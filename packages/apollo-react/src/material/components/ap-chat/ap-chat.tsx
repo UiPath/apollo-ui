@@ -92,7 +92,7 @@ const ApI18nWithLocale = React.memo(({ children }: { children: React.ReactNode }
 
 const AutopilotChatContent = React.memo(() => {
   const { width, shouldAnimate } = useChatWidth();
-  const { historyOpen, settingsOpen, disabledFeatures, chatMode } = useChatState();
+  const { historyOpen, settingsOpen, disabledFeatures, chatMode, readOnly } = useChatState();
 
   return (
     <ChatContainer
@@ -111,6 +111,7 @@ const AutopilotChatContent = React.memo(() => {
           settingsDisabled={disabledFeatures.settings ?? false}
           headerSeparatorDisabled={disabledFeatures.headerSeparator ?? false}
           mode={chatMode}
+          readOnly={readOnly}
         />
       ) : (
         <StandardLayout
@@ -121,6 +122,7 @@ const AutopilotChatContent = React.memo(() => {
           headerDisabled={disabledFeatures.header ?? false}
           headerSeparatorDisabled={disabledFeatures.headerSeparator ?? false}
           mode={chatMode}
+          readOnly={readOnly}
         />
       )}
     </ChatContainer>

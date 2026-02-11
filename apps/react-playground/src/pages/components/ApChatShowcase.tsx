@@ -76,6 +76,7 @@ export function ApChatShowcase() {
 		customScrollTheme: false,
 		copy: true, // Copy enabled by default
 		attachmentsAsync: false,
+		readOnly: false,
 	});
 	const [selectedAgentMode, setSelectedAgentMode] = useState<string>("agent");
 	const [selectedModel, setSelectedModel] = useState<string>("gpt-4");
@@ -380,6 +381,7 @@ export function ApChatShowcase() {
 			instanceName: "showcase-chat",
 			config: {
 				mode: AutopilotChatMode.SideBySide,
+				readOnly: features.readOnly,
 				disabledFeatures: {
 					history: !features.history,
 					settings: !features.settings,
@@ -627,6 +629,7 @@ export function ApChatShowcase() {
 		features.htmlPreview,
 		features.resize,
 		features.settings,
+		features.readOnly,
 	]);
 
 	// Update embedded container when in embedded mode
@@ -648,6 +651,7 @@ export function ApChatShowcase() {
 		if (chatService) {
 			chatService.initialize({
 				mode: chatMode,
+				readOnly: features.readOnly,
 				disabledFeatures: {
 					history: !features.history,
 					settings: !features.settings,
@@ -1922,6 +1926,14 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
 							onChange={() => toggleFeature("attachmentsAsync")}
 						/>
 						Attachments Async
+					</Checkbox>
+					<Checkbox>
+						<input
+							type="checkbox"
+							checked={features.readOnly}
+							onChange={() => toggleFeature("readOnly")}
+						/>
+						Read Only
 					</Checkbox>
 				</Section>
 

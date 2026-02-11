@@ -210,6 +210,7 @@ export interface AutopilotChatError {
  * @property {string} HistoryLoadMore - Emitted when the history load more is triggered (scrolling to bottom)
  * @property {string} HistorySearch - Emitted when the history search is triggered (search for a conversation in the history list)
  * @property {string} SetResourceManager - Emitted when a resource manager is set for the variable picker
+ * @property {string} SetReadOnly - Emitted when the read-only mode is set
  * @property {string} ResourceItemSelected - Emitted when a resource item is selected from the variable picker
  */
 export enum AutopilotChatEvent {
@@ -247,6 +248,7 @@ export enum AutopilotChatEvent {
   SetSelectedAgentMode = 'setSelectedAgentMode',
   SetCustomHeaderActions = 'setCustomHeaderActions',
   CustomHeaderActionClicked = 'customHeaderActionClicked',
+  SetReadOnly = 'setReadOnly',
   SetResourceManager = 'setResourceManager',
   ResourceItemSelected = 'resourceItemSelected',
 }
@@ -490,6 +492,7 @@ export enum AutopilotChatPreHookAction {
  * @property preHooks - The hooks that trigger before the user action (UI interaction) of
  *                      the chat. Hooks expose current data for the action **before** the
  *                      state change is attempted.
+ * @property readOnly - Whether the chat is in read-only mode (hides input area and some action buttons)
  * @property paginatedMessages - Flag to determine if the chat conversation is paginated
  * @property settingsRenderer - The renderer for the settings page. This will be used to
  *                               render the settings page in the chat.
@@ -516,6 +519,7 @@ export interface AutopilotChatConfiguration {
   selectedModel?: AutopilotChatModelInfo;
   agentModes?: AutopilotChatAgentModeInfo[];
   selectedAgentMode?: AutopilotChatAgentModeInfo;
+  readOnly?: boolean;
   preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
   paginatedMessages?: boolean;
   paginatedHistory?: boolean;
