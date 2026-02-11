@@ -73,8 +73,8 @@ export function getIcon(iconId: string): IconComponent {
         src={iconId}
         alt="icon"
         style={{
-          width: w ?? 24,
-          height: h ?? 24,
+          width: w,
+          height: h,
         }}
       />
     );
