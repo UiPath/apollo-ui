@@ -30,7 +30,7 @@
     [
       "@semantic-release/exec",
       {
-        "publishCmd": "bash ../../scripts/publish-to-both.sh --no-git-checks --access public"
+        "publishCmd": "bash ../../scripts/publish-to-registries.sh --no-git-checks --access public"
       }
     ],
     [

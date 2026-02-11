@@ -4,26 +4,13 @@
  */
 
 import { execSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { findPackageInfo } from './package-utils.js';
 
 const IDENTIFIER = '<!-- dev-packages-comment -->';
 
 function getPackageVersion(packageName: string): string {
-  const pkgShortName = packageName.replace('@uipath/', '');
-  const searchDirs = ['packages', 'web-packages'];
-
-  for (const dir of searchDirs) {
-    const pkgJsonPath = join(process.cwd(), dir, pkgShortName, 'package.json');
-    try {
-      const pkgJson = JSON.parse(readFileSync(pkgJsonPath, 'utf8'));
-      return pkgJson.version;
-    } catch {
-      continue;
-    }
-  }
-
-  return 'unknown';
+  const info = findPackageInfo(packageName);
+  return info?.version ?? 'unknown';
 }
 
 function main() {
@@ -73,39 +60,47 @@ function main() {
   let commentId: string | null = null;
   try {
     const result = execSync(
-      `gh api repos/${owner}/${repoName}/issues/${prNumber}/comments --jq '.[] | select(.body | contains("${IDENTIFIER}")) | .id'`,
+      `gh api repos/${owner}/${repoName}/issues/${prNumber}/comments --jq '([.[] | select(.body | contains("${IDENTIFIER}")) | .id][0] // empty)'`,
       { encoding: 'utf8', env: { ...process.env, GH_TOKEN: token } }
     );
-    commentId = result.trim().split('\n')[0] || null;
-  } catch {
-    // No existing comment
+    commentId = result.trim() || null;
+  } catch (error) {
+    console.error('Failed to check for existing comment:');
+    console.error(error);
+    process.exit(1);
   }
 
   // Use JSON input to avoid shell escaping issues
   const payload = JSON.stringify({ body: comment });
 
-  if (commentId) {
-    // Update existing
-    const result = execSync(
-      `gh api repos/${owner}/${repoName}/issues/comments/${commentId} -X PATCH --input -`,
-      {
-        input: payload,
-        encoding: 'utf8',
-        env: { ...process.env, GH_TOKEN: token }
-      }
-    );
-    console.log(`Updated comment ${commentId}`);
-  } else {
-    // Create new
-    const result = execSync(
-      `gh api repos/${owner}/${repoName}/issues/${prNumber}/comments --input -`,
-      {
-        input: payload,
-        encoding: 'utf8',
-        env: { ...process.env, GH_TOKEN: token }
-      }
-    );
-    console.log('Created new comment');
+  try {
+    if (commentId) {
+      // Update existing
+      execSync(
+        `gh api repos/${owner}/${repoName}/issues/comments/${commentId} -X PATCH --input -`,
+        {
+          input: payload,
+          encoding: 'utf8',
+          env: { ...process.env, GH_TOKEN: token }
+        }
+      );
+      console.log(`Updated comment ${commentId}`);
+    } else {
+      // Create new
+      execSync(
+        `gh api repos/${owner}/${repoName}/issues/${prNumber}/comments --input -`,
+        {
+          input: payload,
+          encoding: 'utf8',
+          env: { ...process.env, GH_TOKEN: token }
+        }
+      );
+      console.log('Created new comment');
+    }
+  } catch (error) {
+    console.error('Failed to create/update comment:');
+    console.error(error);
+    process.exit(1);
   }
 }
 

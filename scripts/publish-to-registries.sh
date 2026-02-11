@@ -1,6 +1,6 @@
 #!/bin/bash
 # Publish to both npm and GitHub Package Registry
-# Usage: ./scripts/publish-to-both.sh [publish args...]
+# Usage: ./scripts/publish-to-registries.sh [publish args...]
 
 set -e
 

@@ -96,12 +96,17 @@ async function main() {
 
     } catch (error) {
       if (attempt === maxRetries - 1) {
-        console.error(`Failed after ${maxRetries} attempts:`, error);
+        console.error(`Failed after ${maxRetries} attempts:`);
+        console.error(error);
         throw error;
       }
 
       const delay = getRetryDelay(attempt);
-      console.log(`Retry ${attempt + 1} in ${(delay / 1000).toFixed(1)}s...`);
+      console.log(`Attempt ${attempt + 1} failed, retrying in ${(delay / 1000).toFixed(1)}s...`);
+      if (attempt === 0) {
+        // Show error details on first failure
+        console.error('Error:', error);
+      }
       await sleep(delay);
     }
   }

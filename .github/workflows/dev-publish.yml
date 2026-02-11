@@ -6,7 +6,7 @@ permissions:
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [labeled, synchronize]
     branches:
       - main
 
@@ -25,6 +25,7 @@ jobs:
     name: Detect Changed Packages
     runs-on: ubuntu-latest
     outputs:
+      has_label: ${{ steps.check-label.outputs.has_label }}
       packages: ${{ steps.changed.outputs.packages }}
       has_changes: ${{ steps.changed.outputs.has_changes }}
       matrix: ${{ steps.matrix.outputs.matrix }}
@@ -36,6 +37,19 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
+
+      - name: Check for dev-packages label
+        id: check-label
+        env:
+          LABELS_JSON: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          if echo "$LABELS_JSON" | jq -e 'index("dev-packages")' > /dev/null; then
+            echo "has_label=true" >> $GITHUB_OUTPUT
+            echo "✓ dev-packages label is present"
+          else
+            echo "has_label=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ dev-packages label not present - will cleanup only"
+          fi
 
       - name: Check for previous versions
         id: previous
@@ -163,7 +177,7 @@ jobs:
   update-comment-publishing:
     name: Update Comment - Publishing
     needs: [detect-changes, cleanup]
-    if: always() && needs.detect-changes.outputs.has_changes == 'true'
+    if: always() && needs.detect-changes.outputs.has_label == 'true' && needs.detect-changes.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -198,7 +212,7 @@ jobs:
   publish:
     name: Publish ${{ matrix.package }}
     needs: [detect-changes, cleanup, update-comment-publishing]
-    if: always() && needs.detect-changes.outputs.has_changes == 'true'
+    if: always() && needs.detect-changes.outputs.has_label == 'true' && needs.detect-changes.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -240,7 +254,22 @@ jobs:
 
           echo "Publishing $PACKAGE with suffix $SUFFIX..."
           pkg_json=$(find packages web-packages -name package.json -exec grep -l "\"name\": \"$PACKAGE\"" {} \; | head -1)
-          version=$(jq -r '.version' "$pkg_json" 2>/dev/null || echo "unknown")
+
+          if [ ! -f "$pkg_json" ]; then
+            echo "::error::Could not find package.json for $PACKAGE"
+            exit 1
+          fi
+
+          if ! version=$(jq -r '.version' "$pkg_json" 2>&1); then
+            echo "::error::Failed to parse package.json: $pkg_json"
+            echo "$version"  # Show jq error output
+            exit 1
+          fi
+
+          if [ -z "$version" ] || [ "$version" == "null" ]; then
+            echo "::error::Invalid or missing version in $pkg_json"
+            exit 1
+          fi
 
           if pnpm publish:dev "$PACKAGE" "$SUFFIX"; then
             echo "full_version=$PACKAGE@$version-$SUFFIX" >> $GITHUB_OUTPUT
@@ -259,4 +288,40 @@ jobs:
           PUBLISH_STATUS: ${{ steps.publish.outputs.status }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: pnpm exec tsx scripts/update-dev-comment-row.ts
+
+  update-comment-cleanup:
+    name: Update Comment - Cleanup Only
+    needs: [detect-changes, cleanup]
+    if: always() && needs.detect-changes.outputs.has_previous == 'true' && needs.detect-changes.outputs.has_label == 'false'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Update PR comment with cleanup status
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          COMMENT_ID=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
+            --jq '([.[] | select(.body | contains("<!-- dev-packages-comment -->")) | .id][0] // empty)' 2>&1)
+
+          if [ -n "$COMMENT_ID" ]; then
+            TIMESTAMP=$(TZ="America/Los_Angeles" date "+%b %d, %Y, %I:%M:%S %p")
+            COMMENT_BODY="<!-- dev-packages-comment -->"$'\n\n'
+            COMMENT_BODY+="## 📦 Dev Packages"$'\n\n'
+            COMMENT_BODY+="🧹 Dev packages cleaned up (label removed)."$'\n\n'
+            COMMENT_BODY+="_Dev package publishing is disabled. Add the \`dev-packages\` label to re-enable._"$'\n\n'
+            COMMENT_BODY+="**Last updated:** ${TIMESTAMP} PT"
+
+            if ! gh api "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}" \
+              -X PATCH -f body="$COMMENT_BODY" 2>&1; then
+              echo "⚠️ Could not update comment (non-fatal)"
+            else
+              echo "✓ Updated comment with cleanup status"
+            fi
+          else
+            echo "No comment found to update"
+          fi
 

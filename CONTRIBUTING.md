@@ -271,16 +271,19 @@ Only packages with new commits since their last release will be published.
 
 ### Dev Packages (Preview Releases)
 
-For testing unreleased changes, dev packages are automatically published for every PR to **both registries**.
+For testing unreleased changes, dev packages can be published for PRs to **both registries** on-demand.
 
 **Automatic (CI):**
-- When you push to a PR branch, packages with changes are published as `<version>-pr<number>.<short-sha>`
+- **Trigger:** Add the `dev-packages` label to your PR to publish dev versions
+- When the label is present, packages with changes are published as `<version>-pr<number>.<short-sha>`
 - Example: `@uipath/apollo-react@3.19.3-pr123.abc1234`
 - Published to **both npm and GitHub Package Registry** with `@dev` tag
 - A comment is added to the PR with the published versions and installation instructions
-- Packages are automatically cleaned up from both registries when the PR is closed or merged
+- **Continuous publishing:** New commits will automatically re-publish while the label is present
+- **Stop publishing:** Remove the `dev-packages` label to stop publishing on subsequent commits
+- Packages are automatically cleaned up from GitHub Package Registry when the PR is closed or merged
 
-> **Note:** Cleanup runs when a PR is closed or merged via GitHub's UI. If a branch is deleted directly (e.g., via `git push origin --delete branch`) without closing the PR, packages may remain published until manually cleaned up.
+> **Note:** npm has strict unpublish policies - packages with dependents cannot be unpublished, only deprecated. Dev packages are automatically deprecated but remain in the npm registry. GitHub Package Registry allows full deletion.
 
 **Manual (Local):**
 
