@@ -13,6 +13,10 @@ import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
 import { BaseNode } from '../BaseNode/BaseNode';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
+import {
+  BaseNodeOverrideConfigProvider,
+  type BaseNodeOverrideConfig,
+} from '../BaseNode/BaseNodeConfigContext';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import type { NodeToolbarConfig } from '../Toolbar';
 import type { HandleGroupManifest } from '../../schema/node-definition';
@@ -237,24 +241,32 @@ function CollapsibleAgentNode(props: NodeProps<Node<CollapsibleAgentNodeData>>) 
     [collapsed]
   );
 
+  const baseNodeConfig = useMemo<BaseNodeOverrideConfig>(
+    () => ({
+      handleConfigurations,
+      toolbarConfig,
+    }),
+    [handleConfigurations, toolbarConfig]
+  );
+
   return (
-    <BaseNode
-      {...nodeProps}
-      type="uipath.agent.collapsible"
-      id={id}
-      selected={selected}
-      data={{
-        ...data,
-        parameters: data?.parameters ?? {},
-        display: {
-          label,
-          shape: collapsed ? 'square' : (agentManifest?.display.shape ?? 'rectangle'),
-          iconBackground: agentManifest?.display.iconBackground,
-        },
-      }}
-      handleConfigurations={handleConfigurations}
-      toolbarConfig={toolbarConfig}
-    />
+    <BaseNodeOverrideConfigProvider value={baseNodeConfig}>
+      <BaseNode
+        {...nodeProps}
+        type="uipath.agent.collapsible"
+        id={id}
+        selected={selected}
+        data={{
+          ...data,
+          parameters: data?.parameters ?? {},
+          display: {
+            label,
+            shape: collapsed ? 'square' : (agentManifest?.display.shape ?? 'rectangle'),
+            iconBackground: agentManifest?.display.iconBackground,
+          },
+        }}
+      />
+    </BaseNodeOverrideConfigProvider>
   );
 }
 

@@ -12,6 +12,10 @@ import {
 } from '../../../types';
 import { BaseNode } from '../../BaseNode/BaseNode';
 import type { BaseNodeData } from '../../BaseNode/BaseNode.types';
+import {
+  BaseNodeOverrideConfigProvider,
+  type BaseNodeOverrideConfig,
+} from '../../BaseNode/BaseNodeConfigContext';
 import type { ButtonHandleConfig, HandleActionEvent } from '../../ButtonHandle/ButtonHandle';
 import type { HandleGroupManifest } from '../../../schema/node-definition';
 import type { NodeToolbarConfig, ToolbarAction } from '../../Toolbar';
@@ -80,6 +84,7 @@ interface AgentNodeProps {
 
 const HOVER_DELAY_MS = 500;
 const HOVER_HIDE_DELAY_MS = 300;
+const alwaysShowNotches = () => true;
 
 const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNodeProps) => {
   const {
@@ -519,37 +524,54 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     );
   }, [data.instructions, settings, translations, isConversational]);
 
+  const baseNodeConfig = useMemo<BaseNodeOverrideConfig>(
+    () => ({
+      executionStatusOverride: executionStatus,
+      suggestionType,
+      handleConfigurations,
+      toolbarConfig,
+      footerVariant,
+      iconComponent: agentIcon,
+      footerComponent: instructionsFooter,
+      subLabelComponent: subLabelWithHealthScore,
+      shouldShowAddButtonFn,
+      shouldShowButtonHandleNotchesFn: alwaysShowNotches,
+    }),
+    [
+      executionStatus,
+      suggestionType,
+      handleConfigurations,
+      toolbarConfig,
+      footerVariant,
+      agentIcon,
+      instructionsFooter,
+      subLabelWithHealthScore,
+      shouldShowAddButtonFn,
+    ]
+  );
+
   return (
     <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      <BaseNode
-        {...nodeProps}
-        id={id}
-        type={isConversational ? 'uipath.agent.conversational' : 'uipath.agent.autonomous'}
-        data={{
-          ...data,
-          display: {
-            label: name,
-            subLabel: isConversational
-              ? translations.conversationalAgent
-              : translations.autonomousAgent,
-            shape: 'rectangle',
-            background: 'var(--uix-canvas-background)',
-            iconBackground: 'var(--uix-canvas-background-secondary)',
-          },
-        }}
-        selected={selected}
-        // Runtime customization props (not in data)
-        executionStatusOverride={executionStatus}
-        suggestionType={suggestionType}
-        handleConfigurations={handleConfigurations}
-        toolbarConfig={toolbarConfig}
-        footerVariant={footerVariant}
-        iconComponent={agentIcon}
-        footerComponent={instructionsFooter}
-        subLabelComponent={subLabelWithHealthScore}
-        shouldShowAddButtonFn={shouldShowAddButtonFn}
-        shouldShowButtonHandleNotchesFn={() => true}
-      />
+      <BaseNodeOverrideConfigProvider value={baseNodeConfig}>
+        <BaseNode
+          {...nodeProps}
+          id={id}
+          type={isConversational ? 'uipath.agent.conversational' : 'uipath.agent.autonomous'}
+          data={{
+            ...data,
+            display: {
+              label: name,
+              subLabel: isConversational
+                ? translations.conversationalAgent
+                : translations.autonomousAgent,
+              shape: 'rectangle',
+              background: 'var(--uix-canvas-background)',
+              iconBackground: 'var(--uix-canvas-background-secondary)',
+            },
+          }}
+          selected={selected}
+        />
+      </BaseNodeOverrideConfigProvider>
       <FloatingCanvasPanel
         open={showSettingsPreview}
         nodeId={id}
