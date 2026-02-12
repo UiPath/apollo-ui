@@ -20,6 +20,9 @@ export interface ThemeConfig {
     accent?: string;
     accentForeground?: string;
     destructive?: string;
+    success?: string;
+    info?: string;
+    warning?: string;
     border?: string;
     input?: string;
     ring?: string;
@@ -54,6 +57,9 @@ export interface ThemeConfig {
     accent?: string;
     accentForeground?: string;
     destructive?: string;
+    success?: string;
+    info?: string;
+    warning?: string;
     border?: string;
     input?: string;
     ring?: string;
@@ -105,6 +111,9 @@ const cssVarMap: Record<string, string> = {
   accent: "--accent",
   accentForeground: "--accent-foreground",
   destructive: "--destructive",
+  success: "--success",
+  info: "--info",
+  warning: "--warning",
   border: "--border",
   input: "--input",
   ring: "--ring",
