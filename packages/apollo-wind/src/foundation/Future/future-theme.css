@@ -105,6 +105,7 @@
   --color-accent: var(--color-future-surface-hover);
   --color-accent-foreground: var(--color-future-foreground);
   --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
   --color-border: var(--color-future-border);
   --color-border-de-emp: var(--color-future-border-subtle);
   --color-input: var(--color-future-border);
@@ -205,6 +206,7 @@
   --color-accent: var(--color-future-surface-hover);
   --color-accent-foreground: var(--color-future-foreground);
   --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
   --color-border: var(--color-future-border);
   --color-border-de-emp: var(--color-future-border-subtle);
   --color-input: var(--color-future-border);
