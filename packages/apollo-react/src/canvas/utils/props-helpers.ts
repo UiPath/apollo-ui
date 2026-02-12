@@ -179,6 +179,7 @@ const createResourceNode = (
     hasGuardrails: resource.hasGuardrails ?? false,
     isDisabled: resource.isDisabled ?? false,
     errors: resource.errors,
+    errorAction: resource.errorAction,
   };
 
   // Check if resource has explicit position defined

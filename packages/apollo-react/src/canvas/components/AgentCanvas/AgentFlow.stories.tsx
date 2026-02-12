@@ -1861,3 +1861,143 @@ export const ConversationalAgent: Story = {
     },
   },
 };
+
+/**
+ * Resource with Error CTA Story
+ * Demonstrates error call-to-action buttons on resource nodes
+ */
+
+const resourcesWithErrorCta: AgentFlowResource[] = [
+  {
+    id: 'tool-broken',
+    type: 'tool',
+    name: 'Broken Tool',
+    description: 'This tool has an error',
+    iconUrl: '',
+    hasBreakpoint: false,
+    hasGuardrails: false,
+    projectType: ProjectType.Internal,
+    errorAction: {
+      icon: 'refresh',
+      label: 'Retry Connection',
+    },
+  },
+  {
+    id: 'tool-config-error',
+    type: 'tool',
+    name: 'Misconfigured Tool',
+    description: 'Configuration error detected',
+    iconUrl: '',
+    hasBreakpoint: false,
+    hasGuardrails: false,
+    projectType: ProjectType.Api,
+    errorAction: {
+      icon: 'settings',
+      label: 'Fix Configuration',
+    },
+  },
+  {
+    id: 'context-error',
+    type: 'context',
+    name: 'Invalid Context',
+    description: 'Context validation failed',
+    hasBreakpoint: false,
+    errorAction: {
+      icon: 'warning',
+      label: 'Review Issues',
+    },
+  },
+  {
+    id: 'tool-working',
+    type: 'tool',
+    name: 'Working Tool',
+    description: 'This tool is functioning normally (no error CTA)',
+    iconUrl: '',
+    hasBreakpoint: false,
+    hasGuardrails: false,
+    projectType: ProjectType.Internal,
+    // No errorAction - this tool is working fine
+  },
+];
+
+const ResourceWithErrorCTAWrapper = () => {
+  const handleErrorAction = useCallback(
+    (_resourceId: string, resource: AgentFlowResourceNodeData) => {
+      console.log(resource);
+      // Route based on resource name
+      // resourceId format is typically: "parentNodeId=>resourceName:actualId"
+      const resourceName = resource.name;
+      switch (resourceName) {
+        case 'Broken Tool':
+          alert(`Retry action triggered for: ${resourceName}`);
+          break;
+        case 'Misconfigured Tool':
+          alert(`Fix configuration action triggered for: ${resourceName}`);
+          break;
+        case 'Invalid Context':
+          alert(`Review issues action triggered for: ${resourceName}`);
+          break;
+        default:
+          alert(`Error action triggered for: ${resourceName}`);
+      }
+    },
+    []
+  );
+
+  return (
+    <ReactFlowProvider>
+      <AgentFlow
+        allowDragging
+        definition={sampleAgentDefinition}
+        spans={[]}
+        name="Test Agent"
+        description="Testing error CTA on resources"
+        mode="design"
+        resources={resourcesWithErrorCta}
+        enableMemory
+        enableInstructions
+        onErrorAction={handleErrorAction}
+        instructions={{
+          system: 'System instructions here',
+          user: 'User instructions here',
+        }}
+      />
+      <StoryInfoPanel title="Error CTA Demo" position="top-right">
+        <Column mt={12} gap={8}>
+          <ApTypography variant={FontVariantToken.fontSizeS}>
+            Resources with <strong>errorAction</strong> defined will show an error action button in
+            their toolbar.
+          </ApTypography>
+          <ApTypography
+            variant={FontVariantToken.fontSizeS}
+            style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
+          >
+            Click the error action buttons (Retry, Fix Configuration, Review Issues) to trigger the
+            custom actions.
+          </ApTypography>
+          <ApTypography
+            variant={FontVariantToken.fontSizeS}
+            style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
+          >
+            The "Working Tool" has no error action and shows the normal toolbar.
+          </ApTypography>
+        </Column>
+      </StoryInfoPanel>
+    </ReactFlowProvider>
+  );
+};
+
+export const ResourceWithErrorCTA: Story = {
+  args: {
+    mode: 'design',
+  },
+  render: () => <ResourceWithErrorCTAWrapper />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates error call-to-action buttons on resource nodes. Resources can define an `errorAction` field with icon and label, and handle the action via the `onErrorAction` callback. The button appears next to the remove button in the toolbar. The consumer provides routing logic to handle different error actions for each resource. Hover or click on the resource nodes to see the error CTA buttons.',
+      },
+    },
+  },
+};

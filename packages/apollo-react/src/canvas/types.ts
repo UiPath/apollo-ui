@@ -11,6 +11,7 @@ import type {
   StickyNoteColor,
   StickyNoteData,
 } from './components/StickyNoteNode/StickyNoteNode.types';
+import { ToolbarActionItem } from './components/Toolbar';
 
 // Re-export CanvasLevel for external consumers
 export type { CanvasLevel } from './types/canvas.types';
@@ -74,6 +75,7 @@ export type AgentFlowToolResource = {
   hasGuardrails?: boolean;
   projectId?: string;
   isDisabled?: boolean;
+  errorAction?: Omit<ToolbarActionItem, 'id' | 'onAction'>;
 };
 
 export type AgentFlowContextResource = {
@@ -88,6 +90,7 @@ export type AgentFlowContextResource = {
   hasGuardrails?: boolean;
   projectId?: string;
   isDisabled?: boolean;
+  errorAction?: Omit<ToolbarActionItem, 'id' | 'onAction'>;
 };
 
 export type AgentFlowEscalationResource = {
@@ -102,6 +105,7 @@ export type AgentFlowEscalationResource = {
   hasGuardrails?: boolean;
   projectId?: string;
   isDisabled?: boolean;
+  errorAction?: Omit<ToolbarActionItem, 'id' | 'onAction'>;
 };
 
 export type AgentFlowMcpResource = {
@@ -124,6 +128,7 @@ export type AgentFlowMcpResource = {
   hasGuardrails?: boolean;
   projectId?: string;
   isDisabled?: boolean;
+  errorAction?: Omit<ToolbarActionItem, 'id' | 'onAction'>;
 };
 
 export type AgentFlowMemorySpaceResource = {
@@ -138,6 +143,7 @@ export type AgentFlowMemorySpaceResource = {
   hasGuardrails?: boolean;
   projectId?: string;
   isDisabled?: boolean;
+  errorAction?: Omit<ToolbarActionItem, 'id' | 'onAction'>;
 };
 
 export type AgentFlowResource =
@@ -271,6 +277,7 @@ export type AgentFlowProps = {
   onRemoveBreakpoint?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onAddGuardrail?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onGoToSource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
+  onErrorAction?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onAddResource?: (type: AgentFlowResourceType) => void;
   onRemoveResource?: (resource: AgentFlowResource) => void;
   onAgentNodeClick?: () => void;
@@ -475,6 +482,7 @@ export type SharedResourceData = {
   suggestionId?: string;
   suggestionType?: SuggestionType;
   isPlaceholder?: boolean; // for 'add' type suggestions
+  errorAction?: Omit<ToolbarActionItem, 'id' | 'onAction'>;
 };
 
 export type AgentFlowResourceNodeData = (

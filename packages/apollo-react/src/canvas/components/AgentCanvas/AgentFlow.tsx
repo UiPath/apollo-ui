@@ -203,6 +203,7 @@ const createResourceNodeWrapper = (opts: {
   onRemoveBreakpoint?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onAddGuardrail?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onGoToSource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
+  onErrorAction?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onExpandResource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onCollapseResource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   translations?: ResourceNodeTranslations;
@@ -225,6 +226,7 @@ const createResourceNodeWrapper = (opts: {
         onRemoveBreakpoint={opts.onRemoveBreakpoint}
         onAddGuardrail={opts.onAddGuardrail}
         onGoToSource={opts.onGoToSource}
+        onErrorAction={opts.onErrorAction}
         onRemoveResource={deleteNode}
         onExpandResource={opts.onExpandResource}
         onCollapseResource={opts.onCollapseResource}
@@ -247,6 +249,7 @@ const AgentFlowInner = memo(
     onRemoveBreakpoint,
     onAddGuardrail,
     onGoToSource,
+    onErrorAction,
     onAddResource: _onAddResource, // Handled by createResourcePlaceholder in store
     onSelectResource,
     setSpanForSelectedNode,
@@ -385,6 +388,7 @@ const AgentFlowInner = memo(
           onRemoveBreakpoint,
           onAddGuardrail,
           onGoToSource,
+          onErrorAction,
           onExpandResource,
           onCollapseResource,
           translations: resourceNodeTranslations,
@@ -399,6 +403,7 @@ const AgentFlowInner = memo(
       onRemoveBreakpoint,
       onAddGuardrail,
       onGoToSource,
+      onErrorAction,
       healthScore,
       onHealthScoreClick,
       createResourcePlaceholder,
