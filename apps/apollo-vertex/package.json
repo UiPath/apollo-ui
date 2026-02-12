@@ -5,9 +5,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "next --turbopack",
-    "build": "pnpm registry:build && next build",
+    "dev": "pnpm generate:theme && next --turbopack",
+    "build": "pnpm generate:theme && pnpm registry:build && next build",
     "start": "next start",
+    "generate:theme": "node --experimental-strip-types scripts/generate-theme-css.ts",
     "registry:build": "shadcn build && node --experimental-strip-types scripts/generate-registry-index.ts",
     "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
     "format": "biome check --write .",
