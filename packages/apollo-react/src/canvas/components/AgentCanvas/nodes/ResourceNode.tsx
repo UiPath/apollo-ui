@@ -35,6 +35,7 @@ interface ResourceNodeProps extends NodeProps<AgentFlowResourceNode> {
   onRemoveBreakpoint?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onAddGuardrail?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onGoToSource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
+  onErrorAction?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onExpandResource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onCollapseResource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onRemoveResource?: (resourceId: string) => void;
@@ -59,6 +60,7 @@ export const ResourceNode = memo(
     onRemoveBreakpoint,
     onAddGuardrail,
     onGoToSource,
+    onErrorAction,
     translations,
     suggestionTranslations,
     suggestionGroupVersion,
@@ -82,6 +84,7 @@ export const ResourceNode = memo(
     const suggestionId = data.suggestionId;
     const suggestionType = isSuggestion ? data.suggestionType : undefined;
     const suggestTranslations = suggestionTranslations ?? DefaultSuggestionTranslations;
+    const errorAction = data.errorAction ?? undefined;
 
     const handleClickEnable = useCallback(() => {
       onEnable?.(id, data);
@@ -110,6 +113,10 @@ export const ResourceNode = memo(
     const handleClickRemove = useCallback(() => {
       deleteNode(id);
     }, [id, deleteNode]);
+
+    const handleClickErrorAction = useCallback(() => {
+      onErrorAction?.(id, data);
+    }, [id, data, onErrorAction]);
 
     const handleActOnSuggestion = useCallback(
       (suggestionId: string, action: 'accept' | 'reject') => {
@@ -220,6 +227,14 @@ export const ResourceNode = memo(
         onAction: handleClickRemove,
       };
 
+      const errorCtaAction: ToolbarAction = {
+        id: 'error-cta',
+        icon: errorAction?.icon ?? '',
+        label: errorAction?.label ?? '',
+        disabled: false,
+        onAction: handleClickErrorAction,
+      };
+
       const toggleEnabledAction: ToolbarAction = {
         id: 'toggle-enabled',
         icon: undefined,
@@ -236,9 +251,12 @@ export const ResourceNode = memo(
         onAction: () => {},
       };
 
-      const actions: ToolbarAction[] = [removeAction];
+      // Only show error CTA if `errorAction` is provided in data
+      // Consumers need to conditionally pass this prop if they want to show the error CTA
+      const actions: ToolbarAction[] = [removeAction, ...(errorAction ? [errorCtaAction] : [])];
+
       const overflowActions: ToolbarAction[] = [
-        ...(data.type !== 'memorySpace' ? [toggleBreakpointAction] : []),
+        toggleBreakpointAction,
         ...(data.type === 'tool' ? [addGuardrailAction] : []),
         ...(data.projectId ? [goToSourceAction] : []),
         ...(data.type === 'tool' ? [separator, toggleEnabledAction] : []),
@@ -269,8 +287,10 @@ export const ResourceNode = memo(
       handleClickAddGuardrail,
       handleClickGoToSource,
       handleClickRemove,
+      handleClickErrorAction,
       handleActOnSuggestion,
       suggestTranslations,
+      errorAction,
     ]);
 
     const toolTopHandles = useMemo(
