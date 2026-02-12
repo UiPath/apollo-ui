@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.30.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.30.1...@uipath/apollo-react@3.30.2) (2026-02-12)
+
+### Bug Fixes
+
+* **apollo-react:** use css vars instead of theme ([bf4524e](https://github.com/UiPath/apollo-ui/commit/bf4524e03346ef0b71a214f5945f3530968a9868))
+
 ## [@uipath/apollo-react-v3.30.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.30.0...@uipath/apollo-react@3.30.1) (2026-02-12)
 
 ### Bug Fixes

@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v0.9.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.9.0...@uipath/apollo-wind@0.9.1) (2026-02-12)
+
+### Bug Fixes
+
+* **apollo-react:** use css vars instead of theme ([bf4524e](https://github.com/uipath/apollo-ui/commit/bf4524e03346ef0b71a214f5945f3530968a9868))
+
 ## [@uipath/apollo-wind-v0.9.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.8.1...@uipath/apollo-wind@0.9.0) (2026-02-12)
 
 ### Features
