@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.30.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.29.2...@uipath/apollo-react@3.30.0) (2026-02-12)
+
+### Features
+
+* **apollo-react:** use provider for component non serializable overrides ([15aadec](https://github.com/UiPath/apollo-ui/commit/15aadec17afddf547d2074954c60c456c8d0ed78))
+
 ## [@uipath/apollo-react-v3.29.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.29.1...@uipath/apollo-react@3.29.2) (2026-02-11)
 
 ### Bug Fixes
