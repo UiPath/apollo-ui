@@ -1,14 +1,22 @@
 import type { Meta } from '@storybook/react-vite';
 import {
   Calendar,
+  Calculator,
   CreditCard,
+  FileText,
+  Globe,
+  Laptop,
   Mail,
   MessageSquare,
-  PlusCircle,
+  Moon,
+  Plus,
+  Search,
   Settings,
+  Sun,
   User,
 } from 'lucide-react';
 import * as React from 'react';
+import { Button } from './button';
 import {
   Command,
   CommandDialog,
@@ -32,8 +40,12 @@ const meta = {
 
 export default meta;
 
-export const Default = {
-  args: {},
+// ============================================================================
+// Basic
+// ============================================================================
+
+export const Basic = {
+  name: 'Basic',
   render: () => (
     <Command className="rounded-lg border shadow-md w-[450px]">
       <CommandInput placeholder="Type a command or search..." />
@@ -45,23 +57,12 @@ export const Default = {
             <span>Calendar</span>
           </CommandItem>
           <CommandItem>
-            <User className="mr-2 h-4 w-4" />
-            <span>Search Users</span>
+            <Search className="mr-2 h-4 w-4" />
+            <span>Search</span>
           </CommandItem>
           <CommandItem>
             <Settings className="mr-2 h-4 w-4" />
             <span>Settings</span>
-          </CommandItem>
-        </CommandGroup>
-        <CommandSeparator />
-        <CommandGroup heading="Actions">
-          <CommandItem>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            <span>Create New</span>
-          </CommandItem>
-          <CommandItem>
-            <Mail className="mr-2 h-4 w-4" />
-            <span>Send Message</span>
           </CommandItem>
         </CommandGroup>
       </CommandList>
@@ -69,42 +70,12 @@ export const Default = {
   ),
 };
 
-export const WithShortcuts = {
-  args: {},
-  render: () => (
-    <Command className="rounded-lg border shadow-md w-[450px]">
-      <CommandInput placeholder="Type a command or search..." />
-      <CommandList>
-        <CommandEmpty>No results found.</CommandEmpty>
-        <CommandGroup heading="Suggestions">
-          <CommandItem>
-            <Calendar className="mr-2 h-4 w-4" />
-            <span>Calendar</span>
-            <CommandShortcut>⌘K</CommandShortcut>
-          </CommandItem>
-          <CommandItem>
-            <User className="mr-2 h-4 w-4" />
-            <span>Search Users</span>
-            <CommandShortcut>⌘U</CommandShortcut>
-          </CommandItem>
-          <CommandItem>
-            <CreditCard className="mr-2 h-4 w-4" />
-            <span>Billing</span>
-            <CommandShortcut>⌘B</CommandShortcut>
-          </CommandItem>
-          <CommandItem>
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
-            <CommandShortcut>⌘S</CommandShortcut>
-          </CommandItem>
-        </CommandGroup>
-      </CommandList>
-    </Command>
-  ),
-};
+// ============================================================================
+// Command with Dialog
+// ============================================================================
 
-export const Dialog = {
-  args: {},
+export const CommandWithDialog = {
+  name: 'Command with Dialog',
   render: () => {
     const [open, setOpen] = React.useState(false);
 
@@ -112,7 +83,7 @@ export const Dialog = {
       const down = (e: KeyboardEvent) => {
         if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
           e.preventDefault();
-          setOpen((open) => !open);
+          setOpen((o) => !o);
         }
       };
       document.addEventListener('keydown', down);
@@ -123,16 +94,14 @@ export const Dialog = {
       <div>
         <p className="text-sm text-muted-foreground mb-4">
           Press{' '}
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
             <span className="text-xs">⌘</span>K
-          </kbd>
+          </kbd>{' '}
+          or click the button below.
         </p>
-        <button
-          onClick={() => setOpen(true)}
-          className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
-        >
+        <Button variant="outline" onClick={() => setOpen(true)}>
           Open Command Menu
-        </button>
+        </Button>
         <CommandDialog open={open} onOpenChange={setOpen}>
           <CommandInput placeholder="Type a command or search..." />
           <CommandList>
@@ -169,4 +138,307 @@ export const Dialog = {
       </div>
     );
   },
+};
+
+// ============================================================================
+// Command with Groups
+// ============================================================================
+
+export const CommandWithGroups = {
+  name: 'Command with Groups',
+  render: () => (
+    <Command className="rounded-lg border shadow-md w-[450px]">
+      <CommandInput placeholder="Search..." />
+      <CommandList>
+        <CommandEmpty>No results found.</CommandEmpty>
+        <CommandGroup heading="Navigation">
+          <CommandItem>
+            <Globe className="mr-2 h-4 w-4" />
+            <span>Go to Dashboard</span>
+          </CommandItem>
+          <CommandItem>
+            <FileText className="mr-2 h-4 w-4" />
+            <span>Go to Documents</span>
+          </CommandItem>
+          <CommandItem>
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Go to Settings</span>
+          </CommandItem>
+        </CommandGroup>
+        <CommandSeparator />
+        <CommandGroup heading="Actions">
+          <CommandItem>
+            <Plus className="mr-2 h-4 w-4" />
+            <span>Create New Project</span>
+          </CommandItem>
+          <CommandItem>
+            <Mail className="mr-2 h-4 w-4" />
+            <span>Send Invite</span>
+          </CommandItem>
+        </CommandGroup>
+        <CommandSeparator />
+        <CommandGroup heading="Account">
+          <CommandItem>
+            <User className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </CommandItem>
+          <CommandItem>
+            <CreditCard className="mr-2 h-4 w-4" />
+            <span>Billing</span>
+          </CommandItem>
+        </CommandGroup>
+      </CommandList>
+    </Command>
+  ),
+};
+
+// ============================================================================
+// Command with Shortcuts
+// ============================================================================
+
+export const CommandWithShortcuts = {
+  name: 'Command with Shortcuts',
+  render: () => (
+    <Command className="rounded-lg border shadow-md w-[450px]">
+      <CommandInput placeholder="Type a command or search..." />
+      <CommandList>
+        <CommandEmpty>No results found.</CommandEmpty>
+        <CommandGroup heading="General">
+          <CommandItem>
+            <Search className="mr-2 h-4 w-4" />
+            <span>Search</span>
+            <CommandShortcut>⌘K</CommandShortcut>
+          </CommandItem>
+          <CommandItem>
+            <Plus className="mr-2 h-4 w-4" />
+            <span>New File</span>
+            <CommandShortcut>⌘N</CommandShortcut>
+          </CommandItem>
+          <CommandItem>
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+            <CommandShortcut>⌘,</CommandShortcut>
+          </CommandItem>
+        </CommandGroup>
+        <CommandSeparator />
+        <CommandGroup heading="Account">
+          <CommandItem>
+            <User className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+            <CommandShortcut>⌘P</CommandShortcut>
+          </CommandItem>
+          <CommandItem>
+            <CreditCard className="mr-2 h-4 w-4" />
+            <span>Billing</span>
+            <CommandShortcut>⌘B</CommandShortcut>
+          </CommandItem>
+        </CommandGroup>
+      </CommandList>
+    </Command>
+  ),
+};
+
+// ============================================================================
+// Command Palette Usage
+// ============================================================================
+
+export const CommandPaletteUsage = {
+  name: 'Command Palette Usage',
+  render: () => {
+    const [open, setOpen] = React.useState(false);
+
+    React.useEffect(() => {
+      const down = (e: KeyboardEvent) => {
+        if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+          e.preventDefault();
+          setOpen((o) => !o);
+        }
+      };
+      document.addEventListener('keydown', down);
+      return () => document.removeEventListener('keydown', down);
+    }, []);
+
+    return (
+      <div>
+        <Button
+          variant="outline"
+          className="w-64 justify-between text-muted-foreground"
+          onClick={() => setOpen(true)}
+        >
+          <span className="flex items-center gap-2">
+            <Search className="h-4 w-4" />
+            Search commands...
+          </span>
+          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+            <span className="text-xs">⌘</span>K
+          </kbd>
+        </Button>
+        <CommandDialog open={open} onOpenChange={setOpen}>
+          <CommandInput placeholder="What do you need?" />
+          <CommandList>
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup heading="Quick Actions">
+              <CommandItem>
+                <Plus className="mr-2 h-4 w-4" />
+                <span>New Project</span>
+                <CommandShortcut>⌘N</CommandShortcut>
+              </CommandItem>
+              <CommandItem>
+                <FileText className="mr-2 h-4 w-4" />
+                <span>New Document</span>
+                <CommandShortcut>⌘D</CommandShortcut>
+              </CommandItem>
+              <CommandItem>
+                <Mail className="mr-2 h-4 w-4" />
+                <span>Compose Message</span>
+                <CommandShortcut>⌘M</CommandShortcut>
+              </CommandItem>
+            </CommandGroup>
+            <CommandSeparator />
+            <CommandGroup heading="Navigation">
+              <CommandItem>
+                <Globe className="mr-2 h-4 w-4" />
+                <span>Dashboard</span>
+              </CommandItem>
+              <CommandItem>
+                <Calendar className="mr-2 h-4 w-4" />
+                <span>Calendar</span>
+              </CommandItem>
+              <CommandItem>
+                <User className="mr-2 h-4 w-4" />
+                <span>Team Members</span>
+              </CommandItem>
+            </CommandGroup>
+            <CommandSeparator />
+            <CommandGroup heading="Settings">
+              <CommandItem>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Preferences</span>
+                <CommandShortcut>⌘,</CommandShortcut>
+              </CommandItem>
+              <CommandItem>
+                <Sun className="mr-2 h-4 w-4" />
+                <span>Light Mode</span>
+              </CommandItem>
+              <CommandItem>
+                <Moon className="mr-2 h-4 w-4" />
+                <span>Dark Mode</span>
+              </CommandItem>
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
+      </div>
+    );
+  },
+};
+
+// ============================================================================
+// Examples
+// ============================================================================
+
+export const Examples = {
+  name: 'Examples',
+  render: () => (
+    <div className="flex flex-col gap-8">
+      {/* Search bar */}
+      <div>
+        <p className="text-sm font-medium mb-3">Search Bar</p>
+        <Command className="rounded-lg border shadow-md w-[450px]">
+          <CommandInput placeholder="Search documentation..." />
+          <CommandList>
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup heading="Getting Started">
+              <CommandItem>
+                <FileText className="mr-2 h-4 w-4" />
+                <span>Introduction</span>
+              </CommandItem>
+              <CommandItem>
+                <FileText className="mr-2 h-4 w-4" />
+                <span>Installation</span>
+              </CommandItem>
+              <CommandItem>
+                <FileText className="mr-2 h-4 w-4" />
+                <span>Configuration</span>
+              </CommandItem>
+            </CommandGroup>
+            <CommandSeparator />
+            <CommandGroup heading="Components">
+              <CommandItem>
+                <FileText className="mr-2 h-4 w-4" />
+                <span>Button</span>
+              </CommandItem>
+              <CommandItem>
+                <FileText className="mr-2 h-4 w-4" />
+                <span>Input</span>
+              </CommandItem>
+              <CommandItem>
+                <FileText className="mr-2 h-4 w-4" />
+                <span>Dialog</span>
+              </CommandItem>
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </div>
+
+      {/* Calculator */}
+      <div>
+        <p className="text-sm font-medium mb-3">Calculator Launcher</p>
+        <Command className="rounded-lg border shadow-md w-[450px]">
+          <CommandInput placeholder="Calculate or convert..." />
+          <CommandList>
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup heading="Tools">
+              <CommandItem>
+                <Calculator className="mr-2 h-4 w-4" />
+                <span>Calculator</span>
+                <CommandShortcut>⌘=</CommandShortcut>
+              </CommandItem>
+              <CommandItem>
+                <Laptop className="mr-2 h-4 w-4" />
+                <span>Unit Converter</span>
+              </CommandItem>
+              <CommandItem>
+                <Globe className="mr-2 h-4 w-4" />
+                <span>Currency Exchange</span>
+              </CommandItem>
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </div>
+
+      {/* User management */}
+      <div>
+        <p className="text-sm font-medium mb-3">User Management</p>
+        <Command className="rounded-lg border shadow-md w-[450px]">
+          <CommandInput placeholder="Search users..." />
+          <CommandList>
+            <CommandEmpty>No users found.</CommandEmpty>
+            <CommandGroup heading="Team">
+              <CommandItem>
+                <User className="mr-2 h-4 w-4" />
+                <div className="flex flex-col">
+                  <span>Alex Johnson</span>
+                  <span className="text-xs text-muted-foreground">Engineering</span>
+                </div>
+              </CommandItem>
+              <CommandItem>
+                <User className="mr-2 h-4 w-4" />
+                <div className="flex flex-col">
+                  <span>Sarah Williams</span>
+                  <span className="text-xs text-muted-foreground">Design</span>
+                </div>
+              </CommandItem>
+              <CommandItem>
+                <User className="mr-2 h-4 w-4" />
+                <div className="flex flex-col">
+                  <span>Michael Chen</span>
+                  <span className="text-xs text-muted-foreground">Product</span>
+                </div>
+              </CommandItem>
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </div>
+    </div>
+  ),
 };
