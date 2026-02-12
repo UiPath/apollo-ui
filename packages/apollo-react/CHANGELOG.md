@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.30.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.30.2...@uipath/apollo-react@3.30.3) (2026-02-12)
+
+### Bug Fixes
+
+* **apollo-react:** stage node icon alignment in design time ([3a20bd8](https://github.com/UiPath/apollo-ui/commit/3a20bd892c5f2ab3cc680c68286a816bcb70edd1))
+
 ## [@uipath/apollo-react-v3.30.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.30.1...@uipath/apollo-react@3.30.2) (2026-02-12)
 
 ### Bug Fixes
