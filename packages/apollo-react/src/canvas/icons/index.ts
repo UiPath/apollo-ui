@@ -32,6 +32,7 @@ export { SwitchIcon } from './SwitchIcon';
 export { TimelinePauseIcon } from './TimelinePauseIcon';
 export { TimelinePlayIcon } from './TimelinePlayIcon';
 export { TimelineProgressIcon } from './TimelineProgressIcon';
+export { UiPathIcon } from './UiPathIcon';
 export { WebAppProject } from './WebAppProject';
 export { ZoomInIcon } from './ZoomInIcon';
 export { ZoomOutIcon } from './ZoomOutIcon';
