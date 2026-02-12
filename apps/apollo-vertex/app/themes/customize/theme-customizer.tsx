@@ -21,6 +21,9 @@ const colorFields = [
   { key: "secondary", label: "Secondary" },
   { key: "accent", label: "Accent" },
   { key: "destructive", label: "Destructive" },
+  { key: "success", label: "Success" },
+  { key: "info", label: "Info" },
+  { key: "warning", label: "Warning" },
   { key: "border", label: "Border" },
   { key: "muted", label: "Muted" },
 ] as const;
@@ -367,6 +370,9 @@ export function ThemeCustomizer() {
             <Button variant="secondary">Secondary</Button>
             <Button variant="outline">Outline</Button>
             <Button variant="destructive">Destructive</Button>
+            <Button variant="success">Success</Button>
+            <Button variant="info">Info</Button>
+            <Button variant="warning">Warning</Button>
           </div>
           <div className="p-4 border rounded-lg bg-card text-card-foreground">
             <h4 className="font-semibold mb-2">Card Component</h4>
