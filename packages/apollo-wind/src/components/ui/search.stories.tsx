@@ -3,7 +3,7 @@ import * as React from 'react';
 import { Search, SearchWithSuggestions } from './search';
 
 const meta = {
-  title: 'Components/Core/Search',
+  title: 'Components/UiPath-review/Search',
   component: Search,
   parameters: {
     layout: 'centered',

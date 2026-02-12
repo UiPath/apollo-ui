@@ -1,7 +1,25 @@
 import type { Meta } from '@storybook/react-vite';
 import { ColumnDef } from '@tanstack/react-table';
-import { MoreHorizontal } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronRight,
+  Download,
+  GripVertical,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from 'lucide-react';
 import * as React from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './alert-dialog';
 import { Badge } from './badge';
 import { Button } from './button';
 import { DataTable, DataTableColumnHeader, DataTableSelectColumn } from './data-table';
@@ -10,9 +28,29 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './dropdown-menu';
 import type { EditableCellMeta } from './editable-cell';
+import { Input } from './input';
+import { Label } from './label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
+import { Separator } from './separator';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from './sheet';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './table';
 
 const meta = {
   title: 'Components/Data Display/Data Table',
@@ -25,387 +63,321 @@ const meta = {
 
 export default meta;
 
-// Sample data types
+// ---------------------------------------------------------------------------
+// Shared data
+// ---------------------------------------------------------------------------
+
 type User = {
   id: string;
   name: string;
   email: string;
   role: string;
   status: 'active' | 'inactive' | 'pending';
+  department: string;
+  joined: string;
 };
 
 const sampleUsers: User[] = [
-  {
-    id: '1',
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'Admin',
-    status: 'active',
-  },
-  {
-    id: '2',
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    role: 'User',
-    status: 'active',
-  },
-  {
-    id: '3',
-    name: 'Bob Johnson',
-    email: 'bob@example.com',
-    role: 'User',
-    status: 'inactive',
-  },
-  {
-    id: '4',
-    name: 'Alice Williams',
-    email: 'alice@example.com',
-    role: 'Manager',
-    status: 'active',
-  },
-  {
-    id: '5',
-    name: 'Charlie Brown',
-    email: 'charlie@example.com',
-    role: 'User',
-    status: 'pending',
-  },
-  {
-    id: '6',
-    name: 'Diana Prince',
-    email: 'diana@example.com',
-    role: 'Admin',
-    status: 'active',
-  },
-  {
-    id: '7',
-    name: 'Eve Anderson',
-    email: 'eve@example.com',
-    role: 'User',
-    status: 'inactive',
-  },
-  {
-    id: '8',
-    name: 'Frank Miller',
-    email: 'frank@example.com',
-    role: 'Manager',
-    status: 'active',
-  },
-  {
-    id: '9',
-    name: 'Grace Lee',
-    email: 'grace@example.com',
-    role: 'User',
-    status: 'active',
-  },
-  {
-    id: '10',
-    name: 'Henry Davis',
-    email: 'henry@example.com',
-    role: 'User',
-    status: 'pending',
-  },
-  {
-    id: '11',
-    name: 'Ivy Wilson',
-    email: 'ivy@example.com',
-    role: 'Admin',
-    status: 'active',
-  },
-  {
-    id: '12',
-    name: 'Jack Taylor',
-    email: 'jack@example.com',
-    role: 'User',
-    status: 'inactive',
-  },
+  { id: '1', name: 'John Doe', email: 'john@example.com', role: 'Admin', status: 'active', department: 'Engineering', joined: '2023-01-15' },
+  { id: '2', name: 'Jane Smith', email: 'jane@example.com', role: 'User', status: 'active', department: 'Design', joined: '2023-03-22' },
+  { id: '3', name: 'Bob Johnson', email: 'bob@example.com', role: 'User', status: 'inactive', department: 'Marketing', joined: '2022-11-08' },
+  { id: '4', name: 'Alice Williams', email: 'alice@example.com', role: 'Manager', status: 'active', department: 'Engineering', joined: '2022-06-30' },
+  { id: '5', name: 'Charlie Brown', email: 'charlie@example.com', role: 'User', status: 'pending', department: 'Sales', joined: '2024-01-10' },
+  { id: '6', name: 'Diana Prince', email: 'diana@example.com', role: 'Admin', status: 'active', department: 'Engineering', joined: '2021-09-01' },
+  { id: '7', name: 'Eve Anderson', email: 'eve@example.com', role: 'User', status: 'inactive', department: 'Design', joined: '2023-07-18' },
+  { id: '8', name: 'Frank Miller', email: 'frank@example.com', role: 'Manager', status: 'active', department: 'Product', joined: '2022-04-12' },
+  { id: '9', name: 'Grace Lee', email: 'grace@example.com', role: 'User', status: 'active', department: 'Engineering', joined: '2023-09-05' },
+  { id: '10', name: 'Henry Davis', email: 'henry@example.com', role: 'User', status: 'pending', department: 'Marketing', joined: '2024-02-20' },
+  { id: '11', name: 'Ivy Wilson', email: 'ivy@example.com', role: 'Admin', status: 'active', department: 'Product', joined: '2021-12-11' },
+  { id: '12', name: 'Jack Taylor', email: 'jack@example.com', role: 'User', status: 'inactive', department: 'Sales', joined: '2023-05-25' },
 ];
 
+const statusBadge = (status: string) => (
+  <Badge variant={status === 'active' ? 'default' : status === 'inactive' ? 'secondary' : 'outline'}>
+    {status}
+  </Badge>
+);
+
 const basicColumns: ColumnDef<User>[] = [
-  {
-    accessorKey: 'name',
-    header: 'Name',
-  },
-  {
-    accessorKey: 'email',
-    header: 'Email',
-  },
-  {
-    accessorKey: 'role',
-    header: 'Role',
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status',
-    cell: ({ row }) => {
-      const status = row.getValue('status') as string;
-      return (
-        <Badge
-          variant={
-            status === 'active' ? 'default' : status === 'inactive' ? 'secondary' : 'outline'
-          }
-        >
-          {status}
-        </Badge>
-      );
-    },
-  },
+  { accessorKey: 'name', header: 'Name' },
+  { accessorKey: 'email', header: 'Email' },
+  { accessorKey: 'role', header: 'Role' },
+  { accessorKey: 'status', header: 'Status', cell: ({ row }) => statusBadge(row.getValue('status')) },
 ];
 
 const sortableColumns: ColumnDef<User>[] = [
-  {
-    accessorKey: 'name',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
-  },
-  {
-    accessorKey: 'email',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
-  },
-  {
-    accessorKey: 'role',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Role" />,
-  },
-  {
-    accessorKey: 'status',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
-    cell: ({ row }) => {
-      const status = row.getValue('status') as string;
-      return (
-        <Badge
-          variant={
-            status === 'active' ? 'default' : status === 'inactive' ? 'secondary' : 'outline'
-          }
-        >
-          {status}
-        </Badge>
-      );
-    },
-  },
+  { accessorKey: 'name', header: ({ column }) => <DataTableColumnHeader column={column} title="Name" /> },
+  { accessorKey: 'email', header: ({ column }) => <DataTableColumnHeader column={column} title="Email" /> },
+  { accessorKey: 'role', header: ({ column }) => <DataTableColumnHeader column={column} title="Role" /> },
+  { accessorKey: 'department', header: ({ column }) => <DataTableColumnHeader column={column} title="Department" /> },
+  { accessorKey: 'status', header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />, cell: ({ row }) => statusBadge(row.getValue('status')) },
 ];
 
-const selectableColumns: ColumnDef<User>[] = [
-  DataTableSelectColumn<User>(),
-  ...sortableColumns,
-  {
-    id: 'actions',
-    cell: ({ row }) => {
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(row.original.id)}>
-              Copy user ID
-            </DropdownMenuItem>
-            <DropdownMenuItem>View details</DropdownMenuItem>
-            <DropdownMenuItem>Edit user</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-  },
-];
+// ============================================================================
+// Basic
+// ============================================================================
 
-export const Default = {
-  args: {},
-  render: () => <DataTable columns={basicColumns} data={sampleUsers} />,
-};
-
-export const WithSearch = {
-  args: {},
-  render: () => (
-    <DataTable
-      columns={basicColumns}
-      data={sampleUsers}
-      searchKey="name"
-      searchPlaceholder="Search by name..."
-    />
-  ),
-};
-
-export const Sortable = {
-  args: {},
-  render: () => (
-    <DataTable
-      columns={sortableColumns}
-      data={sampleUsers}
-      searchKey="name"
-      searchPlaceholder="Search by name..."
-    />
-  ),
-};
-
-export const WithSelection = {
-  args: {},
-  render: () => (
-    <DataTable
-      columns={selectableColumns}
-      data={sampleUsers}
-      searchKey="name"
-      searchPlaceholder="Search by name..."
-    />
-  ),
-};
-
-export const NoPagination = {
-  args: {},
-  render: () => (
-    <DataTable columns={basicColumns} data={sampleUsers.slice(0, 5)} showPagination={false} />
-  ),
-};
-
-export const NoColumnToggle = {
-  args: {},
+export const Basic = {
+  name: 'Basic',
   render: () => (
     <DataTable
       columns={basicColumns}
       data={sampleUsers}
       showColumnToggle={false}
-      searchKey="name"
     />
   ),
 };
 
-export const CustomPageSize = {
-  args: {},
-  render: () => (
-    <DataTable columns={sortableColumns} data={sampleUsers} searchKey="name" pageSize={5} />
-  ),
+// ============================================================================
+// Drag and Drop
+// ============================================================================
+
+function DragAndDropExample() {
+  const [data, setData] = React.useState(sampleUsers.slice(0, 6));
+
+  const moveRow = (fromIndex: number, toIndex: number) => {
+    setData((prev) => {
+      const updated = [...prev];
+      const [removed] = updated.splice(fromIndex, 1);
+      updated.splice(toIndex, 0, removed);
+      return updated;
+    });
+  };
+
+  const columns: ColumnDef<User>[] = [
+    {
+      id: 'drag',
+      header: '',
+      size: 40,
+      cell: ({ row }) => (
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 cursor-grab"
+            disabled={row.index === 0}
+            onClick={() => moveRow(row.index, row.index - 1)}
+          >
+            <GripVertical className="h-4 w-4 text-muted-foreground" />
+          </Button>
+        </div>
+      ),
+    },
+    { accessorKey: 'name', header: 'Name' },
+    { accessorKey: 'email', header: 'Email' },
+    { accessorKey: 'role', header: 'Role' },
+    { accessorKey: 'status', header: 'Status', cell: ({ row }) => statusBadge(row.getValue('status')) },
+  ];
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm text-muted-foreground">Click the grip handle to reorder rows.</p>
+      <DataTable columns={columns} data={data} showPagination={false} showColumnToggle={false} />
+    </div>
+  );
+}
+
+export const DragAndDrop = {
+  name: 'Drag and Drop',
+  render: () => <DragAndDropExample />,
 };
 
-// Editable table types and data
+// ============================================================================
+// Expandable Rows
+// ============================================================================
+
+function ExpandableRowsExample() {
+  const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
+
+  const toggle = (id: string) =>
+    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  return (
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[40px]" />
+            <TableHead>Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Status</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {sampleUsers.slice(0, 6).map((user) => (
+            <React.Fragment key={user.id}>
+              <TableRow>
+                <TableCell>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => toggle(user.id)}
+                  >
+                    {expanded[user.id] ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TableCell>
+                <TableCell className="font-medium">{user.name}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.role}</TableCell>
+                <TableCell>{statusBadge(user.status)}</TableCell>
+              </TableRow>
+              {expanded[user.id] && (
+                <TableRow>
+                  <TableCell colSpan={5} className="bg-muted/50 p-4">
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Department</p>
+                        <p className="font-medium">{user.department}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Joined</p>
+                        <p className="font-medium">{user.joined}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">ID</p>
+                        <p className="font-medium">{user.id}</p>
+                      </div>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </React.Fragment>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+export const ExpandableRows = {
+  name: 'Expandable Rows',
+  render: () => <ExpandableRowsExample />,
+};
+
+// ============================================================================
+// Bulk Actions
+// ============================================================================
+
+function BulkActionsExample() {
+  const [data, setData] = React.useState(sampleUsers);
+  const [selected, setSelected] = React.useState<Record<string, boolean>>({});
+
+  const selectedCount = Object.values(selected).filter(Boolean).length;
+
+  const handleDelete = () => {
+    const ids = Object.entries(selected)
+      .filter(([, v]) => v)
+      .map(([k]) => k);
+    setData((prev) => prev.filter((_, i) => !ids.includes(String(i))));
+    setSelected({});
+  };
+
+  const columns: ColumnDef<User>[] = [
+    DataTableSelectColumn<User>(),
+    { accessorKey: 'name', header: ({ column }) => <DataTableColumnHeader column={column} title="Name" /> },
+    { accessorKey: 'email', header: ({ column }) => <DataTableColumnHeader column={column} title="Email" /> },
+    { accessorKey: 'role', header: 'Role' },
+    { accessorKey: 'status', header: 'Status', cell: ({ row }) => statusBadge(row.getValue('status')) },
+  ];
+
+  return (
+    <div className="space-y-2">
+      {selectedCount > 0 && (
+        <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-4 py-2">
+          <span className="text-sm font-medium">{selectedCount} selected</span>
+          <Separator orientation="vertical" className="h-4" />
+          <Button variant="outline" size="sm">Export</Button>
+          <Button variant="outline" size="sm">Change Status</Button>
+          <Button variant="destructive" size="sm" onClick={handleDelete}>
+            <Trash2 className="mr-1 h-3.5 w-3.5" />
+            Delete
+          </Button>
+        </div>
+      )}
+      <DataTable columns={columns} data={data} searchKey="name" searchPlaceholder="Search users..." />
+    </div>
+  );
+}
+
+export const BulkActions = {
+  name: 'Bulk Actions',
+  render: () => <BulkActionsExample />,
+};
+
+// ============================================================================
+// Inline Editing
+// ============================================================================
+
 type Task = {
   id: string;
   name: string;
   status: string;
   priority: string;
-  dueDate: Date | null;
-  completed: boolean;
 };
 
 const initialTasks: Task[] = [
-  {
-    id: '1',
-    name: 'Design homepage mockup',
-    status: 'in-progress',
-    priority: 'high',
-    dueDate: new Date('2024-12-15'),
-    completed: false,
-  },
-  {
-    id: '2',
-    name: 'Review pull request',
-    status: 'todo',
-    priority: 'medium',
-    dueDate: new Date('2024-12-10'),
-    completed: false,
-  },
-  {
-    id: '3',
-    name: 'Update documentation',
-    status: 'done',
-    priority: 'low',
-    dueDate: new Date('2024-12-05'),
-    completed: true,
-  },
-  {
-    id: '4',
-    name: 'Fix navigation bug',
-    status: 'in-progress',
-    priority: 'high',
-    dueDate: null,
-    completed: false,
-  },
-  {
-    id: '5',
-    name: 'Write unit tests',
-    status: 'todo',
-    priority: 'medium',
-    dueDate: new Date('2024-12-20'),
-    completed: false,
-  },
+  { id: '1', name: 'Design homepage mockup', status: 'in-progress', priority: 'high' },
+  { id: '2', name: 'Review pull request', status: 'todo', priority: 'medium' },
+  { id: '3', name: 'Update documentation', status: 'done', priority: 'low' },
+  { id: '4', name: 'Fix navigation bug', status: 'in-progress', priority: 'high' },
+  { id: '5', name: 'Write unit tests', status: 'todo', priority: 'medium' },
 ];
 
-const editableColumns: ColumnDef<Task, unknown>[] = [
-  {
-    accessorKey: 'completed',
-    header: '',
-    meta: { type: 'checkbox' } as EditableCellMeta,
-    size: 50,
-    minSize: 50,
-    maxSize: 50,
-  },
-  {
-    accessorKey: 'name',
-    header: 'Task',
-    meta: {
-      type: 'text',
-      placeholder: 'Enter task name...',
-    } as EditableCellMeta,
-    size: 250,
-    minSize: 200,
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status',
-    meta: {
-      type: 'select',
-      options: [
-        { value: 'todo', label: 'To Do' },
-        { value: 'in-progress', label: 'In Progress' },
-        { value: 'done', label: 'Done' },
-      ],
-    } as EditableCellMeta,
-    size: 140,
-    minSize: 120,
-  },
-  {
-    accessorKey: 'priority',
-    header: 'Priority',
-    meta: {
-      type: 'select',
-      options: [
-        { value: 'low', label: 'Low' },
-        { value: 'medium', label: 'Medium' },
-        { value: 'high', label: 'High' },
-      ],
-    } as EditableCellMeta,
-    size: 120,
-    minSize: 100,
-  },
-  {
-    accessorKey: 'dueDate',
-    header: 'Due Date',
-    meta: { type: 'date', placeholder: 'Set due date' } as EditableCellMeta,
-    size: 180,
-    minSize: 150,
-  },
-];
-
-function EditableTableExample() {
+function InlineEditingExample() {
   const [data, setData] = React.useState<Task[]>(initialTasks);
 
   const handleCellUpdate = (rowIndex: number, columnId: string, value: unknown) => {
     setData((prev) => {
       const newData = [...prev];
-      newData[rowIndex] = {
-        ...newData[rowIndex],
-        [columnId]: value,
-      };
+      newData[rowIndex] = { ...newData[rowIndex], [columnId]: value };
       return newData;
     });
   };
 
+  const editableColumns: ColumnDef<Task, unknown>[] = [
+    {
+      accessorKey: 'name',
+      header: 'Task',
+      meta: { type: 'text', placeholder: 'Enter task name...' } as EditableCellMeta,
+      size: 250,
+    },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      meta: {
+        type: 'select',
+        options: [
+          { value: 'todo', label: 'To Do' },
+          { value: 'in-progress', label: 'In Progress' },
+          { value: 'done', label: 'Done' },
+        ],
+      } as EditableCellMeta,
+      size: 140,
+    },
+    {
+      accessorKey: 'priority',
+      header: 'Priority',
+      meta: {
+        type: 'select',
+        options: [
+          { value: 'low', label: 'Low' },
+          { value: 'medium', label: 'Medium' },
+          { value: 'high', label: 'High' },
+        ],
+      } as EditableCellMeta,
+      size: 120,
+    },
+  ];
+
   return (
-    <div className="space-y-4">
-      <div className="text-sm text-muted-foreground">
-        Click on any cell to edit. Changes are saved automatically.
-      </div>
+    <div className="space-y-2">
+      <p className="text-sm text-muted-foreground">Click on any cell to edit. Press Enter to save, Escape to cancel.</p>
       <DataTable
         columns={editableColumns}
         data={data}
@@ -418,109 +390,528 @@ function EditableTableExample() {
   );
 }
 
-export const Editable = {
-  args: {},
-  render: () => <EditableTableExample />,
+export const InlineEditing = {
+  name: 'Inline Editing',
+  render: () => <InlineEditingExample />,
 };
 
-export const Resizable = {
-  args: {},
+// ============================================================================
+// Filtering & Search
+// ============================================================================
+
+export const FilteringAndSearch = {
+  name: 'Filtering & Search',
   render: () => (
-    <DataTable columns={sortableColumns} data={sampleUsers} searchKey="name" resizable />
+    <DataTable
+      columns={sortableColumns}
+      data={sampleUsers}
+      searchKey="name"
+      searchPlaceholder="Search by name..."
+    />
   ),
 };
 
-export const Compact = {
-  args: {},
-  render: () => <DataTable columns={sortableColumns} data={sampleUsers} searchKey="name" compact />,
+// ============================================================================
+// Column Visibility Toggle
+// ============================================================================
+
+export const ColumnVisibilityToggle = {
+  name: 'Column Visibility Toggle',
+  render: () => (
+    <DataTable
+      columns={sortableColumns}
+      data={sampleUsers}
+      searchKey="name"
+      showColumnToggle
+      columnToggleText="Toggle Columns"
+    />
+  ),
 };
 
-// Full-featured editable table with all options
-const editableSortableColumns: ColumnDef<Task, unknown>[] = [
-  DataTableSelectColumn<Task>(),
-  {
-    accessorKey: 'name',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Task" />,
-    meta: {
-      type: 'text',
-      placeholder: 'Enter task name...',
-    } as EditableCellMeta,
-    size: 250,
-    minSize: 150,
-  },
-  {
-    accessorKey: 'status',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
-    meta: {
-      type: 'select',
-      options: [
-        { value: 'todo', label: 'To Do' },
-        { value: 'in-progress', label: 'In Progress' },
-        { value: 'done', label: 'Done' },
-      ],
-    } as EditableCellMeta,
-    size: 140,
-    minSize: 100,
-  },
-  {
-    accessorKey: 'priority',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Priority" />,
-    meta: {
-      type: 'select',
-      options: [
-        { value: 'low', label: 'Low' },
-        { value: 'medium', label: 'Medium' },
-        { value: 'high', label: 'High' },
-      ],
-    } as EditableCellMeta,
-    size: 120,
-    minSize: 100,
-  },
-  {
-    accessorKey: 'dueDate',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Due Date" />,
-    meta: { type: 'date', placeholder: 'Set due date' } as EditableCellMeta,
-    size: 180,
-    minSize: 140,
-  },
-];
+// ============================================================================
+// Advanced Sorting
+// ============================================================================
 
-function FullFeaturedTableExample() {
-  const [data, setData] = React.useState<Task[]>(initialTasks);
+export const AdvancedSorting = {
+  name: 'Advanced Sorting',
+  render: () => {
+    const columns: ColumnDef<User>[] = [
+      { accessorKey: 'name', header: ({ column }) => <DataTableColumnHeader column={column} title="Name" /> },
+      { accessorKey: 'email', header: ({ column }) => <DataTableColumnHeader column={column} title="Email" /> },
+      { accessorKey: 'role', header: ({ column }) => <DataTableColumnHeader column={column} title="Role" /> },
+      { accessorKey: 'department', header: ({ column }) => <DataTableColumnHeader column={column} title="Department" /> },
+      { accessorKey: 'joined', header: ({ column }) => <DataTableColumnHeader column={column} title="Joined" /> },
+      { accessorKey: 'status', header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />, cell: ({ row }) => statusBadge(row.getValue('status')) },
+    ];
 
-  const handleCellUpdate = (rowIndex: number, columnId: string, value: unknown) => {
-    setData((prev) => {
-      const newData = [...prev];
-      newData[rowIndex] = {
-        ...newData[rowIndex],
-        [columnId]: value,
-      };
-      return newData;
-    });
-  };
+    return (
+      <div className="space-y-2">
+        <p className="text-sm text-muted-foreground">Click column headers to cycle through: ascending, descending, and unsorted.</p>
+        <DataTable columns={columns} data={sampleUsers} showColumnToggle={false} />
+      </div>
+    );
+  },
+};
+
+// ============================================================================
+// Column Filters
+// ============================================================================
+
+function ColumnFiltersExample() {
+  const [roleFilter, setRoleFilter] = React.useState('all');
+  const [statusFilter, setStatusFilter] = React.useState('all');
+
+  const filtered = sampleUsers.filter((u) => {
+    if (roleFilter !== 'all' && u.role !== roleFilter) return false;
+    if (statusFilter !== 'all' && u.status !== statusFilter) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-4">
-      <div className="text-sm text-muted-foreground">
-        Compact, resizable, editable, sortable, and filterable table.
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Label className="text-sm">Role</Label>
+          <Select value={roleFilter} onValueChange={setRoleFilter}>
+            <SelectTrigger className="h-8 w-[130px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Roles</SelectItem>
+              <SelectItem value="Admin">Admin</SelectItem>
+              <SelectItem value="Manager">Manager</SelectItem>
+              <SelectItem value="User">User</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-2">
+          <Label className="text-sm">Status</Label>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-8 w-[130px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        {(roleFilter !== 'all' || statusFilter !== 'all') && (
+          <Button variant="ghost" size="sm" onClick={() => { setRoleFilter('all'); setStatusFilter('all'); }}>
+            Clear filters
+          </Button>
+        )}
       </div>
+      <DataTable columns={sortableColumns} data={filtered} showColumnToggle={false} />
+    </div>
+  );
+}
+
+export const ColumnFilters = {
+  name: 'Column Filters',
+  render: () => <ColumnFiltersExample />,
+};
+
+// ============================================================================
+// Export Functionality
+// ============================================================================
+
+function ExportExample() {
+  const handleExport = (format: string) => {
+    const header = ['Name', 'Email', 'Role', 'Department', 'Status'].join(',');
+    const rows = sampleUsers.map((u) => [u.name, u.email, u.role, u.department, u.status].join(','));
+    const csv = [header, ...rows].join('\n');
+    const blob = new Blob([csv], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `users.${format}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const columns: ColumnDef<User>[] = [
+    DataTableSelectColumn<User>(),
+    ...sortableColumns,
+  ];
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">Select rows and export, or export all data.</p>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Download className="mr-2 h-4 w-4" />
+              Export
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>Export As</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => handleExport('csv')}>CSV</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExport('tsv')}>TSV</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <DataTable columns={columns} data={sampleUsers} searchKey="name" />
+    </div>
+  );
+}
+
+export const ExportFunctionality = {
+  name: 'Export Functionality',
+  render: () => <ExportExample />,
+};
+
+// ============================================================================
+// Drawer
+// ============================================================================
+
+function DrawerExample() {
+  const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
+
+  const columns: ColumnDef<User>[] = [
+    { accessorKey: 'name', header: ({ column }) => <DataTableColumnHeader column={column} title="Name" /> },
+    { accessorKey: 'email', header: ({ column }) => <DataTableColumnHeader column={column} title="Email" /> },
+    { accessorKey: 'role', header: 'Role' },
+    { accessorKey: 'status', header: 'Status', cell: ({ row }) => statusBadge(row.getValue('status')) },
+    {
+      id: 'actions',
+      cell: ({ row }) => (
+        <Button variant="ghost" size="sm" onClick={() => setSelectedUser(row.original)}>
+          View
+        </Button>
+      ),
+    },
+  ];
+
+  return (
+    <>
+      <DataTable columns={columns} data={sampleUsers} searchKey="name" showColumnToggle={false} />
+      <Sheet open={!!selectedUser} onOpenChange={(open) => !open && setSelectedUser(null)}>
+        <SheetContent>
+          {selectedUser && (
+            <>
+              <SheetHeader>
+                <SheetTitle>{selectedUser.name}</SheetTitle>
+                <SheetDescription>{selectedUser.email}</SheetDescription>
+              </SheetHeader>
+              <div className="mt-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Role</p>
+                    <p className="text-sm font-medium">{selectedUser.role}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Status</p>
+                    <div className="mt-0.5">{statusBadge(selectedUser.status)}</div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Department</p>
+                    <p className="text-sm font-medium">{selectedUser.department}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Joined</p>
+                    <p className="text-sm font-medium">{selectedUser.joined}</p>
+                  </div>
+                </div>
+                <Separator />
+                <div className="flex gap-2">
+                  <Button size="sm">
+                    <Pencil className="mr-1 h-3.5 w-3.5" />
+                    Edit
+                  </Button>
+                  <Button variant="destructive" size="sm">
+                    <Trash2 className="mr-1 h-3.5 w-3.5" />
+                    Delete
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+    </>
+  );
+}
+
+export const Drawer = {
+  name: 'Drawer',
+  render: () => <DrawerExample />,
+};
+
+// ============================================================================
+// Modal Delete
+// ============================================================================
+
+function ModalDeleteExample() {
+  const [data, setData] = React.useState(sampleUsers);
+  const [deleteUser, setDeleteUser] = React.useState<User | null>(null);
+
+  const handleDelete = () => {
+    if (deleteUser) {
+      setData((prev) => prev.filter((u) => u.id !== deleteUser.id));
+      setDeleteUser(null);
+    }
+  };
+
+  const columns: ColumnDef<User>[] = [
+    { accessorKey: 'name', header: ({ column }) => <DataTableColumnHeader column={column} title="Name" /> },
+    { accessorKey: 'email', header: ({ column }) => <DataTableColumnHeader column={column} title="Email" /> },
+    { accessorKey: 'role', header: 'Role' },
+    { accessorKey: 'status', header: 'Status', cell: ({ row }) => statusBadge(row.getValue('status')) },
+    {
+      id: 'actions',
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem>Edit user</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={() => setDeleteUser(row.original)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete user
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
+
+  return (
+    <>
+      <DataTable columns={columns} data={data} searchKey="name" showColumnToggle={false} />
+      <AlertDialog open={!!deleteUser} onOpenChange={(open) => !open && setDeleteUser(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{deleteUser?.name}</strong>? This action
+              cannot be undone and will permanently remove the user and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
+
+export const ModalDelete = {
+  name: 'Modal Delete',
+  render: () => <ModalDeleteExample />,
+};
+
+// ============================================================================
+// Density
+// ============================================================================
+
+function DensityExample() {
+  const [density, setDensity] = React.useState<'normal' | 'dense'>('normal');
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Label className="text-sm">Density</Label>
+        <Select value={density} onValueChange={(v) => setDensity(v as 'normal' | 'dense')}>
+          <SelectTrigger className="h-8 w-[140px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="normal">Normal (48px)</SelectItem>
+            <SelectItem value="dense">Dense (32px)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        {density === 'normal'
+          ? 'Normal density (48px): Best for standard data displays with moderate amounts of information. Provides comfortable spacing and readability.'
+          : 'Dense density (32px): Ideal for large datasets where maximizing information density is important. Use when displaying many rows or when screen space is limited.'}
+      </p>
       <DataTable
-        columns={editableSortableColumns}
-        data={data}
-        editable
-        onCellUpdate={handleCellUpdate}
-        resizable
-        compact
+        columns={sortableColumns}
+        data={sampleUsers}
         searchKey="name"
-        searchPlaceholder="Filter tasks..."
-        showPagination
-        pageSize={10}
+        compact={density === 'dense'}
       />
     </div>
   );
 }
 
-export const FullFeatured = {
-  args: {},
-  render: () => <FullFeaturedTableExample />,
+export const Density = {
+  name: 'Density',
+  render: () => <DensityExample />,
+};
+
+// ============================================================================
+// Examples
+// ============================================================================
+
+function FullFeaturedExample() {
+  const [data, setData] = React.useState(sampleUsers);
+  const [drawerUser, setDrawerUser] = React.useState<User | null>(null);
+  const [deleteUser, setDeleteUser] = React.useState<User | null>(null);
+  const [density, setDensity] = React.useState<'normal' | 'dense'>('normal');
+
+  const handleDelete = () => {
+    if (deleteUser) {
+      setData((prev) => prev.filter((u) => u.id !== deleteUser.id));
+      setDeleteUser(null);
+    }
+  };
+
+  const handleExport = () => {
+    const header = ['Name', 'Email', 'Role', 'Department', 'Status'].join(',');
+    const rows = data.map((u) => [u.name, u.email, u.role, u.department, u.status].join(','));
+    const csv = [header, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'users.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const columns: ColumnDef<User>[] = [
+    DataTableSelectColumn<User>(),
+    { accessorKey: 'name', header: ({ column }) => <DataTableColumnHeader column={column} title="Name" /> },
+    { accessorKey: 'email', header: ({ column }) => <DataTableColumnHeader column={column} title="Email" /> },
+    { accessorKey: 'role', header: ({ column }) => <DataTableColumnHeader column={column} title="Role" /> },
+    { accessorKey: 'department', header: ({ column }) => <DataTableColumnHeader column={column} title="Department" /> },
+    { accessorKey: 'status', header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />, cell: ({ row }) => statusBadge(row.getValue('status')) },
+    {
+      id: 'actions',
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => setDrawerUser(row.original)}>
+              View details
+            </DropdownMenuItem>
+            <DropdownMenuItem>Edit user</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-destructive" onClick={() => setDeleteUser(row.original)}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
+
+  return (
+    <>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Label className="text-sm">Density</Label>
+            <Select value={density} onValueChange={(v) => setDensity(v as 'normal' | 'dense')}>
+              <SelectTrigger className="h-8 w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="normal">Normal (48px)</SelectItem>
+                <SelectItem value="dense">Dense (32px)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleExport}>
+            <Download className="mr-2 h-4 w-4" />
+            Export CSV
+          </Button>
+        </div>
+        <DataTable
+          columns={columns}
+          data={data}
+          searchKey="name"
+          searchPlaceholder="Search users..."
+          compact={density === 'dense'}
+          pageSize={5}
+        />
+      </div>
+
+      {/* Detail drawer */}
+      <Sheet open={!!drawerUser} onOpenChange={(open) => !open && setDrawerUser(null)}>
+        <SheetContent>
+          {drawerUser && (
+            <>
+              <SheetHeader>
+                <SheetTitle>{drawerUser.name}</SheetTitle>
+                <SheetDescription>{drawerUser.email}</SheetDescription>
+              </SheetHeader>
+              <div className="mt-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Role</p>
+                    <p className="text-sm font-medium">{drawerUser.role}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Status</p>
+                    <div className="mt-0.5">{statusBadge(drawerUser.status)}</div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Department</p>
+                    <p className="text-sm font-medium">{drawerUser.department}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Joined</p>
+                    <p className="text-sm font-medium">{drawerUser.joined}</p>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleteUser} onOpenChange={(open) => !open && setDeleteUser(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{deleteUser?.name}</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
+
+export const Examples = {
+  name: 'Examples',
+  render: () => <FullFeaturedExample />,
 };

@@ -5,6 +5,6 @@ addons.setConfig({
   theme,
   showPanel: false,
   sidebar: {
-    collapsedRoots: ['components', 'forms'],
+    collapsedRoots: ['components', 'forms', 'experiments'],
   },
 });
