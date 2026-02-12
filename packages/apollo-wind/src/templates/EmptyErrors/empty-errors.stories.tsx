@@ -1,6 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { cn } from '@/lib';
 import { fontFamily } from '@/foundation/Future/typography';
+import { MaestroHeader } from '@/components/custom/global-header';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Button } from '@/components/ui/button';
+import { ErrorVideo } from './error-components';
 
 // ============================================================================
 // Meta
@@ -17,19 +21,35 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // ============================================================================
-// Shared placeholder
+// Shared page layout
 // ============================================================================
 
-function ComingSoon({ theme, label }: { theme: string; label: string }) {
-  const themeClass = theme === 'light' ? 'future-light' : 'future-dark';
+function ErrorPageLayout({
+  theme,
+  children,
+}: {
+  theme: string;
+  children: React.ReactNode;
+}) {
+  const themeValue = theme === 'light' || theme === 'legacy-light' ? 'light' : 'dark';
+  const themeClass =
+    theme === 'legacy-dark'
+      ? 'legacy-dark'
+      : theme === 'legacy-light'
+        ? 'legacy-light'
+        : theme === 'light'
+          ? 'future-light'
+          : 'future-dark';
 
   return (
     <div
-      className={cn(themeClass, 'flex h-screen flex-col items-center justify-center gap-3 bg-future-surface')}
+      className={cn(themeClass, 'flex h-screen flex-col bg-future-surface')}
       style={{ fontFamily: fontFamily.base }}
     >
-      <p className="text-sm font-medium text-future-foreground">{label}</p>
-      <p className="text-sm text-future-foreground-muted">Coming soon</p>
+      <MaestroHeader theme={themeValue} title="UiPath" />
+      <div className="flex flex-1 flex-col items-center justify-center">
+        {children}
+      </div>
     </div>
   );
 }
@@ -42,7 +62,15 @@ function ComingSoon({ theme, label }: { theme: string; label: string }) {
 export const Error: Story = {
   name: 'Error',
   render: (_, { globals }) => (
-    <ComingSoon theme={globals.futureTheme || 'dark'} label="Error" />
+    <ErrorPageLayout theme={globals.futureTheme || 'dark'}>
+      <EmptyState
+        icon={<ErrorVideo />}
+        title="Error"
+        description="The page you're looking for doesn't exist or has been moved."
+      >
+        <Button>Return home</Button>
+      </EmptyState>
+    </ErrorPageLayout>
   ),
 };
 
@@ -50,7 +78,16 @@ export const Error: Story = {
 export const BadRequest400: Story = {
   name: '400 - Bad Request',
   render: (_, { globals }) => (
-    <ComingSoon theme={globals.futureTheme || 'dark'} label="400 - Bad Request" />
+    <ErrorPageLayout theme={globals.futureTheme || 'dark'}>
+      <EmptyState
+        icon={<ErrorVideo />}
+        code="400"
+        title="Bad Request"
+        description="The request was invalid. Please go home and try again."
+      >
+        <Button>Take me home</Button>
+      </EmptyState>
+    </ErrorPageLayout>
   ),
 };
 
@@ -58,7 +95,16 @@ export const BadRequest400: Story = {
 export const Unauthorized401: Story = {
   name: '401 - Unauthorized',
   render: (_, { globals }) => (
-    <ComingSoon theme={globals.futureTheme || 'dark'} label="401 - Unauthorized" />
+    <ErrorPageLayout theme={globals.futureTheme || 'dark'}>
+      <EmptyState
+        icon={<ErrorVideo />}
+        code="401"
+        title="Unauthorized"
+        description="You don't have permission to view Task Mining. Please contact your administrator for necessary permissions."
+      >
+        <Button>Take me home</Button>
+      </EmptyState>
+    </ErrorPageLayout>
   ),
 };
 
@@ -66,7 +112,16 @@ export const Unauthorized401: Story = {
 export const Forbidden403: Story = {
   name: '403 - Forbidden',
   render: (_, { globals }) => (
-    <ComingSoon theme={globals.futureTheme || 'dark'} label="403 - Forbidden" />
+    <ErrorPageLayout theme={globals.futureTheme || 'dark'}>
+      <EmptyState
+        icon={<ErrorVideo />}
+        code="403"
+        title="Oops! You're not on the list"
+        description="You don't have permission to view Orchestrator. Please contact your administrator for necessary permissions."
+      >
+        <Button>Take me home</Button>
+      </EmptyState>
+    </ErrorPageLayout>
   ),
 };
 
@@ -74,7 +129,16 @@ export const Forbidden403: Story = {
 export const NotFound404: Story = {
   name: '404 - Not Found',
   render: (_, { globals }) => (
-    <ComingSoon theme={globals.futureTheme || 'dark'} label="404 - Not Found" />
+    <ErrorPageLayout theme={globals.futureTheme || 'dark'}>
+      <EmptyState
+        icon={<ErrorVideo />}
+        code="404"
+        title="Uh oh! Can't find it"
+        description="The page you're looking for may have been removed, had its name changed, or is temporarily unavailable."
+      >
+        <Button>Take me home</Button>
+      </EmptyState>
+    </ErrorPageLayout>
   ),
 };
 
@@ -82,7 +146,16 @@ export const NotFound404: Story = {
 export const ServerError500: Story = {
   name: '500 - Server Error',
   render: (_, { globals }) => (
-    <ComingSoon theme={globals.futureTheme || 'dark'} label="500 - Server Error" />
+    <ErrorPageLayout theme={globals.futureTheme || 'dark'}>
+      <EmptyState
+        icon={<ErrorVideo />}
+        code="500"
+        title="Server error"
+        description="The server encountered an internal error and was unable to complete your request. Please go home and try again."
+      >
+        <Button>Take me home</Button>
+      </EmptyState>
+    </ErrorPageLayout>
   ),
 };
 
@@ -90,7 +163,16 @@ export const ServerError500: Story = {
 export const ServiceUnavailable503: Story = {
   name: '503 - Service Unavailable',
   render: (_, { globals }) => (
-    <ComingSoon theme={globals.futureTheme || 'dark'} label="503 - Service Unavailable" />
+    <ErrorPageLayout theme={globals.futureTheme || 'dark'}>
+      <EmptyState
+        icon={<ErrorVideo />}
+        code="503"
+        title="We will be back up soon"
+        description="The system is under maintenance. Watch this space for updates."
+      >
+        <Button>Check service status</Button>
+      </EmptyState>
+    </ErrorPageLayout>
   ),
 };
 
@@ -98,7 +180,13 @@ export const ServiceUnavailable503: Story = {
 export const ErrorLoading: Story = {
   name: 'Error Loading',
   render: (_, { globals }) => (
-    <ComingSoon theme={globals.futureTheme || 'dark'} label="Error Loading" />
+    <ErrorPageLayout theme={globals.futureTheme || 'dark'}>
+      <EmptyState
+        icon={<ErrorVideo />}
+        title="Please wait while we set up things for you"
+        description="This could take a few minutes. The page will refresh when the platform is ready to use."
+      />
+    </ErrorPageLayout>
   ),
 };
 
@@ -106,7 +194,14 @@ export const ErrorLoading: Story = {
 export const BrowserNotSupported: Story = {
   name: 'Browser Not Supported',
   render: (_, { globals }) => (
-    <ComingSoon theme={globals.futureTheme || 'dark'} label="Browser Not Supported" />
+    <ErrorPageLayout theme={globals.futureTheme || 'dark'}>
+      <EmptyState
+        icon={<ErrorVideo />}
+        title="This browser is not supported"
+      >
+        <Button>Learn more</Button>
+      </EmptyState>
+    </ErrorPageLayout>
   ),
 };
 
@@ -114,7 +209,15 @@ export const BrowserNotSupported: Story = {
 export const IpRestricted: Story = {
   name: 'IP Restricted',
   render: (_, { globals }) => (
-    <ComingSoon theme={globals.futureTheme || 'dark'} label="IP Restricted" />
+    <ErrorPageLayout theme={globals.futureTheme || 'dark'}>
+      <EmptyState
+        icon={<ErrorVideo />}
+        title="Access restricted"
+        description="Due to organizational policies, you can't access Orchestrator from this network location. Please contact your administrator."
+      >
+        <Button>Back to website</Button>
+      </EmptyState>
+    </ErrorPageLayout>
   ),
 };
 
@@ -122,7 +225,15 @@ export const IpRestricted: Story = {
 export const HideDefaultActions: Story = {
   name: 'Hide Default Actions',
   render: (_, { globals }) => (
-    <ComingSoon theme={globals.futureTheme || 'dark'} label="Hide Default Actions" />
+    <ErrorPageLayout theme={globals.futureTheme || 'dark'}>
+      <EmptyState
+        icon={<ErrorVideo />}
+        title="Unauthorized"
+        description="You don't have permission to view Task Mining. Please contact your administrator for necessary permissions."
+      >
+        <Button>Back to website</Button>
+      </EmptyState>
+    </ErrorPageLayout>
   ),
 };
 
@@ -130,6 +241,16 @@ export const HideDefaultActions: Story = {
 export const NoProjectsYet: Story = {
   name: 'No Projects Yet',
   render: (_, { globals }) => (
-    <ComingSoon theme={globals.futureTheme || 'dark'} label="No Projects Yet" />
+    <ErrorPageLayout theme={globals.futureTheme || 'dark'}>
+      <EmptyState
+        icon={<ErrorVideo />}
+        title="No Projects Yet"
+        description="You haven't created any projects yet. Get started by creating your first project."
+      >
+        <Button>Create project</Button>
+        <Button variant="outline">Import project</Button>
+        <Button variant="outline">Learn More</Button>
+      </EmptyState>
+    </ErrorPageLayout>
   ),
 };

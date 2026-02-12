@@ -332,7 +332,7 @@ DO NOT use raw colors (bg-zinc-900, bg-white, etc.)
 Accordion, Alert, AlertDialog, Avatar, Badge, Breadcrumb, Button, Calendar,
 Card, Checkbox, Collapsible, Combobox, Command, ContextMenu, DataTable,
 DatePicker, Dialog, Drawer, DropdownMenu, EmptyState, FileUpload, HoverCard,
-Input, Label, Menubar, MultiSelect, NavigationMenu, Pagination, Popover,
+Input, Label, MultiSelect, Pagination, Popover,
 Progress, RadioGroup, Resizable, ScrollArea, Search, Select, Separator,
 Sheet, Skeleton, Slider, Spinner, StatsCard, Stepper, Switch, Table, Tabs,
 Textarea, Toggle, ToggleGroup, Tooltip, ViewportGuard`;
