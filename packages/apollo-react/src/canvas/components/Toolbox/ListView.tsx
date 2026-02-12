@@ -42,6 +42,7 @@ type RenderItem<T extends ListItem> =
 export interface ListViewRowProps<T extends ListItem> {
   renderedItems: RenderItem<T>[];
   isLoading?: boolean;
+  isDarkMode?: boolean;
   onItemClick: (item: T) => void;
   onItemHover?: (item: T) => void;
 }
@@ -55,11 +56,11 @@ const ListViewRow = memo(
     ariaAttributes,
     renderedItems,
     isLoading,
+    isDarkMode,
     onItemClick,
     onItemHover,
   }: RowComponentProps<ListViewRowProps<T>>) => {
     const renderItem = renderedItems[index]!;
-    const { isDarkMode } = useCanvasTheme();
 
     const buttonStyle = useMemo(
       () => ({ ...style, padding: 0, paddingRight: '4px', height: '32px', outlineOffset: '-1px' }),
@@ -166,6 +167,8 @@ export const ListView = memo(function ListView<T extends ListItem>({
   isLoading = false,
   enableSections = true,
 }: ListViewProps<T>) {
+  const { isDarkMode } = useCanvasTheme();
+
   const renderedItems = useMemo<RenderItem<T>[]>(() => {
     const result: RenderItem<T>[] = [];
 
@@ -206,8 +209,8 @@ export const ListView = memo(function ListView<T extends ListItem>({
   }, [items, enableSections]);
 
   const rowProps = useMemo(
-    () => ({ renderedItems, isLoading, onItemClick, onItemHover }),
-    [renderedItems, isLoading, onItemClick, onItemHover]
+    () => ({ renderedItems, isLoading, isDarkMode, onItemClick, onItemHover }),
+    [renderedItems, isLoading, isDarkMode, onItemClick, onItemHover]
   );
 
   // Only show skeleton loaders when loading and no items exist
