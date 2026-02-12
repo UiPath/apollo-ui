@@ -1,3 +1,4 @@
+export { AgentDiagramIcon } from './AgentDiagramIcon';
 export { AgentIcon } from './AgentIcon';
 export { AgentProject } from './AgentProject';
 export { AnthropicIcon } from './AnthropicIcon';

@@ -32,6 +32,7 @@ const iconRegistry: Record<string, IconComponent> = {
     <Icons.FlaskRunIcon w={w ?? 24} h={h ?? 24} color={color} />
   ),
   uipath: ({ w, h }) => <Icons.UiPathIcon w={w ?? 24} h={h ?? 24} />,
+  'agent-diagram': ({ w, h }) => <Icons.AgentDiagramIcon w={w ?? 24} h={h ?? 24} />,
 };
 
 /**
