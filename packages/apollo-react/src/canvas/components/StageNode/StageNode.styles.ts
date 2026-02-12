@@ -245,7 +245,6 @@ export const StageTaskIcon = styled.div`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  margin-top: 2px;
 
   svg {
     width: 16px;

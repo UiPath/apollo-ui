@@ -82,34 +82,35 @@ export const TaskContent = memo(({ task, taskExecution, isDragging }: TaskConten
             <ExecutionStatusIcon status={taskExecution.status} />
           ))}
       </Row>
-      {taskExecution && (
-        <Row align="center" justify="space-between">
-          <Row gap={'2px'}>
-            {taskExecution?.duration && (
-              <ApTypography
-                variant={FontVariantToken.fontSizeS}
-                color="var(--uix-canvas-foreground-de-emp)"
-              >
-                {taskExecution.duration}
-              </ApTypography>
-            )}
-            {taskExecution?.retryDuration && (
-              <StageTaskRetryDuration status={taskExecution.badgeStatus ?? 'warning'}>
-                <ApTypography variant={FontVariantToken.fontSizeS} color="inherit">
-                  {`(+${taskExecution.retryDuration})`}
+      {taskExecution &&
+        (taskExecution.duration || taskExecution.retryDuration || taskExecution.badge) && (
+          <Row align="center" justify="space-between">
+            <Row gap={'2px'}>
+              {taskExecution?.duration && (
+                <ApTypography
+                  variant={FontVariantToken.fontSizeS}
+                  color="var(--uix-canvas-foreground-de-emp)"
+                >
+                  {taskExecution.duration}
                 </ApTypography>
-              </StageTaskRetryDuration>
+              )}
+              {taskExecution?.retryDuration && (
+                <StageTaskRetryDuration status={taskExecution.badgeStatus ?? 'warning'}>
+                  <ApTypography variant={FontVariantToken.fontSizeS} color="inherit">
+                    {`(+${taskExecution.retryDuration})`}
+                  </ApTypography>
+                </StageTaskRetryDuration>
+              )}
+            </Row>
+            {taskExecution?.badge && (
+              <ApBadge
+                size={BadgeSize.SMALL}
+                status={taskExecution.badgeStatus as StatusTypes}
+                label={generateBadgeText(taskExecution) ?? ''}
+              />
             )}
           </Row>
-          {taskExecution?.badge && (
-            <ApBadge
-              size={BadgeSize.SMALL}
-              status={taskExecution.badgeStatus as StatusTypes}
-              label={generateBadgeText(taskExecution) ?? ''}
-            />
-          )}
-        </Row>
-      )}
+        )}
     </Column>
   </>
 ));
