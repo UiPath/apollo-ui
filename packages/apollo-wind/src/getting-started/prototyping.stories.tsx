@@ -17,24 +17,22 @@ export const Default: Story = {
         Prototyping with Apollo
       </h1>
       <p style={{ fontSize: '1rem', lineHeight: '1.75', marginBottom: '1rem' }}>
-        Rapid prototyping is central to our approach, enabling high-quality UX, consistency, and efficiency. This section explores how Design and AI work together to help teams align and deliver consistent outcomes.
+        Rapid prototyping is central to our approach, enabling high-quality UX, consistency, and
+        efficiency. This section explores how Design and AI work together to help teams align and
+        deliver consistent outcomes.
       </p>
 
       <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
 
       <section style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>
-          Use Figma
-        </h2>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>Use Figma</h2>
         <p style={{ fontSize: '1rem', lineHeight: '1.75' }}>Redacted</p>
       </section>
 
       <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
 
       <section style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>
-          Use AI
-        </h2>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>Use AI</h2>
         <p style={{ fontSize: '1rem', lineHeight: '1.75' }}>Coming soon</p>
       </section>
 
@@ -48,7 +46,6 @@ export const Default: Story = {
       </section>
 
       <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
-
     </div>
   ),
 };

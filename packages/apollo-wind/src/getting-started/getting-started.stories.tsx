@@ -17,7 +17,8 @@ export const Default: Story = {
         Apollo v.4 Design System
       </h1>
       <p style={{ fontSize: '1rem', lineHeight: '1.75', marginBottom: '1.5rem' }}>
-        Apollo v.4 is UiPath's open-source design system for building consistent user experiences across all UiPath products.
+        Apollo v.4 is UiPath's open-source design system for building consistent user experiences
+        across all UiPath products.
       </p>
 
       <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
@@ -37,11 +38,20 @@ export const Default: Story = {
 
       <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
 
-      <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginTop: '2rem', marginBottom: '1rem' }}>
+      <h2
+        style={{ fontSize: '1.5rem', fontWeight: 'bold', marginTop: '2rem', marginBottom: '1rem' }}
+      >
         Getting Started
       </h2>
 
-      <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginTop: '1.5rem', marginBottom: '0.75rem' }}>
+      <h3
+        style={{
+          fontSize: '1.25rem',
+          fontWeight: 'bold',
+          marginTop: '1.5rem',
+          marginBottom: '0.75rem',
+        }}
+      >
         Prerequisites
       </h3>
       <ul style={{ marginLeft: '1.5rem', marginBottom: '1.5rem', lineHeight: '1.75' }}>
@@ -49,7 +59,14 @@ export const Default: Story = {
         <li>pnpm &gt;= 10</li>
       </ul>
 
-      <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginTop: '1.5rem', marginBottom: '0.75rem' }}>
+      <h3
+        style={{
+          fontSize: '1.25rem',
+          fontWeight: 'bold',
+          marginTop: '1.5rem',
+          marginBottom: '0.75rem',
+        }}
+      >
         Installation
       </h3>
       <pre
@@ -77,7 +94,14 @@ pnpm install
 pnpm build`}</code>
       </pre>
 
-      <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginTop: '1.5rem', marginBottom: '0.75rem' }}>
+      <h3
+        style={{
+          fontSize: '1.25rem',
+          fontWeight: 'bold',
+          marginTop: '1.5rem',
+          marginBottom: '0.75rem',
+        }}
+      >
         Development
       </h3>
       <pre
@@ -107,7 +131,14 @@ pnpm test
 pnpm test:visual`}</code>
       </pre>
 
-      <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginTop: '1.5rem', marginBottom: '0.75rem' }}>
+      <h3
+        style={{
+          fontSize: '1.25rem',
+          fontWeight: 'bold',
+          marginTop: '1.5rem',
+          marginBottom: '0.75rem',
+        }}
+      >
         Building
       </h3>
       <pre

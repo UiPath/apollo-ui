@@ -1,6 +1,6 @@
 import type { Root, Text } from 'mdast';
 import { visit } from 'unist-util-visit';
-import { AutopilotChatResourceItem } from '../../../../service';
+import type { AutopilotChatResourceItem } from '../../../../service';
 
 const RESOURCE_TOKEN_PATTERN = /\[\[resource-token:(.*?)\]\]/g;
 

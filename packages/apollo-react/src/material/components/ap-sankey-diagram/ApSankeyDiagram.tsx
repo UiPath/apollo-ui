@@ -327,11 +327,12 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
 
         // Only cap at midpoint if spaceToMidpoint is positive and less than fullSpace
         // If spaceToMidpoint is negative or zero, the node is at/past midpoint, so just use fullSpace
-        const availableSpace = spaceToMidpoint > 0
-          ? Math.min(fullSpace, spaceToMidpoint)
-          : fullSpace;
+        const availableSpace =
+          spaceToMidpoint > 0 ? Math.min(fullSpace, spaceToMidpoint) : fullSpace;
 
-        const maxChars = Math.floor(Math.max(0, availableSpace) / parseInt(token.Spacing.SpacingXs));
+        const maxChars = Math.floor(
+          Math.max(0, availableSpace) / parseInt(token.Spacing.SpacingXs)
+        );
         const displayLabel = truncateText(extNode.label, maxChars);
 
         return {

@@ -33,7 +33,7 @@ import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
-import { NodeContextMenu, NodeMenuItem } from '../NodeContextMenu';
+import { NodeContextMenu, type NodeMenuItem } from '../NodeContextMenu';
 import { useNodeSelection } from '../NodePropertiesPanel/hooks';
 import { type ListItem, Toolbox } from '../Toolbox';
 import { DraggableTask, TaskContent } from './DraggableTask';
