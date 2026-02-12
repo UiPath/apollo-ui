@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { TranslationKey } from "./TranslationKey";
-import { Text } from "./text";
+import { Text } from "./shell-text";
+import { TranslationKey } from "./shell-translation-key";
 
 interface MinimalNavItemProps {
   to: string;

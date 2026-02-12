@@ -7,7 +7,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { Spinner } from "@/components/ui/spinner";
 import { configurei18n } from "@/lib/i18n";
-import type { LanguageChangedEvent } from "./language-toggle";
+import type { LanguageChangedEvent } from "./shell-language-toggle";
 
 export const LocaleProviderComponent = ({ children }: PropsWithChildren) => {
   const { i18n } = useTranslation();

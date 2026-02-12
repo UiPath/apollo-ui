@@ -1,7 +1,7 @@
 "use client";
 
-import { LocaleProvider } from "@/registry/shell/internal/locale-provider";
-import { ShellLayout } from "@/registry/shell/internal/shell-layout";
+import { ShellLayout } from "@/registry/shell/shell-layout";
+import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
 
 interface ShellTemplateProps {
   variant?: "minimal";

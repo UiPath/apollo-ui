@@ -9,13 +9,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
-import type { CompanyLogo } from "../shell";
+import type { CompanyLogo } from "./shell";
 import {
   fastFadeTransition,
   iconHoverScale,
   scaleVariants,
   textFadeVariants,
-} from "./animations";
+} from "./shell-animations";
 
 interface CompanyProps {
   companyName: string;

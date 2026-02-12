@@ -6,8 +6,8 @@ import {
   type User,
 } from "@uipath/auth-react";
 import type { FC, PropsWithChildren } from "react";
-import { LocaleProvider } from "./internal/locale-provider";
-import { ShellLayout } from "./internal/shell-layout";
+import { ShellLayout } from "./shell-layout";
+import { LocaleProvider } from "./shell-locale-provider";
 
 export interface CompanyLogo {
   url: string;

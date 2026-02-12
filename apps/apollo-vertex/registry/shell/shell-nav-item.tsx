@@ -15,7 +15,7 @@ import {
   fastFadeTransition,
   iconHoverScale,
   textFadeVariants,
-} from "./animations";
+} from "./shell-animations";
 
 interface NavItemProps {
   to: string;

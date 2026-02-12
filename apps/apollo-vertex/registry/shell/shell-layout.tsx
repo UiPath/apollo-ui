@@ -1,7 +1,7 @@
 import type { PropsWithChildren } from "react";
-import type { CompanyLogo } from "@/components/ui/shell";
-import { Sidebar } from "./sidebar";
-import { useTheme } from "./theme-provider";
+import type { CompanyLogo } from "./shell";
+import { Sidebar } from "./shell-sidebar";
+import { useTheme } from "./shell-theme-provider";
 
 const GRADIENT_BLUR = "blur(149.643px)";
 
