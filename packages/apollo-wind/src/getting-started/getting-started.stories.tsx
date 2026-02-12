@@ -23,7 +23,7 @@ export const Default: Story = {
     >
       <div className="mx-auto max-w-3xl p-8">
         <h1 className="mb-4 text-[2rem] font-bold text-future-foreground">
-          Apollo v.4 Design System
+          UiPath Design System
         </h1>
         <p className="mb-6 text-base leading-7 text-future-foreground-muted">
           Apollo v.4 is UiPath's open-source design system for building consistent user experiences

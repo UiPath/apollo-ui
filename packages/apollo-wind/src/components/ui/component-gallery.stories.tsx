@@ -367,22 +367,6 @@ const components: ComponentInfo[] = [
     preview: <label className="text-xs font-medium">Label</label>,
   },
   {
-    name: 'Menubar',
-    description: 'Desktop-style menu bar',
-    storyPath: 'design-system-navigation-menubar--docs',
-    category: Category.Navigation,
-    preview: (
-      <div className="flex gap-2">
-        <Button variant="ghost" size="sm">
-          File
-        </Button>
-        <Button variant="ghost" size="sm">
-          Edit
-        </Button>
-      </div>
-    ),
-  },
-  {
     name: 'Multi Select',
     description: 'Multiple selection input',
     storyPath: 'design-system-core-multi-select--docs',
@@ -391,22 +375,6 @@ const components: ComponentInfo[] = [
       <Button variant="outline" size="sm">
         Select items
       </Button>
-    ),
-  },
-  {
-    name: 'Navigation Menu',
-    description: 'Navigation menu with dropdowns',
-    storyPath: 'design-system-navigation-navigation-menu--docs',
-    category: Category.Navigation,
-    preview: (
-      <div className="flex gap-2">
-        <Button variant="ghost" size="sm">
-          Home
-        </Button>
-        <Button variant="ghost" size="sm">
-          About
-        </Button>
-      </div>
     ),
   },
   {
