@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.30.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.30.0...@uipath/apollo-react@3.30.1) (2026-02-12)
+
+### Bug Fixes
+
+* **apollo-react:** apply dark mode to list rather than rows ([5607495](https://github.com/UiPath/apollo-ui/commit/56074957e519374954cb534e7319417468115a7b))
+
 ## [@uipath/apollo-react-v3.30.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.29.2...@uipath/apollo-react@3.30.0) (2026-02-12)
 
 ### Features
