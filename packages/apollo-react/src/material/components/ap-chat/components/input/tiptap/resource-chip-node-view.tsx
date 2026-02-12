@@ -10,12 +10,12 @@ import { fontByVariant } from '../../../utils/font-by-variant';
 import { AutopilotChatActionButton } from '../../common/action-button';
 import { AutopilotChatTooltip } from '../../common/tooltip';
 
-const ChipContent = styled('span')<{ readonly?: boolean }>(({ theme, readonly }) => ({
+const ChipContent = styled('span')<{ readonly?: boolean }>(({ readonly }) => ({
   display: 'inline-flex',
   alignItems: 'center',
   padding: `0 ${token.Padding.PadS}`,
-  backgroundColor: theme.palette.semantic.colorPrimaryLighter,
-  color: theme.palette.semantic.colorForeground,
+  backgroundColor: 'var(--color-primary-lighter)',
+  color: 'var(--color-foreground)',
   borderRadius: `calc(${token.Border.BorderRadiusL} * 2)`,
   verticalAlign: 'middle',
   ...(!readonly && {
@@ -41,7 +41,7 @@ const ChipLabel = styled('span')(() => ({
 }));
 
 const ChipDeleteContainer = styled('span')<{ visible: boolean; compactMode: boolean }>(
-  ({ visible, compactMode, theme }) => ({
+  ({ visible, compactMode }) => ({
     opacity: visible ? 1 : 0,
     position: 'absolute',
     right: token.Spacing.SpacingMicro,
@@ -49,7 +49,7 @@ const ChipDeleteContainer = styled('span')<{ visible: boolean; compactMode: bool
     transform: 'translateY(-50%)',
     display: 'flex',
     alignItems: 'center',
-    backgroundColor: theme.palette.semantic.colorPrimaryLighter,
+    backgroundColor: 'var(--color-primary-lighter)',
     borderRadius: `calc(${token.Border.BorderRadiusL} * 2)`,
     transition: 'opacity 0.15s ease-in-out',
 

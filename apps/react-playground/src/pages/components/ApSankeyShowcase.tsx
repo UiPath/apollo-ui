@@ -359,21 +359,43 @@ export function ApSankeyShowcase() {
 				<SectionHeader>Multi-Stage Complex Flow</SectionHeader>
 				<SectionDescription>
 					Visualize complex branching flows with multiple stages and convergence
-					points. Long labels are automatically truncated - hover to see full text.
+					points. Long labels are automatically truncated - hover to see full
+					text.
 				</SectionDescription>
 				<div style={{ maxWidth: "1200px" }}>
 					<ApSankeyDiagram
 						data={{
 							nodes: [
 								{ id: "input", label: "Initial Data Input Processing System" },
-								{ id: "stage1a", label: "Primary Validation and Transformation Stage" },
-								{ id: "stage1b", label: "Secondary Data Enrichment Pipeline Module" },
-								{ id: "stage1c", label: "Tertiary Quality Assurance and Verification" },
-								{ id: "stage2a", label: "Advanced Analytics Processing Engine" },
-								{ id: "stage2b", label: "Machine Learning Model Inference Service" },
-								{ id: "stage2c", label: "Real-time Data Aggregation and Filtering" },
+								{
+									id: "stage1a",
+									label: "Primary Validation and Transformation Stage",
+								},
+								{
+									id: "stage1b",
+									label: "Secondary Data Enrichment Pipeline Module",
+								},
+								{
+									id: "stage1c",
+									label: "Tertiary Quality Assurance and Verification",
+								},
+								{
+									id: "stage2a",
+									label: "Advanced Analytics Processing Engine",
+								},
+								{
+									id: "stage2b",
+									label: "Machine Learning Model Inference Service",
+								},
+								{
+									id: "stage2c",
+									label: "Real-time Data Aggregation and Filtering",
+								},
 								{ id: "output1", label: "Final Processed Output Data Storage" },
-								{ id: "output2", label: "Error Handling and Logging System Infrastructure" },
+								{
+									id: "output2",
+									label: "Error Handling and Logging System Infrastructure",
+								},
 							],
 							links: [
 								{ source: "input", target: "stage1a", value: 100 },

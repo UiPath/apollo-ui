@@ -16,7 +16,7 @@ import { TaskIcon, TaskItemTypeValues } from '../TaskIcon';
 import type { ListItem } from '../Toolbox';
 import {
   createGroupModificationHandlers,
-  GroupModificationType,
+  type GroupModificationType,
   getHandlerForModificationType,
 } from '../utils/GroupModificationUtils';
 import { StageConnectionEdge } from './StageConnectionEdge';

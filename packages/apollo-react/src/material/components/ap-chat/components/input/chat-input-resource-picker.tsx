@@ -58,29 +58,29 @@ const ResourceItemContent = styled('div')({
   minWidth: 0,
 });
 
-const ErrorContainer = styled('div')(({ theme }) => ({
+const ErrorContainer = styled('div')(() => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   gap: token.Spacing.SpacingS,
   padding: token.Padding.PadXxxl,
-  color: theme.palette.semantic.colorErrorText,
+  color: 'var(--color-error-text)',
 }));
 
-const EmptyContainer = styled('div')(({ theme }) => ({
+const EmptyContainer = styled('div')(() => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   padding: `${token.Padding.PadXxl} ${token.Padding.PadXxxl}`,
-  color: theme.palette.semantic.colorForegroundDeEmp,
+  color: 'var(--color-foreground-de-emp)',
 }));
 
-const DrillDownHeader = styled('div')(({ theme }) => ({
+const DrillDownHeader = styled('div')(() => ({
   display: 'flex',
   alignItems: 'center',
   gap: token.Spacing.SpacingMicro,
   padding: `${token.Padding.PadXs} ${token.Padding.PadXxxl} ${token.Padding.PadXs} ${token.Padding.PadXxl}`,
-  backgroundColor: theme.palette.semantic.colorBackgroundSecondary,
+  backgroundColor: 'var(--color-background-secondary)',
 }));
 
 const SkeletonItem = styled(StyledMenuItem)({

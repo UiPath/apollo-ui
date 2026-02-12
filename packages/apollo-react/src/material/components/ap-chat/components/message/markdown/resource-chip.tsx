@@ -1,5 +1,5 @@
 import React from 'react';
-import { AutopilotChatResourceItem } from '../../../service';
+import type { AutopilotChatResourceItem } from '../../../service';
 import { ResourceChipBase } from '../../input/tiptap/resource-chip-node-view';
 
 export const ResourceChip = React.memo(({ icon, displayName }: AutopilotChatResourceItem) => (

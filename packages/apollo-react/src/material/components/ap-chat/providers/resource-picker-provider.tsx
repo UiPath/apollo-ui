@@ -1,6 +1,7 @@
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
-import React, {
+import type React from 'react';
+import {
   createContext,
   useCallback,
   useContext,
