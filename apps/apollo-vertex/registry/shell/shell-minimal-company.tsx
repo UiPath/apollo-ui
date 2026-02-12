@@ -1,4 +1,4 @@
-import type { CompanyLogo } from "../shell";
+import type { CompanyLogo } from "./shell";
 
 interface MinimalCompanyProps {
   companyName: string;

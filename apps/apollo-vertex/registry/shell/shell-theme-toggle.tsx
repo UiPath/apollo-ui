@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
-import { useTheme } from "./theme-provider";
+import { useTheme } from "./shell-theme-provider";
 
 export function ThemeToggle() {
   const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);

@@ -1,4 +1,4 @@
-import type { ThemeConfig } from "../registry/shell/internal/theme-provider";
+import type { ThemeConfig } from "../registry/shell/shell-theme-provider";
 
 export const themes = {
   default: {

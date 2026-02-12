@@ -11,8 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/lib/i18n";
-import { TranslationKey } from "./TranslationKey";
-import { Text } from "./text";
+import { Text } from "./shell-text";
+import { TranslationKey } from "./shell-translation-key";
 
 export type LanguageChangedEvent = {
   selectedLanguageId: string;

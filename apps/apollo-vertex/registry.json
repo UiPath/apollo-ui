@@ -91,6 +91,7 @@
       "type": "registry:ui",
       "title": "Button Group",
       "description": "Groups multiple buttons together.",
+      "dependencies": ["@radix-ui/react-slot"],
       "files": [
         {
           "path": "registry/button-group/button-group.tsx",
@@ -171,6 +172,7 @@
       "title": "Command",
       "description": "A command menu for searching and executing commands.",
       "dependencies": ["cmdk"],
+      "registryDependencies": ["dialog"],
       "files": [
         {
           "path": "registry/command/command.tsx",
@@ -312,6 +314,7 @@
       "type": "registry:ui",
       "title": "Item",
       "description": "A list item component for displaying content in lists.",
+      "dependencies": ["@radix-ui/react-slot"],
       "files": [{ "path": "registry/item/item.tsx", "type": "registry:ui" }]
     },
     {
@@ -411,7 +414,7 @@
       "type": "registry:ui",
       "title": "Resizable",
       "description": "Accessible resizable panel groups and layouts.",
-      "dependencies": ["react-resizable-panels"],
+      "dependencies": ["react-resizable-panels@^3.0.6"],
       "files": [
         {
           "path": "registry/resizable/resizable.tsx",
@@ -484,61 +487,61 @@
       "files": [
         { "path": "registry/shell/shell.tsx", "type": "registry:ui" },
         {
-          "path": "registry/shell/internal/shell-layout.tsx",
+          "path": "registry/shell/shell-layout.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "registry/shell/internal/sidebar.tsx",
+          "path": "registry/shell/shell-sidebar.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "registry/shell/internal/company.tsx",
+          "path": "registry/shell/shell-company.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "registry/shell/internal/user-profile.tsx",
+          "path": "registry/shell/shell-user-profile.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "registry/shell/internal/locale-provider.tsx",
+          "path": "registry/shell/shell-locale-provider.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "registry/shell/internal/language-toggle.tsx",
+          "path": "registry/shell/shell-language-toggle.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "registry/shell/internal/TranslationKey.ts",
-          "type": "registry:lib"
+          "path": "registry/shell/shell-translation-key.ts",
+          "type": "registry:ui"
         },
         { "path": "lib/i18n.ts", "type": "registry:lib" },
         { "path": "lib/react-i18next.d.ts", "type": "registry:lib" },
         {
-          "path": "registry/shell/internal/animations.ts",
+          "path": "registry/shell/shell-animations.ts",
           "type": "registry:ui"
         },
         {
-          "path": "registry/shell/internal/nav-item.tsx",
+          "path": "registry/shell/shell-nav-item.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "registry/shell/internal/minimal-company.tsx",
+          "path": "registry/shell/shell-minimal-company.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "registry/shell/internal/minimal-nav-item.tsx",
+          "path": "registry/shell/shell-minimal-nav-item.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "registry/shell/internal/text.tsx",
+          "path": "registry/shell/shell-text.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "registry/shell/internal/theme-toggle.tsx",
+          "path": "registry/shell/shell-theme-toggle.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "registry/shell/internal/theme-provider.tsx",
+          "path": "registry/shell/shell-theme-provider.tsx",
           "type": "registry:ui"
         }
       ]
@@ -683,6 +686,7 @@
       "title": "Toggle Group",
       "description": "A set of two-state buttons that can be toggled on or off.",
       "dependencies": ["@radix-ui/react-toggle-group"],
+      "registryDependencies": ["toggle"],
       "files": [
         {
           "path": "registry/toggle-group/toggle-group.tsx",
