@@ -706,6 +706,30 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "date-picker",
+      "type": "registry:ui",
+      "title": "Date Picker",
+      "description": "A date picker component.",
+      "dependencies": ["date-fns", "lucide-react", "react-i18next"],
+      "registryDependencies": ["button", "popover", "calendar"],
+      "files": [
+        {
+          "path": "registry/date-picker/date-picker.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "calendar",
+      "type": "registry:ui",
+      "title": "Calendar",
+      "description": "A calendar component.",
+      "dependencies": ["react-day-picker"],
+      "files": [
+        { "path": "registry/calendar/calendar.tsx", "type": "registry:ui" }
+      ]
     }
   ]
 }
