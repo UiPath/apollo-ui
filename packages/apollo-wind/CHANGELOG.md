@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v0.9.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.8.1...@uipath/apollo-wind@0.9.0) (2026-02-12)
+
+### Features
+
+* **storybook:** improve Storybook documentation and formatting ([0b677c2](https://github.com/uipath/apollo-ui/commit/0b677c25632e4bb3fbccb62d4bdfe56092166fc4))
+
 ## [@uipath/apollo-wind-v0.8.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.8.0...@uipath/apollo-wind@0.8.1) (2026-02-11)
 
 ### Bug Fixes
