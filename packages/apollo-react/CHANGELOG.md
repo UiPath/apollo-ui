@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.30.5](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.30.4...@uipath/apollo-react@3.30.5) (2026-02-13)
+
+### Bug Fixes
+
+* **apollo-react:** filter invisible handles in calcuation of spacing [MST-6413] ([59bf294](https://github.com/UiPath/apollo-ui/commit/59bf294d275d6690ef2234630fd9f8ccb17e5bca))
+
 ## [@uipath/apollo-react-v3.30.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.30.3...@uipath/apollo-react@3.30.4) (2026-02-13)
 
 ### Bug Fixes
