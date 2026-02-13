@@ -649,7 +649,8 @@
         "lucide-react",
         "framer-motion",
         "react-i18next",
-        "i18next"
+        "i18next",
+        "@radix-ui/react-navigation-menu"
       ],
       "registryDependencies": [
         "button",

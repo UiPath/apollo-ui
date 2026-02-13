@@ -1,9 +1,8 @@
 "use client";
 
+import { Link } from "@radix-ui/react-navigation-menu";
 import { AnimatePresence, motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   Tooltip,
   TooltipContent,
@@ -21,11 +20,11 @@ interface NavItemProps {
   to: string;
   icon: LucideIcon;
   text: string;
+  pathname: string;
 }
 
-export const NavItem = ({ to, icon: Icon, text }: NavItemProps) => {
+export const NavItem = ({ to, icon: Icon, text, pathname }: NavItemProps) => {
   const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
-  const pathname = usePathname();
   const isActive = pathname === to || pathname.startsWith(`${to}/`);
 
   const linkContent = (

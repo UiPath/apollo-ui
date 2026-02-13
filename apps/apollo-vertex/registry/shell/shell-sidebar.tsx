@@ -1,3 +1,4 @@
+import { NavigationMenu } from "@radix-ui/react-navigation-menu";
 import { motion } from "framer-motion";
 import { BarChart3, FolderOpen, Home, Settings, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,6 +15,7 @@ import { UserProfile } from "./shell-user-profile";
 interface SidebarProps {
   companyName: string;
   productName: string;
+  pathname: string;
   variant?: "minimal";
   companyLogo?: CompanyLogo;
 }
@@ -21,6 +23,7 @@ interface SidebarProps {
 export const Sidebar = ({
   companyName,
   productName,
+  pathname,
   variant,
   companyLogo,
 }: SidebarProps) => {
@@ -37,15 +40,20 @@ export const Sidebar = ({
           companyLogo={companyLogo}
         />
 
-        <nav className="flex items-center bg-muted rounded-full p-1.5 max-w-[50%] overflow-x-auto scrollbar-thin mx-4">
+        <NavigationMenu className="flex items-center bg-muted rounded-full p-1.5 max-w-[50%] overflow-x-auto scrollbar-thin mx-4">
           <MinimalNavItem
             to="/templates/shell-template"
             label="dashboard"
             active
+            pathname={pathname}
           />
-          <MinimalNavItem to="/projects" label="projects" />
-          <MinimalNavItem to="/analytics" label="analytics" />
-        </nav>
+          <MinimalNavItem to="/projects" label="projects" pathname={pathname} />
+          <MinimalNavItem
+            to="/analytics"
+            label="analytics"
+            pathname={pathname}
+          />
+        </NavigationMenu>
 
         <div className="flex items-center gap-2">
           <LanguageToggle />
@@ -77,13 +85,18 @@ export const Sidebar = ({
         productName={productName}
         companyLogo={companyLogo}
       />
-      <nav className="flex-1 mt-6 space-y-1 pb-3">
-        <NavItem to="/templates/shell-template" icon={Home} text="Dashboard" />
-        <NavItem to="/" icon={FolderOpen} text="Projects" />
-        <NavItem to="/" icon={BarChart3} text="Analytics" />
-        <NavItem to="/" icon={Users} text="Team" />
-        <NavItem to="/" icon={Settings} text="Settings" />
-      </nav>
+      <NavigationMenu className="flex-1 mt-6 space-y-1 pb-3">
+        <NavItem
+          to="/templates/shell-template"
+          icon={Home}
+          text="Dashboard"
+          pathname={pathname}
+        />
+        <NavItem to="/" icon={FolderOpen} text="Projects" pathname={pathname} />
+        <NavItem to="/" icon={BarChart3} text="Analytics" pathname={pathname} />
+        <NavItem to="/" icon={Users} text="Team" pathname={pathname} />
+        <NavItem to="/" icon={Settings} text="Settings" pathname={pathname} />
+      </NavigationMenu>
       <div className="mt-auto pt-3">
         {!isCollapsed ? (
           <div className="flex flex-col gap-2 pb-2">

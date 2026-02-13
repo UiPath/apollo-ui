@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link } from "@radix-ui/react-navigation-menu";
 import { cn } from "@/lib/utils";
 import { Text } from "./shell-text";
 import { TranslationKey } from "./shell-translation-key";
@@ -10,10 +9,15 @@ interface MinimalNavItemProps {
   to: string;
   label: TranslationKey;
   active?: boolean;
+  pathname: string;
 }
 
-export const MinimalNavItem = ({ to, label, active }: MinimalNavItemProps) => {
-  const pathname = usePathname();
+export const MinimalNavItem = ({
+  to,
+  label,
+  active,
+  pathname,
+}: MinimalNavItemProps) => {
   const isActive = active ?? (pathname === to || pathname.startsWith(`${to}/`));
 
   return (

@@ -20,6 +20,7 @@ export interface ApolloShellProps extends PropsWithChildren {
   extraSigninRequestArgs?: SigninArgsWithState;
   companyName: string;
   productName: string;
+  pathname: string;
   companyLogo?: CompanyLogo;
 }
 
@@ -30,6 +31,7 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   extraSigninRequestArgs,
   companyName,
   productName,
+  pathname,
   companyLogo,
 }) => {
   return (
@@ -43,6 +45,7 @@ export const ApolloShell: FC<ApolloShellProps> = ({
             companyName={companyName}
             productName={productName}
             companyLogo={companyLogo}
+            pathname={pathname}
           >
             {children}
           </ShellLayout>

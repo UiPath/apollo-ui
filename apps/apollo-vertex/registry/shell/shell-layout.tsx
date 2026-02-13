@@ -8,6 +8,7 @@ const GRADIENT_BLUR = "blur(149.643px)";
 interface ShellLayoutProps {
   companyName: string;
   productName: string;
+  pathname: string;
   variant?: "minimal";
   companyLogo?: CompanyLogo;
 }
@@ -277,6 +278,7 @@ export function ShellLayout({
   productName,
   variant,
   companyLogo,
+  pathname,
 }: PropsWithChildren<ShellLayoutProps>) {
   if (variant === "minimal") {
     return (
@@ -286,6 +288,7 @@ export function ShellLayout({
           variant={variant}
           productName={productName}
           companyLogo={companyLogo}
+          pathname={pathname}
         />
         <main className="flex-1 flex flex-col overflow-hidden relative rounded-[10px] bg-sidebar">
           <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -303,6 +306,7 @@ export function ShellLayout({
         variant={variant}
         productName={productName}
         companyLogo={companyLogo}
+        pathname={pathname}
       />
       <main className="flex-1 flex flex-col overflow-hidden relative">
         <GradientBackground />
