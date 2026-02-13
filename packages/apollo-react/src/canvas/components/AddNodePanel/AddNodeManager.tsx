@@ -210,12 +210,12 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
           ? newNodeManifest && registry?.getDefaultHandle(newNodeManifest.nodeType, 'source')?.id
           : firstConnection.existingHandleId;
         const firstEdgeData = firstConnection.addNewNodeAsSource
-          ? { source: newNode.id, sourceHandle: firstEdgeSourceHandle ?? 'output' }
+          ? { source: finalNode.id, sourceHandle: firstEdgeSourceHandle ?? 'output' }
           : {
               source: firstConnection.existingNodeId,
               sourceHandle: firstConnection.existingHandleId,
             };
-        onNodeAdded?.(firstEdgeData.source, firstEdgeData.sourceHandle, newNode);
+        onNodeAdded?.(firstEdgeData.source, firstEdgeData.sourceHandle, finalNode);
       }
       // No need to restore edges once we have added the new node.
       restoreEdgesRef.current = null;
