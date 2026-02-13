@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.30.6](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.30.5...@uipath/apollo-react@3.30.6) (2026-02-13)
+
+### Bug Fixes
+
+* **apollo-react:** pass transformed node/edges to onNodeAdded ([24f0308](https://github.com/UiPath/apollo-ui/commit/24f0308b1d0ccc1a2083122b249e72c8e48e981b))
+
 ## [@uipath/apollo-react-v3.30.5](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.30.4...@uipath/apollo-react@3.30.5) (2026-02-13)
 
 ### Bug Fixes
