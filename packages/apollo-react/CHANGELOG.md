@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.32.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.31.0...@uipath/apollo-react@3.32.0) (2026-02-13)
+
+### Features
+
+* **apollo-react:** add icons for agent types ([c615744](https://github.com/UiPath/apollo-ui/commit/c61574478d70feb130c0af1bd8acf51d2b44be57))
+
 ## [@uipath/apollo-react-v3.31.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.30.6...@uipath/apollo-react@3.31.0) (2026-02-13)
 
 ### Features
