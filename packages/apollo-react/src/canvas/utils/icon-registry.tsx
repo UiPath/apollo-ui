@@ -19,6 +19,8 @@ export type IconComponent = (props: { w?: number; h?: number; color?: string }) 
 const iconRegistry: Record<string, IconComponent> = {
   // UIPath icons
   agent: ({ w, h }) => <Icons.AgentProject w={w ?? 29} h={h ?? 28} />,
+  'autonomous-agent': ({ w, h }) => <Icons.AutonomousAgentIcon w={w ?? 29} h={h ?? 28} />,
+  'conversational-agent': ({ w, h }) => <Icons.ConversationalAgentIcon w={w ?? 29} h={h ?? 28} />,
   'coded-agent': ({ w, h }) => <Icons.CodedAgentIcon w={w ?? 29} h={h ?? 28} />,
   connector: ({ w, h }) => <Icons.ConnectorBuilderProject w={w ?? 29} h={h ?? 28} />,
   'data-tools': ({ w, h }) => <Icons.DataAndTools w={w ?? 29} h={h ?? 28} />,
