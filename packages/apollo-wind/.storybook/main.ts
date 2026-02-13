@@ -64,6 +64,7 @@ const config: StorybookConfig = {
   async viteFinal(config) {
     return {
       ...config,
+      envDir: resolve(__dirname, '..'),
       resolve: {
         ...config.resolve,
         alias: {

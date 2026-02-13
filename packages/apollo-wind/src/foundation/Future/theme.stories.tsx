@@ -26,15 +26,19 @@ type Story = StoryObj<typeof meta>;
 type ThemeFamily = 'future' | 'legacy';
 
 /** Derive the theme family and variant from the Storybook global value */
-function parseThemeGlobal(value: string): { family: ThemeFamily; variant: 'dark' | 'light' } {
+function parseThemeGlobal(value: string): { family: ThemeFamily; variant: 'dark' | 'light'; override?: string } {
   if (value === 'legacy-dark') return { family: 'legacy', variant: 'dark' };
   if (value === 'legacy-light') return { family: 'legacy', variant: 'light' };
+  if (value === 'wireframe') return { family: 'future', variant: 'light', override: 'future-wireframe' };
+  if (value === 'vertex') return { family: 'future', variant: 'dark', override: 'future-vertex' };
+  if (value === 'canvas') return { family: 'future', variant: 'dark', override: 'future-canvas' };
   if (value === 'light') return { family: 'future', variant: 'light' };
   return { family: 'future', variant: 'dark' };
 }
 
-/** Get the CSS class for a given family + variant */
-function themeClass(family: ThemeFamily, variant: 'dark' | 'light') {
+/** Get the CSS class for a given family + variant, respecting demo theme overrides */
+function themeClass(family: ThemeFamily, variant: 'dark' | 'light', override?: string) {
+  if (override) return override;
   return family === 'legacy'
     ? variant === 'light' ? 'legacy-light' : 'legacy-dark'
     : variant === 'light' ? 'future-light' : 'future-dark';
@@ -212,32 +216,32 @@ const futureTokenGroups = [
   {
     group: 'Surface',
     tokens: [
-      { name: 'future-surface', usage: 'Page / canvas background', dark: '#09090b', light: '#ffffff' },
-      { name: 'future-surface-raised', usage: 'Cards, panels, overlays', dark: '#18181b', light: '#fafafa' },
-      { name: 'future-surface-overlay', usage: 'Inputs, tabs, icon rail', dark: '#27272a', light: '#f4f4f5' },
-      { name: 'future-surface-hover', usage: 'Hover, selected nav', dark: '#3f3f46', light: '#e4e4e7' },
+      { name: 'future-surface', usage: 'Page / canvas background', dark: '#09090b', darkTw: 'zinc-950', light: '#ffffff', lightTw: 'white' },
+      { name: 'future-surface-raised', usage: 'Cards, panels, overlays', dark: '#18181b', darkTw: 'zinc-900', light: '#fafafa', lightTw: 'zinc-50' },
+      { name: 'future-surface-overlay', usage: 'Inputs, tabs, icon rail', dark: '#27272a', darkTw: 'zinc-800', light: '#f4f4f5', lightTw: 'zinc-100' },
+      { name: 'future-surface-hover', usage: 'Hover, selected nav', dark: '#3f3f46', darkTw: 'zinc-700', light: '#e4e4e7', lightTw: 'zinc-200' },
     ],
   },
   {
     group: 'Foreground',
     tokens: [
-      { name: 'future-foreground', usage: 'Primary headings', dark: '#fafafa', light: '#09090b' },
-      { name: 'future-foreground-muted', usage: 'Nav, secondary UI', dark: '#a1a1aa', light: '#71717a' },
-      { name: 'future-foreground-subtle', usage: 'Labels, placeholders', dark: '#71717a', light: '#a1a1aa' },
+      { name: 'future-foreground', usage: 'Primary headings', dark: '#fafafa', darkTw: 'zinc-50', light: '#09090b', lightTw: 'zinc-950' },
+      { name: 'future-foreground-muted', usage: 'Nav, secondary UI', dark: '#a1a1aa', darkTw: 'zinc-400', light: '#71717a', lightTw: 'zinc-500' },
+      { name: 'future-foreground-subtle', usage: 'Labels, placeholders', dark: '#71717a', darkTw: 'zinc-500', light: '#a1a1aa', lightTw: 'zinc-400' },
     ],
   },
   {
     group: 'Accent',
     tokens: [
-      { name: 'future-accent', usage: 'Logo, primary action', dark: '#06b6d4', light: '#06b6d4' },
-      { name: 'future-accent-subtle', usage: 'Active nav, status badges', dark: '#083344', light: '#ecfeff' },
+      { name: 'future-accent', usage: 'Logo, primary buttons, active indicators', dark: '#06b6d4', darkTw: 'cyan-500', light: '#06b6d4', lightTw: 'cyan-500' },
+      { name: 'future-accent-subtle', usage: 'Selected state bg, active nav, status badges', dark: '#083344', darkTw: 'cyan-950', light: '#ecfeff', lightTw: 'cyan-50' },
     ],
   },
   {
     group: 'Border',
     tokens: [
-      { name: 'future-border', usage: 'Primary borders', dark: '#3f3f46', light: '#d4d4d8' },
-      { name: 'future-border-subtle', usage: 'Subtle dividers', dark: '#27272a', light: '#e4e4e7' },
+      { name: 'future-border', usage: 'Primary borders', dark: '#3f3f46', darkTw: 'zinc-700', light: '#d4d4d8', lightTw: 'zinc-300' },
+      { name: 'future-border-subtle', usage: 'Subtle dividers', dark: '#27272a', darkTw: 'zinc-800', light: '#e4e4e7', lightTw: 'zinc-200' },
     ],
   },
 ];
@@ -246,8 +250,8 @@ const legacyTokenGroups = [
   {
     group: 'Surface',
     tokens: [
-      { name: 'legacy-surface', usage: 'Page / canvas background', dark: '#182027', light: '#ffffff' },
-      { name: 'legacy-surface-raised', usage: 'Cards, panels', dark: '#273139', light: '#ffffff' },
+      { name: 'legacy-surface', usage: 'Page / canvas background', dark: '#182027', light: '#ffffff', lightTw: 'white' },
+      { name: 'legacy-surface-raised', usage: 'Cards, panels', dark: '#273139', light: '#ffffff', lightTw: 'white' },
       { name: 'legacy-surface-overlay', usage: 'Secondary bg, inputs', dark: '#374652', light: '#f4f5f7' },
       { name: 'legacy-surface-hover', usage: 'Hover states', dark: '#526069', light: '#e9f1fa' },
     ],
@@ -310,17 +314,31 @@ function TokenTable({ groups }: { groups: typeof futureTokenGroups }) {
                   <td className="px-4 py-2">
                     <div className="flex items-center justify-center gap-2">
                       <div className="h-5 w-5 rounded border border-border" style={{ backgroundColor: token.dark }} />
-                      <code className="text-xs text-muted-foreground" style={{ fontFamily: fontFamily.monospace }}>
-                        {token.dark}
-                      </code>
+                      <div className="flex flex-col">
+                        <code className="text-xs text-muted-foreground" style={{ fontFamily: fontFamily.monospace }}>
+                          {token.dark}
+                        </code>
+                        {'darkTw' in token && (token as { darkTw?: string }).darkTw && (
+                          <code className="text-[10px] text-primary/70" style={{ fontFamily: fontFamily.monospace }}>
+                            {(token as { darkTw: string }).darkTw}
+                          </code>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td className="px-4 py-2">
                     <div className="flex items-center justify-center gap-2">
                       <div className="h-5 w-5 rounded border border-border" style={{ backgroundColor: token.light }} />
-                      <code className="text-xs text-muted-foreground" style={{ fontFamily: fontFamily.monospace }}>
-                        {token.light}
-                      </code>
+                      <div className="flex flex-col">
+                        <code className="text-xs text-muted-foreground" style={{ fontFamily: fontFamily.monospace }}>
+                          {token.light}
+                        </code>
+                        {'lightTw' in token && (token as { lightTw?: string }).lightTw && (
+                          <code className="text-[10px] text-primary/70" style={{ fontFamily: fontFamily.monospace }}>
+                            {(token as { lightTw: string }).lightTw}
+                          </code>
+                        )}
+                      </div>
                     </div>
                   </td>
                 </tr>
@@ -358,6 +376,17 @@ function FutureTabContent() {
 
       <Divider />
 
+      {/* ── Token overview ─────────────────────────────────────────────── */}
+      <SectionTitle>Token overview</SectionTitle>
+      <SectionDescription>
+        Key semantic tokens and their resolved values per theme. See the
+        Colors page for the full token reference.
+      </SectionDescription>
+
+      <TokenTable groups={futureTokenGroups} />
+
+      <Divider />
+
       {/* ── How to use ─────────────────────────────────────────────────── */}
       <SectionTitle>How to use</SectionTitle>
       <SectionDescription>
@@ -386,17 +415,6 @@ function FutureTabContent() {
   {/* children automatically inherit dark theme tokens */}
 </MaestroTemplate>`}</CodeBlock>
       </div>
-
-      <Divider />
-
-      {/* ── Token overview ─────────────────────────────────────────────── */}
-      <SectionTitle>Token overview</SectionTitle>
-      <SectionDescription>
-        Key semantic tokens and their resolved values per theme. See the
-        Colors page for the full token reference.
-      </SectionDescription>
-
-      <TokenTable groups={futureTokenGroups} />
 
       <Divider />
 
@@ -451,6 +469,17 @@ function LegacyTabContent() {
 
       <Divider />
 
+      {/* ── Token overview ─────────────────────────────────────────────── */}
+      <SectionTitle>Token overview</SectionTitle>
+      <SectionDescription>
+        Key semantic tokens from the Legacy (apollo-core) design system and their
+        resolved values per theme.
+      </SectionDescription>
+
+      <TokenTable groups={legacyTokenGroups} />
+
+      <Divider />
+
       {/* ── How to use ─────────────────────────────────────────────────── */}
       <SectionTitle>How to use</SectionTitle>
       <SectionDescription>
@@ -479,17 +508,6 @@ function LegacyTabContent() {
 /* The shadcn bridge is also included, so shadcn components
    inherit the correct Legacy colors automatically. */`}</CodeBlock>
       </div>
-
-      <Divider />
-
-      {/* ── Token overview ─────────────────────────────────────────────── */}
-      <SectionTitle>Token overview</SectionTitle>
-      <SectionDescription>
-        Key semantic tokens from the Legacy (apollo-core) design system and their
-        resolved values per theme.
-      </SectionDescription>
-
-      <TokenTable groups={legacyTokenGroups} />
 
       <Divider />
 
@@ -532,10 +550,8 @@ function ThemePage({ globalTheme }: { globalTheme: string }) {
     setActiveTab(family);
   }, [family]);
 
-  const activeThemeClass = themeClass(
-    activeTab,
-    parseThemeGlobal(globalTheme).variant,
-  );
+  const parsed = parseThemeGlobal(globalTheme);
+  const activeThemeClass = themeClass(activeTab, parsed.variant, parsed.override);
 
   return (
     <div

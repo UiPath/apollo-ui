@@ -11,7 +11,7 @@ import { ErrorVideo } from './error-components';
 // ============================================================================
 
 const meta = {
-  title: 'Templates/Empty & Errors',
+  title: 'Templates/Future/Empty & Errors',
   parameters: {
     layout: 'fullscreen',
   },
@@ -31,22 +31,27 @@ function ErrorPageLayout({
   theme: string;
   children: React.ReactNode;
 }) {
-  const themeValue = theme === 'light' || theme === 'legacy-light' ? 'light' : 'dark';
   const themeClass =
     theme === 'legacy-dark'
       ? 'legacy-dark'
       : theme === 'legacy-light'
         ? 'legacy-light'
-        : theme === 'light'
-          ? 'future-light'
-          : 'future-dark';
+        : theme === 'wireframe'
+          ? 'future-wireframe'
+          : theme === 'vertex'
+            ? 'future-vertex'
+            : theme === 'canvas'
+              ? 'future-canvas'
+              : theme === 'light'
+                ? 'future-light'
+                : 'future-dark';
 
   return (
     <div
       className={cn(themeClass, 'flex h-screen flex-col bg-future-surface')}
       style={{ fontFamily: fontFamily.base }}
     >
-      <MaestroHeader theme={themeValue} title="UiPath" />
+      <MaestroHeader theme={theme as import('@/foundation/Future/types').FutureTheme} title="UiPath" />
       <div className="flex flex-1 flex-col items-center justify-center">
         {children}
       </div>
