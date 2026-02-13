@@ -354,10 +354,13 @@ export class CategoryTree {
   }
 
   /**
-   * Flatten single-path categories to root nodes for cleaner UX.
+   * Flatten single-path categories for cleaner UX.
    *
-   * If there's a single path through categories to leaf nodes, those leaf nodes are
-   * brought to the root level. Otherwise, returns the tree unchanged.
+   * Walks down the tree while there is a single nested category with no nodes.
+   * - If the path leads to a leaf category, its nodes are brought to root level.
+   * - If the path leads to a branch point (multiple nested categories or leaf nodes),
+   *   the tree is re-rooted at that category.
+   * - If the tree already has multiple root categories, returns unchanged.
    *
    * This is an immutable operation - returns a new CategoryTree instance.
    *
@@ -365,29 +368,25 @@ export class CategoryTree {
    */
   flattenSinglePath(): CategoryTree {
     // Only flatten if we have exactly one root category
-    if (!(this.rootCategories.length === 1)) {
-      return this;
+    if (this.rootCategories.length !== 1 || this.rootNodes.length > 0) {
+      return CategoryTree.fromPrebuilt([...this.rootCategories], [...this.rootNodes]);
     }
 
     // Walk down the path while it is a single child category with no nodes.
     let current = this.rootCategories[0];
-    let leafNodes: NodeManifest[] = [...this.rootNodes];
     while (current) {
       if (current.nestedCategories.length === 1 && current.nodes.length === 0) {
         // Continue down the single path
         current = current.nestedCategories[0];
-      } else if (current.nestedCategories.length === 0) {
-        // Leaf category - collect its nodes
-        leafNodes = leafNodes.concat(current.nodes);
-        break;
       } else {
-        // Multiple branches - cannot flatten
-        return this;
+        // Reached a branch point - break to return tree rooted here
+        break;
       }
     }
 
-    // Return tree with all collected nodes as root nodes and no categories
-    return CategoryTree.fromPrebuilt([], leafNodes);
+    return current
+      ? CategoryTree.fromPrebuilt([...current.nestedCategories], [...current.nodes])
+      : CategoryTree.fromPrebuilt([], []);
   }
 
   /**

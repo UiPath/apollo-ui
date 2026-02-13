@@ -554,6 +554,151 @@ describe('CategoryTree', () => {
 
       // Should remain unchanged (multiple root categories)
       expect(flattened.getRootCategories().length).toBe(tree.getRootCategories().length);
+      // Nested categories should also be preserved
+      expect(flattened.findCategory('automation')).toBeDefined();
+      expect(flattened.findCategory('automation.files')).toBeDefined();
+    });
+
+    it('should not flatten when root nodes exist', () => {
+      // one root category and one nested category.
+      const categories: CategoryManifest[] = [
+        {
+          id: 'automation',
+          name: 'Automation',
+          icon: 'automation',
+          parentId: undefined,
+          sortOrder: 1,
+          tags: [],
+          color: 'blue',
+          colorDark: 'darkBlue',
+        },
+        {
+          id: 'automation.files',
+          name: 'Files',
+          icon: 'folder',
+          parentId: 'automation',
+          sortOrder: 1,
+          tags: [],
+          color: 'blue',
+          colorDark: 'darkBlue',
+        },
+      ];
+
+      const nodes: NodeManifest[] = [
+        {
+          nodeType: 'root-node',
+          category: undefined,
+          version: '1.0.0',
+          display: {
+            label: 'Root Node',
+            icon: 'root',
+          },
+          description: 'A node at root level',
+          sortOrder: 1,
+          handleConfiguration: [],
+          tags: [],
+        },
+        {
+          nodeType: 'file-node',
+          category: 'automation.files',
+          version: '1.0.0',
+          display: {
+            label: 'File Node',
+            icon: 'file',
+          },
+          description: 'A node in files category',
+          sortOrder: 1,
+          handleConfiguration: [],
+          tags: [],
+        },
+      ];
+      const tree = new CategoryTree(categories, nodes);
+
+      const flattened = tree.flattenSinglePath();
+
+      // Should remain unchanged (root nodes exist)
+      expect(flattened.getRootCategories().length).toBe(tree.getRootCategories().length);
+      // Nested categories should also be preserved
+      expect(flattened.findCategory('automation')).toBeDefined();
+      expect(flattened.findCategory('automation.files')).toBeDefined();
+    });
+
+    it('should re-root at branch point when single path leads to multiple categories', () => {
+      const categories: CategoryManifest[] = [
+        {
+          id: 'root',
+          name: 'Root',
+          icon: 'root',
+          parentId: undefined,
+          sortOrder: 1,
+          tags: [],
+          color: 'blue',
+          colorDark: 'darkBlue',
+        },
+        {
+          id: 'middle',
+          name: 'Middle',
+          icon: 'middle',
+          parentId: 'root',
+          sortOrder: 1,
+          tags: [],
+          color: 'blue',
+          colorDark: 'darkBlue',
+        },
+        {
+          id: 'branch-a',
+          name: 'Branch A',
+          icon: 'branch',
+          parentId: 'middle',
+          sortOrder: 1,
+          tags: [],
+          color: 'blue',
+          colorDark: 'darkBlue',
+        },
+        {
+          id: 'branch-b',
+          name: 'Branch B',
+          icon: 'branch',
+          parentId: 'middle',
+          sortOrder: 2,
+          tags: [],
+          color: 'blue',
+          colorDark: 'darkBlue',
+        },
+      ];
+
+      const nodes: NodeManifest[] = [
+        {
+          nodeType: 'node-a',
+          category: 'branch-a',
+          version: '1.0.0',
+          display: { label: 'Node A', icon: 'a' },
+          sortOrder: 1,
+          handleConfiguration: [],
+          tags: [],
+        },
+        {
+          nodeType: 'node-b',
+          category: 'branch-b',
+          version: '1.0.0',
+          display: { label: 'Node B', icon: 'b' },
+          sortOrder: 1,
+          handleConfiguration: [],
+          tags: [],
+        },
+      ];
+
+      const tree = new CategoryTree(categories, nodes);
+      const flattened = tree.flattenSinglePath();
+
+      // Should re-root at the branch point (middle), exposing its nested categories
+      const rootCategories = flattened.getRootCategories();
+      expect(rootCategories).toHaveLength(2);
+      expect(rootCategories[0]!.id).toBe('branch-a');
+      expect(rootCategories[1]!.id).toBe('branch-b');
+
+      // No root nodes
+      expect(flattened.getRootNodes()).toHaveLength(0);
     });
 
     it('should not flatten when category has nodes and no children', () => {
