@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Canvas } from '@/components/custom/canvas';
 import type { DelegatePanelProps, NavChildItem, NavItem } from '@/components/custom/panel-delegate';
 import { DelegatePanel } from '@/components/custom/panel-delegate';
-import { useViewportAtOrAbove, ViewportGuard } from '@/components/ui/viewport-guard';
+import { useViewportAtOrAbove, ViewportGuard } from '@/components/custom/viewport-guard';
 import type { FutureTheme } from '@/foundation/Future/types';
 import { fontFamily } from '@/foundation/Future/typography';
 import { cn } from '@/lib';
@@ -67,9 +67,15 @@ export function DelegateTemplate({
           ? 'legacy-dark'
           : theme === 'legacy-light'
             ? 'legacy-light'
-            : theme === 'light'
-              ? 'future-light'
-              : 'future-dark',
+            : theme === 'wireframe'
+              ? 'future-wireframe'
+              : theme === 'vertex'
+                ? 'future-vertex'
+                : theme === 'canvas'
+                  ? 'future-canvas'
+                  : theme === 'light'
+                    ? 'future-light'
+                    : 'future-dark',
         'flex h-screen bg-future-surface',
         className
       )}

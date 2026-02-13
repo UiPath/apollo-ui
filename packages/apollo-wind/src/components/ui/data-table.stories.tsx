@@ -1,6 +1,7 @@
 import type { Meta } from '@storybook/react-vite';
 import { ColumnDef } from '@tanstack/react-table';
 import {
+  Archive,
   ChevronDown,
   ChevronRight,
   Download,
@@ -8,6 +9,7 @@ import {
   MoreHorizontal,
   Pencil,
   Trash2,
+  X,
 } from 'lucide-react';
 import * as React from 'react';
 import {
@@ -132,47 +134,112 @@ export const Basic = {
 // Drag and Drop
 // ============================================================================
 
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { CSS } from '@dnd-kit/utilities';
+
+function DraggableRow({ user, children }: { user: User; children: React.ReactNode }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: user.id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <TableRow ref={setNodeRef} style={style}>
+      <TableCell className="w-[40px]">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 cursor-grab active:cursor-grabbing"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+        </Button>
+      </TableCell>
+      {children}
+    </TableRow>
+  );
+}
+
 function DragAndDropExample() {
   const [data, setData] = React.useState(sampleUsers.slice(0, 6));
 
-  const moveRow = (fromIndex: number, toIndex: number) => {
-    setData((prev) => {
-      const updated = [...prev];
-      const [removed] = updated.splice(fromIndex, 1);
-      updated.splice(toIndex, 0, removed);
-      return updated;
-    });
-  };
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor),
+  );
 
-  const columns: ColumnDef<User>[] = [
-    {
-      id: 'drag',
-      header: '',
-      size: 40,
-      cell: ({ row }) => (
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 cursor-grab"
-            disabled={row.index === 0}
-            onClick={() => moveRow(row.index, row.index - 1)}
-          >
-            <GripVertical className="h-4 w-4 text-muted-foreground" />
-          </Button>
-        </div>
-      ),
-    },
-    { accessorKey: 'name', header: 'Name' },
-    { accessorKey: 'email', header: 'Email' },
-    { accessorKey: 'role', header: 'Role' },
-    { accessorKey: 'status', header: 'Status', cell: ({ row }) => statusBadge(row.getValue('status')) },
-  ];
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setData((prev) => {
+        const oldIndex = prev.findIndex((u) => u.id === active.id);
+        const newIndex = prev.findIndex((u) => u.id === over.id);
+        return arrayMove(prev, oldIndex, newIndex);
+      });
+    }
+  };
 
   return (
     <div className="space-y-2">
-      <p className="text-sm text-muted-foreground">Click the grip handle to reorder rows.</p>
-      <DataTable columns={columns} data={data} showPagination={false} showColumnToggle={false} />
+      <p className="text-sm text-muted-foreground">Drag the grip handle to reorder rows.</p>
+      <div className="rounded-md border">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          modifiers={[restrictToVerticalAxis]}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={data.map((u) => u.id)} strategy={verticalListSortingStrategy}>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[40px]" />
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.map((user) => (
+                  <DraggableRow key={user.id} user={user}>
+                    <TableCell className="font-medium">{user.name}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.role}</TableCell>
+                    <TableCell>{statusBadge(user.status)}</TableCell>
+                  </DraggableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </SortableContext>
+        </DndContext>
+      </div>
     </div>
   );
 }
@@ -266,16 +333,40 @@ export const ExpandableRows = {
 
 function BulkActionsExample() {
   const [data, setData] = React.useState(sampleUsers);
-  const [selected, setSelected] = React.useState<Record<string, boolean>>({});
+  const [rowSelection, setRowSelection] = React.useState<Record<string, boolean>>({});
 
-  const selectedCount = Object.values(selected).filter(Boolean).length;
+  const selectedCount = Object.values(rowSelection).filter(Boolean).length;
+  const selectedIndices = Object.entries(rowSelection)
+    .filter(([, v]) => v)
+    .map(([k]) => Number(k));
+
+  const handleClear = () => setRowSelection({});
+
+  const handleExport = () => {
+    const rows = selectedIndices.map((i) => data[i]).filter(Boolean);
+    const header = ['Name', 'Email', 'Role', 'Department', 'Status'].join(',');
+    const csv = [header, ...rows.map((u) => [u.name, u.email, u.role, u.department, u.status].join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'users-export.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleArchive = () => {
+    setData((prev) =>
+      prev.map((user, i) =>
+        selectedIndices.includes(i) ? { ...user, status: 'inactive' as const } : user,
+      ),
+    );
+    setRowSelection({});
+  };
 
   const handleDelete = () => {
-    const ids = Object.entries(selected)
-      .filter(([, v]) => v)
-      .map(([k]) => k);
-    setData((prev) => prev.filter((_, i) => !ids.includes(String(i))));
-    setSelected({});
+    setData((prev) => prev.filter((_, i) => !selectedIndices.includes(i)));
+    setRowSelection({});
   };
 
   const columns: ColumnDef<User>[] = [
@@ -286,22 +377,39 @@ function BulkActionsExample() {
     { accessorKey: 'status', header: 'Status', cell: ({ row }) => statusBadge(row.getValue('status')) },
   ];
 
+  const bulkActions = selectedCount > 0 ? (
+    <>
+      <Separator orientation="vertical" className="h-4" />
+      <span className="text-sm font-medium whitespace-nowrap">{selectedCount} selected</span>
+      <Button variant="ghost" size="sm" onClick={handleClear}>
+        <X className="mr-1 h-3.5 w-3.5" />
+        Clear
+      </Button>
+      <Button variant="outline" size="sm" onClick={handleExport}>
+        <Download className="mr-1 h-3.5 w-3.5" />
+        Export
+      </Button>
+      <Button variant="outline" size="sm" onClick={handleArchive}>
+        <Archive className="mr-1 h-3.5 w-3.5" />
+        Archive
+      </Button>
+      <Button variant="destructive" size="sm" onClick={handleDelete}>
+        <Trash2 className="mr-1 h-3.5 w-3.5" />
+        Delete
+      </Button>
+    </>
+  ) : null;
+
   return (
-    <div className="space-y-2">
-      {selectedCount > 0 && (
-        <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-4 py-2">
-          <span className="text-sm font-medium">{selectedCount} selected</span>
-          <Separator orientation="vertical" className="h-4" />
-          <Button variant="outline" size="sm">Export</Button>
-          <Button variant="outline" size="sm">Change Status</Button>
-          <Button variant="destructive" size="sm" onClick={handleDelete}>
-            <Trash2 className="mr-1 h-3.5 w-3.5" />
-            Delete
-          </Button>
-        </div>
-      )}
-      <DataTable columns={columns} data={data} searchKey="name" searchPlaceholder="Search users..." />
-    </div>
+    <DataTable
+      columns={columns}
+      data={data}
+      searchKey="name"
+      searchPlaceholder="Search users..."
+      rowSelection={rowSelection}
+      onRowSelectionChange={setRowSelection}
+      toolbarContent={bulkActions}
+    />
   );
 }
 
@@ -399,16 +507,104 @@ export const InlineEditing = {
 // Filtering & Search
 // ============================================================================
 
+function FilteringAndSearchExample() {
+  const [statusFilter, setStatusFilter] = React.useState('all');
+  const [roleFilter, setRoleFilter] = React.useState('all');
+  const [departmentFilter, setDepartmentFilter] = React.useState('all');
+
+  const activeFilters: { label: string; value: string; clear: () => void }[] = [];
+  if (statusFilter !== 'all') activeFilters.push({ label: `Status: ${statusFilter}`, value: statusFilter, clear: () => setStatusFilter('all') });
+  if (roleFilter !== 'all') activeFilters.push({ label: `Role: ${roleFilter}`, value: roleFilter, clear: () => setRoleFilter('all') });
+  if (departmentFilter !== 'all') activeFilters.push({ label: `Dept: ${departmentFilter}`, value: departmentFilter, clear: () => setDepartmentFilter('all') });
+
+  const clearAll = () => { setStatusFilter('all'); setRoleFilter('all'); setDepartmentFilter('all'); };
+
+  const filtered = sampleUsers.filter((u) => {
+    if (statusFilter !== 'all' && u.status !== statusFilter) return false;
+    if (roleFilter !== 'all' && u.role !== roleFilter) return false;
+    if (departmentFilter !== 'all' && u.department !== departmentFilter) return false;
+    return true;
+  });
+
+  const filterDropdowns = (
+    <>
+      <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <SelectTrigger className="h-8 w-[140px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Status</SelectItem>
+          <SelectItem value="active">Active</SelectItem>
+          <SelectItem value="inactive">Inactive</SelectItem>
+          <SelectItem value="pending">Pending</SelectItem>
+        </SelectContent>
+      </Select>
+      <Select value={roleFilter} onValueChange={setRoleFilter}>
+        <SelectTrigger className="h-8 w-[140px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Roles</SelectItem>
+          <SelectItem value="Admin">Admin</SelectItem>
+          <SelectItem value="Manager">Manager</SelectItem>
+          <SelectItem value="User">User</SelectItem>
+        </SelectContent>
+      </Select>
+      <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+        <SelectTrigger className="h-8 w-[160px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Departments</SelectItem>
+          <SelectItem value="Engineering">Engineering</SelectItem>
+          <SelectItem value="Design">Design</SelectItem>
+          <SelectItem value="Marketing">Marketing</SelectItem>
+          <SelectItem value="Sales">Sales</SelectItem>
+          <SelectItem value="Product">Product</SelectItem>
+        </SelectContent>
+      </Select>
+    </>
+  );
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted-foreground">
+        Combine search with dropdown filters for precise results. Active filters appear as chips below.
+      </p>
+      {activeFilters.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          {activeFilters.map((f) => (
+            <Badge key={f.label} variant="secondary" className="gap-1 pr-1">
+              {f.label}
+              <button
+                type="button"
+                onClick={f.clear}
+                className="ml-0.5 rounded-sm hover:bg-muted-foreground/20"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          ))}
+          <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={clearAll}>
+            Clear all
+          </Button>
+        </div>
+      )}
+      <DataTable
+        columns={sortableColumns}
+        data={filtered}
+        searchKey="name"
+        searchPlaceholder="Search by name..."
+        showColumnToggle={false}
+        toolbarContent={filterDropdowns}
+      />
+    </div>
+  );
+}
+
 export const FilteringAndSearch = {
   name: 'Filtering & Search',
-  render: () => (
-    <DataTable
-      columns={sortableColumns}
-      data={sampleUsers}
-      searchKey="name"
-      searchPlaceholder="Search by name..."
-    />
-  ),
+  render: () => <FilteringAndSearchExample />,
 };
 
 // ============================================================================
@@ -454,67 +650,6 @@ export const AdvancedSorting = {
 };
 
 // ============================================================================
-// Column Filters
-// ============================================================================
-
-function ColumnFiltersExample() {
-  const [roleFilter, setRoleFilter] = React.useState('all');
-  const [statusFilter, setStatusFilter] = React.useState('all');
-
-  const filtered = sampleUsers.filter((u) => {
-    if (roleFilter !== 'all' && u.role !== roleFilter) return false;
-    if (statusFilter !== 'all' && u.status !== statusFilter) return false;
-    return true;
-  });
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <Label className="text-sm">Role</Label>
-          <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger className="h-8 w-[130px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Roles</SelectItem>
-              <SelectItem value="Admin">Admin</SelectItem>
-              <SelectItem value="Manager">Manager</SelectItem>
-              <SelectItem value="User">User</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center gap-2">
-          <Label className="text-sm">Status</Label>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="h-8 w-[130px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        {(roleFilter !== 'all' || statusFilter !== 'all') && (
-          <Button variant="ghost" size="sm" onClick={() => { setRoleFilter('all'); setStatusFilter('all'); }}>
-            Clear filters
-          </Button>
-        )}
-      </div>
-      <DataTable columns={sortableColumns} data={filtered} showColumnToggle={false} />
-    </div>
-  );
-}
-
-export const ColumnFilters = {
-  name: 'Column Filters',
-  render: () => <ColumnFiltersExample />,
-};
-
-// ============================================================================
 // Export Functionality
 // ============================================================================
 
@@ -537,27 +672,30 @@ function ExportExample() {
     ...sortableColumns,
   ];
 
+  const exportButton = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Download className="mr-2 h-4 w-4" />
+          Export
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuLabel>Export As</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => handleExport('csv')}>CSV</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleExport('tsv')}>TSV</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">Select rows and export, or export all data.</p>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Download className="mr-2 h-4 w-4" />
-              Export
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuLabel>Export As</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleExport('csv')}>CSV</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleExport('tsv')}>TSV</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <DataTable columns={columns} data={sampleUsers} searchKey="name" />
-    </div>
+    <DataTable
+      columns={columns}
+      data={sampleUsers}
+      searchKey="name"
+      toolbarContent={exportButton}
+    />
   );
 }
 

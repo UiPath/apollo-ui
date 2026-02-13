@@ -16,5 +16,8 @@
  * - `'light'`        — Future light theme
  * - `'legacy-dark'`  — Legacy dark theme (backward-compatible)
  * - `'legacy-light'` — Legacy light theme (backward-compatible)
+ * - `'wireframe'`    — Demo: low-fidelity wireframe theme (may be removed)
+ * - `'vertex'`       — Demo: Apollo Vertex dark palette (may be removed)
+ * - `'canvas'`       — Demo: Apollo React / MUI dark palette (may be removed)
  */
-export type FutureTheme = 'dark' | 'light' | 'legacy-dark' | 'legacy-light';
+export type FutureTheme = 'dark' | 'light' | 'legacy-dark' | 'legacy-light' | 'wireframe' | 'vertex' | 'canvas';

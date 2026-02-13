@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Canvas } from '@/components/custom/canvas';
-import { PropertiesBar } from '@/components/custom/flow-properties-bar';
-import { PropertiesExpanded } from '@/components/custom/flow-properties-expanded';
+import { FlowProperties } from '@/components/custom/flow-properties';
 import type {
   PropertiesSimpleField,
   PropertiesSimpleSection,
@@ -15,7 +14,7 @@ import {
 } from '@/components/custom/panel-flow';
 import { FlowCanvasToolbar } from '@/components/custom/toolbar-canvas';
 import { FlowViewToolbar } from '@/components/custom/toolbar-view';
-import { useViewportAtOrAbove, ViewportGuard } from '@/components/ui/viewport-guard';
+import { useViewportAtOrAbove, ViewportGuard } from '@/components/custom/viewport-guard';
 import type { FutureTheme } from '@/foundation/Future/types';
 import { fontFamily } from '@/foundation/Future/typography';
 import { cn } from '@/lib';
@@ -92,8 +91,8 @@ export interface FlowTemplateProps {
  * Composed of:
  * - **FlowPanel** — 60px icon rail + optional 420px expanded chat panel
  * - **Canvas** — main content area (reuses Delegate Canvas)
- * - **PropertiesBar** — collapsed bar top-right of canvas (default)
- * - **PropertiesExpanded** — full properties panel on the right (when expanded)
+ * - **FlowProperties** (collapsed) — bar top-right of canvas (default)
+ * - **FlowProperties** (expanded) — full properties panel on the right (when expanded)
  * - **FlowCanvasToolbar** — bottom-center of canvas
  * - **FlowViewToolbar** — bottom-right of canvas
  */
@@ -128,9 +127,15 @@ export function FlowTemplate({
       ? 'legacy-dark'
       : theme === 'legacy-light'
         ? 'legacy-light'
-        : theme === 'light'
-          ? 'future-light'
-          : 'future-dark';
+        : theme === 'wireframe'
+          ? 'future-wireframe'
+          : theme === 'vertex'
+            ? 'future-vertex'
+            : theme === 'canvas'
+              ? 'future-canvas'
+              : theme === 'light'
+                ? 'future-light'
+                : 'future-dark';
   React.useEffect(() => {
     document.body.classList.add(themeClass);
     return () => {
@@ -183,9 +188,15 @@ export function FlowTemplate({
             ? 'legacy-dark'
             : theme === 'legacy-light'
               ? 'legacy-light'
-              : theme === 'light'
-                ? 'future-light'
-                : 'future-dark',
+              : theme === 'wireframe'
+                ? 'future-wireframe'
+                : theme === 'vertex'
+                  ? 'future-vertex'
+                  : theme === 'canvas'
+                    ? 'future-canvas'
+                    : theme === 'light'
+                      ? 'future-light'
+                      : 'future-dark',
           'flex h-screen bg-future-surface',
           className
         )}
@@ -205,7 +216,12 @@ export function FlowTemplate({
           {/* Properties: collapsed bar (default) — hidden when expanded or simple panel is shown */}
           {!propsExpanded && !propsSimpleOpen && (
             <div className="absolute right-4 top-4 z-10 w-[680px] max-w-[calc(100%-32px)]">
-              <PropertiesBar flowName={flowName} flowType={flowType} onExpand={openPropsExpanded} />
+              <FlowProperties
+                expanded={false}
+                flowName={flowName}
+                flowType={flowType}
+                onExpand={openPropsExpanded}
+              />
             </div>
           )}
 
@@ -235,8 +251,9 @@ export function FlowTemplate({
         {/* Properties expanded panel — right side */}
         {propsExpanded && (
           <div className="shrink-0 p-4 pl-0">
-            <PropertiesExpanded
+            <FlowProperties
               className="h-full"
+              expanded
               nodeName={propertiesNodeName}
               nodeType={propertiesNodeType}
               onClose={() => setPropsExpanded(false)}

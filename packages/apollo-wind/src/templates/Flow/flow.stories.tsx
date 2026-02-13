@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { FlowPanelChatMessage } from '@/components/custom/panel-flow';
 import { FlowTemplate } from './template-flow';
 import type { PropertiesSimpleField, PropertiesSimpleSection } from './template-flow';
-import { FlowNode } from '@/components/custom/flow-node';
-import type { FlowPanelChatMessage } from '@/components/custom/panel-flow';
 
 const meta = {
   title: 'Templates/Flow',
@@ -34,19 +33,14 @@ const chatMessages: FlowPanelChatMessage[] = [
   },
 ];
 
-export const ChatResponse: Story = {
-  name: 'Chat Response',
+export const LeftPanelExpanded: Story = {
+  name: 'Left panel expanded',
   render: (_, { globals }) => (
     <FlowTemplate
       theme={globals.futureTheme || 'dark'}
       defaultPanelOpen
       chatMessages={chatMessages}
-    >
-      {/* Node centered on the canvas */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <FlowNode title="Node title" />
-      </div>
-    </FlowTemplate>
+    />
   ),
 };
 
@@ -145,12 +139,7 @@ export const PropertiesSimple: Story = {
       propertiesSimpleTitle="HTTP Request"
       propertiesSimpleFields={simpleFields}
       propertiesSimpleSections={simpleSections}
-    >
-      {/* Node positioned left-center on the canvas */}
-      <div className="absolute inset-0 flex items-center justify-start pl-16">
-        <FlowNode title="HTTP Request" />
-      </div>
-    </FlowTemplate>
+    />
   ),
 };
 
@@ -160,11 +149,6 @@ export const Properties: Story = {
     <FlowTemplate
       theme={globals.futureTheme || 'dark'}
       defaultPropertiesExpanded
-    >
-      {/* Node positioned left-center on the canvas */}
-      <div className="absolute inset-0 flex items-center justify-start pl-16">
-        <FlowNode title="Node title" />
-      </div>
-    </FlowTemplate>
+    />
   ),
 };

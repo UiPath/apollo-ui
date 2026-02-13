@@ -61,7 +61,7 @@ function HeaderDivider() {
 function StatusBadge({ label }: { label: string }) {
   return (
     <div className="flex h-10 items-center rounded-xl bg-future-accent-subtle px-4 py-2">
-      <span className="text-sm font-bold leading-5 text-future-accent-foreground-muted">
+      <span className="text-sm font-bold leading-5 text-future-foreground-accent-muted">
         {label}
       </span>
     </div>

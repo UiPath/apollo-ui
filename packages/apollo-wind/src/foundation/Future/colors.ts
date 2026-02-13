@@ -70,8 +70,8 @@ export const accent = {
  * | foregroundSubtle       | text-future-foreground-subtle         | zinc-500 #71717a  | zinc-400 #a1a1aa  | Muted, labels             |
  * | foregroundInverse      | text-future-foreground-inverse        | zinc-950 #09090b  | white   #ffffff   | Icons on inverse bg       |
  * | foregroundOnAccent     | text-future-foreground-on-accent      | white   #ffffff   | white   #ffffff   | On primary buttons        |
- * | accentForeground       | text-future-accent-foreground         | cyan-500 #06b6d4  | cyan-600 #0891b2  | Flow/node icons           |
- * | accentForegroundMuted  | text-future-accent-foreground-muted   | cyan-400 #22d3ee  | cyan-600 #0891b2  | Status text               |
+ * | foregroundAccent       | text-future-foreground-accent         | cyan-500 #06b6d4  | cyan-600 #0891b2  | Flow/node icons           |
+ * | foregroundAccentMuted  | text-future-foreground-accent-muted   | cyan-400 #22d3ee  | cyan-600 #0891b2  | Status text               |
  */
 export const foreground = {
   foreground: 'text-future-foreground',
@@ -81,8 +81,8 @@ export const foreground = {
   foregroundSubtle: 'text-future-foreground-subtle',
   foregroundInverse: 'text-future-foreground-inverse',
   foregroundOnAccent: 'text-future-foreground-on-accent',
-  accentForeground: 'text-future-accent-foreground',
-  accentForegroundMuted: 'text-future-accent-foreground-muted',
+  foregroundAccent: 'text-future-foreground-accent',
+  foregroundAccentMuted: 'text-future-foreground-accent-muted',
 } as const;
 
 // =============================================================================
