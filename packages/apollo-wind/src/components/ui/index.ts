@@ -47,7 +47,15 @@ export * from './switch';
 export * from './table';
 export * from './tabs';
 export * from './textarea';
+export { default as TreeView } from './tree-view';
+export type {
+  TreeViewItem,
+  TreeViewItemAction,
+  TreeViewIconMap,
+  TreeViewMenuItem,
+  TreeViewProps,
+  TreeViewSelectionMode,
+} from './tree-view';
 export * from './toggle-group';
 export * from './toggle';
 export * from './tooltip';
-export * from './viewport-guard';

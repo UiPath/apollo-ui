@@ -281,7 +281,7 @@ const ICON_CATEGORIES = [
 const TOTAL_ICONS = ICON_CATEGORIES.reduce((sum, cat) => sum + cat.icons.length, 0);
 
 const meta = {
-  title: 'Theme/Legacy/Icons',
+  title: 'Theme/Icons',
   parameters: {
     layout: 'fullscreen',
   },

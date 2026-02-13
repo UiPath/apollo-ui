@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Badge } from '@/components/ui/badge';
 
 const meta = {
-  title: 'Theme/Legacy/Typography',
+  title: 'Theme/Typography',
   parameters: {
     layout: 'fullscreen',
   },

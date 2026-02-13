@@ -27,12 +27,12 @@
   /* zinc-700  — hover, selected nav */
   --color-future-surface-muted: #71717a;
   /* zinc-500  — badges, indicators */
-  --color-future-surface-inverse: #ffffff;
-  /* white     — buttons on dark bg */
+  --color-future-surface-inverse: #fafafa;
+  /* zinc-50   — buttons on dark bg */
 
   /* ── Accent ───────────────────────────────────────────────────────────── */
-  --color-future-accent: #06b6d4;
-  /* cyan-500  — logo, submit, run */
+  --color-future-accent: #0891b2;
+  /* cyan-600  — logo, submit, run */
   --color-future-accent-subtle: #083344;
   /* cyan-950  — status badge, active nav */
 
@@ -49,11 +49,11 @@
   /* zinc-500  — labels, muted */
   --color-future-foreground-inverse: #09090b;
   /* zinc-950  — icons on light bg */
-  --color-future-foreground-on-accent: #ffffff;
-  /* white     — text on accent bg */
-  --color-future-accent-foreground: #06b6d4;
-  /* cyan-500  — accent text */
-  --color-future-accent-foreground-muted: #22d3ee;
+  --color-future-foreground-on-accent: #fafafa;
+  /* zinc-50   — text on accent bg */
+  --color-future-foreground-accent: #0891b2;
+  /* cyan-600  — accent text */
+  --color-future-foreground-accent-muted: #22d3ee;
   /* cyan-400 — muted accent text */
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
@@ -105,7 +105,8 @@
   --color-accent: var(--color-future-surface-hover);
   --color-accent-foreground: var(--color-future-foreground);
   --color-destructive: #ef4444;
-  --color-destructive-foreground: #ffffff;
+  --color-destructive-foreground: #fafafa;
+  /* zinc-50   — text on destructive bg */
   --color-border: var(--color-future-border);
   --color-border-de-emp: var(--color-future-border-subtle);
   --color-input: var(--color-future-border);
@@ -118,22 +119,22 @@
 
 .future-light {
   /* ── Surfaces ─────────────────────────────────────────────────────────── */
-  --color-future-surface: #ffffff;
-  /* white     — page / canvas */
-  --color-future-surface-raised: #fafafa;
-  /* zinc-50   — cards, overlays, panels */
-  --color-future-surface-overlay: #f4f4f5;
-  /* zinc-100  — panels, inputs, tabs */
-  --color-future-surface-hover: #e4e4e7;
-  /* zinc-200  — hover, selected nav */
+  --color-future-surface: #fafafa;
+  /* zinc-50   — page / canvas */
+  --color-future-surface-raised: #f4f4f5;
+  /* zinc-100  — Properties bar & panel (Flow); cards, overlays, panels */
+  --color-future-surface-overlay: #e4e4e7;
+  /* zinc-200  — Left panel (Flow, Delegate); panels, inputs, tabs */
+  --color-future-surface-hover: #d4d4d8;
+  /* zinc-300  — hover, selected nav */
   --color-future-surface-muted: #a1a1aa;
   /* zinc-400  — badges, indicators */
   --color-future-surface-inverse: #09090b;
   /* zinc-950  — buttons on light bg */
 
   /* ── Accent ───────────────────────────────────────────────────────────── */
-  --color-future-accent: #06b6d4;
-  /* cyan-500  — unchanged */
+  --color-future-accent: #0891b2;
+  /* cyan-600  — logo, submit, run */
   --color-future-accent-subtle: #ecfeff;
   /* cyan-50   — status badge, active nav */
 
@@ -148,13 +149,13 @@
   /* zinc-500  — nav, secondary UI */
   --color-future-foreground-subtle: #a1a1aa;
   /* zinc-400  — labels, muted */
-  --color-future-foreground-inverse: #ffffff;
-  /* white     — icons on dark bg */
-  --color-future-foreground-on-accent: #ffffff;
-  /* white     — text on accent bg (unchanged) */
-  --color-future-accent-foreground: #0891b2;
+  --color-future-foreground-inverse: #fafafa;
+  /* zinc-50   — icons on dark bg */
+  --color-future-foreground-on-accent: #fafafa;
+  /* zinc-50   — text on accent bg */
+  --color-future-foreground-accent: #0891b2;
   /* cyan-600  — accent text */
-  --color-future-accent-foreground-muted: #0891b2;
+  --color-future-foreground-accent-muted: #0891b2;
   /* cyan-600 — muted accent text */
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
@@ -178,19 +179,297 @@
   /* ── Gradients ───────────────────────────────────────────────────────── */
   --gradient-future-1: linear-gradient(127deg, #e4e4e7 25.94%, #f4f4f5 74.06%);
   /* zinc-200 → zinc-100 */
-  --gradient-future-2: linear-gradient(128deg, #ffffff 1.26%, #fafafa 52.69%);
-  /* white → zinc-50 */
+  --gradient-future-2: linear-gradient(128deg, #fafafa 1.26%, #fafafa 52.69%);
+  /* zinc-50 → zinc-50 */
   --gradient-future-3: linear-gradient(128deg, #e4e4e7 1.26%, #fafafa 52.69%);
   /* zinc-200 → zinc-50 */
   --gradient-future-4: linear-gradient(180deg, #fafafa 0%, #f4f4f5 100%);
   /* zinc-50 → zinc-100 */
-  --gradient-future-5: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
-  /* white → zinc-50 */
+  --gradient-future-5: linear-gradient(180deg, #fafafa 0%, #fafafa 100%);
+  /* zinc-50 → zinc-50 */
   --gradient-future-6: linear-gradient(106deg, #22d3ee 28.08%, #cffafe 71.92%);
   /* cyan-400 → cyan-100 */
 
   /* ── shadcn bridge — maps standard variables so shadcn components
        (DataTable, Input, Button, etc.) inherit Future theme colors ────── */
+  --color-background: var(--color-future-surface);
+  --color-foreground: var(--color-future-foreground);
+  --color-card: var(--color-future-surface-raised);
+  --color-card-foreground: var(--color-future-foreground);
+  --color-popover: var(--color-future-surface-raised);
+  --color-popover-foreground: var(--color-future-foreground);
+  --color-primary: var(--color-future-accent);
+  --color-primary-foreground: var(--color-future-foreground-on-accent);
+  --color-secondary: var(--color-future-surface-overlay);
+  --color-secondary-foreground: var(--color-future-foreground);
+  --color-muted: var(--color-future-surface-overlay);
+  --color-muted-foreground: var(--color-future-foreground-muted);
+  --color-accent: var(--color-future-surface-hover);
+  --color-accent-foreground: var(--color-future-foreground);
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #fafafa;
+  /* zinc-50   — text on destructive bg */
+  --color-border: var(--color-future-border);
+  --color-border-de-emp: var(--color-future-border-subtle);
+  --color-input: var(--color-future-border);
+  --color-ring: var(--color-future-ring);
+}
+
+/* ============================================================================
+ * Wireframe theme (low-fidelity prototyping)
+ *
+ * Intentionally flat, no accent color, dashed borders. Designed to look like
+ * a quick sketch or blueprint so stakeholders focus on layout, not polish.
+ * ============================================================================ */
+
+.future-wireframe {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --color-future-surface: #ffffff;
+  --color-future-surface-raised: #f9fafb;
+  --color-future-surface-overlay: #f3f4f6;
+  --color-future-surface-hover: #e5e7eb;
+  --color-future-surface-muted: #d1d5db;
+  --color-future-surface-inverse: #374151;
+
+  /* ── Accent (deliberately muted — no brand color) ──────────────────── */
+  --color-future-accent: #6b7280;
+  --color-future-accent-subtle: #f3f4f6;
+
+  /* ── Foreground ─────────────────────────────────────────────────────── */
+  --color-future-foreground: #1f2937;
+  --color-future-foreground-secondary: #374151;
+  --color-future-foreground-hover: #4b5563;
+  --color-future-foreground-muted: #6b7280;
+  --color-future-foreground-subtle: #9ca3af;
+  --color-future-foreground-inverse: #ffffff;
+  --color-future-foreground-on-accent: #ffffff;
+  --color-future-foreground-accent: #4b5563;
+  --color-future-foreground-accent-muted: #6b7280;
+
+  /* ── Borders (dashed via utility, but color defined here) ───────────── */
+  --color-future-border: #d1d5db;
+  --color-future-border-subtle: #e5e7eb;
+  --color-future-border-muted: #f3f4f6;
+  --color-future-border-deep: #f9fafb;
+  --color-future-border-inverse: #4b5563;
+  --color-future-border-hover: #9ca3af;
+
+  /* ── Ring ────────────────────────────────────────────────────────────── */
+  --color-future-ring: #9ca3af;
+
+  /* ── Gradients (flat — no gradients in wireframe mode) ──────────────── */
+  --gradient-future-1: none;
+  --gradient-future-2: none;
+  --gradient-future-3: none;
+  --gradient-future-4: none;
+  --gradient-future-5: none;
+  --gradient-future-6: none;
+
+  /* ── shadcn bridge ──────────────────────────────────────────────────── */
+  --color-background: var(--color-future-surface);
+  --color-foreground: var(--color-future-foreground);
+  --color-card: var(--color-future-surface-raised);
+  --color-card-foreground: var(--color-future-foreground);
+  --color-popover: var(--color-future-surface-raised);
+  --color-popover-foreground: var(--color-future-foreground);
+  --color-primary: var(--color-future-accent);
+  --color-primary-foreground: var(--color-future-foreground-on-accent);
+  --color-secondary: var(--color-future-surface-overlay);
+  --color-secondary-foreground: var(--color-future-foreground);
+  --color-muted: var(--color-future-surface-overlay);
+  --color-muted-foreground: var(--color-future-foreground-muted);
+  --color-accent: var(--color-future-surface-hover);
+  --color-accent-foreground: var(--color-future-foreground);
+  --color-destructive: #9ca3af;
+  --color-destructive-foreground: #ffffff;
+  --color-border: var(--color-future-border);
+  --color-border-de-emp: var(--color-future-border-subtle);
+  --color-input: var(--color-future-border);
+  --color-ring: var(--color-future-ring);
+}
+
+/* Wireframe overrides: dashed borders everywhere, reduced rounding */
+.future-wireframe *,
+.future-wireframe *::before,
+.future-wireframe *::after {
+  border-style: dashed !important;
+  box-shadow: none !important;
+}
+
+/* ============================================================================
+ * Vertex theme (demo — Apollo Vertex dark palette)
+ *
+ * Translates the Vertex design language (oklch-based, teal/blue accent)
+ * into Future token slots so templates render with the Vertex look & feel.
+ * Source: apps/apollo-vertex/app/themes.ts  (default.config.dark)
+ * ============================================================================ */
+
+.future-vertex {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --color-future-surface: oklch(0.21 0.03 258.5);
+  /* deep blue-grey — page / canvas */
+  --color-future-surface-raised: oklch(0.233 0.036 254.7);
+  /* slightly lighter — cards, panels */
+  --color-future-surface-overlay: oklch(0.2648 0.0329 254.38);
+  /* muted — inputs, tabs */
+  --color-future-surface-hover: oklch(0.3927 0.0289 240.86);
+  /* secondary — hover, selected nav */
+  --color-future-surface-muted: oklch(0.72 0.03 254.38);
+  /* muted-foreground — badges, indicators */
+  --color-future-surface-inverse: oklch(0.985 0 0);
+  /* foreground — buttons on dark bg */
+
+  /* ── Accent ───────────────────────────────────────────────────────────── */
+  --color-future-accent: oklch(0.692 0.1119 207.06);
+  /* primary — teal */
+  --color-future-accent-subtle: oklch(0.166 0.0283 203.34);
+  /* primary-foreground — deep teal bg */
+
+  /* ── Foreground (text / icons) ────────────────────────────────────────── */
+  --color-future-foreground: oklch(0.985 0 0);
+  /* foreground — primary text */
+  --color-future-foreground-secondary: oklch(0.9525 0.011 225.98);
+  /* card-foreground — body text */
+  --color-future-foreground-hover: oklch(0.9416 0.0145 244.72);
+  /* secondary-foreground — hover states */
+  --color-future-foreground-muted: oklch(0.72 0.03 254.38);
+  /* muted-foreground — nav, secondary UI */
+  --color-future-foreground-subtle: oklch(0.4594 0.028 264.25);
+  /* muted-foreground (light ref) — labels */
+  --color-future-foreground-inverse: oklch(0.21 0.03 258.5);
+  /* background — icons on light bg */
+  --color-future-foreground-on-accent: oklch(0.166 0.0283 203.34);
+  /* primary-foreground — text on accent */
+  --color-future-foreground-accent: oklch(0.692 0.1119 207.06);
+  /* primary — accent text */
+  --color-future-foreground-accent-muted: oklch(0.573 0.114 211.4);
+  /* accent — muted accent text */
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --color-future-border: oklch(0.3068 0.0426 258.29);
+  /* border */
+  --color-future-border-subtle: oklch(0.2648 0.0329 254.38);
+  /* muted — subtle dividers */
+  --color-future-border-muted: oklch(0.233 0.036 254.7);
+  /* card — content borders */
+  --color-future-border-deep: oklch(0.21 0.03 258.5);
+  /* background — nested containers */
+  --color-future-border-inverse: oklch(0.9229 0.0065 252.13);
+  /* light border ref */
+  --color-future-border-hover: oklch(0.3927 0.0289 240.86);
+  /* secondary — border hover */
+
+  /* ── Ring ────────────────────────────────────────────────────────────── */
+  --color-future-ring: oklch(0.692 0.1119 207.06);
+  /* ring — teal focus ring */
+
+  /* ── Gradients (subtle depth) ──────────────────────────────────────── */
+  --gradient-future-1: linear-gradient(127deg, oklch(0.3927 0.0289 240.86) 25.94%, oklch(0.2648 0.0329 254.38) 74.06%);
+  --gradient-future-2: linear-gradient(128deg, oklch(0.21 0.03 258.5) 1.26%, oklch(0.233 0.036 254.7) 52.69%);
+  --gradient-future-3: linear-gradient(128deg, oklch(0.3927 0.0289 240.86) 1.26%, oklch(0.233 0.036 254.7) 52.69%);
+  --gradient-future-4: linear-gradient(180deg, oklch(0.233 0.036 254.7) 0%, oklch(0.2648 0.0329 254.38) 100%);
+  --gradient-future-5: linear-gradient(180deg, oklch(0.21 0.03 258.5) 0%, oklch(0.233 0.036 254.7) 100%);
+  --gradient-future-6: linear-gradient(106deg, oklch(0.692 0.1119 207.06) 28.08%, oklch(0.166 0.0283 203.34) 71.92%);
+
+  /* ── shadcn bridge ──────────────────────────────────────────────────── */
+  --color-background: var(--color-future-surface);
+  --color-foreground: var(--color-future-foreground);
+  --color-card: var(--color-future-surface-raised);
+  --color-card-foreground: var(--color-future-foreground);
+  --color-popover: var(--color-future-surface-raised);
+  --color-popover-foreground: var(--color-future-foreground);
+  --color-primary: var(--color-future-accent);
+  --color-primary-foreground: var(--color-future-foreground-on-accent);
+  --color-secondary: var(--color-future-surface-overlay);
+  --color-secondary-foreground: var(--color-future-foreground);
+  --color-muted: var(--color-future-surface-overlay);
+  --color-muted-foreground: var(--color-future-foreground-muted);
+  --color-accent: var(--color-future-surface-hover);
+  --color-accent-foreground: var(--color-future-foreground);
+  --color-destructive: oklch(0.6542 0.2321 28.66);
+  --color-destructive-foreground: oklch(1 0 89.88);
+  --color-border: var(--color-future-border);
+  --color-border-de-emp: var(--color-future-border-subtle);
+  --color-input: var(--color-future-border);
+  --color-ring: var(--color-future-ring);
+}
+
+/* ============================================================================
+ * Canvas theme (demo — Apollo React / MUI dark palette)
+ *
+ * Maps the classic apollo-react dark theme (apollo-core darkPalette) into
+ * Future token slots. Dark blue-grey base with UiPath orange accent.
+ * Source: packages/apollo-core/src/tokens/jss/palette.ts  (darkPalette)
+ * ============================================================================ */
+
+.future-canvas {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --color-future-surface: #182027;
+  /* ColorBackgroundDark — page / canvas */
+  --color-future-surface-raised: #273139;
+  /* ColorBackgroundSecondaryDark — cards, panels */
+  --color-future-surface-overlay: #334049;
+  /* mid-tone — inputs, tabs */
+  --color-future-surface-hover: #3e4e58;
+  /* hover, selected nav */
+  --color-future-surface-muted: #8a97a0;
+  /* ColorBorderDark — badges, indicators */
+  --color-future-surface-inverse: #f8f9fa;
+  /* ColorBackgroundInverseDark — buttons on dark bg */
+
+  /* ── Accent (UiPath orange) ────────────────────────────────────────── */
+  --color-future-accent: #fa4616;
+  /* ColorOrange500 — primary brand */
+  --color-future-accent-subtle: #3c2a1e;
+  /* dark warm tone — active nav bg */
+
+  /* ── Foreground (text / icons) ────────────────────────────────────────── */
+  --color-future-foreground: #f8f9fa;
+  /* ColorForegroundEmpDark — primary text */
+  --color-future-foreground-secondary: #f4f5f7;
+  /* ColorForegroundDark — body text */
+  --color-future-foreground-hover: #cfd8dd;
+  /* ColorForegroundDeEmpDark — hover states */
+  --color-future-foreground-muted: #a4b1b8;
+  /* ColorForegroundDisableDark — nav, secondary UI */
+  --color-future-foreground-subtle: #8a97a0;
+  /* ColorBorderDark — labels, muted */
+  --color-future-foreground-inverse: #182027;
+  /* ColorForegroundInverseDark — icons on light bg */
+  --color-future-foreground-on-accent: #ffffff;
+  /* white — text on accent bg */
+  --color-future-foreground-accent: #fa4616;
+  /* ColorOrange500 — accent text */
+  --color-future-foreground-accent-muted: #ff8f70;
+  /* ColorSelectionDark — muted accent text */
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --color-future-border: #526069;
+  /* ColorBorderDeEmpDark */
+  --color-future-border-subtle: #3e4e58;
+  /* mid border */
+  --color-future-border-muted: #273139;
+  /* ColorBackgroundSecondaryDark — content borders */
+  --color-future-border-deep: #182027;
+  /* ColorBackgroundDark — nested containers */
+  --color-future-border-inverse: #cfd8dd;
+  /* ColorForegroundDeEmpDark — borders on inverse bg */
+  --color-future-border-hover: #8a97a0;
+  /* ColorBorderDark — border hover */
+
+  /* ── Ring ────────────────────────────────────────────────────────────── */
+  --color-future-ring: #fa4616;
+  /* orange focus ring */
+
+  /* ── Gradients ────────────────────────────────────────────────────────── */
+  --gradient-future-1: linear-gradient(127deg, #3e4e58 25.94%, #334049 74.06%);
+  --gradient-future-2: linear-gradient(128deg, #182027 1.26%, #273139 52.69%);
+  --gradient-future-3: linear-gradient(128deg, #3e4e58 1.26%, #273139 52.69%);
+  --gradient-future-4: linear-gradient(180deg, #273139 0%, #334049 100%);
+  --gradient-future-5: linear-gradient(180deg, #182027 0%, #273139 100%);
+  --gradient-future-6: linear-gradient(106deg, #fa4616 28.08%, #3c2a1e 71.92%);
+
+  /* ── shadcn bridge ──────────────────────────────────────────────────── */
   --color-background: var(--color-future-surface);
   --color-foreground: var(--color-future-foreground);
   --color-card: var(--color-future-surface-raised);
@@ -243,8 +522,8 @@
   --color-future-foreground-subtle: var(--color-future-foreground-subtle);
   --color-future-foreground-inverse: var(--color-future-foreground-inverse);
   --color-future-foreground-on-accent: var(--color-future-foreground-on-accent);
-  --color-future-accent-foreground: var(--color-future-accent-foreground);
-  --color-future-accent-foreground-muted: var(--color-future-accent-foreground-muted);
+  --color-future-foreground-accent: var(--color-future-foreground-accent);
+  --color-future-foreground-accent-muted: var(--color-future-foreground-accent-muted);
 
   /* Borders */
   --color-future-border: var(--color-future-border);

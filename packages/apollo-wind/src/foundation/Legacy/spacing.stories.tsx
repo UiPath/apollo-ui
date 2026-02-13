@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Badge } from '@/components/ui/badge';
 
 const meta = {
-  title: 'Theme/Legacy/Spacing',
+  title: 'Theme/Spacing',
   parameters: {
     layout: 'fullscreen',
   },

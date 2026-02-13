@@ -1,7 +1,7 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { cn } from '@/lib';
 import { fontFamily } from './typography';
-import { spacing, spacingHalf, spacingArbitrary } from './spacing';
 
 // ============================================================================
 // Meta
@@ -18,22 +18,132 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // ============================================================================
-// Helpers
+// Token data
 // ============================================================================
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <h2
-      className="mb-6 text-2xl font-bold tracking-tight text-future-foreground"
-      style={{ fontFamily: fontFamily.base }}
-    >
-      {children}
-    </h2>
-  );
+interface SpacingToken {
+  token: string;
+  px: number;
+  twClass: string;
+  usage: string;
 }
 
-function Divider() {
-  return <div className="my-10 h-px bg-future-border-subtle" />;
+interface SpacingGroup {
+  group: string;
+  description?: string;
+  tokens: SpacingToken[];
+}
+
+const spacingGroups: SpacingGroup[] = [
+  {
+    group: 'Scale',
+    description: 'Tailwind spacing scale (1 unit = 4px)',
+    tokens: [
+      { token: '0', px: 0, twClass: 'p-0', usage: 'Reset padding' },
+      { token: '1', px: 4, twClass: 'p-1, gap-1', usage: 'Tight padding' },
+      { token: '2', px: 8, twClass: 'p-2, gap-2', usage: 'Default gaps' },
+      { token: '3', px: 12, twClass: 'px-3, py-3', usage: 'Inline padding' },
+      { token: '4', px: 16, twClass: 'p-4, gap-4', usage: 'Content padding' },
+      { token: '5', px: 20, twClass: 'py-5', usage: 'Section padding' },
+      { token: '6', px: 24, twClass: 'gap-6, px-6', usage: 'Large gaps' },
+      { token: '7', px: 28, twClass: 'gap-7', usage: 'Chat message gap (Flow)' },
+      { token: '8', px: 32, twClass: 'gap-8', usage: 'Section gaps' },
+      { token: '10', px: 40, twClass: 'px-10', usage: 'Page horizontal padding' },
+    ],
+  },
+  {
+    group: 'Half units',
+    description: 'Fractional spacing for tighter control',
+    tokens: [
+      { token: '0.5', px: 2, twClass: 'gap-0.5', usage: 'Tight gaps' },
+      { token: '2.5', px: 10, twClass: 'pt-2.5', usage: 'Node card padding, toolbar' },
+    ],
+  },
+  {
+    group: 'Arbitrary',
+    description: 'Custom values outside the Tailwind scale, used via bracket notation',
+    tokens: [
+      { token: '15', px: 15, twClass: 'gap-[15px]', usage: 'Flow node gap' },
+      { token: '18', px: 18, twClass: 'gap-[18px], pt-[18px]', usage: 'Delegate layout gaps' },
+      { token: '20', px: 20, twClass: 'mt-20', usage: 'Delegate top margin' },
+      { token: '37', px: 37, twClass: 'gap-[37px]', usage: 'Delegate section gap' },
+      { token: '60', px: 60, twClass: 'w-[60px], h-[60px]', usage: 'Panel icon rail' },
+      { token: '78', px: 78, twClass: 'min-h-[78px]', usage: 'Delegate card min-height' },
+      { token: '124', px: 124, twClass: 'min-h-[124px]', usage: 'Delegate card min-height' },
+      { token: '360', px: 360, twClass: 'w-[360px], h-[360px]', usage: 'Flow node size' },
+      { token: '420', px: 420, twClass: 'w-[420px]', usage: 'Flow expanded panel width' },
+      { token: '680', px: 680, twClass: 'max-w-[680px]', usage: 'Properties bar max-width' },
+      { token: '800', px: 800, twClass: 'max-w-[800px]', usage: 'Delegate content max-width' },
+      { token: '930', px: 930, twClass: 'w-[930px]', usage: 'Properties expanded panel' },
+    ],
+  },
+];
+
+// ============================================================================
+// Table component
+// ============================================================================
+
+function SpacingTable({ groups }: { groups: SpacingGroup[] }) {
+  return (
+    <div className="overflow-hidden rounded-lg border border-future-border">
+      <table className="w-full text-sm" style={{ fontFamily: fontFamily.base }}>
+        <thead>
+          <tr className="border-b border-future-border bg-future-surface-overlay">
+            <th className="px-4 py-2.5 text-left font-medium text-future-foreground-muted">Token</th>
+            <th className="px-4 py-2.5 text-right font-medium text-future-foreground-muted">px</th>
+            <th className="px-4 py-2.5 text-left font-medium text-future-foreground-muted">Tailwind Class</th>
+            <th className="px-4 py-2.5 text-left font-medium text-future-foreground-muted">Usage</th>
+            <th className="px-4 py-2.5 text-left font-medium text-future-foreground-muted">Preview</th>
+          </tr>
+        </thead>
+        <tbody>
+          {groups.map((group) => (
+            <React.Fragment key={group.group}>
+              <tr className="border-b border-future-border bg-future-surface-raised/50">
+                <td
+                  colSpan={5}
+                  className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-future-foreground-muted"
+                >
+                  {group.group}
+                  {group.description && (
+                    <span className="ml-2 font-normal normal-case tracking-normal text-future-foreground-subtle">
+                      — {group.description}
+                    </span>
+                  )}
+                </td>
+              </tr>
+              {group.tokens.map((token) => (
+                <tr key={token.token} className="border-b border-future-border-subtle last:border-b-0">
+                  <td className="px-4 py-2">
+                    <code className="text-xs text-future-accent-foreground" style={{ fontFamily: fontFamily.monospace }}>
+                      {token.token}
+                    </code>
+                  </td>
+                  <td className="px-4 py-2 text-right">
+                    <code className="text-xs tabular-nums text-future-foreground-muted" style={{ fontFamily: fontFamily.monospace }}>
+                      {token.px}
+                    </code>
+                  </td>
+                  <td className="px-4 py-2">
+                    <code className="text-xs text-future-foreground-subtle" style={{ fontFamily: fontFamily.monospace }}>
+                      {token.twClass}
+                    </code>
+                  </td>
+                  <td className="px-4 py-2 text-future-foreground-muted">{token.usage}</td>
+                  <td className="px-4 py-2">
+                    <div
+                      className="h-4 rounded bg-future-accent/60"
+                      style={{ width: `${Math.min(token.px, 120)}px`, minWidth: token.px > 0 ? '2px' : '0px' }}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </React.Fragment>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 // ============================================================================
@@ -44,100 +154,23 @@ export const Default: Story = {
   render: (_, { globals }) => (
     <div
       className={cn(
-        globals.futureTheme === 'light' ? 'future-light' : 'future-dark',
+        ({ light: 'future-light', 'legacy-dark': 'legacy-dark', 'legacy-light': 'legacy-light', wireframe: 'future-wireframe', vertex: 'future-vertex', canvas: 'future-canvas' } as Record<string, string>)[globals.futureTheme] ?? 'future-dark',
         'min-h-screen w-full bg-future-surface'
       )}
       style={{ fontFamily: fontFamily.base }}
     >
-      <div className="mx-auto max-w-3xl space-y-2 p-8">
-      {/* ------------------------------------------------------------------ */}
-      {/* Spacing scale */}
-      {/* ------------------------------------------------------------------ */}
-      <SectionTitle>Spacing (Tailwind scale)</SectionTitle>
+      <div className="mx-auto max-w-5xl space-y-10 p-8">
+        <div>
+          <h1 className="mb-2 text-3xl font-bold tracking-tight text-future-foreground">
+            Spacing Tokens
+          </h1>
+          <p className="text-sm text-future-foreground-muted">
+            All spacing values used in Future templates. Scale tokens map to Tailwind's built-in spacing utilities.
+            Arbitrary values use bracket notation.
+          </p>
+        </div>
 
-      <div className="flex flex-col gap-4">
-        {Object.entries(spacing).map(([key, px]) => (
-          <div
-            key={key}
-            className="flex items-center gap-6 border-b border-future-border-subtle py-3"
-          >
-            <code className="w-48 shrink-0 text-sm font-medium text-future-accent-foreground-muted">
-              spacing.{key}
-            </code>
-            <span className="w-16 shrink-0 text-sm tabular-nums text-future-foreground-muted">
-              {px}px
-            </span>
-            <span className="text-xs text-future-foreground-subtle">
-              p-{key}, gap-{key}, etc.
-            </span>
-            <div
-              className="rounded bg-future-surface-hover"
-              style={{ width: `${px}px`, height: '24px' }}
-            />
-          </div>
-        ))}
-      </div>
-
-      <Divider />
-
-      {/* ------------------------------------------------------------------ */}
-      {/* Half spacing */}
-      {/* ------------------------------------------------------------------ */}
-      <SectionTitle>Spacing (half units)</SectionTitle>
-
-      <div className="flex flex-col gap-4">
-        {Object.entries(spacingHalf).map(([key, px]) => (
-          <div
-            key={key}
-            className="flex items-center gap-6 border-b border-future-border-subtle py-3"
-          >
-            <code className="w-48 shrink-0 text-sm font-medium text-future-accent-foreground-muted">
-              spacingHalf.{key}
-            </code>
-            <span className="w-16 shrink-0 text-sm tabular-nums text-future-foreground-muted">
-              {px}px
-            </span>
-            <span className="text-xs text-future-foreground-subtle">gap-{key}</span>
-            <div
-              className="rounded bg-future-surface-hover"
-              style={{ width: `${px}px`, height: '24px' }}
-            />
-          </div>
-        ))}
-      </div>
-
-      <Divider />
-
-      {/* ------------------------------------------------------------------ */}
-      {/* Arbitrary spacing */}
-      {/* ------------------------------------------------------------------ */}
-      <SectionTitle>Spacing (arbitrary)</SectionTitle>
-
-      <div className="flex flex-col gap-4">
-        {Object.entries(spacingArbitrary).map(([key, px]) => (
-          <div
-            key={key}
-            className="flex items-center gap-6 border-b border-future-border-subtle py-3"
-          >
-            <code className="w-48 shrink-0 text-sm font-medium text-future-accent-foreground-muted">
-              spacingArbitrary.{key}
-            </code>
-            <span className="w-16 shrink-0 text-sm tabular-nums text-future-foreground-muted">
-              {px}px
-            </span>
-            <span className="text-xs text-future-foreground-subtle">
-              {Number(px) <= 124 ? `h-[${px}px], gap-[${px}px], etc.` : `max-w-[${px}px]`}
-            </span>
-            <div
-              className="rounded bg-future-surface-hover"
-              style={{
-                width: `${Math.min(px, 120)}px`,
-                height: '24px',
-              }}
-            />
-          </div>
-        ))}
-      </div>
+        <SpacingTable groups={spacingGroups} />
       </div>
     </div>
   ),

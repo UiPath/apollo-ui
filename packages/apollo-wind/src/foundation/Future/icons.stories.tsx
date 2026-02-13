@@ -15,7 +15,7 @@ export const Default: Story = {
   render: (_, { globals }) => (
     <div
       className={cn(
-        globals.futureTheme === 'light' ? 'future-light' : 'future-dark',
+        ({ light: 'future-light', 'legacy-dark': 'legacy-dark', 'legacy-light': 'legacy-light', wireframe: 'future-wireframe', vertex: 'future-vertex', canvas: 'future-canvas' } as Record<string, string>)[globals.futureTheme] ?? 'future-dark',
         'flex min-h-screen w-full items-center justify-center bg-future-surface text-future-foreground-muted'
       )}
     >

@@ -22,7 +22,7 @@ import {
   YAxis,
 } from 'recharts';
 
-import { MaestroTemplate } from '../Maestro/template-maestro';
+import { MaestroTemplate } from './template-maestro';
 import {
   Card,
   CardContent,
@@ -38,13 +38,14 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from '@/components/ui/chart';
+import { Separator } from '@/components/ui/separator';
 
 // ============================================================================
 // Meta
 // ============================================================================
 
 const meta = {
-  title: 'Experiments/Visualization',
+  title: 'Templates/Maestro',
   parameters: {
     layout: 'fullscreen',
   },
@@ -808,6 +809,78 @@ function TooltipShowcase() {
 }
 
 // ============================================================================
+// Panel chart examples (compact for left/right panels)
+// ============================================================================
+
+function LeftPanelCharts() {
+  return (
+    <div className="flex flex-col gap-4 p-6">
+      <div>
+        <p className="mb-2 text-xs font-medium text-future-foreground-muted">Traffic sources</p>
+        <ChartContainer config={pieSimpleConfig} className="aspect-square max-h-[120px] w-full">
+          <PieChart>
+            <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+            <Pie
+              data={pieSimpleData}
+              dataKey="value"
+              nameKey="segment"
+              strokeWidth={2}
+              innerRadius={28}
+            />
+            <ChartLegend content={<ChartLegendContent nameKey="segment" />} className="flex-wrap gap-1 text-xs [&>*]:basis-1/2" />
+          </PieChart>
+        </ChartContainer>
+      </div>
+      <Separator className="bg-future-border-subtle" />
+      <div>
+        <p className="mb-2 text-xs font-medium text-future-foreground-muted">Framework popularity</p>
+        <ChartContainer config={barHorizontalConfig} className="aspect-auto h-[140px] w-full">
+          <BarChart data={barHorizontalData} layout="vertical" margin={{ left: 40, right: 12 }}>
+            <CartesianGrid horizontal={false} />
+            <YAxis dataKey="category" type="category" tickLine={false} axisLine={false} tickMargin={4} width={36} tick={{ fontSize: 10 }} />
+            <XAxis type="number" tickLine={false} axisLine={false} tickMargin={4} tick={{ fontSize: 10 }} />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <Bar dataKey="value" fill="var(--color-value)" radius={4} />
+          </BarChart>
+        </ChartContainer>
+      </div>
+    </div>
+  );
+}
+
+function RightPanelCharts() {
+  return (
+    <div className="flex flex-col gap-4 p-6">
+      <div className="w-full">
+        <p className="mb-2 text-xs font-medium text-future-foreground-muted">Dot Indicator</p>
+        <ChartContainer config={tooltipDotConfig} className="w-full aspect-auto h-[120px] justify-start">
+          <BarChart data={tooltipData} margin={{ left: 12, right: 12 }}>
+            <CartesianGrid vertical={false} />
+            <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={4} tick={{ fontSize: 10 }} />
+            <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
+            <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
+            <Bar dataKey="expenses" fill="var(--color-expenses)" radius={4} />
+          </BarChart>
+        </ChartContainer>
+      </div>
+      <Separator className="bg-future-border-subtle" />
+      <div className="w-full">
+        <p className="mb-2 text-xs font-medium text-future-foreground-muted">Dashed Indicator</p>
+        <ChartContainer config={tooltipDashedConfig} className="w-full aspect-auto h-[120px] justify-start">
+          <BarChart data={tooltipData} margin={{ left: 12, right: 12 }}>
+            <CartesianGrid vertical={false} />
+            <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={4} tick={{ fontSize: 10 }} />
+            <ChartTooltip content={<ChartTooltipContent indicator="dashed" />} />
+            <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
+            <Bar dataKey="expenses" fill="var(--color-expenses)" radius={4} />
+          </BarChart>
+        </ChartContainer>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // Main content component
 // ============================================================================
 
@@ -826,6 +899,30 @@ function VisualizationContent() {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Intro — charts stack and usage */}
+      <Card className="border-future-border-subtle bg-future-surface">
+        <CardHeader>
+          <CardTitle className="text-future-foreground">How to use</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-future-foreground">
+            <a
+              href="https://ui.shadcn.com/charts/area"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-future-accent-foreground underline underline-offset-2 hover:text-future-accent-foreground/80"
+            >
+              Recharts
+            </a>{' '}
+            powers these visuals. Wrap Recharts primitives with{' '}
+            <code className="rounded bg-future-surface-overlay px-1.5 py-0.5 font-mono text-xs">ChartContainer</code>,{' '}
+            <code className="rounded bg-future-surface-overlay px-1.5 py-0.5 font-mono text-xs">ChartTooltip</code>, and{' '}
+            <code className="rounded bg-future-surface-overlay px-1.5 py-0.5 font-mono text-xs">ChartLegend</code> from{' '}
+            <code className="rounded bg-future-surface-overlay px-1.5 py-0.5 font-mono text-xs">@/components/ui/chart</code>. Provide a <code className="rounded bg-future-surface-overlay px-1.5 py-0.5 font-mono text-xs">ChartConfig</code> for theming.
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Tab bar */}
       <div className="flex gap-1 overflow-x-auto border-b border-future-border-subtle">
         {TABS.map((tab) => (
@@ -853,13 +950,16 @@ function VisualizationContent() {
 // Story
 // ============================================================================
 
-export const Default: Story = {
+export const Visualization: Story = {
+  name: 'Visualization',
   render: (_, { globals }) => (
     <MaestroTemplate
       theme={globals.futureTheme || 'dark'}
-      title="Visualization"
+      title="Maestro"
       defaultLeftPanelCollapsed
       defaultRightPanelCollapsed
+      leftPanelContent={<LeftPanelCharts />}
+      rightPanelContent={<RightPanelCharts />}
     >
       <VisualizationContent />
     </MaestroTemplate>

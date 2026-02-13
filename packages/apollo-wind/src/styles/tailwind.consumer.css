@@ -13,6 +13,10 @@
 @import "tailwindcss";
 @import "@uipath/apollo-core/tokens/css/theme-variables.css";
 
+:root {
+  --radius: 0.75rem; /* 12px — base border-radius for buttons and UI elements */
+}
+
 /**
  * shadcn/ui color mappings
  * Maps Apollo Design System tokens to shadcn expected variable names.

@@ -63,17 +63,33 @@ const preview: Preview = {
         order: [
           'Introduction',
           'Theme',
+          [
+            'Colors',
+            'Icons',
+            'Spacing',
+            'Typography',
+            'Future',
+            ['*', 'Theme'],
+          ],
           'Components',
           [
             'All Components',
             'Core',
             'Data Display',
+            'Feedback',
             'Layout',
             'Navigation',
             'Overlays',
             'UiPath',
           ],
           'Templates',
+          [
+            'Admin',
+            'Delegate',
+            'Flow',
+            'Maestro',
+            'Future',
+          ],
           'Forms',
           'Experiments',
           '*',
@@ -94,10 +110,13 @@ const preview: Preview = {
         title: 'Theme',
         icon: 'paintbrush',
         items: [
-          { value: 'dark', title: 'Future: Dark' },
+          { value: 'legacy-light', title: 'Light' },
+          { value: 'legacy-dark', title: 'Dark' },
           { value: 'light', title: 'Future: Light' },
-          { value: 'legacy-dark', title: 'Legacy: Dark' },
-          { value: 'legacy-light', title: 'Legacy: Light' },
+          { value: 'dark', title: 'Future: Dark' },
+          { value: 'wireframe', title: 'Demo: Wireframe' },
+          { value: 'vertex', title: 'Demo: Vertex' },
+          { value: 'canvas', title: 'Demo: Canvas' },
         ],
         dynamicTitle: true,
       },
@@ -124,21 +143,22 @@ const preview: Preview = {
 
       // Map the toolbar value to the CSS class that activates the correct
       // set of CSS custom properties (surfaces, foregrounds, borders, etc.).
-      const themeClass =
-        futureTheme === 'legacy-dark'
-          ? 'legacy-dark'
-          : futureTheme === 'legacy-light'
-            ? 'legacy-light'
-            : futureTheme === 'light'
-              ? 'future-light'
-              : 'future-dark';
+      const themeClassMap: Record<string, string> = {
+        'legacy-dark': 'legacy-dark',
+        'legacy-light': 'legacy-light',
+        wireframe: 'future-wireframe',
+        vertex: 'future-vertex',
+        canvas: 'future-canvas',
+        light: 'future-light',
+      };
+      const themeClass = themeClassMap[futureTheme] ?? 'future-dark';
 
       // Apply the theme class to <html> so every story — including standalone
       // component stories that don't manage their own theme — inherits the
       // correct CSS variables (shadcn bridge + Future tokens).
       useEffect(() => {
         const root = document.documentElement;
-        const allThemeClasses = ['future-dark', 'future-light', 'legacy-dark', 'legacy-light'];
+        const allThemeClasses = ['future-dark', 'future-light', 'future-wireframe', 'future-vertex', 'future-canvas', 'legacy-dark', 'legacy-light'];
         root.classList.remove(...allThemeClasses);
         root.classList.add(themeClass);
         return () => {
