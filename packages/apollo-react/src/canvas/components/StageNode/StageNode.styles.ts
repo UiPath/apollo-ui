@@ -253,6 +253,8 @@ export const StageTaskIcon = styled.div`
 `;
 
 export const StageTaskRetryDuration = styled.div<{ status?: 'warning' | 'info' | 'error' }>`
+  display: flex;
+  align-items: center;
   ${({ status }) =>
     status === 'info' &&
     css`
