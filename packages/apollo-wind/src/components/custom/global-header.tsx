@@ -43,10 +43,12 @@ import { cn } from '@/lib';
 // Types
 // ============================================================================
 
+import type { FutureTheme } from '@/foundation/Future/types';
+
 export interface MaestroHeaderProps {
   className?: string;
   /** Color theme — needed so portal-rendered dropdowns inherit the correct CSS variables */
-  theme?: 'dark' | 'light';
+  theme?: FutureTheme;
   /** Application title shown next to the logo */
   title?: string;
   /** Current tenant name */

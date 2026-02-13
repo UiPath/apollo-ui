@@ -4,7 +4,7 @@ import { MaestroHeader } from '@/components/custom/global-header';
 import { Canvas, Grid, GridItem } from '@/components/custom/grid-maestro';
 import type { PanelProps } from '@/components/custom/panel-maestro';
 import { Panel } from '@/components/custom/panel-maestro';
-import { ViewportGuard } from '@/components/ui/viewport-guard';
+import { ViewportGuard } from '@/components/custom/viewport-guard';
 import type { FutureTheme } from '@/foundation/Future/types';
 import { fontFamily } from '@/foundation/Future/typography';
 import { cn } from '@/lib';

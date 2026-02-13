@@ -90,12 +90,12 @@ import { fontFamily } from '@/foundation/Future/typography'; // font stacks
 | Toggle | `toggle` | Toggle button (Radix) |
 | ToggleGroup | `toggle-group` | Group of toggle buttons (Radix) |
 | Tooltip | `tooltip` | Hover tooltip (Radix) |
-| ViewportGuard | `viewport-guard` | Min-width gate for responsive layouts |
 
 ### Custom Components (from `@/components/custom/`)
 
 | Component | Import | Description |
 |-----------|--------|-------------|
+| ViewportGuard | `viewport-guard` | Min-width gate for product templates (Admin, Delegate, Flow, Maestro) |
 | Canvas | `canvas` | Main content area for flow/delegate templates |
 | MaestroHeader | `global-header` | Global app header with menu drawer, title, search, avatar |
 | FlowNode | `flow-node` | Flow editor node element |

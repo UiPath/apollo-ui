@@ -146,6 +146,14 @@ export type { SpinnerProps } from './components/ui/spinner';
 export { EmptyState } from './components/ui/empty-state';
 export type { EmptyStateProps } from './components/ui/empty-state';
 
+export { default as TreeView } from './components/ui/tree-view';
+export type {
+  TreeViewItem,
+  TreeViewIconMap,
+  TreeViewMenuItem,
+  TreeViewProps,
+} from './components/ui/tree-view';
+
 // -----------------------------------------------------------------------------
 // Feedback & Overlay Components
 // -----------------------------------------------------------------------------

@@ -15,7 +15,7 @@ import {
 } from '@/components/custom/panel-flow';
 import { FlowCanvasToolbar } from '@/components/custom/toolbar-canvas';
 import { FlowViewToolbar } from '@/components/custom/toolbar-view';
-import { useViewportAtOrAbove, ViewportGuard } from '@/components/ui/viewport-guard';
+import { useViewportAtOrAbove, ViewportGuard } from '@/components/custom/viewport-guard';
 import type { FutureTheme } from '@/foundation/Future/types';
 import { fontFamily } from '@/foundation/Future/typography';
 import { cn } from '@/lib';

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Canvas } from '@/components/custom/canvas';
 import type { DelegatePanelProps, NavChildItem, NavItem } from '@/components/custom/panel-delegate';
 import { DelegatePanel } from '@/components/custom/panel-delegate';
-import { useViewportAtOrAbove, ViewportGuard } from '@/components/ui/viewport-guard';
+import { useViewportAtOrAbove, ViewportGuard } from '@/components/custom/viewport-guard';
 import type { FutureTheme } from '@/foundation/Future/types';
 import { fontFamily } from '@/foundation/Future/typography';
 import { cn } from '@/lib';

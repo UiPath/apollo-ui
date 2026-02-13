@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { Workflow, TableProperties, Variable } from 'lucide-react';
 import { cn } from '@/lib';
 

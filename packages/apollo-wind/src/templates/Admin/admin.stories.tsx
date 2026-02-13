@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 import { MaestroHeader } from '@/components/custom/global-header';
+import { ViewportGuard } from '@/components/custom/viewport-guard';
 import { Badge } from '@/components/ui/badge';
 import {
   Breadcrumb,
@@ -66,7 +67,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ViewportGuard } from '@/components/ui/viewport-guard';
 import { fontFamily } from '@/foundation/Future/typography';
 import { cn } from '@/lib';
 

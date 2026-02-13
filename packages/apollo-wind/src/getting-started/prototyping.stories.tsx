@@ -335,7 +335,7 @@ DatePicker, Dialog, Drawer, DropdownMenu, EmptyState, FileUpload, HoverCard,
 Input, Label, MultiSelect, Pagination, Popover,
 Progress, RadioGroup, Resizable, ScrollArea, Search, Select, Separator,
 Sheet, Skeleton, Slider, Spinner, StatsCard, Stepper, Switch, Table, Tabs,
-Textarea, Toggle, ToggleGroup, Tooltip, ViewportGuard`;
+Textarea, Toggle, ToggleGroup, Tooltip, ViewportGuard (from custom)`;
 
 function UseAITab() {
   return (
