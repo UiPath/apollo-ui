@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.30.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.30.3...@uipath/apollo-react@3.30.4) (2026-02-13)
+
+### Bug Fixes
+
+* **apollo-react:** fix text alignment ([3522816](https://github.com/UiPath/apollo-ui/commit/3522816686ac52f63e49062aca3898043b800353))
+
 ## [@uipath/apollo-react-v3.30.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.30.2...@uipath/apollo-react@3.30.3) (2026-02-12)
 
 ### Bug Fixes
