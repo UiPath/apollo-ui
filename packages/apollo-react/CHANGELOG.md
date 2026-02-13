@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.31.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.30.6...@uipath/apollo-react@3.31.0) (2026-02-13)
+
+### Features
+
+* **apollo-react:** add read-only mode to ap-chat ([b0d4793](https://github.com/UiPath/apollo-ui/commit/b0d4793d991bc3e21531bc9ecda30fdf5592c394))
+
 ## [@uipath/apollo-react-v3.30.6](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.30.5...@uipath/apollo-react@3.30.6) (2026-02-13)
 
 ### Bug Fixes
