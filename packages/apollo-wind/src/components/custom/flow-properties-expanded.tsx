@@ -9,9 +9,9 @@ import {
   Variable,
   X,
 } from 'lucide-react';
-import * as React from 'react';
 import { fontFamily } from '@/foundation/Future/typography';
 import { cn } from '@/lib';
+import { Button } from '@/components/ui/button';
 
 // ============================================================================
 // Types
@@ -193,13 +193,15 @@ export function PropertiesExpanded({
               <span>Variables</span>
             </button>
           </div>
-          <button
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-future-surface-overlay text-future-foreground-muted transition-colors hover:text-future-foreground"
+          <Button
+            size="icon"
+            variant="ghost"
+            className="bg-future-surface-overlay text-future-foreground-muted hover:bg-future-surface-overlay hover:text-future-foreground [&_svg]:size-5"
             onClick={onClose}
             aria-label="Close properties"
           >
-            <X className="h-5 w-5" />
-          </button>
+            <X />
+          </Button>
         </div>
       </div>
 
@@ -207,13 +209,14 @@ export function PropertiesExpanded({
       <div className="flex items-center justify-between border-b border-future-border px-4 py-2">
         <div className="flex items-center gap-2">
           {/* Dock button */}
-          <button
-            type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-future-surface-overlay text-future-foreground-muted hover:text-future-foreground"
+          <Button
+            size="icon"
+            variant="ghost"
+            className="bg-future-surface-overlay text-future-foreground-muted hover:bg-future-surface-overlay hover:text-future-foreground [&_svg]:size-5"
             aria-label="Toggle panel dock"
           >
-            <PanelRightOpen className="h-5 w-5" />
-          </button>
+            <PanelRightOpen />
+          </Button>
           {/* Layout toggle: columns / rows */}
           <div
             className="flex h-10 items-center rounded-xl border border-future-border-deep bg-future-surface-overlay p-1"
@@ -237,13 +240,10 @@ export function PropertiesExpanded({
           </div>
         </div>
         {/* Run node button */}
-        <button
-          type="button"
-          className="flex h-10 items-center gap-2 rounded-xl bg-future-accent px-4 py-2 text-sm font-semibold leading-5 text-future-foreground-inverse"
-        >
+        <Button className="bg-future-accent text-future-foreground-on-accent hover:bg-future-accent/90 font-semibold">
           <Play className="h-4 w-4" />
-          <span>Run node</span>
-        </button>
+          Run node
+        </Button>
       </div>
 
       {/* ── Code section ──────────────────────────────────────── */}

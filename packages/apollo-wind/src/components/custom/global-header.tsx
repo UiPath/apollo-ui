@@ -43,10 +43,12 @@ import { cn } from '@/lib';
 // Types
 // ============================================================================
 
+import type { FutureTheme } from '@/foundation/Future/types';
+
 export interface MaestroHeaderProps {
   className?: string;
   /** Color theme — needed so portal-rendered dropdowns inherit the correct CSS variables */
-  theme?: 'dark' | 'light';
+  theme?: FutureTheme;
   /** Application title shown next to the logo */
   title?: string;
   /** Current tenant name */
@@ -302,9 +304,15 @@ export function MaestroHeader({
       ? 'legacy-dark'
       : theme === 'legacy-light'
         ? 'legacy-light'
-        : theme === 'light'
-          ? 'future-light'
-          : 'future-dark';
+        : theme === 'wireframe'
+          ? 'future-wireframe'
+          : theme === 'vertex'
+            ? 'future-vertex'
+            : theme === 'canvas'
+              ? 'future-canvas'
+              : theme === 'light'
+                ? 'future-light'
+                : 'future-dark';
 
   // Internal drawer state — only relevant when menuContent is provided
   const [menuOpen, setMenuOpen] = React.useState(false);

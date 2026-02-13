@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { Workflow, TableProperties, Variable } from 'lucide-react';
 import { cn } from '@/lib';
 
@@ -42,7 +41,7 @@ export function PropertiesBar({
   return (
     <div
       className={cn(
-        'flex h-16 items-center justify-between rounded-2xl bg-future-surface-overlay px-4',
+        'flex h-16 items-center justify-between rounded-2xl bg-future-surface-raised px-4',
         className
       )}
     >
@@ -62,7 +61,7 @@ export function PropertiesBar({
       </div>
 
       {/* Right: Properties / Variables tabs */}
-      <div className="flex h-10 items-center rounded-xl bg-future-surface-raised border border-future-border-deep p-1">
+      <div className="flex h-10 items-center rounded-xl bg-future-surface-overlay border border-future-border-deep p-1">
         <button
           className={cn(
             'flex h-8 items-center gap-2 rounded-[10px] px-4 py-2 text-sm font-medium leading-5 text-future-foreground-subtle transition-colors hover:text-future-foreground-hover',
