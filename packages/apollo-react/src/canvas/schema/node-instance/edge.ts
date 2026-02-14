@@ -15,4 +15,4 @@ export const edgeSchema = z.object({
 });
 
 // Export inferred TypeScript type
-export type WorkflowEdge = z.infer<typeof edgeSchema>;
+export type EdgeInstance = z.infer<typeof edgeSchema>;

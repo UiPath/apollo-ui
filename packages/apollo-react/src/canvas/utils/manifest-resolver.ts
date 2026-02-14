@@ -10,10 +10,10 @@
  * - Resolved: Final merged result used for rendering
  */
 
+import type { HandleActionEvent } from '../components/ButtonHandle/ButtonHandle';
 import type { HandleGroupManifest, HandleManifest } from '../schema/node-definition/handle';
 import type { NodeDisplayManifest } from '../schema/node-definition/node-manifest';
-import type { DisplayConfig } from '../schema/workflow/base';
-import type { HandleActionEvent } from '../components/ButtonHandle/ButtonHandle';
+import type { InstanceDisplayConfig } from '../schema/node-instance';
 import { getCollapsedShape } from './collapse';
 
 /**
@@ -21,7 +21,7 @@ import { getCollapsedShape } from './collapse';
  */
 export interface ResolutionContext {
   /** Instance display overrides */
-  display?: DisplayConfig;
+  display?: InstanceDisplayConfig;
   /** Instance input values */
   inputs?: Record<string, unknown>;
   /** Node ID for collapse state lookup */
@@ -33,7 +33,7 @@ export interface ResolutionContext {
  * Resolved display configuration (manifest defaults + instance overrides)
  * Uses DisplayConfig structure to allow any string values for flexibility
  */
-export type ResolvedDisplay = DisplayConfig & {
+export type ResolvedDisplay = InstanceDisplayConfig & {
   label: string;
   icon: string;
   description?: string;

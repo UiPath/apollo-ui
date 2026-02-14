@@ -13,7 +13,7 @@ import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApButton, ApIcon, ApIconButton, ApTypography } from '@uipath/apollo-react/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { NodeRegistryContext, NodeTypeRegistry } from '../../core';
-import type { WorkflowManifest } from '../../schema/node-definition/workflow-manifest';
+import type { CategoryManifest, NodeManifest } from '../../schema';
 import {
   createNode,
   StoryInfoPanel,
@@ -30,8 +30,7 @@ import type { BaseNodeData } from './BaseNode.types';
 // Sample Manifests
 // ============================================================================
 
-const sampleManifest: WorkflowManifest = {
-  version: '1.0.0',
+const sampleManifest: { nodes: NodeManifest[]; categories: CategoryManifest[] } = {
   categories: [
     {
       id: 'general',
@@ -183,7 +182,7 @@ const meta: Meta<BaseNodeData> = {
     (Story) => {
       const registry = useMemo(() => {
         const reg = new NodeTypeRegistry();
-        reg.registerManifest(sampleManifest);
+        reg.registerManifest(sampleManifest.nodes, sampleManifest.categories);
         return reg;
       }, []);
 

@@ -47,7 +47,7 @@ export const displayConfigSchema = z
   .catchall(z.unknown()); // Allow additional properties
 
 // Export inferred TypeScript types
-export type ID = z.infer<typeof idSchema>;
-export type Version = z.infer<typeof versionSchema>;
-export type TypeVersionKey = z.infer<typeof typeVersionKeySchema>;
-export type DisplayConfig = z.infer<typeof displayConfigSchema>;
+export type InstanceId = z.infer<typeof idSchema>;
+export type InstanceVersion = z.infer<typeof versionSchema>;
+export type InstanceTypeVersionKey = z.infer<typeof typeVersionKeySchema>;
+export type InstanceDisplayConfig = z.infer<typeof displayConfigSchema>;

@@ -10,7 +10,7 @@ import { ApIcon } from '@uipath/apollo-react/material/components';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { NodeRegistryProvider } from '../../core';
-import type { CategoryManifest, WorkflowManifest } from '../../schema/node-definition';
+import type { CategoryManifest } from '../../schema/node-definition';
 import type { NodeManifest } from '../../schema/node-definition/node-manifest';
 import {
   selectAddNode,
@@ -287,7 +287,7 @@ interface CanvasWithControlsContentProps {
 /**
  * Complete workflow manifest with categories and nodes
  */
-const workflowManifest: WorkflowManifest = {
+const workflowManifest = {
   version: '1.0.0',
   categories: workflowCategories,
   nodes: workflowManifests,

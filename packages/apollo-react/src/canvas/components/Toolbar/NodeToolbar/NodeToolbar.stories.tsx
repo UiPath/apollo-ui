@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { NodeRegistryProvider } from '../../../core';
 import { ExecutionStatusContext } from '../../../hooks';
 import type { NodeManifest, NodeShape } from '../../../schema';
-import type { WorkflowManifest } from '../../../schema/node-definition';
 import { StoryInfoPanel, useCanvasStory } from '../../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../../types';
 import { BaseCanvas } from '../../BaseCanvas';
@@ -109,7 +108,7 @@ const meta: Meta = {
         []
       );
 
-      const manifest: WorkflowManifest = useMemo(
+      const manifest = useMemo(
         () => ({
           version: '1.0.0',
           categories: [],

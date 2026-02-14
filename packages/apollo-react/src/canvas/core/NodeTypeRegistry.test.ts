@@ -1,14 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { ListItem } from '../components';
 import type { PreviewNodeConnectionInfo } from '../hooks';
-import type { WorkflowManifest } from '../schema/node-definition';
+import type { CategoryManifest, NodeManifest } from '../schema';
 import { NodeTypeRegistry } from './NodeTypeRegistry';
 
 describe('NodeTypeRegistry', () => {
   let registry: NodeTypeRegistry;
 
-  const createMockManifest = (): WorkflowManifest => ({
-    version: '1.0.0',
+  const createMockManifest = (): { categories: CategoryManifest[]; nodes: NodeManifest[] } => ({
     categories: [
       {
         id: 'control-flow',
@@ -272,7 +271,8 @@ describe('NodeTypeRegistry', () => {
 
   beforeEach(() => {
     registry = new NodeTypeRegistry();
-    registry.registerManifest(createMockManifest());
+    const mockManifest = createMockManifest();
+    registry.registerManifest(mockManifest.nodes, mockManifest.categories);
   });
 
   describe('registerManifest', () => {
@@ -303,17 +303,20 @@ describe('NodeTypeRegistry', () => {
     });
 
     it('should pre-compute category descendants', () => {
+      // @ts-expect-error - accessing internal property for testing
       const descendants = registry.categoryDescendants.get('automation');
       expect(descendants).toContain('automation.files');
       expect(descendants).toContain('automation.email');
     });
 
     it('should pre-compute category ancestors', () => {
+      // @ts-expect-error - accessing internal property for testing
       const ancestors = registry.categoryAncestors.get('automation.files');
       expect(ancestors).toContain('automation');
     });
 
     it('should organize nodes by category', () => {
+      // @ts-expect-error - accessing internal property for testing
       const nodesInFiles = registry.nodesByCategory.get('automation.files');
       expect(nodesInFiles).toHaveLength(2);
     });
@@ -758,15 +761,14 @@ describe('NodeTypeRegistry', () => {
 
     it('should work with empty manifest', () => {
       const emptyRegistry = new NodeTypeRegistry();
-      emptyRegistry.registerManifest({ version: '1.0.0', categories: [], nodes: [] });
+      emptyRegistry.registerManifest([], []);
 
       const items = emptyRegistry.getNodeOptions({});
       expect(items).toHaveLength(0);
     });
 
     it('should handle deeply nested categories', () => {
-      const deepManifest: WorkflowManifest = {
-        version: '1.0.0',
+      const deepManifest = {
         categories: [
           {
             id: 'level1',
@@ -813,7 +815,7 @@ describe('NodeTypeRegistry', () => {
       };
 
       const deepRegistry = new NodeTypeRegistry();
-      deepRegistry.registerManifest(deepManifest);
+      deepRegistry.registerManifest(deepManifest.nodes, deepManifest.categories);
 
       const items = deepRegistry.getNodeOptions({});
       expect(items).toHaveLength(1);

@@ -8,26 +8,25 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon } from '@uipath/apollo-react/material/components';
 import { useCallback, useMemo } from 'react';
+import { NodeRegistryProvider } from '../../core/NodeRegistryProvider';
+import type { HandleGroupManifest, NodeManifest } from '../../schema/node-definition';
 import { allNodeManifests, StoryInfoPanel, useCanvasStory } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
+import {
+  contextResourceManifest,
+  escalationResourceManifest,
+  memoryResourceManifest,
+  toolResourceManifest,
+} from '../AgentCanvas/agent-flow.manifest';
 import { BaseCanvas } from '../BaseCanvas';
 import { BaseNode } from '../BaseNode/BaseNode';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import {
-  BaseNodeOverrideConfigProvider,
   type BaseNodeOverrideConfig,
+  BaseNodeOverrideConfigProvider,
 } from '../BaseNode/BaseNodeConfigContext';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import type { NodeToolbarConfig } from '../Toolbar';
-import type { HandleGroupManifest } from '../../schema/node-definition';
-import { NodeRegistryProvider } from '../../core/NodeRegistryProvider';
-import type { NodeManifest, WorkflowManifest } from '../../schema/node-definition';
-import {
-  contextResourceManifest,
-  toolResourceManifest,
-  escalationResourceManifest,
-  memoryResourceManifest,
-} from '../AgentCanvas/agent-flow.manifest';
 
 // ============================================================================
 // Meta Configuration
@@ -49,7 +48,7 @@ const collapsibleAgentManifest: NodeManifest = {
 };
 
 // Workflow manifest for the story
-const collapseConfigManifest: WorkflowManifest = {
+const collapseConfigManifest = {
   version: '1.0.0',
   categories: [],
   nodes: [
