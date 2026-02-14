@@ -1,15 +1,22 @@
+import token from '@uipath/apollo-core';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
-import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  type ViewportHelperFunctionOptions as BaseCanvasZoomOptions,
+  useReactFlow,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon, ApIconButton, ApTooltip } from '@uipath/apollo-react/material';
 import { memo, useCallback } from 'react';
 import type { CanvasTranslations } from '../types';
 import { BASE_CANVAS_DEFAULTS } from './BaseCanvas/BaseCanvas.constants';
 import type { BaseCanvasFitViewOptions } from './BaseCanvas/BaseCanvas.types';
-import token from '@uipath/apollo-core';
+export type { BaseCanvasZoomOptions };
+
 export interface CanvasPositionControlsProps {
   orientation?: 'horizontal' | 'vertical';
   fitViewOptions?: BaseCanvasFitViewOptions;
+  zoomInOptions?: BaseCanvasZoomOptions;
+  zoomOutOptions?: BaseCanvasZoomOptions;
   translations: CanvasTranslations;
   onOrganize?: () => void;
 }
@@ -18,13 +25,15 @@ export const CanvasPositionControls = memo(
   ({
     orientation = 'horizontal',
     fitViewOptions,
+    zoomInOptions,
+    zoomOutOptions,
     translations,
     onOrganize,
   }: CanvasPositionControlsProps) => {
     const { zoomIn, zoomOut, fitView } = useReactFlow();
 
-    const handleZoomIn = useCallback(() => zoomIn(), [zoomIn]);
-    const handleZoomOut = useCallback(() => zoomOut(), [zoomOut]);
+    const handleZoomIn = useCallback(() => zoomIn(zoomInOptions), [zoomIn, zoomInOptions]);
+    const handleZoomOut = useCallback(() => zoomOut(zoomOutOptions), [zoomOut, zoomOutOptions]);
     const handleFitToView = useCallback(
       () => fitView(fitViewOptions ?? BASE_CANVAS_DEFAULTS.fitViewOptions),
       [fitView, fitViewOptions]
