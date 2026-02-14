@@ -65,5 +65,17 @@
   "autopilot-chat.history.group.today": "Heute",
   "autopilot-chat.input.placeholder": "Was soll ich tun?",
   "autopilot-chat.tree.unknown": "Unbekannt",
-  "autopilot-chat.history.group.yesterday": "Gestern"
+  "autopilot-chat.history.group.yesterday": "Gestern",
+  "autopilot-chat.resource-trigger.tooltip": "Ressource hinzufügen",
+  "autopilot-chat.resource-trigger.label": "Ressourcenreferenz hinzufügen",
+  "autopilot-chat.resource-picker.error": "Ressourcen konnten nicht geladen werden",
+  "autopilot-chat.resource-picker.retry": "Wiederholen",
+  "autopilot-chat.resource-picker.no-results": "Keine übereinstimmenden Ressourcen",
+  "autopilot-chat.resource-picker.empty": "Keine Ressourcen verfügbar",
+  "autopilot-chat.resource-picker.label": "Ressourcenauswahl",
+  "autopilot-chat.resource-picker.load-more-error": "Es konnten keine weiteren geladen werden",
+  "autopilot-chat.resource-picker.search-error": "Suche fehlgeschlagen",
+  "autopilot-chat.resource-picker.back": "Zurück",
+  "autopilot-chat.input.resource-chip.remove": "Entfernen",
+  "autopilot-chat.input.resource-chip.remove-name": "{label} entfernen"
 }

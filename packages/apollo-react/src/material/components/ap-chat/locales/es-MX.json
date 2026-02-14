@@ -65,5 +65,17 @@
   "autopilot-chat.history.group.today": "Hoy",
   "autopilot-chat.input.placeholder": "¿Qué le gustaría que hiciera?",
   "autopilot-chat.tree.unknown": "Desconocido",
-  "autopilot-chat.history.group.yesterday": "Ayer"
+  "autopilot-chat.history.group.yesterday": "Ayer",
+  "autopilot-chat.resource-trigger.tooltip": "Agregar recurso",
+  "autopilot-chat.resource-trigger.label": "Agregar referencia de recursos",
+  "autopilot-chat.resource-picker.error": "Error al cargar los recursos",
+  "autopilot-chat.resource-picker.retry": "Reintentar",
+  "autopilot-chat.resource-picker.no-results": "No hay recursos coincidentes",
+  "autopilot-chat.resource-picker.empty": "No hay recursos disponibles",
+  "autopilot-chat.resource-picker.label": "Selector de recursos",
+  "autopilot-chat.resource-picker.load-more-error": "Error al cargar más",
+  "autopilot-chat.resource-picker.search-error": "Error en la búsqueda",
+  "autopilot-chat.resource-picker.back": "Volver",
+  "autopilot-chat.input.resource-chip.remove": "Eliminar",
+  "autopilot-chat.input.resource-chip.remove-name": "Eliminar {label}"
 }

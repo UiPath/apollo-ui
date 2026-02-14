@@ -1,5 +1,5 @@
 {
-  "english": "Inglês",
+  "english": "English",
   "german": "Alemão",
   "spanish": "Espanhol",
   "spanish-mx": "Espanhol (México)",
@@ -11,5 +11,8 @@
   "russian": "Russo",
   "turkish": "Turco",
   "chinese-cn": "Chinês (China)",
-  "chinese-tw": "Chinês (Taiwan)"
+  "chinese-tw": "Chinês (Taiwan)",
+  "dashboard": "Dashboard",
+  "projects": "Projetos",
+  "analytics": "Análise"
 }

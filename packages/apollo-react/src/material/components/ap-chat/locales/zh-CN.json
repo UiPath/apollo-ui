@@ -65,5 +65,17 @@
   "autopilot-chat.history.group.today": "今天",
   "autopilot-chat.input.placeholder": "要执行什么操作?",
   "autopilot-chat.tree.unknown": "未知",
-  "autopilot-chat.history.group.yesterday": "昨天"
+  "autopilot-chat.history.group.yesterday": "昨天",
+  "autopilot-chat.resource-trigger.tooltip": "添加资源",
+  "autopilot-chat.resource-trigger.label": "添加资源引用",
+  "autopilot-chat.resource-picker.error": "资源加载失败",
+  "autopilot-chat.resource-picker.retry": "重试",
+  "autopilot-chat.resource-picker.no-results": "无匹配资源",
+  "autopilot-chat.resource-picker.empty": "无可用资源",
+  "autopilot-chat.resource-picker.label": "资源选取器",
+  "autopilot-chat.resource-picker.load-more-error": "无法加载更多内容",
+  "autopilot-chat.resource-picker.search-error": "搜索失败",
+  "autopilot-chat.resource-picker.back": "返回",
+  "autopilot-chat.input.resource-chip.remove": "删除",
+  "autopilot-chat.input.resource-chip.remove-name": "删除 {label}"
 }
