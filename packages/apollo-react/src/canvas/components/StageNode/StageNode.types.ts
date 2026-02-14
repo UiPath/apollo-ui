@@ -41,6 +41,7 @@ export interface StageNodeProps extends NodeProps {
     selectedTasks?: string[];
   };
   addTaskLabel?: string;
+  addTaskLoading?: boolean;
   replaceTaskLabel?: string;
   taskOptions?: ListItem[];
   execution?: {
