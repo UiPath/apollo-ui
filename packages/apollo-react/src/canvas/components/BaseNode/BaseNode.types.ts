@@ -22,6 +22,12 @@ export interface BaseNodeData extends Record<string, unknown> {
    * @default false
    */
   useSmartHandles?: boolean;
+
+  /**
+   * Whether the node is collapsed.
+   * @default false
+   */
+  isCollapsed?: boolean;
 }
 
 export interface NodeAdornments {

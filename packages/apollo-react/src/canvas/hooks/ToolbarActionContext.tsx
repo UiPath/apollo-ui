@@ -18,7 +18,6 @@ interface ToolbarActionStore {
   mode: string;
   onToolbarAction?: ToolbarActionHandler;
   breakpoints?: Set<string>;
-  collapsed?: Set<string>;
 }
 
 // Module-level singleton store
@@ -26,7 +25,6 @@ let toolbarActionStore: ToolbarActionStore = {
   mode: 'design',
   onToolbarAction: undefined,
   breakpoints: undefined,
-  collapsed: undefined,
 };
 
 /**
@@ -52,11 +50,10 @@ export function getToolbarActionStore(): ToolbarActionStore {
 export function useToolbarActionStore(
   mode: string,
   onToolbarAction?: ToolbarActionHandler,
-  breakpoints?: Set<string>,
-  collapsed?: Set<string>
+  breakpoints?: Set<string>
 ): void {
   useEffect(() => {
-    setToolbarActionStore({ mode, onToolbarAction, breakpoints, collapsed });
+    setToolbarActionStore({ mode, onToolbarAction, breakpoints });
 
     // Cleanup: reset handler when component unmounts or switches
     // This prevents stale handlers from being invoked on the wrong canvas
@@ -65,8 +62,7 @@ export function useToolbarActionStore(
         mode: 'design',
         onToolbarAction: undefined,
         breakpoints: undefined,
-        collapsed: undefined,
       });
     };
-  }, [mode, onToolbarAction, breakpoints, collapsed]);
+  }, [mode, onToolbarAction, breakpoints]);
 }

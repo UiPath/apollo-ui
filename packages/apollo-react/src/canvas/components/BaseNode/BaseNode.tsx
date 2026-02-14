@@ -112,8 +112,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     (typeof executionState === 'string' ? executionState : executionState?.status);
 
   const display = useMemo(
-    () => resolveDisplay(manifest?.display, data.display),
-    [manifest, data.display]
+    () => resolveDisplay(manifest?.display, { ...data, nodeId: id }),
+    [manifest, data.display, id]
   );
 
   // Icon resolution: component prop takes precedence, then icon string from display
@@ -138,7 +138,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
     // Priority 2: Manifest default
     if (!manifest) return [];
-    const resolved = resolveHandles(manifest.handleConfiguration, data);
+    // Pass nodeId and collapsed for collapse state lookup
+    const resolved = resolveHandles(manifest.handleConfiguration, { ...data, nodeId: id });
 
     // Convert resolved handles to HandleGroupManifest format for ButtonHandle
     return resolved.map((group) => ({

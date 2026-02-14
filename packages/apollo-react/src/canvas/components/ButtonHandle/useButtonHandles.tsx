@@ -6,7 +6,6 @@ import { resolveHandles } from '../../utils/manifest-resolver';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import type { HandleActionEvent } from '../ButtonHandle';
 import { ButtonHandles } from '../ButtonHandle';
-import { getToolbarActionStore } from '../../hooks/ToolbarActionContext';
 
 export const useButtonHandles = ({
   handleConfigurations,
@@ -46,9 +45,6 @@ export const useButtonHandles = ({
     selected: boolean;
   }) => boolean;
 }) => {
-  const { collapsed } = getToolbarActionStore();
-  const isCollapsed = Boolean(collapsed?.has(nodeId));
-
   const connectedHandleIds = useConnectedHandles(nodeId);
   const node = useNodesData(nodeId);
 
@@ -66,14 +62,11 @@ export const useButtonHandles = ({
       const hasConnectedHandle = config.handles.some((h) => connectedHandleIds.has(h.id));
       const finalVisible = hasConnectedHandle || (shouldShowHandles && (config.visible ?? true));
 
-      // Enhance handles with the unified action handler and filter out artifact handles if the node is collapsed
-      const enhancedHandles = config.handles
-        .filter((handle) => (isCollapsed ? handle.handleType !== 'artifact' : true))
-        .map((handle) => ({
-          ...handle,
-          // Preserve individual handle's onAction if it exists, otherwise use global handleAction
-          onAction: handle.onAction || handleAction,
-        }));
+      const enhancedHandles = config.handles.map((handle) => ({
+        ...handle,
+        // Preserve individual handle's onAction if it exists, otherwise use global handleAction
+        onAction: handle.onAction || handleAction,
+      }));
 
       return (
         <ButtonHandles

@@ -159,32 +159,16 @@ function mergeToolbarConfigs(
 export function resolveToolbar(
   manifest: NodeManifest,
   context: ExtendedNodeContext,
-  nodeData?: (Record<string, unknown> & { nodeId?: string }) | undefined
+  nodeData?: Record<string, unknown>
 ): NodeToolbarConfig | undefined {
   const { nodeType, toolbarExtensions: manifestToolbarExtensions } = manifest;
 
   // Get mode from module-level store for filtering/defaults
   // (UIX doesn't pass custom properties through its context)
-  // Note: onToolbarAction is read at click time in convertToNodeAction to avoid stale closures
-  const { mode, collapsed } = getToolbarActionStore();
+  const { mode } = getToolbarActionStore();
 
   // Step 1: Get mode defaults (applies to all nodes)
-  let modeDefaults = toolbarRegistry.getModeDefaults(mode);
-  modeDefaults = {
-    ...modeDefaults,
-    actions: modeDefaults?.actions?.map((action) => {
-      const isCollapsed = Boolean(nodeData?.nodeId && collapsed?.has(nodeData.nodeId));
-      switch (action.id) {
-        case 'collapse':
-          return {
-            ...action,
-            icon: isCollapsed ? 'chevrons-up-down' : 'chevrons-down-up',
-          };
-        default:
-          return action;
-      }
-    }),
-  };
+  const modeDefaults = toolbarRegistry.getModeDefaults(mode);
 
   // Step 2: Get node-type-specific extensions
   const nodeExtensions = manifestToolbarExtensions?.[mode];
