@@ -608,3 +608,69 @@ describe('StageNode - Replace Task Functionality', () => {
     });
   });
 });
+
+describe('StageNode - Add Task Loading State', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should show the add icon by default when addTaskLoading is not set', () => {
+    const onTaskAdd = vi.fn();
+    renderStageNode({ onTaskAdd });
+
+    // The add icon should be present, no spinner
+    expect(screen.queryByTestId('ap-circular-progress')).not.toBeInTheDocument();
+  });
+
+  it('should show a loading spinner instead of the add icon when addTaskLoading is true', () => {
+    const onTaskAdd = vi.fn();
+    renderStageNode({ onTaskAdd, addTaskLoading: true });
+
+    expect(screen.getByTestId('ap-circular-progress')).toBeInTheDocument();
+  });
+
+  it('should disable the add task button when addTaskLoading is true', () => {
+    const onTaskAdd = vi.fn();
+    renderStageNode({ onTaskAdd, addTaskLoading: true });
+
+    const spinner = screen.getByTestId('ap-circular-progress');
+    // The disabled button is the closest button ancestor of the spinner
+    const button = spinner.closest('button');
+    expect(button).toBeDisabled();
+  });
+
+  it('should not call onTaskAdd when button is disabled while loading', () => {
+    const onTaskAdd = vi.fn();
+    renderStageNode({ onTaskAdd, addTaskLoading: true });
+
+    const spinner = screen.getByTestId('ap-circular-progress');
+    const button = spinner.closest('button') as HTMLButtonElement;
+
+    // Button is disabled and has pointer-events: none, preventing any clicks
+    expect(button).toBeDisabled();
+    button.click();
+    expect(onTaskAdd).not.toHaveBeenCalled();
+  });
+
+  it('should show the add icon when addTaskLoading is false', () => {
+    const onTaskAdd = vi.fn();
+    renderStageNode({ onTaskAdd, addTaskLoading: false });
+
+    expect(screen.queryByTestId('ap-circular-progress')).not.toBeInTheDocument();
+  });
+
+  it('should switch from spinner back to add icon when addTaskLoading changes to false', () => {
+    const onTaskAdd = vi.fn();
+    const { rerender } = renderStageNode({ onTaskAdd, addTaskLoading: true });
+
+    expect(screen.getByTestId('ap-circular-progress')).toBeInTheDocument();
+
+    rerender(
+      <ReactFlowProvider>
+        <StageNode {...defaultProps} onTaskAdd={onTaskAdd} addTaskLoading={false} />
+      </ReactFlowProvider>
+    );
+
+    expect(screen.queryByTestId('ap-circular-progress')).not.toBeInTheDocument();
+  });
+});
