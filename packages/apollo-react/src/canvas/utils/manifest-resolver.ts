@@ -10,11 +10,11 @@
  * - Resolved: Final merged result used for rendering
  */
 
-import { getToolbarActionStore } from '../hooks';
 import type { HandleGroupManifest, HandleManifest } from '../schema/node-definition/handle';
 import type { NodeDisplayManifest } from '../schema/node-definition/node-manifest';
 import type { DisplayConfig } from '../schema/workflow/base';
 import type { HandleActionEvent } from '../components/ButtonHandle/ButtonHandle';
+import { getCollapsedShape } from './collapse';
 
 /**
  * Context object passed to resolution functions
@@ -24,6 +24,9 @@ export interface ResolutionContext {
   display?: DisplayConfig;
   /** Instance input values */
   inputs?: Record<string, unknown>;
+  /** Node ID for collapse state lookup */
+  nodeId?: string;
+  isCollapsed?: boolean;
 }
 
 /**
@@ -82,37 +85,33 @@ interface TemplateVars {
  * ```typescript
  * const display = resolveDisplay(
  *   { label: "Decision", icon: "git-branch", shape: "square" },
- *   { label: "Check if admin" }
+ *   { display: { label: "Check if admin" } },
  * );
  * // Result: { label: "Check if admin", icon: "git-branch", shape: "square" }
  * ```
  */
 export function resolveDisplay(
   manifestDisplay?: NodeDisplayManifest,
-  instanceDisplay?: (DisplayConfig & { nodeId?: string }) | undefined
+  context?: ResolutionContext
 ): ResolvedDisplay {
   if (!manifestDisplay) {
     return {
       icon: 'help-circle',
       shape: 'square' as const,
-      label: instanceDisplay?.label || 'Unknown Node',
+      label: context?.display?.label || 'Unknown Node',
     } as ResolvedDisplay;
   }
 
-  const { collapsed } = getToolbarActionStore();
-  const isCollapsed = Boolean(instanceDisplay?.nodeId && collapsed?.has(instanceDisplay.nodeId));
-  const shape = instanceDisplay?.shape ?? manifestDisplay.shape;
+  const isCollapsed = context?.isCollapsed ?? false;
+  const shape = context?.display?.shape ?? manifestDisplay.shape;
 
-  // Map shapes to their collapsed equivalents:
-  // - rectangle → square (compact form)
-  // - square → square (no change)
-  // - circle → circle (no change)
-  const collapsedShape = shape === 'rectangle' ? 'square' : shape;
+  const collapsedShape = getCollapsedShape(shape);
+  const expandedShape = manifestDisplay.shape;
 
   return {
     ...manifestDisplay,
-    ...instanceDisplay,
-    shape: isCollapsed ? collapsedShape : shape,
+    ...context?.display,
+    shape: isCollapsed ? collapsedShape : expandedShape,
   };
 }
 
@@ -246,6 +245,8 @@ export function resolveHandles(
   handleGroups: HandleGroupManifest[],
   context: ResolutionContext
 ): ResolvedHandleGroup[] {
+  const isCollapsed = context?.isCollapsed ?? false;
+
   return handleGroups.map((group) => {
     const handles: ResolvedHandle[] = group.handles.flatMap((handle) => {
       // Handle repeat (dynamic handles from array)
@@ -271,11 +272,16 @@ export function resolveHandles(
             [indexVar]: index,
           };
 
+          // Hide artifact handles when node is collapsed
+          const baseVisible = resolveVisibility(handle.visible, context);
+          const isArtifactHandle = handle.handleType === 'artifact';
+          const visible = context.isCollapsed && isArtifactHandle ? false : baseVisible;
+
           return {
             ...handle,
             id: replaceTemplateVars(handle.id, vars),
             label: handle.label ? replaceTemplateVars(handle.label, vars) : undefined,
-            visible: resolveVisibility(handle.visible, context),
+            visible,
             // Remove repeat-specific fields
             repeat: undefined,
             itemVar: undefined,
@@ -285,9 +291,14 @@ export function resolveHandles(
       }
 
       // Static handle (no repeat)
+      // Hide artifact handles when node is collapsed
+      const baseVisible = resolveVisibility(handle.visible, context);
+      const isArtifactHandle = handle.handleType === 'artifact';
+      const visible = isCollapsed && isArtifactHandle ? false : baseVisible;
+
       return {
         ...handle,
-        visible: resolveVisibility(handle.visible, context),
+        visible,
       } as ResolvedHandle;
     });
 

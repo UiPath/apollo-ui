@@ -20,8 +20,14 @@ const StyledActions = styled('div')(() => ({
 function AutopilotChatHeaderActionsComponent() {
   const { _ } = useLingui();
   const chatService = useChatService();
-  const { disabledFeatures, chatMode, historyOpen, settingsOpen, setHistoryAnchorElement, readOnly } =
-    useChatState();
+  const {
+    disabledFeatures,
+    chatMode,
+    historyOpen,
+    settingsOpen,
+    setHistoryAnchorElement,
+    readOnly,
+  } = useChatState();
   const { clearAttachments } = useAttachments();
   const { customHeaderActions, handleCustomHeaderAction } = usePicker();
   const [actionMenuAnchorEl, setActionMenuAnchorEl] = React.useState<HTMLElement | null>(null);

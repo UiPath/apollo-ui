@@ -2,6 +2,7 @@ export * from './ArrayUtil';
 export * from './auto-layout';
 export * from './CanvasEventBus';
 export * from './CssUtil';
+export * from './collapse';
 export * from './coded-agents/d3-layout';
 export * from './coded-agents/mermaid-parser';
 export * from './constraint-validator';
