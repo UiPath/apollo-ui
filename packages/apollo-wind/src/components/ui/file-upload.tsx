@@ -13,6 +13,8 @@ export interface FileUploadProps {
   maxSize?: number; // in bytes
   className?: string;
   showPreview?: boolean;
+  /** External errors keyed by filename. Use this to set errors from outside (e.g., upload failures). */
+  errors?: Record<string, string>;
 }
 
 export function FileUpload({
@@ -23,21 +25,66 @@ export function FileUpload({
   maxSize,
   className,
   showPreview = false,
+  errors,
 }: FileUploadProps) {
   const [files, setFiles] = React.useState<File[]>([]);
   const [isDragging, setIsDragging] = React.useState(false);
-  const [error, setError] = React.useState<string>('');
+  const [fileErrors, setFileErrors] = React.useState<Map<number, string>>(new Map());
   const [previews, setPreviews] = React.useState<string[]>([]);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
-  const validateFiles = (fileList: File[]): File[] => {
-    setError('');
+  const isFileTypeAccepted = (file: File): boolean => {
+    if (!accept) return true;
+
+    const acceptedTypes = accept.split(',').map((type) => type.trim().toLowerCase());
+
+    for (const acceptedType of acceptedTypes) {
+      // Handle MIME type wildcards (e.g., "image/*")
+      if (acceptedType.endsWith('/*')) {
+        const baseType = acceptedType.slice(0, -2);
+        if (file.type.toLowerCase().startsWith(baseType)) {
+          return true;
+        }
+      }
+      // Handle exact MIME type (e.g., "image/png")
+      else if (acceptedType.includes('/')) {
+        if (file.type.toLowerCase() === acceptedType) {
+          return true;
+        }
+      }
+      // Handle file extension (e.g., ".pdf")
+      else if (acceptedType.startsWith('.')) {
+        if (file.name.toLowerCase().endsWith(acceptedType)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  };
+
+  const validateFiles = (
+    fileList: File[],
+    startIndex: number,
+    existingErrors: Map<number, string>
+  ): { validFiles: File[]; errors: Map<number, string> } => {
     const validFiles: File[] = [];
+    const errors = multiple ? new Map(existingErrors) : new Map<number, string>();
 
     for (const file of fileList) {
+      const fileIndex = startIndex + validFiles.length;
+
+      // Check file type
+      if (!isFileTypeAccepted(file)) {
+        errors.set(fileIndex, 'File type not accepted');
+        validFiles.push(file);
+        continue;
+      }
+
       // Check file size
       if (maxSize && file.size > maxSize) {
-        setError(`File "${file.name}" exceeds maximum size of ${formatFileSize(maxSize)}`);
+        errors.set(fileIndex, `Exceeds maximum size of ${formatFileSize(maxSize)}`);
+        validFiles.push(file);
         continue;
       }
 
@@ -50,20 +97,22 @@ export function FileUpload({
       }
     }
 
-    return validFiles;
+    return { validFiles, errors };
   };
 
   const handleFiles = (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return;
 
     const filesArray = Array.from(fileList);
-    const validFiles = validateFiles(filesArray);
+    const startIndex = multiple ? files.length : 0;
+    const { validFiles, errors } = validateFiles(filesArray, startIndex, fileErrors);
 
     if (validFiles.length === 0) return;
 
     const newFiles = multiple ? [...files, ...validFiles] : validFiles;
     setFiles(newFiles);
     onFilesChange?.(newFiles);
+    setFileErrors(errors);
 
     // Generate previews for images
     if (showPreview) {
@@ -73,9 +122,7 @@ export function FileUpload({
           const reader = new FileReader();
           reader.onloadend = () => {
             newPreviews.push(reader.result as string);
-            if (
-              newPreviews.length === validFiles.filter((f) => f.type.startsWith('image/')).length
-            ) {
+            if (newPreviews.length === validFiles.filter((f) => f.type.startsWith('image/')).length) {
               setPreviews(multiple ? [...previews, ...newPreviews] : newPreviews);
             }
           };
@@ -94,7 +141,20 @@ export function FileUpload({
       const newPreviews = previews.filter((_, i) => i !== index);
       setPreviews(newPreviews);
     }
-    setError('');
+
+    // Update error indices after removal
+    setFileErrors((prev) => {
+      const updated = new Map<number, string>();
+      prev.forEach((error, i) => {
+        if (i < index) {
+          updated.set(i, error);
+        } else if (i > index) {
+          updated.set(i - 1, error);
+        }
+        // Skip the removed index
+      });
+      return updated;
+    });
   };
 
   const handleDragEnter = (e: React.DragEvent) => {
@@ -156,8 +216,7 @@ export function FileUpload({
           isDragging
             ? 'border-primary bg-primary/5'
             : 'border-input bg-background hover:bg-accent/50',
-          disabled && 'opacity-50 cursor-not-allowed hover:bg-background',
-          error && 'border-destructive'
+          disabled && 'opacity-50 cursor-not-allowed hover:bg-background'
         )}
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
@@ -187,43 +246,52 @@ export function FileUpload({
         )}
       </div>
 
-      {error && <p className="text-sm text-destructive mt-2">{error}</p>}
-
       {files.length > 0 && (
         <div className="mt-4 space-y-2">
-          {files.map((file, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between p-3 bg-accent/50 rounded-md"
-            >
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                {showPreview && previews[index] && (
-                  <img
-                    src={previews[index]}
-                    alt={file.name}
-                    className="w-10 h-10 object-cover rounded"
-                  />
+          {files.map((file, index) => {
+            // External errors (by filename) take precedence over internal validation errors
+            const fileError = errors?.[file.name] ?? fileErrors.get(index);
+
+            return (
+              <div
+                key={index}
+                className={cn(
+                  'flex flex-col p-3 rounded-md',
+                  fileError ? 'bg-destructive/10 border border-destructive/20' : 'bg-accent/50'
                 )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{file.name}</p>
-                  <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                aria-label={`Remove ${file.name}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeFile(index);
-                }}
-                disabled={disabled}
               >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          ))}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    {showPreview && previews[index] && (
+                      <img
+                        src={previews[index]}
+                        alt={file.name}
+                        className="w-10 h-10 object-cover rounded"
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{file.name}</p>
+                      <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    aria-label={`Remove ${file.name}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFile(index);
+                    }}
+                    disabled={disabled}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                {fileError && <p className="text-xs text-destructive mt-2">{fileError}</p>}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

@@ -101,7 +101,8 @@
       "body-parser": "^2.2.1",
       "lodash": "^4.17.23",
       "lodash-es": "^4.17.23",
-      "caniuse-lite": "1.0.30001756"
+      "caniuse-lite": "1.0.30001756",
+      "zod": "^4.3.5"
     }
   }
 }
