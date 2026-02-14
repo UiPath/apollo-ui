@@ -8,17 +8,19 @@ import {
   useEdgesState,
   useNodesState,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ApButton, ApMenu } from '@uipath/apollo-react/material/components';
+import type { IMenuItem } from '@uipath/apollo-react/material/components/ap-menu/ApMenu.types';
+import { useCallback, useMemo, useState } from 'react';
 import { DefaultCanvasTranslations } from '../../types';
-import { BaseCanvas } from '../BaseCanvas';
-import { CanvasPositionControls } from '../CanvasPositionControls';
-import { TaskIcon, TaskItemTypeValues } from '../TaskIcon';
-import type { ListItem } from '../Toolbox';
 import {
   createGroupModificationHandlers,
   type GroupModificationType,
   getHandlerForModificationType,
-} from '../utils/GroupModificationUtils';
+} from '../../utils/GroupModificationUtils';
+import { BaseCanvas } from '../BaseCanvas';
+import { CanvasPositionControls } from '../CanvasPositionControls';
+import { TaskIcon, TaskItemTypeValues } from '../TaskIcon';
+import type { ListItem } from '../Toolbox';
 import { StageConnectionEdge } from './StageConnectionEdge';
 import { StageEdge } from './StageEdge';
 import { StageNode } from './StageNode';
@@ -964,19 +966,55 @@ const AddAndReplaceTasksStory = () => {
   const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), [StageNodeWrapper]);
   const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
 
-  const [tasks, setTasks] = useState<StageTaskItem[][]>(initialTasksForAddReplace);
+  const [pendingReplaceTask, setPendingReplaceTask] = useState<
+    { groupIndex: number; taskIndex: number } | undefined
+  >();
+  const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>();
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
 
-  const handleAddTask = useCallback((taskItem: ListItem) => {
-    const newTask: StageTaskItem = {
-      id: `${taskItem.id}-${Date.now()}`,
-      label: taskItem.name,
-      icon: taskItem.icon?.Component ? <taskItem.icon.Component /> : undefined,
-    };
+  const [nodesState, setNodes, onNodesChange] = useNodesState([
+    {
+      id: 'add-replace-stage',
+      type: 'stage',
+      position: { x: 320, y: 96 },
+      data: {
+        stageDetails: {
+          label: 'Add, Replace, and Group Tasks',
+          tasks: initialTasksForAddReplace,
+        },
+        taskOptions: availableTaskOptions,
+      },
+    },
+  ]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-    setTasks((prevTasks: StageTaskItem[][]) => {
-      return [...prevTasks, [newTask]];
-    });
-  }, []);
+  const handleAddTask = useCallback(
+    (taskItem: ListItem) => {
+      const newTask: StageTaskItem = {
+        id: `${taskItem.id}-${Date.now()}`,
+        label: taskItem.name,
+        icon: taskItem.icon?.Component ? <taskItem.icon.Component /> : undefined,
+      };
+
+      setNodes((prevNodes) =>
+        prevNodes.map((node) =>
+          node.id === 'add-replace-stage'
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  stageDetails: {
+                    ...node.data.stageDetails,
+                    tasks: [...node.data.stageDetails.tasks, [newTask]],
+                  },
+                },
+              }
+            : node
+        )
+      );
+    },
+    [setNodes]
+  );
 
   const handleReplaceTask = useCallback(
     (taskItem: StageTaskItem, groupIndex: number, taskIndex: number) => {
@@ -993,30 +1031,49 @@ const AddAndReplaceTasksStory = () => {
         icon: listItem.icon?.Component ? <listItem.icon.Component /> : undefined,
       };
 
-      setTasks((prevTasks: StageTaskItem[][]) => {
-        // Validate that indices are within bounds
-        if (groupIndex >= prevTasks.length) {
-          return prevTasks;
-        }
-
-        const currentGroup = prevTasks[groupIndex];
-        if (!currentGroup || taskIndex >= currentGroup.length) {
-          return prevTasks;
-        }
-
-        const updatedTasks = prevTasks.map((group: StageTaskItem[], gIdx: number) => {
-          if (gIdx === groupIndex) {
-            return group.map((task: StageTaskItem, tIdx: number) =>
-              tIdx === taskIndex ? replacedTask : task
-            );
+      setNodes((prevNodes) =>
+        prevNodes.map((node) => {
+          if (node.id !== 'add-replace-stage') {
+            return node;
           }
-          return group;
-        });
 
-        return updatedTasks;
-      });
+          const prevTasks = node.data.stageDetails.tasks;
+
+          // Validate that indices are within bounds
+          if (groupIndex >= prevTasks.length) {
+            return node;
+          }
+
+          const currentGroup = prevTasks[groupIndex];
+          if (!currentGroup || taskIndex >= currentGroup.length) {
+            return node;
+          }
+
+          const updatedTasks = prevTasks.map((group: StageTaskItem[], gIdx: number) => {
+            if (gIdx === groupIndex) {
+              return group.map((task: StageTaskItem, tIdx: number) =>
+                tIdx === taskIndex ? replacedTask : task
+              );
+            }
+            return group;
+          });
+
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              stageDetails: {
+                ...node.data.stageDetails,
+                tasks: updatedTasks,
+              },
+            },
+          };
+        })
+      );
+
+      setPendingReplaceTask(undefined);
     },
-    [setTasks]
+    [setNodes]
   );
 
   const groupModificationHandlers = useMemo(
@@ -1030,51 +1087,112 @@ const AddAndReplaceTasksStory = () => {
         groupModificationHandlers,
         groupModificationType
       );
-      // Handler returns modified array, we update state with it
-      setTasks((prevTasks) => handler(prevTasks, groupIndex, taskIndex));
+
+      setNodes((prevNodes) =>
+        prevNodes.map((node) => {
+          if (node.id !== 'add-replace-stage') {
+            return node;
+          }
+
+          const prevTasks = node.data.stageDetails.tasks;
+          const updatedTasks = handler(prevTasks, groupIndex, taskIndex);
+
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              stageDetails: {
+                ...node.data.stageDetails,
+                tasks: updatedTasks,
+              },
+            },
+          };
+        })
+      );
     },
-    [groupModificationHandlers, setTasks]
+    [groupModificationHandlers, setNodes]
   );
 
-  const nodes = useMemo(
-    () => [
-      {
-        id: 'add-replace-stage',
-        type: 'stage',
-        position: { x: 320, y: 96 },
-        data: {
-          stageDetails: {
-            label: 'Add, Replace, and Group Tasks',
-            tasks: tasks,
-          },
-          taskOptions: availableTaskOptions,
-          onAddTaskFromToolbox: handleAddTask,
-          onTaskReplace: handleReplaceTask,
-          onTaskGroupModification: handleTaskGroupModification,
+  // Handle task click in canvas (for selection)
+  const handleTaskClick = useCallback((taskId: string) => {
+    setSelectedTaskId(taskId);
+  }, []);
+
+  // Get current tasks from node state for menu items
+  const currentTasks =
+    nodesState.find((n) => n.id === 'add-replace-stage')?.data.stageDetails.tasks || [];
+
+  // Create menu items for task selection
+  const taskMenuItems = useMemo<IMenuItem[]>(() => {
+    return currentTasks.flatMap((group, groupIndex) =>
+      group.map((task, taskIndex) => ({
+        title: task.label,
+        variant: 'item' as const,
+        startIcon: task.icon,
+        onClick: () => {
+          setSelectedTaskId(task.id);
+          setPendingReplaceTask({ groupIndex, taskIndex });
+          setMenuAnchorEl(null);
         },
-      },
-    ],
-    [tasks, handleAddTask, handleReplaceTask, handleTaskGroupModification]
+      }))
+    );
+  }, [currentTasks]);
+
+  // Update node data with pendingReplaceTask and selectedTaskId
+  const nodesWithMetadata = useMemo(
+    () =>
+      nodesState.map((node) =>
+        node.id === 'add-replace-stage'
+          ? {
+              ...node,
+              data: {
+                ...node.data,
+                pendingReplaceTask: pendingReplaceTask,
+                stageDetails: {
+                  ...node.data.stageDetails,
+                  selectedTasks: selectedTaskId ? [selectedTaskId] : undefined,
+                },
+                onAddTaskFromToolbox: handleAddTask,
+                onReplaceTaskFromToolbox: handleReplaceTask,
+                onTaskGroupModification: handleTaskGroupModification,
+                onTaskClick: handleTaskClick,
+              },
+            }
+          : node
+      ),
+    [
+      nodesState,
+      pendingReplaceTask,
+      selectedTaskId,
+      handleAddTask,
+      handleReplaceTask,
+      handleTaskGroupModification,
+      handleTaskClick,
+    ]
   );
-
-  const [nodesState, setNodes, onNodesChange] = useNodesState(nodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-
-  // Sync nodes when tasks change
-  useEffect(() => {
-    setNodes(nodes);
-  }, [nodes, setNodes]);
 
   const onConnect = useCallback(
     (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
     [setEdges]
   );
 
+  // Compute button label based on whether a task is being replaced
+  const replaceButtonLabel = useMemo(() => {
+    if (pendingReplaceTask) {
+      const taskBeingReplaced =
+        currentTasks[pendingReplaceTask.groupIndex]?.[pendingReplaceTask.taskIndex];
+      if (taskBeingReplaced) {
+        return `Replacing Task: ${taskBeingReplaced.label}`;
+      }
+    }
+    return 'Replace Task';
+  }, [pendingReplaceTask, currentTasks]);
+
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       <ReactFlowProvider>
         <BaseCanvas
-          nodes={nodesState}
+          nodes={nodesWithMetadata}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
@@ -1088,6 +1206,22 @@ const AddAndReplaceTasksStory = () => {
           elevateEdgesOnSelect
           defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
         >
+          <Panel position="top-right">
+            <ApButton
+              variant="primary"
+              label={replaceButtonLabel}
+              onClick={(e) => {
+                setMenuAnchorEl(e.currentTarget as HTMLElement);
+              }}
+            />
+            <ApMenu
+              isOpen={Boolean(menuAnchorEl)}
+              anchorEl={menuAnchorEl}
+              menuItems={taskMenuItems}
+              onClose={() => setMenuAnchorEl(null)}
+              width={300}
+            />
+          </Panel>
           <Panel position="bottom-right">
             <CanvasPositionControls translations={DefaultCanvasTranslations} />
           </Panel>
