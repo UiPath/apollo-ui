@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.33.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.33.0...@uipath/apollo-react@3.33.1) (2026-02-14)
+
+### Bug Fixes
+
+* **apollo-react:** cleanup node manifests [PLT-000] ([0877526](https://github.com/UiPath/apollo-ui/commit/08775263de0db198c67189e338066bfbc36250ed))
+
 ## [@uipath/apollo-react-v3.33.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.32.1...@uipath/apollo-react@3.33.0) (2026-02-14)
 
 ### Features
