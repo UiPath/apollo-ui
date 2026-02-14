@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
-import type { NodeManifest, WorkflowManifest } from '../schema/node-definition';
+import type { CategoryManifest, NodeManifest } from '../schema/node-definition';
 import { NodeTypeRegistry } from './NodeTypeRegistry';
 import { NodeRegistryContext } from './useNodeTypeRegistry';
 
@@ -13,7 +13,7 @@ interface NodeRegistryProviderProps {
   /**
    * Full manifest to register both nodes and categories. When changed, will overwrite previous registrations.
    */
-  manifest?: WorkflowManifest;
+  manifest?: { nodes: NodeManifest[]; categories: CategoryManifest[] };
   onRegistration?: (nodeType: string, success: boolean) => void;
 }
 
@@ -25,7 +25,7 @@ export const NodeRegistryProvider: React.FC<NodeRegistryProviderProps> = ({
   const registry = useMemo(() => {
     const reg = new NodeTypeRegistry();
     if (manifest) {
-      reg.registerManifest(manifest);
+      reg.registerManifest(manifest.nodes, manifest.categories);
     } else if (registrations) {
       reg.registerNodeManifests(registrations);
     }

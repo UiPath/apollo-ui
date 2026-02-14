@@ -1,7 +1,6 @@
-import type { WorkflowManifest } from '../../schema/node-definition';
+import type { CategoryManifest, NodeManifest } from '../../schema';
 
-export const codedAgentManifest: WorkflowManifest = {
-  version: '1.0.0',
+export const codedAgentManifest: { categories: CategoryManifest[]; nodes: NodeManifest[] } = {
   categories: [
     {
       id: 'coded-agent',

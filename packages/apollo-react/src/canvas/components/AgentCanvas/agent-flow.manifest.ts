@@ -5,11 +5,7 @@
  * Runtime behavior (dynamic handles, toolbars, adornments) is handled via BaseNodeData.
  */
 
-import type {
-  CategoryManifest,
-  NodeManifest,
-  WorkflowManifest,
-} from '../../schema/node-definition';
+import type { CategoryManifest, NodeManifest } from '../../schema/node-definition';
 
 // ============================================================================
 // Categories
@@ -289,7 +285,7 @@ export const memoryResourceManifest: NodeManifest = {
 // Combined Manifest
 // ============================================================================
 
-export const agentFlowManifest: WorkflowManifest = {
+export const agentFlowManifest = {
   version: '1.0.0',
   categories: agentFlowCategories,
   nodes: [

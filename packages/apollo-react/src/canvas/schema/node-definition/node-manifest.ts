@@ -15,6 +15,14 @@ import { handleGroupManifestSchema } from './handle';
 export const nodeShapeSchema = z.enum(['circle', 'square', 'rectangle']);
 
 /**
+ * Debug configuration for a node
+ */
+export const nodeDebugManifestSchema = z.object({
+  /** Debug configuration runtime */
+  runtime: z.string().min(1),
+});
+
+/**
  * Display configuration for a node
  */
 export const nodeDisplayManifestSchema = z.object({
@@ -81,11 +89,20 @@ export const nodeManifestSchema = z.object({
   /** Toolbar extensions per mode (adds to global defaults) */
   toolbarExtensions: toolbarConfigurationSchema.optional(),
 
+  /** Input defaults for the node */
+  inputDefaults: z.record(z.string(), z.unknown()).optional(),
+
   /** Input definition for the node, record of string to any */
   inputDefinition: z.record(z.string(), z.any()).optional(),
 
   /** Output definition for the node, record of string to any */
   outputDefinition: z.record(z.string(), z.any()).optional(),
+
+  /** Whether this node type supports drill-in (has a child canvas) */
+  drillable: z.boolean().optional(),
+
+  /** Debug configuration for the node */
+  debug: nodeDebugManifestSchema.optional(),
 
   /** Model definition for the node, open for consumers to implement */
   model: z.any().optional(),

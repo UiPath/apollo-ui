@@ -58,6 +58,6 @@ export const nodeSchema = z.object({
 });
 
 // Export inferred TypeScript types
-export type UIConfig = z.infer<typeof uiSchema>;
+export type InstanceUiConfig = z.infer<typeof uiSchema>;
 
-export type WorkflowNode = z.infer<typeof nodeSchema>;
+export type NodeInstance = z.infer<typeof nodeSchema>;

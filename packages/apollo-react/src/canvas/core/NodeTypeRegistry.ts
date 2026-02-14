@@ -1,12 +1,7 @@
 import type { BaseNodeData, ListItem } from '../components';
 import type { PreviewNodeConnectionInfo } from '../hooks';
-import type {
-  CategoryManifest,
-  HandleManifest,
-  NodeManifest,
-  WorkflowManifest,
-} from '../schema/node-definition';
-import type { DisplayConfig } from '../schema/workflow/base';
+import type { InstanceDisplayConfig } from '../schema';
+import type { CategoryManifest, HandleManifest, NodeManifest } from '../schema/node-definition';
 import {
   type ConnectionValidationContext,
   checkCategoryConstraint,
@@ -40,7 +35,7 @@ export class NodeTypeRegistry {
    *
    * @param nodes - Array of node manifests to register
    *
-   * @deprecated Use registerManifest with full WorkflowManifest instead to .
+   * @deprecated Use registerManifest with full node and category manifests instead.
    */
   registerNodeManifests(nodes: NodeManifest[]) {
     // Extract unique categories from nodes
@@ -60,13 +55,7 @@ export class NodeTypeRegistry {
       }
     }
 
-    const workflowManifest: WorkflowManifest = {
-      version: '0',
-      categories: Array.from(categoryMap.values()),
-      nodes,
-    };
-
-    this.registerManifest(workflowManifest);
+    this.registerManifest(nodes, Array.from(categoryMap.values()));
   }
 
   /**
@@ -75,14 +64,15 @@ export class NodeTypeRegistry {
    * Creates lookup maps and pre-computes hierarchical relationships
    * to eliminate repeated O(n) searches during runtime.
    *
-   * @param manifest - The workflow manifest to cache
+   * @param nodeManifests - The node manifests to cache
+   * @param categoryManifests - The category manifests to cache
    */
-  registerManifest(manifest: WorkflowManifest) {
+  registerManifest(nodeManifests: NodeManifest[], categoryManifests: CategoryManifest[]) {
     // Build direct lookup maps O(n) + O(m)
-    this.categoryById = new Map(manifest.categories.map((c) => [c.id, c]));
-    this.nodeByType = new Map(manifest.nodes.map((n) => [n.nodeType, n]));
+    this.categoryById = new Map(categoryManifests.map((c) => [c.id, c]));
+    this.nodeByType = new Map(nodeManifests.map((n) => [n.nodeType, n]));
     this.nodeHandles = new Map<string, NodeHandles>(
-      manifest.nodes.map((n) => [
+      nodeManifests.map((n) => [
         n.nodeType,
         n.handleConfiguration
           .flatMap((hc) => hc.handles)
@@ -98,7 +88,7 @@ export class NodeTypeRegistry {
 
     // Build parent-child relationships O(n)
     this.categoriesByParent = new Map<string | undefined, CategoryManifest[]>();
-    for (const cat of manifest.categories) {
+    for (const cat of categoryManifests) {
       const siblings = this.categoriesByParent.get(cat.parentId) ?? [];
       siblings.push(cat);
       this.categoriesByParent.set(cat.parentId, siblings);
@@ -106,7 +96,7 @@ export class NodeTypeRegistry {
 
     // Pre-compute ancestors for each category O(n * depth)
     this.categoryAncestors = new Map<string, string[]>();
-    for (const cat of manifest.categories) {
+    for (const cat of categoryManifests) {
       const ancestors: string[] = [];
       let currentId = cat.parentId;
       while (currentId) {
@@ -118,7 +108,7 @@ export class NodeTypeRegistry {
 
     // Pre-compute descendants for each category O(n * fan out)
     this.categoryDescendants = new Map<string, string[]>();
-    for (const cat of manifest.categories) {
+    for (const cat of categoryManifests) {
       const descendants: string[] = [];
       const queue = [cat.id];
       while (queue.length > 0) {
@@ -135,7 +125,7 @@ export class NodeTypeRegistry {
     // Build category-to-nodes mapping O(m)
     // Note: nodes without a category are stored with undefined as the key
     this.nodesByCategory = new Map<string, NodeManifest[]>();
-    for (const node of manifest.nodes) {
+    for (const node of nodeManifests) {
       const categoryKey = node.category ?? undefined;
       const nodes = this.nodesByCategory.get(categoryKey) ?? [];
       nodes.push(node);
@@ -143,7 +133,7 @@ export class NodeTypeRegistry {
     }
 
     // Build hierarchical category tree O(n)
-    this.categoryTree = new CategoryTree(manifest.categories, manifest.nodes);
+    this.categoryTree = new CategoryTree(categoryManifests, nodeManifests);
   }
 
   /**
@@ -215,7 +205,7 @@ export class NodeTypeRegistry {
     }
 
     // Build default display from manifest
-    const display: DisplayConfig = {
+    const display: InstanceDisplayConfig = {
       label: label || manifest.display.label,
       icon: manifest.display.icon,
       shape: manifest.display.shape,
