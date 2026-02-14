@@ -1,15 +1,18 @@
 {
-  "english": "Inglés",
+  "english": "English",
   "german": "Alemán",
   "spanish": "Español",
   "spanish-mx": "Español (México)",
   "french": "Francés",
   "japanese": "Japonés",
-  "korean": "Coreano",
+  "korean": "Koreano",
   "portuguese": "Portugués",
   "portuguese-br": "Portugués (Brasil)",
   "russian": "Ruso",
   "turkish": "Turco",
   "chinese-cn": "Chino (China)",
-  "chinese-tw": "Chino (Taiwán)"
+  "chinese-tw": "Chino (Taiwán)",
+  "dashboard": "Panel",
+  "projects": "Proyectos",
+  "analytics": "Análisis"
 }

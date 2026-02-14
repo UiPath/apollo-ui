@@ -65,5 +65,17 @@
   "autopilot-chat.history.group.today": "今日",
   "autopilot-chat.input.placeholder": "どのようなサポートが必要ですか?",
   "autopilot-chat.tree.unknown": "不明",
-  "autopilot-chat.history.group.yesterday": "昨日"
+  "autopilot-chat.history.group.yesterday": "昨日",
+  "autopilot-chat.resource-trigger.tooltip": "リソースを追加",
+  "autopilot-chat.resource-trigger.label": "リソースの参照を追加",
+  "autopilot-chat.resource-picker.error": "リソースの読み込みに失敗しました。",
+  "autopilot-chat.resource-picker.retry": "リトライ",
+  "autopilot-chat.resource-picker.no-results": "一致するリソースがありません。",
+  "autopilot-chat.resource-picker.empty": "利用可能なリソースがありません。",
+  "autopilot-chat.resource-picker.label": "リソース ピッカー",
+  "autopilot-chat.resource-picker.load-more-error": "読み込みに失敗しました。",
+  "autopilot-chat.resource-picker.search-error": "検索に失敗しました。",
+  "autopilot-chat.resource-picker.back": "戻る",
+  "autopilot-chat.input.resource-chip.remove": "削除",
+  "autopilot-chat.input.resource-chip.remove-name": "{label} を削除"
 }
