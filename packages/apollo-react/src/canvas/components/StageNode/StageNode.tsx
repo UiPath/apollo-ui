@@ -20,6 +20,7 @@ import { FontVariantToken, Padding, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { Position, useStore, useViewport } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
+  ApCircularProgress,
   ApIcon,
   ApIconButton,
   ApLink,
@@ -70,6 +71,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
     execution,
     stageDetails,
     addTaskLabel = 'Add task',
+    addTaskLoading = false,
     replaceTaskLabel = 'Replace task',
     taskOptions = [],
     menuItems,
@@ -520,10 +522,20 @@ const StageNodeComponent = (props: StageNodeProps) => {
               </ApTooltip>
             )}
             {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly && (
-              <ApTooltip content={addTaskLabel} placement="top">
-                <ApIconButton onClick={handleTaskAddClick} size="small">
-                  <ApIcon name="add" size="20px" />
-                </ApIconButton>
+              <ApTooltip content={addTaskLoading ? 'Loading...' : addTaskLabel} placement="top">
+                <span>
+                  <ApIconButton
+                    onClick={handleTaskAddClick}
+                    size="small"
+                    disabled={addTaskLoading}
+                  >
+                    {addTaskLoading ? (
+                      <ApCircularProgress size={20} />
+                    ) : (
+                      <ApIcon name="add" size="20px" />
+                    )}
+                  </ApIconButton>
+                </span>
               </ApTooltip>
             )}
           </Row>
@@ -534,9 +546,9 @@ const StageNodeComponent = (props: StageNodeProps) => {
             <Column py={2}>
               {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly ? (
                 <ApLink
-                  onClick={handleTaskAddClick}
+                  onClick={addTaskLoading ? undefined : handleTaskAddClick}
                   variant={FontVariantToken.fontSizeS}
-                  style={{ maxWidth: 'fit-content' }}
+                  style={{ maxWidth: 'fit-content', pointerEvents: addTaskLoading ? 'none' : undefined }}
                 >
                   {defaultContent}
                 </ApLink>

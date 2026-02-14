@@ -1105,3 +1105,131 @@ export const AddAndReplaceTasks: Story = {
   render: () => <AddAndReplaceTasksStory />,
   args: {},
 };
+
+const AddTaskLoadingStory = () => {
+  const StageNodeWrapper = useMemo(
+    () =>
+      function StageNodeWrapperComponent(props: any) {
+        return <StageNode {...props} {...props.data} />;
+      },
+    []
+  );
+
+  const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), [StageNodeWrapper]);
+  const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
+
+  const initialNodes = useMemo(
+    () => [
+      {
+        id: 'loading-stage-empty',
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Empty Stage (click +)',
+            tasks: [],
+          },
+          addTaskLoading: false,
+        },
+      },
+      {
+        id: 'loading-stage-with-tasks',
+        type: 'stage',
+        position: { x: 400, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'With Tasks (click +)',
+            tasks: [
+              [{ id: 'task-1', label: 'Existing Task', icon: <VerificationIcon /> }],
+              [{ id: 'task-2', label: 'Another Task', icon: <DocumentIcon /> }],
+            ],
+          },
+          addTaskLoading: false,
+        },
+      },
+    ],
+    []
+  );
+
+  const [nodesState, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
+  const setNodeLoading = useCallback(
+    (nodeId: string, loading: boolean) => {
+      setNodes((nds) =>
+        nds.map((node) =>
+          node.id === nodeId
+            ? { ...node, data: { ...node.data, addTaskLoading: loading } }
+            : node
+        )
+      );
+    },
+    [setNodes]
+  );
+
+  const handleTaskAddForNode = useCallback(
+    (nodeId: string) => {
+      setNodeLoading(nodeId, true);
+      // Simulate API delay of 3 seconds
+      setTimeout(() => {
+        setNodeLoading(nodeId, false);
+      }, 3000);
+    },
+    [setNodeLoading]
+  );
+
+  // Inject a per-node onTaskAdd handler
+  const nodesWithHandler = useMemo(
+    () =>
+      nodesState.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          onTaskAdd: () => handleTaskAddForNode(node.id),
+        },
+      })),
+    [nodesState, handleTaskAddForNode]
+  );
+
+  const onConnect = useCallback(
+    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
+    [setEdges]
+  );
+
+  return (
+    <div style={{ width: '100vw', height: '100vh' }}>
+      <ReactFlowProvider>
+        <BaseCanvas
+          nodes={nodesWithHandler}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          mode="design"
+          connectionMode={ConnectionMode.Strict}
+          defaultEdgeOptions={{ type: 'stage' }}
+          connectionLineComponent={StageConnectionEdge}
+          elevateEdgesOnSelect
+          defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
+        >
+          <Panel position="bottom-right">
+            <CanvasPositionControls translations={DefaultCanvasTranslations} />
+          </Panel>
+        </BaseCanvas>
+      </ReactFlowProvider>
+    </div>
+  );
+};
+
+export const AddTaskLoading: Story = {
+  name: 'Add Task Loading State',
+  parameters: {
+    useCustomRender: true,
+  },
+  render: () => <AddTaskLoadingStory />,
+  args: {},
+};
