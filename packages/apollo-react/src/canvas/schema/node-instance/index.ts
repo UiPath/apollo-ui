@@ -1,4 +1,3 @@
-
 // Re-export types
 export type {
   InstanceDisplayConfig,
