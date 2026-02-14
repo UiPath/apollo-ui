@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.33.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.32.1...@uipath/apollo-react@3.33.0) (2026-02-14)
+
+### Features
+
+* **apollo-react:** add collapsed state management for nodes in BaseCanvas [AG-683] ([8244db5](https://github.com/UiPath/apollo-ui/commit/8244db51fcd1e84228e3dcd70520e63d07887e0c))
+
 ## [@uipath/apollo-react-v3.32.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.31.0...@uipath/apollo-react@3.32.0) (2026-02-13)
 
 ### Features
