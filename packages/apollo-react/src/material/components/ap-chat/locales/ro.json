@@ -65,5 +65,17 @@
   "autopilot-chat.history.group.today": "Azi",
   "autopilot-chat.input.placeholder": "Ce ai dori să fac?",
   "autopilot-chat.tree.unknown": "Necunoscut",
-  "autopilot-chat.history.group.yesterday": "Ieri"
+  "autopilot-chat.history.group.yesterday": "Ieri",
+  "autopilot-chat.resource-trigger.tooltip": "Adaugă resursă",
+  "autopilot-chat.resource-trigger.label": "Adaugă referință resursă",
+  "autopilot-chat.resource-picker.error": "Încărcarea resurselor a eșuat",
+  "autopilot-chat.resource-picker.retry": "Reîncercare",
+  "autopilot-chat.resource-picker.no-results": "Fără resurse corespunzătoare",
+  "autopilot-chat.resource-picker.empty": "Nu există resurse disponibile",
+  "autopilot-chat.resource-picker.label": "Selector de resurse",
+  "autopilot-chat.resource-picker.load-more-error": "Nu s-a reușit încărcarea mai multor elemente",
+  "autopilot-chat.resource-picker.search-error": "Căutarea a eșuat",
+  "autopilot-chat.resource-picker.back": "Înapoi",
+  "autopilot-chat.input.resource-chip.remove": "Eliminare",
+  "autopilot-chat.input.resource-chip.remove-name": "Elimină {label}"
 }

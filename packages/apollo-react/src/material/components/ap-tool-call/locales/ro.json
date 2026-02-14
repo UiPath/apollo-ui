@@ -1,5 +1,5 @@
 {
-  "tool-call.running": "Rularea {toolName}...",
+  "tool-call.running": "Rulând {toolName}...",
   "tool-call.ran": "A rulat {toolName} ({duration}s)",
   "tool-call.input": "Intrare",
   "tool-call.execution": "Execuție",

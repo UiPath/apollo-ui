@@ -65,5 +65,17 @@
   "autopilot-chat.history.group.today": "Bugün",
   "autopilot-chat.input.placeholder": "Ne yapmak istiyorsunuz?",
   "autopilot-chat.tree.unknown": "Bilinmiyor",
-  "autopilot-chat.history.group.yesterday": "Dün"
+  "autopilot-chat.history.group.yesterday": "Dün",
+  "autopilot-chat.resource-trigger.tooltip": "Kaynak Ekle",
+  "autopilot-chat.resource-trigger.label": "Kaynak başvurusu ekle",
+  "autopilot-chat.resource-picker.error": "Şablonlar yüklenemedi",
+  "autopilot-chat.resource-picker.retry": "Yeniden dene",
+  "autopilot-chat.resource-picker.no-results": "Eşleşen kaynak yok",
+  "autopilot-chat.resource-picker.empty": "Kullanılabilir kaynak yok",
+  "autopilot-chat.resource-picker.label": "Kaynak seçici",
+  "autopilot-chat.resource-picker.load-more-error": "Profil yüklenemedi",
+  "autopilot-chat.resource-picker.search-error": "Arama başarısız oldu",
+  "autopilot-chat.resource-picker.back": "Geri git",
+  "autopilot-chat.input.resource-chip.remove": "Kaldır",
+  "autopilot-chat.input.resource-chip.remove-name": "Kaldır: {label}"
 }

@@ -65,5 +65,17 @@
   "autopilot-chat.history.group.today": "今天",
   "autopilot-chat.input.placeholder": "我要怎麼做?",
   "autopilot-chat.tree.unknown": "未知",
-  "autopilot-chat.history.group.yesterday": "昨天"
+  "autopilot-chat.history.group.yesterday": "昨天",
+  "autopilot-chat.resource-trigger.tooltip": "添加資源",
+  "autopilot-chat.resource-trigger.label": "新增資源參考",
+  "autopilot-chat.resource-picker.error": "無法載入資源",
+  "autopilot-chat.resource-picker.retry": "重試",
+  "autopilot-chat.resource-picker.no-results": "沒有相符的資源",
+  "autopilot-chat.resource-picker.empty": "沒有可用的資源",
+  "autopilot-chat.resource-picker.label": "資源選取器",
+  "autopilot-chat.resource-picker.load-more-error": "無法載入更多",
+  "autopilot-chat.resource-picker.search-error": "搜尋失敗",
+  "autopilot-chat.resource-picker.back": "返回",
+  "autopilot-chat.input.resource-chip.remove": "刪除",
+  "autopilot-chat.input.resource-chip.remove-name": "移除 {label}"
 }
