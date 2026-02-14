@@ -107,14 +107,24 @@ jobs:
       - name: Run Audit All Dependencies
         if: matrix.check == 'Audit All Dependencies'
         run: |
-          echo "📋 Running full dependency audit (all dev + prod)..."
-          pnpm audit
+          if git diff --name-only origin/main...HEAD | grep -q '^pnpm-lock\.yaml$'; then
+            echo "📋 Running full dependency audit (all dev + prod)..."
+            pnpm audit
+          else
+            echo "⏭️ Skipping audit - pnpm-lock.yaml not changed"
+            exit 0
+          fi
 
       - name: Run Audit Production Dependencies
         if: matrix.check == 'Audit Production Dependencies'
         run: |
-          echo "🔒 Checking for vulnerabilities in production dependencies..."
-          pnpm audit --prod
+          if git diff --name-only origin/main...HEAD | grep -q '^pnpm-lock\.yaml$'; then
+            echo "🔒 Checking for vulnerabilities in production dependencies..."
+            pnpm audit --prod
+          else
+            echo "⏭️ Skipping audit - pnpm-lock.yaml not changed"
+            exit 0
+          fi
 
       - name: Upload Failure Artifacts
         if: failure()
