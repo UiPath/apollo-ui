@@ -5,7 +5,7 @@ import { DatePicker, DateRangePicker } from './date-picker';
 import { Label } from './label';
 
 const meta = {
-  title: 'Design System/Core/Date Picker',
+  title: 'Components/Core/Date Picker',
   component: DatePicker,
   parameters: {
     layout: 'centered',
