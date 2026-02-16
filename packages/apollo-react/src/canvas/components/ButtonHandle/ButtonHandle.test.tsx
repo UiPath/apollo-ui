@@ -182,7 +182,7 @@ describe('ButtonHandles', () => {
     );
 
     const handle = screen.getByTestId('handle');
-    expect(handle).toBeInTheDocument();
+    expect(handle).toHaveStyle({ opacity: '1' });
 
     rerender(
       <ButtonHandles
@@ -193,7 +193,7 @@ describe('ButtonHandles', () => {
       />
     );
 
-    expect(screen.queryByTestId('handle')).not.toBeInTheDocument();
+    expect(handle).toHaveStyle({ opacity: '0' });
   });
 
   it('positions handles correctly for different positions', () => {
