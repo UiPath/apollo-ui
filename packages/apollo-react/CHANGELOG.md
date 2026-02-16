@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.34.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.34.0...@uipath/apollo-react@3.34.1) (2026-02-16)
+
+### Bug Fixes
+
+* **apollo-react:** allow visibility of button handles by base node [MST-6330] ([db66a12](https://github.com/UiPath/apollo-ui/commit/db66a1203db58df91bf40ce38efdb755b5f8ab77))
+
 ## [@uipath/apollo-react-v3.34.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.33.2...@uipath/apollo-react@3.34.0) (2026-02-16)
 
 ### Features
