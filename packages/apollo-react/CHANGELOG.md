@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.34.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.33.2...@uipath/apollo-react@3.34.0) (2026-02-16)
+
+### Features
+
+* **apollo-react:** loading icon for add task button ([224beea](https://github.com/UiPath/apollo-ui/commit/224beeac37421a3245f92a0b32e2aa3d6cae8fa6))
+
 ## [@uipath/apollo-react-v3.33.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.33.1...@uipath/apollo-react@3.33.2) (2026-02-14)
 
 ### Bug Fixes
