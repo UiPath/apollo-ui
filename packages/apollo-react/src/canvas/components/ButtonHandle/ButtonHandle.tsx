@@ -258,13 +258,13 @@ const ButtonHandlesBase = ({
 }) => {
   const finalSelected = shouldShowAddButtonFn({ showAddButton, selected });
 
-  // Filter to only visible handles for spacing calculations
-  const visibleHandles = handles.filter((h) => visible && (h.visible ?? true));
+  // Filter only visible handles for spacing calculations
+  const visibleHandles = handles.filter((h) => h.visible ?? true);
   const total = visibleHandles.length;
 
   return (
     <>
-      {visibleHandles.map((handle, index) => (
+      {handles.map((handle, index) => (
         <ButtonHandle
           key={handle.id}
           id={handle.id}
@@ -278,6 +278,8 @@ const ButtonHandlesBase = ({
           index={index}
           total={total}
           selected={selected}
+          // Need top level visibility to be true and current handle visibility to be true to keep positioning of handles consistent
+          visible={visible && (handle.visible ?? true)}
           showButton={finalSelected && visible && handle.showButton}
           color={handle.color}
           onAction={handle.onAction}
