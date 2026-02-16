@@ -643,13 +643,13 @@
       "name": "shell",
       "type": "registry:ui",
       "title": "Shell",
-      "description": "Provides UiPath authentication and renders children only when authenticated.",
+      "description": "Provides UiPath authentication with custom PKCE OAuth flow and renders children only when authenticated.",
       "dependencies": [
-        "@uipath/auth-react",
         "lucide-react",
         "framer-motion",
         "react-i18next",
-        "i18next"
+        "i18next",
+        "zod"
       ],
       "registryDependencies": [
         "button",
@@ -661,6 +661,34 @@
       ],
       "files": [
         { "path": "registry/shell/shell.tsx", "type": "registry:ui" },
+        {
+          "path": "registry/shell/auth-config.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/auth-context.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/auth-utils.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/auth-provider.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/use-auth.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/auth-guard.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/auth-login.tsx",
+          "type": "registry:ui"
+        },
         {
           "path": "registry/shell/shell-layout.tsx",
           "type": "registry:ui"

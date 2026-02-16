@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuth } from "@uipath/auth-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { LogOut } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -10,29 +9,28 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "./use-auth";
 
 interface UserProfileProps {
   isCollapsed: boolean;
 }
 
 export const UserProfile = ({ isCollapsed }: UserProfileProps) => {
-  const auth = useAuth();
+  const { user, logout } = useAuth();
 
-  const user = auth?.user;
-
-  const userInitials = user?.profile?.name
-    ? user.profile.name
+  const userInitials = user?.name
+    ? user.name
         .split(" ")
         .map((n: string) => n[0])
         .join("")
         .toUpperCase()
         .slice(0, 2)
-    : (user?.profile?.preferred_username?.[0]?.toUpperCase() ?? "U");
-  const firstName = user?.profile?.first_name as string;
-  const lastName = user?.profile?.last_name as string;
+    : "U";
+  const firstName = user?.first_name ?? user?.name?.split(" ")[0] ?? "";
+  const lastName = user?.last_name ?? user?.name?.split(" ").slice(1).join(" ") ?? "";
 
   const handleSignOut = () => {
-    auth?.signoutRedirect?.();
+    logout();
   };
 
   return (
@@ -93,7 +91,7 @@ export const UserProfile = ({ isCollapsed }: UserProfileProps) => {
               {firstName} {lastName}
             </span>
             <span className="text-xs text-sidebar-foreground/70 truncate">
-              {user?.profile?.email ?? "user@company.com"}
+              {user?.email ?? "user@company.com"}
             </span>
           </motion.div>
         </motion.div>
@@ -130,10 +128,10 @@ export const UserProfile = ({ isCollapsed }: UserProfileProps) => {
             <div className="flex flex-col gap-2 p-2">
               <div className="flex flex-col gap-0.5">
                 <span className="text-sm font-medium">
-                  {user?.profile?.name ?? "Business user"}
+                  {user?.name ?? "Business user"}
                 </span>
                 <span className="text-xs opacity-60">
-                  {user?.profile?.email ?? "user@company.com"}
+                  {user?.email ?? "user@company.com"}
                 </span>
               </div>
             </div>

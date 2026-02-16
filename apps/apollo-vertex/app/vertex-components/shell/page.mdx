@@ -1,8 +1,9 @@
 import { ShellTemplate } from '@/templates/ShellTemplate';
+import { ShellTemplateWithAuth } from '@/templates/ShellTemplateWithAuth';
 
 # Shell
 
-A component that includes UiPath authentication and a collapsible sidebar.
+A component that includes UiPath authentication with a custom PKCE OAuth flow and a collapsible sidebar.
 
 <div className="not-prose my-8 rounded-lg overflow-hidden" style={{ height: '600px' }}>
   <div className="[&_.h-screen]:!h-full h-full">
@@ -20,9 +21,18 @@ Use the `variant="minimal"` prop to render a horizontal header layout instead of
   </div>
 </div>
 
+
+## Shell template with auth
+
+<div className="not-prose my-8 rounded-lg overflow-hidden" style={{ height: '600px' }}>
+  <div className="[&_.h-screen]:!h-full h-full">
+    <ShellTemplateWithAuth variant="minimal" />
+  </div>
+</div>
+
 ## Features
 
-- **UiPath Authentication**: Built-in authentication flow with `@uipath/auth-react`
+- **UiPath Authentication**: Built-in PKCE OAuth flow with automatic token refresh
 - **Theme Toggle**: Built-in light/dark mode support
 - **Language Toggle**: Built-in language switcher for internationalization
 - **User Profile**: Dropdown menu with user information and sign-out
@@ -36,17 +46,18 @@ npx shadcn@latest add @uipath/shell
 ## Usage
 
 ```tsx
-import { ApolloShell } from '@/components/ui/shell';
-import { onCallback, type AuthConfiguration } from '@uipath/auth-react';
+import { ApolloShell, type AuthConfiguration, type UserInfo } from '@/components/ui/shell';
 import { useNavigate } from '@tanstack/react-router';
 
 function App() {
   const navigate = useNavigate();
 
   const configuration: AuthConfiguration = {
-    authority: 'https://your-org.cloud.uipath.com/identity_',
-    redirect_uri: 'http://localhost:3000/auth_callback',
-    post_logout_redirect_uri: 'http://localhost:3000',
+    authority: 'https://staging.uipath.com/identity_',
+    clientId: 'your-client-id',
+    redirectUri: 'http://localhost:3000',
+    postLogoutRedirectUri: 'http://localhost:3000',
+    scope: 'openid profile email offline_access',
   };
 
   return (
@@ -54,10 +65,10 @@ function App() {
       configuration={configuration}
       companyName="Your Company"
       productName="Your Product"
-      onSigninCallback={(user) => {
-        onCallback(user, (to) => {
-          navigate({ to: to });
-        });
+      onSigninCallback={(user: UserInfo | null) => {
+        if (user) {
+          navigate({ to: '/dashboard' });
+        }
       }}
     >
       {/* ... your authenticated app content ... */}
@@ -66,3 +77,50 @@ function App() {
   );
 }
 ```
+
+## Authentication Configuration
+
+The `AuthConfiguration` object requires the following properties:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `authority` | `string` | The base URL of the identity provider (e.g., `https://staging.uipath.com/identity_`) |
+| `clientId` | `string` | The OAuth client ID |
+| `redirectUri` | `string` | The URL to redirect to after authentication |
+| `scope` | `string` | OAuth scopes to request (e.g., `openid profile email offline_access`) |
+| `postLogoutRedirectUri` | `string` (optional) | The URL to redirect to after logout |
+
+## Using the Auth Hook
+
+You can access auth state anywhere in your app using the `useAuth` hook:
+
+```tsx
+import { useAuth } from '@/components/ui/shell';
+
+function MyComponent() {
+  const { user, isAuthenticated, isLoading, login, logout, accessToken } = useAuth();
+
+  if (isLoading) return <div>Loading...</div>;
+  if (!isAuthenticated) return <button onClick={login}>Sign in</button>;
+
+  return (
+    <div>
+      <p>Welcome, {user?.name}</p>
+      <p>Email: {user?.email}</p>
+      <button onClick={logout}>Sign out</button>
+    </div>
+  );
+}
+```
+
+## User Info Structure
+
+The `UserInfo` object returned by `useAuth` has the following properties:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `name` | `string` | The user's display name |
+| `email` | `string` | The user's email address |
+| `sub` | `string` | The user's unique identifier |
+| `first_name` | `string` (optional) | The user's first name |
+| `last_name` | `string` (optional) | The user's last name |
