@@ -215,11 +215,11 @@ describe('FileUpload', () => {
       fireEvent.change(input, { target: { files: [file] } });
 
       await waitFor(() => {
-        expect(screen.getByText(/exceeds maximum size/)).toBeInTheDocument();
+        expect(screen.getByText(/exceeds maximum size/i)).toBeInTheDocument();
       });
     });
 
-    it('does not add invalid files to list', async () => {
+    it('adds invalid files to list with error message', async () => {
       const handleChange = vi.fn();
       const { container } = render(<FileUpload maxSize={100} onFilesChange={handleChange} />);
       const input = container.querySelector('input[type="file"]') as HTMLInputElement;
@@ -228,9 +228,10 @@ describe('FileUpload', () => {
       fireEvent.change(input, { target: { files: [file] } });
 
       await waitFor(() => {
-        expect(screen.queryByText('large.txt')).not.toBeInTheDocument();
+        expect(screen.getByText('large.txt')).toBeInTheDocument();
+        expect(screen.getByText(/exceeds maximum size/i)).toBeInTheDocument();
       });
-      expect(handleChange).not.toHaveBeenCalled();
+      expect(handleChange).toHaveBeenCalledWith([file]);
     });
 
     it('prevents duplicate files from being added (deduplication bug fix)', async () => {
@@ -355,6 +356,263 @@ describe('FileUpload', () => {
       const { container } = render(<FileUpload accept="image/*" />);
       const input = container.querySelector('input[type="file"]');
       expect(input).toHaveAttribute('accept', 'image/*');
+    });
+  });
+
+  describe('file type validation', () => {
+    it('shows error for file with wrong MIME type', async () => {
+      const { container } = render(<FileUpload accept="image/*" />);
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+      const file = createMockFile('document.pdf', 100, 'application/pdf');
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByText('document.pdf')).toBeInTheDocument();
+        expect(screen.getByText('File type not accepted')).toBeInTheDocument();
+      });
+    });
+
+    it('accepts file with matching MIME wildcard', async () => {
+      const { container } = render(<FileUpload accept="image/*" />);
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+      const file = createMockFile('photo.png', 100, 'image/png');
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByText('photo.png')).toBeInTheDocument();
+        expect(screen.queryByText('File type not accepted')).not.toBeInTheDocument();
+      });
+    });
+
+    it('accepts file with matching exact MIME type', async () => {
+      const { container } = render(<FileUpload accept="application/pdf" />);
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+      const file = createMockFile('document.pdf', 100, 'application/pdf');
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByText('document.pdf')).toBeInTheDocument();
+        expect(screen.queryByText('File type not accepted')).not.toBeInTheDocument();
+      });
+    });
+
+    it('accepts file with matching extension', async () => {
+      const { container } = render(<FileUpload accept=".pdf,.doc" />);
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+      const file = createMockFile('document.pdf', 100, 'application/pdf');
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByText('document.pdf')).toBeInTheDocument();
+        expect(screen.queryByText('File type not accepted')).not.toBeInTheDocument();
+      });
+    });
+
+    it('rejects file with non-matching extension', async () => {
+      const { container } = render(<FileUpload accept=".pdf" />);
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+      const file = createMockFile('document.txt', 100, 'text/plain');
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByText('document.txt')).toBeInTheDocument();
+        expect(screen.getByText('File type not accepted')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('external errors prop', () => {
+    it('displays external error for a file by filename', async () => {
+      const { container, rerender } = render(<FileUpload />);
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+      const file = createMockFile('document.pdf', 100, 'application/pdf');
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByText('document.pdf')).toBeInTheDocument();
+      });
+
+      // Set external error via props
+      rerender(<FileUpload errors={{ 'document.pdf': 'Upload failed: Network error' }} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Upload failed: Network error')).toBeInTheDocument();
+      });
+    });
+
+    it('external error takes precedence over internal validation error', async () => {
+      const { container, rerender } = render(<FileUpload maxSize={100} />);
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+      const file = createMockFile('large.txt', 200, 'text/plain');
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByText(/exceeds maximum size/i)).toBeInTheDocument();
+      });
+
+      // Set external error - should override internal error
+      rerender(<FileUpload maxSize={100} errors={{ 'large.txt': 'Server rejected file' }} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Server rejected file')).toBeInTheDocument();
+        expect(screen.queryByText(/exceeds maximum size/i)).not.toBeInTheDocument();
+      });
+    });
+
+    it('shows external errors for multiple files', async () => {
+      const { container, rerender } = render(<FileUpload multiple />);
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+      const file1 = createMockFile('file1.txt', 100, 'text/plain');
+      const file2 = createMockFile('file2.txt', 100, 'text/plain');
+      fireEvent.change(input, { target: { files: [file1, file2] } });
+
+      await waitFor(() => {
+        expect(screen.getByText('file1.txt')).toBeInTheDocument();
+        expect(screen.getByText('file2.txt')).toBeInTheDocument();
+      });
+
+      // Set different errors for each file
+      rerender(
+        <FileUpload
+          multiple
+          errors={{
+            'file1.txt': 'Permission denied',
+            'file2.txt': 'Quota exceeded',
+          }}
+        />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Permission denied')).toBeInTheDocument();
+        expect(screen.getByText('Quota exceeded')).toBeInTheDocument();
+      });
+    });
+
+    it('clears external error when errors prop is removed', async () => {
+      const { container, rerender } = render(
+        <FileUpload errors={{ 'test.txt': 'Upload failed' }} />
+      );
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+      const file = createMockFile('test.txt', 100, 'text/plain');
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByText('Upload failed')).toBeInTheDocument();
+      });
+
+      // Remove errors prop
+      rerender(<FileUpload />);
+
+      await waitFor(() => {
+        expect(screen.queryByText('Upload failed')).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('per-file error display', () => {
+    it('shows error for each invalid file when multiple files uploaded', async () => {
+      const { container } = render(<FileUpload multiple maxSize={100} />);
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+      const validFile = createMockFile('small.txt', 50, 'text/plain');
+      const invalidFile1 = createMockFile('large1.txt', 200, 'text/plain');
+      const invalidFile2 = createMockFile('large2.txt', 300, 'text/plain');
+
+      fireEvent.change(input, { target: { files: [validFile, invalidFile1, invalidFile2] } });
+
+      await waitFor(() => {
+        expect(screen.getByText('small.txt')).toBeInTheDocument();
+        expect(screen.getByText('large1.txt')).toBeInTheDocument();
+        expect(screen.getByText('large2.txt')).toBeInTheDocument();
+
+        // Should show two error messages (one for each invalid file)
+        const errorMessages = screen.getAllByText(/exceeds maximum size/i);
+        expect(errorMessages).toHaveLength(2);
+      });
+    });
+
+    it('shows different error types for different files', async () => {
+      const { container } = render(<FileUpload multiple maxSize={100} accept=".txt" />);
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+      const wrongTypeFile = createMockFile('image.png', 50, 'image/png');
+      const tooLargeFile = createMockFile('large.txt', 200, 'text/plain');
+
+      fireEvent.change(input, { target: { files: [wrongTypeFile, tooLargeFile] } });
+
+      await waitFor(() => {
+        expect(screen.getByText('image.png')).toBeInTheDocument();
+        expect(screen.getByText('large.txt')).toBeInTheDocument();
+        expect(screen.getByText('File type not accepted')).toBeInTheDocument();
+        expect(screen.getByText(/exceeds maximum size/i)).toBeInTheDocument();
+      });
+    });
+
+    it('applies error styling to files with errors', async () => {
+      const { container } = render(<FileUpload maxSize={100} />);
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+      const file = createMockFile('large.txt', 200, 'text/plain');
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        const fileItem = screen.getByText('large.txt').closest('.flex.flex-col');
+        expect(fileItem).toHaveClass('bg-destructive/10');
+        expect(fileItem).toHaveClass('border-destructive/20');
+      });
+    });
+
+    it('removes error when file is removed', async () => {
+      const user = userEvent.setup();
+      const { container } = render(<FileUpload multiple maxSize={100} />);
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+      const invalidFile = createMockFile('large.txt', 200, 'text/plain');
+      fireEvent.change(input, { target: { files: [invalidFile] } });
+
+      await waitFor(() => {
+        expect(screen.getByText(/exceeds maximum size/i)).toBeInTheDocument();
+      });
+
+      const removeButton = screen.getByRole('button', { name: /remove large\.txt/i });
+      await user.click(removeButton);
+
+      await waitFor(() => {
+        expect(screen.queryByText(/exceeds maximum size/i)).not.toBeInTheDocument();
+      });
+    });
+
+    it('preserves errors for remaining files after removing one', async () => {
+      const user = userEvent.setup();
+      const { container } = render(<FileUpload multiple maxSize={100} />);
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+      const invalidFile1 = createMockFile('large1.txt', 200, 'text/plain');
+      const invalidFile2 = createMockFile('large2.txt', 300, 'text/plain');
+
+      fireEvent.change(input, { target: { files: [invalidFile1, invalidFile2] } });
+
+      await waitFor(() => {
+        expect(screen.getAllByText(/exceeds maximum size/i)).toHaveLength(2);
+      });
+
+      const removeButton = screen.getByRole('button', { name: /remove large1\.txt/i });
+      await user.click(removeButton);
+
+      await waitFor(() => {
+        expect(screen.queryByText('large1.txt')).not.toBeInTheDocument();
+        expect(screen.getByText('large2.txt')).toBeInTheDocument();
+        expect(screen.getAllByText(/exceeds maximum size/i)).toHaveLength(1);
+      });
     });
   });
 });
