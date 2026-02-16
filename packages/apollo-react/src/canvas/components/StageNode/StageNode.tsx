@@ -524,11 +524,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
             {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly && (
               <ApTooltip content={addTaskLoading ? 'Loading...' : addTaskLabel} placement="top">
                 <span>
-                  <ApIconButton
-                    onClick={handleTaskAddClick}
-                    size="small"
-                    disabled={addTaskLoading}
-                  >
+                  <ApIconButton onClick={handleTaskAddClick} size="small" disabled={addTaskLoading}>
                     {addTaskLoading ? (
                       <ApCircularProgress size={20} />
                     ) : (
@@ -548,7 +544,10 @@ const StageNodeComponent = (props: StageNodeProps) => {
                 <ApLink
                   onClick={addTaskLoading ? undefined : handleTaskAddClick}
                   variant={FontVariantToken.fontSizeS}
-                  style={{ maxWidth: 'fit-content', pointerEvents: addTaskLoading ? 'none' : undefined }}
+                  style={{
+                    maxWidth: 'fit-content',
+                    pointerEvents: addTaskLoading ? 'none' : undefined,
+                  }}
                 >
                   {defaultContent}
                 </ApLink>

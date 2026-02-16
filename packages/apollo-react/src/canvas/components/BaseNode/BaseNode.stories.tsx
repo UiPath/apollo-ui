@@ -4,13 +4,11 @@
  * Demonstrates the BaseNode component with various shapes, sizes, and execution states.
  */
 
-import { Checkbox, FormControlLabel } from '@mui/material';
 import type { Meta, StoryObj } from '@storybook/react';
-import { FontVariantToken } from '@uipath/apollo-core';
-import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
+import { Column } from '@uipath/apollo-react/canvas/layouts';
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApButton, ApIcon, ApIconButton, ApTypography } from '@uipath/apollo-react/material';
+import { Button, Input, Label, Slider, Switch } from '@uipath/apollo-wind';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { NodeRegistryContext, NodeTypeRegistry } from '../../core';
 import type { CategoryManifest, NodeManifest } from '../../schema';
@@ -48,6 +46,15 @@ const sampleManifest: { nodes: NodeManifest[]; categories: CategoryManifest[] } 
       color: '#6c757d',
       colorDark: '#495057',
       icon: 'layers',
+      tags: [],
+    },
+    {
+      id: 'control',
+      name: 'Control Flow',
+      sortOrder: 3,
+      color: '#6c757d',
+      colorDark: '#495057',
+      icon: 'git-branch',
       tags: [],
     },
   ],
@@ -162,6 +169,31 @@ const sampleManifest: { nodes: NodeManifest[]; categories: CategoryManifest[] } 
               label: 'Artifact {index}: {item.type}',
               repeat: 'artifacts',
             },
+          ],
+        },
+      ],
+    },
+    {
+      nodeType: 'uipath.decision',
+      version: '1.0.0',
+      category: 'control',
+      tags: ['control', 'decision'],
+      sortOrder: 6,
+      display: {
+        label: 'Decision',
+        icon: 'git-branch',
+        shape: 'square',
+      },
+      handleConfiguration: [
+        {
+          position: 'left',
+          handles: [{ id: 'input', type: 'target', handleType: 'input' }],
+        },
+        {
+          position: 'right',
+          handles: [
+            { id: 'true', type: 'source', handleType: 'output', label: '{inputs.trueLabel}' },
+            { id: 'false', type: 'source', handleType: 'output', label: '{inputs.falseLabel}' },
           ],
         },
       ],
@@ -378,7 +410,7 @@ function CustomizedSizesStory() {
 }
 
 function DynamicHandlesStory() {
-  const [nodeData, setNodeData] = useState({
+  const [switchData, setSwitchData] = useState({
     dynamicInputs: [
       { label: 'Primary Input' },
       { label: 'Secondary Input' },
@@ -388,24 +420,51 @@ function DynamicHandlesStory() {
     hasDefault: false,
   });
 
+  const [decisionData, setDecisionData] = useState({
+    trueLabel: 'Approved',
+    falseLabel: 'Rejected',
+  });
+
   const initialNodes = useMemo(() => {
     return [
       {
         ...createNode({
           id: 'dynamic-handles-node',
           type: 'uipath.control-switch',
-          position: { x: 400, y: 300 },
+          position: { x: 700, y: 200 },
           data: {
             nodeType: 'uipath.control-switch',
             version: '1.0.0',
             inputs: {
-              dynamicInputs: nodeData.dynamicInputs,
-              dynamicOutputs: nodeData.dynamicOutputs,
-              hasDefault: nodeData.hasDefault,
+              dynamicInputs: switchData.dynamicInputs,
+              dynamicOutputs: switchData.dynamicOutputs,
+              hasDefault: switchData.hasDefault,
             },
             display: {
               label: 'Dynamic Handles',
-              subLabel: `${nodeData.dynamicInputs.length} inputs, ${nodeData.dynamicOutputs.length} outputs`,
+              subLabel: `${switchData.dynamicInputs.length} inputs, ${switchData.dynamicOutputs.length} outputs`,
+              shape: 'square',
+            },
+          },
+        }),
+        height: 96,
+        width: 96,
+      },
+      {
+        ...createNode({
+          id: 'decision-node',
+          type: 'uipath.decision',
+          position: { x: 700, y: 600 },
+          data: {
+            nodeType: 'uipath.decision',
+            version: '1.0.0',
+            inputs: {
+              trueLabel: decisionData.trueLabel,
+              falseLabel: decisionData.falseLabel,
+            },
+            display: {
+              label: 'Decision',
+              subLabel: 'Templated labels',
               shape: 'square',
             },
           },
@@ -414,131 +473,155 @@ function DynamicHandlesStory() {
         width: 96,
       },
     ];
-  }, [nodeData]);
+  }, [switchData, decisionData]);
 
   const { canvasProps, setNodes } = useCanvasStory({ initialNodes });
 
-  // Update nodes when nodeData changes
+  // Sync switch node data when controls change
   useEffect(() => {
     setNodes((nodes) =>
-      nodes.map((node) =>
-        node.id === 'dynamic-handles-node'
-          ? {
-              ...node,
-              data: {
-                ...node.data,
-                inputs: {
-                  dynamicInputs: nodeData.dynamicInputs,
-                  dynamicOutputs: nodeData.dynamicOutputs,
-                  hasDefault: nodeData.hasDefault,
-                },
-                display: {
-                  ...(node.data.display || {}),
-                  subLabel: `${nodeData.dynamicInputs.length} inputs, ${nodeData.dynamicOutputs.length} outputs`,
-                },
+      nodes.map((node) => {
+        if (node.id === 'dynamic-handles-node') {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              inputs: {
+                dynamicInputs: switchData.dynamicInputs,
+                dynamicOutputs: switchData.dynamicOutputs,
+                hasDefault: switchData.hasDefault,
               },
-            }
-          : node
-      )
+              display: {
+                ...(node.data.display || {}),
+                subLabel: `${switchData.dynamicInputs.length} inputs, ${switchData.dynamicOutputs.length} outputs`,
+              },
+            },
+          };
+        }
+        if (node.id === 'decision-node') {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              inputs: {
+                trueLabel: decisionData.trueLabel,
+                falseLabel: decisionData.falseLabel,
+              },
+            },
+          };
+        }
+        return node;
+      })
     );
-  }, [nodeData, setNodes]);
+  }, [switchData, decisionData, setNodes]);
 
-  const addHandle = useCallback((type: 'dynamicInputs' | 'dynamicOutputs') => {
-    setNodeData((prev) => {
-      const newArray = [...prev[type]];
-      if (type === 'dynamicInputs') {
-        newArray.push({ label: `Input ${newArray.length + 1}` });
-      } else if (type === 'dynamicOutputs') {
-        newArray.push({ name: `Output ${newArray.length + 1}` });
+  const handleInputCount = useCallback((value: number[]) => {
+    const count = value[0] ?? 0;
+    setSwitchData((prev) => {
+      const current = prev.dynamicInputs;
+      if (count > current.length) {
+        const added = Array.from({ length: count - current.length }, (_, i) => ({
+          label: `Input ${current.length + i + 1}`,
+        }));
+        return { ...prev, dynamicInputs: [...current, ...added] };
       }
-      return { ...prev, [type]: newArray };
+      return { ...prev, dynamicInputs: current.slice(0, count) };
     });
   }, []);
 
-  const removeHandle = useCallback((type: 'dynamicInputs' | 'dynamicOutputs') => {
-    setNodeData((prev) => {
-      const newArray = [...prev[type]];
-      if (newArray.length > 0) {
-        newArray.pop();
+  const handleOutputCount = useCallback((value: number[]) => {
+    const count = value[0] ?? 0;
+    setSwitchData((prev) => {
+      const current = prev.dynamicOutputs;
+      if (count > current.length) {
+        const added = Array.from({ length: count - current.length }, (_, i) => ({
+          name: `Output ${current.length + i + 1}`,
+        }));
+        return { ...prev, dynamicOutputs: [...current, ...added] };
       }
-      return { ...prev, [type]: newArray };
+      return { ...prev, dynamicOutputs: current.slice(0, count) };
     });
   }, []);
-
-  const handleTypes: Array<{
-    key: 'dynamicInputs' | 'dynamicOutputs';
-    label: string;
-    icon: string;
-  }> = [
-    { key: 'dynamicInputs', label: 'Inputs', icon: 'arrow_back' },
-    { key: 'dynamicOutputs', label: 'Outputs', icon: 'arrow_forward' },
-  ];
 
   return (
     <BaseCanvas {...canvasProps} mode="design">
-      <NodeInspector />
       <Panel position="bottom-right">
         <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
       <StoryInfoPanel
         title="Dynamic Handles"
-        description="Interactive demonstration of dynamic handle generation. Use buttons to add/remove handles from arrays."
+        description="Demonstrates repeat expressions (dynamic handle count) and templated handle labels."
       >
-        <Column gap={16}>
-          {handleTypes.map(({ key, label, icon }) => (
-            <Column key={key} gap={6} align="flex-start">
-              <Row gap={8} align="center">
-                <ApIcon name={icon} size="20px" />
-                <ApTypography variant={FontVariantToken.fontSizeMBold}>{label}</ApTypography>
-              </Row>
-              <Row gap={8} align="center">
-                <ApIconButton
-                  onClick={() => removeHandle(key)}
-                  disabled={nodeData[key].length === 0}
-                  aria-label={`Remove ${label.toLowerCase()}`}
-                >
-                  <ApIcon name="remove" />
-                </ApIconButton>
-                <ApTypography
-                  variant={FontVariantToken.fontSizeMBold}
-                  style={{ minWidth: 24, textAlign: 'center' }}
-                >
-                  {nodeData[key].length}
-                </ApTypography>
-                <ApIconButton
-                  onClick={() => addHandle(key)}
-                  aria-label={`Add ${label.toLowerCase()}`}
-                >
-                  <ApIcon name="add" />
-                </ApIconButton>
-              </Row>
+        <Column gap={20}>
+          <Column gap={12}>
+            <Label className="font-semibold">Switch Node — Repeat Handles</Label>
+            <Column gap={6} align="flex-start">
+              <Label>Inputs ({switchData.dynamicInputs.length})</Label>
+              <Slider
+                value={[switchData.dynamicInputs.length]}
+                onValueChange={handleInputCount}
+                min={0}
+                max={10}
+                step={1}
+              />
             </Column>
-          ))}
-          <Column gap={6} align="flex-start">
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={nodeData.hasDefault}
-                  onChange={(e) =>
-                    setNodeData((prev) => ({ ...prev, hasDefault: e.target.checked }))
-                  }
-                />
-              }
-              label="Has Default Output"
-            />
+            <Column gap={6} align="flex-start">
+              <Label>Outputs ({switchData.dynamicOutputs.length})</Label>
+              <Slider
+                value={[switchData.dynamicOutputs.length]}
+                onValueChange={handleOutputCount}
+                min={0}
+                max={10}
+                step={1}
+              />
+            </Column>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={switchData.hasDefault}
+                onCheckedChange={(checked) =>
+                  setSwitchData((prev) => ({ ...prev, hasDefault: checked }))
+                }
+              />
+              <Label>Has Default Output</Label>
+            </div>
           </Column>
-          <ApButton
-            size="small"
+
+          <Column gap={12}>
+            <Label className="font-semibold">Decision Node — Templated Labels</Label>
+            <Column gap={6} align="flex-start">
+              <Label>True Label</Label>
+              <Input
+                value={decisionData.trueLabel}
+                onChange={(e) =>
+                  setDecisionData((prev) => ({ ...prev, trueLabel: e.target.value }))
+                }
+              />
+            </Column>
+            <Column gap={6} align="flex-start">
+              <Label>False Label</Label>
+              <Input
+                value={decisionData.falseLabel}
+                onChange={(e) =>
+                  setDecisionData((prev) => ({ ...prev, falseLabel: e.target.value }))
+                }
+              />
+            </Column>
+          </Column>
+
+          <Button
+            size="sm"
             variant="secondary"
-            label="Reset"
-            onClick={() =>
-              setNodeData({
+            onClick={() => {
+              setSwitchData({
                 dynamicInputs: [{ label: 'Primary Input' }],
                 dynamicOutputs: [{ name: 'Success Path' }],
                 hasDefault: false,
-              })
-            }
-          />
+              });
+              setDecisionData({ trueLabel: 'Approved', falseLabel: 'Rejected' });
+            }}
+          >
+            Reset All
+          </Button>
         </Column>
       </StoryInfoPanel>
     </BaseCanvas>
