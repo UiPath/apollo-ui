@@ -1160,9 +1160,7 @@ const AddTaskLoadingStory = () => {
     (nodeId: string, loading: boolean) => {
       setNodes((nds) =>
         nds.map((node) =>
-          node.id === nodeId
-            ? { ...node, data: { ...node.data, addTaskLoading: loading } }
-            : node
+          node.id === nodeId ? { ...node, data: { ...node.data, addTaskLoading: loading } } : node
         )
       );
     },

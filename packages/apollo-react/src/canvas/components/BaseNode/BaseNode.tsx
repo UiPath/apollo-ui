@@ -32,13 +32,13 @@ import {
   BaseSubHeader,
   BaseTextContainer,
 } from './BaseNode.styles';
-import { useBaseNodeOverrideConfig } from './BaseNodeConfigContext';
 import type {
   BaseNodeData,
   FooterVariant,
   NodeAdornments,
   NodeStatusContext,
 } from './BaseNode.types';
+import { useBaseNodeOverrideConfig } from './BaseNodeConfigContext';
 import { NodeLabel } from './NodeLabel';
 
 const selectIsConnecting = (state: ReactFlowState) => !!state.connectionClickStartHandle;
@@ -113,7 +113,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   const display = useMemo(
     () => resolveDisplay(manifest?.display, { ...data, nodeId: id }),
-    [manifest, data.display, id]
+    [manifest, data, id]
   );
 
   // Icon resolution: component prop takes precedence, then icon string from display
@@ -128,15 +128,22 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     return IconComponent ? <IconComponent /> : null;
   }, [iconComponent, display.icon]);
 
-  // Resolve handles from props or manifest
-  // Prop handleConfigurations take precedence over manifest
+  // Resolve handles: context override > data override > manifest default
   const handleConfigurations = useMemo((): HandleGroupManifest[] => {
-    // Priority 1: Prop override (runtime configuration)
+    // Priority 1: Context override (runtime configuration from parent wrapper components)
     if (handleConfigurationsProp && Array.isArray(handleConfigurationsProp)) {
       return handleConfigurationsProp;
     }
 
-    // Priority 2: Manifest default
+    // Priority 2: Per-instance override via node data
+    const dataHandleConfigs = (data as Record<string, unknown>)?.handleConfigurations as
+      | HandleGroupManifest[]
+      | undefined;
+    if (dataHandleConfigs && Array.isArray(dataHandleConfigs)) {
+      return dataHandleConfigs;
+    }
+
+    // Priority 3: Manifest default
     if (!manifest) return [];
     // Pass nodeId and collapsed for collapse state lookup
     const resolved = resolveHandles(manifest.handleConfiguration, { ...data, nodeId: id });
@@ -155,7 +162,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
       })),
       visible: group.visible,
     }));
-  }, [handleConfigurationsProp, manifest, data]);
+  }, [handleConfigurationsProp, manifest, data, id]);
 
   // Toolbar config resolution with priority: props > manifest
   const toolbarConfig = useMemo(() => {
@@ -204,7 +211,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   // Sync computed height to node when it changes
   useEffect(() => {
-    // Initialising originalHeightRef only when React Flow has finished measuring it and updated the height prop
+    // Initializing originalHeightRef only when React Flow has finished measuring it and updated the height prop
     if (!originalHeightRef.current && height) {
       originalHeightRef.current = height;
       return;
@@ -407,7 +414,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     showNotches,
     handleAction,
     multipleNodesSelected,
-    connectedHandleIds.has,
+    connectedHandleIds,
   ]);
 
   // Use SmartHandle elements if enabled, otherwise use ButtonHandle elements

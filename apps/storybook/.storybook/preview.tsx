@@ -30,6 +30,9 @@ import "@uipath/apollo-react/core/fonts/font.css";
 import "@uipath/apollo-react/canvas/styles/variables.css";
 import "@uipath/apollo-react/canvas/xyflow/style.css";
 
+// Import Apollo Wind pre-compiled styles for apollo-wind components used in stories
+import "@uipath/apollo-wind/styles.css";
+
 // Theme type definition
 type ThemeMode = "light" | "dark" | "light-hc" | "dark-hc";
 

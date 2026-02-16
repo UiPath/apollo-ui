@@ -105,14 +105,18 @@ export function createNode<T = Record<string, unknown>>(
   } = options;
 
   // Build base data with required fields for manifest system
+  const resolvedHandleConfigs = handleConfigurations ?? (data as any).handleConfigurations;
+  const resolvedSmartHandles = useSmartHandles ?? (data as any).useSmartHandles;
+  const resolvedExecutionStatus = executionStatus ?? (data as any).executionStatus;
+
   const baseData: Partial<BaseNodeData> = {
     nodeType: type,
     version: (data as any).version || '1.0.0',
     parameters: (data as any).parameters || {},
     display: display || (data as any).display,
-    handleConfigurations: handleConfigurations || (data as any).handleConfigurations,
-    useSmartHandles: useSmartHandles ?? (data as any).useSmartHandles,
-    executionStatus: executionStatus || (data as any).executionStatus,
+    ...(resolvedHandleConfigs !== undefined && { handleConfigurations: resolvedHandleConfigs }),
+    ...(resolvedSmartHandles !== undefined && { useSmartHandles: resolvedSmartHandles }),
+    ...(resolvedExecutionStatus !== undefined && { executionStatus: resolvedExecutionStatus }),
   };
 
   return {

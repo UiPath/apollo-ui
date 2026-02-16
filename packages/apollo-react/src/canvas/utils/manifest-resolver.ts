@@ -19,7 +19,7 @@ import { getCollapsedShape } from './collapse';
 /**
  * Context object passed to resolution functions
  */
-export interface ResolutionContext {
+export interface ResolutionContext extends Record<string, unknown> {
   /** Instance display overrides */
   display?: InstanceDisplayConfig;
   /** Instance input values */
@@ -268,6 +268,7 @@ export function resolveHandles(
         // Generate one handle per array item
         return array.map((item, index) => {
           const vars: TemplateVars = {
+            ...context,
             [itemVar]: item,
             [indexVar]: index,
           };
@@ -298,6 +299,8 @@ export function resolveHandles(
 
       return {
         ...handle,
+        id: replaceTemplateVars(handle.id, context),
+        label: handle.label ? replaceTemplateVars(handle.label, context) : undefined,
         visible,
       } as ResolvedHandle;
     });
