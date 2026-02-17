@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.36.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.35.1...@uipath/apollo-react@3.36.0) (2026-02-17)
+
+### Features
+
+* **apollo-react:** allow passing in error cta to agent flow nodes [AG-700] ([d8466e4](https://github.com/UiPath/apollo-ui/commit/d8466e45ccc80151e69cbe2e61c8d63509e14f02))
+
 ## [@uipath/apollo-react-v3.35.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.35.0...@uipath/apollo-react@3.35.1) (2026-02-17)
 
 ### Bug Fixes
