@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.36.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.36.0...@uipath/apollo-react@3.36.1) (2026-02-17)
+
+### Bug Fixes
+
+* **apollo-react:** update handle references to use context and add tests for manifest resolver ([49ad070](https://github.com/UiPath/apollo-ui/commit/49ad0704d9ddde5feb75f128fd16d4d882d2db40))
+
 ## [@uipath/apollo-react-v3.36.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.35.1...@uipath/apollo-react@3.36.0) (2026-02-17)
 
 ### Features
