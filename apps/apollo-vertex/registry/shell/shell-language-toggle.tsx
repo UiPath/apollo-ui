@@ -10,9 +10,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SUPPORTED_LOCALES, SupportedLocale } from "@/lib/i18n";
+import { SUPPORTED_LOCALES, type SupportedLocale } from "@/lib/i18n";
 import { Text } from "./shell-text";
-import { TranslationKey } from "./shell-translation-key";
+import type { TranslationKey } from "./shell-translation-key";
 
 export type LanguageChangedEvent = {
   selectedLanguageId: string;

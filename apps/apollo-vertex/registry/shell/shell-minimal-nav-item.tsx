@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Text } from "./shell-text";
-import { TranslationKey } from "./shell-translation-key";
+import type { TranslationKey } from "./shell-translation-key";
 
 interface MinimalNavItemProps {
   to: string;

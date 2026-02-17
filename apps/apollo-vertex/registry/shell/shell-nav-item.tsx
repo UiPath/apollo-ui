@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -70,12 +71,14 @@ export const NavItem = ({ to, icon: Icon, text }: NavItemProps) => {
 
   if (isCollapsed) {
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
-        <TooltipContent side="right" sideOffset={8}>
-          {text}
-        </TooltipContent>
-      </Tooltip>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
+          <TooltipContent side="right" sideOffset={8}>
+            {text}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
   }
 
