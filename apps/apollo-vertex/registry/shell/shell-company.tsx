@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
@@ -53,23 +54,25 @@ export const Company = ({
     <div className="flex items-center justify-between h-7 pt-2">
       <div className="flex items-center gap-2">
         {isCollapsed ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => setIsCollapsed(!isCollapsed)}
-                className="flex items-center justify-center cursor-pointer"
-                type="button"
-              >
-                {iconElement}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <div className="flex flex-col gap-0.5">
-                <span className="font-xs">{companyName}</span>
-                <span className="text-xs opacity-70">{productName}</span>
-              </div>
-            </TooltipContent>
-          </Tooltip>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  className="flex items-center justify-center cursor-pointer"
+                  type="button"
+                >
+                  {iconElement}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <div className="flex flex-col gap-0.5">
+                  <span className="font-xs">{companyName}</span>
+                  <span className="text-xs opacity-70">{productName}</span>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         ) : (
           iconElement
         )}

@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { BarChart3, FolderOpen, Home, Settings, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
-import { CompanyLogo } from "./shell";
+import type { CompanyLogo } from "./shell";
 import { Company } from "./shell-company";
 import { LanguageToggle } from "./shell-language-toggle";
 import { MinimalCompany } from "./shell-minimal-company";

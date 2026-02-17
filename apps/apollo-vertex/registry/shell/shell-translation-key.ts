@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { ParseKeys } from "react-i18next";
+import type { ParseKeys } from "react-i18next";
 
 export type TranslationKey =
   | {

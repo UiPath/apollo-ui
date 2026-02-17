@@ -1,5 +1,5 @@
 import { Trans, useTranslation } from "react-i18next";
-import { TranslationKey } from "./shell-translation-key";
+import type { TranslationKey } from "./shell-translation-key";
 
 export const Text = ({ value }: { value: TranslationKey }) => {
   const { t } = useTranslation();
