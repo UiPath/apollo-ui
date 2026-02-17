@@ -209,6 +209,11 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     );
   }, [handleConfigurations]);
 
+  useEffect(() => {
+    updateNodeInternals(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional when handle configurations change so it recalculates edge positions
+  }, [handleConfigurations, id, updateNodeInternals]);
+
   // Sync computed height to node when it changes
   useEffect(() => {
     // Initializing originalHeightRef only when React Flow has finished measuring it and updated the height prop
