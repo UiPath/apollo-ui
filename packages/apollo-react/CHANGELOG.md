@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.34.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.34.1...@uipath/apollo-react@3.34.2) (2026-02-17)
+
+### Bug Fixes
+
+* **apollo-react:** nest dynamic handle data under inputs to match resolver context ([9789847](https://github.com/UiPath/apollo-ui/commit/97898471490d5b83c7c3442a8fb68ecacfd67ed6))
+
 ## [@uipath/apollo-react-v3.34.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.34.0...@uipath/apollo-react@3.34.1) (2026-02-16)
 
 ### Bug Fixes
