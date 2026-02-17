@@ -718,6 +718,10 @@
         {
           "path": "registry/shell/shell-theme-provider.tsx",
           "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-user-provider.tsx",
+          "type": "registry:ui"
         }
       ]
     },

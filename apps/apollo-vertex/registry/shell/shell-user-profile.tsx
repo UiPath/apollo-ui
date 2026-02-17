@@ -3,6 +3,7 @@
 import { useAuth } from "@uipath/auth-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { LogOut } from "lucide-react";
+import { use } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -10,29 +11,28 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ShellUserContext } from "./shell-user-provider";
 
 interface UserProfileProps {
   isCollapsed: boolean;
 }
 
 export const UserProfile = ({ isCollapsed }: UserProfileProps) => {
-  const auth = useAuth();
+  const user = use(ShellUserContext);
+  const signoutRedirect = useAuth()?.signoutRedirect;
 
-  const user = auth?.user;
-
-  const userInitials = user?.profile?.name
-    ? user.profile.name
+  const userInitials = user
+    ? user.name
         .split(" ")
         .map((n: string) => n[0])
         .join("")
         .toUpperCase()
         .slice(0, 2)
-    : (user?.profile?.preferred_username?.[0]?.toUpperCase() ?? "U");
-  const firstName = user?.profile?.first_name as string;
-  const lastName = user?.profile?.last_name as string;
-
+    : "U";
+  const displayName = user ? user.name : "Business user";
+  const email = user ? user.email : "user@company.com";
   const handleSignOut = () => {
-    auth?.signoutRedirect?.();
+    signoutRedirect?.();
   };
 
   return (
@@ -90,10 +90,10 @@ export const UserProfile = ({ isCollapsed }: UserProfileProps) => {
             transition={{ delay: 0.05 }}
           >
             <span className="text-sm text-sidebar-foreground font-medium truncate">
-              {firstName} {lastName}
+              {displayName}
             </span>
             <span className="text-xs text-sidebar-foreground/70 truncate">
-              {user?.profile?.email ?? "user@company.com"}
+              {email}
             </span>
           </motion.div>
         </motion.div>
@@ -129,12 +129,8 @@ export const UserProfile = ({ isCollapsed }: UserProfileProps) => {
           >
             <div className="flex flex-col gap-2 p-2">
               <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium">
-                  {user?.profile?.name ?? "Business user"}
-                </span>
-                <span className="text-xs opacity-60">
-                  {user?.profile?.email ?? "user@company.com"}
-                </span>
+                <span className="text-sm font-medium">{displayName}</span>
+                <span className="text-xs opacity-60">{email}</span>
               </div>
             </div>
             <DropdownMenuItem onClick={handleSignOut}>

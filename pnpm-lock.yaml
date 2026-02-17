@@ -211,6 +211,9 @@ importers:
       input-otp:
         specifier: ^1.4.2
         version: 1.4.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      jwt-decode:
+        specifier: ^4.0.0
+        version: 4.0.0
       lucide-react:
         specifier: ^0.555.0
         version: 0.555.0(react@19.2.3)
@@ -286,7 +289,7 @@ importers:
         version: 1.4.0
       shadcn:
         specifier: latest
-        version: 3.8.4(@types/node@24.10.1)(babel-plugin-macros@3.1.0)(typescript@5.9.3)
+        version: 3.8.5(@types/node@24.10.1)(babel-plugin-macros@3.1.0)(typescript@5.9.3)
       tw-animate-css:
         specifier: ^1.4.0
         version: 1.4.0
@@ -10702,8 +10705,8 @@ packages:
   setprototypeof@1.2.0:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
 
-  shadcn@3.8.4:
-    resolution: {integrity: sha512-pSad/m1+PGzB0aLsRBV0EkyGg9al1nJqYUuucg6d8v8xZspPZ5/ehGNEp5M4b1KQYqdO5/gGPbkhVbgmXqG9Pw==}
+  shadcn@3.8.5:
+    resolution: {integrity: sha512-jPRx44e+eyeV7xwY3BLJXcfrks00+M0h5BGB9l6DdcBW4BpAj4x3lVmVy0TXPEs2iHEisxejr62sZAAw6B1EVA==}
     hasBin: true
 
   shallowequal@1.1.0:
@@ -22789,7 +22792,7 @@ snapshots:
 
   setprototypeof@1.2.0: {}
 
-  shadcn@3.8.4(@types/node@24.10.1)(babel-plugin-macros@3.1.0)(typescript@5.9.3):
+  shadcn@3.8.5(@types/node@24.10.1)(babel-plugin-macros@3.1.0)(typescript@5.9.3):
     dependencies:
       '@antfu/ni': 25.0.0
       '@babel/core': 7.28.5

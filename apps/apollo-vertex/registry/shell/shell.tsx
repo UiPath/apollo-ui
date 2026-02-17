@@ -8,6 +8,7 @@ import {
 import type { FC, PropsWithChildren } from "react";
 import { ShellLayout } from "./shell-layout";
 import { LocaleProvider } from "./shell-locale-provider";
+import { ShellUserProvider } from "./shell-user-provider";
 
 export interface CompanyLogo {
   url: string;
@@ -20,6 +21,7 @@ export interface ApolloShellProps extends PropsWithChildren {
   extraSigninRequestArgs?: SigninArgsWithState;
   companyName: string;
   productName: string;
+  variant?: "minimal";
   companyLogo?: CompanyLogo;
 }
 
@@ -38,15 +40,17 @@ export const ApolloShell: FC<ApolloShellProps> = ({
       onSigninCallback={onSigninCallback}
     >
       <AuthGuard extraSigninRequestArgs={extraSigninRequestArgs}>
-        <LocaleProvider>
-          <ShellLayout
-            companyName={companyName}
-            productName={productName}
-            companyLogo={companyLogo}
-          >
-            {children}
-          </ShellLayout>
-        </LocaleProvider>
+        <ShellUserProvider>
+          <LocaleProvider>
+            <ShellLayout
+              companyName={companyName}
+              productName={productName}
+              companyLogo={companyLogo}
+            >
+              {children}
+            </ShellLayout>
+          </LocaleProvider>
+        </ShellUserProvider>
       </AuthGuard>
     </UiPathAuthProvider>
   );
