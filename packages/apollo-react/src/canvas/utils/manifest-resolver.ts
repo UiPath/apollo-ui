@@ -156,9 +156,9 @@ export function resolveVisibility(
     return visible;
   }
 
-  // String property path - look up in inputs
+  // String property path - look up in context
   if (typeof visible === 'string') {
-    const value = getPropertyByPath(context.inputs || {}, visible);
+    const value = getPropertyByPath(context, visible);
     return Boolean(value);
   }
 
@@ -256,7 +256,7 @@ export function resolveHandles(
 
       // Handle repeat (dynamic handles from array)
       if (handle.repeat) {
-        const array = getPropertyByPath(context.inputs || {}, handle.repeat);
+        const array = getPropertyByPath(context, handle.repeat);
 
         // If repeat expression doesn't resolve to an array, return empty
         if (!Array.isArray(array)) {
