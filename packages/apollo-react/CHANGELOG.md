@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.35.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.35.0...@uipath/apollo-react@3.35.1) (2026-02-17)
+
+### Bug Fixes
+
+* **apollo-react:** hide button handle group if nothing to show [AG-740] ([321200d](https://github.com/UiPath/apollo-ui/commit/321200dac0dded7bae34dedb16725747730e9e5a))
+
 ## [@uipath/apollo-react-v3.35.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.34.2...@uipath/apollo-react@3.35.0) (2026-02-17)
 
 ### Features
