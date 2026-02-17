@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.35.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.34.2...@uipath/apollo-react@3.35.0) (2026-02-17)
+
+### Features
+
+* **apollo-react:** add zoomIn/zoomOut options to CanvasPositionControls ([206a64f](https://github.com/UiPath/apollo-ui/commit/206a64f8c9158936b33026b3b40df2ad73710371))
+
 ## [@uipath/apollo-react-v3.34.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.34.1...@uipath/apollo-react@3.34.2) (2026-02-17)
 
 ### Bug Fixes
