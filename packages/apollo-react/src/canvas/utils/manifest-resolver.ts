@@ -249,6 +249,11 @@ export function resolveHandles(
 
   return handleGroups.map((group) => {
     const handles: ResolvedHandle[] = group.handles.flatMap((handle) => {
+      // Hide artifact handles when node is collapsed
+      const isArtifactHandle = handle.handleType === 'artifact';
+      const handleBaseVisible = resolveVisibility(handle.visible, context);
+      const handleVisible = isCollapsed && isArtifactHandle ? false : handleBaseVisible;
+
       // Handle repeat (dynamic handles from array)
       if (handle.repeat) {
         const array = getPropertyByPath(context.inputs || {}, handle.repeat);
@@ -273,16 +278,11 @@ export function resolveHandles(
             [indexVar]: index,
           };
 
-          // Hide artifact handles when node is collapsed
-          const baseVisible = resolveVisibility(handle.visible, context);
-          const isArtifactHandle = handle.handleType === 'artifact';
-          const visible = context.isCollapsed && isArtifactHandle ? false : baseVisible;
-
           return {
             ...handle,
             id: replaceTemplateVars(handle.id, vars),
             label: handle.label ? replaceTemplateVars(handle.label, vars) : undefined,
-            visible,
+            visible: handleVisible,
             // Remove repeat-specific fields
             repeat: undefined,
             itemVar: undefined,
@@ -292,21 +292,22 @@ export function resolveHandles(
       }
 
       // Static handle (no repeat)
-      // Hide artifact handles when node is collapsed
-      const baseVisible = resolveVisibility(handle.visible, context);
-      const isArtifactHandle = handle.handleType === 'artifact';
-      const visible = isCollapsed && isArtifactHandle ? false : baseVisible;
-
       return {
         ...handle,
         id: replaceTemplateVars(handle.id, context),
         label: handle.label ? replaceTemplateVars(handle.label, context) : undefined,
-        visible,
+        visible: handleVisible,
       } as ResolvedHandle;
     });
 
+    // Hide entire group when node is collapsed and no "resolved" handles are visible
+    const hasVisibleHandles = handles.some((h) => h.visible);
+    const groupBaseVisible = group.visible;
+    const groupVisible = isCollapsed && !hasVisibleHandles ? false : groupBaseVisible;
+
     return {
       ...group,
+      visible: groupVisible,
       handles,
     };
   });
