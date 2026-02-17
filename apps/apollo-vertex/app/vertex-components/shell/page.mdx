@@ -2,7 +2,7 @@ import { ShellTemplate } from '@/templates/ShellTemplate';
 
 # Shell
 
-A component that includes UiPath authentication and a collapsible sidebar.
+A component that includes OAuth2 authentication and a collapsible sidebar.
 
 <div className="not-prose my-8 rounded-lg overflow-hidden" style={{ height: '600px' }}>
   <div className="[&_.h-screen]:!h-full h-full">
@@ -22,7 +22,7 @@ Use the `variant="minimal"` prop to render a horizontal header layout instead of
 
 ## Features
 
-- **UiPath Authentication**: Built-in authentication flow with `@uipath/auth-react`
+- **OAuth2 Authentication**: Built-in authorization code flow with PKCE
 - **Theme Toggle**: Built-in light/dark mode support
 - **Language Toggle**: Built-in language switcher for internationalization
 - **User Profile**: Dropdown menu with user information and sign-out
@@ -35,34 +35,30 @@ npx shadcn@latest add @uipath/shell
 
 ## Usage
 
+The `ApolloShell` component must be wrapped in a `QueryClientProvider` from `@tanstack/react-query`.
+
 ```tsx
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ApolloShell } from '@/components/ui/shell';
-import { onCallback, type AuthConfiguration } from '@uipath/auth-react';
-import { useNavigate } from '@tanstack/react-router';
+
+const queryClient = new QueryClient();
 
 function App() {
-  const navigate = useNavigate();
-
-  const configuration: AuthConfiguration = {
-    authority: 'https://your-org.cloud.uipath.com/identity_',
-    redirect_uri: 'http://localhost:3000/auth_callback',
-    post_logout_redirect_uri: 'http://localhost:3000',
-  };
-
   return (
-    <ApolloShell
-      configuration={configuration}
-      companyName="Your Company"
-      productName="Your Product"
-      onSigninCallback={(user) => {
-        onCallback(user, (to) => {
-          navigate({ to: to });
-        });
-      }}
-    >
-      {/* ... your authenticated app content ... */}
-      <YourApp />
-    </ApolloShell>
+    <QueryClientProvider client={queryClient}>
+      <ApolloShell
+        tokenEndpoint="https://alpha.uipath.com/identity_/connect/token"
+        authorizationEndpoint="https://alpha.uipath.com/identity_/connect/authorize"
+        redirectUri="http://localhost:3000"
+        clientId="your-client-id"
+        scope="openid profile email offline_access"
+        companyName="Your Company"
+        productName="Your Product"
+      >
+        {/* your authenticated app content */}
+        <YourApp />
+      </ApolloShell>
+    </QueryClientProvider>
   );
 }
 ```
