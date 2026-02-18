@@ -31,7 +31,7 @@ export const getCollapsedShape = (originalShape?: NodeShape): NodeShape | undefi
  * Other shapes remain unchanged.
  */
 export const getExpandedShape = (collapsedShape?: NodeShape): NodeShape | undefined => {
-  return collapsedShape === 'square' ? 'rectangle' : collapsedShape ?? undefined;
+  return collapsedShape === 'square' ? 'rectangle' : (collapsedShape ?? undefined);
 };
 
 /**
