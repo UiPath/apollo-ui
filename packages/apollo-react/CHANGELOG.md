@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.38.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.37.0...@uipath/apollo-react@3.38.0) (2026-02-18)
+
+### Features
+
+* **apollo-react:** add parentId to nodeSchema ([def75c6](https://github.com/UiPath/apollo-ui/commit/def75c6858aec50f4075c4773ac3c10994c86c25))
+
 ## [@uipath/apollo-react-v3.37.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.36.1...@uipath/apollo-react@3.37.0) (2026-02-18)
 
 ### Features
