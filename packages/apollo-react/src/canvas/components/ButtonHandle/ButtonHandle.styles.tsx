@@ -80,7 +80,11 @@ export const StyledLine = styled.div<{ $isVertical: boolean; $selected: boolean;
   transition: border-color 0.2s ease-in-out;
 `;
 
-export const StyledLabel = styled.div<{ $position: Position; $backgroundColor: string }>`
+export const StyledLabel = styled.div<{
+  $position: Position;
+  $backgroundColor: string;
+  $shouldTruncate?: boolean;
+}>`
   position: absolute;
   background-color: ${(p) => p.$backgroundColor};
   padding: 2px 6px;
@@ -88,6 +92,12 @@ export const StyledLabel = styled.div<{ $position: Position; $backgroundColor: s
   z-index: 1;
   white-space: nowrap;
   user-select: none;
+  ${(p) =>
+    p.$shouldTruncate &&
+    css`
+      max-width: 50px;
+      overflow: hidden;
+    `}
 
   ${(p) =>
     p.$position === Position.Top &&

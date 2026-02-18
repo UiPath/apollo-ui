@@ -147,6 +147,10 @@ const ButtonHandleBase = ({
   const markAsHovered = useCallback(() => setIsHovered(true), []);
   const unmarkAsHovered = useCallback(() => setIsHovered(false), []);
 
+  const shouldTruncateLabel = useMemo(() => {
+    return showButton && !!onAction && type === 'source' && !isVertical;
+  }, [showButton, onAction, type, isVertical]);
+
   return (
     <StyledHandle
       type={type}
@@ -162,12 +166,25 @@ const ButtonHandleBase = ({
       onMouseDown={unmarkAsHovered}
     >
       {label && (
-        <StyledLabel $position={position} $backgroundColor={labelBackgroundColor}>
+        <StyledLabel
+          $position={position}
+          $backgroundColor={labelBackgroundColor}
+          $shouldTruncate={shouldTruncateLabel}
+        >
           <Row align="center" gap={4}>
             {labelIcon}
             <ApTypography
               color="var(--uix-canvas-foreground-de-emp)"
               variant={FontVariantToken.fontSizeSBold}
+              sx={
+                shouldTruncateLabel
+                  ? {
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }
+                  : undefined
+              }
             >
               {label}
             </ApTypography>
