@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.41.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.41.0...@uipath/apollo-react@3.41.1) (2026-02-18)
+
+### Bug Fixes
+
+* **apollo-react:** increase icon size for URL based icons [MST-6486] ([41b3d45](https://github.com/UiPath/apollo-ui/commit/41b3d45028c2aa6a1624dec0ce218e93fd8799d0))
+
 ## [@uipath/apollo-react-v3.41.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.40.0...@uipath/apollo-react@3.41.0) (2026-02-18)
 
 ### Features
