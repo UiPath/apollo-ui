@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.40.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.39.0...@uipath/apollo-react@3.40.0) (2026-02-18)
+
+### Features
+
+* **apollo-react:** aria label for add task button ([03a97e5](https://github.com/UiPath/apollo-ui/commit/03a97e5a744bc59bde9b6f022408474ca6b441eb))
+
 ## [@uipath/apollo-react-v3.39.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.38.0...@uipath/apollo-react@3.39.0) (2026-02-18)
 
 ### Features
