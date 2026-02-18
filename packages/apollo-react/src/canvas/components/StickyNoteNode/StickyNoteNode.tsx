@@ -1,7 +1,7 @@
 import { Global } from '@emotion/react';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon } from '@uipath/apollo-react/material/components';
+import { NodeIcon } from '@uipath/apollo-react/canvas';
 import { AnimatePresence } from 'motion/react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -176,13 +176,13 @@ const StickyNoteNodeComponent = ({
     const actions: ToolbarAction[] = [
       {
         id: 'delete',
-        icon: <ApIcon variant="outlined" name="delete" />,
+        icon: <NodeIcon icon="trash" size={14} />,
         label: 'Delete',
         onAction: handleDelete,
       },
       {
         id: 'edit',
-        icon: <ApIcon variant="outlined" name="edit" />,
+        icon: <NodeIcon icon="pencil" size={14} />,
         label: 'Edit',
         onAction: handleEditClick,
       },
