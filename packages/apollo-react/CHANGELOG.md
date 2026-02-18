@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.42.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.41.1...@uipath/apollo-react@3.42.0) (2026-02-18)
+
+### Features
+
+* **apollo-react:** support replacing task via properties panel [MST-6319] ([ff5a07d](https://github.com/UiPath/apollo-ui/commit/ff5a07da8bd8fc3e378cc98b81c415a68af52115))
+
 ## [@uipath/apollo-react-v3.41.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.41.0...@uipath/apollo-react@3.41.1) (2026-02-18)
 
 ### Bug Fixes
