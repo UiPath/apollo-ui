@@ -524,7 +524,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
             {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly && (
               <ApTooltip content={addTaskLoading ? 'Loading...' : addTaskLabel} placement="top">
                 <span>
-                  <ApIconButton onClick={handleTaskAddClick} size="small" disabled={addTaskLoading} aria-label={addTaskLabel}>
+                  <ApIconButton onClick={handleTaskAddClick} size="small" disabled={addTaskLoading} label={addTaskLabel}>
                     {addTaskLoading ? (
                       <ApCircularProgress size={20} />
                     ) : (
