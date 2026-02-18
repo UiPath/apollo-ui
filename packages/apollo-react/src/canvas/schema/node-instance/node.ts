@@ -55,6 +55,9 @@ export const nodeSchema = z.object({
 
   /** Model data */
   model: z.unknown().optional(),
+
+  /** Parent node ID */
+  parentId: idSchema.optional(),
 });
 
 // Export inferred TypeScript types
