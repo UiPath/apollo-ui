@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.37.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.36.1...@uipath/apollo-react@3.37.0) (2026-02-18)
+
+### Features
+
+* **apollo-react:** add helper to get expanded size [AG-683] ([1c8f5b6](https://github.com/UiPath/apollo-ui/commit/1c8f5b6e6a5dab612f022a571f1ae6770fdb3800))
+
 ## [@uipath/apollo-react-v3.36.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.36.0...@uipath/apollo-react@3.36.1) (2026-02-17)
 
 ### Bug Fixes
