@@ -13,12 +13,16 @@ import type { NodeShape } from '../schema/node-definition';
 export const COLLAPSED_NODE_SIZE = 96;
 
 /**
+ * Default width for expanded rectangle nodes.
+ */
+export const EXPANDED_RECTANGLE_WIDTH = 288;
+
+/**
  * Transform a shape to its collapsed form.
  * Rectangle nodes collapse to square, other shapes remain unchanged.
  */
-export const getCollapsedShape = (originalShape: NodeShape | undefined): NodeShape => {
-  const shape = originalShape ?? 'rectangle';
-  return shape === 'rectangle' ? 'square' : shape;
+export const getCollapsedShape = (originalShape?: NodeShape): NodeShape | undefined => {
+  return originalShape === 'rectangle' ? 'square' : originalShape;
 };
 
 /**
@@ -26,19 +30,29 @@ export const getCollapsedShape = (originalShape: NodeShape | undefined): NodeSha
  * Square nodes expand to rectangle (since rectangle → square when collapsing).
  * Other shapes remain unchanged.
  */
-export const getExpandedShape = (collapsedShape: NodeShape | undefined): NodeShape => {
-  const shape = collapsedShape ?? 'rectangle';
-  return shape === 'square' ? 'rectangle' : shape;
+export const getExpandedShape = (collapsedShape?: NodeShape): NodeShape | undefined => {
+  return collapsedShape === 'square' ? 'rectangle' : collapsedShape ?? undefined;
 };
 
 /**
  * Calculate the collapsed size (square) from original dimensions.
  * Uses height as the basis for the square dimension.
  */
-export const getCollapsedSize = (
-  width: number | undefined,
-  height: number | undefined,
-  measured?: { width?: number; height?: number }
-): number => {
-  return height ?? measured?.height ?? width ?? measured?.width ?? COLLAPSED_NODE_SIZE;
+export const getCollapsedSize = (): { width: number; height: number } => {
+  return {
+    width: COLLAPSED_NODE_SIZE,
+    height: COLLAPSED_NODE_SIZE,
+  };
+};
+
+/**
+ * Calculate the expanded size from original dimensions stored in ui.size.
+ * This is the inverse of getCollapsedSize - it restores the original dimensions
+ * when expanding a collapsed node.
+ */
+export const getExpandedSize = (shape?: NodeShape): { width: number; height: number } => {
+  return {
+    width: shape === 'rectangle' ? EXPANDED_RECTANGLE_WIDTH : COLLAPSED_NODE_SIZE,
+    height: COLLAPSED_NODE_SIZE,
+  };
 };
