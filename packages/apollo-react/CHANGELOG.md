@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.39.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.38.0...@uipath/apollo-react@3.39.0) (2026-02-18)
+
+### Features
+
+* **apollo-react:** use icon registry icons for sticky note toolbar [AG-746] ([284d7c7](https://github.com/UiPath/apollo-ui/commit/284d7c712118363ff9c491739bc1a32369864329))
+
 ## [@uipath/apollo-react-v3.38.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.37.0...@uipath/apollo-react@3.38.0) (2026-02-18)
 
 ### Features
