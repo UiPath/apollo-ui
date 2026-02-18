@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v0.10.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.9.1...@uipath/apollo-wind@0.10.0) (2026-02-18)
+
+### Features
+
+* **apollo-wind:** add per-file error display and external errors support to FileUpload ([652de09](https://github.com/uipath/apollo-ui/commit/652de09d4ed0afd055dfe1443f83e8d015057a07))
+
 ## [@uipath/apollo-wind-v0.9.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.9.0...@uipath/apollo-wind@0.9.1) (2026-02-12)
 
 ### Bug Fixes
