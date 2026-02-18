@@ -29,6 +29,7 @@ import {
   BaseContainer,
   BaseHeader,
   BaseIconWrapper,
+  BaseSkeletonIcon,
   BaseSubHeader,
   BaseTextContainer,
 } from './BaseNode.styles';
@@ -483,16 +484,25 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         hasFooter={!!displayFooter}
         footerVariant={displayFooterVariant as FooterVariant}
       >
-        {Icon && (
-          <BaseIconWrapper
+        {data.loading ? (
+          <BaseSkeletonIcon
+            variant="rectangle"
             shape={displayShape}
-            color={displayColor}
-            backgroundColor={displayIconBackground}
-            height={displayFooter ? undefined : height}
-            width={displayFooter ? undefined : (width ?? height)}
-          >
-            {Icon}
-          </BaseIconWrapper>
+            nodeHeight={displayFooter ? undefined : height}
+            nodeWidth={displayFooter ? undefined : (width ?? height)}
+          />
+        ) : (
+          Icon && (
+            <BaseIconWrapper
+              shape={displayShape}
+              color={displayColor}
+              backgroundColor={displayIconBackground}
+              height={displayFooter ? undefined : height}
+              width={displayFooter ? undefined : (width ?? height)}
+            >
+              {Icon}
+            </BaseIconWrapper>
+          )
         )}
 
         {adornments?.topLeft && (
