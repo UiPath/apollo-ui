@@ -405,6 +405,7 @@ export class CategoryTree {
     };
 
     const allNodes = collectNodes(this.rootCategories).concat(this.rootNodes);
+    allNodes.sort((a, b) => a.sortOrder - b.sortOrder);
     return CategoryTree.fromPrebuilt([], allNodes);
   }
 

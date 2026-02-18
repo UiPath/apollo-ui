@@ -754,6 +754,67 @@ describe('CategoryTree', () => {
       expect(rootCategories).toHaveLength(0);
     });
 
+    it('should sort all nodes by sortOrder', () => {
+      const categories: CategoryManifest[] = [
+        {
+          id: 'cat-a',
+          name: 'A',
+          icon: 'a',
+          parentId: undefined,
+          sortOrder: 1,
+          tags: [],
+          color: 'blue',
+          colorDark: 'darkBlue',
+        },
+        {
+          id: 'cat-b',
+          name: 'B',
+          icon: 'b',
+          parentId: undefined,
+          sortOrder: 2,
+          tags: [],
+          color: 'blue',
+          colorDark: 'darkBlue',
+        },
+      ];
+
+      const nodes: NodeManifest[] = [
+        {
+          nodeType: 'node-3',
+          category: 'cat-a',
+          version: '1.0.0',
+          display: { label: 'Node 3', icon: 'n' },
+          sortOrder: 3,
+          handleConfiguration: [],
+          tags: [],
+        },
+        {
+          nodeType: 'node-1',
+          category: 'cat-b',
+          version: '1.0.0',
+          display: { label: 'Node 1', icon: 'n' },
+          sortOrder: 1,
+          handleConfiguration: [],
+          tags: [],
+        },
+        {
+          nodeType: 'node-2',
+          category: undefined,
+          version: '1.0.0',
+          display: { label: 'Node 2', icon: 'n' },
+          sortOrder: 2,
+          handleConfiguration: [],
+          tags: [],
+        },
+      ];
+
+      const tree = new CategoryTree(categories, nodes);
+      const flattened = tree.flatten();
+      const rootNodes = flattened.getRootNodes();
+
+      expect(rootNodes.map((n) => n.nodeType)).toEqual(['node-1', 'node-2', 'node-3']);
+    });
+
     it('should preserve all nodes', () => {
       const categories = createMockCategories();
       const nodes = createMockNodes();
