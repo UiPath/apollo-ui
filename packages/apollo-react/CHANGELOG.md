@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.42.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.42.0...@uipath/apollo-react@3.42.1) (2026-02-19)
+
+### Bug Fixes
+
+* **apollo-react:** sort flattened nodes ([65826a8](https://github.com/UiPath/apollo-ui/commit/65826a84ad18eb1f700206bc0c1e6875154cab31))
+
 ## [@uipath/apollo-react-v3.42.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.41.1...@uipath/apollo-react@3.42.0) (2026-02-18)
 
 ### Features
