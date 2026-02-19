@@ -42,6 +42,7 @@
     "release:dry-run": "pnpm --workspace-concurrency=1 --sort --filter './packages/*' --filter './web-packages/*' exec -- semantic-release --dry-run",
     "publish:dev": "tsx scripts/publish-dev.ts",
     "unpublish:dev": "tsx scripts/unpublish-dev.ts",
+    "notifyUpdates": "tsx scripts/notify-vertex-updates.ts",
     "prepare": "husky"
   },
   "devDependencies": {
