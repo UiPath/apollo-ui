@@ -170,6 +170,7 @@ const ButtonHandleBase = ({
           $position={position}
           $backgroundColor={labelBackgroundColor}
           $shouldTruncate={shouldTruncateLabel}
+          onClick={(e) => e.stopPropagation()}
         >
           <Row align="center" gap={4}>
             {labelIcon}
