@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.42.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.42.1...@uipath/apollo-react@3.42.2) (2026-02-19)
+
+### Bug Fixes
+
+* **apollo-react:** handles in flow [MST-6514] ([afcf4e9](https://github.com/UiPath/apollo-ui/commit/afcf4e94a495c8196054da27c7eca8cc7d5e9b6a))
+
 ## [@uipath/apollo-react-v3.42.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.42.0...@uipath/apollo-react@3.42.1) (2026-02-19)
 
 ### Bug Fixes
