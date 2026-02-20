@@ -273,6 +273,15 @@ export function Toolbox<T>({
     }
   }, [initialItems, navigationStack, currentParentItem]);
 
+  // Re-run active search when items change so results reflect newly loaded data
+  // (e.g. dynamic manifests streaming in while a search query is already entered).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Only re-run when items update, not on search/handleSearch changes
+  useEffect(() => {
+    if (search) {
+      handleSearch(search);
+    }
+  }, [items]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
