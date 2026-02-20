@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.42.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.42.3...@uipath/apollo-react@3.42.4) (2026-02-20)
+
+### Bug Fixes
+
+* **apollo-react:** avoid button handles trigger on label click [MST-6600] ([ddfb43d](https://github.com/UiPath/apollo-ui/commit/ddfb43d288c7649f4d90f9eb67ca6c99fe4ffff6))
+
 ## [@uipath/apollo-react-v3.42.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.42.2...@uipath/apollo-react@3.42.3) (2026-02-20)
 
 ### Bug Fixes
