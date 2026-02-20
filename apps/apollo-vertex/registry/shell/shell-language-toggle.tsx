@@ -28,6 +28,7 @@ const MAP_LOCALE_TO_TRANSLATION_KEY: Record<SupportedLocale, TranslationKey> = {
   ko: "korean",
   pt: "portuguese",
   "pt-BR": "portuguese-br",
+  ro: "romanian",
   ru: "russian",
   tr: "turkish",
   "zh-CN": "chinese-cn",
