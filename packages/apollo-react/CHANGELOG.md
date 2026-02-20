@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.42.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.42.2...@uipath/apollo-react@3.42.3) (2026-02-20)
+
+### Bug Fixes
+
+* **apollo-react:** update items in addnodepanel for dynamic nodes ([2a26b98](https://github.com/UiPath/apollo-ui/commit/2a26b983e5748bdff362d50d5bc66be8ab546b05))
+
 ## [@uipath/apollo-react-v3.42.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.42.1...@uipath/apollo-react@3.42.2) (2026-02-19)
 
 ### Bug Fixes
