@@ -141,15 +141,24 @@ function StandalonePanelWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        width: '320px',
-        margin: '40px auto',
-        backgroundColor: 'var(--uix-canvas-background)',
-        border: '1px solid var(--uix-canvas-border-de-emp)',
-        borderRadius: '8px',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        height: '100vh',
+        width: '100vw',
+        backgroundColor: 'var(--color-background-secondary)',
+        paddingTop: '40px',
       }}
     >
-      {children}
+      <div
+        style={{
+          width: '320px',
+          margin: '0 auto',
+          backgroundColor: 'var(--uix-canvas-background)',
+          border: '1px solid var(--uix-canvas-border-de-emp)',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }

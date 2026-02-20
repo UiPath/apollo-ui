@@ -156,7 +156,6 @@ const ButtonHandleBase = ({
       type={type}
       position={position}
       id={id}
-      isConnectable={handleType !== 'artifact'}
       $positionPercent={positionPercent}
       $total={total}
       $visible={visible}
