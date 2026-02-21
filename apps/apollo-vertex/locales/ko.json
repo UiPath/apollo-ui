@@ -8,12 +8,12 @@
   "korean": "한국어",
   "portuguese": "포르투갈어",
   "portuguese-br": "포르투갈어(브라질)",
-  "romanian": "루마니아어",
   "russian": "러시아어",
   "turkish": "터키어",
   "chinese-cn": "중국어(중국)",
   "chinese-tw": "중국어(대만)",
   "dashboard": "대시보드",
   "projects": "프로젝트",
-  "analytics": "분석"
+  "analytics": "분석",
+  "pick_a_date": "날짜 선택"
 }
