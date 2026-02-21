@@ -8,12 +8,12 @@
   "korean": "韓語",
   "portuguese": "葡萄牙語",
   "portuguese-br": "葡萄牙語 (巴西)",
-  "romanian": "羅馬尼亞語",
   "russian": "俄語",
   "turkish": "土耳其語",
   "chinese-cn": "中文 (中國)",
   "chinese-tw": "中文（台灣）",
   "dashboard": "儀錶板",
   "projects": "專案",
-  "analytics": "分析"
+  "analytics": "分析",
+  "pick_a_date": "選取日期"
 }
