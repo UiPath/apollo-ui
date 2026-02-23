@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.43.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.42.4...@uipath/apollo-react@3.43.0) (2026-02-23)
+
+### Features
+
+* **apollo-react:** allow connecting artifact handles [AG-753] ([b540906](https://github.com/UiPath/apollo-ui/commit/b5409060d90dce5197a4b2b20490815d31fc8ac0))
+
 ## [@uipath/apollo-react-v3.42.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.42.3...@uipath/apollo-react@3.42.4) (2026-02-20)
 
 ### Bug Fixes
