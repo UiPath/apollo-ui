@@ -1,0 +1,87 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["unicorn", "typescript", "oxc", "react", "import"],
+  "jsPlugins": [
+    "eslint-plugin-react",
+    { "name": "shaggy-eslint-plugin-react", "specifier": "eslint-plugin-react" }
+  ],
+  "categories": {
+    "correctness": "error",
+    "perf": "error",
+    "suspicious": "error",
+    "pedantic": "error",
+    "style": "off"
+  },
+  "rules": {
+    "react/react-in-jsx-scope": "off",
+    "eslint/max-lines-per-function": "off",
+    "import/max-dependencies": "off",
+    "shaggy-eslint-plugin-react/jsx-no-literals": ["error"],
+    "typescript/explicit-function-return-type": "off",
+    "typescript/explicit-module-boundary-types": "off",
+    "react/jsx-filename-extension": ["error", { "extensions": [".tsx"] }],
+    "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }],
+    "eslint/no-alert": "error",
+    "eslint/no-console": "error",
+    "eslint/no-empty": "error",
+    "eslint/eqeqeq": ["error", "smart"],
+    "eslint/no-empty-function": "error",
+    "eslint/no-iterator": "error",
+    "eslint/no-param-reassign": "error",
+    "eslint/no-proto": "error",
+    "eslint/max-lines": ["error", { "max": 400 }],
+    "eslint/no-regex-spaces": "error",
+    "eslint/no-sequences": "error",
+    "eslint/no-undefined": "error",
+    "eslint/no-var": "error",
+    "eslint/no-void": "error",
+    "import/no-amd": "error",
+    "import/no-commonjs": "error",
+    "import/no-cycle": "error",
+    "import/no-webpack-loader-syntax": "error",
+    "import/unambiguous": "error",
+    "oxc/bad-bitwise-operator": "error",
+    "oxc/no-barrel-file": "error",
+    "oxc/no-map-spread": "off",
+    "oxc/no-const-enum": "error",
+    "promise/spec-only": "error",
+    "react/button-has-type": "error",
+    "react/no-danger": "error",
+    "react/no-unknown-property": "error",
+    "react/only-export-components": "error",
+    "typescript/use-unknown-in-catch-callback-variable": "error",
+    "typescript/promise-function-async": "error",
+    "typescript/prefer-literal-enum-member": "error",
+    "typescript/no-var-requires": "error",
+    "typescript/no-require-imports": "error",
+    "typescript/no-non-null-assertion": "error",
+    "typescript/no-non-null-asserted-nullish-coalescing": "error",
+    "typescript/no-namespace": "error",
+    "typescript/no-import-type-side-effects": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-empty-object-type": "error",
+    "typescript/no-dynamic-delete": "error",
+    "unicorn/no-abusive-eslint-disable": "error",
+    "unicorn/no-document-cookie": "error",
+    "unicorn/no-length-as-slice-end": "error",
+    "unicorn/no-magic-array-flat-depth": "error",
+    "unicorn/no-useless-error-capture-stack-trace": "error",
+    "unicorn/prefer-modern-math-apis": "error",
+    "unicorn/prefer-node-protocol": "error",
+    "unicorn/prefer-number-properties": "error"
+  },
+  "settings": {},
+  "env": {
+    "builtin": true
+  },
+  "globals": {},
+  "ignorePatterns": [".dependency-cruiser.js", "scripts/**", "next-env.d.ts"],
+  "overrides": [
+    {
+      "files": ["registry/**/*.tsx"],
+      "rules": {
+        "react/only-export-components": "off"
+      }
+    }
+  ]
+}
