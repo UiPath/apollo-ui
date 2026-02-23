@@ -1,5 +1,5 @@
-import { ApSankeyDiagram } from "@uipath/apollo-react/material/components";
 import * as ApolloCore from "@uipath/apollo-react/core";
+import { ApSankeyDiagram } from "@uipath/apollo-react/material/components";
 import {
 	PageContainer,
 	PageDescription,
