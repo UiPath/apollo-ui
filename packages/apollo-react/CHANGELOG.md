@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.44.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.44.0...@uipath/apollo-react@3.44.1) (2026-02-23)
+
+### Bug Fixes
+
+* **apollo-react:** resolve sankey diagram label overlap ([2f47f0c](https://github.com/UiPath/apollo-ui/commit/2f47f0c9e2f9f36041a02369dfc4388e9408e181))
+
 ## [@uipath/apollo-react-v3.44.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.43.0...@uipath/apollo-react@3.44.0) (2026-02-23)
 
 ### Features
