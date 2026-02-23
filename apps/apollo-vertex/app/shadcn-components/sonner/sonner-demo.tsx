@@ -1,9 +1,12 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Button } from "@/registry/button/button";
 
 export function SonnerDemo() {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-wrap gap-2">
       <Button
@@ -11,26 +14,22 @@ export function SonnerDemo() {
         onClick={() =>
           toast("Event has been created", {
             description: "Sunday, December 03, 2023 at 9:00 AM",
-            action: {
-              label: "Undo",
-              onClick: () => console.log("Undo"),
-            },
           })
         }
       >
-        Show Toast
+        {t("show_toast")}
       </Button>
       <Button variant="outline" onClick={() => toast.success("Success!")}>
-        Success
+        {t("success")}
       </Button>
       <Button variant="outline" onClick={() => toast.error("Error!")}>
-        Error
+        {t("error")}
       </Button>
       <Button variant="outline" onClick={() => toast.warning("Warning!")}>
-        Warning
+        {t("warning")}
       </Button>
       <Button variant="outline" onClick={() => toast.info("Info!")}>
-        Info
+        {t("info")}
       </Button>
     </div>
   );

@@ -47,7 +47,7 @@ function ChartContainer({
   >["children"];
 }) {
   const uniqueId = React.useId();
-  const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`;
+  const chartId = `chart-${id || uniqueId.replaceAll(":", "")}`;
 
   return (
     <ChartContext.Provider value={{ config }}>
@@ -71,15 +71,16 @@ function ChartContainer({
 
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
-    ([, config]) => config.theme || config.color,
+    ([, itemConfig]) => itemConfig.theme || itemConfig.color,
   );
 
-  if (!colorConfig.length) {
+  if (colorConfig.length === 0) {
     return null;
   }
 
   return (
     <style
+      // oxlint-disable-next-line react(no-danger) -- Safe: only generated CSS variables
       dangerouslySetInnerHTML={{
         __html: Object.entries(THEMES)
           .map(
@@ -177,7 +178,7 @@ function ChartTooltipContent({
         className,
       )}
     >
-      {!nestLabel ? tooltipLabel : null}
+      {nestLabel ? null : tooltipLabel}
       <div className="grid gap-1.5">
         {payload
           .filter((item) => item.type !== "none")
@@ -194,7 +195,7 @@ function ChartTooltipContent({
                   indicator === "dot" && "items-center",
                 )}
               >
-                {formatter && item?.value !== undefined && item.name ? (
+                {formatter && item?.value != null && item.name ? (
                   formatter(item.value, item.name, item, index, item.payload)
                 ) : (
                   <>
@@ -315,7 +316,7 @@ function getPayloadConfigFromPayload(
   key: string,
 ) {
   if (typeof payload !== "object" || payload === null) {
-    return undefined;
+    return;
   }
 
   const payloadPayload =
@@ -323,7 +324,7 @@ function getPayloadConfigFromPayload(
     typeof payload.payload === "object" &&
     payload.payload !== null
       ? payload.payload
-      : undefined;
+      : null;
 
   let configLabelKey: string = key;
 

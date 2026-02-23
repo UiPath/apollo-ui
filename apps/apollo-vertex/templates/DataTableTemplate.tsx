@@ -157,7 +157,7 @@ const columns: ColumnDef<Payment>[] = [
       />
     ),
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"));
+      const amount = Number.parseFloat(row.getValue("amount"));
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",

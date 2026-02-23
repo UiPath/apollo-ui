@@ -85,7 +85,13 @@ export const Sidebar = ({
         <NavItem to="/" icon={Settings} text="Settings" />
       </nav>
       <div className="mt-auto pt-3">
-        {!isCollapsed ? (
+        {isCollapsed ? (
+          <div className="flex flex-col items-center gap-2 pb-2">
+            <LanguageToggle />
+            <ThemeToggle />
+            <UserProfile isCollapsed={isCollapsed} />
+          </div>
+        ) : (
           <div className="flex flex-col gap-2 pb-2">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -98,12 +104,6 @@ export const Sidebar = ({
                 </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-2 pb-2">
-            <LanguageToggle />
-            <ThemeToggle />
-            <UserProfile isCollapsed={isCollapsed} />
           </div>
         )}
       </div>

@@ -36,7 +36,7 @@ export const Company = ({
   const iconElement = (
     <motion.div
       className="w-8 h-8 rounded-md bg-linear-to-r from-primary/5 via-secondary/5 to-primary/5 flex items-center justify-center shrink-0"
-      whileHover={isCollapsed ? iconHoverScale : undefined}
+      {...(isCollapsed ? { whileHover: iconHoverScale } : {})}
     >
       {companyLogo ? (
         <img

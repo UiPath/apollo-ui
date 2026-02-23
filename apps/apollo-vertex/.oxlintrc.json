@@ -15,8 +15,8 @@
   "rules": {
     "react/react-in-jsx-scope": "off",
     "eslint/max-lines-per-function": "off",
+    "eslint-plugin-react/jsx-no-constructed-context-values": "off",
     "import/max-dependencies": "off",
-    "shaggy-eslint-plugin-react/jsx-no-literals": ["error"],
     "typescript/explicit-function-return-type": "off",
     "typescript/explicit-module-boundary-types": "off",
     "react/jsx-filename-extension": ["error", { "extensions": [".tsx"] }],
@@ -79,6 +79,13 @@
   "overrides": [
     {
       "files": ["registry/**/*.tsx"],
+      "rules": {
+        "react/only-export-components": "off",
+        "shaggy-eslint-plugin-react/jsx-no-literals": ["error"]
+      }
+    },
+    {
+      "files": ["app/**/layout.tsx", "app/**/page.tsx"],
       "rules": {
         "react/only-export-components": "off"
       }
