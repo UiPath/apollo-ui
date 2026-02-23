@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.44.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.43.0...@uipath/apollo-react@3.44.0) (2026-02-23)
+
+### Features
+
+* **apollo-react:** add label support to SequenceEdge ([d705233](https://github.com/UiPath/apollo-ui/commit/d705233e086aa51e4ce9954660976f4620941b50))
+
 ## [@uipath/apollo-react-v3.43.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.42.4...@uipath/apollo-react@3.43.0) (2026-02-23)
 
 ### Features
