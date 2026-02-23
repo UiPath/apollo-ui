@@ -43,7 +43,7 @@ export const NavItem = ({ to, icon: Icon, text }: NavItemProps) => {
     >
       <motion.span
         className="w-8 h-8 flex items-center justify-center shrink-0"
-        whileHover={isCollapsed ? iconHoverScale : undefined}
+        {...(isCollapsed ? { whileHover: iconHoverScale } : {})}
       >
         <Icon className="w-4 h-4" />
       </motion.span>

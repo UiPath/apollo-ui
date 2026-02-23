@@ -10,7 +10,7 @@ export default withNextra({
       "next-mdx-import-source-file": "./mdx-components.tsx",
     },
   },
-  async rewrites() {
+  rewrites() {
     return [
       {
         source: "/identity_",
@@ -18,7 +18,7 @@ export default withNextra({
       },
     ];
   },
-  async headers() {
+  headers() {
     return [
       {
         source: "/:path*",

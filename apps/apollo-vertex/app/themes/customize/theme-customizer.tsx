@@ -1,5 +1,4 @@
 "use client";
-
 import { type ChangeEvent, startTransition, useEffect, useState } from "react";
 import { Button } from "@/registry/button/button";
 import { Card } from "@/registry/card/card";
@@ -49,11 +48,11 @@ function oklchToHex(oklchString: string): string {
     throw new Error("Invalid OKLCH string format");
   }
 
-  let l = parseFloat(match[1]);
-  const c = parseFloat(match[2]);
-  const h = parseFloat(match[3]);
+  let l = Number.parseFloat(match[1]);
+  const c = Number.parseFloat(match[2]);
+  const h = Number.parseFloat(match[3]);
   // Alpha is optional, defaults to 1 (fully opaque)
-  let alpha = match[4] ? parseFloat(match[4]) : 1;
+  let alpha = match[4] ? Number.parseFloat(match[4]) : 1;
 
   // Convert percentage lightness to 0-1 range
   if (oklchString.includes("%") && match[1].includes("%")) {
@@ -97,7 +96,8 @@ function oklchToHex(oklchString: string): string {
   // This is a simplification since color pickers don't handle transparency well
   if (alpha < 1) {
     // Assume dark background ~20% lightness
-    const bgValue = 51; // roughly 20% in sRGB
+    // roughly 20% in sRGB
+    const bgValue = 51;
     r = Math.round(r * alpha + bgValue * (1 - alpha));
     g = Math.round(g * alpha + bgValue * (1 - alpha));
     b_rgb = Math.round(b_rgb * alpha + bgValue * (1 - alpha));
@@ -118,8 +118,8 @@ export function ThemeCustomizer() {
       try {
         const parsed = JSON.parse(savedTheme);
         setCustomTheme(parsed);
-      } catch (e) {
-        console.error("Failed to parse saved custom theme", e);
+      } catch {
+        // Ignore invalid saved theme
       }
     }
   }, []);
@@ -179,10 +179,8 @@ export function ThemeCustomizer() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
+    file.text().then((content) => {
       try {
-        const content = e.target?.result as string;
         const imported = JSON.parse(content);
         setCustomTheme(imported);
 
@@ -195,13 +193,10 @@ export function ThemeCustomizer() {
         window.dispatchEvent(
           new CustomEvent("theme-change", { detail: "custom" }),
         );
-
-        alert("Theme imported and applied successfully!");
-      } catch (_error) {
-        alert("Failed to import theme. Please check the file format.");
+      } catch {
+        // Invalid theme file
       }
-    };
-    reader.readAsText(file);
+    });
   };
 
   const handleLoadPreset = (presetName: keyof typeof themes) => {

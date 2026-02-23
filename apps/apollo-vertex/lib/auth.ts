@@ -175,10 +175,10 @@ const handleOAuthCallback = async (
     sessionStorage.removeItem(STORAGE_KEYS.STATE);
     saveTokenData(tokenData);
     window.history.replaceState({}, document.title, window.location.pathname);
-  } catch (error) {
+  } catch (authError) {
     clearTokenData();
-    toast.error(`Authentication failed: ${error}`);
-    throw error;
+    toast.error(`Authentication failed: ${authError}`);
+    throw authError;
   }
 };
 

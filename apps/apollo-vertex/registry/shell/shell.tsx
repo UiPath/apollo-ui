@@ -32,16 +32,14 @@ const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
 
   return (
     <ShellUserProvider>
-      <LocaleProvider>
-        <ShellLayout
-          companyName={companyName}
-          productName={productName}
-          companyLogo={companyLogo}
-          variant={variant}
-        >
-          {children}
-        </ShellLayout>
-      </LocaleProvider>
+      <ShellLayout
+        companyName={companyName}
+        productName={productName}
+        companyLogo={companyLogo}
+        variant={variant}
+      >
+        {children}
+      </ShellLayout>
     </ShellUserProvider>
   );
 };
@@ -75,13 +73,16 @@ export const ApolloShell: FC<ApolloShellProps> = ({
       scope={scope}
       authorizationEndpoint={authorizationEndpoint}
     >
-      <ApolloShellComponent
-        children={children}
-        companyName={companyName}
-        productName={productName}
-        companyLogo={companyLogo}
-        variant={variant}
-      />
+      <LocaleProvider>
+        <ApolloShellComponent
+          companyName={companyName}
+          productName={productName}
+          companyLogo={companyLogo}
+          variant={variant}
+        >
+          {children}
+        </ApolloShellComponent>
+      </LocaleProvider>
     </ShellAuthProvider>
   );
 };

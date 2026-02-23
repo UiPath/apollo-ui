@@ -12,9 +12,9 @@ const queryClient = new QueryClient();
 const baseUrl = "https://alpha.uipath.com";
 
 const redirectUri =
-  typeof window !== "undefined"
-    ? `${window.location.origin}/vertex-components/shell`
-    : "";
+  typeof window === "undefined"
+    ? ""
+    : `${window.location.origin}/vertex-components/shell`;
 
 export function ShellTemplateComponent({
   variant,

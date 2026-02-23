@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { LogOut } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -17,6 +18,7 @@ interface UserProfileProps {
 }
 
 export const UserProfile = ({ isCollapsed }: UserProfileProps) => {
+  const { t } = useTranslation();
   const { user } = useUser();
   const { logout } = useAuth();
 
@@ -37,7 +39,53 @@ export const UserProfile = ({ isCollapsed }: UserProfileProps) => {
 
   return (
     <AnimatePresence mode="wait">
-      {!isCollapsed ? (
+      {isCollapsed ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <motion.button
+              type="button"
+              className="flex items-center justify-center cursor-pointer rounded-full"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{
+                type: "spring",
+                stiffness: 400,
+                damping: 30,
+                mass: 0.5,
+              }}
+            >
+              <Avatar className="w-7 h-7 rounded-full shrink-0">
+                <AvatarFallback className="w-7 h-7 bg-primary/40 rounded-full text-sidebar-foreground text-xs">
+                  {userInitials}
+                </AvatarFallback>
+              </Avatar>
+            </motion.button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="w-56"
+            align="center"
+            side="right"
+            sideOffset={8}
+          >
+            <div className="flex flex-col gap-2 p-2">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-sm font-medium">
+                  {user?.name ?? t("business_user")}
+                </span>
+                <span className="text-xs opacity-60">
+                  {user?.email ?? t("user_email_placeholder")}
+                </span>
+              </div>
+            </div>
+            <DropdownMenuItem onClick={handleSignOut}>
+              <LogOut className="w-4 h-4" />
+              <span>{t("sign_out")}</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : (
         <motion.div
           key="expanded"
           className="flex items-center gap-3 flex-1 min-w-0"
@@ -79,7 +127,7 @@ export const UserProfile = ({ isCollapsed }: UserProfileProps) => {
             >
               <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="w-4 h-4" />
-                <span>Sign out</span>
+                <span>{t("sign_out")}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -97,52 +145,6 @@ export const UserProfile = ({ isCollapsed }: UserProfileProps) => {
             </span>
           </motion.div>
         </motion.div>
-      ) : (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <motion.button
-              type="button"
-              className="flex items-center justify-center cursor-pointer rounded-full"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{
-                type: "spring",
-                stiffness: 400,
-                damping: 30,
-                mass: 0.5,
-              }}
-            >
-              <Avatar className="w-7 h-7 rounded-full shrink-0">
-                <AvatarFallback className="w-7 h-7 bg-primary/40 rounded-full text-sidebar-foreground text-xs">
-                  {userInitials}
-                </AvatarFallback>
-              </Avatar>
-            </motion.button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-56"
-            align="center"
-            side="right"
-            sideOffset={8}
-          >
-            <div className="flex flex-col gap-2 p-2">
-              <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium">
-                  {user?.name ?? "Business user"}
-                </span>
-                <span className="text-xs opacity-60">
-                  {user?.email ?? "user@company.com"}
-                </span>
-              </div>
-            </div>
-            <DropdownMenuItem onClick={handleSignOut}>
-              <LogOut className="w-4 h-4" />
-              <span>Sign out</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       )}
     </AnimatePresence>
   );

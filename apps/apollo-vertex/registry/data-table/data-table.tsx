@@ -26,6 +26,7 @@ import {
   Settings2Icon,
 } from "lucide-react";
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -69,6 +70,7 @@ function DataTable<TData, TValue>({
   data,
   className,
 }: DataTableProps<TData, TValue>) {
+  const { t } = useTranslation();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -139,7 +141,7 @@ function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {t("no_results")}
                 </TableCell>
               </TableRow>
             )}
@@ -166,6 +168,7 @@ function DataTableColumnHeader<TData, TValue>({
   title,
   className,
 }: DataTableColumnHeaderProps<TData, TValue>) {
+  const { t } = useTranslation();
   if (!column.getCanSort()) {
     return <div className={cn(className)}>{title}</div>;
   }
@@ -195,16 +198,16 @@ function DataTableColumnHeader<TData, TValue>({
         <DropdownMenuContent align="start">
           <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
             <ArrowUpIcon />
-            Asc
+            {t("asc")}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
             <ArrowDownIcon />
-            Desc
+            {t("desc")}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => column.toggleVisibility(false)}>
             <EyeOffIcon />
-            Hide
+            {t("hide")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -225,18 +228,19 @@ function DataTablePagination<TData>({
   table,
   className,
 }: DataTablePaginationProps<TData>) {
+  const { t } = useTranslation();
   return (
     <div
       data-slot="data-table-pagination"
       className={cn("flex items-center justify-between px-2", className)}
     >
       <div className="text-muted-foreground flex-1 text-sm">
-        {table.getFilteredSelectedRowModel().rows.length} of{" "}
-        {table.getFilteredRowModel().rows.length} row(s) selected.
+        {table.getFilteredSelectedRowModel().rows.length} {t("of")}{" "}
+        {table.getFilteredRowModel().rows.length} {t("rows_selected")}
       </div>
       <div className="flex items-center space-x-6 lg:space-x-8">
         <div className="flex items-center space-x-2">
-          <p className="text-sm font-medium">Rows per page</p>
+          <p className="text-sm font-medium">{t("rows_per_page")}</p>
           <Select
             value={`${table.getState().pagination.pageSize}`}
             onValueChange={(value) => {
@@ -256,7 +260,7 @@ function DataTablePagination<TData>({
           </Select>
         </div>
         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-          Page {table.getState().pagination.pageIndex + 1} of{" "}
+          {t("page")} {table.getState().pagination.pageIndex + 1} {t("of")}{" "}
           {table.getPageCount()}
         </div>
         <div className="flex items-center space-x-2">
@@ -267,7 +271,7 @@ function DataTablePagination<TData>({
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
           >
-            <span className="sr-only">Go to first page</span>
+            <span className="sr-only">{t("go_to_first_page")}</span>
             <ChevronsLeftIcon />
           </Button>
           <Button
@@ -276,7 +280,7 @@ function DataTablePagination<TData>({
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            <span className="sr-only">Go to previous page</span>
+            <span className="sr-only">{t("go_to_previous_page")}</span>
             <ChevronLeftIcon />
           </Button>
           <Button
@@ -285,7 +289,7 @@ function DataTablePagination<TData>({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            <span className="sr-only">Go to next page</span>
+            <span className="sr-only">{t("go_to_next_page")}</span>
             <ChevronRightIcon />
           </Button>
           <Button
@@ -295,7 +299,7 @@ function DataTablePagination<TData>({
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
           >
-            <span className="sr-only">Go to last page</span>
+            <span className="sr-only">{t("go_to_last_page")}</span>
             <ChevronsRightIcon />
           </Button>
         </div>
@@ -317,6 +321,7 @@ function DataTableViewOptions<TData>({
   table,
   className,
 }: DataTableViewOptionsProps<TData>) {
+  const { t } = useTranslation();
   return (
     <div data-slot="data-table-view-options" className={className}>
       <DropdownMenu>
@@ -327,17 +332,16 @@ function DataTableViewOptions<TData>({
             className="ml-auto hidden h-8 lg:flex"
           >
             <Settings2Icon />
-            View
+            {t("view")}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[150px]">
-          <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+          <DropdownMenuLabel>{t("toggle_columns")}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {table
             .getAllColumns()
             .filter(
-              (column) =>
-                typeof column.accessorFn !== "undefined" && column.getCanHide(),
+              (column) => column.accessorFn != null && column.getCanHide(),
             )
             .map((column) => (
               <DropdownMenuCheckboxItem

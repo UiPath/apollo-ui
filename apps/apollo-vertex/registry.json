@@ -245,7 +245,7 @@
       "type": "registry:ui",
       "title": "Breadcrumb",
       "description": "Displays the path to the current resource using a hierarchy of links.",
-      "dependencies": ["@radix-ui/react-slot"],
+      "dependencies": ["@radix-ui/react-slot", "react-i18next"],
       "files": [
         {
           "path": "registry/breadcrumb/breadcrumb.tsx",
@@ -299,7 +299,7 @@
       "type": "registry:ui",
       "title": "Carousel",
       "description": "A carousel with motion and swipe built using Embla.",
-      "dependencies": ["embla-carousel-react"],
+      "dependencies": ["embla-carousel-react", "react-i18next"],
       "files": [
         {
           "path": "registry/carousel/carousel.tsx",
@@ -373,7 +373,11 @@
       "type": "registry:ui",
       "title": "Data Table",
       "description": "A data table component built on TanStack Table with sorting, filtering, pagination, and row selection.",
-      "dependencies": ["@tanstack/react-table", "lucide-react"],
+      "dependencies": [
+        "@tanstack/react-table",
+        "lucide-react",
+        "react-i18next"
+      ],
       "registryDependencies": ["table", "button", "dropdown-menu", "select"],
       "files": [
         {
@@ -387,7 +391,7 @@
       "type": "registry:ui",
       "title": "Dialog",
       "description": "A modal dialog that appears in front of app content.",
-      "dependencies": ["@radix-ui/react-dialog"],
+      "dependencies": ["@radix-ui/react-dialog", "react-i18next"],
       "files": [{ "path": "registry/dialog/dialog.tsx", "type": "registry:ui" }]
     },
     {
@@ -538,6 +542,7 @@
       "type": "registry:ui",
       "title": "Pagination",
       "description": "Pagination with page navigation, next and previous links.",
+      "dependencies": ["react-i18next"],
       "files": [
         {
           "path": "registry/pagination/pagination.tsx",
@@ -636,7 +641,7 @@
       "type": "registry:ui",
       "title": "Sheet",
       "description": "Extends the Dialog component to display content that slides in.",
-      "dependencies": ["@radix-ui/react-dialog"],
+      "dependencies": ["@radix-ui/react-dialog", "react-i18next"],
       "files": [{ "path": "registry/sheet/sheet.tsx", "type": "registry:ui" }]
     },
     {
@@ -771,7 +776,8 @@
       "dependencies": [
         "@radix-ui/react-slot",
         "class-variance-authority",
-        "lucide-react"
+        "lucide-react",
+        "react-i18next"
       ],
       "registryDependencies": [
         "button",

@@ -23,7 +23,7 @@ export function useLocalStorage<T>(
     }
     try {
       return JSON.parse(contents) as T;
-    } catch (error) {
+    } catch {
       return defaultValue;
     }
   }, [defaultValue, key]);

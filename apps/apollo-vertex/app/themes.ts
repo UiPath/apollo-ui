@@ -214,8 +214,7 @@ export function getCustomTheme(): ThemeConfig | null {
 
   try {
     return JSON.parse(savedTheme);
-  } catch (e) {
-    console.error("Failed to parse custom theme", e);
+  } catch {
     return null;
   }
 }

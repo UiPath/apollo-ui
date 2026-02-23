@@ -51,13 +51,11 @@ const decodeJWT = (token: string): UserInfo | null => {
   };
 };
 
-export const AuthContext = createContext<AuthContextValue | undefined>(
-  undefined,
-);
+export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (context == null) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;

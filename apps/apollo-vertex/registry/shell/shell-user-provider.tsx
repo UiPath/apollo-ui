@@ -30,9 +30,7 @@ export const useUser = () => {
   return context;
 };
 
-export const UserContext = createContext<UserContextValue | undefined>(
-  undefined,
-);
+export const UserContext = createContext<UserContextValue | null>(null);
 
 export const ShellUserProvider: FC<PropsWithChildren> = ({ children }) => {
   const { user: authUser, isAuthenticated, isLoading } = useAuth();
