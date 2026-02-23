@@ -89,7 +89,7 @@ export const SequenceEdge = memo(function SequenceEdge({
   const angle = ANGLE_MAP[targetPosition];
   const { x: offsetX, y: offsetY } = ARROW_OFFSETS[targetPosition];
 
-  const { edgePath } = useEdgePath({
+  const { edgePath, labelX, labelY } = useEdgePath({
     sourceNodeId: source,
     targetNodeId: target,
     sourceHandleId,
@@ -203,6 +203,38 @@ export const SequenceEdge = memo(function SequenceEdge({
         />
 
         {getStatusAnimation(status, edgePath)}
+
+        {/* Edge label from data */}
+        {typeof data?.label === 'string' && data.label.length > 0 && (
+          <foreignObject
+            x={labelX}
+            y={labelY}
+            width={1}
+            height={1}
+            overflow="visible"
+            style={{ pointerEvents: 'none' }}
+          >
+            <div
+              className="react-flow__edge-label nodrag nopan"
+              style={{
+                position: 'absolute',
+                transform: 'translate(-50%, -50%)',
+                whiteSpace: 'nowrap',
+                pointerEvents: 'none',
+                color: 'var(--uix-canvas-foreground)',
+                background: 'var(--uix-canvas-background)',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                fontWeight: 500,
+                border: `1px solid ${selected ? 'var(--uix-canvas-primary)' : 'var(--uix-canvas-border)'}`,
+                boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+              }}
+            >
+              {data.label}
+            </div>
+          </foreignObject>
+        )}
       </g>
 
       {/* Edge toolbar for adding nodes */}

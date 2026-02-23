@@ -312,6 +312,160 @@ function DefaultStory() {
 }
 
 // ============================================================================
+// Edge Labels Story
+// ============================================================================
+
+function EdgeLabelsStory() {
+  const initialNodes = useMemo(
+    () => [
+      createStickyNote(
+        'sticky-labels',
+        'green',
+        '**Edge Labels**\nLabels rendered at edge midpoint via data.label',
+        { x: 100, y: 80 },
+        { width: 550, height: 590 }
+      ),
+
+      // Horizontal edges with labels
+      createNode({
+        id: 'label-source-1',
+        label: 'Source',
+        x: 130,
+        y: 160,
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'label-target-1',
+        label: 'Target',
+        x: 470,
+        y: 160,
+        targetPositions: [Position.Left],
+      }),
+
+      // Vertical edges with labels
+      createNode({
+        id: 'label-source-2',
+        label: 'Start',
+        x: 300,
+        y: 300,
+        sourcePositions: [Position.Bottom],
+      }),
+      createNode({
+        id: 'label-target-2',
+        label: 'End',
+        x: 300,
+        y: 480,
+        targetPositions: [Position.Top],
+      }),
+
+      // Diff edge with label
+      createStickyNote(
+        'sticky-labels-diff',
+        'white',
+        '**Labels + Diff States**\nEdge labels work alongside diff styling',
+        { x: 760, y: 80 },
+        { width: 420, height: 340 }
+      ),
+      createNode({
+        id: 'label-added-source',
+        label: 'Added',
+        x: 800,
+        y: 160,
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'label-added-target',
+        label: 'Target',
+        x: 1020,
+        y: 160,
+        targetPositions: [Position.Left],
+      }),
+      createNode({
+        id: 'label-removed-source',
+        label: 'Removed',
+        x: 800,
+        y: 300,
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'label-removed-target',
+        label: 'Target',
+        x: 1020,
+        y: 300,
+        targetPositions: [Position.Left],
+      }),
+
+      createStickyNote(
+        'sticky-info-labels',
+        'pink',
+        '## Edge Labels\n\nSet `data.label` on an edge to display a label at the edge midpoint.\n\n**Features:**\n- Rendered via SVG foreignObject\n- Positioned at computed midpoint (labelX, labelY)\n- Styled consistently with StageEdge labels\n- Works with all edge states (diff, selected, etc.)',
+        { x: 100, y: 720 },
+        { width: 350, height: 280 }
+      ),
+    ],
+    []
+  );
+
+  const initialEdges: Edge[] = useMemo(
+    () => [
+      {
+        id: 'e-label-horizontal',
+        source: 'label-source-1',
+        target: 'label-target-1',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+        data: { label: 'Success' },
+      },
+      {
+        id: 'e-label-vertical',
+        source: 'label-source-2',
+        target: 'label-target-2',
+        sourceHandle: `out-${Position.Bottom}`,
+        targetHandle: `in-${Position.Top}`,
+        type: 'sequence',
+        data: { label: 'Next Step' },
+      },
+      {
+        id: 'e-label-added',
+        source: 'label-added-source',
+        target: 'label-added-target',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+        data: { isDiffAdded: true, label: 'New connection' },
+        style: { stroke: 'var(--palette-positive-base)' },
+      },
+      {
+        id: 'e-label-removed',
+        source: 'label-removed-source',
+        target: 'label-removed-target',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+        data: { isDiffRemoved: true, label: 'Deprecated' },
+        style: { stroke: 'var(--palette-negative-base)', strokeDasharray: '5,5' },
+      },
+    ],
+    []
+  );
+
+  const { canvasProps } = useCanvasStory({
+    initialNodes,
+    initialEdges,
+    additionalNodeTypes: nodeTypes,
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} edgeTypes={edgeTypes} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+// ============================================================================
 // Readonly Mode Story (Execution States)
 // ============================================================================
 
@@ -806,6 +960,18 @@ function LoopEdgesStory() {
 
 export const Default: Story = {
   render: () => <DefaultStory />,
+};
+
+export const EdgeLabels: Story = {
+  render: () => <EdgeLabelsStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates edge labels rendered at the midpoint via data.label. Labels work alongside all edge states including diff styling.',
+      },
+    },
+  },
 };
 
 export const ExecutionStates: Story = {

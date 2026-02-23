@@ -12,6 +12,13 @@ export const edgeSchema = z.object({
   targetNodeId: idSchema,
   /** The target port name (input port) */
   targetPort: z.string().min(1),
+  data: z
+    .object({
+      /** Optional label displayed at the edge midpoint */
+      label: z.string().optional(),
+    })
+    .passthrough()
+    .optional(),
 });
 
 // Export inferred TypeScript type
