@@ -19,10 +19,10 @@ export const getContextMenuItems = (
   ) => void
 ): NodeMenuItem[] => {
   const CONTEXT_MENU_ITEMS = {
-    MOVE_UP: getMenuItem('move-up', 'Move Up', () =>
+    MOVE_UP: getMenuItem('move-up', 'Move up', () =>
       reGroupTaskFunction(GroupModificationType.TASK_GROUP_UP, groupIndex, taskIndex)
     ),
-    MOVE_DOWN: getMenuItem('move-down', 'Move Down', () =>
+    MOVE_DOWN: getMenuItem('move-down', 'Move down', () =>
       reGroupTaskFunction(GroupModificationType.TASK_GROUP_DOWN, groupIndex, taskIndex)
     ),
     UNGROUP_ALL: getMenuItem('ungroup', 'Ungroup parallel tasks', () =>
@@ -109,7 +109,7 @@ export function getMenuItem(
   return { id, label, onClick, disabled: isDisabled };
 }
 
-const getDivider = (): NodeMenuItem => {
+export const getDivider = (): NodeMenuItem => {
   return {
     type: 'divider' as const,
   };
