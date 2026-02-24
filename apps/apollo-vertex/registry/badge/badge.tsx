@@ -18,26 +18,73 @@ const badgeVariants = cva(
         outline:
           "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
       },
+      status: {
+        default: "",
+        info: "",
+        warning: "",
+        success: "",
+        error: "",
+      },
     },
+    compoundVariants: [
+      // default status + primary (variant="default")
+      { status: "default", variant: "default", class: "border-transparent bg-muted text-foreground" },
+      // default status + secondary
+      { status: "default", variant: "secondary", class: "border-transparent bg-muted/50 text-muted-foreground" },
+      // default status + outline
+      { status: "default", variant: "outline", class: "border-border text-muted-foreground bg-transparent" },
+
+      // info status + primary
+      { status: "info", variant: "default", class: "border-transparent bg-info text-info-foreground" },
+      // info status + secondary
+      { status: "info", variant: "secondary", class: "border-transparent bg-info/15 text-info" },
+      // info status + outline
+      { status: "info", variant: "outline", class: "border-info text-info bg-transparent" },
+
+      // warning status + primary
+      { status: "warning", variant: "default", class: "border-transparent bg-warning text-warning-foreground" },
+      // warning status + secondary
+      { status: "warning", variant: "secondary", class: "border-transparent bg-warning/15 text-warning" },
+      // warning status + outline
+      { status: "warning", variant: "outline", class: "border-warning text-warning bg-transparent" },
+
+      // success status + primary
+      { status: "success", variant: "default", class: "border-transparent bg-success text-success-foreground" },
+      // success status + secondary
+      { status: "success", variant: "secondary", class: "border-transparent bg-success/15 text-success" },
+      // success status + outline
+      { status: "success", variant: "outline", class: "border-success text-success bg-transparent" },
+
+      // error status + primary
+      { status: "error", variant: "default", class: "border-transparent bg-destructive text-destructive-foreground" },
+      // error status + secondary
+      { status: "error", variant: "secondary", class: "border-transparent bg-destructive/15 text-destructive" },
+      // error status + outline
+      { status: "error", variant: "outline", class: "border-destructive text-destructive bg-transparent" },
+    ],
     defaultVariants: {
       variant: "default",
     },
   },
 );
 
+type BadgeVariantProps = VariantProps<typeof badgeVariants>;
+
 function Badge({
   className,
   variant,
+  status,
   asChild = false,
   ...props
 }: React.ComponentProps<"span"> &
-  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+  BadgeVariantProps & { asChild?: boolean }) {
   const Comp = asChild ? Slot : "span";
 
   return (
     <Comp
       data-slot="badge"
-      className={cn(badgeVariants({ variant }), className)}
+      data-status={status}
+      className={cn(badgeVariants({ variant, status }), className)}
       {...props}
     />
   );

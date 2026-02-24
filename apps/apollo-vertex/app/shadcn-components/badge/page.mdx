@@ -1,4 +1,5 @@
 import { Badge } from '@/registry/badge/badge'
+import { Info, AlertTriangle, CircleAlert, CircleCheck } from 'lucide-react'
 
 # Badge
 
@@ -9,6 +10,50 @@ Displays a badge or a component that looks like a badge.
   <Badge variant="secondary">Secondary</Badge>
   <Badge variant="destructive">Destructive</Badge>
   <Badge variant="outline">Outline</Badge>
+</div>
+
+## Status Badges
+
+Status badges combine a `status` type with a `variant` appearance (primary, secondary, or outline).
+
+### Default
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-2">
+  <Badge status="default">No issues</Badge>
+  <Badge status="default" variant="secondary">No issues</Badge>
+  <Badge status="default" variant="outline">No issues</Badge>
+</div>
+
+### Informational
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-2">
+  <Badge status="info"><Info /> Ready</Badge>
+  <Badge status="info" variant="secondary"><Info /> Ready</Badge>
+  <Badge status="info" variant="outline"><Info /> Ready</Badge>
+</div>
+
+### Warning
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-2">
+  <Badge status="warning"><AlertTriangle /> Could not run</Badge>
+  <Badge status="warning" variant="secondary"><AlertTriangle /> Could not run</Badge>
+  <Badge status="warning" variant="outline"><AlertTriangle /> Could not run</Badge>
+</div>
+
+### Error
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-2">
+  <Badge status="error"><CircleAlert /> Doc missing</Badge>
+  <Badge status="error" variant="secondary"><CircleAlert /> Doc missing</Badge>
+  <Badge status="error" variant="outline"><CircleAlert /> Doc missing</Badge>
+</div>
+
+### Success
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-2">
+  <Badge status="success"><CircleCheck /> Completed</Badge>
+  <Badge status="success" variant="secondary"><CircleCheck /> Completed</Badge>
+  <Badge status="success" variant="outline"><CircleCheck /> Completed</Badge>
 </div>
 
 ## Installation
@@ -28,4 +73,20 @@ import { Badge } from "@/components/ui/badge"
 <Badge variant="secondary">Secondary</Badge>
 <Badge variant="destructive">Destructive</Badge>
 <Badge variant="outline">Outline</Badge>
+```
+
+### Status Badge Usage
+
+```tsx
+// Status with primary appearance (default variant)
+<Badge status="success">Completed</Badge>
+
+// Status with secondary appearance
+<Badge status="warning" variant="secondary">Could not run</Badge>
+
+// Status with outline appearance
+<Badge status="error" variant="outline">Doc missing</Badge>
+
+// With icons (consumer-provided)
+<Badge status="info"><Info /> Ready</Badge>
 ```
