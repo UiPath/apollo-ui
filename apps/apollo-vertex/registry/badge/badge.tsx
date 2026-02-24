@@ -10,13 +10,13 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90",
+          "border-transparent bg-badge text-badge-foreground [a&]:hover:bg-badge/90",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
+          "border-transparent bg-[oklch(0.5995_0.0199_253.42_/_0.20)] dark:bg-badge/25 text-[oklch(0.1660_0.0283_203.34)] dark:text-white [a&]:hover:bg-secondary/90",
         destructive:
           "border-transparent bg-destructive text-destructive-foreground [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
         outline:
-          "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
+          "border-badge text-[oklch(0.1660_0.0283_203.34)] dark:text-badge [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
       },
       status: {
         info: "",
@@ -29,7 +29,7 @@ const badgeVariants = cva(
       // info status
       { status: "info", variant: "default", class: "border-transparent bg-info text-info-foreground" },
       { status: "info", variant: "secondary", class: "border-transparent bg-info/15 dark:bg-info/25 text-info dark:text-white" },
-      { status: "info", variant: "outline", class: "border-info text-info bg-transparent" },
+      { status: "info", variant: "outline", class: "border-info text-info dark:text-info bg-transparent" },
 
       // warning status
       { status: "warning", variant: "default", class: "border-transparent bg-warning text-warning-foreground" },
@@ -39,12 +39,12 @@ const badgeVariants = cva(
       // success status
       { status: "success", variant: "default", class: "border-transparent bg-success text-success-foreground" },
       { status: "success", variant: "secondary", class: "border-transparent bg-success/10 dark:bg-success/25 text-success dark:text-white" },
-      { status: "success", variant: "outline", class: "border-success text-success bg-transparent" },
+      { status: "success", variant: "outline", class: "border-success text-success dark:text-success bg-transparent" },
 
       // error status
       { status: "error", variant: "default", class: "border-transparent bg-destructive text-destructive-foreground" },
       { status: "error", variant: "secondary", class: "border-transparent bg-destructive/10 dark:bg-destructive/25 text-destructive dark:text-white" },
-      { status: "error", variant: "outline", class: "border-destructive text-destructive bg-transparent" },
+      { status: "error", variant: "outline", class: "border-destructive text-destructive dark:text-destructive bg-transparent" },
     ],
     defaultVariants: {
       variant: "default",
