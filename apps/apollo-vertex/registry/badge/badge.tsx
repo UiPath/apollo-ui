@@ -28,22 +28,22 @@ const badgeVariants = cva(
     compoundVariants: [
       // info status
       { status: "info", variant: "default", class: "border-transparent bg-info text-info-foreground" },
-      { status: "info", variant: "secondary", class: "border-transparent bg-info/15 text-info dark:text-white" },
+      { status: "info", variant: "secondary", class: "border-transparent bg-info/15 dark:bg-info/25 text-info dark:text-white" },
       { status: "info", variant: "outline", class: "border-info text-info bg-transparent" },
 
       // warning status
       { status: "warning", variant: "default", class: "border-transparent bg-warning text-warning-foreground" },
-      { status: "warning", variant: "secondary", class: "border-transparent bg-warning/15 text-warning-foreground dark:text-white" },
+      { status: "warning", variant: "secondary", class: "border-transparent bg-warning/15 dark:bg-warning/25 text-warning-foreground dark:text-white" },
       { status: "warning", variant: "outline", class: "border-warning text-warning-foreground dark:text-warning bg-transparent" },
 
       // success status
       { status: "success", variant: "default", class: "border-transparent bg-success text-success-foreground" },
-      { status: "success", variant: "secondary", class: "border-transparent bg-success/10 dark:bg-success/15 text-success dark:text-white" },
+      { status: "success", variant: "secondary", class: "border-transparent bg-success/10 dark:bg-success/25 text-success dark:text-white" },
       { status: "success", variant: "outline", class: "border-success text-success bg-transparent" },
 
       // error status
       { status: "error", variant: "default", class: "border-transparent bg-destructive text-destructive-foreground" },
-      { status: "error", variant: "secondary", class: "border-transparent bg-destructive/10 dark:bg-destructive/15 text-destructive dark:text-white" },
+      { status: "error", variant: "secondary", class: "border-transparent bg-destructive/10 dark:bg-destructive/25 text-destructive dark:text-white" },
       { status: "error", variant: "outline", class: "border-destructive text-destructive bg-transparent" },
     ],
     defaultVariants: {
