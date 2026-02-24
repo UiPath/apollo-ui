@@ -25,7 +25,6 @@ const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
   variant,
 }) => {
   const { accessToken } = useAuth();
-
   if (!accessToken) {
     return <ShellLogin />;
   }
