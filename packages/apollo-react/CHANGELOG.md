@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.44.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.44.1...@uipath/apollo-react@3.44.2) (2026-02-24)
+
+### Bug Fixes
+
+* **apollo-react:** change task context menu labels to sentence case [MST-6888] ([40c9373](https://github.com/UiPath/apollo-ui/commit/40c93736b2ef13e80ef2883e79cc4db66e6b16c1))
+
 ## [@uipath/apollo-react-v3.44.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.44.0...@uipath/apollo-react@3.44.1) (2026-02-23)
 
 ### Bug Fixes
