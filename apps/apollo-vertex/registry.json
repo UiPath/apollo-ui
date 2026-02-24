@@ -789,10 +789,29 @@
         "use-mobile"
       ],
       "files": [
-        {
-          "path": "registry/sidebar/sidebar.tsx",
-          "type": "registry:ui"
-        }
+        { "path": "registry/sidebar/sidebar-provider.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-trigger.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-rail.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-inset.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-input.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-header.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-footer.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-separator.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-content.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-group.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-group-label.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-group-action.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-group-content.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-menu.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-menu-item.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-menu-button.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-menu-action.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-menu-badge.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-menu-skeleton.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-menu-sub.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-menu-sub-item.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-menu-sub-button.tsx", "type": "registry:ui" }
       ]
     },
     {
