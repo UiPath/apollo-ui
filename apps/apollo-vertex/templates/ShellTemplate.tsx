@@ -1,7 +1,6 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import dynamic from "next/dynamic";
 import { ApolloShell } from "@/registry/shell/shell";
 
 interface ShellTemplateWithAuthProps {
@@ -10,9 +9,7 @@ interface ShellTemplateWithAuthProps {
 const queryClient = new QueryClient();
 
 const baseUrl = typeof window === "undefined" ? "" : window.location.origin;
-export function ShellTemplateComponent({
-  variant,
-}: ShellTemplateWithAuthProps) {
+export function ShellTemplate({ variant }: ShellTemplateWithAuthProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <ApolloShell
@@ -28,12 +25,3 @@ export function ShellTemplateComponent({
     </QueryClientProvider>
   );
 }
-
-export const ShellTemplate = dynamic(
-  () => {
-    return Promise.resolve(ShellTemplateComponent);
-  },
-  {
-    ssr: false,
-  },
-);

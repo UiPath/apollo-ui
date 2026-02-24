@@ -1,4 +1,4 @@
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { jwtDecode } from "jwt-decode";
 import {
   createContext,
@@ -69,13 +69,14 @@ interface UseAccessTokenProps {
 export const useAccessToken = ({ clientId, baseUrl }: UseAccessTokenProps) => {
   const queryClient = useQueryClient();
 
-  const { data: token } = useSuspenseQuery({
+  const { data: token } = useQuery({
     queryKey: TOKEN_QUERY_KEY,
     queryFn: async () => await ensureValidToken(queryClient, clientId, baseUrl),
     refetchInterval: 60 * 1000,
+    enabled: typeof window !== "undefined",
   });
 
-  return token;
+  return token ?? null;
 };
 
 interface ShellAuthProviderProps {
