@@ -21,11 +21,11 @@ function getChangedFiles(base: string, head: string): string[] {
 }
 
 function extractComponents(files: string[]): string[] {
-  return files
+  const components = files
     .filter((name) => name.startsWith(REGISTRY_PREFIX))
     .map((name) => name.slice(REGISTRY_PREFIX.length).split('/')[0] as string)
-    .filter(Boolean)
-    .sort();
+    .filter(Boolean);
+  return [...new Set(components)].sort();
 }
 
 async function triggerUpdate(apiKey: string, component: string): Promise<boolean> {
