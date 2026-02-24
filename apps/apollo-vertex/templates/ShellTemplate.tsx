@@ -9,24 +9,16 @@ interface ShellTemplateWithAuthProps {
 }
 const queryClient = new QueryClient();
 
-const baseUrl = "https://alpha.uipath.com";
-
-const redirectUri =
-  typeof window === "undefined"
-    ? ""
-    : `${window.location.origin}/vertex-components/shell`;
-
+const baseUrl = typeof window === "undefined" ? "" : window.location.origin;
 export function ShellTemplateComponent({
   variant,
 }: ShellTemplateWithAuthProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <ApolloShell
-        tokenEndpoint={`${baseUrl}/identity_/connect/token`}
-        redirectUri={redirectUri}
         clientId="e74e5981-cde0-4cd4-971c-6525cfba86b5"
         scope="openid profile email offline_access"
-        authorizationEndpoint={`${baseUrl}/identity_/connect/authorize`}
+        baseUrl={baseUrl}
         companyName="UiPath"
         productName="Apollo Vertex"
         variant={variant}

@@ -47,11 +47,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ApolloShell
-        tokenEndpoint="https://alpha.uipath.com/identity_/connect/token"
-        authorizationEndpoint="https://alpha.uipath.com/identity_/connect/authorize"
-        redirectUri="http://localhost:3000"
         clientId="your-client-id"
         scope="openid profile email offline_access"
+        baseUrl={window.location.origin}
         companyName="Your Company"
         productName="Your Product"
       >
