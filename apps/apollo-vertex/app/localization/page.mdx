@@ -1,0 +1,40 @@
+# Onboarding Your Repo to Localization
+
+Here are the steps to add localization support to your vertical solution. Each step roughly maps to a commit, follow them in order.
+
+## 1. Install the latest shell from the @uipath registry
+
+[https://apollo-vertex.vercel.app/vertex-components/shell](https://apollo-vertex.vercel.app/vertex-components/shell)
+
+This brings in the `LocaleProvider`, `LanguageToggle`, and updated shell components that support i18n out of the box.
+
+## 2. Add locale files under `src/locales/`
+
+Create `en.json` (source of truth with all key-value pairs) and empty `{}` placeholder files for each supported locale: `de.json`, `es.json`, `es-MX.json`, `fr.json`, `ja.json`, `ko.json`, `pt.json`, `pt-BR.json`, `ru.json`, `tr.json`, `zh-CN.json`, `zh-TW.json`, `ro.json`
+
+## 3. Add the `jsx-no-literals` lint rule to prevent hardcoded strings from creeping back in
+
+[https://github.com/jsx-eslint/eslint-plugin-react/blob/master/docs/rules/jsx-no-literals.md](https://github.com/jsx-eslint/eslint-plugin-react/blob/master/docs/rules/jsx-no-literals.md)
+
+This ensures every user-facing string goes through the `t()` function.
+
+## 4. Add translation keys and their English values to `en.json`
+
+Replace all hardcoded strings in your components with `t("key")` using `useTranslation()` from `react-i18next`. Use `snake_case` for keys and `{"{{variable}}"}` for interpolation.
+
+## 5. Add a CI check for unused translation keys
+
+This catches stale keys in `en.json` that are no longer referenced in source code. Add a script and a CI job that fails if any orphaned keys are found.
+
+## 6. Add localization coding standards to `AGENTS.md` (if the file exists in your repo)
+
+Document the conventions (always use `t()`, only update `en.json`, `snake_case` keys, etc.) so AI agents and contributors follow the same patterns.
+
+## Reference PR
+
+[https://github.com/UiPath/vertical-solution-invoice-processing/pull/129](https://github.com/UiPath/vertical-solution-invoice-processing/pull/129)
+
+## Once your PR gets merged
+
+- Let **@Andu (Localization)** know so he can map your repo to their localization system
+- Give **andrei-stoian** read/write rights to your repo (for incoming translation PRs)
