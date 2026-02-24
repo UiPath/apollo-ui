@@ -45,20 +45,16 @@ const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
 };
 
 interface ApolloShellProps extends ApolloShellComponentProps {
-  tokenEndpoint: string;
-  redirectUri: string;
   clientId: string;
   scope: string;
-  authorizationEndpoint: string;
+  baseUrl: string;
   variant?: "minimal";
 }
 
 export const ApolloShell: FC<ApolloShellProps> = ({
-  tokenEndpoint,
-  redirectUri,
   clientId,
   scope,
-  authorizationEndpoint,
+  baseUrl,
   children,
   companyName,
   productName,
@@ -66,13 +62,7 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   variant,
 }) => {
   return (
-    <ShellAuthProvider
-      tokenEndpoint={tokenEndpoint}
-      redirectUri={redirectUri}
-      clientId={clientId}
-      scope={scope}
-      authorizationEndpoint={authorizationEndpoint}
-    >
+    <ShellAuthProvider clientId={clientId} scope={scope} baseUrl={baseUrl}>
       <LocaleProvider>
         <ApolloShellComponent
           companyName={companyName}

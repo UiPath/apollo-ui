@@ -13,8 +13,8 @@ export default withNextra({
   rewrites() {
     return [
       {
-        source: "/identity_",
-        destination: "https://alpha.uipath.com/identity_",
+        source: "/identity_/:path*",
+        destination: "https://alpha.uipath.com/identity_/:path*",
       },
     ];
   },
