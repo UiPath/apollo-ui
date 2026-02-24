@@ -219,7 +219,7 @@ describe('StageNode - Replace Task Functionality', () => {
       // Check if replace task menu item is present
       const replaceMenuItem = screen.getByTestId('menu-item-task-1-replace-task');
       expect(replaceMenuItem).toBeInTheDocument();
-      expect(replaceMenuItem).toHaveTextContent('Replace Task');
+      expect(replaceMenuItem).toHaveTextContent('Replace task');
     });
 
     it('should not show replace task menu item when onTaskReplace is not provided', async () => {
@@ -249,7 +249,7 @@ describe('StageNode - Replace Task Functionality', () => {
       const buttons = menuItems.querySelectorAll('button');
 
       // First item should be replace task
-      expect(buttons[0]).toHaveTextContent('Replace Task');
+      expect(buttons[0]).toHaveTextContent('Replace task');
     });
   });
 

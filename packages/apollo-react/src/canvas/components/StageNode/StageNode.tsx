@@ -54,7 +54,7 @@ import {
 } from './StageNode.styles';
 import type { StageNodeProps } from './StageNode.types';
 import { flattenTasks, getProjection, reorderTasks } from './StageNode.utils';
-import { getContextMenuItems, getMenuItem } from './StageNodeTaskUtilities';
+import { getContextMenuItems, getDivider, getMenuItem } from './StageNodeTaskUtilities';
 
 interface TaskStateReference {
   isParallel: boolean;
@@ -138,7 +138,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
         taskIndex: pendingReplaceTask.taskIndex,
       };
       setIsReplacingTask(true);
-    }
+    } else setIsReplacingTask(false);
   }, [pendingReplaceTask, tasks]);
 
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
@@ -245,7 +245,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
       const items: NodeMenuItem[] = [];
 
       if (onReplaceTaskFromToolbox) {
-        items.push(getMenuItem('replace-task', 'Replace Task', () => setIsReplacingTask(true)));
+        items.push(getMenuItem('replace-task', 'Replace task', () => setIsReplacingTask(true)));
+        items.push(getDivider());
       }
 
       if (onTaskGroupModification) {
@@ -306,15 +307,20 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const handleReplaceTaskToolboxItemSelected = useCallback(
     (item: ListItem) => {
       setIsReplacingTask(true);
+      const groupIndex = taskStateReference.current.groupIndex;
+      const taskIndex = taskStateReference.current.taskIndex;
+      const taskId = tasks[groupIndex]?.[taskIndex]?.id;
+      if (taskId) {
+        onTaskClick?.(taskId);
+      }
       onReplaceTaskFromToolbox?.(
         item,
         taskStateReference.current.groupIndex,
         taskStateReference.current.taskIndex
       );
       setIsReplacingTask(false);
-      setSelectedNodeId(id);
     },
-    [onReplaceTaskFromToolbox, setSelectedNodeId, id]
+    [onReplaceTaskFromToolbox, onTaskClick, tasks]
   );
 
   const handleConfigurations: HandleGroupManifest[] = useMemo(
