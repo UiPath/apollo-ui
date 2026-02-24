@@ -14,7 +14,13 @@ Displays a badge or a component that looks like a badge.
 
 ## Status Badges
 
-Status badges combine a `status` type with a `variant` appearance (primary, secondary, or outline).
+Status badges combine a `status` type with a `variant` appearance (primary, secondary, or outline). Icons are optional and can be passed as children.
+
+<Badge status="info"><Info /> Primary</Badge> badges are used when a status needs emphasis or immediate recognition. Use them in detail views, confirmation states, or when the badge should stand out as a focal element in the interface.
+
+<Badge status="info" variant="secondary"><Info /> Secondary</Badge> badges are best for dense UI contexts such as tables, lists, or dashboards where many statuses appear at once. They communicate state clearly without overwhelming the layout with strong color.
+
+<Badge status="info" variant="outline"><Info /> Outline</Badge> badges are intended for low-emphasis or contextual use, such as inline references, filters, or selectable states. They provide clarity while maintaining a lightweight visual presence.
 
 ### Informational
 
