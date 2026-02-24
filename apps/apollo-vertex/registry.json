@@ -275,19 +275,6 @@
       ]
     },
     {
-      "name": "calendar",
-      "type": "registry:ui",
-      "title": "Calendar",
-      "description": "A date field component that allows users to enter and edit date.",
-      "dependencies": ["react-day-picker@latest", "date-fns"],
-      "files": [
-        {
-          "path": "registry/calendar/calendar.tsx",
-          "type": "registry:ui"
-        }
-      ]
-    },
-    {
       "name": "card",
       "type": "registry:ui",
       "title": "Card",
