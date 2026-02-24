@@ -1,14 +1,56 @@
 import { Badge } from '@/registry/badge/badge'
+import { AlertTriangle, CircleAlert, Check } from 'lucide-react'
 
 # Badge
 
 Displays a badge or a component that looks like a badge.
 
+Badges combine a `variant` appearance (primary, secondary, or outline). Icons are optional and can be passed as children.
+
+<Badge>Primary</Badge> badges are used when a status needs emphasis or immediate recognition. Use them in detail views, confirmation states, or when the badge should stand out as a focal element in the interface.
+
+<Badge variant="secondary">Secondary</Badge> badges are best for dense UI contexts such as tables, lists, or dashboards where many statuses appear at once. They communicate state clearly without overwhelming the layout with strong color.
+
+<Badge variant="outline">Outline</Badge> badges are intended for low-emphasis or contextual use, such as inline references, filters, or selectable states. They provide clarity while maintaining a lightweight visual presence.
+
+### Neutral
+
 <div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-2">
-  <Badge>Default</Badge>
+  <Badge>Primary</Badge>
   <Badge variant="secondary">Secondary</Badge>
-  <Badge variant="destructive">Destructive</Badge>
   <Badge variant="outline">Outline</Badge>
+</div>
+
+### Informational
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-2">
+  <Badge status="info">Primary</Badge>
+  <Badge status="info" variant="secondary">Secondary</Badge>
+  <Badge status="info" variant="outline">Outline</Badge>
+</div>
+
+### Warning
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-2">
+  <Badge status="warning"><AlertTriangle strokeWidth={2} /> Primary</Badge>
+  <Badge status="warning" variant="secondary"><AlertTriangle strokeWidth={2} /> Secondary</Badge>
+  <Badge status="warning" variant="outline"><AlertTriangle strokeWidth={2} /> Outline</Badge>
+</div>
+
+### Error
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-2">
+  <Badge status="error"><CircleAlert strokeWidth={2} /> Primary</Badge>
+  <Badge status="error" variant="secondary"><CircleAlert strokeWidth={2} /> Secondary</Badge>
+  <Badge status="error" variant="outline"><CircleAlert strokeWidth={2} /> Outline</Badge>
+</div>
+
+### Success
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-2">
+  <Badge status="success"><Check strokeWidth={2} /> Primary</Badge>
+  <Badge status="success" variant="secondary"><Check strokeWidth={2} /> Secondary</Badge>
+  <Badge status="success" variant="outline"><Check strokeWidth={2} /> Outline</Badge>
 </div>
 
 ## Installation
@@ -21,11 +63,20 @@ npx shadcn@latest add @uipath/badge
 
 ```tsx
 import { Badge } from "@/components/ui/badge"
-```
 
-```tsx
 <Badge>Badge</Badge>
 <Badge variant="secondary">Secondary</Badge>
-<Badge variant="destructive">Destructive</Badge>
 <Badge variant="outline">Outline</Badge>
+
+// Success status (default variant)
+<Badge status="success">Completed</Badge>
+
+// Warning status with secondary variant
+<Badge status="warning" variant="secondary">Could not run</Badge>
+
+// Error status with outline variant
+<Badge status="error" variant="outline">Doc missing</Badge>
+
+// With icons (consumer-provided)
+<Badge status="info"><Info /> Ready</Badge>
 ```
