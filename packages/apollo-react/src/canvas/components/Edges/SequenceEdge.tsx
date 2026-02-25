@@ -77,10 +77,9 @@ export const SequenceEdge = memo(function SequenceEdge({
   const { validationStatus } = useElementValidationStatus(id) ?? { validationStatus: undefined };
 
   // Use provided status or fall back to hook values
-  const status =
-    mode !== 'design'
-      ? ((executionStatus as NodeExecutionStateWithDebug)?.status ?? executionStatus)
-      : validationStatus;
+  const status = executionStatus
+    ? ((executionStatus as NodeExecutionStateWithDebug)?.status ?? executionStatus)
+    : validationStatus;
 
   // Check if this edge has diff styling applied
   const isDiffAdded = data?.isDiffAdded === true;
