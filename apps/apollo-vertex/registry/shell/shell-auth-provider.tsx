@@ -1,4 +1,4 @@
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { jwtDecode } from "jwt-decode";
 import {
   createContext,
@@ -62,48 +62,34 @@ export const useAuth = () => {
 };
 
 interface UseAccessTokenProps {
-  tokenEndpoint: string;
-  redirectUri: string;
   clientId: string;
+  baseUrl: string;
 }
 
-export const useAccessToken = ({
-  tokenEndpoint,
-  redirectUri,
-  clientId,
-}: UseAccessTokenProps) => {
+export const useAccessToken = ({ clientId, baseUrl }: UseAccessTokenProps) => {
   const queryClient = useQueryClient();
 
-  const { data: token } = useSuspenseQuery({
+  const { data: token } = useQuery({
     queryKey: TOKEN_QUERY_KEY,
-    queryFn: async () =>
-      await ensureValidToken(queryClient, tokenEndpoint, redirectUri, clientId),
+    queryFn: async () => await ensureValidToken(queryClient, clientId, baseUrl),
     refetchInterval: 60 * 1000,
+    enabled: typeof window !== "undefined",
   });
 
-  return token;
+  return token ?? null;
 };
 
 interface ShellAuthProviderProps {
-  tokenEndpoint: string;
-  redirectUri: string;
   clientId: string;
   scope: string;
-  authorizationEndpoint: string;
+  baseUrl: string;
 }
 
 export const ShellAuthProvider: FC<
   PropsWithChildren<ShellAuthProviderProps>
-> = ({
-  children,
-  tokenEndpoint,
-  redirectUri,
-  clientId,
-  scope,
-  authorizationEndpoint,
-}) => {
+> = ({ children, clientId, scope, baseUrl }) => {
   const queryClient = useQueryClient();
-  const accessToken = useAccessToken({ tokenEndpoint, redirectUri, clientId });
+  const accessToken = useAccessToken({ clientId, baseUrl });
   const user = accessToken ? decodeJWT(accessToken) : null;
   const isAuthenticated = accessToken != null;
 
@@ -111,7 +97,7 @@ export const ShellAuthProvider: FC<
     user,
     isAuthenticated,
     isLoading: false,
-    login: () => login(clientId, redirectUri, scope, authorizationEndpoint),
+    login: () => login(clientId, scope, baseUrl),
     logout: () => logout(queryClient),
     accessToken,
   };

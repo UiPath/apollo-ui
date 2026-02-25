@@ -30,6 +30,13 @@ const TokenDataSchema = z.object({
   expiresAt: z.number(),
 });
 
+const getTokenEndpoint = (baseUrl: string) =>
+  `${baseUrl}/identity_/connect/token`;
+const getAuthorizationEndpoint = (baseUrl: string) =>
+  `${baseUrl}/identity_/connect/authorize`;
+const getRedirectUri = (baseUrl: string) =>
+  typeof window === "undefined" ? "" : `${baseUrl}${window.location.pathname}`;
+
 export type TokenData = z.infer<typeof TokenDataSchema>;
 
 const REFRESH_THRESHOLD_MS = 5 * 60 * 1000;
@@ -51,11 +58,8 @@ const clearTokenData = (): void => {
   localStorage.removeItem(STORAGE_KEYS.TOKEN);
 };
 
-const fetchTokenData = async (
-  tokenEndpoint: string,
-  body?: URLSearchParams,
-) => {
-  const response = await fetch(tokenEndpoint, {
+const fetchTokenData = async (baseUrl: string, body?: URLSearchParams) => {
+  const response = await fetch(getTokenEndpoint(baseUrl), {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -83,7 +87,7 @@ const fetchTokenData = async (
 const refreshAccessToken = async (
   refreshToken: string,
   clientId: string,
-  tokenEndpoint: string,
+  baseUrl: string,
 ): Promise<TokenData> => {
   const body = new URLSearchParams({
     grant_type: "refresh_token",
@@ -91,13 +95,13 @@ const refreshAccessToken = async (
     client_id: clientId,
   });
 
-  return await fetchTokenData(tokenEndpoint, body);
+  return await fetchTokenData(baseUrl, body);
 };
 
 const refreshTokenIfNeeded = async (
   tokenData: TokenData,
   clientId: string,
-  tokenEndpoint: string,
+  baseUrl: string,
 ): Promise<string | null> => {
   if (!tokenData.refresh_token) {
     return null;
@@ -107,7 +111,7 @@ const refreshTokenIfNeeded = async (
     const newTokenData = await refreshAccessToken(
       tokenData.refresh_token,
       clientId,
-      tokenEndpoint,
+      baseUrl,
     );
     saveTokenData(newTokenData);
     return newTokenData.access_token;
@@ -120,25 +124,23 @@ const refreshTokenIfNeeded = async (
 const exchangeCodeForToken = async (
   code: string,
   codeVerifier: string,
-  redirectUri: string,
   clientId: string,
-  tokenEndpoint: string,
+  baseUrl: string,
 ): Promise<TokenData> => {
   const body = new URLSearchParams({
     grant_type: "authorization_code",
     code,
-    redirect_uri: redirectUri,
+    redirect_uri: getRedirectUri(baseUrl),
     client_id: clientId,
     code_verifier: codeVerifier,
   });
 
-  return await fetchTokenData(tokenEndpoint, body);
+  return await fetchTokenData(baseUrl, body);
 };
 
 const handleOAuthCallback = async (
-  tokenEndpoint: string,
-  redirectUri: string,
   clientId: string,
+  baseUrl: string,
 ): Promise<void> => {
   const params = new URLSearchParams(window.location.search);
   const code = params.get("code");
@@ -167,9 +169,8 @@ const handleOAuthCallback = async (
     const tokenData = await exchangeCodeForToken(
       code,
       codeVerifier,
-      redirectUri,
       clientId,
-      tokenEndpoint,
+      baseUrl,
     );
     sessionStorage.removeItem(STORAGE_KEYS.CODE_VERIFIER);
     sessionStorage.removeItem(STORAGE_KEYS.STATE);
@@ -184,16 +185,15 @@ const handleOAuthCallback = async (
 
 export const ensureValidToken = async (
   queryClient: ReturnType<typeof useQueryClient>,
-  tokenEndpoint: string,
-  redirectUri: string,
   clientId: string,
+  baseUrl: string,
 ): Promise<string | null> => {
   const params = new URLSearchParams(window.location.search);
   const isInOAuthCallback = params.has("code") && params.has("state");
 
   if (isInOAuthCallback) {
     try {
-      await handleOAuthCallback(tokenEndpoint, redirectUri, clientId);
+      await handleOAuthCallback(clientId, baseUrl);
       queryClient.invalidateQueries({ queryKey: TOKEN_QUERY_KEY });
     } catch {
       queryClient.setQueryData(TOKEN_QUERY_KEY, null);
@@ -214,7 +214,7 @@ export const ensureValidToken = async (
   }
 
   if (isTokenExpired(tokenData) || shouldRefreshToken(tokenData)) {
-    return refreshTokenIfNeeded(tokenData, clientId, tokenEndpoint);
+    return refreshTokenIfNeeded(tokenData, clientId, baseUrl);
   }
 
   return tokenData.access_token;
@@ -222,9 +222,8 @@ export const ensureValidToken = async (
 
 export const login = async (
   clientId: string,
-  redirectUri: string,
   scope: string,
-  authorizationEndpoint: string,
+  baseUrl: string,
 ): Promise<void> => {
   const pkce = await PKCEChallenge();
   const state = generateRandomString(32);
@@ -234,7 +233,7 @@ export const login = async (
 
   const params = new URLSearchParams({
     client_id: clientId,
-    redirect_uri: redirectUri,
+    redirect_uri: getRedirectUri(baseUrl),
     response_type: "code",
     scope: scope,
     state,
@@ -242,7 +241,7 @@ export const login = async (
     code_challenge_method: "S256",
   });
 
-  window.location.href = `${authorizationEndpoint}?${params.toString()}`;
+  window.location.href = `${getAuthorizationEndpoint(baseUrl)}?${params.toString()}`;
 };
 
 export const logout = (

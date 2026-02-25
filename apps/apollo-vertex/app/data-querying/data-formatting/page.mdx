@@ -1,0 +1,234 @@
+# Data Formatting
+
+Locale-aware formatting utilities for numbers, currencies, dates, durations, percentages, and booleans.
+
+## Installation
+
+```bash
+npm install @uipath/data-formatting
+```
+
+`luxon` is a required peer dependency:
+
+```bash
+npm install luxon
+```
+
+## The `format` function
+
+The `format` function is a unified entry point that routes values to the correct formatter based on a field type string.
+
+```tsx
+import { format } from '@uipath/data-formatting';
+
+// Numbers
+format('en', 5000, 'numeric');            // "5,000"
+format('en', 5000, 'numeric', { notation: 'compact' }); // "5K"
+
+// Currency
+format('en', 5000, 'currency');           // "$5,000.00"
+format('en', 5000, 'currency', { currency: 'EUR' }); // "€5,000.00"
+
+// Dates
+format('en', '2024-06-15T14:30:00.000', 'datetime'); // "Jun 15, 2024, 14:30:00"
+
+// Duration (value in milliseconds)
+format('en', 5000, 'duration', { units: ['second'] }); // "5 sec"
+
+// Percentage (0.12 = 12%)
+format('en', 0.12, 'percentage');         // "12%"
+
+// Boolean
+format('en', true, 'boolean');            // "True"
+
+// Strings, IDs, and refs are passed through
+format('en', 'hello', 'string');          // "hello"
+
+// Null values return "NULL"
+format('en', null, 'percentage');         // "NULL"
+```
+
+## Individual formatters
+
+Each formatter can also be used directly for more control.
+
+### `formatNumber`
+
+```tsx
+import { formatNumber } from '@uipath/data-formatting';
+
+formatNumber('en', 5000);                          // "5,000"
+formatNumber('en', 5000, { notation: 'compact' }); // "5K"
+formatNumber('de', 1234.56);                        // "1.234,56"
+```
+
+### `formatCurrency`
+
+```tsx
+import { formatCurrency } from '@uipath/data-formatting';
+
+formatCurrency('en', 1500);                            // "$1,500.00"
+formatCurrency('en', 1500, { currency: 'EUR' });       // "€1,500.00"
+formatCurrency('en', 2500000, { notation: 'compact' }); // "$2.5M"
+```
+
+### `formatDate`
+
+Formats ISO date strings or Luxon `DateTime` objects. Includes milliseconds when present and can hide time for date-only values.
+
+```tsx
+import { formatDate } from '@uipath/data-formatting';
+
+formatDate('en', '2024-06-15T14:30:00.000'); // "Jun 15, 2024, 14:30:00"
+
+// Custom display options
+formatDate('en', '2024-06-15T14:30:00.000', {
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+  hourCycle: 'h23',
+}); // "June 15, 2024, 14:30"
+
+// Hide time component for date-only values
+formatDate('en', '2024-06-15', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hideEmptyTime: true,
+}); // "Jun 15, 2024"
+```
+
+### `formatDuration`
+
+Formats Luxon `Duration` objects into human-readable strings. Supports multiple units, compact notation, and rounding.
+
+```tsx
+import { formatDuration } from '@uipath/data-formatting';
+import { Duration } from 'luxon';
+
+const duration = Duration.fromObject({
+  years: 1,
+  days: 1,
+  hours: 1,
+  minutes: 1,
+  seconds: 1,
+});
+
+// Single unit
+formatDuration('en', duration, { units: ['minute'] });
+// "527,101.02 min"
+
+// Multiple units
+formatDuration('en', duration, { units: ['hour', 'minute', 'second'] });
+// "8,785 hr 1 min 1 sec"
+
+// Compact unit display (narrow)
+formatDuration('en', duration, { units: ['minute'], compactUnit: true });
+// "527,101.02m"
+
+// Compact notation
+formatDuration('en', duration, { units: ['minute'], compact: true });
+// "527.10K min"
+
+// Rounded values
+formatDuration('en', duration, { units: ['minute'], isRounded: true });
+// "527,101 min"
+```
+
+If no `units` option is provided, the `highestDurationUnit` utility automatically picks the most appropriate unit based on the duration's magnitude.
+
+### `formatPercentage`
+
+Formats decimal values as percentages. Values near 0% or 100% that aren't exact are prefixed with `≈`.
+
+```tsx
+import { formatPercentage } from '@uipath/data-formatting';
+
+formatPercentage('en', 0.12);    // "12%"
+formatPercentage('en', 0.8567);  // "85.67%"
+formatPercentage('en', 1);       // "100%"
+
+// Near-zero/near-100% approximation
+formatPercentage('en', 0.0001);  // "≈0%"
+formatPercentage('en', 0.9999);  // "≈100%"
+
+// Minimal notation (no decimals)
+formatPercentage('en', 0.8567, { notation: 'minimal' }); // "86%"
+
+// Sign display
+formatPercentage('en', 0.12, { signDisplay: 'always' }); // "+12%"
+```
+
+### `formatBoolean`
+
+```tsx
+import { formatBoolean } from '@uipath/data-formatting';
+
+formatBoolean(true);   // "True"
+formatBoolean(false);  // "False"
+
+// Custom labels
+formatBoolean(true, { trueLabel: 'Yes', falseLabel: 'No' });   // "Yes"
+formatBoolean(false, { trueLabel: 'Yes', falseLabel: 'No' });  // "No"
+```
+
+### `formatInterval`
+
+Formats Luxon `Interval` objects. Automatically simplifies the output for same-day ranges, whole months, and date-only intervals.
+
+```tsx
+import { formatInterval } from '@uipath/data-formatting';
+import { DateTime, Interval } from 'luxon';
+
+const start = DateTime.fromISO('2024-01-15T09:00:00', { zone: 'utc' });
+const end = DateTime.fromISO('2024-01-15T17:00:00', { zone: 'utc' });
+const interval = Interval.fromDateTimes(start, end);
+
+// Same-day interval shows date once, with time range
+formatInterval('en', interval);
+// "January 15, 2024, 9:00 - 17:00"
+
+// Whole month interval
+const monthStart = DateTime.fromISO('2024-03-01', { zone: 'utc' });
+const monthEnd = DateTime.fromISO('2024-04-01', { zone: 'utc' });
+formatInterval('en', Interval.fromDateTimes(monthStart, monthEnd));
+// "March 2024"
+```
+
+## Utilities
+
+### `highestDurationUnit`
+
+Returns the most appropriate unit for displaying a duration based on its magnitude.
+
+```tsx
+import { highestDurationUnit } from '@uipath/data-formatting';
+import { Duration } from 'luxon';
+
+highestDurationUnit(Duration.fromObject({ days: 5 }));     // "day"
+highestDurationUnit(Duration.fromObject({ hours: 3 }));     // "hour"
+highestDurationUnit(Duration.fromObject({ minutes: 45 }));  // "minute"
+highestDurationUnit(Duration.fromObject({ seconds: 30 }));  // "second"
+```
+
+## Types
+
+```ts
+import type {
+  BaseFormatOptions,
+  DurationUnit,
+  FormatDurationOptions,
+  OverrideTimeOptions,
+} from '@uipath/data-formatting';
+```
+
+| Type                    | Description                                        |
+| ----------------------- | -------------------------------------------------- |
+| `BaseFormatOptions`     | `{ notation?: 'compact' }`                         |
+| `DurationUnit`          | `'year' \| 'month' \| 'day' \| 'hour' \| 'minute' \| 'second'` |
+| `FormatDurationOptions` | `{ units?: DurationUnit[]; isRounded?: boolean; compact?: boolean; compactUnit?: boolean }` |
+| `OverrideTimeOptions`   | Date display options — month, day, year, hour, minute, second, hourCycle, timeZone, etc. |
