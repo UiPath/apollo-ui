@@ -21,6 +21,7 @@ export interface ApolloShellComponentProps extends PropsWithChildren {
   variant?: "minimal";
   companyLogo?: CompanyLogo;
   sidebarActions?: ReactNode;
+  headerActions?: ReactNode;
 }
 
 const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
@@ -30,6 +31,7 @@ const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
   companyLogo,
   variant,
   sidebarActions,
+  headerActions,
 }) => {
   const { accessToken } = useAuth();
   if (!accessToken) {
@@ -44,6 +46,7 @@ const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
         companyLogo={companyLogo}
         variant={variant}
         sidebarActions={sidebarActions}
+        headerActions={headerActions}
       >
         {children}
       </ShellLayout>
@@ -81,6 +84,7 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   variant,
   bypassAuth,
   sidebarActions,
+  headerActions,
 }) => {
   const AuthWrapper = bypassAuth
     ? MockAuthProvider
@@ -103,6 +107,7 @@ export const ApolloShell: FC<ApolloShellProps> = ({
           companyLogo={companyLogo}
           variant={variant}
           sidebarActions={sidebarActions}
+          headerActions={headerActions}
         >
           {children}
         </ApolloShellComponent>

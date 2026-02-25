@@ -1,3 +1,4 @@
+import { Box } from "lucide-react";
 import type { CompanyLogo } from "./shell";
 
 interface MinimalCompanyProps {
@@ -13,19 +14,19 @@ export const MinimalCompany = ({
 }: MinimalCompanyProps) => {
   return (
     <div className="flex items-center gap-2">
-      <div className="w-8 h-8 rounded-md bg-linear-to-r from-primary/5 via-secondary/5 to-primary/5 flex items-center justify-center shrink-0">
+      <div className="w-8 h-8 rounded-md bg-brand-orange flex items-center justify-center shrink-0">
         {companyLogo ? (
           <img
             src={companyLogo.url}
             alt={companyLogo.alt}
-            className="w-8 h-8"
+            className="w-4 h-auto"
           />
         ) : (
-          <div className="w-4 h-4 bg-primary rounded" />
+          <Box className="w-4 h-4 text-white" />
         )}
       </div>
       <div className="flex items-center gap-1.5">
-        <span className="text-sm font-medium text-foreground">
+        <span className="text-sm font-semibold text-foreground">
           {companyName}
         </span>
         <span className="text-sm text-muted-foreground">{productName}</span>

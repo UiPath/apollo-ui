@@ -5,11 +5,9 @@ import {
   Clock,
   FileText,
   AlertTriangle,
-  Plus,
   TrendingUp,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -70,25 +68,19 @@ export function InvoiceDashboard({ visible }: { visible: boolean }) {
   if (!visible) return null;
 
   return (
-    <div className="p-6 space-y-6 relative z-10">
+    <div className="p-6 space-y-4 relative z-10">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Invoice Processing</h1>
-          <p className="text-sm text-muted-foreground">
-            Monitor and manage invoice automation workflows
-          </p>
-        </div>
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          New Invoice
-        </Button>
+      <div>
+        <h1 className="text-base font-bold">Invoice Processing</h1>
+        <p className="text-sm text-muted-foreground">
+          Monitor and manage invoice automation workflows
+        </p>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
         {kpis.map((kpi) => (
-          <Card key={kpi.label} className="border-0 shadow-none">
+          <Card key={kpi.label} className="border-0 shadow-[0_4px_24px_0_rgba(0,0,0,0.03)] dark:bg-accent-foreground/[0.06] rounded-[calc(var(--radius)-2px)]">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -108,7 +100,7 @@ export function InvoiceDashboard({ visible }: { visible: boolean }) {
       </div>
 
       {/* Invoices Table */}
-      <Card className="border-0 shadow-none">
+      <Card className="border-0 shadow-[0_4px_24px_0_rgba(0,0,0,0.03)] dark:bg-accent-foreground/[0.06] rounded-[calc(var(--radius)-2px)]">
         <CardHeader>
           <CardTitle>Recent Invoices</CardTitle>
         </CardHeader>
@@ -143,7 +135,7 @@ export function InvoiceDashboard({ visible }: { visible: boolean }) {
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Processing Activity */}
-        <Card className="border-0 shadow-none">
+        <Card className="border-0 shadow-[0_4px_24px_0_rgba(0,0,0,0.03)] dark:bg-accent-foreground/[0.06] rounded-[calc(var(--radius)-2px)]">
           <CardHeader>
             <CardTitle>Processing Activity</CardTitle>
           </CardHeader>
@@ -163,7 +155,7 @@ export function InvoiceDashboard({ visible }: { visible: boolean }) {
         </Card>
 
         {/* Recent Activity */}
-        <Card className="border-0 shadow-none">
+        <Card className="border-0 shadow-[0_4px_24px_0_rgba(0,0,0,0.03)] dark:bg-accent-foreground/[0.06] rounded-[calc(var(--radius)-2px)]">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
           </CardHeader>
@@ -184,7 +176,7 @@ export function InvoiceDashboard({ visible }: { visible: boolean }) {
       </div>
 
       {/* Processing Pipeline */}
-      <Card className="border-0 shadow-none">
+      <Card className="border-0 shadow-[0_4px_24px_0_rgba(0,0,0,0.03)] dark:bg-accent-foreground/[0.06] rounded-[calc(var(--radius)-2px)]">
         <CardHeader>
           <CardTitle>Processing Pipeline</CardTitle>
         </CardHeader>
