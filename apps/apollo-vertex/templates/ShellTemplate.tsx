@@ -8,14 +8,12 @@ interface ShellTemplateWithAuthProps {
 }
 const queryClient = new QueryClient();
 
-const baseUrl = typeof window === "undefined" ? "" : window.location.origin;
+
 export function ShellTemplate({ variant }: ShellTemplateWithAuthProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <ApolloShell
-        clientId="e74e5981-cde0-4cd4-971c-6525cfba86b5"
-        scope="openid profile email offline_access"
-        baseUrl={baseUrl}
+        bypassAuth
         companyName="UiPath"
         productName="Apollo Vertex"
         variant={variant}

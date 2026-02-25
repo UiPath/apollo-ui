@@ -1,5 +1,10 @@
 import type { FC, PropsWithChildren } from "react";
-import { ShellAuthProvider, useAuth } from "./shell-auth-provider";
+import {
+  AuthContext,
+  type AuthContextValue,
+  ShellAuthProvider,
+  useAuth,
+} from "./shell-auth-provider";
 import { ShellLayout } from "./shell-layout";
 import { LocaleProvider } from "./shell-locale-provider";
 import { ShellLogin } from "./shell-login";
@@ -43,12 +48,24 @@ const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
   );
 };
 
-interface ApolloShellProps extends ApolloShellComponentProps {
-  clientId: string;
-  scope: string;
-  baseUrl: string;
-  variant?: "minimal";
-}
+const MOCK_AUTH_CONTEXT: AuthContextValue = {
+  user: { name: "Dev User", email: "dev@localhost", sub: "dev-user-001" },
+  isAuthenticated: true,
+  isLoading: false,
+  login: async () => {},
+  logout: () => {},
+  accessToken: "bypass-token",
+};
+
+const MockAuthProvider: FC<PropsWithChildren> = ({ children }) => (
+  <AuthContext.Provider value={MOCK_AUTH_CONTEXT}>{children}</AuthContext.Provider>
+);
+
+type ApolloShellProps = ApolloShellComponentProps &
+  (
+    | { bypassAuth: true; clientId?: string; scope?: string; baseUrl?: string }
+    | { bypassAuth?: false; clientId: string; scope: string; baseUrl: string }
+  );
 
 export const ApolloShell: FC<ApolloShellProps> = ({
   clientId,
@@ -59,9 +76,22 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   productName,
   companyLogo,
   variant,
+  bypassAuth,
 }) => {
+  const AuthWrapper = bypassAuth
+    ? MockAuthProvider
+    : ({ children }: PropsWithChildren) => (
+        <ShellAuthProvider
+          clientId={clientId!}
+          scope={scope!}
+          baseUrl={baseUrl!}
+        >
+          {children}
+        </ShellAuthProvider>
+      );
+
   return (
-    <ShellAuthProvider clientId={clientId} scope={scope} baseUrl={baseUrl}>
+    <AuthWrapper>
       <LocaleProvider>
         <ApolloShellComponent
           companyName={companyName}
@@ -72,6 +102,6 @@ export const ApolloShell: FC<ApolloShellProps> = ({
           {children}
         </ApolloShellComponent>
       </LocaleProvider>
-    </ShellAuthProvider>
+    </AuthWrapper>
   );
 };
