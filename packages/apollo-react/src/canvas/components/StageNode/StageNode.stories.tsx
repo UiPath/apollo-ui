@@ -1,7 +1,15 @@
+/**
+ * StageNode Stories
+ *
+ * Demonstrates the StageNode component with TaskNodes rendered as separate React Flow nodes.
+ * The new StageNode uses taskIds: string[][] and requires tasks to be React Flow child nodes.
+ */
+
 import type { Meta, StoryObj } from '@storybook/react';
-import type { Connection, Edge } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Connection, Edge, Node, NodeChange } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   addEdge,
+  applyNodeChanges,
   ConnectionMode,
   Panel,
   ReactFlowProvider,
@@ -10,21 +18,40 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApButton, ApMenu } from '@uipath/apollo-react/material/components';
 import type { IMenuItem } from '@uipath/apollo-react/material/components/ap-menu/ApMenu.types';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CrossStageDragProvider } from '../../hooks/CrossStageDragContext';
+import {
+  useCrossStageTaskDrag,
+  type TaskReorderParams,
+  type TaskMoveParams,
+  type TaskCopyParams,
+} from '../../hooks/useCrossStageTaskDrag';
+import { useTaskCopyPaste, type TaskPasteParams } from '../../hooks/useTaskCopyPaste';
 import { DefaultCanvasTranslations } from '../../types';
 import {
   createGroupModificationHandlers,
-  type GroupModificationType,
   getHandlerForModificationType,
+  GroupModificationType,
 } from '../../utils/GroupModificationUtils';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
+import type { NodeMenuItem } from '../NodeContextMenu';
 import { TaskIcon, TaskItemTypeValues } from '../TaskIcon';
+import { PlaceholderTaskNode } from '../TaskNode/PlaceholderTaskNode';
+import { TaskNode } from '../TaskNode/TaskNode';
+import type { TaskNodeData, TaskNode as TaskNodeType } from '../TaskNode/TaskNode.types';
+import {
+  moveTaskWithinStage,
+  moveTaskBetweenStages,
+  insertTaskAtPosition,
+} from '../TaskNode/taskReorderUtils';
+import { calculateTaskPositions } from '../TaskNode/useTaskPositions';
 import type { ListItem } from '../Toolbox';
 import { StageConnectionEdge } from './StageConnectionEdge';
 import { StageEdge } from './StageEdge';
 import { StageNode } from './StageNode';
-import type { StageNodeProps, StageTaskItem } from './StageNode.types';
+import type { StageNodeProps } from './StageNode.types';
+import { getContextMenuItems } from './StageNodeTaskUtilities';
 
 const meta: Meta<typeof StageNode> = {
   title: 'Canvas/StageNode',
@@ -32,736 +59,1237 @@ const meta: Meta<typeof StageNode> = {
   parameters: {
     layout: 'fullscreen',
   },
-  decorators: [
-    (Story, context) => {
-      // Allow stories to use custom render
-      if (context.parameters?.useCustomRender) {
-        return <Story />;
-      }
-
-      // Create a wrapper component that passes props correctly
-      const StageNodeWrapper = (props: any) => {
-        // React Flow passes node data in props.data, so we need to spread it
-        return <StageNode {...props} {...props.data} />;
-      };
-
-      const initialNodes = context.parameters?.nodes || [
-        {
-          id: '1',
-          type: 'stage',
-          position: { x: 250, y: 100 },
-          data: {
-            stageDetails: context.args.stageDetails,
-            execution: context.args.execution,
-            addTaskLabel: context.args.addTaskLabel,
-            menuItems: context.args.menuItems,
-            onTaskAdd: context.args.onTaskAdd,
-            onTaskClick: context.args.onTaskClick,
-          },
-        },
-      ];
-
-      const initialEdges = context.parameters?.edges || [];
-
-      const [nodes, _setNodes, onNodesChange] = useNodesState(initialNodes);
-      const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
-      const onConnect = useCallback(
-        (connection: Connection) => {
-          setEdges((eds) => addEdge(connection, eds));
-        },
-        [setEdges]
-      );
-
-      const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), [StageNodeWrapper]);
-      const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
-      const defaultEdgeOptions = useMemo(() => ({ type: 'stage' }), []);
-
-      return (
-        <div style={{ width: '100vw', height: '100vh' }}>
-          <ReactFlowProvider>
-            <BaseCanvas
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              nodeTypes={nodeTypes}
-              edgeTypes={edgeTypes}
-              mode="design"
-              connectionMode={ConnectionMode.Strict}
-              defaultEdgeOptions={defaultEdgeOptions}
-              connectionLineComponent={StageConnectionEdge}
-              elevateEdgesOnSelect
-            >
-              <Panel position="bottom-right">
-                <CanvasPositionControls translations={DefaultCanvasTranslations} />
-              </Panel>
-            </BaseCanvas>
-          </ReactFlowProvider>
-        </div>
-      );
-    },
-  ],
-  args: {
-    stageDetails: {
-      label: 'Default Stage',
-      tasks: [],
-    },
-  },
-  argTypes: {
-    addTaskLabel: {
-      control: 'text',
-      description: 'Label for the add process button',
-      defaultValue: 'Add process',
-    },
-  },
-} satisfies Meta<StageNodeProps>;
+};
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Create icon components
-const ProcessIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <rect x="3" y="3" width="7" height="7" rx="1" />
-    <rect x="14" y="3" width="7" height="7" rx="1" />
-    <rect x="3" y="14" width="7" height="7" rx="1" />
-    <rect x="14" y="14" width="7" height="7" rx="1" />
-  </svg>
-);
+// Wrapper components for React Flow
+const StageNodeWrapper = (props: any) => {
+  return <StageNode {...props} {...props.data} />;
+};
 
-const VerificationIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <path d="M9 11L12 14L20 6" />
-    <path d="M20 12V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V6C4 4.89543 4.89543 4 6 4H13" />
-  </svg>
-);
+const TaskNodeWrapper = (props: any) => {
+  return <TaskNode {...props} />;
+};
 
-const DocumentIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <path d="M14 2H6C4.9 2 4 2.9 4 4V20C20 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" />
-    <path d="M14 2V8H20" />
-    <path d="M8 12H16" />
-    <path d="M8 16H16" />
-  </svg>
-);
+/**
+ * Merge computed nodes into React Flow's internal state.
+ * Preserves RF-managed properties (selected, dragging, measured dimensions)
+ * while updating data, style, and position from our computed nodes.
+ */
+function mergeNodes(
+  prevNodes: Node[],
+  computedNodes: Node[]
+): Node[] {
+  const computedMap = new Map(computedNodes.map((n) => [n.id, n]));
+  const prevIds = new Set(prevNodes.map((n) => n.id));
+  const computedIds = new Set(computedNodes.map((n) => n.id));
 
-// Example with both sequential and parallel tasks
-const sampleTasks: StageTaskItem[][] = [
-  [{ id: 'liability_check', label: 'Liability Check', icon: <VerificationIcon /> }],
-  [{ id: 'credit_review', label: 'Credit Review', icon: <DocumentIcon /> }],
-  // Parallel tasks - these run at the same time
-  [
-    {
-      id: 'address_verification',
-      label: 'Address Verification and a really long label that might wrap',
-      icon: <VerificationIcon />,
+  // Update existing nodes, preserving React Flow internal state
+  const merged = prevNodes
+    .filter((n) => computedIds.has(n.id))
+    .map((n) => {
+      const source = computedMap.get(n.id);
+      if (!source) return n;
+      return { ...n, data: source.data, style: source.style, position: source.position };
+    });
+
+  // Append new nodes that don't exist yet
+  for (const node of computedNodes) {
+    if (!prevIds.has(node.id)) {
+      merged.push(node);
+    }
+  }
+
+  return merged;
+}
+
+// Task info interface for story data
+interface TaskInfo {
+  label: string;
+  taskType: string;
+  icon: React.ReactElement;
+  execution?: TaskNodeData['execution'];
+  contextMenuItems?: NodeMenuItem[];
+}
+
+// Helper to create task nodes from task IDs
+interface CreateTaskNodesOptions {
+  stageId: string;
+  taskIds: string[][];
+  tasks: Record<string, TaskInfo>;
+  stageWidth: number;
+  onTaskClick?: (taskId: string) => void;
+  onTaskSelect?: (taskId: string) => void;
+  stageExecution?: { duration?: string };
+  enableCrossStage?: boolean;
+  onGroupModification?: (
+    type: GroupModificationType,
+    groupIndex: number,
+    taskIndex: number
+  ) => void;
+  onRequestReplaceTask: (groupIndex: number, taskIndex: number) => void;
+}
+
+function createTaskNodes({
+  stageId,
+  taskIds,
+  tasks,
+  stageWidth,
+  onTaskClick,
+  onTaskSelect,
+  stageExecution,
+  enableCrossStage,
+  onGroupModification,
+  onRequestReplaceTask,
+}: CreateTaskNodesOptions): TaskNodeType[] {
+  const positions = calculateTaskPositions(taskIds, stageWidth, tasks as any, stageExecution);
+  const nodes: TaskNodeType[] = [];
+
+  taskIds.forEach((group, groupIndex) => {
+    group.forEach((taskId, taskIndex) => {
+      const taskInfo = tasks[taskId];
+      if (!taskInfo) return;
+
+      const position = positions.get(taskId);
+      if (!position) return;
+
+      // Generate context menu items dynamically based on task position
+      const prevGroup = groupIndex > 0 ? taskIds[groupIndex - 1] : undefined;
+      const nextGroup = groupIndex < taskIds.length - 1 ? taskIds[groupIndex + 1] : undefined;
+      const contextMenuItems = onGroupModification
+        ? getContextMenuItems(
+            group.length > 1, // isParallelGroup
+            groupIndex,
+            taskIds.length,
+            taskIndex,
+            group.length,
+            prevGroup !== undefined && prevGroup.length > 1, // isAboveParallel
+            nextGroup !== undefined && nextGroup.length > 1, // isBelowParallel
+            onGroupModification,
+            onRequestReplaceTask
+          )
+        : taskInfo.contextMenuItems;
+
+      const node: TaskNodeType = {
+        id: taskId,
+        type: 'task',
+        parentId: stageId,
+        position: { x: position.x, y: position.y },
+        width: position.width,
+        data: {
+          taskType: taskInfo.taskType,
+          label: taskInfo.label,
+          iconElement: taskInfo.icon,
+          groupIndex,
+          taskIndex,
+          execution: taskInfo.execution,
+          onTaskClick,
+          onTaskSelect,
+          width: position.width,
+          contextMenuItems,
+        } as TaskNodeData,
+      };
+
+      // Only add extent: 'parent' if cross-stage drag is disabled
+      if (!enableCrossStage) {
+        node.extent = 'parent';
+      }
+
+      nodes.push(node);
+    });
+  });
+
+  return nodes;
+}
+
+// Interactive canvas component with drag/copy/paste support
+interface InteractiveStageCanvasProps {
+  stages: {
+    id: string;
+    label: string;
+    taskIds: string[][];
+    position: { x: number; y: number };
+    width?: number;
+    isException?: boolean;
+    isReadOnly?: boolean;
+    execution?: StageNodeProps['execution'];
+  }[];
+  tasks: Record<string, TaskInfo>;
+  edges?: Edge[];
+  showInstructions?: boolean;
+  onTaskAdd?: () => void;
+  onAddTaskFromToolbox?: (taskItem: ListItem) => void;
+  taskOptions?: ListItem[];
+  enableTaskMenu?: boolean;
+  enableReplaceTask?: boolean;
+}
+
+const InteractiveStageCanvas = ({
+  stages: initialStages,
+  tasks: initialTasks,
+  edges: initialEdges = [],
+  showInstructions = true,
+  onTaskAdd,
+  onAddTaskFromToolbox,
+  taskOptions,
+  enableTaskMenu = true,
+  enableReplaceTask = true,
+}: InteractiveStageCanvasProps) => {
+  const [stageTaskIds, setStageTaskIds] = useState<Record<string, string[][]>>(
+    Object.fromEntries(initialStages.map((s) => [s.id, s.taskIds]))
+  );
+  const [tasks, setTasks] = useState(initialTasks);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [actionLog, setActionLog] = useState<string>('');
+  const [replaceTargets, setReplaceTargets] = useState<
+    Record<string, { groupIndex: number; taskIndex: number } | null>
+  >({});
+
+  // Handle replace task
+  const handleTaskReplace = useCallback(
+    (stageId: string) => (newTask: ListItem, groupIndex: number, taskIndex: number) => {
+      setActionLog(
+        `Replace task at stage ${stageId}, group ${groupIndex}, task ${taskIndex} with "${newTask.name}"`
+      );
+
+      const newTaskId = `replaced-${Date.now()}`;
+      const IconComp = newTask.icon?.Component;
+      setTasks((prev) => ({
+        ...prev,
+        [newTaskId]: {
+          label: newTask.name,
+          taskType: newTask.data?.taskType || 'uipath.case-management.process',
+          icon: IconComp ? (
+            <IconComp />
+          ) : (
+            <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />
+          ),
+        },
+      }));
+
+      setStageTaskIds((prev) => {
+        const currentTaskIds = [...(prev[stageId] || [])].map((group) => [...group]);
+        const targetGroup = currentTaskIds[groupIndex];
+        if (targetGroup && targetGroup[taskIndex] !== undefined) {
+          targetGroup[taskIndex] = newTaskId;
+        }
+        return { ...prev, [stageId]: currentTaskIds };
+      });
     },
-    { id: 'property_verification', label: 'Property Verification', icon: <VerificationIcon /> },
-  ],
-  [{ id: 'processing_review', label: 'Processing Review', icon: <ProcessIcon /> }],
-];
+    []
+  );
 
+  // Create stage nodes
+  const stageNodes: Node[] = useMemo(
+    () =>
+      initialStages.map((stage) => ({
+        id: stage.id,
+        type: 'stage',
+        position: stage.position,
+        style: { width: stage.width || 304 },
+        data: {
+          nodeType: 'case-management:Stage',
+          stageDetails: {
+            label: stage.label,
+            taskIds: stageTaskIds[stage.id] || [],
+            isException: stage.isException,
+            isReadOnly: stage.isReadOnly,
+          },
+          execution: stage.execution,
+          onTaskClick: (taskId: string) => {
+            setSelectedTaskId(taskId);
+            setActionLog(`Selected: ${taskId}`);
+          },
+          onTaskAdd,
+          onAddTaskFromToolbox,
+          taskOptions,
+          ...(enableReplaceTask && !stage.isReadOnly
+            ? {
+                onReplaceTaskFromToolbox: handleTaskReplace(stage.id),
+                replaceTaskTarget: replaceTargets[stage.id] ?? null,
+                onReplaceTaskTargetChange: (
+                  target: { groupIndex: number; taskIndex: number } | null
+                ) => setReplaceTargets((prev) => ({ ...prev, [stage.id]: target })),
+              }
+            : {}),
+        } as Partial<StageNodeProps>,
+      })),
+    [
+      initialStages,
+      stageTaskIds,
+      onTaskAdd,
+      onAddTaskFromToolbox,
+      taskOptions,
+      enableReplaceTask,
+      handleTaskReplace,
+      replaceTargets,
+    ]
+  );
+
+  // Handle group modification from context menu
+  const handleGroupModification = useCallback(
+    (stageId: string) => (type: GroupModificationType, groupIndex: number, taskIndex: number) => {
+      setActionLog(
+        `Group modification: ${type} at stage ${stageId}, group ${groupIndex}, task ${taskIndex}`
+      );
+
+      setStageTaskIds((prev) => {
+        const currentTaskIds = [...(prev[stageId] || [])].map((group) => [...group]);
+        const currentGroup = currentTaskIds[groupIndex];
+        if (!currentGroup) return prev;
+
+        switch (type) {
+          case GroupModificationType.TASK_GROUP_UP: {
+            if (groupIndex > 0) {
+              const taskId = currentGroup[taskIndex];
+              if (!taskId) break;
+              // Remove from current group
+              currentGroup.splice(taskIndex, 1);
+              if (currentGroup.length === 0) {
+                currentTaskIds.splice(groupIndex, 1);
+              }
+              // Insert as new group before previous group
+              currentTaskIds.splice(groupIndex - 1, 0, [taskId]);
+            }
+            break;
+          }
+          case GroupModificationType.TASK_GROUP_DOWN: {
+            if (groupIndex < currentTaskIds.length - 1) {
+              const taskId = currentGroup[taskIndex];
+              if (!taskId) break;
+              // Remove from current group
+              currentGroup.splice(taskIndex, 1);
+              if (currentGroup.length === 0) {
+                currentTaskIds.splice(groupIndex, 1);
+                // Insert after the (now shifted) next group
+                currentTaskIds.splice(groupIndex + 1, 0, [taskId]);
+              } else {
+                // Insert after the next group
+                currentTaskIds.splice(groupIndex + 2, 0, [taskId]);
+              }
+            }
+            break;
+          }
+          case GroupModificationType.MERGE_GROUP_UP: {
+            if (groupIndex > 0) {
+              const taskId = currentGroup[taskIndex];
+              if (!taskId) break;
+              // Remove from current group
+              currentGroup.splice(taskIndex, 1);
+              if (currentGroup.length === 0) {
+                currentTaskIds.splice(groupIndex, 1);
+              }
+              // Add to previous group
+              currentTaskIds[groupIndex - 1]?.push(taskId);
+            }
+            break;
+          }
+          case GroupModificationType.MERGE_GROUP_DOWN: {
+            if (groupIndex < currentTaskIds.length - 1) {
+              const taskId = currentGroup[taskIndex];
+              if (!taskId) break;
+              // Remove from current group
+              currentGroup.splice(taskIndex, 1);
+              const wasEmpty = currentGroup.length === 0;
+              if (wasEmpty) {
+                currentTaskIds.splice(groupIndex, 1);
+              }
+              // Add to next group (adjust index if we removed current group)
+              const nextGroupIndex = wasEmpty ? groupIndex : groupIndex + 1;
+              currentTaskIds[nextGroupIndex]?.push(taskId);
+            }
+            break;
+          }
+          case GroupModificationType.UNGROUP_ALL_TASKS: {
+            // Replace the group with individual groups
+            currentTaskIds.splice(groupIndex, 1, ...currentGroup.map((id) => [id]));
+            break;
+          }
+          case GroupModificationType.SPLIT_GROUP: {
+            const taskId = currentGroup[taskIndex];
+            if (!taskId) break;
+            // Remove from current group
+            currentGroup.splice(taskIndex, 1);
+            // Insert as new group after current group
+            currentTaskIds.splice(groupIndex + 1, 0, [taskId]);
+            break;
+          }
+          case GroupModificationType.REMOVE_GROUP: {
+            currentTaskIds.splice(groupIndex, 1);
+            break;
+          }
+          case GroupModificationType.REMOVE_TASK: {
+            currentGroup.splice(taskIndex, 1);
+            if (currentGroup.length === 0) {
+              currentTaskIds.splice(groupIndex, 1);
+            }
+            break;
+          }
+        }
+
+        return { ...prev, [stageId]: currentTaskIds };
+      });
+    },
+    []
+  );
+
+  // Create task nodes for all stages (cross-stage drag enabled by default)
+  const taskNodes = useMemo(() => {
+    const allTaskNodes: TaskNodeType[] = [];
+    initialStages.forEach((stage) => {
+      const stageTaskIdsArr = stageTaskIds[stage.id] || [];
+      const nodes = createTaskNodes({
+        stageId: stage.id,
+        taskIds: stageTaskIdsArr,
+        tasks,
+        stageWidth: stage.width || 304,
+        onTaskClick: (taskId) => {
+          setSelectedTaskId(taskId);
+          setActionLog(`Selected: ${taskId}`);
+        },
+        onTaskSelect: setSelectedTaskId,
+        stageExecution: stage.execution?.stageStatus,
+        enableCrossStage: true,
+        onGroupModification:
+          enableTaskMenu && !stage.isReadOnly ? handleGroupModification(stage.id) : undefined,
+        onRequestReplaceTask:
+          enableReplaceTask && !stage.isReadOnly
+            ? (groupIndex, taskIndex) =>
+                setReplaceTargets((prev) => ({ ...prev, [stage.id]: { groupIndex, taskIndex } }))
+            : () => {},
+      });
+      allTaskNodes.push(...nodes);
+    });
+    return allTaskNodes;
+  }, [
+    initialStages,
+    stageTaskIds,
+    tasks,
+    enableTaskMenu,
+    enableReplaceTask,
+    handleGroupModification,
+  ]);
+
+  const allNodes = useMemo(() => [...stageNodes, ...taskNodes], [stageNodes, taskNodes]);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(allNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+  useEffect(() => {
+    setNodes((prev) => mergeNodes(prev, allNodes));
+  }, [allNodes, setNodes]);
+
+  const onConnect = useCallback(
+    (connection: Connection) => {
+      setEdges((eds) => addEdge({ ...connection, type: 'stage' }, eds));
+    },
+    [setEdges]
+  );
+
+  const nodeTypes = useMemo(
+    () => ({
+      stage: StageNodeWrapper,
+      task: TaskNodeWrapper,
+      placeholder: (props: any) => <PlaceholderTaskNode {...props} />,
+    }),
+    []
+  );
+  const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
+
+  // Handle task reordering (within same stage)
+  const handleTaskReorder = useCallback((params: TaskReorderParams) => {
+    const { taskId, stageId, position } = params;
+    const depthLabel = position.isParallel ? 'parallel' : 'sequential';
+    setActionLog(`Reordered ${taskId} to group ${position.groupIndex} (${depthLabel})`);
+
+    setStageTaskIds((prev) => {
+      const currentTaskIds = prev[stageId || ''] || [];
+      const newTaskIds = moveTaskWithinStage(currentTaskIds, taskId, position);
+      return { ...prev, [stageId || '']: newTaskIds };
+    });
+  }, []);
+
+  // Handle task move (cross-stage)
+  const handleTaskMove = useCallback(
+    (params: TaskMoveParams) => {
+      const { taskId, sourceStageId, targetStageId, position } = params;
+      setActionLog(
+        `Moved ${taskId} from ${sourceStageId} to ${targetStageId} at group ${position.groupIndex}${position.isParallel ? ' (parallel)' : ''}`
+      );
+
+      const taskInfo = tasks[taskId];
+      if (!taskInfo) return;
+
+      setStageTaskIds((prev) => {
+        const sourceTaskIds = prev[sourceStageId] || [];
+        const targetTaskIds = prev[targetStageId] || [];
+
+        const { sourceTaskIds: newSourceTaskIds, targetTaskIds: newTargetTaskIds } =
+          moveTaskBetweenStages(sourceTaskIds, targetTaskIds, taskId, position);
+
+        return {
+          ...prev,
+          [sourceStageId]: newSourceTaskIds,
+          [targetStageId]: newTargetTaskIds,
+        };
+      });
+    },
+    [tasks]
+  );
+
+  // Handle task copy (cross-stage with Alt/Cmd)
+  const handleTaskCopy = useCallback(
+    (params: TaskCopyParams) => {
+      const { taskId, newTaskId, targetStageId, position } = params;
+      setActionLog(
+        `Copied ${taskId} to ${newTaskId} in ${targetStageId} at group ${position.groupIndex}${position.isParallel ? ' (parallel)' : ''}`
+      );
+
+      const taskInfo = tasks[taskId];
+      if (!taskInfo) return;
+
+      // Add copied task to tasks
+      setTasks((prev) => ({
+        ...prev,
+        [newTaskId]: {
+          ...taskInfo,
+          label: `${taskInfo.label} (Copy)`,
+        },
+      }));
+
+      // Insert copied task at position
+      setStageTaskIds((prev) => {
+        const targetTaskIds = prev[targetStageId] || [];
+        const newTargetTaskIds = insertTaskAtPosition(targetTaskIds, newTaskId, position);
+        return { ...prev, [targetStageId]: newTargetTaskIds };
+      });
+    },
+    [tasks]
+  );
+
+  // Handle task paste (keyboard shortcut)
+  const handleTaskPaste = useCallback((params: TaskPasteParams) => {
+    const { newTaskId, originalData, targetStageId } = params;
+    setActionLog(`Pasted as ${newTaskId}`);
+
+    setTasks((prev) => ({
+      ...prev,
+      [newTaskId]: {
+        label: `${originalData.label} (Copy)`,
+        taskType: originalData.taskType as string,
+        icon: originalData.iconElement ?? (
+          <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />
+        ),
+        execution: originalData.execution,
+      } as TaskInfo,
+    }));
+
+    setStageTaskIds((prev) => ({
+      ...prev,
+      [targetStageId]: [...(prev[targetStageId] || []), [newTaskId]],
+    }));
+  }, []);
+
+  return (
+    <ReactFlowProvider>
+      <InteractiveCanvasInner
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        onTaskReorder={handleTaskReorder}
+        onTaskMove={handleTaskMove}
+        onTaskCopy={handleTaskCopy}
+        onTaskPaste={handleTaskPaste}
+        selectedTaskId={selectedTaskId}
+        stageTaskIds={stageTaskIds}
+        actionLog={actionLog}
+        showInstructions={showInstructions}
+      />
+    </ReactFlowProvider>
+  );
+};
+
+// Inner component that uses React Flow hooks
+interface InteractiveCanvasInnerProps {
+  nodes: Node[];
+  edges: Edge[];
+  onNodesChange: any;
+  onEdgesChange: any;
+  onConnect: (connection: Connection) => void;
+  nodeTypes: any;
+  edgeTypes: any;
+  onTaskReorder: (params: TaskReorderParams) => void;
+  onTaskMove?: (params: TaskMoveParams) => void;
+  onTaskCopy?: (params: TaskCopyParams) => void;
+  onTaskPaste: (params: TaskPasteParams) => void;
+  selectedTaskId: string | null;
+  stageTaskIds: Record<string, string[][]>;
+  actionLog: string;
+  showInstructions: boolean;
+}
+
+const InteractiveCanvasInner = ({
+  nodes,
+  edges,
+  onNodesChange,
+  onEdgesChange,
+  onConnect,
+  nodeTypes,
+  edgeTypes,
+  onTaskReorder,
+  onTaskMove,
+  onTaskCopy,
+  onTaskPaste,
+  selectedTaskId,
+  stageTaskIds,
+  actionLog,
+  showInstructions,
+}: InteractiveCanvasInnerProps) => {
+  const { dragState, handlers } = useCrossStageTaskDrag({
+    onTaskReorder,
+    onTaskMove,
+    onTaskCopy,
+  });
+
+  // Find which stage the selected task is in
+  const selectedTaskStageId = useMemo(() => {
+    if (!selectedTaskId) return null;
+    for (const [stageId, taskIds] of Object.entries(stageTaskIds)) {
+      if (taskIds.flat().includes(selectedTaskId)) {
+        return stageId;
+      }
+    }
+    return null;
+  }, [selectedTaskId, stageTaskIds]);
+
+  useTaskCopyPaste(
+    { onTaskPaste },
+    {
+      selectedTaskId,
+      targetStageId: selectedTaskStageId || '',
+      targetTaskIds: stageTaskIds[selectedTaskStageId || ''] || [],
+      enabled: !!selectedTaskId,
+    }
+  );
+
+  return (
+    <CrossStageDragProvider value={{ dragState }}>
+      <BaseCanvas
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        mode="design"
+        connectionMode={ConnectionMode.Strict}
+        defaultEdgeOptions={{ type: 'stage' }}
+        connectionLineComponent={StageConnectionEdge}
+        elevateEdgesOnSelect
+        onNodeDragStart={handlers.onNodeDragStart}
+        onNodeDrag={handlers.onNodeDrag}
+        onNodeDragStop={handlers.onNodeDragStop}
+        fitView
+      >
+        <Panel position="bottom-right">
+          <CanvasPositionControls translations={DefaultCanvasTranslations} />
+        </Panel>
+        {showInstructions && (
+          <Panel position="bottom-left">
+            <div
+              style={{
+                background: 'var(--uix-palette-surface-paper)',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                maxWidth: '300px',
+              }}
+            >
+              <strong>Instructions:</strong>
+              <ul style={{ margin: '8px 0', paddingLeft: '16px', fontSize: '12px' }}>
+                <li>Click a task to select it</li>
+                <li>Drag tasks to reorder</li>
+                <li>Ctrl/Cmd+C to copy selected task</li>
+                <li>Ctrl/Cmd+V to paste task</li>
+              </ul>
+            </div>
+          </Panel>
+        )}
+        {actionLog && (
+          <Panel position="top-left">
+            <div
+              style={{
+                background: 'var(--uix-palette-surface-paper)',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              }}
+            >
+              {actionLog}
+            </div>
+          </Panel>
+        )}
+      </BaseCanvas>
+    </CrossStageDragProvider>
+  );
+};
+
+// ============================================================================
+// Stories
+// ============================================================================
+
+/**
+ * Default stage with no tasks - shows empty state
+ */
 export const Default: Story = {
-  name: 'Default',
-  parameters: {
-    nodes: [
-      {
-        id: '0',
-        type: 'stage',
-        position: { x: 48, y: 96 },
-        width: 304,
-        data: {
-          stageDetails: {
-            label: 'Application',
-            tasks: [],
-          },
-          execution: {
-            stageStatus: {
-              duration: 'SLA: None',
+  render: () => {
+    const tasks: Record<string, TaskInfo> = {};
+
+    return (
+      <div style={{ width: '100vw', height: '100vh' }}>
+        <InteractiveStageCanvas
+          stages={[
+            {
+              id: 'stage-1',
+              label: 'Application',
+              taskIds: [],
+              position: { x: 48, y: 96 },
+              width: 304,
             },
-          },
-          onTaskAdd: () => {
-            window.alert('Add task functionality - this would open a dialog to add a new task');
-          },
-        },
-      },
-      {
-        id: '1',
-        type: 'stage',
-        position: { x: 400, y: 96 },
-        width: 304,
-        data: {
-          stageDetails: {
-            label: 'Processing with a really really really long label that might wrap',
-            tasks: sampleTasks,
-            sla: '1h',
-            slaBreached: false,
-            escalation: '1h',
-            escalationsTriggered: false,
-          },
-          execution: {
-            stageStatus: {
-              duration: 'SLA: None',
+            {
+              id: 'stage-2',
+              label: 'Processing with a really really really long label that might wrap',
+              taskIds: [],
+              position: { x: 400, y: 96 },
+              width: 304,
             },
-          },
-          onAddTaskFromToolbox: (taskItem: ListItem) => {
-            window.alert(
-              `Add task (${taskItem.data.type}) - this would open a panel to configure the new task`
-            );
-          },
-          taskOptions: sampleTasks.flat().map((task) => ({
-            id: task.id,
-            name: task.label,
-            icon: { Component: () => task.icon },
-            data: { type: task.id },
-          })),
-        },
-      },
-    ],
+          ]}
+          tasks={tasks}
+          showInstructions={false}
+          onTaskAdd={() => window.alert('Add task functionality')}
+        />
+      </div>
+    );
   },
-  args: {},
 };
 
+/**
+ * Stage with task icons showing different task types
+ */
 export const WithTaskIcons: Story = {
-  name: 'With Task Icons',
-  parameters: {
-    nodes: [
-      {
-        id: '1',
-        type: 'stage',
-        position: { x: 48, y: 96 },
-        width: 304,
-        data: {
-          stageDetails: {
-            label: 'Task Icons Demo',
-            tasks: [
-              [
-                {
-                  id: 'human-task',
-                  label: 'Human in the Loop',
-                  icon: <TaskIcon type={TaskItemTypeValues.User} size="sm" />,
-                },
-              ],
-              [
-                {
-                  id: 'agent-task',
-                  label: 'Agent Task',
-                  icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
-                },
-                {
-                  id: 'external-agent-task',
-                  label: 'External Agent',
-                  icon: <TaskIcon type={TaskItemTypeValues.ExternalAgent} size="sm" />,
-                },
-              ],
-              [
-                {
-                  id: 'rpa-task',
-                  label: 'RPA Automation',
-                  icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
-                },
-                {
-                  id: 'api-task',
-                  label: 'API Automation',
-                  icon: <TaskIcon type={TaskItemTypeValues.ApiAutomation} size="sm" />,
-                },
-              ],
-              [
-                {
-                  id: 'process-task',
-                  label: 'Agentic Process',
-                  icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
-                },
-                {
-                  id: 'connector-task',
-                  label: 'Connector',
-                  icon: <TaskIcon type={TaskItemTypeValues.Connector} size="sm" />,
-                },
-              ],
-              [
-                {
-                  id: 'timer-task',
-                  label: 'Timer',
-                  icon: <TaskIcon type={TaskItemTypeValues.Timer} size="sm" />,
-                },
-              ],
-            ],
-          },
-        },
+  render: () => {
+    const tasks: Record<string, TaskInfo> = {
+      'agent-task': {
+        label: 'Agent Task',
+        taskType: 'uipath.case-management.agent',
+        icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
       },
-    ],
+      'rpa-task': {
+        label: 'RPA Automation',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+      },
+      'api-task': {
+        label: 'API Automation',
+        taskType: 'uipath.case-management.api-workflow',
+        icon: <TaskIcon type={TaskItemTypeValues.ApiAutomation} size="sm" />,
+      },
+      'human-task': {
+        label: 'Human in the Loop',
+        taskType: 'uipath.case-management.run-human-action',
+        icon: <TaskIcon type={TaskItemTypeValues.User} size="sm" />,
+      },
+      'process-task': {
+        label: 'Agentic Process',
+        taskType: 'uipath.case-management.process',
+        icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+      },
+    };
+
+    return (
+      <div style={{ width: '100vw', height: '100vh' }}>
+        <InteractiveStageCanvas
+          stages={[
+            {
+              id: 'stage-1',
+              label: 'Task Icons Demo',
+              taskIds: [
+                ['agent-task'],
+                ['rpa-task'],
+                ['api-task'],
+                ['human-task'],
+                ['process-task'],
+              ],
+              position: { x: 48, y: 96 },
+              width: 304,
+            },
+          ]}
+          tasks={tasks}
+        />
+      </div>
+    );
   },
-  args: {},
 };
 
+/**
+ * Stages showing execution status with completed, in-progress, and failed states
+ */
 export const ExecutionStatus: Story = {
-  name: 'Execution Status',
-  parameters: {
-    nodes: [
-      {
-        id: '0',
-        type: 'stage',
-        position: { x: 48, y: 96 },
-        width: 304,
-        data: {
-          stageDetails: {
-            sla: '1h',
-            slaBreached: false,
-            escalation: '1h',
-            escalationsTriggered: false,
-            label: 'Application',
-            isReadOnly: true,
-            tasks: [
-              [{ id: '1', label: 'KYC and AML Checks', icon: <VerificationIcon /> }],
-              [
-                {
-                  id: '2',
-                  label: 'Document Verification is going to be very very really long',
-                  icon: <DocumentIcon />,
-                },
-              ],
-            ],
-          },
-          execution: {
-            stageStatus: {
-              status: 'Completed',
-              duration: 'SLA: 4h',
-            },
-            taskStatus: {
-              '1': { status: 'Completed', label: 'KYC and AML Checks', duration: '2h 15m' },
-              '2': { status: 'Completed', label: 'Document Verification', duration: '1h 45m' },
-            },
-          },
+  render: () => {
+    const tasks: Record<string, TaskInfo> = {
+      // Stage 1 tasks
+      's1-task-1': {
+        label: 'KYC and AML Checks',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+        execution: { status: 'Completed', duration: '2h 15m' },
+      },
+      's1-task-2': {
+        label: 'Document Verification is going to be very very really long',
+        taskType: 'uipath.case-management.process',
+        icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+        execution: { status: 'Completed', duration: '1h 45m' },
+      },
+      // Stage 2 tasks
+      's2-task-1': {
+        label: 'Liability Check',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+        execution: {
+          status: 'Completed',
+          duration: '1h 30m',
+          retryDuration: '25m',
+          badge: 'Reworked',
+          badgeStatus: 'error',
+          retryCount: 2,
         },
       },
-      {
-        id: '1',
-        type: 'stage',
-        position: { x: 400, y: 96 },
-        width: 304,
-        data: {
-          stageDetails: {
-            sla: '1h',
-            slaBreached: true,
-            escalation: '1h',
-            escalationsTriggered: true,
-            label: 'Processing',
-            isReadOnly: true,
-            tasks: [
-              [{ id: '1', label: 'Liability Check', icon: <VerificationIcon /> }],
-              [{ id: '2', label: 'Credit Review', icon: <DocumentIcon /> }],
-              [
-                { id: '3', label: 'Address Verification', icon: <VerificationIcon /> },
-                { id: '4', label: 'Property Verification', icon: <VerificationIcon /> },
-              ],
-              [{ id: '5', label: 'Processing Review', icon: <ProcessIcon /> }],
-            ],
-            selectedTasks: ['2'],
-          },
-          execution: {
-            stageStatus: {
-              status: 'Completed',
-              duration: 'SLA: 6h 15m',
-            },
-            taskStatus: {
-              '1': {
-                status: 'Completed',
-                label: 'Liability Check',
-                duration: '1h 30m',
-                retryDuration: '25m',
-                badge: 'Reworked',
-                badgeStatus: 'error',
-                retryCount: 2,
-              },
-              '2': {
-                status: 'Completed',
-                label: 'Credit Review',
-                duration: '1h 30m',
-                retryDuration: '32m',
-                badge: 'Reworked',
-                retryCount: 1,
-              },
-              '3': { status: 'Completed', label: 'Address Verification', duration: '30m' },
-              '4': {
-                status: 'Completed',
-                label: 'Property Verification',
-                duration: '1h 30m',
-                retryDuration: '1h 5m',
-                badge: 'Reworked',
-                retryCount: 3,
-              },
-              '5': { status: 'Completed', label: 'Processing Review', duration: '1h 15m' },
-            },
-          },
+      's2-task-2': {
+        label: 'Credit Review',
+        taskType: 'uipath.case-management.process',
+        icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+        execution: {
+          status: 'Completed',
+          duration: '1h 30m',
+          retryDuration: '32m',
+          badge: 'Reworked',
+          retryCount: 1,
         },
       },
-      {
-        id: '2',
-        type: 'stage',
-        position: { x: 752, y: 96 },
-        width: 304,
-        data: {
-          stageDetails: {
-            label: 'Underwriting',
-            isReadOnly: true,
-            tasks: [
-              [{ id: '1', label: 'Report Ordering', icon: <DocumentIcon /> }],
-              [{ id: '2', label: 'Underwriting Verification', icon: <VerificationIcon /> }],
-            ],
-          },
-          onTaskClick: (id: string) => window.alert(`Task clicked: ${id}`),
-          execution: {
-            stageStatus: {
-              status: 'InProgress',
-              label: 'In progress',
-              duration: 'SLA: 2h 15m',
-            },
-            taskStatus: {
-              '1': { status: 'Completed', label: 'Report Ordering', duration: '2h 15m' },
-              '2': { status: 'InProgress', label: 'Underwriting Verification' },
-            },
-          },
+      's2-task-3': {
+        label: 'Address Verification',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+        execution: { status: 'Completed', duration: '30m' },
+      },
+      's2-task-4': {
+        label: 'Property Verification',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+        execution: {
+          status: 'Completed',
+          duration: '1h 30m',
+          retryDuration: '1h 5m',
+          badge: 'Reworked',
+          retryCount: 3,
         },
       },
-      {
-        id: '3',
-        type: 'stage',
-        position: { x: 1104, y: 96 },
-        width: 304,
-        data: {
-          stageDetails: {
-            label: 'Closing',
-            isReadOnly: true,
-            tasks: [
-              [{ id: '1', label: 'Loan Packet Creation', icon: <DocumentIcon /> }],
-              [{ id: '2', label: 'Customer Signing', icon: <DocumentIcon /> }],
-              [{ id: '3', label: 'Generate Audit Report', icon: <DocumentIcon /> }],
-            ],
-          },
-          execution: {
-            stageStatus: {
-              status: 'NotExecuted',
-              label: 'Not started',
-            },
-            taskStatus: {},
-          },
-        },
+      's2-task-5': {
+        label: 'Processing Review',
+        taskType: 'uipath.case-management.agent',
+        icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
+        execution: { status: 'Completed', duration: '1h 15m' },
       },
-      {
-        id: '4',
-        type: 'stage',
-        position: { x: 1104, y: 400 },
-        width: 304,
-        data: {
-          stageDetails: {
-            label: 'Rejected',
-            isException: true,
-            isReadOnly: true,
-            tasks: [
-              [{ id: '1', label: 'Customer Notification', icon: <ProcessIcon /> }],
-              [{ id: '2', label: 'Generate Audit Report', icon: <DocumentIcon /> }],
-            ],
-          },
-          execution: {
-            stageStatus: {
-              status: 'NotExecuted',
-              label: 'Not started',
-            },
-            taskStatus: {},
-          },
-        },
+      // Stage 3 tasks
+      's3-task-1': {
+        label: 'Report Ordering',
+        taskType: 'uipath.case-management.process',
+        icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+        execution: { status: 'Completed', duration: '2h 15m' },
       },
-    ],
-    edges: [
+      's3-task-2': {
+        label: 'Underwriting Verification',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+        execution: { status: 'InProgress' },
+      },
+      // Stage 4 tasks
+      's4-task-1': {
+        label: 'Loan Packet Creation',
+        taskType: 'uipath.case-management.process',
+        icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+        execution: { status: 'NotExecuted' },
+      },
+      's4-task-2': {
+        label: 'Customer Signing',
+        taskType: 'uipath.case-management.run-human-action',
+        icon: <TaskIcon type={TaskItemTypeValues.User} size="sm" />,
+        execution: { status: 'NotExecuted' },
+      },
+      's4-task-3': {
+        label: 'Generate Audit Report',
+        taskType: 'uipath.case-management.process',
+        icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+        execution: { status: 'NotExecuted' },
+      },
+      // Rejected stage tasks
+      'rejected-task-1': {
+        label: 'Customer Notification',
+        taskType: 'uipath.case-management.agent',
+        icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
+        execution: { status: 'NotExecuted' },
+      },
+      'rejected-task-2': {
+        label: 'Generate Audit Report',
+        taskType: 'uipath.case-management.process',
+        icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+        execution: { status: 'NotExecuted' },
+      },
+    };
+
+    const edges: Edge[] = [
       {
         id: 'e1',
         type: 'stage',
-        source: '0',
-        sourceHandle: '0____source____right',
-        target: '1',
-        targetHandle: '1____target____left',
+        source: 'stage-1',
+        sourceHandle: 'stage-1____source____right',
+        target: 'stage-2',
+        targetHandle: 'stage-2____target____left',
       },
       {
         id: 'e2',
         type: 'stage',
-        source: '1',
-        sourceHandle: '1____source____right',
-        target: '2',
-        targetHandle: '2____target____left',
+        source: 'stage-2',
+        sourceHandle: 'stage-2____source____right',
+        target: 'stage-3',
+        targetHandle: 'stage-3____target____left',
       },
       {
         id: 'e3',
         type: 'stage',
-        source: '2',
-        sourceHandle: '2____source____right',
-        target: '3',
-        targetHandle: '3____target____left',
+        source: 'stage-3',
+        sourceHandle: 'stage-3____source____right',
+        target: 'stage-4',
+        targetHandle: 'stage-4____target____left',
       },
-    ] as Edge[],
+    ];
+
+    return (
+      <div style={{ width: '100vw', height: '100vh' }}>
+        <InteractiveStageCanvas
+          stages={[
+            {
+              id: 'stage-1',
+              label: 'Application',
+              taskIds: [['s1-task-1'], ['s1-task-2']],
+              position: { x: 48, y: 96 },
+              width: 304,
+              isReadOnly: true,
+              execution: {
+                stageStatus: { status: 'Completed', duration: 'SLA: 4h' },
+                taskStatus: {},
+              },
+            },
+            {
+              id: 'stage-2',
+              label: 'Processing',
+              taskIds: [['s2-task-1'], ['s2-task-2'], ['s2-task-3', 's2-task-4'], ['s2-task-5']],
+              position: { x: 400, y: 96 },
+              width: 304,
+              isReadOnly: true,
+              execution: {
+                stageStatus: { status: 'Completed', duration: 'SLA: 6h 15m' },
+                taskStatus: {},
+              },
+            },
+            {
+              id: 'stage-3',
+              label: 'Underwriting',
+              taskIds: [['s3-task-1'], ['s3-task-2']],
+              position: { x: 752, y: 96 },
+              width: 304,
+              isReadOnly: true,
+              execution: {
+                stageStatus: {
+                  status: 'InProgress',
+                  label: 'In progress',
+                  duration: 'SLA: 2h 15m',
+                },
+                taskStatus: {},
+              },
+            },
+            {
+              id: 'stage-4',
+              label: 'Closing',
+              taskIds: [['s4-task-1'], ['s4-task-2'], ['s4-task-3']],
+              position: { x: 1104, y: 96 },
+              width: 304,
+              isReadOnly: true,
+              execution: {
+                stageStatus: { status: 'NotExecuted', label: 'Not started' },
+                taskStatus: {},
+              },
+            },
+            {
+              id: 'rejected',
+              label: 'Rejected',
+              taskIds: [['rejected-task-1'], ['rejected-task-2']],
+              position: { x: 1104, y: 400 },
+              width: 304,
+              isException: true,
+              isReadOnly: true,
+              execution: {
+                stageStatus: { status: 'NotExecuted', label: 'Not started' },
+                taskStatus: {},
+              },
+            },
+          ]}
+          tasks={tasks}
+          edges={edges}
+          showInstructions={false}
+        />
+      </div>
+    );
   },
-  args: {},
 };
 
+/**
+ * Interactive design mode with editable and read-only stages side by side
+ */
 export const InteractiveTaskManagement: Story = {
-  name: 'Interactive Task Management',
-  parameters: {
-    nodes: [
-      {
-        id: 'design-stage',
-        type: 'stage',
-        position: { x: 48, y: 96 },
-        width: 352,
-        data: {
-          stageDetails: {
-            label: 'Design Mode - Editable',
-            tasks: [
-              [{ id: '1', label: 'Initial Task', icon: <VerificationIcon /> }],
-              [
-                {
-                  id: '2',
-                  label:
-                    'Credit Review with a very long label that will be truncated and show tooltip',
-                  icon: <DocumentIcon />,
-                },
-              ],
-              [
-                { id: '3', label: 'Address Verification', icon: <VerificationIcon /> },
-                {
-                  id: '4',
-                  label: 'Property Verification with Long Name',
-                  icon: <VerificationIcon />,
-                },
-                { id: '5', label: 'Background Check', icon: <ProcessIcon /> },
-              ],
-              [
-                {
-                  id: '6',
-                  label: 'Final Review Task with Extended Description',
-                  icon: <ProcessIcon />,
-                },
-              ],
-            ],
-          },
-          onTaskClick: (taskId: string) => {
-            window.alert(`Task clicked: ${taskId}`);
-          },
-          onTaskRemove: (groupIndex: number, taskIndex: number) => {
-            window.alert(
-              `Task removal requested!\nGroup: ${groupIndex}\nTask: ${taskIndex}\n\nIn a real app, this would remove the task from the data.`
-            );
-          },
-          onTaskAdd: () => {
-            window.alert('Add task functionality - this would open a dialog to add a new task');
-          },
+  render: () => {
+    const tasks: Record<string, TaskInfo> = {
+      // Editable stage tasks
+      'task-1': {
+        label: 'Initial Task',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+      },
+      'task-2': {
+        label: 'Credit Review with a very long label that will be truncated and show tooltip',
+        taskType: 'uipath.case-management.process',
+        icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+      },
+      'task-3': {
+        label: 'Address Verification',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+      },
+      'task-4': {
+        label: 'Property Verification with Long Name',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+      },
+      'task-5': {
+        label: 'Background Check',
+        taskType: 'uipath.case-management.agent',
+        icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
+      },
+      'task-6': {
+        label: 'Final Review Task with Extended Description',
+        taskType: 'uipath.case-management.agent',
+        icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
+      },
+      // Execution stage tasks
+      'exec-task-1': {
+        label: 'Task with execution status and very long name that will be truncated',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+        execution: {
+          status: 'Completed',
+          duration: '30m',
+          badge: 'Completed',
+          badgeStatus: 'info',
         },
       },
-      {
-        id: 'execution-stage',
-        type: 'stage',
-        position: { x: 448, y: 96 },
-        width: 352,
-        data: {
-          stageDetails: {
-            label: 'Execution Mode - Read Only',
-            isReadOnly: true,
-            tasks: [
-              [
-                {
-                  id: '1',
-                  label: 'Task with execution status and very long name that will be truncated',
-                  icon: <VerificationIcon />,
-                },
-              ],
-              [{ id: '2', label: 'Credit Review Processing', icon: <DocumentIcon /> }],
-              [
-                {
-                  id: '3',
-                  label: 'Parallel Address Verification Task',
-                  icon: <VerificationIcon />,
-                },
-                {
-                  id: '4',
-                  label: 'Parallel Property Verification with Extended Name',
-                  icon: <VerificationIcon />,
-                },
-              ],
-              [{ id: '5', label: 'Final Review and Approval Process', icon: <ProcessIcon /> }],
-            ],
-          },
-          execution: {
-            stageStatus: {
-              status: 'InProgress',
-              label: 'In progress',
-              duration: '2h 15m',
-            },
-            taskStatus: {
-              '1': {
-                status: 'Completed',
-                duration: '30m',
-                badge: 'Completed',
-                badgeStatus: 'info',
-              },
-              '2': {
-                status: 'InProgress',
-                duration: '1h 15m',
-                retryDuration: '15m',
-                badge: 'Retry',
-                badgeStatus: 'warning',
-                retryCount: 2,
-              },
-              '3': { status: 'Completed', duration: '45m' },
-              '4': {
-                status: 'Failed',
-                duration: '20m',
-                retryDuration: '10m',
-                badge: 'Error',
-                badgeStatus: 'error',
-                retryCount: 1,
-              },
-              '5': { status: 'NotExecuted' },
-            },
-          },
-          onTaskClick: (taskId: string) => {
-            window.alert(`Task clicked: ${taskId} (execution mode - read only)`);
-          },
+      'exec-task-2': {
+        label: 'Credit Review Processing',
+        taskType: 'uipath.case-management.process',
+        icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+        execution: {
+          status: 'InProgress',
+          duration: '1h 15m',
+          retryDuration: '15m',
+          badge: 'Retry',
+          badgeStatus: 'warning',
+          retryCount: 2,
         },
       },
-    ],
+      'exec-task-3': {
+        label: 'Parallel Address Verification Task',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+        execution: { status: 'Completed', duration: '45m' },
+      },
+      'exec-task-4': {
+        label: 'Parallel Property Verification with Extended Name',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+        execution: {
+          status: 'Failed',
+          duration: '20m',
+          retryDuration: '10m',
+          badge: 'Error',
+          badgeStatus: 'error',
+          retryCount: 1,
+        },
+      },
+      'exec-task-5': {
+        label: 'Final Review and Approval Process',
+        taskType: 'uipath.case-management.agent',
+        icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
+        execution: { status: 'NotExecuted' },
+      },
+    };
+
+    return (
+      <div style={{ width: '100vw', height: '100vh' }}>
+        <InteractiveStageCanvas
+          stages={[
+            {
+              id: 'design-stage',
+              label: 'Design Mode - Editable',
+              taskIds: [['task-1'], ['task-2'], ['task-3', 'task-4', 'task-5'], ['task-6']],
+              position: { x: 48, y: 96 },
+              width: 352,
+            },
+            {
+              id: 'execution-stage',
+              label: 'Execution Mode - Read Only',
+              taskIds: [
+                ['exec-task-1'],
+                ['exec-task-2'],
+                ['exec-task-3', 'exec-task-4'],
+                ['exec-task-5'],
+              ],
+              position: { x: 448, y: 96 },
+              width: 352,
+              isReadOnly: true,
+              execution: {
+                stageStatus: { status: 'InProgress', label: 'In progress', duration: '2h 15m' },
+                taskStatus: {},
+              },
+            },
+          ]}
+          tasks={tasks}
+        />
+      </div>
+    );
   },
-  args: {},
 };
 
+/**
+ * Complete loan processing workflow with connected stages
+ */
 export const LoanProcessingWorkflow: Story = {
-  name: 'Loan Processing Workflow',
-  parameters: {
-    nodes: [
-      // Application Stage
-      {
-        id: 'application',
-        type: 'stage',
-        position: { x: 48, y: 96 },
-        width: 304,
-        data: {
-          stageDetails: {
-            label: 'Application',
-            tasks: [
-              [{ id: '1', label: 'KYC and AML Checks', icon: <VerificationIcon /> }],
-              [{ id: '2', label: 'Document Verification', icon: <DocumentIcon /> }],
-            ],
-            selectedTasks: ['1'],
-          },
-        },
+  render: () => {
+    const tasks: Record<string, TaskInfo> = {
+      // Application stage
+      'app-task-1': {
+        label: 'KYC and AML Checks',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
       },
-      // Processing Stage
-      {
-        id: 'processing',
-        type: 'stage',
-        position: { x: 448, y: 96 },
-        width: 304,
-        data: {
-          stageDetails: {
-            label: 'Processing',
-            tasks: [
-              [{ id: '1', label: 'Liability Check', icon: <VerificationIcon /> }],
-              [{ id: '2', label: 'Credit Review', icon: <DocumentIcon /> }],
-              [
-                { id: '3', label: 'Address Verification', icon: <VerificationIcon /> },
-                { id: '4', label: 'Property Verification', icon: <VerificationIcon /> },
-              ],
-              [{ id: '5', label: 'Processing Review', icon: <ProcessIcon /> }],
-            ],
-            selectedTasks: ['4'],
-          },
-        },
+      'app-task-2': {
+        label: 'Document Verification',
+        taskType: 'uipath.case-management.process',
+        icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
       },
-      // Underwriting Stage
-      {
-        id: 'underwriting',
-        type: 'stage',
-        position: { x: 848, y: 96 },
-        width: 304,
-        data: {
-          stageDetails: {
-            label: 'Underwriting',
-            tasks: [
-              [{ id: '1', label: 'Report Ordering', icon: <DocumentIcon /> }],
-              [{ id: '2', label: 'Underwriting Verification', icon: <VerificationIcon /> }],
-            ],
-          },
-        },
+      // Processing stage
+      'proc-task-1': {
+        label: 'Liability Check',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
       },
-      // Closing Stage
-      {
-        id: 'closing',
-        type: 'stage',
-        position: { x: 1248, y: 96 },
-        width: 304,
-        data: {
-          stageDetails: {
-            label: 'Closing',
-            tasks: [
-              [{ id: '1', label: 'Loan Packet Creation', icon: <DocumentIcon /> }],
-              [{ id: '2', label: 'Customer Signing', icon: <DocumentIcon /> }],
-              [{ id: '3', label: 'Generate Audit Report', icon: <DocumentIcon /> }],
-            ],
-          },
-        },
+      'proc-task-2': {
+        label: 'Credit Review',
+        taskType: 'uipath.case-management.process',
+        icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
       },
-      // Funding Stage
-      {
-        id: 'funding',
-        type: 'stage',
-        position: { x: 1648, y: 96 },
-        width: 304,
-        data: {
-          stageDetails: {
-            label: 'Funding',
-            tasks: [
-              [{ id: '1', label: 'Disperse Loan', icon: <ProcessIcon /> }],
-              [{ id: '2', label: 'Generate Audit Report', icon: <DocumentIcon /> }],
-            ],
-          },
-        },
+      'proc-task-3': {
+        label: 'Address Verification',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
       },
-      // Rejected Stage
-      {
-        id: 'rejected',
-        type: 'stage',
-        position: { x: 1248, y: 400 },
-        width: 304,
-        data: {
-          stageDetails: {
-            label: 'Rejected',
-            isException: true,
-            tasks: [
-              [{ id: '1', label: 'Customer Notification', icon: <ProcessIcon /> }],
-              [{ id: '2', label: 'Generate Audit Report', icon: <DocumentIcon /> }],
-            ],
-          },
-        },
+      'proc-task-4': {
+        label: 'Property Verification',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
       },
-      // Withdrawn Stage
-      {
-        id: 'withdrawn',
-        type: 'stage',
-        position: { x: 448, y: 608 },
-        width: 304,
-        data: {
-          stageDetails: {
-            label: 'Withdrawn',
-            isException: true,
-            tasks: [
-              [{ id: '1', label: 'Customer Notification', icon: <ProcessIcon /> }],
-              [{ id: '2', label: 'Generate Audit Report', icon: <DocumentIcon /> }],
-            ],
-          },
-        },
+      'proc-task-5': {
+        label: 'Processing Review',
+        taskType: 'uipath.case-management.agent',
+        icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
       },
-    ],
-    edges: [
-      // Main flow
+      // Underwriting stage
+      'uw-task-1': {
+        label: 'Report Ordering',
+        taskType: 'uipath.case-management.process',
+        icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+      },
+      'uw-task-2': {
+        label: 'Underwriting Verification',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+      },
+      // Closing stage
+      'close-task-1': {
+        label: 'Loan Packet Creation',
+        taskType: 'uipath.case-management.process',
+        icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+      },
+      'close-task-2': {
+        label: 'Customer Signing',
+        taskType: 'uipath.case-management.run-human-action',
+        icon: <TaskIcon type={TaskItemTypeValues.User} size="sm" />,
+      },
+      'close-task-3': {
+        label: 'Generate Audit Report',
+        taskType: 'uipath.case-management.process',
+        icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+      },
+      // Funding stage
+      'fund-task-1': {
+        label: 'Disperse Loan',
+        taskType: 'uipath.case-management.agent',
+        icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
+      },
+      'fund-task-2': {
+        label: 'Generate Audit Report',
+        taskType: 'uipath.case-management.process',
+        icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+      },
+      // Exception stages
+      'reject-task-1': {
+        label: 'Customer Notification',
+        taskType: 'uipath.case-management.agent',
+        icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
+      },
+      'reject-task-2': {
+        label: 'Generate Audit Report',
+        taskType: 'uipath.case-management.process',
+        icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+      },
+      'withdraw-task-1': {
+        label: 'Customer Notification',
+        taskType: 'uipath.case-management.agent',
+        icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
+      },
+      'withdraw-task-2': {
+        label: 'Generate Audit Report',
+        taskType: 'uipath.case-management.process',
+        icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+      },
+    };
+
+    const edges: Edge[] = [
       {
         id: 'e1',
         type: 'stage',
@@ -794,405 +1322,426 @@ export const LoanProcessingWorkflow: Story = {
         target: 'funding',
         targetHandle: 'funding____target____left',
       },
-    ] as Edge[],
-  },
-  args: {} as any, // No args needed as we're using parameters
-};
+    ];
 
-const initialTasks: StageTaskItem[][] = [
-  [{ id: 'task-1', label: 'KYC Verification', icon: <VerificationIcon /> }],
-  [
-    { id: 'task-2', label: 'Document Review', icon: <DocumentIcon /> },
-    { id: 'task-6', label: 'Credit Check', icon: <VerificationIcon /> },
-  ],
-  [
-    { id: 'task-3', label: 'Address Check', icon: <VerificationIcon /> },
-    { id: 'task-4', label: 'Property Check', icon: <VerificationIcon /> },
-  ],
-  [{ id: 'task-5', label: 'Final Approval', icon: <ProcessIcon /> }],
-];
-
-const DraggableTaskReorderingStory = () => {
-  const StageNodeWrapper = useMemo(
-    () =>
-      function StageNodeWrapperComponent(props: any) {
-        return <StageNode {...props} {...props.data} />;
-      },
-    []
-  );
-
-  const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), [StageNodeWrapper]);
-  const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
-
-  const [nodes, setNodes, onNodesChange] = useNodesState([
-    {
-      id: 'reorder-stage',
-      type: 'stage',
-      position: { x: 320, y: 96 },
-      data: {
-        stageDetails: {
-          label: 'Drag to Reorder Tasks',
-          tasks: initialTasks,
-        },
-        onTaskClick: (taskId: string) => console.log('Task clicked:', taskId),
-      },
-    },
-  ]);
-
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-
-  const handleTaskReorder = useCallback(
-    (reorderedTasks: StageTaskItem[][]) => {
-      setNodes((nds) =>
-        nds.map((node) =>
-          node.id === 'reorder-stage'
-            ? {
-                ...node,
-                data: {
-                  ...node.data,
-                  stageDetails: {
-                    ...node.data.stageDetails,
-                    tasks: reorderedTasks,
-                  },
-                },
-              }
-            : node
-        )
-      );
-    },
-    [setNodes]
-  );
-
-  const nodesWithHandler = useMemo(
-    () =>
-      nodes.map((node) => ({
-        ...node,
-        data: {
-          ...node.data,
-          onTaskReorder: handleTaskReorder,
-        },
-      })),
-    [nodes, handleTaskReorder]
-  );
-
-  const onConnect = useCallback(
-    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
-    [setEdges]
-  );
-
-  return (
-    <div style={{ width: '100vw', height: '100vh' }}>
-      <ReactFlowProvider>
-        <BaseCanvas
-          nodes={nodesWithHandler}
+    return (
+      <div style={{ width: '100vw', height: '100vh' }}>
+        <InteractiveStageCanvas
+          stages={[
+            {
+              id: 'application',
+              label: 'Application',
+              taskIds: [['app-task-1'], ['app-task-2']],
+              position: { x: 48, y: 96 },
+              width: 304,
+            },
+            {
+              id: 'processing',
+              label: 'Processing',
+              taskIds: [
+                ['proc-task-1'],
+                ['proc-task-2'],
+                ['proc-task-3', 'proc-task-4'],
+                ['proc-task-5'],
+              ],
+              position: { x: 448, y: 96 },
+              width: 304,
+            },
+            {
+              id: 'underwriting',
+              label: 'Underwriting',
+              taskIds: [['uw-task-1'], ['uw-task-2']],
+              position: { x: 848, y: 96 },
+              width: 304,
+            },
+            {
+              id: 'closing',
+              label: 'Closing',
+              taskIds: [['close-task-1'], ['close-task-2'], ['close-task-3']],
+              position: { x: 1248, y: 96 },
+              width: 304,
+            },
+            {
+              id: 'funding',
+              label: 'Funding',
+              taskIds: [['fund-task-1'], ['fund-task-2']],
+              position: { x: 1648, y: 96 },
+              width: 304,
+            },
+            {
+              id: 'rejected',
+              label: 'Rejected',
+              taskIds: [['reject-task-1'], ['reject-task-2']],
+              position: { x: 1248, y: 400 },
+              width: 304,
+              isException: true,
+            },
+            {
+              id: 'withdrawn',
+              label: 'Withdrawn',
+              taskIds: [['withdraw-task-1'], ['withdraw-task-2']],
+              position: { x: 448, y: 608 },
+              width: 304,
+              isException: true,
+            },
+          ]}
+          tasks={tasks}
           edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          mode="design"
-          connectionMode={ConnectionMode.Strict}
-          defaultEdgeOptions={{ type: 'stage' }}
-          connectionLineComponent={StageConnectionEdge}
-          elevateEdgesOnSelect
-          defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
-        >
-          <Panel position="bottom-right">
-            <CanvasPositionControls translations={DefaultCanvasTranslations} />
-          </Panel>
-        </BaseCanvas>
-      </ReactFlowProvider>
-    </div>
-  );
+        />
+      </div>
+    );
+  },
 };
 
-export const DraggableTaskReordering: Story = {
-  name: 'Draggable Task Reordering',
-  parameters: {
-    useCustomRender: true,
+/**
+ * Tasks with context menu (TaskMenu) for grouping operations
+ * Hover over a task to see the menu icon, click to open the menu
+ */
+export const WithTaskMenu: Story = {
+  render: () => {
+    const tasks: Record<string, TaskInfo> = {
+      'task-1': {
+        label: 'Initial Review',
+        taskType: 'uipath.case-management.process',
+        icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+      },
+      'task-2': {
+        label: 'Document Verification',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+      },
+      'task-3': {
+        label: 'Address Check',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+      },
+      'task-4': {
+        label: 'Background Check',
+        taskType: 'uipath.case-management.agent',
+        icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
+      },
+      'task-5': {
+        label: 'Credit Check',
+        taskType: 'uipath.case-management.rpa',
+        icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+      },
+      'task-6': {
+        label: 'Final Approval',
+        taskType: 'uipath.case-management.run-human-action',
+        icon: <TaskIcon type={TaskItemTypeValues.User} size="sm" />,
+      },
+    };
+
+    return (
+      <div style={{ width: '100vw', height: '100vh' }}>
+        <InteractiveStageCanvas
+          stages={[
+            {
+              id: 'stage-1',
+              label: 'Task Menu Demo',
+              taskIds: [['task-1'], ['task-2'], ['task-3', 'task-4', 'task-5'], ['task-6']],
+              position: { x: 48, y: 96 },
+              width: 304,
+            },
+          ]}
+          tasks={tasks}
+        />
+      </div>
+    );
   },
-  render: () => <DraggableTaskReorderingStory />,
-  args: {},
 };
 
-const initialTasksForAddReplace: StageTaskItem[][] = [
-  [{ id: 'task-1', label: 'Initial Verification', icon: <VerificationIcon /> }],
-  [{ id: 'task-2', label: 'Document Review', icon: <DocumentIcon /> }],
-];
+/**
+ * Stage with add, replace, and group task functionality.
+ * - Click the "+" button in the header to add a new task from the toolbox.
+ * - Hover a task and open the context menu to see "Replace task" option.
+ * - Clicking "Replace task" opens the toolbox to pick a replacement.
+ * - Use the "Replace Task" button in the top-right panel to trigger replacement
+ *   from outside the canvas (simulating a properties panel).
+ */
+const addReplaceInitialTasks: Record<string, TaskInfo> = {
+  'task-1': {
+    label: 'Initial Review',
+    taskType: 'uipath.case-management.process',
+    icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+  },
+  'task-2': {
+    label: 'Document Verification',
+    taskType: 'uipath.case-management.rpa',
+    icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+  },
+  'task-3': {
+    label: 'Address Check',
+    taskType: 'uipath.case-management.rpa',
+    icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+  },
+  'task-4': {
+    label: 'Background Check',
+    taskType: 'uipath.case-management.agent',
+    icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
+  },
+  'task-5': {
+    label: 'Final Approval',
+    taskType: 'uipath.case-management.run-human-action',
+    icon: <TaskIcon type={TaskItemTypeValues.User} size="sm" />,
+  },
+};
 
-const availableTaskOptions: ListItem[] = [
+const addReplaceTaskOptions: ListItem[] = [
   {
-    id: 'verification-task',
-    name: 'Verification task',
-    icon: { Component: () => <VerificationIcon /> },
-    data: { type: 'verification' },
+    id: 'opt-agent',
+    name: 'Agent Task',
+    data: { taskType: 'uipath.case-management.agent' },
+    icon: { Component: () => <TaskIcon type={TaskItemTypeValues.Agent} size="sm" /> },
   },
   {
-    id: 'document-task',
-    name: 'Document task',
-    icon: { Component: () => <DocumentIcon /> },
-    data: { type: 'document' },
+    id: 'opt-automation',
+    name: 'RPA Automation',
+    data: { taskType: 'uipath.case-management.rpa' },
+    icon: { Component: () => <TaskIcon type={TaskItemTypeValues.Automation} size="sm" /> },
   },
   {
-    id: 'process-task',
-    name: 'Process task',
-    icon: { Component: () => <ProcessIcon /> },
-    data: { type: 'process' },
+    id: 'opt-api',
+    name: 'API Automation',
+    data: { taskType: 'uipath.case-management.api-workflow' },
+    icon: { Component: () => <TaskIcon type={TaskItemTypeValues.ApiAutomation} size="sm" /> },
   },
   {
-    id: 'credit-check',
-    name: 'Credit check',
-    icon: { Component: () => <VerificationIcon /> },
-    data: { type: 'credit' },
+    id: 'opt-human',
+    name: 'Human in the Loop',
+    data: { taskType: 'uipath.case-management.run-human-action' },
+    icon: { Component: () => <TaskIcon type={TaskItemTypeValues.User} size="sm" /> },
   },
   {
-    id: 'address-verification',
-    name: 'Address verification',
-    icon: { Component: () => <VerificationIcon /> },
-    data: { type: 'address' },
+    id: 'opt-process',
+    name: 'Agentic Process',
+    data: { taskType: 'uipath.case-management.process' },
+    icon: { Component: () => <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" /> },
   },
 ];
 
 const AddAndReplaceTasksStory = () => {
-  const StageNodeWrapper = useMemo(
-    () =>
-      function StageNodeWrapperComponent(props: any) {
-        return <StageNode {...props} {...props.data} />;
-      },
-    []
-  );
+  const stageId = 'stage-1';
 
-  const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), [StageNodeWrapper]);
-  const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
-
+  const [stageTaskIds, setStageTaskIds] = useState<Record<string, string[][]>>({
+    [stageId]: [['task-1'], ['task-2'], ['task-3', 'task-4'], ['task-5']],
+  });
+  const [allTasks, setAllTasks] = useState(addReplaceInitialTasks);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [actionLog, setActionLog] = useState<string>('');
   const [pendingReplaceTask, setPendingReplaceTask] = useState<
     { groupIndex: number; taskIndex: number } | undefined
   >();
-  const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>();
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
 
-  const [nodesState, setNodes, onNodesChange] = useNodesState([
-    {
-      id: 'add-replace-stage',
-      type: 'stage',
-      position: { x: 320, y: 96 },
-      data: {
-        stageDetails: {
-          label: 'Add, Replace, and Group Tasks',
-          tasks: initialTasksForAddReplace,
-        },
-        taskOptions: availableTaskOptions,
-      },
-    },
-  ]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-
-  const handleAddTask = useCallback(
+  // Handle add task from toolbox
+  const handleAddTaskFromToolbox = useCallback(
     (taskItem: ListItem) => {
-      const newTask: StageTaskItem = {
-        id: `${taskItem.id}-${Date.now()}`,
-        label: taskItem.name,
-        icon: taskItem.icon?.Component ? <taskItem.icon.Component /> : undefined,
-      };
+      const newTaskId = `added-${Date.now()}`;
+      const IconComp = taskItem.icon?.Component;
 
-      setNodes((prevNodes) =>
-        prevNodes.map((node) =>
-          node.id === 'add-replace-stage'
-            ? {
-                ...node,
-                data: {
-                  ...node.data,
-                  stageDetails: {
-                    ...node.data.stageDetails,
-                    tasks: [...node.data.stageDetails.tasks, [newTask]],
-                  },
-                },
-              }
-            : node
-        )
-      );
+      setAllTasks((prev) => ({
+        ...prev,
+        [newTaskId]: {
+          label: taskItem.name,
+          taskType: taskItem.data?.taskType || 'uipath.case-management.process',
+          icon: IconComp ? (
+            <IconComp />
+          ) : (
+            <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />
+          ),
+        },
+      }));
+
+      setStageTaskIds((prev) => ({
+        ...prev,
+        [stageId]: [...(prev[stageId] || []), [newTaskId]],
+      }));
+
+      setActionLog(`Added task: ${taskItem.name}`);
     },
-    [setNodes]
+    [stageId]
   );
 
+  // Handle replace task from toolbox
   const handleReplaceTask = useCallback(
-    (taskItem: StageTaskItem, groupIndex: number, taskIndex: number) => {
-      // Validate indices
-      if (groupIndex < 0 || taskIndex < 0) {
-        return;
-      }
+    (newTask: ListItem, groupIndex: number, taskIndex: number) => {
+      const newTaskId = `replaced-${Date.now()}`;
+      const IconComp = newTask.icon?.Component;
 
-      // The component passes a ListItem cast as StageTaskItem, so convert it properly
-      const listItem = taskItem as unknown as ListItem;
-      const replacedTask: StageTaskItem = {
-        id: `${listItem.id}-replaced-${Date.now()}`,
-        label: listItem.name,
-        icon: listItem.icon?.Component ? <listItem.icon.Component /> : undefined,
-      };
+      setAllTasks((prev) => ({
+        ...prev,
+        [newTaskId]: {
+          label: newTask.name,
+          taskType: newTask.data?.taskType || 'uipath.case-management.process',
+          icon: IconComp ? (
+            <IconComp />
+          ) : (
+            <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />
+          ),
+        },
+      }));
 
-      setNodes((prevNodes) =>
-        prevNodes.map((node) => {
-          if (node.id !== 'add-replace-stage') {
-            return node;
-          }
-
-          const prevTasks = node.data.stageDetails.tasks;
-
-          // Validate that indices are within bounds
-          if (groupIndex >= prevTasks.length) {
-            return node;
-          }
-
-          const currentGroup = prevTasks[groupIndex];
-          if (!currentGroup || taskIndex >= currentGroup.length) {
-            return node;
-          }
-
-          const updatedTasks = prevTasks.map((group: StageTaskItem[], gIdx: number) => {
-            if (gIdx === groupIndex) {
-              return group.map((task: StageTaskItem, tIdx: number) =>
-                tIdx === taskIndex ? replacedTask : task
-              );
-            }
-            return group;
-          });
-
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              stageDetails: {
-                ...node.data.stageDetails,
-                tasks: updatedTasks,
-              },
-            },
-          };
-        })
-      );
+      setStageTaskIds((prev) => {
+        const currentTaskIds = [...(prev[stageId] || [])].map((group) => [...group]);
+        const targetGroup = currentTaskIds[groupIndex];
+        if (targetGroup && targetGroup[taskIndex] !== undefined) {
+          targetGroup[taskIndex] = newTaskId;
+        }
+        return { ...prev, [stageId]: currentTaskIds };
+      });
 
       setPendingReplaceTask(undefined);
-    },
-    [setNodes]
-  );
-
-  const groupModificationHandlers = useMemo(
-    () => createGroupModificationHandlers<StageTaskItem>(),
-    []
-  );
-
-  const handleTaskGroupModification = useCallback(
-    (groupModificationType: GroupModificationType, groupIndex: number, taskIndex: number) => {
-      const handler = getHandlerForModificationType(
-        groupModificationHandlers,
-        groupModificationType
-      );
-
-      setNodes((prevNodes) =>
-        prevNodes.map((node) => {
-          if (node.id !== 'add-replace-stage') {
-            return node;
-          }
-
-          const prevTasks = node.data.stageDetails.tasks;
-          const updatedTasks = handler(prevTasks, groupIndex, taskIndex);
-
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              stageDetails: {
-                ...node.data.stageDetails,
-                tasks: updatedTasks,
-              },
-            },
-          };
-        })
+      setActionLog(
+        `Replaced task at group ${groupIndex}, task ${taskIndex} with "${newTask.name}"`
       );
     },
-    [groupModificationHandlers, setNodes]
+    [stageId]
   );
 
-  // Handle task click in canvas (for selection)
-  const handleTaskClick = useCallback((taskId: string) => {
-    setSelectedTaskId(taskId);
-  }, []);
+  // Handle group modification from context menu
+  const handleGroupModification = useCallback(
+    (type: GroupModificationType, groupIndex: number, taskIndex: number) => {
+      setActionLog(`Group modification: ${type} at group ${groupIndex}, task ${taskIndex}`);
 
-  // Get current tasks from node state for menu items
-  const currentTasks =
-    nodesState.find((n) => n.id === 'add-replace-stage')?.data.stageDetails.tasks || [];
+      setStageTaskIds((prev) => {
+        const handler = getHandlerForModificationType(
+          createGroupModificationHandlers<string>(),
+          type
+        );
+        const currentTaskIds = (prev[stageId] || []).map((group) => [...group]);
+        const updatedTaskIds = handler(currentTaskIds, groupIndex, taskIndex);
+        return { ...prev, [stageId]: updatedTaskIds };
+      });
+    },
+    [stageId]
+  );
 
-  // Create menu items for task selection
+  // Create menu items for task selection (simulates properties panel)
+  const currentTaskIds = stageTaskIds[stageId] || [];
   const taskMenuItems = useMemo<IMenuItem[]>(() => {
-    return currentTasks.flatMap((group, groupIndex) =>
-      group.map((task, taskIndex) => ({
-        title: task.label,
-        variant: 'item' as const,
-        startIcon: task.icon,
-        onClick: () => {
-          setSelectedTaskId(task.id);
-          setPendingReplaceTask({ groupIndex, taskIndex });
-          setMenuAnchorEl(null);
-        },
-      }))
+    return currentTaskIds.flatMap((group, groupIndex) =>
+      group.map((taskId, taskIndex) => {
+        const taskInfo = allTasks[taskId];
+        return {
+          title: taskInfo?.label || taskId,
+          variant: 'item' as const,
+          startIcon: taskInfo?.icon,
+          onClick: () => {
+            setSelectedTaskId(taskId);
+            setPendingReplaceTask({ groupIndex, taskIndex });
+            setMenuAnchorEl(null);
+          },
+        };
+      })
     );
-  }, [currentTasks]);
+  }, [currentTaskIds, allTasks]);
 
-  // Update node data with pendingReplaceTask and selectedTaskId
-  const nodesWithMetadata = useMemo(
-    () =>
-      nodesState.map((node) =>
-        node.id === 'add-replace-stage'
-          ? {
-              ...node,
-              data: {
-                ...node.data,
-                pendingReplaceTask: pendingReplaceTask,
-                stageDetails: {
-                  ...node.data.stageDetails,
-                  selectedTasks: selectedTaskId ? [selectedTaskId] : undefined,
-                },
-                onAddTaskFromToolbox: handleAddTask,
-                onReplaceTaskFromToolbox: handleReplaceTask,
-                onTaskGroupModification: handleTaskGroupModification,
-                onTaskClick: handleTaskClick,
-              },
-            }
-          : node
-      ),
-    [
-      nodesState,
-      pendingReplaceTask,
-      selectedTaskId,
-      handleAddTask,
-      handleReplaceTask,
-      handleTaskGroupModification,
-      handleTaskClick,
-    ]
-  );
-
-  const onConnect = useCallback(
-    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
-    [setEdges]
-  );
-
-  // Compute button label based on whether a task is being replaced
   const replaceButtonLabel = useMemo(() => {
     if (pendingReplaceTask) {
-      const taskBeingReplaced =
-        currentTasks[pendingReplaceTask.groupIndex]?.[pendingReplaceTask.taskIndex];
-      if (taskBeingReplaced) {
-        return `Replacing Task: ${taskBeingReplaced.label}`;
+      const taskId = currentTaskIds[pendingReplaceTask.groupIndex]?.[pendingReplaceTask.taskIndex];
+      const taskInfo = taskId ? allTasks[taskId] : undefined;
+      if (taskInfo) {
+        return `Replacing: ${taskInfo.label}`;
       }
     }
     return 'Replace Task';
-  }, [pendingReplaceTask, currentTasks]);
+  }, [pendingReplaceTask, currentTaskIds, allTasks]);
+
+  // Create stage nodes
+  const stageNodes: Node[] = useMemo(
+    () => [
+      {
+        id: stageId,
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        style: { width: 304 },
+        data: {
+          nodeType: 'case-management:Stage',
+          stageDetails: {
+            label: 'Add, Replace & Group Tasks',
+            taskIds: stageTaskIds[stageId] || [],
+            selectedTasks: selectedTaskId ? [selectedTaskId] : undefined,
+          },
+          pendingReplaceTask,
+          taskOptions: addReplaceTaskOptions,
+          onAddTaskFromToolbox: handleAddTaskFromToolbox,
+          onReplaceTaskFromToolbox: handleReplaceTask,
+          onTaskClick: (taskId: string) => {
+            setSelectedTaskId(taskId);
+            setActionLog(`Selected: ${taskId}`);
+          },
+        } as Partial<StageNodeProps>,
+      },
+    ],
+    [
+      stageTaskIds,
+      selectedTaskId,
+      pendingReplaceTask,
+      handleAddTaskFromToolbox,
+      handleReplaceTask,
+    ]
+  );
+
+  // Create task nodes
+  const taskNodes = useMemo(() => {
+    return createTaskNodes({
+      stageId,
+      taskIds: stageTaskIds[stageId] || [],
+      tasks: allTasks,
+      stageWidth: 304,
+      onTaskClick: (taskId) => {
+        setSelectedTaskId(taskId);
+        setActionLog(`Selected: ${taskId}`);
+      },
+      onTaskSelect: setSelectedTaskId,
+      enableCrossStage: false,
+      onGroupModification: handleGroupModification,
+      onRequestReplaceTask: (groupIndex, taskIndex) => {
+        setPendingReplaceTask({ groupIndex, taskIndex });
+      },
+    });
+  }, [stageTaskIds, allTasks, handleGroupModification]);
+
+  const allNodes = useMemo(() => [...stageNodes, ...taskNodes], [stageNodes, taskNodes]);
+  const allNodesRef = useRef(allNodes);
+  allNodesRef.current = allNodes;
+
+  const [nodes, setNodes] = useState(allNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
+  useEffect(() => {
+    setNodes((prev) => mergeNodes(prev, allNodes));
+  }, [allNodes]);
+
+  // Custom onNodesChange that applies RF changes then re-merges our computed data
+  const onNodesChange = useCallback((changes: NodeChange[]) => {
+    setNodes((nds) => {
+      const updated = applyNodeChanges(changes, nds);
+      return mergeNodes(updated, allNodesRef.current);
+    });
+  }, []);
+
+  const onConnect = useCallback(
+    (connection: Connection) => setEdges((eds) => addEdge({ ...connection, type: 'stage' }, eds)),
+    [setEdges]
+  );
+
+  const nodeTypes = useMemo(
+    () => ({
+      stage: StageNodeWrapper,
+      task: TaskNodeWrapper,
+      placeholder: (props: any) => <PlaceholderTaskNode {...props} />,
+    }),
+    []
+  );
+  const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
 
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       <ReactFlowProvider>
         <BaseCanvas
-          nodes={nodesWithMetadata}
+          nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
@@ -1210,9 +1759,7 @@ const AddAndReplaceTasksStory = () => {
             <ApButton
               variant="primary"
               label={replaceButtonLabel}
-              onClick={(e) => {
-                setMenuAnchorEl(e.currentTarget as HTMLElement);
-              }}
+              onClick={(e) => setMenuAnchorEl(e.currentTarget as HTMLElement)}
             />
             <ApMenu
               isOpen={Boolean(menuAnchorEl)}
@@ -1225,6 +1772,20 @@ const AddAndReplaceTasksStory = () => {
           <Panel position="bottom-right">
             <CanvasPositionControls translations={DefaultCanvasTranslations} />
           </Panel>
+          {actionLog && (
+            <Panel position="top-left">
+              <div
+                style={{
+                  background: 'var(--uix-palette-surface-paper)',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                }}
+              >
+                {actionLog}
+              </div>
+            </Panel>
+          )}
         </BaseCanvas>
       </ReactFlowProvider>
     </div>
@@ -1233,108 +1794,147 @@ const AddAndReplaceTasksStory = () => {
 
 export const AddAndReplaceTasks: Story = {
   name: 'Add, Replace, and Group Tasks',
-  parameters: {
-    useCustomRender: true,
-  },
   render: () => <AddAndReplaceTasksStory />,
-  args: {},
 };
 
+// Module-level constants for AddTaskLoadingStory to prevent re-renders
+const loadingStoryStages = [
+  { id: 'empty-stage', label: 'Empty Stage (click +)', position: { x: 48, y: 96 }, width: 304 },
+  { id: 'tasks-stage', label: 'With Tasks (click +)', position: { x: 400, y: 96 }, width: 304 },
+] as const;
+
+const loadingStoryInitialTaskIds: Record<string, string[][]> = {
+  'empty-stage': [],
+  'tasks-stage': [['task-1'], ['task-2']],
+};
+
+const loadingStoryInitialTasks: Record<string, TaskInfo> = {
+  'task-1': {
+    label: 'Existing Task',
+    taskType: 'uipath.case-management.rpa',
+    icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+  },
+  'task-2': {
+    label: 'Another Task',
+    taskType: 'uipath.case-management.process',
+    icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+  },
+};
+
+/**
+ * Demonstrates the add task loading state.
+ * - Click the "+" button to simulate adding a task with a 3-second API delay.
+ * - The button shows a spinner and is disabled while loading.
+ * - The empty stage "Add first task" link is also disabled while loading.
+ */
 const AddTaskLoadingStory = () => {
-  const StageNodeWrapper = useMemo(
+  const [loadingStages, setLoadingStages] = useState<Record<string, boolean>>({});
+  const [stageTaskIds, setStageTaskIds] = useState<Record<string, string[][]>>(loadingStoryInitialTaskIds);
+  const [allTasks, setAllTasks] = useState<Record<string, TaskInfo>>(loadingStoryInitialTasks);
+
+  const handleTaskAdd = useCallback((stageIdToLoad: string) => {
+    setLoadingStages((prev) => ({ ...prev, [stageIdToLoad]: true }));
+
+    // Simulate 3-second API delay, then add a new task
+    setTimeout(() => {
+      const newTaskId = `new-task-${Date.now()}`;
+      setAllTasks((prev) => ({
+        ...prev,
+        [newTaskId]: {
+          label: 'New Task',
+          taskType: 'uipath.case-management.agent',
+          icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
+        },
+      }));
+
+      setStageTaskIds((prev) => ({
+        ...prev,
+        [stageIdToLoad]: [...(prev[stageIdToLoad] || []), [newTaskId]],
+      }));
+
+      setLoadingStages((prev) => ({ ...prev, [stageIdToLoad]: false }));
+    }, 3000);
+  }, []);
+
+  // Create stage nodes with addTaskLoading
+  const stageNodes: Node[] = useMemo(
     () =>
-      function StageNodeWrapperComponent(props: any) {
-        return <StageNode {...props} {...props.data} />;
-      },
-    []
-  );
-
-  const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), [StageNodeWrapper]);
-  const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
-
-  const initialNodes = useMemo(
-    () => [
-      {
-        id: 'loading-stage-empty',
+      loadingStoryStages.map((stage) => ({
+        id: stage.id,
         type: 'stage',
-        position: { x: 48, y: 96 },
-        width: 304,
+        position: stage.position,
+        style: { width: stage.width },
         data: {
+          nodeType: 'case-management:Stage',
           stageDetails: {
-            label: 'Empty Stage (click +)',
-            tasks: [],
+            label: stage.label,
+            taskIds: stageTaskIds[stage.id] || [],
           },
-          addTaskLoading: false,
-        },
-      },
-      {
-        id: 'loading-stage-with-tasks',
-        type: 'stage',
-        position: { x: 400, y: 96 },
-        width: 304,
-        data: {
-          stageDetails: {
-            label: 'With Tasks (click +)',
-            tasks: [
-              [{ id: 'task-1', label: 'Existing Task', icon: <VerificationIcon /> }],
-              [{ id: 'task-2', label: 'Another Task', icon: <DocumentIcon /> }],
-            ],
-          },
-          addTaskLoading: false,
-        },
-      },
-    ],
-    []
-  );
-
-  const [nodesState, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-
-  const setNodeLoading = useCallback(
-    (nodeId: string, loading: boolean) => {
-      setNodes((nds) =>
-        nds.map((node) =>
-          node.id === nodeId ? { ...node, data: { ...node.data, addTaskLoading: loading } } : node
-        )
-      );
-    },
-    [setNodes]
-  );
-
-  const handleTaskAddForNode = useCallback(
-    (nodeId: string) => {
-      setNodeLoading(nodeId, true);
-      // Simulate API delay of 3 seconds
-      setTimeout(() => {
-        setNodeLoading(nodeId, false);
-      }, 3000);
-    },
-    [setNodeLoading]
-  );
-
-  // Inject a per-node onTaskAdd handler
-  const nodesWithHandler = useMemo(
-    () =>
-      nodesState.map((node) => ({
-        ...node,
-        data: {
-          ...node.data,
-          onTaskAdd: () => handleTaskAddForNode(node.id),
-        },
+          addTaskLoading: loadingStages[stage.id] || false,
+          onTaskAdd: () => handleTaskAdd(stage.id),
+        } as Partial<StageNodeProps>,
       })),
-    [nodesState, handleTaskAddForNode]
+    [stageTaskIds, loadingStages, handleTaskAdd]
   );
+
+  // Create task nodes for all stages
+  const taskNodes = useMemo(() => {
+    const allTaskNodes: Node[] = [];
+    for (const stage of loadingStoryStages) {
+      const ids = stageTaskIds[stage.id] || [];
+      const nodes = createTaskNodes({
+        stageId: stage.id,
+        taskIds: ids,
+        tasks: allTasks,
+        stageWidth: stage.width,
+        enableCrossStage: false,
+        onRequestReplaceTask: () => {},
+      });
+      allTaskNodes.push(...nodes);
+    }
+    return allTaskNodes;
+  }, [stageTaskIds, allTasks]);
+
+  const allNodes = useMemo(() => [...stageNodes, ...taskNodes], [stageNodes, taskNodes]);
+  const allNodesRef = useRef(allNodes);
+  allNodesRef.current = allNodes;
+
+  const [nodes, setNodes] = useState(allNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
+  // Sync computed data into nodes, preserving RF internal state (selected, etc.)
+  useEffect(() => {
+    setNodes((prev) => mergeNodes(prev, allNodes));
+  }, [allNodes]);
+
+  // Custom onNodesChange that applies RF changes then re-merges our computed data
+  const onNodesChange = useCallback((changes: NodeChange[]) => {
+    setNodes((nds) => {
+      const updated = applyNodeChanges(changes, nds);
+      return mergeNodes(updated, allNodesRef.current);
+    });
+  }, []);
 
   const onConnect = useCallback(
-    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
+    (connection: Connection) => setEdges((eds) => addEdge({ ...connection, type: 'stage' }, eds)),
     [setEdges]
   );
+
+  const nodeTypes = useMemo(
+    () => ({
+      stage: StageNodeWrapper,
+      task: TaskNodeWrapper,
+      placeholder: (props: any) => <PlaceholderTaskNode {...props} />,
+    }),
+    []
+  );
+  const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
 
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       <ReactFlowProvider>
         <BaseCanvas
-          nodes={nodesWithHandler}
+          nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
@@ -1359,9 +1959,5 @@ const AddTaskLoadingStory = () => {
 
 export const AddTaskLoading: Story = {
   name: 'Add Task Loading State',
-  parameters: {
-    useCustomRender: true,
-  },
   render: () => <AddTaskLoadingStory />,
-  args: {},
 };
