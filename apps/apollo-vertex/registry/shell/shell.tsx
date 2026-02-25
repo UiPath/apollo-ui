@@ -1,4 +1,4 @@
-import type { FC, PropsWithChildren } from "react";
+import type { FC, PropsWithChildren, ReactNode } from "react";
 import {
   AuthContext,
   type AuthContextValue,
@@ -20,6 +20,7 @@ export interface ApolloShellComponentProps extends PropsWithChildren {
   productName: string;
   variant?: "minimal";
   companyLogo?: CompanyLogo;
+  sidebarActions?: ReactNode;
 }
 
 const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
@@ -28,6 +29,7 @@ const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
   productName,
   companyLogo,
   variant,
+  sidebarActions,
 }) => {
   const { accessToken } = useAuth();
   if (!accessToken) {
@@ -41,6 +43,7 @@ const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
         productName={productName}
         companyLogo={companyLogo}
         variant={variant}
+        sidebarActions={sidebarActions}
       >
         {children}
       </ShellLayout>
@@ -77,6 +80,7 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   companyLogo,
   variant,
   bypassAuth,
+  sidebarActions,
 }) => {
   const AuthWrapper = bypassAuth
     ? MockAuthProvider
@@ -98,6 +102,7 @@ export const ApolloShell: FC<ApolloShellProps> = ({
           productName={productName}
           companyLogo={companyLogo}
           variant={variant}
+          sidebarActions={sidebarActions}
         >
           {children}
         </ApolloShellComponent>

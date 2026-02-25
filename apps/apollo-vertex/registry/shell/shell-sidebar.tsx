@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { BarChart3, FolderOpen, Home, Settings, Users } from "lucide-react";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 import type { CompanyLogo } from "./shell";
@@ -16,6 +17,7 @@ interface SidebarProps {
   productName: string;
   variant?: "minimal";
   companyLogo?: CompanyLogo;
+  sidebarActions?: ReactNode;
 }
 
 export const Sidebar = ({
@@ -23,6 +25,7 @@ export const Sidebar = ({
   productName,
   variant,
   companyLogo,
+  sidebarActions,
 }: SidebarProps) => {
   const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
 
@@ -83,6 +86,7 @@ export const Sidebar = ({
         <NavItem to="/" icon={BarChart3} text="Analytics" />
         <NavItem to="/" icon={Users} text="Team" />
         <NavItem to="/" icon={Settings} text="Settings" />
+        {sidebarActions}
       </nav>
       <div className="mt-auto pt-3">
         {isCollapsed ? (
