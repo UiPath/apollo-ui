@@ -9,14 +9,50 @@
 
 @custom-variant dark (&:is(.dark *)); /* or nextra-theme-blog/style.css */
 
+/* Tokens not covered by theme.generated.css (gitignored) */
+@theme inline {
+  --color-brand-orange: var(--brand-orange);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-badge: var(--badge);
+  --color-badge-foreground: var(--badge-foreground);
+}
+
 :root {
   /* Override Nextra's background to match our theme */
   --x-color-nextra-bg: var(--background);
+  /* Status & brand tokens */
+  --brand-orange: #fa4616;
+  --destructive-foreground: oklch(1 0 89.8800);
+  --success: oklch(0.57 0.105 152);
+  --success-foreground: oklch(1 0 89.8800);
+  --info: oklch(0.60 0.125 210);
+  --info-foreground: oklch(1 0 89.8800);
+  --warning: oklch(0.80 0.1401 80.82);
+  --warning-foreground: oklch(0.1660 0.0283 203.3400);
+  --badge: oklch(0.5995 0.0199 253.42);
+  --badge-foreground: oklch(1 0 89.8800);
 }
 
 .dark {
   /* Override Nextra's background to match our theme */
   --x-color-nextra-bg: var(--background);
+  /* Status & brand tokens */
+  --brand-orange: #fa4616;
+  --destructive-foreground: oklch(0.1660 0.0283 203.3400);
+  --success: oklch(0.70 0.120 152);
+  --success-foreground: oklch(0.1660 0.0283 203.3400);
+  --info: oklch(0.69 0.112 207);
+  --info-foreground: oklch(0.1660 0.0283 203.3400);
+  --warning: oklch(0.6889 0.1401 80.82);
+  --warning-foreground: oklch(0.1660 0.0283 203.3400);
+  --badge: oklch(0.7196 0.0135 255.53);
+  --badge-foreground: oklch(0.1660 0.0283 203.3400);
 }
 
 @layer base {
