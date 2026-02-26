@@ -23,7 +23,7 @@ export const MinimalNavItem = ({ to, label, active }: MinimalNavItemProps) => {
         "px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 shrink-0 whitespace-nowrap",
         isActive
           ? "bg-primary text-primary-foreground"
-          : "text-muted-foreground hover:text-foreground",
+          : "text-muted-foreground hover:text-foreground hover:bg-black/[0.04] dark:hover:bg-white/[0.06]",
       )}
     >
       <Text value={label} />
