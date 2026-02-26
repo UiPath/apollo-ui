@@ -110,8 +110,8 @@ const preview: Preview = {
         title: 'Theme',
         icon: 'paintbrush',
         items: [
-          { value: 'legacy-light', title: 'Light' },
-          { value: 'legacy-dark', title: 'Dark' },
+          { value: 'core-light', title: 'Light' },
+          { value: 'core-dark', title: 'Dark' },
           { value: 'light', title: 'Future: Light' },
           { value: 'dark', title: 'Future: Dark' },
           { value: 'wireframe', title: 'Demo: Wireframe' },
@@ -144,11 +144,11 @@ const preview: Preview = {
       // Map the toolbar value to the CSS class that activates the correct
       // set of CSS custom properties (surfaces, foregrounds, borders, etc.).
       const themeClassMap: Record<string, string> = {
-        'legacy-dark': 'legacy-dark',
-        'legacy-light': 'legacy-light',
-        wireframe: 'future-wireframe',
-        vertex: 'future-vertex',
-        canvas: 'future-canvas',
+        'core-dark': 'core-dark',
+        'core-light': 'core-light',
+        wireframe: 'wireframe',
+        vertex: 'vertex',
+        canvas: 'canvas',
         light: 'future-light',
       };
       const themeClass = themeClassMap[futureTheme] ?? 'future-dark';
@@ -158,7 +158,7 @@ const preview: Preview = {
       // correct CSS variables (shadcn bridge + Future tokens).
       useEffect(() => {
         const root = document.documentElement;
-        const allThemeClasses = ['future-dark', 'future-light', 'future-wireframe', 'future-vertex', 'future-canvas', 'legacy-dark', 'legacy-light'];
+        const allThemeClasses = ['future-dark', 'future-light', 'wireframe', 'vertex', 'canvas', 'core-dark', 'core-light'];
         root.classList.remove(...allThemeClasses);
         root.classList.add(themeClass);
         return () => {

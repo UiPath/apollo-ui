@@ -47,46 +47,46 @@ Themes use CSS custom properties scoped to CSS classes. Apply a class to a paren
 |-------|-------------|
 | `future-dark` | Future design language — dark mode (default) |
 | `future-light` | Future design language — light mode |
-| `legacy-dark` | Legacy design language — dark mode |
-| `legacy-light` | Legacy design language — light mode |
+| `core-dark` | Core design language — dark mode |
+| `core-light` | Core design language — light mode |
 
 ### Color tokens (use these, not raw colors)
 
 **Surfaces (backgrounds):**
-- `bg-future-surface` — page/canvas background
-- `bg-future-surface-raised` — cards, panels
-- `bg-future-surface-overlay` — inputs, tabs, icon rail
-- `bg-future-surface-hover` — hover/selected states
-- `bg-future-surface-muted` — badges, indicators
-- `bg-future-surface-inverse` — inverse backgrounds
+- `bg-surface` — page/canvas background
+- `bg-surface-raised` — cards, panels
+- `bg-surface-overlay` — inputs, tabs, icon rail
+- `bg-surface-hover` — hover/selected states
+- `bg-surface-muted` — badges, indicators
+- `bg-surface-inverse` — inverse backgrounds
 
-**Accent:**
-- `bg-future-accent` — primary accent cyan (#06b6d4)
-- `bg-future-accent-subtle` — subtle accent backgrounds
+**Brand:**
+- `bg-brand` — primary brand cyan (#0891b2)
+- `bg-brand-subtle` — subtle accent backgrounds
 
 **Text/icons (foreground):**
-- `text-future-foreground` — primary text
-- `text-future-foreground-secondary` — body text
-- `text-future-foreground-muted` — secondary UI text
-- `text-future-foreground-subtle` — muted labels
-- `text-future-foreground-inverse` — text on inverse backgrounds
-- `text-future-foreground-accent` — accent-colored text/icons
+- `text-foreground` — primary text
+- `text-foreground-secondary` — body text
+- `text-foreground-muted` — secondary UI text
+- `text-foreground-subtle` — muted labels
+- `text-foreground-inverse` — text on inverse backgrounds
+- `text-foreground-accent` — accent-colored text/icons
 
 **Borders:**
-- `border-future-border` — primary borders
-- `border-future-border-subtle` — subtle dividers
-- `border-future-border-muted` — content borders
+- `border-border` — primary borders
+- `border-border-subtle` — subtle dividers
+- `border-border-muted` — content borders
 
 ### Bridge tokens (cross-theme compatible)
 
-For code that must work across all 4 themes (Future + Legacy), use these shadcn bridge tokens instead of `future-*`. They resolve correctly under any theme class.
+For code that must work across all 4 themes (Future + Core), use these shadcn bridge tokens instead of `future-*`. They resolve correctly under any theme class.
 
 - **Surfaces:** `bg-background`, `bg-card`, `bg-muted`, `bg-muted/50`
 - **Text:** `text-foreground`, `text-muted-foreground`, `text-card-foreground`
 - **Borders:** `border-border`, `border-input`
 - **Accent:** `bg-primary`, `text-primary`, `text-primary-foreground`, `bg-primary/10`
 
-> **When to use which:** Use `future-*` tokens when building for a specific theme. Use bridge tokens when the same code must render across Future and Legacy themes.
+> **When to use which:** Use `future-*` tokens when building for a specific theme. Use bridge tokens when the same code must render across Future and Core themes.
 
 ### Typography
 
@@ -485,8 +485,8 @@ packages/apollo-wind/src/
 │   └── Future/
 │       ├── colors.ts           # Color token definitions
 │       ├── typography.ts       # Font stacks
-│       ├── future-theme.css    # Future theme CSS variables
-│       └── legacy-theme.css    # Legacy theme CSS variables
+│       ├── themes.css           # All theme CSS variables
+│       └── ... (stories, tokens)
 ├── templates/
 │   ├── Admin/        # AdminTemplate + sub-components
 │   ├── Delegate/     # DelegateTemplate

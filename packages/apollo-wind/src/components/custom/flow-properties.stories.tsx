@@ -17,7 +17,7 @@ export const Default: Story = {
   render: function DefaultStory() {
     const [expanded, setExpanded] = useState(false);
     return (
-      <div className="future-dark flex h-[700px] bg-future-surface p-4">
+      <div className="future-dark flex h-[700px] bg-surface p-4">
         <div className="relative flex flex-1 flex-col">
           {/* Collapsed bar: top-right when not expanded */}
           {!expanded && (
@@ -30,7 +30,7 @@ export const Default: Story = {
               />
             </div>
           )}
-          <div className="flex flex-1 items-center justify-center text-sm text-future-foreground-muted">
+          <div className="flex flex-1 items-center justify-center text-sm text-foreground-muted">
             Canvas area
           </div>
         </div>
@@ -53,7 +53,7 @@ export const Default: Story = {
 /** Collapsed state only — bar on the canvas (no expand handler). */
 export const Collapsed: Story = {
   render: () => (
-    <div className="future-dark bg-future-surface p-4">
+    <div className="future-dark bg-surface p-4">
       <FlowProperties
         expanded={false}
         flowName="Invoice processing"
@@ -66,8 +66,8 @@ export const Collapsed: Story = {
 /** Expanded state only — full panel (no close handler). */
 export const Expanded: Story = {
   render: () => (
-    <div className="future-dark flex h-[700px] bg-future-surface p-4">
-      <div className="flex flex-1 items-center justify-center text-sm text-future-foreground-muted">
+    <div className="future-dark flex h-[700px] bg-surface p-4">
+      <div className="flex flex-1 items-center justify-center text-sm text-foreground-muted">
         Canvas area
       </div>
       <FlowProperties

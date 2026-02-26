@@ -13,7 +13,7 @@ type Story = StoryObj<typeof meta>;
 
 function SampleCard({ label }: { label: string }) {
   return (
-    <div className="flex h-32 items-center justify-center rounded-xl border border-future-border-subtle bg-future-surface p-6 text-sm font-medium text-future-foreground-muted">
+    <div className="flex h-32 items-center justify-center rounded-xl border border-border-subtle bg-surface p-6 text-sm font-medium text-foreground-muted">
       {label}
     </div>
   );

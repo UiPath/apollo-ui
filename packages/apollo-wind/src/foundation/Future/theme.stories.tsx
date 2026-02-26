@@ -23,15 +23,15 @@ type Story = StoryObj<typeof meta>;
 // Theme helpers
 // ============================================================================
 
-type ThemeFamily = 'future' | 'legacy';
+type ThemeFamily = 'future' | 'core';
 
 /** Derive the theme family and variant from the Storybook global value */
 function parseThemeGlobal(value: string): { family: ThemeFamily; variant: 'dark' | 'light'; override?: string } {
-  if (value === 'legacy-dark') return { family: 'legacy', variant: 'dark' };
-  if (value === 'legacy-light') return { family: 'legacy', variant: 'light' };
-  if (value === 'wireframe') return { family: 'future', variant: 'light', override: 'future-wireframe' };
-  if (value === 'vertex') return { family: 'future', variant: 'dark', override: 'future-vertex' };
-  if (value === 'canvas') return { family: 'future', variant: 'dark', override: 'future-canvas' };
+  if (value === 'core-dark') return { family: 'core', variant: 'dark' };
+  if (value === 'core-light') return { family: 'core', variant: 'light' };
+  if (value === 'wireframe') return { family: 'future', variant: 'light', override: 'wireframe' };
+  if (value === 'vertex') return { family: 'future', variant: 'dark', override: 'vertex' };
+  if (value === 'canvas') return { family: 'future', variant: 'dark', override: 'canvas' };
   if (value === 'light') return { family: 'future', variant: 'light' };
   return { family: 'future', variant: 'dark' };
 }
@@ -39,8 +39,8 @@ function parseThemeGlobal(value: string): { family: ThemeFamily; variant: 'dark'
 /** Get the CSS class for a given family + variant, respecting demo theme overrides */
 function themeClass(family: ThemeFamily, variant: 'dark' | 'light', override?: string) {
   if (override) return override;
-  return family === 'legacy'
-    ? variant === 'light' ? 'legacy-light' : 'legacy-dark'
+  return family === 'core'
+    ? variant === 'light' ? 'core-light' : 'core-dark'
     : variant === 'light' ? 'future-light' : 'future-dark';
 }
 
@@ -49,7 +49,7 @@ function themeClass(family: ThemeFamily, variant: 'dark' | 'light', override?: s
 // ============================================================================
 
 /** Page chrome uses shadcn bridge tokens (bg-background, text-foreground, etc.)
- *  so they resolve correctly under both .future-* and .legacy-* theme classes. */
+ *  so they resolve correctly under both .future-* and .core-* theme classes. */
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
@@ -102,49 +102,49 @@ function InlineCode({ children }: { children: React.ReactNode }) {
 
 function FuturePreviewCard({ theme }: { theme: string }) {
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-future-border-subtle bg-future-surface-raised p-6">
+    <div className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-raised p-6">
       <div className="flex items-center gap-2">
-        <div className="h-3 w-3 rounded-full bg-future-accent" />
-        <span className="text-xs font-semibold uppercase tracking-widest text-future-foreground-muted">
+        <div className="h-3 w-3 rounded-full bg-brand" />
+        <span className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
           {theme}
         </span>
       </div>
 
       <div className="flex flex-col gap-1">
-        <h3 className="text-lg font-semibold text-future-foreground">Card title</h3>
-        <p className="text-sm text-future-foreground-muted">
+        <h3 className="text-lg font-semibold text-foreground">Card title</h3>
+        <p className="text-sm text-foreground-muted">
           Body text uses the muted foreground token for secondary information and descriptions.
         </p>
       </div>
 
-      <Input placeholder="Search…" className="bg-future-surface-overlay" />
+      <Input placeholder="Search…" className="bg-surface-overlay" />
 
       <div className="flex items-center gap-3">
-        <Button size="sm" className="bg-future-accent text-future-foreground-on-accent hover:bg-future-accent/90">
+        <Button size="sm" className="bg-brand text-foreground-on-accent hover:bg-brand/90">
           Primary
         </Button>
         <Button
           variant="outline"
           size="sm"
-          className="border-future-border bg-future-surface text-future-foreground hover:bg-future-surface-hover"
+          className="border-border bg-surface text-foreground hover:bg-surface-hover"
         >
           Secondary
         </Button>
-        <Button variant="ghost" size="sm" className="text-future-foreground hover:bg-future-surface-hover">
+        <Button variant="ghost" size="sm" className="text-foreground hover:bg-surface-hover">
           Ghost
         </Button>
       </div>
 
       <div className="flex gap-2 pt-2">
         {[
-          { bg: 'bg-future-surface', label: 'surface' },
-          { bg: 'bg-future-surface-raised', label: 'raised' },
-          { bg: 'bg-future-surface-overlay', label: 'overlay' },
-          { bg: 'bg-future-surface-hover', label: 'hover' },
+          { bg: 'bg-surface', label: 'surface' },
+          { bg: 'bg-surface-raised', label: 'raised' },
+          { bg: 'bg-surface-overlay', label: 'overlay' },
+          { bg: 'bg-surface-hover', label: 'hover' },
         ].map((s) => (
           <div key={s.label} className="flex flex-col items-center gap-1">
-            <div className={cn('h-8 w-8 rounded-md border border-future-border', s.bg)} />
-            <span className="text-[10px] text-future-foreground-subtle">{s.label}</span>
+            <div className={cn('h-8 w-8 rounded-md border border-border', s.bg)} />
+            <span className="text-[10px] text-foreground-subtle">{s.label}</span>
           </div>
         ))}
       </div>
@@ -153,54 +153,54 @@ function FuturePreviewCard({ theme }: { theme: string }) {
 }
 
 // ============================================================================
-// Legacy preview card
+// Core preview card
 // ============================================================================
 
-function LegacyPreviewCard({ theme }: { theme: string }) {
+function CorePreviewCard({ theme }: { theme: string }) {
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-legacy-border-subtle bg-legacy-surface-raised p-6">
+    <div className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-raised p-6">
       <div className="flex items-center gap-2">
-        <div className="h-3 w-3 rounded-full bg-legacy-accent" />
-        <span className="text-xs font-semibold uppercase tracking-widest text-legacy-foreground-muted">
+        <div className="h-3 w-3 rounded-full bg-brand" />
+        <span className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
           {theme}
         </span>
       </div>
 
       <div className="flex flex-col gap-1">
-        <h3 className="text-lg font-semibold text-legacy-foreground">Card title</h3>
-        <p className="text-sm text-legacy-foreground-muted">
+        <h3 className="text-lg font-semibold text-foreground">Card title</h3>
+        <p className="text-sm text-foreground-muted">
           Body text uses the muted foreground token for secondary information and descriptions.
         </p>
       </div>
 
-      <Input placeholder="Search…" className="border-legacy-border-subtle bg-legacy-surface-overlay text-legacy-foreground placeholder:text-legacy-foreground-subtle" />
+      <Input placeholder="Search…" className="border-border-subtle bg-surface-overlay text-foreground placeholder:text-foreground-subtle" />
 
       <div className="flex items-center gap-3">
-        <Button size="sm" className="bg-legacy-accent text-legacy-foreground-on-accent hover:bg-legacy-accent-hover">
+        <Button size="sm" className="bg-brand text-foreground-on-accent hover:bg-brand-hover">
           Primary
         </Button>
         <Button
           variant="outline"
           size="sm"
-          className="border-legacy-border-subtle bg-legacy-surface text-legacy-foreground hover:bg-legacy-surface-hover"
+          className="border-border-subtle bg-surface text-foreground hover:bg-surface-hover"
         >
           Secondary
         </Button>
-        <Button variant="ghost" size="sm" className="text-legacy-foreground hover:bg-legacy-surface-hover">
+        <Button variant="ghost" size="sm" className="text-foreground hover:bg-surface-hover">
           Ghost
         </Button>
       </div>
 
       <div className="flex gap-2 pt-2">
         {[
-          { bg: 'bg-legacy-surface', label: 'surface' },
-          { bg: 'bg-legacy-surface-raised', label: 'raised' },
-          { bg: 'bg-legacy-surface-overlay', label: 'overlay' },
-          { bg: 'bg-legacy-surface-hover', label: 'hover' },
+          { bg: 'bg-surface', label: 'surface' },
+          { bg: 'bg-surface-raised', label: 'raised' },
+          { bg: 'bg-surface-overlay', label: 'overlay' },
+          { bg: 'bg-surface-hover', label: 'hover' },
         ].map((s) => (
           <div key={s.label} className="flex flex-col items-center gap-1">
-            <div className={cn('h-8 w-8 rounded-md border border-legacy-border', s.bg)} />
-            <span className="text-[10px] text-legacy-foreground-subtle">{s.label}</span>
+            <div className={cn('h-8 w-8 rounded-md border border-border', s.bg)} />
+            <span className="text-[10px] text-foreground-subtle">{s.label}</span>
           </div>
         ))}
       </div>
@@ -216,66 +216,66 @@ const futureTokenGroups = [
   {
     group: 'Surface',
     tokens: [
-      { name: 'future-surface', usage: 'Page / canvas background', dark: '#09090b', darkTw: 'zinc-950', light: '#ffffff', lightTw: 'white' },
-      { name: 'future-surface-raised', usage: 'Cards, panels, overlays', dark: '#18181b', darkTw: 'zinc-900', light: '#fafafa', lightTw: 'zinc-50' },
-      { name: 'future-surface-overlay', usage: 'Inputs, tabs, icon rail', dark: '#27272a', darkTw: 'zinc-800', light: '#f4f4f5', lightTw: 'zinc-100' },
-      { name: 'future-surface-hover', usage: 'Hover, selected nav', dark: '#3f3f46', darkTw: 'zinc-700', light: '#e4e4e7', lightTw: 'zinc-200' },
+      { name: 'surface', usage: 'Page / canvas background', dark: '#09090b', darkTw: 'zinc-950', light: '#ffffff', lightTw: 'white' },
+      { name: 'surface-raised', usage: 'Cards, panels, overlays', dark: '#18181b', darkTw: 'zinc-900', light: '#fafafa', lightTw: 'zinc-50' },
+      { name: 'surface-overlay', usage: 'Inputs, tabs, icon rail', dark: '#27272a', darkTw: 'zinc-800', light: '#f4f4f5', lightTw: 'zinc-100' },
+      { name: 'surface-hover', usage: 'Hover, selected nav', dark: '#3f3f46', darkTw: 'zinc-700', light: '#e4e4e7', lightTw: 'zinc-200' },
     ],
   },
   {
     group: 'Foreground',
     tokens: [
-      { name: 'future-foreground', usage: 'Primary headings', dark: '#fafafa', darkTw: 'zinc-50', light: '#09090b', lightTw: 'zinc-950' },
-      { name: 'future-foreground-muted', usage: 'Nav, secondary UI', dark: '#a1a1aa', darkTw: 'zinc-400', light: '#71717a', lightTw: 'zinc-500' },
-      { name: 'future-foreground-subtle', usage: 'Labels, placeholders', dark: '#71717a', darkTw: 'zinc-500', light: '#a1a1aa', lightTw: 'zinc-400' },
+      { name: 'foreground', usage: 'Primary headings', dark: '#fafafa', darkTw: 'zinc-50', light: '#09090b', lightTw: 'zinc-950' },
+      { name: 'foreground-muted', usage: 'Nav, secondary UI', dark: '#a1a1aa', darkTw: 'zinc-400', light: '#71717a', lightTw: 'zinc-500' },
+      { name: 'foreground-subtle', usage: 'Labels, placeholders', dark: '#71717a', darkTw: 'zinc-500', light: '#a1a1aa', lightTw: 'zinc-400' },
     ],
   },
   {
-    group: 'Accent',
+    group: 'Brand',
     tokens: [
-      { name: 'future-accent', usage: 'Logo, primary buttons, active indicators', dark: '#06b6d4', darkTw: 'cyan-500', light: '#06b6d4', lightTw: 'cyan-500' },
-      { name: 'future-accent-subtle', usage: 'Selected state bg, active nav, status badges', dark: '#083344', darkTw: 'cyan-950', light: '#ecfeff', lightTw: 'cyan-50' },
+      { name: 'brand', usage: 'Logo, primary buttons, active indicators', dark: '#0891b2', darkTw: 'cyan-600', light: '#0891b2', lightTw: 'cyan-600' },
+      { name: 'brand-subtle', usage: 'Selected state bg, active nav, status badges', dark: '#083344', darkTw: 'cyan-950', light: '#ecfeff', lightTw: 'cyan-50' },
     ],
   },
   {
     group: 'Border',
     tokens: [
-      { name: 'future-border', usage: 'Primary borders', dark: '#3f3f46', darkTw: 'zinc-700', light: '#d4d4d8', lightTw: 'zinc-300' },
-      { name: 'future-border-subtle', usage: 'Subtle dividers', dark: '#27272a', darkTw: 'zinc-800', light: '#e4e4e7', lightTw: 'zinc-200' },
+      { name: 'border', usage: 'Primary borders', dark: '#3f3f46', darkTw: 'zinc-700', light: '#d4d4d8', lightTw: 'zinc-300' },
+      { name: 'border-subtle', usage: 'Subtle dividers', dark: '#27272a', darkTw: 'zinc-800', light: '#e4e4e7', lightTw: 'zinc-200' },
     ],
   },
 ];
 
-const legacyTokenGroups = [
+const coreTokenGroups = [
   {
     group: 'Surface',
     tokens: [
-      { name: 'legacy-surface', usage: 'Page / canvas background', dark: '#182027', light: '#ffffff', lightTw: 'white' },
-      { name: 'legacy-surface-raised', usage: 'Cards, panels', dark: '#273139', light: '#ffffff', lightTw: 'white' },
-      { name: 'legacy-surface-overlay', usage: 'Secondary bg, inputs', dark: '#374652', light: '#f4f5f7' },
-      { name: 'legacy-surface-hover', usage: 'Hover states', dark: '#526069', light: '#e9f1fa' },
+      { name: 'surface', usage: 'Page / canvas background', dark: '#182027', light: '#ffffff', lightTw: 'white' },
+      { name: 'surface-raised', usage: 'Cards, panels', dark: '#273139', light: '#ffffff', lightTw: 'white' },
+      { name: 'surface-overlay', usage: 'Secondary bg, inputs', dark: '#374652', light: '#f4f5f7' },
+      { name: 'surface-hover', usage: 'Hover states', dark: '#526069', light: '#e9f1fa' },
     ],
   },
   {
     group: 'Foreground',
     tokens: [
-      { name: 'legacy-foreground', usage: 'Primary text', dark: '#f4f5f7', light: '#273139' },
-      { name: 'legacy-foreground-muted', usage: 'De-emphasized text', dark: '#cfd8dd', light: '#526069' },
-      { name: 'legacy-foreground-subtle', usage: 'Labels, disabled', dark: '#a4b1b8', light: '#8a97a0' },
+      { name: 'foreground', usage: 'Primary text', dark: '#f4f5f7', light: '#273139' },
+      { name: 'foreground-muted', usage: 'De-emphasized text', dark: '#cfd8dd', light: '#526069' },
+      { name: 'foreground-subtle', usage: 'Labels, disabled', dark: '#a4b1b8', light: '#8a97a0' },
     ],
   },
   {
     group: 'Accent',
     tokens: [
-      { name: 'legacy-accent', usage: 'Primary blue', dark: '#66adff', light: '#0067df' },
-      { name: 'legacy-accent-hover', usage: 'Primary hover', dark: '#87bfff', light: '#0056ba' },
+      { name: 'brand', usage: 'Primary blue', dark: '#66adff', light: '#0067df' },
+      { name: 'brand-hover', usage: 'Primary hover', dark: '#87bfff', light: '#0056ba' },
     ],
   },
   {
     group: 'Border',
     tokens: [
-      { name: 'legacy-border', usage: 'Primary borders', dark: '#8a97a0', light: '#a4b1b8' },
-      { name: 'legacy-border-subtle', usage: 'Subtle dividers', dark: '#526069', light: '#cfd8dd' },
+      { name: 'border', usage: 'Primary borders', dark: '#8a97a0', light: '#a4b1b8' },
+      { name: 'border-subtle', usage: 'Subtle dividers', dark: '#526069', light: '#cfd8dd' },
     ],
   },
 ];
@@ -366,10 +366,10 @@ function FutureTabContent() {
       </SectionDescription>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="future-dark rounded-xl bg-future-surface p-4">
+        <div className="future-dark rounded-xl bg-surface p-4">
           <FuturePreviewCard theme="Dark" />
         </div>
-        <div className="future-light rounded-xl bg-future-surface p-4">
+        <div className="future-light rounded-xl bg-surface p-4">
           <FuturePreviewCard theme="Light" />
         </div>
       </div>
@@ -399,13 +399,13 @@ function FutureTabContent() {
       <div className="flex flex-col gap-4">
         <CodeBlock>{`<!-- Wrap any container with the theme class -->
 <div class="future-dark">
-  <div class="bg-future-surface text-future-foreground">
+  <div class="bg-surface text-foreground">
     Dark themed content
   </div>
 </div>
 
 <div class="future-light">
-  <div class="bg-future-surface text-future-foreground">
+  <div class="bg-surface text-foreground">
     Light themed content
   </div>
 </div>`}</CodeBlock>
@@ -427,43 +427,43 @@ function FutureTabContent() {
         automatically inside any themed container — no extra configuration needed.
       </SectionDescription>
 
-      <CodeBlock>{`/* future-theme.css — shadcn bridge (excerpt) */
+      <CodeBlock>{`/* themes.css — shadcn aliases (excerpt) */
 
 .future-dark {
-  --color-background:   var(--color-future-surface);
-  --color-foreground:   var(--color-future-foreground);
-  --color-primary:      var(--color-future-accent);
-  --color-muted:        var(--color-future-surface-overlay);
-  --color-border:       var(--color-future-border);
-  --color-input:        var(--color-future-border);
-  --color-ring:         var(--color-future-ring);
-  /* … full mapping in future-theme.css */
+  --color-background:   var(--surface);
+  --color-foreground:   var(--foreground);
+  --color-primary:      var(--accent);
+  --color-muted:        var(--surface-overlay);
+  --color-border:       var(--border);
+  --color-input:        var(--border);
+  --color-ring:         var(--ring);
+  /* … full mapping in themes.css */
 }`}</CodeBlock>
     </>
   );
 }
 
 // ============================================================================
-// Tab content — Legacy
+// Tab content — Core
 // ============================================================================
 
-function LegacyTabContent() {
+function CoreTabContent() {
   return (
     <>
       {/* ── Side-by-side preview ───────────────────────────────────────── */}
       <SectionTitle>Theme preview</SectionTitle>
       <SectionDescription>
-        The same component rendered in both Legacy themes. The Legacy design
+        The same component rendered in both Core themes. The Core design
         language uses the apollo-core token set from UiPath&apos;s original
         design system.
       </SectionDescription>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="legacy-dark rounded-xl bg-legacy-surface p-4">
-          <LegacyPreviewCard theme="Dark" />
+        <div className="core-dark rounded-xl bg-surface p-4">
+          <CorePreviewCard theme="Dark" />
         </div>
-        <div className="legacy-light rounded-xl bg-legacy-surface p-4">
-          <LegacyPreviewCard theme="Light" />
+        <div className="core-light rounded-xl bg-surface p-4">
+          <CorePreviewCard theme="Light" />
         </div>
       </div>
 
@@ -472,41 +472,41 @@ function LegacyTabContent() {
       {/* ── Token overview ─────────────────────────────────────────────── */}
       <SectionTitle>Token overview</SectionTitle>
       <SectionDescription>
-        Key semantic tokens from the Legacy (apollo-core) design system and their
+        Key semantic tokens from the Core (apollo-core) design system and their
         resolved values per theme.
       </SectionDescription>
 
-      <TokenTable groups={legacyTokenGroups} />
+      <TokenTable groups={coreTokenGroups} />
 
       <Divider />
 
       {/* ── How to use ─────────────────────────────────────────────────── */}
       <SectionTitle>How to use</SectionTitle>
       <SectionDescription>
-        Apply <InlineCode>.legacy-dark</InlineCode> or <InlineCode>.legacy-light</InlineCode> to
-        any container. The Legacy theme maps apollo-core token values into scoped
+        Apply <InlineCode>.core-dark</InlineCode> or <InlineCode>.core-light</InlineCode> to
+        any container. The Core theme maps apollo-core token values into scoped
         CSS classes that work at any DOM level — just like the Future theme.
       </SectionDescription>
 
       <div className="flex flex-col gap-4">
         <CodeBlock>{`<!-- Wrap any container with the theme class -->
-<div class="legacy-dark">
-  <div class="bg-legacy-surface text-legacy-foreground">
+<div class="core-dark">
+  <div class="bg-surface text-foreground">
     Dark themed content
   </div>
 </div>
 
-<div class="legacy-light">
-  <div class="bg-legacy-surface text-legacy-foreground">
+<div class="core-light">
+  <div class="bg-surface text-foreground">
     Light themed content
   </div>
 </div>`}</CodeBlock>
 
-        <CodeBlock>{`/* Legacy tokens use the "legacy-" prefix */
-/* bg-legacy-surface, text-legacy-foreground, border-legacy-border, etc. */
+        <CodeBlock>{`/* Core tokens use the same bare names as Future */
+/* bg-surface, text-foreground, border-border, etc. */
 
 /* The shadcn bridge is also included, so shadcn components
-   inherit the correct Legacy colors automatically. */`}</CodeBlock>
+   inherit the correct Core colors automatically. */`}</CodeBlock>
       </div>
 
       <Divider />
@@ -514,22 +514,22 @@ function LegacyTabContent() {
       {/* ── Shadcn bridge ──────────────────────────────────────────────── */}
       <SectionTitle>Shadcn component compatibility</SectionTitle>
       <SectionDescription>
-        Like the Future theme, the Legacy theme includes a shadcn bridge so standard
-        components work automatically. The Legacy bridge maps apollo-core variables
+        Like the Future theme, the Core theme includes a shadcn bridge so standard
+        components work automatically. The Core bridge maps apollo-core variables
         to shadcn expected names.
       </SectionDescription>
 
-      <CodeBlock>{`/* legacy-theme.css — shadcn bridge (excerpt) */
+      <CodeBlock>{`/* themes.css — core shadcn aliases (excerpt) */
 
-.legacy-dark {
-  --color-background:   var(--color-legacy-surface);
-  --color-foreground:   var(--color-legacy-foreground);
-  --color-primary:      var(--color-legacy-accent);
-  --color-muted:        var(--color-legacy-surface-raised);
-  --color-border:       var(--color-legacy-border-subtle);
-  --color-input:        var(--color-legacy-border-subtle);
-  --color-ring:         var(--color-legacy-ring);
-  /* … full mapping in legacy-theme.css */
+.core-dark {
+  --color-background:   var(--surface);
+  --color-foreground:   var(--foreground);
+  --color-primary:      var(--accent);
+  --color-muted:        var(--surface-raised);
+  --color-border:       var(--border-subtle);
+  --color-input:        var(--border-subtle);
+  --color-ring:         var(--ring);
+  /* … full mapping in themes.css */
 }`}</CodeBlock>
     </>
   );
@@ -539,7 +539,7 @@ function LegacyTabContent() {
 // Story
 // ============================================================================
 
-const themeTabs = ['Future', 'Legacy'] as const;
+const themeTabs = ['Future', 'Core'] as const;
 
 function ThemePage({ globalTheme }: { globalTheme: string }) {
   const { family } = parseThemeGlobal(globalTheme);
@@ -563,7 +563,7 @@ function ThemePage({ globalTheme }: { globalTheme: string }) {
         <SectionTitle>Theme</SectionTitle>
         <SectionDescription>
           Apollo ships with two design languages — <strong>Future</strong> (the
-          new design direction) and <strong>Legacy</strong> (the original
+          new design direction) and <strong>Core</strong> (the original
           apollo-core tokens). Each provides dark and light variants activated
           via CSS classes. Use the toolbar selector above to switch themes, or
           use the tabs below to explore each design language.
@@ -587,7 +587,7 @@ function ThemePage({ globalTheme }: { globalTheme: string }) {
         </div>
 
         <div className="pt-6">
-          {activeTab === 'future' ? <FutureTabContent /> : <LegacyTabContent />}
+          {activeTab === 'future' ? <FutureTabContent /> : <CoreTabContent />}
         </div>
 
         <Divider />
@@ -603,15 +603,15 @@ function ThemePage({ globalTheme }: { globalTheme: string }) {
         <CodeBlock>{`/* Example: creating a new theme variant */
 
 .my-brand-dark {
-  --color-future-surface:        #0f172a;
-  --color-future-surface-raised: #1e293b;
-  --color-future-foreground:     #f8fafc;
-  --color-future-accent:         #8b5cf6;
+  --surface:        #0f172a;
+  --surface-raised: #1e293b;
+  --foreground:     #f8fafc;
+  --accent:         #8b5cf6;
   /* … define all token variables */
 
   /* shadcn bridge */
-  --color-background: var(--color-future-surface);
-  --color-foreground: var(--color-future-foreground);
+  --color-background: var(--surface);
+  --color-foreground: var(--foreground);
   /* … */
 }`}</CodeBlock>
       </div>
