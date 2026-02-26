@@ -80,7 +80,7 @@ export const Sidebar = ({
         companyLogo={companyLogo}
       />
       <nav className="flex-1 mt-10 space-y-1 pb-3">
-        <NavItem to="/templates/shell-template" icon={Home} text="Dashboard" />
+        <NavItem to="/preview/shell" icon={Home} text="Dashboard" />
         <NavItem to="/" icon={FolderOpen} text="Projects" />
         <NavItem to="/" icon={BarChart3} text="Analytics" />
         <NavItem to="/" icon={Users} text="Team" />
@@ -93,7 +93,7 @@ export const Sidebar = ({
       <div
         className="absolute right-0 top-0 bottom-0 w-px"
         style={{
-          background: "linear-gradient(to top, color-mix(in srgb, var(--color-border) 50%, transparent), color-mix(in srgb, var(--color-border) 10%, transparent))",
+          background: "linear-gradient(to top, color-mix(in srgb, var(--color-border) 50%, transparent), color-mix(in srgb, var(--color-border) 40%, transparent))",
         }}
       />
     </motion.aside>
