@@ -80,7 +80,7 @@ export function InvoiceDashboard({ visible }: { visible: boolean }) {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
         {kpis.map((kpi) => (
-          <Card key={kpi.label} className="bg-white/55 border border-white/80 shadow-[0_2px_16px_2px_rgba(0,0,0,0.05),inset_0_1px_0_0_rgba(255,255,255,0.6)] backdrop-blur-sm dark:bg-white/[0.055] dark:border-white/[0.03] dark:shadow-[0_2px_24px_2px_rgba(0,0,0,0.12),inset_0_1px_0_0_color-mix(in_srgb,var(--sidebar)_5%,transparent)] rounded-2xl">
+          <Card key={kpi.label} variant="glass">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -100,7 +100,7 @@ export function InvoiceDashboard({ visible }: { visible: boolean }) {
       </div>
 
       {/* Invoices Table */}
-      <Card className="bg-white/55 border border-white/80 shadow-[0_2px_16px_2px_rgba(0,0,0,0.05),inset_0_1px_0_0_rgba(255,255,255,0.6)] backdrop-blur-sm dark:bg-white/[0.055] dark:border-white/[0.03] dark:shadow-[0_2px_24px_2px_rgba(0,0,0,0.12),inset_0_1px_0_0_color-mix(in_srgb,var(--sidebar)_5%,transparent)] rounded-2xl">
+      <Card variant="glass">
         <CardHeader>
           <CardTitle>Recent Invoices</CardTitle>
         </CardHeader>
@@ -135,7 +135,7 @@ export function InvoiceDashboard({ visible }: { visible: boolean }) {
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Processing Activity */}
-        <Card className="bg-white/55 border border-white/80 shadow-[0_2px_16px_2px_rgba(0,0,0,0.05),inset_0_1px_0_0_rgba(255,255,255,0.6)] backdrop-blur-sm dark:bg-white/[0.055] dark:border-white/[0.03] dark:shadow-[0_2px_24px_2px_rgba(0,0,0,0.12),inset_0_1px_0_0_color-mix(in_srgb,var(--sidebar)_5%,transparent)] rounded-2xl">
+        <Card variant="glass">
           <CardHeader>
             <CardTitle>Processing Activity</CardTitle>
           </CardHeader>
@@ -155,7 +155,7 @@ export function InvoiceDashboard({ visible }: { visible: boolean }) {
         </Card>
 
         {/* Recent Activity */}
-        <Card className="bg-white/55 border border-white/80 shadow-[0_2px_16px_2px_rgba(0,0,0,0.05),inset_0_1px_0_0_rgba(255,255,255,0.6)] backdrop-blur-sm dark:bg-white/[0.055] dark:border-white/[0.03] dark:shadow-[0_2px_24px_2px_rgba(0,0,0,0.12),inset_0_1px_0_0_color-mix(in_srgb,var(--sidebar)_5%,transparent)] rounded-2xl">
+        <Card variant="glass">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
           </CardHeader>
@@ -176,7 +176,7 @@ export function InvoiceDashboard({ visible }: { visible: boolean }) {
       </div>
 
       {/* Processing Pipeline */}
-      <Card className="bg-white/55 border border-white/80 shadow-[0_2px_16px_2px_rgba(0,0,0,0.05),inset_0_1px_0_0_rgba(255,255,255,0.6)] backdrop-blur-sm dark:bg-white/[0.055] dark:border-white/[0.03] dark:shadow-[0_2px_24px_2px_rgba(0,0,0,0.12),inset_0_1px_0_0_color-mix(in_srgb,var(--sidebar)_5%,transparent)] rounded-2xl">
+      <Card variant="glass">
         <CardHeader>
           <CardTitle>Processing Pipeline</CardTitle>
         </CardHeader>
