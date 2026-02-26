@@ -151,7 +151,9 @@ export const ResourceChipNodeView: React.FC<NodeViewProps> = React.memo(({ node,
         display: 'inline-flex',
         alignItems: 'center',
         height: lineHeight,
+        lineHeight,
         verticalAlign: 'top',
+        marginTop: token.Padding.PadXs,
       }}
     >
       <ResourceChipBase label={label} icon={icon} onDelete={deleteNode} />
