@@ -1,0 +1,53 @@
+import { HaidyThemeDashboard } from '@/templates/HaidyThemeDashboard';
+import { HaidyThemeDashboardAccessible } from '@/templates/HaidyThemeDashboardAccessible';
+import { HaidyThemeLoanQC } from '@/templates/HaidyThemeLoanQC';
+import { FullscreenWrapper } from '@/templates/FullscreenWrapper';
+
+# Haidy Theme Option
+
+A frosted glass UI aesthetic applied to the Invoice Processing dashboard. Soft translucent panels, gentle glows, and minimal contrast.
+
+## Original
+
+<div className="not-prose my-8 rounded-lg overflow-hidden" style={{ height: '700px' }}>
+  <div className="[&_.h-screen]:!h-full h-full">
+    <FullscreenWrapper>
+      <HaidyThemeDashboard />
+    </FullscreenWrapper>
+  </div>
+</div>
+
+## Accessible Version (WCAG AA)
+
+All text meets WCAG 2.1 AA contrast requirements (4.5:1 for normal text, 3:1 for large text and non-text elements). Hierarchy is preserved through font weight and size instead of low-contrast colors.
+
+| Change | Before | After | Contrast |
+|---|---|---|---|
+| Dates, subtitles | `slate-400` (2.29:1) | `slate-600` | 5.92:1 |
+| Labels, headers | `slate-500` (4.26:1) | `slate-600` | 5.92:1 |
+| Active nav | `primary` (~2.90:1) | `#0e7490` dark teal | 4.81:1 |
+| Failed badge | `rose-600` (4.05:1) | `rose-700` | ~5.4:1 |
+| Positive change | `emerald-600/80` (2.64:1) | `emerald-700` | 4.90:1 |
+| Negative change | `rose-500/80` (2.74:1) | `rose-600` | 4.76:1 |
+| Chart axis | `#94a3b8` (2.29:1) | `#475569` | 5.92:1 |
+| Icons | `slate-400` (2.29:1) | `slate-500` | 4.26:1 (3:1 req for non-text) |
+
+<div className="not-prose my-8 rounded-lg overflow-hidden" style={{ height: '700px' }}>
+  <div className="[&_.h-screen]:!h-full h-full">
+    <FullscreenWrapper>
+      <HaidyThemeDashboardAccessible />
+    </FullscreenWrapper>
+  </div>
+</div>
+
+## Loan Processing QC — Frosted Glass Theme
+
+The same accessible frosted glass aesthetic applied to the Loan Processing QC screen. Three-panel layout with compliance rules sidebar, dual document viewers, and glassmorphism buttons with hover states.
+
+<div className="not-prose my-8 rounded-lg overflow-hidden" style={{ height: '700px' }}>
+  <div className="[&_.h-screen]:!h-full h-full">
+    <FullscreenWrapper>
+      <HaidyThemeLoanQC />
+    </FullscreenWrapper>
+  </div>
+</div>
