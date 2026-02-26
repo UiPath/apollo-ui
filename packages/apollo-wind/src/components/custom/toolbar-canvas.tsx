@@ -27,7 +27,7 @@ export interface CanvasToolbarProps {
 // ============================================================================
 
 function ToolbarSeparator() {
-  return <div className="h-8 w-px bg-future-border-subtle" />;
+  return <div className="h-8 w-px bg-border-subtle" />;
 }
 
 // ============================================================================
@@ -45,7 +45,7 @@ function ToolbarButton({
 }) {
   return (
     <button
-      className="flex h-8 w-8 items-center justify-center rounded-lg text-future-foreground-muted transition-colors hover:text-future-foreground"
+      className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:text-foreground"
       onClick={onClick}
       aria-label={label}
     >
@@ -73,19 +73,19 @@ export function FlowCanvasToolbar({
   return (
     <div
       className={cn(
-        'flex h-[60px] items-center gap-2 rounded-3xl border border-future-border bg-future-surface-raised px-2.5',
+        'flex h-[60px] items-center gap-2 rounded-3xl border border-border bg-surface-raised px-2.5',
         className
       )}
     >
       {/* Build / Evaluate toggle */}
-      <div className="flex h-10 items-center rounded-xl border border-future-border-deep bg-future-surface-overlay p-1">
+      <div className="flex h-10 items-center rounded-xl border border-border-deep bg-surface-overlay p-1">
         {/* Build */}
         <button
           className={cn(
             'flex h-8 items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-medium leading-5 transition-colors',
             activeMode === 'build'
-              ? 'border border-future-border bg-future-surface text-future-foreground'
-              : 'text-future-foreground-subtle hover:text-future-foreground-hover'
+              ? 'border border-border bg-surface text-foreground'
+              : 'text-foreground-subtle hover:text-foreground-hover'
           )}
           onClick={() => onModeChange?.('build')}
         >
@@ -97,8 +97,8 @@ export function FlowCanvasToolbar({
           className={cn(
             'flex h-8 items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-medium leading-5 transition-colors',
             activeMode === 'evaluate'
-              ? 'border border-future-border bg-future-surface text-future-foreground'
-              : 'text-future-foreground-subtle hover:text-future-foreground-hover'
+              ? 'border border-border bg-surface text-foreground'
+              : 'text-foreground-subtle hover:text-foreground-hover'
           )}
           onClick={() => onModeChange?.('evaluate')}
         >

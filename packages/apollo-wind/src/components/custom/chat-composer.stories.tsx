@@ -14,7 +14,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: () => (
-    <div className="future-dark flex w-[900px] items-center justify-center bg-future-surface p-8">
+    <div className="future-dark flex w-[900px] items-center justify-center bg-surface p-8">
       <ChatComposer placeholder="I would like you to automate my" />
     </div>
   ),

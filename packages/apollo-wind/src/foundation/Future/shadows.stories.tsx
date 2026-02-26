@@ -40,39 +40,39 @@ const shadowTokens: ShadowToken[] = [
 
 function ShadowTable({ tokens }: { tokens: ShadowToken[] }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-future-border">
+    <div className="overflow-hidden rounded-lg border border-border">
       <table className="w-full text-sm" style={{ fontFamily: fontFamily.base }}>
         <thead>
-          <tr className="border-b border-future-border bg-future-surface-overlay">
-            <th className="px-4 py-2.5 text-left font-medium text-future-foreground-muted">Token</th>
-            <th className="px-4 py-2.5 text-left font-medium text-future-foreground-muted">Value</th>
-            <th className="px-4 py-2.5 text-left font-medium text-future-foreground-muted">Tailwind Class</th>
-            <th className="px-4 py-2.5 text-left font-medium text-future-foreground-muted">Usage</th>
-            <th className="px-4 py-2.5 text-center font-medium text-future-foreground-muted">Preview</th>
+          <tr className="border-b border-border bg-surface-overlay">
+            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Token</th>
+            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Value</th>
+            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Tailwind Class</th>
+            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Usage</th>
+            <th className="px-4 py-2.5 text-center font-medium text-foreground-muted">Preview</th>
           </tr>
         </thead>
         <tbody>
           {tokens.map((token) => (
-            <tr key={token.token} className="border-b border-future-border-subtle last:border-b-0">
+            <tr key={token.token} className="border-b border-border-subtle last:border-b-0">
               <td className="px-4 py-3">
-                <code className="text-xs text-future-accent-foreground" style={{ fontFamily: fontFamily.monospace }}>
+                <code className="text-xs text-brand-foreground" style={{ fontFamily: fontFamily.monospace }}>
                   {token.token}
                 </code>
               </td>
               <td className="max-w-48 px-4 py-3">
-                <code className="break-all text-[10px] text-future-foreground-subtle" style={{ fontFamily: fontFamily.monospace }}>
+                <code className="break-all text-[10px] text-foreground-subtle" style={{ fontFamily: fontFamily.monospace }}>
                   {token.value}
                 </code>
               </td>
               <td className="max-w-48 px-4 py-3">
-                <code className="break-all text-[10px] text-future-foreground-subtle" style={{ fontFamily: fontFamily.monospace }}>
+                <code className="break-all text-[10px] text-foreground-subtle" style={{ fontFamily: fontFamily.monospace }}>
                   {token.twClass}
                 </code>
               </td>
-              <td className="px-4 py-3 text-future-foreground-muted">{token.usage}</td>
+              <td className="px-4 py-3 text-foreground-muted">{token.usage}</td>
               <td className="px-4 py-4">
                 <div
-                  className="mx-auto h-14 w-40 rounded-2xl border border-future-border-subtle bg-future-surface-raised"
+                  className="mx-auto h-14 w-40 rounded-2xl border border-border-subtle bg-surface-raised"
                   style={{ boxShadow: token.value }}
                 />
               </td>
@@ -92,17 +92,17 @@ export const Default: Story = {
   render: (_, { globals }) => (
     <div
       className={cn(
-        ({ light: 'future-light', 'legacy-dark': 'legacy-dark', 'legacy-light': 'legacy-light', wireframe: 'future-wireframe', vertex: 'future-vertex', canvas: 'future-canvas' } as Record<string, string>)[globals.futureTheme] ?? 'future-dark',
-        'min-h-screen w-full bg-future-surface'
+        ({ light: 'future-light', 'core-dark': 'core-dark', 'core-light': 'core-light', wireframe: 'wireframe', vertex: 'vertex', canvas: 'canvas' } as Record<string, string>)[globals.futureTheme] ?? 'future-dark',
+        'min-h-screen w-full bg-surface'
       )}
       style={{ fontFamily: fontFamily.base }}
     >
       <div className="mx-auto max-w-6xl space-y-10 p-8">
         <div>
-          <h1 className="mb-2 text-3xl font-bold tracking-tight text-future-foreground">
+          <h1 className="mb-2 text-3xl font-bold tracking-tight text-foreground">
             Shadow Tokens
           </h1>
-          <p className="text-sm text-future-foreground-muted">
+          <p className="text-sm text-foreground-muted">
             Box shadow values for depth and elevation in the Future design language.
             Shadows are theme-agnostic — the same values apply in both dark and light modes.
           </p>

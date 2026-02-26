@@ -40,11 +40,11 @@ type Story = StoryObj<typeof meta>;
 // ============================================================================
 
 function resolveThemeClass(value: string) {
-  if (value === 'legacy-dark') return 'legacy-dark';
-  if (value === 'legacy-light') return 'legacy-light';
-  if (value === 'wireframe') return 'future-wireframe';
-  if (value === 'vertex') return 'future-vertex';
-  if (value === 'canvas') return 'future-canvas';
+  if (value === 'core-dark') return 'core-dark';
+  if (value === 'core-light') return 'core-light';
+  if (value === 'wireframe') return 'wireframe';
+  if (value === 'vertex') return 'vertex';
+  if (value === 'canvas') return 'canvas';
   if (value === 'light') return 'future-light';
   return 'future-dark';
 }
@@ -108,7 +108,7 @@ function VSCodeShellDemo({ theme }: { theme: string }) {
 
   return (
     <div
-      className={cn(themeClass, 'flex h-screen w-full bg-future-surface')}
+      className={cn(themeClass, 'flex h-screen w-full bg-surface')}
       style={{ fontFamily: fontFamily.base }}
     >
       <Shell className="h-full w-full rounded-none border-0">
@@ -228,7 +228,7 @@ function MinimalShellDemo({ theme }: { theme: string }) {
 
   return (
     <div
-      className={cn(themeClass, 'flex h-screen w-full bg-future-surface')}
+      className={cn(themeClass, 'flex h-screen w-full bg-surface')}
       style={{ fontFamily: fontFamily.base }}
     >
       <Shell className="h-full w-full rounded-none border-0">
@@ -260,7 +260,7 @@ function SidebarOnlyDemo({ theme }: { theme: string }) {
 
   return (
     <div
-      className={cn(themeClass, 'flex h-screen w-full bg-future-surface')}
+      className={cn(themeClass, 'flex h-screen w-full bg-surface')}
       style={{ fontFamily: fontFamily.base }}
     >
       <Shell className="h-full w-full rounded-none border-0">

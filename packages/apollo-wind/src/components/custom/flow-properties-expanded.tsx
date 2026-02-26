@@ -46,7 +46,7 @@ function MiniTab({
     <button
       className={cn(
         'flex h-6 items-center rounded-lg px-2 text-xs font-medium leading-5',
-        active ? 'bg-future-surface text-future-foreground' : 'text-future-foreground-subtle'
+        active ? 'bg-surface text-foreground' : 'text-foreground-subtle'
       )}
       onClick={onClick}
     >
@@ -63,9 +63,9 @@ function SectionHeader({ title }: { title: string }) {
   return (
     <div className="flex items-center gap-1 px-2 py-1">
       <div className="flex h-8 w-8 items-center justify-center rounded-xl">
-        <GripVertical className="h-5 w-5 text-future-foreground-subtle" />
+        <GripVertical className="h-5 w-5 text-foreground-subtle" />
       </div>
-      <span className="text-sm font-semibold leading-5 text-future-foreground">{title}</span>
+      <span className="text-sm font-semibold leading-5 text-foreground">{title}</span>
     </div>
   );
 }
@@ -81,13 +81,13 @@ function CodeViewer({ lines, className }: { lines: string[]; className?: string 
       style={{ fontFamily: fontFamily.monospace }}
     >
       {/* Line numbers */}
-      <div className="flex flex-col text-right text-future-foreground-subtle select-none">
+      <div className="flex flex-col text-right text-foreground-subtle select-none">
         {lines.map((_, i) => (
           <span key={i}>{i + 1}</span>
         ))}
       </div>
       {/* Code content */}
-      <div className="flex flex-col whitespace-pre text-future-foreground-muted">
+      <div className="flex flex-col whitespace-pre text-foreground-muted">
         {lines.map((line, i) => (
           <span key={i}>{line}</span>
         ))}
@@ -146,22 +146,22 @@ export function PropertiesExpanded({
   return (
     <div
       className={cn(
-        'flex w-[930px] shrink-0 flex-col rounded-2xl bg-future-surface-raised',
+        'flex w-[930px] shrink-0 flex-col rounded-2xl bg-surface-raised',
         className
       )}
     >
       {/* ── Header ────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between border-b border-future-border p-4">
+      <div className="flex items-center justify-between border-b border-border p-4">
         {/* Left: icon + name */}
         <div className="flex items-center gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-future-accent-subtle">
-            <Bot className="h-6 w-6 text-future-accent-foreground" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-subtle">
+            <Bot className="h-6 w-6 text-brand-foreground" />
           </div>
           <div className="flex flex-col">
-            <span className="text-base font-semibold leading-5 tracking-[-0.4px] text-future-foreground">
+            <span className="text-base font-semibold leading-5 tracking-[-0.4px] text-foreground">
               {nodeName}
             </span>
-            <span className="text-sm font-normal leading-5 tracking-[-0.35px] text-future-foreground-subtle">
+            <span className="text-sm font-normal leading-5 tracking-[-0.35px] text-foreground-subtle">
               {nodeType}
             </span>
           </div>
@@ -169,13 +169,13 @@ export function PropertiesExpanded({
 
         {/* Right: Properties/Variables toggle + close */}
         <div className="flex items-center gap-2">
-          <div className="flex h-10 items-center rounded-xl border border-future-border-deep bg-future-surface-overlay p-1">
+          <div className="flex h-10 items-center rounded-xl border border-border-deep bg-surface-overlay p-1">
             <button
               className={cn(
                 'flex h-8 items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-medium leading-5 transition-colors',
                 activeTab === 'properties'
-                  ? 'border border-future-border bg-future-surface text-future-foreground'
-                  : 'text-future-foreground-subtle'
+                  ? 'border border-border bg-surface text-foreground'
+                  : 'text-foreground-subtle'
               )}
             >
               <TableProperties className="h-5 w-5" />
@@ -185,8 +185,8 @@ export function PropertiesExpanded({
               className={cn(
                 'flex h-8 items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-medium leading-5 transition-colors',
                 activeTab === 'variables'
-                  ? 'border border-future-border bg-future-surface text-future-foreground'
-                  : 'text-future-foreground-subtle'
+                  ? 'border border-border bg-surface text-foreground'
+                  : 'text-foreground-subtle'
               )}
             >
               <Variable className="h-5 w-5" />
@@ -196,7 +196,7 @@ export function PropertiesExpanded({
           <Button
             size="icon"
             variant="ghost"
-            className="bg-future-surface-overlay text-future-foreground-muted hover:bg-future-surface-overlay hover:text-future-foreground [&_svg]:size-5"
+            className="bg-surface-overlay text-foreground-muted hover:bg-surface-overlay hover:text-foreground [&_svg]:size-5"
             onClick={onClose}
             aria-label="Close properties"
           >
@@ -206,33 +206,33 @@ export function PropertiesExpanded({
       </div>
 
       {/* ── Sub-header toolbar ────────────────────────────────── */}
-      <div className="flex items-center justify-between border-b border-future-border px-4 py-2">
+      <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <div className="flex items-center gap-2">
           {/* Dock button */}
           <Button
             size="icon"
             variant="ghost"
-            className="bg-future-surface-overlay text-future-foreground-muted hover:bg-future-surface-overlay hover:text-future-foreground [&_svg]:size-5"
+            className="bg-surface-overlay text-foreground-muted hover:bg-surface-overlay hover:text-foreground [&_svg]:size-5"
             aria-label="Toggle panel dock"
           >
             <PanelRightOpen />
           </Button>
           {/* Layout toggle: columns / rows */}
           <div
-            className="flex h-10 items-center rounded-xl border border-future-border-deep bg-future-surface-overlay p-1"
+            className="flex h-10 items-center rounded-xl border border-border-deep bg-surface-overlay p-1"
             role="group"
             aria-label="Layout toggle"
           >
             <button
               type="button"
-              className="flex h-8 w-8 items-center justify-center rounded-[10px] text-future-foreground-muted transition-colors hover:text-future-foreground"
+              className="flex h-8 w-8 items-center justify-center rounded-[10px] text-foreground-muted transition-colors hover:text-foreground"
               aria-label="Columns layout"
             >
               <Columns2 className="h-5 w-5" />
             </button>
             <button
               type="button"
-              className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-future-border bg-future-surface text-future-foreground"
+              className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-border bg-surface text-foreground"
               aria-label="Rows layout"
             >
               <Rows2 className="h-5 w-5" />
@@ -240,14 +240,14 @@ export function PropertiesExpanded({
           </div>
         </div>
         {/* Run node button */}
-        <Button className="bg-future-accent text-future-foreground-on-accent hover:bg-future-accent/90 font-semibold">
+        <Button className="bg-brand text-foreground-on-accent hover:bg-brand/90 font-semibold">
           <Play className="h-4 w-4" />
           Run node
         </Button>
       </div>
 
       {/* ── Code section ──────────────────────────────────────── */}
-      <div className="flex flex-1 flex-col overflow-hidden border-b border-future-border">
+      <div className="flex flex-1 flex-col overflow-hidden border-b border-border">
         <SectionHeader title="Code" />
         <div className="flex items-center gap-1 px-2 pb-2">
           <MiniTab label="Parameters" />
@@ -271,7 +271,7 @@ export function PropertiesExpanded({
         </div>
 
         {/* Divider */}
-        <div className="w-px bg-future-border-subtle" />
+        <div className="w-px bg-border-subtle" />
 
         {/* Output */}
         <div className="flex flex-1 flex-col overflow-hidden">

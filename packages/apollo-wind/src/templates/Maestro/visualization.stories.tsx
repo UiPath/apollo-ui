@@ -303,10 +303,10 @@ function AreaChartSection() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* Stacked area */}
-      <Card className="border-future-border-subtle bg-future-surface">
+      <Card className="border-border-subtle bg-surface">
         <CardHeader>
-          <CardTitle className="text-future-foreground">Stacked Area Chart</CardTitle>
-          <CardDescription className="text-future-foreground-muted">
+          <CardTitle className="text-foreground">Stacked Area Chart</CardTitle>
+          <CardDescription className="text-foreground-muted">
             Total visitors by device over the last 6 months
           </CardDescription>
         </CardHeader>
@@ -336,10 +336,10 @@ function AreaChartSection() {
       </Card>
 
       {/* Step area */}
-      <Card className="border-future-border-subtle bg-future-surface">
+      <Card className="border-border-subtle bg-surface">
         <CardHeader>
-          <CardTitle className="text-future-foreground">Step Area Chart</CardTitle>
-          <CardDescription className="text-future-foreground-muted">
+          <CardTitle className="text-foreground">Step Area Chart</CardTitle>
+          <CardDescription className="text-foreground-muted">
             Page views and sessions with step interpolation
           </CardDescription>
         </CardHeader>
@@ -384,11 +384,11 @@ function BarChartSection() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* Interactive vertical bar */}
-      <Card className="border-future-border-subtle bg-future-surface">
-        <CardHeader className="flex flex-col items-stretch space-y-0 border-b border-future-border-subtle p-0 sm:flex-row">
+      <Card className="border-border-subtle bg-surface">
+        <CardHeader className="flex flex-col items-stretch space-y-0 border-b border-border-subtle p-0 sm:flex-row">
           <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
-            <CardTitle className="text-future-foreground">Interactive Bar Chart</CardTitle>
-            <CardDescription className="text-future-foreground-muted">
+            <CardTitle className="text-foreground">Interactive Bar Chart</CardTitle>
+            <CardDescription className="text-foreground-muted">
               Daily visitors — click a toggle to filter
             </CardDescription>
           </div>
@@ -397,13 +397,13 @@ function BarChartSection() {
               <button
                 key={key}
                 data-active={activeKey === key}
-                className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t border-future-border-subtle px-6 py-4 text-left even:border-l data-[active=true]:bg-future-surface-overlay sm:border-l sm:border-t-0 sm:px-8 sm:py-6"
+                className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t border-border-subtle px-6 py-4 text-left even:border-l data-[active=true]:bg-surface-overlay sm:border-l sm:border-t-0 sm:px-8 sm:py-6"
                 onClick={() => setActiveKey(key)}
               >
-                <span className="text-xs text-future-foreground-muted">
+                <span className="text-xs text-foreground-muted">
                   {barConfig[key].label}
                 </span>
-                <span className="text-lg font-bold leading-none text-future-foreground sm:text-3xl">
+                <span className="text-lg font-bold leading-none text-foreground sm:text-3xl">
                   {total[key].toLocaleString()}
                 </span>
               </button>
@@ -447,10 +447,10 @@ function BarChartSection() {
       </Card>
 
       {/* Horizontal bar */}
-      <Card className="border-future-border-subtle bg-future-surface">
+      <Card className="border-border-subtle bg-surface">
         <CardHeader>
-          <CardTitle className="text-future-foreground">Horizontal Bar Chart</CardTitle>
-          <CardDescription className="text-future-foreground-muted">
+          <CardTitle className="text-foreground">Horizontal Bar Chart</CardTitle>
+          <CardDescription className="text-foreground-muted">
             Framework popularity — developer survey 2026
           </CardDescription>
         </CardHeader>
@@ -474,10 +474,10 @@ function LineChartSection() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* Multi-line with dots */}
-      <Card className="border-future-border-subtle bg-future-surface">
+      <Card className="border-border-subtle bg-surface">
         <CardHeader>
-          <CardTitle className="text-future-foreground">Multi-Line Chart</CardTitle>
-          <CardDescription className="text-future-foreground-muted">
+          <CardTitle className="text-foreground">Multi-Line Chart</CardTitle>
+          <CardDescription className="text-foreground-muted">
             Visitors across three device types with dots and grid
           </CardDescription>
         </CardHeader>
@@ -498,10 +498,10 @@ function LineChartSection() {
       </Card>
 
       {/* Curved line — no dots */}
-      <Card className="border-future-border-subtle bg-future-surface">
+      <Card className="border-border-subtle bg-surface">
         <CardHeader>
-          <CardTitle className="text-future-foreground">Curved Line Chart</CardTitle>
-          <CardDescription className="text-future-foreground-muted">
+          <CardTitle className="text-foreground">Curved Line Chart</CardTitle>
+          <CardDescription className="text-foreground-muted">
             Revenue vs profit with natural curve interpolation
           </CardDescription>
         </CardHeader>
@@ -532,10 +532,10 @@ function PieChartSection() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* Donut chart */}
-      <Card className="border-future-border-subtle bg-future-surface">
+      <Card className="border-border-subtle bg-surface">
         <CardHeader>
-          <CardTitle className="text-future-foreground">Donut Chart</CardTitle>
-          <CardDescription className="text-future-foreground-muted">
+          <CardTitle className="text-foreground">Donut Chart</CardTitle>
+          <CardDescription className="text-foreground-muted">
             Browser market share — January–June 2026
           </CardDescription>
         </CardHeader>
@@ -575,10 +575,10 @@ function PieChartSection() {
       </Card>
 
       {/* Simple pie */}
-      <Card className="border-future-border-subtle bg-future-surface">
+      <Card className="border-border-subtle bg-surface">
         <CardHeader>
-          <CardTitle className="text-future-foreground">Pie Chart</CardTitle>
-          <CardDescription className="text-future-foreground-muted">
+          <CardTitle className="text-foreground">Pie Chart</CardTitle>
+          <CardDescription className="text-foreground-muted">
             Traffic sources — January–June 2026
           </CardDescription>
         </CardHeader>
@@ -608,10 +608,10 @@ function RadarChartSection() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* Multi-series radar */}
-      <Card className="border-future-border-subtle bg-future-surface">
+      <Card className="border-border-subtle bg-surface">
         <CardHeader>
-          <CardTitle className="text-future-foreground">Radar Chart</CardTitle>
-          <CardDescription className="text-future-foreground-muted">
+          <CardTitle className="text-foreground">Radar Chart</CardTitle>
+          <CardDescription className="text-foreground-muted">
             Platform performance across 6 dimensions
           </CardDescription>
         </CardHeader>
@@ -630,10 +630,10 @@ function RadarChartSection() {
       </Card>
 
       {/* Single-series radar (dots) */}
-      <Card className="border-future-border-subtle bg-future-surface">
+      <Card className="border-border-subtle bg-surface">
         <CardHeader>
-          <CardTitle className="text-future-foreground">Radar — Dots</CardTitle>
-          <CardDescription className="text-future-foreground-muted">
+          <CardTitle className="text-foreground">Radar — Dots</CardTitle>
+          <CardDescription className="text-foreground-muted">
             Developer skill proficiency radar with dots
           </CardDescription>
         </CardHeader>
@@ -663,10 +663,10 @@ function RadialChartSection() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* Multi-segment radial bar */}
-      <Card className="border-future-border-subtle bg-future-surface">
+      <Card className="border-border-subtle bg-surface">
         <CardHeader>
-          <CardTitle className="text-future-foreground">Radial Bar Chart</CardTitle>
-          <CardDescription className="text-future-foreground-muted">
+          <CardTitle className="text-foreground">Radial Bar Chart</CardTitle>
+          <CardDescription className="text-foreground-muted">
             Browser visitors as stacked radial segments
           </CardDescription>
         </CardHeader>
@@ -695,10 +695,10 @@ function RadialChartSection() {
       </Card>
 
       {/* Semi-circle gauge */}
-      <Card className="border-future-border-subtle bg-future-surface">
+      <Card className="border-border-subtle bg-surface">
         <CardHeader>
-          <CardTitle className="text-future-foreground">Radial Gauge</CardTitle>
-          <CardDescription className="text-future-foreground-muted">
+          <CardTitle className="text-foreground">Radial Gauge</CardTitle>
+          <CardDescription className="text-foreground-muted">
             Sprint completion progress — 72%
           </CardDescription>
         </CardHeader>
@@ -743,10 +743,10 @@ function TooltipShowcase() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* Dot indicator */}
-      <Card className="border-future-border-subtle bg-future-surface">
+      <Card className="border-border-subtle bg-surface">
         <CardHeader>
-          <CardTitle className="text-future-foreground">Dot Indicator</CardTitle>
-          <CardDescription className="text-future-foreground-muted">
+          <CardTitle className="text-foreground">Dot Indicator</CardTitle>
+          <CardDescription className="text-foreground-muted">
             Default dot-style tooltip indicator
           </CardDescription>
         </CardHeader>
@@ -764,10 +764,10 @@ function TooltipShowcase() {
       </Card>
 
       {/* Line indicator */}
-      <Card className="border-future-border-subtle bg-future-surface">
+      <Card className="border-border-subtle bg-surface">
         <CardHeader>
-          <CardTitle className="text-future-foreground">Line Indicator</CardTitle>
-          <CardDescription className="text-future-foreground-muted">
+          <CardTitle className="text-foreground">Line Indicator</CardTitle>
+          <CardDescription className="text-foreground-muted">
             Vertical line-style tooltip indicator
           </CardDescription>
         </CardHeader>
@@ -785,10 +785,10 @@ function TooltipShowcase() {
       </Card>
 
       {/* Dashed indicator */}
-      <Card className="border-future-border-subtle bg-future-surface">
+      <Card className="border-border-subtle bg-surface">
         <CardHeader>
-          <CardTitle className="text-future-foreground">Dashed Indicator</CardTitle>
-          <CardDescription className="text-future-foreground-muted">
+          <CardTitle className="text-foreground">Dashed Indicator</CardTitle>
+          <CardDescription className="text-foreground-muted">
             Dashed border-style tooltip indicator
           </CardDescription>
         </CardHeader>
@@ -816,7 +816,7 @@ function LeftPanelCharts() {
   return (
     <div className="flex flex-col gap-4 p-6">
       <div>
-        <p className="mb-2 text-xs font-medium text-future-foreground-muted">Traffic sources</p>
+        <p className="mb-2 text-xs font-medium text-foreground-muted">Traffic sources</p>
         <ChartContainer config={pieSimpleConfig} className="aspect-square max-h-[120px] w-full">
           <PieChart>
             <ChartTooltip content={<ChartTooltipContent hideLabel />} />
@@ -831,9 +831,9 @@ function LeftPanelCharts() {
           </PieChart>
         </ChartContainer>
       </div>
-      <Separator className="bg-future-border-subtle" />
+      <Separator className="bg-border-subtle" />
       <div>
-        <p className="mb-2 text-xs font-medium text-future-foreground-muted">Framework popularity</p>
+        <p className="mb-2 text-xs font-medium text-foreground-muted">Framework popularity</p>
         <ChartContainer config={barHorizontalConfig} className="aspect-auto h-[140px] w-full">
           <BarChart data={barHorizontalData} layout="vertical" margin={{ left: 40, right: 12 }}>
             <CartesianGrid horizontal={false} />
@@ -852,7 +852,7 @@ function RightPanelCharts() {
   return (
     <div className="flex flex-col gap-4 p-6">
       <div className="w-full">
-        <p className="mb-2 text-xs font-medium text-future-foreground-muted">Dot Indicator</p>
+        <p className="mb-2 text-xs font-medium text-foreground-muted">Dot Indicator</p>
         <ChartContainer config={tooltipDotConfig} className="w-full aspect-auto h-[120px] justify-start">
           <BarChart data={tooltipData} margin={{ left: 12, right: 12 }}>
             <CartesianGrid vertical={false} />
@@ -863,9 +863,9 @@ function RightPanelCharts() {
           </BarChart>
         </ChartContainer>
       </div>
-      <Separator className="bg-future-border-subtle" />
+      <Separator className="bg-border-subtle" />
       <div className="w-full">
-        <p className="mb-2 text-xs font-medium text-future-foreground-muted">Dashed Indicator</p>
+        <p className="mb-2 text-xs font-medium text-foreground-muted">Dashed Indicator</p>
         <ChartContainer config={tooltipDashedConfig} className="w-full aspect-auto h-[120px] justify-start">
           <BarChart data={tooltipData} margin={{ left: 12, right: 12 }}>
             <CartesianGrid vertical={false} />
@@ -900,38 +900,38 @@ function VisualizationContent() {
   return (
     <div className="flex flex-col gap-6">
       {/* Intro — charts stack and usage */}
-      <Card className="border-future-border-subtle bg-future-surface">
+      <Card className="border-border-subtle bg-surface">
         <CardHeader>
-          <CardTitle className="text-future-foreground">How to use</CardTitle>
+          <CardTitle className="text-foreground">How to use</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-future-foreground">
+          <p className="text-sm text-foreground">
             <a
               href="https://ui.shadcn.com/charts/area"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-semibold text-future-accent-foreground underline underline-offset-2 hover:text-future-accent-foreground/80"
+              className="font-semibold text-brand-foreground underline underline-offset-2 hover:text-brand-foreground/80"
             >
               Recharts
             </a>{' '}
             powers these visuals. Wrap Recharts primitives with{' '}
-            <code className="rounded bg-future-surface-overlay px-1.5 py-0.5 font-mono text-xs">ChartContainer</code>,{' '}
-            <code className="rounded bg-future-surface-overlay px-1.5 py-0.5 font-mono text-xs">ChartTooltip</code>, and{' '}
-            <code className="rounded bg-future-surface-overlay px-1.5 py-0.5 font-mono text-xs">ChartLegend</code> from{' '}
-            <code className="rounded bg-future-surface-overlay px-1.5 py-0.5 font-mono text-xs">@/components/ui/chart</code>. Provide a <code className="rounded bg-future-surface-overlay px-1.5 py-0.5 font-mono text-xs">ChartConfig</code> for theming.
+            <code className="rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-xs">ChartContainer</code>,{' '}
+            <code className="rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-xs">ChartTooltip</code>, and{' '}
+            <code className="rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-xs">ChartLegend</code> from{' '}
+            <code className="rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-xs">@/components/ui/chart</code>. Provide a <code className="rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-xs">ChartConfig</code> for theming.
           </p>
         </CardContent>
       </Card>
 
       {/* Tab bar */}
-      <div className="flex gap-1 overflow-x-auto border-b border-future-border-subtle">
+      <div className="flex gap-1 overflow-x-auto border-b border-border-subtle">
         {TABS.map((tab) => (
           <button
             key={tab}
             className={`shrink-0 px-4 pb-3 text-sm font-medium transition-colors ${
               activeTab === tab
-                ? 'border-b-2 border-future-accent text-future-foreground'
-                : 'text-future-foreground-muted hover:text-future-foreground'
+                ? 'border-b-2 border-brand text-foreground'
+                : 'text-foreground-muted hover:text-foreground'
             }`}
             onClick={() => setActiveTab(tab)}
           >

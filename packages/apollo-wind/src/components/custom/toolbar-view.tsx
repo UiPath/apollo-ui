@@ -37,8 +37,8 @@ function ViewButton({
   return (
     <button
       className={cn(
-        'flex h-8 w-8 items-center justify-center rounded-lg text-future-foreground-muted transition-colors hover:text-future-foreground',
-        isActive && 'rounded-2xl border border-future-border bg-future-surface text-future-foreground'
+        'flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:text-foreground',
+        isActive && 'rounded-2xl border border-border bg-surface text-foreground'
       )}
       onClick={onClick}
       aria-label={label}
@@ -57,8 +57,8 @@ function NodeSizeIcon({ size, isActive }: { size: 's' | 'm' | 'l'; isActive?: bo
   return (
     <button
       className={cn(
-        'flex h-8 w-8 items-center justify-center rounded-2xl text-xs font-bold text-future-foreground-muted transition-colors hover:text-future-foreground',
-        isActive && 'border border-future-border bg-future-surface text-future-foreground'
+        'flex h-8 w-8 items-center justify-center rounded-2xl text-xs font-bold text-foreground-muted transition-colors hover:text-foreground',
+        isActive && 'border border-border bg-surface text-foreground'
       )}
       aria-label={`Node size ${label}`}
     >
@@ -85,7 +85,7 @@ export function FlowViewToolbar({
   return (
     <div className={cn('flex flex-col gap-4', className)}>
       {/* Zoom + view controls */}
-      <div className="flex w-10 flex-col items-center gap-1 rounded-xl bg-future-surface-raised p-1">
+      <div className="flex w-10 flex-col items-center gap-1 rounded-xl bg-surface-raised p-1">
         <ViewButton
           icon={<ZoomIn className="h-5 w-5" />}
           label="Zoom in"
@@ -96,7 +96,7 @@ export function FlowViewToolbar({
           label="Zoom out"
           onClick={() => onAction?.('zoom-out')}
         />
-        <div className="h-px w-6 bg-future-border-subtle" />
+        <div className="h-px w-6 bg-border-subtle" />
         <ViewButton
           icon={<Maximize2 className="h-5 w-5" />}
           label="Fit to screen"
@@ -110,7 +110,7 @@ export function FlowViewToolbar({
       </div>
 
       {/* Node size selector */}
-      <div className="flex w-10 flex-col items-center gap-2 rounded-[20px] border border-future-border-deep bg-future-surface-raised p-1">
+      <div className="flex w-10 flex-col items-center gap-2 rounded-[20px] border border-border-deep bg-surface-raised p-1">
         <NodeSizeIcon size="s" isActive={activeNodeSize === 's'} />
         <NodeSizeIcon size="m" isActive={activeNodeSize === 'm'} />
         <NodeSizeIcon size="l" isActive={activeNodeSize === 'l'} />

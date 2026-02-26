@@ -39,7 +39,7 @@ export function PromptSuggestions({
       {suggestions.map((suggestion) => (
         <button
           key={suggestion.id}
-          className="flex h-10 items-center rounded-xl border border-future-border bg-future-surface-overlay px-4 py-2.5 text-sm font-medium leading-5 text-future-foreground transition-colors hover:bg-future-surface-hover"
+          className="flex h-10 items-center rounded-xl border border-border bg-surface-overlay px-4 py-2.5 text-sm font-medium leading-5 text-foreground transition-colors hover:bg-surface-hover"
           onClick={() => onSelect?.(suggestion)}
         >
           {suggestion.label}
