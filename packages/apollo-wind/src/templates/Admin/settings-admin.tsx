@@ -1,5 +1,5 @@
+import { Bell, CreditCard, Key, Palette, Shield, User } from 'lucide-react';
 import * as React from 'react';
-import { Bell, Key, Palette, Shield, User, CreditCard } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Column, Grid, Row } from '@/components/ui/layout';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -22,13 +24,12 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Row, Column, Grid } from '@/components/ui/layout';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  AdminTemplate,
   AdminSidebar,
   AdminSidebarHeader,
   AdminSidebarNav,
+  AdminTemplate,
+  FutureTheme,
 } from './template-admin';
 
 const navItems = [
@@ -40,7 +41,13 @@ const navItems = [
   { id: 'billing', label: 'Billing', icon: <CreditCard className="h-4 w-4" /> },
 ];
 
-export function SettingsAdmin({ theme, menuContent }: { theme: string; menuContent?: React.ReactNode }) {
+export function SettingsAdmin({
+  theme,
+  menuContent,
+}: {
+  theme: string;
+  menuContent?: React.ReactNode;
+}) {
   const [activeSection, setActiveSection] = React.useState('profile');
   const [formData, setFormData] = React.useState({
     firstName: 'John',
@@ -62,7 +69,7 @@ export function SettingsAdmin({ theme, menuContent }: { theme: string; menuConte
 
   return (
     <AdminTemplate
-      theme={theme}
+      theme={theme as FutureTheme}
       title="Settings"
       menuContent={menuContent}
       sidebar={
@@ -82,7 +89,9 @@ export function SettingsAdmin({ theme, menuContent }: { theme: string; menuConte
             <>
               <div>
                 <h2 className="text-2xl font-bold text-future-foreground">Profile</h2>
-                <p className="text-future-foreground-muted">Manage your public profile information.</p>
+                <p className="text-future-foreground-muted">
+                  Manage your public profile information.
+                </p>
               </div>
 
               <Card className="border-future-border-subtle bg-future-surface-raised">
@@ -99,8 +108,12 @@ export function SettingsAdmin({ theme, menuContent }: { theme: string; menuConte
                       <AvatarFallback className="text-lg">JD</AvatarFallback>
                     </Avatar>
                     <Row gap={2}>
-                      <Button variant="outline" size="sm">Upload</Button>
-                      <Button variant="ghost" size="sm">Remove</Button>
+                      <Button variant="outline" size="sm">
+                        Upload
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        Remove
+                      </Button>
                     </Row>
                   </Row>
                 </CardContent>
@@ -109,12 +122,16 @@ export function SettingsAdmin({ theme, menuContent }: { theme: string; menuConte
               <Card className="border-future-border-subtle bg-future-surface-raised">
                 <CardHeader>
                   <CardTitle className="text-future-foreground">Personal Information</CardTitle>
-                  <CardDescription className="text-future-foreground-muted">Update your personal details here.</CardDescription>
+                  <CardDescription className="text-future-foreground-muted">
+                    Update your personal details here.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Grid gap={4} cols={2}>
                     <Column gap={2}>
-                      <Label htmlFor="firstName" className="text-future-foreground">First name</Label>
+                      <Label htmlFor="firstName" className="text-future-foreground">
+                        First name
+                      </Label>
                       <Input
                         id="firstName"
                         value={formData.firstName}
@@ -123,7 +140,9 @@ export function SettingsAdmin({ theme, menuContent }: { theme: string; menuConte
                       />
                     </Column>
                     <Column gap={2}>
-                      <Label htmlFor="lastName" className="text-future-foreground">Last name</Label>
+                      <Label htmlFor="lastName" className="text-future-foreground">
+                        Last name
+                      </Label>
                       <Input
                         id="lastName"
                         value={formData.lastName}
@@ -133,7 +152,9 @@ export function SettingsAdmin({ theme, menuContent }: { theme: string; menuConte
                     </Column>
                   </Grid>
                   <Column gap={2}>
-                    <Label htmlFor="username" className="text-future-foreground">Username</Label>
+                    <Label htmlFor="username" className="text-future-foreground">
+                      Username
+                    </Label>
                     <Input
                       id="username"
                       value={formData.username}
@@ -142,7 +163,9 @@ export function SettingsAdmin({ theme, menuContent }: { theme: string; menuConte
                     />
                   </Column>
                   <Column gap={2}>
-                    <Label htmlFor="bio" className="text-future-foreground">Bio</Label>
+                    <Label htmlFor="bio" className="text-future-foreground">
+                      Bio
+                    </Label>
                     <Textarea
                       id="bio"
                       value={formData.bio}
@@ -180,7 +203,9 @@ export function SettingsAdmin({ theme, menuContent }: { theme: string; menuConte
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Column gap={2}>
-                    <Label htmlFor="email" className="text-future-foreground">Email address</Label>
+                    <Label htmlFor="email" className="text-future-foreground">
+                      Email address
+                    </Label>
                     <Input
                       id="email"
                       type="email"
@@ -198,7 +223,9 @@ export function SettingsAdmin({ theme, menuContent }: { theme: string; menuConte
               <Card className="border-red-500/30 bg-future-surface-raised">
                 <CardHeader>
                   <CardTitle className="text-red-400">Danger Zone</CardTitle>
-                  <CardDescription className="text-future-foreground-muted">Irreversible and destructive actions.</CardDescription>
+                  <CardDescription className="text-future-foreground-muted">
+                    Irreversible and destructive actions.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Row justify="between" align="center">
@@ -227,16 +254,23 @@ export function SettingsAdmin({ theme, menuContent }: { theme: string; menuConte
               <Card className="border-future-border-subtle bg-future-surface-raised">
                 <CardHeader>
                   <CardTitle className="text-future-foreground">Theme</CardTitle>
-                  <CardDescription className="text-future-foreground-muted">Select your preferred theme for the dashboard.</CardDescription>
+                  <CardDescription className="text-future-foreground-muted">
+                    Select your preferred theme for the dashboard.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Column gap={2}>
-                    <Label htmlFor="theme" className="text-future-foreground">Theme</Label>
+                    <Label htmlFor="theme" className="text-future-foreground">
+                      Theme
+                    </Label>
                     <Select
                       value={formData.theme}
                       onValueChange={(value) => updateField('theme', value)}
                     >
-                      <SelectTrigger id="theme" className="w-[200px] border-future-border bg-future-surface-overlay text-future-foreground">
+                      <SelectTrigger
+                        id="theme"
+                        className="w-[200px] border-future-border bg-future-surface-overlay text-future-foreground"
+                      >
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -247,12 +281,17 @@ export function SettingsAdmin({ theme, menuContent }: { theme: string; menuConte
                     </Select>
                   </Column>
                   <Column gap={2}>
-                    <Label htmlFor="language" className="text-future-foreground">Language</Label>
+                    <Label htmlFor="language" className="text-future-foreground">
+                      Language
+                    </Label>
                     <Select
                       value={formData.language}
                       onValueChange={(value) => updateField('language', value)}
                     >
-                      <SelectTrigger id="language" className="w-[200px] border-future-border bg-future-surface-overlay text-future-foreground">
+                      <SelectTrigger
+                        id="language"
+                        className="w-[200px] border-future-border bg-future-surface-overlay text-future-foreground"
+                      >
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -272,13 +311,17 @@ export function SettingsAdmin({ theme, menuContent }: { theme: string; menuConte
             <>
               <div>
                 <h2 className="text-2xl font-bold text-future-foreground">Notifications</h2>
-                <p className="text-future-foreground-muted">Configure how you receive notifications.</p>
+                <p className="text-future-foreground-muted">
+                  Configure how you receive notifications.
+                </p>
               </div>
 
               <Card className="border-future-border-subtle bg-future-surface-raised">
                 <CardHeader>
                   <CardTitle className="text-future-foreground">Notification Preferences</CardTitle>
-                  <CardDescription className="text-future-foreground-muted">Choose what notifications you want to receive.</CardDescription>
+                  <CardDescription className="text-future-foreground-muted">
+                    Choose what notifications you want to receive.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <Row justify="between" align="center">
@@ -334,20 +377,40 @@ export function SettingsAdmin({ theme, menuContent }: { theme: string; menuConte
               <Card className="border-future-border-subtle bg-future-surface-raised">
                 <CardHeader>
                   <CardTitle className="text-future-foreground">Password</CardTitle>
-                  <CardDescription className="text-future-foreground-muted">Change your password here.</CardDescription>
+                  <CardDescription className="text-future-foreground-muted">
+                    Change your password here.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Column gap={2}>
-                    <Label htmlFor="currentPassword" className="text-future-foreground">Current password</Label>
-                    <Input id="currentPassword" type="password" className="border-future-border bg-future-surface-overlay text-future-foreground" />
+                    <Label htmlFor="currentPassword" className="text-future-foreground">
+                      Current password
+                    </Label>
+                    <Input
+                      id="currentPassword"
+                      type="password"
+                      className="border-future-border bg-future-surface-overlay text-future-foreground"
+                    />
                   </Column>
                   <Column gap={2}>
-                    <Label htmlFor="newPassword" className="text-future-foreground">New password</Label>
-                    <Input id="newPassword" type="password" className="border-future-border bg-future-surface-overlay text-future-foreground" />
+                    <Label htmlFor="newPassword" className="text-future-foreground">
+                      New password
+                    </Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      className="border-future-border bg-future-surface-overlay text-future-foreground"
+                    />
                   </Column>
                   <Column gap={2}>
-                    <Label htmlFor="confirmPassword" className="text-future-foreground">Confirm password</Label>
-                    <Input id="confirmPassword" type="password" className="border-future-border bg-future-surface-overlay text-future-foreground" />
+                    <Label htmlFor="confirmPassword" className="text-future-foreground">
+                      Confirm password
+                    </Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      className="border-future-border bg-future-surface-overlay text-future-foreground"
+                    />
                   </Column>
                 </CardContent>
                 <CardFooter className="border-t border-future-border-subtle px-6 py-4">
@@ -357,8 +420,12 @@ export function SettingsAdmin({ theme, menuContent }: { theme: string; menuConte
 
               <Card className="border-future-border-subtle bg-future-surface-raised">
                 <CardHeader>
-                  <CardTitle className="text-future-foreground">Two-Factor Authentication</CardTitle>
-                  <CardDescription className="text-future-foreground-muted">Add an extra layer of security to your account.</CardDescription>
+                  <CardTitle className="text-future-foreground">
+                    Two-Factor Authentication
+                  </CardTitle>
+                  <CardDescription className="text-future-foreground-muted">
+                    Add an extra layer of security to your account.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Row justify="between" align="center">
@@ -390,10 +457,16 @@ export function SettingsAdmin({ theme, menuContent }: { theme: string; menuConte
               <Card className="border-future-border-subtle bg-future-surface-raised">
                 <CardHeader>
                   <CardTitle className="text-future-foreground">Current Plan</CardTitle>
-                  <CardDescription className="text-future-foreground-muted">You are currently on the Pro plan.</CardDescription>
+                  <CardDescription className="text-future-foreground-muted">
+                    You are currently on the Pro plan.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Row justify="between" align="center" className="rounded-lg border border-future-border-subtle p-4">
+                  <Row
+                    justify="between"
+                    align="center"
+                    className="rounded-lg border border-future-border-subtle p-4"
+                  >
                     <Column gap={0}>
                       <p className="font-semibold text-future-foreground">Pro Plan</p>
                       <p className="text-sm text-future-foreground-muted">
@@ -408,12 +481,22 @@ export function SettingsAdmin({ theme, menuContent }: { theme: string; menuConte
               <Card className="border-future-border-subtle bg-future-surface-raised">
                 <CardHeader>
                   <CardTitle className="text-future-foreground">Payment Method</CardTitle>
-                  <CardDescription className="text-future-foreground-muted">Update your payment information.</CardDescription>
+                  <CardDescription className="text-future-foreground-muted">
+                    Update your payment information.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Row justify="between" align="center" className="rounded-lg border border-future-border-subtle p-4">
+                  <Row
+                    justify="between"
+                    align="center"
+                    className="rounded-lg border border-future-border-subtle p-4"
+                  >
                     <Row gap={3} align="center">
-                      <Row justify="center" align="center" className="h-10 w-14 rounded bg-future-surface-overlay">
+                      <Row
+                        justify="center"
+                        align="center"
+                        className="h-10 w-14 rounded bg-future-surface-overlay"
+                      >
                         <CreditCard className="h-5 w-5 text-future-foreground-muted" />
                       </Row>
                       <Column gap={0}>
@@ -421,7 +504,9 @@ export function SettingsAdmin({ theme, menuContent }: { theme: string; menuConte
                         <p className="text-sm text-future-foreground-muted">Expires 12/25</p>
                       </Column>
                     </Row>
-                    <Button variant="ghost" size="sm">Edit</Button>
+                    <Button variant="ghost" size="sm">
+                      Edit
+                    </Button>
                   </Row>
                 </CardContent>
                 <CardFooter className="border-t border-future-border-subtle px-6 py-4">
