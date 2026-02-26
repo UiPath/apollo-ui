@@ -62,7 +62,7 @@ export const Sidebar = ({
     <motion.aside
       className={cn(
         sidebarWidth,
-        "relative flex flex-col bg-white/70 backdrop-blur-xl dark:bg-sidebar/80 dark:backdrop-blur-xl will-change-[width] overflow-hidden px-4 pt-6 pb-4",
+        "relative flex flex-col bg-[oklch(0.99_0_0)]/70 backdrop-blur-xl dark:bg-sidebar/80 dark:backdrop-blur-xl will-change-[width] overflow-hidden px-4 pt-6 pb-4",
       )}
       animate={{
         width: isCollapsed ? 64 : 280,
@@ -91,9 +91,9 @@ export const Sidebar = ({
         <UserProfile isCollapsed={isCollapsed} />
       </div>
       <div
-        className="absolute right-0 top-0 bottom-0 w-px"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          background: "linear-gradient(to top, color-mix(in srgb, var(--color-border) 50%, transparent), color-mix(in srgb, var(--color-border) 40%, transparent))",
+          boxShadow: "inset -1px 0 0 0 color-mix(in srgb, var(--color-border) 50%, transparent)",
         }}
       />
     </motion.aside>

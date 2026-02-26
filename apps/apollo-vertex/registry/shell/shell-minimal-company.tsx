@@ -14,7 +14,7 @@ export const MinimalCompany = ({
 }: MinimalCompanyProps) => {
   return (
     <div className="flex items-center gap-2">
-      <div className="w-8 h-8 rounded-md bg-secondary-foreground/70 flex items-center justify-center shrink-0">
+      <div className="w-8 h-8 rounded-[4px] bg-primary-700 dark:bg-primary-400 flex items-center justify-center shrink-0">
         {companyLogo ? (
           <>
             <img

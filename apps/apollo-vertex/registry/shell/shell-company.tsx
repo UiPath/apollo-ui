@@ -52,7 +52,7 @@ function CollapsedLogo({
             type="button"
           >
             <motion.div
-              className="w-8 h-8 rounded-md bg-secondary-foreground/70 flex items-center justify-center shrink-0"
+              className="w-8 h-8 rounded-[4px] bg-primary-700 dark:bg-primary-400 flex items-center justify-center shrink-0"
               whileHover={iconHoverScale}
             >
               <AnimatePresence mode="wait" initial={false}>
@@ -118,7 +118,7 @@ export const Company = ({
   );
   const iconElement = (
     <motion.div
-      className="w-8 h-8 rounded-md bg-secondary-foreground/70 flex items-center justify-center shrink-0"
+      className="w-8 h-8 rounded-[4px] bg-primary-700 dark:bg-primary-400 flex items-center justify-center shrink-0"
       {...(isCollapsed ? { whileHover: iconHoverScale } : {})}
     >
       {companyLogo ? (

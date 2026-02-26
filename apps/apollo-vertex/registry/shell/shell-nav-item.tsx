@@ -37,8 +37,8 @@ export const NavItem = ({ to, icon: Icon, text }: NavItemProps) => {
         "h-8 text-sm font-medium",
         isCollapsed ? "w-8 justify-center" : "pr-3",
         isActive
-          ? "text-sidebar-accent-foreground"
-          : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+          ? "text-primary-700 dark:text-primary-400 font-semibold bg-[oklch(0.96_0.015_218)] dark:bg-primary-900/30"
+          : "text-sidebar-foreground/85 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
       )}
     >
       <motion.span
