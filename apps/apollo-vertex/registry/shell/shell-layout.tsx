@@ -188,7 +188,8 @@ export function ShellLayout({
   }
 
   return (
-    <div className="h-screen overflow-hidden flex bg-background dark:bg-sidebar">
+    <div className="h-screen overflow-hidden flex bg-background dark:bg-sidebar relative">
+      <GradientBackground />
       <Sidebar
         companyName={companyName}
         variant={variant}
@@ -197,7 +198,6 @@ export function ShellLayout({
         sidebarActions={sidebarActions}
       />
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        <GradientBackground />
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           {children}
         </div>

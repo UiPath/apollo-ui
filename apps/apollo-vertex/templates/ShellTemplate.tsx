@@ -19,7 +19,7 @@ export function ShellTemplate({ variant, children, sidebarActions, headerActions
         bypassAuth
         companyName="UiPath"
         productName="Apollo Vertex"
-        companyLogo={{ url: "/UiPath.svg", alt: "UiPath logo" }}
+        companyLogo={{ url: "/UiPath.svg", darkUrl: "/UiPath_dark.svg", alt: "UiPath logo" }}
         variant={variant}
         sidebarActions={sidebarActions}
         headerActions={headerActions}

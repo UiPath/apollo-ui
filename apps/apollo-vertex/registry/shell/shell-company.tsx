@@ -52,7 +52,7 @@ function CollapsedLogo({
             type="button"
           >
             <motion.div
-              className="w-8 h-8 rounded-md bg-brand-orange flex items-center justify-center shrink-0"
+              className="w-8 h-8 rounded-md bg-secondary-foreground/70 flex items-center justify-center shrink-0"
               whileHover={iconHoverScale}
             >
               <AnimatePresence mode="wait" initial={false}>
@@ -64,7 +64,7 @@ function CollapsedLogo({
                     exit={{ opacity: 0, scale: 0.8 }}
                     transition={{ duration: 0.15 }}
                   >
-                    <PanelLeft className="w-4 h-4 text-white" />
+                    <PanelLeft className="w-4 h-4 text-background" />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -75,13 +75,22 @@ function CollapsedLogo({
                     transition={{ duration: 0.15 }}
                   >
                     {companyLogo ? (
-                      <img
-                        src={companyLogo.url}
-                        alt={companyLogo.alt}
-                        className="w-4 h-auto"
-                      />
+                      <>
+                        <img
+                          src={companyLogo.url}
+                          alt={companyLogo.alt}
+                          className={`w-4 h-auto ${companyLogo.darkUrl ? 'dark:hidden' : ''}`}
+                        />
+                        {companyLogo.darkUrl && (
+                          <img
+                            src={companyLogo.darkUrl}
+                            alt={companyLogo.alt}
+                            className="w-4 h-auto hidden dark:block"
+                          />
+                        )}
+                      </>
                     ) : (
-                      <Box className="w-4 h-4 text-white" />
+                      <Box className="w-4 h-4 text-background" />
                     )}
                   </motion.div>
                 )}
@@ -109,17 +118,26 @@ export const Company = ({
   );
   const iconElement = (
     <motion.div
-      className="w-8 h-8 rounded-md bg-brand-orange flex items-center justify-center shrink-0"
+      className="w-8 h-8 rounded-md bg-secondary-foreground/70 flex items-center justify-center shrink-0"
       {...(isCollapsed ? { whileHover: iconHoverScale } : {})}
     >
       {companyLogo ? (
-        <img
-          src={companyLogo.url}
-          alt={companyLogo.alt}
-          className="w-4 h-auto"
-        />
+        <>
+          <img
+            src={companyLogo.url}
+            alt={companyLogo.alt}
+            className={`w-4 h-auto ${companyLogo.darkUrl ? 'dark:hidden' : ''}`}
+          />
+          {companyLogo.darkUrl && (
+            <img
+              src={companyLogo.darkUrl}
+              alt={companyLogo.alt}
+              className="w-4 h-auto hidden dark:block"
+            />
+          )}
+        </>
       ) : (
-        <Box className="w-4 h-4 text-white" />
+        <Box className="w-4 h-4 text-background" />
       )}
     </motion.div>
   );

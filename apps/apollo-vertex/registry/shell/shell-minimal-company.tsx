@@ -14,15 +14,24 @@ export const MinimalCompany = ({
 }: MinimalCompanyProps) => {
   return (
     <div className="flex items-center gap-2">
-      <div className="w-8 h-8 rounded-md bg-brand-orange flex items-center justify-center shrink-0">
+      <div className="w-8 h-8 rounded-md bg-secondary-foreground/70 flex items-center justify-center shrink-0">
         {companyLogo ? (
-          <img
-            src={companyLogo.url}
-            alt={companyLogo.alt}
-            className="w-4 h-auto"
-          />
+          <>
+            <img
+              src={companyLogo.url}
+              alt={companyLogo.alt}
+              className={`w-4 h-auto ${companyLogo.darkUrl ? 'dark:hidden' : ''}`}
+            />
+            {companyLogo.darkUrl && (
+              <img
+                src={companyLogo.darkUrl}
+                alt={companyLogo.alt}
+                className="w-4 h-auto hidden dark:block"
+              />
+            )}
+          </>
         ) : (
-          <Box className="w-4 h-4 text-white" />
+          <Box className="w-4 h-4 text-background" />
         )}
       </div>
       <div className="flex items-center gap-1.5">

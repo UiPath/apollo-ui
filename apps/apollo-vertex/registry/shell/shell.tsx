@@ -12,6 +12,7 @@ import { ShellUserProvider } from "./shell-user-provider";
 
 export interface CompanyLogo {
   url: string;
+  darkUrl?: string;
   alt: string;
 }
 
