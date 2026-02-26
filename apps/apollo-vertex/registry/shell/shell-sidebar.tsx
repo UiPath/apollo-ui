@@ -40,7 +40,7 @@ export const Sidebar = ({
           companyLogo={companyLogo}
         />
 
-        <nav className="absolute left-1/2 -translate-x-1/2 flex items-center bg-muted rounded-full p-1.5 overflow-x-auto scrollbar-thin">
+        <nav className="absolute left-1/2 -translate-x-1/2 flex items-center bg-muted dark:bg-[oklch(0.24_0.033_254)] rounded-full p-1.5 overflow-x-auto scrollbar-thin">
           <MinimalNavItem
             to="/templates/shell-template"
             label="dashboard"

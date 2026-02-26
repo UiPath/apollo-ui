@@ -22,7 +22,7 @@ export const MinimalNavItem = ({ to, label, active }: MinimalNavItemProps) => {
       className={cn(
         "px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 shrink-0 whitespace-nowrap",
         isActive
-          ? "bg-primary text-primary-foreground"
+          ? "bg-[oklch(0.92_0.035_218)] dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 font-semibold"
           : "text-muted-foreground hover:text-foreground hover:bg-black/[0.04] dark:hover:bg-white/[0.06]",
       )}
     >
