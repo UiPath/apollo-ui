@@ -42,7 +42,7 @@ const sampleSteps = [
 
 export const Default: Story = {
   render: () => (
-    <div className="future-dark flex h-screen bg-future-surface">
+    <div className="future-dark flex h-screen bg-surface">
       <StepsView
         className="mx-auto max-w-3xl"
         flowName="Invoice processing"

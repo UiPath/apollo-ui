@@ -33,7 +33,7 @@ function LeftPanelNav() {
         {['Button', 'Button', 'Button', 'Button', 'Button'].map((label, i) => (
           <button
             key={i}
-            className="flex h-9 items-center rounded-lg px-3 text-sm font-medium text-future-foreground-muted transition-colors hover:bg-future-surface-hover hover:text-future-foreground"
+            className="flex h-9 items-center rounded-lg px-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
           >
             <span className="truncate">{label}</span>
           </button>
@@ -57,7 +57,7 @@ function MenuNav() {
         {['Button', 'Button', 'Button', 'Button', 'Button'].map((label, i) => (
           <button
             key={i}
-            className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-future-foreground-muted transition-colors hover:bg-future-surface-hover hover:text-future-foreground"
+            className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
           >
             <SquareMenu className="h-4 w-4 shrink-0" />
             <span className="truncate">{label}</span>
@@ -66,12 +66,12 @@ function MenuNav() {
       </div>
 
       {/* Divider */}
-      <div className="my-2 border-t border-future-border-subtle" />
+      <div className="my-2 border-t border-border-subtle" />
 
       {/* More — expand / collapse */}
       <div className="flex flex-col gap-1">
         <button
-          className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-future-foreground-muted transition-colors hover:bg-future-surface-hover hover:text-future-foreground"
+          className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
           onClick={() => setMoreOpen((prev) => !prev)}
           aria-expanded={moreOpen}
         >
@@ -86,7 +86,7 @@ function MenuNav() {
             {['Button', 'Button', 'Button', 'Button', 'Button'].map((label, i) => (
               <button
                 key={i}
-                className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-future-foreground-muted transition-colors hover:bg-future-surface-hover hover:text-future-foreground"
+                className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
               >
                 <SquareMenu className="h-4 w-4 shrink-0" />
                 <span className="truncate">{label}</span>
@@ -131,10 +131,10 @@ function RightPanelCard({
 }) {
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="text-sm font-semibold text-future-foreground">{title}</h3>
-      <p className="text-sm leading-5 text-future-foreground-muted">{description}</p>
+      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      <p className="text-sm leading-5 text-foreground-muted">{description}</p>
       {actionLabel && (
-        <button className="flex h-9 w-fit items-center rounded-lg border border-future-border px-4 text-sm font-medium text-future-foreground-muted transition-colors hover:border-future-border-hover hover:text-future-foreground">
+        <button className="flex h-9 w-fit items-center rounded-lg border border-border px-4 text-sm font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground">
           {actionLabel}
         </button>
       )}
@@ -148,9 +148,9 @@ function RightPanelCard({
 
 function FullWidthCard({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="rounded-xl border border-future-border-subtle bg-future-surface p-6">
-      <h3 className="text-sm font-semibold text-future-foreground">{title}</h3>
-      <p className="mt-1 text-sm text-future-foreground-muted">{subtitle}</p>
+    <div className="rounded-xl border border-border-subtle bg-surface p-6">
+      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      <p className="mt-1 text-sm text-foreground-muted">{subtitle}</p>
     </div>
   );
 }
@@ -158,8 +158,8 @@ function FullWidthCard({ title, subtitle }: { title: string; subtitle: string })
 function SectionHeader({ title }: { title: string }) {
   return (
     <div className="flex items-center justify-between">
-      <h2 className="text-xl font-semibold text-future-foreground">{title}</h2>
-      <button className="text-sm font-medium text-future-foreground-muted transition-colors hover:text-future-foreground">
+      <h2 className="text-xl font-semibold text-foreground">{title}</h2>
+      <button className="text-sm font-medium text-foreground-muted transition-colors hover:text-foreground">
         View All
       </button>
     </div>
@@ -168,9 +168,9 @@ function SectionHeader({ title }: { title: string }) {
 
 function ColumnCard({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="rounded-xl border border-future-border-subtle bg-future-surface p-6">
-      <h3 className="text-sm font-semibold text-future-foreground">{title}</h3>
-      <p className="mt-1 text-sm text-future-foreground-muted">{subtitle}</p>
+    <div className="rounded-xl border border-border-subtle bg-surface p-6">
+      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      <p className="mt-1 text-sm text-foreground-muted">{subtitle}</p>
     </div>
   );
 }
@@ -201,7 +201,7 @@ function FourColumnGrid() {
 
 function Badge({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center rounded-full bg-future-surface-hover px-2.5 py-0.5 text-xs font-medium text-future-foreground-muted">
+    <span className="inline-flex items-center rounded-full bg-surface-hover px-2.5 py-0.5 text-xs font-medium text-foreground-muted">
       {label}
     </span>
   );
@@ -225,7 +225,7 @@ function FeaturedCard({
   actionLabel?: string;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-future-border-subtle bg-future-surface p-6">
+    <div className="flex flex-col gap-3 rounded-xl border border-border-subtle bg-surface p-6">
       {/* Badges */}
       <div className="flex gap-2">
         <Badge label={badge1} />
@@ -241,10 +241,10 @@ function FeaturedCard({
         />
 
         <div className="flex flex-1 flex-col gap-2">
-          <h3 className="text-lg font-semibold text-future-foreground">{title}</h3>
-          <p className="text-sm leading-5 text-future-foreground-muted">{description}</p>
+          <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+          <p className="text-sm leading-5 text-foreground-muted">{description}</p>
           <div className="mt-1 flex justify-end">
-            <button className="flex h-9 items-center rounded-lg border border-future-border px-4 text-sm font-medium text-future-foreground-muted transition-colors hover:border-future-border-hover hover:text-future-foreground">
+            <button className="flex h-9 items-center rounded-lg border border-border px-4 text-sm font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground">
               {actionLabel}
             </button>
           </div>
@@ -265,11 +265,11 @@ function SimpleCard({
   actionLabel?: string;
 }) {
   return (
-    <div className="flex flex-col gap-2 rounded-xl border border-future-border-subtle bg-future-surface p-6">
-      <h3 className="text-lg font-semibold text-future-foreground">{title}</h3>
-      <p className="text-sm leading-5 text-future-foreground-muted">{description}</p>
+    <div className="flex flex-col gap-2 rounded-xl border border-border-subtle bg-surface p-6">
+      <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+      <p className="text-sm leading-5 text-foreground-muted">{description}</p>
       <div className="mt-1 flex justify-end">
-        <button className="flex h-9 items-center rounded-lg border border-future-border px-4 text-sm font-medium text-future-foreground-muted transition-colors hover:border-future-border-hover hover:text-future-foreground">
+        <button className="flex h-9 items-center rounded-lg border border-border px-4 text-sm font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground">
           {actionLabel}
         </button>
       </div>
@@ -361,7 +361,7 @@ const sampleTableColumns: ColumnDef<TableRow, unknown>[] = [
   {
     accessorKey: 'name',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
-    cell: ({ row }) => <span className="text-future-foreground">{row.getValue('name')}</span>,
+    cell: ({ row }) => <span className="text-foreground">{row.getValue('name')}</span>,
   },
   {
     accessorKey: 'status',
@@ -373,27 +373,27 @@ const sampleTableColumns: ColumnDef<TableRow, unknown>[] = [
           ? 'text-green-400'
           : status === 'Pending'
             ? 'text-yellow-400'
-            : 'text-future-foreground-muted';
+            : 'text-foreground-muted';
       return <span className={color}>{status}</span>;
     },
   },
   {
     accessorKey: 'type',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Type" />,
-    cell: ({ row }) => <span className="text-future-foreground-muted">{row.getValue('type')}</span>,
+    cell: ({ row }) => <span className="text-foreground-muted">{row.getValue('type')}</span>,
   },
   {
     accessorKey: 'lastModified',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Last Modified" />,
     cell: ({ row }) => (
-      <span className="text-future-foreground-muted">{row.getValue('lastModified')}</span>
+      <span className="text-foreground-muted">{row.getValue('lastModified')}</span>
     ),
   },
   {
     accessorKey: 'owner',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Owner" />,
     cell: ({ row }) => (
-      <span className="text-future-foreground-muted">{row.getValue('owner')}</span>
+      <span className="text-foreground-muted">{row.getValue('owner')}</span>
     ),
   },
 ];
@@ -409,7 +409,7 @@ function LeftPanelCollapsedContent() {
       <img
         src="https://images.ctfassets.net/5965pury2lcm/145el1SuDOOTj7t61htNHe/11ab290de043018bc89fb0bbca017489/Solutions_%C3%A2___byIndustry_01.jpg"
         alt="Hero"
-        className="w-full rounded-xl border border-future-border-subtle object-cover"
+        className="w-full rounded-xl border border-border-subtle object-cover"
         style={{ height: 250 }}
       />
 
@@ -430,7 +430,7 @@ function LeftPanelCollapsedContent() {
 
       {/* Section 3 — Data table */}
       <SectionHeader title="Title" />
-      <div className="rounded-xl border border-future-border-subtle bg-future-surface p-4">
+      <div className="rounded-xl border border-border-subtle bg-surface p-4">
         <DataTable
           columns={sampleTableColumns}
           data={sampleTableData}
@@ -635,10 +635,10 @@ const transactionColumns: ColumnDef<TransactionRow, unknown>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Customer" />,
     cell: ({ row }) => (
       <div className="flex flex-col">
-        <span className="text-sm font-medium text-future-foreground">
+        <span className="text-sm font-medium text-foreground">
           {row.getValue('customer')}
         </span>
-        <span className="text-xs text-future-foreground-muted">{row.original.email}</span>
+        <span className="text-xs text-foreground-muted">{row.original.email}</span>
       </div>
     ),
   },
@@ -675,7 +675,7 @@ const transactionColumns: ColumnDef<TransactionRow, unknown>[] = [
         Failed: 'text-red-400',
       };
       return (
-        <span className={`text-sm ${colors[status] ?? 'text-future-foreground-muted'}`}>
+        <span className={`text-sm ${colors[status] ?? 'text-foreground-muted'}`}>
           {status}
         </span>
       );
@@ -685,14 +685,14 @@ const transactionColumns: ColumnDef<TransactionRow, unknown>[] = [
     accessorKey: 'amount',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Amount" />,
     cell: ({ row }) => (
-      <span className="text-sm font-medium text-future-foreground">{row.getValue('amount')}</span>
+      <span className="text-sm font-medium text-foreground">{row.getValue('amount')}</span>
     ),
   },
   {
     accessorKey: 'date',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Date" />,
     cell: ({ row }) => (
-      <span className="text-sm text-future-foreground-muted">{row.getValue('date')}</span>
+      <span className="text-sm text-foreground-muted">{row.getValue('date')}</span>
     ),
   },
 ];
@@ -723,14 +723,14 @@ function DashboardContent() {
   return (
     <div className="flex flex-col gap-6">
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-future-border-subtle">
+      <div className="flex gap-1 border-b border-border-subtle">
         {dashboardTabs.map((tab) => (
           <button
             key={tab}
             className={`px-4 pb-3 text-sm font-medium transition-colors ${
               activeTab === tab
-                ? 'border-b-2 border-future-accent text-future-foreground'
-                : 'text-future-foreground-muted hover:text-future-foreground'
+                ? 'border-b-2 border-brand text-foreground'
+                : 'text-foreground-muted hover:text-foreground'
             }`}
             onClick={() => setActiveTab(tab)}
           >
@@ -746,16 +746,16 @@ function DashboardContent() {
             {dashboardStats.map((stat) => (
               <div
                 key={stat.title}
-                className="flex flex-col gap-2 rounded-xl border border-future-border-subtle bg-future-surface p-6"
+                className="flex flex-col gap-2 rounded-xl border border-border-subtle bg-surface p-6"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-future-foreground-muted">
+                  <span className="text-sm font-medium text-foreground-muted">
                     {stat.title}
                   </span>
-                  <span className="text-future-foreground-subtle">{stat.icon}</span>
+                  <span className="text-foreground-subtle">{stat.icon}</span>
                 </div>
-                <span className="text-2xl font-bold text-future-foreground">{stat.value}</span>
-                <span className="text-xs text-future-foreground-muted">{stat.change}</span>
+                <span className="text-2xl font-bold text-foreground">{stat.value}</span>
+                <span className="text-xs text-foreground-muted">{stat.change}</span>
               </div>
             ))}
           </div>
@@ -763,13 +763,13 @@ function DashboardContent() {
           {/* Recent Transactions */}
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-future-foreground">Recent Transactions</h2>
-              <button className="flex h-9 items-center gap-2 rounded-lg border border-future-border bg-future-surface px-4 text-sm font-medium text-future-foreground-muted transition-colors hover:border-future-border-hover hover:text-future-foreground">
+              <h2 className="text-xl font-semibold text-foreground">Recent Transactions</h2>
+              <button className="flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground">
                 <Download className="h-4 w-4" />
                 Export
               </button>
             </div>
-            <div className="rounded-xl border border-future-border-subtle bg-future-surface p-4">
+            <div className="rounded-xl border border-border-subtle bg-surface p-4">
               <DataTable
                 columns={transactionColumns}
                 data={transactionData}
@@ -785,10 +785,10 @@ function DashboardContent() {
           {/* Bottom two cards */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {/* Recent Activity */}
-            <div className="flex flex-col rounded-xl border border-future-border-subtle bg-future-surface">
-              <div className="flex items-center justify-between border-b border-future-border-subtle px-6 py-4">
-                <h3 className="text-base font-semibold text-future-foreground">Recent Activity</h3>
-                <button className="text-sm font-medium text-future-foreground-muted transition-colors hover:text-future-foreground">
+            <div className="flex flex-col rounded-xl border border-border-subtle bg-surface">
+              <div className="flex items-center justify-between border-b border-border-subtle px-6 py-4">
+                <h3 className="text-base font-semibold text-foreground">Recent Activity</h3>
+                <button className="text-sm font-medium text-foreground-muted transition-colors hover:text-foreground">
                   View all
                 </button>
               </div>
@@ -796,28 +796,28 @@ function DashboardContent() {
                 {recentActivity.map((item, i) => (
                   <div
                     key={i}
-                    className="flex items-center gap-4 border-b border-future-border-subtle px-6 py-3 last:border-b-0"
+                    className="flex items-center gap-4 border-b border-border-subtle px-6 py-3 last:border-b-0"
                   >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-future-surface-overlay text-xs font-semibold text-future-foreground">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-overlay text-xs font-semibold text-foreground">
                       {item.initials}
                     </div>
                     <div className="flex flex-1 flex-col">
-                      <span className="text-sm font-medium text-future-foreground">
+                      <span className="text-sm font-medium text-foreground">
                         {item.name}
                       </span>
-                      <span className="text-xs text-future-foreground-muted">{item.action}</span>
+                      <span className="text-xs text-foreground-muted">{item.action}</span>
                     </div>
-                    <span className="text-xs text-future-foreground-subtle">{item.time}</span>
+                    <span className="text-xs text-foreground-subtle">{item.time}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Monthly Goals */}
-            <div className="flex flex-col rounded-xl border border-future-border-subtle bg-future-surface">
-              <div className="flex items-center justify-between border-b border-future-border-subtle px-6 py-4">
-                <h3 className="text-base font-semibold text-future-foreground">Monthly Goals</h3>
-                <button className="text-sm font-medium text-future-foreground-muted transition-colors hover:text-future-foreground">
+            <div className="flex flex-col rounded-xl border border-border-subtle bg-surface">
+              <div className="flex items-center justify-between border-b border-border-subtle px-6 py-4">
+                <h3 className="text-base font-semibold text-foreground">Monthly Goals</h3>
+                <button className="text-sm font-medium text-foreground-muted transition-colors hover:text-foreground">
                   View all
                 </button>
               </div>
@@ -833,16 +833,16 @@ function DashboardContent() {
                   return (
                     <div key={goal.label} className="flex flex-col gap-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-future-foreground">
+                        <span className="text-sm font-medium text-foreground">
                           {goal.label}
                         </span>
-                        <span className="text-xs text-future-foreground-muted">
+                        <span className="text-xs text-foreground-muted">
                           {fmt(goal.current)} / {fmt(goal.target)}
                         </span>
                       </div>
                       <Progress
                         value={pct}
-                        className="h-2 bg-future-surface-overlay [&>div]:bg-future-accent"
+                        className="h-2 bg-surface-overlay [&>div]:bg-brand"
                       />
                     </div>
                   );
@@ -852,7 +852,7 @@ function DashboardContent() {
           </div>
         </div>
       ) : (
-        <div className="flex flex-1 items-center justify-center py-20 text-sm text-future-foreground-muted">
+        <div className="flex flex-1 items-center justify-center py-20 text-sm text-foreground-muted">
           Coming soon
         </div>
       )}

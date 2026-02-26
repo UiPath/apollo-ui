@@ -14,11 +14,11 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 function resolveThemeClass(value: string) {
-  if (value === 'legacy-dark') return 'legacy-dark';
-  if (value === 'legacy-light') return 'legacy-light';
-  if (value === 'wireframe') return 'future-wireframe';
-  if (value === 'vertex') return 'future-vertex';
-  if (value === 'canvas') return 'future-canvas';
+  if (value === 'core-dark') return 'core-dark';
+  if (value === 'core-light') return 'core-light';
+  if (value === 'wireframe') return 'wireframe';
+  if (value === 'vertex') return 'vertex';
+  if (value === 'canvas') return 'canvas';
   if (value === 'light') return 'future-light';
   return 'future-dark';
 }

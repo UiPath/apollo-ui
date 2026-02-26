@@ -14,7 +14,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: () => (
-    <div className="future-dark flex h-screen bg-future-surface">
+    <div className="future-dark flex h-screen bg-surface">
       <ChatFirstExperience
         userName="David"
         subtitle="What should we work on today?"
