@@ -88,16 +88,16 @@ export function SettingsAdmin({
           {activeSection === 'profile' && (
             <>
               <div>
-                <h2 className="text-2xl font-bold text-future-foreground">Profile</h2>
-                <p className="text-future-foreground-muted">
+                <h2 className="text-2xl font-bold text-foreground">Profile</h2>
+                <p className="text-foreground-muted">
                   Manage your public profile information.
                 </p>
               </div>
 
-              <Card className="border-future-border-subtle bg-future-surface-raised">
+              <Card className="border-border-subtle bg-surface-raised">
                 <CardHeader>
-                  <CardTitle className="text-future-foreground">Avatar</CardTitle>
-                  <CardDescription className="text-future-foreground-muted">
+                  <CardTitle className="text-foreground">Avatar</CardTitle>
+                  <CardDescription className="text-foreground-muted">
                     Click on the avatar to upload a custom one from your files.
                   </CardDescription>
                 </CardHeader>
@@ -119,51 +119,51 @@ export function SettingsAdmin({
                 </CardContent>
               </Card>
 
-              <Card className="border-future-border-subtle bg-future-surface-raised">
+              <Card className="border-border-subtle bg-surface-raised">
                 <CardHeader>
-                  <CardTitle className="text-future-foreground">Personal Information</CardTitle>
-                  <CardDescription className="text-future-foreground-muted">
+                  <CardTitle className="text-foreground">Personal Information</CardTitle>
+                  <CardDescription className="text-foreground-muted">
                     Update your personal details here.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Grid gap={4} cols={2}>
                     <Column gap={2}>
-                      <Label htmlFor="firstName" className="text-future-foreground">
+                      <Label htmlFor="firstName" className="text-foreground">
                         First name
                       </Label>
                       <Input
                         id="firstName"
                         value={formData.firstName}
                         onChange={(e) => updateField('firstName', e.target.value)}
-                        className="border-future-border bg-future-surface-overlay text-future-foreground"
+                        className="border-border bg-surface-overlay text-foreground"
                       />
                     </Column>
                     <Column gap={2}>
-                      <Label htmlFor="lastName" className="text-future-foreground">
+                      <Label htmlFor="lastName" className="text-foreground">
                         Last name
                       </Label>
                       <Input
                         id="lastName"
                         value={formData.lastName}
                         onChange={(e) => updateField('lastName', e.target.value)}
-                        className="border-future-border bg-future-surface-overlay text-future-foreground"
+                        className="border-border bg-surface-overlay text-foreground"
                       />
                     </Column>
                   </Grid>
                   <Column gap={2}>
-                    <Label htmlFor="username" className="text-future-foreground">
+                    <Label htmlFor="username" className="text-foreground">
                       Username
                     </Label>
                     <Input
                       id="username"
                       value={formData.username}
                       onChange={(e) => updateField('username', e.target.value)}
-                      className="border-future-border bg-future-surface-overlay text-future-foreground"
+                      className="border-border bg-surface-overlay text-foreground"
                     />
                   </Column>
                   <Column gap={2}>
-                    <Label htmlFor="bio" className="text-future-foreground">
+                    <Label htmlFor="bio" className="text-foreground">
                       Bio
                     </Label>
                     <Textarea
@@ -171,14 +171,14 @@ export function SettingsAdmin({
                       value={formData.bio}
                       onChange={(e) => updateField('bio', e.target.value)}
                       rows={3}
-                      className="border-future-border bg-future-surface-overlay text-future-foreground"
+                      className="border-border bg-surface-overlay text-foreground"
                     />
-                    <p className="text-xs text-future-foreground-subtle">
+                    <p className="text-xs text-foreground-subtle">
                       Brief description for your profile. URLs are hyperlinked.
                     </p>
                   </Column>
                 </CardContent>
-                <CardFooter className="border-t border-future-border-subtle px-6 py-4">
+                <CardFooter className="border-t border-border-subtle px-6 py-4">
                   <Button>Save changes</Button>
                 </CardFooter>
               </Card>
@@ -188,22 +188,22 @@ export function SettingsAdmin({
           {activeSection === 'account' && (
             <>
               <div>
-                <h2 className="text-2xl font-bold text-future-foreground">Account</h2>
-                <p className="text-future-foreground-muted">
+                <h2 className="text-2xl font-bold text-foreground">Account</h2>
+                <p className="text-foreground-muted">
                   Manage your account settings and email preferences.
                 </p>
               </div>
 
-              <Card className="border-future-border-subtle bg-future-surface-raised">
+              <Card className="border-border-subtle bg-surface-raised">
                 <CardHeader>
-                  <CardTitle className="text-future-foreground">Email</CardTitle>
-                  <CardDescription className="text-future-foreground-muted">
+                  <CardTitle className="text-foreground">Email</CardTitle>
+                  <CardDescription className="text-foreground-muted">
                     Your email address is used for login and notifications.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Column gap={2}>
-                    <Label htmlFor="email" className="text-future-foreground">
+                    <Label htmlFor="email" className="text-foreground">
                       Email address
                     </Label>
                     <Input
@@ -211,27 +211,27 @@ export function SettingsAdmin({
                       type="email"
                       value={formData.email}
                       onChange={(e) => updateField('email', e.target.value)}
-                      className="border-future-border bg-future-surface-overlay text-future-foreground"
+                      className="border-border bg-surface-overlay text-foreground"
                     />
                   </Column>
                 </CardContent>
-                <CardFooter className="border-t border-future-border-subtle px-6 py-4">
+                <CardFooter className="border-t border-border-subtle px-6 py-4">
                   <Button>Update email</Button>
                 </CardFooter>
               </Card>
 
-              <Card className="border-red-500/30 bg-future-surface-raised">
+              <Card className="border-red-500/30 bg-surface-raised">
                 <CardHeader>
                   <CardTitle className="text-red-400">Danger Zone</CardTitle>
-                  <CardDescription className="text-future-foreground-muted">
+                  <CardDescription className="text-foreground-muted">
                     Irreversible and destructive actions.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Row justify="between" align="center">
                     <Column gap={0}>
-                      <p className="font-medium text-future-foreground">Delete account</p>
-                      <p className="text-sm text-future-foreground-muted">
+                      <p className="font-medium text-foreground">Delete account</p>
+                      <p className="text-sm text-foreground-muted">
                         Permanently delete your account and all associated data.
                       </p>
                     </Column>
@@ -245,22 +245,22 @@ export function SettingsAdmin({
           {activeSection === 'appearance' && (
             <>
               <div>
-                <h2 className="text-2xl font-bold text-future-foreground">Appearance</h2>
-                <p className="text-future-foreground-muted">
+                <h2 className="text-2xl font-bold text-foreground">Appearance</h2>
+                <p className="text-foreground-muted">
                   Customize the appearance of the application.
                 </p>
               </div>
 
-              <Card className="border-future-border-subtle bg-future-surface-raised">
+              <Card className="border-border-subtle bg-surface-raised">
                 <CardHeader>
-                  <CardTitle className="text-future-foreground">Theme</CardTitle>
-                  <CardDescription className="text-future-foreground-muted">
+                  <CardTitle className="text-foreground">Theme</CardTitle>
+                  <CardDescription className="text-foreground-muted">
                     Select your preferred theme for the dashboard.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Column gap={2}>
-                    <Label htmlFor="theme" className="text-future-foreground">
+                    <Label htmlFor="theme" className="text-foreground">
                       Theme
                     </Label>
                     <Select
@@ -269,7 +269,7 @@ export function SettingsAdmin({
                     >
                       <SelectTrigger
                         id="theme"
-                        className="w-[200px] border-future-border bg-future-surface-overlay text-future-foreground"
+                        className="w-[200px] border-border bg-surface-overlay text-foreground"
                       >
                         <SelectValue />
                       </SelectTrigger>
@@ -281,7 +281,7 @@ export function SettingsAdmin({
                     </Select>
                   </Column>
                   <Column gap={2}>
-                    <Label htmlFor="language" className="text-future-foreground">
+                    <Label htmlFor="language" className="text-foreground">
                       Language
                     </Label>
                     <Select
@@ -290,7 +290,7 @@ export function SettingsAdmin({
                     >
                       <SelectTrigger
                         id="language"
-                        className="w-[200px] border-future-border bg-future-surface-overlay text-future-foreground"
+                        className="w-[200px] border-border bg-surface-overlay text-foreground"
                       >
                         <SelectValue />
                       </SelectTrigger>
@@ -310,24 +310,24 @@ export function SettingsAdmin({
           {activeSection === 'notifications' && (
             <>
               <div>
-                <h2 className="text-2xl font-bold text-future-foreground">Notifications</h2>
-                <p className="text-future-foreground-muted">
+                <h2 className="text-2xl font-bold text-foreground">Notifications</h2>
+                <p className="text-foreground-muted">
                   Configure how you receive notifications.
                 </p>
               </div>
 
-              <Card className="border-future-border-subtle bg-future-surface-raised">
+              <Card className="border-border-subtle bg-surface-raised">
                 <CardHeader>
-                  <CardTitle className="text-future-foreground">Notification Preferences</CardTitle>
-                  <CardDescription className="text-future-foreground-muted">
+                  <CardTitle className="text-foreground">Notification Preferences</CardTitle>
+                  <CardDescription className="text-foreground-muted">
                     Choose what notifications you want to receive.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <Row justify="between" align="center">
                     <Column gap={0.5}>
-                      <Label className="text-future-foreground">Email notifications</Label>
-                      <p className="text-sm text-future-foreground-muted">
+                      <Label className="text-foreground">Email notifications</Label>
+                      <p className="text-sm text-foreground-muted">
                         Receive notifications via email.
                       </p>
                     </Column>
@@ -336,11 +336,11 @@ export function SettingsAdmin({
                       onCheckedChange={(checked) => updateField('emailNotifications', checked)}
                     />
                   </Row>
-                  <Separator className="bg-future-border-subtle" />
+                  <Separator className="bg-border-subtle" />
                   <Row justify="between" align="center">
                     <Column gap={0.5}>
-                      <Label className="text-future-foreground">Push notifications</Label>
-                      <p className="text-sm text-future-foreground-muted">
+                      <Label className="text-foreground">Push notifications</Label>
+                      <p className="text-sm text-foreground-muted">
                         Receive push notifications on your device.
                       </p>
                     </Column>
@@ -349,11 +349,11 @@ export function SettingsAdmin({
                       onCheckedChange={(checked) => updateField('pushNotifications', checked)}
                     />
                   </Row>
-                  <Separator className="bg-future-border-subtle" />
+                  <Separator className="bg-border-subtle" />
                   <Row justify="between" align="center">
                     <Column gap={0.5}>
-                      <Label className="text-future-foreground">Marketing emails</Label>
-                      <p className="text-sm text-future-foreground-muted">
+                      <Label className="text-foreground">Marketing emails</Label>
+                      <p className="text-sm text-foreground-muted">
                         Receive emails about new features and updates.
                       </p>
                     </Column>
@@ -370,68 +370,68 @@ export function SettingsAdmin({
           {activeSection === 'security' && (
             <>
               <div>
-                <h2 className="text-2xl font-bold text-future-foreground">Security</h2>
-                <p className="text-future-foreground-muted">Manage your security preferences.</p>
+                <h2 className="text-2xl font-bold text-foreground">Security</h2>
+                <p className="text-foreground-muted">Manage your security preferences.</p>
               </div>
 
-              <Card className="border-future-border-subtle bg-future-surface-raised">
+              <Card className="border-border-subtle bg-surface-raised">
                 <CardHeader>
-                  <CardTitle className="text-future-foreground">Password</CardTitle>
-                  <CardDescription className="text-future-foreground-muted">
+                  <CardTitle className="text-foreground">Password</CardTitle>
+                  <CardDescription className="text-foreground-muted">
                     Change your password here.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Column gap={2}>
-                    <Label htmlFor="currentPassword" className="text-future-foreground">
+                    <Label htmlFor="currentPassword" className="text-foreground">
                       Current password
                     </Label>
                     <Input
                       id="currentPassword"
                       type="password"
-                      className="border-future-border bg-future-surface-overlay text-future-foreground"
+                      className="border-border bg-surface-overlay text-foreground"
                     />
                   </Column>
                   <Column gap={2}>
-                    <Label htmlFor="newPassword" className="text-future-foreground">
+                    <Label htmlFor="newPassword" className="text-foreground">
                       New password
                     </Label>
                     <Input
                       id="newPassword"
                       type="password"
-                      className="border-future-border bg-future-surface-overlay text-future-foreground"
+                      className="border-border bg-surface-overlay text-foreground"
                     />
                   </Column>
                   <Column gap={2}>
-                    <Label htmlFor="confirmPassword" className="text-future-foreground">
+                    <Label htmlFor="confirmPassword" className="text-foreground">
                       Confirm password
                     </Label>
                     <Input
                       id="confirmPassword"
                       type="password"
-                      className="border-future-border bg-future-surface-overlay text-future-foreground"
+                      className="border-border bg-surface-overlay text-foreground"
                     />
                   </Column>
                 </CardContent>
-                <CardFooter className="border-t border-future-border-subtle px-6 py-4">
+                <CardFooter className="border-t border-border-subtle px-6 py-4">
                   <Button>Update password</Button>
                 </CardFooter>
               </Card>
 
-              <Card className="border-future-border-subtle bg-future-surface-raised">
+              <Card className="border-border-subtle bg-surface-raised">
                 <CardHeader>
-                  <CardTitle className="text-future-foreground">
+                  <CardTitle className="text-foreground">
                     Two-Factor Authentication
                   </CardTitle>
-                  <CardDescription className="text-future-foreground-muted">
+                  <CardDescription className="text-foreground-muted">
                     Add an extra layer of security to your account.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Row justify="between" align="center">
                     <Column gap={0.5}>
-                      <p className="font-medium text-future-foreground">Enable 2FA</p>
-                      <p className="text-sm text-future-foreground-muted">
+                      <p className="font-medium text-foreground">Enable 2FA</p>
+                      <p className="text-sm text-foreground-muted">
                         Secure your account with two-factor authentication.
                       </p>
                     </Column>
@@ -448,16 +448,16 @@ export function SettingsAdmin({
           {activeSection === 'billing' && (
             <>
               <div>
-                <h2 className="text-2xl font-bold text-future-foreground">Billing</h2>
-                <p className="text-future-foreground-muted">
+                <h2 className="text-2xl font-bold text-foreground">Billing</h2>
+                <p className="text-foreground-muted">
                   Manage your billing information and subscription.
                 </p>
               </div>
 
-              <Card className="border-future-border-subtle bg-future-surface-raised">
+              <Card className="border-border-subtle bg-surface-raised">
                 <CardHeader>
-                  <CardTitle className="text-future-foreground">Current Plan</CardTitle>
-                  <CardDescription className="text-future-foreground-muted">
+                  <CardTitle className="text-foreground">Current Plan</CardTitle>
+                  <CardDescription className="text-foreground-muted">
                     You are currently on the Pro plan.
                   </CardDescription>
                 </CardHeader>
@@ -465,11 +465,11 @@ export function SettingsAdmin({
                   <Row
                     justify="between"
                     align="center"
-                    className="rounded-lg border border-future-border-subtle p-4"
+                    className="rounded-lg border border-border-subtle p-4"
                   >
                     <Column gap={0}>
-                      <p className="font-semibold text-future-foreground">Pro Plan</p>
-                      <p className="text-sm text-future-foreground-muted">
+                      <p className="font-semibold text-foreground">Pro Plan</p>
+                      <p className="text-sm text-foreground-muted">
                         $29/month — Renews on Jan 1, 2025
                       </p>
                     </Column>
@@ -478,10 +478,10 @@ export function SettingsAdmin({
                 </CardContent>
               </Card>
 
-              <Card className="border-future-border-subtle bg-future-surface-raised">
+              <Card className="border-border-subtle bg-surface-raised">
                 <CardHeader>
-                  <CardTitle className="text-future-foreground">Payment Method</CardTitle>
-                  <CardDescription className="text-future-foreground-muted">
+                  <CardTitle className="text-foreground">Payment Method</CardTitle>
+                  <CardDescription className="text-foreground-muted">
                     Update your payment information.
                   </CardDescription>
                 </CardHeader>
@@ -489,19 +489,19 @@ export function SettingsAdmin({
                   <Row
                     justify="between"
                     align="center"
-                    className="rounded-lg border border-future-border-subtle p-4"
+                    className="rounded-lg border border-border-subtle p-4"
                   >
                     <Row gap={3} align="center">
                       <Row
                         justify="center"
                         align="center"
-                        className="h-10 w-14 rounded bg-future-surface-overlay"
+                        className="h-10 w-14 rounded bg-surface-overlay"
                       >
-                        <CreditCard className="h-5 w-5 text-future-foreground-muted" />
+                        <CreditCard className="h-5 w-5 text-foreground-muted" />
                       </Row>
                       <Column gap={0}>
-                        <p className="font-medium text-future-foreground">•••• •••• •••• 4242</p>
-                        <p className="text-sm text-future-foreground-muted">Expires 12/25</p>
+                        <p className="font-medium text-foreground">•••• •••• •••• 4242</p>
+                        <p className="text-sm text-foreground-muted">Expires 12/25</p>
                       </Column>
                     </Row>
                     <Button variant="ghost" size="sm">
@@ -509,7 +509,7 @@ export function SettingsAdmin({
                     </Button>
                   </Row>
                 </CardContent>
-                <CardFooter className="border-t border-future-border-subtle px-6 py-4">
+                <CardFooter className="border-t border-border-subtle px-6 py-4">
                   <Button variant="outline">Add payment method</Button>
                 </CardFooter>
               </Card>

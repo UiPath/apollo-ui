@@ -54,14 +54,14 @@ export interface StepsViewProps {
 
 /** Vertical divider for the header */
 function HeaderDivider() {
-  return <div className="h-9 w-px bg-future-border-subtle" />;
+  return <div className="h-9 w-px bg-border-subtle" />;
 }
 
 /** Status badge (e.g. ACTIVE) */
 function StatusBadge({ label }: { label: string }) {
   return (
-    <div className="flex h-10 items-center rounded-xl bg-future-accent-subtle px-4 py-2">
-      <span className="text-sm font-bold leading-5 text-future-foreground-accent-muted">
+    <div className="flex h-10 items-center rounded-xl bg-brand-subtle px-4 py-2">
+      <span className="text-sm font-bold leading-5 text-foreground-accent-muted">
         {label}
       </span>
     </div>
@@ -72,8 +72,8 @@ function StatusBadge({ label }: { label: string }) {
 function StatItem({ value, label }: { value: string; label: string }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-[15px] font-semibold leading-5 text-future-foreground">{value}</span>
-      <span className="text-sm font-medium leading-5 text-future-foreground-subtle">{label}</span>
+      <span className="text-[15px] font-semibold leading-5 text-foreground">{value}</span>
+      <span className="text-sm font-medium leading-5 text-foreground-subtle">{label}</span>
     </div>
   );
 }
@@ -90,7 +90,7 @@ function ActionButton({
 }) {
   return (
     <button
-      className="flex h-10 items-center gap-2 rounded-xl border border-future-border px-4 py-2 text-sm font-medium leading-5 text-future-foreground-subtle transition-colors hover:border-future-border-hover hover:text-future-foreground-hover"
+      className="flex h-10 items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium leading-5 text-foreground-subtle transition-colors hover:border-border-hover hover:text-foreground-hover"
       onClick={onClick}
     >
       {icon}
@@ -108,15 +108,15 @@ function TabBar({ activeTab }: { activeTab: 'steps' | 'history' | 'resources' })
   ];
 
   return (
-    <div className="flex h-10 items-center rounded-xl bg-future-surface-overlay p-1">
+    <div className="flex h-10 items-center rounded-xl bg-surface-overlay p-1">
       {tabs.map((tab) => (
         <div
           key={tab.id}
           className={cn(
             'flex h-8 items-center gap-2 rounded-[10px] px-4 py-2 text-sm font-medium leading-5 transition-colors',
             activeTab === tab.id
-              ? 'border border-future-border-subtle bg-future-surface text-future-foreground'
-              : 'text-future-foreground-subtle hover:text-future-foreground-hover'
+              ? 'border border-border-subtle bg-surface text-foreground'
+              : 'text-foreground-subtle hover:text-foreground-hover'
           )}
         >
           {tab.icon}
@@ -134,44 +134,44 @@ function StepCard({ step, isHovered }: { step: FlowStep; isHovered?: boolean }) 
       className={cn(
         'flex h-16 items-center justify-between rounded-2xl border px-4',
         isHovered
-          ? 'border-future-border-subtle bg-future-surface-overlay shadow-[0px_4px_24px_0px_rgba(0,0,0,0.25)]'
-          : 'border-future-border-subtle'
+          ? 'border-border-subtle bg-surface-overlay shadow-[0px_4px_24px_0px_rgba(0,0,0,0.25)]'
+          : 'border-border-subtle'
       )}
     >
       <div className="flex items-center gap-4">
         {/* Bot icon */}
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-future-surface-hover">
-          <Bot className="h-5 w-5 text-future-foreground" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-hover">
+          <Bot className="h-5 w-5 text-foreground" />
         </div>
 
         {/* Step info */}
         <div className="flex flex-col">
           <div className="flex items-start gap-0.5">
-            <span className="text-sm font-semibold leading-5 tracking-[-0.35px] text-future-foreground">
+            <span className="text-sm font-semibold leading-5 tracking-[-0.35px] text-foreground">
               {step.title}
             </span>
-            <span className="ms-1 text-xs leading-5 tracking-[-0.3px] text-future-foreground-subtle">
+            <span className="ms-1 text-xs leading-5 tracking-[-0.3px] text-foreground-subtle">
               &bull; {step.stepRange}
             </span>
           </div>
           {step.loop ? (
             <div className="flex items-center gap-2">
-              <div className="flex h-5 w-5 items-center justify-center rounded-[10px] bg-future-surface-muted">
-                <Repeat2 className="h-3.5 w-3.5 text-future-foreground-on-accent" />
+              <div className="flex h-5 w-5 items-center justify-center rounded-[10px] bg-surface-muted">
+                <Repeat2 className="h-3.5 w-3.5 text-foreground-on-accent" />
               </div>
-              <span className="text-sm leading-5 text-future-foreground-subtle">
+              <span className="text-sm leading-5 text-foreground-subtle">
                 <span className="font-semibold">Loop</span>: {step.loop}
               </span>
             </div>
           ) : (
-            <span className="text-sm leading-5 tracking-[-0.35px] text-future-foreground-subtle">
+            <span className="text-sm leading-5 tracking-[-0.35px] text-foreground-subtle">
               {step.description}
             </span>
           )}
         </div>
       </div>
 
-      <ChevronDown className="h-4 w-4 shrink-0 text-future-foreground-subtle" />
+      <ChevronDown className="h-4 w-4 shrink-0 text-foreground-subtle" />
     </div>
   );
 }
@@ -233,17 +233,17 @@ export function StepsView({
         <div className="flex shrink-0 items-center gap-4">
           <button
             type="button"
-            className="shrink-0 text-future-foreground transition-colors hover:text-future-foreground"
+            className="shrink-0 text-foreground transition-colors hover:text-foreground"
             onClick={onBack}
             aria-label="Go back"
           >
             <ArrowLeft className="h-6 w-6" />
           </button>
           <div className="flex flex-col gap-1">
-            <span className="whitespace-nowrap text-xl font-semibold leading-5 text-future-foreground">
+            <span className="whitespace-nowrap text-xl font-semibold leading-5 text-foreground">
               {flowName}
             </span>
-            <span className="whitespace-nowrap text-sm font-medium leading-5 text-future-foreground-subtle">
+            <span className="whitespace-nowrap text-sm font-medium leading-5 text-foreground-subtle">
               {flowDescription}
             </span>
           </div>
@@ -272,7 +272,7 @@ export function StepsView({
       </div>
 
       {/* Content area */}
-      <div className="flex flex-1 flex-col rounded-t-2xl border border-future-border-muted bg-future-surface p-4">
+      <div className="flex flex-1 flex-col rounded-t-2xl border border-border-muted bg-surface p-4">
         {/* Tab bar */}
         <TabBar activeTab={activeTab} />
 

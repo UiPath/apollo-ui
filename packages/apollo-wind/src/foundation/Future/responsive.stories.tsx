@@ -63,50 +63,50 @@ function ResponsiveTable({ groups }: { groups: ResponsiveGroup[] }) {
   const maxPx = 1920;
 
   return (
-    <div className="overflow-hidden rounded-lg border border-future-border">
+    <div className="overflow-hidden rounded-lg border border-border">
       <table className="w-full text-sm" style={{ fontFamily: fontFamily.base }}>
         <thead>
-          <tr className="border-b border-future-border bg-future-surface-overlay">
-            <th className="px-4 py-2.5 text-left font-medium text-future-foreground-muted">Token</th>
-            <th className="px-4 py-2.5 text-right font-medium text-future-foreground-muted">px</th>
-            <th className="px-4 py-2.5 text-left font-medium text-future-foreground-muted">Usage</th>
-            <th className="px-4 py-2.5 text-left font-medium text-future-foreground-muted">Relative width</th>
+          <tr className="border-b border-border bg-surface-overlay">
+            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Token</th>
+            <th className="px-4 py-2.5 text-right font-medium text-foreground-muted">px</th>
+            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Usage</th>
+            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Relative width</th>
           </tr>
         </thead>
         <tbody>
           {groups.map((group) => (
             <React.Fragment key={group.group}>
-              <tr className="border-b border-future-border bg-future-surface-raised/50">
+              <tr className="border-b border-border bg-surface-raised/50">
                 <td
                   colSpan={4}
-                  className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-future-foreground-muted"
+                  className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-foreground-muted"
                 >
                   {group.group}
-                  <span className="ml-2 font-normal normal-case tracking-normal text-future-foreground-subtle">
+                  <span className="ml-2 font-normal normal-case tracking-normal text-foreground-subtle">
                     — {group.description}
                   </span>
                 </td>
               </tr>
               {group.tokens.map((token) => (
-                <tr key={token.token} className="border-b border-future-border-subtle last:border-b-0">
+                <tr key={token.token} className="border-b border-border-subtle last:border-b-0">
                   <td className="px-4 py-2">
-                    <code className="text-xs text-future-accent-foreground" style={{ fontFamily: fontFamily.monospace }}>
+                    <code className="text-xs text-brand-foreground" style={{ fontFamily: fontFamily.monospace }}>
                       {token.token}
                     </code>
                   </td>
                   <td className="px-4 py-2 text-right">
-                    <code className="text-xs tabular-nums text-future-foreground-muted" style={{ fontFamily: fontFamily.monospace }}>
+                    <code className="text-xs tabular-nums text-foreground-muted" style={{ fontFamily: fontFamily.monospace }}>
                       {token.px}
                     </code>
                   </td>
-                  <td className="px-4 py-2 text-future-foreground-muted">{token.usage}</td>
+                  <td className="px-4 py-2 text-foreground-muted">{token.usage}</td>
                   <td className="px-4 py-2">
                     <div className="flex items-center gap-2">
                       <div
-                        className="h-4 rounded bg-future-accent/60"
+                        className="h-4 rounded bg-brand/60"
                         style={{ width: `${(token.px / maxPx) * 100}%`, minWidth: '4px' }}
                       />
-                      <span className="shrink-0 text-[10px] tabular-nums text-future-foreground-subtle" style={{ fontFamily: fontFamily.monospace }}>
+                      <span className="shrink-0 text-[10px] tabular-nums text-foreground-subtle" style={{ fontFamily: fontFamily.monospace }}>
                         {((token.px / maxPx) * 100).toFixed(0)}%
                       </span>
                     </div>
@@ -129,17 +129,17 @@ export const Default: Story = {
   render: (_, { globals }) => (
     <div
       className={cn(
-        ({ light: 'future-light', 'legacy-dark': 'legacy-dark', 'legacy-light': 'legacy-light', wireframe: 'future-wireframe', vertex: 'future-vertex', canvas: 'future-canvas' } as Record<string, string>)[globals.futureTheme] ?? 'future-dark',
-        'min-h-screen w-full bg-future-surface'
+        ({ light: 'future-light', 'core-dark': 'core-dark', 'core-light': 'core-light', wireframe: 'wireframe', vertex: 'vertex', canvas: 'canvas' } as Record<string, string>)[globals.futureTheme] ?? 'future-dark',
+        'min-h-screen w-full bg-surface'
       )}
       style={{ fontFamily: fontFamily.base }}
     >
       <div className="mx-auto max-w-5xl space-y-10 p-8">
         <div>
-          <h1 className="mb-2 text-3xl font-bold tracking-tight text-future-foreground">
+          <h1 className="mb-2 text-3xl font-bold tracking-tight text-foreground">
             Responsive Tokens
           </h1>
-          <p className="text-sm text-future-foreground-muted">
+          <p className="text-sm text-foreground-muted">
             Breakpoints and viewport presets for the Future design language.
             Breakpoints control layout behavior; viewport presets are named widths for testing.
           </p>

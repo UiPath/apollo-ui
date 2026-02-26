@@ -44,8 +44,8 @@ export interface FlowPanelProps {
 
 function UiPathLogo() {
   return (
-    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-future-accent shadow-sm">
-      <span className="text-xs font-bold text-future-foreground-on-accent select-none">Ui</span>
+    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand shadow-sm">
+      <span className="text-xs font-bold text-foreground-on-accent select-none">Ui</span>
     </div>
   );
 }
@@ -68,7 +68,7 @@ function IconRail({
   return (
     <div
       className={cn(
-        'flex w-[60px] shrink-0 flex-col justify-between bg-future-surface-overlay',
+        'flex w-[60px] shrink-0 flex-col justify-between bg-surface-overlay',
         hasShadow && 'shadow-[0px_4px_16px_0px_rgba(0,0,0,0.25)]'
       )}
     >
@@ -83,15 +83,15 @@ function IconRail({
               <TooltipTrigger asChild>
                 <button
                   className={cn(
-                    'flex h-12 w-full items-center justify-center text-future-foreground-muted transition-colors hover:text-future-foreground',
-                    activeId === item.id && 'text-future-accent-foreground'
+                    'flex h-12 w-full items-center justify-center text-foreground-muted transition-colors hover:text-foreground',
+                    activeId === item.id && 'text-brand-foreground'
                   )}
                   onClick={() => onNavClick(item.id)}
                 >
                   <div
                     className={cn(
                       'flex h-9 w-9 items-center justify-center rounded-lg transition-colors',
-                      activeId === item.id && 'bg-future-surface-hover'
+                      activeId === item.id && 'bg-surface-hover'
                     )}
                   >
                     {item.icon}
@@ -106,8 +106,8 @@ function IconRail({
 
       {/* Footer: avatar */}
       <div className="flex h-[60px] shrink-0 items-center justify-center">
-        <Avatar className="h-8 w-8 bg-future-surface-raised">
-          <AvatarFallback className="bg-future-surface-raised text-xs text-future-foreground-muted">
+        <Avatar className="h-8 w-8 bg-surface-raised">
+          <AvatarFallback className="bg-surface-raised text-xs text-foreground-muted">
             U
           </AvatarFallback>
         </Avatar>
@@ -126,15 +126,15 @@ function DefaultChatContent({ chatMessages }: { chatMessages: FlowPanelChatMessa
       {chatMessages.map((msg) =>
         msg.role === 'user' ? (
           <div key={msg.id} className="flex flex-col items-end pr-6">
-            <div className="max-w-[360px] rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-[4px] bg-future-surface-raised px-6 py-4">
-              <p className="text-base leading-6 tracking-[-0.4px] text-future-foreground">
+            <div className="max-w-[360px] rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-[4px] bg-surface-raised px-6 py-4">
+              <p className="text-base leading-6 tracking-[-0.4px] text-foreground">
                 {msg.content}
               </p>
             </div>
           </div>
         ) : (
           <div key={msg.id} className="flex items-center gap-2">
-            <p className="text-base font-medium leading-5 text-future-foreground-muted">
+            <p className="text-base font-medium leading-5 text-foreground-muted">
               {msg.content}
             </p>
           </div>
@@ -151,11 +151,11 @@ function DefaultChatContent({ chatMessages }: { chatMessages: FlowPanelChatMessa
 function ChatInput() {
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex h-12 items-center rounded-2xl border border-future-border bg-future-surface-raised px-4">
+      <div className="flex h-12 items-center rounded-2xl border border-border bg-surface-raised px-4">
         <input
           type="text"
           placeholder="Ask me to help build your Flow"
-          className="flex-1 bg-transparent text-sm text-future-foreground placeholder:text-future-foreground-subtle outline-none"
+          className="flex-1 bg-transparent text-sm text-foreground placeholder:text-foreground-subtle outline-none"
           readOnly
         />
       </div>
@@ -163,14 +163,14 @@ function ChatInput() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-future-foreground-muted hover:text-future-foreground"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted hover:text-foreground"
             aria-label="Add attachment"
           >
             <Plus className="h-5 w-5" />
           </button>
           <button
             type="button"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-future-foreground-muted hover:text-future-foreground"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted hover:text-foreground"
             aria-label="Add workflow"
           >
             <Workflow className="h-5 w-5" />
@@ -178,7 +178,7 @@ function ChatInput() {
         </div>
         <button
           type="button"
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-future-accent text-future-foreground-on-accent"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-foreground-on-accent"
           aria-label="Submit message"
         >
           <CornerDownLeft className="h-4 w-4" />
@@ -202,15 +202,15 @@ function ExpandedPanel({
   onClose: () => void;
 }) {
   return (
-    <div className="flex h-full w-[420px] shrink-0 flex-col justify-between overflow-hidden bg-future-surface-overlay px-4 pb-4 pt-3">
+    <div className="flex h-full w-[420px] shrink-0 flex-col justify-between overflow-hidden bg-surface-overlay px-4 pb-4 pt-3">
       {/* Header: Flow / Autopilot tabs + close */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4 text-base tracking-[-0.6px] leading-9">
-          <span className="font-bold text-future-foreground">Flow</span>
-          <span className="font-medium text-future-foreground-subtle">Autopilot</span>
+          <span className="font-bold text-foreground">Flow</span>
+          <span className="font-medium text-foreground-subtle">Autopilot</span>
         </div>
         <button
-          className="text-future-foreground-muted transition-colors hover:text-future-foreground"
+          className="text-foreground-muted transition-colors hover:text-foreground"
           onClick={onClose}
           aria-label="Close panel"
         >

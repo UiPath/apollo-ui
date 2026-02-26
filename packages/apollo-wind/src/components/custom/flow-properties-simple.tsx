@@ -100,13 +100,13 @@ function FieldItem({
     <div className="flex flex-col gap-1 pt-4">
       {/* Label row */}
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium leading-5 text-future-foreground-muted">
+        <span className="text-sm font-medium leading-5 text-foreground-muted">
           {field.label}
           {field.required && '*'}
         </span>
         {field.showGraphControl && (
           <button
-            className="flex h-6 w-6 items-center justify-center rounded-lg bg-future-surface-overlay text-future-foreground-muted transition-colors hover:text-future-foreground"
+            className="flex h-6 w-6 items-center justify-center rounded-lg bg-surface-overlay text-foreground-muted transition-colors hover:text-foreground"
             onClick={() => onGraphControl?.(field.label)}
             aria-label="Graph control"
           >
@@ -122,18 +122,18 @@ function FieldItem({
             className={cn(
               'h-10 rounded-xl border-0 shadow-sm',
               value
-                ? 'bg-future-surface-hover text-future-foreground'
-                : 'bg-future-surface-overlay text-future-foreground-muted'
+                ? 'bg-surface-hover text-foreground'
+                : 'bg-surface-overlay text-foreground-muted'
             )}
           >
             <SelectValue placeholder={field.placeholder ?? 'Select...'} />
           </SelectTrigger>
-          <SelectContent className="border-future-border bg-future-surface-overlay text-future-foreground">
+          <SelectContent className="border-border bg-surface-overlay text-foreground">
             {(field.options ?? []).map((opt) => (
               <SelectItem
                 key={opt.value}
                 value={opt.value}
-                className="focus:bg-future-surface-hover focus:text-future-foreground"
+                className="focus:bg-surface-hover focus:text-foreground"
               >
                 {opt.label}
               </SelectItem>
@@ -141,16 +141,16 @@ function FieldItem({
           </SelectContent>
         </Select>
       ) : field.type === 'url' ? (
-        <div className="flex h-10 items-center overflow-hidden rounded-xl bg-future-surface-overlay shadow-sm">
+        <div className="flex h-10 items-center overflow-hidden rounded-xl bg-surface-overlay shadow-sm">
           <Input
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder={field.placeholder}
-            className="h-full flex-1 rounded-none border-0 bg-transparent text-sm font-medium text-future-foreground-muted shadow-none placeholder:text-future-foreground-subtle focus-visible:ring-0"
+            className="h-full flex-1 rounded-none border-0 bg-transparent text-sm font-medium text-foreground-muted shadow-none placeholder:text-foreground-subtle focus-visible:ring-0"
           />
           <button
             type="button"
-            className="flex h-full w-[50px] items-center justify-center border-l border-future-border text-future-foreground-muted transition-colors hover:text-future-foreground"
+            className="flex h-full w-[50px] items-center justify-center border-l border-border text-foreground-muted transition-colors hover:text-foreground"
             aria-label="Browse files"
           >
             <Folder className="h-5 w-5" />
@@ -164,8 +164,8 @@ function FieldItem({
           className={cn(
             'h-10 rounded-xl border-0 text-sm font-medium shadow-sm',
             value
-              ? 'bg-future-surface-hover text-future-foreground'
-              : 'bg-future-surface-overlay text-future-foreground-muted placeholder:text-future-foreground-subtle'
+              ? 'bg-surface-hover text-foreground'
+              : 'bg-surface-overlay text-foreground-muted placeholder:text-foreground-subtle'
           )}
         />
       )}
@@ -199,7 +199,7 @@ const sampleJsonLines = [
 function EditorToolbarButton({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
     <button
-      className="flex h-8 w-8 items-center justify-center rounded-lg text-future-foreground-muted transition-colors hover:text-future-foreground"
+      className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:text-foreground"
       aria-label={label}
     >
       {icon}
@@ -211,14 +211,14 @@ function JsonEditorDrawer({ open, onClose }: { open: boolean; onClose: () => voi
   if (!open) return null;
 
   return (
-    <div className="flex h-full w-full flex-col rounded-2xl border border-future-border bg-future-surface-raised">
+    <div className="flex h-full w-full flex-col rounded-2xl border border-border bg-surface-raised">
       {/* ── Header ──────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-6 py-4">
-        <span className="text-base font-semibold leading-5 tracking-[-0.4px] text-future-foreground">
+        <span className="text-base font-semibold leading-5 tracking-[-0.4px] text-foreground">
           JSON editor
         </span>
         <button
-          className="flex h-10 w-10 items-center justify-center rounded-xl bg-future-surface-overlay text-future-foreground-muted transition-colors hover:text-future-foreground"
+          className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-overlay text-foreground-muted transition-colors hover:text-foreground"
           onClick={onClose}
           aria-label="Close editor"
         >
@@ -236,15 +236,15 @@ function JsonEditorDrawer({ open, onClose }: { open: boolean; onClose: () => voi
 
       {/* ── Code editor area ────────────────────────────────── */}
       <div className="flex flex-1 flex-col overflow-hidden px-6 pb-4">
-        <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-future-border-subtle bg-future-surface shadow-sm">
+        <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface shadow-sm">
           {/* File header */}
           <div className="flex items-center justify-between px-3 py-2.5">
-            <div className="flex items-center gap-2 text-future-foreground-muted">
+            <div className="flex items-center gap-2 text-foreground-muted">
               <FileJson className="h-4 w-4" />
               <span className="text-sm font-medium leading-none">script.js</span>
             </div>
             <button
-              className="flex h-5 w-5 items-center justify-center text-future-foreground-muted transition-colors hover:text-future-foreground"
+              className="flex h-5 w-5 items-center justify-center text-foreground-muted transition-colors hover:text-foreground"
               aria-label="Refresh"
             >
               <RefreshCw className="h-4 w-4" />
@@ -257,13 +257,13 @@ function JsonEditorDrawer({ open, onClose }: { open: boolean; onClose: () => voi
             style={{ fontFamily: fontFamily.monospace }}
           >
             {/* Line numbers */}
-            <div className="flex flex-col text-right text-future-foreground-subtle select-none">
+            <div className="flex flex-col text-right text-foreground-subtle select-none">
               {sampleJsonLines.map((_, i) => (
                 <span key={i}>{i + 1}</span>
               ))}
             </div>
             {/* Code */}
-            <div className="flex flex-col whitespace-pre text-future-foreground-muted">
+            <div className="flex flex-col whitespace-pre text-foreground-muted">
               {sampleJsonLines.map((line, i) => (
                 <span key={i}>{line}</span>
               ))}
@@ -275,13 +275,13 @@ function JsonEditorDrawer({ open, onClose }: { open: boolean; onClose: () => voi
       {/* ── Footer ──────────────────────────────────────────── */}
       <div className="flex items-center justify-end gap-2 px-6 py-4">
         <button
-          className="flex h-10 items-center gap-2 rounded-xl border border-future-border px-4 py-2 text-sm font-medium leading-5 text-future-foreground-subtle transition-colors hover:text-future-foreground"
+          className="flex h-10 items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium leading-5 text-foreground-subtle transition-colors hover:text-foreground"
           onClick={onClose}
         >
           <span>Cancel</span>
         </button>
         <button
-          className="flex h-10 items-center gap-2 rounded-xl bg-future-accent px-4 py-2 text-sm font-semibold leading-5 text-future-foreground-inverse transition-colors hover:bg-future-accent/90"
+          className="flex h-10 items-center gap-2 rounded-xl bg-brand px-4 py-2 text-sm font-semibold leading-5 text-foreground-inverse transition-colors hover:bg-brand/90"
           onClick={onClose}
         >
           <span>Save</span>
@@ -332,22 +332,22 @@ export function PropertiesSimple({
       {/* ── Properties panel ──────────────────────────────────── */}
       <div
         className={cn(
-          'flex h-full w-full flex-col overflow-hidden rounded-2xl border border-future-border bg-future-surface-raised',
+          'flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-surface-raised',
           className
         )}
       >
         {/* ── Header ────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between border-b border-future-border px-4 py-4">
+        <div className="flex items-center justify-between border-b border-border px-4 py-4">
           <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-future-accent-subtle">
-              {icon ?? <Webhook className="h-6 w-6 text-future-accent-foreground" />}
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-subtle">
+              {icon ?? <Webhook className="h-6 w-6 text-brand-foreground" />}
             </div>
-            <span className="text-base font-semibold leading-5 tracking-[-0.4px] text-future-foreground">
+            <span className="text-base font-semibold leading-5 tracking-[-0.4px] text-foreground">
               {title}
             </span>
           </div>
           <button
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-future-surface-overlay text-future-foreground-muted transition-colors hover:text-future-foreground"
+            className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-overlay text-foreground-muted transition-colors hover:text-foreground"
             onClick={onClose}
             aria-label="Close properties"
           >
@@ -373,10 +373,10 @@ export function PropertiesSimple({
                 <AccordionItem
                   key={section.label}
                   value={section.label}
-                  className="border-b border-future-border-subtle"
+                  className="border-b border-border-subtle"
                 >
-                  <AccordionTrigger className="py-4 hover:no-underline [&>svg]:text-future-foreground-muted">
-                    <span className="text-xs font-medium uppercase leading-6 tracking-wide text-future-foreground-muted">
+                  <AccordionTrigger className="py-4 hover:no-underline [&>svg]:text-foreground-muted">
+                    <span className="text-xs font-medium uppercase leading-6 tracking-wide text-foreground-muted">
                       {section.label}
                     </span>
                   </AccordionTrigger>

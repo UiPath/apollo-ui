@@ -79,13 +79,13 @@ export function ViewportGuard({
 
   return (
     <div className={cn('fixed inset-0 z-50 flex items-center justify-center', className)}>
-      <div className="absolute inset-0 bg-future-surface backdrop-blur-xl" aria-hidden="true" />
+      <div className="absolute inset-0 bg-surface backdrop-blur-xl" aria-hidden="true" />
       <div
-        className="relative mx-4 max-w-sm rounded-2xl border border-future-border bg-future-surface-raised px-6 py-5 text-center shadow-xl"
+        className="relative mx-4 max-w-sm rounded-2xl border border-border bg-surface-raised px-6 py-5 text-center shadow-xl"
         role="status"
         aria-live="polite"
       >
-        <p className="text-sm font-medium leading-5 text-future-foreground">{message}</p>
+        <p className="text-sm font-medium leading-5 text-foreground">{message}</p>
       </div>
     </div>
   );

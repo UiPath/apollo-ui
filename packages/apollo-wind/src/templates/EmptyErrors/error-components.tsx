@@ -16,7 +16,7 @@ export function ErrorVideo({ size = 180 }: { size?: number }) {
 
   return (
     <div
-      className="overflow-hidden rounded-full border border-future-border bg-future-surface-raised"
+      className="overflow-hidden rounded-full border border-border bg-surface-raised"
       style={{ width: size, height: size }}
     >
       <iframe

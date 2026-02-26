@@ -32,23 +32,23 @@ function ErrorPageLayout({
   children: React.ReactNode;
 }) {
   const themeClass =
-    theme === 'legacy-dark'
-      ? 'legacy-dark'
-      : theme === 'legacy-light'
-        ? 'legacy-light'
+    theme === 'core-dark'
+      ? 'core-dark'
+      : theme === 'core-light'
+        ? 'core-light'
         : theme === 'wireframe'
-          ? 'future-wireframe'
+          ? 'wireframe'
           : theme === 'vertex'
-            ? 'future-vertex'
+            ? 'vertex'
             : theme === 'canvas'
-              ? 'future-canvas'
+              ? 'canvas'
               : theme === 'light'
                 ? 'future-light'
                 : 'future-dark';
 
   return (
     <div
-      className={cn(themeClass, 'flex h-screen flex-col bg-future-surface')}
+      className={cn(themeClass, 'flex h-screen flex-col bg-surface')}
       style={{ fontFamily: fontFamily.base }}
     >
       <MaestroHeader theme={theme as import('@/foundation/Future/types').FutureTheme} title="UiPath" />

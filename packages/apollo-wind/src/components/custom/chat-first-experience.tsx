@@ -60,10 +60,10 @@ export function ChatFirstExperience({
       <div className="flex w-full max-w-[800px] flex-col items-center gap-[37px]">
         {/* Greeting */}
         <div className="flex flex-col items-center text-center">
-          <h1 className="text-[40px] font-bold leading-9 tracking-[-0.8px] text-future-foreground">
+          <h1 className="text-[40px] font-bold leading-9 tracking-[-0.8px] text-foreground">
             Hello {userName}
           </h1>
-          <p className="mt-1 text-base font-normal leading-9 text-future-foreground-secondary">
+          <p className="mt-1 text-base font-normal leading-9 text-foreground-secondary">
             {subtitle}
           </p>
         </div>

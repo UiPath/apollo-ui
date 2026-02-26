@@ -14,10 +14,10 @@
  *
  * - `'dark'`         — Future dark theme (default)
  * - `'light'`        — Future light theme
- * - `'legacy-dark'`  — Legacy dark theme (backward-compatible)
- * - `'legacy-light'` — Legacy light theme (backward-compatible)
+ * - `'core-dark'`  — Core dark theme (apollo-core design language)
+ * - `'core-light'` — Core light theme (apollo-core design language)
  * - `'wireframe'`    — Demo: low-fidelity wireframe theme (may be removed)
  * - `'vertex'`       — Demo: Apollo Vertex dark palette (may be removed)
  * - `'canvas'`       — Demo: Apollo React / MUI dark palette (may be removed)
  */
-export type FutureTheme = 'dark' | 'light' | 'legacy-dark' | 'legacy-light' | 'wireframe' | 'vertex' | 'canvas';
+export type FutureTheme = 'dark' | 'light' | 'core-dark' | 'core-light' | 'wireframe' | 'vertex' | 'canvas';

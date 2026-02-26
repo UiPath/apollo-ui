@@ -14,11 +14,11 @@ export type { FutureTheme };
 // ============================================================================
 
 function resolveThemeClass(theme: FutureTheme) {
-  if (theme === 'legacy-dark') return 'legacy-dark';
-  if (theme === 'legacy-light') return 'legacy-light';
-  if (theme === 'wireframe') return 'future-wireframe';
-  if (theme === 'vertex') return 'future-vertex';
-  if (theme === 'canvas') return 'future-canvas';
+  if (theme === 'core-dark') return 'core-dark';
+  if (theme === 'core-light') return 'core-light';
+  if (theme === 'wireframe') return 'wireframe';
+  if (theme === 'vertex') return 'vertex';
+  if (theme === 'canvas') return 'canvas';
   if (theme === 'light') return 'future-light';
   return 'future-dark';
 }
@@ -43,7 +43,7 @@ export function AdminSidebar({ className, width = 260, children }: AdminSidebarP
   return (
     <div
       className={cn(
-        'flex shrink-0 flex-col border-r border-future-border-subtle bg-future-surface',
+        'flex shrink-0 flex-col border-r border-border-subtle bg-surface',
         className
       )}
       style={{ width }}
@@ -79,11 +79,11 @@ export function AdminSidebarHeader({
   return (
     <div
       className={cn(
-        'flex shrink-0 items-center justify-between border-b border-future-border-subtle px-4 py-3',
+        'flex shrink-0 items-center justify-between border-b border-border-subtle px-4 py-3',
         className
       )}
     >
-      <div className="flex items-center gap-2 text-sm font-medium text-future-foreground">
+      <div className="flex items-center gap-2 text-sm font-medium text-foreground">
         {icon}
         <span>{title}</span>
       </div>
@@ -128,8 +128,8 @@ export function AdminSidebarNav({
             className={cn(
               'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
               selectedId === item.id
-                ? 'bg-future-accent-subtle text-future-foreground-accent'
-                : 'text-future-foreground-muted hover:bg-future-surface-hover hover:text-future-foreground'
+                ? 'bg-brand-subtle text-foreground-accent'
+                : 'text-foreground-muted hover:bg-surface-hover hover:text-foreground'
             )}
             onClick={() => onSelect?.(item.id)}
           >
@@ -176,14 +176,14 @@ export function AdminPageHeader({
   onTabChange,
 }: AdminPageHeaderProps) {
   return (
-    <div className={cn('border-b border-future-border-subtle px-6 py-4', className)}>
+    <div className={cn('border-b border-border-subtle px-6 py-4', className)}>
       {breadcrumb && breadcrumb.length > 0 && (
-        <div className="mb-2 flex items-center gap-1.5 text-sm text-future-foreground-muted">
+        <div className="mb-2 flex items-center gap-1.5 text-sm text-foreground-muted">
           {breadcrumb.map((item, i) => (
             <React.Fragment key={item}>
-              {i > 0 && <span className="text-future-foreground-subtle">/</span>}
+              {i > 0 && <span className="text-foreground-subtle">/</span>}
               {i === breadcrumb.length - 1 ? (
-                <span className="text-future-foreground">{item}</span>
+                <span className="text-foreground">{item}</span>
               ) : (
                 <span>{item}</span>
               )}
@@ -192,7 +192,7 @@ export function AdminPageHeader({
         </div>
       )}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-future-foreground">{title}</h1>
+        <h1 className="text-xl font-semibold text-foreground">{title}</h1>
         {actions && <div className="flex items-center gap-2">{actions}</div>}
       </div>
       {tabs && (
@@ -203,8 +203,8 @@ export function AdminPageHeader({
               className={cn(
                 'px-4 pb-2 pt-1 text-sm font-medium transition-colors',
                 activeTab === tab.value
-                  ? 'border-b-2 border-future-accent text-future-foreground'
-                  : 'text-future-foreground-muted hover:text-future-foreground'
+                  ? 'border-b-2 border-brand text-foreground'
+                  : 'text-foreground-muted hover:text-foreground'
               )}
               onClick={() => onTabChange?.(tab.value)}
             >
@@ -236,7 +236,7 @@ export function AdminToolbar({ className, children, actions }: AdminToolbarProps
   return (
     <div
       className={cn(
-        'flex items-center justify-between border-b border-future-border-subtle px-6 py-3',
+        'flex items-center justify-between border-b border-border-subtle px-6 py-3',
         className
       )}
     >
@@ -294,7 +294,7 @@ export function AdminTemplate({
       <div
         className={cn(
           resolveThemeClass(theme),
-          'flex h-screen w-full flex-col overflow-hidden bg-future-surface text-foreground',
+          'flex h-screen w-full flex-col overflow-hidden bg-surface text-foreground',
           className
         )}
         style={{ fontFamily: fontFamily.base }}

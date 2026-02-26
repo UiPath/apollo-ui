@@ -20,14 +20,14 @@ const sampleMessages = [
 
 export const Default: Story = {
   render: () => (
-    <div className="future-dark flex h-[600px] bg-future-surface">
+    <div className="future-dark flex h-[600px] bg-surface">
       <FlowPanel
         open
         navItems={defaultFlowNavItems}
         activeNavId="chat"
         chatMessages={sampleMessages}
       />
-      <div className="flex flex-1 items-center justify-center text-sm text-future-foreground-muted">
+      <div className="flex flex-1 items-center justify-center text-sm text-foreground-muted">
         Canvas area
       </div>
     </div>
@@ -36,13 +36,13 @@ export const Default: Story = {
 
 export const Collapsed: Story = {
   render: () => (
-    <div className="future-dark flex h-[600px] bg-future-surface">
+    <div className="future-dark flex h-[600px] bg-surface">
       <FlowPanel
         open={false}
         navItems={defaultFlowNavItems}
         activeNavId="chat"
       />
-      <div className="flex flex-1 items-center justify-center text-sm text-future-foreground-muted">
+      <div className="flex flex-1 items-center justify-center text-sm text-foreground-muted">
         Canvas area
       </div>
     </div>

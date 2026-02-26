@@ -41,31 +41,31 @@ export function PropertiesBar({
   return (
     <div
       className={cn(
-        'flex h-16 items-center justify-between rounded-2xl bg-future-surface-raised px-4',
+        'flex h-16 items-center justify-between rounded-2xl bg-surface-raised px-4',
         className
       )}
     >
       {/* Left: flow icon + name */}
       <div className="flex items-center gap-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-future-accent-subtle">
-          <Workflow className="h-6 w-6 text-future-accent-foreground" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-subtle">
+          <Workflow className="h-6 w-6 text-brand-foreground" />
         </div>
         <div className="flex flex-col">
-          <span className="text-base font-semibold leading-5 tracking-[-0.4px] text-future-foreground">
+          <span className="text-base font-semibold leading-5 tracking-[-0.4px] text-foreground">
             {flowName}
           </span>
-          <span className="text-sm font-normal leading-5 tracking-[-0.35px] text-future-foreground-subtle">
+          <span className="text-sm font-normal leading-5 tracking-[-0.35px] text-foreground-subtle">
             {flowType}
           </span>
         </div>
       </div>
 
       {/* Right: Properties / Variables tabs */}
-      <div className="flex h-10 items-center rounded-xl bg-future-surface-overlay border border-future-border-deep p-1">
+      <div className="flex h-10 items-center rounded-xl bg-surface-overlay border border-border-deep p-1">
         <button
           className={cn(
-            'flex h-8 items-center gap-2 rounded-[10px] px-4 py-2 text-sm font-medium leading-5 text-future-foreground-subtle transition-colors hover:text-future-foreground-hover',
-            activeTab === 'properties' && 'text-future-foreground-subtle'
+            'flex h-8 items-center gap-2 rounded-[10px] px-4 py-2 text-sm font-medium leading-5 text-foreground-subtle transition-colors hover:text-foreground-hover',
+            activeTab === 'properties' && 'text-foreground-subtle'
           )}
           onClick={() => {
             onTabChange?.('properties');
@@ -77,8 +77,8 @@ export function PropertiesBar({
         </button>
         <button
           className={cn(
-            'flex h-7 items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium leading-5 text-future-foreground-subtle transition-colors',
-            activeTab === 'variables' && 'text-future-foreground-subtle'
+            'flex h-7 items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium leading-5 text-foreground-subtle transition-colors',
+            activeTab === 'variables' && 'text-foreground-subtle'
           )}
           onClick={() => onTabChange?.('variables')}
         >

@@ -22,11 +22,11 @@ type Story = StoryObj<typeof meta>;
 // ============================================================================
 
 function resolveThemeClass(value: string) {
-  if (value === 'legacy-dark') return 'legacy-dark';
-  if (value === 'legacy-light') return 'legacy-light';
-  if (value === 'wireframe') return 'future-wireframe';
-  if (value === 'vertex') return 'future-vertex';
-  if (value === 'canvas') return 'future-canvas';
+  if (value === 'core-dark') return 'core-dark';
+  if (value === 'core-light') return 'core-light';
+  if (value === 'wireframe') return 'wireframe';
+  if (value === 'vertex') return 'vertex';
+  if (value === 'canvas') return 'canvas';
   if (value === 'light') return 'future-light';
   return 'future-dark';
 }
@@ -139,8 +139,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib';
 
 ## Theming
-Apply theme class to root: future-dark | future-light | legacy-dark | legacy-light
-Semantic tokens: bg-future-surface, text-future-foreground, border-future-border
+Apply theme class to root: future-dark | future-light | core-dark | core-light
+Semantic tokens: bg-surface, text-foreground, border-border
 Bridge tokens (cross-theme): bg-background, bg-card, text-foreground, text-muted-foreground
 
 ## Components (with inline usage examples)
@@ -186,7 +186,7 @@ Component Library
 
 Theming
   CSS Custom Properties — semantic design tokens
-  Two theme families: Future (Dark / Light) and Legacy (Dark / Light)
+  Two theme families: Future (Dark / Light) and Core (Dark / Light)
   Themes are applied via CSS class scoping — no runtime theme provider needed
 
 Documentation
@@ -398,7 +398,7 @@ function UseFigmaTab() {
           </p>
           <div className="mt-3 space-y-2 text-sm leading-6">
             <div>
-              <span className="font-medium text-foreground">Legacy products: </span>
+              <span className="font-medium text-foreground">Core products: </span>
               <a
                 href="https://www.figma.com/design/l1I5dUQFDxqPYo322wEpXx/Apollo--Components-?node-id=504-2&p=f&t=O0aRtoGuv83eV7od-0"
                 target="_blank"
@@ -841,7 +841,7 @@ function BestPracticesContent() {
           <li>
             <span className="font-medium text-foreground">Reference tokens, not colors.</span>
             <br />
-            Say "use bg-future-surface-raised for the card background" instead of "make the
+            Say "use bg-surface-raised for the card background" instead of "make the
             background dark gray." This ensures theme consistency.
           </li>
           <li>
@@ -868,8 +868,8 @@ function BestPracticesContent() {
             <span className="font-medium text-foreground">Don't use raw Tailwind colors.</span>
             <br />
             Avoid <InlineCode>bg-zinc-900</InlineCode>, <InlineCode>text-gray-400</InlineCode>, etc.
-            Always use semantic tokens (<InlineCode>bg-future-surface</InlineCode>,{' '}
-            <InlineCode>text-future-foreground-muted</InlineCode>).
+            Always use semantic tokens (<InlineCode>bg-surface</InlineCode>,{' '}
+            <InlineCode>text-foreground-muted</InlineCode>).
           </li>
           <li>
             <span className="font-medium text-foreground">Don't install extra UI libraries.</span>
@@ -1021,7 +1021,7 @@ function WhatNotInScopeContent() {
                 <br />
                 Since CSS variables won't resolve, include the actual color values in your prompt.
                 For example: "Use dark gray backgrounds (#09090b for surface, #18181b for raised
-                surfaces) and cyan accents (#06b6d4) to match Apollo's future-dark theme."
+                surfaces) and cyan accents (#0891b2) to match Apollo's future-dark theme."
               </li>
               <li>
                 <span className="font-medium text-foreground">Treat output as a starting point.</span>

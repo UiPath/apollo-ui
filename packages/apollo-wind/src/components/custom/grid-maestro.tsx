@@ -11,7 +11,7 @@ export function Canvas({
   return (
     <main
       className={cn(
-        'flex flex-1 flex-col overflow-y-auto bg-future-surface-raised p-6',
+        'flex flex-1 flex-col overflow-y-auto bg-surface-raised p-6',
         className
       )}
     >

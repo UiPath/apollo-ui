@@ -63,20 +63,20 @@ export function DelegateTemplate({
   const layout = (
     <div
       className={cn(
-        theme === 'legacy-dark'
-          ? 'legacy-dark'
-          : theme === 'legacy-light'
-            ? 'legacy-light'
+        theme === 'core-dark'
+          ? 'core-dark'
+          : theme === 'core-light'
+            ? 'core-light'
             : theme === 'wireframe'
-              ? 'future-wireframe'
+              ? 'wireframe'
               : theme === 'vertex'
-                ? 'future-vertex'
+                ? 'vertex'
                 : theme === 'canvas'
-                  ? 'future-canvas'
+                  ? 'canvas'
                   : theme === 'light'
                     ? 'future-light'
                     : 'future-dark',
-        'flex h-screen bg-future-surface',
+        'flex h-screen bg-surface',
         className
       )}
       style={{ fontFamily: fontFamily.base }}

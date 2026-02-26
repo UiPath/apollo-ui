@@ -224,10 +224,10 @@ Bridge tokens (preferred for content inside templates — cross-theme safe):
 - Borders: border-border, border-input
 
 Future-specific tokens (also available):
-- Surfaces: bg-future-surface, bg-future-surface-raised, bg-future-surface-overlay, bg-future-surface-hover
-- Text: text-future-foreground, text-future-foreground-muted, text-future-foreground-subtle, text-future-foreground-accent
-- Borders: border-future-border, border-future-border-subtle
-- Accent: bg-future-accent, bg-future-accent-subtle
+- Surfaces: bg-surface, bg-surface-raised, bg-surface-overlay, bg-surface-hover
+- Text: text-foreground, text-foreground-muted, text-foreground-subtle, text-foreground-accent
+- Borders: border-border, border-border-subtle
+- Accent: bg-brand, bg-brand-subtle
 
 Common layout patterns:
 - Section header: <div className="flex items-center justify-between"><div><h2 className="text-lg font-semibold text-foreground">Title</h2><p className="text-sm text-muted-foreground">Description</p></div><Button>Action</Button></div>
@@ -246,7 +246,7 @@ Rules:
 - The output renders inside a container that is the full viewport height. Templates already handle h-screen, so do NOT add h-screen to your outermost element.
 - Always use the shadcn components (Card, Table, Button, Badge, etc.) instead of raw HTML when available.
 - Do NOT use raw hex colors or Tailwind palette (bg-zinc-900, text-gray-400). Always use semantic tokens.
-- Do NOT use bg-black or bg-white — use bg-background, bg-card, or bg-future-surface instead.`;
+- Do NOT use bg-black or bg-white — use bg-background, bg-card, or bg-surface instead.`;
 }
 
 async function callClaude(
@@ -289,11 +289,11 @@ async function callClaude(
 // ============================================================================
 
 function resolveThemeClass(theme: FutureTheme) {
-  if (theme === 'legacy-dark') return 'legacy-dark';
-  if (theme === 'legacy-light') return 'legacy-light';
-  if (theme === 'wireframe') return 'future-wireframe';
-  if (theme === 'vertex') return 'future-vertex';
-  if (theme === 'canvas') return 'future-canvas';
+  if (theme === 'core-dark') return 'core-dark';
+  if (theme === 'core-light') return 'core-light';
+  if (theme === 'wireframe') return 'wireframe';
+  if (theme === 'vertex') return 'vertex';
+  if (theme === 'canvas') return 'canvas';
   if (theme === 'light') return 'future-light';
   return 'future-dark';
 }
@@ -507,13 +507,13 @@ function FloatingChat({
         onPointerMove={handleDragPointerMove}
         onPointerUp={handleDragPointerUp}
       >
-        <div className="flex items-center gap-2 rounded-full border border-future-border bg-future-surface-raised px-3 py-2.5 shadow-lg transition-all hover:bg-future-surface-hover">
-          <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab text-future-foreground-subtle active:cursor-grabbing" />
+        <div className="flex items-center gap-2 rounded-full border border-border bg-surface-raised px-3 py-2.5 shadow-lg transition-all hover:bg-surface-hover">
+          <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab text-foreground-subtle active:cursor-grabbing" />
           <button onClick={() => setIsCollapsed(false)} className="flex items-center gap-2">
             <AnimatedGradientIcon className="h-4 w-4" />
-            <span className="text-sm font-medium text-future-foreground">Ideas</span>
+            <span className="text-sm font-medium text-foreground">Ideas</span>
             {messages.length > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-future-accent px-1 text-[10px] font-bold text-future-foreground-on-accent">
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold text-foreground-on-accent">
                 {messages.length}
               </span>
             )}
@@ -528,29 +528,29 @@ function FloatingChat({
     <div
       ref={dragRef}
       className={cn(
-        'z-50 flex w-[320px] flex-col overflow-hidden rounded-2xl border border-future-border bg-future-surface-raised shadow-2xl select-none',
-        isDragging ? 'ring-2 ring-future-accent/30' : ''
+        'z-50 flex w-[320px] flex-col overflow-hidden rounded-2xl border border-border bg-surface-raised shadow-2xl select-none',
+        isDragging ? 'ring-2 ring-brand/30' : ''
       )}
       style={{ ...positionStyle, height: 480 }}
     >
       {/* Title bar — drag handle */}
       <div
         data-drag-handle
-        className="flex h-11 shrink-0 cursor-grab items-center justify-between border-b border-future-border-subtle bg-future-surface-overlay px-3 active:cursor-grabbing"
+        className="flex h-11 shrink-0 cursor-grab items-center justify-between border-b border-border-subtle bg-surface-overlay px-3 active:cursor-grabbing"
         onPointerDown={handleDragPointerDown}
         onPointerMove={handleDragPointerMove}
         onPointerUp={handleDragPointerUp}
       >
         <div className="flex items-center gap-2">
-          <GripVertical className="h-3.5 w-3.5 text-future-foreground-subtle" />
+          <GripVertical className="h-3.5 w-3.5 text-foreground-subtle" />
           <AnimatedGradientIcon className="h-3.5 w-3.5" />
-          <span className="text-sm font-medium text-future-foreground">Ideas Assistant</span>
+          <span className="text-sm font-medium text-foreground">Ideas Assistant</span>
         </div>
         <div className="flex items-center gap-0.5">
           {(isSetupComplete || messages.length > 0) && (
             <button
               onClick={handleReset}
-              className="flex h-6 w-6 items-center justify-center rounded-md text-future-foreground-muted transition-colors hover:bg-future-surface-hover hover:text-future-foreground"
+              className="flex h-6 w-6 items-center justify-center rounded-md text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
               aria-label="Reset"
             >
               <X className="h-3.5 w-3.5" />
@@ -558,7 +558,7 @@ function FloatingChat({
           )}
           <button
             onClick={() => setIsCollapsed(true)}
-            className="flex h-6 w-6 items-center justify-center rounded-md text-future-foreground-muted transition-colors hover:bg-future-surface-hover hover:text-future-foreground"
+            className="flex h-6 w-6 items-center justify-center rounded-md text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
             aria-label="Collapse chat"
           >
             <Minus className="h-3.5 w-3.5" />
@@ -567,29 +567,29 @@ function FloatingChat({
       </div>
 
       {/* Context bar */}
-      <div className="flex h-8 shrink-0 items-center gap-2 border-b border-future-border-subtle bg-future-surface-overlay/50 px-3">
+      <div className="flex h-8 shrink-0 items-center gap-2 border-b border-border-subtle bg-surface-overlay/50 px-3">
         {!isSetupComplete && setupStep === 'template' && (
           <button
             onClick={() => setPersona(null)}
-            className="flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] text-future-foreground-subtle transition-colors hover:bg-future-surface-hover hover:text-future-foreground-muted"
+            className="flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] text-foreground-subtle transition-colors hover:bg-surface-hover hover:text-foreground-muted"
           >
             <ChevronLeft className="h-3 w-3" />
             Back
           </button>
         )}
         {!isSetupComplete && setupStep === 'persona' && (
-          <span className="text-[10px] text-future-foreground-subtle">Step 1 of 2</span>
+          <span className="text-[10px] text-foreground-subtle">Step 1 of 2</span>
         )}
         {!isSetupComplete && setupStep === 'template' && (
           <>
-            <span className="text-future-foreground-subtle">·</span>
-            <span className="text-[10px] text-future-foreground-subtle">Step 2 of 2</span>
+            <span className="text-foreground-subtle">·</span>
+            <span className="text-[10px] text-foreground-subtle">Step 2 of 2</span>
           </>
         )}
         {persona && (
           <button
             onClick={() => setPersona(null)}
-            className="flex items-center gap-1 rounded-md bg-future-accent/10 px-2 py-0.5 text-[10px] font-medium text-future-foreground-accent transition-colors hover:bg-future-accent/20"
+            className="flex items-center gap-1 rounded-md bg-brand/10 px-2 py-0.5 text-[10px] font-medium text-foreground-accent transition-colors hover:bg-brand/20"
           >
             <User className="h-2.5 w-2.5" />
             {persona}
@@ -597,10 +597,10 @@ function FloatingChat({
         )}
         {persona && selectedTemplate && (
           <>
-            <span className="text-future-foreground-subtle">·</span>
+            <span className="text-foreground-subtle">·</span>
             <button
               onClick={() => setSelectedTemplate(null)}
-              className="flex items-center gap-1 rounded-md bg-future-accent/10 px-2 py-0.5 text-[10px] font-medium text-future-foreground-accent transition-colors hover:bg-future-accent/20"
+              className="flex items-center gap-1 rounded-md bg-brand/10 px-2 py-0.5 text-[10px] font-medium text-foreground-accent transition-colors hover:bg-brand/20"
             >
               {TEMPLATE_OPTIONS.find((t) => t.value === selectedTemplate)?.icon}
               {TEMPLATE_OPTIONS.find((t) => t.value === selectedTemplate)?.label}
@@ -615,12 +615,12 @@ function FloatingChat({
           <div className="flex h-full flex-col">
             {setupStep === 'persona' ? (
               <div className="flex flex-1 flex-col items-center justify-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-future-accent/10">
-                  <User className="h-5 w-5 text-future-foreground-accent" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10">
+                  <User className="h-5 w-5 text-foreground-accent" />
                 </div>
                 <div className="text-center">
-                  <p className="text-[12px] font-medium text-future-foreground">I am a...</p>
-                  <p className="mt-1 text-[11px] leading-4 text-future-foreground-muted">
+                  <p className="text-[12px] font-medium text-foreground">I am a...</p>
+                  <p className="mt-1 text-[11px] leading-4 text-foreground-muted">
                     Select your role to personalize the output.
                   </p>
                 </div>
@@ -629,7 +629,7 @@ function FloatingChat({
                     <button
                       key={p}
                       onClick={() => setPersona(p)}
-                      className="rounded-lg border border-future-border-subtle px-3 py-1.5 text-[12px] font-normal text-future-foreground-muted transition-colors hover:border-future-accent hover:bg-future-accent/10 hover:text-future-foreground"
+                      className="rounded-lg border border-border-subtle px-3 py-1.5 text-[12px] font-normal text-foreground-muted transition-colors hover:border-brand hover:bg-brand/10 hover:text-foreground"
                     >
                       {p}
                     </button>
@@ -638,12 +638,12 @@ function FloatingChat({
               </div>
             ) : (
               <div className="flex flex-1 flex-col items-center justify-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-future-accent/10">
-                  <LayoutDashboard className="h-5 w-5 text-future-foreground-accent" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10">
+                  <LayoutDashboard className="h-5 w-5 text-foreground-accent" />
                 </div>
                 <div className="text-center">
-                  <p className="text-[12px] font-medium text-future-foreground">Use template...</p>
-                  <p className="mt-1 text-[11px] leading-4 text-future-foreground-muted">
+                  <p className="text-[12px] font-medium text-foreground">Use template...</p>
+                  <p className="mt-1 text-[11px] leading-4 text-foreground-muted">
                     Pick a base layout for the generated output.
                   </p>
                 </div>
@@ -652,14 +652,14 @@ function FloatingChat({
                     <button
                       key={t.value}
                       onClick={() => setSelectedTemplate(t.value)}
-                      className="flex items-center gap-2.5 rounded-lg border border-future-border-subtle px-3 py-2 text-left transition-colors hover:border-future-accent hover:bg-future-accent/10"
+                      className="flex items-center gap-2.5 rounded-lg border border-border-subtle px-3 py-2 text-left transition-colors hover:border-brand hover:bg-brand/10"
                     >
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-future-surface-overlay text-future-foreground-muted">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-surface-overlay text-foreground-muted">
                         {t.icon}
                       </span>
                       <div className="min-w-0">
-                        <p className="text-[12px] font-medium text-future-foreground">{t.label}</p>
-                        <p className="text-[10px] leading-tight text-future-foreground-subtle">{t.description}</p>
+                        <p className="text-[12px] font-medium text-foreground">{t.label}</p>
+                        <p className="text-[10px] leading-tight text-foreground-subtle">{t.description}</p>
                       </div>
                     </button>
                   ))}
@@ -669,14 +669,14 @@ function FloatingChat({
           </div>
         ) : messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-future-accent/10">
-              <Lightbulb className="h-5 w-5 text-future-foreground-accent" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10">
+              <Lightbulb className="h-5 w-5 text-foreground-accent" />
             </div>
             <div>
-              <p className="text-sm font-medium text-future-foreground">
+              <p className="text-sm font-medium text-foreground">
                 What would you like to build?
               </p>
-              <p className="mt-1 text-[11px] leading-4 text-future-foreground-muted">
+              <p className="mt-1 text-[11px] leading-4 text-foreground-muted">
                 Describe a layout and I'll generate it on the canvas.
               </p>
             </div>
@@ -685,7 +685,7 @@ function FloatingChat({
                 <button
                   key={suggestion}
                   onClick={() => setInputValue(suggestion)}
-                  className="w-full rounded-lg border border-future-border-subtle px-3 py-2 text-left text-[11px] text-future-foreground-muted transition-colors hover:border-future-border hover:bg-future-surface-hover hover:text-future-foreground"
+                  className="w-full rounded-lg border border-border-subtle px-3 py-2 text-left text-[11px] text-foreground-muted transition-colors hover:border-border hover:bg-surface-hover hover:text-foreground"
                 >
                   {suggestion}
                 </button>
@@ -700,17 +700,17 @@ function FloatingChat({
                 className={cn(
                   'max-w-[85%] rounded-xl px-3 py-2 text-xs leading-relaxed',
                   msg.role === 'user'
-                    ? 'ml-auto bg-future-accent text-future-foreground-on-accent'
-                    : 'mr-auto bg-future-surface-overlay text-future-foreground'
+                    ? 'ml-auto bg-brand text-foreground-on-accent'
+                    : 'mr-auto bg-surface-overlay text-foreground'
                 )}
               >
                 {msg.content}
               </div>
             ))}
             {isGenerating && (
-              <div className="mr-auto flex items-center gap-2 rounded-xl bg-future-surface-overlay px-3 py-2">
-                <Loader2 className="h-3 w-3 animate-spin text-future-accent" />
-                <span className="text-xs text-future-foreground-muted">Generating...</span>
+              <div className="mr-auto flex items-center gap-2 rounded-xl bg-surface-overlay px-3 py-2">
+                <Loader2 className="h-3 w-3 animate-spin text-brand" />
+                <span className="text-xs text-foreground-muted">Generating...</span>
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -728,10 +728,10 @@ function FloatingChat({
 
       {/* Input area */}
       <div className={cn(
-        'shrink-0 border-t border-future-border-subtle p-2',
+        'shrink-0 border-t border-border-subtle p-2',
         (!isSetupComplete || isGenerating) && 'pointer-events-none opacity-40'
       )}>
-        <div className="flex items-end gap-1.5 rounded-xl bg-future-surface-overlay px-3 py-2">
+        <div className="flex items-end gap-1.5 rounded-xl bg-surface-overlay px-3 py-2">
           <textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -739,15 +739,15 @@ function FloatingChat({
             placeholder={isSetupComplete ? 'Describe your idea...' : 'Complete setup above...'}
             rows={1}
             disabled={!isSetupComplete || isGenerating}
-            className="max-h-16 flex-1 resize-none bg-transparent text-xs leading-relaxed text-future-foreground placeholder:text-future-foreground-subtle focus:outline-none disabled:cursor-not-allowed"
+            className="max-h-16 flex-1 resize-none bg-transparent text-xs leading-relaxed text-foreground placeholder:text-foreground-subtle focus:outline-none disabled:cursor-not-allowed"
           />
           <button
             onClick={handleSubmit}
             disabled={!inputValue.trim() || !isSetupComplete || isGenerating}
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-future-accent transition-opacity hover:opacity-90 disabled:opacity-30"
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-brand transition-opacity hover:opacity-90 disabled:opacity-30"
             aria-label="Send message"
           >
-            <CornerRightUp className="h-3 w-3 text-future-foreground-on-accent" />
+            <CornerRightUp className="h-3 w-3 text-foreground-on-accent" />
           </button>
         </div>
       </div>
@@ -786,12 +786,12 @@ function IdeasCanvas({ theme, generatedCode, isGenerating }: IdeasCanvasProps) {
           }}
         />
         <div className="relative flex flex-col items-center gap-4 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-future-border-subtle bg-future-surface-raised">
-            <Lightbulb className="h-8 w-8 text-future-foreground-subtle" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface-raised">
+            <Lightbulb className="h-8 w-8 text-foreground-subtle" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-future-foreground">Your canvas is empty</h2>
-            <p className="mt-1 max-w-sm text-sm text-future-foreground-muted">
+            <h2 className="text-lg font-semibold text-foreground">Your canvas is empty</h2>
+            <p className="mt-1 max-w-sm text-sm text-foreground-muted">
               Use the chat assistant in the bottom right to describe what you'd like to build. Your
               generated layouts will appear here.
             </p>
@@ -806,8 +806,8 @@ function IdeasCanvas({ theme, generatedCode, isGenerating }: IdeasCanvasProps) {
     return (
       <div className="flex h-full w-full items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-10 w-10 animate-spin text-future-accent" />
-          <p className="text-sm text-future-foreground-muted">Generating layout...</p>
+          <Loader2 className="h-10 w-10 animate-spin text-brand" />
+          <p className="text-sm text-foreground-muted">Generating layout...</p>
         </div>
       </div>
     );
@@ -840,10 +840,10 @@ function IdeasCanvas({ theme, generatedCode, isGenerating }: IdeasCanvasProps) {
 
 function IdeasPage({ globalTheme }: { globalTheme: string }) {
   const theme: FutureTheme =
-    globalTheme === 'legacy-dark'
-      ? 'legacy-dark'
-      : globalTheme === 'legacy-light'
-        ? 'legacy-light'
+    globalTheme === 'core-dark'
+      ? 'core-dark'
+      : globalTheme === 'core-light'
+        ? 'core-light'
         : globalTheme === 'wireframe'
           ? 'wireframe'
           : globalTheme === 'vertex'
@@ -872,15 +872,15 @@ function IdeasPage({ globalTheme }: { globalTheme: string }) {
     <div
       className={cn(
         resolveThemeClass(theme),
-        'flex h-screen w-full flex-col bg-future-surface text-foreground'
+        'flex h-screen w-full flex-col bg-surface text-foreground'
       )}
       style={{ fontFamily: fontFamily.base }}
     >
       {/* Top bar */}
-      <div className="flex h-12 shrink-0 items-center justify-between border-b border-future-border-subtle px-5">
+      <div className="flex h-12 shrink-0 items-center justify-between border-b border-border-subtle px-5">
         <div className="flex items-center gap-2.5">
           <AnimatedGradientIcon className="h-4 w-4" />
-          <span className="text-sm font-semibold text-future-foreground">Ideas</span>
+          <span className="text-sm font-semibold text-foreground">Ideas</span>
           <AnimatedGradientText
             colorMid="#FA4616"
             className="text-[10px] font-semibold uppercase tracking-wider"
@@ -893,7 +893,7 @@ function IdeasPage({ globalTheme }: { globalTheme: string }) {
             <>
               <button
                 onClick={handleCopy}
-                className="flex h-7 items-center gap-1.5 rounded-lg border border-future-border px-2.5 text-[11px] font-medium text-future-foreground-muted transition-colors hover:border-future-border-hover hover:text-future-foreground"
+                className="flex h-7 items-center gap-1.5 rounded-lg border border-border px-2.5 text-[11px] font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground"
               >
                 {copied ? (
                   <>
@@ -909,14 +909,14 @@ function IdeasPage({ globalTheme }: { globalTheme: string }) {
               </button>
               <button
                 onClick={handleClear}
-                className="flex h-7 items-center gap-1.5 rounded-lg border border-future-border px-2.5 text-[11px] font-medium text-future-foreground-muted transition-colors hover:border-red-500/50 hover:text-red-400"
+                className="flex h-7 items-center gap-1.5 rounded-lg border border-border px-2.5 text-[11px] font-medium text-foreground-muted transition-colors hover:border-red-500/50 hover:text-red-400"
               >
                 <Trash2 className="h-3 w-3" />
                 Clear
               </button>
             </>
           ) : (
-            <span className="text-[11px] text-future-foreground-subtle">
+            <span className="text-[11px] text-foreground-subtle">
               Describe an idea — see it come to life
             </span>
           )}

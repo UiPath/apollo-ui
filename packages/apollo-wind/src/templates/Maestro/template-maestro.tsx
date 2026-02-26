@@ -121,20 +121,20 @@ export function MaestroTemplate({
     >
       <div
         className={cn(
-          theme === 'legacy-dark'
-            ? 'legacy-dark'
-            : theme === 'legacy-light'
-              ? 'legacy-light'
+          theme === 'core-dark'
+            ? 'core-dark'
+            : theme === 'core-light'
+              ? 'core-light'
               : theme === 'wireframe'
-                ? 'future-wireframe'
+                ? 'wireframe'
                 : theme === 'vertex'
-                  ? 'future-vertex'
+                  ? 'vertex'
                   : theme === 'canvas'
-                    ? 'future-canvas'
+                    ? 'canvas'
                     : theme === 'light'
                       ? 'future-light'
                       : 'future-dark',
-          'flex h-screen flex-col bg-future-surface text-foreground',
+          'flex h-screen flex-col bg-surface text-foreground',
           className
         )}
         style={{ fontFamily: fontFamily.base }}

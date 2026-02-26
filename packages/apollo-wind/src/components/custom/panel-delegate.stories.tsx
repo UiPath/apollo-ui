@@ -48,14 +48,14 @@ const sampleNavItems = [
 
 export const Default: Story = {
   render: () => (
-    <div className="future-dark flex h-[600px] bg-future-surface">
+    <div className="future-dark flex h-[600px] bg-surface">
       <DelegatePanel
         defaultOpen
         navItems={sampleNavItems}
         activeNavId="chat"
         selectedChildId="chat-1"
       />
-      <div className="flex flex-1 items-center justify-center text-sm text-future-foreground-muted">
+      <div className="flex flex-1 items-center justify-center text-sm text-foreground-muted">
         Content area
       </div>
     </div>
@@ -64,9 +64,9 @@ export const Default: Story = {
 
 export const Collapsed: Story = {
   render: () => (
-    <div className="future-dark flex h-[600px] bg-future-surface">
+    <div className="future-dark flex h-[600px] bg-surface">
       <DelegatePanel defaultOpen={false} navItems={sampleNavItems} activeNavId="chat" />
-      <div className="flex flex-1 items-center justify-center text-sm text-future-foreground-muted">
+      <div className="flex flex-1 items-center justify-center text-sm text-foreground-muted">
         Content area
       </div>
     </div>

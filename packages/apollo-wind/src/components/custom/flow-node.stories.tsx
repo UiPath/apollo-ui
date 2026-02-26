@@ -15,7 +15,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: () => (
-    <div className="future-dark bg-future-surface p-8">
+    <div className="future-dark bg-surface p-8">
       <FlowNode title="AI Agent" />
     </div>
   ),
@@ -23,7 +23,7 @@ export const Default: Story = {
 
 export const Selected: Story = {
   render: () => (
-    <div className="future-dark bg-future-surface p-8">
+    <div className="future-dark bg-surface p-8">
       <FlowNode title="AI Agent" selected />
     </div>
   ),
@@ -31,14 +31,14 @@ export const Selected: Story = {
 
 export const CustomIcon: Story = {
   render: () => (
-    <div className="future-dark flex gap-4 bg-future-surface p-8">
+    <div className="future-dark flex gap-4 bg-surface p-8">
       <FlowNode
         title="Extract Data"
-        icon={<FileText className="h-5 w-5 text-future-accent-foreground" />}
+        icon={<FileText className="h-5 w-5 text-brand-foreground" />}
       />
       <FlowNode
         title="Send Email"
-        icon={<Mail className="h-5 w-5 text-future-accent-foreground" />}
+        icon={<Mail className="h-5 w-5 text-brand-foreground" />}
       />
     </div>
   ),

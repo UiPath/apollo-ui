@@ -53,11 +53,11 @@ function UiPathLogo({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'flex h-9 w-9 items-center justify-center rounded-lg bg-future-accent shadow-sm',
+        'flex h-9 w-9 items-center justify-center rounded-lg bg-brand shadow-sm',
         className
       )}
     >
-      <span className="text-xs font-bold text-future-foreground-on-accent select-none">Ui</span>
+      <span className="text-xs font-bold text-foreground-on-accent select-none">Ui</span>
     </div>
   );
 }
@@ -81,7 +81,7 @@ function ExpandedNavItem({
   if (!isExpandable) {
     return (
       <button
-        className="flex h-10 w-full items-center gap-2 rounded-2xl px-1 text-future-foreground-muted transition-colors hover:bg-future-surface-hover"
+        className="flex h-10 w-full items-center gap-2 rounded-2xl px-1 text-foreground-muted transition-colors hover:bg-surface-hover"
         onClick={onToggle}
       >
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
@@ -95,7 +95,7 @@ function ExpandedNavItem({
   return (
     <Collapsible open={isOpen} onOpenChange={() => onToggle()}>
       <CollapsibleTrigger asChild>
-        <button className="flex h-10 w-full items-center justify-between rounded-2xl px-1 text-future-foreground-muted transition-colors hover:bg-future-surface-hover">
+        <button className="flex h-10 w-full items-center justify-between rounded-2xl px-1 text-foreground-muted transition-colors hover:bg-surface-hover">
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
               {item.icon}
@@ -115,9 +115,9 @@ function ExpandedNavItem({
             <button
               key={child.id}
               className={cn(
-                'flex h-10 items-center rounded-2xl pl-12 pr-3 text-sm font-medium text-future-foreground-muted transition-colors hover:bg-future-surface-hover',
+                'flex h-10 items-center rounded-2xl pl-12 pr-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover',
                 selectedChildId === child.id &&
-                  'bg-future-surface-hover text-future-foreground-on-accent'
+                  'bg-surface-hover text-foreground-on-accent'
               )}
               onClick={() => onChildSelect?.(child.id)}
             >
@@ -145,15 +145,15 @@ function CollapsedNavItem({
       <TooltipTrigger asChild>
         <button
           className={cn(
-            'flex h-12 w-full items-center justify-center text-future-foreground-muted transition-colors hover:text-future-foreground',
-            isActive && 'text-future-accent-foreground'
+            'flex h-12 w-full items-center justify-center text-foreground-muted transition-colors hover:text-foreground',
+            isActive && 'text-brand-foreground'
           )}
           onClick={onClick}
         >
           <div
             className={cn(
               'flex h-9 w-9 items-center justify-center rounded-lg transition-colors',
-              isActive && 'bg-future-accent-subtle'
+              isActive && 'bg-brand-subtle'
             )}
           >
             {item.icon}
@@ -224,7 +224,7 @@ export function DelegatePanel({
     <TooltipProvider delayDuration={300}>
       <div
         className={cn(
-          'flex flex-col justify-between bg-future-surface-overlay shadow-[0px_4px_24px_0px_rgba(0,0,0,0.25)] transition-[width] duration-300 ease-in-out',
+          'flex flex-col justify-between bg-surface-overlay shadow-[0px_4px_24px_0px_rgba(0,0,0,0.25)] transition-[width] duration-300 ease-in-out',
           panelOpen ? 'w-80' : 'w-[60px]',
           className
         )}
@@ -249,14 +249,14 @@ export function DelegatePanel({
                 <div className="flex items-center gap-[18px]">
                   <button
                     type="button"
-                    className="text-future-foreground-muted transition-colors hover:text-future-foreground"
+                    className="text-foreground-muted transition-colors hover:text-foreground"
                     aria-label="New conversation"
                   >
                     <MessageCirclePlus className="h-5 w-5" />
                   </button>
                   <button
                     type="button"
-                    className="text-future-foreground-muted transition-colors hover:text-future-foreground"
+                    className="text-foreground-muted transition-colors hover:text-foreground"
                     aria-label="Picture in picture"
                   >
                     <PictureInPicture2 className="h-5 w-5" />
@@ -264,7 +264,7 @@ export function DelegatePanel({
                 </div>
                 <button
                   type="button"
-                  className="text-future-foreground-muted transition-colors hover:text-future-foreground"
+                  className="text-foreground-muted transition-colors hover:text-foreground"
                   onClick={() => setPanelOpen(false)}
                   aria-label="Collapse panel"
                 >
@@ -302,7 +302,7 @@ export function DelegatePanel({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
-                      className="flex h-12 w-full items-center justify-center text-future-foreground-muted transition-colors hover:text-future-foreground"
+                      className="flex h-12 w-full items-center justify-center text-foreground-muted transition-colors hover:text-foreground"
                       onClick={() => setPanelOpen(true)}
                     >
                       <div className="flex h-9 w-9 items-center justify-center rounded-lg">
@@ -331,8 +331,8 @@ export function DelegatePanel({
 
         {/* Footer */}
         <div className="flex h-[60px] shrink-0 items-center justify-start px-3">
-          <Avatar className="h-8 w-8 bg-future-surface-raised">
-            <AvatarFallback className="bg-future-surface-raised text-xs text-future-foreground-muted">
+          <Avatar className="h-8 w-8 bg-surface-raised">
+            <AvatarFallback className="bg-surface-raised text-xs text-foreground-muted">
               U
             </AvatarFallback>
           </Avatar>

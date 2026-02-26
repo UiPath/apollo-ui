@@ -39,8 +39,8 @@ export function FlowNode({
   return (
     <div
       className={cn(
-        'flex h-[360px] w-[360px] flex-col overflow-hidden rounded-2xl bg-future-surface-overlay px-4 pb-4 pt-2.5',
-        selected && 'ring-1 ring-future-ring',
+        'flex h-[360px] w-[360px] flex-col overflow-hidden rounded-2xl bg-surface-overlay px-4 pb-4 pt-2.5',
+        selected && 'ring-1 ring-ring',
         className
       )}
     >
@@ -48,16 +48,16 @@ export function FlowNode({
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-future-surface">
-              {icon ?? <Bot className="h-5 w-5 text-future-foreground-muted" />}
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface">
+              {icon ?? <Bot className="h-5 w-5 text-foreground-muted" />}
             </div>
-            <span className="text-sm font-medium text-future-foreground">{title}</span>
+            <span className="text-sm font-medium text-foreground">{title}</span>
           </div>
-          <ChevronDown className="h-4 w-4 text-future-foreground-muted" />
+          <ChevronDown className="h-4 w-4 text-foreground-muted" />
         </div>
 
         {/* Content area */}
-        <div className="flex-1 rounded-lg bg-future-surface-raised">
+        <div className="flex-1 rounded-lg bg-surface-raised">
           {children}
         </div>
       </div>

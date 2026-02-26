@@ -14,7 +14,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: () => (
-    <div className="future-dark bg-future-surface p-8">
+    <div className="future-dark bg-surface p-8">
       <PromptSuggestions
         suggestions={[
           { id: '1', label: 'Make a list of affordable apartments in NYC' },

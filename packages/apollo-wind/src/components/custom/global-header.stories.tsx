@@ -22,17 +22,17 @@ function SampleMenuNav() {
         {['Home', 'Projects', 'Tasks', 'Settings', 'Reports'].map((label, i) => (
           <button
             key={i}
-            className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-future-foreground-muted transition-colors hover:bg-future-surface-hover hover:text-future-foreground first:bg-future-surface-hover first:text-future-foreground"
+            className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground first:bg-surface-hover first:text-foreground"
           >
             <SquareMenu className="h-4 w-4 shrink-0" />
             <span className="truncate">{label}</span>
           </button>
         ))}
       </div>
-      <div className="my-2 border-t border-future-border-subtle" />
+      <div className="my-2 border-t border-border-subtle" />
       <div className="flex flex-col gap-1">
         <button
-          className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-future-foreground-muted transition-colors hover:bg-future-surface-hover hover:text-future-foreground"
+          className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
           onClick={() => setMoreOpen((prev) => !prev)}
         >
           <ChevronDown
@@ -45,7 +45,7 @@ function SampleMenuNav() {
             {['Analytics', 'Integrations', 'API Keys', 'Audit Log', 'Help'].map((label, i) => (
               <button
                 key={i}
-                className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-future-foreground-muted transition-colors hover:bg-future-surface-hover hover:text-future-foreground"
+                className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
               >
                 <SquareMenu className="h-4 w-4 shrink-0" />
                 <span className="truncate">{label}</span>
@@ -60,7 +60,7 @@ function SampleMenuNav() {
 
 export const Dark: Story = {
   render: () => (
-    <div className="future-dark bg-future-surface">
+    <div className="future-dark bg-surface">
       <MaestroHeader
         theme="dark"
         title="Autopilot"
@@ -73,7 +73,7 @@ export const Dark: Story = {
 
 export const Light: Story = {
   render: () => (
-    <div className="future-light bg-future-surface">
+    <div className="future-light bg-surface">
       <MaestroHeader
         theme="light"
         title="Autopilot"

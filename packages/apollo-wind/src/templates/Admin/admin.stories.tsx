@@ -88,12 +88,12 @@ function AdminFilter({
 }) {
   return (
     <div className="flex items-center gap-1.5 text-sm">
-      <span className="text-future-foreground-muted">{label}:</span>
+      <span className="text-foreground-muted">{label}:</span>
       <Select value={value} onValueChange={onValueChange}>
-        <SelectTrigger className="h-7 w-auto gap-1 border-0 bg-transparent px-1 font-medium text-future-foreground shadow-none">
+        <SelectTrigger className="h-7 w-auto gap-1 border-0 bg-transparent px-1 font-medium text-foreground shadow-none">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent className="border-future-border bg-future-surface-overlay text-future-foreground">
+        <SelectContent className="border-border bg-surface-overlay text-foreground">
           {options.map((option) => (
             <SelectItem key={option.value} value={option.value}>
               {option.label}
@@ -136,8 +136,8 @@ function AdminPagination({
   const pageNumbers = getPageNumbers();
 
   return (
-    <div className="flex items-center justify-between border-t border-future-border-subtle px-6 py-3">
-      <span className="text-sm text-future-foreground-muted">
+    <div className="flex items-center justify-between border-t border-border-subtle px-6 py-3">
+      <span className="text-sm text-foreground-muted">
         {start} - {end} / {total}
       </span>
       <div className="flex items-center gap-4">
@@ -147,7 +147,7 @@ function AdminPagination({
               <Button
                 size="icon"
                 variant="ghost"
-                className="text-future-foreground-muted hover:bg-future-surface-hover hover:text-future-foreground"
+                className="text-foreground-muted hover:bg-surface-hover hover:text-foreground"
                 disabled={page === 1}
                 onClick={() => onPageChange?.(1)}
               >
@@ -158,7 +158,7 @@ function AdminPagination({
               <PaginationPrevious
                 onClick={() => page > 1 && onPageChange?.(page - 1)}
                 className={cn(
-                  'text-future-foreground-muted hover:bg-future-surface-hover hover:text-future-foreground',
+                  'text-foreground-muted hover:bg-surface-hover hover:text-foreground',
                   page === 1 && 'pointer-events-none opacity-50'
                 )}
               />
@@ -171,7 +171,7 @@ function AdminPagination({
                 <React.Fragment key={pageNum}>
                   {showEllipsis && (
                     <PaginationItem>
-                      <PaginationEllipsis className="text-future-foreground-muted" />
+                      <PaginationEllipsis className="text-foreground-muted" />
                     </PaginationItem>
                   )}
                   <PaginationItem>
@@ -180,8 +180,8 @@ function AdminPagination({
                       isActive={page === pageNum}
                       className={cn(
                         page === pageNum
-                          ? 'bg-future-accent text-future-foreground-on-accent'
-                          : 'text-future-foreground-muted hover:bg-future-surface-hover hover:text-future-foreground'
+                          ? 'bg-brand text-foreground-on-accent'
+                          : 'text-foreground-muted hover:bg-surface-hover hover:text-foreground'
                       )}
                     >
                       {pageNum}
@@ -195,7 +195,7 @@ function AdminPagination({
               <PaginationNext
                 onClick={() => page < totalPages && onPageChange?.(page + 1)}
                 className={cn(
-                  'text-future-foreground-muted hover:bg-future-surface-hover hover:text-future-foreground',
+                  'text-foreground-muted hover:bg-surface-hover hover:text-foreground',
                   page === totalPages && 'pointer-events-none opacity-50'
                 )}
               />
@@ -204,7 +204,7 @@ function AdminPagination({
               <Button
                 size="icon"
                 variant="ghost"
-                className="text-future-foreground-muted hover:bg-future-surface-hover hover:text-future-foreground"
+                className="text-foreground-muted hover:bg-surface-hover hover:text-foreground"
                 disabled={page === totalPages}
                 onClick={() => onPageChange?.(totalPages)}
               >
@@ -216,12 +216,12 @@ function AdminPagination({
 
         {onPageSizeChange && (
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-future-foreground-muted">Items</span>
+            <span className="text-foreground-muted">Items</span>
             <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
-              <SelectTrigger className="h-8 w-16 border-future-border bg-future-surface-overlay text-future-foreground">
+              <SelectTrigger className="h-8 w-16 border-border bg-surface-overlay text-foreground">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="border-future-border bg-future-surface-overlay text-future-foreground">
+              <SelectContent className="border-border bg-surface-overlay text-foreground">
                 <SelectItem value="10">10</SelectItem>
                 <SelectItem value="25">25</SelectItem>
                 <SelectItem value="50">50</SelectItem>
@@ -269,7 +269,7 @@ function AdminMenuNav() {
           <Button
             key={i}
             variant="ghost"
-            className="w-full justify-start gap-3 text-future-foreground-muted hover:bg-future-surface-hover hover:text-future-foreground"
+            className="w-full justify-start gap-3 text-foreground-muted hover:bg-surface-hover hover:text-foreground"
           >
             {item.icon}
             <span className="truncate">{item.label}</span>
@@ -439,11 +439,11 @@ const adminTreeDataExpanded: TreeViewItem[] = [
 ];
 
 const adminTreeIconMap: TreeViewIconMap = {
-  region: <Globe className="h-4 w-4 text-future-foreground-muted" />,
-  enterprise: <Folder className="h-4 w-4 text-future-foreground-muted" />,
-  folder: <Code className="h-4 w-4 text-future-foreground-muted" />,
-  tenant: <Globe className="h-4 w-4 text-future-foreground-accent/80" />,
-  service: <Code className="h-4 w-4 text-future-foreground-accent/80" />,
+  region: <Globe className="h-4 w-4 text-foreground-muted" />,
+  enterprise: <Folder className="h-4 w-4 text-foreground-muted" />,
+  folder: <Code className="h-4 w-4 text-foreground-muted" />,
+  tenant: <Globe className="h-4 w-4 text-foreground-accent/80" />,
+  service: <Code className="h-4 w-4 text-foreground-accent/80" />,
 };
 
 type UserRow = {
@@ -681,16 +681,16 @@ function AdminPageDemo({ theme }: { theme: string }) {
   );
 
   const themeClass =
-    theme === 'legacy-dark'
-      ? 'legacy-dark'
-      : theme === 'legacy-light'
-        ? 'legacy-light'
+    theme === 'core-dark'
+      ? 'core-dark'
+      : theme === 'core-light'
+        ? 'core-light'
         : theme === 'wireframe'
-          ? 'future-wireframe'
+          ? 'wireframe'
           : theme === 'vertex'
-            ? 'future-vertex'
+            ? 'vertex'
             : theme === 'canvas'
-              ? 'future-canvas'
+              ? 'canvas'
               : theme === 'light'
                 ? 'future-light'
                 : 'future-dark';
@@ -702,8 +702,8 @@ function AdminPageDemo({ theme }: { theme: string }) {
       header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <Users className="h-4 w-4 text-future-foreground-muted" />
-          <span className="text-future-foreground">{row.original.name}</span>
+          <Users className="h-4 w-4 text-foreground-muted" />
+          <span className="text-foreground">{row.original.name}</span>
         </div>
       ),
     },
@@ -711,35 +711,35 @@ function AdminPageDemo({ theme }: { theme: string }) {
       accessorKey: 'email',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
       cell: ({ row }) => (
-        <span className="text-future-foreground-muted">{row.original.email || '—'}</span>
+        <span className="text-foreground-muted">{row.original.email || '—'}</span>
       ),
     },
     {
       accessorKey: 'role',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Roles">
-          <HelpCircle className="ml-1 h-3.5 w-3.5 text-future-foreground-muted" />
+          <HelpCircle className="ml-1 h-3.5 w-3.5 text-foreground-muted" />
         </DataTableColumnHeader>
       ),
-      cell: ({ row }) => <span className="text-future-foreground-muted">{row.original.role}</span>,
+      cell: ({ row }) => <span className="text-foreground-muted">{row.original.role}</span>,
     },
     {
       id: 'actions',
       cell: () => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="icon" variant="ghost" className="text-future-foreground-muted hover:bg-future-surface-hover hover:text-future-foreground">
+            <Button size="icon" variant="ghost" className="text-foreground-muted hover:bg-surface-hover hover:text-foreground">
               <MoreHorizontal />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className={cn(themeClass, 'border-future-border bg-future-surface-overlay')}
+            className={cn(themeClass, 'border-border bg-surface-overlay')}
           >
-            <DropdownMenuItem className="text-future-foreground-muted focus:bg-future-surface-hover focus:text-future-foreground">
+            <DropdownMenuItem className="text-foreground-muted focus:bg-surface-hover focus:text-foreground">
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-future-foreground-muted focus:bg-future-surface-hover focus:text-future-foreground">
+            <DropdownMenuItem className="text-foreground-muted focus:bg-surface-hover focus:text-foreground">
               Remove
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -755,7 +755,7 @@ function AdminPageDemo({ theme }: { theme: string }) {
       menuContent={<AdminMenuNav />}
       sidebar={
         <AdminSidebar width={320}>
-          <div className="flex shrink-0 items-center gap-2 border-b border-future-border-subtle px-4 py-3 text-sm font-medium text-future-foreground">
+          <div className="flex shrink-0 items-center gap-2 border-b border-border-subtle px-4 py-3 text-sm font-medium text-foreground">
             <svg
               viewBox="0 0 24 24"
               className="h-5 w-5"
@@ -794,10 +794,10 @@ function AdminPageDemo({ theme }: { theme: string }) {
         onTabChange={setActiveTab}
         actions={
           <>
-            <Button variant="ghost" className="text-future-foreground-accent hover:bg-transparent hover:text-future-foreground">
+            <Button variant="ghost" className="text-foreground-accent hover:bg-transparent hover:text-foreground">
               Check access
             </Button>
-            <Button className="bg-future-accent text-future-foreground-on-accent hover:bg-future-accent/90">
+            <Button className="bg-brand text-foreground-on-accent hover:bg-brand/90">
               Assign role
             </Button>
           </>
@@ -806,7 +806,7 @@ function AdminPageDemo({ theme }: { theme: string }) {
 
       <AdminToolbar
         actions={
-          <Button size="icon" variant="ghost" className="text-future-foreground-muted hover:bg-future-surface-hover hover:text-future-foreground">
+          <Button size="icon" variant="ghost" className="text-foreground-muted hover:bg-surface-hover hover:text-foreground">
             <RefreshCw />
           </Button>
         }
@@ -1385,16 +1385,16 @@ function DataManagementDemo({ theme }: { theme: string }) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = React.useState(false);
 
   const themeClass =
-    theme === 'legacy-dark'
-      ? 'legacy-dark'
-      : theme === 'legacy-light'
-        ? 'legacy-light'
+    theme === 'core-dark'
+      ? 'core-dark'
+      : theme === 'core-light'
+        ? 'core-light'
         : theme === 'wireframe'
-          ? 'future-wireframe'
+          ? 'wireframe'
           : theme === 'vertex'
-            ? 'future-vertex'
+            ? 'vertex'
             : theme === 'canvas'
-              ? 'future-canvas'
+              ? 'canvas'
               : theme === 'light'
                 ? 'future-light'
                 : 'future-dark';
@@ -1432,8 +1432,8 @@ function DataManagementDemo({ theme }: { theme: string }) {
       header: ({ column }) => <DataTableColumnHeader column={column} title="Product" />,
       cell: ({ row }) => (
         <div className="flex flex-col">
-          <span className="font-medium text-future-foreground">{row.original.name}</span>
-          <span className="text-xs text-future-foreground-muted">{row.original.sku}</span>
+          <span className="font-medium text-foreground">{row.original.name}</span>
+          <span className="text-xs text-foreground-muted">{row.original.sku}</span>
         </div>
       ),
     },
@@ -1441,7 +1441,7 @@ function DataManagementDemo({ theme }: { theme: string }) {
       accessorKey: 'category',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Category" />,
       cell: ({ row }) => (
-        <span className="text-future-foreground-muted">{row.getValue('category')}</span>
+        <span className="text-foreground-muted">{row.getValue('category')}</span>
       ),
     },
     {
@@ -1450,7 +1450,7 @@ function DataManagementDemo({ theme }: { theme: string }) {
       cell: ({ row }) => {
         const price = parseFloat(row.getValue('price'));
         return (
-          <span className="text-future-foreground">
+          <span className="text-foreground">
             {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price)}
           </span>
         );
@@ -1463,7 +1463,7 @@ function DataManagementDemo({ theme }: { theme: string }) {
         const stock = row.getValue('stock') as number;
         return (
           <span
-            className={stock === 0 ? 'font-medium text-red-400' : 'text-future-foreground-muted'}
+            className={stock === 0 ? 'font-medium text-red-400' : 'text-foreground-muted'}
           >
             {stock === 0 ? 'Out of stock' : stock}
           </span>
@@ -1478,7 +1478,7 @@ function DataManagementDemo({ theme }: { theme: string }) {
         const colors: Record<string, string> = {
           active: 'bg-green-500/10 text-green-400',
           draft: 'bg-yellow-500/10 text-yellow-400',
-          archived: 'bg-future-surface-hover text-future-foreground-muted',
+          archived: 'bg-surface-hover text-foreground-muted',
         };
         return (
           <span
@@ -1493,7 +1493,7 @@ function DataManagementDemo({ theme }: { theme: string }) {
       accessorKey: 'createdAt',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Created" />,
       cell: ({ row }) => (
-        <span className="text-future-foreground-muted">{row.getValue('createdAt')}</span>
+        <span className="text-foreground-muted">{row.getValue('createdAt')}</span>
       ),
     },
     {
@@ -1501,22 +1501,22 @@ function DataManagementDemo({ theme }: { theme: string }) {
       cell: () => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="icon" variant="ghost" className="text-future-foreground-muted hover:bg-future-surface-hover hover:text-future-foreground">
+            <Button size="icon" variant="ghost" className="text-foreground-muted hover:bg-surface-hover hover:text-foreground">
               <MoreHorizontal />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className={cn(themeClass, 'border-future-border bg-future-surface-overlay')}
+            className={cn(themeClass, 'border-border bg-surface-overlay')}
           >
-            <DropdownMenuItem className="text-future-foreground-muted focus:bg-future-surface-hover focus:text-future-foreground">
+            <DropdownMenuItem className="text-foreground-muted focus:bg-surface-hover focus:text-foreground">
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-future-foreground-muted focus:bg-future-surface-hover focus:text-future-foreground">
+            <DropdownMenuItem className="text-foreground-muted focus:bg-surface-hover focus:text-foreground">
               Duplicate
             </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-future-border-subtle" />
-            <DropdownMenuItem className="text-red-400 focus:bg-future-surface-hover focus:text-red-300">
+            <DropdownMenuSeparator className="bg-border-subtle" />
+            <DropdownMenuItem className="text-red-400 focus:bg-surface-hover focus:text-red-300">
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -1528,20 +1528,20 @@ function DataManagementDemo({ theme }: { theme: string }) {
   return (
     <AdminTemplate theme={theme} title="Data Management" menuContent={<AdminMenuNav />}>
       {/* Page header with actions */}
-      <div className="flex items-center justify-between border-b border-future-border-subtle px-6 py-4">
-        <h1 className="text-xl font-semibold text-future-foreground">Products</h1>
+      <div className="flex items-center justify-between border-b border-border-subtle px-6 py-4">
+        <h1 className="text-xl font-semibold text-foreground">Products</h1>
           <div className="flex items-center gap-2">
-            <Button variant="outline" className="border-future-border bg-future-surface text-future-foreground-muted hover:border-future-border-hover hover:bg-future-surface hover:text-future-foreground">
+            <Button variant="outline" className="border-border bg-surface text-foreground-muted hover:border-border-hover hover:bg-surface hover:text-foreground">
               <Upload />
               Import
             </Button>
-            <Button variant="outline" className="border-future-border bg-future-surface text-future-foreground-muted hover:border-future-border-hover hover:bg-future-surface hover:text-future-foreground">
+            <Button variant="outline" className="border-border bg-surface text-foreground-muted hover:border-border-hover hover:bg-surface hover:text-foreground">
               <Download />
               Export
             </Button>
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-future-accent text-future-foreground-on-accent hover:bg-future-accent/90">
+                <Button className="bg-brand text-foreground-on-accent hover:bg-brand/90">
                   <Plus />
                   Add Product
                 </Button>
@@ -1549,50 +1549,50 @@ function DataManagementDemo({ theme }: { theme: string }) {
               <DialogContent
                 className={cn(
                   themeClass,
-                  'border-future-border bg-future-surface-raised text-future-foreground'
+                  'border-border bg-surface-raised text-foreground'
                 )}
               >
                 <DialogHeader>
-                  <DialogTitle className="text-future-foreground">Add New Product</DialogTitle>
-                  <DialogDescription className="text-future-foreground-muted">
+                  <DialogTitle className="text-foreground">Add New Product</DialogTitle>
+                  <DialogDescription className="text-foreground-muted">
                     Enter the details for the new product.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col gap-4 py-4">
                   <div className="flex flex-col gap-2">
-                    <Label className="text-future-foreground">Product name</Label>
+                    <Label className="text-foreground">Product name</Label>
                     <Input
                       placeholder="Enter product name"
-                      className="border-future-border bg-future-surface-overlay text-future-foreground placeholder:text-future-foreground-subtle"
+                      className="border-border bg-surface-overlay text-foreground placeholder:text-foreground-subtle"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
-                      <Label className="text-future-foreground">SKU</Label>
+                      <Label className="text-foreground">SKU</Label>
                       <Input
                         placeholder="XX-000"
-                        className="border-future-border bg-future-surface-overlay text-future-foreground placeholder:text-future-foreground-subtle"
+                        className="border-border bg-surface-overlay text-foreground placeholder:text-foreground-subtle"
                       />
                     </div>
                     <div className="flex flex-col gap-2">
-                      <Label className="text-future-foreground">Price</Label>
+                      <Label className="text-foreground">Price</Label>
                       <Input
                         type="number"
                         placeholder="0.00"
-                        className="border-future-border bg-future-surface-overlay text-future-foreground placeholder:text-future-foreground-subtle"
+                        className="border-border bg-surface-overlay text-foreground placeholder:text-foreground-subtle"
                       />
                     </div>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <Label className="text-future-foreground">Category</Label>
+                    <Label className="text-foreground">Category</Label>
                     <Select>
-                      <SelectTrigger className="border-future-border bg-future-surface-overlay text-future-foreground">
+                      <SelectTrigger className="border-border bg-surface-overlay text-foreground">
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent
                         className={cn(
                           themeClass,
-                          'border-future-border bg-future-surface-overlay text-future-foreground'
+                          'border-border bg-surface-overlay text-foreground'
                         )}
                       >
                         {productCategories.map((cat) => (
@@ -1604,24 +1604,24 @@ function DataManagementDemo({ theme }: { theme: string }) {
                     </Select>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <Label className="text-future-foreground">Initial stock</Label>
+                    <Label className="text-foreground">Initial stock</Label>
                     <Input
                       type="number"
                       placeholder="0"
-                      className="border-future-border bg-future-surface-overlay text-future-foreground placeholder:text-future-foreground-subtle"
+                      className="border-border bg-surface-overlay text-foreground placeholder:text-foreground-subtle"
                     />
                   </div>
                 </div>
                 <DialogFooter>
                   <Button
                     variant="outline"
-                    className="border-future-border bg-future-surface text-future-foreground-muted hover:border-future-border-hover hover:bg-future-surface hover:text-future-foreground"
+                    className="border-border bg-surface text-foreground-muted hover:border-border-hover hover:bg-surface hover:text-foreground"
                     onClick={() => setIsCreateDialogOpen(false)}
                   >
                     Cancel
                   </Button>
                   <Button
-                    className="bg-future-accent text-future-foreground-on-accent hover:bg-future-accent/90"
+                    className="bg-brand text-foreground-on-accent hover:bg-brand/90"
                     onClick={() => setIsCreateDialogOpen(false)}
                   >
                     Create product
@@ -1633,20 +1633,20 @@ function DataManagementDemo({ theme }: { theme: string }) {
         </div>
 
         {/* Tabs + filter bar */}
-        <div className="flex items-center justify-between border-b border-future-border-subtle px-6 py-3">
+        <div className="flex items-center justify-between border-b border-border-subtle px-6 py-3">
           <div className="flex gap-1">
             {statusTabs.map((tab) => (
               <button
                 key={tab.value}
                 className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                   activeTab === tab.value
-                    ? 'bg-future-surface-hover text-future-foreground'
-                    : 'text-future-foreground-muted hover:text-future-foreground'
+                    ? 'bg-surface-hover text-foreground'
+                    : 'text-foreground-muted hover:text-foreground'
                 }`}
                 onClick={() => setActiveTab(tab.value)}
               >
                 {tab.label}
-                <span className="rounded-full bg-future-surface-overlay px-1.5 py-0.5 text-xs">
+                <span className="rounded-full bg-surface-overlay px-1.5 py-0.5 text-xs">
                   {tab.count}
                 </span>
               </button>
@@ -1655,14 +1655,14 @@ function DataManagementDemo({ theme }: { theme: string }) {
 
           <div className="flex items-center gap-2">
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="h-9 w-[150px] border-future-border bg-future-surface-overlay text-sm text-future-foreground">
-                <Filter className="mr-2 h-4 w-4 text-future-foreground-muted" />
+              <SelectTrigger className="h-9 w-[150px] border-border bg-surface-overlay text-sm text-foreground">
+                <Filter className="mr-2 h-4 w-4 text-foreground-muted" />
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent
                 className={cn(
                   themeClass,
-                  'border-future-border bg-future-surface-overlay text-future-foreground'
+                  'border-border bg-surface-overlay text-foreground'
                 )}
               >
                 <SelectItem value="all">All categories</SelectItem>
@@ -1673,7 +1673,7 @@ function DataManagementDemo({ theme }: { theme: string }) {
                 ))}
               </SelectContent>
             </Select>
-            <Button size="icon" variant="outline" className="border-future-border text-future-foreground-muted hover:border-future-border-hover hover:bg-transparent hover:text-future-foreground">
+            <Button size="icon" variant="outline" className="border-border text-foreground-muted hover:border-border-hover hover:bg-transparent hover:text-foreground">
               <RefreshCw />
             </Button>
           </div>

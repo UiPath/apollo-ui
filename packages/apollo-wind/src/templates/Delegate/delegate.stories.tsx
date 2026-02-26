@@ -97,24 +97,24 @@ export const Chat: Story = {
 
 const agentSteps = [
   {
-    icon: <Search className="h-3.5 w-3.5 text-future-foreground-subtle" />,
+    icon: <Search className="h-3.5 w-3.5 text-foreground-subtle" />,
     title: 'WebSearchTool',
     description:
       'Searching and analyzing multiple cells in this spreadsheet to create a summary for planning next steps.',
   },
   {
-    icon: <SettingsIcon className="h-3.5 w-3.5 text-future-foreground-subtle" />,
+    icon: <SettingsIcon className="h-3.5 w-3.5 text-foreground-subtle" />,
     title: 'Excel Agent',
     description: 'Editing current column with additional information.',
   },
   {
-    icon: <Search className="h-3.5 w-3.5 text-future-foreground-subtle" />,
+    icon: <Search className="h-3.5 w-3.5 text-foreground-subtle" />,
     title: 'WebSearchTool',
     description:
       'Checking categorized tabs to better understand spam and volume sources.',
   },
   {
-    icon: <SettingsIcon className="h-3.5 w-3.5 text-future-foreground-subtle" />,
+    icon: <SettingsIcon className="h-3.5 w-3.5 text-foreground-subtle" />,
     title: 'Currency conversion',
     description:
       'Performing currency conversion using current market rates to ensure accurate calculations.',
@@ -129,8 +129,8 @@ function ChatResponsesContent() {
         <div className="flex w-full max-w-[800px] flex-col gap-6">
           {/* User message — right-aligned */}
           <div className="flex justify-end">
-            <div className="max-w-[640px] rounded-bl-2xl rounded-br-sm rounded-tl-2xl rounded-tr-2xl bg-future-surface-raised px-6 py-4">
-              <p className="text-base leading-6 tracking-[-0.4px] text-future-foreground">
+            <div className="max-w-[640px] rounded-bl-2xl rounded-br-sm rounded-tl-2xl rounded-tr-2xl bg-surface-raised px-6 py-4">
+              <p className="text-base leading-6 tracking-[-0.4px] text-foreground">
                 Open the Excel file I uploaded yesterday, analyze the sales
                 numbers, and generate a short summary of monthly performance.
                 Send the summary to me on Slack once you&apos;re done.
@@ -140,16 +140,16 @@ function ChatResponsesContent() {
 
           {/* "Created an action plan" — left-aligned */}
           <div className="flex items-center gap-2">
-            <span className="text-base font-medium text-future-foreground-muted">
+            <span className="text-base font-medium text-foreground-muted">
               Created an action plan
             </span>
-            <ChevronUp className="h-4 w-4 text-future-foreground-muted" />
+            <ChevronUp className="h-4 w-4 text-foreground-muted" />
           </div>
 
           {/* Agent card — dark theme */}
-          <div className="w-full max-w-[477px] overflow-hidden rounded-2xl border border-future-border-subtle bg-future-surface-overlay">
+          <div className="w-full max-w-[477px] overflow-hidden rounded-2xl border border-border-subtle bg-surface-overlay">
             {/* Card header */}
-            <div className="flex items-center justify-between border-b border-future-border-subtle px-4 py-4">
+            <div className="flex items-center justify-between border-b border-border-subtle px-4 py-4">
               <div className="flex items-center gap-2.5">
                 <div className="flex h-6 w-6 items-center justify-center">
                   <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none">
@@ -159,30 +159,30 @@ function ChatResponsesContent() {
                     <text x="4.5" y="14.5" fontSize="7" fontWeight="bold" fill="white">X</text>
                   </svg>
                 </div>
-                <span className="text-base font-semibold tracking-[-0.4px] text-future-foreground">
+                <span className="text-base font-semibold tracking-[-0.4px] text-foreground">
                   Excel Agent
                 </span>
               </div>
-              <ChevronUp className="h-4 w-4 text-future-foreground-muted" />
+              <ChevronUp className="h-4 w-4 text-foreground-muted" />
             </div>
 
             {/* Card content */}
             <div className="flex flex-col gap-3 px-4 pb-4 pt-2">
-              <span className="text-xs tracking-[-0.3px] text-future-foreground-subtle">
+              <span className="text-xs tracking-[-0.3px] text-foreground-subtle">
                 Agents and tools used
               </span>
 
               <div className="flex flex-col gap-3">
                 {agentSteps.map((step, i) => (
                   <div key={i} className="flex gap-2.5">
-                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[10px] bg-future-surface-raised">
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[10px] bg-surface-raised">
                       {step.icon}
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-sm font-semibold leading-4 text-future-foreground">
+                      <span className="text-sm font-semibold leading-4 text-foreground">
                         {step.title}
                       </span>
-                      <span className="text-xs leading-[18px] text-future-foreground-muted">
+                      <span className="text-xs leading-[18px] text-foreground-muted">
                         {step.description}
                       </span>
                     </div>
@@ -194,16 +194,16 @@ function ChatResponsesContent() {
 
           {/* Action icons row */}
           <div className="flex items-center gap-1">
-            <button className="flex h-6 w-6 items-center justify-center rounded text-future-foreground-subtle transition-colors hover:text-future-foreground">
+            <button className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground">
               <Copy className="h-4 w-4" />
             </button>
-            <button className="flex h-6 w-6 items-center justify-center rounded text-future-foreground-subtle transition-colors hover:text-future-foreground">
+            <button className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground">
               <ThumbsDown className="h-4 w-4" />
             </button>
-            <button className="flex h-6 w-6 items-center justify-center rounded text-future-foreground-subtle transition-colors hover:text-future-foreground">
+            <button className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground">
               <ThumbsUp className="h-4 w-4" />
             </button>
-            <button className="flex h-6 w-6 items-center justify-center rounded text-future-foreground-subtle transition-colors hover:text-future-foreground">
+            <button className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground">
               <MoreVertical className="h-4 w-4" />
             </button>
           </div>
@@ -262,15 +262,15 @@ function SettingsContent() {
   return (
     <div className="flex flex-1 flex-col overflow-y-auto">
       {/* Tabs */}
-      <div className="shrink-0 border-b border-future-border-subtle px-8 pt-6">
+      <div className="shrink-0 border-b border-border-subtle px-8 pt-6">
         <div className="flex gap-1">
           {settingsTabs.map((tab) => (
             <button
               key={tab.id}
               className={`px-4 pb-3 text-sm font-medium transition-colors ${
                 activeTab === tab.id
-                  ? 'border-b-2 border-future-accent text-future-foreground'
-                  : 'text-future-foreground-muted hover:text-future-foreground'
+                  ? 'border-b-2 border-brand text-foreground'
+                  : 'text-foreground-muted hover:text-foreground'
               }`}
               onClick={() => setActiveTab(tab.id)}
             >
@@ -286,8 +286,8 @@ function SettingsContent() {
           <div className="mx-auto max-w-2xl">
             {/* Page header */}
             <div className="mb-8">
-              <h1 className="text-2xl font-semibold text-future-foreground">Manage Profile</h1>
-              <p className="mt-1 text-sm text-future-foreground-muted">
+              <h1 className="text-2xl font-semibold text-foreground">Manage Profile</h1>
+              <p className="mt-1 text-sm text-foreground-muted">
                 Update your profile information and preferences.
               </p>
             </div>
@@ -295,12 +295,12 @@ function SettingsContent() {
             <div className="flex flex-col gap-8">
               {/* Profile Image */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-future-foreground">Profile Image</label>
+                <label className="text-sm font-medium text-foreground">Profile Image</label>
                 <div className="flex items-center gap-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-future-surface-overlay">
-                    <User className="h-7 w-7 text-future-foreground-muted" />
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-overlay">
+                    <User className="h-7 w-7 text-foreground-muted" />
                   </div>
-                  <button className="flex h-9 items-center gap-2 rounded-lg border border-future-border bg-future-surface px-4 text-sm font-medium text-future-foreground-muted transition-colors hover:border-future-border-hover hover:text-future-foreground">
+                  <button className="flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground">
                     <Upload className="h-4 w-4" />
                     Select Image
                   </button>
@@ -308,37 +308,37 @@ function SettingsContent() {
               </div>
 
               {/* Divider */}
-              <div className="h-px bg-future-border-subtle" />
+              <div className="h-px bg-border-subtle" />
 
               {/* Your Name */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-future-foreground">Your Name</label>
+                <label className="text-sm font-medium text-foreground">Your Name</label>
                 <Input
                   placeholder="Enter your name"
-                  className="max-w-md border-future-border bg-future-surface-overlay text-future-foreground placeholder:text-future-foreground-subtle"
+                  className="max-w-md border-border bg-surface-overlay text-foreground placeholder:text-foreground-subtle"
                 />
               </div>
 
               {/* Your Email */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-future-foreground">Your Email</label>
+                <label className="text-sm font-medium text-foreground">Your Email</label>
                 <Input
                   placeholder="Enter your email"
                   type="email"
-                  className="max-w-md border-future-border bg-future-surface-overlay text-future-foreground placeholder:text-future-foreground-subtle"
+                  className="max-w-md border-border bg-surface-overlay text-foreground placeholder:text-foreground-subtle"
                 />
               </div>
 
               {/* Divider */}
-              <div className="h-px bg-future-border-subtle" />
+              <div className="h-px bg-border-subtle" />
 
               {/* Language */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-future-foreground">Language</label>
-                <p className="text-sm text-future-foreground-muted">
+                <label className="text-sm font-medium text-foreground">Language</label>
+                <p className="text-sm text-foreground-muted">
                   Select your preferred language for the interface.
                 </p>
-                <select className="h-10 max-w-md appearance-none rounded-md border border-future-border bg-future-surface-overlay px-3 text-sm text-future-foreground focus:outline-none focus:ring-1 focus:ring-future-ring">
+                <select className="h-10 max-w-md appearance-none rounded-md border border-border bg-surface-overlay px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
                   <option>Select Language</option>
                   <option>English</option>
                   <option>Spanish</option>
@@ -349,12 +349,12 @@ function SettingsContent() {
               </div>
 
               {/* Divider */}
-              <div className="h-px bg-future-border-subtle" />
+              <div className="h-px bg-border-subtle" />
 
               {/* Theme Settings */}
               <div className="flex flex-col gap-3">
-                <label className="text-sm font-medium text-future-foreground">Theme Settings</label>
-                <p className="text-sm text-future-foreground-muted">
+                <label className="text-sm font-medium text-foreground">Theme Settings</label>
+                <p className="text-sm text-foreground-muted">
                   Choose your preferred theme for the interface.
                 </p>
                 <div className="flex gap-3">
@@ -367,8 +367,8 @@ function SettingsContent() {
                       key={theme.id}
                       className={`flex h-20 w-28 flex-col items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-colors ${
                         selectedTheme === theme.id
-                          ? 'border-future-accent bg-future-accent-subtle text-future-foreground'
-                          : 'border-future-border bg-future-surface-overlay text-future-foreground-muted hover:border-future-border-hover hover:text-future-foreground'
+                          ? 'border-brand bg-brand-subtle text-foreground'
+                          : 'border-border bg-surface-overlay text-foreground-muted hover:border-border-hover hover:text-foreground'
                       }`}
                       onClick={() => setSelectedTheme(theme.id)}
                     >
@@ -381,7 +381,7 @@ function SettingsContent() {
             </div>
           </div>
         ) : (
-          <div className="flex flex-1 items-center justify-center text-sm text-future-foreground-muted">
+          <div className="flex flex-1 items-center justify-center text-sm text-foreground-muted">
             Coming soon
           </div>
         )}
