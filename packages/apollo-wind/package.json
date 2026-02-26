@@ -126,7 +126,7 @@
     "react-dom": "19.2.3",
     "react-scan": "^0.4.3",
     "semantic-release": "^25.0.2",
-    "storybook": "^10.2.0",
+    "storybook": "^10.2.10",
     "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3",
     "vitest": "^4.0.14"
