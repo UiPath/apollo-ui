@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.45.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.44.3...@uipath/apollo-react@3.45.0) (2026-02-27)
+
+### Features
+
+* **apollo-react:** loading state for toolbox ([f140071](https://github.com/UiPath/apollo-ui/commit/f1400717ac53c9801394b9f32d211c2248268a4d))
+
 ## [@uipath/apollo-react-v3.44.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.44.2...@uipath/apollo-react@3.44.3) (2026-02-27)
 
 ### Bug Fixes
