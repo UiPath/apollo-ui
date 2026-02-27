@@ -6,7 +6,7 @@ import { cn } from '@/lib';
 // Types
 // ============================================================================
 
-export interface PanelProps {
+export interface MaestroPanelProps {
   /** Determines border side, arrow direction, and arrow position */
   side: 'left' | 'right';
   /** Panel content — only rendered when expanded */
@@ -39,13 +39,13 @@ export interface PanelProps {
  *
  * State is managed by the parent — pass `isCollapsed` and `onToggle`.
  */
-export function Panel({
+export function MaestroPanel({
   side,
   children,
   className,
   isCollapsed = false,
   onToggle,
-}: PanelProps) {
+}: MaestroPanelProps) {
   const isExpanded = !isCollapsed;
   const isLeft = side === 'left';
 
@@ -61,7 +61,7 @@ export function Panel({
       )}
     >
       {/* Expand/collapse toggle button */}
-      <button
+      <button type="button"
         className="absolute z-10 flex h-7 w-7 items-center justify-center rounded-full border border-border bg-surface text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
         style={{
           top: 28,

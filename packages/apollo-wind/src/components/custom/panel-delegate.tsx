@@ -80,7 +80,7 @@ function ExpandedNavItem({
 
   if (!isExpandable) {
     return (
-      <button
+      <button type="button"
         className="flex h-10 w-full items-center gap-2 rounded-2xl px-1 text-foreground-muted transition-colors hover:bg-surface-hover"
         onClick={onToggle}
       >
@@ -95,7 +95,7 @@ function ExpandedNavItem({
   return (
     <Collapsible open={isOpen} onOpenChange={() => onToggle()}>
       <CollapsibleTrigger asChild>
-        <button className="flex h-10 w-full items-center justify-between rounded-2xl px-1 text-foreground-muted transition-colors hover:bg-surface-hover">
+        <button type="button" className="flex h-10 w-full items-center justify-between rounded-2xl px-1 text-foreground-muted transition-colors hover:bg-surface-hover">
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
               {item.icon}
@@ -112,7 +112,7 @@ function ExpandedNavItem({
       <CollapsibleContent>
         <div className="flex flex-col">
           {item.children?.map((child) => (
-            <button
+            <button type="button"
               key={child.id}
               className={cn(
                 'flex h-10 items-center rounded-2xl pl-12 pr-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover',
@@ -143,7 +143,7 @@ function CollapsedNavItem({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button
+        <button type="button"
           className={cn(
             'flex h-12 w-full items-center justify-center text-foreground-muted transition-colors hover:text-foreground',
             isActive && 'text-brand-foreground'
@@ -247,14 +247,14 @@ export function DelegatePanel({
             {panelOpen && (
               <div className="flex flex-1 items-center justify-between">
                 <div className="flex items-center gap-[18px]">
-                  <button
+                  <button type="button"
                     type="button"
                     className="text-foreground-muted transition-colors hover:text-foreground"
                     aria-label="New conversation"
                   >
                     <MessageCirclePlus className="h-5 w-5" />
                   </button>
-                  <button
+                  <button type="button"
                     type="button"
                     className="text-foreground-muted transition-colors hover:text-foreground"
                     aria-label="Picture in picture"
@@ -262,7 +262,7 @@ export function DelegatePanel({
                     <PictureInPicture2 className="h-5 w-5" />
                   </button>
                 </div>
-                <button
+                <button type="button"
                   type="button"
                   className="text-foreground-muted transition-colors hover:text-foreground"
                   onClick={() => setPanelOpen(false)}
@@ -301,7 +301,7 @@ export function DelegatePanel({
                 {/* Expand button */}
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button
+                    <button type="button"
                       className="flex h-12 w-full items-center justify-center text-foreground-muted transition-colors hover:text-foreground"
                       onClick={() => setPanelOpen(true)}
                     >
