@@ -35,7 +35,7 @@ describe('EmptyState', () => {
       <EmptyState title="Empty" icon={<span data-testid="custom-icon">📦</span>} />
     );
     expect(screen.getByTestId('custom-icon')).toBeInTheDocument();
-    const iconContainer = container.querySelector('.rounded-full.bg-muted');
+    const iconContainer = container.querySelector('.items-center.justify-center');
     expect(iconContainer).toBeInTheDocument();
   });
 
