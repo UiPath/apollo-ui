@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.44.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.44.2...@uipath/apollo-react@3.44.3) (2026-02-27)
+
+### Bug Fixes
+
+* **apollo-react:** tigger release ([f9f8a6e](https://github.com/UiPath/apollo-ui/commit/f9f8a6e8e7625e0723d8d3157c409179ab531699))
+
 ## [@uipath/apollo-react-v3.44.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.44.1...@uipath/apollo-react@3.44.2) (2026-02-24)
 
 ### Bug Fixes

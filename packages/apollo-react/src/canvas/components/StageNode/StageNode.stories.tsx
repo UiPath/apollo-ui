@@ -919,6 +919,7 @@ export const DraggableTaskReordering: Story = {
 const initialTasksForAddReplace: StageTaskItem[][] = [
   [{ id: 'task-1', label: 'Initial Verification', icon: <VerificationIcon /> }],
   [{ id: 'task-2', label: 'Document Review', icon: <DocumentIcon /> }],
+  [{ id: 'task-3', label: 'Process Validation', icon: <ProcessIcon /> }],
 ];
 
 const availableTaskOptions: ListItem[] = [
@@ -966,9 +967,7 @@ const AddAndReplaceTasksStory = () => {
   const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), [StageNodeWrapper]);
   const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
 
-  const [pendingReplaceTask, setPendingReplaceTask] = useState<
-    { groupIndex: number; taskIndex: number } | undefined
-  >();
+  const [pendingReplaceTask, setPendingReplaceTask] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>();
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -1071,7 +1070,8 @@ const AddAndReplaceTasksStory = () => {
         })
       );
 
-      setPendingReplaceTask(undefined);
+      setPendingReplaceTask(false);
+      setSelectedTaskId(undefined);
     },
     [setNodes]
   );
@@ -1118,20 +1118,41 @@ const AddAndReplaceTasksStory = () => {
     setSelectedTaskId(taskId);
   }, []);
 
+  // Clear task selection when clicking on the canvas background
+  const handlePaneClick = useCallback(() => {
+    setSelectedTaskId(undefined);
+    setPendingReplaceTask(false);
+  }, []);
+
+  // Clear replace state when the node is deselected (e.g., clicking on canvas)
+  const handleNodesChange = useCallback(
+    (...args: Parameters<typeof onNodesChange>) => {
+      onNodesChange(...args);
+      const deselected = args[0].some(
+        (c) => c.type === 'select' && c.id === 'add-replace-stage' && !c.selected
+      );
+      if (deselected) {
+        setPendingReplaceTask(false);
+        setSelectedTaskId(undefined);
+      }
+    },
+    [onNodesChange]
+  );
+
   // Get current tasks from node state for menu items
   const currentTasks =
     nodesState.find((n) => n.id === 'add-replace-stage')?.data.stageDetails.tasks || [];
 
   // Create menu items for task selection
   const taskMenuItems = useMemo<IMenuItem[]>(() => {
-    return currentTasks.flatMap((group, groupIndex) =>
-      group.map((task, taskIndex) => ({
+    return currentTasks.flatMap((group) =>
+      group.map((task) => ({
         title: task.label,
         variant: 'item' as const,
         startIcon: task.icon,
         onClick: () => {
           setSelectedTaskId(task.id);
-          setPendingReplaceTask({ groupIndex, taskIndex });
+          setPendingReplaceTask(true);
           setMenuAnchorEl(null);
         },
       }))
@@ -1147,10 +1168,10 @@ const AddAndReplaceTasksStory = () => {
               ...node,
               data: {
                 ...node.data,
-                pendingReplaceTask: pendingReplaceTask,
+                ...(selectedTaskId && { pendingReplaceTask }),
                 stageDetails: {
                   ...node.data.stageDetails,
-                  selectedTasks: selectedTaskId ? [selectedTaskId] : undefined,
+                  selectedTaskId,
                 },
                 onAddTaskFromToolbox: handleAddTask,
                 onReplaceTaskFromToolbox: handleReplaceTask,
@@ -1178,15 +1199,14 @@ const AddAndReplaceTasksStory = () => {
 
   // Compute button label based on whether a task is being replaced
   const replaceButtonLabel = useMemo(() => {
-    if (pendingReplaceTask) {
-      const taskBeingReplaced =
-        currentTasks[pendingReplaceTask.groupIndex]?.[pendingReplaceTask.taskIndex];
+    if (pendingReplaceTask && selectedTaskId) {
+      const taskBeingReplaced = currentTasks.flat().find((t) => t.id === selectedTaskId);
       if (taskBeingReplaced) {
         return `Replacing Task: ${taskBeingReplaced.label}`;
       }
     }
     return 'Replace Task';
-  }, [pendingReplaceTask, currentTasks]);
+  }, [pendingReplaceTask, selectedTaskId, currentTasks]);
 
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
@@ -1194,9 +1214,10 @@ const AddAndReplaceTasksStory = () => {
         <BaseCanvas
           nodes={nodesWithMetadata}
           edges={edges}
-          onNodesChange={onNodesChange}
+          onNodesChange={handleNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onPaneClick={handlePaneClick}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           mode="design"

@@ -67,4 +67,16 @@ import { Badge } from "@/components/ui/badge"
 <Badge>Badge</Badge>
 <Badge variant="secondary">Secondary</Badge>
 <Badge variant="outline">Outline</Badge>
+
+// Success status (default variant)
+<Badge status="success">Completed</Badge>
+
+// Warning status with secondary variant
+<Badge status="warning" variant="secondary">Could not run</Badge>
+
+// Error status with outline variant
+<Badge status="error" variant="outline">Doc missing</Badge>
+
+// With icons (consumer-provided)
+<Badge status="info"><Info /> Ready</Badge>
 ```
