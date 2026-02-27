@@ -79,7 +79,7 @@ function HeaderIconButton({
   disabled?: boolean;
 }) {
   return (
-    <button
+    <button type="button"
       className={cn(
         'flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors',
         disabled ? 'cursor-default opacity-50' : 'hover:text-foreground'
@@ -102,7 +102,7 @@ function NotificationsDropdown({ themeClass }: { themeClass: string }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
+        <button type="button"
           className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:text-foreground"
           aria-label="Notifications"
         >
@@ -152,7 +152,7 @@ function HelpDropdown({ themeClass }: { themeClass: string }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
+        <button type="button"
           className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:text-foreground"
           aria-label="Help"
         >
@@ -197,7 +197,7 @@ function TenantSelector({ tenantName, themeClass }: { tenantName: string; themeC
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button className="flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-foreground-muted transition-colors hover:text-foreground">
+        <button type="button" className="flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-foreground-muted transition-colors hover:text-foreground">
           <span>
             Tenant: <span className="font-medium">{selected}</span>
           </span>
@@ -210,7 +210,7 @@ function TenantSelector({ tenantName, themeClass }: { tenantName: string; themeC
         className={cn(themeClass, 'w-56 border-border bg-surface-overlay p-1')}
       >
         {tenants.map((tenant) => (
-          <button
+          <button type="button"
             key={tenant.id}
             className={cn(
               'flex w-full items-center rounded-md px-3 py-2 text-sm transition-colors hover:bg-surface-hover',
@@ -236,7 +236,7 @@ function AvatarDropdown({ themeClass }: { themeClass: string }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="rounded-full focus:outline-none" aria-label="User menu">
+        <button type="button" className="rounded-full focus:outline-none" aria-label="User menu">
           <Avatar className="h-6 w-6 bg-brand">
             <AvatarFallback className="bg-brand text-[10px] font-bold text-foreground-on-accent">
               UI
@@ -327,7 +327,7 @@ export function MaestroHeader({
       >
         {/* Left: waffle + title */}
         <div className="flex items-center gap-3">
-          <button
+          <button type="button"
             className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:text-foreground"
             onClick={() => menuContent && setMenuOpen((prev) => !prev)}
             aria-label="App launcher"

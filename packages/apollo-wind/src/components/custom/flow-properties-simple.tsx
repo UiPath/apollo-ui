@@ -105,7 +105,7 @@ function FieldItem({
           {field.required && '*'}
         </span>
         {field.showGraphControl && (
-          <button
+          <button type="button"
             className="flex h-6 w-6 items-center justify-center rounded-lg bg-surface-overlay text-foreground-muted transition-colors hover:text-foreground"
             onClick={() => onGraphControl?.(field.label)}
             aria-label="Graph control"
@@ -148,7 +148,7 @@ function FieldItem({
             placeholder={field.placeholder}
             className="h-full flex-1 rounded-none border-0 bg-transparent text-sm font-medium text-foreground-muted shadow-none placeholder:text-foreground-subtle focus-visible:ring-0"
           />
-          <button
+          <button type="button"
             type="button"
             className="flex h-full w-[50px] items-center justify-center border-l border-border text-foreground-muted transition-colors hover:text-foreground"
             aria-label="Browse files"
@@ -198,7 +198,7 @@ const sampleJsonLines = [
 
 function EditorToolbarButton({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <button
+    <button type="button"
       className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:text-foreground"
       aria-label={label}
     >
@@ -217,7 +217,7 @@ function JsonEditorDrawer({ open, onClose }: { open: boolean; onClose: () => voi
         <span className="text-base font-semibold leading-5 tracking-[-0.4px] text-foreground">
           JSON editor
         </span>
-        <button
+        <button type="button"
           className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-overlay text-foreground-muted transition-colors hover:text-foreground"
           onClick={onClose}
           aria-label="Close editor"
@@ -243,7 +243,7 @@ function JsonEditorDrawer({ open, onClose }: { open: boolean; onClose: () => voi
               <FileJson className="h-4 w-4" />
               <span className="text-sm font-medium leading-none">script.js</span>
             </div>
-            <button
+            <button type="button"
               className="flex h-5 w-5 items-center justify-center text-foreground-muted transition-colors hover:text-foreground"
               aria-label="Refresh"
             >
@@ -274,13 +274,13 @@ function JsonEditorDrawer({ open, onClose }: { open: boolean; onClose: () => voi
 
       {/* ── Footer ──────────────────────────────────────────── */}
       <div className="flex items-center justify-end gap-2 px-6 py-4">
-        <button
+        <button type="button"
           className="flex h-10 items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium leading-5 text-foreground-subtle transition-colors hover:text-foreground"
           onClick={onClose}
         >
           <span>Cancel</span>
         </button>
-        <button
+        <button type="button"
           className="flex h-10 items-center gap-2 rounded-xl bg-brand px-4 py-2 text-sm font-semibold leading-5 text-foreground-inverse transition-colors hover:bg-brand/90"
           onClick={onClose}
         >
@@ -346,7 +346,7 @@ export function PropertiesSimple({
               {title}
             </span>
           </div>
-          <button
+          <button type="button"
             className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-overlay text-foreground-muted transition-colors hover:text-foreground"
             onClick={onClose}
             aria-label="Close properties"
