@@ -919,6 +919,7 @@ export const DraggableTaskReordering: Story = {
 const initialTasksForAddReplace: StageTaskItem[][] = [
   [{ id: 'task-1', label: 'Initial Verification', icon: <VerificationIcon /> }],
   [{ id: 'task-2', label: 'Document Review', icon: <DocumentIcon /> }],
+  [{ id: 'task-3', label: 'Process Validation', icon: <ProcessIcon /> }],
 ];
 
 const availableTaskOptions: ListItem[] = [
