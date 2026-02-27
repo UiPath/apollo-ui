@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.45.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.0...@uipath/apollo-react@3.45.1) (2026-02-27)
+
+### Bug Fixes
+
+* **apollo-react:** stabilize panOnDrag array reference to prevent unnecessary re-renders ([53c897c](https://github.com/UiPath/apollo-ui/commit/53c897c4806e1772ee2084ca4f5ad1558025d12a))
+
 ## [@uipath/apollo-react-v3.45.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.44.3...@uipath/apollo-react@3.45.0) (2026-02-27)
 
 ### Features
