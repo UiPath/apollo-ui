@@ -1,14 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import * as React from 'react';
-import { Panel } from './panel-maestro';
+import { MaestroPanel } from './panel-maestro';
 
 const meta = {
   title: 'Components/UiPath/Panel (Maestro)',
-  component: Panel,
+  component: MaestroPanel,
   parameters: {
     layout: 'fullscreen',
   },
-} satisfies Meta<typeof Panel>;
+} satisfies Meta<typeof MaestroPanel>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -33,17 +33,17 @@ function PanelDemo({ side }: { side: 'left' | 'right' }) {
   return (
     <div className="future-dark flex h-[500px] bg-surface-raised">
       {side === 'left' && (
-        <Panel side="left" isCollapsed={collapsed} onToggle={() => setCollapsed(!collapsed)}>
+        <MaestroPanel side="left" isCollapsed={collapsed} onToggle={() => setCollapsed(!collapsed)}>
           <SampleNav />
-        </Panel>
+        </MaestroPanel>
       )}
       <div className="flex flex-1 items-center justify-center text-sm text-foreground-muted">
         Content area
       </div>
       {side === 'right' && (
-        <Panel side="right" isCollapsed={collapsed} onToggle={() => setCollapsed(!collapsed)}>
+        <MaestroPanel side="right" isCollapsed={collapsed} onToggle={() => setCollapsed(!collapsed)}>
           <div className="p-4 text-sm text-foreground-muted">Right panel content</div>
-        </Panel>
+        </MaestroPanel>
       )}
     </div>
   );

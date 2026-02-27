@@ -2,15 +2,15 @@ import * as React from 'react';
 import type { MaestroHeaderProps } from '@/components/custom/global-header';
 import { MaestroHeader } from '@/components/custom/global-header';
 import { Canvas, Grid, GridItem } from '@/components/custom/grid-maestro';
-import type { PanelProps } from '@/components/custom/panel-maestro';
-import { Panel } from '@/components/custom/panel-maestro';
+import type { MaestroPanelProps } from '@/components/custom/panel-maestro';
+import { MaestroPanel } from '@/components/custom/panel-maestro';
 import { ViewportGuard } from '@/components/custom/viewport-guard';
 import type { FutureTheme } from '@/foundation/Future/types';
 import { fontFamily } from '@/foundation/Future/typography';
 import { cn } from '@/lib';
 
 // Re-export types and components for convenience
-export type { MaestroHeaderProps, PanelProps };
+export type { MaestroHeaderProps, MaestroPanelProps };
 export { Canvas, Grid, GridItem };
 
 // ============================================================================
@@ -61,9 +61,9 @@ export interface MaestroTemplateProps {
  *
  * Composed of:
  * - **MaestroHeader** — global header with logo, actions, tenant selector, avatar
- * - **Panel side="left"** — collapsible left panel (300px expanded / 32px collapsed)
+ * - **MaestroPanel side="left"** — collapsible left panel (300px expanded / 32px collapsed)
  * - **Canvas** — scrollable main area with ResizeObserver-based grid reflow
- * - **Panel side="right"** — collapsible right panel (300px expanded / 32px collapsed)
+ * - **MaestroPanel side="right"** — collapsible right panel (300px expanded / 32px collapsed)
  *
  * ### Responsive auto-collapse
  *
@@ -150,25 +150,25 @@ export function MaestroTemplate({
         {/* Body: left panel + canvas + right panel */}
         <div ref={bodyRef} className="flex flex-1 overflow-hidden">
           {/* Left panel */}
-          <Panel
+          <MaestroPanel
             side="left"
             isCollapsed={leftIsCollapsed}
             onToggle={() => setLeftCollapsed((prev) => !prev)}
           >
             {leftPanelContent}
-          </Panel>
+          </MaestroPanel>
 
           {/* Canvas (main content) */}
           <Canvas>{children}</Canvas>
 
           {/* Right panel */}
-          <Panel
+          <MaestroPanel
             side="right"
             isCollapsed={rightIsCollapsed}
             onToggle={() => setRightCollapsed((prev) => !prev)}
           >
             {rightPanelContent}
-          </Panel>
+          </MaestroPanel>
         </div>
       </div>
     </ViewportGuard>

@@ -25,6 +25,8 @@ export interface PropertiesExpandedProps {
   nodeType?: string;
   /** Active top tab: 'properties' | 'variables' */
   activeTab?: 'properties' | 'variables';
+  /** Callback when top tab is changed */
+  onTabChange?: (tab: 'properties' | 'variables') => void;
   /** Callback when close button is clicked */
   onClose?: () => void;
 }
@@ -44,6 +46,7 @@ function MiniTab({
 }) {
   return (
     <button
+      type="button"
       className={cn(
         'flex h-6 items-center rounded-lg px-2 text-xs font-medium leading-5',
         active ? 'bg-surface text-foreground' : 'text-foreground-subtle'
@@ -141,6 +144,7 @@ export function PropertiesExpanded({
   nodeName = 'Validate invoice',
   nodeType = 'AI Agent',
   activeTab = 'properties',
+  onTabChange,
   onClose,
 }: PropertiesExpandedProps) {
   return (
@@ -171,23 +175,27 @@ export function PropertiesExpanded({
         <div className="flex items-center gap-2">
           <div className="flex h-10 items-center rounded-xl border border-border-deep bg-surface-overlay p-1">
             <button
+              type="button"
               className={cn(
                 'flex h-8 items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-medium leading-5 transition-colors',
                 activeTab === 'properties'
                   ? 'border border-border bg-surface text-foreground'
                   : 'text-foreground-subtle'
               )}
+              onClick={() => onTabChange?.('properties')}
             >
               <TableProperties className="h-5 w-5" />
               <span>Properties</span>
             </button>
             <button
+              type="button"
               className={cn(
                 'flex h-8 items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-medium leading-5 transition-colors',
                 activeTab === 'variables'
                   ? 'border border-border bg-surface text-foreground'
                   : 'text-foreground-subtle'
               )}
+              onClick={() => onTabChange?.('variables')}
             >
               <Variable className="h-5 w-5" />
               <span>Variables</span>

@@ -34,7 +34,6 @@ import {
   DropdownMenuTrigger,
 } from './dropdown-menu';
 import type { EditableCellMeta } from './editable-cell';
-import { Input } from './input';
 import { Label } from './label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 import { Separator } from './separator';

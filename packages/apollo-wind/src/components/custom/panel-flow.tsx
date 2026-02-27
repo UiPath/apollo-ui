@@ -81,7 +81,7 @@ function IconRail({
           {navItems.map((item) => (
             <Tooltip key={item.id}>
               <TooltipTrigger asChild>
-                <button
+                <button type="button"
                   className={cn(
                     'flex h-12 w-full items-center justify-center text-foreground-muted transition-colors hover:text-foreground',
                     activeId === item.id && 'text-brand-foreground'
@@ -161,14 +161,14 @@ function ChatInput() {
       </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             type="button"
             className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted hover:text-foreground"
             aria-label="Add attachment"
           >
             <Plus className="h-5 w-5" />
           </button>
-          <button
+          <button type="button"
             type="button"
             className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted hover:text-foreground"
             aria-label="Add workflow"
@@ -176,7 +176,7 @@ function ChatInput() {
             <Workflow className="h-5 w-5" />
           </button>
         </div>
-        <button
+        <button type="button"
           type="button"
           className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-foreground-on-accent"
           aria-label="Submit message"
@@ -209,7 +209,7 @@ function ExpandedPanel({
           <span className="font-bold text-foreground">Flow</span>
           <span className="font-medium text-foreground-subtle">Autopilot</span>
         </div>
-        <button
+        <button type="button"
           className="text-foreground-muted transition-colors hover:text-foreground"
           onClick={onClose}
           aria-label="Close panel"

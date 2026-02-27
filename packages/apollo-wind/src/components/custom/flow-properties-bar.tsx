@@ -62,7 +62,7 @@ export function PropertiesBar({
 
       {/* Right: Properties / Variables tabs */}
       <div className="flex h-10 items-center rounded-xl bg-surface-overlay border border-border-deep p-1">
-        <button
+        <button type="button"
           className={cn(
             'flex h-8 items-center gap-2 rounded-[10px] px-4 py-2 text-sm font-medium leading-5 text-foreground-subtle transition-colors hover:text-foreground-hover',
             activeTab === 'properties' && 'text-foreground-subtle'
@@ -75,7 +75,7 @@ export function PropertiesBar({
           <TableProperties className="h-5 w-5" />
           <span>Properties</span>
         </button>
-        <button
+        <button type="button"
           className={cn(
             'flex h-7 items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium leading-5 text-foreground-subtle transition-colors',
             activeTab === 'variables' && 'text-foreground-subtle'

@@ -2,10 +2,8 @@ import type { Meta } from '@storybook/react-vite';
 import {
   Calendar,
   ExternalLink,
-  FileText,
   GitBranch,
   MapPin,
-  MoreHorizontal,
   Star,
   Users,
 } from 'lucide-react';

@@ -50,7 +50,7 @@ import {
 
 // Template components — available to the LLM via liveScope
 import { MaestroTemplate, Canvas, Grid, GridItem } from '../Maestro/template-maestro';
-import { Panel } from '@/components/custom/panel-maestro';
+import { MaestroPanel } from '@/components/custom/panel-maestro';
 import { FlowTemplate } from '../Flow/template-flow';
 import { DelegateTemplate } from '../Delegate/template-delegate';
 import {
@@ -107,7 +107,7 @@ const baseLiveScope = {
   Switch,
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
   // Templates & layout primitives
-  MaestroTemplate, Canvas, Grid, GridItem, Panel,
+  MaestroTemplate, Canvas, Grid, GridItem, MaestroPanel,
   FlowTemplate,
   DelegateTemplate,
   AdminTemplate, AdminSidebar, AdminSidebarHeader, AdminSidebarNav, AdminPageHeader, AdminToolbar,
@@ -132,7 +132,7 @@ function getTemplateInstruction(template: TemplateChoice): string {
 </MaestroTemplate>
 
 MaestroTemplate props: theme, title, tenantName, defaultLeftPanelCollapsed, leftPanelContent (ReactNode), defaultRightPanelCollapsed, rightPanelContent (ReactNode), children (main canvas).
-Sub-components available: Canvas (scrollable main area), Grid + GridItem (responsive grid), Panel (collapsible side panel).
+Sub-components available: Canvas (scrollable main area), Grid + GridItem (responsive grid), MaestroPanel (collapsible side panel).
 Use Grid with GridItem children for dashboard-style card layouts. GridItem accepts colSpan and rowSpan for sizing.
 leftPanelContent and rightPanelContent render inside collapsible panels.`;
 
