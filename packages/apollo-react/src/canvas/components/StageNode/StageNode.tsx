@@ -20,7 +20,6 @@ import { FontVariantToken, Padding, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { Position, useStore, useViewport } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
-  ApCircularProgress,
   ApIcon,
   ApIconButton,
   ApLink,
@@ -543,19 +542,14 @@ const StageNodeComponent = (props: StageNodeProps) => {
               </ApTooltip>
             )}
             {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly && (
-              <ApTooltip content={addTaskLoading ? 'Loading...' : addTaskLabel} placement="top">
+              <ApTooltip content={addTaskLabel} placement="top">
                 <span>
                   <ApIconButton
                     onClick={handleTaskAddClick}
                     size="small"
-                    disabled={addTaskLoading}
                     label={addTaskLabel}
                   >
-                    {addTaskLoading ? (
-                      <ApCircularProgress size={20} />
-                    ) : (
-                      <ApIcon name="add" size="20px" />
-                    )}
+                    <ApIcon name="add" size="20px" />
                   </ApIconButton>
                 </span>
               </ApTooltip>
@@ -682,6 +676,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
           <Toolbox
             title={addTaskLabel}
             initialItems={taskOptions}
+            loading={addTaskLoading}
             onClose={() => setIsAddingTask(false)}
             onItemSelect={handleAddTaskToolboxItemSelected}
             onSearch={onTaskToolboxSearch}
