@@ -69,4 +69,8 @@ export interface ApSankeyDiagramProps {
   colorScheme?: string[];
   /** Accessible label for the diagram */
   ariaLabel?: string;
+  /** Minimum height per node in pixels. Diagram scrolls vertically when nodes would be smaller. Default: 36 */
+  minNodeHeight?: number;
+  /** Minimum width per column in pixels (includes label space). Diagram scrolls horizontally when columns would be narrower. Default: 140 */
+  minColumnWidth?: number;
 }
