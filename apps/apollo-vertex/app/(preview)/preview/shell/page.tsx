@@ -10,8 +10,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
+import { ShellNavigationProvider } from "@/registry/shell/shell-navigation-context";
 import { ShellTemplate } from "@/templates/ShellTemplate";
+import { AnalyticsPage } from "./analytics-page";
 import { InvoiceDashboard } from "./invoice-dashboard";
+import { ProjectsPage } from "./projects-page";
 
 function VisibilityToggle({
   visible,
@@ -67,17 +70,35 @@ function VisibilityToggle({
 
 export default function ShellPreviewPage() {
   const [contentVisible, setContentVisible] = useState(true);
+  const [activePage, setActivePage] = useState<"dashboard" | "projects" | "analytics">("dashboard");
 
   return (
-    <ShellTemplate
-      sidebarActions={
-        <VisibilityToggle
-          visible={contentVisible}
-          onToggle={() => setContentVisible((v) => !v)}
-        />
-      }
-    >
-      <InvoiceDashboard visible={contentVisible} />
-    </ShellTemplate>
+    <ShellNavigationProvider activePage={activePage} onNavigate={(page) => setActivePage(page as "dashboard" | "projects" | "analytics")}>
+      <ShellTemplate
+        sidebarActions={
+          <VisibilityToggle
+            visible={contentVisible}
+            onToggle={() => setContentVisible((v) => !v)}
+          />
+        }
+      >
+        <AnimatePresence mode="wait">
+          {contentVisible || activePage === "analytics" ? (
+            <motion.div
+              key={activePage}
+              className="h-full"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+            >
+              <InvoiceDashboard visible={activePage === "dashboard"} />
+              <ProjectsPage visible={activePage === "projects"} />
+              <AnalyticsPage visible={activePage === "analytics"} />
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      </ShellTemplate>
+    </ShellNavigationProvider>
   );
 }

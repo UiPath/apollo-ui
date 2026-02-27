@@ -7,6 +7,7 @@ import type { CompanyLogo } from "./shell";
 import { Company } from "./shell-company";
 import { MinimalCompany } from "./shell-minimal-company";
 import { MinimalNavItem } from "./shell-minimal-nav-item";
+import { useShellNavigation } from "./shell-navigation-context";
 import { NavItem } from "./shell-nav-item";
 import { UserProfile } from "./shell-user-profile";
 
@@ -28,8 +29,16 @@ export const Sidebar = ({
   headerActions,
 }: SidebarProps) => {
   const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
+  const nav = useShellNavigation();
 
   const sidebarWidth = isCollapsed ? "w-16" : "w-[280px]";
+
+  const handleNavigate = (page: string) => (e: React.MouseEvent) => {
+    if (nav) {
+      e.preventDefault();
+      nav.onNavigate(page);
+    }
+  };
 
   if (variant === "minimal") {
     return (
@@ -44,10 +53,21 @@ export const Sidebar = ({
           <MinimalNavItem
             to="/templates/shell-template"
             label="dashboard"
-            active
+            active={nav ? nav.activePage === "dashboard" : undefined}
+            onClick={handleNavigate("dashboard")}
           />
-          <MinimalNavItem to="/projects" label="projects" />
-          <MinimalNavItem to="/analytics" label="analytics" />
+          <MinimalNavItem
+            to="/projects"
+            label="projects"
+            active={nav ? nav.activePage === "projects" : undefined}
+            onClick={handleNavigate("projects")}
+          />
+          <MinimalNavItem
+            to="/analytics"
+            label="analytics"
+            active={nav ? nav.activePage === "analytics" : undefined}
+            onClick={handleNavigate("analytics")}
+          />
         </nav>
 
         <div className="flex items-center gap-2">
@@ -80,9 +100,27 @@ export const Sidebar = ({
         companyLogo={companyLogo}
       />
       <nav className="flex-1 mt-10 space-y-1 pb-3">
-        <NavItem to="/preview/shell" icon={Home} text="Dashboard" />
-        <NavItem to="/" icon={FolderOpen} text="Projects" />
-        <NavItem to="/" icon={BarChart3} text="Analytics" />
+        <NavItem
+          to="/preview/shell"
+          icon={Home}
+          text="Dashboard"
+          active={nav ? nav.activePage === "dashboard" : undefined}
+          onClick={handleNavigate("dashboard")}
+        />
+        <NavItem
+          to="/preview/shell/projects"
+          icon={FolderOpen}
+          text="Projects"
+          active={nav ? nav.activePage === "projects" : undefined}
+          onClick={handleNavigate("projects")}
+        />
+        <NavItem
+          to="/preview/shell/analytics"
+          icon={BarChart3}
+          text="Analytics"
+          active={nav ? nav.activePage === "analytics" : undefined}
+          onClick={handleNavigate("analytics")}
+        />
         <NavItem to="/" icon={Users} text="Team" />
         <NavItem to="/" icon={Settings} text="Settings" />
         {sidebarActions}

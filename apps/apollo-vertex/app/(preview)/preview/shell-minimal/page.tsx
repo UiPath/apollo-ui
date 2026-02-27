@@ -2,8 +2,11 @@
 
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import { ShellNavigationProvider } from "@/registry/shell/shell-navigation-context";
 import { ShellTemplate } from "@/templates/ShellTemplate";
+import { AnalyticsPage } from "./analytics-page";
 import { LoanQcDashboard } from "./loan-qc-dashboard";
+import { ProjectsPage } from "./projects-page";
 
 function VisibilityToggle({
   visible,
@@ -27,18 +30,23 @@ function VisibilityToggle({
 
 export default function ShellMinimalPreviewPage() {
   const [contentVisible, setContentVisible] = useState(true);
+  const [activePage, setActivePage] = useState<"dashboard" | "projects" | "analytics">("dashboard");
 
   return (
-    <ShellTemplate
-      variant="minimal"
-      headerActions={
-        <VisibilityToggle
-          visible={contentVisible}
-          onToggle={() => setContentVisible((v) => !v)}
-        />
-      }
-    >
-      <LoanQcDashboard visible={contentVisible} />
-    </ShellTemplate>
+    <ShellNavigationProvider activePage={activePage} onNavigate={(page) => setActivePage(page as "dashboard" | "projects" | "analytics")}>
+      <ShellTemplate
+        variant="minimal"
+        headerActions={
+          <VisibilityToggle
+            visible={contentVisible}
+            onToggle={() => setContentVisible((v) => !v)}
+          />
+        }
+      >
+        <LoanQcDashboard visible={contentVisible && activePage === "dashboard"} />
+        <ProjectsPage visible={contentVisible && activePage === "projects"} />
+        <AnalyticsPage visible={activePage === "analytics"} />
+      </ShellTemplate>
+    </ShellNavigationProvider>
   );
 }

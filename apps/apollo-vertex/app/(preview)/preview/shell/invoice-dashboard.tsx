@@ -23,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useShellNavigation } from "@/registry/shell/shell-navigation-context";
 
 const kpis = [
   { label: "Total Invoices", value: "1,247", icon: FileText, change: "+12%" },
@@ -65,6 +66,8 @@ const recentActivity = [
 ];
 
 export function InvoiceDashboard({ visible }: { visible: boolean }) {
+  const nav = useShellNavigation();
+
   if (!visible) return null;
 
   return (
@@ -116,8 +119,12 @@ export function InvoiceDashboard({ visible }: { visible: boolean }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {invoices.map((inv) => (
-                <TableRow key={inv.id}>
+              {invoices.map((inv, i) => (
+                <TableRow
+                  key={inv.id}
+                  className={i === 0 ? "cursor-pointer hover:bg-muted/50 transition-colors" : ""}
+                  onClick={i === 0 ? () => nav?.onNavigate("analytics") : undefined}
+                >
                   <TableCell className="font-medium">{inv.id}</TableCell>
                   <TableCell>{inv.vendor}</TableCell>
                   <TableCell>{inv.amount}</TableCell>
