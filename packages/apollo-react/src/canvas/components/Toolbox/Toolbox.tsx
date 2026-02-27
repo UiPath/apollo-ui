@@ -101,6 +101,7 @@ export function Toolbox<T>({
     parentItem: ListItem<T> | null;
   }>();
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const searchIdRef = useRef(0);
   const initialItemsRef = useRef(initialItems);
@@ -297,8 +298,18 @@ export function Toolbox<T>({
       }
     };
 
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [
     isSearching,
     navigationStack.canGoBack,
@@ -309,27 +320,29 @@ export function Toolbox<T>({
   ]);
 
   return (
-    <Column px={20} py={12} gap={12} w={320} h={440}>
-      <Header
-        title={currentParentItem?.name || title}
-        onBack={handleBackTransition}
-        showBackButton={navigationStack.canGoBack}
-      />
+    <div ref={containerRef}>
+      <Column px={20} py={12} gap={12} w={320} h={440}>
+        <Header
+          title={currentParentItem?.name || title}
+          onBack={handleBackTransition}
+          showBackButton={navigationStack.canGoBack}
+        />
 
-      <SearchBox value={search} onChange={handleSearch} clear={clearSearch} placeholder="Search" />
+        <SearchBox value={search} onChange={handleSearch} clear={clearSearch} placeholder="Search" />
 
-      <AnimatedContainer>
-        <AnimatedContent entering={isTransitioning} direction={animationDirection}>
-          <ListView
-            isLoading={childrenLoading || searchLoading || loading}
-            items={isSearching && !isSearchingInitialItems ? searchedItems : items}
-            emptyStateMessage={isSearching ? 'No matching nodes found' : 'No nodes found'}
-            enableSections={!isSearching}
-            onItemClick={handleItemSelect}
-            onItemHover={onItemHover}
-          />
-        </AnimatedContent>
-      </AnimatedContainer>
-    </Column>
+        <AnimatedContainer>
+          <AnimatedContent entering={isTransitioning} direction={animationDirection}>
+            <ListView
+              isLoading={childrenLoading || searchLoading || loading}
+              items={isSearching && !isSearchingInitialItems ? searchedItems : items}
+              emptyStateMessage={isSearching ? 'No matching nodes found' : 'No nodes found'}
+              enableSections={!isSearching}
+              onItemClick={handleItemSelect}
+              onItemHover={onItemHover}
+            />
+          </AnimatedContent>
+        </AnimatedContainer>
+      </Column>
+    </div>
   );
 }

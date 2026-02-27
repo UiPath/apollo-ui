@@ -96,7 +96,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const isException = stageDetails?.isException;
   const isReadOnly = !!stageDetails?.isReadOnly;
   const icon = stageDetails?.icon;
-  const selectedTasks = stageDetails?.selectedTasks;
+  const selectedTaskId = stageDetails?.selectedTaskId;
   const defaultContent = stageDetails?.defaultContent || 'Add first task';
 
   const status = execution?.stageStatus?.status;
@@ -130,16 +130,21 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const [isReplacingTask, setIsReplacingTask] = useState(false);
 
   useEffect(() => {
-    if (pendingReplaceTask?.groupIndex != null && pendingReplaceTask?.taskIndex != null) {
-      const taskGroup = tasks[pendingReplaceTask.groupIndex];
-      taskStateReference.current = {
-        isParallel: (taskGroup?.length ?? 0) > 1,
-        groupIndex: pendingReplaceTask.groupIndex,
-        taskIndex: pendingReplaceTask.taskIndex,
-      };
-      setIsReplacingTask(true);
-    } else setIsReplacingTask(false);
-  }, [pendingReplaceTask, tasks]);
+    if (pendingReplaceTask) {
+      const match = tasks
+        .flatMap((group, gi) => group.map((task, ti) => ({ task, groupIndex: gi, taskIndex: ti })))
+        .find(({ task }) => task.id === selectedTaskId);
+
+      if (match) {
+        taskStateReference.current = {
+          isParallel: (tasks[match.groupIndex]?.length ?? 0) > 1,
+          groupIndex: match.groupIndex,
+          taskIndex: match.taskIndex,
+        };
+        setIsReplacingTask(true);
+      }
+    }
+  }, [pendingReplaceTask, selectedTaskId, tasks]);
 
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
@@ -245,7 +250,13 @@ const StageNodeComponent = (props: StageNodeProps) => {
       const items: NodeMenuItem[] = [];
 
       if (onReplaceTaskFromToolbox) {
-        items.push(getMenuItem('replace-task', 'Replace task', () => setIsReplacingTask(true)));
+        items.push(
+          getMenuItem('replace-task', 'Replace task', () => {
+            const taskId = tasks[groupIndex]?.[taskIndex]?.id;
+            if (taskId) onTaskClick?.(taskId);
+            setIsReplacingTask(true);
+          })
+        );
         items.push(getDivider());
       }
 
@@ -265,7 +276,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
       return items;
     },
-    [onReplaceTaskFromToolbox, onTaskGroupModification, reGroupTaskFunction]
+    [onReplaceTaskFromToolbox, onTaskClick, onTaskGroupModification, reGroupTaskFunction, tasks]
   );
 
   const { setSelectedNodeId } = useNodeSelection();
@@ -306,13 +317,6 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
   const handleReplaceTaskToolboxItemSelected = useCallback(
     (item: ListItem) => {
-      setIsReplacingTask(true);
-      const groupIndex = taskStateReference.current.groupIndex;
-      const taskIndex = taskStateReference.current.taskIndex;
-      const taskId = tasks[groupIndex]?.[taskIndex]?.id;
-      if (taskId) {
-        onTaskClick?.(taskId);
-      }
       onReplaceTaskFromToolbox?.(
         item,
         taskStateReference.current.groupIndex,
@@ -320,7 +324,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
       );
       setIsReplacingTask(false);
     },
-    [onReplaceTaskFromToolbox, onTaskClick, tasks]
+    [onReplaceTaskFromToolbox]
   );
 
   const handleConfigurations: HandleGroupManifest[] = useMemo(
@@ -619,7 +623,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                                 key={task.id}
                                 task={task}
                                 taskExecution={taskExecution}
-                                isSelected={!!selectedTasks?.includes(task.id)}
+                                isSelected={selectedTaskId === task.id}
                                 isParallel={isParallel}
                                 contextMenuItems={contextMenuItems(
                                   isParallel,
