@@ -74,7 +74,7 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-  const [internalRowSelection, setInternalRowSelection] = React.useState({});
+  const [internalRowSelection, setInternalRowSelection] = React.useState<Record<string, boolean>>({});
 
   const isControlled = controlledRowSelection !== undefined;
   const rowSelection = isControlled ? controlledRowSelection : internalRowSelection;

@@ -35,7 +35,7 @@ function ViewButton({
   onClick?: () => void;
 }) {
   return (
-    <button
+    <button type="button"
       className={cn(
         'flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:text-foreground',
         isActive && 'rounded-2xl border border-border bg-surface text-foreground'
@@ -55,7 +55,7 @@ function ViewButton({
 function NodeSizeIcon({ size, isActive }: { size: 's' | 'm' | 'l'; isActive?: boolean }) {
   const label = { s: 'S', m: 'M', l: 'L' }[size];
   return (
-    <button
+    <button type="button"
       className={cn(
         'flex h-8 w-8 items-center justify-center rounded-2xl text-xs font-bold text-foreground-muted transition-colors hover:text-foreground',
         isActive && 'border border-border bg-surface text-foreground'

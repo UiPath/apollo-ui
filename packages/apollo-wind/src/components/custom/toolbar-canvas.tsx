@@ -44,7 +44,7 @@ function ToolbarButton({
   onClick?: () => void;
 }) {
   return (
-    <button
+    <button type="button"
       className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:text-foreground"
       onClick={onClick}
       aria-label={label}
@@ -80,7 +80,7 @@ export function FlowCanvasToolbar({
       {/* Build / Evaluate toggle */}
       <div className="flex h-10 items-center rounded-xl border border-border-deep bg-surface-overlay p-1">
         {/* Build */}
-        <button
+        <button type="button"
           className={cn(
             'flex h-8 items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-medium leading-5 transition-colors',
             activeMode === 'build'
@@ -93,7 +93,7 @@ export function FlowCanvasToolbar({
           <span>Build</span>
         </button>
         {/* Evaluate */}
-        <button
+        <button type="button"
           className={cn(
             'flex h-8 items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-medium leading-5 transition-colors',
             activeMode === 'evaluate'

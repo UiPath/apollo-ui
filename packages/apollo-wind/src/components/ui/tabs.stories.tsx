@@ -1,5 +1,5 @@
 import type { Meta } from '@storybook/react-vite';
-import { Bell, CreditCard, Settings, Shield, User } from 'lucide-react';
+import { Bell, Shield, User } from 'lucide-react';
 import { Button } from './button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './card';
 import { Input } from './input';

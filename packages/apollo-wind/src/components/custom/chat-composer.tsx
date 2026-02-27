@@ -68,14 +68,14 @@ export function ChatComposer({
         <div className="flex items-center justify-between">
           {/* Left actions */}
           <div className="flex items-center gap-1">
-            <button
+            <button type="button"
               type="button"
               className="flex h-8 w-8 items-center justify-center rounded-2xl border border-border-inverse bg-surface-inverse transition-opacity hover:opacity-80"
               aria-label="Add attachment"
             >
               <Plus className="h-5 w-5 text-foreground-inverse" />
             </button>
-            <button
+            <button type="button"
               type="button"
               className="flex h-8 w-8 items-center justify-center rounded-2xl border border-border-inverse bg-surface-inverse transition-opacity hover:opacity-80"
               aria-label="Add workflow"
@@ -85,7 +85,7 @@ export function ChatComposer({
           </div>
 
           {/* Submit button */}
-          <button
+          <button type="button"
             type="button"
             className="flex h-8 w-8 items-center justify-center rounded-2xl bg-brand transition-opacity hover:opacity-90"
             onClick={handleSubmit}
