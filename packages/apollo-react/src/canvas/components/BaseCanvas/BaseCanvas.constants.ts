@@ -47,6 +47,9 @@ export const BASE_CANVAS_DEFAULTS = {
   organizeAnimationDuration: 500,
 } as const;
 
+/** Stable reference: restrict panning to middle-mouse-button only so left-click stays free for node interaction */
+export const PAN_ON_DRAG: [number] = [1];
+
 // Timing constants
 export const FIT_VIEW_DELAY_MS = 50;
 export const CANVAS_READY_DELAY_MS = 50;

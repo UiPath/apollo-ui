@@ -11,7 +11,7 @@ import {
   useState,
 } from 'react';
 import { useToolbarActionStore } from '../../hooks/ToolbarActionContext';
-import { BASE_CANVAS_DEFAULTS } from './BaseCanvas.constants';
+import { BASE_CANVAS_DEFAULTS, PAN_ON_DRAG } from './BaseCanvas.constants';
 import { useAutoLayout, useEnsureNodesInView, useMaintainNodesInView } from './BaseCanvas.hooks';
 import type { BaseCanvasProps, BaseCanvasRef } from './BaseCanvas.types';
 import { CanvasBackground } from './CanvasBackground';
@@ -175,7 +175,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
         panOnScroll={isInteractive}
         zoomOnScroll={isInteractive}
         zoomOnDoubleClick={isInteractive && zoomOnDoubleClick}
-        panOnDrag={isInteractive ? [1] : false}
+        panOnDrag={isInteractive ? PAN_ON_DRAG : false}
         onInit={handleInit}
         onNodesChange={isInteractive ? onNodesChange : undefined}
         onEdgesChange={isInteractive ? onEdgesChange : undefined}
