@@ -1,17 +1,20 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
   ArrowLeft,
   ArrowUp,
   CheckCircle,
   CircleAlert,
+  Clock,
   Grid2x2,
   Loader2,
+  type LucideIcon,
   Sparkles,
 } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,63 +40,354 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 import { useShellNavigation } from "@/registry/shell/shell-navigation-context";
 
-const findings = [
-  {
-    icon: CircleAlert,
-    label: "Duplicate line item detected",
-    time: "5m ago",
-    severity: "medium" as const,
-    description:
-      "Line item #3 (Industrial Bearings, $2,400) appears to match a charge on INV-3987 from Jan 15...",
-    detail: {
-      headline: "Potential duplicate charge of $2,400 for Industrial Bearings",
-      summary:
-        "Line item #3 on this invoice (120× SKF-6205-2RS at $20.00 each, totaling $2,400.00) matches an identical charge on INV-3987, submitted by Acme Corp on January 15 and already approved for payment on January 22. Same vendor, same part number, same quantity and unit price. This could be a legitimate reorder for the Detroit facility, but the 41-day gap and identical amounts suggest it may be an accidental duplicate submission.",
-      actions: ["Mark as Duplicate", "Approve Anyway"],
-    },
-  },
-  {
-    icon: AlertTriangle,
-    label: "Payment terms mismatch",
-    time: "12m ago",
-    severity: "low" as const,
-    description:
-      "Invoice specifies Net 45, but vendor master record shows agreed terms of Net 30.",
-    detail: {
-      headline: "Payment terms discrepancy — Net 45 vs. agreed Net 30",
-      summary:
-        "This invoice from Acme Corp specifies payment terms of Net 45, but the vendor master record (VMR-AC-0042) shows mutually agreed terms of Net 30, last updated on November 8, 2025. Paying on Net 45 would delay payment by 15 days beyond the contractual obligation, which could trigger late payment penalties or affect the vendor relationship. This may be a clerical error on the invoice, or Acme Corp may have recently requested extended terms that haven't been reflected in the master record yet.",
-      actions: ["Use Agreed Net 30", "Accept Net 45", "Contact Vendor"],
-    },
-  },
-];
+/* ─── types ─── */
 
-const initialTimeline = [
-  {
-    text: "Three-way match completed — invoice, PO, and goods receipt verified.",
-    time: "2m ago",
-  },
-  {
-    text: "Goods receipt GRN-8842 confirmed for PO-7710.",
-    time: "18m ago",
-  },
-  {
-    text: "Invoice matched to purchase order PO-7710.",
-    time: "22m ago",
-  },
-  {
-    text: "Invoice received via EDI and entered into processing queue.",
-    time: "1h ago",
-  },
-];
+interface ActionHandler {
+  chatLoading: string;
+  chatDone: string;
+  timelineEntry: string;
+}
 
-const lineItems = [
-  { line: 1, description: "Industrial Bearings (SKF 6205)", partNo: "SKF-6205-2RS", qty: 120, unitPrice: 20.00, total: 2400.00 },
-  { line: 2, description: "Hydraulic Cylinder Seals", partNo: "HCS-4450-KIT", qty: 50, unitPrice: 38.50, total: 1925.00 },
-  { line: 3, description: "Precision Machined Shafts", partNo: "PMS-1020-SS", qty: 25, unitPrice: 185.00, total: 4625.00 },
-  { line: 4, description: "Linear Guide Rails", partNo: "LGR-20-800", qty: 10, unitPrice: 245.00, total: 2450.00 },
-  { line: 5, description: "Coupling Assemblies", partNo: "CA-30-FL", qty: 15, unitPrice: 70.00, total: 1050.00 },
-];
+interface FindingAction {
+  label: string;
+  handler?: ActionHandler;
+}
+
+interface Finding {
+  icon: LucideIcon;
+  label: string;
+  time: string;
+  severity: "medium" | "low";
+  description: string;
+  detail: {
+    headline: string;
+    summary: string;
+    actions: FindingAction[];
+  };
+}
+
+interface LineItem {
+  line: number;
+  description: string;
+  partNo: string;
+  qty: number;
+  unitPrice: number;
+  total: number;
+}
+
+interface InvoiceConfig {
+  id: string;
+  vendor: string;
+  amount: number;
+  received: string;
+  statusLabel: string;
+  statusIcon: LucideIcon;
+  statusColor: string;
+  assignee: string;
+  matchScore: string;
+  purchaseOrder: string;
+  paymentTerms: string;
+  dueDate: string;
+  description: string;
+  findings: Finding[];
+  timeline: { text: string; time: string }[];
+  lineItems: LineItem[];
+  summary: { headline: string; body: string };
+  approveTitle: string;
+  approveDescription: string;
+}
+
+/* ─── invoice data ─── */
+
+const invoiceConfigs: Record<string, InvoiceConfig> = {
+  "INV-4021": {
+    id: "INV-4021",
+    vendor: "Acme Corp",
+    amount: 12450,
+    received: "Feb 25, 2026",
+    statusLabel: "Processed",
+    statusIcon: CheckCircle,
+    statusColor: "text-emerald-500",
+    assignee: "Sarah Mitchell",
+    matchScore: "94%",
+    purchaseOrder: "PO-7710",
+    paymentTerms: "Net 45",
+    dueDate: "Apr 11, 2026",
+    description:
+      "Q1 2026 order for industrial bearings, hydraulic seals, and precision machining components for the Detroit manufacturing facility.",
+    findings: [
+      {
+        icon: CircleAlert,
+        label: "Duplicate line item detected",
+        time: "5m ago",
+        severity: "medium",
+        description:
+          "Line item #3 (Industrial Bearings, $2,400) appears to match a charge on INV-3987 from Jan 15...",
+        detail: {
+          headline:
+            "Potential duplicate charge of $2,400 for Industrial Bearings",
+          summary:
+            "Line item #3 on this invoice (120× SKF-6205-2RS at $20.00 each, totaling $2,400.00) matches an identical charge on INV-3987, submitted by Acme Corp on January 15 and already approved for payment on January 22. Same vendor, same part number, same quantity and unit price. This could be a legitimate reorder for the Detroit facility, but the 41-day gap and identical amounts suggest it may be an accidental duplicate submission.",
+          actions: [
+            {
+              label: "Mark as Duplicate",
+              handler: {
+                chatLoading:
+                  "Marking line item #3 as duplicate across INV-4021 and INV-3987...",
+                chatDone:
+                  "Done — line item #3 (Industrial Bearings, $2,400.00) has been flagged as a duplicate. The charge has been excluded from the payment total. Updated invoice amount: $10,050.00.",
+                timelineEntry:
+                  "Line item #3 marked as duplicate — charge excluded from payment total.",
+              },
+            },
+            { label: "Approve Anyway" },
+          ],
+        },
+      },
+      {
+        icon: AlertTriangle,
+        label: "Payment terms mismatch",
+        time: "12m ago",
+        severity: "low",
+        description:
+          "Invoice specifies Net 45, but vendor master record shows agreed terms of Net 30.",
+        detail: {
+          headline: "Payment terms discrepancy — Net 45 vs. agreed Net 30",
+          summary:
+            "This invoice from Acme Corp specifies payment terms of Net 45, but the vendor master record (VMR-AC-0042) shows mutually agreed terms of Net 30, last updated on November 8, 2025. Paying on Net 45 would delay payment by 15 days beyond the contractual obligation, which could trigger late payment penalties or affect the vendor relationship. This may be a clerical error on the invoice, or Acme Corp may have recently requested extended terms that haven't been reflected in the master record yet.",
+          actions: [
+            { label: "Use Agreed Net 30" },
+            {
+              label: "Accept Net 45",
+              handler: {
+                chatLoading: "Updating payment terms to Net 45 for INV-4021...",
+                chatDone:
+                  "Done — payment terms updated to Net 45. Due date adjusted to April 11, 2026. Vendor master record VMR-AC-0042 has been flagged for review to align with the updated terms.",
+                timelineEntry:
+                  "Payment terms updated to Net 45 — due date adjusted to Apr 11, 2026.",
+              },
+            },
+            { label: "Contact Vendor" },
+          ],
+        },
+      },
+    ],
+    timeline: [
+      {
+        text: "Three-way match completed — invoice, PO, and goods receipt verified.",
+        time: "2m ago",
+      },
+      {
+        text: "Goods receipt GRN-8842 confirmed for PO-7710.",
+        time: "18m ago",
+      },
+      {
+        text: "Invoice matched to purchase order PO-7710.",
+        time: "22m ago",
+      },
+      {
+        text: "Invoice received via EDI and entered into processing queue.",
+        time: "1h ago",
+      },
+    ],
+    lineItems: [
+      {
+        line: 1,
+        description: "Industrial Bearings (SKF 6205)",
+        partNo: "SKF-6205-2RS",
+        qty: 120,
+        unitPrice: 20.0,
+        total: 2400.0,
+      },
+      {
+        line: 2,
+        description: "Hydraulic Cylinder Seals",
+        partNo: "HCS-4450-KIT",
+        qty: 50,
+        unitPrice: 38.5,
+        total: 1925.0,
+      },
+      {
+        line: 3,
+        description: "Precision Machined Shafts",
+        partNo: "PMS-1020-SS",
+        qty: 25,
+        unitPrice: 185.0,
+        total: 4625.0,
+      },
+      {
+        line: 4,
+        description: "Linear Guide Rails",
+        partNo: "LGR-20-800",
+        qty: 10,
+        unitPrice: 245.0,
+        total: 2450.0,
+      },
+      {
+        line: 5,
+        description: "Coupling Assemblies",
+        partNo: "CA-30-FL",
+        qty: 15,
+        unitPrice: 70.0,
+        total: 1050.0,
+      },
+    ],
+    summary: {
+      headline:
+        "INV-4021 from Acme Corp has been fully processed and is ready for payment approval.",
+      body: "The three-way match between the invoice, purchase order PO-7710, and goods receipt GRN-8842 was completed successfully. Two findings were flagged: a potential duplicate line item and a payment terms discrepancy. Neither is blocking, but both may warrant review before final approval.",
+    },
+    approveTitle: "Approve payment for INV-4021?",
+    approveDescription:
+      "This will authorize a payment of $12,450.00 to Acme Corp under purchase order PO-7710. Once confirmed, the payment will be queued for processing and cannot be reversed.",
+  },
+
+  "INV-4018": {
+    id: "INV-4018",
+    vendor: "Globex Inc",
+    amount: 8230,
+    received: "Feb 23, 2026",
+    statusLabel: "In Review",
+    statusIcon: Clock,
+    statusColor: "text-amber-500",
+    assignee: "David Chen",
+    matchScore: "87%",
+    purchaseOrder: "PO-8215",
+    paymentTerms: "Net 30",
+    dueDate: "Mar 25, 2026",
+    description:
+      "Q1 2026 order for electronic sensors, control modules, and calibration equipment for the Austin testing facility.",
+    findings: [
+      {
+        icon: CircleAlert,
+        label: "Quantity exceeds purchase order",
+        time: "8m ago",
+        severity: "medium",
+        description:
+          "Invoice shows 200× Proximity Sensors but PO-8215 authorized only 150 units. Overage of 50 units ($925.00).",
+        detail: {
+          headline:
+            "Quantity overage of 50 units on Proximity Sensors — $925.00 above PO",
+          summary:
+            "Line item #1 on this invoice lists 200× Proximity Sensors (PS-200-IR) at $18.50 each, totaling $3,700.00. However, purchase order PO-8215 only authorized 150 units ($2,775.00). The overage of 50 units adds $925.00 beyond the approved amount. The Austin facility did request additional sensors in a follow-up email on Feb 18, but no PO amendment was filed. This may be a legitimate order increase that needs retroactive approval.",
+          actions: [
+            {
+              label: "Adjust to PO Quantity",
+              handler: {
+                chatLoading:
+                  "Adjusting line item #1 quantity from 200 to 150 per PO-8215...",
+                chatDone:
+                  "Done — line item #1 (Proximity Sensors) adjusted from 200 to 150 units. Charge reduced from $3,700.00 to $2,775.00. Updated invoice amount: $7,305.00.",
+                timelineEntry:
+                  "Line item #1 quantity adjusted to match PO — invoice amount updated.",
+              },
+            },
+            { label: "Approve Overage" },
+          ],
+        },
+      },
+      {
+        icon: AlertTriangle,
+        label: "Missing goods receipt",
+        time: "20m ago",
+        severity: "low",
+        description:
+          "No goods receipt found for line items #3 and #4 (Control Modules and Calibration Kits).",
+        detail: {
+          headline:
+            "Goods receipt missing for Control Modules and Calibration Kits",
+          summary:
+            "Line items #3 (Control Modules, CM-PLC-8X, $1,450.00) and #4 (Calibration Kits, CK-NIST-A, $760.00) have no corresponding goods receipt in the system. The warehouse receiving log for the Austin facility shows no delivery confirmation for these items as of Feb 23. The remaining items on the invoice (Proximity Sensors, Temperature Probes, Wiring Harnesses) were received and confirmed on Feb 21. These two items may still be in transit or delivered to a different dock.",
+          actions: [
+            { label: "Request GRN" },
+            {
+              label: "Waive Receipt",
+              handler: {
+                chatLoading:
+                  "Waiving goods receipt requirement for line items #3 and #4...",
+                chatDone:
+                  "Done — goods receipt requirement waived for Control Modules and Calibration Kits. Manager approval logged. Items marked as received-in-system.",
+                timelineEntry:
+                  "Goods receipt waived for line items #3 and #4 — manager approval logged.",
+              },
+            },
+            { label: "Contact Warehouse" },
+          ],
+        },
+      },
+    ],
+    timeline: [
+      {
+        text: "Two-way match partial — PO verified, pending goods receipt.",
+        time: "5m ago",
+      },
+      {
+        text: "Quantity variance detected on line item #1.",
+        time: "15m ago",
+      },
+      {
+        text: "Invoice matched to purchase order PO-8215.",
+        time: "28m ago",
+      },
+      {
+        text: "Invoice received via email and entered into processing queue.",
+        time: "2h ago",
+      },
+    ],
+    lineItems: [
+      {
+        line: 1,
+        description: "Proximity Sensors (IR)",
+        partNo: "PS-200-IR",
+        qty: 200,
+        unitPrice: 18.5,
+        total: 3700.0,
+      },
+      {
+        line: 2,
+        description: "Temperature Probes (K-type)",
+        partNo: "TP-K-100",
+        qty: 80,
+        unitPrice: 24.0,
+        total: 1920.0,
+      },
+      {
+        line: 3,
+        description: "Control Modules (PLC 8x)",
+        partNo: "CM-PLC-8X",
+        qty: 10,
+        unitPrice: 145.0,
+        total: 1450.0,
+      },
+      {
+        line: 4,
+        description: "Calibration Kits (NIST-A)",
+        partNo: "CK-NIST-A",
+        qty: 8,
+        unitPrice: 95.0,
+        total: 760.0,
+      },
+      {
+        line: 5,
+        description: "Wiring Harnesses (24-pin)",
+        partNo: "WH-24-SH",
+        qty: 20,
+        unitPrice: 20.0,
+        total: 400.0,
+      },
+    ],
+    summary: {
+      headline:
+        "INV-4018 from Globex Inc is partially matched and awaiting goods receipt confirmation.",
+      body: "The invoice has been matched to purchase order PO-8215, but two findings need attention: a quantity overage on proximity sensors and missing goods receipts for two line items. The match score is 87% — below the auto-approval threshold of 95%.",
+    },
+    approveTitle: "Approve payment for INV-4018?",
+    approveDescription:
+      "This will authorize a payment of $8,230.00 to Globex Inc under purchase order PO-8215. Once confirmed, the payment will be queued for processing and cannot be reversed.",
+  },
+};
+
+/* ─── helpers ─── */
 
 const tabs = ["All", "Findings", "Activity"] as const;
 type Tab = (typeof tabs)[number];
@@ -101,15 +395,29 @@ type Tab = (typeof tabs)[number];
 const fmt = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 
-export function AnalyticsPage({ visible }: { visible: boolean }) {
+/* ─── component ─── */
+
+export function AnalyticsPage({
+  visible,
+  invoiceId = "INV-4021",
+}: {
+  visible: boolean;
+  invoiceId?: string;
+}) {
+  const config = invoiceConfigs[invoiceId] ?? invoiceConfigs["INV-4021"];
+  const StatusIcon = config.statusIcon;
+
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>("All");
   const [view, setView] = useState<"summary" | "table">("summary");
   const [selectedFinding, setSelectedFinding] = useState<number | null>(null);
-  const [chatMessages, setChatMessages] = useState<{ text: string; status: "loading" | "done" }[]>([]);
-  const [duplicateMarked, setDuplicateMarked] = useState(false);
-  const [net45Accepted, setNet45Accepted] = useState(false);
-  const [timelineItems, setTimelineItems] = useState(initialTimeline);
+  const [chatMessages, setChatMessages] = useState<
+    { text: string; status: "loading" | "done" }[]
+  >([]);
+  const [completedActions, setCompletedActions] = useState<Set<string>>(
+    new Set(),
+  );
+  const [timelineItems, setTimelineItems] = useState(config.timeline);
   const nav = useShellNavigation();
 
   useEffect(() => {
@@ -117,40 +425,27 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleMarkDuplicate = useCallback(() => {
-    setDuplicateMarked(true);
-    setChatMessages((prev) => [...prev, { text: "Marking line item #3 as duplicate across INV-4021 and INV-3987...", status: "loading" }]);
+  const handleAction = useCallback((action: FindingAction) => {
+    if (!action.handler) return;
+    const h = action.handler;
+    setCompletedActions((prev) => new Set(prev).add(action.label));
+    setChatMessages((prev) => [
+      ...prev,
+      { text: h.chatLoading, status: "loading" },
+    ]);
     setTimeout(() => {
       setChatMessages((prev) =>
-        prev.map((m, i) => (i === prev.length - 1 ? { ...m, status: "done" as const } : m))
+        prev.map((m, i) =>
+          i === prev.length - 1 ? { ...m, status: "done" as const } : m,
+        ),
       );
       setTimeout(() => {
         setChatMessages((prev) => [
           ...prev,
-          { text: "Done — line item #3 (Industrial Bearings, $2,400.00) has been flagged as a duplicate. The charge has been excluded from the payment total. Updated invoice amount: $10,050.00.", status: "done" },
+          { text: h.chatDone, status: "done" },
         ]);
         setTimelineItems((prev) => [
-          { text: "Line item #3 marked as duplicate — charge excluded from payment total.", time: "Just now" },
-          ...prev,
-        ]);
-      }, 800);
-    }, 1500);
-  }, []);
-
-  const handleAcceptNet45 = useCallback(() => {
-    setNet45Accepted(true);
-    setChatMessages((prev) => [...prev, { text: "Updating payment terms to Net 45 for INV-4021...", status: "loading" }]);
-    setTimeout(() => {
-      setChatMessages((prev) =>
-        prev.map((m, i) => (i === prev.length - 1 ? { ...m, status: "done" as const } : m))
-      );
-      setTimeout(() => {
-        setChatMessages((prev) => [
-          ...prev,
-          { text: "Done — payment terms updated to Net 45. Due date adjusted to April 11, 2026. Vendor master record VMR-AC-0042 has been flagged for review to align with the updated terms.", status: "done" },
-        ]);
-        setTimelineItems((prev) => [
-          { text: "Payment terms updated to Net 45 — due date adjusted to Apr 11, 2026.", time: "Just now" },
+          { text: h.timelineEntry, time: "Just now" },
           ...prev,
         ]);
       }, 800);
@@ -166,40 +461,40 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
         <div className="flex items-center gap-4">
           <button
             type="button"
-            onClick={() => nav?.onNavigate("dashboard")}
+            onClick={() => nav?.onNavigate("invoices")}
             className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-base font-bold">Acme Corp</h1>
-            <p className="text-sm text-muted-foreground">INV-4021</p>
+            <h1 className="text-base font-bold">{config.vendor}</h1>
+            <p className="text-sm text-muted-foreground">{config.id}</p>
           </div>
         </div>
 
         <div className="flex items-center gap-8">
           <div>
             <p className="text-xs text-muted-foreground">Amount</p>
-            <p className="text-sm font-medium">$12,450.00</p>
+            <p className="text-sm font-medium">{fmt(config.amount)}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Received</p>
-            <p className="text-sm font-medium">Feb 25, 2026</p>
+            <p className="text-sm font-medium">{config.received}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Status</p>
             <div className="flex items-center gap-1.5">
-              <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
-              <p className="text-sm font-medium">Processed</p>
+              <StatusIcon className={cn("w-3.5 h-3.5", config.statusColor)} />
+              <p className="text-sm font-medium">{config.statusLabel}</p>
             </div>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Assignee</p>
-            <p className="text-sm font-medium">Sarah Mitchell</p>
+            <p className="text-sm font-medium">{config.assignee}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Match Score</p>
-            <p className="text-sm font-medium">94%</p>
+            <p className="text-sm font-medium">{config.matchScore}</p>
           </div>
         </div>
 
@@ -220,21 +515,34 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
-                style={{ boxShadow: "0 0 16px color-mix(in oklch, var(--color-primary) 40%, transparent)" }}
+                style={{
+                  boxShadow:
+                    "0 0 16px color-mix(in oklch, var(--color-primary) 40%, transparent)",
+                }}
               >
                 Approve Payment
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Approve payment for INV-4021?</AlertDialogTitle>
+                <AlertDialogTitle>{config.approveTitle}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will authorize a payment of $12,450.00 to Acme Corp under purchase order PO-7710. Once confirmed, the payment will be queued for processing and cannot be reversed.
+                  {config.approveDescription}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => nav?.onNavigate("dashboard")}>
+                <AlertDialogAction
+                  onClick={() => {
+                    nav?.onNavigate("invoices");
+                    setTimeout(() => {
+                      toast.success(
+                        `${config.id} approved — payment of ${fmt(config.amount)} to ${config.vendor} has been queued for processing.`,
+                        { duration: 5000 },
+                      );
+                    }, 600);
+                  }}
+                >
                   Confirm
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -392,15 +700,20 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
                       Findings
                     </h3>
                     <div className="space-y-3 mb-8">
-                      {findings.map((finding, i) => (
+                      {config.findings.map((finding, i) => (
                         <div
                           key={finding.label}
-                          role={finding.detail ? "button" : undefined}
-                          tabIndex={finding.detail ? 0 : undefined}
-                          onClick={finding.detail ? () => { setSelectedFinding(prev => prev === i ? null : i); setChatMessages([]); setDuplicateMarked(false); setNet45Accepted(false); } : undefined}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => {
+                            setSelectedFinding((prev) =>
+                              prev === i ? null : i,
+                            );
+                            setChatMessages([]);
+                            setCompletedActions(new Set());
+                          }}
                           className={cn(
-                            "p-3 rounded-lg border transition-colors",
-                            finding.detail && "cursor-pointer",
+                            "p-3 rounded-lg border transition-colors cursor-pointer",
                             selectedFinding === i
                               ? "border-primary bg-primary/5"
                               : "border-border/50 bg-card/50",
@@ -409,16 +722,22 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
                           <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center gap-2">
                               <finding.icon className="w-4 h-4 text-muted-foreground" />
-                              <span className="text-sm font-medium">{finding.label}</span>
+                              <span className="text-sm font-medium">
+                                {finding.label}
+                              </span>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-xs text-muted-foreground">
                                 {finding.time}
                               </span>
-                              <div className={cn(
-                                "w-2 h-2 rounded-full",
-                                finding.severity === "medium" ? "bg-warning" : "bg-muted-foreground/50",
-                              )} />
+                              <div
+                                className={cn(
+                                  "w-2 h-2 rounded-full",
+                                  finding.severity === "medium"
+                                    ? "bg-warning"
+                                    : "bg-muted-foreground/50",
+                                )}
+                              />
                             </div>
                           </div>
                           {finding.description && (
@@ -448,7 +767,9 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm leading-relaxed">{item.text}</p>
+                            <p className="text-sm leading-relaxed">
+                              {item.text}
+                            </p>
                             <p className="text-xs text-muted-foreground mt-0.5">
                               {item.time}
                             </p>
@@ -473,7 +794,8 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
                     </span>
                   </div>
                   <AnimatePresence mode="wait">
-                    {selectedFinding !== null && findings[selectedFinding]?.detail ? (
+                    {selectedFinding !== null &&
+                    config.findings[selectedFinding]?.detail ? (
                       <motion.div
                         key={`finding-${selectedFinding}`}
                         className="space-y-4"
@@ -483,33 +805,39 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
                         transition={{ duration: 0.2, ease: "easeInOut" }}
                       >
                         <h2 className="text-2xl font-semibold leading-tight">
-                          {findings[selectedFinding].detail.headline}
+                          {config.findings[selectedFinding].detail.headline}
                         </h2>
                         <p className="text-sm text-muted-foreground leading-relaxed">
-                          {findings[selectedFinding].detail.summary}
+                          {config.findings[selectedFinding].detail.summary}
                         </p>
                         <div className="flex gap-2 pt-2">
-                          {findings[selectedFinding].detail.actions.map((action) => {
-                            const isActive =
-                              (action === "Mark as Duplicate" && duplicateMarked) ||
-                              (action === "Accept Net 45" && net45Accepted);
-                            return (
-                              <Button
-                                key={action}
-                                variant="outline"
-                                size="sm"
-                                onClick={
-                                  action === "Mark as Duplicate" ? handleMarkDuplicate
-                                  : action === "Accept Net 45" ? handleAcceptNet45
-                                  : undefined
-                                }
-                                disabled={isActive}
-                                className={isActive ? "bg-accent/80 text-accent-foreground" : undefined}
-                              >
-                                {action}
-                              </Button>
-                            );
-                          })}
+                          {config.findings[selectedFinding].detail.actions.map(
+                            (action) => {
+                              const isActive = completedActions.has(
+                                action.label,
+                              );
+                              return (
+                                <Button
+                                  key={action.label}
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={
+                                    action.handler
+                                      ? () => handleAction(action)
+                                      : undefined
+                                  }
+                                  disabled={isActive}
+                                  className={
+                                    isActive
+                                      ? "bg-accent/80 text-accent-foreground"
+                                      : undefined
+                                  }
+                                >
+                                  {action.label}
+                                </Button>
+                              );
+                            },
+                          )}
                         </div>
                       </motion.div>
                     ) : (
@@ -522,16 +850,10 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
                         transition={{ duration: 0.2, ease: "easeInOut" }}
                       >
                         <h2 className="text-2xl font-semibold leading-tight">
-                          INV-4021 from Acme Corp has been fully processed and is
-                          ready for payment approval.
+                          {config.summary.headline}
                         </h2>
                         <p className="text-sm text-muted-foreground leading-relaxed">
-                          The three-way match between the invoice, purchase order
-                          PO-7710, and goods receipt GRN-8842 was completed
-                          successfully. Two findings were flagged: a potential
-                          duplicate line item and a payment terms discrepancy.
-                          Neither is blocking, but both may warrant review before
-                          final approval.
+                          {config.summary.body}
                         </p>
                         <div className="flex gap-2 pt-2">
                           <Button variant="outline" size="sm">
@@ -595,31 +917,41 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
 
               <div className="space-y-5">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-0.5">Invoice amount</p>
-                  <p className="text-lg font-bold">$12,450.00</p>
+                  <p className="text-xs text-muted-foreground mb-0.5">
+                    Invoice amount
+                  </p>
+                  <p className="text-lg font-bold">{fmt(config.amount)}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-0.5">Vendor</p>
-                  <p className="text-sm font-semibold">Acme Corp</p>
+                  <p className="text-sm font-semibold">{config.vendor}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-0.5">Purchase order</p>
-                  <p className="text-sm font-semibold">PO-7710</p>
+                  <p className="text-xs text-muted-foreground mb-0.5">
+                    Purchase order
+                  </p>
+                  <p className="text-sm font-semibold">
+                    {config.purchaseOrder}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-0.5">Payment terms</p>
-                  <p className="text-sm font-semibold">Net 45</p>
+                  <p className="text-xs text-muted-foreground mb-0.5">
+                    Payment terms
+                  </p>
+                  <p className="text-sm font-semibold">{config.paymentTerms}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-0.5">Due date</p>
-                  <p className="text-sm font-semibold">Apr 11, 2026</p>
+                  <p className="text-xs text-muted-foreground mb-0.5">
+                    Due date
+                  </p>
+                  <p className="text-sm font-semibold">{config.dueDate}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-0.5">Description</p>
+                  <p className="text-xs text-muted-foreground mb-0.5">
+                    Description
+                  </p>
                   <p className="text-sm leading-relaxed">
-                    Q1 2026 order for industrial bearings, hydraulic seals, and
-                    precision machining components for the Detroit manufacturing
-                    facility.
+                    {config.description}
                   </p>
                 </div>
               </div>
@@ -647,30 +979,52 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {lineItems.map((item) => (
+                {config.lineItems.map((item) => (
                   <TableRow key={item.line}>
-                    <TableCell className="text-muted-foreground">{item.line}</TableCell>
-                    <TableCell className="font-medium">{item.description}</TableCell>
-                    <TableCell className="text-muted-foreground font-mono text-xs">{item.partNo}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {item.line}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {item.description}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground font-mono text-xs">
+                      {item.partNo}
+                    </TableCell>
                     <TableCell className="text-right">{item.qty}</TableCell>
-                    <TableCell className="text-right">{fmt(item.unitPrice)}</TableCell>
-                    <TableCell className="text-right font-medium">{fmt(item.total)}</TableCell>
+                    <TableCell className="text-right">
+                      {fmt(item.unitPrice)}
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      {fmt(item.total)}
+                    </TableCell>
                   </TableRow>
                 ))}
                 <TableRow>
                   <TableCell colSpan={4} />
-                  <TableCell className="text-right text-sm text-muted-foreground">Subtotal</TableCell>
-                  <TableCell className="text-right font-semibold">$12,450.00</TableCell>
+                  <TableCell className="text-right text-sm text-muted-foreground">
+                    Subtotal
+                  </TableCell>
+                  <TableCell className="text-right font-semibold">
+                    {fmt(config.amount)}
+                  </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell colSpan={4} />
-                  <TableCell className="text-right text-sm text-muted-foreground">Tax (0%)</TableCell>
-                  <TableCell className="text-right text-muted-foreground">$0.00</TableCell>
+                  <TableCell className="text-right text-sm text-muted-foreground">
+                    Tax (0%)
+                  </TableCell>
+                  <TableCell className="text-right text-muted-foreground">
+                    $0.00
+                  </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell colSpan={4} />
-                  <TableCell className="text-right text-sm font-semibold">Total</TableCell>
-                  <TableCell className="text-right text-lg font-bold">$12,450.00</TableCell>
+                  <TableCell className="text-right text-sm font-semibold">
+                    Total
+                  </TableCell>
+                  <TableCell className="text-right text-lg font-bold">
+                    {fmt(config.amount)}
+                  </TableCell>
                 </TableRow>
               </TableBody>
             </Table>

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { BarChart3, FolderOpen, Home, Settings, Users } from "lucide-react";
+import { FileText, FolderOpen, Home, Settings, Users } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
@@ -7,8 +7,8 @@ import type { CompanyLogo } from "./shell";
 import { Company } from "./shell-company";
 import { MinimalCompany } from "./shell-minimal-company";
 import { MinimalNavItem } from "./shell-minimal-nav-item";
-import { useShellNavigation } from "./shell-navigation-context";
 import { NavItem } from "./shell-nav-item";
+import { useShellNavigation } from "./shell-navigation-context";
 import { UserProfile } from "./shell-user-profile";
 
 interface SidebarProps {
@@ -64,9 +64,14 @@ export const Sidebar = ({
           />
           <MinimalNavItem
             to="/analytics"
-            label="analytics"
-            active={nav ? nav.activePage === "analytics" : undefined}
-            onClick={handleNavigate("analytics")}
+            label="invoices"
+            active={
+              nav
+                ? nav.activePage === "invoices" ||
+                  nav.activePage === "analytics"
+                : undefined
+            }
+            onClick={handleNavigate("invoices")}
           />
         </nav>
 
@@ -116,22 +121,29 @@ export const Sidebar = ({
         />
         <NavItem
           to="/preview/shell/analytics"
-          icon={BarChart3}
-          text="Analytics"
-          active={nav ? nav.activePage === "analytics" : undefined}
-          onClick={handleNavigate("analytics")}
+          icon={FileText}
+          text="Invoices"
+          active={
+            nav
+              ? nav.activePage === "invoices" || nav.activePage === "analytics"
+              : undefined
+          }
+          onClick={handleNavigate("invoices")}
         />
         <NavItem to="/" icon={Users} text="Team" />
         <NavItem to="/" icon={Settings} text="Settings" />
         {sidebarActions}
       </nav>
-      <div className={cn("mt-auto", isCollapsed && "flex flex-col items-center")}>
+      <div
+        className={cn("mt-auto", isCollapsed && "flex flex-col items-center")}
+      >
         <UserProfile isCollapsed={isCollapsed} />
       </div>
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          boxShadow: "inset -1px 0 0 0 color-mix(in srgb, var(--color-border) 50%, transparent)",
+          boxShadow:
+            "inset -1px 0 0 0 color-mix(in srgb, var(--color-border) 50%, transparent)",
         }}
       />
     </motion.aside>
