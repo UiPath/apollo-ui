@@ -1,7 +1,7 @@
 {
   "tool-call.running": "Rulând {toolName}...",
   "tool-call.ran": "A rulat {toolName} ({duration}s)",
-  "tool-call.input": "Intrare",
+  "tool-call.input": "Input",
   "tool-call.execution": "Execuție",
   "tool-call.escalation": "Escaladare",
   "tool-call.errors": "Erori",
