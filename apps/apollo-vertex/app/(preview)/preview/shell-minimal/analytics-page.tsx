@@ -162,8 +162,8 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
   return (
     <div className="flex flex-col h-full relative z-10">
       {/* Top Header Bar */}
-      <div className="flex items-center justify-between px-8 py-4 border-b border-border/50">
-        <div className="flex items-center gap-4">
+      <div className="grid grid-cols-[380px_1fr_300px] border-b border-border/50">
+        <div className="flex items-center gap-4 px-6 py-4">
           <button
             type="button"
             onClick={() => nav?.onNavigate("dashboard")}
@@ -177,7 +177,7 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-8 pl-6 py-4">
           <div>
             <p className="text-xs text-muted-foreground">Amount</p>
             <p className="text-sm font-medium">$12,450.00</p>
@@ -203,7 +203,7 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-end gap-3 px-6 py-4">
           <ToggleGroup
             type="single"
             value={view}
