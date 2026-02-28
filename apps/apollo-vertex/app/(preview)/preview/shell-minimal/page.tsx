@@ -30,10 +30,10 @@ function VisibilityToggle({
 
 export default function ShellMinimalPreviewPage() {
   const [contentVisible, setContentVisible] = useState(true);
-  const [activePage, setActivePage] = useState<"dashboard" | "projects" | "analytics">("dashboard");
+  const [activePage, setActivePage] = useState<"dashboard" | "projects" | "invoices" | "analytics">("dashboard");
 
   return (
-    <ShellNavigationProvider activePage={activePage} onNavigate={(page) => setActivePage(page as "dashboard" | "projects" | "analytics")}>
+    <ShellNavigationProvider activePage={activePage} onNavigate={(page) => setActivePage(page as "dashboard" | "projects" | "invoices" | "analytics")}>
       <ShellTemplate
         variant="minimal"
         headerActions={
@@ -45,7 +45,7 @@ export default function ShellMinimalPreviewPage() {
       >
         <LoanQcDashboard visible={contentVisible && activePage === "dashboard"} />
         <ProjectsPage visible={contentVisible && activePage === "projects"} />
-        <AnalyticsPage visible={activePage === "analytics"} />
+        <AnalyticsPage visible={activePage === "invoices" || activePage === "analytics"} />
       </ShellTemplate>
     </ShellNavigationProvider>
   );
