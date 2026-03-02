@@ -2,13 +2,15 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Box, PanelLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 import type { CompanyLogo } from "./shell";
 import {
@@ -24,55 +26,132 @@ interface CompanyProps {
   companyLogo?: CompanyLogo;
 }
 
+function CollapsedLogo({
+  companyLogo,
+  companyName,
+  productName,
+  onExpand,
+}: {
+  companyLogo?: CompanyLogo;
+  companyName: string;
+  productName: string;
+  onExpand: () => void;
+}) {
+  const { t } = useTranslation();
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={onExpand}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            className="flex items-center justify-center cursor-pointer"
+            type="button"
+          >
+            <motion.div
+              className="w-8 h-8 rounded-[4px] bg-primary-700 dark:bg-primary-400 flex items-center justify-center shrink-0"
+              whileHover={iconHoverScale}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {hovered ? (
+                  <motion.div
+                    key="panel"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <PanelLeft className="w-4 h-4 text-background" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="logo"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    {companyLogo ? (
+                      <>
+                        <img
+                          src={companyLogo.url}
+                          alt={companyLogo.alt}
+                          className={`w-4 h-auto ${companyLogo.darkUrl ? 'dark:hidden' : ''}`}
+                        />
+                        {companyLogo.darkUrl && (
+                          <img
+                            src={companyLogo.darkUrl}
+                            alt={companyLogo.alt}
+                            className="w-4 h-auto hidden dark:block"
+                          />
+                        )}
+                      </>
+                    ) : (
+                      <Box className="w-4 h-4 text-background" />
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="right">
+          {t("open_sidebar")}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 export const Company = ({
   companyName,
   productName,
   companyLogo,
 }: CompanyProps) => {
+  const { t } = useTranslation();
   const [isCollapsed, setIsCollapsed] = useLocalStorage(
     "sidebar-collapsed",
     false,
   );
   const iconElement = (
     <motion.div
-      className="w-8 h-8 rounded-md bg-linear-to-r from-primary/5 via-secondary/5 to-primary/5 flex items-center justify-center shrink-0"
+      className="w-8 h-8 rounded-[4px] bg-primary-700 dark:bg-primary-400 flex items-center justify-center shrink-0"
       {...(isCollapsed ? { whileHover: iconHoverScale } : {})}
     >
       {companyLogo ? (
-        <img
-          src={companyLogo.url}
-          alt={companyLogo.alt}
-          className="w-8 h-8 text-primary"
-        />
+        <>
+          <img
+            src={companyLogo.url}
+            alt={companyLogo.alt}
+            className={`w-4 h-auto ${companyLogo.darkUrl ? 'dark:hidden' : ''}`}
+          />
+          {companyLogo.darkUrl && (
+            <img
+              src={companyLogo.darkUrl}
+              alt={companyLogo.alt}
+              className="w-4 h-auto hidden dark:block"
+            />
+          )}
+        </>
       ) : (
-        <Box className="w-4 h-4 text-primary" />
+        <Box className="w-4 h-4 text-background" />
       )}
     </motion.div>
   );
 
   return (
-    <div className="flex items-center justify-between h-7 pt-2">
+    <div className="flex items-center justify-between h-7 pt-4">
       <div className="flex items-center gap-2">
         {isCollapsed ? (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => setIsCollapsed(!isCollapsed)}
-                  className="flex items-center justify-center cursor-pointer"
-                  type="button"
-                >
-                  {iconElement}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                <div className="flex flex-col gap-0.5">
-                  <span className="font-xs">{companyName}</span>
-                  <span className="text-xs opacity-70">{productName}</span>
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <CollapsedLogo
+            companyLogo={companyLogo}
+            companyName={companyName}
+            productName={productName}
+            onExpand={() => setIsCollapsed(false)}
+          />
         ) : (
           iconElement
         )}
@@ -92,7 +171,7 @@ export const Company = ({
               exit="exit"
               transition={fastFadeTransition}
             >
-              <span className="text-sm text-sidebar-foreground truncate">
+              <span className="text-sm font-semibold text-sidebar-foreground truncate">
                 {companyName}
               </span>
               <span className="text-xs text-sidebar-foreground/70 truncate">
@@ -116,14 +195,22 @@ export const Company = ({
             exit="exit"
             transition={fastFadeTransition}
           >
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="h-8 w-8 ml-auto shrink-0"
-            >
-              <PanelLeft className="w-4 h-4" />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    className="h-8 w-8 ml-auto shrink-0 flex items-center justify-center rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors cursor-pointer"
+                  >
+                    <PanelLeft className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  {t("close_sidebar")}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </motion.div>
         )}
       </AnimatePresence>
