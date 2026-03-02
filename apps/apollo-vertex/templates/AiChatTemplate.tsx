@@ -101,11 +101,66 @@ function getMockResponse(userMessage: string): ChatMessage[] {
     ];
   }
 
+  if (lowerMessage.includes("markdown") || lowerMessage.includes("format")) {
+    return [
+      {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: `# Markdown Rendering Demo
+
+This chat component supports **full markdown formatting** with *GitHub Flavored Markdown* extensions!
+
+## Text Formatting
+
+You can use **bold text**, *italic text*, and \`inline code\` in your responses.
+
+## Lists
+
+**Bullet lists:**
+- First item
+- Second item
+- Third item
+
+**Numbered lists:**
+1. Step one
+2. Step two
+3. Step three
+
+## Code Blocks
+
+\`\`\`typescript
+function greet(name: string): string {
+  return \`Hello, \${name}!\`;
+}
+\`\`\`
+
+## Tables
+
+| Feature | Status | Priority |
+|---------|--------|----------|
+| Markdown | ✅ Done | High |
+| Tool Calls | ✅ Done | High |
+| File Upload | ✅ Done | Medium |
+
+## Links & Quotes
+
+Check out the [Apollo Design System](https://apollo-vertex.vercel.app) for more components.
+
+> **Note:** All markdown elements are styled to match the Apollo Design System theme, supporting both light and dark modes.
+
+---
+
+Try asking about other features like **search**, **approve**, or **generate**!`,
+        timestamp: Date.now(),
+      },
+    ];
+  }
+
   return [
     {
       id: crypto.randomUUID(),
       role: "assistant",
-      content: `I received your message: "${userMessage}". Try asking me to:\n\n• **Search** for something (shows grouped tool calls)\n• **Approve** or **review** a document (shows suggestions)\n• **Generate** a report (shows tool calls with text)`,
+      content: `I received your message: "${userMessage}". Try asking me to:\n\n• Show **markdown** formatting (demonstrates rich text rendering)\n• **Search** for something (shows grouped tool calls)\n• **Approve** or **review** a document (shows suggestions)\n• **Generate** a report (shows tool calls with text)`,
       timestamp: Date.now(),
     },
   ];
@@ -157,7 +212,7 @@ function AiChatDemo() {
       onStop={() => setIsLoading(false)}
       onClearChat={handleClear}
       title={t("ai_assistant")}
-      placeholder="Try: 'search database' or 'approve document'"
+      placeholder="Try: 'markdown demo', 'search database', or 'approve document'"
       assistantName={t("assistant")}
       enableToolGrouping={true}
       toolDisplayNames={toolDisplayNames}

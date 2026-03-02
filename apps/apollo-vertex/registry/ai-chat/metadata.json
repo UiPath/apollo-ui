@@ -2,7 +2,7 @@
   "name": "ai-chat",
   "type": "component",
   "category": "complex",
-  "description": "A generic, reusable, and type-safe AI chat component with OpenAI-compatible API support, tool calling, collapsible tool groups, suggestion buttons, and file uploads",
+  "description": "A generic, reusable, and type-safe AI chat component with OpenAI-compatible API support, markdown rendering, tool calling, collapsible tool groups, suggestion buttons, and file uploads",
   "tags": [
     "ai",
     "chat",
@@ -13,7 +13,7 @@
     "tools",
     "suggestions"
   ],
-  "dependencies": ["lucide-react", "react-i18next"],
+  "dependencies": ["lucide-react", "react-i18next", "react-markdown", "remark-gfm"],
   "files": [
     {
       "path": "ai-chat-types.ts",

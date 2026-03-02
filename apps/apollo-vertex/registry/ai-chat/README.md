@@ -1,6 +1,6 @@
 # AI Chat Component
 
-A generic, reusable, and type-safe AI chat component for the Apollo Design System. Built with React, TypeScript, and Tailwind CSS, it supports OpenAI-compatible LLM APIs with features like tool calling, collapsible tool groups, suggestion buttons, and file uploads.
+A generic, reusable, and type-safe AI chat component for the Apollo Design System. Built with React, TypeScript, and Tailwind CSS, it supports OpenAI-compatible LLM APIs with features like markdown rendering, tool calling, collapsible tool groups, suggestion buttons, and file uploads.
 
 ## Features
 
@@ -9,6 +9,7 @@ A generic, reusable, and type-safe AI chat component for the Apollo Design Syste
 - 💬 **Suggestion Buttons** - Interactive choice buttons for user responses
 - 📎 **File Attachments** - Upload and process files (images, PDFs, text)
 - 💾 **Persistent History** - Save conversations to session/local storage
+- 📝 **Markdown Rendering** - Automatically renders markdown in assistant responses with GitHub Flavored Markdown support
 - 🌍 **i18n Support** - Built-in internationalization with react-i18next
 - ⚡ **Type-Safe** - Full TypeScript support with strict types
 - ♿ **Accessible** - WCAG 2.1 compliant with keyboard navigation
@@ -22,7 +23,7 @@ This component is part of the Apollo Vertex registry. Add it to your project:
 npx shadcn@latest add @uipath/ai-chat
 
 # Install peer dependencies
-npm install lucide-react react-i18next
+npm install lucide-react react-i18next react-markdown remark-gfm
 ```
 
 **Optional:** Install `zod` for runtime validation of tool arguments:
