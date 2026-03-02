@@ -5,7 +5,7 @@ import { Card, CardContent } from './card';
 import { Step, Stepper } from './stepper';
 
 const meta = {
-  title: 'Design System/Navigation/Stepper',
+  title: 'Components/Navigation/Stepper',
   component: Stepper,
   parameters: {
     layout: 'centered',

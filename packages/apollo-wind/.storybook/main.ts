@@ -34,7 +34,19 @@ if (isDev) {
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
-  addons: ['@storybook/addon-links', '@storybook/addon-docs'],
+  addons: [
+    '@storybook/addon-links',
+    '@storybook/addon-docs',
+    '@storybook/addon-a11y',
+    '@storybook/addon-mcp',
+  ],
+
+  // Enable the component manifest so Storybook MCP can expose
+  // machine-readable component metadata (APIs, props, usage examples)
+  // to AI agents and coding tools.
+  features: {
+    experimentalComponentsManifest: true,
+  },
 
   // Serve only public/ (e.g. ui-path.svg for sidebar logo); single dir to avoid route conflicts
   staticDirs: ['../public'],
@@ -52,6 +64,7 @@ const config: StorybookConfig = {
   async viteFinal(config) {
     return {
       ...config,
+      envDir: resolve(__dirname, '..'),
       resolve: {
         ...config.resolve,
         alias: {

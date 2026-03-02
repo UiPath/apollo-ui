@@ -3,7 +3,7 @@ import { AspectRatio } from './aspect-ratio';
 import { Row } from './layout';
 
 const meta: Meta<typeof AspectRatio> = {
-  title: 'Design System/Layout/Aspect Ratio',
+  title: 'Components/Layout/Aspect Ratio',
   component: AspectRatio,
   tags: ['autodocs'],
 };

@@ -4,7 +4,7 @@ import { Spinner } from './spinner';
 import { Row, Column } from './layout';
 
 const meta: Meta<typeof Spinner> = {
-  title: 'Design System/Feedback/Spinner',
+  title: 'Components/Feedback/Spinner',
   component: Spinner,
   tags: ['autodocs'],
   argTypes: {

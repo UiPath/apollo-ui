@@ -3,7 +3,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from './resizabl
 import { Row } from './layout';
 
 const meta = {
-  title: 'Design System/Layout/Resizable',
+  title: 'Components/Layout/Resizable',
   component: ResizablePanelGroup,
   parameters: {
     layout: 'fullscreen',

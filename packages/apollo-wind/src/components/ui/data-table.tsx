@@ -49,6 +49,9 @@ export interface DataTableProps<TData, TValue> {
   resizable?: boolean;
   compact?: boolean;
   columnToggleText?: string;
+  rowSelection?: Record<string, boolean>;
+  onRowSelectionChange?: (selection: Record<string, boolean>) => void;
+  toolbarContent?: React.ReactNode;
 }
 
 export function DataTable<TData, TValue>({
@@ -64,11 +67,25 @@ export function DataTable<TData, TValue>({
   resizable = false,
   compact = false,
   columnToggleText = 'Columns',
+  rowSelection: controlledRowSelection,
+  onRowSelectionChange: controlledOnRowSelectionChange,
+  toolbarContent,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [internalRowSelection, setInternalRowSelection] = React.useState<Record<string, boolean>>({});
+
+  const isControlled = controlledRowSelection !== undefined;
+  const rowSelection = isControlled ? controlledRowSelection : internalRowSelection;
+  const setRowSelection = React.useCallback(
+    (updater: React.SetStateAction<Record<string, boolean>>) => {
+      const next = typeof updater === 'function' ? updater(rowSelection) : updater;
+      if (!isControlled) setInternalRowSelection(next);
+      controlledOnRowSelectionChange?.(next);
+    },
+    [isControlled, rowSelection, controlledOnRowSelectionChange],
+  );
 
   // Wrap columns with editable cell renderer if editable mode is enabled
   const processedColumns = React.useMemo(() => {
@@ -130,6 +147,7 @@ export function DataTable<TData, TValue>({
             className="max-w-sm"
           />
         )}
+        {toolbarContent}
         {showColumnToggle && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

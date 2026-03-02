@@ -3,7 +3,7 @@ import { Activity, CreditCard, DollarSign, ShoppingCart, TrendingUp, Users } fro
 import { StatsCard } from './stats-card';
 
 const meta = {
-  title: 'Design System/Data Display/Stats Card',
+  title: 'Components/Data Display/Stats Card',
   component: StatsCard,
   parameters: {
     layout: 'centered',

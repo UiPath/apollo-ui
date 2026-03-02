@@ -146,6 +146,16 @@ export type { SpinnerProps } from './components/ui/spinner';
 export { EmptyState } from './components/ui/empty-state';
 export type { EmptyStateProps } from './components/ui/empty-state';
 
+export { default as TreeView } from './components/ui/tree-view';
+export type {
+  TreeViewItem,
+  TreeViewItemAction,
+  TreeViewIconMap,
+  TreeViewMenuItem,
+  TreeViewProps,
+  TreeViewSelectionMode,
+} from './components/ui/tree-view';
+
 // -----------------------------------------------------------------------------
 // Feedback & Overlay Components
 // -----------------------------------------------------------------------------
@@ -188,19 +198,6 @@ export {
   SheetTitle,
   SheetTrigger,
 } from './components/ui/sheet';
-
-export {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerOverlay,
-  DrawerPortal,
-  DrawerTitle,
-  DrawerTrigger,
-} from './components/ui/drawer';
 
 export {
   Popover,
@@ -254,18 +251,6 @@ export {
 export { Stepper } from './components/ui/stepper';
 export type { Step, StepperProps } from './components/ui/stepper';
 
-export {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuIndicator,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  NavigationMenuViewport,
-  navigationMenuTriggerStyle,
-} from './components/ui/navigation-menu';
-
 // -----------------------------------------------------------------------------
 // Menu Components
 // -----------------------------------------------------------------------------
@@ -316,25 +301,6 @@ export {
   CommandSeparator,
   CommandShortcut,
 } from './components/ui/command';
-
-export {
-  Menubar,
-  MenubarCheckboxItem,
-  MenubarContent,
-  MenubarGroup,
-  MenubarItem,
-  MenubarLabel,
-  MenubarMenu,
-  MenubarPortal,
-  MenubarRadioGroup,
-  MenubarRadioItem,
-  MenubarSeparator,
-  MenubarShortcut,
-  MenubarSub,
-  MenubarSubContent,
-  MenubarSubTrigger,
-  MenubarTrigger,
-} from './components/ui/menubar';
 
 // -----------------------------------------------------------------------------
 // Utility Components

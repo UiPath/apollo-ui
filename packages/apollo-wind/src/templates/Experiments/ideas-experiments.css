@@ -1,0 +1,10 @@
+/**
+ * Ideas experiment — shared styles.
+ * Kept here so concepts can be promoted or removed as a unit.
+ */
+
+@keyframes ideas-gradient {
+  to {
+    background-position: var(--bg-size, 300%) 0;
+  }
+}

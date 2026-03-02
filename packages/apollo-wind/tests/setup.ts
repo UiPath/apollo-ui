@@ -37,6 +37,9 @@ global.IntersectionObserver = class IntersectionObserver {
 
 // Mock ResizeObserver for components that use it (like Command from cmdk)
 global.ResizeObserver = class ResizeObserver {
+  constructor(_callback: ResizeObserverCallback) {
+    // Mock implementation
+  }
   observe() {
     // Mock implementation
   }
