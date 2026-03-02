@@ -181,6 +181,47 @@ docs(apollo-vertex): update component documentation
 
 Valid scopes: `apollo-vertex`, `apollo-react`, `apollo-wind`, `apollo-core`, `repo`
 
+### Rebasing & Commit History
+
+Always **rebase over main** instead of creating merge commits. This keeps commit history linear and clean. When updating your PR:
+
+```bash
+git fetch origin main
+git rebase -i origin/main
+# Resolve any conflicts, then continue
+git push --force-with-lease
+```
+
+### Fixing Previous Changes in a PR
+
+If a previous commit in your PR already contains the change you're making, **do not add a new commit**. Instead, use fixup commits and rebase to squash them together:
+
+```bash
+# Make your changes
+git add .
+git commit --fixup <original-commit-sha>
+
+# Rebase and auto-squash
+git rebase -i origin/main --autosquash
+git push --force-with-lease
+```
+
+This keeps the PR history clean with meaningful, non-duplicate commits.
+
+## Theme & Color Token Updates
+
+**Important**: Color tokens and theme values should **only be updated in `registry.json`** within the `apollo-vertex-theme` configuration, **not in `app/globals.css`**.
+
+The `app/globals.css` file is **automatically generated** from `registry.json` when you run:
+
+```bash
+bun run dev
+```
+or 
+```bash
+bun run build
+```
+
 ## Key Dependencies
 
 - `next@16` - React framework
