@@ -1,0 +1,313 @@
+import { AiChatTemplate } from '@/templates/AiChatTemplate';
+
+# AI Chat
+
+A generic, reusable, and type-safe AI chat component for the Apollo Design System. Built with React, TypeScript, and Tailwind CSS, it supports OpenAI-compatible LLM APIs with features like tool calling, collapsible tool groups, suggestion buttons, and file uploads.
+
+<div className="not-prose my-8">
+  <AiChatTemplate />
+</div>
+
+## Features
+
+- 🤖 **OpenAI-compatible API** - Works with OpenAI, Azure OpenAI, and compatible endpoints
+- 🛠️ **Tool/Function Calling** - Full support for LLM function calling with collapsible tool groups
+- 💬 **Suggestion Buttons** - Interactive choice buttons for user responses
+- 📎 **File Attachments** - Upload and process files (images, PDFs, text)
+- 💾 **Persistent History** - Save conversations to session/local storage
+- 🌍 **i18n Support** - Built-in internationalization with react-i18next
+- ⚡ **Type-Safe** - Full TypeScript support with strict types
+- ♿ **Accessible** - WCAG 2.1 compliant with keyboard navigation
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/ai-chat
+```
+
+Install peer dependencies:
+
+```bash
+npm install lucide-react react-i18next
+```
+
+**Optional:** Install `zod` for runtime validation of tool arguments:
+
+```bash
+npm install zod
+```
+
+## Quick Start
+
+### Basic Chat
+
+```tsx
+import { AiChat } from '@/registry/ai-chat/ai-chat';
+import { useAiChat } from '@/registry/ai-chat/use-ai-chat';
+
+function BasicChat() {
+  const chat = useAiChat({
+    config: {
+      baseUrl: 'https://api.openai.com/v1',
+      model: 'gpt-4',
+      systemPrompt: 'You are a helpful assistant.',
+    },
+    accessToken: () => 'your-api-key',
+  });
+
+  return (
+    <AiChat
+      messages={chat.messages}
+      isLoading={chat.isLoading}
+      onSendMessage={(msg) => chat.sendMessage(msg)}
+      onStop={chat.stop}
+      onClearChat={chat.clearChat}
+      title="AI Assistant"
+    />
+  );
+}
+```
+
+### With Tool Calling
+
+```tsx
+import { AiChat } from '@/registry/ai-chat/ai-chat';
+import { useAiChat } from '@/registry/ai-chat/use-ai-chat';
+import type { ToolDefinition } from '@/registry/ai-chat/types';
+
+const tools: ToolDefinition[] = [
+  {
+    type: 'function',
+    function: {
+      name: 'get_weather',
+      description: 'Get the current weather for a location',
+      parameters: {
+        type: 'object',
+        properties: {
+          location: {
+            type: 'string',
+            description: 'City name',
+          },
+        },
+        required: ['location'],
+      },
+    },
+  },
+];
+
+function ChatWithTools() {
+  const chat = useAiChat({
+    config: {
+      baseUrl: 'https://api.openai.com/v1',
+      model: 'gpt-4',
+      tools,
+    },
+    accessToken: () => 'your-api-key',
+    onToolCall: async (toolCall, args) => {
+      // Execute your tool logic here
+      console.log('Tool called:', toolCall.name, args);
+    },
+  });
+
+  return (
+    <AiChat
+      messages={chat.messages}
+      isLoading={chat.isLoading}
+      onSendMessage={(msg) => chat.sendMessage(msg)}
+      onStop={chat.stop}
+      title="Weather Assistant"
+      renderToolCall={(toolCalls) => (
+        // Custom rendering for tool results
+        <div className="p-4 rounded-lg bg-muted">
+          {/* Your custom tool rendering */}
+        </div>
+      )}
+    />
+  );
+}
+```
+
+### Tool Grouping
+
+Group consecutive tool-only assistant messages into collapsible badges:
+
+```tsx
+<AiChat
+  messages={messages}
+  isLoading={isLoading}
+  onSendMessage={handleSendMessage}
+  onStop={() => setIsLoading(false)}
+  enableToolGrouping={true}
+  toolDisplayNames={{
+    search_database: "Search Database",
+    filter_results: "Filter Results",
+    generate_report: "Generate Report",
+  }}
+/>
+```
+
+**How it works:**
+- Consecutive assistant messages with only `toolCalls` (no text content) are grouped
+- Latest group is expanded by default, older groups are collapsed
+- Users can toggle groups to see individual tool calls
+
+### Suggestion Buttons
+
+Display interactive choice buttons from tool results:
+
+```tsx
+import type { ChatMessage, ToolResultChoices } from '@/registry/ai-chat/types';
+
+// Create choices data
+const choicesData: ToolResultChoices = {
+  type: "choices",
+  prompt: "How would you like to proceed?",
+  options: [
+    { id: "approve", label: "Approve Document", recommended: true },
+    { id: "reject", label: "Reject Document" },
+    { id: "request", label: "Request Changes" },
+  ],
+};
+
+// Add as a tool message
+const toolMessage: ChatMessage = {
+  id: crypto.randomUUID(),
+  role: "tool",
+  content: JSON.stringify(choicesData),
+  timestamp: Date.now(),
+};
+
+setMessages((prev) => [...prev, toolMessage]);
+
+// Handle selection
+<AiChat
+  messages={messages}
+  isLoading={isLoading}
+  onSendMessage={handleSendMessage}
+  onStop={() => setIsLoading(false)}
+  onChoiceSelect={(option) => {
+    console.log("User selected:", option.label);
+    handleSendMessage(option.label);
+  }}
+/>
+```
+
+**Features:**
+- Automatically parses tool messages with `type: "choices"`
+- Highlights recommended options with a border
+- Hides after user responds
+```
+
+## API Reference
+
+### `useAiChat(options)`
+
+Main hook for AI chat functionality.
+
+**Options:**
+
+- `config` (required): Chat configuration
+  - `baseUrl`: API endpoint URL
+  - `model`: Model name (e.g., "gpt-4")
+  - `systemPrompt`: System prompt
+  - `tools`: Tool/function definitions
+  - `maxTokens`: Max tokens (default: 2048)
+  - `temperature`: Temperature 0-2 (default: 0.7)
+- `accessToken` (required): API key or token getter
+- `storage`: Storage configuration
+- `onToolCall`: Tool execution handler
+- `onError`: Error handler
+
+**Returns:**
+
+- `messages`: Chat messages array
+- `isLoading`: Loading state
+- `error`: Error object
+- `sendMessage(content, file?)`: Send message
+- `stop()`: Stop generation
+- `clearChat()`: Clear history
+
+### `<AiChat>`
+
+Main chat UI component.
+
+**Props:**
+
+- `messages` (required): Messages array
+- `isLoading` (required): Loading state
+- `onSendMessage` (required): Message handler
+- `onStop` (required): Stop handler
+- `onClearChat`: Clear handler
+- `onChoiceSelect`: Handler for suggestion button clicks
+- `renderToolCall`: Custom tool renderer
+- `assistantName`: Assistant display name
+- `title`: Chat title
+- `emptyState`: Custom empty state
+- `placeholder`: Input placeholder
+- `showClearButton`: Show clear button (default: true)
+- `allowFileAttachments`: Enable file uploads (default: true)
+- `maxFiles`: Maximum number of files
+- `maxFileSize`: Maximum file size in bytes
+- `acceptedFileTypes`: Accepted file MIME types
+- `toolDisplayNames`: Custom display names for tools
+- `enableToolGrouping`: Group consecutive tool-only messages (default: false)
+
+## TypeScript
+
+All components are fully typed:
+
+```tsx
+import type {
+  ChatMessage,
+  ChatRole,
+  ToolDefinition,
+  ToolCall,
+  UseAiChatReturn,
+  ChoiceOption,
+  ToolResultChoices,
+  ToolResultNavigation,
+  MessagePart,
+} from '@/registry/ai-chat/types';
+```
+
+### Key Types
+
+**ChoiceOption** - Suggestion button options
+```tsx
+interface ChoiceOption {
+  id: string;
+  label: string;
+  value?: string;
+  recommended?: boolean;
+}
+```
+
+**ToolResultChoices** - Choice/suggestion structure for tool messages
+```tsx
+interface ToolResultChoices {
+  type: "choices";
+  prompt: string;
+  options: ChoiceOption[];
+}
+```
+
+**MessagePart** - Multi-part content support
+```tsx
+interface MessagePart {
+  content: string;
+}
+```
+
+**ChatMessage** - Extended with new fields
+```tsx
+interface ChatMessage {
+  id: string;
+  role: "user" | "assistant" | "system" | "tool";
+  content: string;
+  parts?: MessagePart[];      // Multi-part content
+  timestamp: number;
+  toolCalls?: ToolCall[];
+  hidden?: boolean;            // Hide from UI
+  attachments?: Array<{...}>;
+}
+```

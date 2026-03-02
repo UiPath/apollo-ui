@@ -85,6 +85,8 @@
       "@/components/ui/toggle": ["./registry/toggle/toggle"],
       "@/components/ui/toggle-group": ["./registry/toggle-group/toggle-group"],
       "@/components/ui/tooltip": ["./registry/tooltip/tooltip"],
+      "@/lib/ai-chat-types": ["./registry/ai-chat/ai-chat-types"],
+      "@/lib/ai-chat-utils": ["./registry/ai-chat/ai-chat-utils"],
       "@/hooks/use-mobile": ["./registry/use-mobile/use-mobile"],
       "@/components/theme-provider/theme-provider": [
         "./registry/theme-provider/theme-provider"

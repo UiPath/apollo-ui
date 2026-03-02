@@ -1,0 +1,62 @@
+{
+  "name": "ai-chat",
+  "type": "component",
+  "category": "complex",
+  "description": "A generic, reusable, and type-safe AI chat component with OpenAI-compatible API support, tool calling, collapsible tool groups, suggestion buttons, and file uploads",
+  "tags": [
+    "ai",
+    "chat",
+    "llm",
+    "openai",
+    "assistant",
+    "chatbot",
+    "tools",
+    "suggestions"
+  ],
+  "dependencies": ["lucide-react", "react-i18next"],
+  "files": [
+    {
+      "path": "ai-chat-types.ts",
+      "type": "types"
+    },
+    {
+      "path": "ai-chat-utils.ts",
+      "type": "utils"
+    },
+    {
+      "path": "use-ai-chat.ts",
+      "type": "hook"
+    },
+    {
+      "path": "ai-chat.tsx",
+      "type": "component"
+    },
+    {
+      "path": "ai-chat-message.tsx",
+      "type": "component"
+    },
+    {
+      "path": "ai-chat-loading.tsx",
+      "type": "component"
+    },
+    {
+      "path": "ai-chat-input.tsx",
+      "type": "component"
+    },
+    {
+      "path": "ai-chat-suggestions.tsx",
+      "type": "component"
+    },
+    {
+      "path": "ai-chat-tool-group.tsx",
+      "type": "component"
+    },
+    {
+      "path": "ai-chat-tool-group-message.tsx",
+      "type": "component"
+    }
+  ],
+  "version": "1.1.0",
+  "author": "Apollo Design System",
+  "license": "MIT"
+}

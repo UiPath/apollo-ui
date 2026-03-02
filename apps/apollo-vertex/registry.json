@@ -240,6 +240,56 @@
       ]
     },
     {
+      "name": "ai-chat",
+      "type": "registry:ui",
+      "title": "AI Chat",
+      "description": "A generic, reusable, and type-safe AI chat component with OpenAI-compatible API support, tool calling, collapsible tool groups, suggestion buttons, and file uploads",
+      "dependencies": ["lucide-react", "react-i18next"],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/ai-chat/ai-chat-types.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/ai-chat/ai-chat-utils.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/ai-chat/use-ai-chat.ts",
+          "type": "registry:hook"
+        },
+        {
+          "path": "registry/ai-chat/ai-chat.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ai-chat/ai-chat-message.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ai-chat/ai-chat-loading.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ai-chat/ai-chat-input.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ai-chat/ai-chat-suggestions.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ai-chat/ai-chat-tool-group.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/ai-chat/ai-chat-tool-group-message.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "alert",
       "type": "registry:ui",
       "title": "Alert",
