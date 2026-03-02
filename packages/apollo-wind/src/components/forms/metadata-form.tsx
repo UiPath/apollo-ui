@@ -1,8 +1,7 @@
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-
 import { FormProvider, useForm } from 'react-hook-form';
 import { z } from 'zod/v4';
-
 import {
   Accordion,
   AccordionContent,
@@ -10,7 +9,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 
 import { DataFetcher } from './data-fetcher';
 import { FormFieldRenderer } from './field-renderer';
@@ -72,19 +70,19 @@ export function MetadataForm({
   const { watch, handleSubmit, reset } = form;
 
   // Use ref to store values - prevents context recreation on every render
-  const valuesRef = useRef<Record<string, unknown>>({});
-  // This watch() triggers re-renders but we store in ref for stable context access
-  const watchedValues = watch();
-  valuesRef.current = watchedValues;
+  const valuesRef = useRef<Record<string, unknown>>(form.getValues());
+  // Trigger re-renders on value changes so conditional sections/actions re-evaluate.
+  // The actual ref sync happens in the watch subscription effect below.
+  watch();
 
   // Build form context - STABLE reference (values accessed via ref/getters)
   const context: FormContext = useMemo(
     () => ({
       schema,
       form,
-      // Use getter to always return latest values without recreating context
+      // Use getter so render-time reads always see current form values
       get values() {
-        return valuesRef.current;
+        return form.getValues();
       },
       get errors() {
         return form.formState.errors;
@@ -98,7 +96,7 @@ export function MetadataForm({
       currentStep: schema.steps ? currentStep : undefined,
 
       evaluateConditions: (conditions: FieldCondition[]) =>
-        RulesEngine.evaluateConditions(conditions, valuesRef.current, 'AND'),
+        RulesEngine.evaluateConditions(conditions, form.getValues(), 'AND'),
 
       fetchData: async (source: DataSource) => {
         const result = await DataFetcher.fetch(source, valuesRef.current);
@@ -117,7 +115,27 @@ export function MetadataForm({
 
   // Ref for context to use in useEffects without causing dependency loops
   const contextRef = useRef(context);
-  contextRef.current = context;
+
+  useEffect(() => {
+    contextRef.current = context;
+  }, [context]);
+
+  // Watch for value changes — declared BEFORE init effect so the subscription
+  // catches reset() during initialization. Keeps valuesRef in sync for async
+  // callbacks (fetchData, plugins). Plugin callbacks are gated by isInitialized.
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      valuesRef.current = value as Record<string, unknown>;
+
+      if (isInitialized && name) {
+        plugins.forEach((plugin) => {
+          plugin.onValueChange?.(name, value[name], contextRef.current);
+        });
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, isInitialized, plugins]);
 
   // Initialize form - runs once on mount only
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs once on mount - use key prop to reinitialize with new schema
@@ -142,26 +160,6 @@ export function MetadataForm({
 
     initializeForm();
   }, [isInitialized]);
-
-  // Watch for field changes and execute plugin hooks
-  useEffect(() => {
-    if (!isInitialized) return;
-
-    const subscription = watch((value, { name }) => {
-      if (name) {
-        // Update valuesRef with the latest values BEFORE calling plugins
-        // This ensures context.values returns current data, not stale data
-        valuesRef.current = value as Record<string, unknown>;
-
-        // Plugin field change hooks
-        plugins.forEach((plugin) => {
-          plugin.onValueChange?.(name, value[name], contextRef.current);
-        });
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [watch, isInitialized, plugins]);
 
   // Handle form submission
   const handleFormSubmit = handleSubmit(async (data) => {
