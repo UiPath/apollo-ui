@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.45.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.3...@uipath/apollo-react@3.45.4) (2026-03-02)
+
+### Bug Fixes
+
+* **apollo-react:** use icon registry icons for resource node toolbar [AG-771] ([245dd04](https://github.com/UiPath/apollo-ui/commit/245dd04c3caaad60b998b29e774b22bc66d098fe))
+
 ## [@uipath/apollo-react-v3.45.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.2...@uipath/apollo-react@3.45.3) (2026-03-02)
 
 ### Bug Fixes
