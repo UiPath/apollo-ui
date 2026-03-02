@@ -2,6 +2,21 @@
 
 > Feed this file to your AI tool (Cursor rules, Claude context, ChatGPT, v0, etc.)
 > to get consistent, design-system-aligned output when prototyping.
+>
+> **For Claude Code / Cursor:** Load this at session start. Every decision about color,
+> radius, spacing, or typography must reference a token or scale from this file — never fabricate values.
+
+---
+
+## Token System Architecture
+
+Apollo Wind uses a three-layer system to prevent hardcoded values:
+
+1. **CSS variables** — defined in `themes.css` (e.g. `--color-brand`, `--radius: 0.75rem`)
+2. **Tailwind utilities** — generated from those variables (e.g. `bg-brand`, `rounded-lg`)
+3. **Component classNames** — the only layer AI-generated code should touch
+
+Never write raw hex colors, arbitrary `px` radius values, or hardcoded palette classes (`bg-zinc-900`, `text-gray-400`). If a token doesn't exist for what you need, use the closest semantic equivalent from this file.
 
 ---
 
@@ -88,11 +103,67 @@ For code that must work across all 4 themes (Future + Core), use these shadcn br
 
 > **When to use which:** Use `future-*` tokens when building for a specific theme. Use bridge tokens when the same code must render across Future and Core themes.
 
+### Border Radius
+
+All radius derives from `--radius: 0.75rem` (12px). Never write `rounded-[12px]` or arbitrary bracket values.
+
+| Class | Value | Use |
+|-------|-------|-----|
+| `rounded-lg` | 12px (`var(--radius)`) | Buttons, inputs, cards, badges — all interactive elements |
+| `rounded-md` | 10px | Nested elements inside a container (e.g. toggle inner buttons) |
+| `rounded-sm` | 8px | Small/compact sub-elements |
+| `rounded-xl` | 12px | Icon containers, avatar wells |
+| `rounded-2xl` | 16px | Large panels and surfaces |
+| `rounded-full` | 50% | Pills, avatars |
+
+### Spacing & Sizing
+
+Use these values consistently. Never invent arbitrary spacing.
+
+**Button heights** — always use the `<Button>` component, never raw `<button>`:
+
+| Size prop | Height | Use |
+|-----------|--------|-----|
+| `default` (no prop) | `h-10` (40px) | Standard actions |
+| `size="sm"` | `h-9` (36px) | Compact / toolbar contexts |
+| `size="lg"` | `h-11` (44px) | Prominent CTAs |
+| `size="icon"` | `h-10 w-10` (40px) | Icon-only buttons |
+
+**Common layout spacing:**
+
+| Scale | Value | Common use |
+|-------|-------|------------|
+| `gap-1` / `p-1` | 4px | Tight internal padding (toggle groups) |
+| `gap-2` / `p-2` | 8px | Icon + label gap, compact lists |
+| `gap-3` / `p-3` | 12px | Nav item padding |
+| `gap-4` / `p-4` | 16px | Standard component padding |
+| `gap-6` / `p-6` | 24px | Section/page padding |
+| `gap-8` / `p-8` | 32px | Large section gaps |
+
 ### Typography
 
-- **Primary font:** Inter (`fontFamily.base`)
-- **Monospace font:** JetBrains Mono (`fontFamily.monospace`)
-- Apply via: `style={{ fontFamily: fontFamily.base }}`
+**Font families:**
+- **Primary:** Inter (`fontFamily.base`) — apply via `style={{ fontFamily: fontFamily.base }}`
+- **Monospace:** JetBrains Mono (`fontFamily.monospace`) — for code, terminal, JSON viewers
+
+**Font size scale:**
+
+| Class | Size | Use |
+|-------|------|-----|
+| `text-xs` | 12px | Labels, badges, captions, line numbers |
+| `text-sm` | 14px | Body text, UI controls, nav items (default) |
+| `text-base` | 16px | Section headings, node names |
+| `text-lg` | 18px | Page subheadings |
+| `text-xl` / `text-2xl` | 20–24px | Page titles, stat values |
+
+**Font weights:**
+
+| Class | Use |
+|-------|-----|
+| `font-normal` | Body/secondary text |
+| `font-medium` | UI controls, nav items, labels |
+| `font-semibold` | Headings, button labels, emphasis |
+| `font-bold` | Stats, key metrics |
 
 ---
 
@@ -111,7 +182,7 @@ For code that must work across all 4 themes (Future + Core), use these shadcn br
 <Button variant="link">Link</Button>
 <Button size="sm">Small</Button>
 <Button size="lg">Large</Button>
-<Button size="icon"><Plus className="h-4 w-4" /></Button>
+<Button size="icon"><Plus /></Button>
 ```
 
 #### Card

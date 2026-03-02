@@ -107,6 +107,9 @@ export type { StatsCardProps } from './components/ui/stats-card';
 export { Badge, badgeVariants } from './components/ui/badge';
 export type { BadgeProps } from './components/ui/badge';
 
+export { CodeBlock } from './components/ui/code-block';
+export type { CodeBlockProps } from './components/ui/code-block';
+
 export { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar';
 
 export {
