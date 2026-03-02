@@ -41,21 +41,43 @@ export function ApSankeyShowcase() {
 			</section>
 
 			<section style={{ marginBottom: "48px" }}>
-				<SectionHeader>Job Flow with Metadata</SectionHeader>
+				<SectionHeader>Agent Trace Flow with Metadata</SectionHeader>
 				<SectionDescription>
-					Complex flow showing agent job execution paths. Hover over links to
-					see metadata like total jobs, latency, and agent units.
+					Complex multi-stage trace flow showing agent job execution paths
+					through LLM calls, tool invocations, guardrails, and final
+					outcomes. Hover over links to see metadata. Use zoom controls to
+					navigate.
 				</SectionDescription>
 				<ApSankeyDiagram
 					data={{
 						nodes: [
-							{ id: "all_traces", label: "All traces" },
-							{ id: "api_call", label: "API Call" },
+							{ id: "all_traces", label: "All Traces" },
+							// Stage 1: Entry routing
+							{ id: "api_call", label: "LLM API Call" },
 							{ id: "context", label: "Context Grounding Index Search" },
+							{ id: "direct_tool", label: "Direct Tool Invocation" },
+							// Stage 2: Processing
 							{ id: "memory", label: "Apply Dynamic Few Shot Memory" },
-							{ id: "guardrails", label: "Guardrails" },
-							{ id: "escalation", label: "Escalation" },
+							{ id: "guardrails", label: "Input Guardrails" },
+							{ id: "rag_retrieval", label: "RAG Document Retrieval" },
+							{ id: "fn_call_parse", label: "Function Call Parsing" },
+							// Stage 3: Tool execution
 							{ id: "web_search", label: "Tool Call - Web Search" },
+							{ id: "code_exec", label: "Tool Call - Code Execution" },
+							{ id: "db_query", label: "Tool Call - Database Query" },
+							{ id: "api_integration", label: "Tool Call - External API" },
+							// Stage 4: Result validation & retry
+							{ id: "result_validation", label: "Result Validation" },
+							{ id: "confidence_check", label: "Confidence Score Check" },
+							{ id: "retry_orchestrator", label: "Retry Orchestrator" },
+							// Stage 5: Post-processing
+							{ id: "output_guardrails", label: "Output Guardrails" },
+							{ id: "response_format", label: "Response Formatting" },
+							{ id: "escalation", label: "Human Escalation" },
+							// Stage 6: Logging & audit
+							{ id: "audit_log", label: "Audit Log & Compliance" },
+							{ id: "telemetry", label: "Telemetry Export" },
+							// Stage 7: Outcomes
 							{
 								id: "successful",
 								label: "Successful",
@@ -66,68 +88,135 @@ export function ApSankeyShowcase() {
 								label: "Faulted",
 								color: ApolloCore.ColorError500,
 							},
+							{
+								id: "timeout",
+								label: "Timeout",
+								color: ApolloCore.ColorWarning500,
+							},
 						],
 						links: [
+							// Stage 1: Entry routing
 							{
 								source: "all_traces",
 								target: "api_call",
-								value: 6,
-								metadata: {
-									"Total jobs": 6,
-									"P95 latency": "10s",
-									"Agent units": "15",
-								},
+								value: 45,
+								metadata: { "Total jobs": 45, "P95 latency": "1.2s", "Agent units": "90" },
 							},
 							{
 								source: "all_traces",
 								target: "context",
-								value: 3,
-								metadata: {
-									"Total jobs": 3,
-									"P95 latency": "10s",
-									"Agent units": "18",
-								},
+								value: 30,
+								metadata: { "Total jobs": 30, "P95 latency": "0.8s", "Agent units": "60" },
 							},
-							{ source: "api_call", target: "memory", value: 2 },
+							{
+								source: "all_traces",
+								target: "direct_tool",
+								value: 15,
+								metadata: { "Total jobs": 15, "P95 latency": "0.3s", "Agent units": "15" },
+							},
+							// Stage 2: LLM API Call fan-out
+							{
+								source: "api_call",
+								target: "memory",
+								value: 18,
+								metadata: { "Total jobs": 18, "P95 latency": "2.1s", "Agent units": "36" },
+							},
 							{
 								source: "api_call",
 								target: "guardrails",
-								value: 2,
-								metadata: {
-									"Total jobs": 4,
-									"P95 latency": "10s",
-									"Agent units": "14",
-								},
+								value: 15,
+								metadata: { "Total jobs": 15, "P95 latency": "0.5s", "Agent units": "30" },
 							},
 							{
 								source: "api_call",
-								target: "escalation",
-								value: 1,
-								metadata: {
-									"Total jobs": 3,
-									"P95 latency": "10s",
-									"Agent units": "55",
-								},
+								target: "fn_call_parse",
+								value: 12,
+								metadata: { "Total jobs": 12, "P95 latency": "0.2s", "Agent units": "12" },
 							},
+							// Stage 2: Context grounding fan-out
 							{
-								source: "api_call",
+								source: "context",
+								target: "rag_retrieval",
+								value: 20,
+								metadata: { "Total jobs": 20, "P95 latency": "1.5s", "Agent units": "40" },
+							},
+							{ source: "context", target: "guardrails", value: 10 },
+							// Stage 2: Direct tool fan-out
+							{ source: "direct_tool", target: "fn_call_parse", value: 15 },
+							// Stage 3: Processing → Tool execution
+							{ source: "memory", target: "web_search", value: 8 },
+							{ source: "memory", target: "db_query", value: 10 },
+							{
+								source: "guardrails",
 								target: "web_search",
-								value: 1,
-								metadata: {
-									"Total jobs": 2,
-									"P95 latency": "10s",
-									"Agent units": "25",
-								},
+								value: 10,
+								metadata: { "Total jobs": 10, "P95 latency": "3.2s", "Agent units": "50" },
 							},
-							{ source: "context", target: "guardrails", value: 2 },
-							{ source: "context", target: "web_search", value: 1 },
-							{ source: "memory", target: "successful", value: 1 },
-							{ source: "memory", target: "faulted", value: 1 },
-							{ source: "guardrails", target: "successful", value: 3 },
-							{ source: "guardrails", target: "faulted", value: 1 },
-							{ source: "escalation", target: "faulted", value: 1 },
-							{ source: "web_search", target: "successful", value: 1 },
-							{ source: "web_search", target: "faulted", value: 1 },
+							{ source: "guardrails", target: "code_exec", value: 8 },
+							{ source: "guardrails", target: "escalation", value: 7 },
+							{ source: "rag_retrieval", target: "api_integration", value: 12 },
+							{ source: "rag_retrieval", target: "db_query", value: 8 },
+							{ source: "fn_call_parse", target: "web_search", value: 9 },
+							{ source: "fn_call_parse", target: "code_exec", value: 10 },
+							{ source: "fn_call_parse", target: "api_integration", value: 8 },
+							// Stage 4: Tool execution → Result validation
+							{
+								source: "web_search",
+								target: "result_validation",
+								value: 18,
+								metadata: { "Total jobs": 18, "P95 latency": "0.3s", "Agent units": "18" },
+							},
+							{ source: "web_search", target: "confidence_check", value: 9 },
+							{ source: "code_exec", target: "result_validation", value: 12 },
+							{ source: "code_exec", target: "confidence_check", value: 6 },
+							{ source: "db_query", target: "result_validation", value: 10 },
+							{ source: "db_query", target: "confidence_check", value: 8 },
+							{ source: "api_integration", target: "result_validation", value: 10 },
+							{ source: "api_integration", target: "confidence_check", value: 10 },
+							// Stage 4: Validation → Retry or forward
+							{
+								source: "result_validation",
+								target: "output_guardrails",
+								value: 35,
+								metadata: { "Total jobs": 35, "P95 latency": "0.4s", "Agent units": "35" },
+							},
+							{ source: "result_validation", target: "retry_orchestrator", value: 15 },
+							{ source: "confidence_check", target: "output_guardrails", value: 18 },
+							{ source: "confidence_check", target: "retry_orchestrator", value: 10 },
+							{ source: "confidence_check", target: "escalation", value: 5 },
+							// Retry loops back into post-processing (longer path)
+							{
+								source: "retry_orchestrator",
+								target: "response_format",
+								value: 16,
+								metadata: { "Total jobs": 16, "P95 latency": "4.8s", "Retry attempts": "2.3 avg" },
+							},
+							{ source: "retry_orchestrator", target: "escalation", value: 9 },
+							// Stage 5: Post-processing
+							{
+								source: "output_guardrails",
+								target: "audit_log",
+								value: 32,
+								metadata: { "Total jobs": 32, "P95 latency": "0.1s", "Agent units": "32" },
+							},
+							{ source: "output_guardrails", target: "telemetry", value: 15 },
+							{ source: "output_guardrails", target: "faulted", value: 6 },
+							{ source: "response_format", target: "audit_log", value: 10 },
+							{ source: "response_format", target: "telemetry", value: 6 },
+							// Stage 6: Logging → Outcomes (longest paths: 8 columns deep)
+							{
+								source: "audit_log",
+								target: "successful",
+								value: 36,
+								metadata: { "Total jobs": 36, "P95 latency": "0.05s", "Agent units": "36" },
+							},
+							{ source: "audit_log", target: "faulted", value: 6 },
+							{ source: "telemetry", target: "successful", value: 16 },
+							{ source: "telemetry", target: "timeout", value: 5 },
+							// Escalation → Outcomes
+							{ source: "escalation", target: "successful", value: 8 },
+							{ source: "escalation", target: "faulted", value: 10 },
+							{ source: "escalation", target: "timeout", value: 3 },
 						],
 					}}
 					style={{ height: "600px", width: "100%" }}
@@ -157,95 +246,6 @@ export function ApSankeyShowcase() {
 					}}
 					style={{ height: "400px", width: "100%" }}
 				/>
-			</section>
-
-			<section style={{ marginBottom: "48px" }}>
-				<SectionHeader>Node Alignment Options</SectionHeader>
-				<SectionDescription>
-					Control how nodes are positioned horizontally: left, right, center, or
-					justify (default).
-				</SectionDescription>
-
-				<div style={{ marginBottom: "32px" }}>
-					<h4
-						style={{
-							fontSize: "16px",
-							color: "var(--color-foreground-emp)",
-							marginBottom: "12px",
-						}}
-					>
-						Left Alignment
-					</h4>
-					<ApSankeyDiagram
-						data={{
-							nodes: [
-								{ id: "a", label: "Start" },
-								{ id: "b", label: "Middle" },
-								{ id: "c", label: "End" },
-							],
-							links: [
-								{ source: "a", target: "b", value: 10 },
-								{ source: "b", target: "c", value: 8 },
-							],
-						}}
-						nodeAlignment="left"
-						style={{ height: "250px", width: "100%" }}
-					/>
-				</div>
-
-				<div style={{ marginBottom: "32px" }}>
-					<h4
-						style={{
-							fontSize: "16px",
-							color: "var(--color-foreground-emp)",
-							marginBottom: "12px",
-						}}
-					>
-						Center Alignment
-					</h4>
-					<ApSankeyDiagram
-						data={{
-							nodes: [
-								{ id: "a", label: "Start" },
-								{ id: "b", label: "Middle" },
-								{ id: "c", label: "End" },
-							],
-							links: [
-								{ source: "a", target: "b", value: 10 },
-								{ source: "b", target: "c", value: 8 },
-							],
-						}}
-						nodeAlignment="center"
-						style={{ height: "250px", width: "100%" }}
-					/>
-				</div>
-
-				<div>
-					<h4
-						style={{
-							fontSize: "16px",
-							color: "var(--color-foreground-emp)",
-							marginBottom: "12px",
-						}}
-					>
-						Right Alignment
-					</h4>
-					<ApSankeyDiagram
-						data={{
-							nodes: [
-								{ id: "a", label: "Start" },
-								{ id: "b", label: "Middle" },
-								{ id: "c", label: "End" },
-							],
-							links: [
-								{ source: "a", target: "b", value: 10 },
-								{ source: "b", target: "c", value: 8 },
-							],
-						}}
-						nodeAlignment="right"
-						style={{ height: "250px", width: "100%" }}
-					/>
-				</div>
 			</section>
 
 			<section style={{ marginBottom: "48px" }}>

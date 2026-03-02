@@ -1,4 +1,4 @@
-export { ApSankeyDiagram } from './ApSankeyDiagram';
+export { ApSankeyDiagram, computeSankeyDimensions } from './ApSankeyDiagram';
 export type {
   ApSankeyDiagramProps,
   NodeAlignment,

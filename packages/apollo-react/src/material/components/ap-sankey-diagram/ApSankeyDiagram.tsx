@@ -1,4 +1,7 @@
-import { Paper, Popper } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import FitScreenIcon from '@mui/icons-material/FitScreen';
+import RemoveIcon from '@mui/icons-material/Remove';
+import { IconButton, Paper, Popper } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core';
 import {
@@ -13,6 +16,8 @@ import {
   sankeyRight,
 } from 'd3-sankey';
 import { schemeTableau10 } from 'd3-scale-chromatic';
+import { select } from 'd3-selection';
+import { zoom as d3Zoom, type ZoomBehavior, type ZoomTransform, zoomIdentity } from 'd3-zoom';
 import React, {
   useCallback,
   useEffect,
@@ -22,7 +27,12 @@ import React, {
   useState,
 } from 'react';
 
-import type { ApSankeyDiagramProps, SankeyLink, SankeyNode } from './ApSankeyDiagram.types';
+import type {
+  ApSankeyDiagramProps,
+  SankeyData,
+  SankeyLink,
+  SankeyNode,
+} from './ApSankeyDiagram.types';
 
 const SankeyContainer = styled('div')({
   position: 'relative',
@@ -33,8 +43,6 @@ const SankeyContainer = styled('div')({
 
   '& svg': {
     display: 'block',
-    width: '100%',
-    height: '100%',
   },
 });
 
@@ -117,6 +125,18 @@ const TooltipValue = styled('span')({
   fontWeight: token.FontFamily.FontWeightSemibold,
 });
 
+const ZoomControls = styled('div')({
+  position: 'absolute',
+  bottom: token.Spacing.SpacingM,
+  right: token.Spacing.SpacingM,
+  display: 'flex',
+  gap: '1px',
+  backgroundColor: 'var(--color-border)',
+  borderRadius: token.Border.BorderRadiusM,
+  overflow: 'hidden',
+  boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+});
+
 /**
  * ApSankeyDiagram component for visualizing flow data
  *
@@ -155,7 +175,77 @@ interface ExtendedSankeyLink extends D3SankeyLink<SankeyNode, SankeyLink>, Sanke
 // Layout margins — small left (no labels go left), larger right (for last-column labels)
 const DIAGRAM_MARGIN_LEFT = 5;
 const DIAGRAM_MARGIN_RIGHT = 120;
-const DIAGRAM_MARGIN_VERTICAL = 5;
+const DIAGRAM_MARGIN_TOP = 5;
+const DIAGRAM_MARGIN_BOTTOM = 40;
+const ZOOM_SCALE_EXTENT_MIN = 0.25;
+const ZOOM_SCALE_EXTENT_MAX = 2;
+
+/**
+ * Compute minimum SVG dimensions for a Sankey dataset by assigning nodes to
+ * columns via forward BFS depth, then counting nodes per column.
+ * Returns { minWidth, minHeight }.
+ */
+export const computeSankeyDimensions = (
+  data: SankeyData,
+  nodePadding: number,
+  minNodeHeight: number,
+  minColumnWidth: number,
+  marginLeft: number,
+  marginRight: number,
+  marginTop: number,
+  marginBottom: number
+): { minWidth: number; minHeight: number } => {
+  if (!data || data.nodes.length === 0) return { minWidth: 0, minHeight: 0 };
+
+  // Build adjacency lists
+  const outgoing = new Map<string, string[]>();
+  const incoming = new Map<string, string[]>();
+  for (const node of data.nodes) {
+    outgoing.set(node.id, []);
+    incoming.set(node.id, []);
+  }
+  for (const link of data.links) {
+    outgoing.get(link.source)?.push(link.target);
+    incoming.get(link.target)?.push(link.source);
+  }
+
+  // Forward BFS — compute depth (max distance from sources)
+  const depth = new Map<string, number>();
+  const sources = data.nodes.filter((n) => (incoming.get(n.id)?.length ?? 0) === 0);
+  const queue: string[] = [];
+  for (const s of sources) {
+    depth.set(s.id, 0);
+    queue.push(s.id);
+  }
+  // Guard against cycles: in the worst-case DAG every edge can enqueue once
+  const maxIterations = data.nodes.length * data.links.length + data.nodes.length;
+  let iterations = 0;
+  while (queue.length > 0 && iterations++ < maxIterations) {
+    const id = queue.shift()!;
+    const d = depth.get(id)!;
+    for (const target of outgoing.get(id) ?? []) {
+      if (!depth.has(target) || depth.get(target)! < d + 1) {
+        depth.set(target, d + 1);
+        queue.push(target);
+      }
+    }
+  }
+
+  // Count nodes per column (column = depth)
+  const columnCounts = new Map<number, number>();
+  for (const d of depth.values()) {
+    columnCounts.set(d, (columnCounts.get(d) ?? 0) + 1);
+  }
+
+  const columnCount = columnCounts.size;
+  const maxNodesPerColumn = Math.max(0, ...columnCounts.values());
+
+  const minWidth = columnCount * minColumnWidth + marginLeft + marginRight;
+  const minHeight =
+    maxNodesPerColumn * (minNodeHeight + nodePadding) - nodePadding + marginTop + marginBottom;
+
+  return { minWidth, minHeight };
+};
 
 // Truncate text to fit within a pixel width, measured via canvas
 const truncateToFit = (text: string, maxWidth: number, ctx: CanvasRenderingContext2D): string => {
@@ -191,10 +281,16 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
       ariaLabel = 'Sankey diagram',
       onLinkClick,
       onNodeClick,
+      minNodeHeight = 36,
+      minColumnWidth = 140,
     } = props;
 
     const containerRef = useRef<HTMLDivElement>(null);
     const svgRef = useRef<SVGSVGElement>(null);
+    const zoomGroupRef = useRef<SVGGElement>(null);
+    const zoomBehaviorRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+    const zoomTransformRef = useRef<ZoomTransform>(zoomIdentity);
+    const hasUserZoomedRef = useRef(false);
     const [containerWidth, setContainerWidth] = useState(0);
     const [containerHeight, setContainerHeight] = useState(0);
     const [selectedLinkIndex, setSelectedLinkIndex] = useState<number | null>(null);
@@ -223,6 +319,24 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
     // Calculate actual dimensions (fallback to defaults if not measured yet)
     const actualWidth = containerWidth || 1200;
     const actualHeight = containerHeight || 600;
+
+    // Auto-size: compute minimum dimensions based on data complexity
+    const { minWidth, minHeight } = useMemo(() => {
+      if (!data || data.nodes.length === 0) return { minWidth: 0, minHeight: 0 };
+      return computeSankeyDimensions(
+        data,
+        nodePadding,
+        minNodeHeight,
+        minColumnWidth,
+        DIAGRAM_MARGIN_LEFT,
+        DIAGRAM_MARGIN_RIGHT,
+        DIAGRAM_MARGIN_TOP,
+        DIAGRAM_MARGIN_BOTTOM
+      );
+    }, [data, nodePadding, minNodeHeight, minColumnWidth]);
+
+    const svgWidth = Math.max(actualWidth, minWidth);
+    const svgHeight = Math.max(actualHeight, minHeight);
 
     // Create a color map for nodes
     const nodeColorMap = useMemo(() => {
@@ -258,8 +372,8 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
         .nodeWidth(nodeWidth)
         .nodePadding(nodePadding)
         .extent([
-          [DIAGRAM_MARGIN_LEFT, DIAGRAM_MARGIN_VERTICAL],
-          [actualWidth - DIAGRAM_MARGIN_RIGHT, actualHeight - DIAGRAM_MARGIN_VERTICAL],
+          [DIAGRAM_MARGIN_LEFT, DIAGRAM_MARGIN_TOP],
+          [svgWidth - DIAGRAM_MARGIN_RIGHT, svgHeight - DIAGRAM_MARGIN_BOTTOM],
         ]);
 
       // Transform data for d3-sankey
@@ -270,7 +384,7 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
 
       // Compute layout
       return sankeyGenerator(graph);
-    }, [data, nodeAlignment, nodeWidth, nodePadding, actualWidth, actualHeight]);
+    }, [data, nodeAlignment, nodeWidth, nodePadding, svgWidth, svgHeight]);
 
     // Generate link paths
     const linkPaths = useMemo(() => {
@@ -315,6 +429,8 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
           targetId: targetNode.id,
           sourceLabel: sourceNode.label,
           targetLabel: targetNode.label,
+          sourceX,
+          targetX,
           centerX,
           centerY,
         };
@@ -327,9 +443,7 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
 
       const labelPad = parseInt(token.Spacing.SpacingXs, 10);
       const ctx =
-        typeof document !== 'undefined'
-          ? document.createElement('canvas').getContext('2d')
-          : null;
+        typeof document !== 'undefined' ? document.createElement('canvas').getContext('2d') : null;
       if (ctx) ctx.font = LABEL_CSS_FONT;
 
       // Build sorted column boundaries from the layout
@@ -357,9 +471,10 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
         const nextCol = columns[colIndex + 1];
 
         // Available space = gap to next column; last column is never truncated
-        const displayLabel = nextCol && ctx
-          ? truncateToFit(extNode.label, Math.max(0, nextCol.x0 - x1 - labelPad), ctx)
-          : extNode.label;
+        const displayLabel =
+          nextCol && ctx
+            ? truncateToFit(extNode.label, Math.max(0, nextCol.x0 - x1 - labelPad), ctx)
+            : extNode.label;
 
         return {
           node: extNode,
@@ -378,23 +493,115 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
       });
     }, [sankeyGraph, nodeColorMap, colorScheme]);
 
-    // Handle link hover
+    // Fit-to-view: compute and apply a transform that fits content in the viewport
+    const fitToView = useCallback(() => {
+      const svg = svgRef.current;
+      const zoomBehavior = zoomBehaviorRef.current;
+      if (!svg || !zoomBehavior || svgWidth === 0 || svgHeight === 0) return;
+
+      hasUserZoomedRef.current = false;
+
+      const cw = containerWidth || 1;
+      const ch = containerHeight || 1;
+      const scale = Math.min(cw / svgWidth, ch / svgHeight) * 0.95;
+      const tx = (cw - svgWidth * scale) / 2;
+      const ty = (ch - svgHeight * scale) / 2;
+      const t = zoomIdentity.translate(tx, ty).scale(scale);
+
+      select<SVGSVGElement, unknown>(svg)
+        .transition()
+        .duration(300)
+        .call(zoomBehavior.transform, t);
+    }, [containerWidth, containerHeight, svgWidth, svgHeight]);
+
+    // Attach d3-zoom behavior
+    useEffect(() => {
+      const svg = svgRef.current;
+      const zoomGroup = zoomGroupRef.current;
+      if (!svg || !zoomGroup) return;
+
+      const zoomBehavior = d3Zoom<SVGSVGElement, unknown>()
+        .scaleExtent([ZOOM_SCALE_EXTENT_MIN, ZOOM_SCALE_EXTENT_MAX])
+        .filter((event: Event) => {
+          // Require Ctrl/Cmd for wheel zoom so normal scroll isn't hijacked
+          if (event.type === 'wheel') {
+            return (event as WheelEvent).ctrlKey || (event as WheelEvent).metaKey;
+          }
+          // Allow drag-to-pan and touch gestures; exclude right-click
+          return !(event as MouseEvent).button;
+        })
+        .on('zoom', (event) => {
+          const t: ZoomTransform = event.transform;
+          zoomTransformRef.current = t;
+          zoomGroup.setAttribute('transform', `translate(${t.x},${t.y}) scale(${t.k})`);
+          if (event.sourceEvent) {
+            // User-initiated events (wheel, drag) have a sourceEvent; programmatic ones don't
+            hasUserZoomedRef.current = true;
+          }
+        });
+
+      zoomBehaviorRef.current = zoomBehavior;
+      select<SVGSVGElement, unknown>(svg).call(zoomBehavior);
+
+      return () => {
+        select<SVGSVGElement, unknown>(svg).on('.zoom', null);
+        zoomBehaviorRef.current = null;
+      };
+    }, []);
+
+    // Reset user zoom flag when data changes so new data triggers fit-to-view
+    useEffect(() => {
+      hasUserZoomedRef.current = false;
+    }, []);
+
+    // Fit-to-view on mount and data changes; skip on resize if user has manually zoomed
+    useEffect(() => {
+      if (!sankeyGraph || containerWidth === 0 || containerHeight === 0) return;
+      if (hasUserZoomedRef.current) return;
+      fitToView();
+    }, [sankeyGraph, containerWidth, containerHeight, fitToView]);
+
+    // Zoom control handlers
+    const handleZoomIn = useCallback(() => {
+      const svg = svgRef.current;
+      const zoomBehavior = zoomBehaviorRef.current;
+      if (!svg || !zoomBehavior) return;
+      select<SVGSVGElement, unknown>(svg)
+        .transition()
+        .duration(200)
+        .call(zoomBehavior.scaleBy, 1.3);
+    }, []);
+
+    const handleZoomOut = useCallback(() => {
+      const svg = svgRef.current;
+      const zoomBehavior = zoomBehaviorRef.current;
+      if (!svg || !zoomBehavior) return;
+      select<SVGSVGElement, unknown>(svg)
+        .transition()
+        .duration(200)
+        .call(zoomBehavior.scaleBy, 1 / 1.3);
+    }, []);
+
+    // Handle link hover — accounts for zoom transform
     const handleLinkMouseEnter = useCallback(
       (index: number, centerX: number, centerY: number) => {
         // Only update if hovering over a different link
         if (selectedLinkIndex === index) return;
 
-        // Create a virtual anchor element at the link's center
+        // Create a virtual anchor element at the link's center, adjusted for zoom
         const svgRect = svgRef.current?.getBoundingClientRect();
         if (svgRect) {
+          const t = zoomTransformRef.current;
+          const screenX = svgRect.left + centerX * t.k + t.x;
+          const screenY = svgRect.top + centerY * t.k + t.y;
           const virtualAnchor = {
             getBoundingClientRect: () => ({
-              x: svgRect.left + centerX,
-              y: svgRect.top + centerY,
-              left: svgRect.left + centerX,
-              top: svgRect.top + centerY,
-              right: svgRect.left + centerX,
-              bottom: svgRect.top + centerY,
+              x: screenX,
+              y: screenY,
+              left: screenX,
+              top: screenY,
+              right: screenX,
+              bottom: screenY,
               width: 0,
               height: 0,
               toJSON: () => {},
@@ -438,118 +645,133 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
         ref={containerRef}
         style={style}
         className={className}
-        role="img"
+        role="figure"
         aria-label={ariaLabel}
       >
         <svg ref={svgRef} width={actualWidth} height={actualHeight}>
-          {/* Define gradients for links */}
-          <defs>
-            {linkPaths.map((linkData) => (
-              <linearGradient
-                key={linkData.gradientId}
-                id={linkData.gradientId}
-                gradientUnits="userSpaceOnUse"
-                x1="0%"
-                y1="0%"
-                x2="100%"
-                y2="0%"
-              >
-                <stop offset="0%" stopColor={linkData.sourceColor} />
-                <stop offset="100%" stopColor={linkData.targetColor} />
-              </linearGradient>
-            ))}
-          </defs>
+          {/* Zoom group — all content transforms together */}
+          <g ref={zoomGroupRef}>
+            <defs>
+              {linkPaths.map((linkData) => (
+                <linearGradient
+                  key={linkData.gradientId}
+                  id={linkData.gradientId}
+                  gradientUnits="userSpaceOnUse"
+                  x1={linkData.sourceX}
+                  y1={0}
+                  x2={linkData.targetX}
+                  y2={0}
+                >
+                  <stop offset="0%" stopColor={linkData.sourceColor} />
+                  <stop offset="100%" stopColor={linkData.targetColor} />
+                </linearGradient>
+              ))}
+            </defs>
 
-          {/* Render links */}
-          <g>
-            {linkPaths.map((linkData, index) => {
-              // Check if this link is connected to the hovered node
-              const isConnectedToHoveredNode = connectedLinkIndices.has(index);
+            {/* Render links */}
+            <g>
+              {linkPaths.map((linkData, index) => {
+                // Check if this link is connected to the hovered node
+                const isConnectedToHoveredNode = connectedLinkIndices.has(index);
 
-              // Determine opacity based on hover state
-              let opacity = 0.6;
-              if (selectedLinkIndex === index) {
-                opacity = 1;
-              } else if (hoveredNodeId) {
-                opacity = isConnectedToHoveredNode ? 1 : 0.3;
-              }
+                // Determine opacity based on hover state
+                let opacity = 0.6;
+                if (selectedLinkIndex === index) {
+                  opacity = 1;
+                } else if (hoveredNodeId) {
+                  opacity = isConnectedToHoveredNode ? 1 : 0.3;
+                }
 
-              return (
-                <StyledSankeyLink
-                  key={`link-${index}`}
-                  d={linkData.path}
-                  stroke={linkData.color ? linkData.color : `url(#${linkData.gradientId})`}
-                  strokeWidth={linkData.strokeWidth}
-                  fill="none"
-                  opacity={opacity}
-                  onMouseEnter={() =>
-                    handleLinkMouseEnter(index, linkData.centerX, linkData.centerY)
-                  }
-                  onMouseLeave={handleLinkMouseLeave}
-                  onClick={(e) => onLinkClick?.(linkData.originalLink, e)}
-                  aria-label={`Link from ${linkData.sourceLabel} to ${linkData.targetLabel}`}
-                />
-              );
-            })}
-          </g>
-
-          {/* Render nodes */}
-          <g>
-            {nodeData.map((nodeItem) => {
-              // Determine node opacity based on hover state
-              const nodeOpacity = hoveredNodeId
-                ? hoveredNodeId === nodeItem.node.id
-                  ? 1
-                  : 0.4
-                : 1;
-
-              return (
-                <g key={`node-${nodeItem.node.id}`}>
-                  {/* Node rectangle */}
-                  <StyledSankeyNode
-                    x={nodeItem.x}
-                    y={nodeItem.y}
-                    width={nodeItem.width}
-                    height={nodeItem.height}
-                    fill={nodeItem.color}
-                    opacity={nodeOpacity}
-                    onMouseEnter={() => handleNodeMouseEnter(nodeItem.node.id)}
-                    onMouseLeave={handleNodeMouseLeave}
-                    onClick={(e) =>
-                      onNodeClick?.(
-                        nodeItem.node as SankeyNode,
-                        e as React.MouseEvent<SVGRectElement>
-                      )
+                return (
+                  <StyledSankeyLink
+                    key={`link-${index}`}
+                    d={linkData.path}
+                    stroke={linkData.color ? linkData.color : `url(#${linkData.gradientId})`}
+                    strokeWidth={linkData.strokeWidth}
+                    fill="none"
+                    opacity={opacity}
+                    onMouseEnter={() =>
+                      handleLinkMouseEnter(index, linkData.centerX, linkData.centerY)
                     }
+                    onMouseLeave={handleLinkMouseLeave}
+                    onClick={(e) => onLinkClick?.(linkData.originalLink, e)}
+                    aria-label={`Link from ${linkData.sourceLabel} to ${linkData.targetLabel}`}
                   />
+                );
+              })}
+            </g>
 
-                  {/* Node label */}
-                  <StyledSankeyNodeLabel
-                    x={nodeItem.labelX}
-                    y={nodeItem.labelY}
-                    dy="0.35em"
-                    textAnchor={nodeItem.labelAnchor}
-                  >
-                    <title>{nodeItem.fullLabel}</title>
-                    {nodeItem.displayLabel}
-                  </StyledSankeyNodeLabel>
+            {/* Render nodes */}
+            <g>
+              {nodeData.map((nodeItem) => {
+                // Determine node opacity based on hover state
+                const nodeOpacity = hoveredNodeId
+                  ? hoveredNodeId === nodeItem.node.id
+                    ? 1
+                    : 0.4
+                  : 1;
 
-                  {/* Node value */}
-                  {nodeItem.value > 0 && (
-                    <StyledSankeyNodeValue
+                return (
+                  <g key={`node-${nodeItem.node.id}`}>
+                    {/* Node rectangle */}
+                    <StyledSankeyNode
+                      x={nodeItem.x}
+                      y={nodeItem.y}
+                      width={nodeItem.width}
+                      height={nodeItem.height}
+                      fill={nodeItem.color}
+                      opacity={nodeOpacity}
+                      onMouseEnter={() => handleNodeMouseEnter(nodeItem.node.id)}
+                      onMouseLeave={handleNodeMouseLeave}
+                      onClick={(e) =>
+                        onNodeClick?.(
+                          nodeItem.node as SankeyNode,
+                          e as React.MouseEvent<SVGRectElement>
+                        )
+                      }
+                    />
+
+                    {/* Node label */}
+                    <StyledSankeyNodeLabel
                       x={nodeItem.labelX}
-                      y={nodeItem.labelY + parseInt(token.Spacing.SpacingM, 10)}
+                      y={nodeItem.labelY}
                       dy="0.35em"
                       textAnchor={nodeItem.labelAnchor}
                     >
-                      {nodeItem.value}
-                    </StyledSankeyNodeValue>
-                  )}
-                </g>
-              );
-            })}
+                      <title>{nodeItem.fullLabel}</title>
+                      {nodeItem.displayLabel}
+                    </StyledSankeyNodeLabel>
+
+                    {/* Node value */}
+                    {nodeItem.value > 0 && (
+                      <StyledSankeyNodeValue
+                        x={nodeItem.labelX}
+                        y={nodeItem.labelY + parseInt(token.Spacing.SpacingM, 10)}
+                        dy="0.35em"
+                        textAnchor={nodeItem.labelAnchor}
+                      >
+                        {nodeItem.value}
+                      </StyledSankeyNodeValue>
+                    )}
+                  </g>
+                );
+              })}
+            </g>
           </g>
         </svg>
+
+        {/* Zoom controls */}
+        <ZoomControls>
+          <IconButton size="small" onClick={handleZoomIn} aria-label="Zoom in">
+            <AddIcon fontSize="small" />
+          </IconButton>
+          <IconButton size="small" onClick={handleZoomOut} aria-label="Zoom out">
+            <RemoveIcon fontSize="small" />
+          </IconButton>
+          <IconButton size="small" onClick={fitToView} aria-label="Fit to view">
+            <FitScreenIcon fontSize="small" />
+          </IconButton>
+        </ZoomControls>
 
         {/* Render tooltip using Popper for smart positioning */}
         <Popper
