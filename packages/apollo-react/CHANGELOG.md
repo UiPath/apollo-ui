@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.45.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.1...@uipath/apollo-react@3.45.2) (2026-03-02)
+
+### Bug Fixes
+
+* **apollo-react:** visibility of edge color after debug completion [MST-6924] ([9937438](https://github.com/UiPath/apollo-ui/commit/9937438302c84da1d8d6935f440b6565c270295e))
+
 ## [@uipath/apollo-react-v3.45.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.0...@uipath/apollo-react@3.45.1) (2026-02-27)
 
 ### Bug Fixes
