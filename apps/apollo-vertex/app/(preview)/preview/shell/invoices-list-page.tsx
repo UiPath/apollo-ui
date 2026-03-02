@@ -112,9 +112,10 @@ const invoices = [
     id: "INV-4015",
     vendor: "Initech Ltd",
     amount: "$4,150.00",
-    status: "Processed" as const,
+    status: "Not Started" as const,
     date: "Feb 22, 2026",
     assignee: "James Wilson",
+    hasDetail: true,
   },
   {
     id: "INV-4014",
@@ -136,9 +137,10 @@ const invoices = [
     id: "INV-4012",
     vendor: "Vandelay Industries",
     amount: "$2,950.00",
-    status: "Processed" as const,
+    status: "Not Started" as const,
     date: "Feb 21, 2026",
     assignee: "Lisa Park",
+    hasDetail: true,
   },
   {
     id: "INV-4011",
@@ -152,9 +154,10 @@ const invoices = [
     id: "INV-4009",
     vendor: "Stark Manufacturing",
     amount: "$19,750.00",
-    status: "Pending" as const,
+    status: "Not Started" as const,
     date: "Feb 19, 2026",
     assignee: "James Wilson",
+    hasDetail: true,
   },
 ];
 
@@ -166,6 +169,7 @@ const statusVariant: Record<
   Pending: "secondary",
   Failed: "destructive",
   "In Review": "outline",
+  "Not Started": "secondary",
 };
 
 export function InvoicesListPage({

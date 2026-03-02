@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Eye, EyeOff, FileText } from "lucide-react";
+import { CheckCircle, Circle, Clock, Eye, EyeOff, FileText, type LucideIcon } from "lucide-react";
 import { useState } from "react";
 import {
   Tooltip,
@@ -22,20 +22,27 @@ import { InvoiceDashboard } from "./invoice-dashboard";
 import { InvoicesListPage } from "./invoices-list-page";
 import { ProjectsPage } from "./projects-page";
 
-const assignedInvoices = [
-  { id: "INV-4021", vendor: "Acme Corp" },
-  { id: "INV-4018", vendor: "Globex Inc" },
-  { id: "INV-4015", vendor: "Initech Ltd" },
-  { id: "INV-4012", vendor: "Vandelay Industries" },
-  { id: "INV-4009", vendor: "Stark Manufacturing" },
+const assignedInvoices: {
+  id: string;
+  vendor: string;
+  statusIcon?: LucideIcon;
+  statusColor?: string;
+}[] = [
+  { id: "INV-4021", vendor: "Acme Corp", statusIcon: CheckCircle, statusColor: "text-emerald-500" },
+  { id: "INV-4018", vendor: "Globex Inc", statusIcon: Clock, statusColor: "text-amber-500" },
+  { id: "INV-4015", vendor: "Initech Ltd", statusIcon: Circle, statusColor: "text-muted-foreground" },
+  { id: "INV-4012", vendor: "Vandelay Industries", statusIcon: Circle, statusColor: "text-muted-foreground" },
+  { id: "INV-4009", vendor: "Stark Manufacturing", statusIcon: Circle, statusColor: "text-muted-foreground" },
 ];
 
 function InvoiceSidebarSection({
   selectedInvoice,
   onSelectInvoice,
+  approvedInvoices,
 }: {
   selectedInvoice: string | null;
   onSelectInvoice: (id: string) => void;
+  approvedInvoices: Set<string>;
 }) {
   const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
   const nav = useShellNavigation();
@@ -80,9 +87,16 @@ function InvoiceSidebarSection({
                     )}
                   >
                     <FileText className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
-                    <span className="truncate text-xs">
+                    <span className="truncate text-xs text-left flex-1">
                       {inv.vendor} — {inv.id}
                     </span>
+                    {(() => {
+                      const isApproved = approvedInvoices.has(inv.id);
+                      const StatusIcon = isApproved ? CheckCircle : inv.statusIcon;
+                      const color = isApproved ? "text-emerald-500" : inv.statusColor;
+                      if (!StatusIcon) return null;
+                      return <StatusIcon className={cn("w-3.5 h-3.5 shrink-0", color)} />;
+                    })()}
                   </button>
                 );
               })}
@@ -152,6 +166,7 @@ export default function ShellPreviewPage() {
     "dashboard" | "projects" | "invoices" | "analytics"
   >("dashboard");
   const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null);
+  const [approvedInvoices, setApprovedInvoices] = useState<Set<string>>(new Set());
 
   return (
     <ShellNavigationProvider
@@ -172,6 +187,7 @@ export default function ShellPreviewPage() {
             <InvoiceSidebarSection
               selectedInvoice={selectedInvoice}
               onSelectInvoice={setSelectedInvoice}
+              approvedInvoices={approvedInvoices}
             />
           </>
         }
@@ -203,6 +219,7 @@ export default function ShellPreviewPage() {
               <AnalyticsPage
                 visible={activePage === "analytics"}
                 invoiceId={selectedInvoice || "INV-4021"}
+                onApprove={(id) => setApprovedInvoices((prev) => new Set(prev).add(id))}
               />
             </motion.div>
           ) : null}

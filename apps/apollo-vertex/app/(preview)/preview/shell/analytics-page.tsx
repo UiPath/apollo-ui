@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   ArrowUp,
   CheckCircle,
+  Circle,
   CircleAlert,
   Clock,
   Grid2x2,
@@ -385,6 +386,299 @@ const invoiceConfigs: Record<string, InvoiceConfig> = {
     approveDescription:
       "This will authorize a payment of $8,230.00 to Globex Inc under purchase order PO-8215. Once confirmed, the payment will be queued for processing and cannot be reversed.",
   },
+
+  "INV-4015": {
+    id: "INV-4015",
+    vendor: "Initech Ltd",
+    amount: 4150,
+    received: "Feb 22, 2026",
+    statusLabel: "Not Started",
+    statusIcon: Circle,
+    statusColor: "text-muted-foreground",
+    assignee: "James Wilson",
+    matchScore: "—",
+    purchaseOrder: "PO-9102",
+    paymentTerms: "Net 30",
+    dueDate: "Mar 24, 2026",
+    description:
+      "Standard office supplies order including paper goods and printer cartridges for the Chicago headquarters.",
+    findings: [],
+    timeline: [
+      {
+        text: "Invoice received via email and entered into processing queue.",
+        time: "3h ago",
+      },
+      {
+        text: "Vendor identity confirmed against master record VMR-IT-0118.",
+        time: "3h ago",
+      },
+    ],
+    lineItems: [
+      {
+        line: 1,
+        description: "Premium Copy Paper (A4)",
+        partNo: "PCP-A4-5000",
+        qty: 200,
+        unitPrice: 12.5,
+        total: 2500.0,
+      },
+      {
+        line: 2,
+        description: "Toner Cartridges (Black)",
+        partNo: "TC-HP-26A",
+        qty: 25,
+        unitPrice: 66.0,
+        total: 1650.0,
+      },
+    ],
+    summary: {
+      headline:
+        "INV-4015 from Initech Ltd has been received and is awaiting processing.",
+      body: "The invoice has been queued for automated review. No findings have been generated yet. Vendor identity has been confirmed. Processing will begin once current queue items are completed.",
+    },
+    approveTitle: "Approve payment for INV-4015?",
+    approveDescription:
+      "This will authorize a payment of $4,150.00 to Initech Ltd under purchase order PO-9102. Once confirmed, the payment will be queued for processing and cannot be reversed.",
+  },
+
+  "INV-4012": {
+    id: "INV-4012",
+    vendor: "Vandelay Industries",
+    amount: 2950,
+    received: "Feb 21, 2026",
+    statusLabel: "Not Started",
+    statusIcon: Circle,
+    statusColor: "text-muted-foreground",
+    assignee: "Lisa Park",
+    matchScore: "—",
+    purchaseOrder: "PO-8840",
+    paymentTerms: "Net 30",
+    dueDate: "Mar 23, 2026",
+    description:
+      "Import/export packaging materials for the Q1 2026 product shipment cycle to European distributors.",
+    findings: [
+      {
+        icon: AlertTriangle,
+        label: "Missing PO reference on line item",
+        time: "1h ago",
+        severity: "low",
+        description:
+          "Line item #2 (Pallet Wrap) does not include a purchase order line reference. This may delay three-way matching.",
+        detail: {
+          headline:
+            "Line item #2 missing PO line reference — may delay matching",
+          summary:
+            "Line item #2 on this invoice (Industrial Pallet Wrap, $450.00) does not include a corresponding purchase order line number. The remaining items reference PO-8840 correctly. This is likely a clerical omission by the vendor rather than a substantive discrepancy, but it will prevent automated three-way matching for this line until the reference is added or manually overridden.",
+          actions: [
+            {
+              label: "Link to PO Line",
+              handler: {
+                chatLoading:
+                  "Linking line item #2 to PO-8840 line 2 based on description match...",
+                chatDone:
+                  "Done — line item #2 (Pallet Wrap) has been linked to PO-8840 line 2. Three-way matching can now proceed for all items.",
+                timelineEntry:
+                  "Line item #2 manually linked to PO-8840 — matching unblocked.",
+              },
+            },
+            { label: "Contact Vendor" },
+          ],
+        },
+      },
+    ],
+    timeline: [
+      {
+        text: "Invoice received via EDI and entered into processing queue.",
+        time: "4h ago",
+      },
+      {
+        text: "Vendor identity confirmed against master record VMR-VD-0067.",
+        time: "4h ago",
+      },
+      {
+        text: "Initial line item scan flagged missing PO reference.",
+        time: "3h ago",
+      },
+    ],
+    lineItems: [
+      {
+        line: 1,
+        description: "Corrugated Shipping Boxes (Large)",
+        partNo: "CSB-LG-200",
+        qty: 500,
+        unitPrice: 3.2,
+        total: 1600.0,
+      },
+      {
+        line: 2,
+        description: "Industrial Pallet Wrap",
+        partNo: "IPW-18-1500",
+        qty: 30,
+        unitPrice: 15.0,
+        total: 450.0,
+      },
+      {
+        line: 3,
+        description: "Customs Declaration Labels",
+        partNo: "CDL-EU-500",
+        qty: 1000,
+        unitPrice: 0.9,
+        total: 900.0,
+      },
+    ],
+    summary: {
+      headline:
+        "INV-4012 from Vandelay Industries has been received. Initial scan detected a minor discrepancy.",
+      body: "The invoice has been queued but not yet fully processed. An initial automated scan flagged a missing purchase order line reference on one item. This is a low-severity issue that can be resolved manually before full three-way matching begins.",
+    },
+    approveTitle: "Approve payment for INV-4012?",
+    approveDescription:
+      "This will authorize a payment of $2,950.00 to Vandelay Industries under purchase order PO-8840. Once confirmed, the payment will be queued for processing and cannot be reversed.",
+  },
+
+  "INV-4009": {
+    id: "INV-4009",
+    vendor: "Stark Manufacturing",
+    amount: 19750,
+    received: "Feb 19, 2026",
+    statusLabel: "Not Started",
+    statusIcon: Circle,
+    statusColor: "text-muted-foreground",
+    assignee: "James Wilson",
+    matchScore: "—",
+    purchaseOrder: "PO-7655",
+    paymentTerms: "Net 60",
+    dueDate: "Apr 20, 2026",
+    description:
+      "High-value precision manufacturing components order for the Denver facility expansion, including CNC tooling and inspection equipment.",
+    findings: [
+      {
+        icon: CircleAlert,
+        label: "Invoice amount exceeds PO budget",
+        time: "2h ago",
+        severity: "medium",
+        description:
+          "Invoice total of $19,750.00 exceeds the approved PO-7655 budget of $18,000.00 by $1,750.00 (9.7% overage).",
+        detail: {
+          headline:
+            "Invoice exceeds approved PO budget by $1,750.00 — requires authorization",
+          summary:
+            "The invoice total of $19,750.00 exceeds the approved budget on PO-7655 ($18,000.00) by $1,750.00. The overage appears to be driven by line item #3 (Precision Drill Bits) where the invoiced unit price of $85.00 is higher than the PO-agreed price of $75.00. The vendor may have applied a price adjustment for expedited delivery, as noted in email correspondence from Feb 16. This overage exceeds the 5% auto-approval threshold and requires manual authorization.",
+          actions: [
+            {
+              label: "Approve Overage",
+              handler: {
+                chatLoading:
+                  "Recording budget overage approval for PO-7655...",
+                chatDone:
+                  "Done — budget overage of $1,750.00 approved for PO-7655. Invoice amount of $19,750.00 accepted. Manager approval logged.",
+                timelineEntry:
+                  "Budget overage approved — invoice amount of $19,750.00 accepted.",
+              },
+            },
+            { label: "Reject Overage" },
+            { label: "Contact Vendor" },
+          ],
+        },
+      },
+      {
+        icon: AlertTriangle,
+        label: "Vendor certification expiring",
+        time: "2h ago",
+        severity: "low",
+        description:
+          "Stark Manufacturing's ISO 9001 certification expires on Mar 15, 2026. Renewal status unknown.",
+        detail: {
+          headline:
+            "Vendor ISO 9001 certification expiring in 13 days — renewal not yet confirmed",
+          summary:
+            "Stark Manufacturing's ISO 9001:2015 quality management certification (cert #QMS-2023-SM-4401) is set to expire on March 15, 2026. The vendor compliance database shows no renewal documentation has been uploaded. While this does not block payment for the current invoice, company policy requires active certification for orders above $10,000. If the certification lapses before payment is processed, the invoice may be held pending compliance review.",
+          actions: [
+            {
+              label: "Request Renewal Status",
+              handler: {
+                chatLoading:
+                  "Sending certification renewal inquiry to Stark Manufacturing...",
+                chatDone:
+                  "Done — renewal inquiry sent to vendor contact (procurement@starkmanufacturing.com). Flagged for follow-up in 5 business days.",
+                timelineEntry:
+                  "Certification renewal inquiry sent to Stark Manufacturing.",
+              },
+            },
+            { label: "Waive Requirement" },
+          ],
+        },
+      },
+    ],
+    timeline: [
+      {
+        text: "Invoice received via EDI and entered into processing queue.",
+        time: "6h ago",
+      },
+      {
+        text: "Vendor identity confirmed against master record VMR-SM-0203.",
+        time: "6h ago",
+      },
+      {
+        text: "Budget variance detected — invoice exceeds PO-7655 approved amount.",
+        time: "4h ago",
+      },
+      {
+        text: "Vendor compliance flag raised — ISO certification expiring.",
+        time: "2h ago",
+      },
+    ],
+    lineItems: [
+      {
+        line: 1,
+        description: "CNC End Mill Set (Carbide)",
+        partNo: "CNC-EM-4FL",
+        qty: 20,
+        unitPrice: 245.0,
+        total: 4900.0,
+      },
+      {
+        line: 2,
+        description: "Precision Lathe Inserts",
+        partNo: "PLI-TNMG-16",
+        qty: 100,
+        unitPrice: 42.5,
+        total: 4250.0,
+      },
+      {
+        line: 3,
+        description: "Precision Drill Bits (Cobalt)",
+        partNo: "PDB-CO-SET",
+        qty: 50,
+        unitPrice: 85.0,
+        total: 4250.0,
+      },
+      {
+        line: 4,
+        description: "Digital Micrometers",
+        partNo: "DM-0-25-IP65",
+        qty: 10,
+        unitPrice: 385.0,
+        total: 3850.0,
+      },
+      {
+        line: 5,
+        description: "Surface Roughness Tester",
+        partNo: "SRT-200-PRO",
+        qty: 5,
+        unitPrice: 500.0,
+        total: 2500.0,
+      },
+    ],
+    summary: {
+      headline:
+        "INV-4009 from Stark Manufacturing is a high-value order awaiting review. Two items flagged for attention.",
+      body: "The invoice has been received but processing has not started. Preliminary scans detected a budget overage of $1,750.00 above the approved PO amount and an expiring vendor certification. Both require manual review before full three-way matching can proceed.",
+    },
+    approveTitle: "Approve payment for INV-4009?",
+    approveDescription:
+      "This will authorize a payment of $19,750.00 to Stark Manufacturing under purchase order PO-7655. Once confirmed, the payment will be queued for processing and cannot be reversed.",
+  },
 };
 
 /* ─── helpers ─── */
@@ -400,9 +694,11 @@ const fmt = (n: number) =>
 export function AnalyticsPage({
   visible,
   invoiceId = "INV-4021",
+  onApprove,
 }: {
   visible: boolean;
   invoiceId?: string;
+  onApprove?: (invoiceId: string) => void;
 }) {
   const config = invoiceConfigs[invoiceId] ?? invoiceConfigs["INV-4021"];
   const StatusIcon = config.statusIcon;
@@ -457,48 +753,50 @@ export function AnalyticsPage({
   return (
     <div className="flex flex-col h-full relative z-10 pt-2">
       {/* Top Header Bar */}
-      <div className="grid grid-cols-[380px_1fr_300px] border-b border-border/50">
-        <div className="flex items-center gap-4 px-6 py-4">
-          <button
-            type="button"
-            onClick={() => nav?.onNavigate("invoices")}
-            className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div>
-            <h1 className="text-base font-bold">{config.vendor}</h1>
-            <p className="text-sm text-muted-foreground">{config.id}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-8 pl-6 py-4">
-          <div>
-            <p className="text-xs text-muted-foreground">Amount</p>
-            <p className="text-sm font-medium">{fmt(config.amount)}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Received</p>
-            <p className="text-sm font-medium">{config.received}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Status</p>
-            <div className="flex items-center gap-1.5">
-              <StatusIcon className={cn("w-3.5 h-3.5", config.statusColor)} />
-              <p className="text-sm font-medium">{config.statusLabel}</p>
+      <div className="flex items-center justify-between border-b border-border/50 px-6 py-4">
+        <div className="flex items-center gap-20">
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => nav?.onNavigate("invoices")}
+              className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div>
+              <h1 className="text-base font-bold">{config.vendor}</h1>
+              <p className="text-sm text-muted-foreground">{config.id}</p>
             </div>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Assignee</p>
-            <p className="text-sm font-medium">{config.assignee}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Match Score</p>
-            <p className="text-sm font-medium">{config.matchScore}</p>
+
+          <div className="flex items-center gap-8">
+            <div>
+              <p className="text-xs text-muted-foreground">Amount</p>
+              <p className="text-sm font-medium">{fmt(config.amount)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Received</p>
+              <p className="text-sm font-medium">{config.received}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Status</p>
+              <div className="flex items-center gap-1.5">
+                <StatusIcon className={cn("w-3.5 h-3.5", config.statusColor)} />
+                <p className="text-sm font-medium">{config.statusLabel}</p>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Assignee</p>
+              <p className="text-sm font-medium">{config.assignee}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Match Score</p>
+              <p className="text-sm font-medium">{config.matchScore}</p>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 px-6 py-4">
+        <div className="flex items-center gap-3">
           <ToggleGroup
             type="single"
             value={view}
@@ -534,6 +832,7 @@ export function AnalyticsPage({
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => {
+                    onApprove?.(config.id);
                     nav?.onNavigate("invoices");
                     setTimeout(() => {
                       toast.success(
