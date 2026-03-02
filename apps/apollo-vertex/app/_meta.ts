@@ -4,5 +4,6 @@ export default {
   "shadcn-components": "Shadcn Components",
   "vertex-components": "Vertex Components",
   themes: "Themes",
+  "haidy-theme-option": "Haidy Theme Option",
   localization: "Localization",
 };
