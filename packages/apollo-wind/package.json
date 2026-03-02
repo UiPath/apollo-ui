@@ -115,7 +115,7 @@
     "@types/react-dom": "^19.2.2",
     "@vitest/coverage-v8": "^4.0.14",
     "@vitest/ui": "^4.0.14",
-    "ajv": "^8.17.1",
+    "ajv": "^8.18.0",
     "autoprefixer": "^10.4.22",
     "globals": "^16.5.0",
     "jest-axe": "^10.0.0",
