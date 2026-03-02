@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.45.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.2...@uipath/apollo-react@3.45.3) (2026-03-02)
+
+### Bug Fixes
+
+* **apollo-react:** var picker bug fixes [PLT-98392][PLT-98392] ([67979fd](https://github.com/UiPath/apollo-ui/commit/67979fdda3be544b2e6ee91c0bf96d89f2cf87e6))
+
 ## [@uipath/apollo-react-v3.45.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.1...@uipath/apollo-react@3.45.2) (2026-03-02)
 
 ### Bug Fixes
