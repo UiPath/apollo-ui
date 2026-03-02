@@ -9,14 +9,20 @@
 
 @custom-variant dark (&:is(.dark *)); /* or nextra-theme-blog/style.css */
 
+@theme inline {
+  --color-brand-orange: var(--brand-orange);
+}
+
 :root {
   /* Override Nextra's background to match our theme */
   --x-color-nextra-bg: var(--background);
+  --brand-orange: #fa4616;
 }
 
 .dark {
   /* Override Nextra's background to match our theme */
   --x-color-nextra-bg: var(--background);
+  --brand-orange: #fa4616;
 }
 
 @layer base {
@@ -25,5 +31,8 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  a {
+    @apply text-primary-700 dark:text-primary-400;
   }
 }
