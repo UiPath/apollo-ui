@@ -198,6 +198,24 @@ const sampleManifest: { nodes: NodeManifest[]; categories: CategoryManifest[] } 
         },
       ],
     },
+    {
+      nodeType: 'uipath.control-flow.terminate',
+      version: '1.0.0',
+      category: 'control',
+      tags: ['control', 'terminate'],
+      sortOrder: 6,
+      display: {
+        label: 'Terminate',
+        icon: 'git-branch',
+        shape: 'circle',
+      },
+      handleConfiguration: [
+        {
+          position: 'right',
+          handles: [{ id: 'out', type: 'source', handleType: 'output', label: 'Output' }],
+        },
+      ],
+    },
   ],
 };
 
@@ -628,6 +646,53 @@ function DynamicHandlesStory() {
   );
 }
 
+/**
+ * Creates nodes demonstrating loading/skeleton states for all shapes.
+ * Uses `data.loading: true` to enable the skeleton state.
+ */
+function createLoadingGrid(): Node<BaseNodeData>[] {
+  const shapes = [
+    { type: 'uipath.blank-node', shape: 'square' as const, label: 'Square' },
+    { type: 'uipath.control-flow.terminate', shape: 'circle' as const, label: 'Circle' },
+    { type: 'uipath.agent', shape: 'rectangle' as const, label: 'Rectangle' },
+  ];
+
+  return shapes.map((config, index) =>
+    createNode({
+      id: `loading-${config.shape}`,
+      type: config.type,
+      position: { x: 96 + index * 192, y: 96 },
+      data: {
+        nodeType: config.type,
+        version: '1.0.0',
+        loading: true, // Enable skeleton loading state
+        display: {
+          label: config.label,
+          subLabel: 'Loading...',
+          shape: config.shape,
+        },
+      },
+    })
+  );
+}
+
+function LoadingStory() {
+  const initialNodes = useMemo(() => createLoadingGrid(), []);
+  const { canvasProps } = useCanvasStory({ initialNodes });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="Loading State"
+        description="Nodes in skeleton loading state for circle, square, and rectangle shapes."
+      />
+    </BaseCanvas>
+  );
+}
+
 // ============================================================================
 // Exported Stories
 // ============================================================================
@@ -645,4 +710,9 @@ export const CustomizedSizes: Story = {
 export const DynamicHandles: Story = {
   name: 'Dynamic Handles',
   render: () => <DynamicHandlesStory />,
+};
+
+export const Loading: Story = {
+  name: 'Loading',
+  render: () => <LoadingStory />,
 };
