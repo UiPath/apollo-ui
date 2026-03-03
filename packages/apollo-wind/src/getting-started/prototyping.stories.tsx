@@ -678,13 +678,13 @@ const resourceSubTabs = ['Best Practices', 'Use Cases', "What's Not in Scope"] a
 type ResourceSubTab = (typeof resourceSubTabs)[number];
 
 function PersonaCard({
-  role,
+  persona,
   icon,
   scenario,
   solution,
   outcome,
 }: {
-  role: string;
+  persona: string;
   icon: string;
   scenario: string;
   solution: string;
@@ -696,7 +696,7 @@ function PersonaCard({
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-lg">
           {icon}
         </div>
-        <h4 className="text-base font-semibold text-foreground">{role}</h4>
+        <h4 className="text-base font-semibold text-foreground">{persona}</h4>
       </div>
 
       <div className="space-y-4">
@@ -738,7 +738,7 @@ function UseCasesContent() {
 
       <div className="space-y-6">
         <PersonaCard
-          role="Product Manager"
+          persona="Product Manager"
           icon="📋"
           scenario="A supply chain customer needs to visualize their automation workflows and monitor performance across 50+ processes. They want a dashboard that shows analytics, status, and trends at a glance."
           solution="Start from the Maestro Dashboard template. Use the DataTable component for process listings with sorting and filtering. Add StatsCards for KPIs (throughput, error rate, uptime) and the Tabs component to organize views by Overview, Analytics, and Reports."
@@ -746,7 +746,7 @@ function UseCasesContent() {
         />
 
         <PersonaCard
-          role="Designer"
+          persona="Designer"
           icon="🎨"
           scenario="A developer is building complex automation workflows and needs to understand how the platform handles scale. They want a Flow demo showing how the system manages 100+ workflow steps with branching logic."
           solution="Start from the Flow template with the Properties Simple panel. Use FlowNode components to populate the canvas, the FlowCanvasToolbar for mode switching, and the FlowPanel for the left navigation rail. Leverage the Flow Properties panel (expanded) for detailed node configuration."
@@ -754,7 +754,7 @@ function UseCasesContent() {
         />
 
         <PersonaCard
-          role="Engineer"
+          persona="Engineer"
           icon="🛠️"
           scenario="A customer needs to consolidate and format complex Excel documents into a presentation-ready format. They want a Delegate-style interface where an AI assistant guides the user through the process step by step."
           solution="Start from the Delegate template with the sidebar navigation panel. Use the ChatComposer and ChatStepsView custom components for the AI assistant interaction. Add FileUpload for document ingestion, and use Card and DataTable components to preview the transformed output."

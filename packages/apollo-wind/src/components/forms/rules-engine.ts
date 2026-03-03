@@ -1,6 +1,6 @@
 import jsep from 'jsep';
-import type { FieldRule, FieldCondition, FormContext, FieldOption } from './form-schema';
 import { get } from '@/lib';
+import type { FieldCondition, FieldOption, FieldRule, FormContext } from './form-schema';
 
 /**
  * Rules Engine - Evaluates conditions and applies effects using jsep
@@ -8,6 +8,7 @@ import { get } from '@/lib';
  * Uses jsep for safe expression parsing with minimal evaluator
  */
 
+// biome-ignore lint/complexity/noStaticOnlyClass: intended
 export class RulesEngine {
   /**
    * Evaluate if conditions are met
@@ -149,10 +150,12 @@ export class RulesEngine {
 
         switch (binary.operator) {
           case '==':
+            // biome-ignore lint/suspicious/noDoubleEquals: Intentionally implementing == operator with type coercion
             return left == right;
           case '===':
             return left === right;
           case '!=':
+            // biome-ignore lint/suspicious/noDoubleEquals: Intentionally implementing != operator with type coercion
             return left != right;
           case '!==':
             return left !== right;
@@ -268,6 +271,8 @@ export class RulesEngine {
 /**
  * Expression Builder - Helper for creating common expressions
  */
+
+// biome-ignore lint/complexity/noStaticOnlyClass: intended
 export class ExpressionBuilder {
   static equals(field: string, value: unknown): string {
     return `${field} == ${JSON.stringify(value)}`;

@@ -43,7 +43,7 @@ function ErrorPageLayout({ theme, children }: { theme: string; children: React.R
 // ============================================================================
 
 /** Generic error page for pages that don't exist or have been moved. */
-export const Error: Story = {
+export const ErrorPage: Story = {
   name: 'Error',
   render: (_, { globals }) => (
     <ErrorPageLayout theme={globals.theme || 'future-dark'}>

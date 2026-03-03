@@ -192,7 +192,7 @@ export const AlertWithLinks = {
         <AlertTitle>New Documentation</AlertTitle>
         <AlertDescription>
           We've updated our API documentation.{' '}
-          <a href="#" className="font-medium underline underline-offset-4 hover:no-underline">
+          <a href="#demo" className="font-medium underline underline-offset-4 hover:no-underline">
             Read the docs <ExternalLink className="inline h-3 w-3" />
           </a>
         </AlertDescription>
@@ -203,9 +203,9 @@ export const AlertWithLinks = {
         <AlertTitle>Getting Started</AlertTitle>
         <AlertDescription>
           New to the platform? Check out our{' '}
-          <a href="#" className="font-medium underline underline-offset-4 hover:no-underline">quick start guide</a>
+          <a href="#demo" className="font-medium underline underline-offset-4 hover:no-underline">quick start guide</a>
           {' '}or browse the{' '}
-          <a href="#" className="font-medium underline underline-offset-4 hover:no-underline">component library</a>.
+          <a href="#demo" className="font-medium underline underline-offset-4 hover:no-underline">component library</a>.
         </AlertDescription>
       </Alert>
     </div>
@@ -330,7 +330,7 @@ export const SecurityNotice = {
         <AlertTitle>Two-Factor Authentication</AlertTitle>
         <AlertDescription>
           Your account does not have two-factor authentication enabled. We strongly recommend enabling it for additional security.{' '}
-          <a href="#" className="font-medium underline underline-offset-4 hover:no-underline">
+          <a href="#demo" className="font-medium underline underline-offset-4 hover:no-underline">
             Enable 2FA
           </a>
         </AlertDescription>

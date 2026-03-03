@@ -32,10 +32,7 @@ export const WithBreadcrumb: Story = {
   args: { title: '' },
   render: () => (
     <div className="future-dark bg-surface">
-      <PageHeader
-        title="Manage access"
-        breadcrumb={['POPoC', 'DefaultTenant', 'Manage access']}
-      />
+      <PageHeader title="Manage access" breadcrumb={['POPoC', 'DefaultTenant', 'Manage access']} />
     </div>
   ),
 };
@@ -50,10 +47,16 @@ export const WithActions: Story = {
         breadcrumb={['POPoC', 'DefaultTenant', 'Manage access']}
         actions={
           <>
-            <button className="rounded-md px-3 py-1.5 text-sm font-medium text-foreground-accent transition-colors hover:bg-surface-hover">
+            <button
+              type="button"
+              className="rounded-md px-3 py-1.5 text-sm font-medium text-foreground-accent transition-colors hover:bg-surface-hover"
+            >
               Check access
             </button>
-            <button className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-foreground-on-accent transition-colors hover:bg-brand/90">
+            <button
+              type="button"
+              className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-foreground-on-accent transition-colors hover:bg-brand/90"
+            >
               Assign role
             </button>
           </>
@@ -75,10 +78,16 @@ export const WithTabs: Story = {
           breadcrumb={['POPoC', 'DefaultTenant', 'Manage access']}
           actions={
             <>
-              <button className="rounded-md px-3 py-1.5 text-sm font-medium text-foreground-accent transition-colors hover:bg-surface-hover">
+              <button
+                type="button"
+                className="rounded-md px-3 py-1.5 text-sm font-medium text-foreground-accent transition-colors hover:bg-surface-hover"
+              >
                 Check access
               </button>
-              <button className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-foreground-on-accent transition-colors hover:bg-brand/90">
+              <button
+                type="button"
+                className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-foreground-on-accent transition-colors hover:bg-brand/90"
+              >
                 Assign role
               </button>
             </>

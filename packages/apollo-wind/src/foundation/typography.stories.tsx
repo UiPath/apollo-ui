@@ -292,7 +292,7 @@ function TypographyGallery() {
             <p>
               This is{' '}
               <a
-                href="#"
+                href="#demo"
                 className="text-primary underline underline-offset-4 hover:text-primary/80"
               >
                 a link

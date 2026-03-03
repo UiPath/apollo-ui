@@ -422,6 +422,11 @@ function TreeItem({
         <div>
           <div
             ref={itemRef}
+            role="treeitem"
+            aria-expanded={item.children ? isOpen : undefined}
+            aria-selected={isSelected && selectionMode !== "none"}
+            aria-disabled={isDisabled}
+            tabIndex={0}
             data-tree-item
             data-id={item.id}
             data-depth={depth}
@@ -438,6 +443,12 @@ function TreeItem({
             }`}
             style={{ paddingLeft: `${depth * 20}px` }}
             onClick={handleClick}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleClick(e as unknown as React.MouseEvent);
+              }
+            }}
           >
             <div className="flex items-center h-8 min-w-0">
               {item.children ? (
@@ -462,9 +473,11 @@ function TreeItem({
                     </CollapsibleTrigger>
                   </Collapsible>
                   {showAccessRights && (
-                    <div
-                      className="relative flex items-center justify-center w-4 h-4 cursor-pointer hover:opacity-80"
+                    <button
+                      type="button"
+                      className="relative flex items-center justify-center w-4 h-4 cursor-pointer hover:opacity-80 bg-transparent border-0 p-0"
                       onClick={handleAccessClick}
+                      aria-label={`Toggle access for ${item.name}`}
                     >
                       {getCheckState(item, itemMap) === "checked" && (
                         <div className="w-4 h-4 border rounded bg-primary border-primary flex items-center justify-center">
@@ -491,7 +504,7 @@ function TreeItem({
                           <div className="h-0.5 w-2 bg-primary-foreground" />
                         </div>
                       )}
-                    </div>
+                    </button>
                   )}
                   {renderIcon()}
                   <span className="flex-1 min-w-0 truncate">{item.name}</span>
@@ -626,9 +639,11 @@ function TreeItem({
                     />
                   )}
                   {showAccessRights && (
-                    <div
-                      className="relative flex items-center justify-center w-4 h-4 cursor-pointer hover:opacity-80"
+                    <button
+                      type="button"
+                      className="relative flex items-center justify-center w-4 h-4 cursor-pointer hover:opacity-80 bg-transparent border-0 p-0"
                       onClick={handleAccessClick}
+                      aria-label={`Toggle access for ${item.name}`}
                     >
                       {item.checked ? (
                         <div className="w-4 h-4 border rounded bg-primary border-primary flex items-center justify-center">
@@ -649,7 +664,7 @@ function TreeItem({
                       ) : (
                         <div className="w-4 h-4 border rounded border-input" />
                       )}
-                    </div>
+                    </button>
                   )}
                   {renderIcon()}
                   <span className="flex-1 min-w-0 truncate">{item.name}</span>
@@ -1215,8 +1230,9 @@ export default function TreeView({
             </div>
           ) : null}
         </div>
-        <div
+        <section
           ref={dragRef}
+          aria-label="Tree view content"
           className={cn(
             "rounded-lg relative select-none min-w-0 overflow-x-hidden",
             className
@@ -1260,7 +1276,7 @@ export default function TreeView({
               getSelectedItems={getSelectedItems}
             />
           ))}
-        </div>
+        </section>
       </div>
     </div>
   );

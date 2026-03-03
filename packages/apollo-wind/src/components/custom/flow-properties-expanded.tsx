@@ -226,9 +226,8 @@ export function PropertiesExpanded({
             <PanelRightOpen />
           </Button>
           {/* Layout toggle: columns / rows */}
-          <div
+          <fieldset
             className="flex h-10 items-center rounded-xl border border-border-deep bg-surface-overlay p-1"
-            role="group"
             aria-label="Layout toggle"
           >
             <button
@@ -245,7 +244,7 @@ export function PropertiesExpanded({
             >
               <Rows2 className="h-5 w-5" />
             </button>
-          </div>
+          </fieldset>
         </div>
         {/* Run node button */}
         <Button className="bg-brand text-foreground-on-accent hover:bg-brand/90 font-semibold">
