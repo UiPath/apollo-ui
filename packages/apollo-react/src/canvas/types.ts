@@ -11,7 +11,7 @@ import type {
   StickyNoteColor,
   StickyNoteData,
 } from './components/StickyNoteNode/StickyNoteNode.types';
-import { ToolbarActionItem } from './components/Toolbar';
+import type { ToolbarActionItem } from './components/Toolbar';
 
 // Re-export CanvasLevel for external consumers
 export type { CanvasLevel } from './types/canvas.types';

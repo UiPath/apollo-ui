@@ -1,5 +1,4 @@
-import type { Handle, Node, XYPosition } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import { type Handle, type InternalNode, type Node, type XYPosition, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { DEFAULT_NODE_SIZE, GRID_SPACING, PREVIEW_NODE_ID } from '../constants';
 
 /**
@@ -180,6 +179,38 @@ export const resolveCollisions: CollisionAlgorithm = (
   // Return all nodes in original order: resolved nodes get updated positions, ignored nodes stay untouched
   return nodes.map((n) => resolvedMap.get(n.id) ?? n);
 };
+
+export type HandleContext = {
+  anchor: { x: number; y: number };
+  index: number | null;
+  count: number;
+};
+
+/**
+ * Resolves handle context (anchor coordinates, peer index, peer count) for a
+ * given handle on an internal node. Returns undefined if the handle isn't found.
+ */
+export function resolveHandleContext(
+  internalNode: InternalNode,
+  handleId: string,
+  handlePosition: Position
+): HandleContext | undefined {
+  const allHandles = [
+    ...(internalNode.internals.handleBounds?.source ?? []),
+    ...(internalNode.internals.handleBounds?.target ?? []),
+  ];
+  const matchedHandle = allHandles.find((h) => h.id === handleId);
+  if (!matchedHandle) return undefined;
+
+  return {
+    anchor: {
+      x: internalNode.internals.positionAbsolute.x + matchedHandle.x + matchedHandle.width / 2,
+      y: internalNode.internals.positionAbsolute.y + matchedHandle.y + matchedHandle.height / 2,
+    },
+    index: getHandleIndex(handleId, handlePosition, allHandles),
+    count: allHandles.filter((h) => h.position === handlePosition).length,
+  };
+}
 
 /**
  * Returns the 0-based index of a handle among all handles on the same side,

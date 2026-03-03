@@ -6,9 +6,10 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { DEFAULT_NODE_SIZE, GRID_SPACING, PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../constants';
 import {
+  type HandleContext,
   getAbsolutePosition,
-  getHandleIndex,
   getNonOverlappingPositionForDirection,
+  resolveHandleContext,
 } from './NodeUtils';
 
 /**
@@ -85,9 +86,7 @@ function calculateAutoPosition(
   existingNodes: Node[],
   offset = GRID_SPACING * 5,
   ignoredNodeTypes: string[] = [],
-  handleAnchor?: { x: number; y: number },
-  handleIndex: number | null = null,
-  handleCount = 1
+  handle?: HandleContext
 ): { x: number; y: number } {
   const sourceAbsolutePosition = sourceNode.parentId
     ? getAbsolutePosition(sourceNode, existingNodes)
@@ -95,8 +94,8 @@ function calculateAutoPosition(
   const sourceWidth = sourceNode.measured?.width ?? 0;
   const sourceHeight = sourceNode.measured?.height ?? 0;
   // Use exact handle position when available, fall back to node center
-  const anchorX = handleAnchor?.x ?? sourceAbsolutePosition.x + sourceWidth / 2;
-  const anchorY = handleAnchor?.y ?? sourceAbsolutePosition.y + sourceHeight / 2;
+  const anchorX = handle?.anchor.x ?? sourceAbsolutePosition.x + sourceWidth / 2;
+  const anchorY = handle?.anchor.y ?? sourceAbsolutePosition.y + sourceHeight / 2;
 
   // Prepare nodes with absolute positions for overlap detection
   const nodesWithAbsolutePositions = existingNodes.map((node) => ({
@@ -121,6 +120,8 @@ function calculateAutoPosition(
       // When multiple handles share the same side, spread preview nodes vertically: top half shifts up,
       // bottom half shifts down, middle (odd count) stays centered.
       let yOffset = 0;
+      const handleIndex = handle?.index ?? null;
+      const handleCount = handle?.count ?? 1;
       if (handleIndex !== null && handleCount > 1) {
         if (handleIndex < Math.floor(handleCount / 2)) yOffset = -previewNodeSize.height / 2;
         else if (handleIndex >= Math.ceil(handleCount / 2)) yOffset = previewNodeSize.height / 2;
@@ -202,25 +203,10 @@ export function createPreviewNode(
 
   // Resolve the exact canvas position of the clicked handle via InternalNode bounds.
   // Falls back to undefined (node-center) if the node or handle isn't found.
-  let handleAnchor: { x: number; y: number } | undefined;
-  let handleIdx: number | null = null;
-  let peerCount = 1;
-  const internalNode = reactFlowInstance.getInternalNode(sourceNodeId);
-  if (position === undefined && internalNode) {
-    const allHandles = [
-      ...(internalNode.internals.handleBounds?.source ?? []),
-      ...(internalNode.internals.handleBounds?.target ?? []),
-    ];
-    const matchedHandle = allHandles.find((h) => h.id === sourceHandleId);
-    if (matchedHandle) {
-      handleAnchor = {
-        x: internalNode.internals.positionAbsolute.x + matchedHandle.x + matchedHandle.width / 2,
-        y: internalNode.internals.positionAbsolute.y + matchedHandle.y + matchedHandle.height / 2,
-      };
-      handleIdx = getHandleIndex(sourceHandleId, handlePosition, allHandles);
-      peerCount = allHandles.filter((h) => h.position === handlePosition).length;
-    }
-  }
+  const internalNode = position === undefined ? reactFlowInstance.getInternalNode(sourceNodeId) : undefined;
+  const handle = internalNode
+    ? resolveHandleContext(internalNode, sourceHandleId, handlePosition)
+    : undefined;
 
   const nodePosition = position
     ? calculatePositionFromDrop(position, handlePosition, previewNodeSize)
@@ -231,9 +217,7 @@ export function createPreviewNode(
         existingNodes,
         undefined,
         ignoredNodeTypes,
-        handleAnchor,
-        handleIdx,
-        peerCount
+        handle
       );
 
   // Calculate handle positions for the preview node
