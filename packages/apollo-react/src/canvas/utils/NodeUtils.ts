@@ -1,4 +1,5 @@
-import type { Node, XYPosition } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Handle, Node, XYPosition } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { DEFAULT_NODE_SIZE, GRID_SPACING, PREVIEW_NODE_ID } from '../constants';
 
 /**
@@ -186,3 +187,26 @@ export const resolveCollisions: CollisionAlgorithm = (
   // Return all nodes in original order: resolved nodes get updated positions, ignored nodes stay untouched
   return nodes.map((n) => resolvedMap.get(n.id) ?? n);
 };
+
+/**
+ * Returns the 0-based index of a handle among all handles on the same side,
+ * sorted top-to-bottom (Left/Right) or left-to-right (Top/Bottom).
+ *
+ * @param handleId The ID of the target handle.
+ * @param position Which side the handle is on.
+ * @param allHandles Flat list of all Handle objects from handleBounds.
+ * @returns The ordinal index, or null if the handle isn't found.
+ */
+export function getHandleIndex(
+  handleId: string,
+  position: Position,
+  allHandles: Handle[]
+): number | null {
+  const peers = allHandles
+    .filter((h) => h.position === position)
+    .sort((a, b) =>
+      position === Position.Left || position === Position.Right ? a.y - b.y : a.x - b.x
+    );
+  const index = peers.findIndex((h) => h.id === handleId);
+  return index === -1 ? null : index;
+}
