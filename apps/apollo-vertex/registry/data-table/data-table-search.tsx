@@ -1,8 +1,6 @@
 import type { Table as TanstackTable } from "@tanstack/react-table";
 import { useTranslation } from "react-i18next";
-
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 
 interface DataTableSearchProps<TData> {
   table: TanstackTable<TData>;
