@@ -88,12 +88,9 @@ function calculateAutoPosition(
     : sourceNode.position;
   const sourceWidth = sourceNode.measured?.width ?? 0;
   const sourceHeight = sourceNode.measured?.height ?? 0;
-  const sourceCenterX = sourceAbsolutePosition.x + sourceWidth / 2;
-  const sourceCenterY = sourceAbsolutePosition.y + sourceHeight / 2;
-
   // Use exact handle position when available, fall back to node center
-  const anchorX = handleAnchor?.x ?? sourceCenterX;
-  const anchorY = handleAnchor?.y ?? sourceCenterY;
+  const anchorX = handleAnchor?.x ?? sourceAbsolutePosition.x + sourceWidth / 2;
+  const anchorY = handleAnchor?.y ?? sourceAbsolutePosition.y + sourceHeight / 2;
 
   // Prepare nodes with absolute positions for overlap detection
   const nodesWithAbsolutePositions = existingNodes.map((node) => ({
@@ -191,20 +188,17 @@ export function createPreviewNode(
   // Resolve the exact canvas position of the clicked handle via InternalNode bounds.
   // Falls back to undefined (node-center) if the node or handle isn't found.
   let handleAnchor: { x: number; y: number } | undefined;
-  if (!position) {
-    const internalNode = reactFlowInstance.getInternalNode(sourceNodeId);
+  const internalNode = reactFlowInstance.getInternalNode(sourceNodeId);
+  if (position === undefined && internalNode) {
     const allHandles = [
-      ...(internalNode?.internals?.handleBounds?.source ?? []),
-      ...(internalNode?.internals?.handleBounds?.target ?? []),
+      ...(internalNode.internals.handleBounds?.source ?? []),
+      ...(internalNode.internals.handleBounds?.target ?? []),
     ];
     const matchedHandle = allHandles.find((h) => h.id === sourceHandleId);
     if (matchedHandle) {
-      const sourceAbsolutePos = sourceNode.parentId
-        ? getAbsolutePosition(sourceNode, existingNodes)
-        : sourceNode.position;
       handleAnchor = {
-        x: sourceAbsolutePos.x + matchedHandle.x + matchedHandle.width / 2,
-        y: sourceAbsolutePos.y + matchedHandle.y + matchedHandle.height / 2,
+        x: internalNode.internals.positionAbsolute.x + matchedHandle.x + matchedHandle.width / 2,
+        y: internalNode.internals.positionAbsolute.y + matchedHandle.y + matchedHandle.height / 2,
       };
     }
   }
