@@ -1,12 +1,24 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontalIcon } from "lucide-react";
+import {
+  CheckCircleIcon,
+  CircleDotIcon,
+  ClockIcon,
+  MoreHorizontalIcon,
+  XCircleIcon,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
+import {
+  DataTable,
+  DataTableColumnHeader,
+  DataTableFacetedFilter,
+  type DataTableFacetedFilterOption,
+  dataTableFacetedFilterFn,
+} from "@/components/ui/data-table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -108,6 +120,13 @@ const statusVariant: Record<
   failed: "destructive",
 };
 
+const statusFilterOptions: DataTableFacetedFilterOption[] = [
+  { label: "Success", value: "success", icon: CheckCircleIcon },
+  { label: "Processing", value: "processing", icon: ClockIcon },
+  { label: "Pending", value: "pending", icon: CircleDotIcon },
+  { label: "Failed", value: "failed", icon: XCircleIcon },
+];
+
 const columns: ColumnDef<Payment>[] = [
   {
     id: "select",
@@ -140,6 +159,7 @@ const columns: ColumnDef<Payment>[] = [
       const status = row.getValue("status") as Payment["status"];
       return <Badge variant={statusVariant[status]}>{status}</Badge>;
     },
+    filterFn: dataTableFacetedFilterFn,
   },
   {
     accessorKey: "email",
@@ -196,5 +216,20 @@ const columns: ColumnDef<Payment>[] = [
 ];
 
 export function DataTableTemplate() {
-  return <DataTable columns={columns} data={data} />;
+  return (
+    <div className="p-4">
+      <DataTable
+        columns={columns}
+        data={data}
+        storageKey="payments-demo"
+        toolbarContent={(table) => (
+          <DataTableFacetedFilter
+            column={table.getColumn("status")}
+            title="Status"
+            options={statusFilterOptions}
+          />
+        )}
+      />
+    </div>
+  );
 }
