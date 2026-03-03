@@ -14,7 +14,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 function resolveThemeClass(value: string) {
-  return value || 'future-dark';
+  return value ?? 'future-dark';
 }
 
 // ============================================================================
@@ -56,6 +56,7 @@ function CodeBlock({ children, label }: { children: string; label?: string }) {
         <div className="flex items-center justify-between border-b border-border px-4 py-2">
           <span className="text-xs font-medium text-muted-foreground">{label}</span>
           <button
+            type="button"
             onClick={handleCopy}
             className="cursor-pointer rounded px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
@@ -65,6 +66,7 @@ function CodeBlock({ children, label }: { children: string; label?: string }) {
       )}
       {!label && (
         <button
+          type="button"
           onClick={handleCopy}
           className="absolute top-2 right-2 cursor-pointer rounded px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
@@ -119,6 +121,7 @@ function PackageCard({
       <div className="mb-4 inline-flex rounded-lg border border-border bg-muted/50 p-1">
         {installTabs.map((tab) => (
           <button
+            type="button"
             key={tab}
             className={cn(
               'cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
@@ -150,8 +153,8 @@ function PackageCard({
               className="font-medium text-primary underline"
             >
               apollo-ui
-            </a>
-            {' '}monorepo and running <InlineCode>pnpm install</InlineCode>:
+            </a>{' '}
+            monorepo and running <InlineCode>pnpm install</InlineCode>:
           </p>
           <CodeBlock>{localDevCommands}</CodeBlock>
         </div>
@@ -287,5 +290,5 @@ pnpm test`}
 }
 
 export const Default: Story = {
-  render: (_, { globals }) => <GettingStartedPage globalTheme={globals.futureTheme || 'future-dark'} />,
+  render: (_, { globals }) => <GettingStartedPage globalTheme={globals.theme || 'future-dark'} />,
 };

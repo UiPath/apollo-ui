@@ -15,7 +15,7 @@ import {
 import { FlowCanvasToolbar } from '@/components/custom/toolbar-canvas';
 import { FlowViewToolbar } from '@/components/custom/toolbar-view';
 import { useViewportAtOrAbove, ViewportGuard } from '@/components/custom/viewport-guard';
-import type { FutureTheme } from '@/foundation/Future/types';
+import type { Theme } from '@/foundation/Future/types';
 import { fontFamily } from '@/foundation/Future/typography';
 import { cn } from '@/lib';
 
@@ -48,7 +48,7 @@ export type {
 export interface FlowTemplateProps {
   className?: string;
   /** Color theme for the template */
-  theme?: FutureTheme;
+  theme?: Theme;
   /** Navigation items for the icon rail */
   navItems?: FlowPanelNavItem[];
   /** Whether the expanded panel starts open */
@@ -176,11 +176,7 @@ export function FlowTemplate({
       message="This view is not available at this screen size. Please use a larger viewport."
     >
       <div
-        className={cn(
-          theme,
-          'flex h-screen bg-surface',
-          className
-        )}
+        className={cn(theme, 'flex h-screen bg-surface', className)}
         style={{ fontFamily: fontFamily.base }}
       >
         {/* Left panel: icon rail + optional expanded panel */}

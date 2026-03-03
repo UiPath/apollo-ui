@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { cn } from '@/lib';
-import { fontFamily } from '@/foundation/Future/typography';
 import { MaestroHeader } from '@/components/custom/global-header';
-import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
+import { fontFamily } from '@/foundation/Future/typography';
+import { cn } from '@/lib';
 import { ErrorVideo } from './error-components';
 
 // ============================================================================
@@ -24,24 +24,16 @@ type Story = StoryObj<typeof meta>;
 // Shared page layout
 // ============================================================================
 
-function ErrorPageLayout({
-  theme,
-  children,
-}: {
-  theme: string;
-  children: React.ReactNode;
-}) {
-  const themeClass = theme || 'future-dark';
+function ErrorPageLayout({ theme, children }: { theme: string; children: React.ReactNode }) {
+  const themeClass = theme ?? 'future-dark';
 
   return (
     <div
       className={cn(themeClass, 'flex h-screen flex-col bg-surface')}
       style={{ fontFamily: fontFamily.base }}
     >
-      <MaestroHeader theme={theme as import('@/foundation/Future/types').FutureTheme} title="UiPath" />
-      <div className="flex flex-1 flex-col items-center justify-center">
-        {children}
-      </div>
+      <MaestroHeader theme={theme as import('@/foundation/Future/types').Theme} title="UiPath" />
+      <div className="flex flex-1 flex-col items-center justify-center">{children}</div>
     </div>
   );
 }
@@ -54,7 +46,7 @@ function ErrorPageLayout({
 export const Error: Story = {
   name: 'Error',
   render: (_, { globals }) => (
-    <ErrorPageLayout theme={globals.futureTheme || 'future-dark'}>
+    <ErrorPageLayout theme={globals.theme || 'future-dark'}>
       <EmptyState
         icon={<ErrorVideo />}
         title="Error"
@@ -70,7 +62,7 @@ export const Error: Story = {
 export const BadRequest400: Story = {
   name: '400 - Bad Request',
   render: (_, { globals }) => (
-    <ErrorPageLayout theme={globals.futureTheme || 'future-dark'}>
+    <ErrorPageLayout theme={globals.theme || 'future-dark'}>
       <EmptyState
         icon={<ErrorVideo />}
         code="400"
@@ -87,7 +79,7 @@ export const BadRequest400: Story = {
 export const Unauthorized401: Story = {
   name: '401 - Unauthorized',
   render: (_, { globals }) => (
-    <ErrorPageLayout theme={globals.futureTheme || 'future-dark'}>
+    <ErrorPageLayout theme={globals.theme || 'future-dark'}>
       <EmptyState
         icon={<ErrorVideo />}
         code="401"
@@ -104,7 +96,7 @@ export const Unauthorized401: Story = {
 export const Forbidden403: Story = {
   name: '403 - Forbidden',
   render: (_, { globals }) => (
-    <ErrorPageLayout theme={globals.futureTheme || 'future-dark'}>
+    <ErrorPageLayout theme={globals.theme || 'future-dark'}>
       <EmptyState
         icon={<ErrorVideo />}
         code="403"
@@ -121,7 +113,7 @@ export const Forbidden403: Story = {
 export const NotFound404: Story = {
   name: '404 - Not Found',
   render: (_, { globals }) => (
-    <ErrorPageLayout theme={globals.futureTheme || 'future-dark'}>
+    <ErrorPageLayout theme={globals.theme || 'future-dark'}>
       <EmptyState
         icon={<ErrorVideo />}
         code="404"
@@ -138,7 +130,7 @@ export const NotFound404: Story = {
 export const ServerError500: Story = {
   name: '500 - Server Error',
   render: (_, { globals }) => (
-    <ErrorPageLayout theme={globals.futureTheme || 'future-dark'}>
+    <ErrorPageLayout theme={globals.theme || 'future-dark'}>
       <EmptyState
         icon={<ErrorVideo />}
         code="500"
@@ -155,7 +147,7 @@ export const ServerError500: Story = {
 export const ServiceUnavailable503: Story = {
   name: '503 - Service Unavailable',
   render: (_, { globals }) => (
-    <ErrorPageLayout theme={globals.futureTheme || 'future-dark'}>
+    <ErrorPageLayout theme={globals.theme || 'future-dark'}>
       <EmptyState
         icon={<ErrorVideo />}
         code="503"
@@ -172,7 +164,7 @@ export const ServiceUnavailable503: Story = {
 export const ErrorLoading: Story = {
   name: 'Error Loading',
   render: (_, { globals }) => (
-    <ErrorPageLayout theme={globals.futureTheme || 'future-dark'}>
+    <ErrorPageLayout theme={globals.theme || 'future-dark'}>
       <EmptyState
         icon={<ErrorVideo />}
         title="Please wait while we set up things for you"
@@ -186,11 +178,8 @@ export const ErrorLoading: Story = {
 export const BrowserNotSupported: Story = {
   name: 'Browser Not Supported',
   render: (_, { globals }) => (
-    <ErrorPageLayout theme={globals.futureTheme || 'future-dark'}>
-      <EmptyState
-        icon={<ErrorVideo />}
-        title="This browser is not supported"
-      >
+    <ErrorPageLayout theme={globals.theme || 'future-dark'}>
+      <EmptyState icon={<ErrorVideo />} title="This browser is not supported">
         <Button>Learn more</Button>
       </EmptyState>
     </ErrorPageLayout>
@@ -201,7 +190,7 @@ export const BrowserNotSupported: Story = {
 export const IpRestricted: Story = {
   name: 'IP Restricted',
   render: (_, { globals }) => (
-    <ErrorPageLayout theme={globals.futureTheme || 'future-dark'}>
+    <ErrorPageLayout theme={globals.theme || 'future-dark'}>
       <EmptyState
         icon={<ErrorVideo />}
         title="Access restricted"
@@ -217,7 +206,7 @@ export const IpRestricted: Story = {
 export const HideDefaultActions: Story = {
   name: 'Hide Default Actions',
   render: (_, { globals }) => (
-    <ErrorPageLayout theme={globals.futureTheme || 'future-dark'}>
+    <ErrorPageLayout theme={globals.theme || 'future-dark'}>
       <EmptyState
         icon={<ErrorVideo />}
         title="Unauthorized"
@@ -233,7 +222,7 @@ export const HideDefaultActions: Story = {
 export const NoProjectsYet: Story = {
   name: 'No Projects Yet',
   render: (_, { globals }) => (
-    <ErrorPageLayout theme={globals.futureTheme || 'future-dark'}>
+    <ErrorPageLayout theme={globals.theme || 'future-dark'}>
       <EmptyState
         icon={<ErrorVideo />}
         title="No Projects Yet"

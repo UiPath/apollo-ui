@@ -334,13 +334,13 @@ function SpacingGallery() {
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Button Padding</h3>
               <div className="flex gap-4 items-center">
-                <button className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm">
+                <button type="button" className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm">
                   Default
                 </button>
-                <button className="px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm">
+                <button type="button" className="px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm">
                   Small
                 </button>
-                <button className="px-8 py-3 bg-primary text-primary-foreground rounded-md text-sm">
+                <button type="button" className="px-8 py-3 bg-primary text-primary-foreground rounded-md text-sm">
                   Large
                 </button>
               </div>
@@ -566,7 +566,7 @@ function SpacingGallery() {
             <h3 className="text-lg font-semibold">Common Usage</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="space-y-2">
-                <button className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium">
+                <button type="button" className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium">
                   Button
                 </button>
                 <Badge variant="outline" className="text-xs font-mono">

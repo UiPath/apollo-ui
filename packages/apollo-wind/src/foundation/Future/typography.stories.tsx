@@ -1,6 +1,5 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { cn } from '@/lib';
+import React from 'react';
 import { fontFamily } from './typography';
 
 // ============================================================================
@@ -41,12 +40,23 @@ const typographyGroups: TypographyGroup[] = [
     description: 'Inter is the primary typeface for all Future UI surfaces',
     tokens: [
       { token: 'base', value: 'Inter', twClass: 'font-sans', usage: 'All UI text' },
-      { token: 'monospace', value: 'JetBrains Mono', twClass: 'font-mono', usage: 'Code, data, technical content' },
-      { token: 'numeric', value: 'Inter (tabular)', twClass: 'font-sans tabular-nums', usage: 'Numbers, data displays' },
+      {
+        token: 'monospace',
+        value: 'JetBrains Mono',
+        twClass: 'font-mono',
+        usage: 'Code, data, technical content',
+      },
+      {
+        token: 'numeric',
+        value: 'Inter (tabular)',
+        twClass: 'font-sans tabular-nums',
+        usage: 'Numbers, data displays',
+      },
     ],
     previewStyle: (value: string) => {
       if (value === 'JetBrains Mono') return { fontFamily: fontFamily.monospace };
-      if (value === 'Inter (tabular)') return { fontFamily: fontFamily.numeric, fontVariantNumeric: 'tabular-nums' as const };
+      if (value === 'Inter (tabular)')
+        return { fontFamily: fontFamily.numeric, fontVariantNumeric: 'tabular-nums' as const };
       return { fontFamily: fontFamily.base };
     },
   },
@@ -60,7 +70,11 @@ const typographyGroups: TypographyGroup[] = [
       { token: 'xl', value: '20px', twClass: 'text-xl', usage: 'Sub-headings' },
       { token: '4xl', value: '40px', twClass: 'text-[40px]', usage: 'Hero headings' },
     ],
-    previewStyle: (value: string) => ({ fontSize: value, lineHeight: '1.4', fontFamily: fontFamily.base }),
+    previewStyle: (value: string) => ({
+      fontSize: value,
+      lineHeight: '1.4',
+      fontFamily: fontFamily.base,
+    }),
   },
   {
     group: 'Font Weight',
@@ -70,7 +84,12 @@ const typographyGroups: TypographyGroup[] = [
       { token: 'semibold', value: '600', twClass: 'font-semibold', usage: 'Sub-headings' },
       { token: 'bold', value: '700', twClass: 'font-bold', usage: 'Headings' },
     ],
-    previewStyle: (value: string) => ({ fontWeight: Number(value), fontSize: '16px', lineHeight: '1.4', fontFamily: fontFamily.base }),
+    previewStyle: (value: string) => ({
+      fontWeight: Number(value),
+      fontSize: '16px',
+      lineHeight: '1.4',
+      fontFamily: fontFamily.base,
+    }),
   },
   {
     group: 'Line Height',
@@ -79,18 +98,47 @@ const typographyGroups: TypographyGroup[] = [
       { token: 'normal', value: '24px', twClass: 'leading-6', usage: 'Default body text' },
       { token: 'loose', value: '36px', twClass: 'leading-9', usage: 'Large headings' },
     ],
-    previewStyle: (value: string) => ({ fontSize: '14px', lineHeight: value, maxWidth: '280px', fontFamily: fontFamily.base }),
+    previewStyle: (value: string) => ({
+      fontSize: '14px',
+      lineHeight: value,
+      maxWidth: '280px',
+      fontFamily: fontFamily.base,
+    }),
   },
   {
     group: 'Letter Spacing',
     tokens: [
-      { token: 'tight', value: '-0.8px', twClass: 'tracking-[-0.8px]', usage: 'Large headings (40px)' },
+      {
+        token: 'tight',
+        value: '-0.8px',
+        twClass: 'tracking-[-0.8px]',
+        usage: 'Large headings (40px)',
+      },
       { token: 'snug', value: '-0.6px', twClass: 'tracking-[-0.6px]', usage: 'Panel tab titles' },
-      { token: 'normal', value: '-0.4px', twClass: 'tracking-[-0.4px]', usage: 'Primary text (16px)' },
-      { token: 'subtle', value: '-0.35px', twClass: 'tracking-[-0.35px]', usage: 'Subtitles, labels (14px)' },
-      { token: 'fine', value: '-0.3px', twClass: 'tracking-[-0.3px]', usage: 'Small labels (12px)' },
+      {
+        token: 'normal',
+        value: '-0.4px',
+        twClass: 'tracking-[-0.4px]',
+        usage: 'Primary text (16px)',
+      },
+      {
+        token: 'subtle',
+        value: '-0.35px',
+        twClass: 'tracking-[-0.35px]',
+        usage: 'Subtitles, labels (14px)',
+      },
+      {
+        token: 'fine',
+        value: '-0.3px',
+        twClass: 'tracking-[-0.3px]',
+        usage: 'Small labels (12px)',
+      },
     ],
-    previewStyle: (value: string) => ({ fontSize: '16px', letterSpacing: value, fontFamily: fontFamily.base }),
+    previewStyle: (value: string) => ({
+      fontSize: '16px',
+      letterSpacing: value,
+      fontFamily: fontFamily.base,
+    }),
   },
 ];
 
@@ -114,7 +162,9 @@ function TypographyTable({ groups }: { groups: TypographyGroup[] }) {
           <tr className="border-b border-border bg-surface-overlay">
             <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Token</th>
             <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Value</th>
-            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Tailwind Class</th>
+            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">
+              Tailwind Class
+            </th>
             <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Usage</th>
             <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Preview</th>
           </tr>
@@ -136,19 +186,31 @@ function TypographyTable({ groups }: { groups: TypographyGroup[] }) {
                 </td>
               </tr>
               {group.tokens.map((token) => (
-                <tr key={`${group.group}-${token.token}`} className="border-b border-border-subtle last:border-b-0">
+                <tr
+                  key={`${group.group}-${token.token}`}
+                  className="border-b border-border-subtle last:border-b-0"
+                >
                   <td className="px-4 py-2">
-                    <code className="text-xs text-brand-foreground" style={{ fontFamily: fontFamily.monospace }}>
+                    <code
+                      className="text-xs text-brand-foreground"
+                      style={{ fontFamily: fontFamily.monospace }}
+                    >
                       {token.token}
                     </code>
                   </td>
                   <td className="px-4 py-2">
-                    <code className="text-xs tabular-nums text-foreground-muted" style={{ fontFamily: fontFamily.monospace }}>
+                    <code
+                      className="text-xs tabular-nums text-foreground-muted"
+                      style={{ fontFamily: fontFamily.monospace }}
+                    >
                       {token.value}
                     </code>
                   </td>
                   <td className="px-4 py-2">
-                    <code className="text-xs text-foreground-subtle" style={{ fontFamily: fontFamily.monospace }}>
+                    <code
+                      className="text-xs text-foreground-subtle"
+                      style={{ fontFamily: fontFamily.monospace }}
+                    >
                       {token.twClass}
                     </code>
                   </td>
@@ -180,14 +242,8 @@ function TypographyTable({ groups }: { groups: TypographyGroup[] }) {
 // ============================================================================
 
 export const Default: Story = {
-  render: (_, { globals }) => (
-    <div
-      className={cn(
-        globals.futureTheme ?? 'future-dark',
-        'min-h-screen w-full bg-surface'
-      )}
-      style={{ fontFamily: fontFamily.base }}
-    >
+  render: () => (
+    <div className="min-h-screen w-full bg-surface" style={{ fontFamily: fontFamily.base }}>
       <div className="mx-auto max-w-6xl space-y-10 p-8">
         <div>
           <h1 className="mb-2 text-3xl font-bold tracking-tight text-foreground">

@@ -27,7 +27,7 @@
  * - `'vertex'`       — Demo: Apollo Vertex dark palette
  * - `'canvas'`       — Demo: Apollo React / MUI dark palette
  */
-export type FutureTheme =
+export type Theme =
   | 'dark'
   | 'light'
   | 'dark-hc'

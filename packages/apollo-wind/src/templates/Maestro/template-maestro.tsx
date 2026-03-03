@@ -5,7 +5,7 @@ import { Canvas, Grid, GridItem } from '@/components/custom/grid-maestro';
 import type { MaestroPanelProps } from '@/components/custom/panel-maestro';
 import { MaestroPanel } from '@/components/custom/panel-maestro';
 import { ViewportGuard } from '@/components/custom/viewport-guard';
-import type { FutureTheme } from '@/foundation/Future/types';
+import type { Theme } from '@/foundation/Future/types';
 import { fontFamily } from '@/foundation/Future/typography';
 import { cn } from '@/lib';
 
@@ -27,7 +27,7 @@ const AUTO_COLLAPSE_BREAKPOINT = 1024;
 export interface MaestroTemplateProps {
   className?: string;
   /** Color theme for the template */
-  theme?: FutureTheme;
+  theme?: Theme;
   /** Application title shown in the header */
   title?: string;
   /** Tenant name shown in the header */
@@ -120,11 +120,7 @@ export function MaestroTemplate({
       message="This view is not available at this screen size. Please use a larger viewport."
     >
       <div
-        className={cn(
-          theme,
-          'flex h-screen flex-col bg-surface text-foreground',
-          className
-        )}
+        className={cn(theme, 'flex h-screen flex-col bg-surface text-foreground', className)}
         style={{ fontFamily: fontFamily.base }}
       >
         {/* Global header — menuContent enables the slide-out app-launcher menu */}

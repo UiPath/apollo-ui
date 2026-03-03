@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DataTable,
   DataTableColumnHeader,
@@ -51,10 +52,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import TreeView, {
-  type TreeViewIconMap,
-  type TreeViewItem,
-} from '@/components/ui/tree-view';
 import {
   Select,
   SelectContent,
@@ -62,14 +59,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
+import TreeView, { type TreeViewIconMap, type TreeViewItem } from '@/components/ui/tree-view';
 import { cn } from '@/lib';
-import {
-  AdminPageHeader,
-  AdminSidebar,
-  AdminTemplate,
-  AdminToolbar,
-} from './template-admin';
+import { AdminPageHeader, AdminSidebar, AdminTemplate, AdminToolbar } from './template-admin';
 
 // ============================================================================
 // Demo-only helpers (not exported from template)
@@ -354,7 +346,11 @@ const adminTreeDataExpanded: TreeViewItem[] = [
     id: 'staging',
     name: 'Staging',
     type: 'tenant',
-    badge: <Badge variant="secondary" className="text-xs">Staging</Badge>,
+    badge: (
+      <Badge variant="secondary" className="text-xs">
+        Staging
+      </Badge>
+    ),
   },
   { id: 'tenant', name: 'Tenant', type: 'tenant' },
   {
@@ -371,7 +367,11 @@ const adminTreeDataExpanded: TreeViewItem[] = [
             id: 'workflow-maestro',
             name: 'Maestro',
             type: 'tenant',
-            badge: <Badge variant="secondary" className="text-xs">Canary</Badge>,
+            badge: (
+              <Badge variant="secondary" className="text-xs">
+                Canary
+              </Badge>
+            ),
             meta: 'Production',
             actions: [
               {
@@ -398,7 +398,11 @@ const adminTreeDataExpanded: TreeViewItem[] = [
             id: 'workflow-delegate',
             name: 'Delegate',
             type: 'tenant',
-            badge: <Badge variant="outline" className="text-xs">New</Badge>,
+            badge: (
+              <Badge variant="outline" className="text-xs">
+                New
+              </Badge>
+            ),
           },
           { id: 'workflow-admin', name: 'Admin', type: 'tenant' },
           {
@@ -426,7 +430,11 @@ const adminTreeDataExpanded: TreeViewItem[] = [
             id: 'workflow-svc-flow',
             name: 'Flow',
             type: 'service',
-            badge: <Badge variant="destructive" className="text-xs">Beta</Badge>,
+            badge: (
+              <Badge variant="destructive" className="text-xs">
+                Beta
+              </Badge>
+            ),
           },
           { id: 'workflow-svc-delegate', name: 'Delegate', type: 'service' },
           { id: 'workflow-svc-admin', name: 'Admin', type: 'service' },
@@ -669,18 +677,15 @@ function AdminPageDemo({ theme }: { theme: string }) {
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(15);
 
-  const handleTreeSelectionChange = React.useCallback(
-    (selectedItems: { id: string }[]) => {
-      const first = selectedItems[0];
-      const tenantIds = ['1', '2', '3', '4', '5', '6', 'maestro', 'staging', 'tenant'];
-      if (first && tenantIds.includes(first.id)) {
-        setSelectedTenant(first.id);
-      }
-    },
-    []
-  );
+  const handleTreeSelectionChange = React.useCallback((selectedItems: { id: string }[]) => {
+    const first = selectedItems[0];
+    const tenantIds = ['1', '2', '3', '4', '5', '6', 'maestro', 'staging', 'tenant'];
+    if (first && tenantIds.includes(first.id)) {
+      setSelectedTenant(first.id);
+    }
+  }, []);
 
-  const themeClass = theme || 'future-dark';
+  const themeClass = theme ?? 'future-dark';
 
   const columns: ColumnDef<UserRow>[] = [
     DataTableSelectColumn<UserRow>(),
@@ -697,9 +702,7 @@ function AdminPageDemo({ theme }: { theme: string }) {
     {
       accessorKey: 'email',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
-      cell: ({ row }) => (
-        <span className="text-foreground-muted">{row.original.email || '—'}</span>
-      ),
+      cell: ({ row }) => <span className="text-foreground-muted">{row.original.email || '—'}</span>,
     },
     {
       accessorKey: 'role',
@@ -715,7 +718,11 @@ function AdminPageDemo({ theme }: { theme: string }) {
       cell: () => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="icon" variant="ghost" className="text-foreground-muted hover:bg-surface-hover hover:text-foreground">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="text-foreground-muted hover:bg-surface-hover hover:text-foreground"
+            >
               <MoreHorizontal />
             </Button>
           </DropdownMenuTrigger>
@@ -781,7 +788,10 @@ function AdminPageDemo({ theme }: { theme: string }) {
         onTabChange={setActiveTab}
         actions={
           <>
-            <Button variant="ghost" className="text-foreground-accent hover:bg-transparent hover:text-foreground">
+            <Button
+              variant="ghost"
+              className="text-foreground-accent hover:bg-transparent hover:text-foreground"
+            >
               Check access
             </Button>
             <Button className="bg-brand text-foreground-on-accent hover:bg-brand/90">
@@ -793,7 +803,11 @@ function AdminPageDemo({ theme }: { theme: string }) {
 
       <AdminToolbar
         actions={
-          <Button size="icon" variant="ghost" className="text-foreground-muted hover:bg-surface-hover hover:text-foreground">
+          <Button
+            size="icon"
+            variant="ghost"
+            className="text-foreground-muted hover:bg-surface-hover hover:text-foreground"
+          >
             <RefreshCw />
           </Button>
         }
@@ -843,7 +857,7 @@ export const Blank: Story = {
   name: 'Blank',
   render: (_, { globals }) => (
     <AdminTemplate
-      theme={globals.futureTheme || 'future-dark'}
+      theme={globals.theme || 'future-dark'}
       title="Administration"
       menuContent={<AdminMenuNav />}
       sidebar={
@@ -870,7 +884,10 @@ export const Blank: Story = {
         breadcrumb={['Tenant', 'Page title']}
         actions={
           <>
-            <Button variant="ghost" className="text-foreground-accent hover:bg-transparent hover:text-foreground">
+            <Button
+              variant="ghost"
+              className="text-foreground-accent hover:bg-transparent hover:text-foreground"
+            >
               Secondary action
             </Button>
             <Button className="bg-brand text-foreground-on-accent hover:bg-brand/90">
@@ -886,7 +903,7 @@ export const Blank: Story = {
 export const Landing: Story = {
   name: 'Landing',
   render: (_, { globals }) => {
-    return <AdminPageDemo theme={globals.futureTheme || 'future-dark'} />;
+    return <AdminPageDemo theme={globals.theme || 'future-dark'} />;
   },
 };
 
@@ -1415,7 +1432,7 @@ function DataManagementDemo({ theme }: { theme: string }) {
   const [categoryFilter, setCategoryFilter] = React.useState('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = React.useState(false);
 
-  const themeClass = theme || 'future-dark';
+  const themeClass = theme ?? 'future-dark';
 
   const filteredProducts = React.useMemo(() => {
     let filtered = products;
@@ -1458,9 +1475,7 @@ function DataManagementDemo({ theme }: { theme: string }) {
     {
       accessorKey: 'category',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Category" />,
-      cell: ({ row }) => (
-        <span className="text-foreground-muted">{row.getValue('category')}</span>
-      ),
+      cell: ({ row }) => <span className="text-foreground-muted">{row.getValue('category')}</span>,
     },
     {
       accessorKey: 'price',
@@ -1480,9 +1495,7 @@ function DataManagementDemo({ theme }: { theme: string }) {
       cell: ({ row }) => {
         const stock = row.getValue('stock') as number;
         return (
-          <span
-            className={stock === 0 ? 'font-medium text-red-400' : 'text-foreground-muted'}
-          >
+          <span className={stock === 0 ? 'font-medium text-red-400' : 'text-foreground-muted'}>
             {stock === 0 ? 'Out of stock' : stock}
           </span>
         );
@@ -1510,16 +1523,18 @@ function DataManagementDemo({ theme }: { theme: string }) {
     {
       accessorKey: 'createdAt',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Created" />,
-      cell: ({ row }) => (
-        <span className="text-foreground-muted">{row.getValue('createdAt')}</span>
-      ),
+      cell: ({ row }) => <span className="text-foreground-muted">{row.getValue('createdAt')}</span>,
     },
     {
       id: 'actions',
       cell: () => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="icon" variant="ghost" className="text-foreground-muted hover:bg-surface-hover hover:text-foreground">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="text-foreground-muted hover:bg-surface-hover hover:text-foreground"
+            >
               <MoreHorizontal />
             </Button>
           </DropdownMenuTrigger>
@@ -1548,154 +1563,156 @@ function DataManagementDemo({ theme }: { theme: string }) {
       {/* Page header with actions */}
       <div className="flex items-center justify-between border-b border-border-subtle px-6 py-4">
         <h1 className="text-xl font-semibold text-foreground">Products</h1>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" className="border-border bg-surface text-foreground-muted hover:border-border-hover hover:bg-surface hover:text-foreground">
-              <Upload />
-              Import
-            </Button>
-            <Button variant="outline" className="border-border bg-surface text-foreground-muted hover:border-border-hover hover:bg-surface hover:text-foreground">
-              <Download />
-              Export
-            </Button>
-            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-brand text-foreground-on-accent hover:bg-brand/90">
-                  <Plus />
-                  Add Product
-                </Button>
-              </DialogTrigger>
-              <DialogContent
-                className={cn(
-                  themeClass,
-                  'border-border bg-surface-raised text-foreground'
-                )}
-              >
-                <DialogHeader>
-                  <DialogTitle className="text-foreground">Add New Product</DialogTitle>
-                  <DialogDescription className="text-foreground-muted">
-                    Enter the details for the new product.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="flex flex-col gap-4 py-4">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            className="border-border bg-surface text-foreground-muted hover:border-border-hover hover:bg-surface hover:text-foreground"
+          >
+            <Upload />
+            Import
+          </Button>
+          <Button
+            variant="outline"
+            className="border-border bg-surface text-foreground-muted hover:border-border-hover hover:bg-surface hover:text-foreground"
+          >
+            <Download />
+            Export
+          </Button>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-brand text-foreground-on-accent hover:bg-brand/90">
+                <Plus />
+                Add Product
+              </Button>
+            </DialogTrigger>
+            <DialogContent
+              className={cn(themeClass, 'border-border bg-surface-raised text-foreground')}
+            >
+              <DialogHeader>
+                <DialogTitle className="text-foreground">Add New Product</DialogTitle>
+                <DialogDescription className="text-foreground-muted">
+                  Enter the details for the new product.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex flex-col gap-4 py-4">
+                <div className="flex flex-col gap-2">
+                  <Label className="text-foreground">Product name</Label>
+                  <Input
+                    placeholder="Enter product name"
+                    className="border-border bg-surface-overlay text-foreground placeholder:text-foreground-subtle"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
-                    <Label className="text-foreground">Product name</Label>
+                    <Label className="text-foreground">SKU</Label>
                     <Input
-                      placeholder="Enter product name"
+                      placeholder="XX-000"
                       className="border-border bg-surface-overlay text-foreground placeholder:text-foreground-subtle"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-2">
-                      <Label className="text-foreground">SKU</Label>
-                      <Input
-                        placeholder="XX-000"
-                        className="border-border bg-surface-overlay text-foreground placeholder:text-foreground-subtle"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <Label className="text-foreground">Price</Label>
-                      <Input
-                        type="number"
-                        placeholder="0.00"
-                        className="border-border bg-surface-overlay text-foreground placeholder:text-foreground-subtle"
-                      />
-                    </div>
-                  </div>
                   <div className="flex flex-col gap-2">
-                    <Label className="text-foreground">Category</Label>
-                    <Select>
-                      <SelectTrigger className="border-border bg-surface-overlay text-foreground">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent
-                        className={cn(
-                          themeClass,
-                          'border-border bg-surface-overlay text-foreground'
-                        )}
-                      >
-                        {productCategories.map((cat) => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <Label className="text-foreground">Initial stock</Label>
+                    <Label className="text-foreground">Price</Label>
                     <Input
                       type="number"
-                      placeholder="0"
+                      placeholder="0.00"
                       className="border-border bg-surface-overlay text-foreground placeholder:text-foreground-subtle"
                     />
                   </div>
                 </div>
-                <DialogFooter>
-                  <Button
-                    variant="outline"
-                    className="border-border bg-surface text-foreground-muted hover:border-border-hover hover:bg-surface hover:text-foreground"
-                    onClick={() => setIsCreateDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    className="bg-brand text-foreground-on-accent hover:bg-brand/90"
-                    onClick={() => setIsCreateDialogOpen(false)}
-                  >
-                    Create product
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
+                <div className="flex flex-col gap-2">
+                  <Label className="text-foreground">Category</Label>
+                  <Select>
+                    <SelectTrigger className="border-border bg-surface-overlay text-foreground">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent
+                      className={cn(themeClass, 'border-border bg-surface-overlay text-foreground')}
+                    >
+                      {productCategories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label className="text-foreground">Initial stock</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    className="border-border bg-surface-overlay text-foreground placeholder:text-foreground-subtle"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  className="border-border bg-surface text-foreground-muted hover:border-border-hover hover:bg-surface hover:text-foreground"
+                  onClick={() => setIsCreateDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-brand text-foreground-on-accent hover:bg-brand/90"
+                  onClick={() => setIsCreateDialogOpen(false)}
+                >
+                  Create product
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {/* Tabs + filter bar */}
+      <div className="flex items-center justify-between border-b border-border-subtle px-6 py-3">
+        <div className="flex gap-1">
+          {statusTabs.map((tab) => (
+            <button
+              type="button"
+              key={tab.value}
+              className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                activeTab === tab.value
+                  ? 'bg-surface-hover text-foreground'
+                  : 'text-foreground-muted hover:text-foreground'
+              }`}
+              onClick={() => setActiveTab(tab.value)}
+            >
+              {tab.label}
+              <span className="rounded-full bg-surface-overlay px-1.5 py-0.5 text-xs">
+                {tab.count}
+              </span>
+            </button>
+          ))}
         </div>
 
-        {/* Tabs + filter bar */}
-        <div className="flex items-center justify-between border-b border-border-subtle px-6 py-3">
-          <div className="flex gap-1">
-            {statusTabs.map((tab) => (
-              <button
-                key={tab.value}
-                className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                  activeTab === tab.value
-                    ? 'bg-surface-hover text-foreground'
-                    : 'text-foreground-muted hover:text-foreground'
-                }`}
-                onClick={() => setActiveTab(tab.value)}
-              >
-                {tab.label}
-                <span className="rounded-full bg-surface-overlay px-1.5 py-0.5 text-xs">
-                  {tab.count}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="h-9 w-[150px] border-border bg-surface-overlay text-sm text-foreground">
-                <Filter className="mr-2 h-4 w-4 text-foreground-muted" />
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent
-                className={cn(
-                  themeClass,
-                  'border-border bg-surface-overlay text-foreground'
-                )}
-              >
-                <SelectItem value="all">All categories</SelectItem>
-                {productCategories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button size="icon" variant="outline" className="border-border text-foreground-muted hover:border-border-hover hover:bg-transparent hover:text-foreground">
-              <RefreshCw />
-            </Button>
-          </div>
+        <div className="flex items-center gap-2">
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="h-9 w-[150px] border-border bg-surface-overlay text-sm text-foreground">
+              <Filter className="mr-2 h-4 w-4 text-foreground-muted" />
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent
+              className={cn(themeClass, 'border-border bg-surface-overlay text-foreground')}
+            >
+              <SelectItem value="all">All categories</SelectItem>
+              {productCategories.map((cat) => (
+                <SelectItem key={cat} value={cat}>
+                  {cat}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            size="icon"
+            variant="outline"
+            className="border-border text-foreground-muted hover:border-border-hover hover:bg-transparent hover:text-foreground"
+          >
+            <RefreshCw />
+          </Button>
         </div>
+      </div>
 
       {/* Table */}
       <div className="flex-1 overflow-auto px-6 pt-4">
@@ -1717,7 +1734,7 @@ function DataManagementDemo({ theme }: { theme: string }) {
 export const DataManagement: Story = {
   name: 'Data Management',
   render: (_, { globals }) => {
-    return <DataManagementDemo theme={globals.futureTheme || 'future-dark'} />;
+    return <DataManagementDemo theme={globals.theme || 'future-dark'} />;
   },
 };
 
@@ -1730,7 +1747,6 @@ import { SettingsAdmin } from './settings-admin';
 export const Settings: Story = {
   name: 'Settings',
   render: (_, { globals }) => {
-    return <SettingsAdmin theme={globals.futureTheme || 'future-dark'} menuContent={<AdminMenuNav />} />;
+    return <SettingsAdmin theme={globals.theme || 'future-dark'} menuContent={<AdminMenuNav />} />;
   },
 };
-

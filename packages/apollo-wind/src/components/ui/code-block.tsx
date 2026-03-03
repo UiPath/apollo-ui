@@ -11,9 +11,8 @@ import {
   vs,
   vscDarkPlus,
 } from 'react-syntax-highlighter/dist/esm/styles/prism';
-
-import { cn } from '@/lib';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib';
 
 // ============================================================================
 // Types
@@ -22,9 +21,9 @@ import { Button } from '@/components/ui/button';
 /**
  * All Apollo theme variants supported by CodeBlock.
  *
- * Standard:
- * - `'dark'` / `'light'`               — Apollo dark / light
- * - `'dark-hc'` / `'light-hc'`         — high-contrast variants
+ * Standard (apollo-core):
+ * - `'dark'` / `'light'`               — Default dark / light
+ * - `'dark-hc'` / `'light-hc'`         — High contrast variants
  *
  * Future / Demo themes:
  * - `'future-dark'` / `'future-light'`  — Future zinc palette, cyan brand
@@ -38,13 +37,13 @@ import { Button } from '@/components/ui/button';
 export type CodeBlockTheme =
   | 'dark'
   | 'light'
+  | 'dark-hc'
+  | 'light-hc'
   | 'future-dark'
   | 'future-light'
   | 'wireframe'
   | 'vertex'
-  | 'canvas'
-  | 'dark-hc'
-  | 'light-hc';
+  | 'canvas';
 
 export interface CodeBlockProps {
   /** The code string to display */
@@ -82,23 +81,23 @@ interface ThemeConfig {
 }
 
 const THEME_CONFIG: Record<CodeBlockTheme, ThemeConfig> = {
-  // ── Standard Apollo dark ─────────────────────────────────────────────────
+  // ── Dark — Nord for the apollo-core blue-grey palette ────────────────────
   dark: {
-    prismStyle: oneDark,
-    bg: '#282c34',
-    headerBg: '#21252b',
-    labelColor: '#abb2bf',
-    iconColor: '#9da5b4',
-    lineNumberColor: '#495162',
+    prismStyle: nord,
+    bg: '#182027',
+    headerBg: '#111920',
+    labelColor: '#8ea1b1',
+    iconColor: '#6b8899',
+    lineNumberColor: '#2e3f4c',
   },
-  // ── Standard Apollo light ────────────────────────────────────────────────
+  // ── Light — VS Code Light on a clean white surface ───────────────────────
   light: {
-    prismStyle: oneLight,
-    bg: '#fafafa',
-    headerBg: '#f0f0f0',
-    labelColor: '#6b7280',
-    iconColor: '#9ca3af',
-    lineNumberColor: '#c0c0c0',
+    prismStyle: vs,
+    bg: '#ffffff',
+    headerBg: '#f0f4f8',
+    labelColor: '#374151',
+    iconColor: '#6b7280',
+    lineNumberColor: '#c8d4de',
   },
   // ── Future dark — VS Code Dark+ for a modern zinc feel ───────────────────
   'future-dark': {
@@ -176,18 +175,20 @@ const BODY_CLASS_PRIORITY: CodeBlockTheme[] = [
   'future-light',
   'dark-hc',
   'light-hc',
+  'dark',
+  'light',
   'wireframe',
   'vertex',
   'canvas',
-  'dark',
-  'light',
 ];
 
 function getBodyTheme(): CodeBlockTheme {
   if (typeof document === 'undefined') return 'dark';
   const bodyClasses = document.body.classList;
   const htmlClasses = document.documentElement.classList;
-  return BODY_CLASS_PRIORITY.find((t) => bodyClasses.contains(t) || htmlClasses.contains(t)) ?? 'dark';
+  return (
+    BODY_CLASS_PRIORITY.find((t) => bodyClasses.contains(t) || htmlClasses.contains(t)) ?? 'future-dark'
+  );
 }
 
 function useApolloTheme(): CodeBlockTheme {

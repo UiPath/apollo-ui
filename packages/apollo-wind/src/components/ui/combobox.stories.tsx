@@ -129,7 +129,7 @@ function MultiSelectCombobox() {
             return (
               <Badge key={val} variant="secondary" className="gap-1">
                 {item?.label}
-                <button onClick={() => remove(val)} className="ml-0.5 rounded-full hover:bg-muted">
+                <button type="button" onClick={() => remove(val)} className="ml-0.5 rounded-full hover:bg-muted">
                   <X className="h-3 w-3" />
                 </button>
               </Badge>

@@ -1,11 +1,7 @@
-import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { LiveProvider, LivePreview, LiveError } from 'react-live';
+import * as React from 'react';
+import { LiveError, LivePreview, LiveProvider } from 'react-live';
 import './ideas-experiments.css';
-import {
-  AnimatedGradientIcon,
-  AnimatedGradientText,
-} from './ideas-AnimatedGradientText';
 import {
   AlertCircle,
   ChevronLeft,
@@ -18,26 +14,29 @@ import {
   Loader2,
   MessageSquare,
   Minus,
-  RotateCcw,
   Settings,
   Trash2,
   User,
   Workflow,
   X,
 } from 'lucide-react';
-import { cn } from '@/lib';
-import { fontFamily } from '@/foundation/Future/typography';
-import type { FutureTheme } from '@/foundation/Future/types';
-
-import { Button } from '@/components/ui/button';
+import { MaestroPanel } from '@/components/custom/panel-maestro';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import {
   Table,
@@ -47,20 +46,22 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-
-// Template components — available to the LLM via liveScope
-import { MaestroTemplate, Canvas, Grid, GridItem } from '../Maestro/template-maestro';
-import { MaestroPanel } from '@/components/custom/panel-maestro';
-import { FlowTemplate } from '../Flow/template-flow';
-import { DelegateTemplate } from '../Delegate/template-delegate';
+import type { Theme } from '@/foundation/Future/types';
+import { fontFamily } from '@/foundation/Future/typography';
+import { cn } from '@/lib';
 import {
-  AdminTemplate,
+  AdminPageHeader,
   AdminSidebar,
   AdminSidebarHeader,
   AdminSidebarNav,
-  AdminPageHeader,
+  AdminTemplate,
   AdminToolbar,
 } from '../Admin/template-admin';
+import { DelegateTemplate } from '../Delegate/template-delegate';
+import { FlowTemplate } from '../Flow/template-flow';
+// Template components — available to the LLM via liveScope
+import { Canvas, Grid, GridItem, MaestroTemplate } from '../Maestro/template-maestro';
+import { AnimatedGradientIcon, AnimatedGradientText } from './ideas-AnimatedGradientText';
 
 // ============================================================================
 // Meta
@@ -97,20 +98,41 @@ const baseLiveScope = {
   // UI components
   Button,
   Badge,
-  Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
   Input,
   Label,
   Separator,
   ScrollArea,
-  Avatar, AvatarFallback, AvatarImage,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
   Progress,
   Switch,
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
   // Templates & layout primitives
-  MaestroTemplate, Canvas, Grid, GridItem, MaestroPanel,
+  MaestroTemplate,
+  Canvas,
+  Grid,
+  GridItem,
+  MaestroPanel,
   FlowTemplate,
   DelegateTemplate,
-  AdminTemplate, AdminSidebar, AdminSidebarHeader, AdminSidebarNav, AdminPageHeader, AdminToolbar,
+  AdminTemplate,
+  AdminSidebar,
+  AdminSidebarHeader,
+  AdminSidebarNav,
+  AdminPageHeader,
+  AdminToolbar,
 };
 
 // ============================================================================
@@ -251,7 +273,7 @@ Rules:
 
 async function callClaude(
   messages: { role: 'user' | 'assistant'; content: string }[],
-  systemPrompt: string,
+  systemPrompt: string
 ): Promise<string> {
   const res = await fetch(ANTHROPIC_API_URL, {
     method: 'POST',
@@ -288,8 +310,8 @@ async function callClaude(
 // Helpers
 // ============================================================================
 
-function resolveThemeClass(theme: FutureTheme) {
-  return theme || 'future-dark';
+function resolveThemeClass(theme: Theme) {
+  return theme ?? 'future-dark';
 }
 
 // ============================================================================
@@ -334,16 +356,46 @@ const TEMPLATE_SUGGESTIONS: Record<TemplateChoice, string[]> = {
   ],
 };
 
-const TEMPLATE_OPTIONS: { value: TemplateChoice; label: string; description: string; icon: React.ReactNode }[] = [
-  { value: 'maestro', label: 'Maestro', description: 'Dashboard with panels & grid', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { value: 'admin', label: 'Admin', description: 'Sidebar, header & data tables', icon: <Settings className="h-4 w-4" /> },
-  { value: 'flow', label: 'Flow', description: 'Workflow editor with canvas', icon: <Workflow className="h-4 w-4" /> },
-  { value: 'delegate', label: 'Delegate', description: 'Agent chat with nav panel', icon: <MessageSquare className="h-4 w-4" /> },
-  { value: 'freeform', label: 'Freeform', description: 'No template — raw components', icon: <Lightbulb className="h-4 w-4" /> },
+const TEMPLATE_OPTIONS: {
+  value: TemplateChoice;
+  label: string;
+  description: string;
+  icon: React.ReactNode;
+}[] = [
+  {
+    value: 'maestro',
+    label: 'Maestro',
+    description: 'Dashboard with panels & grid',
+    icon: <LayoutDashboard className="h-4 w-4" />,
+  },
+  {
+    value: 'admin',
+    label: 'Admin',
+    description: 'Sidebar, header & data tables',
+    icon: <Settings className="h-4 w-4" />,
+  },
+  {
+    value: 'flow',
+    label: 'Flow',
+    description: 'Workflow editor with canvas',
+    icon: <Workflow className="h-4 w-4" />,
+  },
+  {
+    value: 'delegate',
+    label: 'Delegate',
+    description: 'Agent chat with nav panel',
+    icon: <MessageSquare className="h-4 w-4" />,
+  },
+  {
+    value: 'freeform',
+    label: 'Freeform',
+    description: 'No template — raw components',
+    icon: <Lightbulb className="h-4 w-4" />,
+  },
 ];
 
 interface FloatingChatProps {
-  globalTheme: FutureTheme;
+  globalTheme: Theme;
   onCodeGenerated: (code: string) => void;
   onGeneratingChange: (generating: boolean) => void;
   isGenerating: boolean;
@@ -503,7 +555,11 @@ function FloatingChat({
       >
         <div className="flex items-center gap-2 rounded-full border border-border bg-surface-raised px-3 py-2.5 shadow-lg transition-all hover:bg-surface-hover">
           <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab text-foreground-subtle active:cursor-grabbing" />
-          <button onClick={() => setIsCollapsed(false)} className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsCollapsed(false)}
+            className="flex items-center gap-2"
+          >
             <AnimatedGradientIcon className="h-4 w-4" />
             <span className="text-sm font-medium text-foreground">Ideas</span>
             {messages.length > 0 && (
@@ -543,6 +599,7 @@ function FloatingChat({
         <div className="flex items-center gap-0.5">
           {(isSetupComplete || messages.length > 0) && (
             <button
+              type="button"
               onClick={handleReset}
               className="flex h-6 w-6 items-center justify-center rounded-md text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
               aria-label="Reset"
@@ -551,6 +608,7 @@ function FloatingChat({
             </button>
           )}
           <button
+            type="button"
             onClick={() => setIsCollapsed(true)}
             className="flex h-6 w-6 items-center justify-center rounded-md text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
             aria-label="Collapse chat"
@@ -564,6 +622,7 @@ function FloatingChat({
       <div className="flex h-8 shrink-0 items-center gap-2 border-b border-border-subtle bg-surface-overlay/50 px-3">
         {!isSetupComplete && setupStep === 'template' && (
           <button
+            type="button"
             onClick={() => setPersona(null)}
             className="flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] text-foreground-subtle transition-colors hover:bg-surface-hover hover:text-foreground-muted"
           >
@@ -582,6 +641,7 @@ function FloatingChat({
         )}
         {persona && (
           <button
+            type="button"
             onClick={() => setPersona(null)}
             className="flex items-center gap-1 rounded-md bg-brand/10 px-2 py-0.5 text-[10px] font-medium text-foreground-accent transition-colors hover:bg-brand/20"
           >
@@ -593,6 +653,7 @@ function FloatingChat({
           <>
             <span className="text-foreground-subtle">·</span>
             <button
+              type="button"
               onClick={() => setSelectedTemplate(null)}
               className="flex items-center gap-1 rounded-md bg-brand/10 px-2 py-0.5 text-[10px] font-medium text-foreground-accent transition-colors hover:bg-brand/20"
             >
@@ -621,6 +682,7 @@ function FloatingChat({
                 <div className="mt-1 grid w-full grid-cols-2 gap-1.5">
                   {PERSONAS.map((p) => (
                     <button
+                      type="button"
                       key={p}
                       onClick={() => setPersona(p)}
                       className="rounded-lg border border-border-subtle px-3 py-1.5 text-[12px] font-normal text-foreground-muted transition-colors hover:border-brand hover:bg-brand/10 hover:text-foreground"
@@ -644,6 +706,7 @@ function FloatingChat({
                 <div className="mt-1 flex w-full flex-col gap-1.5">
                   {TEMPLATE_OPTIONS.map((t) => (
                     <button
+                      type="button"
                       key={t.value}
                       onClick={() => setSelectedTemplate(t.value)}
                       className="flex items-center gap-2.5 rounded-lg border border-border-subtle px-3 py-2 text-left transition-colors hover:border-brand hover:bg-brand/10"
@@ -653,7 +716,9 @@ function FloatingChat({
                       </span>
                       <div className="min-w-0">
                         <p className="text-[12px] font-medium text-foreground">{t.label}</p>
-                        <p className="text-[10px] leading-tight text-foreground-subtle">{t.description}</p>
+                        <p className="text-[10px] leading-tight text-foreground-subtle">
+                          {t.description}
+                        </p>
                       </div>
                     </button>
                   ))}
@@ -667,9 +732,7 @@ function FloatingChat({
               <Lightbulb className="h-5 w-5 text-foreground-accent" />
             </div>
             <div>
-              <p className="text-sm font-medium text-foreground">
-                What would you like to build?
-              </p>
+              <p className="text-sm font-medium text-foreground">What would you like to build?</p>
               <p className="mt-1 text-[11px] leading-4 text-foreground-muted">
                 Describe a layout and I'll generate it on the canvas.
               </p>
@@ -677,6 +740,7 @@ function FloatingChat({
             <div className="mt-2 flex w-full flex-col gap-1.5">
               {(TEMPLATE_SUGGESTIONS[selectedTemplate ?? 'freeform'] ?? []).map((suggestion) => (
                 <button
+                  type="button"
                   key={suggestion}
                   onClick={() => setInputValue(suggestion)}
                   className="w-full rounded-lg border border-border-subtle px-3 py-2 text-left text-[11px] text-foreground-muted transition-colors hover:border-border hover:bg-surface-hover hover:text-foreground"
@@ -721,10 +785,12 @@ function FloatingChat({
       )}
 
       {/* Input area */}
-      <div className={cn(
-        'shrink-0 border-t border-border-subtle p-2',
-        (!isSetupComplete || isGenerating) && 'pointer-events-none opacity-40'
-      )}>
+      <div
+        className={cn(
+          'shrink-0 border-t border-border-subtle p-2',
+          (!isSetupComplete || isGenerating) && 'pointer-events-none opacity-40'
+        )}
+      >
         <div className="flex items-end gap-1.5 rounded-xl bg-surface-overlay px-3 py-2">
           <textarea
             value={inputValue}
@@ -736,6 +802,7 @@ function FloatingChat({
             className="max-h-16 flex-1 resize-none bg-transparent text-xs leading-relaxed text-foreground placeholder:text-foreground-subtle focus:outline-none disabled:cursor-not-allowed"
           />
           <button
+            type="button"
             onClick={handleSubmit}
             disabled={!inputValue.trim() || !isSetupComplete || isGenerating}
             className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-brand transition-opacity hover:opacity-90 disabled:opacity-30"
@@ -754,7 +821,7 @@ function FloatingChat({
 // ============================================================================
 
 interface IdeasCanvasProps {
-  theme: FutureTheme;
+  theme: Theme;
   generatedCode: string;
   isGenerating: boolean;
 }
@@ -762,10 +829,7 @@ interface IdeasCanvasProps {
 function IdeasCanvas({ theme, generatedCode, isGenerating }: IdeasCanvasProps) {
   const themeClass = resolveThemeClass(theme);
 
-  const liveScope = React.useMemo(
-    () => ({ ...baseLiveScope, currentTheme: theme }),
-    [theme]
-  );
+  const liveScope = React.useMemo(() => ({ ...baseLiveScope, currentTheme: theme }), [theme]);
 
   // Empty state
   if (!generatedCode && !isGenerating) {
@@ -833,7 +897,7 @@ function IdeasCanvas({ theme, generatedCode, isGenerating }: IdeasCanvasProps) {
 // ============================================================================
 
 function IdeasPage({ globalTheme }: { globalTheme: string }) {
-  const theme = (globalTheme || 'future-dark') as FutureTheme;
+  const theme: Theme = (globalTheme as Theme) ?? 'future-dark';
 
   const [generatedCode, setGeneratedCode] = React.useState('');
   const [isGenerating, setIsGenerating] = React.useState(false);
@@ -873,6 +937,7 @@ function IdeasPage({ globalTheme }: { globalTheme: string }) {
           {generatedCode ? (
             <>
               <button
+                type="button"
                 onClick={handleCopy}
                 className="flex h-7 items-center gap-1.5 rounded-lg border border-border px-2.5 text-[11px] font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground"
               >
@@ -889,6 +954,7 @@ function IdeasPage({ globalTheme }: { globalTheme: string }) {
                 )}
               </button>
               <button
+                type="button"
                 onClick={handleClear}
                 className="flex h-7 items-center gap-1.5 rounded-lg border border-border px-2.5 text-[11px] font-medium text-foreground-muted transition-colors hover:border-red-500/50 hover:text-red-400"
               >
@@ -906,11 +972,7 @@ function IdeasPage({ globalTheme }: { globalTheme: string }) {
 
       {/* Canvas area */}
       <div className="relative flex-1 overflow-hidden">
-        <IdeasCanvas
-          theme={theme}
-          generatedCode={generatedCode}
-          isGenerating={isGenerating}
-        />
+        <IdeasCanvas theme={theme} generatedCode={generatedCode} isGenerating={isGenerating} />
       </div>
 
       {/* Floating chat widget */}
@@ -931,7 +993,5 @@ function IdeasPage({ globalTheme }: { globalTheme: string }) {
 
 export const Default: Story = {
   name: 'Ideas',
-  render: (_, { globals }) => (
-    <IdeasPage globalTheme={globals.futureTheme || 'future-dark'} />
-  ),
+  render: (_, { globals }) => <IdeasPage globalTheme={globals.theme || 'future-dark'} />,
 };

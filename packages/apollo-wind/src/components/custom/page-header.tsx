@@ -73,9 +73,7 @@ export function PageHeader({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-foreground">{title}</h1>
-          {description && (
-            <p className="mt-0.5 text-sm text-foreground-muted">{description}</p>
-          )}
+          {description && <p className="mt-0.5 text-sm text-foreground-muted">{description}</p>}
         </div>
         {actions && <div className="flex items-center gap-2">{actions}</div>}
       </div>
@@ -83,6 +81,7 @@ export function PageHeader({
         <div className="mt-4 flex gap-1">
           {tabs.map((tab) => (
             <button
+              type="button"
               key={tab.value}
               className={cn(
                 'px-4 pb-2 pt-1 text-sm font-medium transition-colors',

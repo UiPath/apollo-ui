@@ -32,6 +32,7 @@ function LeftPanelNav() {
       <div className="flex flex-col gap-1">
         {['Button', 'Button', 'Button', 'Button', 'Button'].map((label, i) => (
           <button
+            type="button"
             key={i}
             className="flex h-9 items-center rounded-lg px-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
           >
@@ -56,6 +57,7 @@ function MenuNav() {
       <div className="flex flex-col gap-1">
         {['Button', 'Button', 'Button', 'Button', 'Button'].map((label, i) => (
           <button
+            type="button"
             key={i}
             className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
           >
@@ -71,6 +73,7 @@ function MenuNav() {
       {/* More — expand / collapse */}
       <div className="flex flex-col gap-1">
         <button
+          type="button"
           className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
           onClick={() => setMoreOpen((prev) => !prev)}
           aria-expanded={moreOpen}
@@ -85,6 +88,7 @@ function MenuNav() {
           <div className="flex flex-col gap-1 pl-2">
             {['Button', 'Button', 'Button', 'Button', 'Button'].map((label, i) => (
               <button
+                type="button"
                 key={i}
                 className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
               >
@@ -134,7 +138,10 @@ function RightPanelCard({
       <h3 className="text-sm font-semibold text-foreground">{title}</h3>
       <p className="text-sm leading-5 text-foreground-muted">{description}</p>
       {actionLabel && (
-        <button className="flex h-9 w-fit items-center rounded-lg border border-border px-4 text-sm font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground">
+        <button
+          type="button"
+          className="flex h-9 w-fit items-center rounded-lg border border-border px-4 text-sm font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground"
+        >
           {actionLabel}
         </button>
       )}
@@ -159,7 +166,10 @@ function SectionHeader({ title }: { title: string }) {
   return (
     <div className="flex items-center justify-between">
       <h2 className="text-xl font-semibold text-foreground">{title}</h2>
-      <button className="text-sm font-medium text-foreground-muted transition-colors hover:text-foreground">
+      <button
+        type="button"
+        className="text-sm font-medium text-foreground-muted transition-colors hover:text-foreground"
+      >
         View All
       </button>
     </div>
@@ -244,7 +254,10 @@ function FeaturedCard({
           <h3 className="text-lg font-semibold text-foreground">{title}</h3>
           <p className="text-sm leading-5 text-foreground-muted">{description}</p>
           <div className="mt-1 flex justify-end">
-            <button className="flex h-9 items-center rounded-lg border border-border px-4 text-sm font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground">
+            <button
+              type="button"
+              className="flex h-9 items-center rounded-lg border border-border px-4 text-sm font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground"
+            >
               {actionLabel}
             </button>
           </div>
@@ -269,7 +282,10 @@ function SimpleCard({
       <h3 className="text-lg font-semibold text-foreground">{title}</h3>
       <p className="text-sm leading-5 text-foreground-muted">{description}</p>
       <div className="mt-1 flex justify-end">
-        <button className="flex h-9 items-center rounded-lg border border-border px-4 text-sm font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground">
+        <button
+          type="button"
+          className="flex h-9 items-center rounded-lg border border-border px-4 text-sm font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground"
+        >
           {actionLabel}
         </button>
       </div>
@@ -392,9 +408,7 @@ const sampleTableColumns: ColumnDef<TableRow, unknown>[] = [
   {
     accessorKey: 'owner',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Owner" />,
-    cell: ({ row }) => (
-      <span className="text-foreground-muted">{row.getValue('owner')}</span>
-    ),
+    cell: ({ row }) => <span className="text-foreground-muted">{row.getValue('owner')}</span>,
   },
 ];
 
@@ -471,7 +485,7 @@ export const Blank: Story = {
   name: 'Blank',
   render: (_, { globals }) => (
     <MaestroTemplate
-      theme={globals.futureTheme || 'future-dark'}
+      theme={globals.theme || 'future-dark'}
       leftPanelContent={null}
       menuContent={<MenuNav />}
       rightPanelContent={null}
@@ -483,7 +497,7 @@ export const Landing: Story = {
   name: 'Landing',
   render: (_, { globals }) => (
     <MaestroTemplate
-      theme={globals.futureTheme || 'future-dark'}
+      theme={globals.theme || 'future-dark'}
       leftPanelContent={<LeftPanelNav />}
       menuContent={<MenuNav />}
       rightPanelContent={<RightPanelContent />}
@@ -647,9 +661,7 @@ const transactionColumns: ColumnDef<TransactionRow, unknown>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Customer" />,
     cell: ({ row }) => (
       <div className="flex flex-col">
-        <span className="text-sm font-medium text-foreground">
-          {row.getValue('customer')}
-        </span>
+        <span className="text-sm font-medium text-foreground">{row.getValue('customer')}</span>
         <span className="text-xs text-foreground-muted">{row.original.email}</span>
       </div>
     ),
@@ -687,9 +699,7 @@ const transactionColumns: ColumnDef<TransactionRow, unknown>[] = [
         Failed: 'text-red-400',
       };
       return (
-        <span className={`text-sm ${colors[status] ?? 'text-foreground-muted'}`}>
-          {status}
-        </span>
+        <span className={`text-sm ${colors[status] ?? 'text-foreground-muted'}`}>{status}</span>
       );
     },
   },
@@ -738,6 +748,7 @@ function DashboardContent() {
       <div className="flex gap-1 border-b border-border-subtle">
         {dashboardTabs.map((tab) => (
           <button
+            type="button"
             key={tab}
             className={`px-4 pb-3 text-sm font-medium transition-colors ${
               activeTab === tab
@@ -761,9 +772,7 @@ function DashboardContent() {
                 className="flex flex-col gap-2 rounded-xl border border-border-subtle bg-surface p-6"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-foreground-muted">
-                    {stat.title}
-                  </span>
+                  <span className="text-sm font-medium text-foreground-muted">{stat.title}</span>
                   <span className="text-foreground-subtle">{stat.icon}</span>
                 </div>
                 <span className="text-2xl font-bold text-foreground">{stat.value}</span>
@@ -776,7 +785,10 @@ function DashboardContent() {
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-foreground">Recent Transactions</h2>
-              <button className="flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground">
+              <button
+                type="button"
+                className="flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground"
+              >
                 <Download className="h-4 w-4" />
                 Export
               </button>
@@ -800,7 +812,10 @@ function DashboardContent() {
             <div className="flex flex-col rounded-xl border border-border-subtle bg-surface">
               <div className="flex items-center justify-between border-b border-border-subtle px-6 py-4">
                 <h3 className="text-base font-semibold text-foreground">Recent Activity</h3>
-                <button className="text-sm font-medium text-foreground-muted transition-colors hover:text-foreground">
+                <button
+                  type="button"
+                  className="text-sm font-medium text-foreground-muted transition-colors hover:text-foreground"
+                >
                   View all
                 </button>
               </div>
@@ -814,9 +829,7 @@ function DashboardContent() {
                       {item.initials}
                     </div>
                     <div className="flex flex-1 flex-col">
-                      <span className="text-sm font-medium text-foreground">
-                        {item.name}
-                      </span>
+                      <span className="text-sm font-medium text-foreground">{item.name}</span>
                       <span className="text-xs text-foreground-muted">{item.action}</span>
                     </div>
                     <span className="text-xs text-foreground-subtle">{item.time}</span>
@@ -829,7 +842,10 @@ function DashboardContent() {
             <div className="flex flex-col rounded-xl border border-border-subtle bg-surface">
               <div className="flex items-center justify-between border-b border-border-subtle px-6 py-4">
                 <h3 className="text-base font-semibold text-foreground">Monthly Goals</h3>
-                <button className="text-sm font-medium text-foreground-muted transition-colors hover:text-foreground">
+                <button
+                  type="button"
+                  className="text-sm font-medium text-foreground-muted transition-colors hover:text-foreground"
+                >
                   View all
                 </button>
               </div>
@@ -845,17 +861,12 @@ function DashboardContent() {
                   return (
                     <div key={goal.label} className="flex flex-col gap-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-foreground">
-                          {goal.label}
-                        </span>
+                        <span className="text-sm font-medium text-foreground">{goal.label}</span>
                         <span className="text-xs text-foreground-muted">
                           {fmt(goal.current)} / {fmt(goal.target)}
                         </span>
                       </div>
-                      <Progress
-                        value={pct}
-                        className="h-2 bg-surface-overlay [&>div]:bg-brand"
-                      />
+                      <Progress value={pct} className="h-2 bg-surface-overlay [&>div]:bg-brand" />
                     </div>
                   );
                 })}
@@ -876,7 +887,7 @@ export const Dashboard: Story = {
   name: 'Dashboard',
   render: (_, { globals }) => (
     <MaestroTemplate
-      theme={globals.futureTheme || 'future-dark'}
+      theme={globals.theme || 'future-dark'}
       defaultLeftPanelCollapsed
       defaultRightPanelCollapsed
       leftPanelContent={<LeftPanelNav />}
@@ -887,4 +898,3 @@ export const Dashboard: Story = {
     </MaestroTemplate>
   ),
 };
-

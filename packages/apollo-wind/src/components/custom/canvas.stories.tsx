@@ -14,7 +14,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: () => (
-    <div className="future-dark flex h-[500px]">
+    <div className="flex h-[500px]">
       <Canvas>
         <div className="flex flex-1 items-center justify-center text-sm text-foreground-muted">
           Canvas content area — used as the main content surface in Delegate and Flow templates.

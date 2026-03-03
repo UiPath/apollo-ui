@@ -21,6 +21,7 @@ function SampleMenuNav() {
       <div className="flex flex-col gap-1">
         {['Home', 'Projects', 'Tasks', 'Settings', 'Reports'].map((label, i) => (
           <button
+            type="button"
             key={i}
             className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground first:bg-surface-hover first:text-foreground"
           >
@@ -32,6 +33,7 @@ function SampleMenuNav() {
       <div className="my-2 border-t border-border-subtle" />
       <div className="flex flex-col gap-1">
         <button
+          type="button"
           className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
           onClick={() => setMoreOpen((prev) => !prev)}
         >
@@ -44,6 +46,7 @@ function SampleMenuNav() {
           <div className="flex flex-col gap-1 pl-2">
             {['Analytics', 'Integrations', 'API Keys', 'Audit Log', 'Help'].map((label, i) => (
               <button
+                type="button"
                 key={i}
                 className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
               >
@@ -60,7 +63,7 @@ function SampleMenuNav() {
 
 export const Dark: Story = {
   render: () => (
-    <div className="future-dark bg-surface">
+    <div className="bg-surface">
       <MaestroHeader
         theme="dark"
         title="Autopilot"
@@ -73,7 +76,7 @@ export const Dark: Story = {
 
 export const Light: Story = {
   render: () => (
-    <div className="future-light bg-surface">
+    <div className="bg-surface">
       <MaestroHeader
         theme="light"
         title="Autopilot"

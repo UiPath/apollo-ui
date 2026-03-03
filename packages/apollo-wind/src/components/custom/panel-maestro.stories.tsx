@@ -18,6 +18,7 @@ function SampleNav() {
     <nav className="flex flex-col gap-1 px-2 pt-2">
       {['Dashboard', 'Projects', 'Tasks', 'Settings', 'Reports'].map((label, i) => (
         <button
+          type="button"
           key={i}
           className="flex h-9 items-center rounded-lg px-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground first:bg-surface-hover first:text-foreground"
         >
@@ -31,7 +32,7 @@ function SampleNav() {
 function PanelDemo({ side }: { side: 'left' | 'right' }) {
   const [collapsed, setCollapsed] = React.useState(false);
   return (
-    <div className="future-dark flex h-[500px] bg-surface-raised">
+    <div className="flex h-[500px] bg-surface-raised">
       {side === 'left' && (
         <MaestroPanel side="left" isCollapsed={collapsed} onToggle={() => setCollapsed(!collapsed)}>
           <SampleNav />
@@ -41,7 +42,11 @@ function PanelDemo({ side }: { side: 'left' | 'right' }) {
         Content area
       </div>
       {side === 'right' && (
-        <MaestroPanel side="right" isCollapsed={collapsed} onToggle={() => setCollapsed(!collapsed)}>
+        <MaestroPanel
+          side="right"
+          isCollapsed={collapsed}
+          onToggle={() => setCollapsed(!collapsed)}
+        >
           <div className="p-4 text-sm text-foreground-muted">Right panel content</div>
         </MaestroPanel>
       )}
@@ -50,9 +55,11 @@ function PanelDemo({ side }: { side: 'left' | 'right' }) {
 }
 
 export const LeftPanel: Story = {
-  render: () => <PanelDemo side="left" />,
+  args: { side: 'left' },
+  render: (args) => <PanelDemo {...args} />,
 };
 
 export const RightPanel: Story = {
-  render: () => <PanelDemo side="right" />,
+  args: { side: 'right' },
+  render: (args) => <PanelDemo {...args} />,
 };

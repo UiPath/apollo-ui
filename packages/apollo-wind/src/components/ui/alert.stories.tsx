@@ -123,6 +123,7 @@ export const DismissibleAlert = {
             <AlertTitle>{alert.title}</AlertTitle>
             <AlertDescription>{alert.description}</AlertDescription>
             <button
+              type="button"
               className="absolute right-3 top-3 rounded-md p-1 text-foreground/50 opacity-70 transition-opacity hover:opacity-100"
               onClick={() => dismiss(alert.id)}
             >

@@ -4,7 +4,11 @@ import * as RechartsPrimitive from 'recharts';
 import { cn } from '@/lib';
 
 // Format: { THEME_NAME: CSS_SELECTOR }
-const THEMES = { light: '.future-light', dark: '.future-dark' } as const;
+// Matches ALL light themes and ALL dark themes using :is() selector
+const THEMES = {
+  light: ':is(.light, .light-hc, .future-light)',
+  dark: ':is(.dark, .dark-hc, .future-dark, .wireframe, .vertex, .canvas)'
+} as const;
 
 export type ChartConfig = {
   [k in string]: {
@@ -81,7 +85,7 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
 
   const safeId = sanitizeCssToken(id);
   const css = Object.entries(THEMES)
-    .map(([theme, prefix]) => {
+    .map(([theme, selectors]) => {
       const lines = colorConfig
         .map(([key, itemConfig]) => {
           const color =
@@ -94,7 +98,10 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
         .filter(Boolean)
         .join('\n');
       if (!lines) return '';
-      return `${prefix} [data-chart="${safeId}"] {\n${lines}\n}`;
+      // Generate separate rule for each selector to ensure proper matching
+      return selectors.split(', ').map(selector =>
+        `${selector} [data-chart="${safeId}"] {\n${lines}\n}`
+      ).join('\n');
     })
     .filter(Boolean)
     .join('\n');

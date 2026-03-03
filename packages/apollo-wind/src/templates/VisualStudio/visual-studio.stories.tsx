@@ -1,9 +1,10 @@
-import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Blocks, Bug, FileCode, FileJson, Files, GitBranch, Search, Settings } from 'lucide-react';
+import * as React from 'react';
 import { Column, Row } from '@/components/ui/layout';
 import { fontFamily } from '@/foundation/Future/typography';
 import { cn } from '@/lib';
+import type { FileTreeItem } from './shell';
 import {
   Shell,
   ShellActivityBar,
@@ -19,7 +20,6 @@ import {
   ShellTabBar,
   ShellTitleBar,
 } from './shell';
-import type { FileTreeItem } from './shell';
 
 // ============================================================================
 // Meta
@@ -40,7 +40,7 @@ type Story = StoryObj<typeof meta>;
 // ============================================================================
 
 function resolveThemeClass(value: string) {
-  return value || 'future-dark';
+  return value ?? 'future-dark';
 }
 
 // ============================================================================
@@ -56,7 +56,11 @@ const sampleFiles: FileTreeItem[] = [
         name: 'components',
         type: 'folder',
         children: [
-          { name: 'Button.tsx', type: 'file', icon: <FileCode className="h-4 w-4 text-blue-500" /> },
+          {
+            name: 'Button.tsx',
+            type: 'file',
+            icon: <FileCode className="h-4 w-4 text-blue-500" />,
+          },
           { name: 'Input.tsx', type: 'file', icon: <FileCode className="h-4 w-4 text-blue-500" /> },
           { name: 'Shell.tsx', type: 'file', icon: <FileCode className="h-4 w-4 text-blue-500" /> },
         ],
@@ -65,8 +69,16 @@ const sampleFiles: FileTreeItem[] = [
         name: 'hooks',
         type: 'folder',
         children: [
-          { name: 'useAuth.ts', type: 'file', icon: <FileCode className="h-4 w-4 text-blue-500" /> },
-          { name: 'useTheme.ts', type: 'file', icon: <FileCode className="h-4 w-4 text-blue-500" /> },
+          {
+            name: 'useAuth.ts',
+            type: 'file',
+            icon: <FileCode className="h-4 w-4 text-blue-500" />,
+          },
+          {
+            name: 'useTheme.ts',
+            type: 'file',
+            icon: <FileCode className="h-4 w-4 text-blue-500" />,
+          },
         ],
       },
       { name: 'App.tsx', type: 'file', icon: <FileCode className="h-4 w-4 text-blue-500" /> },
@@ -112,31 +124,46 @@ function VSCodeShellDemo({ theme }: { theme: string }) {
             <ShellActivityBarItem
               icon={<Files className="h-5 w-5" />}
               active={activeView === 'files'}
-              onClick={() => { setActiveView('files'); setSidebarCollapsed(false); }}
+              onClick={() => {
+                setActiveView('files');
+                setSidebarCollapsed(false);
+              }}
               tooltip="Explorer"
             />
             <ShellActivityBarItem
               icon={<Search className="h-5 w-5" />}
               active={activeView === 'search'}
-              onClick={() => { setActiveView('search'); setSidebarCollapsed(false); }}
+              onClick={() => {
+                setActiveView('search');
+                setSidebarCollapsed(false);
+              }}
               tooltip="Search"
             />
             <ShellActivityBarItem
               icon={<GitBranch className="h-5 w-5" />}
               active={activeView === 'git'}
-              onClick={() => { setActiveView('git'); setSidebarCollapsed(false); }}
+              onClick={() => {
+                setActiveView('git');
+                setSidebarCollapsed(false);
+              }}
               tooltip="Source Control"
             />
             <ShellActivityBarItem
               icon={<Bug className="h-5 w-5" />}
               active={activeView === 'debug'}
-              onClick={() => { setActiveView('debug'); setSidebarCollapsed(false); }}
+              onClick={() => {
+                setActiveView('debug');
+                setSidebarCollapsed(false);
+              }}
               tooltip="Run and Debug"
             />
             <ShellActivityBarItem
               icon={<Blocks className="h-5 w-5" />}
               active={activeView === 'extensions'}
-              onClick={() => { setActiveView('extensions'); setSidebarCollapsed(false); }}
+              onClick={() => {
+                setActiveView('extensions');
+                setSidebarCollapsed(false);
+              }}
               tooltip="Extensions"
             />
             <Column flex={1} />
@@ -281,15 +308,15 @@ function SidebarOnlyDemo({ theme }: { theme: string }) {
 
 export const Default: Story = {
   name: 'Default',
-  render: (_, { globals }) => <VSCodeShellDemo theme={globals.futureTheme || 'future-dark'} />,
+  render: (_, { globals }) => <VSCodeShellDemo theme={globals.theme || 'future-dark'} />,
 };
 
 export const Minimal: Story = {
   name: 'Minimal',
-  render: (_, { globals }) => <MinimalShellDemo theme={globals.futureTheme || 'future-dark'} />,
+  render: (_, { globals }) => <MinimalShellDemo theme={globals.theme || 'future-dark'} />,
 };
 
 export const SidebarOnly: Story = {
   name: 'Sidebar Only',
-  render: (_, { globals }) => <SidebarOnlyDemo theme={globals.futureTheme || 'future-dark'} />,
+  render: (_, { globals }) => <SidebarOnlyDemo theme={globals.theme || 'future-dark'} />,
 };
