@@ -1,6 +1,5 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { cn } from '@/lib';
+import React from 'react';
 import { fontFamily } from './typography';
 
 // ============================================================================
@@ -91,7 +90,9 @@ function SpacingTable({ groups }: { groups: SpacingGroup[] }) {
           <tr className="border-b border-border bg-surface-overlay">
             <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Token</th>
             <th className="px-4 py-2.5 text-right font-medium text-foreground-muted">px</th>
-            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Tailwind Class</th>
+            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">
+              Tailwind Class
+            </th>
             <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Usage</th>
             <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Preview</th>
           </tr>
@@ -115,17 +116,26 @@ function SpacingTable({ groups }: { groups: SpacingGroup[] }) {
               {group.tokens.map((token) => (
                 <tr key={token.token} className="border-b border-border-subtle last:border-b-0">
                   <td className="px-4 py-2">
-                    <code className="text-xs text-brand-foreground" style={{ fontFamily: fontFamily.monospace }}>
+                    <code
+                      className="text-xs text-brand-foreground"
+                      style={{ fontFamily: fontFamily.monospace }}
+                    >
                       {token.token}
                     </code>
                   </td>
                   <td className="px-4 py-2 text-right">
-                    <code className="text-xs tabular-nums text-foreground-muted" style={{ fontFamily: fontFamily.monospace }}>
+                    <code
+                      className="text-xs tabular-nums text-foreground-muted"
+                      style={{ fontFamily: fontFamily.monospace }}
+                    >
                       {token.px}
                     </code>
                   </td>
                   <td className="px-4 py-2">
-                    <code className="text-xs text-foreground-subtle" style={{ fontFamily: fontFamily.monospace }}>
+                    <code
+                      className="text-xs text-foreground-subtle"
+                      style={{ fontFamily: fontFamily.monospace }}
+                    >
                       {token.twClass}
                     </code>
                   </td>
@@ -133,7 +143,10 @@ function SpacingTable({ groups }: { groups: SpacingGroup[] }) {
                   <td className="px-4 py-2">
                     <div
                       className="h-4 rounded bg-brand/60"
-                      style={{ width: `${Math.min(token.px, 120)}px`, minWidth: token.px > 0 ? '2px' : '0px' }}
+                      style={{
+                        width: `${Math.min(token.px, 120)}px`,
+                        minWidth: token.px > 0 ? '2px' : '0px',
+                      }}
                     />
                   </td>
                 </tr>
@@ -151,22 +164,14 @@ function SpacingTable({ groups }: { groups: SpacingGroup[] }) {
 // ============================================================================
 
 export const Default: Story = {
-  render: (_, { globals }) => (
-    <div
-      className={cn(
-        globals.futureTheme ?? 'future-dark',
-        'min-h-screen w-full bg-surface'
-      )}
-      style={{ fontFamily: fontFamily.base }}
-    >
+  render: () => (
+    <div className="min-h-screen w-full bg-surface" style={{ fontFamily: fontFamily.base }}>
       <div className="mx-auto max-w-5xl space-y-10 p-8">
         <div>
-          <h1 className="mb-2 text-3xl font-bold tracking-tight text-foreground">
-            Spacing Tokens
-          </h1>
+          <h1 className="mb-2 text-3xl font-bold tracking-tight text-foreground">Spacing Tokens</h1>
           <p className="text-sm text-foreground-muted">
-            All spacing values used in Future templates. Scale tokens map to Tailwind's built-in spacing utilities.
-            Arbitrary values use bracket notation.
+            All spacing values used in Future templates. Scale tokens map to Tailwind's built-in
+            spacing utilities. Arbitrary values use bracket notation.
           </p>
         </div>
 

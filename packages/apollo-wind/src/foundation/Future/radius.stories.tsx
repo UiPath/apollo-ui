@@ -1,6 +1,5 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { cn } from '@/lib';
+import React from 'react';
 import { fontFamily } from './typography';
 
 // ============================================================================
@@ -52,7 +51,9 @@ function RadiusTable({ tokens }: { tokens: RadiusToken[] }) {
           <tr className="border-b border-border bg-surface-overlay">
             <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Token</th>
             <th className="px-4 py-2.5 text-right font-medium text-foreground-muted">px</th>
-            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Tailwind Class</th>
+            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">
+              Tailwind Class
+            </th>
             <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Usage</th>
             <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Preview</th>
           </tr>
@@ -61,17 +62,26 @@ function RadiusTable({ tokens }: { tokens: RadiusToken[] }) {
           {tokens.map((token) => (
             <tr key={token.token} className="border-b border-border-subtle last:border-b-0">
               <td className="px-4 py-2">
-                <code className="text-xs text-brand-foreground" style={{ fontFamily: fontFamily.monospace }}>
+                <code
+                  className="text-xs text-brand-foreground"
+                  style={{ fontFamily: fontFamily.monospace }}
+                >
                   {token.token}
                 </code>
               </td>
               <td className="px-4 py-2 text-right">
-                <code className="text-xs tabular-nums text-foreground-muted" style={{ fontFamily: fontFamily.monospace }}>
+                <code
+                  className="text-xs tabular-nums text-foreground-muted"
+                  style={{ fontFamily: fontFamily.monospace }}
+                >
                   {token.px >= 9999 ? '9999' : token.px}
                 </code>
               </td>
               <td className="px-4 py-2">
-                <code className="text-xs text-foreground-subtle" style={{ fontFamily: fontFamily.monospace }}>
+                <code
+                  className="text-xs text-foreground-subtle"
+                  style={{ fontFamily: fontFamily.monospace }}
+                >
                   {token.twClass}
                 </code>
               </td>
@@ -95,22 +105,16 @@ function RadiusTable({ tokens }: { tokens: RadiusToken[] }) {
 // ============================================================================
 
 export const Default: Story = {
-  render: (_, { globals }) => (
-    <div
-      className={cn(
-        globals.futureTheme ?? 'future-dark',
-        'min-h-screen w-full bg-surface'
-      )}
-      style={{ fontFamily: fontFamily.base }}
-    >
+  render: () => (
+    <div className="min-h-screen w-full bg-surface" style={{ fontFamily: fontFamily.base }}>
       <div className="mx-auto max-w-5xl space-y-10 p-8">
         <div>
           <h1 className="mb-2 text-3xl font-bold tracking-tight text-foreground">
             Border Radius Tokens
           </h1>
           <p className="text-sm text-foreground-muted">
-            All border radius values for the Future design language. Most map to Tailwind radius utilities,
-            with custom values using bracket notation.
+            All border radius values for the Future design language. Most map to Tailwind radius
+            utilities, with custom values using bracket notation.
           </p>
         </div>
 

@@ -1,5 +1,5 @@
 import type { Preview } from '@storybook/react-vite';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import '../src/styles/tailwind.css';
 
 const isDev = import.meta.env.MODE !== 'production';
@@ -50,7 +50,7 @@ const customViewports = {
 
 const preview: Preview = {
   initialGlobals: {
-    futureTheme: 'future-dark',
+    theme: 'future-dark',
     reactScan: 'off',
   },
   parameters: {
@@ -63,14 +63,7 @@ const preview: Preview = {
         order: [
           'Introduction',
           'Theme',
-          [
-            'Colors',
-            'Icons',
-            'Spacing',
-            'Typography',
-            'Future',
-            ['*', 'Theme'],
-          ],
+          ['Colors', 'Icons', 'Spacing', 'Typography', 'Future', ['*', 'Theme']],
           'Components',
           [
             'All Components',
@@ -83,13 +76,7 @@ const preview: Preview = {
             'UiPath',
           ],
           'Templates',
-          [
-            'Admin',
-            'Delegate',
-            'Flow',
-            'Maestro',
-            'Future',
-          ],
+          ['Admin', 'Delegate', 'Flow', 'Maestro', 'Future'],
           'Forms',
           'Experiments',
           '*',
@@ -104,7 +91,7 @@ const preview: Preview = {
     },
   },
   globalTypes: {
-    futureTheme: {
+    theme: {
       description: 'Toggle design language theme',
       toolbar: {
         title: 'Theme',
@@ -141,16 +128,22 @@ const preview: Preview = {
   decorators: [
     (Story, context) => {
       const reactScanEnabled = context.globals.reactScan === 'on';
-      const futureTheme: string = context.globals.futureTheme ?? 'future-dark';
+      const theme: string = context.globals.theme ?? 'future-dark';
 
       // Apollo-core themes use body.light / body.dark class selectors (from
       // @uipath/apollo-core/tokens/css/theme-variables.css). Future and Demo
       // themes use element-level class selectors (.future-dark, .vertex, etc.).
-      const coreThemes = ['light', 'dark', 'light-hc', 'dark-hc'];
-      const elementThemes = ['future-dark', 'future-light', 'wireframe', 'vertex', 'canvas'];
-      const allThemes = [...coreThemes, ...elementThemes];
+      const coreThemes = React.useMemo(() => ['light', 'dark', 'light-hc', 'dark-hc'], []);
+      const elementThemes = React.useMemo(
+        () => ['future-dark', 'future-light', 'wireframe', 'vertex', 'canvas'],
+        []
+      );
+      const allThemes = React.useMemo(
+        () => [...coreThemes, ...elementThemes],
+        [coreThemes, elementThemes]
+      );
 
-      const isCoreTheme = coreThemes.includes(futureTheme);
+      const isCoreTheme = coreThemes.includes(theme);
 
       useEffect(() => {
         const root = document.documentElement;
@@ -161,16 +154,16 @@ const preview: Preview = {
         body.classList.remove(...allThemes);
 
         if (isCoreTheme) {
-          body.classList.add(futureTheme);
+          body.classList.add(theme);
         } else {
-          root.classList.add(futureTheme);
+          root.classList.add(theme);
         }
 
         return () => {
           root.classList.remove(...allThemes);
           body.classList.remove(...allThemes);
         };
-      }, [futureTheme, isCoreTheme]);
+      }, [theme, isCoreTheme, allThemes]);
 
       useEffect(() => {
         if (isDev) {

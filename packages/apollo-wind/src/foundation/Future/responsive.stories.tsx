@@ -1,6 +1,5 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { cn } from '@/lib';
+import React from 'react';
 import { fontFamily } from './typography';
 
 // ============================================================================
@@ -38,8 +37,16 @@ const responsiveGroups: ResponsiveGroup[] = [
     group: 'Breakpoints',
     description: 'Min-width values for layout behavior via matchMedia()',
     tokens: [
-      { token: 'viewportGuard', px: 769, usage: 'Content visible at this width; below shows overlay' },
-      { token: 'panelExpand', px: 1025, usage: 'Left panel expanded at this width; below collapsed' },
+      {
+        token: 'viewportGuard',
+        px: 769,
+        usage: 'Content visible at this width; below shows overlay',
+      },
+      {
+        token: 'panelExpand',
+        px: 1025,
+        usage: 'Left panel expanded at this width; below collapsed',
+      },
     ],
   },
   {
@@ -70,7 +77,9 @@ function ResponsiveTable({ groups }: { groups: ResponsiveGroup[] }) {
             <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Token</th>
             <th className="px-4 py-2.5 text-right font-medium text-foreground-muted">px</th>
             <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Usage</th>
-            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Relative width</th>
+            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">
+              Relative width
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -90,12 +99,18 @@ function ResponsiveTable({ groups }: { groups: ResponsiveGroup[] }) {
               {group.tokens.map((token) => (
                 <tr key={token.token} className="border-b border-border-subtle last:border-b-0">
                   <td className="px-4 py-2">
-                    <code className="text-xs text-brand-foreground" style={{ fontFamily: fontFamily.monospace }}>
+                    <code
+                      className="text-xs text-brand-foreground"
+                      style={{ fontFamily: fontFamily.monospace }}
+                    >
                       {token.token}
                     </code>
                   </td>
                   <td className="px-4 py-2 text-right">
-                    <code className="text-xs tabular-nums text-foreground-muted" style={{ fontFamily: fontFamily.monospace }}>
+                    <code
+                      className="text-xs tabular-nums text-foreground-muted"
+                      style={{ fontFamily: fontFamily.monospace }}
+                    >
                       {token.px}
                     </code>
                   </td>
@@ -106,7 +121,10 @@ function ResponsiveTable({ groups }: { groups: ResponsiveGroup[] }) {
                         className="h-4 rounded bg-brand/60"
                         style={{ width: `${(token.px / maxPx) * 100}%`, minWidth: '4px' }}
                       />
-                      <span className="shrink-0 text-[10px] tabular-nums text-foreground-subtle" style={{ fontFamily: fontFamily.monospace }}>
+                      <span
+                        className="shrink-0 text-[10px] tabular-nums text-foreground-subtle"
+                        style={{ fontFamily: fontFamily.monospace }}
+                      >
                         {((token.px / maxPx) * 100).toFixed(0)}%
                       </span>
                     </div>
@@ -126,22 +144,16 @@ function ResponsiveTable({ groups }: { groups: ResponsiveGroup[] }) {
 // ============================================================================
 
 export const Default: Story = {
-  render: (_, { globals }) => (
-    <div
-      className={cn(
-        globals.futureTheme ?? 'future-dark',
-        'min-h-screen w-full bg-surface'
-      )}
-      style={{ fontFamily: fontFamily.base }}
-    >
+  render: () => (
+    <div className="min-h-screen w-full bg-surface" style={{ fontFamily: fontFamily.base }}>
       <div className="mx-auto max-w-5xl space-y-10 p-8">
         <div>
           <h1 className="mb-2 text-3xl font-bold tracking-tight text-foreground">
             Responsive Tokens
           </h1>
           <p className="text-sm text-foreground-muted">
-            Breakpoints and viewport presets for the Future design language.
-            Breakpoints control layout behavior; viewport presets are named widths for testing.
+            Breakpoints and viewport presets for the Future design language. Breakpoints control
+            layout behavior; viewport presets are named widths for testing.
           </p>
         </div>
 

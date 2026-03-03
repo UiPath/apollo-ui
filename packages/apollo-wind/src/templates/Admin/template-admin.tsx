@@ -3,19 +3,19 @@ import { MaestroHeader } from '@/components/custom/global-header';
 import { PageHeader, type PageHeaderProps } from '@/components/custom/page-header';
 import { ViewportGuard } from '@/components/custom/viewport-guard';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { FutureTheme } from '@/foundation/Future/types';
+import type { Theme } from '@/foundation/Future/types';
 import { fontFamily } from '@/foundation/Future/typography';
 import { cn } from '@/lib';
 
 // Re-export types for consumer convenience
-export type { FutureTheme };
+export type { Theme };
 
 // ============================================================================
 // Helpers
 // ============================================================================
 
-function resolveThemeClass(theme: FutureTheme) {
-  return theme;
+function resolveThemeClass(theme: Theme) {
+  return theme ?? 'future-dark';
 }
 
 // ============================================================================
@@ -37,10 +37,7 @@ export interface AdminSidebarProps {
 export function AdminSidebar({ className, width = 260, children }: AdminSidebarProps) {
   return (
     <div
-      className={cn(
-        'flex shrink-0 flex-col border-r border-border-subtle bg-surface',
-        className
-      )}
+      className={cn('flex shrink-0 flex-col border-r border-border-subtle bg-surface', className)}
       style={{ width }}
     >
       {children}
@@ -65,12 +62,7 @@ export interface AdminSidebarHeaderProps {
 /**
  * Header row for AdminSidebar — title, optional icon, and action buttons.
  */
-export function AdminSidebarHeader({
-  className,
-  title,
-  icon,
-  actions,
-}: AdminSidebarHeaderProps) {
+export function AdminSidebarHeader({ className, title, icon, actions }: AdminSidebarHeaderProps) {
   return (
     <div
       className={cn(
@@ -108,17 +100,13 @@ export interface AdminSidebarNavProps {
 /**
  * Scrollable nav list for AdminSidebar. Each item has an optional icon and badge.
  */
-export function AdminSidebarNav({
-  className,
-  items,
-  selectedId,
-  onSelect,
-}: AdminSidebarNavProps) {
+export function AdminSidebarNav({ className, items, selectedId, onSelect }: AdminSidebarNavProps) {
   return (
     <ScrollArea className={cn('flex-1', className)}>
       <nav className="flex flex-col gap-0.5 p-2">
         {items.map((item) => (
           <button
+            type="button"
             key={item.id}
             className={cn(
               'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
@@ -181,7 +169,7 @@ export function AdminToolbar({ className, children, actions }: AdminToolbarProps
 export interface AdminTemplateProps {
   className?: string;
   /** Color theme (default "dark") */
-  theme?: FutureTheme;
+  theme?: Theme;
   /** Header title (default "Administration") */
   title?: string;
   /** Content for the global header's slide-out menu drawer */

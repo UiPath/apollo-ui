@@ -1,5 +1,5 @@
-import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import * as React from 'react';
 import {
   Area,
   AreaChart,
@@ -21,24 +21,17 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-
-import { MaestroTemplate } from './template-maestro';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
+  type ChartConfig,
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
-  type ChartConfig,
 } from '@/components/ui/chart';
 import { Separator } from '@/components/ui/separator';
+import { MaestroTemplate } from './template-maestro';
 
 // ============================================================================
 // Meta
@@ -193,9 +186,7 @@ const radarSkillsData = [
   { skill: 'SQL', level: 65 },
 ];
 
-const radialGaugeData = [
-  { name: 'progress', value: 72, fill: 'var(--color-progress)' },
-];
+const radialGaugeData = [{ name: 'progress', value: 72, fill: 'var(--color-progress)' }];
 
 const tooltipData = [
   { month: 'Jan', revenue: 4500, expenses: 2800 },
@@ -328,8 +319,22 @@ function AreaChartSection() {
                   <stop offset="95%" stopColor="var(--color-mobile)" stopOpacity={0.1} />
                 </linearGradient>
               </defs>
-              <Area dataKey="mobile" type="natural" fill="url(#fillMobile)" fillOpacity={0.4} stroke="var(--color-mobile)" stackId="a" />
-              <Area dataKey="desktop" type="natural" fill="url(#fillDesktop)" fillOpacity={0.4} stroke="var(--color-desktop)" stackId="a" />
+              <Area
+                dataKey="mobile"
+                type="natural"
+                fill="url(#fillMobile)"
+                fillOpacity={0.4}
+                stroke="var(--color-mobile)"
+                stackId="a"
+              />
+              <Area
+                dataKey="desktop"
+                type="natural"
+                fill="url(#fillDesktop)"
+                fillOpacity={0.4}
+                stroke="var(--color-desktop)"
+                stackId="a"
+              />
             </AreaChart>
           </ChartContainer>
         </CardContent>
@@ -361,8 +366,20 @@ function AreaChartSection() {
                   <stop offset="95%" stopColor="var(--color-sessions)" stopOpacity={0.1} />
                 </linearGradient>
               </defs>
-              <Area dataKey="sessions" type="step" fill="url(#fillSessions)" fillOpacity={0.4} stroke="var(--color-sessions)" />
-              <Area dataKey="pageViews" type="step" fill="url(#fillPageViews)" fillOpacity={0.4} stroke="var(--color-pageViews)" />
+              <Area
+                dataKey="sessions"
+                type="step"
+                fill="url(#fillSessions)"
+                fillOpacity={0.4}
+                stroke="var(--color-sessions)"
+              />
+              <Area
+                dataKey="pageViews"
+                type="step"
+                fill="url(#fillPageViews)"
+                fillOpacity={0.4}
+                stroke="var(--color-pageViews)"
+              />
             </AreaChart>
           </ChartContainer>
         </CardContent>
@@ -378,7 +395,7 @@ function BarChartSection() {
       desktop: barData.reduce((acc, d) => acc + d.desktop, 0),
       mobile: barData.reduce((acc, d) => acc + d.mobile, 0),
     }),
-    [],
+    []
   );
 
   return (
@@ -395,14 +412,13 @@ function BarChartSection() {
           <div className="flex">
             {(['desktop', 'mobile'] as const).map((key) => (
               <button
+                type="button"
                 key={key}
                 data-active={activeKey === key}
                 className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t border-border-subtle px-6 py-4 text-left even:border-l data-[active=true]:bg-surface-overlay sm:border-l sm:border-t-0 sm:px-8 sm:py-6"
                 onClick={() => setActiveKey(key)}
               >
-                <span className="text-xs text-foreground-muted">
-                  {barConfig[key].label}
-                </span>
+                <span className="text-xs text-foreground-muted">{barConfig[key].label}</span>
                 <span className="text-lg font-bold leading-none text-foreground sm:text-3xl">
                   {total[key].toLocaleString()}
                 </span>
@@ -458,7 +474,14 @@ function BarChartSection() {
           <ChartContainer config={barHorizontalConfig} className="aspect-auto h-[250px] w-full">
             <BarChart data={barHorizontalData} layout="vertical" margin={{ left: 24, right: 24 }}>
               <CartesianGrid horizontal={false} />
-              <YAxis dataKey="category" type="category" tickLine={false} axisLine={false} tickMargin={8} width={60} />
+              <YAxis
+                dataKey="category"
+                type="category"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                width={60}
+              />
               <XAxis type="number" tickLine={false} axisLine={false} tickMargin={8} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Bar dataKey="value" fill="var(--color-value)" radius={4} />
@@ -489,9 +512,30 @@ function LineChartSection() {
               <YAxis tickLine={false} axisLine={false} tickMargin={8} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <ChartLegend content={<ChartLegendContent />} />
-              <Line dataKey="desktop" type="monotone" stroke="var(--color-desktop)" strokeWidth={2} dot={{ fill: 'var(--color-desktop)', r: 4 }} activeDot={{ r: 6 }} />
-              <Line dataKey="mobile" type="monotone" stroke="var(--color-mobile)" strokeWidth={2} dot={{ fill: 'var(--color-mobile)', r: 4 }} activeDot={{ r: 6 }} />
-              <Line dataKey="tablet" type="monotone" stroke="var(--color-tablet)" strokeWidth={2} dot={{ fill: 'var(--color-tablet)', r: 4 }} activeDot={{ r: 6 }} />
+              <Line
+                dataKey="desktop"
+                type="monotone"
+                stroke="var(--color-desktop)"
+                strokeWidth={2}
+                dot={{ fill: 'var(--color-desktop)', r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+              <Line
+                dataKey="mobile"
+                type="monotone"
+                stroke="var(--color-mobile)"
+                strokeWidth={2}
+                dot={{ fill: 'var(--color-mobile)', r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+              <Line
+                dataKey="tablet"
+                type="monotone"
+                stroke="var(--color-tablet)"
+                strokeWidth={2}
+                dot={{ fill: 'var(--color-tablet)', r: 4 }}
+                activeDot={{ r: 6 }}
+              />
             </LineChart>
           </ChartContainer>
         </CardContent>
@@ -513,8 +557,20 @@ function LineChartSection() {
               <YAxis tickLine={false} axisLine={false} tickMargin={8} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <ChartLegend content={<ChartLegendContent />} />
-              <Line dataKey="revenue" type="natural" stroke="var(--color-revenue)" strokeWidth={2} dot={false} />
-              <Line dataKey="profit" type="natural" stroke="var(--color-profit)" strokeWidth={2} dot={false} />
+              <Line
+                dataKey="revenue"
+                type="natural"
+                stroke="var(--color-revenue)"
+                strokeWidth={2}
+                dot={false}
+              />
+              <Line
+                dataKey="profit"
+                type="natural"
+                stroke="var(--color-profit)"
+                strokeWidth={2}
+                dot={false}
+              />
             </LineChart>
           </ChartContainer>
         </CardContent>
@@ -524,10 +580,7 @@ function LineChartSection() {
 }
 
 function PieChartSection() {
-  const totalVisitors = React.useMemo(
-    () => pieData.reduce((acc, d) => acc + d.visitors, 0),
-    [],
-  );
+  const totalVisitors = React.useMemo(() => pieData.reduce((acc, d) => acc + d.visitors, 0), []);
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -554,11 +607,24 @@ function PieChartSection() {
                   content={({ viewBox }) => {
                     if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
                       return (
-                        <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
-                          <tspan x={viewBox.cx} y={viewBox.cy} className="fill-foreground text-3xl font-bold">
+                        <text
+                          x={viewBox.cx}
+                          y={viewBox.cy}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                        >
+                          <tspan
+                            x={viewBox.cx}
+                            y={viewBox.cy}
+                            className="fill-foreground text-3xl font-bold"
+                          >
                             {totalVisitors.toLocaleString()}
                           </tspan>
-                          <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 24} className="fill-muted-foreground">
+                          <tspan
+                            x={viewBox.cx}
+                            y={(viewBox.cy || 0) + 24}
+                            className="fill-muted-foreground"
+                          >
                             Visitors
                           </tspan>
                         </text>
@@ -621,8 +687,18 @@ function RadarChartSection() {
               <ChartTooltip content={<ChartTooltipContent />} />
               <PolarAngleAxis dataKey="metric" />
               <PolarGrid />
-              <Radar dataKey="desktop" fill="var(--color-desktop)" fillOpacity={0.6} stroke="var(--color-desktop)" />
-              <Radar dataKey="mobile" fill="var(--color-mobile)" fillOpacity={0.6} stroke="var(--color-mobile)" />
+              <Radar
+                dataKey="desktop"
+                fill="var(--color-desktop)"
+                fillOpacity={0.6}
+                stroke="var(--color-desktop)"
+              />
+              <Radar
+                dataKey="mobile"
+                fill="var(--color-mobile)"
+                fillOpacity={0.6}
+                stroke="var(--color-mobile)"
+              />
               <ChartLegend content={<ChartLegendContent />} />
             </RadarChart>
           </ChartContainer>
@@ -638,7 +714,10 @@ function RadarChartSection() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={radarSkillsConfig} className="mx-auto aspect-square max-h-[300px]">
+          <ChartContainer
+            config={radarSkillsConfig}
+            className="mx-auto aspect-square max-h-[300px]"
+          >
             <RadarChart data={radarSkillsData}>
               <ChartTooltip content={<ChartTooltipContent />} />
               <PolarAngleAxis dataKey="skill" />
@@ -703,11 +782,14 @@ function RadialChartSection() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={radialGaugeConfig} className="mx-auto aspect-square max-h-[300px]">
+          <ChartContainer
+            config={radialGaugeConfig}
+            className="mx-auto aspect-square max-h-[300px]"
+          >
             <RadialBarChart
               data={radialGaugeData}
               startAngle={180}
-              endAngle={180 - (360 * 0.72)}
+              endAngle={180 - 360 * 0.72}
               innerRadius={80}
               outerRadius={110}
             >
@@ -718,11 +800,24 @@ function RadialChartSection() {
                 content={({ viewBox }) => {
                   if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
                     return (
-                      <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
-                        <tspan x={viewBox.cx} y={viewBox.cy} className="fill-foreground text-4xl font-bold">
+                      <text
+                        x={viewBox.cx}
+                        y={viewBox.cy}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                      >
+                        <tspan
+                          x={viewBox.cx}
+                          y={viewBox.cy}
+                          className="fill-foreground text-4xl font-bold"
+                        >
                           72%
                         </tspan>
-                        <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 28} className="fill-muted-foreground text-sm">
+                        <tspan
+                          x={viewBox.cx}
+                          y={(viewBox.cy || 0) + 28}
+                          className="fill-muted-foreground text-sm"
+                        >
                           Completed
                         </tspan>
                       </text>
@@ -827,7 +922,10 @@ function LeftPanelCharts() {
               strokeWidth={2}
               innerRadius={28}
             />
-            <ChartLegend content={<ChartLegendContent nameKey="segment" />} className="flex-wrap gap-1 text-xs [&>*]:basis-1/2" />
+            <ChartLegend
+              content={<ChartLegendContent nameKey="segment" />}
+              className="flex-wrap gap-1 text-xs [&>*]:basis-1/2"
+            />
           </PieChart>
         </ChartContainer>
       </div>
@@ -837,8 +935,22 @@ function LeftPanelCharts() {
         <ChartContainer config={barHorizontalConfig} className="aspect-auto h-[140px] w-full">
           <BarChart data={barHorizontalData} layout="vertical" margin={{ left: 40, right: 12 }}>
             <CartesianGrid horizontal={false} />
-            <YAxis dataKey="category" type="category" tickLine={false} axisLine={false} tickMargin={4} width={36} tick={{ fontSize: 10 }} />
-            <XAxis type="number" tickLine={false} axisLine={false} tickMargin={4} tick={{ fontSize: 10 }} />
+            <YAxis
+              dataKey="category"
+              type="category"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={4}
+              width={36}
+              tick={{ fontSize: 10 }}
+            />
+            <XAxis
+              type="number"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={4}
+              tick={{ fontSize: 10 }}
+            />
             <ChartTooltip content={<ChartTooltipContent />} />
             <Bar dataKey="value" fill="var(--color-value)" radius={4} />
           </BarChart>
@@ -853,10 +965,19 @@ function RightPanelCharts() {
     <div className="flex flex-col gap-4 p-6">
       <div className="w-full">
         <p className="mb-2 text-xs font-medium text-foreground-muted">Dot Indicator</p>
-        <ChartContainer config={tooltipDotConfig} className="w-full aspect-auto h-[120px] justify-start">
+        <ChartContainer
+          config={tooltipDotConfig}
+          className="w-full aspect-auto h-[120px] justify-start"
+        >
           <BarChart data={tooltipData} margin={{ left: 12, right: 12 }}>
             <CartesianGrid vertical={false} />
-            <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={4} tick={{ fontSize: 10 }} />
+            <XAxis
+              dataKey="month"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={4}
+              tick={{ fontSize: 10 }}
+            />
             <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
             <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
             <Bar dataKey="expenses" fill="var(--color-expenses)" radius={4} />
@@ -866,10 +987,19 @@ function RightPanelCharts() {
       <Separator className="bg-border-subtle" />
       <div className="w-full">
         <p className="mb-2 text-xs font-medium text-foreground-muted">Dashed Indicator</p>
-        <ChartContainer config={tooltipDashedConfig} className="w-full aspect-auto h-[120px] justify-start">
+        <ChartContainer
+          config={tooltipDashedConfig}
+          className="w-full aspect-auto h-[120px] justify-start"
+        >
           <BarChart data={tooltipData} margin={{ left: 12, right: 12 }}>
             <CartesianGrid vertical={false} />
-            <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={4} tick={{ fontSize: 10 }} />
+            <XAxis
+              dataKey="month"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={4}
+              tick={{ fontSize: 10 }}
+            />
             <ChartTooltip content={<ChartTooltipContent indicator="dashed" />} />
             <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
             <Bar dataKey="expenses" fill="var(--color-expenses)" radius={4} />
@@ -915,10 +1045,26 @@ function VisualizationContent() {
               Recharts
             </a>{' '}
             powers these visuals. Wrap Recharts primitives with{' '}
-            <code className="rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-xs">ChartContainer</code>,{' '}
-            <code className="rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-xs">ChartTooltip</code>, and{' '}
-            <code className="rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-xs">ChartLegend</code> from{' '}
-            <code className="rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-xs">@/components/ui/chart</code>. Provide a <code className="rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-xs">ChartConfig</code> for theming.
+            <code className="rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-xs">
+              ChartContainer
+            </code>
+            ,{' '}
+            <code className="rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-xs">
+              ChartTooltip
+            </code>
+            , and{' '}
+            <code className="rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-xs">
+              ChartLegend
+            </code>{' '}
+            from{' '}
+            <code className="rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-xs">
+              @/components/ui/chart
+            </code>
+            . Provide a{' '}
+            <code className="rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-xs">
+              ChartConfig
+            </code>{' '}
+            for theming.
           </p>
         </CardContent>
       </Card>
@@ -927,6 +1073,7 @@ function VisualizationContent() {
       <div className="flex gap-1 overflow-x-auto border-b border-border-subtle">
         {TABS.map((tab) => (
           <button
+            type="button"
             key={tab}
             className={`shrink-0 px-4 pb-3 text-sm font-medium transition-colors ${
               activeTab === tab
@@ -954,7 +1101,7 @@ export const Visualization: Story = {
   name: 'Visualization',
   render: (_, { globals }) => (
     <MaestroTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.theme || 'future-dark'}
       title="Maestro"
       defaultLeftPanelCollapsed
       defaultRightPanelCollapsed

@@ -21,15 +21,13 @@ function SampleCard({ label }: { label: string }) {
 
 export const Default: Story = {
   render: () => (
-    <div className="future-dark">
-      <Canvas>
-        <Grid>
-          <GridItem><SampleCard label="Column 1" /></GridItem>
-          <GridItem><SampleCard label="Column 2" /></GridItem>
-          <GridItem><SampleCard label="Column 3" /></GridItem>
-          <GridItem><SampleCard label="Column 4" /></GridItem>
-        </Grid>
-      </Canvas>
-    </div>
+    <Canvas>
+      <Grid>
+        <GridItem><SampleCard label="Column 1" /></GridItem>
+        <GridItem><SampleCard label="Column 2" /></GridItem>
+        <GridItem><SampleCard label="Column 3" /></GridItem>
+        <GridItem><SampleCard label="Column 4" /></GridItem>
+      </Grid>
+    </Canvas>
   ),
 };

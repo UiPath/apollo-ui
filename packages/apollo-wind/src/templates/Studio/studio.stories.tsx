@@ -1,15 +1,38 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { ChevronDown, ChevronRight, Code, EllipsisVertical, Folder, Globe, Pencil, SquareMenu, Trash2 } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronRight,
+  Code,
+  EllipsisVertical,
+  Folder,
+  Globe,
+  Pencil,
+  SquareMenu,
+  Trash2,
+} from 'lucide-react';
 import * as React from 'react';
+import { PageHeader } from '@/components/custom/page-header';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import TreeView, { type TreeViewIconMap, type TreeViewItem } from '@/components/ui/tree-view';
-import { PageHeader } from '@/components/custom/page-header';
-import { Button } from '@/components/ui/button';
 import { StudioGrid, StudioGridItem, StudioTemplate } from './template-studio';
 
 // ============================================================================
@@ -78,7 +101,11 @@ const explorerData: TreeViewItem[] = [
     id: 'staging',
     name: 'Staging',
     type: 'tenant',
-    badge: <Badge variant="secondary" className="text-xs">Staging</Badge>,
+    badge: (
+      <Badge variant="secondary" className="text-xs">
+        Staging
+      </Badge>
+    ),
   },
   { id: 'tenant', name: 'Tenant', type: 'tenant' },
   {
@@ -95,7 +122,11 @@ const explorerData: TreeViewItem[] = [
             id: 'workflow-maestro',
             name: 'Maestro',
             type: 'tenant',
-            badge: <Badge variant="secondary" className="text-xs">Canary</Badge>,
+            badge: (
+              <Badge variant="secondary" className="text-xs">
+                Canary
+              </Badge>
+            ),
             meta: 'Production',
             actions: [
               {
@@ -117,10 +148,20 @@ const explorerData: TreeViewItem[] = [
             id: 'workflow-delegate',
             name: 'Delegate',
             type: 'tenant',
-            badge: <Badge variant="outline" className="text-xs">New</Badge>,
+            badge: (
+              <Badge variant="outline" className="text-xs">
+                New
+              </Badge>
+            ),
           },
           { id: 'workflow-admin', name: 'Admin', type: 'tenant' },
-          { id: 'workflow-admin-east', name: 'Admin East', type: 'tenant', disabled: true, meta: 'Maintenance' },
+          {
+            id: 'workflow-admin-east',
+            name: 'Admin East',
+            type: 'tenant',
+            disabled: true,
+            meta: 'Maintenance',
+          },
           { id: 'workflow-admin-west', name: 'Admin West', type: 'tenant' },
         ],
       },
@@ -134,7 +175,11 @@ const explorerData: TreeViewItem[] = [
             id: 'workflow-svc-flow',
             name: 'Flow',
             type: 'service',
-            badge: <Badge variant="destructive" className="text-xs">Beta</Badge>,
+            badge: (
+              <Badge variant="destructive" className="text-xs">
+                Beta
+              </Badge>
+            ),
           },
           { id: 'workflow-svc-delegate', name: 'Delegate', type: 'service' },
           { id: 'workflow-svc-admin', name: 'Admin', type: 'service' },
@@ -204,6 +249,7 @@ function MenuNav() {
       <div className="flex flex-col gap-1">
         {['Button', 'Button', 'Button', 'Button', 'Button'].map((label, i) => (
           <button
+            type="button"
             key={i}
             className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
           >
@@ -217,6 +263,7 @@ function MenuNav() {
 
       <div className="flex flex-col gap-1">
         <button
+          type="button"
           className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
           onClick={() => setMoreOpen((prev) => !prev)}
           aria-expanded={moreOpen}
@@ -231,6 +278,7 @@ function MenuNav() {
           <div className="flex flex-col gap-1 pl-2">
             {['Button', 'Button', 'Button', 'Button', 'Button'].map((label, i) => (
               <button
+                type="button"
                 key={i}
                 className="flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
               >
@@ -256,7 +304,13 @@ function AgentConfigForm() {
   return (
     <StudioGrid cols={12} gap="md" className="space-y-4">
       {/* Page title — no border/background, just text */}
-      <StudioGridItem cols={12} border={false} background="transparent" padding="none" className="pb-2">
+      <StudioGridItem
+        cols={12}
+        border={false}
+        background="transparent"
+        padding="none"
+        className="pb-2"
+      >
         <h1 className="text-2xl font-semibold text-foreground">Agent configuration</h1>
         <p className="mt-1 text-sm text-foreground-muted">
           Configure prompts, memory, and context for your agent.
@@ -269,36 +323,50 @@ function AgentConfigForm() {
           <h4 className="text-lg font-semibold text-foreground">Configuration</h4>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="md:col-span-2">
-              <label className="mb-2 block text-sm font-medium text-foreground">
+              <label
+                htmlFor="system-prompt"
+                className="mb-2 block text-sm font-medium text-foreground"
+              >
                 System prompt
               </label>
               <textarea
+                id="system-prompt"
                 rows={4}
                 placeholder="Enter the system prompt for the agent..."
                 className={inputClass}
               />
             </div>
             <div className="md:col-span-2">
-              <label className="mb-2 block text-sm font-medium text-foreground">
+              <label
+                htmlFor="user-prompt"
+                className="mb-2 block text-sm font-medium text-foreground"
+              >
                 User prompt
               </label>
               <textarea
+                id="user-prompt"
                 rows={4}
                 placeholder="Enter the user prompt..."
                 className={inputClass}
               />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-foreground">Name</label>
-              <input type="text" placeholder="Enter a name" className={inputClass} />
+              <label htmlFor="name" className="mb-2 block text-sm font-medium text-foreground">
+                Name
+              </label>
+              <input id="name" type="text" placeholder="Enter a name" className={inputClass} />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-foreground">Email</label>
-              <input type="email" placeholder="Enter an email" className={inputClass} />
+              <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
+                Email
+              </label>
+              <input id="email" type="email" placeholder="Enter an email" className={inputClass} />
             </div>
             <div className="md:col-span-2">
-              <label className="mb-2 block text-sm font-medium text-foreground">Tools</label>
-              <select className={inputClass}>
+              <label htmlFor="tools" className="mb-2 block text-sm font-medium text-foreground">
+                Tools
+              </label>
+              <select id="tools" className={inputClass}>
                 <option value="">Choose tools...</option>
                 <option value="web-search">Web search</option>
                 <option value="file-reader">File reader</option>
@@ -366,8 +434,10 @@ const dataPoints: DataPoint[] = [
     id: 'dp-001',
     name: 'dp-001',
     input: 'Summarize the following earnings report...',
-    inputFull: 'Summarize the following earnings report in 3 bullet points: "Q3 revenue reached $4.2B, up 12% year-over-year. Net income margin improved to 18%. Full-year guidance has been raised to $16.5B."',
-    expectedOutput: '• Revenue up 12% YoY to $4.2B\n• Net income margin at 18%\n• FY guidance raised to $16.5B',
+    inputFull:
+      'Summarize the following earnings report in 3 bullet points: "Q3 revenue reached $4.2B, up 12% year-over-year. Net income margin improved to 18%. Full-year guidance has been raised to $16.5B."',
+    expectedOutput:
+      '• Revenue up 12% YoY to $4.2B\n• Net income margin at 18%\n• FY guidance raised to $16.5B',
     type: 'text',
     status: 'Active',
     created: 'Jan 15, 2024',
@@ -377,7 +447,8 @@ const dataPoints: DataPoint[] = [
     id: 'dp-002',
     name: 'dp-002',
     input: 'Classify this customer inquiry: "My invoice is wrong."',
-    inputFull: 'Classify this customer inquiry into one of: Billing, Technical, General. Inquiry: "My invoice is wrong — it shows a charge I did not authorize."',
+    inputFull:
+      'Classify this customer inquiry into one of: Billing, Technical, General. Inquiry: "My invoice is wrong — it shows a charge I did not authorize."',
     expectedOutput: 'Billing',
     type: 'text',
     status: 'Active',
@@ -388,8 +459,10 @@ const dataPoints: DataPoint[] = [
     id: 'dp-003',
     name: 'dp-003',
     input: 'Extract entities from: "Acme Corp signed a deal..."',
-    inputFull: 'Extract named entities (ORG, PERSON, DATE, MONEY) from: "Acme Corp signed a $50M deal with GlobalTech on March 3rd, led by CEO Jane Smith."',
-    expectedOutput: '{"ORG": ["Acme Corp", "GlobalTech"], "PERSON": ["Jane Smith"], "DATE": ["March 3rd"], "MONEY": ["$50M"]}',
+    inputFull:
+      'Extract named entities (ORG, PERSON, DATE, MONEY) from: "Acme Corp signed a $50M deal with GlobalTech on March 3rd, led by CEO Jane Smith."',
+    expectedOutput:
+      '{"ORG": ["Acme Corp", "GlobalTech"], "PERSON": ["Jane Smith"], "DATE": ["March 3rd"], "MONEY": ["$50M"]}',
     type: 'json',
     status: 'Active',
     created: 'Jan 17, 2024',
@@ -398,7 +471,8 @@ const dataPoints: DataPoint[] = [
     id: 'dp-004',
     name: 'dp-004',
     input: 'Detect the intent of: "Cancel my subscription."',
-    inputFull: 'Detect the user intent from the following message. Choose from: cancel_subscription, upgrade_plan, get_support, check_status. Message: "I want to cancel my subscription immediately."',
+    inputFull:
+      'Detect the user intent from the following message. Choose from: cancel_subscription, upgrade_plan, get_support, check_status. Message: "I want to cancel my subscription immediately."',
     expectedOutput: 'cancel_subscription',
     type: 'text',
     status: 'Active',
@@ -409,7 +483,8 @@ const dataPoints: DataPoint[] = [
     id: 'dp-005',
     name: 'dp-005',
     input: 'Analyze sentiment: "The product is fantastic!"',
-    inputFull: 'Analyze the sentiment of the following product review and return a score from -1.0 (very negative) to 1.0 (very positive). Review: "The product is absolutely fantastic, exceeded all my expectations!"',
+    inputFull:
+      'Analyze the sentiment of the following product review and return a score from -1.0 (very negative) to 1.0 (very positive). Review: "The product is absolutely fantastic, exceeded all my expectations!"',
     expectedOutput: '0.95',
     type: 'text',
     status: 'Active',
@@ -419,7 +494,8 @@ const dataPoints: DataPoint[] = [
     id: 'dp-006',
     name: 'dp-006',
     input: 'Translate to French: "Welcome to our platform."',
-    inputFull: 'Translate the following English text to French: "Welcome to our platform. We are happy to have you here."',
+    inputFull:
+      'Translate the following English text to French: "Welcome to our platform. We are happy to have you here."',
     expectedOutput: 'Bienvenue sur notre plateforme. Nous sommes heureux de vous accueillir.',
     type: 'text',
     status: 'Draft',
@@ -430,7 +506,8 @@ const dataPoints: DataPoint[] = [
     id: 'dp-007',
     name: 'dp-007',
     input: 'Parse invoice fields from JSON payload...',
-    inputFull: '{"vendor": "Office Supplies Co.", "date": "2024-01-20", "line_items": [{"desc": "Pens x50", "amount": 25.00}, {"desc": "Paper reams x10", "amount": 45.00}], "total": 70.00}',
+    inputFull:
+      '{"vendor": "Office Supplies Co.", "date": "2024-01-20", "line_items": [{"desc": "Pens x50", "amount": 25.00}, {"desc": "Paper reams x10", "amount": 45.00}], "total": 70.00}',
     expectedOutput: '{"vendor": "Office Supplies Co.", "total": 70.00, "line_count": 2}',
     type: 'json',
     status: 'Active',
@@ -440,7 +517,8 @@ const dataPoints: DataPoint[] = [
     id: 'dp-008',
     name: 'dp-008',
     input: 'Categorize email: "Server is down, urgent!"',
-    inputFull: 'Categorize the following email into one of: urgent_incident, feature_request, billing_issue, general_inquiry. Email subject: "Server is down, urgent!" Body: "Our production server has been unreachable for the past 30 minutes."',
+    inputFull:
+      'Categorize the following email into one of: urgent_incident, feature_request, billing_issue, general_inquiry. Email subject: "Server is down, urgent!" Body: "Our production server has been unreachable for the past 30 minutes."',
     expectedOutput: 'urgent_incident',
     type: 'text',
     status: 'Active',
@@ -451,7 +529,8 @@ const dataPoints: DataPoint[] = [
     id: 'dp-009',
     name: 'dp-009',
     input: 'Triage bug report: null pointer on login page',
-    inputFull: 'Triage the following bug report and assign a severity (P0–P3) and team (Frontend, Backend, Infra). Report: "NullPointerException thrown on /login when email field is empty. Affects all users. Reproducible 100%."',
+    inputFull:
+      'Triage the following bug report and assign a severity (P0–P3) and team (Frontend, Backend, Infra). Report: "NullPointerException thrown on /login when email field is empty. Affects all users. Reproducible 100%."',
     expectedOutput: '{"severity": "P1", "team": "Frontend"}',
     type: 'json',
     status: 'Active',
@@ -461,7 +540,8 @@ const dataPoints: DataPoint[] = [
     id: 'dp-010',
     name: 'dp-010',
     input: 'Check policy compliance for: remote work request',
-    inputFull: 'Check if the following request complies with the remote work policy. Policy: employees must be in-office 3 days per week. Request: "I would like to work fully remote for the next 3 months due to a home renovation."',
+    inputFull:
+      'Check if the following request complies with the remote work policy. Policy: employees must be in-office 3 days per week. Request: "I would like to work fully remote for the next 3 months due to a home renovation."',
     expectedOutput: 'non_compliant',
     type: 'text',
     status: 'Draft',
@@ -526,7 +606,8 @@ function DatasetForm() {
 
   const statusClass = (status: DataPoint['status']) => {
     if (status === 'Active') return 'bg-success/10 text-success';
-    if (status === 'Draft') return 'bg-surface-raised text-foreground-muted border border-border-subtle';
+    if (status === 'Draft')
+      return 'bg-surface-raised text-foreground-muted border border-border-subtle';
     return 'bg-surface-raised text-foreground-subtle border border-border-subtle';
   };
 
@@ -607,11 +688,15 @@ function DatasetForm() {
                   <TableCell className="h-12 w-8 px-2 py-0">
                     <Checkbox
                       checked={selectedRows.has(dp.id)}
-                      onCheckedChange={(v: boolean | 'indeterminate') => toggleSelect(dp.id, v === true)}
+                      onCheckedChange={(v: boolean | 'indeterminate') =>
+                        toggleSelect(dp.id, v === true)
+                      }
                       aria-label={`Select ${dp.name}`}
                     />
                   </TableCell>
-                  <TableCell className="h-12 px-4 py-0 font-medium text-foreground">{dp.name}</TableCell>
+                  <TableCell className="h-12 px-4 py-0 font-medium text-foreground">
+                    {dp.name}
+                  </TableCell>
                   <TableCell className="h-12 max-w-[200px] truncate px-4 py-0 text-foreground-muted">
                     {dp.input}
                   </TableCell>
@@ -627,7 +712,9 @@ function DatasetForm() {
                       {dp.status}
                     </span>
                   </TableCell>
-                  <TableCell className="h-12 px-4 py-0 text-sm text-foreground-muted">{dp.created}</TableCell>
+                  <TableCell className="h-12 px-4 py-0 text-sm text-foreground-muted">
+                    {dp.created}
+                  </TableCell>
                   <TableCell className="h-12 px-2 py-0">
                     <button
                       type="button"
@@ -698,7 +785,9 @@ function CanvasAgentPanel() {
       <div className="flex-1 overflow-y-auto space-y-5 px-4 py-4">
         {/* Model */}
         <div>
-          <label className="mb-1.5 block text-xs font-medium text-foreground">Model</label>
+          <label htmlFor="model" className="mb-1.5 block text-xs font-medium text-foreground">
+            Model
+          </label>
           <Select value={model} onValueChange={setModel}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select model..." />
@@ -715,8 +804,14 @@ function CanvasAgentPanel() {
 
         {/* System prompt — code block */}
         <div>
-          <label className="mb-1.5 block text-xs font-medium text-foreground">System prompt</label>
+          <label
+            htmlFor="system-prompt"
+            className="mb-1.5 block text-xs font-medium text-foreground"
+          >
+            System prompt
+          </label>
           <textarea
+            id="system-prompt"
             rows={6}
             placeholder="// Enter system prompt..."
             className="w-full resize-none rounded-md border border-border-subtle bg-surface-raised px-3 py-2 font-mono text-xs text-foreground placeholder:text-foreground-subtle focus:outline-none focus:ring-2 focus:ring-brand"
@@ -725,8 +820,11 @@ function CanvasAgentPanel() {
 
         {/* User prompt — text editor */}
         <div>
-          <label className="mb-1.5 block text-xs font-medium text-foreground">User prompt</label>
+          <label htmlFor="user-prompt" className="mb-1.5 block text-xs font-medium text-foreground">
+            User prompt
+          </label>
           <Textarea
+            id="user-prompt"
             rows={5}
             placeholder="Enter user prompt..."
             className="resize-none border-border-subtle bg-surface text-foreground placeholder:text-foreground-subtle focus-visible:ring-brand"
@@ -745,7 +843,7 @@ export const Blank: Story = {
   name: 'Blank',
   render: (_, { globals }) => (
     <StudioTemplate
-      theme={globals.futureTheme || 'future-dark'}
+      theme={globals.theme || 'future-dark'}
       menuContent={<MenuNav />}
       leftPanelViews={leftPanelViews}
       rightPanelViews={rightPanelViews}
@@ -759,7 +857,7 @@ export const Panels: Story = {
   name: 'Configuration',
   render: (_, { globals }) => (
     <StudioTemplate
-      theme={globals.futureTheme || 'future-dark'}
+      theme={globals.theme || 'future-dark'}
       menuContent={<MenuNav />}
       leftPanelViews={leftPanelViews}
       rightPanelViews={rightPanelViews}
@@ -773,7 +871,7 @@ export const CanvasStory: Story = {
   name: 'Canvas',
   render: (_, { globals }) => (
     <StudioTemplate
-      theme={globals.futureTheme || 'future-dark'}
+      theme={globals.theme || 'future-dark'}
       menuContent={<MenuNav />}
       canvasBackground="surface"
       leftPanelViews={leftPanelViews}
@@ -812,15 +910,19 @@ function DatasetStory({ theme }: { theme: string }) {
           onTabChange={setActiveTab}
           actions={
             <>
-              <Button variant="ghost" className="text-foreground-accent hover:bg-transparent hover:text-foreground">
+              <Button
+                variant="ghost"
+                className="text-foreground-accent hover:bg-transparent hover:text-foreground"
+              >
                 Add
               </Button>
-              <Button variant="ghost" className="text-foreground-accent hover:bg-transparent hover:text-foreground">
+              <Button
+                variant="ghost"
+                className="text-foreground-accent hover:bg-transparent hover:text-foreground"
+              >
                 Import
               </Button>
-              <Button className="bg-brand text-foreground-on-accent hover:bg-brand/90">
-                Run
-              </Button>
+              <Button className="bg-brand text-foreground-on-accent hover:bg-brand/90">Run</Button>
             </>
           }
         />
@@ -833,5 +935,5 @@ function DatasetStory({ theme }: { theme: string }) {
 
 export const Dataset: Story = {
   name: 'Dataset',
-  render: (_, { globals }) => <DatasetStory theme={globals.futureTheme || 'future-dark'} />,
+  render: (_, { globals }) => <DatasetStory theme={globals.theme || 'future-dark'} />,
 };

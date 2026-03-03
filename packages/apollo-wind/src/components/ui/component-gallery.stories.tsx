@@ -353,7 +353,7 @@ const components: ComponentInfo[] = [
     description: 'Form field label',
     storyPath: 'components-core-label--docs',
     category: Category.Core,
-    preview: <label className="text-xs font-medium">Label</label>,
+    preview: <span className="text-xs font-medium">Label</span>,
   },
   {
     name: 'Multi Select',

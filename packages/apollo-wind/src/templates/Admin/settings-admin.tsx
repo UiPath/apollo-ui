@@ -29,7 +29,7 @@ import {
   AdminSidebarHeader,
   AdminSidebarNav,
   AdminTemplate,
-  FutureTheme,
+  Theme,
 } from './template-admin';
 
 const navItems = [
@@ -69,7 +69,7 @@ export function SettingsAdmin({
 
   return (
     <AdminTemplate
-      theme={theme as FutureTheme}
+      theme={theme as Theme}
       title="Settings"
       menuContent={menuContent}
       sidebar={
@@ -89,9 +89,7 @@ export function SettingsAdmin({
             <>
               <div>
                 <h2 className="text-2xl font-bold text-foreground">Profile</h2>
-                <p className="text-foreground-muted">
-                  Manage your public profile information.
-                </p>
+                <p className="text-foreground-muted">Manage your public profile information.</p>
               </div>
 
               <Card className="border-border-subtle bg-surface-raised">
@@ -311,9 +309,7 @@ export function SettingsAdmin({
             <>
               <div>
                 <h2 className="text-2xl font-bold text-foreground">Notifications</h2>
-                <p className="text-foreground-muted">
-                  Configure how you receive notifications.
-                </p>
+                <p className="text-foreground-muted">Configure how you receive notifications.</p>
               </div>
 
               <Card className="border-border-subtle bg-surface-raised">
@@ -420,9 +416,7 @@ export function SettingsAdmin({
 
               <Card className="border-border-subtle bg-surface-raised">
                 <CardHeader>
-                  <CardTitle className="text-foreground">
-                    Two-Factor Authentication
-                  </CardTitle>
+                  <CardTitle className="text-foreground">Two-Factor Authentication</CardTitle>
                   <CardDescription className="text-foreground-muted">
                     Add an extra layer of security to your account.
                   </CardDescription>

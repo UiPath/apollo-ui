@@ -22,7 +22,7 @@ type Story = StoryObj<typeof meta>;
 // ============================================================================
 
 function resolveThemeClass(value: string) {
-  return value || 'future-dark';
+  return value ?? 'future-dark';
 }
 
 // ============================================================================
@@ -72,6 +72,7 @@ function CodeBlock({ children, label }: { children: string; label?: string }) {
         <div className="flex items-center justify-between border-b border-border px-4 py-2">
           <span className="text-xs font-medium text-muted-foreground">{label}</span>
           <button
+            type="button"
             onClick={handleCopy}
             className="cursor-pointer rounded px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
@@ -81,6 +82,7 @@ function CodeBlock({ children, label }: { children: string; label?: string }) {
       )}
       {!label && (
         <button
+          type="button"
           onClick={handleCopy}
           className="absolute top-2 right-2 cursor-pointer rounded px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
@@ -200,8 +202,8 @@ Documentation
           <div className="rounded-lg border border-border bg-card p-4">
             <h4 className="mb-2 text-sm font-semibold text-foreground">Cursor</h4>
             <p className="mb-3 text-sm text-muted-foreground">
-              Type <InlineCode>@apollo-ai-context.md</InlineCode> in chat and describe what you
-              want to build. That's it.
+              Type <InlineCode>@apollo-ai-context.md</InlineCode> in chat and describe what you want
+              to build. That's it.
             </p>
           </div>
 
@@ -263,9 +265,9 @@ function UsePlaygroundTab() {
       <div>
         <SectionTitle>Use Playground</SectionTitle>
         <SectionDescription>
-          This playground enables UiPath team members to quickly set up a prototype app in just a few
-          clicks. Its purpose is to help less technical users launch a functional prototype using our
-          design system's default styles and templates.
+          This playground enables UiPath team members to quickly set up a prototype app in just a
+          few clicks. Its purpose is to help less technical users launch a functional prototype
+          using our design system's default styles and templates.
         </SectionDescription>
       </div>
 
@@ -320,8 +322,8 @@ cd apollo-prototype-playground`}
             </li>
             <li>Select your folder from the team member list</li>
             <li>
-              Optionally toggle{' '}
-              <span className="font-medium text-foreground">Shareable URL</span> to generate a link
+              Optionally toggle <span className="font-medium text-foreground">Shareable URL</span>{' '}
+              to generate a link
             </li>
             <li>
               Click <span className="font-medium text-foreground">Create</span> — your prototype
@@ -387,9 +389,7 @@ function UseFigmaTab() {
 
       <div className="space-y-4">
         <StepItem step={1} title="Start from the Apollo Figma library">
-          <p>
-            Use the shared design system file as your starting point.
-          </p>
+          <p>Use the shared design system file as your starting point.</p>
           <div className="mt-3 space-y-2 text-sm leading-6">
             <div>
               <span className="font-medium text-foreground">Core products: </span>
@@ -446,8 +446,8 @@ function UseFigmaTab() {
 
         <StepItem step={3} title="Copy the Figma URL and prompt">
           <p>
-            Copy the URL for the specific frame you want to prototype. Include context the AI
-            can't see: interactions, states, theme, and which Apollo components map to the design.
+            Copy the URL for the specific frame you want to prototype. Include context the AI can't
+            see: interactions, states, theme, and which Apollo components map to the design.
           </p>
         </StepItem>
       </div>
@@ -473,8 +473,8 @@ Use the Apollo AI context file for component and token references.`}
 
       <InfoCallout>
         See the <span className="font-medium text-foreground">Use Claude</span> or{' '}
-        <span className="font-medium text-foreground">Use Cursor</span> tabs for full tool
-        setup including the Storybook MCP server and AI context file.
+        <span className="font-medium text-foreground">Use Cursor</span> tabs for full tool setup
+        including the Storybook MCP server and AI context file.
       </InfoCallout>
     </div>
   );
@@ -499,8 +499,8 @@ function UseClaudeTab() {
       <div className="space-y-4">
         <StepItem step={1} title="Reference the AI context file">
           <p>
-            Claude Code can read project files directly. Reference the context file in your
-            prompt so Claude knows the design system:
+            Claude Code can read project files directly. Reference the context file in your prompt
+            so Claude knows the design system:
           </p>
           <CodeBlock>
             {`Read packages/apollo-wind/apollo-ai-context.md then create a dashboard page
@@ -508,8 +508,8 @@ with a sidebar, header, and a DataTable showing process status.
 Use the future-dark theme.`}
           </CodeBlock>
           <p>
-            For repeated use, add a note to your project's{' '}
-            <InlineCode>CLAUDE.md</InlineCode> so Claude always knows where to find it:
+            For repeated use, add a note to your project's <InlineCode>CLAUDE.md</InlineCode> so
+            Claude always knows where to find it:
           </p>
           <CodeBlock label="CLAUDE.md addition">
             {`## Prototyping
@@ -520,9 +520,7 @@ for the full component library, tokens, and theming reference.`}
 
         {/* 2. Storybook MCP */}
         <StepItem step={2} title="Connect the Storybook MCP server">
-          <p>
-            Gives Claude live access to component metadata, props, and usage examples.
-          </p>
+          <p>Gives Claude live access to component metadata, props, and usage examples.</p>
           <CodeBlock label="Start Storybook first">
             {`cd packages/apollo-wind && pnpm storybook`}
           </CodeBlock>
@@ -537,9 +535,7 @@ for the full component library, tokens, and theming reference.`}
 
         {/* 3. Figma MCP */}
         <StepItem step={3} title="Connect Figma">
-          <p>
-            Add the Figma MCP so Claude can read your design files directly:
-          </p>
+          <p>Add the Figma MCP so Claude can read your design files directly:</p>
           <CodeBlock>
             {`claude mcp add figma -- npx -y figma-developer-mcp --figma-api-key=YOUR_KEY`}
           </CodeBlock>
@@ -558,14 +554,14 @@ for the full component library, tokens, and theming reference.`}
             prompting.
           </li>
           <li>
-            <span className="font-medium text-foreground">Let Claude read the file.</span> Say
-            "read apollo-ai-context.md" rather than pasting it — Claude Code can access files
-            directly and this keeps your prompt clean.
+            <span className="font-medium text-foreground">Let Claude read the file.</span> Say "read
+            apollo-ai-context.md" rather than pasting it — Claude Code can access files directly and
+            this keeps your prompt clean.
           </li>
           <li>
             <span className="font-medium text-foreground">Iterate in conversation.</span> Claude
-            Code keeps full context, so you can refine incrementally: "now add a filter bar to
-            the table" or "switch the theme to future-light."
+            Code keeps full context, so you can refine incrementally: "now add a filter bar to the
+            table" or "switch the theme to future-light."
           </li>
         </ul>
       </div>
@@ -583,8 +579,8 @@ function UseCursorTab() {
       <div>
         <SectionTitle>Use Cursor</SectionTitle>
         <SectionDescription>
-          Complete setup for prototyping with Cursor. Three things to connect: the AI context
-          file, the Storybook MCP server, and optionally the Figma MCP server.
+          Complete setup for prototyping with Cursor. Three things to connect: the AI context file,
+          the Storybook MCP server, and optionally the Figma MCP server.
         </SectionDescription>
       </div>
 
@@ -592,13 +588,11 @@ function UseCursorTab() {
       <div className="space-y-4">
         <StepItem step={1} title="Reference the AI context file">
           <p>
-            The fastest way — type <InlineCode>@apollo-ai-context.md</InlineCode> in any Cursor
-            chat to attach the design system reference. The AI immediately knows all components,
-            tokens, and rules.
+            The fastest way — type <InlineCode>@apollo-ai-context.md</InlineCode> in any Cursor chat
+            to attach the design system reference. The AI immediately knows all components, tokens,
+            and rules.
           </p>
-          <p>
-            For automatic inclusion on every chat, add it as a Cursor rule:
-          </p>
+          <p>For automatic inclusion on every chat, add it as a Cursor rule:</p>
           <CodeBlock label=".cursor/rules/apollo-prototyping.md">
             {`---
 description: Apollo design system context for prototyping
@@ -610,15 +604,11 @@ globs: ["packages/apollo-wind/**"]
 
         {/* 2. Storybook MCP */}
         <StepItem step={2} title="Connect the Storybook MCP server">
-          <p>
-            Gives the agent live access to component metadata, props, and usage examples.
-          </p>
+          <p>Gives the agent live access to component metadata, props, and usage examples.</p>
           <CodeBlock label="Start Storybook first">
             {`cd packages/apollo-wind && pnpm storybook`}
           </CodeBlock>
-          <p>
-            Then add this to your project's MCP config:
-          </p>
+          <p>Then add this to your project's MCP config:</p>
           <CodeBlock label=".cursor/mcp.json">
             {`{
   "mcpServers": {
@@ -636,9 +626,7 @@ globs: ["packages/apollo-wind/**"]
 
         {/* 3. Figma MCP */}
         <StepItem step={3} title="Connect Figma">
-          <p>
-            Add the Figma MCP server:
-          </p>
+          <p>Add the Figma MCP server:</p>
           <CodeBlock label=".cursor/mcp.json">
             {`{
   "mcpServers": {
@@ -667,9 +655,9 @@ globs: ["packages/apollo-wind/**"]
             <InlineCode>@apollo-ai-context.md</InlineCode> for the design system context.
           </li>
           <li>
-            <span className="font-medium text-foreground">Agent mode for multi-step work.</span>{' '}
-            Use Agent mode when building a full page — it can create files, run commands, and
-            iterate autonomously. Use Ask mode for quick questions about tokens or components.
+            <span className="font-medium text-foreground">Agent mode for multi-step work.</span> Use
+            Agent mode when building a full page — it can create files, run commands, and iterate
+            autonomously. Use Ask mode for quick questions about tokens or components.
           </li>
           <li>
             <span className="font-medium text-foreground">Reference existing templates.</span> Say
@@ -813,10 +801,9 @@ function BestPracticesContent() {
           <li>
             <span className="font-medium text-foreground">Set the theme class first.</span>
             <br />
-            Apply{' '}
-            <InlineCode>future-dark</InlineCode> or <InlineCode>future-light</InlineCode> to your
-            root element before adding any content. This ensures all tokens resolve correctly from
-            the start.
+            Apply <InlineCode>future-dark</InlineCode> or <InlineCode>future-light</InlineCode> to
+            your root element before adding any content. This ensures all tokens resolve correctly
+            from the start.
           </li>
         </ul>
       </div>
@@ -835,8 +822,8 @@ function BestPracticesContent() {
           <li>
             <span className="font-medium text-foreground">Reference tokens, not colors.</span>
             <br />
-            Say "use bg-surface-raised for the card background" instead of "make the
-            background dark gray." This ensures theme consistency.
+            Say "use bg-surface-raised for the card background" instead of "make the background dark
+            gray." This ensures theme consistency.
           </li>
           <li>
             <span className="font-medium text-foreground">Iterate in small steps.</span>
@@ -960,13 +947,16 @@ function WhatNotInScopeContent() {
       <div>
         <h3 className="mb-3 text-lg font-semibold text-foreground">v0 and Lovable</h3>
         <SectionDescription>
-          These web-based AI builders operate differently from code-editor tools like Cursor and Claude
-          Code. Here's why they're not directly supported and how to get the most out of them.
+          These web-based AI builders operate differently from code-editor tools like Cursor and
+          Claude Code. Here's why they're not directly supported and how to get the most out of
+          them.
         </SectionDescription>
 
         <div className="mt-4 space-y-4">
           <div>
-            <h4 className="mb-2 text-base font-semibold text-foreground">Why they're not directly supported</h4>
+            <h4 className="mb-2 text-base font-semibold text-foreground">
+              Why they're not directly supported
+            </h4>
             <ul className="space-y-2 text-sm leading-6 text-muted-foreground">
               <li>
                 <span className="font-medium text-foreground">No MCP support.</span>
@@ -978,29 +968,32 @@ function WhatNotInScopeContent() {
               <li>
                 <span className="font-medium text-foreground">No local file access.</span>
                 <br />
-                They can't read files from your repository or use{' '}
-                <InlineCode>@</InlineCode> references. Context must be manually pasted.
+                They can't read files from your repository or use <InlineCode>@</InlineCode>{' '}
+                references. Context must be manually pasted.
               </li>
               <li>
-                <span className="font-medium text-foreground">Different component environments.</span>
+                <span className="font-medium text-foreground">
+                  Different component environments.
+                </span>
                 <br />
                 Both tools use their own shadcn/ui setup. Import paths, custom Apollo components
-                (like <InlineCode>ChatComposer</InlineCode>,{' '}
-                <InlineCode>FlowNode</InlineCode>), and our custom design tokens won't exist in
-                their generated code.
+                (like <InlineCode>ChatComposer</InlineCode>, <InlineCode>FlowNode</InlineCode>), and
+                our custom design tokens won't exist in their generated code.
               </li>
               <li>
                 <span className="font-medium text-foreground">No theme CSS.</span>
                 <br />
-                Our <InlineCode>future-dark</InlineCode> and{' '}
-                <InlineCode>future-light</InlineCode> CSS variables won't be available. Output will
-                use generic Tailwind colors unless manually adjusted.
+                Our <InlineCode>future-dark</InlineCode> and <InlineCode>future-light</InlineCode>{' '}
+                CSS variables won't be available. Output will use generic Tailwind colors unless
+                manually adjusted.
               </li>
             </ul>
           </div>
 
           <div>
-            <h4 className="mb-2 text-base font-semibold text-foreground">How to use them effectively</h4>
+            <h4 className="mb-2 text-base font-semibold text-foreground">
+              How to use them effectively
+            </h4>
             <ul className="space-y-3 text-sm leading-6 text-muted-foreground">
               <li>
                 <span className="font-medium text-foreground">Paste the AI context file.</span>
@@ -1011,18 +1004,22 @@ function WhatNotInScopeContent() {
                 components, tokens, and patterns.
               </li>
               <li>
-                <span className="font-medium text-foreground">Specify theme values explicitly.</span>
+                <span className="font-medium text-foreground">
+                  Specify theme values explicitly.
+                </span>
                 <br />
                 Since CSS variables won't resolve, include the actual color values in your prompt.
                 For example: "Use dark gray backgrounds (#09090b for surface, #18181b for raised
                 surfaces) and cyan accents (#0891b2) to match Apollo's future-dark theme."
               </li>
               <li>
-                <span className="font-medium text-foreground">Treat output as a starting point.</span>
+                <span className="font-medium text-foreground">
+                  Treat output as a starting point.
+                </span>
                 <br />
-                The generated code will need adjustment when brought into the Apollo Wind repository.
-                Plan to replace generic Tailwind classes with semantic tokens, update import paths,
-                and add custom Apollo components where needed.
+                The generated code will need adjustment when brought into the Apollo Wind
+                repository. Plan to replace generic Tailwind classes with semantic tokens, update
+                import paths, and add custom Apollo components where needed.
               </li>
               <li>
                 <span className="font-medium text-foreground">Use for rapid ideation.</span>
@@ -1051,6 +1048,7 @@ function ResourcesTab() {
         <div className="mt-4 inline-flex rounded-lg border border-border bg-muted/50 p-1">
           {resourceSubTabs.map((sub) => (
             <button
+              type="button"
               key={sub}
               className={cn(
                 'cursor-pointer rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
@@ -1079,7 +1077,14 @@ function ResourcesTab() {
 // Prototyping Page
 // ============================================================================
 
-const tabs = ['Overview', 'Use Playground', 'Use Figma', 'Use Claude', 'Use Cursor', 'Resources'] as const;
+const tabs = [
+  'Overview',
+  'Use Playground',
+  'Use Figma',
+  'Use Claude',
+  'Use Cursor',
+  'Resources',
+] as const;
 type TabId = (typeof tabs)[number];
 
 function PrototypingPage({ globalTheme }: { globalTheme: string }) {
@@ -1107,6 +1112,7 @@ function PrototypingPage({ globalTheme }: { globalTheme: string }) {
         <div className="flex gap-1 border-b border-border pt-4 pb-0">
           {tabs.map((tab) => (
             <button
+              type="button"
               key={tab}
               className={cn(
                 'cursor-pointer px-4 pb-3 text-sm font-medium transition-colors',
@@ -1140,5 +1146,5 @@ function PrototypingPage({ globalTheme }: { globalTheme: string }) {
 // ============================================================================
 
 export const Default: Story = {
-  render: (_, { globals }) => <PrototypingPage globalTheme={globals.futureTheme || 'future-dark'} />,
+  render: (_, { globals }) => <PrototypingPage globalTheme={globals.theme || 'future-dark'} />,
 };

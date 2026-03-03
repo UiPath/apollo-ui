@@ -1,22 +1,23 @@
-import * as React from 'react';
+import * as SheetPrimitive from '@radix-ui/react-dialog';
 import {
-  Menu,
-  Search,
-  Sparkles,
+  AlertCircle,
   Bell,
-  CircleHelp,
-  ChevronDown,
-  User,
-  Settings,
-  LogOut,
   BookOpen,
-  MessageCircleQuestion,
+  CheckCircle2,
+  ChevronDown,
+  CircleHelp,
   ExternalLink,
   Info,
-  AlertCircle,
-  CheckCircle2,
+  LogOut,
+  Menu,
+  MessageCircleQuestion,
+  Search,
+  Settings,
+  Sparkles,
+  User,
   X,
 } from 'lucide-react';
+import * as React from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -25,30 +26,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Sheet,
-  SheetOverlay,
-  SheetPortal,
-  SheetTitle,
-} from '@/components/ui/sheet';
-import * as SheetPrimitive from '@radix-ui/react-dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Sheet, SheetOverlay, SheetPortal, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib';
 
 // ============================================================================
 // Types
 // ============================================================================
 
-import type { FutureTheme } from '@/foundation/Future/types';
+import type { Theme } from '@/foundation/Future/types';
 
 export interface MaestroHeaderProps {
   className?: string;
   /** Color theme — needed so portal-rendered dropdowns inherit the correct CSS variables */
-  theme?: FutureTheme;
+  theme?: Theme;
   /** Application title shown next to the logo */
   title?: string;
   /** Current tenant name */
@@ -79,7 +70,8 @@ function HeaderIconButton({
   disabled?: boolean;
 }) {
   return (
-    <button type="button"
+    <button
+      type="button"
       className={cn(
         'flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors',
         disabled ? 'cursor-default opacity-50' : 'hover:text-foreground'
@@ -102,7 +94,8 @@ function NotificationsDropdown({ themeClass }: { themeClass: string }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button type="button"
+        <button
+          type="button"
           className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:text-foreground"
           aria-label="Notifications"
         >
@@ -129,7 +122,9 @@ function NotificationsDropdown({ themeClass }: { themeClass: string }) {
           <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
           <div className="flex flex-col gap-0.5">
             <span className="text-sm font-medium text-foreground">Flow completed</span>
-            <span className="text-xs text-foreground-muted">Invoice processing finished successfully</span>
+            <span className="text-xs text-foreground-muted">
+              Invoice processing finished successfully
+            </span>
           </div>
         </DropdownMenuItem>
         <DropdownMenuItem className="flex items-start gap-3 px-3 py-2.5 text-foreground-muted focus:bg-surface-hover focus:text-foreground">
@@ -152,7 +147,8 @@ function HelpDropdown({ themeClass }: { themeClass: string }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button type="button"
+        <button
+          type="button"
           className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:text-foreground"
           aria-label="Help"
         >
@@ -197,7 +193,10 @@ function TenantSelector({ tenantName, themeClass }: { tenantName: string; themeC
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button type="button" className="flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-foreground-muted transition-colors hover:text-foreground">
+        <button
+          type="button"
+          className="flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-foreground-muted transition-colors hover:text-foreground"
+        >
           <span>
             Tenant: <span className="font-medium">{selected}</span>
           </span>
@@ -210,13 +209,12 @@ function TenantSelector({ tenantName, themeClass }: { tenantName: string; themeC
         className={cn(themeClass, 'w-56 border-border bg-surface-overlay p-1')}
       >
         {tenants.map((tenant) => (
-          <button type="button"
+          <button
+            type="button"
             key={tenant.id}
             className={cn(
               'flex w-full items-center rounded-md px-3 py-2 text-sm transition-colors hover:bg-surface-hover',
-              selected === tenant.label
-                ? 'font-medium text-foreground'
-                : 'text-foreground-muted'
+              selected === tenant.label ? 'font-medium text-foreground' : 'text-foreground-muted'
             )}
             onClick={() => setSelected(tenant.label)}
           >
@@ -314,31 +312,26 @@ export function MaestroHeader({
       >
         {/* Left: waffle + title */}
         <div className="flex items-center gap-3">
-          <button type="button"
+          <button
+            type="button"
             className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:text-foreground"
             onClick={() => menuContent && setMenuOpen((prev) => !prev)}
             aria-label="App launcher"
           >
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
-          <span className="text-sm font-semibold text-foreground">
-            {title}
-          </span>
+          <span className="text-sm font-semibold text-foreground">{title}</span>
         </div>
 
         {/* Right: actions + tenant + avatar */}
         <div className="flex items-center gap-4">
-        <HeaderIconButton
-          icon={<Search className="h-5 w-5" />}
-          label="Search"
-          onClick={onSearchClick}
-          disabled
-        />
-        <HeaderIconButton
-          icon={<Sparkles className="h-5 w-5" />}
-          label="AI"
-          disabled
-        />
+          <HeaderIconButton
+            icon={<Search className="h-5 w-5" />}
+            label="Search"
+            onClick={onSearchClick}
+            disabled
+          />
+          <HeaderIconButton icon={<Sparkles className="h-5 w-5" />} label="AI" disabled />
           <NotificationsDropdown themeClass={themeClass} />
           <HelpDropdown themeClass={themeClass} />
           <TenantSelector tenantName={tenantName} themeClass={themeClass} />
@@ -365,9 +358,7 @@ export function MaestroHeader({
               <SheetTitle className="sr-only">App launcher</SheetTitle>
 
               {/* Menu content */}
-              <div className="flex h-full flex-col overflow-y-auto">
-                {menuContent}
-              </div>
+              <div className="flex h-full flex-col overflow-y-auto">{menuContent}</div>
             </SheetPrimitive.Content>
           </SheetPortal>
         </Sheet>

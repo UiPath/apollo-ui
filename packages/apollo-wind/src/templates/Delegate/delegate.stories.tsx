@@ -1,28 +1,28 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import * as React from 'react';
 import {
+  ChevronUp,
+  Copy,
   House,
   MessageCircle,
-  Workflow,
-  ChevronUp,
+  Monitor,
+  Moon,
+  MoreVertical,
   Search,
   Settings as SettingsIcon,
-  Copy,
-  ThumbsUp,
-  ThumbsDown,
-  MoreVertical,
   Sun,
-  Moon,
-  Monitor,
+  ThumbsDown,
+  ThumbsUp,
   Upload,
   User,
+  Workflow,
 } from 'lucide-react';
-import { DelegateTemplate } from './template-delegate';
-import type { NavItem } from './template-delegate';
-import { ChatFirstExperience } from '@/components/custom/chat-first-experience';
+import * as React from 'react';
 import { ChatComposer } from '@/components/custom/chat-composer';
+import { ChatFirstExperience } from '@/components/custom/chat-first-experience';
 import { StepsView } from '@/components/custom/chat-steps-view';
 import { Input } from '@/components/ui/input';
+import type { NavItem } from './template-delegate';
+import { DelegateTemplate } from './template-delegate';
 
 const defaultNavItems: NavItem[] = [
   {
@@ -70,7 +70,7 @@ type Story = StoryObj<typeof meta>;
 export const Blank: Story = {
   render: (_, { globals }) => (
     <DelegateTemplate
-      theme={globals.futureTheme || 'future-dark'}
+      theme={globals.theme || 'future-dark'}
       navItems={defaultNavItems}
       defaultPanelOpen={true}
     >
@@ -82,7 +82,7 @@ export const Blank: Story = {
 export const Home: Story = {
   render: (_, { globals }) => (
     <DelegateTemplate
-      theme={globals.futureTheme || 'future-dark'}
+      theme={globals.theme || 'future-dark'}
       navItems={defaultNavItems}
       defaultPanelOpen={true}
     >
@@ -110,8 +110,7 @@ const agentSteps = [
   {
     icon: <Search className="h-3.5 w-3.5 text-foreground-subtle" />,
     title: 'WebSearchTool',
-    description:
-      'Checking categorized tabs to better understand spam and volume sources.',
+    description: 'Checking categorized tabs to better understand spam and volume sources.',
   },
   {
     icon: <SettingsIcon className="h-3.5 w-3.5 text-foreground-subtle" />,
@@ -131,9 +130,9 @@ function ChatResponsesContent() {
           <div className="flex justify-end">
             <div className="max-w-[640px] rounded-bl-2xl rounded-br-sm rounded-tl-2xl rounded-tr-2xl bg-surface-raised px-6 py-4">
               <p className="text-base leading-6 tracking-[-0.4px] text-foreground">
-                Open the Excel file I uploaded yesterday, analyze the sales
-                numbers, and generate a short summary of monthly performance.
-                Send the summary to me on Slack once you&apos;re done.
+                Open the Excel file I uploaded yesterday, analyze the sales numbers, and generate a
+                short summary of monthly performance. Send the summary to me on Slack once
+                you&apos;re done.
               </p>
             </div>
           </div>
@@ -154,9 +153,15 @@ function ChatResponsesContent() {
                 <div className="flex h-6 w-6 items-center justify-center">
                   <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none">
                     <rect width="24" height="24" rx="4" fill="#21A366" />
-                    <path d="M6 4h5l3 4.5L17 4h4v16h-4l-3-4.5L11 20H6V4z" fill="white" opacity="0.9" />
+                    <path
+                      d="M6 4h5l3 4.5L17 4h4v16h-4l-3-4.5L11 20H6V4z"
+                      fill="white"
+                      opacity="0.9"
+                    />
                     <path d="M3 7h7l-2 5 2 5H3V7z" fill="#185C37" />
-                    <text x="4.5" y="14.5" fontSize="7" fontWeight="bold" fill="white">X</text>
+                    <text x="4.5" y="14.5" fontSize="7" fontWeight="bold" fill="white">
+                      X
+                    </text>
                   </svg>
                 </div>
                 <span className="text-base font-semibold tracking-[-0.4px] text-foreground">
@@ -194,16 +199,28 @@ function ChatResponsesContent() {
 
           {/* Action icons row */}
           <div className="flex items-center gap-1">
-            <button className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground">
+            <button
+              type="button"
+              className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground"
+            >
               <Copy className="h-4 w-4" />
             </button>
-            <button className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground">
+            <button
+              type="button"
+              className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground"
+            >
               <ThumbsDown className="h-4 w-4" />
             </button>
-            <button className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground">
+            <button
+              type="button"
+              className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground"
+            >
               <ThumbsUp className="h-4 w-4" />
             </button>
-            <button className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground">
+            <button
+              type="button"
+              className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground"
+            >
               <MoreVertical className="h-4 w-4" />
             </button>
           </div>
@@ -222,7 +239,7 @@ export const Conversation: Story = {
   name: 'Conversation',
   render: (_, { globals }) => (
     <DelegateTemplate
-      theme={globals.futureTheme || 'future-dark'}
+      theme={globals.theme || 'future-dark'}
       navItems={defaultNavItems}
       defaultPanelOpen={true}
     >
@@ -234,7 +251,7 @@ export const Conversation: Story = {
 export const Steps: Story = {
   render: (_, { globals }) => (
     <DelegateTemplate
-      theme={globals.futureTheme || 'future-dark'}
+      theme={globals.theme || 'future-dark'}
       navItems={defaultNavItems}
       defaultPanelOpen={true}
     >
@@ -266,6 +283,7 @@ function SettingsContent() {
         <div className="flex gap-1">
           {settingsTabs.map((tab) => (
             <button
+              type="button"
               key={tab.id}
               className={`px-4 pb-3 text-sm font-medium transition-colors ${
                 activeTab === tab.id
@@ -295,12 +313,15 @@ function SettingsContent() {
             <div className="flex flex-col gap-8">
               {/* Profile Image */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-foreground">Profile Image</label>
+                <span className="text-sm font-medium text-foreground">Profile Image</span>
                 <div className="flex items-center gap-4">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-overlay">
                     <User className="h-7 w-7 text-foreground-muted" />
                   </div>
-                  <button className="flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground">
+                  <button
+                    type="button"
+                    className="flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground"
+                  >
                     <Upload className="h-4 w-4" />
                     Select Image
                   </button>
@@ -312,8 +333,11 @@ function SettingsContent() {
 
               {/* Your Name */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-foreground">Your Name</label>
+                <label htmlFor="profile-name" className="text-sm font-medium text-foreground">
+                  Your Name
+                </label>
                 <Input
+                  id="profile-name"
                   placeholder="Enter your name"
                   className="max-w-md border-border bg-surface-overlay text-foreground placeholder:text-foreground-subtle"
                 />
@@ -321,8 +345,11 @@ function SettingsContent() {
 
               {/* Your Email */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-foreground">Your Email</label>
+                <label htmlFor="profile-email" className="text-sm font-medium text-foreground">
+                  Your Email
+                </label>
                 <Input
+                  id="profile-email"
                   placeholder="Enter your email"
                   type="email"
                   className="max-w-md border-border bg-surface-overlay text-foreground placeholder:text-foreground-subtle"
@@ -334,11 +361,16 @@ function SettingsContent() {
 
               {/* Language */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-foreground">Language</label>
+                <label htmlFor="profile-language" className="text-sm font-medium text-foreground">
+                  Language
+                </label>
                 <p className="text-sm text-foreground-muted">
                   Select your preferred language for the interface.
                 </p>
-                <select className="h-10 max-w-md appearance-none rounded-md border border-border bg-surface-overlay px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
+                <select
+                  id="profile-language"
+                  className="h-10 max-w-md appearance-none rounded-md border border-border bg-surface-overlay px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                >
                   <option>Select Language</option>
                   <option>English</option>
                   <option>Spanish</option>
@@ -353,7 +385,7 @@ function SettingsContent() {
 
               {/* Theme Settings */}
               <div className="flex flex-col gap-3">
-                <label className="text-sm font-medium text-foreground">Theme Settings</label>
+                <span className="text-sm font-medium text-foreground">Theme Settings</span>
                 <p className="text-sm text-foreground-muted">
                   Choose your preferred theme for the interface.
                 </p>
@@ -364,6 +396,7 @@ function SettingsContent() {
                     { id: 'system', label: 'System', icon: <Monitor className="h-5 w-5" /> },
                   ].map((theme) => (
                     <button
+                      type="button"
                       key={theme.id}
                       className={`flex h-20 w-28 flex-col items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-colors ${
                         selectedTheme === theme.id
@@ -394,7 +427,7 @@ export const Settings: Story = {
   name: 'Settings',
   render: (_, { globals }) => (
     <DelegateTemplate
-      theme={globals.futureTheme || 'future-dark'}
+      theme={globals.theme || 'future-dark'}
       navItems={defaultNavItems}
       defaultPanelOpen={true}
     >

@@ -21,7 +21,7 @@ type Story = StoryObj<typeof meta>;
 // ============================================================================
 
 function resolveThemeClass(value: string) {
-  return value || 'future-dark';
+  return value ?? 'future-dark';
 }
 
 // ============================================================================
@@ -33,13 +33,14 @@ function ComingSoon({ theme }: { theme: string }) {
 
   return (
     <div
-      className={cn(themeClass, 'flex min-h-screen w-full items-center justify-center bg-background text-foreground')}
+      className={cn(
+        themeClass,
+        'flex min-h-screen w-full items-center justify-center bg-background text-foreground'
+      )}
       style={{ fontFamily: fontFamily.base }}
     >
       <div className="flex flex-col items-center gap-3 text-center">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Brand Motion
-        </h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Brand Motion</h1>
         <p className="text-base text-muted-foreground">Coming soon</p>
       </div>
     </div>
@@ -51,7 +52,5 @@ function ComingSoon({ theme }: { theme: string }) {
 // ============================================================================
 
 export const Default: Story = {
-  render: (_, { globals }) => (
-    <ComingSoon theme={globals.futureTheme || 'future-dark'} />
-  ),
+  render: (_, { globals }) => <ComingSoon theme={globals.theme || 'future-dark'} />,
 };

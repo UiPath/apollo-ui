@@ -3,18 +3,18 @@ import { StudioCanvas, StudioGrid, StudioGridItem } from '@/components/custom/ca
 import { MaestroHeader } from '@/components/custom/global-header';
 import { StudioPanel, StudioPanelSelection } from '@/components/custom/panel-studio';
 import { ViewportGuard } from '@/components/custom/viewport-guard';
-import type { FutureTheme } from '@/foundation/Future/types';
+import type { Theme } from '@/foundation/Future/types';
 import { fontFamily } from '@/foundation/Future/typography';
 import { cn } from '@/lib';
 
-export type { FutureTheme };
+export type { Theme };
 export { StudioCanvas, StudioGrid, StudioGridItem, StudioPanel, StudioPanelSelection };
 
 // ============================================================================
 // Helpers
 // ============================================================================
 
-function resolveThemeClass(theme: FutureTheme) {
+function resolveThemeClass(theme: Theme) {
   return theme;
 }
 
@@ -35,7 +35,7 @@ const LEFT_PANEL_BREAKPOINT = 1024;
 export interface StudioTemplateProps {
   className?: string;
   /** Color theme for the template */
-  theme?: FutureTheme;
+  theme?: Theme;
   /** Application title shown in the header */
   title?: string;
   /** Tenant name shown in the header */
@@ -188,7 +188,11 @@ export function StudioTemplate({
           if (prevW >= LEFT_PANEL_BREAKPOINT && w < LEFT_PANEL_BREAKPOINT) {
             if (!pinLeftPanel) setLeftIndex(undefined);
             if (!pinRightPanel) setRightIndex(undefined);
-          } else if (prevW >= RIGHT_PANEL_BREAKPOINT && w < RIGHT_PANEL_BREAKPOINT && !pinRightPanel) {
+          } else if (
+            prevW >= RIGHT_PANEL_BREAKPOINT &&
+            w < RIGHT_PANEL_BREAKPOINT &&
+            !pinRightPanel
+          ) {
             setRightIndex(undefined);
           }
         }
@@ -257,20 +261,18 @@ export function StudioTemplate({
           )}
 
           {/* Left panel — shown when an icon is active and not narrowed */}
-          {showLeftPanel && (
-            <StudioPanel side="left">{leftContent}</StudioPanel>
-          )}
+          {showLeftPanel && <StudioPanel side="left">{leftContent}</StudioPanel>}
 
           {/* Center canvas — vertical flex so pageHeader sits above the scroll area */}
           <div className="flex flex-1 flex-col overflow-hidden">
             {pageHeader}
-            <StudioCanvas background={canvasBackground} fullWidth={canvasFullWidth}>{children}</StudioCanvas>
+            <StudioCanvas background={canvasBackground} fullWidth={canvasFullWidth}>
+              {children}
+            </StudioCanvas>
           </div>
 
           {/* Right panel — shown when an icon is active and not narrowed */}
-          {showRightPanel && (
-            <StudioPanel side="right">{rightContent}</StudioPanel>
-          )}
+          {showRightPanel && <StudioPanel side="right">{rightContent}</StudioPanel>}
 
           {/* Right rail — always visible when right views are provided */}
           {hasRight && (

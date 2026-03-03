@@ -3,7 +3,7 @@ import { Canvas } from '@/components/custom/canvas';
 import type { DelegatePanelProps, NavChildItem, NavItem } from '@/components/custom/panel-delegate';
 import { DelegatePanel } from '@/components/custom/panel-delegate';
 import { useViewportAtOrAbove, ViewportGuard } from '@/components/custom/viewport-guard';
-import type { FutureTheme } from '@/foundation/Future/types';
+import type { Theme } from '@/foundation/Future/types';
 import { fontFamily } from '@/foundation/Future/typography';
 import { cn } from '@/lib';
 
@@ -20,7 +20,7 @@ export type { NavItem, NavChildItem, DelegatePanelProps };
 export interface DelegateTemplateProps {
   className?: string;
   /** Color theme for the template */
-  theme?: FutureTheme;
+  theme?: Theme;
   /** Whether the left panel starts expanded */
   defaultPanelOpen?: boolean;
   /** Navigation items in the left panel */
@@ -62,11 +62,7 @@ export function DelegateTemplate({
 
   const layout = (
     <div
-      className={cn(
-        theme,
-        'flex h-screen bg-surface',
-        className
-      )}
+      className={cn(theme, 'flex h-screen bg-surface', className)}
       style={{ fontFamily: fontFamily.base }}
     >
       <DelegatePanel
