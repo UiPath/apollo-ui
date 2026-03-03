@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.45.6](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.5...@uipath/apollo-react@3.45.6) (2026-03-03)
+
+### Bug Fixes
+
+* **apollo-react:** prevent cite-end tag when citing text-block ending in url ([32f7851](https://github.com/UiPath/apollo-ui/commit/32f7851f07b9d71c85492f887aa95246049e7069))
+
 ## [@uipath/apollo-react-v3.45.5](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.4...@uipath/apollo-react@3.45.5) (2026-03-03)
 
 ### Bug Fixes
