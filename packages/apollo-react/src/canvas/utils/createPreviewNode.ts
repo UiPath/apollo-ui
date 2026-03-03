@@ -80,7 +80,8 @@ function calculateAutoPosition(
   previewNodeSize: { width: number; height: number },
   existingNodes: Node[],
   offset = GRID_SPACING * 5,
-  ignoredNodeTypes: string[] = []
+  ignoredNodeTypes: string[] = [],
+  handleAnchor?: { x: number; y: number }
 ): { x: number; y: number } {
   const sourceAbsolutePosition = sourceNode.parentId
     ? getAbsolutePosition(sourceNode, existingNodes)
@@ -89,6 +90,10 @@ function calculateAutoPosition(
   const sourceHeight = sourceNode.measured?.height ?? 0;
   const sourceCenterX = sourceAbsolutePosition.x + sourceWidth / 2;
   const sourceCenterY = sourceAbsolutePosition.y + sourceHeight / 2;
+
+  // Use exact handle position when available, fall back to node center
+  const anchorX = handleAnchor?.x ?? sourceCenterX;
+  const anchorY = handleAnchor?.y ?? sourceCenterY;
 
   // Prepare nodes with absolute positions for overlap detection
   const nodesWithAbsolutePositions = existingNodes.map((node) => ({
@@ -101,33 +106,33 @@ function calculateAutoPosition(
 
   switch (handlePosition) {
     case Position.Left:
-      // Place preview to the left of source node
+      // Place preview to the left of source node, vertically aligned with the handle
       initialPosition = {
         x: sourceAbsolutePosition.x - previewNodeSize.width - offset,
-        y: sourceCenterY - previewNodeSize.height / 2,
+        y: anchorY - previewNodeSize.height / 2,
       };
       direction = 'left';
       break;
     case Position.Right:
-      // Place preview to the right of source node
+      // Place preview to the right of source node, vertically aligned with the handle
       initialPosition = {
         x: sourceAbsolutePosition.x + sourceWidth + offset,
-        y: sourceCenterY - previewNodeSize.height / 2,
+        y: anchorY - previewNodeSize.height / 2,
       };
       direction = 'right';
       break;
     case Position.Top:
-      // Place preview above source node
+      // Place preview above source node, horizontally aligned with the handle
       initialPosition = {
-        x: sourceCenterX - previewNodeSize.width / 2,
+        x: anchorX - previewNodeSize.width / 2,
         y: sourceAbsolutePosition.y - previewNodeSize.height - offset,
       };
       direction = 'top';
       break;
     case Position.Bottom:
-      // Place preview below source node
+      // Place preview below source node, horizontally aligned with the handle
       initialPosition = {
-        x: sourceCenterX - previewNodeSize.width / 2,
+        x: anchorX - previewNodeSize.width / 2,
         y: sourceAbsolutePosition.y + sourceHeight + offset,
       };
       direction = 'bottom';
@@ -136,7 +141,7 @@ function calculateAutoPosition(
       // Fallback to right-side behavior
       initialPosition = {
         x: sourceAbsolutePosition.x + sourceWidth + offset,
-        y: sourceCenterY - previewNodeSize.height / 2,
+        y: anchorY - previewNodeSize.height / 2,
       };
       direction = 'right';
   }
@@ -181,15 +186,39 @@ export function createPreviewNode(
   // When dragging from a target handle, we should treat the preview as the source for the edge connection.
   const treatPreviewAsSource = sourceHandleType === 'target';
 
+  const existingNodes = reactFlowInstance.getNodes().filter((n) => n.id !== PREVIEW_NODE_ID);
+
+  // Resolve the exact canvas position of the clicked handle via InternalNode bounds.
+  // Falls back to undefined (node-center) if the node or handle isn't found.
+  let handleAnchor: { x: number; y: number } | undefined;
+  if (!position) {
+    const internalNode = reactFlowInstance.getInternalNode(sourceNodeId);
+    const allHandles = [
+      ...(internalNode?.internals?.handleBounds?.source ?? []),
+      ...(internalNode?.internals?.handleBounds?.target ?? []),
+    ];
+    const matchedHandle = allHandles.find((h) => h.id === sourceHandleId);
+    if (matchedHandle) {
+      const sourceAbsolutePos = sourceNode.parentId
+        ? getAbsolutePosition(sourceNode, existingNodes)
+        : sourceNode.position;
+      handleAnchor = {
+        x: sourceAbsolutePos.x + matchedHandle.x + matchedHandle.width / 2,
+        y: sourceAbsolutePos.y + matchedHandle.y + matchedHandle.height / 2,
+      };
+    }
+  }
+
   const nodePosition = position
     ? calculatePositionFromDrop(position, handlePosition, previewNodeSize)
     : calculateAutoPosition(
         sourceNode,
         handlePosition,
         previewNodeSize,
-        reactFlowInstance.getNodes().filter((n) => n.id !== PREVIEW_NODE_ID),
+        existingNodes,
         undefined,
-        ignoredNodeTypes
+        ignoredNodeTypes,
+        handleAnchor
       );
 
   // Calculate handle positions for the preview node
