@@ -1,0 +1,254 @@
+# In-product notification
+
+Notifications provide timely feedback about user actions or system status.
+Used well, they build trust and clarity. Used carelessly, they interrupt flow.
+
+There are two primary patterns in our system:
+
+- [**Sonner**](/shadcn-components/sonner) — time-based, non-modal notifications for lightweight feedback
+- [**Alert**](/shadcn-components/alert) — inline notifications within page content for contextual, persistent, or blocking feedback
+
+Both components support status variants and theme-based contrast styles. Use them intentionally.
+
+---
+
+## When to use notifications
+
+### Task-generated notifications
+
+Triggered directly by a user action during a task.
+
+**Purpose:**
+- Provide immediate feedback
+- Confirm results
+- Surface validation or errors
+
+**Pattern:**
+- [Sonner](/shadcn-components/sonner) for success or lightweight confirmation
+- Inline ([Alert](/shadcn-components/alert)) for validation, warnings, or blocking errors
+
+The message must clearly relate to the user's action.
+
+### System-generated notifications
+
+Triggered by the system, independent of a user action.
+
+**Purpose:**
+- Communicate background updates
+- Inform about system status
+- Surface out-of-context events
+
+**Pattern:**
+- Inline ([Alert](/shadcn-components/alert)), anchored near relevant UI
+- Persistent when time-sensitive or important
+
+Avoid using [Sonner](/shadcn-components/sonner) for system-level updates that require awareness over time.
+
+---
+
+## Sonner variant
+
+[Sonner](/shadcn-components/sonner) notifications are short, non-modal messages used for quick feedback after a user action.
+
+### When to use Sonner
+
+Use [Sonner](/shadcn-components/sonner) when:
+
+- Confirming a successful or completed action
+  _Example: "Project published", "Saved successfully"_
+- The feedback is short and non-blocking
+- No user action is required
+- The message is directly tied to a user-initiated action
+- You want to surface passive updates without interrupting workflow
+
+### Do not use Sonner for
+
+- Errors that block progress
+- Situations requiring user input
+- Form validation
+- Persistent guidance or contextual messaging
+
+Use Inline ([Alert](/shadcn-components/alert)) instead.
+
+### Placement and behavior
+
+| Property | Value |
+|---|---|
+| Position | Top-right corner of the screen |
+| Auto-dismiss | 5 seconds |
+| Manual dismiss | Close icon |
+| Persistent | Never |
+
+> Never use [Sonner](/shadcn-components/sonner) for errors that require resolution.
+
+---
+
+## Inline variant (Alert)
+
+Inline notifications use the [Alert](/shadcn-components/alert) component and appear within the layout, near relevant UI elements.
+They provide contextual feedback tied to the current task or workflow.
+
+### When to use Inline
+
+Use Inline ([Alert](/shadcn-components/alert)) when:
+
+- Feedback must remain visible in context
+- Displaying validation errors or warnings
+- The message relates to a specific form, section, or workflow state
+- The system requires user action
+- You need persistent contextual guidance
+
+Inline notifications may be persistent or dismissible depending on priority.
+
+### Placement and behavior
+
+- Appear inline with content, near the relevant UI
+- Persist until resolved or dismissed (if dismissible)
+- Should be visually connected to the related task or component
+
+---
+
+## Dismissible vs persistent
+
+| Variant | Auto-dismiss | User-dismissible | Persistent |
+|---|---|---|---|
+| [Sonner](/shadcn-components/sonner) | Yes (5s) | Yes | No |
+| Inline ([Alert](/shadcn-components/alert)) | No | Optional | Yes |
+
+### Make Inline dismissible if
+
+- The message is low priority
+  _Example: "Settings updated", "You've been signed out from another device"_
+- The user has already acknowledged the information
+- Dismissing improves focus and reduces clutter
+
+### Keep Inline persistent if
+
+- The message indicates an error that must be resolved
+- The system requires user input
+- The message provides important ongoing context
+
+> Never rely on dismissibility for critical blockers.
+
+---
+
+## Status and semantic meaning
+
+Each notification has a status that communicates tone and urgency through color and icon.
+Choose status based on both urgency and user context.
+
+### Status definitions
+
+Notification statuses align with the [Badge](/shadcn-components/badge) status system for consistent semantic meaning across the design system.
+
+| Status | Usage | Token | Color | Inline notes |
+|---|---|---|---|---|
+| `info` | General updates, FYIs | `--info` | `oklch(0.60 0.125 210)` | Best for passive or contextual information |
+| `success` | Confirmation of completed tasks | `--success` | `oklch(0.57 0.105 152)` | Inline only when tied to direct user action |
+| `warning` | Potential issues or unintended consequences | `--warning` | `oklch(0.80 0.1401 80.82)` | Appropriate for both persistent and action-related messages |
+| `error` | Failures, blockers, critical issues | `--destructive` | `oklch(0.62 0.150 18)` | Inline only when tied to validation or error resolution |
+
+> Inline notifications should use **success** or **error** only when tied to a user-initiated action.
+> For persistent system guidance or background alerts, use **info** or **warning**.
+
+---
+
+## Contrast guidelines
+
+Both [Sonner](/shadcn-components/sonner) and Inline ([Alert](/shadcn-components/alert)) support high and low contrast styling through theme settings.
+
+### Use high contrast when
+
+- The message is critical
+- Immediate attention is required
+- The issue blocks progress
+
+_Examples: authentication failure, system error_
+
+### Use low contrast when
+
+- The message is routine
+- The feedback is non-disruptive
+- Confirming success or sharing informational updates
+
+Do not mix contrast levels within the same variant in a single context.
+
+When unsure, default to **low contrast**.
+
+Contrast automatically adapts between light and dark themes to preserve emphasis.
+
+---
+
+## Content guidelines
+
+Notifications have limited space. Write for clarity and scanability.
+
+Users should understand:
+1. **What** happened
+2. **Why** it matters
+3. **What to do** next
+
+### Title
+
+- Short and clear
+- Communicates the most important information
+- No period at the end
+- For errors, state what failed or what cannot be completed
+
+_Examples: "Changes saved", "Connection failed"_
+
+> **Accessibility note:** Screen readers read the entire notification as one string. Do not rely on text styling alone to convey meaning.
+
+### Body text
+
+- Maximum two lines
+- Do not repeat the title
+- Support the title with context or next steps
+- Include troubleshooting guidance when relevant
+- User actions are mandatory for error messages
+- Never truncate critical or actionable content
+
+If more explanation is required:
+- Provide a short summary
+- Add a single "View more" link to a modal or page
+
+No bolding within body text. If emphasis is necessary, use quotation marks.
+
+---
+
+## Call to action links
+
+Use links sparingly.
+
+| Guideline | Rule |
+|---|---|
+| Maximum links | One per notification |
+| Position | End of notification only |
+| Inline links | Do not embed links within body text |
+| Label length | One or two words |
+| Tone | Concise and action-oriented |
+
+_Examples: "View details", "Retry", "Fix"_
+
+Avoid driving users away from their workflow unless necessary.
+
+---
+
+## Quick decision guide
+
+### Use [Sonner](/shadcn-components/sonner) when
+
+- Confirming success
+- The message is short
+- No action is required
+- The feedback is tied to a user action
+
+### Use Inline ([Alert](/shadcn-components/alert)) when
+
+- Displaying validation errors
+- The issue blocks progress
+- Context must persist
+- The message relates to a specific UI element
+- The system requires action
+
+> If the message blocks progress, it should **never** use [Sonner](/shadcn-components/sonner).
