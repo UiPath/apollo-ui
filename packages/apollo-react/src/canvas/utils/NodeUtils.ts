@@ -97,21 +97,14 @@ type Box = {
 };
 
 function getBoxesFromNodes(nodes: Node[], margin: number = 0): Box[] {
-  const boxes: Box[] = new Array(nodes.length);
-
-  for (let i = 0; i < nodes.length; i++) {
-    const node = nodes[i]!;
-    boxes[i] = {
-      x: node.position.x - margin,
-      y: node.position.y - margin,
-      width: (node.width ?? node.measured?.width ?? DEFAULT_NODE_SIZE) + margin * 2,
-      height: (node.height ?? node.measured?.height ?? DEFAULT_NODE_SIZE) + margin * 2,
-      node,
-      moved: false,
-    };
-  }
-
-  return boxes;
+  return nodes.map((node) => ({
+    x: node.position.x - margin,
+    y: node.position.y - margin,
+    width: (node.width ?? node.measured?.width ?? DEFAULT_NODE_SIZE) + margin * 2,
+    height: (node.height ?? node.measured?.height ?? DEFAULT_NODE_SIZE) + margin * 2,
+    node,
+    moved: false,
+  }));
 }
 
 export const resolveCollisions: CollisionAlgorithm = (
