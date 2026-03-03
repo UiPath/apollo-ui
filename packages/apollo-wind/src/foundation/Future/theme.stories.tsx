@@ -517,6 +517,16 @@ function ThemePage({ globalTheme }: { globalTheme: string }) {
           <strong>Demo</strong> themes (Wireframe, Vertex, Canvas). Use the theme selector in the
           toolbar above to switch between them. Everything on this page updates live.
         </SectionDescription>
+        <p
+          className="mb-6 rounded-lg border border-border bg-muted/50 px-4 py-3 text-sm leading-relaxed text-muted-foreground"
+          style={{ fontFamily: fontFamily.base }}
+        >
+          <strong className="text-foreground">For consumer apps, use Core themes</strong>{' '}
+          — apply <InlineCode>light</InlineCode>, <InlineCode>dark</InlineCode>,{' '}
+          <InlineCode>light-hc</InlineCode>, or <InlineCode>dark-hc</InlineCode> as
+          a class on <InlineCode>&lt;body&gt;</InlineCode>. Future and Demo themes
+          are intended for internal prototyping and experimentation.
+        </p>
 
         <div className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-1.5 text-sm text-muted-foreground">
           Active theme: <strong className="text-foreground">{label}</strong>
