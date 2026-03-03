@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.45.5](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.4...@uipath/apollo-react@3.45.5) (2026-03-03)
+
+### Bug Fixes
+
+* **apollo-react:** introduce sankey diagram zoom and scale ([96c8c39](https://github.com/UiPath/apollo-ui/commit/96c8c39fd8f7b0a6df782c0cc6b176764d79ee64))
+
 ## [@uipath/apollo-react-v3.45.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.3...@uipath/apollo-react@3.45.4) (2026-03-02)
 
 ### Bug Fixes
