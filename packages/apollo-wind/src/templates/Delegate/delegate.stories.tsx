@@ -79,7 +79,7 @@ export const Blank: Story = {
   ),
 };
 
-export const Chat: Story = {
+export const Home: Story = {
   render: (_, { globals }) => (
     <DelegateTemplate
       theme={globals.futureTheme || 'dark'}
@@ -218,8 +218,8 @@ function ChatResponsesContent() {
   );
 }
 
-export const ChatResponses: Story = {
-  name: 'Chat Responses',
+export const Conversation: Story = {
+  name: 'Conversation',
   render: (_, { globals }) => (
     <DelegateTemplate
       theme={globals.futureTheme || 'dark'}

@@ -73,7 +73,7 @@ export function SettingsAdmin({
       title="Settings"
       menuContent={menuContent}
       sidebar={
-        <AdminSidebar width={240}>
+        <AdminSidebar width={300}>
           <AdminSidebarHeader title="Settings" icon={<User className="h-4 w-4" />} />
           <AdminSidebarNav
             items={navItems}

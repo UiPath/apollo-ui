@@ -187,7 +187,7 @@ export function DataTable<TData, TValue>({
                   return (
                     <TableHead
                       key={header.id}
-                      className={compact ? 'relative h-8 px-2 py-1' : 'relative'}
+                      className={compact ? 'relative h-8 px-2 py-0' : 'relative py-0'}
                       style={{
                         width: resizable
                           ? header.getSize()
@@ -231,7 +231,7 @@ export function DataTable<TData, TValue>({
                     return (
                       <TableCell
                         key={cell.id}
-                        className={compact ? 'truncate px-2 py-1' : 'truncate'}
+                        className={compact ? 'h-8 truncate px-2 py-0' : 'h-12 truncate px-4 py-0'}
                         style={{
                           width: resizable
                             ? cell.column.getSize()

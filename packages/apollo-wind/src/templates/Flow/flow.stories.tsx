@@ -14,6 +14,14 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Blank: Story = {
+  name: 'Blank',
+  render: (_, { globals }) => (
+    <FlowTemplate theme={globals.futureTheme || 'dark'} blank />
+  ),
+};
+
+export const LeftPanelCollapsed: Story = {
+  name: 'Left panel collapsed',
   render: (_, { globals }) => (
     <FlowTemplate theme={globals.futureTheme || 'dark'} />
   ),
@@ -34,7 +42,7 @@ const chatMessages: FlowPanelChatMessage[] = [
 ];
 
 export const LeftPanelExpanded: Story = {
-  name: 'Left panel expanded',
+  name: 'Left panel open',
   render: (_, { globals }) => (
     <FlowTemplate
       theme={globals.futureTheme || 'dark'}

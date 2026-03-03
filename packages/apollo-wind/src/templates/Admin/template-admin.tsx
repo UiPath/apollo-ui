@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { MaestroHeader } from '@/components/custom/global-header';
+import { PageHeader, type PageHeaderProps } from '@/components/custom/page-header';
 import { ViewportGuard } from '@/components/custom/viewport-guard';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { FutureTheme } from '@/foundation/Future/types';
@@ -144,78 +145,11 @@ export function AdminSidebarNav({
 }
 
 // ============================================================================
-// AdminPageHeader
+// AdminPageHeader — re-exported from the shared PageHeader component
 // ============================================================================
 
-export interface AdminPageHeaderProps {
-  className?: string;
-  /** Page title */
-  title: string;
-  /** Breadcrumb segments (plain strings — last one is highlighted) */
-  breadcrumb?: string[];
-  /** Action buttons rendered on the right */
-  actions?: React.ReactNode;
-  /** Tab definitions */
-  tabs?: { value: string; label: string }[];
-  /** Currently active tab value */
-  activeTab?: string;
-  /** Callback when a tab is selected */
-  onTabChange?: (value: string) => void;
-}
-
-/**
- * Page header with optional breadcrumb trail, action buttons, and tab bar.
- */
-export function AdminPageHeader({
-  className,
-  title,
-  breadcrumb,
-  actions,
-  tabs,
-  activeTab,
-  onTabChange,
-}: AdminPageHeaderProps) {
-  return (
-    <div className={cn('border-b border-border-subtle px-6 py-4', className)}>
-      {breadcrumb && breadcrumb.length > 0 && (
-        <div className="mb-2 flex items-center gap-1.5 text-sm text-foreground-muted">
-          {breadcrumb.map((item, i) => (
-            <React.Fragment key={item}>
-              {i > 0 && <span className="text-foreground-subtle">/</span>}
-              {i === breadcrumb.length - 1 ? (
-                <span className="text-foreground">{item}</span>
-              ) : (
-                <span>{item}</span>
-              )}
-            </React.Fragment>
-          ))}
-        </div>
-      )}
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-foreground">{title}</h1>
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
-      </div>
-      {tabs && (
-        <div className="mt-4 flex gap-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.value}
-              className={cn(
-                'px-4 pb-2 pt-1 text-sm font-medium transition-colors',
-                activeTab === tab.value
-                  ? 'border-b-2 border-brand text-foreground'
-                  : 'text-foreground-muted hover:text-foreground'
-              )}
-              onClick={() => onTabChange?.(tab.value)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+export type AdminPageHeaderProps = PageHeaderProps;
+export { PageHeader as AdminPageHeader };
 
 // ============================================================================
 // AdminToolbar
