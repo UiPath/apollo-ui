@@ -1,3 +1,4 @@
+import { pluginBabel } from '@rsbuild/plugin-babel';
 import { pluginReact } from '@rsbuild/plugin-react';
 import type { RslibConfig } from '@rslib/core';
 import { defineConfig } from '@rslib/core';
@@ -56,7 +57,19 @@ export default defineConfig({
       'postcss.config.export': './postcss.config.export.js',
     },
   },
-  plugins: [pluginReact()],
+  plugins: [
+    pluginReact(),
+    pluginBabel({
+      include: /\.(?:jsx?|tsx?)$/,
+      babelLoaderOptions(opts) {
+        if (!opts.plugins) {
+          opts.plugins = [];
+        }
+        opts.plugins.unshift(['babel-plugin-react-compiler', { target: '18' }]);
+        return opts;
+      },
+    }),
+  ],
   output: {
     target: 'web',
     cleanDistPath: true,

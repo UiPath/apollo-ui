@@ -1,20 +1,35 @@
-import { useState, useMemo, useEffect } from 'react';
-import type {
-  FormSchema,
-  FieldMetadata,
-  FieldRule,
-  FieldCondition,
-  DataSource,
-  FieldType,
-  FormPlugin,
-  ValidationConfig,
-} from './form-schema';
-import { schemaToJson } from './schema-serializer';
-import { MetadataForm } from './metadata-form';
+import {
+  AlertTriangle,
+  Asterisk,
+  Ban,
+  ChevronRight,
+  Code,
+  Database,
+  Eye,
+  EyeOff,
+  GitBranch,
+  GripVertical,
+  Layers,
+  MoveDown,
+  MoveUp,
+  Plus,
+  Settings,
+  Trash2,
+  View,
+} from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Grid } from '@/components/ui/layout/grid';
 import {
   Select,
   SelectContent,
@@ -22,37 +37,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Switch } from '@/components/ui/switch';
-import {
-  Trash2,
-  Plus,
-  MoveUp,
-  MoveDown,
-  Eye,
-  EyeOff,
-  Code,
-  Database,
-  GitBranch,
-  Layers,
-  ChevronRight,
-  GripVertical,
-  Settings,
-  AlertTriangle,
-  Asterisk,
-  Ban,
-  View,
-} from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Grid } from '@/components/ui/layout/grid';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import type {
+  DataSource,
+  FieldCondition,
+  FieldMetadata,
+  FieldRule,
+  FieldType,
+  FormPlugin,
+  FormSchema,
+  ValidationConfig,
+} from './form-schema';
+import { MetadataForm } from './metadata-form';
+import { schemaToJson } from './schema-serializer';
 
 /**
  * Enhanced Form Designer Component
@@ -669,7 +669,11 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
   const schema = useMemo(() => createFieldConfigSchema(field), [field]);
 
   // Track current type for detecting type changes
-  const currentTypeRef = useMemo(() => ({ type: field.type }), [field.type]);
+  const currentTypeRef = useRef(field.type);
+
+  useEffect(() => {
+    currentTypeRef.current = field.type;
+  }, [field.type]);
 
   // Sync plugin - updates parent on any value change
   const plugins = useMemo<FormPlugin[]>(
@@ -734,7 +738,7 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
           }
 
           // Clear properties from previous type if type changed
-          if (newType !== currentTypeRef.type) {
+          if (newType !== currentTypeRef.current) {
             // Preserve requiredMessage across type changes
             const preservedRequiredMessage = field.validation?.requiredMessage;
 
@@ -781,14 +785,14 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
                 };
               }
             }
-            currentTypeRef.type = newType;
+            currentTypeRef.current = newType;
           }
 
           onUpdate(updates);
         },
       },
     ],
-    [onUpdate, currentTypeRef, field.validation?.requiredMessage]
+    [onUpdate, field.validation?.requiredMessage]
   );
 
   // Check if field type needs options editor
@@ -1692,7 +1696,7 @@ function RulesEditor({
       // For numeric fields, try to parse as number
       if (isNumericField) {
         const num = Number(val);
-        if (!isNaN(num)) return num;
+        if (!Number.isNaN(num)) return num;
       }
 
       // For text-based fields, keep as string
@@ -1988,7 +1992,7 @@ function RulesEditor({
                   type="button"
                   className={`flex items-center gap-2 p-2 rounded-lg border text-left text-sm transition-all ${
                     selectedEffect === effect.value
-                      ? effect.color + ' border-current'
+                      ? `${effect.color} border-current`
                       : 'hover:bg-muted'
                   }`}
                   onClick={() => setSelectedEffect(effect.value)}

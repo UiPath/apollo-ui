@@ -50,6 +50,17 @@ const config: StorybookConfig = {
     : undefined,
 
   async viteFinal(config) {
+    // Enable React Compiler in Storybook so react-scan reflects real perf
+    const react = await import('@vitejs/plugin-react');
+    config.plugins ??= [];
+    config.plugins.push(
+      react.default({
+        babel: {
+          plugins: [['babel-plugin-react-compiler', { target: '18' }]],
+        },
+      })
+    );
+
     return {
       ...config,
       resolve: {
