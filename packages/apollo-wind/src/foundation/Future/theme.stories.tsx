@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib';
@@ -20,13 +21,54 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // ============================================================================
+// Theme helpers
+// ============================================================================
+
+type ThemeFamily = 'future' | 'core' | 'demo';
+
+const coreThemes = ['dark', 'light', 'dark-hc', 'light-hc'];
+const demoThemes = ['wireframe', 'vertex', 'canvas'];
+
+function parseThemeFamily(value: string): ThemeFamily {
+  if (coreThemes.includes(value)) return 'core';
+  if (demoThemes.includes(value)) return 'demo';
+  return 'future';
+}
+
+function themeLabel(value: string): string {
+  const labels: Record<string, string> = {
+    'future-dark': 'Future Dark',
+    'future-light': 'Future Light',
+    dark: 'Dark',
+    light: 'Light',
+    'dark-hc': 'Dark High Contrast',
+    'light-hc': 'Light High Contrast',
+    wireframe: 'Wireframe',
+    vertex: 'Vertex',
+    canvas: 'Canvas',
+  };
+  return labels[value] ?? value;
+}
+
+/** Returns [primary, companion] theme class names for side-by-side preview. */
+function themePair(value: string): [string, string] | [string] {
+  const pairs: Record<string, [string, string]> = {
+    'future-dark': ['future-dark', 'future-light'],
+    'future-light': ['future-light', 'future-dark'],
+    'dark': ['dark', 'light'],
+    'light': ['light', 'dark'],
+    'dark-hc': ['dark-hc', 'light-hc'],
+    'light-hc': ['light-hc', 'dark-hc'],
+  };
+  return pairs[value] ?? [value];
+}
+
+// ============================================================================
 // Shared helpers
 // ============================================================================
 
-type ThemeFamily = 'future' | 'core';
-
 /** Page chrome uses shadcn bridge tokens (bg-background, text-foreground, etc.)
- *  so they resolve correctly under both .future-* and .core-* theme classes. */
+ *  so they resolve correctly under all theme families. */
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
@@ -70,16 +112,16 @@ function InlineCode({ children }: { children: React.ReactNode }) {
 }
 
 // ============================================================================
-// Future preview card
+// Unified preview card — inherits tokens from the active theme on <body>/<html>
 // ============================================================================
 
-function FuturePreviewCard({ theme }: { theme: string }) {
+function PreviewCard({ label }: { label: string }) {
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-raised p-6">
       <div className="flex items-center gap-2">
         <div className="h-3 w-3 rounded-full bg-brand" />
         <span className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
-          {theme}
+          {label}
         </span>
       </div>
 
@@ -126,9 +168,64 @@ function FuturePreviewCard({ theme }: { theme: string }) {
 }
 
 // ============================================================================
-// Core preview card
+// Iframe preview for core themes (requires body-level theme class)
 // ============================================================================
 
+function IframeThemePreview({ theme, label }: { theme: string; label: string }) {
+  const [iframeRef, setIframeRef] = React.useState<HTMLIFrameElement | null>(null);
+  const [mountNode, setMountNode] = React.useState<HTMLElement | null>(null);
+
+  React.useEffect(() => {
+    if (!iframeRef) return;
+
+    const iframeDoc = iframeRef.contentDocument;
+    if (!iframeDoc) return;
+
+    // Set up the iframe document with body theme class
+    iframeDoc.open();
+    iframeDoc.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+        </head>
+        <body class="${theme}" style="margin: 0; padding: 0; min-height: 100%;">
+          <div id="preview-mount"></div>
+        </body>
+      </html>
+    `);
+    iframeDoc.close();
+
+    // Copy all stylesheets from parent document (includes Tailwind)
+    const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'));
+    styles.forEach((style) => {
+      const clone = style.cloneNode(true) as HTMLElement;
+      iframeDoc.head.appendChild(clone);
+    });
+
+    // Set mount node for portal
+    const mount = iframeDoc.getElementById('preview-mount');
+    setMountNode(mount);
+  }, [iframeRef, theme]);
+
+  return (
+    <>
+      <iframe
+        ref={setIframeRef}
+        className="min-w-0 w-full rounded-xl border border-border"
+        style={{ height: '480px', background: 'transparent' }}
+        title={`${label} theme preview`}
+      />
+      {mountNode &&
+        createPortal(
+          <div className="h-full w-full bg-surface p-4">
+            <PreviewCard label={label} />
+          </div>,
+          mountNode
+        )}
+    </>
+  );
+}
 
 // ============================================================================
 // Token tables
@@ -254,114 +351,57 @@ const coreTokenGroups = [
         usage: 'Page / canvas background',
         dark: '#182027',
         light: '#ffffff',
-        darkHc: '#182027',
-        lightHc: '#ffffff',
+        lightTw: 'white',
       },
       {
         name: 'surface-raised',
         usage: 'Cards, panels',
         dark: '#273139',
         light: '#ffffff',
-        darkHc: '#273139',
-        lightHc: '#ffffff',
+        lightTw: 'white',
       },
-      {
-        name: 'surface-overlay',
-        usage: 'Secondary bg, inputs',
-        dark: '#374652',
-        light: '#f4f5f7',
-        darkHc: '#374652',
-        lightHc: '#f4f5f7',
-      },
-      {
-        name: 'surface-hover',
-        usage: 'Hover states',
-        dark: '#526069',
-        light: '#e9f1fa',
-        darkHc: '#374652',
-        lightHc: '#e9f1fa',
-      },
+      { name: 'surface-overlay', usage: 'Secondary bg, inputs', dark: '#374652', light: '#f4f5f7' },
+      { name: 'surface-hover', usage: 'Hover states', dark: '#526069', light: '#e9f1fa' },
     ],
   },
   {
     group: 'Foreground',
     tokens: [
-      {
-        name: 'foreground',
-        usage: 'Primary text',
-        dark: '#f4f5f7',
-        light: '#273139',
-        darkHc: '#f4f5f7',
-        lightHc: '#273139',
-      },
-      {
-        name: 'foreground-muted',
-        usage: 'De-emphasized text',
-        dark: '#cfd8dd',
-        light: '#526069',
-        darkHc: '#cfd8dd',
-        lightHc: '#374652',
-      },
-      {
-        name: 'foreground-subtle',
-        usage: 'Labels, disabled',
-        dark: '#a4b1b8',
-        light: '#8a97a0',
-        darkHc: '#a4b1b8',
-        lightHc: '#8a97a0',
-      },
+      { name: 'foreground', usage: 'Primary text', dark: '#f4f5f7', light: '#273139' },
+      { name: 'foreground-muted', usage: 'De-emphasized text', dark: '#cfd8dd', light: '#526069' },
+      { name: 'foreground-subtle', usage: 'Labels, disabled', dark: '#a4b1b8', light: '#8a97a0' },
     ],
   },
   {
     group: 'Accent',
     tokens: [
-      {
-        name: 'brand',
-        usage: 'Primary blue',
-        dark: '#66adff',
-        light: '#0067df',
-        darkHc: '#badaff',
-        lightHc: '#00489d',
-      },
-      {
-        name: 'brand-hover',
-        usage: 'Primary hover',
-        dark: '#87bfff',
-        light: '#0056ba',
-        darkHc: '#87bfff',
-        lightHc: '#00336f',
-      },
+      { name: 'brand', usage: 'Primary blue', dark: '#66adff', light: '#0067df' },
+      { name: 'brand-hover', usage: 'Primary hover', dark: '#87bfff', light: '#0056ba' },
     ],
   },
   {
     group: 'Border',
     tokens: [
-      {
-        name: 'border',
-        usage: 'Primary borders',
-        dark: '#8a97a0',
-        light: '#a4b1b8',
-        darkHc: '#bbc7cd',
-        lightHc: '#6b7882',
-      },
-      {
-        name: 'border-subtle',
-        usage: 'Subtle dividers',
-        dark: '#526069',
-        light: '#cfd8dd',
-        darkHc: '#a4b1b8',
-        lightHc: '#a4b1b8',
-      },
+      { name: 'border', usage: 'Primary borders', dark: '#8a97a0', light: '#a4b1b8' },
+      { name: 'border-subtle', usage: 'Subtle dividers', dark: '#526069', light: '#cfd8dd' },
     ],
   },
 ];
 
 function TokenTable({
   groups,
-  showHc = false,
 }: {
-  groups: typeof futureTokenGroups | typeof coreTokenGroups;
-  showHc?: boolean;
+  groups: {
+    group: string;
+    tokens: {
+      name: string;
+      usage: string;
+      dark: string;
+      darkTw?: string;
+      light: string;
+      lightTw?: string;
+    }[];
+  }[];
 }) {
   return (
     <div className="overflow-hidden rounded-lg border border-border">
@@ -372,16 +412,6 @@ function TokenTable({
             <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Usage</th>
             <th className="px-4 py-2.5 text-center font-medium text-muted-foreground">Dark</th>
             <th className="px-4 py-2.5 text-center font-medium text-muted-foreground">Light</th>
-            {showHc && (
-              <>
-                <th className="px-4 py-2.5 text-center font-medium text-muted-foreground">
-                  Dark HC
-                </th>
-                <th className="px-4 py-2.5 text-center font-medium text-muted-foreground">
-                  Light HC
-                </th>
-              </>
-            )}
           </tr>
         </thead>
         <tbody>
@@ -389,7 +419,7 @@ function TokenTable({
             <React.Fragment key={group.group}>
               <tr className="border-b border-border bg-card/50">
                 <td
-                  colSpan={showHc ? 6 : 4}
+                  colSpan={4}
                   className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                 >
                   {group.group}
@@ -454,38 +484,6 @@ function TokenTable({
                       </div>
                     </div>
                   </td>
-                  {showHc && (
-                    <>
-                      <td className="px-4 py-2">
-                        <div className="flex items-center justify-center gap-2">
-                          <div
-                            className="h-5 w-5 rounded border border-border"
-                            style={{ backgroundColor: (token as any).darkHc }}
-                          />
-                          <code
-                            className="text-xs text-muted-foreground"
-                            style={{ fontFamily: fontFamily.monospace }}
-                          >
-                            {(token as any).darkHc}
-                          </code>
-                        </div>
-                      </td>
-                      <td className="px-4 py-2">
-                        <div className="flex items-center justify-center gap-2">
-                          <div
-                            className="h-5 w-5 rounded border border-border"
-                            style={{ backgroundColor: (token as any).lightHc }}
-                          />
-                          <code
-                            className="text-xs text-muted-foreground"
-                            style={{ fontFamily: fontFamily.monospace }}
-                          >
-                            {(token as any).lightHc}
-                          </code>
-                        </div>
-                      </td>
-                    </>
-                  )}
                 </tr>
               ))}
             </React.Fragment>
@@ -497,293 +495,196 @@ function TokenTable({
 }
 
 // ============================================================================
-// Tab content — Future
+// Unified theme page — responds to the global Storybook theme switcher
 // ============================================================================
 
-function FutureTabContent() {
-  return (
-    <>
-      {/* ── Side-by-side preview ───────────────────────────────────────── */}
-      <SectionTitle>Theme preview</SectionTitle>
-      <SectionDescription>
-        The same component rendered in both themes. All tokens resolve automatically — no
-        conditional styling needed.
-      </SectionDescription>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="future-dark rounded-xl bg-surface p-4">
-          <FuturePreviewCard theme="Dark" />
-        </div>
-        <div className="future-light rounded-xl bg-surface p-4">
-          <FuturePreviewCard theme="Light" />
-        </div>
-      </div>
-
-      <Divider />
-
-      {/* ── Token overview ─────────────────────────────────────────────── */}
-      <SectionTitle>Token overview</SectionTitle>
-      <SectionDescription>
-        Key semantic tokens and their resolved values per theme. See the Colors page for the full
-        token reference.
-      </SectionDescription>
-
-      <TokenTable groups={futureTokenGroups} />
-
-      <Divider />
-
-      {/* ── How to use ─────────────────────────────────────────────────── */}
-      <SectionTitle>How to use</SectionTitle>
-      <SectionDescription>
-        Apply <InlineCode>.future-dark</InlineCode> or <InlineCode>.future-light</InlineCode> to any
-        container. Everything inside inherits the correct token values. Templates like{' '}
-        <InlineCode>MaestroTemplate</InlineCode> handle this automatically via their{' '}
-        <InlineCode>theme</InlineCode> prop.
-      </SectionDescription>
-
-      <div className="flex flex-col gap-4">
-        <CodeBlock>{`<!-- Wrap any container with the theme class -->
-<div class="future-dark">
-  <div class="bg-surface text-foreground">
-    Dark themed content
-  </div>
-</div>
-
-<div class="future-light">
-  <div class="bg-surface text-foreground">
-    Light themed content
-  </div>
-</div>`}</CodeBlock>
-
-        <CodeBlock>{`<!-- Or use a template component that handles it for you -->
-<MaestroTemplate theme="dark">
-  {/* children automatically inherit dark theme tokens */}
-</MaestroTemplate>`}</CodeBlock>
-      </div>
-
-      <Divider />
-
-      {/* ── Shadcn bridge ──────────────────────────────────────────────── */}
-      <SectionTitle>Shadcn component compatibility</SectionTitle>
-      <SectionDescription>
-        The Future theme includes a built-in bridge that maps standard shadcn CSS variables to their
-        Future token equivalents. This means shadcn/ui components like Button, Input, DataTable, and
-        DropdownMenu work automatically inside any themed container — no extra configuration needed.
-      </SectionDescription>
-
-      <CodeBlock>{`/* themes.css — shadcn aliases (excerpt) */
-
-.future-dark {
-  --color-background:   var(--surface);
-  --color-foreground:   var(--foreground);
-  --color-primary:      var(--accent);
-  --color-muted:        var(--surface-overlay);
-  --color-border:       var(--border);
-  --color-input:        var(--border);
-  --color-ring:         var(--ring);
-  /* … full mapping in themes.css */
-}`}</CodeBlock>
-    </>
-  );
-}
-
-// ============================================================================
-// Tab content — Core
-// ============================================================================
-
-// Theme preview iframe component
-function ThemePreviewIframe({ theme, label }: { theme: string; label: string }) {
-  const html = `<!DOCTYPE html>
-<html><head><link rel="stylesheet" href="/src/styles/tailwind.css" /><style>body { margin: 0; padding: 1rem; font-family: Inter, system-ui, sans-serif; }</style></head>
-<body class="${theme}">
-  <div class="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-raised p-6">
-    <div class="flex items-center gap-2">
-      <div class="h-3 w-3 rounded-full bg-brand"></div>
-      <span class="text-xs font-semibold uppercase tracking-widest text-foreground-muted">${label}</span>
-    </div>
-    <div class="flex flex-col gap-1">
-      <h3 class="text-lg font-semibold text-foreground">Card title</h3>
-      <p class="text-sm text-foreground-muted">Body text uses the muted foreground token for secondary information and descriptions.</p>
-    </div>
-    <input placeholder="Search…" class="rounded-md border border-border-subtle bg-surface-overlay px-3 py-2 text-sm text-foreground placeholder:text-foreground-subtle" />
-    <div class="flex items-center gap-3">
-      <button class="rounded-md bg-brand px-4 py-2 text-sm font-medium text-foreground-on-accent hover:bg-brand-hover">Primary</button>
-      <button class="rounded-md border border-border-subtle bg-surface px-4 py-2 text-sm font-medium text-foreground hover:bg-surface-hover">Secondary</button>
-      <button class="rounded-md px-4 py-2 text-sm font-medium text-foreground hover:bg-surface-hover">Ghost</button>
-    </div>
-    <div class="flex gap-2 pt-2">
-      <div class="flex flex-col items-center gap-1"><div class="h-8 w-8 rounded-md border border-border bg-surface"></div><span class="text-[10px] text-foreground-subtle">surface</span></div>
-      <div class="flex flex-col items-center gap-1"><div class="h-8 w-8 rounded-md border border-border bg-surface-raised"></div><span class="text-[10px] text-foreground-subtle">raised</span></div>
-      <div class="flex flex-col items-center gap-1"><div class="h-8 w-8 rounded-md border border-border bg-surface-overlay"></div><span class="text-[10px] text-foreground-subtle">overlay</span></div>
-      <div class="flex flex-col items-center gap-1"><div class="h-8 w-8 rounded-md border border-border bg-surface-hover"></div><span class="text-[10px] text-foreground-subtle">hover</span></div>
-    </div>
-  </div>
-</body></html>`;
-
-  return (
-    <div className="rounded-xl overflow-hidden border border-border">
-      <iframe
-        srcDoc={html}
-        className="w-full h-[400px] border-0"
-        title={`${label} theme preview`}
-      />
-    </div>
-  );
-}
-
-function CoreTabContent() {
-  return (
-    <>
-      {/* ── Side-by-side preview ───────────────────────────────────────── */}
-      <SectionTitle>Theme preview</SectionTitle>
-      <SectionDescription>
-        The same component rendered in all Core theme variants. The Core design language uses the
-        apollo-core token set from UiPath&apos;s original design system.
-      </SectionDescription>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <ThemePreviewIframe theme="dark" label="Dark" />
-        <ThemePreviewIframe theme="light" label="Light" />
-        <ThemePreviewIframe theme="dark-hc" label="Dark HC" />
-        <ThemePreviewIframe theme="light-hc" label="Light HC" />
-      </div>
-
-      <Divider />
-
-      {/* ── Token overview ─────────────────────────────────────────────── */}
-      <SectionTitle>Token overview</SectionTitle>
-      <SectionDescription>
-        Key semantic tokens from the Core (apollo-core) design system and their resolved values per
-        theme.
-      </SectionDescription>
-
-      <TokenTable groups={coreTokenGroups} showHc={true} />
-
-      <Divider />
-
-      {/* ── How to use ─────────────────────────────────────────────────── */}
-      <SectionTitle>How to use</SectionTitle>
-      <SectionDescription>
-        Apply <InlineCode>body.dark</InlineCode>, <InlineCode>body.light</InlineCode>,{' '}
-        <InlineCode>body.dark-hc</InlineCode>, or <InlineCode>body.light-hc</InlineCode> to the body
-        element. The Core theme maps apollo-core token values into semantic CSS variables.
-      </SectionDescription>
-
-      <div className="flex flex-col gap-4">
-        <CodeBlock>{`<!-- Apply theme class to body element -->
-<body class="dark">
-  <div class="bg-surface text-foreground">
-    Dark themed content
-  </div>
-</body>
-
-<body class="light">
-  <div class="bg-surface text-foreground">
-    Light themed content
-  </div>
-</body>
-
-<body class="dark-hc">
-  <div class="bg-surface text-foreground">
-    High contrast dark themed content
-  </div>
-</body>`}</CodeBlock>
-
-        <CodeBlock>{`/* Core tokens use the same bare names as Future */
-/* bg-surface, text-foreground, border-border, etc. */
-
-/* The shadcn bridge is also included, so shadcn components
-   inherit the correct Core colors automatically. */`}</CodeBlock>
-      </div>
-
-      <Divider />
-
-      {/* ── Shadcn bridge ──────────────────────────────────────────────── */}
-      <SectionTitle>Shadcn component compatibility</SectionTitle>
-      <SectionDescription>
-        Like the Future theme, the Core theme includes a shadcn bridge so standard components work
-        automatically. The Core bridge maps apollo-core variables to shadcn expected names.
-      </SectionDescription>
-
-      <CodeBlock>{`/* themes.css — core shadcn aliases (excerpt) */
-
-.dark {
-  --color-background:   var(--surface);
-  --color-foreground:   var(--foreground);
-  --color-primary:      var(--accent);
-  --color-muted:        var(--surface-raised);
-  --color-border:       var(--border-subtle);
-  --color-input:        var(--border-subtle);
-  --color-ring:         var(--ring);
-  /* … full mapping in themes.css */
-}`}</CodeBlock>
-    </>
-  );
-}
-
-// ============================================================================
-// Story
-// ============================================================================
-
-const themeTabs = ['Future', 'Core'] as const;
-
-function ThemePage({ selectedTheme }: { selectedTheme: string }) {
-  // Map theme to tab: core themes → Core tab, everything else → Future tab
-  const coreThemes = ['dark', 'light', 'dark-hc', 'light-hc'];
-  const initialTab = coreThemes.includes(selectedTheme) ? 'core' : 'future';
-  const [activeTab, setActiveTab] = React.useState<ThemeFamily>(initialTab);
-
-  // Sync tab when theme selector changes
-  React.useEffect(() => {
-    const newTab = coreThemes.includes(selectedTheme) ? 'core' : 'future';
-    setActiveTab(newTab);
-  }, [selectedTheme]);
+function ThemePage({ globalTheme }: { globalTheme: string }) {
+  const family = parseThemeFamily(globalTheme);
+  const label = themeLabel(globalTheme);
+  const tokenGroups = family === 'core' ? coreTokenGroups : futureTokenGroups;
 
   return (
     <div
-      className="min-h-screen w-full bg-background text-foreground"
+      className={cn(globalTheme, 'min-h-screen w-full bg-background text-foreground')}
       style={{ fontFamily: fontFamily.base }}
     >
       <div className="mx-auto max-w-4xl space-y-2 p-8">
         {/* ── Header ─────────────────────────────────────────────────── */}
         <SectionTitle>Theme</SectionTitle>
         <SectionDescription>
-          Apollo ships with two design languages — <strong>Future</strong> (the new design
-          direction) and <strong>Core</strong> (the original apollo-core tokens). Each provides dark
-          and light variants (plus high-contrast modes) activated via CSS classes. Use the tabs
-          below to explore each design language.
+          Apollo ships with multiple theme families — <strong>Core</strong> (the original
+          apollo-core tokens), <strong>Future</strong> (the new design direction), and{' '}
+          <strong>Demo</strong> themes (Wireframe, Vertex, Canvas). Use the theme selector in the
+          toolbar above to switch between them. Everything on this page updates live.
         </SectionDescription>
 
-        {/* ── Tabs ────────────────────────────────────────────────────── */}
-        <div className="flex gap-1 border-b border-border pb-0">
-          {themeTabs.map((tab) => (
-            <button
-              type="button"
-              key={tab}
-              className={`px-4 pb-3 text-sm font-medium transition-colors ${
-                activeTab === tab.toLowerCase()
-                  ? 'border-b-2 border-primary text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-              onClick={() => setActiveTab(tab.toLowerCase() as ThemeFamily)}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
-        <div className="pt-6">
-          {activeTab === 'future' ? <FutureTabContent /> : <CoreTabContent />}
+        <div className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-1.5 text-sm text-muted-foreground">
+          Active theme: <strong className="text-foreground">{label}</strong>
+          <span className="text-xs opacity-60">({family})</span>
         </div>
 
         <Divider />
 
-        {/* ── Adding new themes (shared) ─────────────────────────────── */}
+        {/* ── Live preview ───────────────────────────────────────────── */}
+        <SectionTitle>Theme preview</SectionTitle>
+        {(() => {
+          const pair = themePair(globalTheme);
+          const hasPair = pair.length === 2;
+          const isDemoTheme = demoThemes.includes(globalTheme);
+          const isCoreTheme = coreThemes.includes(globalTheme);
+
+          return (
+            <>
+              <SectionDescription>
+                {hasPair && isCoreTheme
+                  ? 'Core themes require body-level class application. The previews below are rendered in iframes to demonstrate both variants side-by-side.'
+                  : hasPair
+                    ? 'The same component rendered in both light and dark variants. All tokens resolve automatically via element-level CSS classes.'
+                    : 'Demo themes are scoped at the element level. Use the toolbar to switch between theme variants.'}
+              </SectionDescription>
+
+              <div
+                className={cn(
+                  'grid w-full grid-cols-1 gap-6',
+                  hasPair && 'md:grid-cols-2',
+                  !hasPair && isDemoTheme && 'md:w-1/2'
+                )}
+              >
+                {isCoreTheme ? (
+                  <>
+                    <IframeThemePreview theme={pair[0]} label={themeLabel(pair[0])} />
+                    {pair[1] && <IframeThemePreview theme={pair[1]} label={themeLabel(pair[1])} />}
+                  </>
+                ) : (
+                  <>
+                    <div
+                      className={cn(
+                        pair[0],
+                        'min-w-0 rounded-xl border border-border bg-surface p-4'
+                      )}
+                    >
+                      <PreviewCard label={themeLabel(pair[0])} />
+                    </div>
+                    {pair[1] && (
+                      <div
+                        className={cn(
+                          pair[1],
+                          'min-w-0 rounded-xl border border-border bg-surface p-4'
+                        )}
+                      >
+                        <PreviewCard label={themeLabel(pair[1])} />
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </>
+          );
+        })()}
+
+        <Divider />
+
+        {/* ── Token overview ─────────────────────────────────────────── */}
+        <SectionTitle>Token overview</SectionTitle>
+        <SectionDescription>
+          Key semantic tokens and their resolved values for the{' '}
+          <strong>{family === 'core' ? 'Core' : family === 'demo' ? 'Demo' : 'Future'}</strong>{' '}
+          theme family. See the Colors page for the full token reference.
+        </SectionDescription>
+
+        <TokenTable groups={tokenGroups} />
+
+        <Divider />
+
+        {/* ── How to use ─────────────────────────────────────────────── */}
+        <SectionTitle>How to use</SectionTitle>
+        {family === 'core' ? (
+          <>
+            <SectionDescription>
+              Apollo Core themes are activated by adding <InlineCode>light</InlineCode>,{' '}
+              <InlineCode>dark</InlineCode>, <InlineCode>light-hc</InlineCode>, or{' '}
+              <InlineCode>dark-hc</InlineCode> as a class on <InlineCode>&lt;body&gt;</InlineCode>.
+              The bridge layer in <InlineCode>tailwind.consumer.css</InlineCode> maps apollo-core
+              tokens to bare variable names so components using <InlineCode>bg-surface</InlineCode>,{' '}
+              <InlineCode>text-foreground</InlineCode>, etc. resolve correctly.
+            </SectionDescription>
+
+            <CodeBlock>{`<!-- Apply theme class to <body> -->
+<body class="dark">
+  <div class="bg-surface text-foreground">
+    Dark themed content
+  </div>
+</body>`}</CodeBlock>
+          </>
+        ) : (
+          <>
+            <SectionDescription>
+              Apply the theme class to any container. Everything inside inherits the correct token
+              values. Templates like <InlineCode>MaestroTemplate</InlineCode> handle this
+              automatically via their <InlineCode>theme</InlineCode> prop.
+            </SectionDescription>
+
+            <div className="flex flex-col gap-4">
+              <CodeBlock>{`<!-- Wrap any container with the theme class -->
+<div class="${globalTheme}">
+  <div class="bg-surface text-foreground">
+    Themed content
+  </div>
+</div>`}</CodeBlock>
+
+              <CodeBlock>{`<!-- Or use a template component -->
+<MaestroTemplate theme="${globalTheme}">
+  {/* children automatically inherit theme tokens */}
+</MaestroTemplate>`}</CodeBlock>
+            </div>
+          </>
+        )}
+
+        <Divider />
+
+        {/* ── Shadcn bridge ──────────────────────────────────────────── */}
+        <SectionTitle>Shadcn component compatibility</SectionTitle>
+        <SectionDescription>
+          Every theme includes a built-in bridge that maps standard shadcn CSS variables to their
+          semantic token equivalents. Components like Button, Input, DataTable, and DropdownMenu
+          work automatically inside any themed container — no extra configuration needed.
+        </SectionDescription>
+
+        {family === 'core' ? (
+          <CodeBlock>{`/* tailwind.consumer.css — Core bridge (excerpt) */
+
+body.dark {
+  --color-card:     var(--color-background-raised);
+  --color-muted:    var(--color-background-secondary);
+  --color-ring:     var(--color-focus-indicator);
+
+  /* bare var bridge */
+  --surface:        var(--color-background);
+  --brand:          var(--color-primary);
+  --foreground:     var(--color-foreground);
+  /* … full mapping in tailwind.consumer.css */
+}`}</CodeBlock>
+        ) : (
+          <CodeBlock>{`/* tailwind.consumer.css — shadcn aliases (excerpt) */
+
+.${globalTheme} {
+  --background:   var(--surface);
+  --card:         var(--surface-raised);
+  --primary:      var(--brand);
+  --muted:        var(--surface-overlay);
+  --input:        var(--border);
+  --ring:         var(--ring);
+  /* … full mapping in tailwind.consumer.css */
+}`}</CodeBlock>
+        )}
+
+        <Divider />
+
+        {/* ── Adding new themes ──────────────────────────────────────── */}
         <SectionTitle>Adding new themes</SectionTitle>
         <SectionDescription>
-          To create a new theme, define a new CSS class that sets the same set of CSS custom
-          properties. All components using semantic tokens will automatically adapt to the new
-          palette.
+          To create a new theme, define a CSS class that sets the same set of CSS custom properties.
+          All components using semantic tokens will automatically adapt to the new palette.
         </SectionDescription>
 
         <CodeBlock>{`/* Example: creating a new theme variant */
@@ -806,5 +707,5 @@ function ThemePage({ selectedTheme }: { selectedTheme: string }) {
 }
 
 export const Default: Story = {
-  render: (_, { globals }) => <ThemePage selectedTheme={globals.theme ?? 'future-dark'} />,
+  render: (_, { globals }) => <ThemePage globalTheme={globals.theme || 'future-dark'} />,
 };

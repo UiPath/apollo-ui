@@ -2,9 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MetadataForm } from './metadata-form';
 import { FormStateViewer } from './form-state-viewer';
 import type { FormSchema } from './form-schema';
-import { z } from 'zod/v4';
 import { useForm, FormProvider, type FieldValues, type UseFormReturn } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { RuleBuilder } from './rules-engine';
 import { autoSavePlugin, analyticsPlugin } from './form-plugins';
 import { setupDemoMocks } from './demo-mocks';
@@ -779,7 +777,14 @@ const ManualFormFields = () => {
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="name">Full Name</Label>
-          <Input id="name" placeholder="John Doe" {...register('name')} />
+          <Input
+            id="name"
+            placeholder="John Doe"
+            {...register('name', {
+              required: 'Name is required',
+              minLength: { value: 2, message: 'Name must be at least 2 characters' },
+            })}
+          />
           {errors.name && (
             <p className="text-sm text-destructive">{errors.name.message as string}</p>
           )}
@@ -787,7 +792,15 @@ const ManualFormFields = () => {
 
         <div className="space-y-2">
           <Label htmlFor="email">Email Address</Label>
-          <Input id="email" type="email" placeholder="john@example.com" {...register('email')} />
+          <Input
+            id="email"
+            type="email"
+            placeholder="john@example.com"
+            {...register('email', {
+              required: 'Email is required',
+              pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Invalid email address' },
+            })}
+          />
           {errors.email && (
             <p className="text-sm text-destructive">{errors.email.message as string}</p>
           )}
@@ -795,7 +808,15 @@ const ManualFormFields = () => {
 
         <div className="space-y-2">
           <Label htmlFor="age">Age</Label>
-          <Input id="age" type="number" {...register('age', { valueAsNumber: true })} />
+          <Input
+            id="age"
+            type="number"
+            {...register('age', {
+              valueAsNumber: true,
+              min: { value: 18, message: 'Must be 18 or older' },
+              max: { value: 120, message: 'Invalid age' },
+            })}
+          />
           {errors.age && <p className="text-sm text-destructive">{errors.age.message as string}</p>}
         </div>
 
@@ -839,16 +860,7 @@ const ManualFormFields = () => {
 };
 
 const StateViewerExample = () => {
-  const zodSchema = z.object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
-    email: z.string().email('Invalid email address'),
-    age: z.number().min(18, 'Must be 18 or older').max(120),
-    subscribe: z.boolean(),
-    role: z.string().optional(),
-  });
-
   const form = useForm({
-    resolver: zodResolver(zodSchema),
     mode: 'onChange',
     defaultValues: {
       subscribe: false,
@@ -889,14 +901,7 @@ export const WithStateViewer = {
 } satisfies Story;
 
 const CompactStateExample = () => {
-  const zodSchema = z.object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
-    email: z.string().email('Invalid email address'),
-    country: z.string().optional(),
-  });
-
   const form = useForm({
-    resolver: zodResolver(zodSchema),
     mode: 'onChange',
   });
 
@@ -919,7 +924,13 @@ const CompactStateExample = () => {
 
           <div className="space-y-2">
             <Label htmlFor="name2">Name</Label>
-            <Input id="name2" {...register('name')} />
+            <Input
+              id="name2"
+              {...register('name', {
+                required: 'Name is required',
+                minLength: { value: 2, message: 'Name must be at least 2 characters' },
+              })}
+            />
             {errors.name && (
               <p className="text-sm text-destructive">{errors.name.message as string}</p>
             )}
@@ -927,7 +938,14 @@ const CompactStateExample = () => {
 
           <div className="space-y-2">
             <Label htmlFor="email2">Email</Label>
-            <Input id="email2" type="email" {...register('email')} />
+            <Input
+              id="email2"
+              type="email"
+              {...register('email', {
+                required: 'Email is required',
+                pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Invalid email address' },
+              })}
+            />
             {errors.email && (
               <p className="text-sm text-destructive">{errors.email.message as string}</p>
             )}
