@@ -305,8 +305,14 @@ export class CategoryTree {
   }
 
   /**
-   * Filter the tree by search term.
-   * Searches node labels, types, descriptions, and tags.
+   * Filter the tree by search term using combination search.
+   *
+   * The search term is split into words. A node matches if every word matches
+   * at least one searchable attribute: node label, type, description, tags,
+   * or ancestor category names.
+   *
+   * This allows queries like "Outlook Email" to match a node named "Archive Email"
+   * inside a "Microsoft Outlook 365" category.
    *
    * This is an immutable operation - returns a new CategoryTree instance.
    *
@@ -318,20 +324,62 @@ export class CategoryTree {
       return this;
     }
 
-    const searchLower = searchTerm.toLowerCase();
+    const searchWords = searchTerm
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean);
 
-    return this.filter({
-      nodeFilter: (node) => {
-        const matchesLabel = node.display.label.toLowerCase().includes(searchLower);
-        const matchesType = node.nodeType.toLowerCase().includes(searchLower);
-        const matchesDescription = node.description?.toLowerCase().includes(searchLower);
-        const matchesTags = node.tags?.some(
-          (tag) => typeof tag === 'string' && tag.toLowerCase().includes(searchLower)
+    if (searchWords.length === 0) {
+      return this;
+    }
+
+    const matchesAllWords = (
+      node: NodeManifest,
+      ancestorCategoryNames: string[],
+    ): boolean => {
+      const searchableTexts = [
+        node.display.label.toLowerCase(),
+        node.nodeType.toLowerCase(),
+        ...(node.description ? [node.description.toLowerCase()] : []),
+        ...(node.tags
+          ?.filter((tag): tag is string => typeof tag === 'string')
+          .map((tag) => tag.toLowerCase()) ?? []),
+        ...ancestorCategoryNames,
+      ];
+
+      return searchWords.every((word) =>
+        searchableTexts.some((text) => text.includes(word)),
+      );
+    };
+
+    const filterTree = (
+      tree: CategoryTreeNode[],
+      ancestorNames: string[],
+    ): CategoryTreeNode[] => {
+      const filtered: CategoryTreeNode[] = [];
+
+      for (const item of tree) {
+        const categoryNames = [...ancestorNames, item.name.toLowerCase()];
+
+        const nestedCategories = filterTree(item.nestedCategories, categoryNames);
+        const nodes = item.nodes.filter((node) =>
+          matchesAllWords(node, categoryNames),
         );
 
-        return matchesLabel || matchesType || matchesDescription || matchesTags;
-      },
-    });
+        if (nestedCategories.length > 0 || nodes.length > 0) {
+          filtered.push({ ...item, nestedCategories, nodes });
+        }
+      }
+
+      return filtered;
+    };
+
+    const filteredRoots = filterTree(this.rootCategories, []);
+    const filteredRootNodes = this.rootNodes.filter((node) =>
+      matchesAllWords(node, []),
+    );
+
+    return CategoryTree.fromPrebuilt(filteredRoots, filteredRootNodes);
   }
 
   /**

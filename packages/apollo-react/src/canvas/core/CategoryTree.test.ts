@@ -450,6 +450,66 @@ describe('CategoryTree', () => {
       const filtered = tree.filterBySearch('nonexistent-search-term');
       expect(filtered.isEmpty()).toBe(true);
     });
+
+    it('should match multi-word search across different node attributes', () => {
+      const categories = createMockCategories();
+      const nodes = createMockNodes();
+      const tree = new CategoryTree(categories, nodes);
+
+      // "send" matches label "Send Email", "message" matches description "Send an email message"
+      const filtered = tree.filterBySearch('send message');
+      const emailCategory = filtered.findCategory('automation.email');
+
+      expect(emailCategory?.nodes).toHaveLength(1);
+      expect(emailCategory?.nodes[0]?.nodeType).toBe('send-email');
+    });
+
+    it('should match multi-word search across node and category attributes', () => {
+      const categories = createMockCategories();
+      const nodes = createMockNodes();
+      const tree = new CategoryTree(categories, nodes);
+
+      // "automation" matches category name, "read" matches node label/tags
+      const filtered = tree.filterBySearch('automation read');
+      const filesCategory = filtered.findCategory('automation.files');
+
+      expect(filesCategory?.nodes).toHaveLength(1);
+      expect(filesCategory?.nodes[0]?.nodeType).toBe('read-file');
+    });
+
+    it('should match multi-word search regardless of word order', () => {
+      const categories = createMockCategories();
+      const nodes = createMockNodes();
+      const tree = new CategoryTree(categories, nodes);
+
+      const filtered1 = tree.filterBySearch('email automation');
+      const filtered2 = tree.filterBySearch('automation email');
+
+      expect(filtered1.findCategory('automation.email')?.nodes).toHaveLength(1);
+      expect(filtered2.findCategory('automation.email')?.nodes).toHaveLength(1);
+    });
+
+    it('should require all words to match for multi-word search', () => {
+      const categories = createMockCategories();
+      const nodes = createMockNodes();
+      const tree = new CategoryTree(categories, nodes);
+
+      // "email" matches but "zzz" matches nothing
+      const filtered = tree.filterBySearch('email zzz');
+      expect(filtered.isEmpty()).toBe(true);
+    });
+
+    it('should match across nested category names', () => {
+      const categories = createMockCategories();
+      const nodes = createMockNodes();
+      const tree = new CategoryTree(categories, nodes);
+
+      // "files" matches subcategory name, "content" matches description
+      const filtered = tree.filterBySearch('files content');
+      const filesCategory = filtered.findCategory('automation.files');
+
+      expect(filesCategory?.nodes).toHaveLength(2);
+    });
   });
 
   describe('filterByConnections', () => {
