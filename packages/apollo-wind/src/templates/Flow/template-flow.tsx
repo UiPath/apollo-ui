@@ -79,6 +79,11 @@ export interface FlowTemplateProps {
   propertiesSimpleSections?: PropertiesSimpleSection[];
   /** Canvas content */
   children?: React.ReactNode;
+  /**
+   * When true, renders only the left sidebar (icon rail) and the canvas —
+   * no properties bar, no toolbars, no right-side panels.
+   */
+  blank?: boolean;
 }
 
 // ============================================================================
@@ -114,6 +119,7 @@ export function FlowTemplate({
   propertiesSimpleFields,
   propertiesSimpleSections,
   children,
+  blank = false,
 }: FlowTemplateProps) {
   const isLargeViewport = useViewportAtOrAbove(PANEL_EXPAND_BREAKPOINT);
   const [panelOpen, setPanelOpen] = React.useState(defaultPanelOpen);
@@ -214,7 +220,7 @@ export function FlowTemplate({
         {/* Canvas area — relative for toolbar positioning */}
         <Canvas className="relative">
           {/* Properties: collapsed bar (default) — hidden when expanded or simple panel is shown */}
-          {!propsExpanded && !propsSimpleOpen && (
+          {!blank && !propsExpanded && !propsSimpleOpen && (
             <div className="absolute right-4 top-4 z-10 w-[680px] max-w-[calc(100%-32px)]">
               <FlowProperties
                 expanded={false}
@@ -229,27 +235,31 @@ export function FlowTemplate({
           {children}
 
           {/* Canvas toolbar — bottom center */}
-          <div className="absolute bottom-5 left-1/2 z-10 -translate-x-1/2">
-            <FlowCanvasToolbar
-              activeMode={propsSimpleOpen ? 'evaluate' : 'build'}
-              onModeChange={(mode) => {
-                if (mode === 'evaluate') {
-                  openPropsSimple();
-                } else {
-                  setPropsSimpleOpen(false);
-                }
-              }}
-            />
-          </div>
+          {!blank && (
+            <div className="absolute bottom-5 left-1/2 z-10 -translate-x-1/2">
+              <FlowCanvasToolbar
+                activeMode={propsSimpleOpen ? 'evaluate' : 'build'}
+                onModeChange={(mode) => {
+                  if (mode === 'evaluate') {
+                    openPropsSimple();
+                  } else {
+                    setPropsSimpleOpen(false);
+                  }
+                }}
+              />
+            </div>
+          )}
 
           {/* View toolbar — bottom right */}
-          <div className="absolute bottom-5 right-4 z-10">
-            <FlowViewToolbar />
-          </div>
+          {!blank && (
+            <div className="absolute bottom-5 right-4 z-10">
+              <FlowViewToolbar />
+            </div>
+          )}
         </Canvas>
 
         {/* Properties expanded panel — right side */}
-        {propsExpanded && (
+        {!blank && propsExpanded && (
           <div className="shrink-0 p-4 pl-0">
             <FlowProperties
               className="h-full"
@@ -262,7 +272,7 @@ export function FlowTemplate({
         )}
 
         {/* Properties simple panel — right side */}
-        {propsSimpleOpen && !propsExpanded && (
+        {!blank && propsSimpleOpen && !propsExpanded && (
           <div className="shrink-0 p-4 pl-0">
             <PropertiesSimple
               className="h-full"

@@ -467,6 +467,18 @@ type Story = StoryObj<typeof meta>;
 // Stories
 // ============================================================================
 
+export const Blank: Story = {
+  name: 'Blank',
+  render: (_, { globals }) => (
+    <MaestroTemplate
+      theme={globals.futureTheme || 'dark'}
+      leftPanelContent={null}
+      menuContent={<MenuNav />}
+      rightPanelContent={null}
+    />
+  ),
+};
+
 export const Landing: Story = {
   name: 'Landing',
   render: (_, { globals }) => (
@@ -875,3 +887,4 @@ export const Dashboard: Story = {
     </MaestroTemplate>
   ),
 };
+

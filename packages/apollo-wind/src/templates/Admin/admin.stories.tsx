@@ -754,7 +754,7 @@ function AdminPageDemo({ theme }: { theme: string }) {
       title="Administration"
       menuContent={<AdminMenuNav />}
       sidebar={
-        <AdminSidebar width={320}>
+        <AdminSidebar width={300}>
           <div className="flex shrink-0 items-center gap-2 border-b border-border-subtle px-4 py-3 text-sm font-medium text-foreground">
             <svg
               viewBox="0 0 24 24"
@@ -851,6 +851,50 @@ function AdminPageDemo({ theme }: { theme: string }) {
 // ============================================================================
 // Stories
 // ============================================================================
+
+export const Blank: Story = {
+  name: 'Blank',
+  render: (_, { globals }) => (
+    <AdminTemplate
+      theme={globals.futureTheme || 'dark'}
+      title="Administration"
+      menuContent={<AdminMenuNav />}
+      sidebar={
+        <AdminSidebar width={300}>
+          <div className="flex shrink-0 items-center gap-2 border-b border-border-subtle px-4 py-3 text-sm font-medium text-foreground">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M3 9h18" />
+              <path d="M9 21V9" />
+            </svg>
+            Tenant
+          </div>
+        </AdminSidebar>
+      }
+    >
+      <AdminPageHeader
+        title="Page title"
+        breadcrumb={['Tenant', 'Page title']}
+        actions={
+          <>
+            <Button variant="ghost" className="text-foreground-accent hover:bg-transparent hover:text-foreground">
+              Secondary action
+            </Button>
+            <Button className="bg-brand text-foreground-on-accent hover:bg-brand/90">
+              Primary action
+            </Button>
+          </>
+        }
+      />
+    </AdminTemplate>
+  ),
+};
 
 export const Landing: Story = {
   name: 'Landing',
@@ -1715,3 +1759,4 @@ export const Settings: Story = {
     return <SettingsAdmin theme={globals.futureTheme || 'dark'} menuContent={<AdminMenuNav />} />;
   },
 };
+
