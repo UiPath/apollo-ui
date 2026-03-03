@@ -1,13 +1,15 @@
+import { Callout } from 'nextra/components'
 import { SonnerDemo } from './sonner-demo';
 
 # Sonner
 
 An opinionated toast component for React.
 
+<Callout type="info">
+  For guidance on when to use Sonner vs. Alert, placement rules, and content guidelines, see the [In-product notification](/patterns/notifications/in-product) pattern.
+</Callout>
+
 <div className="p-4 border rounded-lg mt-4">
-  <p className="text-sm text-muted-foreground mb-4">
-    Click the buttons below to trigger toast notifications.
-  </p>
   <SonnerDemo />
 </div>
 
@@ -27,7 +29,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         {children}
-        <Toaster />
+        <Toaster position="top-center" closeButton />
       </body>
     </html>
   )
@@ -41,10 +43,20 @@ import { toast } from "sonner"
 ```
 
 ```tsx
-toast("Event has been created.")
+toast("Event has been created", {
+  description: "Sunday, December 03, 2023 at 9:00 AM",
+})
 
-toast.success("Success!")
-toast.error("Error!")
-toast.warning("Warning!")
-toast.info("Info!")
+toast.success("Changes saved", {
+  description: "Your updates have been applied.",
+})
+toast.error("Upload failed", {
+  description: "Please check your connection and retry.",
+})
+toast.warning("Storage almost full", {
+  description: "Consider removing unused files.",
+})
+toast.info("Background sync complete", {
+  description: "All data is up to date.",
+})
 ```
