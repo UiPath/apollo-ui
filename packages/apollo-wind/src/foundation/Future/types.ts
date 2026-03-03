@@ -10,14 +10,30 @@
 // =============================================================================
 
 /**
- * All supported theme modes for Future templates.
+ * All supported theme modes for templates.
  *
- * - `'dark'`         — Future dark theme (default)
- * - `'light'`        — Future light theme
- * - `'core-dark'`  — Core dark theme (apollo-core design language)
- * - `'core-light'` — Core light theme (apollo-core design language)
- * - `'wireframe'`    — Demo: low-fidelity wireframe theme (may be removed)
- * - `'vertex'`       — Demo: Apollo Vertex dark palette (may be removed)
- * - `'canvas'`       — Demo: Apollo React / MUI dark palette (may be removed)
+ * Apollo Core (applied to <body>):
+ * - `'dark'`         — Apollo Core dark theme
+ * - `'light'`        — Apollo Core light theme
+ * - `'dark-hc'`      — Apollo Core dark high-contrast theme
+ * - `'light-hc'`     — Apollo Core light high-contrast theme
+ *
+ * Future (applied as CSS class):
+ * - `'future-dark'`  — Future dark theme (zinc + cyan)
+ * - `'future-light'` — Future light theme (zinc + cyan)
+ *
+ * Demo (applied as CSS class):
+ * - `'wireframe'`    — Demo: low-fidelity wireframe theme
+ * - `'vertex'`       — Demo: Apollo Vertex dark palette
+ * - `'canvas'`       — Demo: Apollo React / MUI dark palette
  */
-export type FutureTheme = 'dark' | 'light' | 'core-dark' | 'core-light' | 'wireframe' | 'vertex' | 'canvas';
+export type FutureTheme =
+  | 'dark'
+  | 'light'
+  | 'dark-hc'
+  | 'light-hc'
+  | 'future-dark'
+  | 'future-light'
+  | 'wireframe'
+  | 'vertex'
+  | 'canvas';

@@ -40,13 +40,7 @@ type Story = StoryObj<typeof meta>;
 // ============================================================================
 
 function resolveThemeClass(value: string) {
-  if (value === 'core-dark') return 'core-dark';
-  if (value === 'core-light') return 'core-light';
-  if (value === 'wireframe') return 'wireframe';
-  if (value === 'vertex') return 'vertex';
-  if (value === 'canvas') return 'canvas';
-  if (value === 'light') return 'future-light';
-  return 'future-dark';
+  return value || 'future-dark';
 }
 
 // ============================================================================
@@ -287,15 +281,15 @@ function SidebarOnlyDemo({ theme }: { theme: string }) {
 
 export const Default: Story = {
   name: 'Default',
-  render: (_, { globals }) => <VSCodeShellDemo theme={globals.futureTheme || 'dark'} />,
+  render: (_, { globals }) => <VSCodeShellDemo theme={globals.futureTheme || 'future-dark'} />,
 };
 
 export const Minimal: Story = {
   name: 'Minimal',
-  render: (_, { globals }) => <MinimalShellDemo theme={globals.futureTheme || 'dark'} />,
+  render: (_, { globals }) => <MinimalShellDemo theme={globals.futureTheme || 'future-dark'} />,
 };
 
 export const SidebarOnly: Story = {
   name: 'Sidebar Only',
-  render: (_, { globals }) => <SidebarOnlyDemo theme={globals.futureTheme || 'dark'} />,
+  render: (_, { globals }) => <SidebarOnlyDemo theme={globals.futureTheme || 'future-dark'} />,
 };

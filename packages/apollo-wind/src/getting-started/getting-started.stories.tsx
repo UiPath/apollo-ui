@@ -14,13 +14,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 function resolveThemeClass(value: string) {
-  if (value === 'core-dark') return 'core-dark';
-  if (value === 'core-light') return 'core-light';
-  if (value === 'wireframe') return 'wireframe';
-  if (value === 'vertex') return 'vertex';
-  if (value === 'canvas') return 'canvas';
-  if (value === 'light') return 'future-light';
-  return 'future-dark';
+  return value || 'future-dark';
 }
 
 // ============================================================================
@@ -293,5 +287,5 @@ pnpm test`}
 }
 
 export const Default: Story = {
-  render: (_, { globals }) => <GettingStartedPage globalTheme={globals.futureTheme || 'dark'} />,
+  render: (_, { globals }) => <GettingStartedPage globalTheme={globals.futureTheme || 'future-dark'} />,
 };

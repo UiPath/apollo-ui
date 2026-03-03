@@ -12,7 +12,7 @@
 
 Apollo Wind uses a three-layer system to prevent hardcoded values:
 
-1. **CSS variables** — defined in `themes.css` (e.g. `--color-brand`, `--radius: 0.75rem`)
+1. **CSS variables** — defined in `tailwind.consumer.css` (e.g. `--color-brand`, `--radius: 0.75rem`)
 2. **Tailwind utilities** — generated from those variables (e.g. `bg-brand`, `rounded-lg`)
 3. **Component classNames** — the only layer AI-generated code should touch
 
@@ -62,8 +62,10 @@ Themes use CSS custom properties scoped to CSS classes. Apply a class to a paren
 |-------|-------------|
 | `future-dark` | Future design language — dark mode (default) |
 | `future-light` | Future design language — light mode |
-| `core-dark` | Core design language — dark mode |
-| `core-light` | Core design language — light mode |
+| `dark` | Apollo Core — dark mode (body class) |
+| `light` | Apollo Core — light mode (body class) |
+| `dark-hc` | Apollo Core — dark high contrast (body class) |
+| `light-hc` | Apollo Core — light high contrast (body class) |
 
 ### Color tokens (use these, not raw colors)
 
@@ -94,14 +96,14 @@ Themes use CSS custom properties scoped to CSS classes. Apply a class to a paren
 
 ### Bridge tokens (cross-theme compatible)
 
-For code that must work across all 4 themes (Future + Core), use these shadcn bridge tokens instead of `future-*`. They resolve correctly under any theme class.
+For code that must work across all themes (Apollo Core + Future + Demo), use these shadcn bridge tokens. They resolve correctly under any theme.
 
 - **Surfaces:** `bg-background`, `bg-card`, `bg-muted`, `bg-muted/50`
 - **Text:** `text-foreground`, `text-muted-foreground`, `text-card-foreground`
 - **Borders:** `border-border`, `border-input`
 - **Accent:** `bg-primary`, `text-primary`, `text-primary-foreground`, `bg-primary/10`
 
-> **When to use which:** Use `future-*` tokens when building for a specific theme. Use bridge tokens when the same code must render across Future and Core themes.
+> **When to use which:** Use design-system tokens (`bg-surface`, `text-brand`) when building for a specific theme. Use bridge tokens when the same code must render across all themes.
 
 ### Border Radius
 
@@ -556,7 +558,6 @@ packages/apollo-wind/src/
 │   └── Future/
 │       ├── colors.ts           # Color token definitions
 │       ├── typography.ts       # Font stacks
-│       ├── themes.css           # All theme CSS variables
 │       └── ... (stories, tokens)
 ├── templates/
 │   ├── Admin/        # AdminTemplate + sub-components

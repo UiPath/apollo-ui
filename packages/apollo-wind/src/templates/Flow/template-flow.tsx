@@ -128,20 +128,7 @@ export function FlowTemplate({
 
   // Sync the active theme class on document.body so Radix portals
   // (Select, Dialog, Sheet, etc.) inherit the correct CSS custom properties.
-  const themeClass =
-    theme === 'core-dark'
-      ? 'core-dark'
-      : theme === 'core-light'
-        ? 'core-light'
-        : theme === 'wireframe'
-          ? 'wireframe'
-          : theme === 'vertex'
-            ? 'vertex'
-            : theme === 'canvas'
-              ? 'canvas'
-              : theme === 'light'
-                ? 'future-light'
-                : 'future-dark';
+  const themeClass = theme;
   React.useEffect(() => {
     document.body.classList.add(themeClass);
     return () => {
@@ -190,19 +177,7 @@ export function FlowTemplate({
     >
       <div
         className={cn(
-          theme === 'core-dark'
-            ? 'core-dark'
-            : theme === 'core-light'
-              ? 'core-light'
-              : theme === 'wireframe'
-                ? 'wireframe'
-                : theme === 'vertex'
-                  ? 'vertex'
-                  : theme === 'canvas'
-                    ? 'canvas'
-                    : theme === 'light'
-                      ? 'future-light'
-                      : 'future-dark',
+          theme,
           'flex h-screen bg-surface',
           className
         )}

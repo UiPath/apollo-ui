@@ -23,25 +23,41 @@ type Story = StoryObj<typeof meta>;
 // Theme helpers
 // ============================================================================
 
-type ThemeFamily = 'future' | 'core';
+type ThemeFamily = 'future' | 'core' | 'demo';
 
-/** Derive the theme family and variant from the Storybook global value */
-function parseThemeGlobal(value: string): { family: ThemeFamily; variant: 'dark' | 'light'; override?: string } {
-  if (value === 'core-dark') return { family: 'core', variant: 'dark' };
-  if (value === 'core-light') return { family: 'core', variant: 'light' };
-  if (value === 'wireframe') return { family: 'future', variant: 'light', override: 'wireframe' };
-  if (value === 'vertex') return { family: 'future', variant: 'dark', override: 'vertex' };
-  if (value === 'canvas') return { family: 'future', variant: 'dark', override: 'canvas' };
-  if (value === 'light') return { family: 'future', variant: 'light' };
-  return { family: 'future', variant: 'dark' };
+const coreThemes = ['dark', 'light', 'dark-hc', 'light-hc'];
+const demoThemes = ['wireframe', 'vertex', 'canvas'];
+
+function parseThemeFamily(value: string): ThemeFamily {
+  if (coreThemes.includes(value)) return 'core';
+  if (demoThemes.includes(value)) return 'demo';
+  return 'future';
 }
 
-/** Get the CSS class for a given family + variant, respecting demo theme overrides */
-function themeClass(family: ThemeFamily, variant: 'dark' | 'light', override?: string) {
-  if (override) return override;
-  return family === 'core'
-    ? variant === 'light' ? 'core-light' : 'core-dark'
-    : variant === 'light' ? 'future-light' : 'future-dark';
+function themeLabel(value: string): string {
+  const labels: Record<string, string> = {
+    'future-dark': 'Future Dark',
+    'future-light': 'Future Light',
+    dark: 'Dark',
+    light: 'Light',
+    'dark-hc': 'Dark High Contrast',
+    'light-hc': 'Light High Contrast',
+    wireframe: 'Wireframe',
+    vertex: 'Vertex',
+    canvas: 'Canvas',
+  };
+  return labels[value] ?? value;
+}
+
+/** Returns [primary, companion] theme class names for side-by-side preview.
+ *  Core themes return a single entry because their tokens are set on <body>
+ *  and can't be scoped to an element. */
+function themePair(value: string): [string, string] | [string] {
+  const pairs: Record<string, [string, string]> = {
+    'future-dark': ['future-dark', 'future-light'],
+    'future-light': ['future-light', 'future-dark'],
+  };
+  return pairs[value] ?? [value];
 }
 
 // ============================================================================
@@ -49,7 +65,7 @@ function themeClass(family: ThemeFamily, variant: 'dark' | 'light', override?: s
 // ============================================================================
 
 /** Page chrome uses shadcn bridge tokens (bg-background, text-foreground, etc.)
- *  so they resolve correctly under both .future-* and .core-* theme classes. */
+ *  so they resolve correctly under all theme families. */
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
@@ -97,16 +113,16 @@ function InlineCode({ children }: { children: React.ReactNode }) {
 }
 
 // ============================================================================
-// Future preview card
+// Unified preview card — inherits tokens from the active theme on <body>/<html>
 // ============================================================================
 
-function FuturePreviewCard({ theme }: { theme: string }) {
+function PreviewCard({ label }: { label: string }) {
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-raised p-6">
       <div className="flex items-center gap-2">
         <div className="h-3 w-3 rounded-full bg-brand" />
         <span className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
-          {theme}
+          {label}
         </span>
       </div>
 
@@ -127,62 +143,6 @@ function FuturePreviewCard({ theme }: { theme: string }) {
           variant="outline"
           size="sm"
           className="border-border bg-surface text-foreground hover:bg-surface-hover"
-        >
-          Secondary
-        </Button>
-        <Button variant="ghost" size="sm" className="text-foreground hover:bg-surface-hover">
-          Ghost
-        </Button>
-      </div>
-
-      <div className="flex gap-2 pt-2">
-        {[
-          { bg: 'bg-surface', label: 'surface' },
-          { bg: 'bg-surface-raised', label: 'raised' },
-          { bg: 'bg-surface-overlay', label: 'overlay' },
-          { bg: 'bg-surface-hover', label: 'hover' },
-        ].map((s) => (
-          <div key={s.label} className="flex flex-col items-center gap-1">
-            <div className={cn('h-8 w-8 rounded-md border border-border', s.bg)} />
-            <span className="text-[10px] text-foreground-subtle">{s.label}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// Core preview card
-// ============================================================================
-
-function CorePreviewCard({ theme }: { theme: string }) {
-  return (
-    <div className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-raised p-6">
-      <div className="flex items-center gap-2">
-        <div className="h-3 w-3 rounded-full bg-brand" />
-        <span className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
-          {theme}
-        </span>
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <h3 className="text-lg font-semibold text-foreground">Card title</h3>
-        <p className="text-sm text-foreground-muted">
-          Body text uses the muted foreground token for secondary information and descriptions.
-        </p>
-      </div>
-
-      <Input placeholder="Search…" className="border-border-subtle bg-surface-overlay text-foreground placeholder:text-foreground-subtle" />
-
-      <div className="flex items-center gap-3">
-        <Button size="sm" className="bg-brand text-foreground-on-accent hover:bg-brand-hover">
-          Primary
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="border-border-subtle bg-surface text-foreground hover:bg-surface-hover"
         >
           Secondary
         </Button>
@@ -352,250 +312,172 @@ function TokenTable({ groups }: { groups: typeof futureTokenGroups }) {
 }
 
 // ============================================================================
-// Tab content — Future
+// Unified theme page — responds to the global Storybook theme switcher
 // ============================================================================
-
-function FutureTabContent() {
-  return (
-    <>
-      {/* ── Side-by-side preview ───────────────────────────────────────── */}
-      <SectionTitle>Theme preview</SectionTitle>
-      <SectionDescription>
-        The same component rendered in both themes. All tokens resolve
-        automatically — no conditional styling needed.
-      </SectionDescription>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="future-dark rounded-xl bg-surface p-4">
-          <FuturePreviewCard theme="Dark" />
-        </div>
-        <div className="future-light rounded-xl bg-surface p-4">
-          <FuturePreviewCard theme="Light" />
-        </div>
-      </div>
-
-      <Divider />
-
-      {/* ── Token overview ─────────────────────────────────────────────── */}
-      <SectionTitle>Token overview</SectionTitle>
-      <SectionDescription>
-        Key semantic tokens and their resolved values per theme. See the
-        Colors page for the full token reference.
-      </SectionDescription>
-
-      <TokenTable groups={futureTokenGroups} />
-
-      <Divider />
-
-      {/* ── How to use ─────────────────────────────────────────────────── */}
-      <SectionTitle>How to use</SectionTitle>
-      <SectionDescription>
-        Apply <InlineCode>.future-dark</InlineCode> or <InlineCode>.future-light</InlineCode> to
-        any container. Everything inside inherits the correct token values.
-        Templates like <InlineCode>MaestroTemplate</InlineCode> handle
-        this automatically via their <InlineCode>theme</InlineCode> prop.
-      </SectionDescription>
-
-      <div className="flex flex-col gap-4">
-        <CodeBlock>{`<!-- Wrap any container with the theme class -->
-<div class="future-dark">
-  <div class="bg-surface text-foreground">
-    Dark themed content
-  </div>
-</div>
-
-<div class="future-light">
-  <div class="bg-surface text-foreground">
-    Light themed content
-  </div>
-</div>`}</CodeBlock>
-
-        <CodeBlock>{`<!-- Or use a template component that handles it for you -->
-<MaestroTemplate theme="dark">
-  {/* children automatically inherit dark theme tokens */}
-</MaestroTemplate>`}</CodeBlock>
-      </div>
-
-      <Divider />
-
-      {/* ── Shadcn bridge ──────────────────────────────────────────────── */}
-      <SectionTitle>Shadcn component compatibility</SectionTitle>
-      <SectionDescription>
-        The Future theme includes a built-in bridge that maps standard shadcn CSS
-        variables to their Future token equivalents. This means shadcn/ui
-        components like Button, Input, DataTable, and DropdownMenu work
-        automatically inside any themed container — no extra configuration needed.
-      </SectionDescription>
-
-      <CodeBlock>{`/* themes.css — shadcn aliases (excerpt) */
-
-.future-dark {
-  --color-background:   var(--surface);
-  --color-foreground:   var(--foreground);
-  --color-primary:      var(--accent);
-  --color-muted:        var(--surface-overlay);
-  --color-border:       var(--border);
-  --color-input:        var(--border);
-  --color-ring:         var(--ring);
-  /* … full mapping in themes.css */
-}`}</CodeBlock>
-    </>
-  );
-}
-
-// ============================================================================
-// Tab content — Core
-// ============================================================================
-
-function CoreTabContent() {
-  return (
-    <>
-      {/* ── Side-by-side preview ───────────────────────────────────────── */}
-      <SectionTitle>Theme preview</SectionTitle>
-      <SectionDescription>
-        The same component rendered in both Core themes. The Core design
-        language uses the apollo-core token set from UiPath&apos;s original
-        design system.
-      </SectionDescription>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="core-dark rounded-xl bg-surface p-4">
-          <CorePreviewCard theme="Dark" />
-        </div>
-        <div className="core-light rounded-xl bg-surface p-4">
-          <CorePreviewCard theme="Light" />
-        </div>
-      </div>
-
-      <Divider />
-
-      {/* ── Token overview ─────────────────────────────────────────────── */}
-      <SectionTitle>Token overview</SectionTitle>
-      <SectionDescription>
-        Key semantic tokens from the Core (apollo-core) design system and their
-        resolved values per theme.
-      </SectionDescription>
-
-      <TokenTable groups={coreTokenGroups} />
-
-      <Divider />
-
-      {/* ── How to use ─────────────────────────────────────────────────── */}
-      <SectionTitle>How to use</SectionTitle>
-      <SectionDescription>
-        Apply <InlineCode>.core-dark</InlineCode> or <InlineCode>.core-light</InlineCode> to
-        any container. The Core theme maps apollo-core token values into scoped
-        CSS classes that work at any DOM level — just like the Future theme.
-      </SectionDescription>
-
-      <div className="flex flex-col gap-4">
-        <CodeBlock>{`<!-- Wrap any container with the theme class -->
-<div class="core-dark">
-  <div class="bg-surface text-foreground">
-    Dark themed content
-  </div>
-</div>
-
-<div class="core-light">
-  <div class="bg-surface text-foreground">
-    Light themed content
-  </div>
-</div>`}</CodeBlock>
-
-        <CodeBlock>{`/* Core tokens use the same bare names as Future */
-/* bg-surface, text-foreground, border-border, etc. */
-
-/* The shadcn bridge is also included, so shadcn components
-   inherit the correct Core colors automatically. */`}</CodeBlock>
-      </div>
-
-      <Divider />
-
-      {/* ── Shadcn bridge ──────────────────────────────────────────────── */}
-      <SectionTitle>Shadcn component compatibility</SectionTitle>
-      <SectionDescription>
-        Like the Future theme, the Core theme includes a shadcn bridge so standard
-        components work automatically. The Core bridge maps apollo-core variables
-        to shadcn expected names.
-      </SectionDescription>
-
-      <CodeBlock>{`/* themes.css — core shadcn aliases (excerpt) */
-
-.core-dark {
-  --color-background:   var(--surface);
-  --color-foreground:   var(--foreground);
-  --color-primary:      var(--accent);
-  --color-muted:        var(--surface-raised);
-  --color-border:       var(--border-subtle);
-  --color-input:        var(--border-subtle);
-  --color-ring:         var(--ring);
-  /* … full mapping in themes.css */
-}`}</CodeBlock>
-    </>
-  );
-}
-
-// ============================================================================
-// Story
-// ============================================================================
-
-const themeTabs = ['Future', 'Core'] as const;
 
 function ThemePage({ globalTheme }: { globalTheme: string }) {
-  const { family } = parseThemeGlobal(globalTheme);
-  const [activeTab, setActiveTab] = React.useState<ThemeFamily>(family);
-
-  // Sync tab when toolbar selection changes family
-  React.useEffect(() => {
-    setActiveTab(family);
-  }, [family]);
-
-  const parsed = parseThemeGlobal(globalTheme);
-  const activeThemeClass = themeClass(activeTab, parsed.variant, parsed.override);
+  const family = parseThemeFamily(globalTheme);
+  const label = themeLabel(globalTheme);
+  const tokenGroups = family === 'core' ? coreTokenGroups : futureTokenGroups;
 
   return (
     <div
-      className={cn(activeThemeClass, 'min-h-screen w-full bg-background text-foreground')}
+      className={cn(globalTheme, 'min-h-screen w-full bg-background text-foreground')}
       style={{ fontFamily: fontFamily.base }}
     >
       <div className="mx-auto max-w-4xl space-y-2 p-8">
         {/* ── Header ─────────────────────────────────────────────────── */}
         <SectionTitle>Theme</SectionTitle>
         <SectionDescription>
-          Apollo ships with two design languages — <strong>Future</strong> (the
-          new design direction) and <strong>Core</strong> (the original
-          apollo-core tokens). Each provides dark and light variants activated
-          via CSS classes. Use the toolbar selector above to switch themes, or
-          use the tabs below to explore each design language.
+          Apollo ships with multiple theme families — <strong>Core</strong>{' '}
+          (the original apollo-core tokens), <strong>Future</strong> (the new
+          design direction), and <strong>Demo</strong> themes (Wireframe,
+          Vertex, Canvas). Use the theme selector in the toolbar above to switch
+          between them. Everything on this page updates live.
         </SectionDescription>
 
-        {/* ── Tabs ────────────────────────────────────────────────────── */}
-        <div className="flex gap-1 border-b border-border pb-0">
-          {themeTabs.map((tab) => (
-            <button
-              key={tab}
-              className={`px-4 pb-3 text-sm font-medium transition-colors ${
-                activeTab === tab.toLowerCase()
-                  ? 'border-b-2 border-primary text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-              onClick={() => setActiveTab(tab.toLowerCase() as ThemeFamily)}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
-        <div className="pt-6">
-          {activeTab === 'future' ? <FutureTabContent /> : <CoreTabContent />}
+        <div className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-1.5 text-sm text-muted-foreground">
+          Active theme: <strong className="text-foreground">{label}</strong>
+          <span className="text-xs opacity-60">({family})</span>
         </div>
 
         <Divider />
 
-        {/* ── Adding new themes (shared) ─────────────────────────────── */}
+        {/* ── Live preview ───────────────────────────────────────────── */}
+        <SectionTitle>Theme preview</SectionTitle>
+        {(() => {
+          const pair = themePair(globalTheme);
+          const hasPair = pair.length === 2;
+
+          return (
+            <>
+              <SectionDescription>
+                {hasPair
+                  ? 'The same component rendered in both light and dark variants. All tokens resolve automatically via element-level CSS classes.'
+                  : 'Core themes are applied at the body level — switch variants using the toolbar above.'}
+              </SectionDescription>
+
+              <div className={cn('grid w-full grid-cols-1 gap-6', hasPair && 'md:grid-cols-2')}>
+                <div className={cn(pair[0], 'min-w-0 rounded-xl border border-border bg-surface p-4')}>
+                  <PreviewCard label={themeLabel(pair[0])} />
+                </div>
+                {pair[1] && (
+                  <div className={cn(pair[1], 'min-w-0 rounded-xl border border-border bg-surface p-4')}>
+                    <PreviewCard label={themeLabel(pair[1])} />
+                  </div>
+                )}
+              </div>
+            </>
+          );
+        })()}
+
+        <Divider />
+
+        {/* ── Token overview ─────────────────────────────────────────── */}
+        <SectionTitle>Token overview</SectionTitle>
+        <SectionDescription>
+          Key semantic tokens and their resolved values for the{' '}
+          <strong>{family === 'core' ? 'Core' : family === 'demo' ? 'Demo' : 'Future'}</strong>{' '}
+          theme family. See the Colors page for the full token reference.
+        </SectionDescription>
+
+        <TokenTable groups={tokenGroups} />
+
+        <Divider />
+
+        {/* ── How to use ─────────────────────────────────────────────── */}
+        <SectionTitle>How to use</SectionTitle>
+        {family === 'core' ? (
+          <>
+            <SectionDescription>
+              Apollo Core themes are activated by adding{' '}
+              <InlineCode>light</InlineCode>, <InlineCode>dark</InlineCode>,{' '}
+              <InlineCode>light-hc</InlineCode>, or{' '}
+              <InlineCode>dark-hc</InlineCode> as a class on{' '}
+              <InlineCode>&lt;body&gt;</InlineCode>. The bridge layer in{' '}
+              <InlineCode>tailwind.consumer.css</InlineCode> maps apollo-core
+              tokens to bare variable names so components using{' '}
+              <InlineCode>bg-surface</InlineCode>,{' '}
+              <InlineCode>text-foreground</InlineCode>, etc. resolve correctly.
+            </SectionDescription>
+
+            <CodeBlock>{`<!-- Apply theme class to <body> -->
+<body class="dark">
+  <div class="bg-surface text-foreground">
+    Dark themed content
+  </div>
+</body>`}</CodeBlock>
+          </>
+        ) : (
+          <>
+            <SectionDescription>
+              Apply the theme class to any container. Everything inside inherits
+              the correct token values. Templates like{' '}
+              <InlineCode>MaestroTemplate</InlineCode> handle this automatically
+              via their <InlineCode>theme</InlineCode> prop.
+            </SectionDescription>
+
+            <div className="flex flex-col gap-4">
+              <CodeBlock>{`<!-- Wrap any container with the theme class -->
+<div class="${globalTheme}">
+  <div class="bg-surface text-foreground">
+    Themed content
+  </div>
+</div>`}</CodeBlock>
+
+              <CodeBlock>{`<!-- Or use a template component -->
+<MaestroTemplate theme="${globalTheme}">
+  {/* children automatically inherit theme tokens */}
+</MaestroTemplate>`}</CodeBlock>
+            </div>
+          </>
+        )}
+
+        <Divider />
+
+        {/* ── Shadcn bridge ──────────────────────────────────────────── */}
+        <SectionTitle>Shadcn component compatibility</SectionTitle>
+        <SectionDescription>
+          Every theme includes a built-in bridge that maps standard shadcn CSS
+          variables to their semantic token equivalents. Components like Button,
+          Input, DataTable, and DropdownMenu work automatically inside any
+          themed container — no extra configuration needed.
+        </SectionDescription>
+
+        {family === 'core' ? (
+          <CodeBlock>{`/* tailwind.consumer.css — Core bridge (excerpt) */
+
+body.dark {
+  --color-card:     var(--color-background-raised);
+  --color-muted:    var(--color-background-secondary);
+  --color-ring:     var(--color-focus-indicator);
+
+  /* bare var bridge */
+  --surface:        var(--color-background);
+  --brand:          var(--color-primary);
+  --foreground:     var(--color-foreground);
+  /* … full mapping in tailwind.consumer.css */
+}`}</CodeBlock>
+        ) : (
+          <CodeBlock>{`/* tailwind.consumer.css — shadcn aliases (excerpt) */
+
+.${globalTheme} {
+  --background:   var(--surface);
+  --card:         var(--surface-raised);
+  --primary:      var(--brand);
+  --muted:        var(--surface-overlay);
+  --input:        var(--border);
+  --ring:         var(--ring);
+  /* … full mapping in tailwind.consumer.css */
+}`}</CodeBlock>
+        )}
+
+        <Divider />
+
+        {/* ── Adding new themes ──────────────────────────────────────── */}
         <SectionTitle>Adding new themes</SectionTitle>
         <SectionDescription>
-          To create a new theme, define a new CSS class that sets the same set of
+          To create a new theme, define a CSS class that sets the same set of
           CSS custom properties. All components using semantic tokens will
           automatically adapt to the new palette.
         </SectionDescription>
@@ -621,6 +503,6 @@ function ThemePage({ globalTheme }: { globalTheme: string }) {
 
 export const Default: Story = {
   render: (_, { globals }) => (
-    <ThemePage globalTheme={globals.futureTheme || 'dark'} />
+    <ThemePage globalTheme={globals.futureTheme || 'future-dark'} />
   ),
 };

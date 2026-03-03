@@ -50,7 +50,7 @@ const customViewports = {
 
 const preview: Preview = {
   initialGlobals: {
-    futureTheme: 'dark',
+    futureTheme: 'future-dark',
     reactScan: 'off',
   },
   parameters: {
@@ -110,13 +110,15 @@ const preview: Preview = {
         title: 'Theme',
         icon: 'paintbrush',
         items: [
-          { value: 'core-light', title: 'Light' },
-          { value: 'core-dark', title: 'Dark' },
-          { value: 'light', title: 'Future: Light' },
-          { value: 'dark', title: 'Future: Dark' },
-          { value: 'wireframe', title: 'Demo: Wireframe' },
-          { value: 'vertex', title: 'Demo: Vertex' },
-          { value: 'canvas', title: 'Demo: Canvas' },
+          { value: 'light', title: 'Light' },
+          { value: 'dark', title: 'Dark' },
+          { value: 'light-hc', title: 'Light High Contrast' },
+          { value: 'dark-hc', title: 'Dark High Contrast' },
+          { value: 'future-light', title: 'Future Light' },
+          { value: 'future-dark', title: 'Future Dark' },
+          { value: 'wireframe', title: 'Wireframe' },
+          { value: 'vertex', title: 'Vertex' },
+          { value: 'canvas', title: 'Canvas' },
         ],
         dynamicTitle: true,
       },
@@ -139,32 +141,36 @@ const preview: Preview = {
   decorators: [
     (Story, context) => {
       const reactScanEnabled = context.globals.reactScan === 'on';
-      const futureTheme: string = context.globals.futureTheme ?? 'dark';
+      const futureTheme: string = context.globals.futureTheme ?? 'future-dark';
 
-      // Map the toolbar value to the CSS class that activates the correct
-      // set of CSS custom properties (surfaces, foregrounds, borders, etc.).
-      const themeClassMap: Record<string, string> = {
-        'core-dark': 'core-dark',
-        'core-light': 'core-light',
-        wireframe: 'wireframe',
-        vertex: 'vertex',
-        canvas: 'canvas',
-        light: 'future-light',
-      };
-      const themeClass = themeClassMap[futureTheme] ?? 'future-dark';
+      // Apollo-core themes use body.light / body.dark class selectors (from
+      // @uipath/apollo-core/tokens/css/theme-variables.css). Future and Demo
+      // themes use element-level class selectors (.future-dark, .vertex, etc.).
+      const coreThemes = ['light', 'dark', 'light-hc', 'dark-hc'];
+      const elementThemes = ['future-dark', 'future-light', 'wireframe', 'vertex', 'canvas'];
+      const allThemes = [...coreThemes, ...elementThemes];
 
-      // Apply the theme class to <html> so every story — including standalone
-      // component stories that don't manage their own theme — inherits the
-      // correct CSS variables (shadcn bridge + Future tokens).
+      const isCoreTheme = coreThemes.includes(futureTheme);
+
       useEffect(() => {
         const root = document.documentElement;
-        const allThemeClasses = ['future-dark', 'future-light', 'wireframe', 'vertex', 'canvas', 'core-dark', 'core-light'];
-        root.classList.remove(...allThemeClasses);
-        root.classList.add(themeClass);
+        const body = document.body;
+
+        // Clear all theme classes from both <html> and <body>
+        root.classList.remove(...allThemes);
+        body.classList.remove(...allThemes);
+
+        if (isCoreTheme) {
+          body.classList.add(futureTheme);
+        } else {
+          root.classList.add(futureTheme);
+        }
+
         return () => {
-          root.classList.remove(themeClass);
+          root.classList.remove(...allThemes);
+          body.classList.remove(...allThemes);
         };
-      }, [themeClass]);
+      }, [futureTheme, isCoreTheme]);
 
       useEffect(() => {
         if (isDev) {

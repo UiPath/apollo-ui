@@ -289,13 +289,7 @@ async function callClaude(
 // ============================================================================
 
 function resolveThemeClass(theme: FutureTheme) {
-  if (theme === 'core-dark') return 'core-dark';
-  if (theme === 'core-light') return 'core-light';
-  if (theme === 'wireframe') return 'wireframe';
-  if (theme === 'vertex') return 'vertex';
-  if (theme === 'canvas') return 'canvas';
-  if (theme === 'light') return 'future-light';
-  return 'future-dark';
+  return theme || 'future-dark';
 }
 
 // ============================================================================
@@ -839,20 +833,7 @@ function IdeasCanvas({ theme, generatedCode, isGenerating }: IdeasCanvasProps) {
 // ============================================================================
 
 function IdeasPage({ globalTheme }: { globalTheme: string }) {
-  const theme: FutureTheme =
-    globalTheme === 'core-dark'
-      ? 'core-dark'
-      : globalTheme === 'core-light'
-        ? 'core-light'
-        : globalTheme === 'wireframe'
-          ? 'wireframe'
-          : globalTheme === 'vertex'
-            ? 'vertex'
-            : globalTheme === 'canvas'
-              ? 'canvas'
-              : globalTheme === 'light'
-                ? 'light'
-                : 'dark';
+  const theme = (globalTheme || 'future-dark') as FutureTheme;
 
   const [generatedCode, setGeneratedCode] = React.useState('');
   const [isGenerating, setIsGenerating] = React.useState(false);
@@ -951,6 +932,6 @@ function IdeasPage({ globalTheme }: { globalTheme: string }) {
 export const Default: Story = {
   name: 'Ideas',
   render: (_, { globals }) => (
-    <IdeasPage globalTheme={globals.futureTheme || 'dark'} />
+    <IdeasPage globalTheme={globals.futureTheme || 'future-dark'} />
   ),
 };

@@ -471,7 +471,7 @@ export const Blank: Story = {
   name: 'Blank',
   render: (_, { globals }) => (
     <MaestroTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.futureTheme || 'future-dark'}
       leftPanelContent={null}
       menuContent={<MenuNav />}
       rightPanelContent={null}
@@ -483,7 +483,7 @@ export const Landing: Story = {
   name: 'Landing',
   render: (_, { globals }) => (
     <MaestroTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.futureTheme || 'future-dark'}
       leftPanelContent={<LeftPanelNav />}
       menuContent={<MenuNav />}
       rightPanelContent={<RightPanelContent />}
@@ -876,7 +876,7 @@ export const Dashboard: Story = {
   name: 'Dashboard',
   render: (_, { globals }) => (
     <MaestroTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.futureTheme || 'future-dark'}
       defaultLeftPanelCollapsed
       defaultRightPanelCollapsed
       leftPanelContent={<LeftPanelNav />}

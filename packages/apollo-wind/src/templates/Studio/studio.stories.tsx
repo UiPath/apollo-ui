@@ -745,7 +745,7 @@ export const Blank: Story = {
   name: 'Blank',
   render: (_, { globals }) => (
     <StudioTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.futureTheme || 'future-dark'}
       menuContent={<MenuNav />}
       leftPanelViews={leftPanelViews}
       rightPanelViews={rightPanelViews}
@@ -759,7 +759,7 @@ export const Panels: Story = {
   name: 'Configuration',
   render: (_, { globals }) => (
     <StudioTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.futureTheme || 'future-dark'}
       menuContent={<MenuNav />}
       leftPanelViews={leftPanelViews}
       rightPanelViews={rightPanelViews}
@@ -773,7 +773,7 @@ export const CanvasStory: Story = {
   name: 'Canvas',
   render: (_, { globals }) => (
     <StudioTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.futureTheme || 'future-dark'}
       menuContent={<MenuNav />}
       canvasBackground="surface"
       leftPanelViews={leftPanelViews}
@@ -833,5 +833,5 @@ function DatasetStory({ theme }: { theme: string }) {
 
 export const Dataset: Story = {
   name: 'Dataset',
-  render: (_, { globals }) => <DatasetStory theme={globals.futureTheme || 'dark'} />,
+  render: (_, { globals }) => <DatasetStory theme={globals.futureTheme || 'future-dark'} />,
 };

@@ -25,8 +25,6 @@ const meta = {
         'light',
         'future-dark',
         'future-light',
-        'core-dark',
-        'core-light',
         'wireframe',
         'vertex',
         'canvas',
@@ -503,8 +501,6 @@ const THEME_LABELS: Record<CodeBlockTheme, string> = {
   // Future design language
   'future-dark': 'Future: Dark',
   'future-light': 'Future: Light',
-  'core-dark': 'Core: Dark',
-  'core-light': 'Core: Light',
   wireframe: 'Wireframe',
   vertex: 'Vertex',
   canvas: 'Canvas',
