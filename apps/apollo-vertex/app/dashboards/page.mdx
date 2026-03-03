@@ -1,0 +1,82 @@
+# Dashboards
+
+A dashboarding library for building interactive data visualizations with configurable charts, tables, and filters. Built on [Recharts](https://recharts.org/)
+
+Source: [UiPath/apollo-dashboarding](https://github.com/UiPath/apollo-dashboarding)
+
+## Features
+
+- **Chart types**: Bar, line, multi-line, distribution, table, and KPI
+- **Custom layouts**: Flexible grid system with configurable rows, columns, and containers
+- **Filters**: List and time-range filters with runtime state management
+- **Data adapters**: Pluggable data layer — use the built-in standalone/Data Fabric adapters or implement your own
+- **Editors**: Visual dashboard editor and JSON configuration editor
+
+## Installation
+
+```bash
+npm install @uipath/apollo-dashboarding
+```
+
+## Usage
+
+```tsx
+import { Dashboard, type DashboardConfiguration, type DashboardState, type DataAdapter } from '@uipath/apollo-dashboarding';
+
+const config: DashboardConfiguration = {
+  id: 'my-dashboard',
+  layout: {
+    type: 'custom',
+    layout: {
+      columnCount: 30,
+      rowCount: 30,
+      containers: [
+        { id: 'c1', columnStart: 1, columnEnd: 15, rowStart: 1, rowEnd: 15 },
+        { id: 'c2', columnStart: 15, columnEnd: 30, rowStart: 1, rowEnd: 15 },
+        { id: 'c3', columnStart: 1, columnEnd: 15, rowStart: 15, rowEnd: 30 },
+        { id: 'c4', columnStart: 15, columnEnd: 30, rowStart: 15, rowEnd: 30 },
+      ],
+    },
+  },
+  tables: [
+    {
+      id: 'SALES',
+      display: 'Sales',
+      fields: [
+        { id: 'SALES.REGION', display: 'Region', type: 'string' },
+        { id: 'SALES.REVENUE', display: 'Revenue', type: 'numeric' },
+        { id: 'SALES.DATE', display: 'Date', type: 'datetime' },
+      ],
+    },
+  ],
+  metrics: [
+    {
+      id: 'total-revenue',
+      display: 'Total Revenue',
+      expression: { type: 'aggregate', aggregation: 'SUM', argument: 'SALES.REVENUE' },
+    },
+  ],
+  charts: [
+    [{ id: 'bar-1', name: 'Revenue by Region', type: 'bar', dimensions: ['SALES.REGION'], metrics: ['total-revenue'] }],
+    [{ id: 'line-1', name: 'Revenue Over Time', type: 'line', dimensions: ['SALES.DATE'], metrics: ['total-revenue'] }],
+    [{ id: 'bar-2', name: 'Top Regions', type: 'bar', dimensions: ['SALES.REGION'], metrics: ['total-revenue'] }],
+    [{ id: 'line-2', name: 'Trend', type: 'line', dimensions: ['SALES.DATE'], metrics: ['total-revenue'] }],
+  ],
+};
+
+<Dashboard
+  dashboard={config}
+  dataModel={dataModel}
+  dataAdapter={dataAdapter}
+  locale="en-US"
+  state={state}
+  onStateChange={setState}
+  filters={[]}
+  isShowingFilters={false}
+  isRecharts
+/>
+```
+
+## Examples
+
+For full working examples, see the [apollo-dashboarding repository](https://github.com/UiPath/apollo-dashboarding).
