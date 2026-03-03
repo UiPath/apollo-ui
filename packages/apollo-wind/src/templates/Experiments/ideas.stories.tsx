@@ -403,7 +403,7 @@ interface FloatingChatProps {
 }
 
 function FloatingChat({
-  globalTheme,
+  globalTheme: _globalTheme,
   onCodeGenerated,
   onGeneratingChange,
   isGenerating,

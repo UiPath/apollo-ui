@@ -61,6 +61,7 @@ import {
 } from '@/components/ui/select';
 import TreeView, { type TreeViewIconMap, type TreeViewItem } from '@/components/ui/tree-view';
 import { cn } from '@/lib';
+import type { Theme } from '@/foundation/Future/types';
 import { AdminPageHeader, AdminSidebar, AdminTemplate, AdminToolbar } from './template-admin';
 
 // ============================================================================
@@ -276,45 +277,7 @@ function AdminMenuNav() {
 // Sample data
 // ============================================================================
 
-const tenants = [
-  { id: '1', name: 'Maestro', type: 'tenant' },
-  { id: '2', name: 'Staging', type: 'tenant' },
-  { id: '3', name: 'ao', type: 'tenant' },
-  { id: '4', name: 'Development', type: 'service', badge: 'Canary Environment' },
-  { id: '5', name: 'DefaultTenant', type: 'tenant' },
-  { id: '6', name: 'optimize', type: 'service' },
-];
 
-// Tree structure for Admin sidebar (tenants + nested groups)
-const adminTreeData: TreeViewItem[] = [
-  {
-    id: 'root',
-    name: 'POPoC',
-    type: 'region',
-    children: [
-      {
-        id: 'tenants',
-        name: 'Tenants',
-        type: 'folder',
-        children: [
-          { id: '1', name: 'Maestro', type: 'tenant' },
-          { id: '2', name: 'Staging', type: 'tenant' },
-          { id: '3', name: 'ao', type: 'tenant' },
-          { id: '5', name: 'DefaultTenant', type: 'tenant' },
-        ],
-      },
-      {
-        id: 'services',
-        name: 'Services',
-        type: 'folder',
-        children: [
-          { id: '4', name: 'Development', type: 'service' },
-          { id: '6', name: 'optimize', type: 'service' },
-        ],
-      },
-    ],
-  },
-];
 
 /** Admin demo: varied tree structure for layout/scroll demo. */
 const adminTreeDataExpanded: TreeViewItem[] = [
@@ -669,8 +632,8 @@ const users: UserRow[] = [
 // Admin page demo
 // ============================================================================
 
-function AdminPageDemo({ theme }: { theme: string }) {
-  const [selectedTenant, setSelectedTenant] = React.useState('1');
+function AdminPageDemo({ theme }: { theme: Theme }) {
+  const [_selectedTenant, setSelectedTenant] = React.useState('1');
   const [activeTab, setActiveTab] = React.useState('assignments');
   const [nameFilter, setNameFilter] = React.useState('all');
   const [roleFilter, setRoleFilter] = React.useState('all');
@@ -1427,7 +1390,7 @@ const products: Product[] = [
 
 const productCategories = [...new Set(products.map((p) => p.category))];
 
-function DataManagementDemo({ theme }: { theme: string }) {
+function DataManagementDemo({ theme }: { theme: Theme }) {
   const [activeTab, setActiveTab] = React.useState('all');
   const [categoryFilter, setCategoryFilter] = React.useState('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = React.useState(false);

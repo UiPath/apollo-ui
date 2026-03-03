@@ -3,7 +3,7 @@ import * as React from 'react';
 
 import { cn } from '@/lib/index';
 
-interface ButtonGroupProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ButtonGroupProps extends React.HTMLAttributes<HTMLDivElement> {
   orientation?: 'horizontal' | 'vertical';
 }
 

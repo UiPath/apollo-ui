@@ -128,6 +128,7 @@ export const WithStatusCode: Story = {
 /** When more than two actions are needed, pass Button components as children. */
 export const ComposableActions: Story = {
   name: 'Composable Actions',
+  args: { title: '' },
   render: () => (
     <EmptyState
       icon={<AlertTriangle className="h-10 w-10 text-muted-foreground" />}
@@ -173,6 +174,7 @@ function VideoCircle({ size = 180 }: { size?: number }) {
 /** The icon prop accepts any ReactNode — including rich media like videos or illustrations. */
 export const WithVideo: Story = {
   name: 'With Video',
+  args: { title: '' },
   render: () => (
     <EmptyState
       icon={<VideoCircle />}

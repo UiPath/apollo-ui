@@ -85,10 +85,12 @@ function PanelDemo({ side }: { side: 'left' | 'right' }) {
 
 export const LeftPanel: Story = {
   name: 'Left panel',
+  args: { side: 'left' as const },
   render: () => <PanelDemo side="left" />,
 };
 
 export const RightPanel: Story = {
   name: 'Right panel',
+  args: { side: 'right' as const },
   render: () => <PanelDemo side="right" />,
 };
