@@ -122,13 +122,8 @@ function calculateAutoPosition(
       // bottom half shifts down, middle (odd count) stays centered.
       let yOffset = 0;
       if (handleIndex !== null && handleCount > 1) {
-        const centerHandleIdx = Math.floor(handleCount / 2);
-        if (handleIndex < centerHandleIdx) yOffset = -previewNodeSize.height / 2;
-        else if (
-          handleIndex > centerHandleIdx ||
-          (handleCount % 2 === 0 && handleIndex === centerHandleIdx)
-        )
-          yOffset = previewNodeSize.height / 2;
+        if (handleIndex < Math.floor(handleCount / 2)) yOffset = -previewNodeSize.height / 2;
+        else if (handleIndex >= Math.ceil(handleCount / 2)) yOffset = previewNodeSize.height / 2;
       }
 
       initialPosition = {
@@ -224,9 +219,6 @@ export function createPreviewNode(
       };
       handleIdx = getHandleIndex(sourceHandleId, handlePosition, allHandles);
       peerCount = allHandles.filter((h) => h.position === handlePosition).length;
-      console.log(
-        `[createPreviewNode!!] handle "${sourceHandleId}" [index ${handleIdx} of ${peerCount} on ${handlePosition}] — anchor resolved to (${Math.round(handleAnchor.x)}, ${Math.round(handleAnchor.y)})`
-      );
     }
   }
 
