@@ -148,7 +148,10 @@ export function contentPartsToMarkdown(messageId: string, contentParts: ContentP
         }));
 
         const encodedData = btoa(JSON.stringify(citationsData));
-        text = `[[cite-start:${encodedData}]]${text}[[cite-end]]`;
+        // Add a space before [[cite-end]] when text ends with a URL to prevent
+        // link parser from absorbing [[cite-end]] into the URL and rendering it as part of the link.
+        const endsWithUrl = /https?:\/\/\S+$/.test(text);
+        text = `[[cite-start:${encodedData}]]${text}${endsWithUrl ? ' ' : ''}[[cite-end]]`;
       }
       return text;
     })
