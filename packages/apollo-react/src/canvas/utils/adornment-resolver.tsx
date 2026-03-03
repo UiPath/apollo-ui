@@ -1,8 +1,10 @@
 import { ExecutionStatusIcon, NodeIcon } from '@uipath/apollo-react/canvas';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 import { ApTooltip } from '@uipath/apollo-react/material';
 import { memo } from 'react';
 import type { NodeAdornments, NodeStatusContext } from '../components';
 import { getExecutionStatusColor } from '../components/ExecutionStatusIcon/ExecutionStatusIcon';
+import { ValidationErrorSeverity } from '../types/validation';
 
 interface BreakpointIndicatorProps {
   isActive?: boolean;
@@ -68,6 +70,16 @@ function PinnedOutputIndicator() {
 
 export const ExecutionStatusIndicator = memo(ExecutionStatusIndicatorInternal);
 
+export function ValidationErrorIndicator({ message }: { message?: string }) {
+  return (
+    <ApTooltip content={message || 'Validation error'} placement="bottom">
+      <span style={{ display: 'inline-flex' }}>
+        <ApIcon name="error" size="16px" color="var(--uix-canvas-error-icon)" />
+      </span>
+    </ApTooltip>
+  );
+}
+
 const getDefaultAdornments = (context: NodeStatusContext): NodeAdornments => {
   const executionState = context.executionState;
 
@@ -78,9 +90,15 @@ const getDefaultAdornments = (context: NodeStatusContext): NodeAdornments => {
     typeof executionState === 'object' && executionState?.isExecutionStartPoint;
   const isOutputPinned = typeof executionState === 'object' && executionState?.isOutputPinned;
 
+  const hasValidationError =
+    context.validationState?.validationStatus === ValidationErrorSeverity.ERROR ||
+    context.validationState?.validationStatus === ValidationErrorSeverity.CRITICAL;
+
   return {
     topLeft: hasBreakpoint ? <BreakpointIndicator /> : undefined,
-    topRight: <ExecutionStatusIndicator status={status} count={count} />,
+    topRight: !status && hasValidationError
+      ? <ValidationErrorIndicator message={context.validationState?.validationError?.message} />
+      : <ExecutionStatusIndicator status={status} count={count} />,
     bottomLeft: isExecutionStartPoint ? <ExecutionStartPointIndicator /> : undefined,
     bottomRight: isOutputPinned ? <PinnedOutputIndicator /> : undefined,
   };

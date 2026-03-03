@@ -1,5 +1,6 @@
 import type { NodeShape } from '../../schema';
 import type { ExecutionState } from '../../types/execution';
+import type { ValidationState } from '../../types/validation';
 
 export type FooterVariant = 'none' | 'button' | 'single' | 'double';
 
@@ -40,6 +41,7 @@ export interface NodeAdornments {
 export interface NodeStatusContext {
   nodeId: string;
   executionState?: ExecutionState;
+  validationState?: ValidationState;
   isHovered?: boolean;
   isConnecting?: boolean;
   isSelected?: boolean;

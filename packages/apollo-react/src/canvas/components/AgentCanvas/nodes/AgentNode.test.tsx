@@ -33,10 +33,6 @@ vi.mock('../../ButtonHandle/useButtonHandles', () => ({
   useButtonHandles: () => null,
 }));
 
-vi.mock('../../ExecutionStatusIcon/ExecutionStatusIcon', async () => ({
-  ...(await vi.importActual('../../ExecutionStatusIcon/ExecutionStatusIcon')),
-}));
-
 vi.mock('../store/agent-flow-store', () => ({
   useAgentFlowStore: () => ({
     actOnSuggestion: vi.fn(),
