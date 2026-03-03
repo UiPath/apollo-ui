@@ -152,16 +152,6 @@ function RightPanelCard({
 // ============================================================================
 // Sample main content — uses canvas-responsive Grid/GridItem
 // ============================================================================
-
-function FullWidthCard({ title, subtitle }: { title: string; subtitle: string }) {
-  return (
-    <div className="rounded-xl border border-border-subtle bg-surface p-6">
-      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-      <p className="mt-1 text-sm text-foreground-muted">{subtitle}</p>
-    </div>
-  );
-}
-
 function SectionHeader({ title }: { title: string }) {
   return (
     <div className="flex items-center justify-between">

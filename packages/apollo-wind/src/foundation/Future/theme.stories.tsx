@@ -129,60 +129,6 @@ function FuturePreviewCard({ theme }: { theme: string }) {
 // Core preview card
 // ============================================================================
 
-function CorePreviewCard({ theme }: { theme: string }) {
-  return (
-    <div className="flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-raised p-6">
-      <div className="flex items-center gap-2">
-        <div className="h-3 w-3 rounded-full bg-brand" />
-        <span className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
-          {theme}
-        </span>
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <h3 className="text-lg font-semibold text-foreground">Card title</h3>
-        <p className="text-sm text-foreground-muted">
-          Body text uses the muted foreground token for secondary information and descriptions.
-        </p>
-      </div>
-
-      <Input
-        placeholder="Search…"
-        className="border-border-subtle bg-surface-overlay text-foreground placeholder:text-foreground-subtle"
-      />
-
-      <div className="flex items-center gap-3">
-        <Button size="sm" className="bg-brand text-foreground-on-accent hover:bg-brand-hover">
-          Primary
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="border-border-subtle bg-surface text-foreground hover:bg-surface-hover"
-        >
-          Secondary
-        </Button>
-        <Button variant="ghost" size="sm" className="text-foreground hover:bg-surface-hover">
-          Ghost
-        </Button>
-      </div>
-
-      <div className="flex gap-2 pt-2">
-        {[
-          { bg: 'bg-surface', label: 'surface' },
-          { bg: 'bg-surface-raised', label: 'raised' },
-          { bg: 'bg-surface-overlay', label: 'overlay' },
-          { bg: 'bg-surface-hover', label: 'hover' },
-        ].map((s) => (
-          <div key={s.label} className="flex flex-col items-center gap-1">
-            <div className={cn('h-8 w-8 rounded-md border border-border', s.bg)} />
-            <span className="text-[10px] text-foreground-subtle">{s.label}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 // ============================================================================
 // Token tables
@@ -414,7 +360,7 @@ function TokenTable({
   groups,
   showHc = false,
 }: {
-  groups: typeof futureTokenGroups;
+  groups: typeof futureTokenGroups | typeof coreTokenGroups;
   showHc?: boolean;
 }) {
   return (

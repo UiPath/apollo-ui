@@ -19,6 +19,7 @@ type Story = StoryObj<typeof meta>;
 
 export const TitleOnly: Story = {
   name: 'Title only',
+  args: { title: '' },
   render: () => (
     <div className="future-dark bg-surface">
       <PageHeader title="Manage access" />
@@ -28,6 +29,7 @@ export const TitleOnly: Story = {
 
 export const WithBreadcrumb: Story = {
   name: 'With breadcrumb',
+  args: { title: '' },
   render: () => (
     <div className="future-dark bg-surface">
       <PageHeader
@@ -40,6 +42,7 @@ export const WithBreadcrumb: Story = {
 
 export const WithActions: Story = {
   name: 'With actions',
+  args: { title: '' },
   render: () => (
     <div className="future-dark bg-surface">
       <PageHeader
@@ -62,6 +65,7 @@ export const WithActions: Story = {
 
 export const WithTabs: Story = {
   name: 'With tabs',
+  args: { title: '' },
   render: () => {
     const [activeTab, setActiveTab] = React.useState('assignments');
     return (
