@@ -22,16 +22,17 @@ import { Button } from '@/components/ui/button';
 /**
  * All Apollo theme variants supported by CodeBlock.
  *
- * Standard:
- * - `'dark'` / `'light'`               — Apollo dark / light
- * - `'dark-hc'` / `'light-hc'`         — high-contrast variants
+ * Standard (apollo-core):
+ * - `'dark'` / `'light'`               — Default dark / light
+ * - `'dark-hc'` / `'light-hc'`         — High contrast variants
  *
- * Future design language (from themes.css):
- * - `'future-dark'` / `'future-light'`  — Future zinc palette, cyan brand
- * - `'core-dark'` / `'core-light'`      — Apollo Core blue palette
- * - `'wireframe'`                        — Greyscale / prototyping
- * - `'vertex'`                           — Deep blue-grey, teal brand
- * - `'canvas'`                           — Apollo MUI dark, orange brand
+ * Future design language:
+ * - `'future-dark'` / `'future-light'` — Future zinc palette, cyan brand
+ *
+ * Demo themes:
+ * - `'wireframe'`                      — Greyscale prototyping
+ * - `'vertex'`                         — Deep blue-grey, teal brand
+ * - `'canvas'`                         — Apollo MUI dark, orange brand
  *
  * When no theme is passed the component auto-detects from the Apollo
  * `<body>` class and switches live when the theme changes.
@@ -39,15 +40,13 @@ import { Button } from '@/components/ui/button';
 export type CodeBlockTheme =
   | 'dark'
   | 'light'
+  | 'dark-hc'
+  | 'light-hc'
   | 'future-dark'
   | 'future-light'
-  | 'core-dark'
-  | 'core-light'
   | 'wireframe'
   | 'vertex'
-  | 'canvas'
-  | 'dark-hc'
-  | 'light-hc';
+  | 'canvas';
 
 export interface CodeBlockProps {
   /** The code string to display */
@@ -85,23 +84,23 @@ interface ThemeConfig {
 }
 
 const THEME_CONFIG: Record<CodeBlockTheme, ThemeConfig> = {
-  // ── Standard Apollo dark ─────────────────────────────────────────────────
+  // ── Dark — Nord for the apollo-core blue-grey palette ────────────────────
   dark: {
-    prismStyle: oneDark,
-    bg: '#282c34',
-    headerBg: '#21252b',
-    labelColor: '#abb2bf',
-    iconColor: '#9da5b4',
-    lineNumberColor: '#495162',
+    prismStyle: nord,
+    bg: '#182027',
+    headerBg: '#111920',
+    labelColor: '#8ea1b1',
+    iconColor: '#6b8899',
+    lineNumberColor: '#2e3f4c',
   },
-  // ── Standard Apollo light ────────────────────────────────────────────────
+  // ── Light — VS Code Light on a clean white surface ───────────────────────
   light: {
-    prismStyle: oneLight,
-    bg: '#fafafa',
-    headerBg: '#f0f0f0',
-    labelColor: '#6b7280',
-    iconColor: '#9ca3af',
-    lineNumberColor: '#c0c0c0',
+    prismStyle: vs,
+    bg: '#ffffff',
+    headerBg: '#f0f4f8',
+    labelColor: '#374151',
+    iconColor: '#6b7280',
+    lineNumberColor: '#c8d4de',
   },
   // ── Future dark — VS Code Dark+ for a modern zinc feel ───────────────────
   'future-dark': {
@@ -120,24 +119,6 @@ const THEME_CONFIG: Record<CodeBlockTheme, ThemeConfig> = {
     labelColor: '#52525b',
     iconColor: '#71717a',
     lineNumberColor: '#d4d4d8',
-  },
-  // ── Core dark — Nord for the apollo-core blue-grey palette ───────────────
-  'core-dark': {
-    prismStyle: nord,
-    bg: '#182027',
-    headerBg: '#111920',
-    labelColor: '#8ea1b1',
-    iconColor: '#6b8899',
-    lineNumberColor: '#2e3f4c',
-  },
-  // ── Core light — VS Code Light on a clean white surface ──────────────────
-  'core-light': {
-    prismStyle: vs,
-    bg: '#ffffff',
-    headerBg: '#f0f4f8',
-    labelColor: '#374151',
-    iconColor: '#6b7280',
-    lineNumberColor: '#c8d4de',
   },
   // ── Wireframe — classic Prism on grey-50, minimal ────────────────────────
   wireframe: {
@@ -195,15 +176,13 @@ const THEME_CONFIG: Record<CodeBlockTheme, ThemeConfig> = {
 const BODY_CLASS_PRIORITY: CodeBlockTheme[] = [
   'future-dark',
   'future-light',
-  'core-dark',
-  'core-light',
   'dark-hc',
   'light-hc',
+  'dark',
+  'light',
   'wireframe',
   'vertex',
   'canvas',
-  'dark',
-  'light',
 ];
 
 function getBodyTheme(): CodeBlockTheme {
@@ -235,8 +214,8 @@ function useApolloTheme(): CodeBlockTheme {
  * one-click copy button. Automatically follows the active Apollo theme by
  * watching the body class — or accept an explicit `theme` prop to override.
  *
- * Supported themes: dark, light, future-dark, future-light, core-dark,
- * core-light, wireframe, vertex, canvas, dark-hc, light-hc.
+ * Supported themes: dark, light, dark-hc, light-hc, future-dark, future-light,
+ * wireframe, vertex, canvas.
  */
 export function CodeBlock({
   children,

@@ -22,13 +22,7 @@ type Story = StoryObj<typeof meta>;
 // ============================================================================
 
 function resolveThemeClass(value: string) {
-  if (value === 'core-dark') return 'core-dark';
-  if (value === 'core-light') return 'core-light';
-  if (value === 'wireframe') return 'wireframe';
-  if (value === 'vertex') return 'vertex';
-  if (value === 'canvas') return 'canvas';
-  if (value === 'light') return 'future-light';
-  return 'future-dark';
+  return value ?? 'dark';
 }
 
 // ============================================================================
@@ -78,6 +72,7 @@ function CodeBlock({ children, label }: { children: string; label?: string }) {
         <div className="flex items-center justify-between border-b border-border px-4 py-2">
           <span className="text-xs font-medium text-muted-foreground">{label}</span>
           <button
+            type="button"
             onClick={handleCopy}
             className="cursor-pointer rounded px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
@@ -87,6 +82,7 @@ function CodeBlock({ children, label }: { children: string; label?: string }) {
       )}
       {!label && (
         <button
+          type="button"
           onClick={handleCopy}
           className="absolute top-2 right-2 cursor-pointer rounded px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
@@ -139,7 +135,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib';
 
 ## Theming
-Apply theme class to root: future-dark | future-light | core-dark | core-light
+Apply theme class to root (body): dark | light | dark-hc | light-hc
+Apply theme class to root (html): future-dark | future-light | wireframe | vertex | canvas
 Semantic tokens: bg-surface, text-foreground, border-border
 Bridge tokens (cross-theme): bg-background, bg-card, text-foreground, text-muted-foreground
 
@@ -1057,6 +1054,7 @@ function ResourcesTab() {
         <div className="mt-4 inline-flex rounded-lg border border-border bg-muted/50 p-1">
           {resourceSubTabs.map((sub) => (
             <button
+              type="button"
               key={sub}
               className={cn(
                 'cursor-pointer rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
@@ -1113,6 +1111,7 @@ function PrototypingPage({ globalTheme }: { globalTheme: string }) {
         <div className="flex gap-1 border-b border-border pt-4 pb-0">
           {tabs.map((tab) => (
             <button
+              type="button"
               key={tab}
               className={cn(
                 'cursor-pointer px-4 pb-3 text-sm font-medium transition-colors',
@@ -1146,5 +1145,5 @@ function PrototypingPage({ globalTheme }: { globalTheme: string }) {
 // ============================================================================
 
 export const Default: Story = {
-  render: (_, { globals }) => <PrototypingPage globalTheme={globals.futureTheme || 'dark'} />,
+  render: (_, { globals }) => <PrototypingPage globalTheme={globals.theme || 'dark'} />,
 };

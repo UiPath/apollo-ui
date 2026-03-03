@@ -91,7 +91,7 @@ export const InForm = {
     return (
       <div className="w-[400px] space-y-4">
         <div>
-          <label className="text-sm font-medium mb-2 block">Meeting Date</label>
+          <span className="text-sm font-medium mb-2 block">Meeting Date</span>
           <DateTimePicker
             value={meetingDate}
             onValueChange={setMeetingDate}
@@ -99,7 +99,7 @@ export const InForm = {
           />
         </div>
         <div>
-          <label className="text-sm font-medium mb-2 block">Project Deadline</label>
+          <span className="text-sm font-medium mb-2 block">Project Deadline</span>
           <DateTimePicker
             value={deadline}
             onValueChange={setDeadline}

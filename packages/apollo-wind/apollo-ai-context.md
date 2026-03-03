@@ -60,10 +60,12 @@ Themes use CSS custom properties scoped to CSS classes. Apply a class to a paren
 
 | Class | Description |
 |-------|-------------|
-| `future-dark` | Future design language — dark mode (default) |
+| `dark` | Default dark theme (apollo-core, apply to body) |
+| `light` | Default light theme (apollo-core, apply to body) |
+| `dark-hc` | High contrast dark theme (apply to body) |
+| `light-hc` | High contrast light theme (apply to body) |
+| `future-dark` | Future design language — dark mode |
 | `future-light` | Future design language — light mode |
-| `core-dark` | Core design language — dark mode |
-| `core-light` | Core design language — light mode |
 
 ### Color tokens (use these, not raw colors)
 

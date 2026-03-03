@@ -14,13 +14,7 @@ export type { FutureTheme };
 // ============================================================================
 
 function resolveThemeClass(theme: FutureTheme) {
-  if (theme === 'core-dark') return 'core-dark';
-  if (theme === 'core-light') return 'core-light';
-  if (theme === 'wireframe') return 'wireframe';
-  if (theme === 'vertex') return 'vertex';
-  if (theme === 'canvas') return 'canvas';
-  if (theme === 'light') return 'future-light';
-  return 'future-dark';
+  return theme ?? 'dark';
 }
 
 // ============================================================================
@@ -124,6 +118,7 @@ export function AdminSidebarNav({
       <nav className="flex flex-col gap-0.5 p-2">
         {items.map((item) => (
           <button
+            type="button"
             key={item.id}
             className={cn(
               'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
@@ -199,6 +194,7 @@ export function AdminPageHeader({
         <div className="mt-4 flex gap-1">
           {tabs.map((tab) => (
             <button
+              type="button"
               key={tab.value}
               className={cn(
                 'px-4 pb-2 pt-1 text-sm font-medium transition-colors',

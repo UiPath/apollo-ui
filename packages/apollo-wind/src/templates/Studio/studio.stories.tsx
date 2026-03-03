@@ -21,13 +21,7 @@ type Story = StoryObj<typeof meta>;
 // ============================================================================
 
 function resolveThemeClass(value: string) {
-  if (value === 'core-dark') return 'core-dark';
-  if (value === 'core-light') return 'core-light';
-  if (value === 'wireframe') return 'wireframe';
-  if (value === 'vertex') return 'vertex';
-  if (value === 'canvas') return 'canvas';
-  if (value === 'light') return 'future-light';
-  return 'future-dark';
+  return value ?? 'dark';
 }
 
 // ============================================================================
@@ -58,12 +52,12 @@ function ComingSoon({ theme, variant }: { theme: string; variant: string }) {
 
 export const Blank: Story = {
   render: (_, { globals }) => (
-    <ComingSoon theme={globals.futureTheme || 'dark'} variant="Blank" />
+    <ComingSoon theme={globals.theme || 'dark'} variant="Blank" />
   ),
 };
 
 export const Panels: Story = {
   render: (_, { globals }) => (
-    <ComingSoon theme={globals.futureTheme || 'dark'} variant="Panels" />
+    <ComingSoon theme={globals.theme || 'dark'} variant="Panels" />
   ),
 };

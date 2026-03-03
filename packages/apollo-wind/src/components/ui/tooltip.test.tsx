@@ -42,7 +42,7 @@ describe('Tooltip', () => {
       <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <button>Focus me</button>
+            <button type="button">Focus me</button>
           </TooltipTrigger>
           <TooltipContent>Tooltip on focus</TooltipContent>
         </Tooltip>
@@ -162,7 +162,7 @@ describe('Tooltip', () => {
       <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <button>Custom trigger</button>
+            <button type="button">Custom trigger</button>
           </TooltipTrigger>
           <TooltipContent>Content</TooltipContent>
         </Tooltip>

@@ -2,7 +2,7 @@
  * Apollo Wind — Theme Variables
  *
  * All theme definitions for the design system. Each theme is scoped to a CSS
- * class applied to a parent element (e.g. `.future-dark`, `.core-light`).
+ * class applied to a parent element (e.g. `.future-dark`, `.wireframe`).
  * Templates apply the class at their root automatically via the `theme` prop.
  *
  * Follows the shadcn convention: bare vars for definitions, --color-* prefix
@@ -10,9 +10,11 @@
  *   bg-surface, text-foreground, border-border, bg-brand, etc.
  *
  * Theme families:
- *   Future  — .future-dark, .future-light (default design language)
- *   Core    — .core-dark, .core-light   (apollo-core design language)
+ *   Future  — .future-dark, .future-light (Future design language)
  *   Demo    — .wireframe, .vertex, .canvas
+ *
+ * Note: Core themes (body.dark, body.light, body.dark-hc, body.light-hc)
+ * are now defined in tailwind.consumer.css using apollo-core semantic tokens.
  */
 
 /* ============================================================================
@@ -149,169 +151,6 @@
   --input: var(--border);
 }
 
-/* ============================================================================
- * CORE — Dark theme (apollo-core design language)
- *
- * Source values from @uipath/apollo-core/tokens/css/theme-variables.css.
- * ============================================================================ */
-
-.core-dark {
-  /* ── Surfaces ─────────────────────────────────────────────────────────── */
-  --surface: #182027;             /* page / canvas */
-  --surface-raised: #273139;      /* cards, panels */
-  --surface-overlay: #374652;     /* inputs, tabs, hover */
-  --surface-hover: #526069;       /* hover states */
-  --surface-muted: #8a97a0;       /* badges, indicators */
-  --surface-inverse: #f8f9fa;     /* inverse bg */
-  --surface-disabled: #273139;    /* disabled elements */
-  --surface-selected: #374652;    /* selected items */
-
-  /* ── Brand / Primary ─────────────────────────────────────────────────── */
-  --brand: #66adff;               /* primary blue */
-  --brand-hover: #87bfff;         /* primary hover */
-  --brand-lighter: #00489d;       /* lighter variant */
-  --brand-darker: #badaff;        /* darker variant */
-
-  /* ── Foreground (text / icons) ────────────────────────────────────────── */
-  --foreground: #f4f5f7;          /* primary text */
-  --foreground-emp: #f8f9fa;      /* emphasized text */
-  --foreground-muted: #cfd8dd;    /* de-emphasized text */
-  --foreground-subtle: #a4b1b8;   /* labels, disabled */
-  --foreground-inverse: #182027;  /* text on light bg */
-  --foreground-link: #66adff;     /* link text */
-  --foreground-on-accent: #182027; /* text on accent bg */
-
-  /* ── Borders ──────────────────────────────────────────────────────────── */
-  --border: #8a97a0;              /* primary borders */
-  --border-subtle: #526069;       /* subtle dividers */
-  --border-disabled: #526069;     /* disabled borders */
-  --border-grid: #273139;         /* grid borders */
-
-  /* ── Status ──────────────────────────────────────────────────────────── */
-  --error: #ff8484;
-  --success: #74c94b;
-  --warning: #ffbb27;
-  --info: #42a1ff;
-
-  /* ── Ring / Focus ────────────────────────────────────────────────────── */
-  --ring: #66adff;
-  --logo: #ffffff;
-
-  /* ── Bridge — defines shared token names using core values, so
-       components built with bg-surface, text-foreground-secondary, etc.
-       resolve correctly under core themes ────────────────────────────── */
-  --brand-subtle: var(--brand-lighter);
-  --foreground-secondary: var(--foreground-emp);
-  --foreground-hover: var(--foreground-muted);
-  --foreground-accent: var(--brand);
-  --foreground-accent-muted: var(--brand-hover);
-  --border-muted: var(--border-grid);
-  --border-deep: var(--border-grid);
-  --border-inverse: var(--border);
-  --border-hover: var(--border);
-
-  /* ── shadcn aliases — maps to standard names for shadcn component compat ── */
-  --background: var(--surface);
-  --card: var(--surface-raised);
-  --card-foreground: var(--foreground);
-  --popover: var(--surface-raised);
-  --popover-foreground: var(--foreground);
-  --primary: var(--brand);
-  --primary-foreground: var(--foreground-on-accent);
-  --secondary: var(--surface-overlay);
-  --secondary-foreground: var(--foreground-muted);
-  --muted: var(--surface-raised);
-  --muted-foreground: var(--foreground-muted);
-  --accent: var(--surface-selected);
-  --accent-foreground: var(--foreground-emp);
-  --destructive: var(--error);
-  --border-de-emp: var(--border-subtle);
-  --input: var(--border-subtle);
-
-  color-scheme: dark;
-}
-
-/* ============================================================================
- * CORE — Light theme
- *
- * Source values from @uipath/apollo-core/tokens/css/theme-variables.css.
- * ============================================================================ */
-
-.core-light {
-  /* ── Surfaces ─────────────────────────────────────────────────────────── */
-  --surface: #ffffff;             /* page / canvas */
-  --surface-raised: #ffffff;      /* cards (white on white) */
-  --surface-overlay: #f4f5f7;     /* secondary bg, inputs */
-  --surface-hover: #e9f1fa;       /* hover states */
-  --surface-muted: #cfd8dd;       /* badges, indicators */
-  --surface-inverse: #182027;     /* inverse bg */
-  --surface-disabled: #ecedee;    /* disabled elements */
-  --surface-selected: #e9f1fa;    /* selected items */
-
-  /* ── Brand / Primary ─────────────────────────────────────────────────── */
-  --brand: #0067df;               /* primary blue */
-  --brand-hover: #0056ba;         /* primary hover */
-  --brand-lighter: #badaff;       /* lighter variant */
-  --brand-darker: #00489d;        /* darker variant */
-
-  /* ── Foreground (text / icons) ────────────────────────────────────────── */
-  --foreground: #273139;          /* primary text */
-  --foreground-emp: #182027;      /* emphasized text */
-  --foreground-muted: #526069;    /* de-emphasized text */
-  --foreground-subtle: #8a97a0;   /* labels, disabled */
-  --foreground-inverse: #f8f9fa;  /* text on dark bg */
-  --foreground-link: #0067df;     /* link text */
-  --foreground-on-accent: #f8f9fa; /* text on accent bg */
-
-  /* ── Borders ──────────────────────────────────────────────────────────── */
-  --border: #a4b1b8;              /* primary borders */
-  --border-subtle: #cfd8dd;       /* subtle dividers */
-  --border-disabled: #cfd8dd;     /* disabled borders */
-  --border-grid: #f4f5f7;         /* grid borders */
-
-  /* ── Status ──────────────────────────────────────────────────────────── */
-  --error: #a6040a;
-  --success: #038108;
-  --warning: #9e6100;
-  --info: #1665b3;
-
-  /* ── Ring / Focus ────────────────────────────────────────────────────── */
-  --ring: #0067df;
-  --logo: #fa4616;
-
-  /* ── Bridge — defines shared token names using core values, so
-       components built with bg-surface, text-foreground-secondary, etc.
-       resolve correctly under core themes ────────────────────────────── */
-  --brand-subtle: var(--brand-lighter);
-  --foreground-secondary: var(--foreground-emp);
-  --foreground-hover: var(--foreground-muted);
-  --foreground-accent: var(--brand);
-  --foreground-accent-muted: var(--brand-hover);
-  --border-muted: var(--border-grid);
-  --border-deep: var(--border-grid);
-  --border-inverse: var(--border);
-  --border-hover: var(--border);
-
-  /* ── shadcn aliases — maps to standard names for shadcn component compat ── */
-  --background: var(--surface);
-  --card: var(--surface-raised);
-  --card-foreground: var(--foreground);
-  --popover: var(--surface-raised);
-  --popover-foreground: var(--foreground);
-  --primary: var(--brand);
-  --primary-foreground: var(--foreground-on-accent);
-  --secondary: var(--surface-overlay);
-  --secondary-foreground: var(--foreground-muted);
-  --muted: var(--surface-overlay);
-  --muted-foreground: var(--foreground-muted);
-  --accent: var(--surface-selected);
-  --accent-foreground: var(--foreground-emp);
-  --destructive: var(--error);
-  --border-de-emp: var(--border-subtle);
-  --input: var(--border-subtle);
-
-  color-scheme: light;
-}
 
 /* ============================================================================
  * DEMO — Wireframe theme (low-fidelity prototyping)
@@ -531,86 +370,6 @@
   --destructive-foreground: #ffffff;
   --border-de-emp: var(--border-subtle);
   --input: var(--border);
-}
-
-/* ============================================================================
- * Register tokens with Tailwind 4
- *
- * The @theme inline block tells Tailwind to generate utility classes for
- * each variable. E.g. --color-surface generates:
- *   bg-surface, text-surface, border-surface,
- *   from-surface, to-surface, ring-surface, etc.
- * ============================================================================ */
-
-@theme inline {
-  /* ── Design system tokens ──────────────────────────────────────────── */
-
-  /* Surfaces */
-  --color-surface: var(--surface);
-  --color-surface-raised: var(--surface-raised);
-  --color-surface-overlay: var(--surface-overlay);
-  --color-surface-hover: var(--surface-hover);
-  --color-surface-muted: var(--surface-muted);
-  --color-surface-inverse: var(--surface-inverse);
-
-  /* Brand */
-  --color-brand: var(--brand);
-  --color-brand-subtle: var(--brand-subtle);
-
-  /* Foreground */
-  --color-foreground-secondary: var(--foreground-secondary);
-  --color-foreground-hover: var(--foreground-hover);
-  --color-foreground-muted: var(--foreground-muted);
-  --color-foreground-subtle: var(--foreground-subtle);
-  --color-foreground-inverse: var(--foreground-inverse);
-  --color-foreground-on-accent: var(--foreground-on-accent);
-  --color-foreground-accent: var(--foreground-accent);
-  --color-foreground-accent-muted: var(--foreground-accent-muted);
-
-  /* Borders */
-  --color-border-subtle: var(--border-subtle);
-  --color-border-muted: var(--border-muted);
-  --color-border-deep: var(--border-deep);
-  --color-border-inverse: var(--border-inverse);
-  --color-border-hover: var(--border-hover);
-
-  /* ── shadcn standard tokens ────────────────────────────────────────── */
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-border-de-emp: var(--border-de-emp);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-
-  /* ── Core-specific tokens ─────────────────────────────────────────── */
-  --color-surface-disabled: var(--surface-disabled);
-  --color-surface-selected: var(--surface-selected);
-  --color-brand-hover: var(--brand-hover);
-  --color-brand-lighter: var(--brand-lighter);
-  --color-brand-darker: var(--brand-darker);
-  --color-foreground-emp: var(--foreground-emp);
-  --color-foreground-link: var(--foreground-link);
-  --color-border-disabled: var(--border-disabled);
-  --color-border-grid: var(--border-grid);
-  --color-error: var(--error);
-  --color-success: var(--success);
-  --color-warning: var(--warning);
-  --color-info: var(--info);
-  --color-logo: var(--logo);
 }
 
 /* ============================================================================

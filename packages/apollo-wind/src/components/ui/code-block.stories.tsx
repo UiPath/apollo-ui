@@ -16,22 +16,32 @@ const meta = {
   argTypes: {
     language: {
       control: 'select',
-      options: ['tsx', 'typescript', 'javascript', 'json', 'css', 'html', 'python', 'bash', 'sql', 'yaml', 'markdown'],
+      options: [
+        'tsx',
+        'typescript',
+        'javascript',
+        'json',
+        'css',
+        'html',
+        'python',
+        'bash',
+        'sql',
+        'yaml',
+        'markdown',
+      ],
     },
     theme: {
       control: 'select',
       options: [
         'dark',
         'light',
+        'dark-hc',
+        'light-hc',
         'future-dark',
         'future-light',
-        'core-dark',
-        'core-light',
         'wireframe',
         'vertex',
         'canvas',
-        'dark-hc',
-        'light-hc',
       ],
     },
     showLineNumbers: { control: 'boolean' },
@@ -417,56 +427,72 @@ export const Languages = {
   render: () => (
     <div className="flex flex-col gap-6 max-w-3xl">
       <div>
-        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">TypeScript / TSX</p>
+        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">
+          TypeScript / TSX
+        </p>
         <CodeBlock language="tsx" showLineNumbers={false}>
           {tsxSample.split('\n').slice(0, 8).join('\n')}
         </CodeBlock>
       </div>
 
       <div>
-        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">JavaScript</p>
+        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">
+          JavaScript
+        </p>
         <CodeBlock language="javascript" showLineNumbers={false}>
           {jsSample}
         </CodeBlock>
       </div>
 
       <div>
-        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">JSON</p>
+        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">
+          JSON
+        </p>
         <CodeBlock language="json" showLineNumbers={false}>
           {jsonSample}
         </CodeBlock>
       </div>
 
       <div>
-        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">CSS</p>
+        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">
+          CSS
+        </p>
         <CodeBlock language="css" showLineNumbers={false}>
           {cssSample}
         </CodeBlock>
       </div>
 
       <div>
-        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">Python</p>
+        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">
+          Python
+        </p>
         <CodeBlock language="python" showLineNumbers={false}>
           {pythonSample}
         </CodeBlock>
       </div>
 
       <div>
-        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">Bash</p>
+        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">
+          Bash
+        </p>
         <CodeBlock language="bash" showLineNumbers={false}>
           {bashSample}
         </CodeBlock>
       </div>
 
       <div>
-        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">SQL</p>
+        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">
+          SQL
+        </p>
         <CodeBlock language="sql" showLineNumbers={false}>
           {sqlSample}
         </CodeBlock>
       </div>
 
       <div>
-        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">HTML</p>
+        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">
+          HTML
+        </p>
         <CodeBlock language="html" showLineNumbers={false}>
           {htmlSample}
         </CodeBlock>
@@ -503,8 +529,6 @@ const THEME_LABELS: Record<CodeBlockTheme, string> = {
   // Future design language
   'future-dark': 'Future: Dark',
   'future-light': 'Future: Light',
-  'core-dark': 'Core: Dark',
-  'core-light': 'Core: Light',
   wireframe: 'Wireframe',
   vertex: 'Vertex',
   canvas: 'Canvas',
@@ -516,7 +540,7 @@ import { useState } from 'react';
 export function Counter() {
   const [count, setCount] = useState(0);
   return (
-    <button onClick={() => setCount(count + 1)}>
+    <button type="button" onClick={() => setCount(count + 1)}>
       Count: {count}
     </button>
   );

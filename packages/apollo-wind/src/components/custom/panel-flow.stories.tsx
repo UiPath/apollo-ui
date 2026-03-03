@@ -20,7 +20,7 @@ const sampleMessages = [
 
 export const Default: Story = {
   render: () => (
-    <div className="future-dark flex h-[600px] bg-surface">
+    <div className="flex h-[600px] bg-surface">
       <FlowPanel
         open
         navItems={defaultFlowNavItems}
@@ -36,7 +36,7 @@ export const Default: Story = {
 
 export const Collapsed: Story = {
   render: () => (
-    <div className="future-dark flex h-[600px] bg-surface">
+    <div className="flex h-[600px] bg-surface">
       <FlowPanel
         open={false}
         navItems={defaultFlowNavItems}

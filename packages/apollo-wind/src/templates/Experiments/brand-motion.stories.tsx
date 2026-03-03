@@ -21,13 +21,7 @@ type Story = StoryObj<typeof meta>;
 // ============================================================================
 
 function resolveThemeClass(value: string) {
-  if (value === 'core-dark') return 'core-dark';
-  if (value === 'core-light') return 'core-light';
-  if (value === 'wireframe') return 'wireframe';
-  if (value === 'vertex') return 'vertex';
-  if (value === 'canvas') return 'canvas';
-  if (value === 'light') return 'future-light';
-  return 'future-dark';
+  return value ?? 'dark';
 }
 
 // ============================================================================
@@ -58,6 +52,6 @@ function ComingSoon({ theme }: { theme: string }) {
 
 export const Default: Story = {
   render: (_, { globals }) => (
-    <ComingSoon theme={globals.futureTheme || 'dark'} />
+    <ComingSoon theme={globals.theme || 'dark'} />
   ),
 };

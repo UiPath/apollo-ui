@@ -50,7 +50,7 @@ const customViewports = {
 
 const preview: Preview = {
   initialGlobals: {
-    futureTheme: 'dark',
+    theme: 'dark',
     reactScan: 'off',
   },
   parameters: {
@@ -63,14 +63,7 @@ const preview: Preview = {
         order: [
           'Introduction',
           'Theme',
-          [
-            'Colors',
-            'Icons',
-            'Spacing',
-            'Typography',
-            'Future',
-            ['*', 'Theme'],
-          ],
+          ['Colors', 'Icons', 'Spacing', 'Typography', 'Future', ['*', 'Theme']],
           'Components',
           [
             'All Components',
@@ -83,13 +76,7 @@ const preview: Preview = {
             'UiPath',
           ],
           'Templates',
-          [
-            'Admin',
-            'Delegate',
-            'Flow',
-            'Maestro',
-            'Future',
-          ],
+          ['Admin', 'Delegate', 'Flow', 'Maestro', 'Future'],
           'Forms',
           'Experiments',
           '*',
@@ -104,16 +91,18 @@ const preview: Preview = {
     },
   },
   globalTypes: {
-    futureTheme: {
+    theme: {
       description: 'Toggle design language theme',
       toolbar: {
         title: 'Theme',
         icon: 'paintbrush',
         items: [
-          { value: 'core-light', title: 'Light' },
-          { value: 'core-dark', title: 'Dark' },
-          { value: 'light', title: 'Future: Light' },
-          { value: 'dark', title: 'Future: Dark' },
+          { value: 'light', title: 'Light' },
+          { value: 'dark', title: 'Dark' },
+          { value: 'light-hc', title: 'Light HC' },
+          { value: 'dark-hc', title: 'Dark HC' },
+          { value: 'future-light', title: 'Future: Light' },
+          { value: 'future-dark', title: 'Future: Dark' },
           { value: 'wireframe', title: 'Demo: Wireframe' },
           { value: 'vertex', title: 'Demo: Vertex' },
           { value: 'canvas', title: 'Demo: Canvas' },
@@ -139,30 +128,51 @@ const preview: Preview = {
   decorators: [
     (Story, context) => {
       const reactScanEnabled = context.globals.reactScan === 'on';
-      const futureTheme: string = context.globals.futureTheme ?? 'dark';
+      const theme: string = context.globals.theme ?? 'dark';
 
       // Map the toolbar value to the CSS class that activates the correct
       // set of CSS custom properties (surfaces, foregrounds, borders, etc.).
       const themeClassMap: Record<string, string> = {
-        'core-dark': 'core-dark',
-        'core-light': 'core-light',
+        dark: 'dark',
+        light: 'light',
+        'dark-hc': 'dark-hc',
+        'light-hc': 'light-hc',
+        'future-dark': 'future-dark',
+        'future-light': 'future-light',
         wireframe: 'wireframe',
         vertex: 'vertex',
         canvas: 'canvas',
-        light: 'future-light',
       };
-      const themeClass = themeClassMap[futureTheme] ?? 'future-dark';
+      const themeClass = themeClassMap[theme] ?? 'dark';
 
-      // Apply the theme class to <html> so every story — including standalone
-      // component stories that don't manage their own theme — inherits the
-      // correct CSS variables (shadcn bridge + Future tokens).
+      // Apply the theme class to <body> for body.dark/body.light themes,
+      // and to <html> for other themes (.future-dark, .wireframe, etc.)
       useEffect(() => {
-        const root = document.documentElement;
-        const allThemeClasses = ['future-dark', 'future-light', 'wireframe', 'vertex', 'canvas', 'core-dark', 'core-light'];
-        root.classList.remove(...allThemeClasses);
-        root.classList.add(themeClass);
+        const bodyThemes = ['dark', 'light', 'dark-hc', 'light-hc'];
+        const isBodyTheme = bodyThemes.includes(themeClass);
+        const targetElement = isBodyTheme ? document.body : document.documentElement;
+
+        const allThemeClasses = [
+          'dark',
+          'light',
+          'dark-hc',
+          'light-hc',
+          'future-dark',
+          'future-light',
+          'wireframe',
+          'vertex',
+          'canvas',
+        ];
+
+        // Remove from both body and html
+        document.body.classList.remove(...allThemeClasses);
+        document.documentElement.classList.remove(...allThemeClasses);
+
+        // Apply to correct element
+        targetElement.classList.add(themeClass);
+
         return () => {
-          root.classList.remove(themeClass);
+          targetElement.classList.remove(themeClass);
         };
       }, [themeClass]);
 

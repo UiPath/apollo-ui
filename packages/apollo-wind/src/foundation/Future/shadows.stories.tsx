@@ -1,6 +1,5 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { cn } from '@/lib';
 import { fontFamily } from './typography';
 
 // ============================================================================
@@ -89,14 +88,8 @@ function ShadowTable({ tokens }: { tokens: ShadowToken[] }) {
 // ============================================================================
 
 export const Default: Story = {
-  render: (_, { globals }) => (
-    <div
-      className={cn(
-        ({ light: 'future-light', 'core-dark': 'core-dark', 'core-light': 'core-light', wireframe: 'wireframe', vertex: 'vertex', canvas: 'canvas' } as Record<string, string>)[globals.futureTheme] ?? 'future-dark',
-        'min-h-screen w-full bg-surface'
-      )}
-      style={{ fontFamily: fontFamily.base }}
-    >
+  render: () => (
+    <div className="min-h-screen w-full bg-surface" style={{ fontFamily: fontFamily.base }}>
       <div className="mx-auto max-w-6xl space-y-10 p-8">
         <div>
           <h1 className="mb-2 text-3xl font-bold tracking-tight text-foreground">

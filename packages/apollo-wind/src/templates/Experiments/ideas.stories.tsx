@@ -289,13 +289,7 @@ async function callClaude(
 // ============================================================================
 
 function resolveThemeClass(theme: FutureTheme) {
-  if (theme === 'core-dark') return 'core-dark';
-  if (theme === 'core-light') return 'core-light';
-  if (theme === 'wireframe') return 'wireframe';
-  if (theme === 'vertex') return 'vertex';
-  if (theme === 'canvas') return 'canvas';
-  if (theme === 'light') return 'future-light';
-  return 'future-dark';
+  return theme ?? 'dark';
 }
 
 // ============================================================================
@@ -509,7 +503,7 @@ function FloatingChat({
       >
         <div className="flex items-center gap-2 rounded-full border border-border bg-surface-raised px-3 py-2.5 shadow-lg transition-all hover:bg-surface-hover">
           <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab text-foreground-subtle active:cursor-grabbing" />
-          <button onClick={() => setIsCollapsed(false)} className="flex items-center gap-2">
+          <button type="button" onClick={() => setIsCollapsed(false)} className="flex items-center gap-2">
             <AnimatedGradientIcon className="h-4 w-4" />
             <span className="text-sm font-medium text-foreground">Ideas</span>
             {messages.length > 0 && (
@@ -549,6 +543,7 @@ function FloatingChat({
         <div className="flex items-center gap-0.5">
           {(isSetupComplete || messages.length > 0) && (
             <button
+              type="button"
               onClick={handleReset}
               className="flex h-6 w-6 items-center justify-center rounded-md text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
               aria-label="Reset"
@@ -557,6 +552,7 @@ function FloatingChat({
             </button>
           )}
           <button
+            type="button"
             onClick={() => setIsCollapsed(true)}
             className="flex h-6 w-6 items-center justify-center rounded-md text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
             aria-label="Collapse chat"
@@ -570,6 +566,7 @@ function FloatingChat({
       <div className="flex h-8 shrink-0 items-center gap-2 border-b border-border-subtle bg-surface-overlay/50 px-3">
         {!isSetupComplete && setupStep === 'template' && (
           <button
+            type="button"
             onClick={() => setPersona(null)}
             className="flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] text-foreground-subtle transition-colors hover:bg-surface-hover hover:text-foreground-muted"
           >
@@ -588,6 +585,7 @@ function FloatingChat({
         )}
         {persona && (
           <button
+            type="button"
             onClick={() => setPersona(null)}
             className="flex items-center gap-1 rounded-md bg-brand/10 px-2 py-0.5 text-[10px] font-medium text-foreground-accent transition-colors hover:bg-brand/20"
           >
@@ -599,6 +597,7 @@ function FloatingChat({
           <>
             <span className="text-foreground-subtle">·</span>
             <button
+              type="button"
               onClick={() => setSelectedTemplate(null)}
               className="flex items-center gap-1 rounded-md bg-brand/10 px-2 py-0.5 text-[10px] font-medium text-foreground-accent transition-colors hover:bg-brand/20"
             >
@@ -627,6 +626,7 @@ function FloatingChat({
                 <div className="mt-1 grid w-full grid-cols-2 gap-1.5">
                   {PERSONAS.map((p) => (
                     <button
+                      type="button"
                       key={p}
                       onClick={() => setPersona(p)}
                       className="rounded-lg border border-border-subtle px-3 py-1.5 text-[12px] font-normal text-foreground-muted transition-colors hover:border-brand hover:bg-brand/10 hover:text-foreground"
@@ -650,6 +650,7 @@ function FloatingChat({
                 <div className="mt-1 flex w-full flex-col gap-1.5">
                   {TEMPLATE_OPTIONS.map((t) => (
                     <button
+                      type="button"
                       key={t.value}
                       onClick={() => setSelectedTemplate(t.value)}
                       className="flex items-center gap-2.5 rounded-lg border border-border-subtle px-3 py-2 text-left transition-colors hover:border-brand hover:bg-brand/10"
@@ -683,6 +684,7 @@ function FloatingChat({
             <div className="mt-2 flex w-full flex-col gap-1.5">
               {(TEMPLATE_SUGGESTIONS[selectedTemplate ?? 'freeform'] ?? []).map((suggestion) => (
                 <button
+                  type="button"
                   key={suggestion}
                   onClick={() => setInputValue(suggestion)}
                   className="w-full rounded-lg border border-border-subtle px-3 py-2 text-left text-[11px] text-foreground-muted transition-colors hover:border-border hover:bg-surface-hover hover:text-foreground"
@@ -742,6 +744,7 @@ function FloatingChat({
             className="max-h-16 flex-1 resize-none bg-transparent text-xs leading-relaxed text-foreground placeholder:text-foreground-subtle focus:outline-none disabled:cursor-not-allowed"
           />
           <button
+            type="button"
             onClick={handleSubmit}
             disabled={!inputValue.trim() || !isSetupComplete || isGenerating}
             className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-brand transition-opacity hover:opacity-90 disabled:opacity-30"
@@ -839,20 +842,7 @@ function IdeasCanvas({ theme, generatedCode, isGenerating }: IdeasCanvasProps) {
 // ============================================================================
 
 function IdeasPage({ globalTheme }: { globalTheme: string }) {
-  const theme: FutureTheme =
-    globalTheme === 'core-dark'
-      ? 'core-dark'
-      : globalTheme === 'core-light'
-        ? 'core-light'
-        : globalTheme === 'wireframe'
-          ? 'wireframe'
-          : globalTheme === 'vertex'
-            ? 'vertex'
-            : globalTheme === 'canvas'
-              ? 'canvas'
-              : globalTheme === 'light'
-                ? 'light'
-                : 'dark';
+  const theme: FutureTheme = (globalTheme as FutureTheme) ?? 'dark';
 
   const [generatedCode, setGeneratedCode] = React.useState('');
   const [isGenerating, setIsGenerating] = React.useState(false);
@@ -892,6 +882,7 @@ function IdeasPage({ globalTheme }: { globalTheme: string }) {
           {generatedCode ? (
             <>
               <button
+                type="button"
                 onClick={handleCopy}
                 className="flex h-7 items-center gap-1.5 rounded-lg border border-border px-2.5 text-[11px] font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground"
               >
@@ -908,6 +899,7 @@ function IdeasPage({ globalTheme }: { globalTheme: string }) {
                 )}
               </button>
               <button
+                type="button"
                 onClick={handleClear}
                 className="flex h-7 items-center gap-1.5 rounded-lg border border-border px-2.5 text-[11px] font-medium text-foreground-muted transition-colors hover:border-red-500/50 hover:text-red-400"
               >
@@ -951,6 +943,6 @@ function IdeasPage({ globalTheme }: { globalTheme: string }) {
 export const Default: Story = {
   name: 'Ideas',
   render: (_, { globals }) => (
-    <IdeasPage globalTheme={globals.futureTheme || 'dark'} />
+    <IdeasPage globalTheme={globals.theme || 'dark'} />
   ),
 };

@@ -680,20 +680,7 @@ function AdminPageDemo({ theme }: { theme: string }) {
     []
   );
 
-  const themeClass =
-    theme === 'core-dark'
-      ? 'core-dark'
-      : theme === 'core-light'
-        ? 'core-light'
-        : theme === 'wireframe'
-          ? 'wireframe'
-          : theme === 'vertex'
-            ? 'vertex'
-            : theme === 'canvas'
-              ? 'canvas'
-              : theme === 'light'
-                ? 'future-light'
-                : 'future-dark';
+  const themeClass = theme ?? 'dark';
 
   const columns: ColumnDef<UserRow>[] = [
     DataTableSelectColumn<UserRow>(),
@@ -855,7 +842,7 @@ function AdminPageDemo({ theme }: { theme: string }) {
 export const Landing: Story = {
   name: 'Landing',
   render: (_, { globals }) => {
-    return <AdminPageDemo theme={globals.futureTheme || 'dark'} />;
+    return <AdminPageDemo theme={globals.theme || 'dark'} />;
   },
 };
 
@@ -1384,20 +1371,7 @@ function DataManagementDemo({ theme }: { theme: string }) {
   const [categoryFilter, setCategoryFilter] = React.useState('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = React.useState(false);
 
-  const themeClass =
-    theme === 'core-dark'
-      ? 'core-dark'
-      : theme === 'core-light'
-        ? 'core-light'
-        : theme === 'wireframe'
-          ? 'wireframe'
-          : theme === 'vertex'
-            ? 'vertex'
-            : theme === 'canvas'
-              ? 'canvas'
-              : theme === 'light'
-                ? 'future-light'
-                : 'future-dark';
+  const themeClass = theme ?? 'dark';
 
   const filteredProducts = React.useMemo(() => {
     let filtered = products;
@@ -1637,6 +1611,7 @@ function DataManagementDemo({ theme }: { theme: string }) {
           <div className="flex gap-1">
             {statusTabs.map((tab) => (
               <button
+                type="button"
                 key={tab.value}
                 className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                   activeTab === tab.value
@@ -1699,7 +1674,7 @@ function DataManagementDemo({ theme }: { theme: string }) {
 export const DataManagement: Story = {
   name: 'Data Management',
   render: (_, { globals }) => {
-    return <DataManagementDemo theme={globals.futureTheme || 'dark'} />;
+    return <DataManagementDemo theme={globals.theme || 'dark'} />;
   },
 };
 
@@ -1712,6 +1687,6 @@ import { SettingsAdmin } from './settings-admin';
 export const Settings: Story = {
   name: 'Settings',
   render: (_, { globals }) => {
-    return <SettingsAdmin theme={globals.futureTheme || 'dark'} menuContent={<AdminMenuNav />} />;
+    return <SettingsAdmin theme={globals.theme || 'dark'} menuContent={<AdminMenuNav />} />;
   },
 };

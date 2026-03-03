@@ -121,19 +121,7 @@ export function MaestroTemplate({
     >
       <div
         className={cn(
-          theme === 'core-dark'
-            ? 'core-dark'
-            : theme === 'core-light'
-              ? 'core-light'
-              : theme === 'wireframe'
-                ? 'wireframe'
-                : theme === 'vertex'
-                  ? 'vertex'
-                  : theme === 'canvas'
-                    ? 'canvas'
-                    : theme === 'light'
-                      ? 'future-light'
-                      : 'future-dark',
+          theme ?? 'future-dark',
           'flex h-screen flex-col bg-surface text-foreground',
           className
         )}

@@ -14,13 +14,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 function resolveThemeClass(value: string) {
-  if (value === 'core-dark') return 'core-dark';
-  if (value === 'core-light') return 'core-light';
-  if (value === 'wireframe') return 'wireframe';
-  if (value === 'vertex') return 'vertex';
-  if (value === 'canvas') return 'canvas';
-  if (value === 'light') return 'future-light';
-  return 'future-dark';
+  return value ?? 'dark';
 }
 
 // ============================================================================
@@ -62,6 +56,7 @@ function CodeBlock({ children, label }: { children: string; label?: string }) {
         <div className="flex items-center justify-between border-b border-border px-4 py-2">
           <span className="text-xs font-medium text-muted-foreground">{label}</span>
           <button
+            type="button"
             onClick={handleCopy}
             className="cursor-pointer rounded px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
@@ -71,6 +66,7 @@ function CodeBlock({ children, label }: { children: string; label?: string }) {
       )}
       {!label && (
         <button
+          type="button"
           onClick={handleCopy}
           className="absolute top-2 right-2 cursor-pointer rounded px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
@@ -125,6 +121,7 @@ function PackageCard({
       <div className="mb-4 inline-flex rounded-lg border border-border bg-muted/50 p-1">
         {installTabs.map((tab) => (
           <button
+            type="button"
             key={tab}
             className={cn(
               'cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
@@ -293,5 +290,5 @@ pnpm test`}
 }
 
 export const Default: Story = {
-  render: (_, { globals }) => <GettingStartedPage globalTheme={globals.futureTheme || 'dark'} />,
+  render: (_, { globals }) => <GettingStartedPage globalTheme={globals.theme || 'dark'} />,
 };

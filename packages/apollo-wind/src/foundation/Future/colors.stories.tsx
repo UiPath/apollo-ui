@@ -235,12 +235,9 @@ function GradientTable({ gradients }: { gradients: GradientToken[] }) {
 // ============================================================================
 
 export const Default: Story = {
-  render: (_, { globals }) => (
+  render: () => (
     <div
-      className={cn(
-        ({ light: 'future-light', 'core-dark': 'core-dark', 'core-light': 'core-light', wireframe: 'wireframe', vertex: 'vertex', canvas: 'canvas' } as Record<string, string>)[globals.futureTheme] ?? 'future-dark',
-        'min-h-screen w-full bg-surface'
-      )}
+      className="min-h-screen w-full bg-surface"
       style={{ fontFamily: fontFamily.base }}
     >
       <div className="mx-auto max-w-6xl space-y-10 p-8">

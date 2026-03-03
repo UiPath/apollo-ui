@@ -149,6 +149,7 @@ export const WithExternalErrors = {
       <div className="w-[400px] space-y-4">
         <FileUpload onFilesChange={setFiles} multiple errors={errors} />
         <button
+          type="button"
           onClick={simulateUpload}
           disabled={files.length === 0 || isUploading}
           className="px-4 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50"

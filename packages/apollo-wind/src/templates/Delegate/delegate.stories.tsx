@@ -70,7 +70,7 @@ type Story = StoryObj<typeof meta>;
 export const Blank: Story = {
   render: (_, { globals }) => (
     <DelegateTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.theme || 'dark'}
       navItems={defaultNavItems}
       defaultPanelOpen={true}
     >
@@ -82,7 +82,7 @@ export const Blank: Story = {
 export const Chat: Story = {
   render: (_, { globals }) => (
     <DelegateTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.theme || 'dark'}
       navItems={defaultNavItems}
       defaultPanelOpen={true}
     >
@@ -194,16 +194,16 @@ function ChatResponsesContent() {
 
           {/* Action icons row */}
           <div className="flex items-center gap-1">
-            <button className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground">
+            <button type="button" className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground">
               <Copy className="h-4 w-4" />
             </button>
-            <button className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground">
+            <button type="button" className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground">
               <ThumbsDown className="h-4 w-4" />
             </button>
-            <button className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground">
+            <button type="button" className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground">
               <ThumbsUp className="h-4 w-4" />
             </button>
-            <button className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground">
+            <button type="button" className="flex h-6 w-6 items-center justify-center rounded text-foreground-subtle transition-colors hover:text-foreground">
               <MoreVertical className="h-4 w-4" />
             </button>
           </div>
@@ -222,7 +222,7 @@ export const ChatResponses: Story = {
   name: 'Chat Responses',
   render: (_, { globals }) => (
     <DelegateTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.theme || 'dark'}
       navItems={defaultNavItems}
       defaultPanelOpen={true}
     >
@@ -234,7 +234,7 @@ export const ChatResponses: Story = {
 export const Steps: Story = {
   render: (_, { globals }) => (
     <DelegateTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.theme || 'dark'}
       navItems={defaultNavItems}
       defaultPanelOpen={true}
     >
@@ -266,6 +266,7 @@ function SettingsContent() {
         <div className="flex gap-1">
           {settingsTabs.map((tab) => (
             <button
+              type="button"
               key={tab.id}
               className={`px-4 pb-3 text-sm font-medium transition-colors ${
                 activeTab === tab.id
@@ -295,12 +296,12 @@ function SettingsContent() {
             <div className="flex flex-col gap-8">
               {/* Profile Image */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-foreground">Profile Image</label>
+                <span className="text-sm font-medium text-foreground">Profile Image</span>
                 <div className="flex items-center gap-4">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-overlay">
                     <User className="h-7 w-7 text-foreground-muted" />
                   </div>
-                  <button className="flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground">
+                  <button type="button" className="flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground">
                     <Upload className="h-4 w-4" />
                     Select Image
                   </button>
@@ -312,8 +313,9 @@ function SettingsContent() {
 
               {/* Your Name */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-foreground">Your Name</label>
+                <label htmlFor="profile-name" className="text-sm font-medium text-foreground">Your Name</label>
                 <Input
+                  id="profile-name"
                   placeholder="Enter your name"
                   className="max-w-md border-border bg-surface-overlay text-foreground placeholder:text-foreground-subtle"
                 />
@@ -321,8 +323,9 @@ function SettingsContent() {
 
               {/* Your Email */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-foreground">Your Email</label>
+                <label htmlFor="profile-email" className="text-sm font-medium text-foreground">Your Email</label>
                 <Input
+                  id="profile-email"
                   placeholder="Enter your email"
                   type="email"
                   className="max-w-md border-border bg-surface-overlay text-foreground placeholder:text-foreground-subtle"
@@ -334,11 +337,11 @@ function SettingsContent() {
 
               {/* Language */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-foreground">Language</label>
+                <label htmlFor="profile-language" className="text-sm font-medium text-foreground">Language</label>
                 <p className="text-sm text-foreground-muted">
                   Select your preferred language for the interface.
                 </p>
-                <select className="h-10 max-w-md appearance-none rounded-md border border-border bg-surface-overlay px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
+                <select id="profile-language" className="h-10 max-w-md appearance-none rounded-md border border-border bg-surface-overlay px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
                   <option>Select Language</option>
                   <option>English</option>
                   <option>Spanish</option>
@@ -353,7 +356,7 @@ function SettingsContent() {
 
               {/* Theme Settings */}
               <div className="flex flex-col gap-3">
-                <label className="text-sm font-medium text-foreground">Theme Settings</label>
+                <span className="text-sm font-medium text-foreground">Theme Settings</span>
                 <p className="text-sm text-foreground-muted">
                   Choose your preferred theme for the interface.
                 </p>
@@ -364,6 +367,7 @@ function SettingsContent() {
                     { id: 'system', label: 'System', icon: <Monitor className="h-5 w-5" /> },
                   ].map((theme) => (
                     <button
+                      type="button"
                       key={theme.id}
                       className={`flex h-20 w-28 flex-col items-center justify-center gap-2 rounded-xl border text-sm font-medium transition-colors ${
                         selectedTheme === theme.id
@@ -394,7 +398,7 @@ export const Settings: Story = {
   name: 'Settings',
   render: (_, { globals }) => (
     <DelegateTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.theme || 'dark'}
       navItems={defaultNavItems}
       defaultPanelOpen={true}
     >

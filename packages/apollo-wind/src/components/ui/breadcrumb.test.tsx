@@ -164,7 +164,7 @@ describe('Breadcrumb', () => {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <button>Custom Link</button>
+              <button type="button">Custom Link</button>
             </BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>

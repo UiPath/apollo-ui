@@ -395,6 +395,7 @@ function BarChartSection() {
           <div className="flex">
             {(['desktop', 'mobile'] as const).map((key) => (
               <button
+                type="button"
                 key={key}
                 data-active={activeKey === key}
                 className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t border-border-subtle px-6 py-4 text-left even:border-l data-[active=true]:bg-surface-overlay sm:border-l sm:border-t-0 sm:px-8 sm:py-6"
@@ -927,6 +928,7 @@ function VisualizationContent() {
       <div className="flex gap-1 overflow-x-auto border-b border-border-subtle">
         {TABS.map((tab) => (
           <button
+            type="button"
             key={tab}
             className={`shrink-0 px-4 pb-3 text-sm font-medium transition-colors ${
               activeTab === tab
@@ -954,7 +956,7 @@ export const Visualization: Story = {
   name: 'Visualization',
   render: (_, { globals }) => (
     <MaestroTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.theme || 'dark'}
       title="Maestro"
       defaultLeftPanelCollapsed
       defaultRightPanelCollapsed
