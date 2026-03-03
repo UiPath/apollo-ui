@@ -63,19 +63,7 @@ export function DelegateTemplate({
   const layout = (
     <div
       className={cn(
-        theme === 'core-dark'
-          ? 'core-dark'
-          : theme === 'core-light'
-            ? 'core-light'
-            : theme === 'wireframe'
-              ? 'wireframe'
-              : theme === 'vertex'
-                ? 'vertex'
-                : theme === 'canvas'
-                  ? 'canvas'
-                  : theme === 'light'
-                    ? 'future-light'
-                    : 'future-dark',
+        theme,
         'flex h-screen bg-surface',
         className
       )}

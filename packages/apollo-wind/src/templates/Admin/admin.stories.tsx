@@ -680,20 +680,7 @@ function AdminPageDemo({ theme }: { theme: string }) {
     []
   );
 
-  const themeClass =
-    theme === 'core-dark'
-      ? 'core-dark'
-      : theme === 'core-light'
-        ? 'core-light'
-        : theme === 'wireframe'
-          ? 'wireframe'
-          : theme === 'vertex'
-            ? 'vertex'
-            : theme === 'canvas'
-              ? 'canvas'
-              : theme === 'light'
-                ? 'future-light'
-                : 'future-dark';
+  const themeClass = theme || 'future-dark';
 
   const columns: ColumnDef<UserRow>[] = [
     DataTableSelectColumn<UserRow>(),
@@ -856,7 +843,7 @@ export const Blank: Story = {
   name: 'Blank',
   render: (_, { globals }) => (
     <AdminTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.futureTheme || 'future-dark'}
       title="Administration"
       menuContent={<AdminMenuNav />}
       sidebar={
@@ -899,7 +886,7 @@ export const Blank: Story = {
 export const Landing: Story = {
   name: 'Landing',
   render: (_, { globals }) => {
-    return <AdminPageDemo theme={globals.futureTheme || 'dark'} />;
+    return <AdminPageDemo theme={globals.futureTheme || 'future-dark'} />;
   },
 };
 
@@ -1428,20 +1415,7 @@ function DataManagementDemo({ theme }: { theme: string }) {
   const [categoryFilter, setCategoryFilter] = React.useState('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = React.useState(false);
 
-  const themeClass =
-    theme === 'core-dark'
-      ? 'core-dark'
-      : theme === 'core-light'
-        ? 'core-light'
-        : theme === 'wireframe'
-          ? 'wireframe'
-          : theme === 'vertex'
-            ? 'vertex'
-            : theme === 'canvas'
-              ? 'canvas'
-              : theme === 'light'
-                ? 'future-light'
-                : 'future-dark';
+  const themeClass = theme || 'future-dark';
 
   const filteredProducts = React.useMemo(() => {
     let filtered = products;
@@ -1743,7 +1717,7 @@ function DataManagementDemo({ theme }: { theme: string }) {
 export const DataManagement: Story = {
   name: 'Data Management',
   render: (_, { globals }) => {
-    return <DataManagementDemo theme={globals.futureTheme || 'dark'} />;
+    return <DataManagementDemo theme={globals.futureTheme || 'future-dark'} />;
   },
 };
 
@@ -1756,7 +1730,7 @@ import { SettingsAdmin } from './settings-admin';
 export const Settings: Story = {
   name: 'Settings',
   render: (_, { globals }) => {
-    return <SettingsAdmin theme={globals.futureTheme || 'dark'} menuContent={<AdminMenuNav />} />;
+    return <SettingsAdmin theme={globals.futureTheme || 'future-dark'} menuContent={<AdminMenuNav />} />;
   },
 };
 

@@ -5,7 +5,7 @@
  * Includes values actively used in both Delegate and Flow templates.
  *
  * Colors are now theme-aware via CSS custom properties defined in
- * `themes.css`. Apply `.future-dark` or `.future-light` to a
+ * `tailwind.consumer.css`. Apply `.future-dark` or `.future-light` to a
  * parent element to activate a theme.
  *
  * The semantic Tailwind classes (e.g. `bg-surface`) resolve to

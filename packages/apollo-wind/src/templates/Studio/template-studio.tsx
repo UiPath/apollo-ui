@@ -15,13 +15,7 @@ export { StudioCanvas, StudioGrid, StudioGridItem, StudioPanel, StudioPanelSelec
 // ============================================================================
 
 function resolveThemeClass(theme: FutureTheme) {
-  if (theme === 'core-dark') return 'core-dark';
-  if (theme === 'core-light') return 'core-light';
-  if (theme === 'wireframe') return 'wireframe';
-  if (theme === 'vertex') return 'vertex';
-  if (theme === 'canvas') return 'canvas';
-  if (theme === 'light') return 'future-light';
-  return 'future-dark';
+  return theme;
 }
 
 // ============================================================================

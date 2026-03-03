@@ -299,20 +299,7 @@ export function MaestroHeader({
 }: MaestroHeaderProps) {
   // Theme class applied to portal-rendered content (dropdowns/popovers)
   // so CSS variables resolve correctly outside the template's DOM tree
-  const themeClass =
-    theme === 'core-dark'
-      ? 'core-dark'
-      : theme === 'core-light'
-        ? 'core-light'
-        : theme === 'wireframe'
-          ? 'wireframe'
-          : theme === 'vertex'
-            ? 'vertex'
-            : theme === 'canvas'
-              ? 'canvas'
-              : theme === 'light'
-                ? 'future-light'
-                : 'future-dark';
+  const themeClass = theme;
 
   // Internal drawer state — only relevant when menuContent is provided
   const [menuOpen, setMenuOpen] = React.useState(false);

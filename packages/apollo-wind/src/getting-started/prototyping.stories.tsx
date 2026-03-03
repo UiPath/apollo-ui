@@ -22,13 +22,7 @@ type Story = StoryObj<typeof meta>;
 // ============================================================================
 
 function resolveThemeClass(value: string) {
-  if (value === 'core-dark') return 'core-dark';
-  if (value === 'core-light') return 'core-light';
-  if (value === 'wireframe') return 'wireframe';
-  if (value === 'vertex') return 'vertex';
-  if (value === 'canvas') return 'canvas';
-  if (value === 'light') return 'future-light';
-  return 'future-dark';
+  return value || 'future-dark';
 }
 
 // ============================================================================
@@ -139,7 +133,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib';
 
 ## Theming
-Apply theme class to root: future-dark | future-light | core-dark | core-light
+Apply theme class to root: future-dark | future-light | dark | light | dark-hc | light-hc
 Semantic tokens: bg-surface, text-foreground, border-border
 Bridge tokens (cross-theme): bg-background, bg-card, text-foreground, text-muted-foreground
 
@@ -1146,5 +1140,5 @@ function PrototypingPage({ globalTheme }: { globalTheme: string }) {
 // ============================================================================
 
 export const Default: Story = {
-  render: (_, { globals }) => <PrototypingPage globalTheme={globals.futureTheme || 'dark'} />,
+  render: (_, { globals }) => <PrototypingPage globalTheme={globals.futureTheme || 'future-dark'} />,
 };

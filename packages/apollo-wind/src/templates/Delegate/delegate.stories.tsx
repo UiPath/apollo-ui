@@ -70,7 +70,7 @@ type Story = StoryObj<typeof meta>;
 export const Blank: Story = {
   render: (_, { globals }) => (
     <DelegateTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.futureTheme || 'future-dark'}
       navItems={defaultNavItems}
       defaultPanelOpen={true}
     >
@@ -82,7 +82,7 @@ export const Blank: Story = {
 export const Home: Story = {
   render: (_, { globals }) => (
     <DelegateTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.futureTheme || 'future-dark'}
       navItems={defaultNavItems}
       defaultPanelOpen={true}
     >
@@ -222,7 +222,7 @@ export const Conversation: Story = {
   name: 'Conversation',
   render: (_, { globals }) => (
     <DelegateTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.futureTheme || 'future-dark'}
       navItems={defaultNavItems}
       defaultPanelOpen={true}
     >
@@ -234,7 +234,7 @@ export const Conversation: Story = {
 export const Steps: Story = {
   render: (_, { globals }) => (
     <DelegateTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.futureTheme || 'future-dark'}
       navItems={defaultNavItems}
       defaultPanelOpen={true}
     >
@@ -394,7 +394,7 @@ export const Settings: Story = {
   name: 'Settings',
   render: (_, { globals }) => (
     <DelegateTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.futureTheme || 'future-dark'}
       navItems={defaultNavItems}
       defaultPanelOpen={true}
     >

@@ -16,14 +16,14 @@ type Story = StoryObj<typeof meta>;
 export const Blank: Story = {
   name: 'Blank',
   render: (_, { globals }) => (
-    <FlowTemplate theme={globals.futureTheme || 'dark'} blank />
+    <FlowTemplate theme={globals.futureTheme || 'future-dark'} blank />
   ),
 };
 
 export const LeftPanelCollapsed: Story = {
   name: 'Left panel collapsed',
   render: (_, { globals }) => (
-    <FlowTemplate theme={globals.futureTheme || 'dark'} />
+    <FlowTemplate theme={globals.futureTheme || 'future-dark'} />
   ),
 };
 
@@ -45,7 +45,7 @@ export const LeftPanelExpanded: Story = {
   name: 'Left panel open',
   render: (_, { globals }) => (
     <FlowTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.futureTheme || 'future-dark'}
       defaultPanelOpen
       chatMessages={chatMessages}
     />
@@ -142,7 +142,7 @@ export const PropertiesSimple: Story = {
   name: 'Properties Simple',
   render: (_, { globals }) => (
     <FlowTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.futureTheme || 'future-dark'}
       defaultPropertiesSimple
       propertiesSimpleTitle="HTTP Request"
       propertiesSimpleFields={simpleFields}
@@ -155,7 +155,7 @@ export const Properties: Story = {
   name: 'Properties Advanced',
   render: (_, { globals }) => (
     <FlowTemplate
-      theme={globals.futureTheme || 'dark'}
+      theme={globals.futureTheme || 'future-dark'}
       defaultPropertiesExpanded
     />
   ),
