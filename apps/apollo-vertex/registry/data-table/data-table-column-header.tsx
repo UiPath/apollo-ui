@@ -29,7 +29,6 @@ function DataTableColumnHeader<TData, TValue>({
   title,
   className,
 }: DataTableColumnHeaderProps<TData, TValue>) {
-  "use no memo";
   const { t } = useTranslation();
   if (!column.getCanSort()) {
     return <div className={cn(className)}>{title}</div>;

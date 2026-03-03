@@ -407,13 +407,16 @@
       "name": "data-table",
       "type": "registry:ui",
       "title": "Data Table",
-      "description": "A data table component built on TanStack Table with sorting, filtering, pagination, and row selection.",
+      "description": "A data table component built on TanStack Table with sorting, filtering, pagination, row selection, and column reordering.",
       "dependencies": [
         "@tanstack/react-table",
+        "@dnd-kit/core",
+        "@dnd-kit/sortable",
+        "@dnd-kit/utilities",
         "lucide-react",
         "react-i18next"
       ],
-      "registryDependencies": ["table", "button", "dropdown-menu", "select", "input", "skeleton"],
+      "registryDependencies": ["table", "button", "checkbox", "dropdown-menu", "select", "input", "skeleton", "use-local-storage"],
       "files": [
         { "path": "registry/data-table/index.ts", "type": "registry:ui" },
         { "path": "registry/data-table/data-table.tsx", "type": "registry:ui" },
