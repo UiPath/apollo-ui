@@ -413,12 +413,17 @@
         "lucide-react",
         "react-i18next"
       ],
-      "registryDependencies": ["table", "button", "dropdown-menu", "select"],
+      "registryDependencies": ["table", "button", "dropdown-menu", "select", "input", "skeleton"],
       "files": [
-        {
-          "path": "registry/data-table/data-table.tsx",
-          "type": "registry:ui"
-        }
+        { "path": "registry/data-table/index.ts", "type": "registry:ui" },
+        { "path": "registry/data-table/data-table.tsx", "type": "registry:ui" },
+        { "path": "registry/data-table/data-table-column-header.tsx", "type": "registry:ui" },
+        { "path": "registry/data-table/data-table-faceted-filter.tsx", "type": "registry:ui" },
+        { "path": "registry/data-table/data-table-pagination.tsx", "type": "registry:ui" },
+        { "path": "registry/data-table/data-table-search.tsx", "type": "registry:ui" },
+        { "path": "registry/data-table/data-table-skeleton.tsx", "type": "registry:ui" },
+        { "path": "registry/data-table/data-table-toolbar.tsx", "type": "registry:ui" },
+        { "path": "registry/data-table/data-table-view-options.tsx", "type": "registry:ui" }
       ]
     },
     {
