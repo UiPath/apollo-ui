@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MetadataForm } from './metadata-form';
 import { FormStateViewer } from './form-state-viewer';
 import type { FormSchema } from './form-schema';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { useForm, FormProvider, type FieldValues, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RuleBuilder } from './rules-engine';

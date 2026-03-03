@@ -31,6 +31,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  RowSelectionState,
   SortingState,
   useReactTable,
   VisibilityState,
@@ -49,8 +50,8 @@ export interface DataTableProps<TData, TValue> {
   resizable?: boolean;
   compact?: boolean;
   columnToggleText?: string;
-  rowSelection?: Record<string, boolean>;
-  onRowSelectionChange?: (selection: Record<string, boolean>) => void;
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: (selection: RowSelectionState) => void;
   toolbarContent?: React.ReactNode;
 }
 
@@ -74,12 +75,12 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-  const [internalRowSelection, setInternalRowSelection] = React.useState<Record<string, boolean>>({});
+  const [internalRowSelection, setInternalRowSelection] = React.useState<RowSelectionState>({});
 
   const isControlled = controlledRowSelection !== undefined;
   const rowSelection = isControlled ? controlledRowSelection : internalRowSelection;
   const setRowSelection = React.useCallback(
-    (updater: React.SetStateAction<Record<string, boolean>>) => {
+    (updater: React.SetStateAction<RowSelectionState>) => {
       const next = typeof updater === 'function' ? updater(rowSelection) : updater;
       if (!isControlled) setInternalRowSelection(next);
       controlledOnRowSelectionChange?.(next);
@@ -202,7 +203,14 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
                       {resizable && header.column.getCanResize() && (
+                        // biome-ignore lint/a11y/useSemanticElements: Interactive resizable separator needs role="separator" with aria-valuenow
                         <div
+                          role="separator"
+                          aria-label="Resize column"
+                          aria-valuenow={header.column.getSize()}
+                          aria-valuemin={header.column.columnDef.minSize ?? 40}
+                          aria-valuemax={header.column.columnDef.maxSize ?? 1000}
+                          tabIndex={0}
                           onMouseDown={header.getResizeHandler()}
                           onTouchStart={header.getResizeHandler()}
                           className={`absolute -right-1 top-0 z-10 h-full w-2 cursor-col-resize select-none touch-none group`}

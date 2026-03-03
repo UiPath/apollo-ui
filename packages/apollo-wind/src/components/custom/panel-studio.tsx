@@ -70,11 +70,24 @@ export function StudioPanel({
       <div className="flex-1 overflow-y-auto">{children}</div>
 
       {/* Resize handle — sits on the inner border edge */}
+      {/* biome-ignore lint/a11y/useSemanticElements: Interactive resizable separator needs role="separator" with aria-valuenow */}
       <div
         role="separator"
         aria-orientation="vertical"
         aria-label="Resize panel"
+        aria-valuenow={width}
+        aria-valuemin={PANEL_MIN_WIDTH}
+        aria-valuemax={PANEL_MAX_WIDTH}
+        tabIndex={0}
         onMouseDown={handleMouseDown}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            const delta = e.key === 'ArrowLeft' ? -10 : 10;
+            const adjustedDelta = side === 'left' ? delta : -delta;
+            setWidth(Math.max(PANEL_MIN_WIDTH, Math.min(PANEL_MAX_WIDTH, width + adjustedDelta)));
+          }
+        }}
         className={cn(
           'absolute top-0 z-10 h-full w-1 cursor-col-resize transition-colors duration-150',
           'hover:bg-brand/40 active:bg-brand/60',

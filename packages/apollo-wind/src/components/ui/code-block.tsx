@@ -195,8 +195,22 @@ function useApolloTheme(): CodeBlockTheme {
   const [theme, setTheme] = useState<CodeBlockTheme>(getBodyTheme);
 
   useEffect(() => {
+    if (typeof document === 'undefined') {
+      // In non-browser environments (e.g. SSR), skip observing
+      return;
+    }
+
     const observer = new MutationObserver(() => setTheme(getBodyTheme()));
-    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+    // Observe both body and documentElement to catch theme changes on either
+    const targets: (HTMLElement | null)[] = [document.body, document.documentElement];
+
+    targets.forEach((target) => {
+      if (target) {
+        observer.observe(target, { attributes: true, attributeFilter: ['class'] });
+      }
+    });
+
     return () => observer.disconnect();
   }, []);
 

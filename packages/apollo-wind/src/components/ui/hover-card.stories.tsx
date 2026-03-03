@@ -267,7 +267,7 @@ export const LinksAndReferences = {
         Our design system is built on top of{' '}
         <HoverCard>
           <HoverCardTrigger asChild>
-            <a href="#" className="font-medium underline underline-offset-4 hover:no-underline">
+            <a href="#demo" className="font-medium underline underline-offset-4 hover:no-underline">
               Radix UI
             </a>
           </HoverCardTrigger>
@@ -287,7 +287,7 @@ export const LinksAndReferences = {
         {' '}primitives with{' '}
         <HoverCard>
           <HoverCardTrigger asChild>
-            <a href="#" className="font-medium underline underline-offset-4 hover:no-underline">
+            <a href="#demo" className="font-medium underline underline-offset-4 hover:no-underline">
               Tailwind CSS
             </a>
           </HoverCardTrigger>
@@ -307,7 +307,7 @@ export const LinksAndReferences = {
         {' '}styling. Documentation is powered by{' '}
         <HoverCard>
           <HoverCardTrigger asChild>
-            <a href="#" className="font-medium underline underline-offset-4 hover:no-underline">
+            <a href="#demo" className="font-medium underline underline-offset-4 hover:no-underline">
               Storybook
             </a>
           </HoverCardTrigger>

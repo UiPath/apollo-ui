@@ -27,6 +27,7 @@ export interface SpinnerProps
 const Spinner = React.forwardRef<HTMLDivElement, SpinnerProps>(
   ({ className, size, label = 'Loading', showLabel = false, ...props }, ref) => {
     return (
+      // biome-ignore lint/a11y/useSemanticElements: role="status" is the correct ARIA role for loading indicators, not <output>
       <div
         ref={ref}
         role="status"

@@ -15,9 +15,11 @@ describe('AspectRatio', () => {
 
   it('has no accessibility violations', async () => {
     const { container } = render(
-      <AspectRatio ratio={16 / 9}>
-        <img src="test.jpg" alt="Test image" />
-      </AspectRatio>
+      <main>
+        <AspectRatio ratio={16 / 9}>
+          <img src="test.jpg" alt="Test content" />
+        </AspectRatio>
+      </main>
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();
@@ -73,7 +75,9 @@ describe('AspectRatio', () => {
   it('renders with video', () => {
     const { container } = render(
       <AspectRatio ratio={16 / 9}>
-        <video src="video.mp4" />
+        <video src="video.mp4" muted>
+          <track kind="captions" />
+        </video>
       </AspectRatio>
     );
     const video = container.querySelector('video');

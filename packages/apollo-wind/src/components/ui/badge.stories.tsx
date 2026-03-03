@@ -71,16 +71,16 @@ export const Link = {
   name: 'Link',
   render: () => (
     <div className="flex flex-wrap items-center gap-3">
-      <a href="#" className="no-underline">
+      <a href="#demo" className="no-underline">
         <Badge variant="default" className="cursor-pointer">Default</Badge>
       </a>
-      <a href="#" className="no-underline">
+      <a href="#demo" className="no-underline">
         <Badge variant="secondary" className="cursor-pointer">Secondary</Badge>
       </a>
-      <a href="#" className="no-underline">
+      <a href="#demo" className="no-underline">
         <Badge variant="destructive" className="cursor-pointer">Destructive</Badge>
       </a>
-      <a href="#" className="no-underline">
+      <a href="#demo" className="no-underline">
         <Badge variant="outline" className="cursor-pointer">Outline</Badge>
       </a>
     </div>

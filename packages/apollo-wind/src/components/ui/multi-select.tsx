@@ -95,17 +95,10 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
                         }}
                       >
                         {option?.label}
-                        <span
-                          role="button"
-                          tabIndex={0}
+                        <button
+                          type="button"
                           aria-label={`Remove ${option?.label}`}
-                          className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              handleUnselect(value);
-                            }
-                          }}
+                          className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer bg-transparent border-0 p-0 inline-flex items-center"
                           onMouseDown={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -117,7 +110,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
                           }}
                         >
                           <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                        </span>
+                        </button>
                       </Badge>
                     );
                   })

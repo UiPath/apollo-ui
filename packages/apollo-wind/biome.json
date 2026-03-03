@@ -27,9 +27,8 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": false,
+      "recommended": true,
       "a11y": {
-        "recommended": true,
         "noSvgWithoutTitle": "off"
       }
     },

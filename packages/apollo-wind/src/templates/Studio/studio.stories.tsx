@@ -574,13 +574,17 @@ function DatasetForm() {
     if (allSelected) {
       setSelectedRows((prev) => {
         const next = new Set(prev);
-        filtered.forEach((dp) => next.delete(dp.id));
+        filtered.forEach((dp) => {
+          next.delete(dp.id);
+        });
         return next;
       });
     } else {
       setSelectedRows((prev) => {
         const next = new Set(prev);
-        filtered.forEach((dp) => next.add(dp.id));
+        filtered.forEach((dp) => {
+          next.add(dp.id);
+        });
         return next;
       });
     }

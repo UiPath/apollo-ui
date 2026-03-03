@@ -238,7 +238,7 @@ export const TooltipWithDifferentContent = {
         {/* Disabled state info */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <span tabIndex={0}>
+            <span>
               <Button variant="outline" size="sm" disabled>Disabled</Button>
             </span>
           </TooltipTrigger>
@@ -404,7 +404,7 @@ export const Examples = {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <span tabIndex={0}>
+                <span>
                   <Button size="icon" variant="outline" disabled>
                     <Trash2 className="h-4 w-4" />
                   </Button>
