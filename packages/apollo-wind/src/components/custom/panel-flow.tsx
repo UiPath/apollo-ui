@@ -81,7 +81,8 @@ function IconRail({
           {navItems.map((item) => (
             <Tooltip key={item.id}>
               <TooltipTrigger asChild>
-                <button type="button"
+                <button
+                  type="button"
                   className={cn(
                     'flex h-12 w-full items-center justify-center text-foreground-muted transition-colors hover:text-foreground',
                     activeId === item.id && 'text-brand-foreground'
@@ -127,16 +128,12 @@ function DefaultChatContent({ chatMessages }: { chatMessages: FlowPanelChatMessa
         msg.role === 'user' ? (
           <div key={msg.id} className="flex flex-col items-end pr-6">
             <div className="max-w-[360px] rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-[4px] bg-surface-raised px-6 py-4">
-              <p className="text-base leading-6 tracking-[-0.4px] text-foreground">
-                {msg.content}
-              </p>
+              <p className="text-base leading-6 tracking-[-0.4px] text-foreground">{msg.content}</p>
             </div>
           </div>
         ) : (
           <div key={msg.id} className="flex items-center gap-2">
-            <p className="text-base font-medium leading-5 text-foreground-muted">
-              {msg.content}
-            </p>
+            <p className="text-base font-medium leading-5 text-foreground-muted">{msg.content}</p>
           </div>
         )
       )}
@@ -161,14 +158,14 @@ function ChatInput() {
       </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <button type="button"
+          <button
             type="button"
             className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted hover:text-foreground"
             aria-label="Add attachment"
           >
             <Plus className="h-5 w-5" />
           </button>
-          <button type="button"
+          <button
             type="button"
             className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted hover:text-foreground"
             aria-label="Add workflow"
@@ -176,7 +173,7 @@ function ChatInput() {
             <Workflow className="h-5 w-5" />
           </button>
         </div>
-        <button type="button"
+        <button
           type="button"
           className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-foreground-on-accent"
           aria-label="Submit message"
@@ -209,7 +206,8 @@ function ExpandedPanel({
           <span className="font-bold text-foreground">Flow</span>
           <span className="font-medium text-foreground-subtle">Autopilot</span>
         </div>
-        <button type="button"
+        <button
+          type="button"
           className="text-foreground-muted transition-colors hover:text-foreground"
           onClick={onClose}
           aria-label="Close panel"
