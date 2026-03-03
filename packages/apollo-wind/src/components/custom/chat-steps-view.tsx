@@ -61,9 +61,7 @@ function HeaderDivider() {
 function StatusBadge({ label }: { label: string }) {
   return (
     <div className="flex h-10 items-center rounded-xl bg-brand-subtle px-4 py-2">
-      <span className="text-sm font-bold leading-5 text-foreground-accent-muted">
-        {label}
-      </span>
+      <span className="text-sm font-bold leading-5 text-foreground-accent-muted">{label}</span>
     </div>
   );
 }
@@ -89,7 +87,8 @@ function ActionButton({
   onClick?: () => void;
 }) {
   return (
-    <button type="button"
+    <button
+      type="button"
       className="flex h-10 items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium leading-5 text-foreground-subtle transition-colors hover:border-border-hover hover:text-foreground-hover"
       onClick={onClick}
     >
@@ -231,7 +230,7 @@ export function StepsView({
       <div className="flex min-h-[78px] shrink-0 items-center gap-8 overflow-x-auto px-10 py-5">
         {/* Back + Title */}
         <div className="flex shrink-0 items-center gap-4">
-          <button type="button"
+          <button
             type="button"
             className="shrink-0 text-foreground transition-colors hover:text-foreground"
             onClick={onBack}
