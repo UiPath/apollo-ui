@@ -1,0 +1,348 @@
+import { SonnerExamples, AlertExamples, AlertOutlineExamples, AlertDefaultExamples, CollapsibleAlertExample, ActionAlertExample } from './notification-examples'
+import { LayoutDiagram } from './layout-diagram'
+
+# In-product notification
+
+Notifications provide timely feedback about user actions or system status. Used well, they build trust and clarity. Used carelessly, they interrupt flow.
+
+There are two primary patterns in our system:
+
+- [**Sonner**](/shadcn-components/sonner) — time-based, non-modal notifications for lightweight feedback. Floating, transient, always tied to a user action, never blocking.
+- [**Alert**](/shadcn-components/alert) — inline notifications within page content for contextual, persistent, or blocking feedback. Structural, anchored to content, can be persistent or blocking.
+
+Both components support status variants and theme-based contrast styles. Use them intentionally.
+
+---
+
+## When to use notifications
+
+### Task-generated notifications
+
+Triggered directly by a user action during a task.
+
+**Purpose:**
+- Provide immediate feedback
+- Confirm results
+- Surface validation or errors
+
+**Pattern:**
+- [Sonner](/shadcn-components/sonner) for success or lightweight confirmation
+- Inline ([Alert](/shadcn-components/alert)) for validation, warnings, or blocking errors
+
+The message must clearly relate to the user's action.
+
+### System-generated notifications
+
+Triggered by the system, independent of a user action.
+
+**Purpose:**
+- Communicate background updates
+- Inform about system status
+- Surface out-of-context events
+
+**Pattern:**
+- Inline ([Alert](/shadcn-components/alert)), anchored near relevant UI
+- Persistent when time-sensitive or important
+
+Avoid using [Sonner](/shadcn-components/sonner) for system-level updates that require awareness over time.
+
+**When there is no obvious relevant UI element** (for example, a background sync failure or session timeout), surface the alert as a persistent full-width banner directly below the main header. Do not use a floating Sonner notification for these cases.
+
+---
+
+## Sonner variant
+
+[Sonner](/shadcn-components/sonner) notifications are short, floating, non-modal messages used for quick feedback after a user action. They are always transient, never blocking, and always tied to something the user just did.
+
+### When to use Sonner
+
+Use [Sonner](/shadcn-components/sonner) when:
+
+- Confirming a successful or completed action — _example: "Project published", "Saved successfully"_
+- The feedback is short and non-blocking
+- No user action is required
+- The message is directly tied to a user-initiated action
+- You want to surface passive updates without interrupting workflow
+
+### Do not use Sonner for
+
+- Errors that block progress
+- Situations requiring user input
+- Form validation
+- Persistent guidance or contextual messaging
+- System-generated events with no direct user trigger
+
+Use Inline ([Alert](/shadcn-components/alert)) instead.
+
+### Placement and behavior
+
+[Sonner](/shadcn-components/sonner) notifications appear at the **top-center of the screen**.
+
+> **Rationale:** The top-right corner is reserved for primary CTAs across our solutions. The bottom-right corner is reserved for the chat component. Top-center keeps notifications prominent and visible without competing with either.
+
+| Property | Value |
+|---|---|
+| Position | Top-center of the screen |
+| Auto-dismiss | 5 seconds |
+| Manual dismiss | Close icon |
+| Persistent | Never |
+
+> Never use [Sonner](/shadcn-components/sonner) for errors that require resolution.
+
+### Example
+
+<div className="p-4 border rounded-lg mt-4">
+  <SonnerExamples />
+</div>
+
+---
+
+## Inline variant (Alert)
+
+Inline notifications use the [Alert](/shadcn-components/alert) component and appear within the layout, near relevant UI elements. They provide contextual feedback tied to the current task or workflow. Unlike [Sonner](/shadcn-components/sonner), they are structural — they occupy space in the layout rather than floating above it.
+
+### When to use Inline
+
+Use Inline ([Alert](/shadcn-components/alert)) when:
+
+- Feedback must remain visible in context
+- Displaying validation errors or warnings
+- The message relates to a specific form, section, or workflow state
+- The system requires user action
+- You need persistent contextual guidance
+- There is no direct user action to tie the message to
+
+Inline notifications may be persistent or dismissible depending on priority.
+
+### Placement and behavior
+
+- Appear inline with content, near the relevant UI
+- Persist until resolved or dismissed (if dismissible)
+- Should be visually connected to the related task or component
+- When no specific UI element is the anchor (e.g. session expiry, system outage), appear as a persistent full-width banner below the main header
+
+### Choosing a visual style
+
+Inline alerts support three visual styles. Choose based on the urgency and importance of the message — not personal preference. Do not mix styles within the same context.
+
+| Style | Variant | When to use | Dismissible |
+|---|---|---|---|
+| Default | Subtle | Routine info, background updates, non-disruptive confirmations | Optional |
+| Accent | Outline | Contextual warnings, guidance, acknowledged states, unresolved requirements | Context-dependent |
+| Bold | Tinted | Critical issues, blocking errors, authentication failures | No |
+
+> When unsure, start with **default**. Escalate only when the message demands immediate attention or blocks progress.
+
+#### Default (subtle)
+
+Neutral background with status color on the title and icon. Description text uses the standard muted color. Use for routine information, background updates, and non-disruptive feedback.
+
+<div className="p-4 border rounded-lg mt-4">
+  <AlertDefaultExamples />
+</div>
+
+#### Accent (outline)
+
+Status color on the border and icon, with default text colors. Use for contextual warnings, dismissible guidance, or messages the user has already acknowledged.
+
+<div className="p-4 border rounded-lg mt-4">
+  <AlertOutlineExamples />
+</div>
+
+#### Bold (tinted)
+
+Full status-colored background with white text in dark mode. Use for critical messages that demand immediate attention or block progress.
+
+<div className="p-4 border rounded-lg mt-4">
+  <AlertExamples />
+</div>
+
+### Complex alert patterns (edge cases)
+
+The patterns above cover the majority of notification needs. The following compositions are reserved for complex workflows where a standard alert is not sufficient. Do not use these as defaults — reach for them only when the workflow genuinely requires inline items or embedded actions.
+
+#### Collapsible content
+
+When an alert references a list of items (e.g., missing documents, failed validations), show items inline as chips. If the list overflows a single row, clip to one row and show a "Show all" toggle that expands to reveal the full list.
+
+**Overflow behavior:** Items display inline by default. The expand/collapse toggle only appears when items overflow the available space — keeping simple cases compact and reserving the toggle for edge cases with many items.
+
+<div className="p-4 border rounded-lg mt-4">
+  <CollapsibleAlertExample />
+</div>
+
+#### Action buttons
+
+When an alert can trigger a direct action (e.g., filtering a table, retrying an operation), include an action button inside the alert description area. Limit to one primary action per alert.
+
+<div className="p-4 border rounded-lg mt-4">
+  <ActionAlertExample />
+</div>
+
+#### Dynamic state updates
+
+Alerts should reflect real-time state changes client-side. When a user resolves an item referenced by an alert (e.g., uploads a missing document), the alert should update immediately without requiring a page refresh:
+
+- Update the count in the title ("3 required documents missing" becomes "2 required documents missing")
+- Remove resolved items from the collapsible list
+- Auto-dismiss the alert when all items are resolved
+
+Implement this by deriving alert visibility and content from reactive state (e.g., React state or a server state library like TanStack Query). Do not hard-code alert content.
+
+---
+
+## Layout boundaries
+
+The following areas are reserved and must not be obscured by floating notifications:
+
+| Area | Reserved for |
+|---|---|
+| Top-right | Primary CTAs |
+| Bottom-right | Chat component |
+
+No [Sonner](/shadcn-components/sonner) notification or floating overlay should appear in these areas. Top-center is the designated position for all [Sonner](/shadcn-components/sonner) notifications.
+
+<div className="mt-4">
+  <LayoutDiagram />
+</div>
+
+---
+
+## Dismissible vs persistent
+
+| Variant | Auto-dismiss | User-dismissible | Persistent |
+|---|---|---|---|
+| [Sonner](/shadcn-components/sonner) | Yes (5s) | Yes | No |
+| Inline ([Alert](/shadcn-components/alert)) | No | Optional | Yes |
+
+### Make Inline dismissible if
+
+- The message is low priority — _example: "Settings updated", "You've been signed out from another device"_
+- The user has already acknowledged the information
+- Dismissing improves focus and reduces clutter
+
+### Keep Inline persistent if
+
+- The message indicates an error that must be resolved
+- The system requires user input
+- The message provides important ongoing context
+
+> Never rely on dismissibility for critical blockers.
+
+> **Note:** Visual style does not determine dismissibility. An accent (outline) alert can be either dismissible or persistent depending on whether the condition it represents requires resolution. Missing required documents, for example, should use accent styling but remain persistent until all documents are provided.
+
+---
+
+## Status and semantic meaning
+
+Each notification has a status that communicates tone and urgency through color and icon. Choose status based on both urgency and user context.
+
+### Status definitions
+
+Notification statuses align with the [Badge](/shadcn-components/badge) status system for consistent semantic meaning across the design system.
+
+| Status | Usage | Token | Color | Inline notes |
+|---|---|---|---|---|
+| `info` | General updates, FYIs | `--info` | `oklch(0.60 0.125 210)` | Best for passive or contextual information |
+| `success` | Confirmation of completed tasks | `--success` | `oklch(0.57 0.105 152)` | Inline only when tied to direct user action |
+| `warning` | Potential issues or unintended consequences | `--warning` | `oklch(0.80 0.1401 80.82)` | Appropriate for both persistent and action-related messages |
+| `error` | Failures, blockers, critical issues | `--destructive` | `oklch(0.62 0.150 18)` | Inline only when tied to validation or error resolution |
+
+> Inline notifications should use **success** or **error** only when tied to a user-initiated action.
+> For persistent system guidance or background alerts, use **info** or **warning**.
+
+---
+
+## Content guidelines
+
+Notifications have limited space. Write for clarity and scanability.
+
+Users should understand:
+- **What** happened
+- **Why** it matters
+- **What to do** next
+
+### Title
+
+- Short and clear
+- Communicates the most important information
+- No period at the end
+- For errors, state what failed or what cannot be completed
+- _Examples: "Changes saved", "Connection failed"_
+
+> **Accessibility note:** Screen readers read the entire notification as one string. Do not rely on text styling alone to convey meaning.
+
+### Body text
+
+- Maximum two lines
+- Do not repeat the title
+- Support the title with context or next steps
+- Include troubleshooting guidance when relevant
+- User actions are mandatory for error messages
+- Never truncate critical or actionable content
+
+If more explanation is required:
+- Provide a short summary
+- Add a single "View more" link to a modal or page
+
+No bolding within body text. If emphasis is necessary, use quotation marks.
+
+### Lists and structured content
+
+Notifications should not contain bulleted or numbered lists. Lists add visual complexity and break the scanability of a compact notification.
+
+If the notification references multiple items:
+- Summarize with a count in the title — _example: "3 required documents missing"_
+- Show items as inline chips or a comma-separated string
+- Limit visible items to one row; use a "Show all" link for overflow
+- Never display more than one level of hierarchy
+
+For details that require a full list, link out to a dedicated view with "View details".
+
+### Call to action links
+
+Use links sparingly.
+
+| Guideline | Rule |
+|---|---|
+| Maximum links | One per notification |
+| Position | End of notification only |
+| Inline links | Do not embed links within body text |
+| Label length | One or two words |
+| Tone | Concise and action-oriented |
+
+_Examples: "View details", "Retry", "Fix"_
+
+Avoid driving users away from their workflow unless necessary.
+
+---
+
+## Quick decision guide
+
+### Use [Sonner](/shadcn-components/sonner) when
+
+- Confirming success
+- The message is short
+- No action is required
+- The feedback is tied to a user action
+
+### Use Inline ([Alert](/shadcn-components/alert)) when
+
+- Displaying validation errors
+- The issue blocks progress
+- Context must persist
+- The message relates to a specific UI element
+- The system requires action
+- There is no user action to tie the message to
+
+> If the message blocks progress, it should **never** use [Sonner](/shadcn-components/sonner).
+
+### Choosing an Alert style
+
+| Question | Answer | Style |
+|---|---|---|
+| Is the message routine, informational, or non-disruptive? | Yes | Default (subtle) |
+| Is the message contextual, a warning, or an unresolved requirement? | Yes | Accent (outline) |
+| Does the message block progress or require immediate action? | Yes | Bold (tinted) |
+
+> When unsure, start with **default** and escalate only if the message demands it.
