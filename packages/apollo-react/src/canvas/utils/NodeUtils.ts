@@ -1,4 +1,10 @@
-import { type Handle, type InternalNode, type Node, type XYPosition, Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  type Handle,
+  type InternalNode,
+  type Node,
+  Position,
+  type XYPosition,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { DEFAULT_NODE_SIZE, GRID_SPACING, PREVIEW_NODE_ID } from '../constants';
 
 /**
@@ -96,14 +102,21 @@ type Box = {
 };
 
 function getBoxesFromNodes(nodes: Node[], margin: number = 0): Box[] {
-  return nodes.map((node) => ({
-    x: node.position.x - margin,
-    y: node.position.y - margin,
-    width: (node.width ?? node.measured?.width ?? DEFAULT_NODE_SIZE) + margin * 2,
-    height: (node.height ?? node.measured?.height ?? DEFAULT_NODE_SIZE) + margin * 2,
-    node,
-    moved: false,
-  }));
+  const boxes: Box[] = new Array(nodes.length);
+
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i]!;
+    boxes[i] = {
+      x: node.position.x - margin,
+      y: node.position.y - margin,
+      width: (node.width ?? node.measured?.width ?? DEFAULT_NODE_SIZE) + margin * 2,
+      height: (node.height ?? node.measured?.height ?? DEFAULT_NODE_SIZE) + margin * 2,
+      node,
+      moved: false,
+    };
+  }
+
+  return boxes;
 }
 
 export const resolveCollisions: CollisionAlgorithm = (
