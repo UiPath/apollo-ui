@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.47.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.47.0...@uipath/apollo-react@3.47.1) (2026-03-04)
+
+### Bug Fixes
+
+* **apollo-react:** use combination search for add node panel ([f75c997](https://github.com/UiPath/apollo-ui/commit/f75c9976b7a74a16202ed6752a85e12548f74057))
+
 ## [@uipath/apollo-react-v3.47.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.46.0...@uipath/apollo-react@3.47.0) (2026-03-04)
 
 ### Features
