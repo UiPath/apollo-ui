@@ -1,6 +1,6 @@
 export * from './accordion';
-export * from './alert-dialog';
 export * from './alert';
+export * from './alert-dialog';
 export * from './aspect-ratio';
 export * from './avatar';
 export * from './badge';
@@ -47,15 +47,15 @@ export * from './switch';
 export * from './table';
 export * from './tabs';
 export * from './textarea';
-export { default as TreeView } from './tree-view';
+export * from './toggle';
+export * from './toggle-group';
+export * from './tooltip';
 export type {
+  TreeViewIconMap,
   TreeViewItem,
   TreeViewItemAction,
-  TreeViewIconMap,
   TreeViewMenuItem,
   TreeViewProps,
   TreeViewSelectionMode,
 } from './tree-view';
-export * from './toggle-group';
-export * from './toggle';
-export * from './tooltip';
+export { default as TreeView } from './tree-view';
