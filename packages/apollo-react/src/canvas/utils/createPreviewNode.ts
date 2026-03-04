@@ -6,9 +6,9 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { DEFAULT_NODE_SIZE, GRID_SPACING, PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../constants';
 import {
-  type HandleContext,
   getAbsolutePosition,
   getNonOverlappingPositionForDirection,
+  type HandleContext,
   resolveHandleContext,
 } from './NodeUtils';
 
@@ -123,8 +123,8 @@ function calculateAutoPosition(
       const handleIndex = handle?.index ?? null;
       const handleCount = handle?.count ?? 1;
       if (handleIndex !== null && handleCount > 1) {
-        if (handleIndex < Math.floor(handleCount / 2)) yOffset = -previewNodeSize.height / 2;
-        else if (handleIndex >= Math.ceil(handleCount / 2)) yOffset = previewNodeSize.height / 2;
+        if (handleIndex < Math.floor(handleCount / 2)) yOffset = -previewNodeSize.height;
+        else if (handleIndex >= Math.ceil(handleCount / 2)) yOffset = previewNodeSize.height;
       }
 
       initialPosition = {
@@ -203,7 +203,8 @@ export function createPreviewNode(
 
   // Resolve the exact canvas position of the clicked handle via InternalNode bounds.
   // Falls back to undefined (node-center) if the node or handle isn't found.
-  const internalNode = position === undefined ? reactFlowInstance.getInternalNode(sourceNodeId) : undefined;
+  const internalNode =
+    position === undefined ? reactFlowInstance.getInternalNode(sourceNodeId) : undefined;
   const handle = internalNode
     ? resolveHandleContext(internalNode, sourceHandleId, handlePosition)
     : undefined;
