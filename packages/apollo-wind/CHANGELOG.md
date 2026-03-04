@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v0.12.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.11.0...@uipath/apollo-wind@0.12.0) (2026-03-04)
+
+### Features
+
+* **apollo-wind:** allow explicit imports ([00372e4](https://github.com/uipath/apollo-ui/commit/00372e4ffe9d6ba42dc9410e47d888773227926a))
+
 ## [@uipath/apollo-wind-v0.11.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.10.0...@uipath/apollo-wind@0.11.0) (2026-03-03)
 
 ### Features
