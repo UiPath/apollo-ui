@@ -1,3 +1,21 @@
+## [@uipath/apollo-react-v3.46.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.6...@uipath/apollo-react@3.46.0) (2026-03-04)
+
+### Features
+
+* **apollo-react:** add support for validation adornments on node ([9dfd923](https://github.com/UiPath/apollo-ui/commit/9dfd9238cde90c4c9b21c031343574d05ed2212f))
+
+## [@uipath/apollo-react-v3.45.6](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.5...@uipath/apollo-react@3.45.6) (2026-03-03)
+
+### Bug Fixes
+
+* **apollo-react:** prevent cite-end tag when citing text-block ending in url ([32f7851](https://github.com/UiPath/apollo-ui/commit/32f7851f07b9d71c85492f887aa95246049e7069))
+
+## [@uipath/apollo-react-v3.45.5](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.4...@uipath/apollo-react@3.45.5) (2026-03-03)
+
+### Bug Fixes
+
+* **apollo-react:** introduce sankey diagram zoom and scale ([96c8c39](https://github.com/UiPath/apollo-ui/commit/96c8c39fd8f7b0a6df782c0cc6b176764d79ee64))
+
 ## [@uipath/apollo-react-v3.45.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.3...@uipath/apollo-react@3.45.4) (2026-03-02)
 
 ### Bug Fixes

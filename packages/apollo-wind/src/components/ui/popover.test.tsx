@@ -221,7 +221,7 @@ describe('Popover', () => {
     render(
       <Popover>
         <PopoverTrigger asChild>
-          <button>Custom trigger</button>
+          <button type="button">Custom trigger</button>
         </PopoverTrigger>
         <PopoverContent>Content</PopoverContent>
       </Popover>

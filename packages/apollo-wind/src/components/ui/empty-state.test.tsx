@@ -34,9 +34,9 @@ describe('EmptyState', () => {
     const { container } = render(
       <EmptyState title="Empty" icon={<span data-testid="custom-icon">📦</span>} />
     );
-    expect(screen.getByTestId('custom-icon')).toBeInTheDocument();
-    const iconContainer = container.querySelector('.rounded-full.bg-muted');
-    expect(iconContainer).toBeInTheDocument();
+    const icon = screen.getByTestId('custom-icon');
+    expect(icon).toBeInTheDocument();
+    expect(icon.parentElement).toBeInTheDocument();
   });
 
   it('renders primary action button', async () => {

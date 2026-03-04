@@ -134,7 +134,9 @@ export function FormFieldRenderer({
 
     // Check for computed dependencies
     if (field.dataSource.type === 'computed' && 'dependency' in field.dataSource) {
-      field.dataSource.dependency.forEach((dep) => fields.add(dep));
+      field.dataSource.dependency.forEach((dep) => {
+        fields.add(dep);
+      });
     }
 
     return Array.from(fields);

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Badge } from '@/components/ui/badge';
 
 const meta = {
-  title: 'Theme/Current/Typography',
+  title: 'Theme/Typography',
   parameters: {
     layout: 'fullscreen',
   },
@@ -292,7 +292,7 @@ function TypographyGallery() {
             <p>
               This is{' '}
               <a
-                href="#"
+                href="#demo"
                 className="text-primary underline underline-offset-4 hover:text-primary/80"
               >
                 a link

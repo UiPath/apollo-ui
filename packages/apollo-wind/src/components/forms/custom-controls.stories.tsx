@@ -199,7 +199,7 @@ function RatingInput({
   allowHalf = false,
 }: RatingInputProps) {
   const rating = (value as number) || 0;
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLFieldSetElement>(null);
 
   const handleClick = (star: number, isHalf: boolean) => {
     if (disabled) return;
@@ -216,7 +216,12 @@ function RatingInput({
 
   return (
     <div className="space-y-2">
-      <div ref={containerRef} className="flex items-center gap-1" onBlur={handleBlur}>
+      <fieldset
+        ref={containerRef}
+        className="flex items-center gap-1 border-0 p-0 m-0"
+        onBlur={handleBlur}
+        aria-label="Star rating"
+      >
         {Array.from({ length: maxStars }, (_, i) => {
           const star = i + 1;
           const filled = rating >= star;
@@ -254,7 +259,7 @@ function RatingInput({
         <span className="ml-2 text-sm text-muted-foreground">
           {rating > 0 ? `${rating}/${maxStars}` : 'Not rated'}
         </span>
-      </div>
+      </fieldset>
       <RequiredHint show={required === true && rating === 0} message="Rating is required" />
       <FieldError error={error} />
     </div>
@@ -636,7 +641,7 @@ const PRIORITIES: PriorityOption[] = [
 
 function PrioritySelector({ value, onChange, onBlur, disabled, error }: PrioritySelectorProps) {
   const priority = (value as Priority) || '';
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLFieldSetElement>(null);
 
   const handleBlur = (e: React.FocusEvent) => {
     // Only trigger onBlur if focus is leaving the container entirely
@@ -647,7 +652,12 @@ function PrioritySelector({ value, onChange, onBlur, disabled, error }: Priority
 
   return (
     <div className="space-y-2">
-      <div ref={containerRef} className="flex flex-wrap gap-2" onBlur={handleBlur}>
+      <fieldset
+        ref={containerRef}
+        className="flex flex-wrap gap-2 border-0 p-0 m-0"
+        onBlur={handleBlur}
+        aria-label="Priority selection"
+      >
         {PRIORITIES.map((p) => (
           <button
             key={p.value}
@@ -665,7 +675,7 @@ function PrioritySelector({ value, onChange, onBlur, disabled, error }: Priority
             {p.label}
           </button>
         ))}
-      </div>
+      </fieldset>
       <FieldError error={error} />
     </div>
   );

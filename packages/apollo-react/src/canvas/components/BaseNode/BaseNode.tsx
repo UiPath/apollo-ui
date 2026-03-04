@@ -10,7 +10,7 @@ import { ApIcon } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DEFAULT_NODE_SIZE } from '../../constants';
 import { useNodeTypeRegistry } from '../../core';
-import { useNodeExecutionState } from '../../hooks';
+import { useElementValidationStatus, useNodeExecutionState } from '../../hooks';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import { resolveAdornments } from '../../utils/adornment-resolver';
 import { getIcon } from '../../utils/icon-registry';
@@ -32,6 +32,7 @@ import {
   BaseSubHeader,
   BaseTextContainer,
 } from './BaseNode.styles';
+import type { ExecutionState } from '../../types/execution';
 import type {
   BaseNodeData,
   FooterVariant,
@@ -75,6 +76,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   // Get execution status from external source
   const executionState = useNodeExecutionState(id);
+  const validationState = useElementValidationStatus(id);
   const nodeTypeRegistry = useNodeTypeRegistry();
   const { mode } = useBaseCanvasMode();
 
@@ -92,13 +94,14 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const statusContext: NodeStatusContext = useMemo(
     () => ({
       nodeId: id,
-      executionState,
+      executionState: (executionStatusOverride as ExecutionState) ?? executionState,
+      validationState,
       isConnecting,
       isSelected: selected,
       isDragging: dragging,
       mode,
     }),
-    [id, executionState, isConnecting, selected, dragging, mode]
+    [id, executionStatusOverride, executionState, validationState, isConnecting, selected, dragging, mode]
   );
 
   // Callbacks: Use props only (no longer in data)
