@@ -413,20 +413,58 @@
         "@dnd-kit/core",
         "@dnd-kit/sortable",
         "@dnd-kit/utilities",
+        "@radix-ui/react-popover",
         "lucide-react",
         "react-i18next"
       ],
-      "registryDependencies": ["table", "button", "checkbox", "dropdown-menu", "select", "input", "skeleton", "use-local-storage"],
+      "registryDependencies": [
+        "table",
+        "button",
+        "checkbox",
+        "dropdown-menu",
+        "select",
+        "input",
+        "skeleton"
+      ],
       "files": [
         { "path": "registry/data-table/index.ts", "type": "registry:ui" },
         { "path": "registry/data-table/data-table.tsx", "type": "registry:ui" },
-        { "path": "registry/data-table/data-table-column-header.tsx", "type": "registry:ui" },
-        { "path": "registry/data-table/data-table-faceted-filter.tsx", "type": "registry:ui" },
-        { "path": "registry/data-table/data-table-pagination.tsx", "type": "registry:ui" },
-        { "path": "registry/data-table/data-table-search.tsx", "type": "registry:ui" },
-        { "path": "registry/data-table/data-table-skeleton.tsx", "type": "registry:ui" },
-        { "path": "registry/data-table/data-table-toolbar.tsx", "type": "registry:ui" },
-        { "path": "registry/data-table/data-table-view-options.tsx", "type": "registry:ui" }
+        {
+          "path": "registry/data-table/data-table-column-header.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/data-table/data-table-faceted-filter.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/data-table/data-table-pagination.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/data-table/data-table-search.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/data-table/data-table-skeleton.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/data-table/data-table-toolbar.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/data-table/data-table-view-options.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/data-table/sortable-column-item.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/data-table/sortable-column-list.tsx",
+          "type": "registry:ui"
+        }
       ]
     },
     {

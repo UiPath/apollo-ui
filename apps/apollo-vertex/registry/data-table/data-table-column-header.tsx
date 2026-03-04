@@ -1,4 +1,4 @@
-import type { Column } from "@tanstack/react-table";
+import type { Column, SortDirection } from "@tanstack/react-table";
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -17,6 +17,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+
+function SortStateIcon({
+  sortDirection,
+}: {
+  sortDirection: SortDirection | false;
+}) {
+  if (sortDirection === "desc") return <ArrowDownIcon />;
+  if (sortDirection === "asc") return <ArrowUpIcon />;
+  return <ChevronsUpDownIcon />;
+}
 
 interface DataTableColumnHeaderProps<TData, TValue>
   extends React.HTMLAttributes<HTMLDivElement> {
@@ -47,13 +57,7 @@ function DataTableColumnHeader<TData, TValue>({
             className="data-[state=open]:bg-accent -ml-3 h-8"
           >
             <span>{title}</span>
-            {column.getIsSorted() === "desc" ? (
-              <ArrowDownIcon />
-            ) : column.getIsSorted() === "asc" ? (
-              <ArrowUpIcon />
-            ) : (
-              <ChevronsUpDownIcon />
-            )}
+            <SortStateIcon sortDirection={column.getIsSorted()} />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">

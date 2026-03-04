@@ -1,3 +1,14 @@
+export type {
+  ColumnDef,
+  ColumnFiltersState,
+  OnChangeFn,
+  PaginationState,
+  RowSelectionState,
+  SortingState,
+  Table as TanstackTable,
+  VisibilityState,
+} from "@tanstack/react-table";
+export type { DataTableProps } from "./data-table";
 export {
   DataTable,
   dataTableFacetedFilterFn,
@@ -13,8 +24,3 @@ export { DataTableSearch } from "./data-table-search";
 export { DataTableSkeleton } from "./data-table-skeleton";
 export { DataTableToolbar } from "./data-table-toolbar";
 export { DataTableViewOptions } from "./data-table-view-options";
-
-export type {
-  ColumnDef,
-  Table as TanstackTable,
-} from "@tanstack/react-table";

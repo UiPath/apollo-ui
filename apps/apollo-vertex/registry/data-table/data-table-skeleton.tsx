@@ -14,15 +14,18 @@ function DataTableSkeleton({
   columnCount?: number;
   rowCount?: number;
 }) {
+  const columns = (rowIndex: number) =>
+    Array.from({ length: columnCount }, (_col, colIndex) => (
+      <TableCell key={generateSkeletonKey("cell", rowIndex, colIndex)}>
+        <Skeleton className="h-4 w-36" />
+      </TableCell>
+    ));
+
   return (
     <>
-      {Array.from({ length: rowCount }, (_, rowIndex) => (
+      {Array.from({ length: rowCount }, (_row, rowIndex) => (
         <TableRow key={generateSkeletonKey("row", rowIndex)}>
-          {Array.from({ length: columnCount }, (_, colIndex) => (
-            <TableCell key={generateSkeletonKey("cell", rowIndex, colIndex)}>
-              <Skeleton className="h-4 w-36" />
-            </TableCell>
-          ))}
+          {columns(rowIndex)}
         </TableRow>
       ))}
     </>

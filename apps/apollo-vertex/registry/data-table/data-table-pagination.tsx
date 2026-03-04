@@ -19,11 +19,13 @@ import { cn } from "@/lib/utils";
 
 interface DataTablePaginationProps<TData> {
   table: TanstackTable<TData>;
+  paginationSizes?: number[];
   className?: string;
 }
 
 function DataTablePagination<TData>({
   table,
+  paginationSizes = [10, 20, 30, 40, 50],
   className,
 }: DataTablePaginationProps<TData>) {
   const { t } = useTranslation();
@@ -56,7 +58,7 @@ function DataTablePagination<TData>({
               <SelectValue placeholder={pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
-              {[10, 20, 30, 40, 50].map((size) => (
+              {paginationSizes.map((size) => (
                 <SelectItem key={size} value={`${size}`}>
                   {size}
                 </SelectItem>
