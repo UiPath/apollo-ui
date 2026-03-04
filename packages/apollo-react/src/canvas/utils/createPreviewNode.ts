@@ -132,14 +132,20 @@ function calculateAutoPosition(
       // Spread vertically when multiple handles share the right side.
       initialPosition = {
         x: sourceAbsolutePosition.x + sourceWidth + offset,
-        y: anchorY - previewNodeSize.height / 2 + computeSpreadOffset(handle, previewNodeSize.height),
+        y:
+          anchorY -
+          previewNodeSize.height / 2 +
+          computeSpreadOffset(handle, previewNodeSize.height),
       };
       direction = 'right';
       break;
     case Position.Top:
       // Spread horizontally when multiple handles share the top side.
       initialPosition = {
-        x: anchorX - previewNodeSize.width / 2 + computeSpreadOffset(handle, previewNodeSize.width / 2),
+        x:
+          anchorX -
+          previewNodeSize.width / 2 +
+          computeSpreadOffset(handle, previewNodeSize.width / 2),
         y: sourceAbsolutePosition.y - previewNodeSize.height - offset,
       };
       direction = 'top';
@@ -147,7 +153,10 @@ function calculateAutoPosition(
     case Position.Bottom:
       // Spread horizontally when multiple handles share the bottom side.
       initialPosition = {
-        x: anchorX - previewNodeSize.width / 2 + computeSpreadOffset(handle, previewNodeSize.width / 2),
+        x:
+          anchorX -
+          previewNodeSize.width / 2 +
+          computeSpreadOffset(handle, previewNodeSize.width / 2),
         y: sourceAbsolutePosition.y + sourceHeight + offset,
       };
       direction = 'bottom';
@@ -161,6 +170,14 @@ function calculateAutoPosition(
       direction = 'right';
   }
 
+  // Overflow toward the closest perpendicular edge of the source node:
+  // for top/bottom handles, left of center → shift left, right of center → shift right;
+  // for left/right handles, above center → shift up, below center → shift down.
+  const overflowDirection = {
+    x: anchorX >= sourceAbsolutePosition.x + sourceWidth / 2 ? 'right' : 'left',
+    y: anchorY >= sourceAbsolutePosition.y + sourceHeight / 2 ? 'down' : 'up',
+  } as { x: 'left' | 'right'; y: 'up' | 'down' };
+
   // Find non-overlapping position
   return getNonOverlappingPositionForDirection(
     nodesWithAbsolutePositions,
@@ -168,7 +185,8 @@ function calculateAutoPosition(
     previewNodeSize,
     direction,
     offset,
-    ignoredNodeTypes
+    ignoredNodeTypes,
+    overflowDirection
   );
 }
 

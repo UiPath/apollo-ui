@@ -37,6 +37,7 @@ export const getAbsolutePosition = (node: Node, nodes: Node[]): { x: number; y: 
  * @param direction The direction the node is placed relative to source ("left" | "right" | "top" | "bottom").
  * @param offset The offset distance to shift when overlapping.
  * @param ignoredNodeTypes Optional array of node types to ignore when calculating overlap.
+ * @param overflowDirection Controls the shift direction when overlap is detected. Derived from handle position relative to node center — `'left'`/`'up'` shifts toward those edges, `'right'`/`'down'` toward the opposite.
  * @returns { x: number, y: number } The non-overlapping position for the new node.
  */
 export function getNonOverlappingPositionForDirection(
@@ -45,7 +46,8 @@ export function getNonOverlappingPositionForDirection(
   newNodeStyle: { width: number; height: number },
   direction: 'left' | 'right' | 'top' | 'bottom',
   offset = GRID_SPACING * 2,
-  ignoredNodeTypes: string[] = []
+  ignoredNodeTypes: string[] = [],
+  overflowDirection: { x: 'left' | 'right'; y: 'up' | 'down' } = { x: 'right', y: 'down' }
 ): XYPosition {
   const isOverlapping = nodes.some(
     (node) =>
@@ -58,13 +60,13 @@ export function getNonOverlappingPositionForDirection(
   );
 
   if (isOverlapping) {
-    // Shift perpendicular to the placement direction
+    // Shift toward the closest perpendicular edge of the source node.
+    // For left/right placement, shift vertically; for top/bottom, shift horizontally.
+    // The direction is derived from the handle's position relative to node center.
     if (direction === 'left' || direction === 'right') {
-      // For left/right placement, shift vertically (down)
-      newNodePosition.y += offset;
+      newNodePosition.y += overflowDirection.y === 'down' ? offset : -offset;
     } else {
-      // For top/bottom placement, shift horizontally (right)
-      newNodePosition.x += offset;
+      newNodePosition.x += overflowDirection.x === 'right' ? offset : -offset;
     }
     return getNonOverlappingPositionForDirection(
       nodes,
@@ -72,7 +74,8 @@ export function getNonOverlappingPositionForDirection(
       newNodeStyle,
       direction,
       offset,
-      ignoredNodeTypes
+      ignoredNodeTypes,
+      overflowDirection
     );
   }
 
