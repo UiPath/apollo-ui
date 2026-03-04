@@ -223,6 +223,23 @@ git push --force-with-lease
 
 This keeps the PR history clean with meaningful, non-duplicate commits.
 
+### Finalizing Changes
+
+After implementing components or making changes, **always run linting and formatting**:
+
+```bash
+bun run lint
+bun run format
+```
+
+If linting or formatting issues are found:
+1. Review the issues reported by `bun run lint`
+2. Fix any issues manually if needed
+3. Run `bun run format` to auto-format the code
+4. Commit any formatting or lint fixes before pushing
+
+This ensures all code follows the project's style guidelines and catches any issues before submitting the PR.
+
 ## Theme & Color Token Updates
 
 **Important**: Color tokens and theme values should **only be updated in `registry.json`** within the `apollo-vertex-theme` configuration, **not in `app/globals.css`**.
