@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.46.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.6...@uipath/apollo-react@3.46.0) (2026-03-04)
+
+### Features
+
+* **apollo-react:** add support for validation adornments on node ([9dfd923](https://github.com/UiPath/apollo-ui/commit/9dfd9238cde90c4c9b21c031343574d05ed2212f))
+
 ## [@uipath/apollo-react-v3.45.6](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.5...@uipath/apollo-react@3.45.6) (2026-03-03)
 
 ### Bug Fixes
