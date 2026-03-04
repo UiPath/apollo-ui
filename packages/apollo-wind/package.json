@@ -12,6 +12,31 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./components": {
+      "import": "./dist/components/index.js",
+      "require": "./dist/components/index.cjs",
+      "types": "./dist/components/index.d.ts"
+    },
+    "./components/ui": {
+      "import": "./dist/components/ui/index.js",
+      "require": "./dist/components/ui/index.cjs",
+      "types": "./dist/components/ui/index.d.ts"
+    },
+    "./components/ui/*": {
+      "import": "./dist/components/ui/*.js",
+      "require": "./dist/components/ui/*.cjs",
+      "types": "./dist/components/ui/*.d.ts"
+    },
+    "./components/forms": {
+      "import": "./dist/components/forms/index.js",
+      "require": "./dist/components/forms/index.cjs",
+      "types": "./dist/components/forms/index.d.ts"
+    },
+    "./components/forms/*": {
+      "import": "./dist/components/forms/*.js",
+      "require": "./dist/components/forms/*.cjs",
+      "types": "./dist/components/forms/*.d.ts"
+    },
     "./styles.css": "./dist/styles.css",
     "./tailwind.css": "./dist/tailwind.css",
     "./tailwind": {
