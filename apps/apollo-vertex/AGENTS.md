@@ -97,18 +97,26 @@ import { cn } from "@/lib/utils";
 - Use `cn()` utility for merging Tailwind classes
 - Add `data-slot` attributes for styling hooks
 - Export both component and variants
+- **Define component props as a `ComponentProps` interface** (named `[ComponentName]Props`)
+
+#### Props Interface Pattern
+
+Always define component props in an explicit `interface [ComponentName]Props`:
 
 ```typescript
+interface ButtonProps
+  extends React.ComponentProps<"button">,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+}
+
 function Button({
   className,
   variant = "default",
   size = "default",
   asChild = false,
   ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean;
-  }) {
+}: ButtonProps) {
   const Comp = asChild ? Slot : "button";
   return (
     <Comp
@@ -121,7 +129,14 @@ function Button({
 }
 
 export { Button, buttonVariants };
+export type { ButtonProps };
 ```
+
+**Benefits of using `ComponentProps` interface:**
+- Type clarity: Props are explicitly defined and easy to discover
+- Reusability: Consumers can import and extend `ButtonProps` in their own components
+- Maintainability: Props changes are centralized in one place
+- Documentation: Interface name clearly indicates what props the component accepts
 
 ### Naming Conventions
 - **Files**: kebab-case (`button-group.tsx`, `use-mobile.ts`)
