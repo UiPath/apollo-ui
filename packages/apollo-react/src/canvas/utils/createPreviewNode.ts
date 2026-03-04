@@ -75,6 +75,19 @@ function calculatePositionFromDrop(
 }
 
 /**
+ * Returns the spread offset for a handle within a multi-handle group.
+ * Left/top half shifts by -size, right/bottom half by +size, middle stays at 0.
+ */
+function computeSpreadOffset(handle: HandleContext | undefined, size: number): number {
+  const index = handle?.index ?? null;
+  const count = handle?.count ?? 1;
+  if (index === null || count <= 1) return 0;
+  if (index < Math.floor(count / 2)) return -size;
+  if (index >= Math.ceil(count / 2)) return size;
+  return 0;
+}
+
+/**
  * Calculates the preview node position when no drop position is provided.
  * Positions the preview node on the appropriate side based on handle position.
  * Uses overlap detection to ensure the preview doesn't overlap existing nodes.
@@ -115,37 +128,26 @@ function calculateAutoPosition(
       };
       direction = 'left';
       break;
-    case Position.Right: {
-      // Place preview to the right of source node, vertically aligned with the handle.
-      // When multiple handles share the same side, spread preview nodes vertically: top half shifts up,
-      // bottom half shifts down, middle (odd count) stays centered.
-      let yOffset = 0;
-      const handleIndex = handle?.index ?? null;
-      const handleCount = handle?.count ?? 1;
-      if (handleIndex !== null && handleCount > 1) {
-        if (handleIndex < Math.floor(handleCount / 2)) yOffset = -previewNodeSize.height;
-        else if (handleIndex >= Math.ceil(handleCount / 2)) yOffset = previewNodeSize.height;
-      }
-
+    case Position.Right:
+      // Spread vertically when multiple handles share the right side.
       initialPosition = {
         x: sourceAbsolutePosition.x + sourceWidth + offset,
-        y: anchorY - previewNodeSize.height / 2 + yOffset,
+        y: anchorY - previewNodeSize.height / 2 + computeSpreadOffset(handle, previewNodeSize.height),
       };
       direction = 'right';
       break;
-    }
     case Position.Top:
-      // Place preview above source node, horizontally aligned with the handle
+      // Spread horizontally when multiple handles share the top side.
       initialPosition = {
-        x: anchorX - previewNodeSize.width / 2,
+        x: anchorX - previewNodeSize.width / 2 + computeSpreadOffset(handle, previewNodeSize.width / 2),
         y: sourceAbsolutePosition.y - previewNodeSize.height - offset,
       };
       direction = 'top';
       break;
     case Position.Bottom:
-      // Place preview below source node, horizontally aligned with the handle
+      // Spread horizontally when multiple handles share the bottom side.
       initialPosition = {
-        x: anchorX - previewNodeSize.width / 2,
+        x: anchorX - previewNodeSize.width / 2 + computeSpreadOffset(handle, previewNodeSize.width / 2),
         y: sourceAbsolutePosition.y + sourceHeight + offset,
       };
       direction = 'bottom';
