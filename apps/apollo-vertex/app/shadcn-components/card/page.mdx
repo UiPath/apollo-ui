@@ -30,6 +30,48 @@ Displays a card with header, content, and footer.
   </Card>
 </div>
 
+## Glass Variant
+
+Use `variant="glass"` for a frosted glass effect with semi-transparent backgrounds and layered shadows.
+
+<div className="p-8 rounded-lg mt-4 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-800">
+  <Card variant="glass" className="w-[350px]">
+    <CardHeader>
+      <CardTitle>Glass Card</CardTitle>
+      <CardDescription>A frosted glass effect with backdrop blur and layered shadows.</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <form>
+        <div className="grid w-full items-center gap-4">
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="glass-name">Name</Label>
+            <Input id="glass-name" placeholder="Name of your project" />
+          </div>
+        </div>
+      </form>
+    </CardContent>
+    <CardFooter className="flex justify-between">
+      <Button variant="outline">Cancel</Button>
+      <Button>Deploy</Button>
+    </CardFooter>
+  </Card>
+</div>
+
+```tsx
+<Card variant="glass">
+  <CardHeader>
+    <CardTitle>Glass Card</CardTitle>
+    <CardDescription>A frosted glass effect.</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <p>Card Content</p>
+  </CardContent>
+  <CardFooter>
+    <p>Card Footer</p>
+  </CardFooter>
+</Card>
+```
+
 ## Installation
 
 ```bash

@@ -7,6 +7,7 @@ import { ShellUserProvider } from "./shell-user-provider";
 
 export interface CompanyLogo {
   url: string;
+  darkUrl?: string;
   alt: string;
 }
 
@@ -15,6 +16,13 @@ export interface ApolloShellComponentProps extends PropsWithChildren {
   productName: string;
   variant?: "minimal";
   companyLogo?: CompanyLogo;
+}
+
+interface ApolloShellProps extends ApolloShellComponentProps {
+  clientId: string;
+  scope: string;
+  baseUrl: string;
+  variant?: "minimal";
 }
 
 const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
@@ -42,13 +50,6 @@ const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
     </ShellUserProvider>
   );
 };
-
-interface ApolloShellProps extends ApolloShellComponentProps {
-  clientId: string;
-  scope: string;
-  baseUrl: string;
-  variant?: "minimal";
-}
 
 export const ApolloShell: FC<ApolloShellProps> = ({
   clientId,
