@@ -1,3 +1,14 @@
+## [@uipath/apollo-react-v3.47.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.46.0...@uipath/apollo-react@3.47.0) (2026-03-04)
+
+### Features
+
+* **apollo-react:** position preview nodes vertically based on handle index ([3de7ebb](https://github.com/UiPath/apollo-ui/commit/3de7ebbe0f7116f94644d47a5146e3d0f665220f))
+* **apollo-react:** preview node position now based on origin handle position ([60a35f8](https://github.com/UiPath/apollo-ui/commit/60a35f8a5390a90b7af1ac628b8ba596348bb31e))
+
+### Bug Fixes
+
+* **apollo-react:** increased height offset for preview nodes ([4fc88a5](https://github.com/UiPath/apollo-ui/commit/4fc88a5eeccfd570ffdeced53f84ddd7605a0803))
+
 ## [@uipath/apollo-react-v3.46.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.6...@uipath/apollo-react@3.46.0) (2026-03-04)
 
 ### Features
