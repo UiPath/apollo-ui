@@ -4,22 +4,26 @@ import {
   type ColumnDef,
   type ColumnFiltersState,
   type FilterFn,
-  type Row,
-  type RowData,
-  type SortingState,
-  type Table as TanstackTable,
-  type VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type OnChangeFn,
+  type PaginationState,
+  type Row,
+  type RowData,
+  type RowSelectionState,
+  type SortingState,
+  type Table as TanstackTable,
   useReactTable,
+  type VisibilityState,
 } from "@tanstack/react-table";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 
 declare module "@tanstack/react-table" {
+  // eslint-disable-next-line no-unused-vars -- TValue is required by the TanStack Table module augmentation signature
   interface ColumnMeta<TData extends RowData, TValue> {
     displayName?: string;
     getFilterValue?: (value: unknown, row: Row<TData>) => string;
@@ -35,101 +39,44 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 
 import { DataTablePagination } from "./data-table-pagination";
-import { DataTableSearch } from "./data-table-search";
 import { DataTableSkeleton } from "./data-table-skeleton";
 import { DataTableToolbar } from "./data-table-toolbar";
-import { DataTableViewOptions } from "./data-table-view-options";
 
 // ---------------------------------------------------------------------------
 // Filter functions
 // ---------------------------------------------------------------------------
 
-// biome-ignore lint/suspicious/noExplicitAny: generic filter function used across table instances
-const dataTableGlobalFilterFn: FilterFn<any> = (
-  row,
-  _columnId,
-  filterValue,
-) => {
+const dataTableGlobalFilterFn = (
+  row: Row<RowData>,
+  _columnId: string,
+  filterValue: string,
+): boolean => {
   if (!filterValue) return true;
 
   const searchStr = filterValue.toLowerCase();
 
-  return row.getVisibleCells().some(
-    (cell: {
-      getValue: () => unknown;
-      column: {
-        columnDef: {
-          meta?: {
-            getFilterValue?: (value: unknown, row: Row<unknown>) => string;
-          };
-        };
-      };
-    }) => {
-      const value = cell.getValue();
-      const meta = cell.column.columnDef.meta;
-      const displayValue = meta?.getFilterValue
-        ? meta.getFilterValue(value, row)
-        : String(value ?? "");
-      return displayValue.toLowerCase().includes(searchStr);
-    },
-  );
+  return row.getVisibleCells().some((cell) => {
+    const value = cell.getValue();
+    const meta = cell.column.columnDef.meta;
+    const displayValue = meta?.getFilterValue
+      ? meta.getFilterValue(value, row)
+      : String(value ?? "");
+    return displayValue.toLowerCase().includes(searchStr);
+  });
 };
 
-// biome-ignore lint/suspicious/noExplicitAny: generic filter function used across table instances
-const dataTableFacetedFilterFn: FilterFn<any> = (
-  row,
-  columnId,
-  filterValue,
-) => {
+const dataTableFacetedFilterFn = (
+  row: Row<RowData>,
+  columnId: string,
+  filterValue: unknown,
+): boolean => {
   if (!filterValue || !Array.isArray(filterValue) || filterValue.length === 0)
     return true;
   const cellValue = String(row.getValue(columnId) ?? "");
   return filterValue.includes(cellValue);
 };
-
-// ---------------------------------------------------------------------------
-// Persisted state helper
-// ---------------------------------------------------------------------------
-
-function usePersistedState<T>(
-  storageKey: string | undefined,
-  subKey: string,
-  defaultValue: T,
-): [T, React.Dispatch<React.SetStateAction<T>>] {
-  // Stabilize defaultValue reference to prevent useLocalStorage's
-  // getSnapshot from being recreated every render, which would cause
-  // useSyncExternalStore to re-subscribe and trigger infinite loops
-  // when defaultValue is an object/array.
-  const defaultRef = React.useRef(defaultValue);
-
-  const [storedValue, setStoredValue] = useLocalStorage<T>(
-    `${storageKey ?? "__noop__"}-${subKey}`,
-    defaultRef.current,
-  );
-  const [localValue, setLocalValue] = React.useState<T>(defaultValue);
-
-  // Wrap the localStorage setter to resolve function updaters,
-  // since useLocalStorage only accepts plain values.
-  const setPersistedValue: React.Dispatch<React.SetStateAction<T>> =
-    React.useCallback(
-      (action) => {
-        const nextValue =
-          typeof action === "function"
-            ? (action as (prev: T) => T)(storedValue)
-            : action;
-        setStoredValue(nextValue);
-      },
-      [storedValue, setStoredValue],
-    );
-
-  if (storageKey) {
-    return [storedValue, setPersistedValue];
-  }
-  return [localValue, setLocalValue];
-}
 
 // ---------------------------------------------------------------------------
 // DataTable
@@ -141,16 +88,25 @@ interface DataTableProps<TData, TValue> {
   className?: string;
   isLoading?: boolean;
   onRowClick?: (row: TData) => void;
-  initialColumnVisibility?: VisibilityState;
-  initialColumnOrder?: string[];
-  initialSorting?: SortingState;
-  initialPageSize?: number;
+  sorting: SortingState;
+  onSortingChange: OnChangeFn<SortingState>;
+  columnFilters: ColumnFiltersState;
+  onColumnFiltersChange: OnChangeFn<ColumnFiltersState>;
+  columnVisibility: VisibilityState;
+  onColumnVisibilityChange: OnChangeFn<VisibilityState>;
+  columnOrder: string[];
+  onColumnOrderChange: OnChangeFn<string[]>;
+  rowSelection: RowSelectionState;
+  onRowSelectionChange: OnChangeFn<RowSelectionState>;
+  globalFilter: string;
+  onGlobalFilterChange: OnChangeFn<string>;
+  pagination: PaginationState;
+  onPaginationChange: OnChangeFn<PaginationState>;
   globalFilterFn?: FilterFn<TData>;
   enableSearch?: boolean;
   enableViewOptions?: boolean;
   toolbarContent?: (table: TanstackTable<TData>) => React.ReactNode;
   noResultsMessage?: string;
-  storageKey?: string;
 }
 
 function DataTable<TData, TValue>({
@@ -159,111 +115,65 @@ function DataTable<TData, TValue>({
   className,
   isLoading = false,
   onRowClick,
-  initialColumnVisibility = {},
-  initialColumnOrder,
-  initialSorting = [],
-  initialPageSize = 10,
+  sorting,
+  onSortingChange,
+  columnFilters,
+  onColumnFiltersChange,
+  columnVisibility,
+  onColumnVisibilityChange,
+  columnOrder,
+  onColumnOrderChange,
+  rowSelection,
+  onRowSelectionChange,
+  globalFilter,
+  onGlobalFilterChange,
+  pagination,
+  onPaginationChange,
   globalFilterFn,
   enableSearch = true,
   enableViewOptions = true,
   toolbarContent,
   noResultsMessage,
-  storageKey,
 }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation();
-
-  // Derive default column order from column definitions
-  const defaultColumnOrder = React.useMemo(
-    () =>
-      initialColumnOrder ??
-      columns
-        .map((col) => {
-          if ("accessorKey" in col && col.accessorKey)
-            return String(col.accessorKey);
-          if ("id" in col && col.id) return col.id;
-          return "";
-        })
-        .filter(Boolean),
-    [columns, initialColumnOrder],
-  );
-
-  const [sorting, setSorting] = React.useState<SortingState>(initialSorting);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    [],
-  );
-  const [columnVisibility, setColumnVisibility] =
-    usePersistedState<VisibilityState>(
-      storageKey,
-      "column-visibility",
-      initialColumnVisibility,
-    );
-  const [columnOrder, setColumnOrder] = usePersistedState<string[]>(
-    storageKey,
-    "column-order",
-    defaultColumnOrder,
-  );
-  const [rowSelection, setRowSelection] = React.useState({});
-  const [globalFilter, setGlobalFilter] = React.useState("");
-
-  // Reconcile stored order with current columns (handles added/removed columns)
-  const reconciledOrder = React.useMemo(() => {
-    const definedIds = new Set(
-      columns
-        .map((col) => {
-          if ("accessorKey" in col && col.accessorKey)
-            return String(col.accessorKey);
-          if ("id" in col && col.id) return col.id;
-          return "";
-        })
-        .filter(Boolean),
-    );
-    const kept = columnOrder.filter((id) => definedIds.has(id));
-    const keptSet = new Set(kept);
-    const added = [...definedIds].filter((id) => !keptSet.has(id));
-    return [...kept, ...added];
-  }, [columnOrder, columns]);
 
   const table = useReactTable({
     data,
     columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    onColumnOrderChange: setColumnOrder,
-    onRowSelectionChange: setRowSelection,
-    onGlobalFilterChange: setGlobalFilter,
+    onSortingChange,
+    onColumnFiltersChange,
+    onColumnVisibilityChange,
+    onColumnOrderChange,
+    onRowSelectionChange,
+    onGlobalFilterChange,
+    onPaginationChange,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     ...(globalFilterFn ? { globalFilterFn } : {}),
     autoResetPageIndex: false,
-    initialState: {
-      pagination: { pageIndex: 0, pageSize: initialPageSize },
-    },
     state: {
       sorting,
       columnFilters,
       columnVisibility,
-      columnOrder: reconciledOrder,
+      columnOrder,
       rowSelection,
       globalFilter,
+      pagination,
     },
   });
 
-  const showToolbar = enableSearch || enableViewOptions || toolbarContent;
+  const rows = table.getRowModel().rows;
 
   return (
     <div data-slot="data-table" className={cn("space-y-4", className)}>
-      {showToolbar && (
-        <DataTableToolbar>
-          <div className="flex items-center gap-2">
-            {enableSearch && <DataTableSearch table={table} />}
-            {toolbarContent?.(table)}
-          </div>
-          {enableViewOptions && <DataTableViewOptions table={table} />}
-        </DataTableToolbar>
-      )}
+      <DataTableToolbar
+        table={table}
+        enableSearch={enableSearch}
+        enableViewOptions={enableViewOptions}
+        customContent={toolbarContent?.(table)}
+      />
 
       <div className="overflow-hidden rounded-md border">
         <Table>
@@ -288,8 +198,8 @@ function DataTable<TData, TValue>({
               <DataTableSkeleton
                 columnCount={table.getVisibleLeafColumns().length}
               />
-            ) : table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
+            ) : rows.length > 0 ? (
+              rows.map((row) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
@@ -298,9 +208,9 @@ function DataTable<TData, TValue>({
                       ? "cursor-pointer hover:bg-gradient-to-r hover:from-primary/5 hover:to-secondary/5 transition-all border-l-2 border-transparent hover:border-l-primary"
                       : ""
                   }
-                  onClick={
-                    onRowClick ? () => onRowClick(row.original) : undefined
-                  }
+                  {...(onRowClick && {
+                    onClick: () => onRowClick(row.original),
+                  })}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -331,3 +241,4 @@ function DataTable<TData, TValue>({
 }
 
 export { DataTable, dataTableFacetedFilterFn, dataTableGlobalFilterFn };
+export type { DataTableProps };

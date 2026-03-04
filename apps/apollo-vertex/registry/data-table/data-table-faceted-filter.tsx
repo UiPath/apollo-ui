@@ -2,7 +2,7 @@ import * as PopoverPrimitive from "@radix-ui/react-popover";
 import type { Column } from "@tanstack/react-table";
 import { CheckIcon, ChevronDownIcon, XIcon } from "lucide-react";
 import * as React from "react";
-
+import { ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +17,7 @@ interface DataTableFacetedFilterProps<TData, TValue> {
   title: string;
   options: DataTableFacetedFilterOption[];
   className?: string;
-  noOptionsMessage?: React.ReactNode;
+  noOptionsMessage?: ReactNode;
 }
 
 function DataTableFacetedFilter<TData, TValue>({
@@ -27,30 +27,26 @@ function DataTableFacetedFilter<TData, TValue>({
   className,
   noOptionsMessage,
 }: DataTableFacetedFilterProps<TData, TValue>) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
 
   if (!column) return null;
 
   const filterValue = column.getFilterValue();
-  const selectedValues = new Set<string>(
-    Array.isArray(filterValue) ? filterValue : [],
-  );
+  const selectedValues: string[] = Array.isArray(filterValue)
+    ? filterValue
+    : [];
 
   const handleToggle = (value: string) => {
-    const next = new Set(selectedValues);
-    if (next.has(value)) {
-      next.delete(value);
-    } else {
-      next.add(value);
-    }
-    const arr = Array.from(next);
-    column.setFilterValue(arr.length > 0 ? arr : undefined);
+    const next = selectedValues.includes(value)
+      ? selectedValues.filter((v) => v !== value)
+      : [...selectedValues, value];
+    column.setFilterValue(next.length > 0 ? next : []);
   };
 
   const handleClear = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    column.setFilterValue(undefined);
+    column.setFilterValue([]);
   };
 
   return (
@@ -67,11 +63,11 @@ function DataTableFacetedFilter<TData, TValue>({
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <span className="shrink-0 text-sm font-medium">
                 {title}
-                {selectedValues.size > 0 && ` (${selectedValues.size})`}
+                {selectedValues.length > 0 && ` (${selectedValues.length})`}
               </span>
             </div>
             <div className="flex shrink-0 items-center gap-1">
-              {selectedValues.size > 0 && (
+              {selectedValues.length > 0 && (
                 <button
                   type="button"
                   onClick={handleClear}
@@ -95,7 +91,7 @@ function DataTableFacetedFilter<TData, TValue>({
             {options.length === 0
               ? noOptionsMessage
               : options.map((option) => {
-                  const isSelected = selectedValues.has(option.value);
+                  const isSelected = selectedValues.includes(option.value);
                   return (
                     <button
                       key={option.value}

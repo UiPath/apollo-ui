@@ -1,6 +1,13 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
+import type {
+  ColumnDef,
+  ColumnFiltersState,
+  PaginationState,
+  RowSelectionState,
+  SortingState,
+  VisibilityState,
+} from "@tanstack/react-table";
 import {
   CheckCircleIcon,
   CircleDotIcon,
@@ -8,6 +15,7 @@ import {
   MoreHorizontalIcon,
   XCircleIcon,
 } from "lucide-react";
+import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -215,13 +223,39 @@ const columns: ColumnDef<Payment>[] = [
   },
 ];
 
+const defaultColumnOrder = ["select", "status", "email", "amount", "actions"];
+
 export function DataTableTemplate() {
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [columnOrder, setColumnOrder] = useState<string[]>(defaultColumnOrder);
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+
   return (
     <div className="p-4">
       <DataTable
         columns={columns}
         data={data}
-        storageKey="payments-demo"
+        sorting={sorting}
+        onSortingChange={setSorting}
+        columnFilters={columnFilters}
+        onColumnFiltersChange={setColumnFilters}
+        columnVisibility={columnVisibility}
+        onColumnVisibilityChange={setColumnVisibility}
+        columnOrder={columnOrder}
+        onColumnOrderChange={setColumnOrder}
+        rowSelection={rowSelection}
+        onRowSelectionChange={setRowSelection}
+        globalFilter={globalFilter}
+        onGlobalFilterChange={setGlobalFilter}
+        pagination={pagination}
+        onPaginationChange={setPagination}
         toolbarContent={(table) => (
           <DataTableFacetedFilter
             column={table.getColumn("status")}
