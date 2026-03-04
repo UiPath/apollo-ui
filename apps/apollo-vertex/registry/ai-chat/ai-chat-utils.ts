@@ -1,4 +1,9 @@
-import type { ChatMessage, ToolCall, ToolResultChoices } from "@/lib/ai-chat-types";
+import type {
+  ChatMessage,
+  ToolCall,
+  ToolResultChoices,
+  ToolResultNavigation,
+} from "@/lib/ai-chat-types";
 
 export type GroupedItem =
   | { kind: "message"; message: ChatMessage }
@@ -25,7 +30,7 @@ function isValidChoices(parsed: unknown): parsed is ToolResultChoices {
   );
 }
 
-function extractMessageContent(message: ChatMessage): string {
+export function extractMessageContent(message: ChatMessage): string {
   return message.parts?.map((p) => p.content).join("") ?? message.content;
 }
 
@@ -52,7 +57,7 @@ export function findLatestChoices(
 ): ToolResultChoices | null {
   const result = messages
     .map((message, index) => ({ message, index }))
-    .reverse()
+    .toReversed()
     .filter(({ message }) => message?.role === "tool")
     .map(({ message, index }) => ({
       choices: parseToolResultForChoices(message),
@@ -86,6 +91,47 @@ function flushPendingTools(
       toolCalls: pending.toolCalls,
     },
   ];
+}
+
+function isValidNavigation(parsed: unknown): parsed is ToolResultNavigation {
+  return (
+    typeof parsed === "object" &&
+    parsed !== null &&
+    "type" in parsed &&
+    (parsed as Record<string, unknown>)["type"] === "navigation" &&
+    "tabs" in parsed &&
+    Array.isArray((parsed as Record<string, unknown>)["tabs"])
+  );
+}
+
+function parseToolResultForNavigation(
+  message: ChatMessage,
+): ToolResultNavigation | null {
+  if (message.role !== "tool") return null;
+
+  const content = extractMessageContent(message);
+  const parsed = safeJsonParse(content);
+
+  return parsed && isValidNavigation(parsed) ? parsed : null;
+}
+
+export function findLatestNavigation(
+  messages: ChatMessage[],
+): ToolResultNavigation | null {
+  const result = messages
+    .map((message, index) => ({ message, index }))
+    .toReversed()
+    .filter(({ message }) => message?.role === "tool")
+    .map(({ message, index }) => ({
+      navigation: parseToolResultForNavigation(message),
+      index,
+    }))
+    .find(
+      ({ navigation, index }) =>
+        navigation !== null && !hasUserResponseAfter(messages, index),
+    );
+
+  return result?.navigation ?? null;
 }
 
 export function groupMessages(

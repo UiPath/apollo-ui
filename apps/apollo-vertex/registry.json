@@ -244,7 +244,12 @@
       "type": "registry:ui",
       "title": "AI Chat",
       "description": "A generic, reusable, and type-safe AI chat component with OpenAI-compatible API support, markdown rendering, tool calling, collapsible tool groups, suggestion buttons, and file uploads",
-      "dependencies": ["lucide-react", "react-i18next", "react-markdown", "remark-gfm"],
+      "dependencies": [
+        "lucide-react",
+        "react-i18next",
+        "react-markdown",
+        "remark-gfm"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -253,6 +258,14 @@
         },
         {
           "path": "registry/ai-chat/ai-chat-utils.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/ai-chat/ai-chat-storage.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/ai-chat/ai-chat-api.ts",
           "type": "registry:lib"
         },
         {

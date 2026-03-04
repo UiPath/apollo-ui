@@ -41,6 +41,7 @@ export interface ChatMessage {
   content: string;
   parts?: MessagePart[];
   timestamp: number;
+  toolCallId?: string;
   toolCalls?: ToolCall[];
   hidden?: boolean;
   attachments?: Array<{
@@ -52,7 +53,7 @@ export interface ChatMessage {
 
 export interface LLMMessage {
   role: string;
-  content: string;
+  content: string | null;
   tool_calls?: {
     id: string;
     type: string;
@@ -61,6 +62,7 @@ export interface LLMMessage {
       arguments: string;
     };
   }[];
+  tool_call_id?: string;
 }
 
 export interface ToolDefinition {
@@ -91,9 +93,11 @@ export interface AiChatConfig {
   apiVersion?: string;
   maxTokens?: number;
   temperature?: number;
-  systemPrompt?: string;
-  tools?: ToolDefinition[];
+  systemPrompt?: string | (() => string);
+  tools?: ToolDefinition[] | (() => ToolDefinition[]);
   toolChoice?: "auto" | "none" | "required";
+  fallbackResponse?: string;
+  maxToolIterations?: number;
 }
 
 export interface StorageConfig {
@@ -116,8 +120,13 @@ export interface UseAiChatReturn {
   messages: ChatMessage[];
   isLoading: boolean;
   error: Error | null;
-  sendMessage: (content: string, files?: File[]) => Promise<void>;
+  sendMessage: (
+    content: string,
+    files?: File[],
+    options?: { hidden?: boolean },
+  ) => Promise<void>;
   stop: () => void;
   clearChat: () => void;
   addSystemMessage: (content: string) => void;
+  appendMessages: (msgs: ChatMessage[]) => void;
 }

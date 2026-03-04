@@ -33,6 +33,12 @@ export interface AiChatInputHandle {
   focus: () => void;
 }
 
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
   function AiChatInput(
     {
@@ -70,7 +76,11 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
     const handleSubmit = (e: FormEvent) => {
       e.preventDefault();
       if ((!value.trim() && selectedFiles.length === 0) || isLoading) return;
-      onSubmit(selectedFiles.length > 0 ? selectedFiles : undefined);
+      if (selectedFiles.length > 0) {
+        onSubmit(selectedFiles);
+      } else {
+        onSubmit();
+      }
       setSelectedFiles([]);
       setFileError(null);
     };
@@ -80,12 +90,6 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
         e.preventDefault();
         handleSubmit(e);
       }
-    };
-
-    const formatFileSize = (bytes: number): string => {
-      if (bytes < 1024) return `${bytes} B`;
-      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
     };
 
     const validateFile = (file: File): string | null => {
@@ -103,7 +107,7 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
           }
           if (type.endsWith("/*")) {
             const category = type.split("/")[0];
-            return file.type.startsWith(category + "/");
+            return file.type.startsWith(`${category}/`);
           }
           return file.type === type;
         });
@@ -182,10 +186,13 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
             <div className="flex flex-wrap gap-2">
               {selectedFiles.map((file, index) => (
                 <div
-                  key={index}
+                  key={`${file.name}-${file.lastModified}`}
                   className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-muted border border-border"
                 >
-                  <Paperclip className="size-4 text-muted-foreground" />
+                  <Paperclip
+                    className="size-4 text-muted-foreground"
+                    aria-hidden="true"
+                  />
                   <div className="flex flex-col">
                     <span className="text-sm font-medium">{file.name}</span>
                     <span className="text-xs text-muted-foreground">
@@ -196,9 +203,10 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
                     type="button"
                     onClick={() => handleRemoveFile(index)}
                     className="ml-2 size-5 rounded-full flex items-center justify-center hover:bg-background transition-colors"
+                    aria-label={`${t("remove_file")} ${file.name}`}
                     title={t("remove_file")}
                   >
-                    <X className="size-3" />
+                    <X className="size-3" aria-hidden="true" />
                   </button>
                 </div>
               ))}
@@ -206,16 +214,20 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
           </div>
         )}
         {fileError && (
-          <div className="mb-2 px-3">
+          <div className="mb-2 px-3" role="alert" aria-live="assertive">
             <p className="text-sm text-destructive">{fileError}</p>
           </div>
         )}
         <div className="flex items-center gap-2">
           <form
             onSubmit={handleSubmit}
-            onDragOver={allowFileAttachments ? handleDragOver : undefined}
-            onDragLeave={allowFileAttachments ? handleDragLeave : undefined}
-            onDrop={allowFileAttachments ? handleDrop : undefined}
+            {...(allowFileAttachments
+              ? {
+                  onDragOver: handleDragOver,
+                  onDragLeave: handleDragLeave,
+                  onDrop: handleDrop,
+                }
+              : {})}
             className={
               allowFileAttachments && isDragging
                 ? "flex-1 flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-colors bg-primary/10 border-dashed border-primary"
@@ -240,13 +252,18 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
                   disabled={
                     isLoading || disabled || selectedFiles.length >= maxFiles
                   }
+                  aria-label={
+                    selectedFiles.length >= maxFiles
+                      ? t("max_files_reached")
+                      : t("attach_file")
+                  }
                   title={
                     selectedFiles.length >= maxFiles
                       ? t("max_files_reached")
                       : t("attach_file")
                   }
                 >
-                  <Paperclip className="size-4" />
+                  <Paperclip className="size-4" aria-hidden="true" />
                 </button>
               </>
             )}
@@ -256,6 +273,7 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
               onChange={(e) => onChange(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={displayPlaceholder}
+              aria-label={displayPlaceholder}
               className="flex-1 resize-none bg-transparent text-sm placeholder:text-muted-foreground focus-visible:outline-none min-h-[32px] max-h-[120px] py-1"
               rows={1}
               disabled={isLoading || disabled}
@@ -265,9 +283,10 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
                 type="button"
                 className="size-8 rounded-full flex-shrink-0 flex items-center justify-center hover:bg-muted transition-colors"
                 onClick={onStop}
+                aria-label={t("stop")}
                 title={t("stop")}
               >
-                <Square className="size-4" />
+                <Square className="size-4" aria-hidden="true" />
               </button>
             ) : (
               <button
@@ -276,9 +295,10 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
                 disabled={
                   (!value.trim() && selectedFiles.length === 0) || disabled
                 }
+                aria-label={t("send")}
                 title={t("send")}
               >
-                <Send className="size-4" />
+                <Send className="size-4" aria-hidden="true" />
               </button>
             )}
           </form>
@@ -287,9 +307,10 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
               type="button"
               className="size-8 rounded-full flex-shrink-0 flex items-center justify-center hover:bg-muted transition-colors"
               onClick={onClear}
+              aria-label={t("clear_conversation")}
               title={t("clear_conversation")}
             >
-              <Trash2 className="size-4" />
+              <Trash2 className="size-4" aria-hidden="true" />
             </button>
           )}
         </div>

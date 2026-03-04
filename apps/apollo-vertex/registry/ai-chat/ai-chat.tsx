@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
+import { AlertCircle, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,7 +9,11 @@ import { AiChatLoading } from "./ai-chat-loading";
 import { AiChatMessage } from "./ai-chat-message";
 import { AiChatSuggestions } from "./ai-chat-suggestions";
 import { AiChatToolGroupMessage } from "./ai-chat-tool-group-message";
-import { findLatestChoices, groupMessages } from "@/lib/ai-chat-utils";
+import {
+  findLatestChoices,
+  findLatestNavigation,
+  groupMessages,
+} from "@/lib/ai-chat-utils";
 import type { ChatMessage, ChoiceOption } from "@/lib/ai-chat-types";
 
 interface AiChatProps {
@@ -31,6 +35,8 @@ interface AiChatProps {
   acceptedFileTypes?: string[];
   toolDisplayNames?: Record<string, string>;
   enableToolGrouping?: boolean;
+  error?: Error | null;
+  onNavigate?: (tab: string) => void;
 }
 
 export function AiChat({
@@ -52,6 +58,8 @@ export function AiChat({
   acceptedFileTypes,
   toolDisplayNames,
   enableToolGrouping = false,
+  error,
+  onNavigate,
 }: AiChatProps) {
   const { t } = useTranslation();
   const [input, setInput] = useState("");
@@ -109,13 +117,14 @@ export function AiChat({
   }, [isLoading]);
 
   const latestChoices = findLatestChoices(messages);
+  const latestNavigation = findLatestNavigation(messages);
 
   const groupedItems = groupMessages(messages, enableToolGrouping);
 
   const defaultEmptyState = (
     <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
       <div className="size-16 flex items-center justify-center mb-4 rounded-full bg-primary">
-        <Sparkles className="size-8 text-primary-foreground" />
+        <Sparkles className="size-8 text-primary-foreground" aria-hidden="true" />
       </div>
       <p>{t("start_conversation_with", { name: displayName })}</p>
     </div>
@@ -129,14 +138,29 @@ export function AiChat({
       {title && (
         <div className="py-3 px-4">
           <h3 className="flex items-center gap-2 text-base font-semibold">
-            <Sparkles className="size-4" />
+            <Sparkles className="size-4" aria-hidden="true" />
             {title}
           </h3>
         </div>
       )}
 
+      {error && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="mx-4 mb-2 flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+        >
+          <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
+          <span>{error.message}</span>
+        </div>
+      )}
+
       <div
         ref={messagesContainerRef}
+        role="log"
+        aria-label="Chat messages"
+        aria-live="polite"
+        aria-atomic="false"
         className="flex-1 overflow-y-auto p-4 space-y-4"
       >
         {groupedItems.length === 0 ? (
@@ -182,6 +206,21 @@ export function AiChat({
                   }
                 }}
               />
+            )}
+
+            {latestNavigation && !isLoading && onNavigate && (
+              <nav aria-label="Navigation options" className="flex flex-wrap gap-2">
+                {latestNavigation.tabs.map((navTab) => (
+                  <button
+                    key={navTab.tab}
+                    type="button"
+                    className="h-auto py-2 px-3 text-sm rounded-lg border hover:bg-muted transition-colors"
+                    onClick={() => onNavigate(navTab.tab)}
+                  >
+                    {navTab.label}
+                  </button>
+                ))}
+              </nav>
             )}
 
             {isLoading && <AiChatLoading assistantName={displayName} />}
