@@ -182,6 +182,12 @@ Components in `registry/` follow shadcn/ui patterns:
 - Styled with Tailwind CSS + cva variants
 - Path aliases configured in tsconfig.json
 
+Avoid near-duplicate components:
+- Prefer composition, variants, and shared primitives over copying similar components.
+- When differences are small, expose a variant, prop, or slot instead of creating a new component.
+- Extract common logic and styling into a base component or utility so multiple variants can reuse it.
+- Duplicate components make maintenance and accessibility fixes harder—reuse where possible.
+
 ## Git Workflow
 
 Follow conventional commits:
