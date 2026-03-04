@@ -1,26 +1,30 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import { ApolloShell } from "@/registry/shell/shell";
 
-interface ShellTemplateWithAuthProps {
+interface ShellTemplateProps {
   variant?: "minimal";
+  children?: ReactNode;
+  sidebarActions?: ReactNode;
+  headerActions?: ReactNode;
 }
 const queryClient = new QueryClient();
 
-const baseUrl = typeof window === "undefined" ? "" : window.location.origin;
-export function ShellTemplate({ variant }: ShellTemplateWithAuthProps) {
+export function ShellTemplate({ variant, children, sidebarActions, headerActions }: ShellTemplateProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <ApolloShell
-        clientId="e74e5981-cde0-4cd4-971c-6525cfba86b5"
-        scope="openid profile email offline_access"
-        baseUrl={baseUrl}
+        bypassAuth
         companyName="UiPath"
         productName="Apollo Vertex"
+        companyLogo={{ url: "/UiPath.svg", alt: "UiPath logo" }}
         variant={variant}
+        sidebarActions={sidebarActions}
+        headerActions={headerActions}
       >
-        <div />
+        {children ?? <div />}
       </ApolloShell>
     </QueryClientProvider>
   );
