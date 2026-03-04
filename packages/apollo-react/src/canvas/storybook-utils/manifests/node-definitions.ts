@@ -465,7 +465,7 @@ export const allNodeManifests: NodeManifest[] = [
     },
     handleConfiguration: [
       {
-        position: 'top',
+        position: 'bottom',
         handles: [
           {
             id: 'input',
@@ -495,7 +495,7 @@ export const allNodeManifests: NodeManifest[] = [
     },
     handleConfiguration: [
       {
-        position: 'top',
+        position: 'bottom',
         handles: [
           {
             id: 'input',
