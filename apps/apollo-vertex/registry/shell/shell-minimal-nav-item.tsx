@@ -10,15 +10,17 @@ interface MinimalNavItemProps {
   to: string;
   label: TranslationKey;
   active?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
-export const MinimalNavItem = ({ to, label, active }: MinimalNavItemProps) => {
+export const MinimalNavItem = ({ to, label, active, onClick }: MinimalNavItemProps) => {
   const pathname = usePathname();
   const isActive = active ?? (pathname === to || pathname.startsWith(`${to}/`));
 
   return (
     <Link
       href={to}
+      onClick={onClick}
       className={cn(
         "px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 shrink-0 whitespace-nowrap",
         isActive

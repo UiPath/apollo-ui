@@ -10,6 +10,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 import type { CompanyLogo } from "./shell";
 import {
@@ -25,11 +26,17 @@ interface CompanyProps {
   companyLogo?: CompanyLogo;
 }
 
-interface CollapsedLogoProps {
+function CollapsedLogo({
+  companyLogo,
+  companyName,
+  productName,
+  onExpand,
+}: {
   companyLogo?: CompanyLogo;
+  companyName: string;
+  productName: string;
   onExpand: () => void;
-}
-function CollapsedLogo({ companyLogo, onExpand }: CollapsedLogoProps) {
+}) {
   const { t } = useTranslation();
   const [hovered, setHovered] = useState(false);
 
@@ -139,6 +146,8 @@ export const Company = ({
         {isCollapsed ? (
           <CollapsedLogo
             companyLogo={companyLogo}
+            companyName={companyName}
+            productName={productName}
             onExpand={() => setIsCollapsed(false)}
           />
         ) : (

@@ -1,4 +1,4 @@
-import type { PropsWithChildren } from "react";
+import type { PropsWithChildren, ReactNode } from "react";
 import type { CompanyLogo } from "./shell";
 import { Sidebar } from "./shell-sidebar";
 import { useTheme } from "./shell-theme-provider";
@@ -10,6 +10,8 @@ interface ShellLayoutProps {
   productName: string;
   variant?: "minimal";
   companyLogo?: CompanyLogo;
+  sidebarActions?: ReactNode;
+  headerActions?: ReactNode;
 }
 
 function DarkGradientBackground() {
@@ -161,6 +163,8 @@ export function ShellLayout({
   productName,
   variant,
   companyLogo,
+  sidebarActions,
+  headerActions,
 }: PropsWithChildren<ShellLayoutProps>) {
   if (variant === "minimal") {
     return (
@@ -172,6 +176,8 @@ export function ShellLayout({
             variant={variant}
             productName={productName}
             companyLogo={companyLogo}
+            sidebarActions={sidebarActions}
+            headerActions={headerActions}
           />
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             {children}
@@ -189,6 +195,7 @@ export function ShellLayout({
         variant={variant}
         productName={productName}
         companyLogo={companyLogo}
+        sidebarActions={sidebarActions}
       />
       <main className="flex-1 flex flex-col overflow-hidden relative">
         <div className="flex-1 overflow-y-auto custom-scrollbar">

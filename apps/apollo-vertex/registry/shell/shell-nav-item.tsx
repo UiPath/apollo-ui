@@ -22,16 +22,19 @@ interface NavItemProps {
   to: string;
   icon: LucideIcon;
   text: string;
+  active?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
-export const NavItem = ({ to, icon: Icon, text }: NavItemProps) => {
+export const NavItem = ({ to, icon: Icon, text, active, onClick }: NavItemProps) => {
   const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
   const pathname = usePathname();
-  const isActive = pathname === to || pathname.startsWith(`${to}/`);
+  const isActive = active ?? (pathname === to || pathname.startsWith(`${to}/`));
 
   const linkContent = (
     <Link
       href={to}
+      onClick={onClick}
       className={cn(
         "flex items-center rounded-md transition-colors duration-200",
         "h-8 text-sm font-medium",

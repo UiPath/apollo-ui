@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { BarChart3, FolderOpen, Home, Settings, Users } from "lucide-react";
+import { FileText, FolderOpen, Home, LayoutDashboard, Settings, Users } from "lucide-react";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 import type { CompanyLogo } from "./shell";
@@ -7,6 +8,7 @@ import { Company } from "./shell-company";
 import { MinimalCompany } from "./shell-minimal-company";
 import { MinimalNavItem } from "./shell-minimal-nav-item";
 import { NavItem } from "./shell-nav-item";
+import { useShellNavigation } from "./shell-navigation-context";
 import { UserProfile } from "./shell-user-profile";
 
 interface SidebarProps {
@@ -14,6 +16,8 @@ interface SidebarProps {
   productName: string;
   variant?: "minimal";
   companyLogo?: CompanyLogo;
+  sidebarActions?: ReactNode;
+  headerActions?: ReactNode;
 }
 
 export const Sidebar = ({
@@ -21,10 +25,20 @@ export const Sidebar = ({
   productName,
   variant,
   companyLogo,
+  sidebarActions,
+  headerActions,
 }: SidebarProps) => {
   const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
+  const nav = useShellNavigation();
 
   const sidebarWidth = isCollapsed ? "w-16" : "w-[280px]";
+
+  const handleNavigate = (page: string) => (e: React.MouseEvent) => {
+    if (nav) {
+      e.preventDefault();
+      nav.onNavigate(page);
+    }
+  };
 
   if (variant === "minimal") {
     return (
@@ -39,13 +53,30 @@ export const Sidebar = ({
           <MinimalNavItem
             to="/templates/shell-template"
             label="dashboard"
-            active
+            active={nav ? nav.activePage === "dashboard" : undefined}
+            onClick={handleNavigate("dashboard")}
           />
-          <MinimalNavItem to="/projects" label="projects" />
-          <MinimalNavItem to="/analytics" label="analytics" />
+          <MinimalNavItem
+            to="/projects"
+            label="projects"
+            active={nav ? nav.activePage === "projects" : undefined}
+            onClick={handleNavigate("projects")}
+          />
+          <MinimalNavItem
+            to="/analytics"
+            label="invoices"
+            active={
+              nav
+                ? nav.activePage === "invoices" ||
+                  nav.activePage === "analytics"
+                : undefined
+            }
+            onClick={handleNavigate("invoices")}
+          />
         </nav>
 
         <div className="flex items-center gap-2">
+          {headerActions}
           <UserProfile isCollapsed />
         </div>
       </header>
@@ -74,11 +105,41 @@ export const Sidebar = ({
         companyLogo={companyLogo}
       />
       <nav className="flex-1 mt-10 space-y-1 pb-3">
-        <NavItem to="/preview/shell" icon={Home} text="Dashboard" />
-        <NavItem to="/" icon={FolderOpen} text="Projects" />
-        <NavItem to="/" icon={BarChart3} text="Analytics" />
+        <NavItem
+          to="/preview/shell"
+          icon={Home}
+          text="Dashboard"
+          active={nav ? nav.activePage === "dashboard" : undefined}
+          onClick={handleNavigate("dashboard")}
+        />
+        <NavItem
+          to="/preview/shell/dashboard-v2"
+          icon={LayoutDashboard}
+          text="Dashboard v2"
+          active={nav ? nav.activePage === "dashboard-v2" : undefined}
+          onClick={handleNavigate("dashboard-v2")}
+        />
+        <NavItem
+          to="/preview/shell/projects"
+          icon={FolderOpen}
+          text="Projects"
+          active={nav ? nav.activePage === "projects" : undefined}
+          onClick={handleNavigate("projects")}
+        />
+        <NavItem
+          to="/preview/shell/analytics"
+          icon={FileText}
+          text="Invoices"
+          active={
+            nav
+              ? nav.activePage === "invoices" || nav.activePage === "analytics"
+              : undefined
+          }
+          onClick={handleNavigate("invoices")}
+        />
         <NavItem to="/" icon={Users} text="Team" />
         <NavItem to="/" icon={Settings} text="Settings" />
+        {sidebarActions}
       </nav>
       <div
         className={cn("mt-auto", isCollapsed && "flex flex-col items-center")}

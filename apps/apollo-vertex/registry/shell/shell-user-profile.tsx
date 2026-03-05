@@ -52,7 +52,7 @@ export const UserProfile = ({ isCollapsed }: UserProfileProps) => {
   const { t, i18n } = useTranslation();
   const { user } = useUser();
   const { logout } = useAuth();
-  const { setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [language, setLanguageState] = useState(i18n.language);
 
   const setLanguage = useCallback((code: string) => {

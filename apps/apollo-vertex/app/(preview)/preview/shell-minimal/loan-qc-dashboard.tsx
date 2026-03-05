@@ -138,7 +138,9 @@ const severityColor: Record<string, string> = {
   low: "bg-primary",
 };
 
-export function LoanQcDashboard() {
+export function LoanQcDashboard({ visible }: { visible: boolean }) {
+  if (!visible) return null;
+
   return (
     <div className="p-8 space-y-4 relative z-10">
       {/* Header */}
@@ -164,8 +166,7 @@ export function LoanQcDashboard() {
             <CardContent>
               <div className="text-2xl font-bold">{kpi.value}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                <span className="text-emerald-500">{kpi.change}</span> from last
-                week
+                <span className="text-emerald-500">{kpi.change}</span> from last week
               </p>
             </CardContent>
           </Card>
