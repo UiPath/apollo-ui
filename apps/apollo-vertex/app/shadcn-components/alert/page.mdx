@@ -1,26 +1,36 @@
-import { Alert, AlertDescription, AlertTitle } from '@/registry/alert/alert'
-import { AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Callout } from 'nextra/components'
+import { AlertDefaultExamples, AlertOutlineExamples, AlertExamples } from '@/app/patterns/notifications/in-product/notification-examples'
 
 # Alert
 
 Displays a callout for user attention.
 
-<div className="p-4 border rounded-lg mt-4 space-y-4">
-  <Alert>
-    <CheckCircle2 className="h-4 w-4" />
-    <AlertTitle>Success!</AlertTitle>
-    <AlertDescription>
-      Your changes have been saved successfully.
-    </AlertDescription>
-  </Alert>
+<Callout type="info">
+  For guidance on when to use Alert vs. Sonner, visual style selection, and content guidelines, see the [In-product notification](/patterns/notifications/in-product) pattern.
+</Callout>
 
-  <Alert variant="destructive">
-    <AlertCircle className="h-4 w-4" />
-    <AlertTitle>Error</AlertTitle>
-    <AlertDescription>
-      Your session has expired. Please log in again.
-    </AlertDescription>
-  </Alert>
+### Default (subtle)
+
+Neutral background with status-colored title and icon. Use for routine information and non-disruptive feedback.
+
+<div className="p-4 border rounded-lg mt-4">
+  <AlertDefaultExamples />
+</div>
+
+### Accent (outline)
+
+Status-colored border and icon with default text. Dismissible. Use for contextual warnings and acknowledged states.
+
+<div className="p-4 border rounded-lg mt-4">
+  <AlertOutlineExamples />
+</div>
+
+### Bold (tinted)
+
+Full status-colored background. Use for critical messages that demand immediate attention.
+
+<div className="p-4 border rounded-lg mt-4">
+  <AlertExamples />
 </div>
 
 ## Installation
