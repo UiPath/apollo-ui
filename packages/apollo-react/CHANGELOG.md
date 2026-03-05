@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v3.48.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.47.2...@uipath/apollo-react@3.48.0) (2026-03-05)
+
+### Features
+
+* **apollo-react:** spread nodes from top/bottom-facing handles horizontally ([81f7b9b](https://github.com/UiPath/apollo-ui/commit/81f7b9b774933f83b6da551b48b66073bed261d5))
+
+### Bug Fixes
+
+* **apollo-react:** move handle to bottom for memory and escalation nodes ([8232cb1](https://github.com/UiPath/apollo-ui/commit/8232cb1558c4b1dab2056a0c223c3aa6ae0e06eb))
+
 ## [@uipath/apollo-react-v3.47.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.47.1...@uipath/apollo-react@3.47.2) (2026-03-05)
 
 ### Bug Fixes
