@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.47.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.47.1...@uipath/apollo-react@3.47.2) (2026-03-05)
+
+### Bug Fixes
+
+* **repo:** security vulnerabilities + add skill ([258a535](https://github.com/UiPath/apollo-ui/commit/258a53557628fd1df7845eacbbe0db2e2aedb347))
+
 ## [@uipath/apollo-react-v3.47.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.47.0...@uipath/apollo-react@3.47.1) (2026-03-04)
 
 ### Bug Fixes

@@ -1,3 +1,9 @@
+## [@uipath/apollo-core-v5.7.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.7.0...@uipath/apollo-core@5.7.1) (2026-03-05)
+
+### Bug Fixes
+
+* **repo:** security vulnerabilities + add skill ([258a535](https://github.com/UiPath/apollo-ui/commit/258a53557628fd1df7845eacbbe0db2e2aedb347))
+
 ## [@uipath/apollo-core-v5.7.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.6.2...@uipath/apollo-core@5.7.0) (2026-02-10)
 
 ### Features
