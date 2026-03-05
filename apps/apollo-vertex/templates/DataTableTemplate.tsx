@@ -1,12 +1,32 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontalIcon } from "lucide-react";
+import type {
+  ColumnDef,
+  ColumnFiltersState,
+  PaginationState,
+  RowSelectionState,
+  SortingState,
+  VisibilityState,
+} from "@tanstack/react-table";
+import {
+  CheckCircleIcon,
+  CircleDotIcon,
+  ClockIcon,
+  MoreHorizontalIcon,
+  XCircleIcon,
+} from "lucide-react";
+import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
+import {
+  DataTable,
+  DataTableColumnHeader,
+  DataTableFacetedFilter,
+  type DataTableFacetedFilterOption,
+  dataTableFacetedFilterFn,
+} from "@/components/ui/data-table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -108,6 +128,13 @@ const statusVariant: Record<
   failed: "destructive",
 };
 
+const statusFilterOptions: DataTableFacetedFilterOption[] = [
+  { label: "Success", value: "success", icon: CheckCircleIcon },
+  { label: "Processing", value: "processing", icon: ClockIcon },
+  { label: "Pending", value: "pending", icon: CircleDotIcon },
+  { label: "Failed", value: "failed", icon: XCircleIcon },
+];
+
 const columns: ColumnDef<Payment>[] = [
   {
     id: "select",
@@ -140,6 +167,7 @@ const columns: ColumnDef<Payment>[] = [
       const status = row.getValue("status") as Payment["status"];
       return <Badge variant={statusVariant[status]}>{status}</Badge>;
     },
+    filterFn: dataTableFacetedFilterFn,
   },
   {
     accessorKey: "email",
@@ -195,6 +223,47 @@ const columns: ColumnDef<Payment>[] = [
   },
 ];
 
+const defaultColumnOrder = ["select", "status", "email", "amount", "actions"];
+
 export function DataTableTemplate() {
-  return <DataTable columns={columns} data={data} />;
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [columnOrder, setColumnOrder] = useState<string[]>(defaultColumnOrder);
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+
+  return (
+    <div className="p-4">
+      <DataTable
+        columns={columns}
+        data={data}
+        sorting={sorting}
+        onSortingChange={setSorting}
+        columnFilters={columnFilters}
+        onColumnFiltersChange={setColumnFilters}
+        columnVisibility={columnVisibility}
+        onColumnVisibilityChange={setColumnVisibility}
+        columnOrder={columnOrder}
+        onColumnOrderChange={setColumnOrder}
+        rowSelection={rowSelection}
+        onRowSelectionChange={setRowSelection}
+        globalFilter={globalFilter}
+        onGlobalFilterChange={setGlobalFilter}
+        pagination={pagination}
+        onPaginationChange={setPagination}
+        toolbarContent={(table) => (
+          <DataTableFacetedFilter
+            column={table.getColumn("status")}
+            title="Status"
+            options={statusFilterOptions}
+          />
+        )}
+      />
+    </div>
+  );
 }

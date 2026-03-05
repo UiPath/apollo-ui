@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 
 const meta = {
-  title: 'Theme/Current/Colors',
+  title: 'Theme/Colors',
   parameters: {
     layout: 'fullscreen',
   },
@@ -365,7 +365,7 @@ function ColorsGallery() {
 
       {/* Color Groups */}
       <div className="px-8 py-10 max-w-7xl mx-auto space-y-16">
-        {/* Semantic Colors Section */}
+        {/* Semantic Colors */}
         <section className="space-y-8">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight">Semantic Colors</h2>
@@ -375,243 +375,131 @@ function ColorsGallery() {
           </div>
 
           <ColorGroup
-            title="Primary Colors"
+            title="Primary & Brand"
             colors={[
-              {
-                name: 'Primary',
-                cssVar: '--color-primary',
-                description: 'Main brand color',
-              },
-              {
-                name: 'Primary Foreground',
-                cssVar: '--color-primary-foreground',
-                description: 'Text on primary',
-              },
+              { name: 'Primary', cssVar: '--primary', description: 'Main color' },
+              { name: 'Primary Foreground', cssVar: '--primary-foreground', description: 'Text on primary' },
+              { name: 'Brand', cssVar: '--brand', description: 'Brand color' },
+              { name: 'Brand Hover', cssVar: '--brand-hover', description: 'Brand hover' },
             ]}
           />
 
           <ColorGroup
-            title="Secondary Colors"
+            title="Surfaces"
             colors={[
-              {
-                name: 'Secondary',
-                cssVar: '--color-secondary',
-                description: 'Secondary actions',
-              },
-              {
-                name: 'Secondary Foreground',
-                cssVar: '--color-secondary-foreground',
-                description: 'Text on secondary',
-              },
+              { name: 'Background', cssVar: '--background', description: 'Page background' },
+              { name: 'Surface', cssVar: '--surface', description: 'Base surface' },
+              { name: 'Surface Raised', cssVar: '--surface-raised', description: 'Cards, panels' },
+              { name: 'Card', cssVar: '--card', description: 'Card background' },
+              { name: 'Popover', cssVar: '--popover', description: 'Popover background' },
             ]}
           />
 
           <ColorGroup
-            title="Background Colors"
+            title="Interactive States"
             colors={[
-              {
-                name: 'Background',
-                cssVar: '--color-background',
-                description: 'Page background',
-              },
-              {
-                name: 'Foreground',
-                cssVar: '--color-foreground',
-                description: 'Default text color',
-              },
+              { name: 'Secondary', cssVar: '--secondary', description: 'Secondary actions' },
+              { name: 'Muted', cssVar: '--muted', description: 'Subtle backgrounds' },
+              { name: 'Accent', cssVar: '--accent', description: 'Accents & highlights' },
+              { name: 'Surface Hover', cssVar: '--surface-hover', description: 'Hover state' },
             ]}
           />
 
           <ColorGroup
-            title="Muted Colors"
+            title="Text Colors"
             colors={[
-              {
-                name: 'Muted',
-                cssVar: '--color-muted',
-                description: 'Subtle backgrounds',
-              },
-              {
-                name: 'Muted Foreground',
-                cssVar: '--color-muted-foreground',
-                description: 'Secondary text',
-              },
+              { name: 'Foreground', cssVar: '--foreground', description: 'Default text' },
+              { name: 'Muted Foreground', cssVar: '--muted-foreground', description: 'Secondary text' },
+              { name: 'Foreground Subtle', cssVar: '--foreground-subtle', description: 'Subtle text' },
             ]}
           />
 
           <ColorGroup
-            title="Accent Colors"
+            title="Feedback"
             colors={[
-              {
-                name: 'Accent',
-                cssVar: '--color-accent',
-                description: 'Highlight elements',
-              },
-              {
-                name: 'Accent Foreground',
-                cssVar: '--color-accent-foreground',
-                description: 'Text on accent',
-              },
+              { name: 'Destructive', cssVar: '--destructive', description: 'Errors' },
+              { name: 'Error', cssVar: '--error', description: 'Error state' },
+              { name: 'Success', cssVar: '--success', description: 'Success state' },
+              { name: 'Warning', cssVar: '--warning', description: 'Warning state' },
+              { name: 'Info', cssVar: '--info', description: 'Info state' },
             ]}
           />
 
           <ColorGroup
-            title="Destructive Colors"
+            title="Borders & Focus"
             colors={[
-              {
-                name: 'Destructive',
-                cssVar: '--color-destructive',
-                description: 'Errors and danger',
-              },
-              {
-                name: 'Destructive Foreground',
-                cssVar: '--color-destructive-foreground',
-                description: 'Text on destructive',
-              },
-            ]}
-          />
-
-          <ColorGroup
-            title="Surface Colors"
-            colors={[
-              {
-                name: 'Card',
-                cssVar: '--color-card',
-                description: 'Card backgrounds',
-              },
-              {
-                name: 'Card Foreground',
-                cssVar: '--color-card-foreground',
-                description: 'Text on cards',
-              },
-              {
-                name: 'Popover',
-                cssVar: '--color-popover',
-                description: 'Popover backgrounds',
-              },
-              {
-                name: 'Popover Foreground',
-                cssVar: '--color-popover-foreground',
-                description: 'Text on popovers',
-              },
-            ]}
-          />
-
-          <ColorGroup
-            title="Border & Input Colors"
-            colors={[
-              {
-                name: 'Border',
-                cssVar: '--color-border',
-                description: 'Default borders',
-              },
-              {
-                name: 'Input',
-                cssVar: '--color-input',
-                description: 'Input borders',
-              },
-              {
-                name: 'Ring',
-                cssVar: '--color-ring',
-                description: 'Focus rings',
-              },
+              { name: 'Border', cssVar: '--border', description: 'Default borders' },
+              { name: 'Border Subtle', cssVar: '--border-subtle', description: 'Subtle borders' },
+              { name: 'Input', cssVar: '--input', description: 'Input borders' },
+              { name: 'Ring', cssVar: '--ring', description: 'Focus ring' },
             ]}
           />
         </section>
 
-        {/* Chart Colors Section */}
+        {/* Design System Tokens */}
         <section className="space-y-8">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight">Chart Colors</h2>
+            <h2 className="text-2xl font-semibold tracking-tight">Design System Tokens</h2>
             <p className="text-muted-foreground mt-1">
-              Colors for data visualization. Available in themed variants.
+              Extended semantic tokens from the Apollo design system.
             </p>
           </div>
 
           <ColorGroup
-            title="Chart Palette"
+            title="Surfaces"
             colors={[
-              {
-                name: 'Chart 1',
-                cssVar: '--color-chart-1',
-                description: 'Primary chart color',
-              },
-              {
-                name: 'Chart 2',
-                cssVar: '--color-chart-2',
-                description: 'Secondary chart color',
-              },
-              {
-                name: 'Chart 3',
-                cssVar: '--color-chart-3',
-                description: 'Tertiary chart color',
-              },
-              {
-                name: 'Chart 4',
-                cssVar: '--color-chart-4',
-                description: 'Quaternary chart color',
-              },
-              {
-                name: 'Chart 5',
-                cssVar: '--color-chart-5',
-                description: 'Quinary chart color',
-              },
+              { name: 'Surface', cssVar: '--surface', description: 'Base surface' },
+              { name: 'Surface Raised', cssVar: '--surface-raised', description: 'Elevated surfaces' },
+              { name: 'Surface Overlay', cssVar: '--surface-overlay', description: 'Overlays, dialogs' },
+              { name: 'Surface Hover', cssVar: '--surface-hover', description: 'Hover state' },
+              { name: 'Surface Muted', cssVar: '--surface-muted', description: 'Muted surfaces' },
+              { name: 'Surface Inverse', cssVar: '--surface-inverse', description: 'Inverse backgrounds' },
             ]}
             compact
           />
-        </section>
-
-        {/* Sidebar Colors Section */}
-        <section className="space-y-8">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight">Sidebar Colors</h2>
-            <p className="text-muted-foreground mt-1">
-              Dedicated colors for sidebar navigation components.
-            </p>
-          </div>
 
           <ColorGroup
-            title="Sidebar Palette"
+            title="Brand"
             colors={[
-              {
-                name: 'Sidebar',
-                cssVar: '--color-sidebar',
-                description: 'Sidebar background',
-              },
-              {
-                name: 'Sidebar Foreground',
-                cssVar: '--color-sidebar-foreground',
-                description: 'Sidebar text',
-              },
-              {
-                name: 'Sidebar Primary',
-                cssVar: '--color-sidebar-primary',
-                description: 'Active item background',
-              },
-              {
-                name: 'Sidebar Primary FG',
-                cssVar: '--color-sidebar-primary-foreground',
-                description: 'Active item text',
-              },
-              {
-                name: 'Sidebar Accent',
-                cssVar: '--color-sidebar-accent',
-                description: 'Hover state',
-              },
-              {
-                name: 'Sidebar Accent FG',
-                cssVar: '--color-sidebar-accent-foreground',
-                description: 'Hover text',
-              },
-              {
-                name: 'Sidebar Border',
-                cssVar: '--color-sidebar-border',
-                description: 'Sidebar borders',
-              },
-              {
-                name: 'Sidebar Ring',
-                cssVar: '--color-sidebar-ring',
-                description: 'Focus ring',
-              },
+              { name: 'Brand', cssVar: '--brand', description: 'Brand color' },
+              { name: 'Brand Subtle', cssVar: '--brand-subtle', description: 'Subtle brand' },
+              { name: 'Brand Hover', cssVar: '--brand-hover', description: 'Hover state' },
+              { name: 'Brand Lighter', cssVar: '--brand-lighter', description: 'Lighter variant' },
+              { name: 'Brand Darker', cssVar: '--brand-darker', description: 'Darker variant' },
+            ]}
+            compact
+          />
+
+          <ColorGroup
+            title="Foreground Variants"
+            colors={[
+              { name: 'Foreground Muted', cssVar: '--foreground-muted', description: 'Muted text' },
+              { name: 'Foreground Subtle', cssVar: '--foreground-subtle', description: 'Subtle text' },
+              { name: 'Foreground Inverse', cssVar: '--foreground-inverse', description: 'Inverse text' },
+              { name: 'Foreground On Accent', cssVar: '--foreground-on-accent', description: 'Text on accent' },
+            ]}
+            compact
+          />
+
+          <ColorGroup
+            title="Border Variants"
+            colors={[
+              { name: 'Border Subtle', cssVar: '--border-subtle', description: 'Subtle borders' },
+              { name: 'Border Muted', cssVar: '--border-muted', description: 'Muted borders' },
+              { name: 'Border Deep', cssVar: '--border-deep', description: 'Deep borders' },
+              { name: 'Border Inverse', cssVar: '--border-inverse', description: 'Inverse borders' },
+              { name: 'Border Hover', cssVar: '--border-hover', description: 'Hover state' },
+            ]}
+            compact
+          />
+
+          <ColorGroup
+            title="Status"
+            colors={[
+              { name: 'Error', cssVar: '--error', description: 'Error state' },
+              { name: 'Success', cssVar: '--success', description: 'Success state' },
+              { name: 'Warning', cssVar: '--warning', description: 'Warning state' },
+              { name: 'Info', cssVar: '--info', description: 'Info state' },
             ]}
             compact
           />

@@ -97,27 +97,20 @@ export function EditableCell<TData, TValue>({ cell, onUpdate }: EditableCellProp
   const cellContent = isEditing ? (
     renderEditMode()
   ) : (
-    <div
+    <button
+      type="button"
       className={cn(
-        'min-h-[32px] px-2 py-1.5 -mx-2 rounded cursor-pointer',
+        'min-h-[32px] px-2 py-1.5 -mx-2 rounded cursor-pointer w-full text-left',
         'hover:bg-muted/50 transition-colors',
-        'flex items-center w-full'
+        'flex items-center bg-transparent border-0'
       )}
       onClick={() => setIsEditing(true)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          setIsEditing(true);
-        }
-      }}
-      tabIndex={0}
-      role="button"
       aria-label={`Edit ${cell.column.id}`}
     >
       <span className={cn('truncate', !value && 'text-muted-foreground')}>
         {formatDisplayValue(value, type, meta?.options)}
       </span>
-    </div>
+    </button>
   );
 
   return cellContent;

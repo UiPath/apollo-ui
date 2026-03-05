@@ -10,7 +10,7 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApButton, ApMenu } from '@uipath/apollo-react/material/components';
 import type { IMenuItem } from '@uipath/apollo-react/material/components/ap-menu/ApMenu.types';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DefaultCanvasTranslations } from '../../types';
 import {
   createGroupModificationHandlers,
@@ -919,6 +919,7 @@ export const DraggableTaskReordering: Story = {
 const initialTasksForAddReplace: StageTaskItem[][] = [
   [{ id: 'task-1', label: 'Initial Verification', icon: <VerificationIcon /> }],
   [{ id: 'task-2', label: 'Document Review', icon: <DocumentIcon /> }],
+  [{ id: 'task-3', label: 'Process Validation', icon: <ProcessIcon /> }],
 ];
 
 const availableTaskOptions: ListItem[] = [
@@ -966,9 +967,7 @@ const AddAndReplaceTasksStory = () => {
   const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), [StageNodeWrapper]);
   const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
 
-  const [pendingReplaceTask, setPendingReplaceTask] = useState<
-    { groupIndex: number; taskIndex: number } | undefined
-  >();
+  const [pendingReplaceTask, setPendingReplaceTask] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>();
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -1071,7 +1070,8 @@ const AddAndReplaceTasksStory = () => {
         })
       );
 
-      setPendingReplaceTask(undefined);
+      setPendingReplaceTask(false);
+      setSelectedTaskId(undefined);
     },
     [setNodes]
   );
@@ -1118,20 +1118,41 @@ const AddAndReplaceTasksStory = () => {
     setSelectedTaskId(taskId);
   }, []);
 
+  // Clear task selection when clicking on the canvas background
+  const handlePaneClick = useCallback(() => {
+    setSelectedTaskId(undefined);
+    setPendingReplaceTask(false);
+  }, []);
+
+  // Clear replace state when the node is deselected (e.g., clicking on canvas)
+  const handleNodesChange = useCallback(
+    (...args: Parameters<typeof onNodesChange>) => {
+      onNodesChange(...args);
+      const deselected = args[0].some(
+        (c) => c.type === 'select' && c.id === 'add-replace-stage' && !c.selected
+      );
+      if (deselected) {
+        setPendingReplaceTask(false);
+        setSelectedTaskId(undefined);
+      }
+    },
+    [onNodesChange]
+  );
+
   // Get current tasks from node state for menu items
   const currentTasks =
     nodesState.find((n) => n.id === 'add-replace-stage')?.data.stageDetails.tasks || [];
 
   // Create menu items for task selection
   const taskMenuItems = useMemo<IMenuItem[]>(() => {
-    return currentTasks.flatMap((group, groupIndex) =>
-      group.map((task, taskIndex) => ({
+    return currentTasks.flatMap((group) =>
+      group.map((task) => ({
         title: task.label,
         variant: 'item' as const,
         startIcon: task.icon,
         onClick: () => {
           setSelectedTaskId(task.id);
-          setPendingReplaceTask({ groupIndex, taskIndex });
+          setPendingReplaceTask(true);
           setMenuAnchorEl(null);
         },
       }))
@@ -1147,10 +1168,10 @@ const AddAndReplaceTasksStory = () => {
               ...node,
               data: {
                 ...node.data,
-                pendingReplaceTask: pendingReplaceTask,
+                ...(selectedTaskId && { pendingReplaceTask }),
                 stageDetails: {
                   ...node.data.stageDetails,
-                  selectedTasks: selectedTaskId ? [selectedTaskId] : undefined,
+                  selectedTaskId,
                 },
                 onAddTaskFromToolbox: handleAddTask,
                 onReplaceTaskFromToolbox: handleReplaceTask,
@@ -1178,15 +1199,14 @@ const AddAndReplaceTasksStory = () => {
 
   // Compute button label based on whether a task is being replaced
   const replaceButtonLabel = useMemo(() => {
-    if (pendingReplaceTask) {
-      const taskBeingReplaced =
-        currentTasks[pendingReplaceTask.groupIndex]?.[pendingReplaceTask.taskIndex];
+    if (pendingReplaceTask && selectedTaskId) {
+      const taskBeingReplaced = currentTasks.flat().find((t) => t.id === selectedTaskId);
       if (taskBeingReplaced) {
         return `Replacing Task: ${taskBeingReplaced.label}`;
       }
     }
     return 'Replace Task';
-  }, [pendingReplaceTask, currentTasks]);
+  }, [pendingReplaceTask, selectedTaskId, currentTasks]);
 
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
@@ -1194,9 +1214,10 @@ const AddAndReplaceTasksStory = () => {
         <BaseCanvas
           nodes={nodesWithMetadata}
           edges={edges}
-          onNodesChange={onNodesChange}
+          onNodesChange={handleNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onPaneClick={handlePaneClick}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           mode="design"
@@ -1240,6 +1261,30 @@ export const AddAndReplaceTasks: Story = {
   args: {},
 };
 
+// Simulate async children fetch (2s delay)
+const fetchChildren = (id: string): Promise<ListItem[]> =>
+  new Promise((resolve) => {
+    setTimeout(() => {
+      resolve([
+        { id: `${id}-sub-1`, name: `${id} - Subtask A`, data: { type: `${id}-a` } },
+        { id: `${id}-sub-2`, name: `${id} - Subtask B`, data: { type: `${id}-b` } },
+        { id: `${id}-sub-3`, name: `${id} - Subtask C`, data: { type: `${id}-c` } },
+      ]);
+    }, 2000);
+  });
+
+// Top-level items with async children — level 2 loading is handled by Toolbox internally
+const loadedTaskOptionsWithChildren: ListItem[] = [
+  { id: 'email', name: 'Email', data: { type: 'email' }, children: (id) => fetchChildren(id) },
+  {
+    id: 'approval',
+    name: 'Approval',
+    data: { type: 'approval' },
+    children: (id) => fetchChildren(id),
+  },
+  { id: 'script', name: 'Script', data: { type: 'script' }, children: (id) => fetchChildren(id) },
+];
+
 const AddTaskLoadingStory = () => {
   const StageNodeWrapper = useMemo(
     () =>
@@ -1261,26 +1306,29 @@ const AddTaskLoadingStory = () => {
         width: 304,
         data: {
           stageDetails: {
-            label: 'Empty Stage (click +)',
+            label: 'Top-level loading (click +)',
             tasks: [],
           },
-          addTaskLoading: false,
+          // Top-level loading: skeletons until API returns items
+          addTaskLoading: true,
+          taskOptions: [] as ListItem[],
         },
       },
       {
-        id: 'loading-stage-with-tasks',
+        id: 'loading-stage-children',
         type: 'stage',
         position: { x: 400, y: 96 },
         width: 304,
         data: {
           stageDetails: {
-            label: 'With Tasks (click +)',
+            label: 'Async children (click +)',
             tasks: [
               [{ id: 'task-1', label: 'Existing Task', icon: <VerificationIcon /> }],
-              [{ id: 'task-2', label: 'Another Task', icon: <DocumentIcon /> }],
             ],
           },
+          // Children loading: items already available, level 2 loads on click
           addTaskLoading: false,
+          taskOptions: loadedTaskOptionsWithChildren,
         },
       },
     ],
@@ -1290,39 +1338,40 @@ const AddTaskLoadingStory = () => {
   const [nodesState, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  const setNodeLoading = useCallback(
-    (nodeId: string, loading: boolean) => {
+  // Simulate top-level API loading — after 3 seconds, items become available
+  useEffect(() => {
+    const timeout = setTimeout(() => {
       setNodes((nds) =>
         nds.map((node) =>
-          node.id === nodeId ? { ...node, data: { ...node.data, addTaskLoading: loading } } : node
+          node.id === 'loading-stage-empty'
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  addTaskLoading: false,
+                  taskOptions: loadedTaskOptionsWithChildren,
+                },
+              }
+            : node
         )
       );
-    },
-    [setNodes]
-  );
+    }, 3000);
+    return () => clearTimeout(timeout);
+  }, [setNodes]);
 
-  const handleTaskAddForNode = useCallback(
-    (nodeId: string) => {
-      setNodeLoading(nodeId, true);
-      // Simulate API delay of 3 seconds
-      setTimeout(() => {
-        setNodeLoading(nodeId, false);
-      }, 3000);
-    },
-    [setNodeLoading]
-  );
-
-  // Inject a per-node onTaskAdd handler
+  // Inject per-node handlers
   const nodesWithHandler = useMemo(
     () =>
       nodesState.map((node) => ({
         ...node,
         data: {
           ...node.data,
-          onTaskAdd: () => handleTaskAddForNode(node.id),
+          onAddTaskFromToolbox: (taskItem: ListItem) => {
+            window.alert(`Added task "${taskItem.name}" to ${node.id}`);
+          },
         },
       })),
-    [nodesState, handleTaskAddForNode]
+    [nodesState]
   );
 
   const onConnect = useCallback(

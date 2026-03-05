@@ -1100,8 +1100,10 @@ export function FormDesigner() {
                       <ChevronRight className="h-3 w-3 shrink-0 transition-transform duration-200 group-data-[state=open]/section:rotate-90" />
                     </span>
                   </AccordionTrigger>
-                  <div
-                    className="flex-1 min-w-0 cursor-pointer flex items-center gap-1"
+                  <button
+                    type="button"
+                    tabIndex={0}
+                    className="flex-1 min-w-0 cursor-pointer flex items-center gap-1 bg-transparent border-0 p-0 text-left"
                     onClick={() => {
                       setSelectedSectionId(section.id);
                       setSelectedFieldId(null);
@@ -1111,7 +1113,7 @@ export function FormDesigner() {
                     {section.collapsible && (
                       <span className="text-[10px] text-muted-foreground">(collapsible)</span>
                     )}
-                  </div>
+                  </button>
                   <div className="flex gap-0.5 opacity-0 group-hover/section:opacity-100 transition-opacity">
                     <Button
                       variant="ghost"
@@ -1154,14 +1156,24 @@ export function FormDesigner() {
                 <AccordionContent className="px-2 pb-2 pt-0">
                   <div className="space-y-0.5 ml-3 border-l pl-2">
                     {section.fields.map((field, fieldIndex) => (
+                      // biome-ignore lint/a11y/useSemanticElements: Interactive field item in list needs div for proper layout with drag handles
                       <div
                         key={field.id}
+                        role="button"
+                        tabIndex={0}
                         className={`group/field flex items-center gap-1 px-2 py-1 rounded cursor-pointer hover:bg-accent transition-colors ${
                           selectedFieldId === field.id ? 'bg-accent' : ''
                         }`}
                         onClick={() => {
                           setSelectedSectionId(section.id);
                           setSelectedFieldId(field.id);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setSelectedSectionId(section.id);
+                            setSelectedFieldId(field.id);
+                          }
                         }}
                       >
                         <GripVertical className="h-3 w-3 text-muted-foreground opacity-0 group-hover/field:opacity-50" />

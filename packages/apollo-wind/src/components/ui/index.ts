@@ -1,6 +1,6 @@
 export * from './accordion';
-export * from './alert-dialog';
 export * from './alert';
+export * from './alert-dialog';
 export * from './aspect-ratio';
 export * from './avatar';
 export * from './badge';
@@ -18,7 +18,6 @@ export * from './data-table';
 export * from './date-picker';
 export * from './datetime-picker';
 export * from './dialog';
-export * from './drawer';
 export * from './dropdown-menu';
 export * from './editable-cell';
 export * from './empty-state';
@@ -27,9 +26,7 @@ export * from './hover-card';
 export * from './input';
 export * from './label';
 export * from './layout';
-export * from './menubar';
 export * from './multi-select';
-export * from './navigation-menu';
 export * from './pagination';
 export * from './popover';
 export * from './progress';
@@ -50,6 +47,15 @@ export * from './switch';
 export * from './table';
 export * from './tabs';
 export * from './textarea';
-export * from './toggle-group';
 export * from './toggle';
+export * from './toggle-group';
 export * from './tooltip';
+export type {
+  TreeViewIconMap,
+  TreeViewItem,
+  TreeViewItemAction,
+  TreeViewMenuItem,
+  TreeViewProps,
+  TreeViewSelectionMode,
+} from './tree-view';
+export { default as TreeView } from './tree-view';

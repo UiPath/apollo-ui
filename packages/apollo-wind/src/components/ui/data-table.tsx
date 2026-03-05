@@ -31,6 +31,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  RowSelectionState,
   SortingState,
   useReactTable,
   VisibilityState,
@@ -49,6 +50,9 @@ export interface DataTableProps<TData, TValue> {
   resizable?: boolean;
   compact?: boolean;
   columnToggleText?: string;
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: (selection: RowSelectionState) => void;
+  toolbarContent?: React.ReactNode;
 }
 
 export function DataTable<TData, TValue>({
@@ -64,11 +68,25 @@ export function DataTable<TData, TValue>({
   resizable = false,
   compact = false,
   columnToggleText = 'Columns',
+  rowSelection: controlledRowSelection,
+  onRowSelectionChange: controlledOnRowSelectionChange,
+  toolbarContent,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [internalRowSelection, setInternalRowSelection] = React.useState<RowSelectionState>({});
+
+  const isControlled = controlledRowSelection !== undefined;
+  const rowSelection = isControlled ? controlledRowSelection : internalRowSelection;
+  const setRowSelection = React.useCallback(
+    (updater: React.SetStateAction<RowSelectionState>) => {
+      const next = typeof updater === 'function' ? updater(rowSelection) : updater;
+      if (!isControlled) setInternalRowSelection(next);
+      controlledOnRowSelectionChange?.(next);
+    },
+    [isControlled, rowSelection, controlledOnRowSelectionChange],
+  );
 
   // Wrap columns with editable cell renderer if editable mode is enabled
   const processedColumns = React.useMemo(() => {
@@ -130,6 +148,7 @@ export function DataTable<TData, TValue>({
             className="max-w-sm"
           />
         )}
+        {toolbarContent}
         {showColumnToggle && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -169,7 +188,7 @@ export function DataTable<TData, TValue>({
                   return (
                     <TableHead
                       key={header.id}
-                      className={compact ? 'relative h-8 px-2 py-1' : 'relative'}
+                      className={compact ? 'relative h-8 px-2 py-0' : 'relative py-0'}
                       style={{
                         width: resizable
                           ? header.getSize()
@@ -184,7 +203,14 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
                       {resizable && header.column.getCanResize() && (
+                        // biome-ignore lint/a11y/useSemanticElements: Interactive resizable separator needs role="separator" with aria-valuenow
                         <div
+                          role="separator"
+                          aria-label="Resize column"
+                          aria-valuenow={header.column.getSize()}
+                          aria-valuemin={header.column.columnDef.minSize ?? 40}
+                          aria-valuemax={header.column.columnDef.maxSize ?? 1000}
+                          tabIndex={0}
                           onMouseDown={header.getResizeHandler()}
                           onTouchStart={header.getResizeHandler()}
                           className={`absolute -right-1 top-0 z-10 h-full w-2 cursor-col-resize select-none touch-none group`}
@@ -213,7 +239,7 @@ export function DataTable<TData, TValue>({
                     return (
                       <TableCell
                         key={cell.id}
-                        className={compact ? 'truncate px-2 py-1' : 'truncate'}
+                        className={compact ? 'h-8 truncate px-2 py-0' : 'h-12 truncate px-4 py-0'}
                         style={{
                           width: resizable
                             ? cell.column.getSize()

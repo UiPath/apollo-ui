@@ -1,3 +1,80 @@
+## [@uipath/apollo-react-v3.47.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.47.1...@uipath/apollo-react@3.47.2) (2026-03-05)
+
+### Bug Fixes
+
+* **repo:** security vulnerabilities + add skill ([258a535](https://github.com/UiPath/apollo-ui/commit/258a53557628fd1df7845eacbbe0db2e2aedb347))
+
+## [@uipath/apollo-react-v3.47.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.47.0...@uipath/apollo-react@3.47.1) (2026-03-04)
+
+### Bug Fixes
+
+* **apollo-react:** use combination search for add node panel ([f75c997](https://github.com/UiPath/apollo-ui/commit/f75c9976b7a74a16202ed6752a85e12548f74057))
+
+## [@uipath/apollo-react-v3.47.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.46.0...@uipath/apollo-react@3.47.0) (2026-03-04)
+
+### Features
+
+* **apollo-react:** position preview nodes vertically based on handle index ([3de7ebb](https://github.com/UiPath/apollo-ui/commit/3de7ebbe0f7116f94644d47a5146e3d0f665220f))
+* **apollo-react:** preview node position now based on origin handle position ([60a35f8](https://github.com/UiPath/apollo-ui/commit/60a35f8a5390a90b7af1ac628b8ba596348bb31e))
+
+### Bug Fixes
+
+* **apollo-react:** increased height offset for preview nodes ([4fc88a5](https://github.com/UiPath/apollo-ui/commit/4fc88a5eeccfd570ffdeced53f84ddd7605a0803))
+
+## [@uipath/apollo-react-v3.46.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.6...@uipath/apollo-react@3.46.0) (2026-03-04)
+
+### Features
+
+* **apollo-react:** add support for validation adornments on node ([9dfd923](https://github.com/UiPath/apollo-ui/commit/9dfd9238cde90c4c9b21c031343574d05ed2212f))
+
+## [@uipath/apollo-react-v3.45.6](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.5...@uipath/apollo-react@3.45.6) (2026-03-03)
+
+### Bug Fixes
+
+* **apollo-react:** prevent cite-end tag when citing text-block ending in url ([32f7851](https://github.com/UiPath/apollo-ui/commit/32f7851f07b9d71c85492f887aa95246049e7069))
+
+## [@uipath/apollo-react-v3.45.5](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.4...@uipath/apollo-react@3.45.5) (2026-03-03)
+
+### Bug Fixes
+
+* **apollo-react:** introduce sankey diagram zoom and scale ([96c8c39](https://github.com/UiPath/apollo-ui/commit/96c8c39fd8f7b0a6df782c0cc6b176764d79ee64))
+
+## [@uipath/apollo-react-v3.45.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.3...@uipath/apollo-react@3.45.4) (2026-03-02)
+
+### Bug Fixes
+
+* **apollo-react:** use icon registry icons for resource node toolbar [AG-771] ([245dd04](https://github.com/UiPath/apollo-ui/commit/245dd04c3caaad60b998b29e774b22bc66d098fe))
+
+## [@uipath/apollo-react-v3.45.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.2...@uipath/apollo-react@3.45.3) (2026-03-02)
+
+### Bug Fixes
+
+* **apollo-react:** var picker bug fixes [PLT-98392][PLT-98392] ([67979fd](https://github.com/UiPath/apollo-ui/commit/67979fdda3be544b2e6ee91c0bf96d89f2cf87e6))
+
+## [@uipath/apollo-react-v3.45.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.1...@uipath/apollo-react@3.45.2) (2026-03-02)
+
+### Bug Fixes
+
+* **apollo-react:** visibility of edge color after debug completion [MST-6924] ([9937438](https://github.com/UiPath/apollo-ui/commit/9937438302c84da1d8d6935f440b6565c270295e))
+
+## [@uipath/apollo-react-v3.45.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.45.0...@uipath/apollo-react@3.45.1) (2026-02-27)
+
+### Bug Fixes
+
+* **apollo-react:** stabilize panOnDrag array reference to prevent unnecessary re-renders ([53c897c](https://github.com/UiPath/apollo-ui/commit/53c897c4806e1772ee2084ca4f5ad1558025d12a))
+
+## [@uipath/apollo-react-v3.45.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.44.3...@uipath/apollo-react@3.45.0) (2026-02-27)
+
+### Features
+
+* **apollo-react:** loading state for toolbox ([f140071](https://github.com/UiPath/apollo-ui/commit/f1400717ac53c9801394b9f32d211c2248268a4d))
+
+## [@uipath/apollo-react-v3.44.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.44.2...@uipath/apollo-react@3.44.3) (2026-02-27)
+
+### Bug Fixes
+
+* **apollo-react:** tigger release ([f9f8a6e](https://github.com/UiPath/apollo-ui/commit/f9f8a6e8e7625e0723d8d3157c409179ab531699))
+
 ## [@uipath/apollo-react-v3.44.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.44.1...@uipath/apollo-react@3.44.2) (2026-02-24)
 
 ### Bug Fixes

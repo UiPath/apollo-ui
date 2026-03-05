@@ -97,18 +97,26 @@ import { cn } from "@/lib/utils";
 - Use `cn()` utility for merging Tailwind classes
 - Add `data-slot` attributes for styling hooks
 - Export both component and variants
+- **Define component props as a `ComponentProps` interface** (named `[ComponentName]Props`)
+
+#### Props Interface Pattern
+
+Always define component props in an explicit `interface [ComponentName]Props`:
 
 ```typescript
+interface ButtonProps
+  extends React.ComponentProps<"button">,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+}
+
 function Button({
   className,
   variant = "default",
   size = "default",
   asChild = false,
   ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean;
-  }) {
+}: ButtonProps) {
   const Comp = asChild ? Slot : "button";
   return (
     <Comp
@@ -121,7 +129,14 @@ function Button({
 }
 
 export { Button, buttonVariants };
+export type { ButtonProps };
 ```
+
+**Benefits of using `ComponentProps` interface:**
+- Type clarity: Props are explicitly defined and easy to discover
+- Reusability: Consumers can import and extend `ButtonProps` in their own components
+- Maintainability: Props changes are centralized in one place
+- Documentation: Interface name clearly indicates what props the component accepts
 
 ### Naming Conventions
 - **Files**: kebab-case (`button-group.tsx`, `use-mobile.ts`)
@@ -167,6 +182,12 @@ Components in `registry/` follow shadcn/ui patterns:
 - Styled with Tailwind CSS + cva variants
 - Path aliases configured in tsconfig.json
 
+Avoid near-duplicate components:
+- Prefer composition, variants, and shared primitives over copying similar components.
+- When differences are small, expose a variant, prop, or slot instead of creating a new component.
+- Extract common logic and styling into a base component or utility so multiple variants can reuse it.
+- Duplicate components make maintenance and accessibility fixes harder—reuse where possible.
+
 ## Git Workflow
 
 Follow conventional commits:
@@ -180,6 +201,64 @@ docs(apollo-vertex): update component documentation
 ```
 
 Valid scopes: `apollo-vertex`, `apollo-react`, `apollo-wind`, `apollo-core`, `repo`
+
+### Rebasing & Commit History
+
+Always **rebase over main** instead of creating merge commits. This keeps commit history linear and clean. When updating your PR:
+
+```bash
+git fetch origin main
+git rebase -i origin/main
+# Resolve any conflicts, then continue
+git push --force-with-lease
+```
+
+### Fixing Previous Changes in a PR
+
+If a previous commit in your PR already contains the change you're making, **do not add a new commit**. Instead, use fixup commits and rebase to squash them together:
+
+```bash
+# Make your changes
+git add .
+git commit --fixup <original-commit-sha>
+
+# Rebase and auto-squash
+git rebase -i origin/main --autosquash
+git push --force-with-lease
+```
+
+This keeps the PR history clean with meaningful, non-duplicate commits.
+
+### Finalizing Changes
+
+After implementing components or making changes, **always run linting and formatting**:
+
+```bash
+bun run lint
+bun run format
+```
+
+If linting or formatting issues are found:
+1. Review the issues reported by `bun run lint`
+2. Fix any issues manually if needed
+3. Run `bun run format` to auto-format the code
+4. Commit any formatting or lint fixes before pushing
+
+This ensures all code follows the project's style guidelines and catches any issues before submitting the PR.
+
+## Theme & Color Token Updates
+
+**Important**: Color tokens and theme values should **only be updated in `registry.json`** within the `apollo-vertex-theme` configuration, **not in `app/globals.css`**.
+
+The `app/globals.css` file is **automatically generated** from `registry.json` when you run:
+
+```bash
+bun run dev
+```
+or 
+```bash
+bun run build
+```
 
 ## Key Dependencies
 

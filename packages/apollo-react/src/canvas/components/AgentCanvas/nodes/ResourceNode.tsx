@@ -1,4 +1,5 @@
 import * as Icons from '@uipath/apollo-react/canvas/icons';
+import { NodeIcon } from '@uipath/apollo-react/canvas/utils';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { type NodeProps, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon } from '@uipath/apollo-react/material/components';
@@ -161,18 +162,17 @@ export const ResourceNode = memo(
     }, [data]);
 
     const toolbarConfig = useMemo((): NodeToolbarConfig | null | undefined => {
-      if (mode === 'view') {
-        return null; // Explicitly disable toolbar in view mode
+      // Explicitly disable toolbar in view mode or for placeholder nodes
+      if (mode === 'view' || (data.isPlaceholder && (!isSuggestion || !suggestionId))) {
+        return null;
       }
-
-      // Note: Removed standalone placeholder check - placeholders now show the same toolbar as permanent nodes
 
       // If this is a suggestion, show accept/reject actions only if version is not "0.0.1"
       if (isSuggestion && suggestionId) {
         if (suggestionGroupVersion === '0.0.1') return null;
         const rejectAction: ToolbarAction = {
           id: 'reject-suggestion',
-          icon: 'close',
+          icon: <NodeIcon icon="X" size={14} />,
           label: suggestTranslations.reject,
           disabled: false,
           onAction: () => handleActOnSuggestion(suggestionId, 'reject'),
@@ -180,7 +180,7 @@ export const ResourceNode = memo(
 
         const acceptAction: ToolbarAction = {
           id: 'accept-suggestion',
-          icon: 'check',
+          icon: <NodeIcon icon="check" size={14} />,
           label: suggestTranslations.accept,
           disabled: false,
           onAction: () => handleActOnSuggestion(suggestionId, 'accept'),
@@ -221,7 +221,7 @@ export const ResourceNode = memo(
 
       const removeAction: ToolbarAction = {
         id: 'remove',
-        icon: 'delete',
+        icon: <NodeIcon icon="trash" size={14} />,
         label: translations?.remove ?? '',
         disabled: false,
         onAction: handleClickRemove,

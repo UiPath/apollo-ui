@@ -3,16 +3,18 @@ import * as React from 'react';
 
 import { cn } from '@/lib/index';
 
-interface ButtonGroupProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ButtonGroupProps extends React.HTMLAttributes<HTMLDivElement> {
   orientation?: 'horizontal' | 'vertical';
 }
 
 const ButtonGroup = React.forwardRef<HTMLDivElement, ButtonGroupProps>(
   ({ className, orientation = 'horizontal', ...props }, ref) => {
     return (
+      // biome-ignore lint/a11y/useSemanticElements: Button group needs role="group" to convey relationship between buttons
       <div
         ref={ref}
         role="group"
+        aria-label="Button group"
         className={cn(
           'inline-flex',
           orientation === 'horizontal'
@@ -31,14 +33,15 @@ interface ButtonGroupSeparatorProps extends React.HTMLAttributes<HTMLDivElement>
   orientation?: 'horizontal' | 'vertical';
 }
 
-const ButtonGroupSeparator = React.forwardRef<HTMLDivElement, ButtonGroupSeparatorProps>(
+const ButtonGroupSeparator = React.forwardRef<HTMLHRElement, ButtonGroupSeparatorProps>(
   ({ className, orientation = 'vertical', ...props }, ref) => {
     return (
-      <div
+      <hr
         ref={ref}
-        role="separator"
+        aria-orientation={orientation}
+        aria-label="Separator"
         className={cn(
-          'bg-border',
+          'bg-border border-0 m-0',
           orientation === 'vertical' ? 'w-px self-stretch' : 'h-px self-stretch',
           className
         )}

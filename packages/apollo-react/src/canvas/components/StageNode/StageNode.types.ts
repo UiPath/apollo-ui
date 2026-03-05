@@ -27,10 +27,7 @@ export interface StageNodeProps extends NodeProps {
   dragging: boolean;
   selected: boolean;
   id: string;
-  pendingReplaceTask?: {
-    groupIndex: number;
-    taskIndex: number;
-  };
+  pendingReplaceTask?: boolean;
   stageDetails: {
     label: string;
     defaultContent?: string;
@@ -42,7 +39,7 @@ export interface StageNodeProps extends NodeProps {
     isException?: boolean;
     isReadOnly?: boolean;
     tasks: StageTaskItem[][];
-    selectedTasks?: string[];
+    selectedTaskId?: string;
   };
   addTaskLabel?: string;
   addTaskLoading?: boolean;

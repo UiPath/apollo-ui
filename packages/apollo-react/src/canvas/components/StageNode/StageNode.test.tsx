@@ -71,15 +71,17 @@ vi.mock('../Toolbox', () => ({
   Toolbox: ({
     title,
     initialItems,
+    loading,
     onItemSelect,
     onClose,
   }: {
     title: string;
     initialItems: ListItem[];
+    loading?: boolean;
     onItemSelect?: (item: ListItem) => void;
     onClose?: () => void;
   }) => (
-    <div data-testid="toolbox">
+    <div data-testid="toolbox" data-loading={loading}>
       <div data-testid="toolbox-title">{title}</div>
       <div data-testid="toolbox-items-count">{initialItems.length}</div>
       {initialItems.map((item, index) => (
@@ -614,63 +616,54 @@ describe('StageNode - Add Task Loading State', () => {
     vi.clearAllMocks();
   });
 
-  it('should show the add icon by default when addTaskLoading is not set', () => {
-    const onTaskAdd = vi.fn();
-    renderStageNode({ onTaskAdd });
+  it('should pass addTaskLoading to Toolbox when toolbox is open', async () => {
+    const user = userEvent.setup();
+    const onAddTaskFromToolbox = vi.fn();
+    renderStageNode({ onAddTaskFromToolbox, addTaskLoading: true });
 
-    // The add icon should be present, no spinner
-    expect(screen.queryByTestId('ap-circular-progress')).not.toBeInTheDocument();
+    const addButton = screen.getByRole('button', { name: 'Add task' });
+    await user.click(addButton);
+
+    const toolbox = screen.getByTestId('toolbox');
+    expect(toolbox).toHaveAttribute('data-loading', 'true');
   });
 
-  it('should show a loading spinner instead of the add icon when addTaskLoading is true', () => {
-    const onTaskAdd = vi.fn();
-    renderStageNode({ onTaskAdd, addTaskLoading: true });
+  it('should not pass loading to Toolbox when addTaskLoading is false', async () => {
+    const user = userEvent.setup();
+    const onAddTaskFromToolbox = vi.fn();
+    renderStageNode({ onAddTaskFromToolbox, addTaskLoading: false });
 
-    expect(screen.getByTestId('ap-circular-progress')).toBeInTheDocument();
+    const addButton = screen.getByRole('button', { name: 'Add task' });
+    await user.click(addButton);
+
+    const toolbox = screen.getByTestId('toolbox');
+    expect(toolbox).toHaveAttribute('data-loading', 'false');
   });
 
-  it('should disable the add task button when addTaskLoading is true', () => {
-    const onTaskAdd = vi.fn();
-    renderStageNode({ onTaskAdd, addTaskLoading: true });
+  it('should not disable the add button when addTaskLoading is true', () => {
+    const onAddTaskFromToolbox = vi.fn();
+    renderStageNode({ onAddTaskFromToolbox, addTaskLoading: true });
 
-    const spinner = screen.getByTestId('ap-circular-progress');
-    // The disabled button is the closest button ancestor of the spinner
-    const button = spinner.closest('button');
-    expect(button).toBeDisabled();
+    const addButton = screen.getByRole('button', { name: 'Add task' });
+    expect(addButton).not.toBeDisabled();
   });
 
-  it('should not call onTaskAdd when button is disabled while loading', () => {
-    const onTaskAdd = vi.fn();
-    renderStageNode({ onTaskAdd, addTaskLoading: true });
+  it('should update Toolbox loading when addTaskLoading changes to false', async () => {
+    const user = userEvent.setup();
+    const onAddTaskFromToolbox = vi.fn();
+    const { rerender } = renderStageNode({ onAddTaskFromToolbox, addTaskLoading: true });
 
-    const spinner = screen.getByTestId('ap-circular-progress');
-    const button = spinner.closest('button') as HTMLButtonElement;
+    const addButton = screen.getByRole('button', { name: 'Add task' });
+    await user.click(addButton);
 
-    // Button is disabled and has pointer-events: none, preventing any clicks
-    expect(button).toBeDisabled();
-    button.click();
-    expect(onTaskAdd).not.toHaveBeenCalled();
-  });
-
-  it('should show the add icon when addTaskLoading is false', () => {
-    const onTaskAdd = vi.fn();
-    renderStageNode({ onTaskAdd, addTaskLoading: false });
-
-    expect(screen.queryByTestId('ap-circular-progress')).not.toBeInTheDocument();
-  });
-
-  it('should switch from spinner back to add icon when addTaskLoading changes to false', () => {
-    const onTaskAdd = vi.fn();
-    const { rerender } = renderStageNode({ onTaskAdd, addTaskLoading: true });
-
-    expect(screen.getByTestId('ap-circular-progress')).toBeInTheDocument();
+    expect(screen.getByTestId('toolbox')).toHaveAttribute('data-loading', 'true');
 
     rerender(
       <ReactFlowProvider>
-        <StageNode {...defaultProps} onTaskAdd={onTaskAdd} addTaskLoading={false} />
+        <StageNode {...defaultProps} onAddTaskFromToolbox={onAddTaskFromToolbox} addTaskLoading={false} />
       </ReactFlowProvider>
     );
 
-    expect(screen.queryByTestId('ap-circular-progress')).not.toBeInTheDocument();
+    expect(screen.getByTestId('toolbox')).toHaveAttribute('data-loading', 'false');
   });
 });

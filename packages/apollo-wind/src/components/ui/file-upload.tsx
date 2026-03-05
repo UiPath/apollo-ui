@@ -122,7 +122,9 @@ export function FileUpload({
           const reader = new FileReader();
           reader.onloadend = () => {
             newPreviews.push(reader.result as string);
-            if (newPreviews.length === validFiles.filter((f) => f.type.startsWith('image/')).length) {
+            if (
+              newPreviews.length === validFiles.filter((f) => f.type.startsWith('image/')).length
+            ) {
               setPreviews(multiple ? [...previews, ...newPreviews] : newPreviews);
             }
           };
@@ -210,7 +212,10 @@ export function FileUpload({
 
   return (
     <div className={cn('w-full', className)}>
+      {/** biome-ignore lint/a11y/useSemanticElements: Intended */}
       <div
+        role="group"
+        aria-label="File upload area"
         className={cn(
           'relative flex flex-col items-center justify-center w-full h-32 px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors',
           isDragging
@@ -223,6 +228,12 @@ export function FileUpload({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={handleClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleClick();
+          }
+        }}
       >
         <input
           ref={inputRef}

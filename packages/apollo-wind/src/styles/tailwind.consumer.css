@@ -13,101 +13,867 @@
 @import "tailwindcss";
 @import "@uipath/apollo-core/tokens/css/theme-variables.css";
 
-/**
- * shadcn/ui color mappings
- * Maps Apollo Design System tokens to shadcn expected variable names.
- * These are defined per-theme so they respond to theme switching.
- * Supports theme class on either <html> or <body> for flash-free loading.
- */
-body.light,
-body.dark,
-body.light-hc,
-body.dark-hc {
-  /* Card colors - map to raised surface */
-  --color-card: var(--color-background-raised);
-  --color-card-foreground: var(--color-foreground);
-
-  /* Popover colors - map to raised surface */
-  --color-popover: var(--color-background-raised);
-  --color-popover-foreground: var(--color-foreground);
-
-  /* Primary foreground - for text on primary backgrounds */
-  --color-primary-foreground: var(--color-foreground-inverse);
-
-  /* Secondary - map to secondary background */
-  --color-secondary: var(--color-background-secondary);
-  --color-secondary-foreground: var(--color-foreground-de-emp);
-
-  /* Muted - map to gray background and de-emphasized foreground */
-  --color-muted: var(--color-background-secondary);
-  --color-muted-foreground: var(--color-foreground-de-emp);
-
-  /* Accent - map to selected background */
-  --color-accent: var(--color-background-selected);
-  --color-accent-foreground: var(--color-foreground-emp);
-
-  /* Destructive - map to error colors */
-  --color-destructive: var(--color-error-text);
-  --color-destructive-foreground: var(--color-error-foreground-inverse);
-
-  /* Input - map to border for input borders */
-  --color-input: var(--color-border-de-emp);
-
-  /* Ring - map to focus indicator */
-  --color-ring: var(--color-focus-indicator);
-
-  /* Chart colors - map numbered names to apollo-core chart colors */
-  --color-chart-1: var(--color-chart-blue-secondary);
-  --color-chart-2: var(--color-chart-pink);
-  --color-chart-3: var(--color-chart-purple);
-  --color-chart-4: var(--color-chart-green);
-  --color-chart-5: var(--color-chart-yellow);
-
-  /* Sidebar colors */
-  --color-sidebar: var(--color-background-secondary);
-  --color-sidebar-foreground: var(--color-foreground);
-  --color-sidebar-primary: var(--color-primary);
-  --color-sidebar-primary-foreground: var(--color-foreground-inverse);
-  --color-sidebar-accent: var(--color-background-selected);
-  --color-sidebar-accent-foreground: var(--color-foreground-emp);
-  --color-sidebar-border: var(--color-border-de-emp);
-  --color-sidebar-ring: var(--color-focus-indicator);
+:root {
+  --radius: 0.75rem;
+  /* 12px — base border-radius for buttons and UI elements */
 }
 
-@theme inline {
+/**
+  * Individual theme definitions with fallback HEX values
+  * Each theme uses semantic tokens from apollo-core with hardcoded fallbacks
+  */
 
-  /* shadcn inline tokens to generate utilities */
-  --color-card: var(--color-card);
-  --color-card-foreground: var(--color-card-foreground);
-  --color-popover: var(--color-popover);
-  --color-popover-foreground: var(--color-popover-foreground);
-  --color-primary-foreground: var(--color-primary-foreground);
-  --color-secondary: var(--color-secondary);
-  --color-secondary-foreground: var(--color-secondary-foreground);
-  --color-muted: var(--color-muted);
-  --color-muted-foreground: var(--color-muted-foreground);
-  --color-accent: var(--color-accent);
-  --color-accent-foreground: var(--color-accent-foreground);
-  --color-destructive: var(--color-destructive);
-  --color-destructive-foreground: var(--color-destructive-foreground);
-  --color-input: var(--color-input);
-  --color-ring: var(--color-ring);
-  --color-chart-1: var(--color-chart-1);
-  --color-chart-2: var(--color-chart-2);
-  --color-chart-3: var(--color-chart-3);
-  --color-chart-4: var(--color-chart-4);
-  --color-chart-5: var(--color-chart-5);
-  --color-sidebar: var(--color-sidebar);
-  --color-sidebar-foreground: var(--color-sidebar-foreground);
-  --color-sidebar-primary: var(--color-sidebar-primary);
-  --color-sidebar-primary-foreground: var(--color-sidebar-primary-foreground);
-  --color-sidebar-accent: var(--color-sidebar-accent);
-  --color-sidebar-accent-foreground: var(--color-sidebar-accent-foreground);
-  --color-sidebar-border: var(--color-sidebar-border);
-  --color-sidebar-ring: var(--color-sidebar-ring);
+body.dark {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --surface: var(--color-background, #182027);
+  --surface-raised: var(--color-background-raised, #273139);
+  --surface-overlay: var(--color-background-selected, #374652);
+  --surface-hover: var(--color-background-gray, #526069);
+  --surface-muted: var(--color-background-gray-emp, #8a97a0);
+  --surface-inverse: var(--color-background-inverse, #f8f9fa);
+  --surface-disabled: var(--color-background-disabled, #273139);
+  --surface-selected: var(--color-background-selected, #374652);
+
+  /* ── Brand / Primary ─────────────────────────────────────────────────── */
+  --brand: var(--color-primary, #66adff);
+  --brand-hover: var(--color-primary-hover, #87bfff);
+  --brand-lighter: var(--color-primary-lighter, #00489d);
+  --brand-darker: var(--color-foreground-link-pressed, #badaff);
+
+  /* ── Foreground (text / icons) ────────────────────────────────────────── */
+  --foreground: var(--color-foreground, #f4f5f7);
+  --foreground-emp: var(--color-foreground-emp, #f8f9fa);
+  --foreground-muted: var(--color-foreground-de-emp, #cfd8dd);
+  --foreground-subtle: var(--color-foreground-disable, #a4b1b8);
+  --foreground-inverse: var(--color-foreground-inverse, #182027);
+  --foreground-link: var(--color-foreground-link, #66adff);
+  --foreground-on-accent: var(--color-foreground-inverse, #182027);
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --border: var(--color-border, #8a97a0);
+  --border-subtle: var(--color-border-de-emp, #526069);
+  --border-disabled: var(--color-border-disabled, #526069);
+  --border-grid: var(--color-border-grid, #273139);
+
+  /* ── Status ──────────────────────────────────────────────────────────── */
+  --error: var(--color-error-text, #ff8484);
+  --success: var(--color-success-icon, #74c94b);
+  --warning: var(--color-warning-icon, #ffbb27);
+  --info: var(--color-info-foreground, #42a1ff);
+
+  /* ── Ring / Focus ────────────────────────────────────────────────────── */
+  --ring: var(--color-primary, #66adff);
+  --logo: var(--color-logo, #ffffff);
+
+  /* ── Bridge — defines shared token names using core values, so
+        components built with bg-surface, text-foreground-secondary, etc.
+        resolve correctly under core themes ────────────────────────────── */
+  --brand-subtle: var(--brand-lighter);
+  --foreground-secondary: var(--foreground-emp);
+  --foreground-hover: var(--foreground-muted);
+  --foreground-accent: var(--brand);
+  --foreground-accent-muted: var(--brand-hover);
+  --border-muted: var(--border-grid);
+  --border-deep: var(--border-grid);
+  --border-inverse: var(--border);
+  --border-hover: var(--border);
+
+  /* ── shadcn aliases — maps to standard names for shadcn component compat ── */
+  --background: var(--surface);
+  --card: var(--surface-raised);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--foreground-on-accent);
+  --secondary: var(--surface-overlay);
+  --secondary-foreground: var(--foreground-muted);
+  --muted: var(--surface-raised);
+  --muted-foreground: var(--foreground-muted);
+  --accent: var(--surface-selected);
+  --accent-foreground: var(--foreground-emp);
+  --destructive: var(--error);
+  --destructive-foreground: var(--foreground-on-accent);
+  --border-de-emp: var(--border-subtle);
+  --input: var(--border-subtle);
+
+  color-scheme: dark;
+}
+
+body.dark-hc {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --surface: var(--color-background, #182027);
+  --surface-raised: var(--color-background-raised, #273139);
+  --surface-overlay: var(--color-background-selected, #374652);
+  --surface-hover: var(--color-background-gray, #374652);
+  --surface-muted: var(--color-background-gray-emp, #a4b1b8);
+  --surface-inverse: var(--color-background-inverse, #f8f9fa);
+  --surface-disabled: var(--color-background-disabled, #273139);
+  --surface-selected: var(--color-background-selected, #374652);
+
+  /* ── Brand / Primary ─────────────────────────────────────────────────── */
+  --brand: var(--color-primary, #badaff);
+  --brand-hover: var(--color-primary-hover, #87bfff);
+  --brand-lighter: var(--color-primary-lighter, #00336f);
+  --brand-darker: var(--color-foreground-link-pressed, #badaff);
+
+  /* ── Foreground (text / icons) ────────────────────────────────────────── */
+  --foreground: var(--color-foreground, #f4f5f7);
+  --foreground-emp: var(--color-foreground-emp, #f8f9fa);
+  --foreground-muted: var(--color-foreground-de-emp, #cfd8dd);
+  --foreground-subtle: var(--color-foreground-disable, #a4b1b8);
+  --foreground-inverse: var(--color-foreground-inverse, #182027);
+  --foreground-link: var(--color-foreground-link, #87bfff);
+  --foreground-on-accent: var(--color-foreground-inverse, #182027);
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --border: var(--color-border, #bbc7cd);
+  --border-subtle: var(--color-border-de-emp, #a4b1b8);
+  --border-disabled: var(--color-border-disabled, #8a97a0);
+  --border-grid: var(--color-border-grid, #273139);
+
+  /* ── Status ──────────────────────────────────────────────────────────── */
+  --error: var(--color-error-text, #ffadad);
+  --success: var(--color-success-icon, #74c94b);
+  --warning: var(--color-warning-icon, #ffbb27);
+  --info: var(--color-info-foreground, #42a1ff);
+
+  /* ── Ring / Focus ────────────────────────────────────────────────────── */
+  --ring: var(--color-primary, #badaff);
+  --logo: var(--color-logo, #ffffff);
+
+  /* ── Bridge — defines shared token names using core values, so
+        components built with bg-surface, text-foreground-secondary, etc.
+        resolve correctly under core themes ────────────────────────────── */
+  --brand-subtle: var(--brand-lighter);
+  --foreground-secondary: var(--foreground-emp);
+  --foreground-hover: var(--foreground-muted);
+  --foreground-accent: var(--brand);
+  --foreground-accent-muted: var(--brand-hover);
+  --border-muted: var(--border-grid);
+  --border-deep: var(--border-grid);
+  --border-inverse: var(--border);
+  --border-hover: var(--border);
+
+  /* ── shadcn aliases — maps to standard names for shadcn component compat ── */
+  --background: var(--surface);
+  --card: var(--surface-raised);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--foreground-on-accent);
+  --secondary: var(--surface-overlay);
+  --secondary-foreground: var(--foreground-muted);
+  --muted: var(--surface-raised);
+  --muted-foreground: var(--foreground-muted);
+  --accent: var(--surface-selected);
+  --accent-foreground: var(--foreground-emp);
+  --destructive: var(--error);
+  --destructive-foreground: var(--foreground-on-accent);
+  --border-de-emp: var(--border-subtle);
+  --input: var(--border-subtle);
+
+  color-scheme: dark;
+}
+
+body.light {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --surface: var(--color-background, #ffffff);
+  --surface-raised: var(--color-background-raised, #ffffff);
+  --surface-overlay: var(--color-background-secondary, #f4f5f7);
+  --surface-hover: var(--color-background-selected, #e9f1fa);
+  --surface-muted: var(--color-background-gray, #cfd8dd);
+  --surface-inverse: var(--color-background-inverse, #182027);
+  --surface-disabled: var(--color-background-disabled, #ecedee);
+  --surface-selected: var(--color-background-selected, #e9f1fa);
+
+  /* ── Brand / Primary ─────────────────────────────────────────────────── */
+  --brand: var(--color-primary, #0067df);
+  --brand-hover: var(--color-primary-hover, #0056ba);
+  --brand-lighter: var(--color-primary-lighter, #badaff);
+  --brand-darker: var(--color-foreground-link-pressed, #00489d);
+
+  /* ── Foreground (text / icons) ────────────────────────────────────────── */
+  --foreground: var(--color-foreground, #273139);
+  --foreground-emp: var(--color-foreground-emp, #182027);
+  --foreground-muted: var(--color-foreground-de-emp, #526069);
+  --foreground-subtle: var(--color-foreground-disable, #8a97a0);
+  --foreground-inverse: var(--color-foreground-inverse, #f8f9fa);
+  --foreground-link: var(--color-foreground-link, #0067df);
+  --foreground-on-accent: var(--color-foreground-inverse, #f8f9fa);
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --border: var(--color-border, #a4b1b8);
+  --border-subtle: var(--color-border-de-emp, #cfd8dd);
+  --border-disabled: var(--color-border-disabled, #cfd8dd);
+  --border-grid: var(--color-border-grid, #f4f5f7);
+
+  /* ── Status ──────────────────────────────────────────────────────────── */
+  --error: var(--color-error-text, #a6040a);
+  --success: var(--color-success-icon, #038108);
+  --warning: var(--color-warning-text, #9e6100);
+  --info: var(--color-info-foreground, #1665b3);
+
+  /* ── Ring / Focus ────────────────────────────────────────────────────── */
+  --ring: var(--color-primary, #0067df);
+  --logo: var(--color-logo, #fa4616);
+
+  /* ── Bridge — defines shared token names using core values, so
+        components built with bg-surface, text-foreground-secondary, etc.
+        resolve correctly under core themes ────────────────────────────── */
+  --brand-subtle: var(--brand-lighter);
+  --foreground-secondary: var(--foreground-emp);
+  --foreground-hover: var(--foreground-muted);
+  --foreground-accent: var(--brand);
+  --foreground-accent-muted: var(--brand-hover);
+  --border-muted: var(--border-grid);
+  --border-deep: var(--border-grid);
+  --border-inverse: var(--border);
+  --border-hover: var(--border);
+
+  /* ── shadcn aliases — maps to standard names for shadcn component compat ── */
+  --background: var(--surface);
+  --card: var(--surface-raised);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--foreground-on-accent);
+  --secondary: var(--surface-overlay);
+  --secondary-foreground: var(--foreground-muted);
+  --muted: var(--surface-raised);
+  --muted-foreground: var(--foreground-muted);
+  --accent: var(--surface-selected);
+  --accent-foreground: var(--foreground-emp);
+  --destructive: var(--error);
+  --destructive-foreground: var(--foreground-on-accent);
+  --border-de-emp: var(--border-subtle);
+  --input: var(--border-subtle);
+
+  color-scheme: light;
+}
+
+body.light-hc {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --surface: var(--color-background, #ffffff);
+  --surface-raised: var(--color-background-raised, #ffffff);
+  --surface-overlay: var(--color-background-secondary, #f4f5f7);
+  --surface-hover: var(--color-background-selected, #e9f1fa);
+  --surface-muted: var(--color-background-gray, #cfd8dd);
+  --surface-inverse: var(--color-background-inverse, #182027);
+  --surface-disabled: var(--color-background-disabled, #ecedee);
+  --surface-selected: var(--color-background-selected, #e9f1fa);
+
+  /* ── Brand / Primary ─────────────────────────────────────────────────── */
+  --brand: var(--color-primary, #00489d);
+  --brand-hover: var(--color-primary-hover, #00336f);
+  --brand-lighter: var(--color-primary-lighter, #badaff);
+  --brand-darker: var(--color-foreground-link-pressed, #00336f);
+
+  /* ── Foreground (text / icons) ────────────────────────────────────────── */
+  --foreground: var(--color-foreground, #273139);
+  --foreground-emp: var(--color-foreground-emp, #182027);
+  --foreground-muted: var(--color-foreground-de-emp, #374652);
+  --foreground-subtle: var(--color-foreground-disable, #8a97a0);
+  --foreground-inverse: var(--color-foreground-inverse, #f8f9fa);
+  --foreground-link: var(--color-foreground-link, #00489d);
+  --foreground-on-accent: var(--color-foreground-inverse, #f8f9fa);
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --border: var(--color-border, #6b7882);
+  --border-subtle: var(--color-border-de-emp, #a4b1b8);
+  --border-disabled: var(--color-border-disabled, #cfd8dd);
+  --border-grid: var(--color-border-grid, #f4f5f7);
+
+  /* ── Status ──────────────────────────────────────────────────────────── */
+  --error: var(--color-error-text, #a6040a);
+  --success: var(--color-success-icon, #005603);
+  --warning: var(--color-warning-text, #273139);
+  --info: var(--color-info-foreground, #11508d);
+
+  /* ── Ring / Focus ────────────────────────────────────────────────────── */
+  --ring: var(--color-primary, #00489d);
+  --logo: var(--color-logo, #fa4616);
+
+  /* ── Bridge — defines shared token names using core values, so
+        components built with bg-surface, text-foreground-secondary, etc.
+        resolve correctly under core themes ────────────────────────────── */
+  --brand-subtle: var(--brand-lighter);
+  --foreground-secondary: var(--foreground-emp);
+  --foreground-hover: var(--foreground-muted);
+  --foreground-accent: var(--brand);
+  --foreground-accent-muted: var(--brand-hover);
+  --border-muted: var(--border-grid);
+  --border-deep: var(--border-grid);
+  --border-inverse: var(--border);
+  --border-hover: var(--border);
+
+  /* ── shadcn aliases — maps to standard names for shadcn component compat ── */
+  --background: var(--surface);
+  --card: var(--surface-raised);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--foreground-on-accent);
+  --secondary: var(--surface-overlay);
+  --secondary-foreground: var(--foreground-muted);
+  --muted: var(--surface-raised);
+  --muted-foreground: var(--foreground-muted);
+  --accent: var(--surface-selected);
+  --accent-foreground: var(--foreground-emp);
+  --destructive: var(--error);
+  --destructive-foreground: var(--foreground-on-accent);
+  --border-de-emp: var(--border-subtle);
+  --input: var(--border-subtle);
+
+  color-scheme: light;
+}
+
+/* ============================================================================
+ * FUTURE — Dark theme (default for Future templates)
+ * ============================================================================ */
+
+.future-dark {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --surface: #09090b;
+  /* zinc-950  — page / canvas */
+  --surface-raised: #18181b;
+  /* zinc-900  — cards, overlays, panels */
+  --surface-overlay: #27272a;
+  /* zinc-800  — panels, inputs, tabs */
+  --surface-hover: #3f3f46;
+  /* zinc-700  — hover, selected nav */
+  --surface-muted: #71717a;
+  /* zinc-500  — badges, indicators */
+  --surface-inverse: #fafafa;
+  /* zinc-50   — buttons on dark bg */
+
+  /* ── Brand ──────────────────────────────────────────────────────────── */
+  --brand: #0891b2;
+  /* cyan-600  — logo, submit, run */
+  --brand-subtle: #083344;
+  /* cyan-950  — status badge, active nav */
+
+  /* ── Foreground (text / icons) ────────────────────────────────────────── */
+  --foreground: #fafafa;
+  /* zinc-50   — primary headings */
+  --foreground-secondary: #f4f4f5;
+  /* zinc-100  — body, messages */
+  --foreground-hover: #d4d4d8;
+  /* zinc-300  — hover states */
+  --foreground-muted: #a1a1aa;
+  /* zinc-400  — nav, secondary UI */
+  --foreground-subtle: #71717a;
+  /* zinc-500  — labels, muted */
+  --foreground-inverse: #09090b;
+  /* zinc-950  — icons on light bg */
+  --foreground-on-accent: #fafafa;
+  /* zinc-50   — text on accent bg */
+  --foreground-accent: #0891b2;
+  /* cyan-600  — accent text */
+  --foreground-accent-muted: #22d3ee;
+  /* cyan-400 — muted accent text */
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --border: #3f3f46;
+  /* zinc-700  — primary borders */
+  --border-subtle: #27272a;
+  /* zinc-800  — subtle dividers */
+  --border-muted: #18181b;
+  /* zinc-900  — content borders */
+  --border-deep: #09090b;
+  /* zinc-950  — nested containers */
+  --border-inverse: #e4e4e7;
+  /* zinc-200  — borders on inverse bg */
+  --border-hover: #52525b;
+  /* zinc-600  — border hover state */
+
+  /* ── Ring ──────────────────────────────────────────────────────────────── */
+  --ring: #52525b;
+  /* zinc-600  — selection ring */
+
+  /* ── Gradients ───────────────────────────────────────────────────────── */
+  --gradient-1: linear-gradient(127deg, #3f3f47 25.94%, #27272a 74.06%);
+  /* zinc-700 → zinc-800 */
+  --gradient-2: linear-gradient(128deg, #09090b 1.26%, #18181b 52.69%);
+  /* zinc-950 → zinc-900 */
+  --gradient-3: linear-gradient(128deg, #3f3f47 1.26%, #18181b 52.69%);
+  /* zinc-700 → zinc-900 */
+  --gradient-4: linear-gradient(180deg, #18181b 0%, #27272a 100%);
+  /* zinc-900 → zinc-800 */
+  --gradient-5: linear-gradient(180deg, #09090b 0%, #18181b 100%);
+  /* zinc-950 → zinc-900 */
+  --gradient-6: linear-gradient(106deg, #0092b8 28.08%, #053345 71.92%);
+  /* cyan-600 → cyan-950 */
+
+  /* ── shadcn aliases — maps to standard names for shadcn component compat ── */
+  --background: var(--surface);
+  --card: var(--surface-raised);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--foreground-on-accent);
+  --secondary: var(--surface-overlay);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--surface-overlay);
+  --muted-foreground: var(--foreground-muted);
+  --accent: var(--surface-hover);
+  --accent-foreground: var(--foreground);
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  /* zinc-50 — text on destructive bg */
+  --border-de-emp: var(--border-subtle);
+  --input: var(--border);
+}
+
+/* ============================================================================
+ * FUTURE — Light theme
+ * ============================================================================ */
+
+.future-light {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --surface: #fafafa;
+  /* zinc-50   — page / canvas */
+  --surface-raised: #f4f4f5;
+  /* zinc-100  — cards, overlays, panels */
+  --surface-overlay: #e4e4e7;
+  /* zinc-200  — panels, inputs, tabs */
+  --surface-hover: #d4d4d8;
+  /* zinc-300  — hover, selected nav */
+  --surface-muted: #a1a1aa;
+  /* zinc-400  — badges, indicators */
+  --surface-inverse: #09090b;
+  /* zinc-950  — buttons on light bg */
+
+  /* ── Brand ──────────────────────────────────────────────────────────── */
+  --brand: #0891b2;
+  /* cyan-600  — logo, submit, run */
+  --brand-subtle: #ecfeff;
+  /* cyan-50   — status badge, active nav */
+
+  /* ── Foreground (text / icons) ────────────────────────────────────────── */
+  --foreground: #09090b;
+  /* zinc-950  — primary headings */
+  --foreground-secondary: #18181b;
+  /* zinc-900  — body, messages */
+  --foreground-hover: #52525b;
+  /* zinc-600  — hover states */
+  --foreground-muted: #71717a;
+  /* zinc-500  — nav, secondary UI */
+  --foreground-subtle: #a1a1aa;
+  /* zinc-400  — labels, muted */
+  --foreground-inverse: #fafafa;
+  /* zinc-50   — icons on dark bg */
+  --foreground-on-accent: #fafafa;
+  /* zinc-50   — text on accent bg */
+  --foreground-accent: #0891b2;
+  /* cyan-600  — accent text */
+  --foreground-accent-muted: #0891b2;
+  /* cyan-600 — muted accent text */
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --border: #d4d4d8;
+  /* zinc-300  — primary borders */
+  --border-subtle: #e4e4e7;
+  /* zinc-200  — subtle dividers */
+  --border-muted: #f4f4f5;
+  /* zinc-100  — content borders */
+  --border-deep: #fafafa;
+  /* zinc-50   — nested containers */
+  --border-inverse: #3f3f46;
+  /* zinc-700  — borders on inverse bg */
+  --border-hover: #a1a1aa;
+  /* zinc-400  — border hover state */
+
+  /* ── Ring ──────────────────────────────────────────────────────────────── */
+  --ring: #a1a1aa;
+  /* zinc-400  — selection ring */
+
+  /* ── Gradients ───────────────────────────────────────────────────────── */
+  --gradient-1: linear-gradient(127deg, #e4e4e7 25.94%, #f4f4f5 74.06%);
+  /* zinc-200 → zinc-100 */
+  --gradient-2: linear-gradient(128deg, #fafafa 1.26%, #fafafa 52.69%);
+  /* zinc-50 → zinc-50 */
+  --gradient-3: linear-gradient(128deg, #e4e4e7 1.26%, #fafafa 52.69%);
+  /* zinc-200 → zinc-50 */
+  --gradient-4: linear-gradient(180deg, #fafafa 0%, #f4f4f5 100%);
+  /* zinc-50 → zinc-100 */
+  --gradient-5: linear-gradient(180deg, #fafafa 0%, #fafafa 100%);
+  /* zinc-50 → zinc-50 */
+  --gradient-6: linear-gradient(106deg, #22d3ee 28.08%, #cffafe 71.92%);
+  /* cyan-400 → cyan-100 */
+
+  /* ── shadcn aliases ──────────────────────────────────────────────────── */
+  --background: var(--surface);
+  --card: var(--surface-raised);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--foreground-on-accent);
+  --secondary: var(--surface-overlay);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--surface-overlay);
+  --muted-foreground: var(--foreground-muted);
+  --accent: var(--surface-hover);
+  --accent-foreground: var(--foreground);
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  /* zinc-50 — text on destructive bg */
+  --border-de-emp: var(--border-subtle);
+  --input: var(--border);
+}
+
+
+/* ============================================================================
+ * DEMO — Wireframe theme (low-fidelity prototyping)
+ *
+ * Intentionally flat, no accent color, dashed borders. Designed to look like
+ * a quick sketch or blueprint so stakeholders focus on layout, not polish.
+ * ============================================================================ */
+
+.wireframe {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --surface: #ffffff;
+  --surface-raised: #f9fafb;
+  --surface-overlay: #f3f4f6;
+  --surface-hover: #e5e7eb;
+  --surface-muted: #d1d5db;
+  --surface-inverse: #374151;
+
+  /* ── Brand (deliberately muted — no brand color) ─────────────────────── */
+  --brand: #6b7280;
+  --brand-subtle: #f3f4f6;
+
+  /* ── Foreground ─────────────────────────────────────────────────────── */
+  --foreground: #1f2937;
+  --foreground-secondary: #374151;
+  --foreground-hover: #4b5563;
+  --foreground-muted: #6b7280;
+  --foreground-subtle: #9ca3af;
+  --foreground-inverse: #ffffff;
+  --foreground-on-accent: #ffffff;
+  --foreground-accent: #4b5563;
+  --foreground-accent-muted: #6b7280;
+
+  /* ── Borders (dashed via utility, but color defined here) ───────────── */
+  --border: #d1d5db;
+  --border-subtle: #e5e7eb;
+  --border-muted: #f3f4f6;
+  --border-deep: #f9fafb;
+  --border-inverse: #4b5563;
+  --border-hover: #9ca3af;
+
+  /* ── Ring ────────────────────────────────────────────────────────────── */
+  --ring: #9ca3af;
+
+  /* ── Gradients (flat — no gradients in wireframe mode) ──────────────── */
+  --gradient-1: none;
+  --gradient-2: none;
+  --gradient-3: none;
+  --gradient-4: none;
+  --gradient-5: none;
+  --gradient-6: none;
+
+  /* ── shadcn aliases ──────────────────────────────────────────────────── */
+  --background: var(--surface);
+  --card: var(--surface-raised);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--foreground-on-accent);
+  --secondary: var(--surface-overlay);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--surface-overlay);
+  --muted-foreground: var(--foreground-muted);
+  --accent: var(--surface-hover);
+  --accent-foreground: var(--foreground);
+  --destructive: #9ca3af;
+  --destructive-foreground: #ffffff;
+  --border-de-emp: var(--border-subtle);
+  --input: var(--border);
+}
+
+/* Wireframe overrides: dashed borders everywhere, reduced rounding */
+.wireframe *,
+.wireframe *::before,
+.wireframe *::after {
+  border-style: dashed !important;
+  box-shadow: none !important;
+}
+
+/* ============================================================================
+ * DEMO — Vertex theme (Apollo Vertex dark palette)
+ *
+ * Translates the Vertex design language (oklch-based, teal/blue accent)
+ * into token slots so templates render with the Vertex look & feel.
+ * Source: apps/apollo-vertex/app/themes.ts  (default.config.dark)
+ * ============================================================================ */
+
+.vertex {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --surface: oklch(0.21 0.03 258.5);
+  /* deep blue-grey — page / canvas */
+  --surface-raised: oklch(0.233 0.036 254.7);
+  /* slightly lighter — cards, panels */
+  --surface-overlay: oklch(0.2648 0.0329 254.38);
+  /* muted — inputs, tabs */
+  --surface-hover: oklch(0.3927 0.0289 240.86);
+  /* secondary — hover, selected nav */
+  --surface-muted: oklch(0.72 0.03 254.38);
+  /* muted-foreground — badges, indicators */
+  --surface-inverse: oklch(0.985 0 0);
+  /* foreground — buttons on dark bg */
+
+  /* ── Brand ──────────────────────────────────────────────────────────── */
+  --brand: oklch(0.692 0.1119 207.06);
+  /* primary — teal */
+  --brand-subtle: oklch(0.166 0.0283 203.34);
+  /* primary-foreground — deep teal bg */
+
+  /* ── Foreground (text / icons) ────────────────────────────────────────── */
+  --foreground: oklch(0.985 0 0);
+  /* foreground — primary text */
+  --foreground-secondary: oklch(0.9525 0.011 225.98);
+  /* card-foreground — body text */
+  --foreground-hover: oklch(0.9416 0.0145 244.72);
+  /* secondary-foreground — hover states */
+  --foreground-muted: oklch(0.72 0.03 254.38);
+  /* muted-foreground — nav, secondary UI */
+  --foreground-subtle: oklch(0.4594 0.028 264.25);
+  /* muted-foreground (light ref) — labels */
+  --foreground-inverse: oklch(0.21 0.03 258.5);
+  /* background — icons on light bg */
+  --foreground-on-accent: oklch(0.166 0.0283 203.34);
+  /* primary-foreground — text on accent */
+  --foreground-accent: oklch(0.692 0.1119 207.06);
+  /* primary — accent text */
+  --foreground-accent-muted: oklch(0.573 0.114 211.4);
+  /* accent — muted accent text */
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --border: oklch(0.3068 0.0426 258.29);
+  /* border */
+  --border-subtle: oklch(0.2648 0.0329 254.38);
+  /* muted — subtle dividers */
+  --border-muted: oklch(0.233 0.036 254.7);
+  /* card — content borders */
+  --border-deep: oklch(0.21 0.03 258.5);
+  /* background — nested containers */
+  --border-inverse: oklch(0.9229 0.0065 252.13);
+  /* light border ref */
+  --border-hover: oklch(0.3927 0.0289 240.86);
+  /* secondary — border hover */
+
+  /* ── Ring ────────────────────────────────────────────────────────────── */
+  --ring: oklch(0.692 0.1119 207.06);
+  /* ring — teal focus ring */
+
+  /* ── Gradients (subtle depth) ──────────────────────────────────────── */
+  --gradient-1: linear-gradient(127deg, oklch(0.3927 0.0289 240.86) 25.94%, oklch(0.2648 0.0329 254.38) 74.06%);
+  --gradient-2: linear-gradient(128deg, oklch(0.21 0.03 258.5) 1.26%, oklch(0.233 0.036 254.7) 52.69%);
+  --gradient-3: linear-gradient(128deg, oklch(0.3927 0.0289 240.86) 1.26%, oklch(0.233 0.036 254.7) 52.69%);
+  --gradient-4: linear-gradient(180deg, oklch(0.233 0.036 254.7) 0%, oklch(0.2648 0.0329 254.38) 100%);
+  --gradient-5: linear-gradient(180deg, oklch(0.21 0.03 258.5) 0%, oklch(0.233 0.036 254.7) 100%);
+  --gradient-6: linear-gradient(106deg, oklch(0.692 0.1119 207.06) 28.08%, oklch(0.166 0.0283 203.34) 71.92%);
+
+  /* ── shadcn aliases ──────────────────────────────────────────────────── */
+  --background: var(--surface);
+  --card: var(--surface-raised);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--foreground-on-accent);
+  --secondary: var(--surface-overlay);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--surface-overlay);
+  --muted-foreground: var(--foreground-muted);
+  --accent: var(--surface-hover);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.6542 0.2321 28.66);
+  --destructive-foreground: oklch(1 0 89.88);
+  --border-de-emp: var(--border-subtle);
+  --input: var(--border);
+}
+
+/* ============================================================================
+ * DEMO — Canvas theme (Apollo React / MUI dark palette)
+ *
+ * Maps the classic apollo-react dark theme (apollo-core darkPalette) into
+ * token slots. Dark blue-grey base with UiPath orange accent.
+ * Source: packages/apollo-core/src/tokens/jss/palette.ts  (darkPalette)
+ * ============================================================================ */
+
+.canvas {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --surface: #182027;
+  /* ColorBackgroundDark — page / canvas */
+  --surface-raised: #273139;
+  /* ColorBackgroundSecondaryDark — cards, panels */
+  --surface-overlay: #334049;
+  /* mid-tone — inputs, tabs */
+  --surface-hover: #3e4e58;
+  /* hover, selected nav */
+  --surface-muted: #8a97a0;
+  /* ColorBorderDark — badges, indicators */
+  --surface-inverse: #f8f9fa;
+  /* ColorBackgroundInverseDark — buttons on dark bg */
+
+  /* ── Brand (UiPath orange) ───────────────────────────────────────────── */
+  --brand: #fa4616;
+  /* ColorOrange500 — primary brand */
+  --brand-subtle: #3c2a1e;
+  /* dark warm tone — active nav bg */
+
+  /* ── Foreground (text / icons) ────────────────────────────────────────── */
+  --foreground: #f8f9fa;
+  /* ColorForegroundEmpDark — primary text */
+  --foreground-secondary: #f4f5f7;
+  /* ColorForegroundDark — body text */
+  --foreground-hover: #cfd8dd;
+  /* ColorForegroundDeEmpDark — hover states */
+  --foreground-muted: #a4b1b8;
+  /* ColorForegroundDisableDark — nav, secondary UI */
+  --foreground-subtle: #8a97a0;
+  /* ColorBorderDark — labels, muted */
+  --foreground-inverse: #182027;
+  /* ColorForegroundInverseDark — icons on light bg */
+  --foreground-on-accent: #ffffff;
+  /* white — text on accent bg */
+  --foreground-accent: #fa4616;
+  /* ColorOrange500 — accent text */
+  --foreground-accent-muted: #ff8f70;
+  /* ColorSelectionDark — muted accent text */
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --border: #526069;
+  /* ColorBorderDeEmpDark */
+  --border-subtle: #3e4e58;
+  /* mid border */
+  --border-muted: #273139;
+  /* ColorBackgroundSecondaryDark — content borders */
+  --border-deep: #182027;
+  /* ColorBackgroundDark — nested containers */
+  --border-inverse: #cfd8dd;
+  /* ColorForegroundDeEmpDark — borders on inverse bg */
+  --border-hover: #8a97a0;
+  /* ColorBorderDark — border hover */
+
+  /* ── Ring ────────────────────────────────────────────────────────────── */
+  --ring: #fa4616;
+  /* orange focus ring */
+
+  /* ── Gradients ────────────────────────────────────────────────────────── */
+  --gradient-1: linear-gradient(127deg, #3e4e58 25.94%, #334049 74.06%);
+  --gradient-2: linear-gradient(128deg, #182027 1.26%, #273139 52.69%);
+  --gradient-3: linear-gradient(128deg, #3e4e58 1.26%, #273139 52.69%);
+  --gradient-4: linear-gradient(180deg, #273139 0%, #334049 100%);
+  --gradient-5: linear-gradient(180deg, #182027 0%, #273139 100%);
+  --gradient-6: linear-gradient(106deg, #fa4616 28.08%, #3c2a1e 71.92%);
+
+  /* ── shadcn aliases ──────────────────────────────────────────────────── */
+  --background: var(--surface);
+  --card: var(--surface-raised);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--foreground-on-accent);
+  --secondary: var(--surface-overlay);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--surface-overlay);
+  --muted-foreground: var(--foreground-muted);
+  --accent: var(--surface-hover);
+  --accent-foreground: var(--foreground);
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border-de-emp: var(--border-subtle);
+  --input: var(--border);
+}
+
+/**
+  * @theme inline - Tailwind utility generation
+  *
+  * Combines tokens from themes.css with Apollo-core tokens.
+  * Only tokens defined here will generate Tailwind utilities.
+  */
+
+@theme inline {
+  /* ── Design system tokens ──────────────────────────────────────────── */
+
+  /* Surfaces */
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-inverse: var(--surface-inverse);
+
+  /* Brand */
+  --color-brand: var(--brand);
+  --color-brand-subtle: var(--brand-subtle);
+
+  /* Foreground */
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-hover: var(--foreground-hover);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-subtle: var(--foreground-subtle);
+  --color-foreground-inverse: var(--foreground-inverse);
+  --color-foreground-on-accent: var(--foreground-on-accent);
+  --color-foreground-accent: var(--foreground-accent);
+  --color-foreground-accent-muted: var(--foreground-accent-muted);
+
+  /* Borders */
+  --color-border-subtle: var(--border-subtle);
+  --color-border-muted: var(--border-muted);
+  --color-border-deep: var(--border-deep);
+  --color-border-inverse: var(--border-inverse);
+  --color-border-hover: var(--border-hover);
+
+  /* ── shadcn standard tokens ────────────────────────────────────────── */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-border-de-emp: var(--border-de-emp);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* ── Core-specific tokens ─────────────────────────────────────────── */
+  --color-surface-disabled: var(--surface-disabled);
+  --color-surface-selected: var(--surface-selected);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-lighter: var(--brand-lighter);
+  --color-brand-darker: var(--brand-darker);
+  --color-foreground-emp: var(--foreground-emp);
+  --color-foreground-link: var(--foreground-link);
+  --color-border-disabled: var(--border-disabled);
+  --color-border-grid: var(--border-grid);
+  --color-error: var(--error);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-logo: var(--logo);
 
   /* Apollo inline tokens to generate utilities */
-  --color-background: var(--color-background);
   --color-background-secondary: var(--color-background-secondary);
   --color-background-inverse: var(--color-background-inverse);
   --color-background-gray: var(--color-background-gray);
@@ -124,25 +890,15 @@ body.dark-hc {
   --color-notification-indicator: var(--color-notification-indicator);
   --color-hover: var(--color-hover);
   --color-curtain: var(--color-curtain);
-  --color-border: var(--color-border);
-  --color-border-disabled: var(--color-border-disabled);
-  --color-border-grid: var(--color-border-grid);
-  --color-border-de-emp: var(--color-border-de-emp);
   --color-selection: var(--color-selection);
-  --color-logo: var(--color-logo);
-  --color-foreground: var(--color-foreground);
   --color-foreground-light: var(--color-foreground-light);
-  --color-foreground-emp: var(--color-foreground-emp);
   --color-foreground-de-emp: var(--color-foreground-de-emp);
   --color-foreground-disable: var(--color-foreground-disable);
-  --color-foreground-inverse: var(--color-foreground-inverse);
   --color-foreground-highlight: var(--color-foreground-highlight);
   --color-foreground-highlight-selected: var(--color-foreground-highlight-selected);
   --color-foreground-highlight-selected-hover: var(--color-foreground-highlight-selected-hover);
-  --color-foreground-link: var(--color-foreground-link);
   --color-foreground-link-pressed: var(--color-foreground-link-pressed);
   --color-foreground-inv-de-emp: var(--color-foreground-inv-de-emp);
-  --color-primary: var(--color-primary);
   --color-primary-lighter: var(--color-primary-lighter);
   --color-primary-darker: var(--color-primary-darker);
   --color-primary-hover: var(--color-primary-hover);
@@ -236,4 +992,35 @@ body.dark-hc {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* ============================================================================
+ * Gradient utilities
+ *
+ * Gradients can't be registered via @theme (they aren't single color values),
+ * so we define them as @utility rules. Usage: bg-gradient-1, etc.
+ * ============================================================================ */
+
+@utility bg-gradient-1 {
+  background-image: var(--gradient-1);
+}
+
+@utility bg-gradient-2 {
+  background-image: var(--gradient-2);
+}
+
+@utility bg-gradient-3 {
+  background-image: var(--gradient-3);
+}
+
+@utility bg-gradient-4 {
+  background-image: var(--gradient-4);
+}
+
+@utility bg-gradient-5 {
+  background-image: var(--gradient-5);
+}
+
+@utility bg-gradient-6 {
+  background-image: var(--gradient-6);
 }

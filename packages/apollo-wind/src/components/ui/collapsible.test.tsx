@@ -190,7 +190,7 @@ describe('Collapsible', () => {
     render(
       <Collapsible>
         <CollapsibleTrigger asChild>
-          <button>Custom trigger</button>
+          <button type="button">Custom trigger</button>
         </CollapsibleTrigger>
         <CollapsibleContent>Content</CollapsibleContent>
       </Collapsible>

@@ -1,3 +1,36 @@
+## [@uipath/apollo-wind-v0.12.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.12.0...@uipath/apollo-wind@0.12.1) (2026-03-05)
+
+### Bug Fixes
+
+* **repo:** security vulnerabilities + add skill ([258a535](https://github.com/uipath/apollo-ui/commit/258a53557628fd1df7845eacbbe0db2e2aedb347))
+
+## [@uipath/apollo-wind-v0.12.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.11.0...@uipath/apollo-wind@0.12.0) (2026-03-04)
+
+### Features
+
+* **apollo-wind:** allow explicit imports ([00372e4](https://github.com/uipath/apollo-ui/commit/00372e4ffe9d6ba42dc9410e47d888773227926a))
+
+## [@uipath/apollo-wind-v0.11.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.10.0...@uipath/apollo-wind@0.11.0) (2026-03-03)
+
+### Features
+
+* **apollo-wind:** add CodeBlock component and expand AI context docs ([b78e250](https://github.com/uipath/apollo-ui/commit/b78e25078a2ed740608b82f557ce2b0138eb2c9c))
+* **apollo-wind:** add Getting Started section with templates, theming, and AI prototyping ([7006b1a](https://github.com/uipath/apollo-ui/commit/7006b1af6f5ae54ffb5b0f109a65c40df2207488))
+* **apollo-wind:** add Studio template, PageHeader, and StudioPanel components ([cb91640](https://github.com/uipath/apollo-ui/commit/cb91640a4b443a0091596e21b7792ba6198f3a0d))
+* **apollo-wind:** adopt shadcn theme convention and consolidate theme files ([cc0827f](https://github.com/uipath/apollo-ui/commit/cc0827fd66244af276b293efe256cd2622731327))
+* **apollo-wind:** comprehensive component stories update and cleanup ([b54c229](https://github.com/uipath/apollo-ui/commit/b54c229d670fc953bf570ca73ec57b772f2cb8cf))
+* **apollo-wind:** wip ([0fd58ac](https://github.com/uipath/apollo-ui/commit/0fd58ac4e27421890c434a7c1da2c739c0788e49))
+
+### Bug Fixes
+
+* **apollo-wind:** a11y lint issues, test, comments ([602acbb](https://github.com/uipath/apollo-ui/commit/602acbb339e272f7b5873d4ed745df3219c1d988))
+* **apollo-wind:** address PR [#219](https://github.com/uipath/apollo-ui/issues/219) review feedback ([46b9381](https://github.com/uipath/apollo-ui/commit/46b9381fa10f3040424f0b787d1c1e7419eafaf0))
+* **apollo-wind:** build issues ([4db4f18](https://github.com/uipath/apollo-ui/commit/4db4f18862bcb0fbb55627722cd0dfd6701e3bbe))
+* **apollo-wind:** build issues ([5102f5b](https://github.com/uipath/apollo-ui/commit/5102f5b332aaffb0cb4ab0e79ea873d11e6c92b6))
+* **apollo-wind:** build issues, duplicate buttons ([ac6d5f4](https://github.com/uipath/apollo-ui/commit/ac6d5f4b822980fdd13d9bf9d6468e98455a44a0))
+* **apollo-wind:** dependencies consistency ([9a8231a](https://github.com/uipath/apollo-ui/commit/9a8231aa97f191ef8a45a552ac0a4bec1855c668))
+* **apollo-wind:** failing tests ([7a6a99d](https://github.com/uipath/apollo-ui/commit/7a6a99de6b18160c04b6b93a2032e95996e99b5e))
+
 ## [@uipath/apollo-wind-v0.10.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.9.1...@uipath/apollo-wind@0.10.0) (2026-02-18)
 
 ### Features

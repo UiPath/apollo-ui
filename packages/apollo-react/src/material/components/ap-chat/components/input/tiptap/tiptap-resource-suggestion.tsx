@@ -2,7 +2,6 @@ import type { Editor, Range } from '@tiptap/core';
 import type { MentionOptions } from '@tiptap/extension-mention';
 import { PluginKey } from '@tiptap/pm/state';
 import { CHAT_RESOURCE_MENTION_TERMINATOR } from '../../../service';
-import { getFullMentionQuery } from './tiptap.utils';
 
 export const ResourceMentionPluginKey = new PluginKey('resourceMention');
 
@@ -67,14 +66,12 @@ export function createResourceSuggestion(
     render: () => ({
       onStart: (props) => {
         const coords = getCursorCoordinates(props.editor, props.range.from);
-        const { query, fullRange } = getFullMentionQuery(props.editor, props.range);
-        callbacks.onStart?.(fullRange, coords);
-        callbacks.onQueryChange?.(query, fullRange);
+        callbacks.onStart?.(props.range, coords);
+        callbacks.onQueryChange?.(props.query, props.range);
       },
 
       onUpdate: (props) => {
-        const { query, fullRange } = getFullMentionQuery(props.editor, props.range);
-        callbacks.onQueryChange?.(query, fullRange);
+        callbacks.onQueryChange?.(props.query, props.range);
       },
 
       onExit: () => {

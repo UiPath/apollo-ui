@@ -10,12 +10,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
   Table,
@@ -29,20 +24,70 @@ import {
 const kpis = [
   { label: "Loans Reviewed", value: "3,842", icon: FileSearch, change: "+18%" },
   { label: "Pending QC", value: "127", icon: Clock, change: "-8%" },
-  { label: "Compliance Rate", value: "99.1%", icon: ShieldCheck, change: "+0.3%" },
+  {
+    label: "Compliance Rate",
+    value: "99.1%",
+    icon: ShieldCheck,
+    change: "+0.3%",
+  },
   { label: "Defect Rate", value: "0.9%", icon: TrendingUp, change: "-0.2%" },
 ];
 
 const loans = [
-  { id: "LN-8842", borrower: "Martinez Holdings LLC", amount: "$1,250,000", type: "Commercial", status: "Passed" as const, date: "Feb 25, 2026" },
-  { id: "LN-8841", borrower: "Sarah Chen", amount: "$485,000", type: "Residential", status: "Flagged" as const, date: "Feb 25, 2026" },
-  { id: "LN-8840", borrower: "Greenfield Dev Corp", amount: "$3,200,000", type: "Construction", status: "In Review" as const, date: "Feb 24, 2026" },
-  { id: "LN-8839", borrower: "James & Linda Park", amount: "$320,000", type: "Residential", status: "Passed" as const, date: "Feb 24, 2026" },
-  { id: "LN-8838", borrower: "NovaTech Industries", amount: "$890,000", type: "Commercial", status: "Failed" as const, date: "Feb 23, 2026" },
-  { id: "LN-8837", borrower: "Riverside Properties", amount: "$2,100,000", type: "Commercial", status: "Passed" as const, date: "Feb 23, 2026" },
+  {
+    id: "LN-8842",
+    borrower: "Martinez Holdings LLC",
+    amount: "$1,250,000",
+    type: "Commercial",
+    status: "Passed" as const,
+    date: "Feb 25, 2026",
+  },
+  {
+    id: "LN-8841",
+    borrower: "Sarah Chen",
+    amount: "$485,000",
+    type: "Residential",
+    status: "Flagged" as const,
+    date: "Feb 25, 2026",
+  },
+  {
+    id: "LN-8840",
+    borrower: "Greenfield Dev Corp",
+    amount: "$3,200,000",
+    type: "Construction",
+    status: "In Review" as const,
+    date: "Feb 24, 2026",
+  },
+  {
+    id: "LN-8839",
+    borrower: "James & Linda Park",
+    amount: "$320,000",
+    type: "Residential",
+    status: "Passed" as const,
+    date: "Feb 24, 2026",
+  },
+  {
+    id: "LN-8838",
+    borrower: "NovaTech Industries",
+    amount: "$890,000",
+    type: "Commercial",
+    status: "Failed" as const,
+    date: "Feb 23, 2026",
+  },
+  {
+    id: "LN-8837",
+    borrower: "Riverside Properties",
+    amount: "$2,100,000",
+    type: "Commercial",
+    status: "Passed" as const,
+    date: "Feb 23, 2026",
+  },
 ];
 
-const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+const statusVariant: Record<
+  string,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
   Passed: "default",
   "In Review": "secondary",
   Failed: "destructive",
@@ -65,10 +110,26 @@ const complianceChecks = [
 ];
 
 const recentFindings = [
-  { text: "LN-8838 — missing employment verification letter", time: "1 hr ago", severity: "high" as const },
-  { text: "LN-8841 — DTI ratio exceeds threshold (43.2%)", time: "2 hrs ago", severity: "medium" as const },
-  { text: "Batch QC completed — 156 loans, 2 flagged", time: "4 hrs ago", severity: "low" as const },
-  { text: "LN-8835 — appraisal gap identified ($12K)", time: "6 hrs ago", severity: "medium" as const },
+  {
+    text: "LN-8838 — missing employment verification letter",
+    time: "1 hr ago",
+    severity: "high" as const,
+  },
+  {
+    text: "LN-8841 — DTI ratio exceeds threshold (43.2%)",
+    time: "2 hrs ago",
+    severity: "medium" as const,
+  },
+  {
+    text: "Batch QC completed — 156 loans, 2 flagged",
+    time: "4 hrs ago",
+    severity: "low" as const,
+  },
+  {
+    text: "LN-8835 — appraisal gap identified ($12K)",
+    time: "6 hrs ago",
+    severity: "medium" as const,
+  },
 ];
 
 const severityColor: Record<string, string> = {
@@ -137,14 +198,21 @@ export function LoanQcDashboard({ visible }: { visible: boolean }) {
                     <TableCell className="font-medium">{loan.id}</TableCell>
                     <TableCell>{loan.borrower}</TableCell>
                     <TableCell>{loan.amount}</TableCell>
-                    <TableCell className="text-muted-foreground">{loan.type}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {loan.type}
+                    </TableCell>
                     <TableCell>
-                      <Badge variant={statusVariant[loan.status]} className="gap-1">
+                      <Badge
+                        variant={statusVariant[loan.status]}
+                        className="gap-1"
+                      >
                         <StatusIcon className="w-3 h-3" />
                         {loan.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{loan.date}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {loan.date}
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -182,12 +250,16 @@ export function LoanQcDashboard({ visible }: { visible: boolean }) {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentFindings.map((finding, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <div className={`mt-1.5 w-2 h-2 rounded-full ${severityColor[finding.severity]} shrink-0`} />
+              {recentFindings.map((finding) => (
+                <div key={finding.text} className="flex items-start gap-3">
+                  <div
+                    className={`mt-1.5 w-2 h-2 rounded-full ${severityColor[finding.severity]} shrink-0`}
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm">{finding.text}</p>
-                    <p className="text-xs text-muted-foreground">{finding.time}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {finding.time}
+                    </p>
                   </div>
                 </div>
               ))}

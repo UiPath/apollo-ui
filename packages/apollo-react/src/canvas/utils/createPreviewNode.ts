@@ -5,7 +5,12 @@ import {
   type ReactFlowInstance,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { DEFAULT_NODE_SIZE, GRID_SPACING, PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../constants';
-import { getAbsolutePosition, getNonOverlappingPositionForDirection } from './NodeUtils';
+import {
+  getAbsolutePosition,
+  getNonOverlappingPositionForDirection,
+  type HandleContext,
+  resolveHandleContext,
+} from './NodeUtils';
 
 /**
  * Returns the opposite position for a given handle position.
@@ -80,15 +85,17 @@ function calculateAutoPosition(
   previewNodeSize: { width: number; height: number },
   existingNodes: Node[],
   offset = GRID_SPACING * 5,
-  ignoredNodeTypes: string[] = []
+  ignoredNodeTypes: string[] = [],
+  handle?: HandleContext
 ): { x: number; y: number } {
   const sourceAbsolutePosition = sourceNode.parentId
     ? getAbsolutePosition(sourceNode, existingNodes)
     : sourceNode.position;
   const sourceWidth = sourceNode.measured?.width ?? 0;
   const sourceHeight = sourceNode.measured?.height ?? 0;
-  const sourceCenterX = sourceAbsolutePosition.x + sourceWidth / 2;
-  const sourceCenterY = sourceAbsolutePosition.y + sourceHeight / 2;
+  // Use exact handle position when available, fall back to node center
+  const anchorX = handle?.anchor.x ?? sourceAbsolutePosition.x + sourceWidth / 2;
+  const anchorY = handle?.anchor.y ?? sourceAbsolutePosition.y + sourceHeight / 2;
 
   // Prepare nodes with absolute positions for overlap detection
   const nodesWithAbsolutePositions = existingNodes.map((node) => ({
@@ -101,33 +108,44 @@ function calculateAutoPosition(
 
   switch (handlePosition) {
     case Position.Left:
-      // Place preview to the left of source node
+      // Place preview to the left of source node, vertically aligned with the handle
       initialPosition = {
         x: sourceAbsolutePosition.x - previewNodeSize.width - offset,
-        y: sourceCenterY - previewNodeSize.height / 2,
+        y: anchorY - previewNodeSize.height / 2,
       };
       direction = 'left';
       break;
-    case Position.Right:
-      // Place preview to the right of source node
+    case Position.Right: {
+      // Place preview to the right of source node, vertically aligned with the handle.
+      // When multiple handles share the same side, spread preview nodes vertically: top half shifts up,
+      // bottom half shifts down, middle (odd count) stays centered.
+      let yOffset = 0;
+      const handleIndex = handle?.index ?? null;
+      const handleCount = handle?.count ?? 1;
+      if (handleIndex !== null && handleCount > 1) {
+        if (handleIndex < Math.floor(handleCount / 2)) yOffset = -previewNodeSize.height;
+        else if (handleIndex >= Math.ceil(handleCount / 2)) yOffset = previewNodeSize.height;
+      }
+
       initialPosition = {
         x: sourceAbsolutePosition.x + sourceWidth + offset,
-        y: sourceCenterY - previewNodeSize.height / 2,
+        y: anchorY - previewNodeSize.height / 2 + yOffset,
       };
       direction = 'right';
       break;
+    }
     case Position.Top:
-      // Place preview above source node
+      // Place preview above source node, horizontally aligned with the handle
       initialPosition = {
-        x: sourceCenterX - previewNodeSize.width / 2,
+        x: anchorX - previewNodeSize.width / 2,
         y: sourceAbsolutePosition.y - previewNodeSize.height - offset,
       };
       direction = 'top';
       break;
     case Position.Bottom:
-      // Place preview below source node
+      // Place preview below source node, horizontally aligned with the handle
       initialPosition = {
-        x: sourceCenterX - previewNodeSize.width / 2,
+        x: anchorX - previewNodeSize.width / 2,
         y: sourceAbsolutePosition.y + sourceHeight + offset,
       };
       direction = 'bottom';
@@ -136,7 +154,7 @@ function calculateAutoPosition(
       // Fallback to right-side behavior
       initialPosition = {
         x: sourceAbsolutePosition.x + sourceWidth + offset,
-        y: sourceCenterY - previewNodeSize.height / 2,
+        y: anchorY - previewNodeSize.height / 2,
       };
       direction = 'right';
   }
@@ -181,15 +199,26 @@ export function createPreviewNode(
   // When dragging from a target handle, we should treat the preview as the source for the edge connection.
   const treatPreviewAsSource = sourceHandleType === 'target';
 
+  const existingNodes = reactFlowInstance.getNodes().filter((n) => n.id !== PREVIEW_NODE_ID);
+
+  // Resolve the exact canvas position of the clicked handle via InternalNode bounds.
+  // Falls back to undefined (node-center) if the node or handle isn't found.
+  const internalNode =
+    position === undefined ? reactFlowInstance.getInternalNode(sourceNodeId) : undefined;
+  const handle = internalNode
+    ? resolveHandleContext(internalNode, sourceHandleId, handlePosition)
+    : undefined;
+
   const nodePosition = position
     ? calculatePositionFromDrop(position, handlePosition, previewNodeSize)
     : calculateAutoPosition(
         sourceNode,
         handlePosition,
         previewNodeSize,
-        reactFlowInstance.getNodes().filter((n) => n.id !== PREVIEW_NODE_ID),
+        existingNodes,
         undefined,
-        ignoredNodeTypes
+        ignoredNodeTypes,
+        handle
       );
 
   // Calculate handle positions for the preview node
@@ -198,9 +227,19 @@ export function createPreviewNode(
 
   // Create preview node
   const finalData: Record<string, unknown> = { ...(data ?? {}) };
-  // Set handle positions based on whether preview is source or target.
-  // When preview is source, output handle faces original node.
-  // When preview is target, input handle faces original node.
+  // Set handle positions based on whether preview is acting as the source or the target.
+  //
+  // - When dragging from a *target* handle, we treat the preview node as the *source* (`treatPreviewAsSource`).
+  //   In that case the edge should go: preview (source, output handle) -> original node (target, original handle).
+  //   Therefore:
+  //     • preview.inputHandlePosition stays at the original `handlePosition` (same side as the original target handle),
+  //       because this is where an upstream node would eventually connect to the preview.
+  //     • preview.outputHandlePosition is `handleFacingSource`, so the preview's output handle visually faces back
+  //       towards the original node we are currently connected to.
+  //
+  // - When dragging from a *source* handle (`treatPreviewAsSource` is false), the original node remains the source.
+  //   The preview acts as the target, so its *input* handle must face the original node, and its *output* handle
+  //   stays on the original `handlePosition` side for any downstream connections from the preview.
   finalData.inputHandlePosition = treatPreviewAsSource ? handlePosition : handleFacingSource;
   finalData.outputHandlePosition = treatPreviewAsSource ? handleFacingSource : handlePosition;
 

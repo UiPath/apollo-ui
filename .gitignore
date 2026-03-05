@@ -1,6 +1,8 @@
 # AI
 .claude/*
 !.claude/commands/
+!.claude/skills/
+!.claude/settings.json
 
 # Planning (short-term, task-related documents)
 plan/*
@@ -10,6 +12,7 @@ plan/*
 node_modules/
 .pnp
 .pnp.js
+.pnpm-store
 
 # Build outputs
 dist/

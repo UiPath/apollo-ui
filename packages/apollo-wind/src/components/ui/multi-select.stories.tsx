@@ -3,7 +3,7 @@ import * as React from 'react';
 import { MultiSelect } from './multi-select';
 
 const meta = {
-  title: 'Design System/Core/Multi Select',
+  title: 'Components/Core/Multi Select',
   component: MultiSelect,
   parameters: {
     layout: 'centered',
@@ -218,7 +218,7 @@ export const Interactive = {
     return (
       <div className="w-[400px] space-y-4">
         <div>
-          <label className="text-sm font-medium mb-2 block">Select your skills</label>
+          <span className="text-sm font-medium mb-2 block">Select your skills</span>
           <MultiSelect
             options={skills}
             selected={selected}

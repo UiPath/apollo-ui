@@ -79,7 +79,7 @@ function CollapsedLogo({
                         <img
                           src={companyLogo.url}
                           alt={companyLogo.alt}
-                          className={`w-4 h-auto ${companyLogo.darkUrl ? 'dark:hidden' : ''}`}
+                          className={`w-4 h-auto ${companyLogo.darkUrl ? "dark:hidden" : ""}`}
                         />
                         {companyLogo.darkUrl && (
                           <img
@@ -98,9 +98,7 @@ function CollapsedLogo({
             </motion.div>
           </button>
         </TooltipTrigger>
-        <TooltipContent side="right">
-          {t("open_sidebar")}
-        </TooltipContent>
+        <TooltipContent side="right">{t("open_sidebar")}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
@@ -126,7 +124,7 @@ export const Company = ({
           <img
             src={companyLogo.url}
             alt={companyLogo.alt}
-            className={`w-4 h-auto ${companyLogo.darkUrl ? 'dark:hidden' : ''}`}
+            className={`w-4 h-auto ${companyLogo.darkUrl ? "dark:hidden" : ""}`}
           />
           {companyLogo.darkUrl && (
             <img

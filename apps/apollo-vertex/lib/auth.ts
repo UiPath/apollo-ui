@@ -34,8 +34,10 @@ const getTokenEndpoint = (baseUrl: string) =>
   `${baseUrl}/identity_/connect/token`;
 const getAuthorizationEndpoint = (baseUrl: string) =>
   `${baseUrl}/identity_/connect/authorize`;
-const getRedirectUri = (baseUrl: string) =>
-  typeof window === "undefined" ? "" : `${baseUrl}${window.location.pathname}`;
+const getRedirectUri = () =>
+  window.location.pathname === "/"
+    ? window.location.origin
+    : `${window.location.origin}${window.location.pathname}`;
 
 export type TokenData = z.infer<typeof TokenDataSchema>;
 
@@ -130,7 +132,7 @@ const exchangeCodeForToken = async (
   const body = new URLSearchParams({
     grant_type: "authorization_code",
     code,
-    redirect_uri: getRedirectUri(baseUrl),
+    redirect_uri: getRedirectUri(),
     client_id: clientId,
     code_verifier: codeVerifier,
   });
@@ -233,7 +235,7 @@ export const login = async (
 
   const params = new URLSearchParams({
     client_id: clientId,
-    redirect_uri: getRedirectUri(baseUrl),
+    redirect_uri: getRedirectUri(),
     response_type: "code",
     scope: scope,
     state,
