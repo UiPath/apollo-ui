@@ -92,13 +92,13 @@ export class CategoryTree {
   static buildMap(tree: CategoryTreeNode[]): Map<string, CategoryTreeNode> {
     // Build new category map from filtered tree
     const newCategoryMap = new Map<string, CategoryTreeNode>();
-    const buildMapHelper = (t: CategoryTreeNode[]) => {
-      for (const tNode of t) {
+    const addCategoriesToMap = (categories: CategoryTreeNode[]) => {
+      for (const tNode of categories) {
         newCategoryMap.set(tNode.id, tNode);
-        buildMapHelper(tNode.nestedCategories);
+        addCategoriesToMap(tNode.nestedCategories);
       }
     };
-    buildMapHelper(tree);
+    addCategoriesToMap(tree);
     return newCategoryMap;
   }
 

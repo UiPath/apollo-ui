@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v0.12.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.12.0...@uipath/apollo-wind@0.12.1) (2026-03-05)
+
+### Bug Fixes
+
+* **repo:** security vulnerabilities + add skill ([258a535](https://github.com/uipath/apollo-ui/commit/258a53557628fd1df7845eacbbe0db2e2aedb347))
+
 ## [@uipath/apollo-wind-v0.12.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.11.0...@uipath/apollo-wind@0.12.0) (2026-03-04)
 
 ### Features

@@ -247,9 +247,19 @@ export function createPreviewNode(
 
   // Create preview node
   const finalData: Record<string, unknown> = { ...(data ?? {}) };
-  // Set handle positions based on whether preview is source or target.
-  // When preview is source, output handle faces original node.
-  // When preview is target, input handle faces original node.
+  // Set handle positions based on whether preview is acting as the source or the target.
+  //
+  // - When dragging from a *target* handle, we treat the preview node as the *source* (`treatPreviewAsSource`).
+  //   In that case the edge should go: preview (source, output handle) -> original node (target, original handle).
+  //   Therefore:
+  //     • preview.inputHandlePosition stays at the original `handlePosition` (same side as the original target handle),
+  //       because this is where an upstream node would eventually connect to the preview.
+  //     • preview.outputHandlePosition is `handleFacingSource`, so the preview's output handle visually faces back
+  //       towards the original node we are currently connected to.
+  //
+  // - When dragging from a *source* handle (`treatPreviewAsSource` is false), the original node remains the source.
+  //   The preview acts as the target, so its *input* handle must face the original node, and its *output* handle
+  //   stays on the original `handlePosition` side for any downstream connections from the preview.
   finalData.inputHandlePosition = treatPreviewAsSource ? handlePosition : handleFacingSource;
   finalData.outputHandlePosition = treatPreviewAsSource ? handleFacingSource : handlePosition;
 

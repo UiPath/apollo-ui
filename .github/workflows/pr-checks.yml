@@ -31,8 +31,6 @@ jobs:
           - Typecheck
           - Test Coverage
           - Build
-          - Audit All Dependencies
-          - Audit Production Dependencies
 
     steps:
       - name: Checkout code
@@ -104,28 +102,6 @@ jobs:
             pnpm build --affected
           fi
 
-      - name: Run Audit All Dependencies
-        if: matrix.check == 'Audit All Dependencies'
-        run: |
-          if git diff --name-only origin/main...HEAD | grep -q '^pnpm-lock\.yaml$'; then
-            echo "📋 Running full dependency audit (all dev + prod)..."
-            pnpm audit
-          else
-            echo "⏭️ Skipping audit - pnpm-lock.yaml not changed"
-            exit 0
-          fi
-
-      - name: Run Audit Production Dependencies
-        if: matrix.check == 'Audit Production Dependencies'
-        run: |
-          if git diff --name-only origin/main...HEAD | grep -q '^pnpm-lock\.yaml$'; then
-            echo "🔒 Checking for vulnerabilities in production dependencies..."
-            pnpm audit --prod
-          else
-            echo "⏭️ Skipping audit - pnpm-lock.yaml not changed"
-            exit 0
-          fi
-
       - name: Upload Failure Artifacts
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -136,3 +112,56 @@ jobs:
             dist/
             .turbo/
           retention-days: 3
+
+  audit:
+    name: ${{ matrix.check }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        check:
+          - Audit All Dependencies
+          - Audit Production Dependencies
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check for lockfile changes
+        id: lockfile_check
+        run: |
+          if git diff --name-only origin/main...HEAD | grep -q '^pnpm-lock\.yaml$'; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup pnpm
+        if: steps.lockfile_check.outputs.changed == 'true'
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
+
+      - name: Setup Node.js
+        if: steps.lockfile_check.outputs.changed == 'true'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        if: steps.lockfile_check.outputs.changed == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Audit All Dependencies
+        if: matrix.check == 'Audit All Dependencies' && steps.lockfile_check.outputs.changed == 'true'
+        run: pnpm audit
+
+      - name: Run Audit Production Dependencies
+        if: matrix.check == 'Audit Production Dependencies' && steps.lockfile_check.outputs.changed == 'true'
+        run: pnpm audit --prod
+
+      - name: Skip audit
+        if: steps.lockfile_check.outputs.changed == 'false'
+        run: echo "⏭️ Skipping audit - pnpm-lock.yaml not changed"

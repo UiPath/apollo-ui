@@ -1,6 +1,6 @@
 {
   "name": "@uipath/apollo-react",
-  "version": "3.47.1",
+  "version": "3.47.2",
   "description": "Apollo Design System - React component library with Material UI theming",
   "repository": {
     "type": "git",
@@ -230,9 +230,9 @@
     "@mui/private-theming": "^5.15.3",
     "@rsbuild/plugin-babel": "^1.0.6",
     "@rsbuild/plugin-react": "^1.4.1",
-    "@rslib/core": "^0.17.0",
-    "@storybook/react": "^10.2.0",
-    "@storybook/react-vite": "^10.2.0",
+    "@rslib/core": "^0.19.6",
+    "@storybook/react": "^10.2.15",
+    "@storybook/react-vite": "^10.2.15",
     "@svgr/webpack": "^8.1.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
