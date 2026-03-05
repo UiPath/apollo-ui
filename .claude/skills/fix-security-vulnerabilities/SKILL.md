@@ -28,46 +28,28 @@ Do NOT use for:
 
 **NEVER skip steps. Each step exists because agents skip it under pressure.**
 
-```dot
-digraph vulnerability_fix {
-    "Run pnpm audit" [shape=box];
-    "For EACH vulnerability" [shape=box];
-    "Trace full dependency chain" [shape=box];
-    "Check version range (^ vs exact)" [shape=diamond];
-    "Try pnpm update in lockfile" [shape=box];
-    "Did it fix?" [shape=diamond];
-    "Check parent package updates" [shape=box];
-    "Check intermediate packages" [shape=box];
-    "Check peer dependencies" [shape=box];
-    "Any fix found?" [shape=diamond];
-    "Update parent package" [shape=box];
-    "Add explicit dependency if peer" [shape=box];
-    "Verify fix" [shape=box];
-    "Add override (last resort)" [shape=box];
-    "Document why no fix" [shape=box];
-    "Done" [shape=doublecircle];
-
-    "Run pnpm audit" -> "For EACH vulnerability";
-    "For EACH vulnerability" -> "Trace full dependency chain";
-    "Trace full dependency chain" -> "Check version range (^ vs exact)";
-    "Check version range (^ vs exact)" -> "Try pnpm update in lockfile" [label="uses ^"];
-    "Check version range (^ vs exact)" -> "Check parent package updates" [label="exact"];
-    "Try pnpm update in lockfile" -> "Did it fix?";
-    "Did it fix?" -> "Verify fix" [label="yes"];
-    "Did it fix?" -> "Check parent package updates" [label="no"];
-    "Check parent package updates" -> "Check intermediate packages";
-    "Check intermediate packages" -> "Check peer dependencies";
-    "Check peer dependencies" -> "Any fix found?";
-    "Any fix found?" -> "Update parent package" [label="yes, via update"];
-    "Any fix found?" -> "Add explicit dependency if peer" [label="yes, via peer"];
-    "Any fix found?" -> "Add override (last resort)" [label="no"];
-    "Update parent package" -> "Verify fix";
-    "Add explicit dependency if peer" -> "Verify fix";
-    "Verify fix" -> "For EACH vulnerability";
-    "Add override (last resort)" -> "Document why no fix";
-    "Document why no fix" -> "For EACH vulnerability";
-    "For EACH vulnerability" -> "Done" [label="all done"];
-}
+```mermaid
+flowchart TD
+    A["Run pnpm audit"] --> B["For EACH vulnerability"]
+    B --> C["Trace full dependency chain"]
+    C --> D{"Check version range (^ vs exact)"}
+    D -- "uses ^" --> E["Try pnpm update in lockfile"]
+    D -- "exact" --> F["Check parent package updates"]
+    E --> G{"Did it fix?"}
+    G -- "yes" --> H["Verify fix"]
+    G -- "no" --> F
+    F --> I["Check intermediate packages"]
+    I --> J["Check peer dependencies"]
+    J --> K{"Any fix found?"}
+    K -- "yes, via update" --> L["Update parent package"]
+    K -- "yes, via peer" --> M["Add explicit dependency if peer"]
+    K -- "no" --> N["Add override (last resort)"]
+    L --> H
+    M --> H
+    H --> B
+    N --> O["Document why no fix"]
+    O --> B
+    B --> P(["Done"])
 ```
 
 ## Step-by-Step Instructions
@@ -218,7 +200,7 @@ pnpm build  # Ensure nothing broke
 }
 ```
 
-**Add to package.json:**
+**Example: real-world override in package.json:**
 ```json
 {
   "pnpm": {
