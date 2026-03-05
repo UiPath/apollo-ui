@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.48.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.48.0...@uipath/apollo-react@3.48.1) (2026-03-05)
+
+### Bug Fixes
+
+* **apollo-react:** correctly position new nodes on handle with node pre-attached ([6071f12](https://github.com/UiPath/apollo-ui/commit/6071f12a35b224b4dc71d35f429cba279cb8119d))
+
 ## [@uipath/apollo-react-v3.48.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.47.2...@uipath/apollo-react@3.48.0) (2026-03-05)
 
 ### Features
