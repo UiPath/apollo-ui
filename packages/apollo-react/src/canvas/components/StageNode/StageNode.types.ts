@@ -39,6 +39,8 @@ export interface StageNodeProps extends NodeProps {
     isException?: boolean;
     isReadOnly?: boolean;
     tasks: StageTaskItem[][];
+    nonSequentialTasks?: StageTaskItem[];
+    nonSequentialTasksTitle?: string;
     selectedTaskId?: string;
   };
   addTaskLabel?: string;

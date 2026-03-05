@@ -291,3 +291,10 @@ export const StageTaskDragPlaceholder = styled.div<{ isTargetParallel?: boolean 
   height: 100%;
   width: ${({ isTargetParallel }) => (isTargetParallel ? 'var(--stage-task-width-parallel, 216px)' : 'var(--stage-task-width, 246px)')};
 `;
+
+export const StageNonSequentialTasksDivider = styled.div`
+  height: 1px;
+  padding: 0 ${Spacing.SpacingBase};
+  border-bottom: solid 1px var(--uix-canvas-border-de-emp);
+  overflow: hidden;
+`;

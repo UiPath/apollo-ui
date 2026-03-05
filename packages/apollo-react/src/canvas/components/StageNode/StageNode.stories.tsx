@@ -200,6 +200,19 @@ export const Default: Story = {
             slaBreached: false,
             escalation: '1h',
             escalationsTriggered: false,
+            nonSequentialTasks: [
+              {
+                id: 'non_sequential_task_1',
+                label: 'Non Sequential Task 1',
+                icon: <ProcessIcon />,
+              },
+              {
+                id: 'non_sequential_task_2',
+                label: 'Non Sequential Task 2',
+                icon: <ProcessIcon />,
+              },
+            ],
+            nonSequentialTasksTitle: 'Non Sequential Tasks',
           },
           execution: {
             stageStatus: {
@@ -673,6 +686,14 @@ export const LoanProcessingWorkflow: Story = {
               [{ id: '5', label: 'Processing Review', icon: <ProcessIcon /> }],
             ],
             selectedTasks: ['4'],
+            nonSequentialTasks: [
+              {
+                id: 'non_sequential_task_1',
+                label: 'Escalate to Manager',
+                icon: <ProcessIcon />,
+              },
+            ],
+            nonSequentialTasksTitle: 'Non-Sequential Tasks',
           },
         },
       },

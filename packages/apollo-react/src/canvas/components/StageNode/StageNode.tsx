@@ -43,6 +43,7 @@ import {
   StageContainer,
   StageContent,
   StageHeader,
+  StageNonSequentialTasksDivider,
   StageParallelBracket,
   StageParallelLabel,
   StageTask,
@@ -88,9 +89,16 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
   const taskWidth = width ? width - STAGE_CONTENT_INSET : undefined;
 
-  const tasks = useMemo(() => stageDetails?.tasks || [], [stageDetails?.tasks]);
-  const flatTasks = useMemo(() => tasks.flat(), [tasks]);
-  const taskIds = useMemo(() => flatTasks.map((task) => task.id), [flatTasks]);
+  const sequentialTasks = useMemo(() => stageDetails?.tasks || [], [stageDetails?.tasks]);
+  const nonSequentialTasks = useMemo(
+    () => stageDetails?.nonSequentialTasks || [],
+    [stageDetails?.nonSequentialTasks]
+  );
+  const flatSequentialTasks = useMemo(() => sequentialTasks.flat(), [sequentialTasks]);
+  const sequentialTaskIds = useMemo(
+    () => flatSequentialTasks.map((task) => task.id),
+    [flatSequentialTasks]
+  );
 
   const isException = stageDetails?.isException;
   const isReadOnly = !!stageDetails?.isReadOnly;
@@ -130,42 +138,42 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
   useEffect(() => {
     if (pendingReplaceTask) {
-      const match = tasks
+      const match = sequentialTasks
         .flatMap((group, gi) => group.map((task, ti) => ({ task, groupIndex: gi, taskIndex: ti })))
         .find(({ task }) => task.id === selectedTaskId);
 
       if (match) {
         taskStateReference.current = {
-          isParallel: (tasks[match.groupIndex]?.length ?? 0) > 1,
+          isParallel: (sequentialTasks[match.groupIndex]?.length ?? 0) > 1,
           groupIndex: match.groupIndex,
           taskIndex: match.taskIndex,
         };
         setIsReplacingTask(true);
       }
     }
-  }, [pendingReplaceTask, selectedTaskId, tasks]);
+  }, [pendingReplaceTask, selectedTaskId, sequentialTasks]);
 
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
   const [overId, setOverId] = useState<string | null>(null);
   const activeTask = useMemo(
-    () => flatTasks.find((t) => t.id === activeDragId),
-    [flatTasks, activeDragId]
+    () => flatSequentialTasks.find((t) => t.id === activeDragId),
+    [flatSequentialTasks, activeDragId]
   );
   const isActiveTaskParallel = useMemo(() => {
     if (!activeDragId) {
       return false;
     }
-    const group = tasks.find((g) => g.some((t) => t.id === activeDragId));
+    const group = sequentialTasks.find((g) => g.some((t) => t.id === activeDragId));
     return group ? group.length > 1 : false;
-  }, [tasks, activeDragId]);
+  }, [sequentialTasks, activeDragId]);
 
   const { zoom } = useViewport();
 
   const projected = useMemo(() => {
     if (!activeDragId || !overId) return null;
-    return getProjection(tasks, activeDragId, overId, offsetLeft);
-  }, [tasks, activeDragId, overId, offsetLeft]);
+    return getProjection(sequentialTasks, activeDragId, overId, offsetLeft);
+  }, [sequentialTasks, activeDragId, overId, offsetLeft]);
 
   useEffect(() => {
     if (selected === false) {
@@ -251,7 +259,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
       if (onReplaceTaskFromToolbox) {
         items.push(
           getMenuItem('replace-task', 'Replace task', () => {
-            const taskId = tasks[groupIndex]?.[taskIndex]?.id;
+            const taskId = sequentialTasks[groupIndex]?.[taskIndex]?.id;
             if (taskId) onTaskClick?.(taskId);
             setIsReplacingTask(true);
           })
@@ -275,7 +283,13 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
       return items;
     },
-    [onReplaceTaskFromToolbox, onTaskClick, onTaskGroupModification, reGroupTaskFunction, tasks]
+    [
+      onReplaceTaskFromToolbox,
+      onTaskClick,
+      onTaskGroupModification,
+      reGroupTaskFunction,
+      sequentialTasks,
+    ]
   );
 
   const { setSelectedNodeId } = useNodeSelection();
@@ -435,7 +449,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
       }
 
       const projection = getProjection(
-        tasks,
+        sequentialTasks,
         active.id as string,
         over.id as string,
         currentOffsetLeft
@@ -446,7 +460,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
       // For in-place movement, skip if depth hasn't changed
       if (active.id === over.id) {
-        const flattened = flattenTasks(tasks);
+        const flattened = flattenTasks(sequentialTasks);
         const activeTask = flattened.find((t) => t.id === active.id);
         if (activeTask && activeTask.depth === projection.depth) {
           return;
@@ -454,14 +468,14 @@ const StageNodeComponent = (props: StageNodeProps) => {
       }
 
       const newTasks = reorderTasks(
-        tasks,
+        sequentialTasks,
         active.id as string,
         over.id as string,
         projection.depth
       );
       onTaskReorder(newTasks);
     },
-    [tasks, onTaskReorder, offsetLeft, resetState]
+    [sequentialTasks, onTaskReorder, offsetLeft, resetState]
   );
 
   const handleDragCancel = useCallback(() => {
@@ -548,11 +562,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
             {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly && (
               <ApTooltip content={addTaskLabel} placement="top">
                 <span>
-                  <ApIconButton
-                    onClick={handleTaskAddClick}
-                    size="small"
-                    label={addTaskLabel}
-                  >
+                  <ApIconButton onClick={handleTaskAddClick} size="small" label={addTaskLabel}>
                     <ApIcon name="add" size="20px" />
                   </ApIconButton>
                 </span>
@@ -562,7 +572,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
         </StageHeader>
 
         <StageContent>
-          {!tasks || tasks.length === 0 ? (
+          {!sequentialTasks || sequentialTasks.length === 0 ? (
             <Column py={2}>
               {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly ? (
                 <ApLink
@@ -594,10 +604,10 @@ const StageNodeComponent = (props: StageNodeProps) => {
               onDragEnd={handleDragEnd}
               onDragCancel={handleDragCancel}
             >
-              <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+              <SortableContext items={sequentialTaskIds} strategy={verticalListSortingStrategy}>
                 {/* Disable dragging and panning the canvas when dragging a task */}
                 <StageTaskList className="nodrag nopan">
-                  {tasks.map((taskGroup, groupIndex) => {
+                  {sequentialTasks.map((taskGroup, groupIndex) => {
                     const isParallel = taskGroup.length > 1;
                     return (
                       <Row key={`group-${groupIndex}`} gap={Spacing.SpacingS}>
@@ -623,10 +633,10 @@ const StageNodeComponent = (props: StageNodeProps) => {
                                   isParallel,
                                   groupIndex,
                                   taskIndex,
-                                  tasks.length,
+                                  sequentialTasks.length,
                                   taskGroup.length,
-                                  (tasks[groupIndex - 1]?.length ?? 0) > 1,
-                                  (tasks[groupIndex + 1]?.length ?? 0) > 1
+                                  (sequentialTasks[groupIndex - 1]?.length ?? 0) > 1,
+                                  (sequentialTasks[groupIndex + 1]?.length ?? 0) > 1
                                 )}
                                 onTaskClick={handleTaskClick}
                                 projectedDepth={
@@ -671,6 +681,44 @@ const StageNodeComponent = (props: StageNodeProps) => {
                 document.body
               )}
             </DndContext>
+          )}
+          {nonSequentialTasks.length > 0 && (
+            <Column pt={Spacing.SpacingS} gap={Spacing.SpacingS}>
+              <StageNonSequentialTasksDivider />
+              <ApTypography
+                variant={FontVariantToken.fontSizeS}
+                color="var(--uix-canvas-foreground-de-emp)"
+              >
+                {stageDetails?.nonSequentialTasksTitle}
+              </ApTypography>
+              <StageTaskList>
+                {nonSequentialTasks.map((task, taskIndex) => {
+                  const taskExecution = execution?.taskStatus?.[task.id];
+                  return (
+                    <DraggableTask
+                      key={task.id}
+                      task={task}
+                      taskExecution={taskExecution}
+                      isSelected={selectedTaskId === task.id}
+                      isParallel={false}
+                      contextMenuItems={contextMenuItems(false, 0, 0, 0, 0, false, false)} // we only want replace/delete for non-sequential tasks
+                      onTaskClick={handleTaskClick}
+                      isDragDisabled={true}
+                      zoom={zoom}
+                      {...((onTaskGroupModification || onReplaceTaskFromToolbox) && {
+                        onMenuOpen: () => {
+                          taskStateReference.current = {
+                            isParallel: false,
+                            groupIndex: 0,
+                            taskIndex,
+                          };
+                        },
+                      })}
+                    />
+                  );
+                })}
+              </StageTaskList>
+            </Column>
           )}
         </StageContent>
       </StageContainer>
