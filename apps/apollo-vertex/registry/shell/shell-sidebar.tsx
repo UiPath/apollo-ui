@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { FileText, FolderOpen, Home, Settings, Users } from "lucide-react";
+import { FileText, FolderOpen, Home, LayoutDashboard, Settings, Users } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
@@ -111,6 +111,13 @@ export const Sidebar = ({
           text="Dashboard"
           active={nav ? nav.activePage === "dashboard" : undefined}
           onClick={handleNavigate("dashboard")}
+        />
+        <NavItem
+          to="/preview/shell/dashboard-v2"
+          icon={LayoutDashboard}
+          text="Dashboard v2"
+          active={nav ? nav.activePage === "dashboard-v2" : undefined}
+          onClick={handleNavigate("dashboard-v2")}
         />
         <NavItem
           to="/preview/shell/projects"

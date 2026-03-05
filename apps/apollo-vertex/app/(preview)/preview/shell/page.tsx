@@ -18,6 +18,7 @@ import { Toaster } from "@/registry/sonner/sonner";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 import { ShellTemplate } from "@/templates/ShellTemplate";
 import { AnalyticsPage } from "./analytics-page";
+import { DashboardV2Page } from "./dashboard-v2-page";
 import { InvoiceDashboard } from "./invoice-dashboard";
 import { InvoicesListPage } from "./invoices-list-page";
 import { ProjectsPage } from "./projects-page";
@@ -163,7 +164,7 @@ function VisibilityToggle({
 export default function ShellPreviewPage() {
   const [contentVisible, setContentVisible] = useState(true);
   const [activePage, setActivePage] = useState<
-    "dashboard" | "projects" | "invoices" | "analytics"
+    "dashboard" | "dashboard-v2" | "projects" | "invoices" | "analytics"
   >("dashboard");
   const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null);
   const [approvedInvoices, setApprovedInvoices] = useState<Set<string>>(new Set());
@@ -173,7 +174,7 @@ export default function ShellPreviewPage() {
       activePage={activePage}
       onNavigate={(page) =>
         setActivePage(
-          page as "dashboard" | "projects" | "invoices" | "analytics",
+          page as "dashboard" | "dashboard-v2" | "projects" | "invoices" | "analytics",
         )
       }
     >
@@ -195,7 +196,8 @@ export default function ShellPreviewPage() {
         <AnimatePresence mode="wait">
           {contentVisible ||
           activePage === "analytics" ||
-          activePage === "invoices" ? (
+          activePage === "invoices" ||
+          activePage === "dashboard-v2" ? (
             <motion.div
               key={
                 activePage === "analytics"
@@ -209,6 +211,7 @@ export default function ShellPreviewPage() {
               transition={{ duration: 0.2, ease: "easeInOut" }}
             >
               <InvoiceDashboard visible={activePage === "dashboard"} />
+              <DashboardV2Page visible={activePage === "dashboard-v2"} />
               <ProjectsPage visible={activePage === "projects"} />
               <InvoicesListPage
                 visible={activePage === "invoices"}

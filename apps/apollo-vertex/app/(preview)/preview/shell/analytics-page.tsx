@@ -862,7 +862,7 @@ export function AnalyticsPage({
             transition={{ duration: 0.3 }}
           >
             {/* Left Panel Skeleton */}
-            <div className="border-r border-border/50 p-6 space-y-6">
+            <div className="p-6 space-y-6">
               <div className="flex items-center justify-between">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-3 w-12" />
@@ -904,7 +904,7 @@ export function AnalyticsPage({
             </div>
 
             {/* Center Panel Skeleton */}
-            <div className="p-6 space-y-6">
+            <div className="bg-background p-6 space-y-6">
               <div className="flex items-center gap-2">
                 <Skeleton className="h-4 w-20" />
                 <Skeleton className="h-3 w-12" />
@@ -925,7 +925,7 @@ export function AnalyticsPage({
             </div>
 
             {/* Right Panel Skeleton */}
-            <div className="border-l border-border/50 p-6 space-y-5">
+            <div className="p-6 space-y-5">
               <Skeleton className="h-4 w-24" />
               <div className="space-y-1">
                 <Skeleton className="h-3 w-20" />
@@ -964,7 +964,7 @@ export function AnalyticsPage({
             transition={{ duration: 0.25, ease: "easeInOut" }}
           >
             {/* Left Panel — Notifications */}
-            <div className="relative border-r border-border/50 overflow-hidden">
+            <div className="relative overflow-hidden">
               <div className="overflow-y-auto h-full p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-sm font-semibold">Notifications</h2>
@@ -1083,7 +1083,7 @@ export function AnalyticsPage({
             </div>
 
             {/* Center Panel — AI Summary */}
-            <div className="flex flex-col overflow-hidden">
+            <div className="bg-background relative flex flex-col overflow-hidden">
               <div className="flex-1 overflow-y-auto py-6 pl-6 pr-12">
                 <div className="mb-8">
                   <div className="flex items-center gap-2 mb-6">
@@ -1211,7 +1211,7 @@ export function AnalyticsPage({
             </div>
 
             {/* Right Panel — Invoice Details */}
-            <div className="border-l border-border/50 overflow-y-auto p-6">
+            <div className="overflow-y-auto p-6">
               <h2 className="text-sm font-semibold mb-6">Invoice Details</h2>
 
               <div className="space-y-5">
