@@ -299,7 +299,7 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
             </div>
 
             {/* Center Panel Skeleton */}
-            <div className="bg-background p-6 space-y-6">
+            <div className="p-6 space-y-6">
               <div className="flex items-center gap-2">
                 <Skeleton className="h-4 w-20" />
                 <Skeleton className="h-3 w-12" />
@@ -465,7 +465,7 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
         </div>
 
         {/* Center Panel — AI Summary */}
-        <div className="bg-background flex flex-col overflow-hidden">
+        <div className="flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto py-6 pl-6 pr-12">
               {/* Agent Message */}
               <div className="mb-8">
