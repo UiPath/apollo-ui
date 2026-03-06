@@ -799,7 +799,6 @@ body.light-hc {
 /**
   * @theme inline - Tailwind utility generation
   *
-  * Combines tokens from themes.css with Apollo-core tokens.
   * Only tokens defined here will generate Tailwind utilities.
   */
 
