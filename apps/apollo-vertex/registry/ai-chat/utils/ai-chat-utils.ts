@@ -3,7 +3,7 @@ import type {
   ToolCall,
   ToolResultChoices,
   ToolResultNavigation,
-} from "@/lib/ai-chat-types";
+} from "./ai-chat-types";
 
 export type GroupedItem =
   | { kind: "message"; message: ChatMessage }

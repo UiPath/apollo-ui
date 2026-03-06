@@ -6,8 +6,8 @@ import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/lib/utils";
-import type { ChatMessage } from "@/lib/ai-chat-types";
-import { extractMessageContent } from "@/lib/ai-chat-utils";
+import type { ChatMessage } from "../utils/ai-chat-types";
+import { extractMessageContent } from "../utils/ai-chat-utils";
 
 interface AiChatMessageProps {
   message: ChatMessage;
@@ -41,7 +41,10 @@ export function AiChatMessage({
                   key={attachment.fileName}
                   className="flex items-center gap-1 text-xs text-muted-foreground"
                 >
-                  <Paperclip className="size-3 flex-shrink-0" aria-hidden="true" />
+                  <Paperclip
+                    className="size-3 flex-shrink-0"
+                    aria-hidden="true"
+                  />
                   {attachment.fileName}
                 </p>
               ))}
@@ -55,7 +58,10 @@ export function AiChatMessage({
   return (
     <div className="flex w-full justify-start gap-3">
       <div className="size-8 flex items-center justify-center flex-shrink-0 rounded-full bg-primary">
-        <Sparkles className="size-4 text-primary-foreground" aria-hidden="true" />
+        <Sparkles
+          className="size-4 text-primary-foreground"
+          aria-hidden="true"
+        />
       </div>
       <div className="flex flex-col gap-1 w-[85%]">
         <span className="text-xs text-muted-foreground font-medium">

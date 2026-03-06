@@ -5,18 +5,18 @@ import type {
   ToolDefinition,
   UseAiChatOptions,
   UseAiChatReturn,
-} from "@/lib/ai-chat-types";
+} from "../utils/ai-chat-types";
 import {
   buildApiMessages,
   executeToolCall,
   getAccessToken,
   resolveConfig,
-} from "@/lib/ai-chat-api";
+} from "../utils/ai-chat-api";
 import {
   getStorage,
   loadFromStorage,
   saveToStorage,
-} from "@/lib/ai-chat-storage";
+} from "../utils/ai-chat-storage";
 
 export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
   const {
@@ -74,12 +74,13 @@ export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
 
   // Cleanup on unmount — abort in-flight requests and cancel queued timers.
   useEffect(() => {
+    const pendingTimers = pendingTimersRef.current;
     return () => {
       abortControllerRef.current?.abort();
-      for (const timer of pendingTimersRef.current) {
+      for (const timer of pendingTimers) {
         clearInterval(timer);
       }
-      pendingTimersRef.current.clear();
+      pendingTimers.clear();
     };
   }, []);
 
@@ -111,7 +112,7 @@ export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
             if (!isLoadingRef.current) {
               pendingTimersRef.current.delete(check);
               clearInterval(check);
-              void sendMessage(content, files, opts);
+              sendMessage(content, files, opts);
             }
           }, 200);
           pendingTimersRef.current.add(check);

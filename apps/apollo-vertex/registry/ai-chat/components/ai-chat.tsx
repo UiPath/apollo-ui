@@ -13,8 +13,8 @@ import {
   findLatestChoices,
   findLatestNavigation,
   groupMessages,
-} from "@/lib/ai-chat-utils";
-import type { ChatMessage, ChoiceOption } from "@/lib/ai-chat-types";
+} from "../utils/ai-chat-utils";
+import type { ChatMessage, ChoiceOption } from "../utils/ai-chat-types";
 
 interface AiChatProps {
   messages: ChatMessage[];
@@ -124,7 +124,10 @@ export function AiChat({
   const defaultEmptyState = (
     <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
       <div className="size-16 flex items-center justify-center mb-4 rounded-full bg-primary">
-        <Sparkles className="size-8 text-primary-foreground" aria-hidden="true" />
+        <Sparkles
+          className="size-8 text-primary-foreground"
+          aria-hidden="true"
+        />
       </div>
       <p>{t("start_conversation_with", { name: displayName })}</p>
     </div>
@@ -150,7 +153,10 @@ export function AiChat({
           aria-live="assertive"
           className="mx-4 mb-2 flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
         >
-          <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
+          <AlertCircle
+            className="h-4 w-4 flex-shrink-0 mt-0.5"
+            aria-hidden="true"
+          />
           <span>{error.message}</span>
         </div>
       )}
@@ -209,7 +215,10 @@ export function AiChat({
             )}
 
             {latestNavigation && !isLoading && onNavigate && (
-              <nav aria-label="Navigation options" className="flex flex-wrap gap-2">
+              <nav
+                aria-label="Navigation options"
+                className="flex flex-wrap gap-2"
+              >
                 {latestNavigation.tabs.map((navTab) => (
                   <button
                     key={navTab.tab}
@@ -259,4 +268,4 @@ export type {
   ToolResult,
   ToolResultChoices,
   ToolResultNavigation,
-} from "@/lib/ai-chat-types";
+} from "../utils/ai-chat-types";

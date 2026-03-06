@@ -243,7 +243,7 @@
       "name": "ai-chat",
       "type": "registry:ui",
       "title": "AI Chat",
-      "description": "A generic, reusable, and type-safe AI chat component with OpenAI-compatible API support, markdown rendering, tool calling, collapsible tool groups, suggestion buttons, and file uploads",
+      "description": "A generic, reusable, and type-safe AI chat component with OpenAI-compatible API support, agentic tool loop, markdown rendering, tool calling, collapsible tool groups, navigation tabs, suggestion buttons, error display, hidden messages, dynamic config, message injection, and file uploads",
       "dependencies": [
         "lucide-react",
         "react-i18next",
@@ -253,52 +253,64 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "registry/ai-chat/ai-chat-types.ts",
-          "type": "registry:lib"
+          "path": "registry/ai-chat/utils/ai-chat-types.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/utils/ai-chat-types.ts"
         },
         {
-          "path": "registry/ai-chat/ai-chat-utils.ts",
-          "type": "registry:lib"
+          "path": "registry/ai-chat/utils/ai-chat-utils.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/utils/ai-chat-utils.ts"
         },
         {
-          "path": "registry/ai-chat/ai-chat-storage.ts",
-          "type": "registry:lib"
+          "path": "registry/ai-chat/utils/ai-chat-storage.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/utils/ai-chat-storage.ts"
         },
         {
-          "path": "registry/ai-chat/ai-chat-api.ts",
-          "type": "registry:lib"
+          "path": "registry/ai-chat/utils/ai-chat-api.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/utils/ai-chat-api.ts"
         },
         {
-          "path": "registry/ai-chat/use-ai-chat.ts",
-          "type": "registry:hook"
+          "path": "registry/ai-chat/hooks/use-ai-chat.ts",
+          "type": "registry:hook",
+          "target": "components/ui/ai-chat/hooks/use-ai-chat.ts"
         },
         {
-          "path": "registry/ai-chat/ai-chat.tsx",
-          "type": "registry:ui"
+          "path": "registry/ai-chat/components/ai-chat.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat.tsx"
         },
         {
-          "path": "registry/ai-chat/ai-chat-message.tsx",
-          "type": "registry:ui"
+          "path": "registry/ai-chat/components/ai-chat-message.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-message.tsx"
         },
         {
-          "path": "registry/ai-chat/ai-chat-loading.tsx",
-          "type": "registry:ui"
+          "path": "registry/ai-chat/components/ai-chat-loading.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-loading.tsx"
         },
         {
-          "path": "registry/ai-chat/ai-chat-input.tsx",
-          "type": "registry:ui"
+          "path": "registry/ai-chat/components/ai-chat-input.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-input.tsx"
         },
         {
-          "path": "registry/ai-chat/ai-chat-suggestions.tsx",
-          "type": "registry:ui"
+          "path": "registry/ai-chat/components/ai-chat-suggestions.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-suggestions.tsx"
         },
         {
-          "path": "registry/ai-chat/ai-chat-tool-group.tsx",
-          "type": "registry:ui"
+          "path": "registry/ai-chat/components/ai-chat-tool-group.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-tool-group.tsx"
         },
         {
-          "path": "registry/ai-chat/ai-chat-tool-group-message.tsx",
-          "type": "registry:ui"
+          "path": "registry/ai-chat/components/ai-chat-tool-group-message.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-tool-group-message.tsx"
         }
       ]
     },

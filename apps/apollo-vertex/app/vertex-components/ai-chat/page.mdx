@@ -43,8 +43,8 @@ npm install lucide-react react-i18next react-markdown remark-gfm
 ### Basic Chat
 
 ```tsx
-import { AiChat } from '@/registry/ai-chat/ai-chat';
-import { useAiChat } from '@/registry/ai-chat/use-ai-chat';
+import { AiChat } from '@/components/ui/ai-chat/components/ai-chat';
+import { useAiChat } from '@/components/ui/ai-chat/hooks/use-ai-chat';
 
 function BasicChat() {
   const chat = useAiChat({
@@ -75,8 +75,8 @@ function BasicChat() {
 The hook automatically loops — executing tool calls and re-calling the LLM — until the assistant sends a final response with no tool calls.
 
 ```tsx
-import { useAiChat } from '@/registry/ai-chat/use-ai-chat';
-import type { ToolDefinition } from '@/registry/ai-chat/ai-chat-types';
+import { useAiChat } from '@/components/ui/ai-chat/hooks/use-ai-chat';
+import type { ToolDefinition } from '@/components/ui/ai-chat/utils/ai-chat-types';
 
 const tools: ToolDefinition[] = [
   {
@@ -153,7 +153,7 @@ function DynamicChat({ currentUser, currentContext }) {
 Display clickable section navigation buttons from a tool result. The `onNavigate` callback receives the `tab` value when the user clicks.
 
 ```tsx
-import type { ToolResultNavigation } from '@/registry/ai-chat/ai-chat-types';
+import type { ToolResultNavigation } from '@/components/ui/ai-chat/utils/ai-chat-types';
 
 // Tool result shape that triggers navigation buttons
 const navResult: ToolResultNavigation = {
@@ -189,7 +189,7 @@ const toolMessage: ChatMessage = {
 Display interactive choice buttons from tool results:
 
 ```tsx
-import type { ToolResultChoices } from '@/registry/ai-chat/ai-chat-types';
+import type { ToolResultChoices } from '@/components/ui/ai-chat/utils/ai-chat-types';
 
 const choices: ToolResultChoices = {
   type: 'choices',
@@ -408,10 +408,10 @@ import type {
   ToolResultNavigation,
   MessagePart,
   LLMMessage,
-} from '@/lib/ai-chat-types';
+} from '@/components/ui/ai-chat/utils/ai-chat-types';
 
 // AiChatInputHandle — ref handle for programmatic input focus
-import type { AiChatInputHandle } from '@/registry/ai-chat/ai-chat';
+import type { AiChatInputHandle } from '@/components/ui/ai-chat/components/ai-chat';
 ```
 
 ### Key Types

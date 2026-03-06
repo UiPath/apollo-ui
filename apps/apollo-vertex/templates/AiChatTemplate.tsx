@@ -2,13 +2,13 @@
 
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { AiChat } from "@/registry/ai-chat/components/ai-chat";
+import { useAiChat } from "@/registry/ai-chat/hooks/use-ai-chat";
 import type {
   ChatMessage,
   ToolResultChoices,
   ToolResultNavigation,
-} from "@/lib/ai-chat-types";
-import { AiChat } from "@/registry/ai-chat/ai-chat";
-import { useAiChat } from "@/registry/ai-chat/use-ai-chat";
+} from "@/registry/ai-chat/utils/ai-chat-types";
 
 const delay = (ms: number): Promise<void> =>
   new Promise((r) => {

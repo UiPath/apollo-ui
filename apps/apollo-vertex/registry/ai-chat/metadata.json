@@ -23,51 +23,51 @@
   ],
   "files": [
     {
-      "path": "ai-chat-types.ts",
+      "path": "utils/ai-chat-types.ts",
       "type": "types"
     },
     {
-      "path": "ai-chat-utils.ts",
+      "path": "utils/ai-chat-utils.ts",
       "type": "utils"
     },
     {
-      "path": "ai-chat-storage.ts",
+      "path": "utils/ai-chat-storage.ts",
       "type": "utils"
     },
     {
-      "path": "ai-chat-api.ts",
+      "path": "utils/ai-chat-api.ts",
       "type": "utils"
     },
     {
-      "path": "use-ai-chat.ts",
+      "path": "hooks/use-ai-chat.ts",
       "type": "hook"
     },
     {
-      "path": "ai-chat.tsx",
+      "path": "components/ai-chat.tsx",
       "type": "component"
     },
     {
-      "path": "ai-chat-message.tsx",
+      "path": "components/ai-chat-message.tsx",
       "type": "component"
     },
     {
-      "path": "ai-chat-loading.tsx",
+      "path": "components/ai-chat-loading.tsx",
       "type": "component"
     },
     {
-      "path": "ai-chat-input.tsx",
+      "path": "components/ai-chat-input.tsx",
       "type": "component"
     },
     {
-      "path": "ai-chat-suggestions.tsx",
+      "path": "components/ai-chat-suggestions.tsx",
       "type": "component"
     },
     {
-      "path": "ai-chat-tool-group.tsx",
+      "path": "components/ai-chat-tool-group.tsx",
       "type": "component"
     },
     {
-      "path": "ai-chat-tool-group-message.tsx",
+      "path": "components/ai-chat-tool-group-message.tsx",
       "type": "component"
     }
   ],

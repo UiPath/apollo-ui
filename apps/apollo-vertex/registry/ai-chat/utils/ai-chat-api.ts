@@ -1,4 +1,4 @@
-import type { ChatMessage, LLMMessage, ToolCall } from "@/lib/ai-chat-types";
+import type { ChatMessage, LLMMessage, ToolCall } from "./ai-chat-types";
 
 export function resolveConfig<T>(value: T | (() => T)): T {
   return typeof value === "function" ? (value as () => T)() : value;

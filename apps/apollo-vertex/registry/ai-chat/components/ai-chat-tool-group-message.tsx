@@ -1,7 +1,7 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
-import type { ToolCall } from "@/lib/ai-chat-types";
+import type { ToolCall } from "../utils/ai-chat-types";
 import { AiChatToolGroup } from "./ai-chat-tool-group";
 
 interface AiChatToolGroupMessageProps {
@@ -26,7 +26,10 @@ export function AiChatToolGroupMessage({
   return (
     <div className="flex w-full justify-start gap-3">
       <div className="size-8 flex items-center justify-center flex-shrink-0 rounded-full bg-primary">
-        <Sparkles className="size-4 text-primary-foreground" aria-hidden="true" />
+        <Sparkles
+          className="size-4 text-primary-foreground"
+          aria-hidden="true"
+        />
       </div>
       <div className="flex flex-col gap-1 w-[85%]">
         <span className="text-xs text-muted-foreground font-medium">

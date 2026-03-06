@@ -3,7 +3,7 @@
 import { ChevronDown, ChevronRight, Wrench } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ToolCall } from "@/lib/ai-chat-types";
+import type { ToolCall } from "../utils/ai-chat-types";
 
 interface AiChatToolGroupProps {
   toolCalls: ToolCall[];
@@ -43,7 +43,10 @@ export function AiChatToolGroup({
           : t("tools_used")}
       </button>
       {!collapsed && (
-        <div id={`tool-group-list-${toolCalls[0]?.id ?? "group"}`} className="flex flex-col gap-1">
+        <div
+          id={`tool-group-list-${toolCalls[0]?.id ?? "group"}`}
+          className="flex flex-col gap-1"
+        >
           {toolCalls.map((tc) => (
             <span
               key={tc.id}
