@@ -1,21 +1,21 @@
-import { type Collection, useLiveQuery } from "@tanstack/react-db";
+import { useLiveQuery } from "@tanstack/react-db";
 import type {
   ColumnDef,
   ColumnFiltersState,
   PaginationState,
   RowSelectionState,
 } from "@tanstack/react-table";
+import { useSolution } from "@uipath/vs-core";
 import { useMemo, useState } from "react";
+
+import { ENTITY_TABLE_STORAGE_PREFIX } from "@/lib/constants";
+import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 
 import { useColumnVisibility } from "./useColumnVisibility";
 import type { Column } from "./useEntityColumns";
 import { useEntityColumns } from "./useEntityColumns";
 import { usePersistedColumnOrder } from "./usePersistedColumnOrder";
 import { usePersistedSorting } from "./usePersistedSorting";
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
 
 export type EntityRecord = Record<string, unknown>;
 
@@ -42,12 +42,10 @@ export interface ExtraColumn<TRecord extends EntityRecord = EntityRecord> {
   definition: ColumnDefWithAccessorKey<TRecord>;
 }
 
-export interface UseEntityDataOptions<
+export interface UseEntityDataTableOptions<
   TRecord extends EntityRecord = EntityRecord,
 > {
   entity: VssEntity;
-  /** The collection object from useSolution().api.collections */
-  collection: Collection<TRecord>;
   storageKey?: string;
   systemFields?: string[];
   columnOrder?: string[];
@@ -61,20 +59,31 @@ export interface UseEntityDataOptions<
   >;
 }
 
-// ---------------------------------------------------------------------------
-// Hook
-// ---------------------------------------------------------------------------
-
-export function useEntityData<TRecord extends EntityRecord = EntityRecord>({
+export function useEntityDataTable<
+  TRecord extends EntityRecord = EntityRecord,
+>({
   entity,
-  collection,
   storageKey: storageKeyProp,
   initialVisibleColumnCount = 8,
   systemFields = ["Id"],
   columnOrder: columnOrderProp,
   extraColumns,
   columnOverrides,
-}: UseEntityDataOptions<TRecord>) {
+}: UseEntityDataTableOptions<TRecord>) {
+  const solution = useSolution();
+  if (!solution) {
+    throw new Error(
+      "useEntityDataTable requires a SolutionProvider. Wrap your component tree with <SolutionProvider>.",
+    );
+  }
+
+  const collection = solution.api.collections.entities[entity.name];
+  if (!collection) {
+    throw new Error(
+      `useEntityDataTable: no collection found for entity "${entity.name}". Ensure the entity is configured in your solution.`,
+    );
+  }
+
   const storageKey = storageKeyProp ?? `entity-${entity.name ?? entity.id}`;
   const { data = [], isLoading } = useLiveQuery((q) =>
     q.from({ entities: collection }),
@@ -88,14 +97,12 @@ export function useEntityData<TRecord extends EntityRecord = EntityRecord>({
     columnOverrides,
   });
 
-  const defaultVisibleColumns = useMemo(() => {
-    if (columnOrderProp && columnOrderProp.length > 0) {
-      return columnOrderProp.filter((key) =>
-        allColumns.some((col) => col.key === key),
-      );
-    }
-    return allColumns.slice(0, initialVisibleColumnCount).map((col) => col.key);
-  }, [columnOrderProp, allColumns, initialVisibleColumnCount]);
+  const defaultVisibleColumns =
+    columnOrderProp && columnOrderProp.length > 0
+      ? columnOrderProp.filter((key) =>
+          allColumns.some((col) => col.key === key),
+        )
+      : allColumns.slice(0, initialVisibleColumnCount).map((col) => col.key);
 
   const { columnVisibility, onColumnVisibilityChange } = useColumnVisibility({
     storageKey,
@@ -117,7 +124,10 @@ export function useEntityData<TRecord extends EntityRecord = EntityRecord>({
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [globalFilter, setGlobalFilter] = useLocalStorage(
+    `${ENTITY_TABLE_STORAGE_PREFIX}global-filter-${storageKey}`,
+    "",
+  );
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
