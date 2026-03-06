@@ -1,5 +1,4 @@
 import type { OnChangeFn, SortingState } from "@tanstack/react-table";
-import { useCallback } from "react";
 
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 
@@ -17,16 +16,13 @@ export function usePersistedSorting({
     [],
   );
 
-  const onSortingChange: OnChangeFn<SortingState> = useCallback(
-    (updaterOrValue) => {
-      const newSorting =
-        typeof updaterOrValue === "function"
-          ? updaterOrValue(sorting)
-          : updaterOrValue;
-      setSorting(newSorting);
-    },
-    [sorting, setSorting],
-  );
+  const onSortingChange: OnChangeFn<SortingState> = (updaterOrValue) => {
+    const newSorting =
+      typeof updaterOrValue === "function"
+        ? updaterOrValue(sorting)
+        : updaterOrValue;
+    setSorting(newSorting);
+  };
 
   return { sorting, onSortingChange };
 }

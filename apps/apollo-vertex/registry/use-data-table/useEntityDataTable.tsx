@@ -13,10 +13,6 @@ import { useEntityColumns } from "./useEntityColumns";
 import { usePersistedColumnOrder } from "./usePersistedColumnOrder";
 import { usePersistedSorting } from "./usePersistedSorting";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
 export type EntityRecord = Record<string, unknown>;
 
 export type ColumnDefWithAccessorKey<T> = ColumnDef<T, unknown> & {
@@ -46,7 +42,6 @@ export interface UseEntityDataOptions<
   TRecord extends EntityRecord = EntityRecord,
 > {
   entity: VssEntity;
-  /** The collection object from useSolution().api.collections */
   collection: Collection<TRecord>;
   storageKey?: string;
   systemFields?: string[];
@@ -60,10 +55,6 @@ export interface UseEntityDataOptions<
     ) => ColumnDefWithAccessorKey<TRecord>
   >;
 }
-
-// ---------------------------------------------------------------------------
-// Hook
-// ---------------------------------------------------------------------------
 
 export function useEntityData<TRecord extends EntityRecord = EntityRecord>({
   entity,
@@ -88,14 +79,12 @@ export function useEntityData<TRecord extends EntityRecord = EntityRecord>({
     columnOverrides,
   });
 
-  const defaultVisibleColumns = useMemo(() => {
-    if (columnOrderProp && columnOrderProp.length > 0) {
-      return columnOrderProp.filter((key) =>
-        allColumns.some((col) => col.key === key),
-      );
-    }
-    return allColumns.slice(0, initialVisibleColumnCount).map((col) => col.key);
-  }, [columnOrderProp, allColumns, initialVisibleColumnCount]);
+  const defaultVisibleColumns =
+    columnOrderProp && columnOrderProp.length > 0
+      ? columnOrderProp.filter((key) =>
+          allColumns.some((col) => col.key === key),
+        )
+      : allColumns.slice(0, initialVisibleColumnCount).map((col) => col.key);
 
   const { columnVisibility, onColumnVisibilityChange } = useColumnVisibility({
     storageKey,

@@ -86,10 +86,14 @@
     "zod": "^4.3.5"
   },
   "peerDependencies": {
-    "@tanstack/react-db": ">=0"
+    "@tanstack/react-db": ">=0",
+    "luxon": ">=3"
   },
   "peerDependenciesMeta": {
     "@tanstack/react-db": {
+      "optional": true
+    },
+    "luxon": {
       "optional": true
     }
   },

@@ -1,5 +1,4 @@
 import type { OnChangeFn } from "@tanstack/react-table";
-import { useCallback } from "react";
 
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 
@@ -19,16 +18,13 @@ export function usePersistedColumnOrder({
     defaultColumnOrder,
   );
 
-  const onColumnOrderChange: OnChangeFn<string[]> = useCallback(
-    (updaterOrValue) => {
-      const newOrder =
-        typeof updaterOrValue === "function"
-          ? updaterOrValue(columnOrder)
-          : updaterOrValue;
-      setColumnOrder(newOrder);
-    },
-    [columnOrder, setColumnOrder],
-  );
+  const onColumnOrderChange: OnChangeFn<string[]> = (updaterOrValue) => {
+    const newOrder =
+      typeof updaterOrValue === "function"
+        ? updaterOrValue(columnOrder)
+        : updaterOrValue;
+    setColumnOrder(newOrder);
+  };
 
   return { columnOrder, onColumnOrderChange };
 }
