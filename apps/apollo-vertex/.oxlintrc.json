@@ -75,7 +75,12 @@
     "builtin": true
   },
   "globals": {},
-  "ignorePatterns": [".dependency-cruiser.js", "scripts/**", "next-env.d.ts"],
+  "ignorePatterns": [
+    ".dependency-cruiser.js",
+    "scripts/**",
+    "next-env.d.ts",
+    "types/**/*.d.ts"
+  ],
   "overrides": [
     {
       "files": ["registry/**/*.tsx"],

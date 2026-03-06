@@ -1,9 +1,7 @@
 import type { OnChangeFn } from "@tanstack/react-table";
-import { useCallback } from "react";
 
+import { ENTITY_TABLE_STORAGE_PREFIX } from "@/lib/constants";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
-
-const STORAGE_PREFIX = "entity-table-";
 
 export interface UsePersistedColumnOrderOptions {
   storageKey: string;
@@ -15,20 +13,17 @@ export function usePersistedColumnOrder({
   defaultColumnOrder,
 }: UsePersistedColumnOrderOptions) {
   const [columnOrder, setColumnOrder] = useLocalStorage<string[]>(
-    `${STORAGE_PREFIX}order-${storageKey}`,
+    `${ENTITY_TABLE_STORAGE_PREFIX}order-${storageKey}`,
     defaultColumnOrder,
   );
 
-  const onColumnOrderChange: OnChangeFn<string[]> = useCallback(
-    (updaterOrValue) => {
-      const newOrder =
-        typeof updaterOrValue === "function"
-          ? updaterOrValue(columnOrder)
-          : updaterOrValue;
-      setColumnOrder(newOrder);
-    },
-    [columnOrder, setColumnOrder],
-  );
+  const onColumnOrderChange: OnChangeFn<string[]> = (updaterOrValue) => {
+    const newOrder =
+      typeof updaterOrValue === "function"
+        ? updaterOrValue(columnOrder)
+        : updaterOrValue;
+    setColumnOrder(newOrder);
+  };
 
   return { columnOrder, onColumnOrderChange };
 }

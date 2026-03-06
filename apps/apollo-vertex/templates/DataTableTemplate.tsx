@@ -1,14 +1,6 @@
 "use client";
 
-import type {
-  ColumnDef,
-  ColumnFiltersState,
-  ExpandedState,
-  PaginationState,
-  RowSelectionState,
-  SortingState,
-  VisibilityState,
-} from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
   CheckCircleIcon,
   ChevronRightIcon,
@@ -17,7 +9,6 @@ import {
   MoreHorizontalIcon,
   XCircleIcon,
 } from "lucide-react";
-import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,6 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useDataTable } from "@/registry/use-data-table/useDataTable";
 
 type Payment = {
   id: string;
@@ -248,72 +240,18 @@ const columns: ColumnDef<Payment>[] = [
   },
 ];
 
-const defaultColumnOrder = [
-  "expand",
-  "select",
-  "status",
-  "email",
-  "amount",
-  "actions",
-];
-
 export function DataTableTemplate() {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [columnOrder, setColumnOrder] = useState<string[]>(defaultColumnOrder);
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [expanded, setExpanded] = useState<ExpandedState>({});
-  const [globalFilter, setGlobalFilter] = useState("");
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 10,
+  const tableState = useDataTable({
+    data,
+    columns,
+    storageKey: "payments-demo",
+    defaultColumnOrder: ["select", "status", "email", "amount", "actions"],
   });
 
   return (
     <div className="p-4">
       <DataTable
-        columns={columns}
-        data={data}
-        sorting={sorting}
-        onSortingChange={setSorting}
-        columnFilters={columnFilters}
-        onColumnFiltersChange={setColumnFilters}
-        columnVisibility={columnVisibility}
-        onColumnVisibilityChange={setColumnVisibility}
-        columnOrder={columnOrder}
-        onColumnOrderChange={setColumnOrder}
-        rowSelection={rowSelection}
-        onRowSelectionChange={setRowSelection}
-        expanded={expanded}
-        onExpandedChange={setExpanded}
-        renderExpandedRow={(row) => (
-          <div className="p-4 text-sm text-muted-foreground">
-            <p>
-              <span className="font-medium text-foreground">Payment ID:</span>{" "}
-              {row.original.id}
-            </p>
-            <p>
-              <span className="font-medium text-foreground">Email:</span>{" "}
-              {row.original.email}
-            </p>
-            <p>
-              <span className="font-medium text-foreground">Amount:</span>{" "}
-              {new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: "USD",
-              }).format(row.original.amount)}
-            </p>
-            <p>
-              <span className="font-medium text-foreground">Status:</span>{" "}
-              {row.original.status}
-            </p>
-          </div>
-        )}
-        globalFilter={globalFilter}
-        onGlobalFilterChange={setGlobalFilter}
-        pagination={pagination}
-        onPaginationChange={setPagination}
+        {...tableState}
         toolbarContent={(table) => (
           <DataTableFacetedFilter
             column={table.getColumn("status")}
