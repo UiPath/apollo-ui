@@ -6,22 +6,25 @@
  * by consumers to customize the appearance.
  *
  * Usage:
- *   import '@uipath/uix-canvas/styles';
+ *   import "@uipath/apollo-react/canvas/styles/variables.css";
  *
  * To override, define the variables in your own CSS:
- *   :root {
+ *   body.light {
  *     --uix-canvas-foreground: #333;
  *     --uix-canvas-background: #fff;
  *   }
  *
- * Note: We use `:where(*)` instead of `:root` because the --color-* variables
- * from Portal Shell are defined in the shadow DOM and cascade down to slotted
- * content. The `:where(*)` selector ensures our variables are evaluated in the
- * context of each element, allowing proper inheritance of the --color-* values.
- * `:where()` has zero specificity, making it easy to override these defaults.
+ * Note: We define these on each theme class (body.light, body.dark, etc.) to
+ * ensure the var() references resolve correctly. CSS variables can only reference
+ * other variables in the same scope or parent scopes. Since the base --color-*
+ * variables are defined on body.light, body.dark, etc., we must define canvas
+ * variables in the same context to ensure proper resolution.
  */
 
-:where(*) {
+body.light,
+body.dark,
+body.light-hc,
+body.dark-hc {
   /* ==========================================================================
      Core Colors
      ========================================================================== */
