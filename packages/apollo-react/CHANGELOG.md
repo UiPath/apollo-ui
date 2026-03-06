@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.48.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.48.1...@uipath/apollo-react@3.48.2) (2026-03-06)
+
+### Bug Fixes
+
+* **apollo-react:** canvas colors selector ([84aaadf](https://github.com/UiPath/apollo-ui/commit/84aaadff688b0143839d29cc409d74d8c65ea153))
+
 ## [@uipath/apollo-react-v3.48.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.48.0...@uipath/apollo-react@3.48.1) (2026-03-05)
 
 ### Bug Fixes
