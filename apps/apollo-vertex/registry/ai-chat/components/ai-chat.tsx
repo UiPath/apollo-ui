@@ -1,42 +1,33 @@
 "use client";
 
 import { AlertCircle, Sparkles } from "lucide-react";
-import type { ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AiChatInput, type AiChatInputHandle } from "./ai-chat-input";
+import type { ChatMessage } from "../utils/ai-chat-message-types";
+import type { ChoiceOption, Tools } from "../utils/ai-chat-tool-types";
+import { findLatestChoices, groupMessages } from "../utils/ai-chat-utils";
+import { AiChatInput } from "./ai-chat-input";
 import { AiChatLoading } from "./ai-chat-loading";
 import { AiChatMessage } from "./ai-chat-message";
 import { AiChatSuggestions } from "./ai-chat-suggestions";
 import { AiChatToolGroupMessage } from "./ai-chat-tool-group-message";
-import {
-  findLatestChoices,
-  findLatestNavigation,
-  groupMessages,
-} from "../utils/ai-chat-utils";
-import type { ChatMessage, ChoiceOption } from "../utils/ai-chat-types";
 
 interface AiChatProps {
   messages: ChatMessage[];
   isLoading: boolean;
-  onSendMessage: (content: string, files?: File[]) => void;
+  onSendMessage: (content: string) => void;
   onStop: () => void;
   onClearChat?: () => void;
   onChoiceSelect?: (option: ChoiceOption) => void;
-  renderToolCall?: (toolCall: ChatMessage["toolCalls"]) => ReactNode;
+  tools?: Tools;
   assistantName?: string;
   title?: string;
   emptyState?: ReactNode;
   placeholder?: string;
   showClearButton?: boolean;
-  allowFileAttachments?: boolean;
-  maxFiles?: number;
-  maxFileSize?: number;
-  acceptedFileTypes?: string[];
   toolDisplayNames?: Record<string, string>;
   enableToolGrouping?: boolean;
   error?: Error | null;
-  onNavigate?: (tab: string) => void;
 }
 
 export function AiChat({
@@ -46,78 +37,43 @@ export function AiChat({
   onStop,
   onClearChat,
   onChoiceSelect,
-  renderToolCall,
+  tools,
   assistantName,
   title,
   emptyState,
   placeholder,
   showClearButton = true,
-  allowFileAttachments = true,
-  maxFiles,
-  maxFileSize,
-  acceptedFileTypes,
   toolDisplayNames,
   enableToolGrouping = false,
   error,
-  onNavigate,
 }: AiChatProps) {
   const { t } = useTranslation();
   const [input, setInput] = useState("");
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<AiChatInputHandle>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const displayName = assistantName ?? t("ai_assistant");
 
+  const scrollToBottom = () => {
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  };
+
   useEffect(() => {
-    const container = messagesContainerRef.current;
-    if (!container) return;
-
-    let previousScrollHeight = container.scrollHeight;
-    let scrollTimeout: ReturnType<typeof setTimeout>;
-
-    const scrollToBottom = (force = false) => {
-      const currentScrollHeight = container.scrollHeight;
-      if (force || currentScrollHeight > previousScrollHeight) {
-        container.scrollTop = currentScrollHeight;
-        previousScrollHeight = currentScrollHeight;
-      }
-    };
-
-    const initialTimer = setTimeout(() => scrollToBottom(true), 100);
-
-    const resizeObserver = new ResizeObserver(() => {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => scrollToBottom(false), 50);
-    });
-
-    Array.from(container.children).forEach((child) => {
-      resizeObserver.observe(child);
-    });
-
-    return () => {
-      clearTimeout(initialTimer);
-      clearTimeout(scrollTimeout);
-      resizeObserver.disconnect();
-    };
+    scrollToBottom();
+    const last = contentRef.current?.lastElementChild;
+    if (!last) return;
+    const observer = new ResizeObserver(scrollToBottom);
+    observer.observe(last);
+    return () => observer.disconnect();
   }, [messages]);
 
-  const handleSubmit = (files?: File[]) => {
-    if ((!input.trim() && !files) || isLoading) return;
-    onSendMessage(input, files);
+  const handleSubmit = () => {
+    if (!input.trim() || isLoading) return;
+    onSendMessage(input);
     setInput("");
   };
 
-  const prevLoadingRef = useRef(isLoading);
-  useEffect(() => {
-    if (prevLoadingRef.current && !isLoading) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 50);
-    }
-    prevLoadingRef.current = isLoading;
-  }, [isLoading]);
-
   const latestChoices = findLatestChoices(messages);
-  const latestNavigation = findLatestNavigation(messages);
 
   const groupedItems = groupMessages(messages, enableToolGrouping);
 
@@ -162,17 +118,17 @@ export function AiChat({
       )}
 
       <div
-        ref={messagesContainerRef}
+        ref={scrollRef}
         role="log"
-        aria-label="Chat messages"
+        aria-label={t("chat_messages")}
         aria-live="polite"
         aria-atomic="false"
-        className="flex-1 overflow-y-auto p-4 space-y-4"
+        className="flex-1 overflow-y-auto p-4"
       >
         {groupedItems.length === 0 ? (
           (emptyState ?? defaultEmptyState)
         ) : (
-          <>
+          <div ref={contentRef} className="space-y-4">
             {groupedItems.map((item, idx) => {
               if (item.kind === "tool-group") {
                 const isLast = !groupedItems
@@ -194,7 +150,7 @@ export function AiChat({
                 <AiChatMessage
                   key={message.id}
                   message={message}
-                  renderToolCall={renderToolCall}
+                  tools={tools}
                   assistantName={displayName}
                 />
               );
@@ -214,31 +170,12 @@ export function AiChat({
               />
             )}
 
-            {latestNavigation && !isLoading && onNavigate && (
-              <nav
-                aria-label="Navigation options"
-                className="flex flex-wrap gap-2"
-              >
-                {latestNavigation.tabs.map((navTab) => (
-                  <button
-                    key={navTab.tab}
-                    type="button"
-                    className="h-auto py-2 px-3 text-sm rounded-lg border hover:bg-muted transition-colors"
-                    onClick={() => onNavigate(navTab.tab)}
-                  >
-                    {navTab.label}
-                  </button>
-                ))}
-              </nav>
-            )}
-
             {isLoading && <AiChatLoading assistantName={displayName} />}
-          </>
+          </div>
         )}
       </div>
 
       <AiChatInput
-        ref={inputRef}
         value={input}
         onChange={setInput}
         onSubmit={handleSubmit}
@@ -248,24 +185,24 @@ export function AiChat({
         placeholder={placeholder}
         showClearButton={showClearButton}
         hasMessages={messages.length > 0}
-        allowFileAttachments={allowFileAttachments}
-        maxFiles={maxFiles}
-        maxFileSize={maxFileSize}
-        acceptedFileTypes={acceptedFileTypes}
       />
     </div>
   );
 }
 
-export { AiChatInput, type AiChatInputHandle } from "./ai-chat-input";
+export type {
+  ChoiceOption,
+  DisplayTool,
+  ExecuteTool,
+  Tool,
+  ToolResult,
+  ToolResultChoices,
+  Tools,
+} from "../utils/ai-chat-types";
+export { AiChatInput } from "./ai-chat-input";
 export { AiChatLoading } from "./ai-chat-loading";
+export { AiChatMarkdown } from "./ai-chat-markdown";
 export { AiChatMessage } from "./ai-chat-message";
 export { AiChatSuggestions } from "./ai-chat-suggestions";
 export { AiChatToolGroup } from "./ai-chat-tool-group";
 export { AiChatToolGroupMessage } from "./ai-chat-tool-group-message";
-export type {
-  ChoiceOption,
-  ToolResult,
-  ToolResultChoices,
-  ToolResultNavigation,
-} from "../utils/ai-chat-types";

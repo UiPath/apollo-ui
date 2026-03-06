@@ -2,7 +2,7 @@
   "name": "ai-chat",
   "type": "component",
   "category": "complex",
-  "description": "A generic, reusable, and type-safe AI chat component with OpenAI-compatible API support, agentic tool loop, markdown rendering, tool calling, collapsible tool groups, navigation tabs, suggestion buttons, error display, hidden messages, dynamic config, message injection, and file uploads",
+  "description": "A generic, reusable, and type-safe AI chat component with OpenAI-compatible API support, agentic tool loop, Zod-typed tool calling, markdown rendering, collapsible tool groups, suggestion buttons, error display, message injection, and per-context storage",
   "tags": [
     "ai",
     "chat",
@@ -12,16 +12,25 @@
     "chatbot",
     "tools",
     "suggestions",
-    "navigation",
-    "agentic"
+    "agentic",
+    "zod"
   ],
   "dependencies": [
+    "zod",
     "lucide-react",
     "react-i18next",
     "react-markdown",
     "remark-gfm"
   ],
   "files": [
+    {
+      "path": "utils/ai-chat-message-types.ts",
+      "type": "types"
+    },
+    {
+      "path": "utils/ai-chat-tool-types.ts",
+      "type": "types"
+    },
     {
       "path": "utils/ai-chat-types.ts",
       "type": "types"
@@ -44,6 +53,10 @@
     },
     {
       "path": "components/ai-chat.tsx",
+      "type": "component"
+    },
+    {
+      "path": "components/ai-chat-markdown.tsx",
       "type": "component"
     },
     {
@@ -71,7 +84,7 @@
       "type": "component"
     }
   ],
-  "version": "1.1.0",
+  "version": "2.0.0",
   "author": "Apollo Design System",
   "license": "MIT"
 }

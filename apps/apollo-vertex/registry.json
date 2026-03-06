@@ -243,8 +243,9 @@
       "name": "ai-chat",
       "type": "registry:ui",
       "title": "AI Chat",
-      "description": "A generic, reusable, and type-safe AI chat component with OpenAI-compatible API support, agentic tool loop, markdown rendering, tool calling, collapsible tool groups, navigation tabs, suggestion buttons, error display, hidden messages, dynamic config, message injection, and file uploads",
+      "description": "A generic, reusable, and type-safe AI chat component with OpenAI-compatible API support, agentic tool loop, Zod-typed tool calling, markdown rendering, collapsible tool groups, suggestion buttons, error display, message injection, and per-context storage",
       "dependencies": [
+        "zod",
         "lucide-react",
         "react-i18next",
         "react-markdown",
@@ -252,6 +253,16 @@
       ],
       "registryDependencies": [],
       "files": [
+        {
+          "path": "registry/ai-chat/utils/ai-chat-message-types.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/utils/ai-chat-message-types.ts"
+        },
+        {
+          "path": "registry/ai-chat/utils/ai-chat-tool-types.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/utils/ai-chat-tool-types.ts"
+        },
         {
           "path": "registry/ai-chat/utils/ai-chat-types.ts",
           "type": "registry:lib",
@@ -281,6 +292,11 @@
           "path": "registry/ai-chat/components/ai-chat.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-markdown.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-markdown.tsx"
         },
         {
           "path": "registry/ai-chat/components/ai-chat-message.tsx",

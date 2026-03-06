@@ -1,23 +1,15 @@
 import type {
+  AssistantMessage,
   ChatMessage,
-  ToolCall,
-  ToolResultChoices,
-  ToolResultNavigation,
-} from "./ai-chat-types";
+  ToolCallPart,
+} from "./ai-chat-message-types";
+import type { ToolResultChoices } from "./ai-chat-tool-types";
 
 export type GroupedItem =
   | { kind: "message"; message: ChatMessage }
-  | { kind: "tool-group"; id: string; toolCalls: ToolCall[] };
+  | { kind: "tool-group"; id: string; toolCalls: ToolCallPart[] };
 
-type PendingTools = { toolCalls: ToolCall[]; groupId: string };
-
-function safeJsonParse(content: string): unknown | null {
-  try {
-    return JSON.parse(content);
-  } catch {
-    return null;
-  }
-}
+type PendingTools = { toolCalls: ToolCallPart[]; groupId: string };
 
 function isValidChoices(parsed: unknown): parsed is ToolResultChoices {
   return (
@@ -30,21 +22,6 @@ function isValidChoices(parsed: unknown): parsed is ToolResultChoices {
   );
 }
 
-export function extractMessageContent(message: ChatMessage): string {
-  return message.parts?.map((p) => p.content).join("") ?? message.content;
-}
-
-function parseToolResultForChoices(
-  message: ChatMessage,
-): ToolResultChoices | null {
-  if (message.role !== "tool") return null;
-
-  const content = extractMessageContent(message);
-  const parsed = safeJsonParse(content);
-
-  return parsed && isValidChoices(parsed) ? parsed : null;
-}
-
 function hasUserResponseAfter(
   messages: ChatMessage[],
   afterIndex: number,
@@ -55,26 +32,32 @@ function hasUserResponseAfter(
 export function findLatestChoices(
   messages: ChatMessage[],
 ): ToolResultChoices | null {
-  const result = messages
-    .map((message, index) => ({ message, index }))
-    .toReversed()
-    .filter(({ message }) => message?.role === "tool")
-    .map(({ message, index }) => ({
-      choices: parseToolResultForChoices(message),
-      index,
-    }))
-    .find(
-      ({ choices, index }) =>
-        choices !== null && !hasUserResponseAfter(messages, index),
-    );
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i];
+    if (!msg || msg.role !== "tool") continue;
+    if (hasUserResponseAfter(messages, i)) continue;
 
-  return result?.choices ?? null;
+    for (const part of msg.content) {
+      if (part.type === "tool-result" && isValidChoices(part.result)) {
+        return part.result;
+      }
+    }
+  }
+  return null;
+}
+
+function extractToolCallParts(
+  content: AssistantMessage["content"],
+): ToolCallPart[] {
+  return content.filter((p): p is ToolCallPart => p.type === "tool-call");
 }
 
 function isToolOnlyMessage(message: ChatMessage): boolean {
-  const content = extractMessageContent(message);
-  const hasToolCalls = (message.toolCalls?.length ?? 0) > 0;
-  return message.role === "assistant" && !content && hasToolCalls;
+  if (message.role !== "assistant") return false;
+  return (
+    message.content.length > 0 &&
+    message.content.every((p) => p.type === "tool-call")
+  );
 }
 
 function flushPendingTools(
@@ -93,59 +76,18 @@ function flushPendingTools(
   ];
 }
 
-function isValidNavigation(parsed: unknown): parsed is ToolResultNavigation {
-  return (
-    typeof parsed === "object" &&
-    parsed !== null &&
-    "type" in parsed &&
-    (parsed as Record<string, unknown>)["type"] === "navigation" &&
-    "tabs" in parsed &&
-    Array.isArray((parsed as Record<string, unknown>)["tabs"])
-  );
-}
-
-function parseToolResultForNavigation(
-  message: ChatMessage,
-): ToolResultNavigation | null {
-  if (message.role !== "tool") return null;
-
-  const content = extractMessageContent(message);
-  const parsed = safeJsonParse(content);
-
-  return parsed && isValidNavigation(parsed) ? parsed : null;
-}
-
-export function findLatestNavigation(
-  messages: ChatMessage[],
-): ToolResultNavigation | null {
-  const result = messages
-    .map((message, index) => ({ message, index }))
-    .toReversed()
-    .filter(({ message }) => message?.role === "tool")
-    .map(({ message, index }) => ({
-      navigation: parseToolResultForNavigation(message),
-      index,
-    }))
-    .find(
-      ({ navigation, index }) =>
-        navigation !== null && !hasUserResponseAfter(messages, index),
-    );
-
-  return result?.navigation ?? null;
-}
-
 export function groupMessages(
   messages: ChatMessage[],
   enableToolGrouping: boolean,
 ): GroupedItem[] {
   if (!enableToolGrouping) {
     return messages
-      .filter((m) => !m.hidden && m.role !== "tool")
+      .filter((m) => m.role !== "tool")
       .map((message) => ({ kind: "message" as const, message }));
   }
 
   const visible = messages.filter(
-    (m) => !m.hidden && (m.role === "user" || m.role === "assistant"),
+    (m) => m.role === "user" || m.role === "assistant",
   );
 
   const { items, pending } = visible.reduce<{
@@ -154,10 +96,12 @@ export function groupMessages(
   }>(
     (acc, msg) => {
       if (isToolOnlyMessage(msg)) {
+        const newToolCalls =
+          msg.role === "assistant" ? extractToolCallParts(msg.content) : [];
         return {
           items: acc.items,
           pending: {
-            toolCalls: [...acc.pending.toolCalls, ...(msg.toolCalls ?? [])],
+            toolCalls: [...acc.pending.toolCalls, ...newToolCalls],
             groupId: acc.pending.groupId || msg.id,
           },
         };

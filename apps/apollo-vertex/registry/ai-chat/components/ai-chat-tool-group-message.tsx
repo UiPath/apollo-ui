@@ -1,11 +1,11 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
-import type { ToolCall } from "../utils/ai-chat-types";
+import type { ToolCallPart } from "../utils/ai-chat-message-types";
 import { AiChatToolGroup } from "./ai-chat-tool-group";
 
 interface AiChatToolGroupMessageProps {
-  toolCalls: ToolCall[];
+  toolCalls: ToolCallPart[];
   isLatest: boolean;
   assistantName: string;
   toolDisplayNames?: Record<string, string>;
@@ -18,7 +18,9 @@ export function AiChatToolGroupMessage({
   toolDisplayNames,
 }: AiChatToolGroupMessageProps) {
   const visibleToolCalls = toolDisplayNames
-    ? toolCalls.filter((tc) => (toolDisplayNames[tc.name] ?? tc.name) !== "")
+    ? toolCalls.filter(
+        (tc) => (toolDisplayNames[tc.toolName] ?? tc.toolName) !== "",
+      )
     : toolCalls;
 
   if (visibleToolCalls.length === 0) return null;

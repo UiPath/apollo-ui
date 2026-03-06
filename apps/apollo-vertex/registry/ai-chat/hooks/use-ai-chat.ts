@@ -1,31 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type {
-  ChatCompletionRequest,
-  ChatMessage,
-  ToolDefinition,
-  UseAiChatOptions,
-  UseAiChatReturn,
-} from "../utils/ai-chat-types";
 import {
   buildApiMessages,
+  buildToolDefinitions,
   executeToolCall,
   getAccessToken,
   resolveConfig,
 } from "../utils/ai-chat-api";
+import type {
+  ChatMessage,
+  TextPart,
+  ToolCallPart,
+} from "../utils/ai-chat-message-types";
 import {
   getStorage,
   loadFromStorage,
   saveToStorage,
 } from "../utils/ai-chat-storage";
+import type { UseAiChatOptions, UseAiChatReturn } from "../utils/ai-chat-types";
 
 export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
-  const {
-    config,
-    accessToken,
-    storage: storageConfig,
-    onToolCall,
-    onError,
-  } = options;
+  const { connection, storage: storageConfig } = options;
 
   const storageType = storageConfig?.type ?? "session";
   const storageKey = storageConfig?.messagesKey ?? "ai_chat_messages";
@@ -40,22 +34,15 @@ export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
   messagesRef.current = messages;
   const isLoadingRef = useRef(isLoading);
   isLoadingRef.current = isLoading;
-  const configRef = useRef(config);
-  configRef.current = config;
-  const accessTokenRef = useRef(accessToken);
-  accessTokenRef.current = accessToken;
-  const onToolCallRef = useRef(onToolCall);
-  onToolCallRef.current = onToolCall;
-  const onErrorRef = useRef(onError);
-  onErrorRef.current = onError;
+  const connectionRef = useRef(connection);
+  connectionRef.current = connection;
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
   const storageRef = useRef<Storage | null>(null);
   const storageKeyRef = useRef(storageKey);
   storageKeyRef.current = storageKey;
 
   const abortControllerRef = useRef<AbortController | null>(null);
-  const pendingTimersRef = useRef<Set<ReturnType<typeof setInterval>>>(
-    new Set(),
-  );
 
   // Initialize storage and load persisted messages after mount (SSR-safe).
   useEffect(() => {
@@ -72,15 +59,10 @@ export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
     }
   }, [storageKey]);
 
-  // Cleanup on unmount — abort in-flight requests and cancel queued timers.
+  // Cleanup on unmount — abort in-flight requests.
   useEffect(() => {
-    const pendingTimers = pendingTimersRef.current;
     return () => {
       abortControllerRef.current?.abort();
-      for (const timer of pendingTimers) {
-        clearInterval(timer);
-      }
-      pendingTimers.clear();
     };
   }, []);
 
@@ -98,27 +80,8 @@ export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
   }, []);
 
   const sendMessage = useCallback(
-    async (
-      content: string,
-      files?: File[],
-      opts?: { hidden?: boolean },
-    ): Promise<void> => {
-      if (!content.trim()) return;
-
-      // Queue hidden messages while loading; they fire once the current request completes.
-      if (isLoadingRef.current) {
-        if (opts?.hidden) {
-          const check = setInterval(() => {
-            if (!isLoadingRef.current) {
-              pendingTimersRef.current.delete(check);
-              clearInterval(check);
-              sendMessage(content, files, opts);
-            }
-          }, 200);
-          pendingTimersRef.current.add(check);
-        }
-        return;
-      }
+    async (content: string): Promise<void> => {
+      if (!content.trim() || isLoadingRef.current) return;
 
       setError(null);
       setIsLoading(true);
@@ -127,21 +90,13 @@ export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
+      const opts = optionsRef.current;
+
       const userMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: "user",
-        content: content.trim(),
+        content: [{ type: "text", text: content.trim() }],
         timestamp: Date.now(),
-        ...(opts?.hidden ? { hidden: true } : {}),
-        ...(files?.length
-          ? {
-              attachments: files.map((f) => ({
-                fileName: f.name,
-                fileType: f.type,
-                fileSize: f.size,
-              })),
-            }
-          : {}),
       };
 
       // Mutable local buffer; slice() on each persist gives React a new reference.
@@ -152,7 +107,7 @@ export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
       persist(currentMessages.slice());
 
       try {
-        const maxIter = configRef.current.maxToolIterations ?? 10;
+        const maxIter = opts.maxToolIterations ?? 10;
         let iterations = 0;
 
         while (true) {
@@ -160,34 +115,30 @@ export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
             throw new Error(`Max tool iterations (${maxIter}) exceeded`);
           }
 
-          const cfg = configRef.current;
+          const conn = connectionRef.current;
 
           // Refresh token on each iteration to handle short-lived OAuth tokens.
-          const token = getAccessToken(accessTokenRef.current);
+          const token = getAccessToken(conn.accessToken);
           if (!token) throw new Error("Not authenticated");
 
-          const resolvedTools = cfg.tools
-            ? resolveConfig(
-                cfg.tools as ToolDefinition[] | (() => ToolDefinition[]),
-              )
-            : null;
+          const resolvedTools = opts.tools ? resolveConfig(opts.tools) : null;
 
-          const requestBody: ChatCompletionRequest = {
-            model: cfg.model,
-            messages: buildApiMessages(currentMessages, cfg.systemPrompt),
-            max_tokens: cfg.maxTokens ?? 2048,
-            temperature: cfg.temperature ?? 0.7,
+          const requestBody: Record<string, unknown> = {
+            model: conn.model,
+            messages: buildApiMessages(currentMessages, opts.systemPrompt),
+            max_tokens: opts.maxTokens ?? 2048,
+            temperature: opts.temperature ?? 0.7,
           };
 
-          if (resolvedTools?.length) {
-            requestBody.tools = resolvedTools;
-            requestBody.tool_choice = cfg.toolChoice ?? "auto";
+          if (resolvedTools && Object.keys(resolvedTools).length > 0) {
+            requestBody["tools"] = buildToolDefinitions(resolvedTools);
+            requestBody["tool_choice"] = opts.toolChoice ?? "auto";
           }
 
-          const apiVersion = cfg.apiVersion
-            ? `?api-version=${cfg.apiVersion}`
+          const apiVersion = conn.apiVersion
+            ? `?api-version=${conn.apiVersion}`
             : "";
-          const url = `${cfg.baseUrl}/chat/completions${apiVersion}`;
+          const url = `${conn.baseUrl}/chat/completions${apiVersion}`;
 
           // eslint-disable-next-line no-await-in-loop
           const response = await fetch(url, {
@@ -224,48 +175,70 @@ export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
             currentMessages.push({
               id: crypto.randomUUID(),
               role: "assistant",
-              content: assistantMessage.content || (cfg.fallbackResponse ?? ""),
+              content: [
+                {
+                  type: "text",
+                  text:
+                    assistantMessage.content || (opts.fallbackResponse ?? ""),
+                },
+              ],
               timestamp: Date.now(),
             });
             persist(currentMessages.slice());
             break;
           }
 
-          const toolCalls = rawToolCalls.map((tc) => ({
-            id: tc.id,
-            name: tc.function.name,
-            arguments: tc.function.arguments,
+          const toolCallParts: ToolCallPart[] = rawToolCalls.map((tc) => ({
+            type: "tool-call",
+            toolCallId: tc.id,
+            toolName: tc.function.name,
+            args: JSON.parse(tc.function.arguments) as Record<string, unknown>,
           }));
+
+          // Build assistant message content: text (if any) + tool call parts
+          const assistantContent: Array<TextPart | ToolCallPart> = [];
+          if (assistantMessage.content) {
+            assistantContent.push({
+              type: "text",
+              text: assistantMessage.content,
+            });
+          }
+          assistantContent.push(...toolCallParts);
 
           currentMessages.push({
             id: crypto.randomUUID(),
             role: "assistant",
-            content: assistantMessage.content ?? "",
+            content: assistantContent,
             timestamp: Date.now(),
-            toolCalls,
           });
           persist(currentMessages.slice());
 
-          // No handler means display-only tools — stop the loop, don't send results back to the LLM.
-          if (!onToolCallRef.current) break;
+          // No tools map — stop the loop, don't send results back to the LLM.
+          if (!resolvedTools || Object.keys(resolvedTools).length === 0) break;
 
-          for (const tc of toolCalls) {
-            const handler = onToolCallRef.current;
-            let result: unknown;
-            if (handler) {
-              // eslint-disable-next-line no-await-in-loop
-              result = await executeToolCall(handler, tc);
-            } else {
-              result = { error: "No tool handler configured" };
-            }
+          // If any tool in this batch is a DisplayTool (no execute), stop the loop entirely.
+          const hasDisplayTool = toolCallParts.some((tc) => {
+            const handler = resolvedTools[tc.toolName];
+            return handler != null && !("execute" in handler);
+          });
+          if (hasDisplayTool) break;
+
+          for (const tc of toolCallParts) {
+            // eslint-disable-next-line no-await-in-loop
+            const result = await executeToolCall(resolvedTools, tc);
 
             currentMessages.push({
               id: crypto.randomUUID(),
               role: "tool",
-              content:
-                typeof result === "string" ? result : JSON.stringify(result),
+              content: [
+                {
+                  type: "tool-result",
+                  toolCallId: tc.toolCallId,
+                  toolName: tc.toolName,
+                  result,
+                },
+              ],
               timestamp: Date.now(),
-              toolCallId: tc.id,
             });
             persist(currentMessages.slice());
           }
@@ -275,7 +248,7 @@ export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
         const errorObj =
           err instanceof Error ? err : new Error("Unknown error");
         setError(errorObj);
-        onErrorRef.current?.(errorObj);
+        opts.onError?.(errorObj);
       } finally {
         setIsLoading(false);
         isLoadingRef.current = false;
@@ -292,11 +265,6 @@ export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
       setIsLoading(false);
       isLoadingRef.current = false;
     }
-    // Cancel any queued hidden messages so stop() truly halts all activity.
-    for (const timer of pendingTimersRef.current) {
-      clearInterval(timer);
-    }
-    pendingTimersRef.current.clear();
   }, []);
 
   const clearChat = useCallback(() => {
@@ -305,19 +273,6 @@ export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
     storageRef.current?.removeItem(storageKeyRef.current);
   }, []);
 
-  const addSystemMessage = useCallback(
-    (content: string) => {
-      const systemMessage: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: "system",
-        content,
-        timestamp: Date.now(),
-      };
-      appendMessages([systemMessage]);
-    },
-    [appendMessages],
-  );
-
   return {
     messages,
     isLoading,
@@ -325,7 +280,6 @@ export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
     sendMessage,
     stop,
     clearChat,
-    addSystemMessage,
     appendMessages,
   };
 }
