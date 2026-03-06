@@ -1,6 +1,6 @@
 import { CircularProgress } from '@mui/material';
 import Button, { type ButtonProps } from '@mui/material/Button';
-import { styled } from '@mui/material/styles';
+import { styled, type SxProps } from '@mui/material/styles';
 import React from 'react';
 import token from '@uipath/apollo-core';
 
@@ -85,7 +85,8 @@ export const ApButton = React.forwardRef<HTMLButtonElement, ApButtonProps>((prop
   const shouldShowLoadingAsStartIcon = loading && hasStartIcon;
   const shouldShowLoadingAsEndIcon = loading && !hasStartIcon && hasEndIcon;
   const shouldShowLoadingAsLabel = loading && !hasStartIcon && !hasEndIcon;
-  const variantProps = variantToProps[variant];
+  const { sx: variantSx, ...restVariantProps } = variantToProps[variant];
+  const { sx: userSx, ...restProps } = rest;
 
   const loadingIndicator = loading ? <ButtonLoadingIndicator aria-label={label} /> : null;
 
@@ -108,16 +109,17 @@ export const ApButton = React.forwardRef<HTMLButtonElement, ApButtonProps>((prop
         onBlur={onBlur}
         startIcon={loading && shouldShowLoadingAsStartIcon ? loadingIndicator : startIcon}
         endIcon={loading && shouldShowLoadingAsEndIcon ? loadingIndicator : endIcon}
-        {...variantProps}
+        {...restVariantProps}
+        sx={[variantSx ?? {}, userSx ?? {}] as SxProps}
         tabIndex={tabIndex ?? (loading ? -1 : undefined)}
         aria-disabled={disabled || loading ? 'true' : undefined}
         aria-expanded={expanded}
         title={title}
-        className={joinClasses(variantProps?.className, loading && 'loading')}
+        className={joinClasses(restVariantProps?.className, loading && 'loading')}
         href={href}
         customSize={size}
         customWidth={widthMode}
-        {...rest}
+        {...restProps}
       >
         <span
           style={{
