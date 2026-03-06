@@ -428,7 +428,7 @@ function ColorsGallery() {
           <ColorGroup
             title="Borders & Focus"
             colors={[
-              { name: 'Border', cssVar: '--border', description: 'Default borders' },
+              { name: 'Border', cssVar: '--ap-wind-border', description: 'Default borders' },
               { name: 'Border Subtle', cssVar: '--border-subtle', description: 'Subtle borders' },
               { name: 'Input', cssVar: '--input', description: 'Input borders' },
               { name: 'Ring', cssVar: '--ring', description: 'Focus ring' },

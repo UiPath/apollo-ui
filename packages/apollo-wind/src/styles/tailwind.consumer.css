@@ -50,7 +50,7 @@ body.dark {
   --foreground-on-accent: var(--color-foreground-inverse, #182027);
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
-  --border: var(--color-border, #8a97a0);
+  --ap-wind-border: var(--color-border, #8a97a0);
   --border-subtle: var(--color-border-de-emp, #526069);
   --border-disabled: var(--color-border-disabled, #526069);
   --border-grid: var(--color-border-grid, #273139);
@@ -75,8 +75,8 @@ body.dark {
   --foreground-accent-muted: var(--brand-hover);
   --border-muted: var(--border-grid);
   --border-deep: var(--border-grid);
-  --border-inverse: var(--border);
-  --border-hover: var(--border);
+  --border-inverse: var(--ap-wind-border);
+  --border-hover: var(--ap-wind-border);
 
   /* ── shadcn aliases — maps to standard names for shadcn component compat ── */
   --background: var(--surface);
@@ -127,7 +127,7 @@ body.dark-hc {
   --foreground-on-accent: var(--color-foreground-inverse, #182027);
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
-  --border: var(--color-border, #bbc7cd);
+  --ap-wind-border: var(--color-border, #bbc7cd);
   --border-subtle: var(--color-border-de-emp, #a4b1b8);
   --border-disabled: var(--color-border-disabled, #8a97a0);
   --border-grid: var(--color-border-grid, #273139);
@@ -152,8 +152,8 @@ body.dark-hc {
   --foreground-accent-muted: var(--brand-hover);
   --border-muted: var(--border-grid);
   --border-deep: var(--border-grid);
-  --border-inverse: var(--border);
-  --border-hover: var(--border);
+  --border-inverse: var(--ap-wind-border);
+  --border-hover: var(--ap-wind-border);
 
   /* ── shadcn aliases — maps to standard names for shadcn component compat ── */
   --background: var(--surface);
@@ -204,7 +204,7 @@ body.light {
   --foreground-on-accent: var(--color-foreground-inverse, #f8f9fa);
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
-  --border: var(--color-border, #a4b1b8);
+  --ap-wind-border: var(--color-border, #a4b1b8);
   --border-subtle: var(--color-border-de-emp, #cfd8dd);
   --border-disabled: var(--color-border-disabled, #cfd8dd);
   --border-grid: var(--color-border-grid, #f4f5f7);
@@ -229,8 +229,8 @@ body.light {
   --foreground-accent-muted: var(--brand-hover);
   --border-muted: var(--border-grid);
   --border-deep: var(--border-grid);
-  --border-inverse: var(--border);
-  --border-hover: var(--border);
+  --border-inverse: var(--ap-wind-border);
+  --border-hover: var(--ap-wind-border);
 
   /* ── shadcn aliases — maps to standard names for shadcn component compat ── */
   --background: var(--surface);
@@ -281,7 +281,7 @@ body.light-hc {
   --foreground-on-accent: var(--color-foreground-inverse, #f8f9fa);
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
-  --border: var(--color-border, #6b7882);
+  --ap-wind-border: var(--color-border, #6b7882);
   --border-subtle: var(--color-border-de-emp, #a4b1b8);
   --border-disabled: var(--color-border-disabled, #cfd8dd);
   --border-grid: var(--color-border-grid, #f4f5f7);
@@ -306,8 +306,8 @@ body.light-hc {
   --foreground-accent-muted: var(--brand-hover);
   --border-muted: var(--border-grid);
   --border-deep: var(--border-grid);
-  --border-inverse: var(--border);
-  --border-hover: var(--border);
+  --border-inverse: var(--ap-wind-border);
+  --border-hover: var(--ap-wind-border);
 
   /* ── shadcn aliases — maps to standard names for shadcn component compat ── */
   --background: var(--surface);
@@ -377,7 +377,7 @@ body.light-hc {
   /* cyan-400 — muted accent text */
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
-  --border: #3f3f46;
+  --ap-wind-border: #3f3f46;
   /* zinc-700  — primary borders */
   --border-subtle: #27272a;
   /* zinc-800  — subtle dividers */
@@ -426,7 +426,7 @@ body.light-hc {
   --destructive-foreground: #fafafa;
   /* zinc-50 — text on destructive bg */
   --border-de-emp: var(--border-subtle);
-  --input: var(--border);
+  --input: var(--ap-wind-border);
 }
 
 /* ============================================================================
@@ -475,7 +475,7 @@ body.light-hc {
   /* cyan-600 — muted accent text */
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
-  --border: #d4d4d8;
+  --ap-wind-border: #d4d4d8;
   /* zinc-300  — primary borders */
   --border-subtle: #e4e4e7;
   /* zinc-200  — subtle dividers */
@@ -524,7 +524,7 @@ body.light-hc {
   --destructive-foreground: #fafafa;
   /* zinc-50 — text on destructive bg */
   --border-de-emp: var(--border-subtle);
-  --input: var(--border);
+  --input: var(--ap-wind-border);
 }
 
 
@@ -560,7 +560,7 @@ body.light-hc {
   --foreground-accent-muted: #6b7280;
 
   /* ── Borders (dashed via utility, but color defined here) ───────────── */
-  --border: #d1d5db;
+  --ap-wind-border: #d1d5db;
   --border-subtle: #e5e7eb;
   --border-muted: #f3f4f6;
   --border-deep: #f9fafb;
@@ -595,7 +595,7 @@ body.light-hc {
   --destructive: #9ca3af;
   --destructive-foreground: #ffffff;
   --border-de-emp: var(--border-subtle);
-  --input: var(--border);
+  --input: var(--ap-wind-border);
 }
 
 /* Wireframe overrides: dashed borders everywhere, reduced rounding */
@@ -656,7 +656,7 @@ body.light-hc {
   /* accent — muted accent text */
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
-  --border: oklch(0.3068 0.0426 258.29);
+  --ap-wind-border: oklch(0.3068 0.0426 258.29);
   /* border */
   --border-subtle: oklch(0.2648 0.0329 254.38);
   /* muted — subtle dividers */
@@ -698,7 +698,7 @@ body.light-hc {
   --destructive: oklch(0.6542 0.2321 28.66);
   --destructive-foreground: oklch(1 0 89.88);
   --border-de-emp: var(--border-subtle);
-  --input: var(--border);
+  --input: var(--ap-wind-border);
 }
 
 /* ============================================================================
@@ -751,7 +751,7 @@ body.light-hc {
   /* ColorSelectionDark — muted accent text */
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
-  --border: #526069;
+  --ap-wind-border: #526069;
   /* ColorBorderDeEmpDark */
   --border-subtle: #3e4e58;
   /* mid border */
@@ -793,7 +793,7 @@ body.light-hc {
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --border-de-emp: var(--border-subtle);
-  --input: var(--border);
+  --input: var(--ap-wind-border);
 }
 
 /**
@@ -852,7 +852,7 @@ body.light-hc {
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
+  --color-border: var(--ap-wind-border);
   --color-border-de-emp: var(--border-de-emp);
   --color-input: var(--input);
   --color-ring: var(--ring);

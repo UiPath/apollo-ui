@@ -127,7 +127,7 @@ function BorderWidthTable({ tokens }: { tokens: StrokeWidthToken[] }) {
               <td className="px-4 py-3">
                 <div
                   className="h-10 w-28 rounded-lg bg-surface-raised"
-                  style={{ border: `${token.px}px solid var(--border)` }}
+                  style={{ border: `${token.px}px solid var(--ap-wind-border)` }}
                 />
               </td>
             </tr>

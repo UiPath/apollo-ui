@@ -46,7 +46,7 @@
   --foreground-accent-muted: #22d3ee; /* cyan-400 — muted accent text */
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
-  --border: #3f3f46;              /* zinc-700  — primary borders */
+  --ap-wind-border: #3f3f46;              /* zinc-700  — primary borders */
   --border-subtle: #27272a;       /* zinc-800  — subtle dividers */
   --border-muted: #18181b;        /* zinc-900  — content borders */
   --border-deep: #09090b;         /* zinc-950  — nested containers */
@@ -81,7 +81,7 @@
   --destructive: #ef4444;
   --destructive-foreground: #fafafa; /* zinc-50 — text on destructive bg */
   --border-de-emp: var(--border-subtle);
-  --input: var(--border);
+  --input: var(--ap-wind-border);
 }
 
 /* ============================================================================
@@ -113,7 +113,7 @@
   --foreground-accent-muted: #0891b2; /* cyan-600 — muted accent text */
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
-  --border: #d4d4d8;              /* zinc-300  — primary borders */
+  --ap-wind-border: #d4d4d8;              /* zinc-300  — primary borders */
   --border-subtle: #e4e4e7;       /* zinc-200  — subtle dividers */
   --border-muted: #f4f4f5;        /* zinc-100  — content borders */
   --border-deep: #fafafa;         /* zinc-50   — nested containers */
@@ -148,7 +148,7 @@
   --destructive: #ef4444;
   --destructive-foreground: #fafafa; /* zinc-50 — text on destructive bg */
   --border-de-emp: var(--border-subtle);
-  --input: var(--border);
+  --input: var(--ap-wind-border);
 }
 
 
@@ -184,7 +184,7 @@
   --foreground-accent-muted: #6b7280;
 
   /* ── Borders (dashed via utility, but color defined here) ───────────── */
-  --border: #d1d5db;
+  --ap-wind-border: #d1d5db;
   --border-subtle: #e5e7eb;
   --border-muted: #f3f4f6;
   --border-deep: #f9fafb;
@@ -219,7 +219,7 @@
   --destructive: #9ca3af;
   --destructive-foreground: #ffffff;
   --border-de-emp: var(--border-subtle);
-  --input: var(--border);
+  --input: var(--ap-wind-border);
 }
 
 /* Wireframe overrides: dashed borders everywhere, reduced rounding */
@@ -263,7 +263,7 @@
   --foreground-accent-muted: oklch(0.573 0.114 211.4); /* accent — muted accent text */
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
-  --border: oklch(0.3068 0.0426 258.29);         /* border */
+  --ap-wind-border: oklch(0.3068 0.0426 258.29);         /* border */
   --border-subtle: oklch(0.2648 0.0329 254.38);  /* muted — subtle dividers */
   --border-muted: oklch(0.233 0.036 254.7);      /* card — content borders */
   --border-deep: oklch(0.21 0.03 258.5);         /* background — nested containers */
@@ -298,7 +298,7 @@
   --destructive: oklch(0.6542 0.2321 28.66);
   --destructive-foreground: oklch(1 0 89.88);
   --border-de-emp: var(--border-subtle);
-  --input: var(--border);
+  --input: var(--ap-wind-border);
 }
 
 /* ============================================================================
@@ -334,7 +334,7 @@
   --foreground-accent-muted: #ff8f70; /* ColorSelectionDark — muted accent text */
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
-  --border: #526069;              /* ColorBorderDeEmpDark */
+  --ap-wind-border: #526069;              /* ColorBorderDeEmpDark */
   --border-subtle: #3e4e58;       /* mid border */
   --border-muted: #273139;        /* ColorBackgroundSecondaryDark — content borders */
   --border-deep: #182027;         /* ColorBackgroundDark — nested containers */
@@ -369,7 +369,7 @@
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --border-de-emp: var(--border-subtle);
-  --input: var(--border);
+  --input: var(--ap-wind-border);
 }
 
 /* ============================================================================
