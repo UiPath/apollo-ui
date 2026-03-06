@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.49.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.49.0...@uipath/apollo-react@3.49.1) (2026-03-06)
+
+### Bug Fixes
+
+* **apollo-react:** apbutton sx props was completely overriding default ([bda9ff8](https://github.com/UiPath/apollo-ui/commit/bda9ff81e9aa946a6447e13acabc850400191a61))
+
 ## [@uipath/apollo-react-v3.49.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.48.2...@uipath/apollo-react@3.49.0) (2026-03-06)
 
 ### Features
