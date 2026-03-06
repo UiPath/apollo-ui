@@ -65,7 +65,7 @@ const NODE_OPTIONS: ListItem<NodeItemData>[] = [
   },
   {
     id: '4',
-    name: 'AI Agent',
+    name: 'AI Agent long long long long long long name',
     icon: { name: 'smart_toy' },
     data: { type: 'ai-agent', category: 'AI' },
     description: 'Autonomous AI assistant',
