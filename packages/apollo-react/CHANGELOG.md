@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.49.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.48.2...@uipath/apollo-react@3.49.0) (2026-03-06)
+
+### Features
+
+* **apollo-react:** add tooltip for big names in tooltip [MST-7088] ([728fbda](https://github.com/UiPath/apollo-ui/commit/728fbdae561e4884821b0e0425f9e33b7e3f2c04))
+
 ## [@uipath/apollo-react-v3.48.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.48.1...@uipath/apollo-react@3.48.2) (2026-03-06)
 
 ### Bug Fixes
