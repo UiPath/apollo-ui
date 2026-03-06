@@ -2,7 +2,7 @@ import { FontVariantToken } from '@uipath/apollo-core';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { NodeIcon, partition } from '@uipath/apollo-react/canvas/utils';
 import { ApSkeleton, ApTypography } from '@uipath/apollo-react/material';
-import { ApIcon } from '@uipath/apollo-react/material/components';
+import { ApIcon, ApTooltip } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useMemo } from 'react';
 import type { RowComponentProps } from 'react-window';
 import { useCanvasTheme } from '../BaseCanvas/CanvasThemeContext';
@@ -118,13 +118,15 @@ const ListViewRow = memo(
           {item.icon?.Component && <item.icon.Component />}
         </IconContainerMemoized>
         <Column flex={1} overflow="hidden">
-          <ApTypography
-            variant={FontVariantToken.fontSizeM}
-            className="list-view-item-name"
-            color="var(--uix-canvas-foreground-emp)"
-          >
-            {item.name}
-          </ApTypography>
+          <ApTooltip content={item.name} placement="top" smartTooltip>
+            <ApTypography
+              variant={FontVariantToken.fontSizeM}
+              className="list-view-item-name"
+              color="var(--uix-canvas-foreground-emp)"
+            >
+              {item.name}
+            </ApTypography>
+          </ApTooltip>
           {item.description && (
             <ApTypography
               variant={FontVariantToken.fontSizeXs}
