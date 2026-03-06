@@ -2,7 +2,7 @@ import { FontVariantToken } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApTypography } from '@uipath/apollo-react/material';
-import { ApIcon } from '@uipath/apollo-react/material/components';
+import { ApIcon, ApTooltip } from '@uipath/apollo-react/material/components';
 import { AnimatePresence } from 'motion/react';
 import { memo, useCallback, useMemo, useState } from 'react';
 import type { HandleConfigurationSpecificPosition } from '../../schema/node-definition/handle';
@@ -198,9 +198,11 @@ const ButtonHandleBase = ({
             $selected={selected}
             $size={label ? '60px' : '16px'}
           />
-          <div className="nodrag nopan" style={{ pointerEvents: 'auto' }}>
-            <AddButton onAction={handleButtonClick} />
-          </div>
+          <ApTooltip content="Add node" placement="bottom">
+            <div className="nodrag nopan" style={{ pointerEvents: 'auto' }}>
+              <AddButton onAction={handleButtonClick} />
+            </div>
+          </ApTooltip>
         </StyledWrapper>
       )}
       <StyledNotch
