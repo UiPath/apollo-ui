@@ -672,7 +672,7 @@ body.dark {
   --card:         var(--surface-raised);
   --primary:      var(--brand);
   --muted:        var(--surface-overlay);
-  --input:        var(--border);
+  --input:        var(--ap-wind-border);
   --ring:         var(--ring);
   /* … full mapping in tailwind.consumer.css */
 }`}</CodeBlock>
