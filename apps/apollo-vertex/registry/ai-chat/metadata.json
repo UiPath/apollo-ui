@@ -1,0 +1,90 @@
+{
+  "name": "ai-chat",
+  "type": "component",
+  "category": "complex",
+  "description": "A generic, reusable, and type-safe AI chat component with OpenAI-compatible API support, agentic tool loop, Zod-typed tool calling, markdown rendering, collapsible tool groups, suggestion buttons, error display, message injection, and per-context storage",
+  "tags": [
+    "ai",
+    "chat",
+    "llm",
+    "openai",
+    "assistant",
+    "chatbot",
+    "tools",
+    "suggestions",
+    "agentic",
+    "zod"
+  ],
+  "dependencies": [
+    "zod",
+    "lucide-react",
+    "react-i18next",
+    "react-markdown",
+    "remark-gfm"
+  ],
+  "files": [
+    {
+      "path": "utils/ai-chat-message-types.ts",
+      "type": "types"
+    },
+    {
+      "path": "utils/ai-chat-tool-types.ts",
+      "type": "types"
+    },
+    {
+      "path": "utils/ai-chat-types.ts",
+      "type": "types"
+    },
+    {
+      "path": "utils/ai-chat-utils.ts",
+      "type": "utils"
+    },
+    {
+      "path": "utils/ai-chat-storage.ts",
+      "type": "utils"
+    },
+    {
+      "path": "utils/ai-chat-api.ts",
+      "type": "utils"
+    },
+    {
+      "path": "hooks/use-ai-chat.ts",
+      "type": "hook"
+    },
+    {
+      "path": "components/ai-chat.tsx",
+      "type": "component"
+    },
+    {
+      "path": "components/ai-chat-markdown.tsx",
+      "type": "component"
+    },
+    {
+      "path": "components/ai-chat-message.tsx",
+      "type": "component"
+    },
+    {
+      "path": "components/ai-chat-loading.tsx",
+      "type": "component"
+    },
+    {
+      "path": "components/ai-chat-input.tsx",
+      "type": "component"
+    },
+    {
+      "path": "components/ai-chat-suggestions.tsx",
+      "type": "component"
+    },
+    {
+      "path": "components/ai-chat-tool-group.tsx",
+      "type": "component"
+    },
+    {
+      "path": "components/ai-chat-tool-group-message.tsx",
+      "type": "component"
+    }
+  ],
+  "version": "2.0.0",
+  "author": "Apollo Design System",
+  "license": "MIT"
+}
