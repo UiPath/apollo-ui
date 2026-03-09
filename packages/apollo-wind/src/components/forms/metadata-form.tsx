@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import { FormProvider, useForm } from 'react-hook-form';
+import { type FieldValues, FormProvider, useForm } from 'react-hook-form';
 import { z } from 'zod/v4';
 
 import {
@@ -63,7 +63,7 @@ export function MetadataForm({
   const zodSchema = useMemo(() => buildZodSchema(schema), [schema]);
 
   // Initialize React Hook Form
-  const form = useForm({
+  const form = useForm<FieldValues>({
     resolver: standardSchemaResolver(zodSchema),
     mode: schema.mode || 'onSubmit',
     reValidateMode: schema.reValidateMode || 'onChange',
