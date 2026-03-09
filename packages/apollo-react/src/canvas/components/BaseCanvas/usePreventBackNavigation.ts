@@ -4,8 +4,9 @@ import { useEffect } from 'react';
  * Custom hook to prevent browser back navigation on touch gestures and horizontal wheel scrolling.
  * This is useful for canvas/flow components where accidental navigation can interrupt user work.
  */
-export function usePreventBackNavigation() {
+export function usePreventBackNavigation(enabled = true) {
   useEffect(() => {
+    if (!enabled) return;
     const preventBackNavigation = (e: TouchEvent) => {
       if (e.touches.length === 2) {
         e.preventDefault();
@@ -28,5 +29,5 @@ export function usePreventBackNavigation() {
       document.removeEventListener('touchmove', preventBackNavigation);
       document.removeEventListener('wheel', preventWheel);
     };
-  }, []);
+  }, [enabled]);
 }

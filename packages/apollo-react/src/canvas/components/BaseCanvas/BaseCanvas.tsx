@@ -82,6 +82,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     zoomOnDoubleClick = true,
     snapToGrid = BASE_CANVAS_DEFAULTS.snapToGrid,
     snapGrid = BASE_CANVAS_DEFAULTS.snapGrid,
+    preventScrolling = false,
 
     // Layout
     initialAutoLayout,
@@ -90,6 +91,9 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     // Toolbar
     onToolbarAction,
     breakpoints,
+
+    // Navigation
+    enableBackNavigationPrevention = true,
 
     // Pan Shortcut Teaching UI
     panShortcutTeachingUIMessage = 'Hold Space and drag to pan around the canvas!',
@@ -109,7 +113,8 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
   const { ensureNodesInView, ensureAllNodesInView, centerNode } = useEnsureNodesInView();
 
   // Prevent browser back navigation on touch gestures
-  usePreventBackNavigation();
+  const preventBackNavigationEnabled = preventScrolling === false && enableBackNavigationPrevention;
+  usePreventBackNavigation(preventBackNavigationEnabled);
 
   // Maintain specified nodes in view when canvas resizes
   // This ensures important nodes remain visible in responsive layouts

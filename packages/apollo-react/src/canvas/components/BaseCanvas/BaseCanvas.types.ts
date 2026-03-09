@@ -187,6 +187,13 @@ export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends 
    * @default undefined
    */
   isDarkMode?: boolean;
+
+  /**
+   * Whether to prevent browser back navigation on touch gestures and horizontal wheel scrolling.
+   * Disable this when the canvas is embedded in a scrollable page where horizontal scroll should work normally.
+   * @default true
+   */
+  enableBackNavigationPrevention?: boolean;
 }
 
 /**
