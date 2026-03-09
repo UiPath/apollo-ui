@@ -31,6 +31,17 @@ interface ColorToken {
   lightTw: string;
 }
 
+interface CodeSyntaxToken {
+  name: string;
+  usage: string;
+  darkVar: string;
+  darkTw: string;
+  darkHex: string;
+  lightVar: string;
+  lightTw: string;
+  lightHex: string;
+}
+
 interface GradientToken {
   name: string;
   twClass: string;
@@ -340,6 +351,69 @@ const gradientTokens: GradientToken[] = [
   },
 ];
 
+const codeSyntaxTokens: CodeSyntaxToken[] = [
+  {
+    name: '--code-rest',
+    usage: 'Default text, identifiers, plain code',
+    darkVar: 'var(--color-zinc-400)',
+    darkTw: 'zinc-400',
+    darkHex: '#a1a1aa',
+    lightVar: 'var(--color-zinc-600)',
+    lightTw: 'zinc-600',
+    lightHex: '#52525b',
+  },
+  {
+    name: '--code-punctuation',
+    usage: 'Brackets, commas, semicolons',
+    darkVar: 'var(--color-zinc-500)',
+    darkTw: 'zinc-500',
+    darkHex: '#71717a',
+    lightVar: 'var(--color-zinc-500)',
+    lightTw: 'zinc-500',
+    lightHex: '#71717a',
+  },
+  {
+    name: '--code-key',
+    usage: 'Keywords, properties, attributes',
+    darkVar: 'var(--color-cyan-400)',
+    darkTw: 'cyan-400',
+    darkHex: '#22d3ee',
+    lightVar: 'var(--color-cyan-700)',
+    lightTw: 'cyan-700',
+    lightHex: '#0e7490',
+  },
+  {
+    name: '--code-string',
+    usage: 'String values',
+    darkVar: 'var(--color-emerald-400)',
+    darkTw: 'emerald-400',
+    darkHex: '#34d399',
+    lightVar: 'var(--color-emerald-700)',
+    lightTw: 'emerald-700',
+    lightHex: '#047857',
+  },
+  {
+    name: '--code-number',
+    usage: 'Numeric literals',
+    darkVar: 'var(--color-amber-400)',
+    darkTw: 'amber-400',
+    darkHex: '#fbbf24',
+    lightVar: 'var(--color-amber-700)',
+    lightTw: 'amber-700',
+    lightHex: '#b45309',
+  },
+  {
+    name: '--code-literal',
+    usage: 'Booleans, null, undefined',
+    darkVar: 'var(--color-violet-400)',
+    darkTw: 'violet-400',
+    darkHex: '#a78bfa',
+    lightVar: 'var(--color-violet-600)',
+    lightTw: 'violet-600',
+    lightHex: '#7c3aed',
+  },
+];
+
 // ============================================================================
 // Table components
 // ============================================================================
@@ -351,10 +425,11 @@ function ColorTokenTable({ groups }: { groups: ColorGroup[] }) {
         <thead>
           <tr className="border-b border-border bg-surface-overlay">
             <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Token</th>
+            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Usage</th>
             <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">
               Tailwind Class
             </th>
-            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Usage</th>
+            <th className="w-56 px-4 py-2.5 text-left font-medium text-foreground-muted">CSS Variable</th>
             <th className="px-4 py-2.5 text-center font-medium text-foreground-muted">Dark</th>
             <th className="px-4 py-2.5 text-center font-medium text-foreground-muted">Light</th>
           </tr>
@@ -364,7 +439,7 @@ function ColorTokenTable({ groups }: { groups: ColorGroup[] }) {
             <React.Fragment key={group.group}>
               <tr className="border-b border-border bg-surface-raised/50">
                 <td
-                  colSpan={5}
+                  colSpan={6}
                   className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-foreground-muted"
                 >
                   {group.group}
@@ -380,6 +455,7 @@ function ColorTokenTable({ groups }: { groups: ColorGroup[] }) {
                       {token.name}
                     </code>
                   </td>
+                  <td className="px-4 py-2 text-xs text-foreground-muted">{token.usage}</td>
                   <td className="px-4 py-2">
                     <code
                       className="text-xs text-foreground-subtle"
@@ -388,7 +464,22 @@ function ColorTokenTable({ groups }: { groups: ColorGroup[] }) {
                       {token.twClass}
                     </code>
                   </td>
-                  <td className="px-4 py-2 text-foreground-muted">{token.usage}</td>
+                  <td className="w-56 px-4 py-2">
+                    <div className="flex flex-col gap-0.5">
+                      <code
+                        className="whitespace-nowrap text-[10px] text-foreground-accent/70"
+                        style={{ fontFamily: fontFamily.monospace }}
+                      >
+                        {`var(--color-${token.darkTw})`}
+                      </code>
+                      <code
+                        className="whitespace-nowrap text-[10px] text-foreground-subtle"
+                        style={{ fontFamily: fontFamily.monospace }}
+                      >
+                        {`var(--color-${token.lightTw})`}
+                      </code>
+                    </div>
+                  </td>
                   <td className="px-4 py-2">
                     <div className="flex items-center justify-center gap-2">
                       <div
@@ -397,13 +488,13 @@ function ColorTokenTable({ groups }: { groups: ColorGroup[] }) {
                       />
                       <div className="flex flex-col">
                         <code
-                          className="text-xs text-foreground-muted"
+                          className="whitespace-nowrap text-xs text-foreground-muted"
                           style={{ fontFamily: fontFamily.monospace }}
                         >
                           {token.dark}
                         </code>
                         <code
-                          className="text-[10px] text-foreground-accent/70"
+                          className="whitespace-nowrap text-[10px] text-foreground-accent/70"
                           style={{ fontFamily: fontFamily.monospace }}
                         >
                           {token.darkTw}
@@ -419,13 +510,13 @@ function ColorTokenTable({ groups }: { groups: ColorGroup[] }) {
                       />
                       <div className="flex flex-col">
                         <code
-                          className="text-xs text-foreground-muted"
+                          className="whitespace-nowrap text-xs text-foreground-muted"
                           style={{ fontFamily: fontFamily.monospace }}
                         >
                           {token.light}
                         </code>
                         <code
-                          className="text-[10px] text-foreground-accent/70"
+                          className="whitespace-nowrap text-[10px] text-foreground-accent/70"
                           style={{ fontFamily: fontFamily.monospace }}
                         >
                           {token.lightTw}
@@ -436,6 +527,110 @@ function ColorTokenTable({ groups }: { groups: ColorGroup[] }) {
                 </tr>
               ))}
             </React.Fragment>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function CodeSyntaxTable({ tokens }: { tokens: CodeSyntaxToken[] }) {
+  return (
+    <div className="overflow-hidden rounded-lg border border-border">
+      <table className="w-full text-sm" style={{ fontFamily: fontFamily.base }}>
+        <thead>
+          <tr className="border-b border-border bg-surface-overlay">
+            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Token</th>
+            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">Usage</th>
+            <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">
+              Tailwind Class
+            </th>
+            <th className="w-56 px-4 py-2.5 text-left font-medium text-foreground-muted">CSS Variable</th>
+            <th className="px-4 py-2.5 text-center font-medium text-foreground-muted">Dark</th>
+            <th className="px-4 py-2.5 text-center font-medium text-foreground-muted">Light</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tokens.map((token) => (
+            <tr key={token.name} className="border-b border-border-subtle last:border-b-0">
+              <td className="px-4 py-2">
+                <code
+                  className="text-xs text-foreground-accent"
+                  style={{ fontFamily: fontFamily.monospace }}
+                >
+                  {token.name}
+                </code>
+              </td>
+              <td className="px-4 py-2 text-xs text-foreground-muted">{token.usage}</td>
+              <td className="px-4 py-2">
+                <code
+                  className="text-xs text-foreground-subtle"
+                  style={{ fontFamily: fontFamily.monospace }}
+                >
+                  —
+                </code>
+              </td>
+              <td className="w-56 px-4 py-2">
+                <div className="flex flex-col gap-0.5">
+                  <code
+                    className="whitespace-nowrap text-[10px] text-foreground-accent/70"
+                    style={{ fontFamily: fontFamily.monospace }}
+                  >
+                    {token.darkVar}
+                  </code>
+                  <code
+                    className="whitespace-nowrap text-[10px] text-foreground-subtle"
+                    style={{ fontFamily: fontFamily.monospace }}
+                  >
+                    {token.lightVar}
+                  </code>
+                </div>
+              </td>
+              <td className="px-4 py-2">
+                <div className="flex items-center justify-center gap-2">
+                  <div
+                    className="h-5 w-5 shrink-0 rounded border border-border"
+                    style={{ backgroundColor: token.darkHex }}
+                  />
+                  <div className="flex flex-col">
+                    <code
+                      className="whitespace-nowrap text-xs text-foreground-muted"
+                      style={{ fontFamily: fontFamily.monospace }}
+                    >
+                      {token.darkHex}
+                    </code>
+                    <code
+                      className="whitespace-nowrap text-[10px] text-foreground-accent/70"
+                      style={{ fontFamily: fontFamily.monospace }}
+                    >
+                      {token.darkTw}
+                    </code>
+                  </div>
+                </div>
+              </td>
+              <td className="px-4 py-2">
+                <div className="flex items-center justify-center gap-2">
+                  <div
+                    className="h-5 w-5 shrink-0 rounded border border-border"
+                    style={{ backgroundColor: token.lightHex }}
+                  />
+                  <div className="flex flex-col">
+                    <code
+                      className="whitespace-nowrap text-xs text-foreground-muted"
+                      style={{ fontFamily: fontFamily.monospace }}
+                    >
+                      {token.lightHex}
+                    </code>
+                    <code
+                      className="whitespace-nowrap text-[10px] text-foreground-accent/70"
+                      style={{ fontFamily: fontFamily.monospace }}
+                    >
+                      {token.lightTw}
+                    </code>
+                  </div>
+                </div>
+              </td>
+            </tr>
           ))}
         </tbody>
       </table>
@@ -531,6 +726,27 @@ export const Default: Story = {
         </div>
 
         <ColorTokenTable groups={colorGroups} />
+
+        <div>
+          <h2
+            className="mb-4 text-xl font-bold tracking-tight text-foreground"
+            style={{ fontFamily: fontFamily.base }}
+          >
+            Components
+          </h2>
+          <p className="mb-6 text-sm text-foreground-muted">
+            Semantic color tokens scoped to specific components. Each token maps to a Tailwind v4
+            palette variable and resolves to a different value in dark and light themes. Reference
+            tokens directly via <code style={{ fontFamily: fontFamily.monospace }}>var(--code-*)</code> in component styles.
+          </p>
+          <h3
+            className="mb-3 text-sm font-semibold tracking-tight text-foreground"
+            style={{ fontFamily: fontFamily.base }}
+          >
+            Code Block
+          </h3>
+          <CodeSyntaxTable tokens={codeSyntaxTokens} />
+        </div>
 
         <div>
           <h2
