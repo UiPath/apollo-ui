@@ -30,10 +30,10 @@ Do NOT use for:
 
 ```mermaid
 flowchart TD
-    A["Run pnpm audit"] --> B["For EACH vulnerability"]
+    A["Run audit"] --> B["For EACH vulnerability"]
     B --> C["Trace full dependency chain"]
     C --> D{"Check version range (^ vs exact)"}
-    D -- "uses ^" --> E["Try pnpm update in lockfile"]
+    D -- "uses ^" --> E["Try update in lockfile"]
     D -- "exact" --> F["Check parent package updates"]
     E --> G{"Did it fix?"}
     G -- "yes" --> H["Verify fix"]
@@ -43,13 +43,16 @@ flowchart TD
     J --> K{"Any fix found?"}
     K -- "yes, via update" --> L["Update parent package"]
     K -- "yes, via peer" --> M["Add explicit dependency if peer"]
-    K -- "no" --> N["Add override (last resort)"]
+    K -- "no" --> N["Try lockfile patching (Step 7.5)"]
     L --> H
     M --> H
+    N --> Q{"Did it fix?"}
+    Q -- "yes" --> H
+    Q -- "no" --> R["Add override (last resort)"]
     H --> B
-    N --> O["Document why no fix"]
-    O --> B
-    B --> P(["Done"])
+    R --> S["Document why no fix"]
+    S --> B
+    B --> T(["Done"])
 ```
 
 ## Step-by-Step Instructions
@@ -93,9 +96,10 @@ npm view @microsoft/api-extractor@7.57.6 dependencies.minimatch
 ```
 
 **If it uses `^` range:**
-- Try updating in lockfile: `pnpm update vulnerable-package --depth Infinity`
+- Try updating in lockfile: `pnpm update vulnerable-package --depth Infinity` (or `npm update` / `yarn upgrade`)
 - This might get a newer version within the range
-- Verify: `pnpm audit` again
+- Verify: `pnpm audit` again (or `npm audit` / `yarn audit`)
+- **Important**: If you have packages with `"latest"` as version specifier, update commands will also update those packages. If update doesn't work, proceed to Step 7.5 (lockfile patching) before considering overrides.
 
 **If exact version:**
 - Parent package must be updated (continue to Step 4)
@@ -172,11 +176,113 @@ pnpm add -D webpack@latest
 **After ANY change:**
 
 ```bash
-pnpm install
-pnpm audit  # Should show fewer vulnerabilities
+pnpm install  # or npm install / yarn install
+pnpm audit  # Should show fewer vulnerabilities (or npm audit / yarn audit)
 pnpm check:dependencies  # Ensure consistency (if you have this script)
 pnpm build  # Ensure nothing broke
 ```
+
+### Step 7.5: Lockfile Patching (When Updates Fail, Before Overrides)
+
+**Use this when `pnpm update` / `npm update` / `yarn upgrade` fails to update the vulnerable package**, typically because:
+- Your project has packages with `"latest"` version specifiers that get updated alongside
+- The lockfile resolution is stuck despite parent packages accepting the fixed version
+- You want a surgical fix without triggering other package updates
+
+This step sits between failed update attempts (Steps 6–7) and overrides (Step 8) in the overall flow.
+
+**Process:**
+
+**PREREQUISITE: Verify the fixed version is within the parent's allowed range:**
+```bash
+# Check what range the parent package allows
+npm view parent-package@version dependencies.vulnerable-package
+# Example output: "^8.2.1" means 8.2.1-8.x.x is allowed
+# If parent uses exact version (e.g., "8.2.1"), do NOT use lockfile patching - use overrides instead
+```
+
+1. **Get the correct integrity hash for the fixed version:**
+```bash
+npm view vulnerable-package@fixed-version dist.integrity
+# Example: npm view express-rate-limit@8.3.1 dist.integrity
+# Output: sha512-D1dKN+cmyPWuvB+G2SREQDzPY1agpBIcTa9sJxOPMCNeH3gwzhqJRDWCXW3gg0y//+LQ/8j52JbMROWyrKdMdw==
+```
+
+2. **Edit the lockfile directly:**
+
+**For pnpm (pnpm-lock.yaml):**
+```bash
+# Replace all instances of the vulnerable version with fixed version
+# GNU sed (Linux):
+sed -i 's/vulnerable-package@old-version:/vulnerable-package@new-version:/' pnpm-lock.yaml
+sed -i 's/old-integrity-hash/new-integrity-hash/' pnpm-lock.yaml
+sed -i 's/vulnerable-package: old-version(/vulnerable-package: new-version(/' pnpm-lock.yaml
+sed -i 's/vulnerable-package@old-version(/vulnerable-package@new-version(/' pnpm-lock.yaml
+
+# BSD/macOS sed (note the empty string after -i):
+sed -i '' 's/vulnerable-package@old-version:/vulnerable-package@new-version:/' pnpm-lock.yaml
+sed -i '' 's/old-integrity-hash/new-integrity-hash/' pnpm-lock.yaml
+sed -i '' 's/vulnerable-package: old-version(/vulnerable-package: new-version(/' pnpm-lock.yaml
+sed -i '' 's/vulnerable-package@old-version(/vulnerable-package@new-version(/' pnpm-lock.yaml
+```
+
+**For npm (package-lock.json):**
+```bash
+# Find and replace version and integrity in package-lock.json
+# Search for "vulnerable-package": { "version": "old-version"
+# Update both "version" and "integrity" fields
+```
+
+**For yarn (yarn.lock):**
+```bash
+# Find the package entry
+# vulnerable-package@^range:
+#   version "old-version"
+#   resolved "..."
+#   integrity sha512-...
+# Update version, resolved URL, and integrity
+```
+
+3. **Verify the patch:**
+```bash
+# Check what changed
+git diff pnpm-lock.yaml  # or package-lock.json / yarn.lock
+
+# Apply the changes
+pnpm install --frozen-lockfile  # or npm ci / yarn install --frozen-lockfile
+
+# Verify vulnerability is fixed
+pnpm audit  # or npm audit / yarn audit
+```
+
+**Example (pnpm):**
+```bash
+# Get integrity hash
+npm view express-rate-limit@8.3.1 dist.integrity
+
+# Patch lockfile
+sed -i '' 's/express-rate-limit@8\.2\.1:/express-rate-limit@8.3.1:/' pnpm-lock.yaml
+sed -i '' 's/sha512-OLD_HASH/sha512-NEW_HASH/' pnpm-lock.yaml
+sed -i '' 's/express-rate-limit: 8\.2\.1(/express-rate-limit: 8.3.1(/' pnpm-lock.yaml
+sed -i '' 's/express-rate-limit@8\.2\.1(/express-rate-limit@8.3.1(/' pnpm-lock.yaml
+
+# Verify
+git diff pnpm-lock.yaml
+pnpm install --frozen-lockfile
+pnpm audit
+```
+
+**When to use lockfile patching:**
+- ✅ After exhausting all update attempts (Steps 3-6)
+- ✅ When parent packages use `^` ranges but lockfile won't update
+- ✅ When you need to avoid updating packages with "latest" specifiers
+- ✅ **CRITICAL**: Only when the fixed version is within the parent's allowed range
+  - Parent has `^8.2.1` and fix is `8.3.1` → ✅ OK (within range)
+  - Parent has `8.2.1` (exact) and fix is `8.3.1` → ❌ NOT OK (violates constraint)
+  - Always verify: `npm view parent@version dependencies.package` shows the range
+- ❌ Don't use if the parent package specifies an exact version (not a range)
+- ❌ Don't use if you're unsure about the package's compatibility
+- ❌ Don't use if the integrity hash is wrong (will fail integrity check)
 
 ### Step 8: Override Only As Last Resort
 
@@ -185,11 +291,13 @@ pnpm build  # Ensure nothing broke
 - ✅ Checked ALL intermediate packages - none have updates
 - ✅ Checked if it's a peer dependency - it's not, or can't be satisfied
 - ✅ Checked version range - it's exact pinned, can't bump in lockfile
+- ✅ Tried lockfile patching (Step 7.5) - didn't work or not feasible
 - ✅ Verified a fixed version exists for the vulnerable package
 - ✅ Latest versions of ALL packages in chain still have the issue
 
-**Add to package.json:**
+**Add to package.json (syntax varies by package manager):**
 
+**pnpm:**
 ```json
 {
   "pnpm": {
@@ -200,7 +308,25 @@ pnpm build  # Ensure nothing broke
 }
 ```
 
-**Example: real-world override in package.json:**
+**npm (v8.3+):**
+```json
+{
+  "overrides": {
+    "vulnerable-package": "^fixed-version"
+  }
+}
+```
+
+**yarn:**
+```json
+{
+  "resolutions": {
+    "vulnerable-package": "^fixed-version"
+  }
+}
+```
+
+**Example: real-world override:**
 ```json
 {
   "pnpm": {
@@ -211,7 +337,7 @@ pnpm build  # Ensure nothing broke
 }
 ```
 
-**Document why in PR/commit:** "minimatch: api-extractor@7.57.6 (latest) uses exact 10.2.1, needs 10.2.3"
+**Document why in PR/commit:** "minimatch: api-extractor@7.57.6 (latest) uses exact 10.2.1, needs 10.2.3. Checked all packages in chain, tried lockfile patching. No package update available as of 2026-03-04."
 
 ### Step 9: Handle Unfixable Vulnerabilities
 
@@ -229,17 +355,19 @@ pnpm build  # Ensure nothing broke
 
 ## Commands Reference
 
-| Task | Command |
-|------|---------|
-| Run audit | `pnpm audit` |
-| Get JSON output | `pnpm audit --json` |
-| Trace dependency | `pnpm ls package-name --depth=20` |
-| Check latest version | `npm view package@latest version` |
-| Check deps of version | `npm view package@version dependencies.dep-name` |
-| Check peer deps | `npm view package@version peerDependencies peerDependenciesMeta` |
-| Update in lockfile | `pnpm update package@latest --depth Infinity` |
-| Update parent package | `pnpm update parent-package@latest` |
-| Check version range | `npm view parent@version dependencies.child` |
+| Task | pnpm | npm | yarn |
+|------|------|-----|------|
+| Run audit | `pnpm audit` | `npm audit` | `yarn audit` |
+| Get JSON output | `pnpm audit --json` | `npm audit --json` | `yarn audit --json` |
+| Trace dependency | `pnpm ls package --depth=20` | `npm ls package --depth=20` | `yarn why package` |
+| Check latest version | `npm view package@latest version` | `npm view package@latest version` | `yarn info package@latest version` |
+| Check deps of version | `npm view package@ver dependencies.dep` | `npm view package@ver dependencies.dep` | `yarn info package@ver dependencies` |
+| Check peer deps | `npm view package@ver peerDependencies` | `npm view package@ver peerDependencies` | `yarn info package@ver peerDependencies` |
+| Update in lockfile | `pnpm update package --depth Infinity` | `npm update package` | `yarn upgrade package` |
+| Update parent package | `pnpm update parent@latest` | `npm install parent@latest` | `yarn upgrade parent@latest` |
+| Check version range | `npm view parent@ver dependencies.child` | `npm view parent@ver dependencies.child` | `yarn info parent@ver dependencies` |
+| Get integrity hash | `npm view package@ver dist.integrity` | `npm view package@ver dist.integrity` | `yarn info package@ver dist.integrity` |
+| Patch lockfile | See Step 7.5 | See Step 7.5 | See Step 7.5 |
 
 ## Common Mistakes
 
@@ -250,9 +378,11 @@ pnpm build  # Ensure nothing broke
 | Changing audit-level | Hides vulnerabilities | Fix root causes |
 | Not checking peer deps | Miss opportunity to control version | Always check peerDependencies |
 | Not checking version ranges | Can't identify lockfile update opportunities | Check if ^ or exact |
-| Adding webpack/other as dep | Pollutes package.json | Try `pnpm update` in lockfile first |
+| Adding webpack/other as dep | Pollutes package.json | Try update commands in lockfile first |
 | Skipping intermediate packages | Miss update opportunities | Check ALL packages in chain |
 | Not verifying ^ ranges | Assume exact when it's ^ | Use `npm view` to check |
+| Running update when "latest" exists | Updates unrelated packages | Use lockfile patching (Step 7.5) |
+| Skipping lockfile patching | Jump to overrides too quickly | Try patching before overrides |
 
 ## Red Flags - STOP and Investigate Deeper
 
@@ -260,14 +390,16 @@ These thoughts mean you're taking shortcuts:
 
 | Thought | Reality |
 |---------|---------|
-| "Package is at latest, needs override" | Did you check intermediates? Peer deps? |
+| "Package is at latest, needs override" | Did you check intermediates? Peer deps? Try lockfile patching? |
 | "This will take too long" | Overrides create tech debt. Do it right. |
 | "Audit-level=high is simpler" | User said NEVER change audit level |
-| "Just add webpack as dep" | Did you try pnpm update first? |
+| "Just add webpack as dep" | Did you try update commands first? |
 | "Security team approved overrides" | They approved IF NO OTHER FIX. Check first. |
-| "I've checked enough" | Did you check version ranges? Peer deps? |
+| "I've checked enough" | Did you check version ranges? Peer deps? Lockfile patching? |
 | "This is obviously unfixable" | Did you check ALL packages in chain? |
 | "Let me add it to devDeps" | Only if it's a peer dep. Try updates first. |
+| "Update commands don't work" | Did you try lockfile patching (Step 7.5)? |
+| "I have packages with 'latest'" | Use lockfile patching to avoid updating them |
 
 **When you think "this needs an override":** Go back and verify you completed Steps 3-6. Every single one.
 
@@ -432,20 +564,22 @@ npm view @modelcontextprotocol/sdk@latest dependencies.hono peerDependencies.hon
 1. **ALWAYS trace the COMPLETE dependency chain** - Every package from your code to the vulnerability
 2. **ALWAYS check if packages use ^ ranges** - Can be updated in lockfile
 3. **ALWAYS check peerDependencies and peerDependenciesMeta** - Optional peers can be removed or satisfied
-4. **ALWAYS try `pnpm update --depth Infinity`** - Before adding as explicit dependency
+4. **ALWAYS try update commands** - `pnpm update --depth Infinity` / `npm update` / `yarn upgrade` before adding as explicit dependency
 5. **ALWAYS verify after each fix** - Run audit + build + tests
 
 ## Quick Decision Matrix
 
 | Scenario | Action |
 |----------|--------|
-| Package uses `^` range | Try `pnpm update package --depth Infinity` |
+| Package uses `^` range | Try update: `pnpm update pkg --depth Infinity` / `npm update pkg` / `yarn upgrade pkg` |
+| Update doesn't work (^ range) | Try lockfile patching (Step 7.5) |
 | Package uses exact version | Check parent for updates |
 | Parent at latest | Check intermediate packages |
 | All at latest | Check peer dependencies |
 | Optional peer dependency | Try removing or explicit version |
 | Required peer dependency | Add explicit version if range allows |
-| Genuinely no fix | Override with comment explaining why |
+| Have "latest" specifiers | Use lockfile patching instead of update commands |
+| All methods exhausted | Override with comment explaining why |
 | No patched version exists | Document as unfixable, monitor upstream |
 
 ## Verification Script
@@ -472,9 +606,10 @@ Override is correct when ALL these are true:
 - [ ] Traced COMPLETE dependency chain (all packages)
 - [ ] Checked latest version of EVERY package in chain
 - [ ] Verified version ranges (^ vs exact)
-- [ ] Tried `pnpm update --depth Infinity`
+- [ ] Tried update commands (`pnpm/npm/yarn update --depth Infinity`)
 - [ ] Checked peerDependencies of all packages
 - [ ] Checked peerDependenciesMeta for optional flag
+- [ ] Attempted lockfile patching (Step 7.5) - either didn't work or not feasible
 - [ ] Confirmed fixed version exists for override target
 - [ ] No parent package update available with fix
 - [ ] Can't remove optional peer dependency
