@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.50.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.49.1...@uipath/apollo-react@3.50.0) (2026-03-09)
+
+### Features
+
+* **apollo-react:** add tooltip to add node icon in flow[MST-6942] ([65a4d8d](https://github.com/UiPath/apollo-ui/commit/65a4d8dfac97a1bdc2a991d5aa9f3d7c4c80f38c))
+
 ## [@uipath/apollo-react-v3.49.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.49.0...@uipath/apollo-react@3.49.1) (2026-03-06)
 
 ### Bug Fixes
