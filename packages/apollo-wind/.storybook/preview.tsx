@@ -76,7 +76,7 @@ const preview: Preview = {
             'UiPath',
           ],
           'Templates',
-          ['Admin', 'Delegate', 'Flow', 'Maestro', 'Future'],
+          ['Admin', 'Delegate', 'Flow', 'Maestro', 'Studio', 'Future'],
           'Forms',
           'Experiments',
           '*',
