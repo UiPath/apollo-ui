@@ -481,7 +481,7 @@ function ColorTokenTable({ groups }: { groups: ColorGroup[] }) {
                     </div>
                   </td>
                   <td className="px-4 py-2">
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-start gap-2">
                       <div
                         className="h-5 w-5 shrink-0 rounded border border-border"
                         style={{ backgroundColor: token.dark }}
@@ -503,7 +503,7 @@ function ColorTokenTable({ groups }: { groups: ColorGroup[] }) {
                     </div>
                   </td>
                   <td className="px-4 py-2">
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-start gap-2">
                       <div
                         className="h-5 w-5 shrink-0 rounded border border-border"
                         style={{ backgroundColor: token.light }}
@@ -587,7 +587,7 @@ function CodeSyntaxTable({ tokens }: { tokens: CodeSyntaxToken[] }) {
                 </div>
               </td>
               <td className="px-4 py-2">
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-start gap-2">
                   <div
                     className="h-5 w-5 shrink-0 rounded border border-border"
                     style={{ backgroundColor: token.darkHex }}
@@ -609,7 +609,7 @@ function CodeSyntaxTable({ tokens }: { tokens: CodeSyntaxToken[] }) {
                 </div>
               </td>
               <td className="px-4 py-2">
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-start gap-2">
                   <div
                     className="h-5 w-5 shrink-0 rounded border border-border"
                     style={{ backgroundColor: token.lightHex }}
