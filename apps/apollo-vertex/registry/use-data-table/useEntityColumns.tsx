@@ -4,16 +4,12 @@ import { DataTableColumnHeader } from "@/components/ui/data-table";
 import { FORMAT_TYPE_MAP } from "@/lib/constants";
 import { renderValueOrEmptyState } from "@/lib/renderValueOrEmptyState";
 import type {
+  Column,
   ColumnDefWithAccessorKey,
   EntityRecord,
   ExtraColumn,
   VssEntity,
-} from "./useEntityDataTable";
-
-export interface Column {
-  key: string;
-  label: string;
-}
+} from "./types";
 
 function mergeExtraColumns<TRecord extends EntityRecord>(
   columns: Column[],
