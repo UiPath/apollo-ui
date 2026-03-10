@@ -125,6 +125,14 @@ export const connectionConstraintSchema = z.object({
    * Example: "Agent Model can only connect to Agent node's model handle"
    */
   validationMessage: z.string().optional(),
+
+  /**
+   * Severity level for constraint violations
+   * Controls whether violations appear as errors or warnings
+   * - 'error' (default): Blocks execution/publish
+   * - 'warning': Shows advisory badge but doesn't block
+   */
+  severity: z.enum(['warning', 'error', 'critical', 'info']).optional(),
 });
 
 // Export inferred types
