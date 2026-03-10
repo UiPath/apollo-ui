@@ -6,8 +6,9 @@ import {
   BreakpointIndicator,
   ExecutionStartPointIndicator,
   ExecutionStatusIndicator,
-  ValidationErrorIndicator,
   resolveAdornments,
+  ValidationErrorIndicator,
+  ValidationWarningIndicator,
 } from './adornment-resolver';
 
 const baseContext: NodeStatusContext = { nodeId: 'node-1' };
@@ -110,7 +111,7 @@ describe('resolveAdornments', () => {
     expect((result.topRight as React.ReactElement)?.type).toBe(ValidationErrorIndicator);
   });
 
-  it('falls back to execution indicator for WARNING severity', () => {
+  it('shows warning indicator for WARNING severity', () => {
     const result = resolveAdornments({
       ...baseContext,
       validationState: {
@@ -123,7 +124,24 @@ describe('resolveAdornments', () => {
         },
       },
     });
-    expect((result.topRight as React.ReactElement)?.type).toBe(ExecutionStatusIndicator);
+    expect((result.topRight as React.ReactElement)?.type).toBe(ValidationWarningIndicator);
+  });
+
+  it('shows warning indicator even when executionState has status None', () => {
+    const result = resolveAdornments({
+      ...baseContext,
+      executionState: { status: 'None', count: 0 },
+      validationState: {
+        validationStatus: ValidationErrorSeverity.WARNING,
+        validationError: {
+          code: 'WARN',
+          message: 'Warning',
+          description: 'Warning',
+          severity: ValidationErrorSeverity.WARNING,
+        },
+      },
+    });
+    expect((result.topRight as React.ReactElement)?.type).toBe(ValidationWarningIndicator);
   });
 
   it('falls back to execution indicator for INFO severity', () => {
@@ -213,5 +231,17 @@ describe('ValidationErrorIndicator', () => {
 
   it('renders with default message when none provided', () => {
     expect(ValidationErrorIndicator({})).toBeTruthy();
+  });
+});
+
+describe('ValidationWarningIndicator', () => {
+  it('renders with custom message', () => {
+    const el = ValidationWarningIndicator({ message: 'Trigger should be connected' });
+    expect(el).toBeTruthy();
+    expect(isValidElement(el)).toBe(true);
+  });
+
+  it('renders with default message when none provided', () => {
+    expect(ValidationWarningIndicator({})).toBeTruthy();
   });
 });
