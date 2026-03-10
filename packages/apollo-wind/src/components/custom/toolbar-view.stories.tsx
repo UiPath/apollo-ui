@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import * as React from 'react';
 import { FlowViewToolbar } from './toolbar-view';
 
 const meta = {
@@ -13,9 +14,12 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: () => (
-    <div className="bg-surface p-8">
-      <FlowViewToolbar activeNodeSize="m" />
-    </div>
-  ),
+  render: () => {
+    const [activeNodeSize, setActiveNodeSize] = React.useState<'s' | 'm' | 'l'>('s');
+    return (
+      <div className="bg-surface p-8">
+        <FlowViewToolbar activeNodeSize={activeNodeSize} onNodeSizeChange={setActiveNodeSize} />
+      </div>
+    );
+  },
 };

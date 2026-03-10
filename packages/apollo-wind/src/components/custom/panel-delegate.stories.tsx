@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Folder, History, MessageCirclePlus, Settings } from 'lucide-react';
+import { Folder, History, MessageCircle, Settings } from 'lucide-react';
 import { DelegatePanel } from './panel-delegate';
 
 const meta = {
@@ -17,7 +17,7 @@ const sampleNavItems = [
   {
     id: 'chat',
     label: 'Chat',
-    icon: <MessageCirclePlus className="h-5 w-5" />,
+    icon: <MessageCircle className="h-5 w-5" />,
     defaultOpen: true,
     children: [
       { id: 'chat-1', label: 'Invoice processing' },
@@ -48,7 +48,7 @@ const sampleNavItems = [
 
 export const Default: Story = {
   render: () => (
-    <div className="flex h-[600px] bg-surface">
+    <div className="flex h-screen bg-surface">
       <DelegatePanel
         defaultOpen
         navItems={sampleNavItems}
@@ -64,7 +64,7 @@ export const Default: Story = {
 
 export const Collapsed: Story = {
   render: () => (
-    <div className="flex h-[600px] bg-surface">
+    <div className="flex h-screen bg-surface">
       <DelegatePanel defaultOpen={false} navItems={sampleNavItems} activeNavId="chat" />
       <div className="flex flex-1 items-center justify-center text-sm text-foreground-muted">
         Content area

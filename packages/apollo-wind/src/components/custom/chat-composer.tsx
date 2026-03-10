@@ -1,4 +1,4 @@
-import { CornerDownLeft, Plus, Workflow } from 'lucide-react';
+import { Circle, CornerRightUp, Mic, Plus, Settings2, Workflow } from 'lucide-react';
 import * as React from 'react';
 import { cn } from '@/lib';
 
@@ -22,8 +22,7 @@ export interface ChatComposerProps {
  * Reusable chat composer input with action buttons.
  *
  * Features a text area, left-side action buttons (add, workflow),
- * and a cyan submit button. Fixed at 800px max-width to match the
- * Delegate design spec.
+ * and an accent submit button. Max-width 800px.
  */
 export function ChatComposer({
   className,
@@ -31,6 +30,7 @@ export function ChatComposer({
   onSubmit,
 }: ChatComposerProps) {
   const [value, setValue] = React.useState('');
+  const [focused, setFocused] = React.useState(false);
 
   const handleSubmit = () => {
     if (value.trim()) {
@@ -46,53 +46,88 @@ export function ChatComposer({
     }
   };
 
+  const showEnter = value.length > 0;
+
   return (
     <div
       className={cn(
-        'w-full max-w-[800px] rounded-[32px] bg-gradient-to-b from-surface to-surface-raised p-2',
+        'w-full max-w-[800px] rounded-[32px] bg-surface-raised p-2',
         className
       )}
     >
-      <div className="flex min-h-[124px] flex-col justify-between rounded-3xl border border-border bg-surface-overlay pb-3 pl-4 pr-3 pt-4">
+      <div className="group/input flex flex-col gap-3 rounded-[24px] border border-border bg-surface pb-3 pl-4 pr-3 pt-4 transition-colors hover:border-border-hover focus-within:border-border-hover">
         {/* Text area */}
         <textarea
-          className="w-full resize-none bg-transparent text-base font-medium leading-5 text-foreground placeholder:text-foreground-subtle focus:outline-none"
+          className="w-full resize-none bg-transparent text-sm font-normal leading-5 text-foreground placeholder:text-foreground-muted group-hover/input:placeholder:text-foreground-secondary focus:placeholder:text-foreground-secondary focus:outline-none"
           placeholder={placeholder}
-          rows={2}
+          rows={3}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
         />
 
         {/* Bottom toolbar */}
         <div className="flex items-center justify-between">
-          {/* Left actions */}
+          {/* Left actions — no bg fill in default, show on hover */}
           <div className="flex items-center gap-1">
             <button
               type="button"
-              className="flex h-8 w-8 items-center justify-center rounded-2xl border border-border-inverse bg-surface-inverse transition-opacity hover:opacity-80"
+              className="group flex h-8 w-8 items-center justify-center rounded-lg hover:bg-surface-hover"
               aria-label="Add attachment"
             >
-              <Plus className="h-5 w-5 text-foreground-inverse" />
+              <Plus className="h-5 w-5 text-foreground-muted group-hover:text-foreground-hover" />
             </button>
             <button
               type="button"
-              className="flex h-8 w-8 items-center justify-center rounded-2xl border border-border-inverse bg-surface-inverse transition-opacity hover:opacity-80"
+              className="group flex h-8 w-8 items-center justify-center rounded-lg hover:bg-surface-hover"
               aria-label="Add workflow"
             >
-              <Workflow className="h-5 w-5 text-foreground-inverse" />
+              <Workflow className="h-5 w-5 text-foreground-muted group-hover:text-foreground-hover" />
+            </button>
+            <button
+              type="button"
+              className="group flex h-8 w-8 items-center justify-center rounded-lg hover:bg-surface-hover"
+              aria-label="Settings"
+            >
+              <Settings2 className="h-5 w-5 text-foreground-muted group-hover:text-foreground-hover" />
             </button>
           </div>
 
-          {/* Submit button */}
-          <button
-            type="button"
-            className="flex h-8 w-8 items-center justify-center rounded-2xl bg-brand transition-opacity hover:opacity-90"
-            onClick={handleSubmit}
-            aria-label="Submit message"
-          >
-            <CornerDownLeft className="h-5 w-5 -scale-y-100 rotate-90 text-foreground-on-accent" />
-          </button>
+          {/* Right actions */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="group flex h-8 w-8 items-center justify-center rounded-lg hover:bg-surface-hover"
+              aria-label="Record"
+            >
+              <Circle className="h-5 w-5 text-foreground-muted group-hover:text-foreground-hover" />
+            </button>
+            {showEnter ? (
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground-accent hover:bg-foreground-accent-muted"
+                onClick={handleSubmit}
+                aria-label="Submit message"
+              >
+                <CornerRightUp className="h-5 w-5 text-white" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className={cn(
+                  'flex h-8 w-8 items-center justify-center rounded-lg',
+                  focused
+                    ? 'bg-foreground-accent hover:bg-foreground-accent-muted'
+                    : 'bg-surface-hover hover:bg-foreground-accent-muted'
+                )}
+                aria-label="Voice input"
+              >
+                <Mic className="h-5 w-5 text-white" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

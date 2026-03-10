@@ -1023,3 +1023,22 @@ body.light-hc {
 @utility bg-gradient-6 {
   background-image: var(--gradient-6);
 }
+
+/* ============================================================================
+ * Collapsible animations (Radix UI CollapsibleContent)
+ * ============================================================================ */
+
+@keyframes collapsible-down {
+  from { height: 0; opacity: 0; }
+  to { height: var(--radix-collapsible-content-height); opacity: 1; }
+}
+
+@keyframes collapsible-up {
+  from { height: var(--radix-collapsible-content-height); opacity: 1; }
+  to { height: 0; opacity: 0; }
+}
+
+@theme inline {
+  --animate-collapsible-down: collapsible-down 200ms ease-out;
+  --animate-collapsible-up: collapsible-up 200ms ease-out;
+}
