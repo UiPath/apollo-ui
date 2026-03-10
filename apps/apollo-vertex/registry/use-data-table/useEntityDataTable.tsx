@@ -1,46 +1,25 @@
 import { useLiveQuery } from "@tanstack/react-db";
 import type {
-  ColumnDef,
   ColumnFiltersState,
   PaginationState,
   RowSelectionState,
 } from "@tanstack/react-table";
 import { useSolution } from "@uipath/vs-core";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { ENTITY_TABLE_STORAGE_PREFIX } from "@/lib/constants";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 
+import type {
+  ColumnDefWithAccessorKey,
+  EntityRecord,
+  ExtraColumn,
+  VssEntity,
+} from "./types";
 import { useColumnVisibility } from "./useColumnVisibility";
-import type { Column } from "./useEntityColumns";
 import { useEntityColumns } from "./useEntityColumns";
 import { usePersistedColumnOrder } from "./usePersistedColumnOrder";
 import { usePersistedSorting } from "./usePersistedSorting";
-
-export type EntityRecord = Record<string, unknown>;
-
-export type ColumnDefWithAccessorKey<T> = ColumnDef<T, unknown> & {
-  accessorKey: string;
-};
-
-export interface VssEntity {
-  id?: string;
-  name: string;
-  fields: Array<{
-    isHiddenField: boolean;
-    name: string;
-    displayName: string;
-    fieldDataType: {
-      name: string;
-    };
-  }>;
-}
-
-export interface ExtraColumn<TRecord extends EntityRecord = EntityRecord> {
-  column: Column;
-  position: "start" | "end";
-  definition: ColumnDefWithAccessorKey<TRecord>;
-}
 
 export interface UseEntityDataTableOptions<
   TRecord extends EntityRecord = EntityRecord,
@@ -71,18 +50,7 @@ export function useEntityDataTable<
   columnOverrides,
 }: UseEntityDataTableOptions<TRecord>) {
   const solution = useSolution();
-  if (!solution) {
-    throw new Error(
-      "useEntityDataTable requires a SolutionProvider. Wrap your component tree with <SolutionProvider>.",
-    );
-  }
-
-  const collection = solution.api.collections.entities[entity.name];
-  if (!collection) {
-    throw new Error(
-      `useEntityDataTable: no collection found for entity "${entity.name}". Ensure the entity is configured in your solution.`,
-    );
-  }
+  const collection = solution?.api.collections.entities[entity.name];
 
   const storageKey = storageKeyProp ?? `entity-${entity.name ?? entity.id}`;
   const { data = [], isLoading } = useLiveQuery((q) =>
@@ -112,10 +80,7 @@ export function useEntityDataTable<
 
   const { sorting, onSortingChange } = usePersistedSorting({ storageKey });
 
-  const defaultColumnOrder = useMemo(
-    () => allColumns.map((col) => col.key),
-    [allColumns],
-  );
+  const defaultColumnOrder = allColumns.map((col) => col.key);
 
   const { columnOrder, onColumnOrderChange } = usePersistedColumnOrder({
     storageKey,

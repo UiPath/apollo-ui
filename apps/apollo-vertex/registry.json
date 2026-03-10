@@ -533,13 +533,13 @@
         "react-i18next"
       ],
       "registryDependencies": [
-        "table",
-        "button",
-        "checkbox",
-        "dropdown-menu",
-        "select",
-        "input",
-        "skeleton"
+        "@uipath/table",
+        "@uipath/button",
+        "@uipath/checkbox",
+        "@uipath/dropdown-menu",
+        "@uipath/select",
+        "@uipath/input",
+        "@uipath/skeleton"
       ],
       "files": [
         { "path": "registry/data-table/index.ts", "type": "registry:ui" },
@@ -965,6 +965,67 @@
           "path": "registry/use-mobile/use-mobile.ts",
           "type": "registry:hook"
         }
+      ]
+    },
+    {
+      "name": "use-data-table",
+      "type": "registry:hook",
+      "title": "useDataTable",
+      "description": "A generic data table hook that manages sorting, filtering, pagination, column visibility, and column order with localStorage persistence.",
+      "dependencies": ["@tanstack/react-table", "@uidotdev/usehooks"],
+      "files": [
+        {
+          "path": "registry/use-data-table/types.ts",
+          "type": "registry:hook"
+        },
+        { "path": "lib/constants.ts", "type": "registry:lib" },
+        {
+          "path": "registry/use-data-table/useDataTable.tsx",
+          "type": "registry:hook"
+        },
+        {
+          "path": "registry/use-data-table/useColumnVisibility.ts",
+          "type": "registry:hook"
+        },
+        {
+          "path": "registry/use-data-table/usePersistedColumns.ts",
+          "type": "registry:hook"
+        },
+        {
+          "path": "registry/use-data-table/usePersistedColumnOrder.ts",
+          "type": "registry:hook"
+        },
+        {
+          "path": "registry/use-data-table/usePersistedSorting.ts",
+          "type": "registry:hook"
+        }
+      ]
+    },
+    {
+      "name": "use-entity-data-table",
+      "type": "registry:hook",
+      "title": "useEntityDataTable",
+      "description": "A data table hook for VSS entities that fetches live data from collections and builds column definitions from entity metadata.",
+      "dependencies": [
+        "@tanstack/react-table",
+        "@tanstack/react-db",
+        "@uipath/vs-core"
+      ],
+      "registryDependencies": ["@uipath/use-data-table", "@uipath/data-table"],
+      "files": [
+        {
+          "path": "registry/use-data-table/useEntityDataTable.tsx",
+          "type": "registry:hook"
+        },
+        {
+          "path": "registry/use-data-table/useEntityColumns.tsx",
+          "type": "registry:hook"
+        },
+        { "path": "lib/renderValueOrEmptyState.ts", "type": "registry:lib" },
+        { "path": "lib/asserts/assert.ts", "type": "registry:lib" },
+        { "path": "lib/asserts/assertDateOrString.ts", "type": "registry:lib" },
+        { "path": "lib/asserts/assertNumber.ts", "type": "registry:lib" },
+        { "path": "lib/asserts/assertString.ts", "type": "registry:lib" }
       ]
     },
     {
