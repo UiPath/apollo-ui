@@ -229,7 +229,7 @@ with a sidebar navigation and form section. Use the future-dark theme.`}
           A portable markdown file at{' '}
           <InlineCode>packages/apollo-wind/apollo-ai-context.md</InlineCode> containing the full
           Apollo design system reference — stack, components, tokens, patterns, and rules. Both the
-          Use Claude and Use Cursor tabs reference this file.
+          The Claude and Cursor tabs reference this file.
         </SectionDescription>
         <CodeBlock label="apollo-ai-context.md (preview)">{AI_CONTEXT_PREVIEW}</CodeBlock>
       </div>
