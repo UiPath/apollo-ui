@@ -1,5 +1,5 @@
 import { Callout } from 'nextra/components'
-import { SonnerDemo } from './sonner-demo';
+import { SonnerExamples } from '@/app/patterns/notifications/in-product/notification-examples';
 
 # Sonner
 
@@ -10,7 +10,7 @@ An opinionated toast component for React.
 </Callout>
 
 <div className="p-4 border rounded-lg mt-4">
-  <SonnerDemo />
+  <SonnerExamples />
 </div>
 
 ## Installation
@@ -19,7 +19,7 @@ An opinionated toast component for React.
 npx shadcn@latest add @uipath/sonner
 ```
 
-Add the `<Toaster />` component to your app:
+Add the `<Toaster />` component once to your app root. Status colors, icons, close button, and positioning are included by default:
 
 ```tsx
 import { Toaster } from "@/components/ui/sonner"
@@ -29,7 +29,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         {children}
-        <Toaster position="top-center" closeButton />
+        <Toaster />
       </body>
     </html>
   )
@@ -43,20 +43,30 @@ import { toast } from "sonner"
 ```
 
 ```tsx
-toast("Event has been created", {
-  description: "Sunday, December 03, 2023 at 9:00 AM",
+toast.info("Background sync complete", {
+  description: "All data is up to date.",
 })
 
 toast.success("Changes saved", {
   description: "Your updates have been applied.",
 })
-toast.error("Upload failed", {
-  description: "Please check your connection and retry.",
-})
+
 toast.warning("Storage almost full", {
   description: "Consider removing unused files.",
 })
-toast.info("Background sync complete", {
-  description: "All data is up to date.",
+
+toast.error("Upload failed", {
+  description: "Please check your connection and retry.",
 })
+```
+
+## Custom toast styles
+
+If you need to apply the Apollo status styles to your own `Toaster` instance, import `apolloToastClassNames`:
+
+```tsx
+import { Toaster } from "sonner"
+import { apolloToastClassNames } from "@/components/ui/sonner"
+
+<Toaster toastOptions={{ classNames: apolloToastClassNames }} />
 ```
