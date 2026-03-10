@@ -63,7 +63,7 @@ jobs:
           echo "result=${MATRIX}" >> "${GITHUB_OUTPUT}"
 
       - name: Create base shadcn app
-        run: cd ${{ runner.temp }} && pnpx shadcn@latest create minimal-app --preset "https://ui.shadcn.com/init?base=radix&style=vega&baseColor=neutral&theme=neutral&iconLibrary=lucide&font=inter&menuAccent=subtle&menuColor=default&radius=default&template=next&rtl=false" --template next
+        run: cd ${{ runner.temp }} && pnpx shadcn@latest init --preset a0 --template next --name minimal-app
 
       - name: Configure @uipath registry
         working-directory: ${{ runner.temp }}/minimal-app
