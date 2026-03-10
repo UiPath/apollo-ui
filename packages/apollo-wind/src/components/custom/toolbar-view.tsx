@@ -4,6 +4,7 @@ import {
   ZoomOut,
   Maximize2,
   LayoutGrid,
+  GitCommitHorizontal,
 } from 'lucide-react';
 import { cn } from '@/lib';
 
@@ -15,6 +16,8 @@ export interface ViewToolbarProps {
   className?: string;
   /** Active node size: 's' | 'm' | 'l' */
   activeNodeSize?: 's' | 'm' | 'l';
+  /** Callback when node size changes */
+  onNodeSizeChange?: (size: 's' | 'm' | 'l') => void;
   /** Callback for zoom/view actions */
   onAction?: (action: string) => void;
 }
@@ -24,45 +27,83 @@ export interface ViewToolbarProps {
 // ============================================================================
 
 function ViewButton({
-  icon,
+  icon: Icon,
   label,
-  isActive,
   onClick,
 }: {
-  icon: React.ReactNode;
+  icon: React.ElementType;
   label: string;
-  isActive?: boolean;
   onClick?: () => void;
 }) {
   return (
-    <button type="button"
-      className={cn(
-        'flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:text-foreground',
-        isActive && 'rounded-2xl border border-border bg-surface text-foreground'
-      )}
+    <button
+      type="button"
+      className="group flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted hover:bg-surface-hover hover:text-foreground"
       onClick={onClick}
       aria-label={label}
     >
-      {icon}
+      <Icon className="h-5 w-5 group-hover:h-6 group-hover:w-6" />
     </button>
   );
 }
 
 // ============================================================================
-// Node size labels
+// Node size icons (SVG)
 // ============================================================================
 
-function NodeSizeIcon({ size, isActive }: { size: 's' | 'm' | 'l'; isActive?: boolean }) {
-  const label = { s: 'S', m: 'M', l: 'L' }[size];
+function NodeSIcon() {
+  return <GitCommitHorizontal className="h-5 w-5" />;
+}
+
+function NodeMIcon() {
   return (
-    <button type="button"
+    <svg viewBox="0 0 20 20" className="h-5 w-5" fill="none" aria-hidden="true">
+      {/* Medium card: plain rounded rectangle */}
+      <rect x="3" y="5" width="14" height="10" rx="2.5" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function NodeLIcon() {
+  return (
+    <svg viewBox="0 0 20 20" className="h-5 w-5" fill="none" aria-hidden="true">
+      {/* Large card: rounded rectangle with header divider */}
+      <rect x="3" y="4" width="14" height="12" rx="2.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M3 8.5h14" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+const nodeSizeIcons = { s: NodeSIcon, m: NodeMIcon, l: NodeLIcon } as const;
+const nodeSizeLabels = { s: 'Small nodes', m: 'Medium nodes', l: 'Large nodes' } as const;
+
+// ============================================================================
+// Node size button
+// ============================================================================
+
+function NodeSizeButton({
+  size,
+  isActive,
+  onClick,
+}: {
+  size: 's' | 'm' | 'l';
+  isActive?: boolean;
+  onClick?: () => void;
+}) {
+  const Icon = nodeSizeIcons[size];
+  return (
+    <button
+      type="button"
       className={cn(
-        'flex h-8 w-8 items-center justify-center rounded-2xl text-xs font-bold text-foreground-muted transition-colors hover:text-foreground',
-        isActive && 'border border-border bg-surface text-foreground'
+        'flex h-8 w-8 items-center justify-center rounded-2xl',
+        isActive
+          ? 'border border-surface-hover bg-surface text-foreground-accent shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] hover:border-transparent hover:bg-surface-hover hover:text-foreground hover:shadow-none'
+          : 'text-foreground-muted hover:bg-surface-hover hover:text-foreground'
       )}
-      aria-label={`Node size ${label}`}
+      onClick={onClick}
+      aria-label={nodeSizeLabels[size]}
     >
-      {label}
+      <Icon />
     </button>
   );
 }
@@ -80,40 +121,25 @@ function NodeSizeIcon({ size, isActive }: { size: 's' | 'm' | 'l'; isActive?: bo
 export function FlowViewToolbar({
   className,
   activeNodeSize = 's',
+  onNodeSizeChange,
   onAction,
 }: ViewToolbarProps) {
   return (
     <div className={cn('flex flex-col gap-4', className)}>
       {/* Zoom + view controls */}
-      <div className="flex w-10 flex-col items-center gap-1 rounded-xl bg-surface-raised p-1">
-        <ViewButton
-          icon={<ZoomIn className="h-5 w-5" />}
-          label="Zoom in"
-          onClick={() => onAction?.('zoom-in')}
-        />
-        <ViewButton
-          icon={<ZoomOut className="h-5 w-5" />}
-          label="Zoom out"
-          onClick={() => onAction?.('zoom-out')}
-        />
-        <div className="h-px w-6 bg-border-subtle" />
-        <ViewButton
-          icon={<Maximize2 className="h-5 w-5" />}
-          label="Fit to screen"
-          onClick={() => onAction?.('fit')}
-        />
-        <ViewButton
-          icon={<LayoutGrid className="h-5 w-5" />}
-          label="Toggle grid"
-          onClick={() => onAction?.('grid')}
-        />
+      <div className="flex w-10 flex-col items-center gap-1 rounded-xl border border-border-subtle bg-surface-raised p-1">
+        <ViewButton icon={ZoomIn} label="Zoom in" onClick={() => onAction?.('zoom-in')} />
+        <ViewButton icon={ZoomOut} label="Zoom out" onClick={() => onAction?.('zoom-out')} />
+        <div className="h-px w-6 bg-surface-overlay" />
+        <ViewButton icon={Maximize2} label="Fit to screen" onClick={() => onAction?.('fit')} />
+        <ViewButton icon={LayoutGrid} label="Toggle grid" onClick={() => onAction?.('grid')} />
       </div>
 
       {/* Node size selector */}
-      <div className="flex w-10 flex-col items-center gap-2 rounded-[20px] border border-border-deep bg-surface-raised p-1">
-        <NodeSizeIcon size="s" isActive={activeNodeSize === 's'} />
-        <NodeSizeIcon size="m" isActive={activeNodeSize === 'm'} />
-        <NodeSizeIcon size="l" isActive={activeNodeSize === 'l'} />
+      <div className="flex w-10 flex-col items-center gap-2 rounded-[20px] border border-border-subtle bg-surface-raised p-1">
+        <NodeSizeButton size="s" isActive={activeNodeSize === 's'} onClick={() => onNodeSizeChange?.('s')} />
+        <NodeSizeButton size="m" isActive={activeNodeSize === 'm'} onClick={() => onNodeSizeChange?.('m')} />
+        <NodeSizeButton size="l" isActive={activeNodeSize === 'l'} onClick={() => onNodeSizeChange?.('l')} />
       </div>
     </div>
   );
