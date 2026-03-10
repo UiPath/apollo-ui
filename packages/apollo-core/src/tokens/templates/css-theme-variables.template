@@ -1,6 +1,6 @@
 @import "./variables.css";
 
-body.light {
+body.light, .light {
 <% _.each(allProperties, function(property) { if (property.name.endsWith('light')) {
   const baseName = property.name.slice(0, -'-light'.length);
 %>  --<%= baseName %>: <%= property.value %>;
@@ -9,7 +9,7 @@ body.light {
   color-scheme: light;
 }
 
-body.light-hc {
+body.light-hc, .light-hc {
 <% _.each(allProperties, function(property) { if (property.name.endsWith('light-hc')) {
   const baseName = property.name.slice(0, -'-light-hc'.length);
 %>  --<%= baseName %>: <%= property.value %>;
@@ -18,7 +18,7 @@ body.light-hc {
   color-scheme: light;
 }
 
-body.dark {
+body.dark, .dark {
 <% _.each(allProperties, function(property) { if (property.name.endsWith('dark')) {
   const baseName = property.name.slice(0, -'-dark'.length);
 %>  --<%= baseName %>: <%= property.value %>;
@@ -27,7 +27,7 @@ body.dark {
   color-scheme: dark;
 }
 
-body.dark-hc {
+body.dark-hc, .dark-hc {
 <% _.each(allProperties, function(property) { if (property.name.endsWith('dark-hc')) {
   const baseName = property.name.slice(0, -'-dark-hc'.length);
 %>  --<%= baseName %>: <%= property.value %>;
