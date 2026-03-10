@@ -315,6 +315,7 @@
       "title": "Button Group",
       "description": "Groups multiple buttons together.",
       "dependencies": ["@radix-ui/react-slot"],
+      "registryDependencies": ["separator"],
       "files": [
         {
           "path": "registry/button-group/button-group.tsx",
@@ -508,6 +509,7 @@
       "type": "registry:ui",
       "title": "Field",
       "description": "A form field component with label, input, and description.",
+      "registryDependencies": ["label", "separator"],
       "files": [{ "path": "registry/field/field.tsx", "type": "registry:ui" }]
     },
     {
@@ -522,6 +524,7 @@
         "zod",
         "react-hook-form"
       ],
+      "registryDependencies": ["label"],
       "files": [{ "path": "registry/form/form.tsx", "type": "registry:ui" }]
     },
     {
@@ -549,6 +552,7 @@
       "type": "registry:ui",
       "title": "Input Group",
       "description": "Groups input elements with addons and buttons.",
+      "registryDependencies": ["button", "input", "textarea"],
       "files": [
         {
           "path": "registry/input-group/input-group.tsx",
@@ -575,6 +579,7 @@
       "title": "Item",
       "description": "A list item component for displaying content in lists.",
       "dependencies": ["@radix-ui/react-slot"],
+      "registryDependencies": ["separator"],
       "files": [{ "path": "registry/item/item.tsx", "type": "registry:ui" }]
     },
     {
