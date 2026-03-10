@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v0.12.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.12.1...@uipath/apollo-wind@0.12.2) (2026-03-10)
+
+### Bug Fixes
+
+* **apollo-wind:** vercel build issues ([f66914e](https://github.com/uipath/apollo-ui/commit/f66914e1e9bd57418f10303aabccd5c8b6c0de89))
+
 ## [@uipath/apollo-wind-v0.12.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.12.0...@uipath/apollo-wind@0.12.1) (2026-03-05)
 
 ### Bug Fixes
