@@ -1,5 +1,5 @@
 import { Callout } from 'nextra/components'
-import { AlertDefaultExamples, AlertOutlineExamples, AlertExamples } from '@/app/patterns/notifications/in-product/notification-examples'
+import { AlertDefaultExamples, AlertOutlineExamples, AlertExamples, CollapsibleAlertExample, ActionAlertExample } from '@/app/patterns/notifications/in-product/notification-examples'
 
 # Alert
 
@@ -11,7 +11,7 @@ Displays a callout for user attention.
 
 ### Default (subtle)
 
-Neutral background with status-colored title and icon. Use for routine information and non-disruptive feedback.
+Neutral background with status color on the title and icon. Description text uses the standard muted color. Use for routine information, background updates, and non-disruptive feedback.
 
 <div className="p-4 border rounded-lg mt-4">
   <AlertDefaultExamples />
@@ -45,11 +45,128 @@ npx shadcn@latest add @uipath/alert
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 ```
 
+### Subtle (default)
+
 ```tsx
-<Alert>
-  <AlertTitle>Heads up!</AlertTitle>
+<Alert status="info" visual="subtle">
+  <InfoIcon className="h-4 w-4" />
+  <AlertTitle>New version available</AlertTitle>
   <AlertDescription>
-    You can add components to your app using the CLI.
+    A new version of the platform is ready. Review the changelog for details.
+  </AlertDescription>
+</Alert>
+```
+
+### Outline
+
+```tsx
+<Alert status="warning" visual="outline">
+  <TriangleAlertIcon className="h-4 w-4" />
+  <AlertTitle>API rate limit approaching</AlertTitle>
+  <AlertDescription>
+    You have used 90% of your monthly API quota. Consider upgrading your plan.
+  </AlertDescription>
+</Alert>
+```
+
+### Tinted
+
+```tsx
+<Alert status="error" visual="tinted">
+  <OctagonXIcon className="h-4 w-4" />
+  <AlertTitle>Connection failed</AlertTitle>
+  <AlertDescription>
+    Unable to reach the server. Check your network connection and try again.
+  </AlertDescription>
+</Alert>
+```
+
+### Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `status` | `"info" \| "success" \| "warning" \| "error"` | — | Sets the semantic status color |
+| `visual` | `"outline" \| "tinted" \| "subtle"` | — | Sets the visual treatment |
+| `variant` | `"default" \| "destructive"` | `"default"` | Legacy shadcn variant (use `status` + `visual` instead) |
+
+## Complex alert patterns (edge cases)
+
+The following patterns are for workflows that need inline items or embedded actions inside an alert. Use sparingly — standard alerts cover most cases.
+
+### Collapsible content
+
+When an alert references a list of items, show them as inline chips. If they overflow a single row, clip to one row and show a "Show all" link. Any `status` can be used with this pattern.
+
+<div className="p-4 border rounded-lg mt-4">
+  <CollapsibleAlertExample />
+</div>
+
+```tsx
+import { useState, useRef, useEffect } from "react"
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
+
+export function CollapsibleAlertExample() {
+  const [expanded, setExpanded] = useState(false)
+  const [overflows, setOverflows] = useState(false)
+  const [rowHeight, setRowHeight] = useState(0)
+  const measureRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = measureRef.current
+    if (!el) return
+    const firstChild = el.firstElementChild as HTMLElement | null
+    if (!firstChild) return
+    const singleRow = firstChild.offsetHeight + 6
+    setRowHeight(singleRow)
+    setOverflows(el.scrollHeight > singleRow)
+  }, [])
+
+  return (
+    <Alert status="warning" visual="outline">
+      <TriangleAlertIcon className="h-4 w-4" />
+      <AlertTitle className="line-clamp-none">
+        {items.length} required documents missing
+      </AlertTitle>
+      <AlertDescription>
+        <p>Upload these documents before completing quality check.</p>
+        <div ref={measureRef} style={{ position: "absolute", visibility: "hidden", left: 0, right: 0 }}
+          className="flex flex-wrap gap-1.5 mt-2">
+          {items.map((item) => <Badge key={item} variant="secondary" status="warning">{item}</Badge>)}
+        </div>
+        <div style={!expanded && overflows && rowHeight ? { maxHeight: rowHeight, overflow: "hidden" } : {}}
+          className="flex flex-wrap gap-1.5 mt-2">
+          {items.map((item) => <Badge key={item} variant="secondary" status="warning">{item}</Badge>)}
+        </div>
+        {overflows && (
+          <button type="button" onClick={() => setExpanded(!expanded)}
+            className="mt-1.5 text-xs font-medium text-primary hover:underline">
+            {expanded ? "Show less" : "Show all"}
+          </button>
+        )}
+      </AlertDescription>
+    </Alert>
+  )
+}
+```
+
+### Action button
+
+When an alert can trigger a direct action, place a single button inside the description area. Limit to one action per alert. Any `status` can be used with this pattern.
+
+<div className="p-4 border rounded-lg mt-4">
+  <ActionAlertExample />
+</div>
+
+```tsx
+<Alert status="info" visual="outline">
+  <InfoIcon className="h-4 w-4" />
+  <AlertTitle>12 documents unclassified</AlertTitle>
+  <AlertDescription>
+    <p>Some documents could not be automatically classified.</p>
+    <Button variant="outline" size="sm" className="mt-1.5">
+      Filter unclassified
+    </Button>
   </AlertDescription>
 </Alert>
 ```

@@ -10,6 +10,22 @@ import {
 import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 
+// Shared icon alignment: top-align icons with the first line of toast text
+const iconAlign = "[&>[data-icon]]:!items-start [&>[data-icon]>svg]:!mt-0.5";
+
+// Apollo status styles for Sonner toasts.
+// Light: solid secondary background with status-colored border and accessible icon.
+// Dark: status-tinted background blended with popover; standard status token for icon.
+// sRGB interpolation avoids hue shift when mixing with blue-gray popover.
+export const apolloToastClassNames: NonNullable<
+  NonNullable<ToasterProps["toastOptions"]>["classNames"]
+> = {
+  info: `!border-info !bg-secondary dark:!bg-[color-mix(in_srgb,var(--info)_25%,var(--popover)_75%)] [&>svg]:!text-[var(--info-fg)] dark:[&>svg]:!text-info ${iconAlign}`,
+  success: `!border-success !bg-secondary dark:!bg-[color-mix(in_srgb,var(--success)_25%,var(--popover)_75%)] [&>svg]:!text-[var(--success-fg)] dark:[&>svg]:!text-success ${iconAlign}`,
+  warning: `!border-warning !bg-secondary dark:!bg-[color-mix(in_srgb,var(--warning)_25%,var(--popover)_75%)] [&>svg]:!text-warning-foreground dark:[&>svg]:!text-warning ${iconAlign}`,
+  error: `!border-destructive !bg-secondary dark:!bg-[color-mix(in_srgb,var(--destructive)_25%,var(--popover)_75%)] [&>svg]:!text-[var(--destructive-fg)] dark:[&>svg]:!text-destructive ${iconAlign}`,
+};
+
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme();
 
@@ -17,6 +33,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
+      position="top-center"
+      closeButton
       icons={{
         success: <CircleCheckIcon className="size-4" />,
         info: <InfoIcon className="size-4" />,
@@ -32,6 +50,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--border-radius": "var(--radius)",
         } as React.CSSProperties
       }
+      toastOptions={{ classNames: apolloToastClassNames }}
       {...props}
     />
   );

@@ -12,6 +12,24 @@
 :root {
   /* Override Nextra's background to match our theme */
   --x-color-nextra-bg: var(--background);
+
+  /* WCAG AA accessible foreground colors for status indicators on light backgrounds.
+     Same hue as the status token but darkened to pass 4.5:1. Dark mode uses the
+     standard status tokens directly (which already pass on dark backgrounds). */
+  --info-fg: oklch(0.49 0.12 210);
+  --success-fg: oklch(0.46 0.10 152);
+  --destructive-fg: oklch(0.50 0.14 18);
+}
+
+/* Sonner close button: right-aligned inside toast (Apollo default) */
+[data-sonner-toast] [data-close-button] {
+  left: unset !important;
+  right: 8px !important;
+  top: 8px !important;
+  transform: none !important;
+  border: none !important;
+  background: transparent !important;
+  border-radius: 4px !important;
 }
 
 .dark {
