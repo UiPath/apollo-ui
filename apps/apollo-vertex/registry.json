@@ -1170,7 +1170,7 @@
       "type": "registry:ui",
       "title": "Date Picker",
       "description": "A date picker component.",
-      "dependencies": ["date-fns", "lucide-react", "react-i18next"],
+      "dependencies": ["luxon", "@types/luxon", "lucide-react", "react-i18next"],
       "registryDependencies": ["button", "popover", "calendar"],
       "files": [
         {
