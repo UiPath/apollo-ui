@@ -1,6 +1,7 @@
 import { getSmoothStepPath, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useMemo } from 'react';
-import { GRID_SPACING } from '../constants';
+
+import { EDGE_BORDER_RADIUS, GRID_SPACING, HANDLE_OFFSETS } from '../constants';
 
 // Constants
 const LOOP_HEIGHT = GRID_SPACING * 6;
@@ -9,12 +10,6 @@ const LOOP_RIGHT_EXTENSION = GRID_SPACING * 3;
 const LOOP_SUCCESS_RIGHT_EXTENSION = GRID_SPACING * 4;
 const LOOP_LEFT_EXTENSION = GRID_SPACING * 2;
 const LOOP_CORNER_RADIUS = GRID_SPACING;
-const SOURCE_OFFSETS: Record<Position, { x: number; y: number }> = {
-  [Position.Left]: { x: 8, y: 0 },
-  [Position.Right]: { x: -8, y: 0 },
-  [Position.Top]: { x: 0, y: 8 },
-  [Position.Bottom]: { x: 0, y: -8 },
-};
 
 // Helper function to snap a value to the grid
 const snapToGrid = (value: number): number => {
@@ -32,7 +27,7 @@ const createLoopPath = ({
   targetY,
   sourceHandleId,
 }: EdgePathParams): { path: string; loopHeight: number } => {
-  const offsets = SOURCE_OFFSETS[sourcePosition];
+  const offsets = HANDLE_OFFSETS[sourcePosition];
   const sourceOffsetX = sourceX + offsets.x;
   const sourceOffsetY = sourceY + offsets.y;
   const loopHeight = sourceHandleId === 'success' ? LOOP_SUCCESS_HEIGHT : LOOP_HEIGHT;
@@ -145,8 +140,8 @@ export function useEdgePath({
       labelY = Math.max(sourceY, targetY) + loopHeight;
     } else {
       const { sourceOffsetX, sourceOffsetY } = {
-        sourceOffsetX: sourceX + SOURCE_OFFSETS[sourcePosition].x,
-        sourceOffsetY: sourceY + SOURCE_OFFSETS[sourcePosition].y,
+        sourceOffsetX: sourceX + HANDLE_OFFSETS[sourcePosition].x,
+        sourceOffsetY: sourceY + HANDLE_OFFSETS[sourcePosition].y,
       };
       [edgePath, labelX, labelY] = getSmoothStepPath({
         sourceX: sourceOffsetX,
@@ -155,7 +150,7 @@ export function useEdgePath({
         targetX,
         targetY,
         targetPosition,
-        borderRadius: 16,
+        borderRadius: EDGE_BORDER_RADIUS,
       });
     }
 
