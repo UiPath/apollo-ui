@@ -51,7 +51,7 @@ export interface DelegatePanelProps {
 /** UiPath logo mark */
 function UiPathLogo({ className }: { className?: string }) {
   return (
-    <div className={cn('flex h-9 w-9 items-center justify-center overflow-clip rounded-lg bg-[#0092b8] shadow-sm', className)}>
+    <div className={cn('flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-[#0092b8] shadow-sm', className)}>
       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-[22px] w-[22px]" aria-hidden="true">
         <path d="M18.57 11.4014H18.273C17.3139 11.4014 16.7183 12.002 16.7183 12.9686V22.4331C16.7183 23.3997 17.3139 24.0003 18.273 24.0003H18.57C19.5289 24.0003 20.1246 23.3997 20.1246 22.4331V12.9686C20.1246 12.002 19.5289 11.4014 18.57 11.4014Z" fill="white" />
         <path d="M22.689 5.54073C20.5215 5.19295 18.8111 3.48437 18.463 1.31918C18.4564 1.27831 18.4034 1.27831 18.3968 1.31918C18.0487 3.48437 16.3383 5.19295 14.1708 5.54073C14.1299 5.54728 14.1299 5.60028 14.1708 5.60683C16.3383 5.95453 18.0487 7.66319 18.3968 9.82838C18.4034 9.86925 18.4564 9.86925 18.463 9.82838C18.8111 7.66319 20.5215 5.95453 22.689 5.60683C22.73 5.60028 22.73 5.54728 22.689 5.54073ZM20.5595 5.59031C19.4757 5.76416 18.6205 6.61848 18.4465 7.70108C18.4432 7.72151 18.4167 7.72151 18.4134 7.70108C18.2393 6.61848 17.3841 5.76416 16.3003 5.59031C16.2799 5.58703 16.2799 5.56053 16.3003 5.55725C17.3841 5.38337 18.2393 4.52907 18.4134 3.44648C18.4167 3.42604 18.4432 3.42604 18.4465 3.44648C18.6205 4.52907 19.4757 5.38337 20.5595 5.55725C20.5799 5.56053 20.5799 5.58703 20.5595 5.59031Z" fill="white" />
@@ -89,6 +89,7 @@ function ExpandedNavItem({
           isActive && 'bg-surface-hover text-foreground'
         )}
         onClick={onToggle}
+        aria-current={isActive ? 'page' : undefined}
       >
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
           {item.icon}
@@ -157,8 +158,10 @@ function CollapsedNavItem({
       <TooltipTrigger asChild>
         <button
           type="button"
-          className="group flex h-12 w-full items-center justify-center"
+          className="group flex h-12 w-full items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset rounded-lg"
           onClick={onClick}
+          aria-label={item.label}
+          aria-pressed={isActive}
         >
           <div
             className={cn(
