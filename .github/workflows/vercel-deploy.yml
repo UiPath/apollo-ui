@@ -37,6 +37,7 @@ jobs:
 
             const projects = [
               'apollo-canvas',
+              'apollo-landing',
               'apollo-ui-react',
               'apollo-vertex',
               'apollo-wind'
@@ -96,6 +97,8 @@ jobs:
         include:
           - project_name: apollo-canvas
             vercel_project_id_secret: VERCEL_PROJECT_ID_CANVAS
+          - project_name: apollo-landing
+            vercel_project_id_secret: VERCEL_PROJECT_ID_LANDING
           - project_name: apollo-ui-react
             vercel_project_id_secret: VERCEL_PROJECT_ID_UI_REACT
           - project_name: apollo-vertex
@@ -157,6 +160,9 @@ jobs:
           case "${{ matrix.vercel_project_id_secret }}" in
             VERCEL_PROJECT_ID_CANVAS)
               echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_CANVAS }}" >> $GITHUB_ENV
+              ;;
+            VERCEL_PROJECT_ID_LANDING)
+              echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_LANDING }}" >> $GITHUB_ENV
               ;;
             VERCEL_PROJECT_ID_UI_REACT)
               echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_UI_REACT }}" >> $GITHUB_ENV
