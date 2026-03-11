@@ -107,6 +107,7 @@ interface DataTableProps<TData, TValue> {
   enableViewOptions?: boolean;
   toolbarContent?: (table: TanstackTable<TData>) => React.ReactNode;
   noResultsMessage?: string;
+  stickyHeader?: boolean;
 }
 
 function DataTable<TData, TValue>({
@@ -134,6 +135,7 @@ function DataTable<TData, TValue>({
   enableViewOptions = true,
   toolbarContent,
   noResultsMessage,
+  stickyHeader = false,
 }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation();
 
@@ -175,9 +177,16 @@ function DataTable<TData, TValue>({
         customContent={toolbarContent?.(table)}
       />
 
-      <div className="overflow-hidden rounded-md border">
+      <div
+        className={cn(
+          "rounded-md border",
+          stickyHeader ? "overflow-auto" : "overflow-hidden",
+        )}
+      >
         <Table>
-          <TableHeader>
+          <TableHeader
+            className={stickyHeader ? "sticky top-0 z-10 bg-background" : ""}
+          >
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
