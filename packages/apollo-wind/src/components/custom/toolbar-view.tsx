@@ -42,7 +42,9 @@ function ViewButton({
       onClick={onClick}
       aria-label={label}
     >
-      <Icon className="h-5 w-5 group-hover:h-6 group-hover:w-6" />
+      <div className="h-5 w-5 transition-transform group-hover:scale-[1.2]">
+        <Icon className="h-full w-full" />
+      </div>
     </button>
   );
 }

@@ -65,7 +65,7 @@ export function FlowNodeExpandable({
         // Selected hover
         isSelectedHover && 'border-2 border-foreground-accent-muted',
         // CSS selected hover
-        !forceState && isSelected && 'hover:border-foreground-accent-muted',
+        !forceState && isSelected && 'group-hover:border-foreground-accent-muted',
         className,
       )}
     >
@@ -82,9 +82,9 @@ export function FlowNodeExpandable({
         </div>
         <button
           type="button"
-          className="flex items-center justify-center text-foreground-muted hover:text-foreground"
+          className="flex items-center justify-center rounded text-foreground-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           onClick={onToggle}
-          aria-label={expanded ? 'Collapse node' : 'Expand node'}
+          aria-label={expanded ? `Collapse ${title}` : `Expand ${title}`}
         >
           <ChevronDown className={cn('h-4 w-4', expanded && 'rotate-180')} />
         </button>
