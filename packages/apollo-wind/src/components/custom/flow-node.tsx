@@ -50,7 +50,7 @@ export function FlowNode({
   return (
     <button
       type="button"
-      className={cn('group flex w-[107px] flex-col items-center gap-2.5', className)}
+      className={cn('group flex w-[107px] flex-col items-center gap-2.5 rounded-[32px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2', className)}
       onClick={onClick}
     >
       {/* ── Outer ring ─────────────────────────────────────────────────── */}
