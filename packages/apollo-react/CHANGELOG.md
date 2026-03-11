@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.51.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.50.0...@uipath/apollo-react@3.51.0) (2026-03-11)
+
+### Features
+
+* **apollo-react:** add warning adornments to node ([db253ba](https://github.com/UiPath/apollo-ui/commit/db253baa7d11545171dbe55b30ce773ccc641ef5))
+
 ## [@uipath/apollo-react-v3.50.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.49.1...@uipath/apollo-react@3.50.0) (2026-03-09)
 
 ### Features
