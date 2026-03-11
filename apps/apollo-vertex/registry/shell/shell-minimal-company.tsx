@@ -20,7 +20,7 @@ export const MinimalCompany = ({
             <img
               src={companyLogo.url}
               alt={companyLogo.alt}
-              className={`w-4 h-auto ${companyLogo.darkUrl ? 'dark:hidden' : ''}`}
+              className={`w-4 h-auto ${companyLogo.darkUrl ? "dark:hidden" : ""}`}
             />
             {companyLogo.darkUrl && (
               <img

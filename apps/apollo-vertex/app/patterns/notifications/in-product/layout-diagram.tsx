@@ -5,11 +5,15 @@ export function LayoutDiagram() {
       <div className="flex items-center justify-between border-b bg-card px-4 py-2">
         <div className="flex items-center gap-2">
           <div className="h-4 w-4 rounded bg-muted-foreground/30" />
-          <span className="text-xs font-medium text-muted-foreground">App Header</span>
+          <span className="text-xs font-medium text-muted-foreground">
+            App Header
+          </span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="rounded border border-dashed border-destructive bg-transparent px-2 py-0.5">
-            <span className="text-[10px] font-medium text-destructive">Reserved: Primary CTAs</span>
+            <span className="text-[10px] font-medium text-destructive">
+              Reserved: Primary CTAs
+            </span>
           </div>
         </div>
       </div>
@@ -17,7 +21,9 @@ export function LayoutDiagram() {
       {/* Sonner position indicator */}
       <div className="flex justify-center py-2">
         <div className="rounded-md border border-info bg-transparent px-3 py-1.5 shadow-sm">
-          <span className="text-[10px] font-medium text-info">Sonner position: top-center</span>
+          <span className="text-[10px] font-medium text-info">
+            Sonner position: top-center
+          </span>
         </div>
       </div>
 
@@ -26,7 +32,8 @@ export function LayoutDiagram() {
         {/* System banner example */}
         <div className="mb-3 w-full rounded border border-warning bg-transparent px-3 py-1.5">
           <span className="text-[10px] font-medium text-warning-foreground dark:text-warning">
-            System banner (full-width, below header) — for alerts with no UI anchor
+            System banner (full-width, below header) — for alerts with no UI
+            anchor
           </span>
         </div>
 
@@ -48,7 +55,9 @@ export function LayoutDiagram() {
         {/* Chat reserved area */}
         <div className="absolute bottom-3 right-3">
           <div className="rounded border border-dashed border-destructive bg-transparent px-2 py-1">
-            <span className="text-[10px] font-medium text-destructive">Reserved: Chat</span>
+            <span className="text-[10px] font-medium text-destructive">
+              Reserved: Chat
+            </span>
           </div>
         </div>
       </div>
