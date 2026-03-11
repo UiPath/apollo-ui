@@ -887,6 +887,17 @@ function BestPracticesContent() {
                   skill description on Apollo-specific triggers (e.g., "Use when building Apollo
                   prototypes or UI with apollo-wind").
                 </li>
+                <li>
+                  <span className="font-medium text-foreground">
+                    Use the Apollo prototype skill (optional).
+                  </span>
+                  <br />
+                  A ready-made skill is available at{' '}
+                  <InlineCode>packages/apollo-wind/skills/apollo-prototype/</InlineCode>.
+                  Copy it to your project's <InlineCode>.cursor/skills/</InlineCode> or personal{' '}
+                  <InlineCode>~/.cursor/skills/</InlineCode> folder. No setup required — the agent
+                  will apply Apollo conventions automatically when prototyping.
+                </li>
               </ul>
 
               <div>
