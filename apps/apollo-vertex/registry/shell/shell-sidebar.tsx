@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { BarChart3, FolderOpen, Home, Settings, Users } from "lucide-react";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 import { cn } from "@/lib/utils";
-import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 import type { CompanyLogo } from "./shell";
 import { Company } from "./shell-company";
 import { MinimalCompany } from "./shell-minimal-company";

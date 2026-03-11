@@ -10,8 +10,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 import { cn } from "@/lib/utils";
-import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 import {
   fastFadeTransition,
   iconHoverScale,
