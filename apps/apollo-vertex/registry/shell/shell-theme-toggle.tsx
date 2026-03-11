@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useTheme } from "./shell-theme-provider";
 
 export function ThemeToggle() {
