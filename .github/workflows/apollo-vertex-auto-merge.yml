@@ -1,0 +1,26 @@
+name: Apollo Vertex Auto Merge
+on:
+    pull_request:
+        types:
+            - opened
+            - reopened
+            - ready_for_review
+            - synchronize
+        branches: [main]
+        paths:
+            - "apps/apollo-vertex/**"
+
+jobs:
+    enable-auto-merge:
+        permissions:
+            contents: read
+            pull-requests: write
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Enable auto-merge
+              env:
+                  GH_TOKEN: ${{ secrets.AUTO_MERGE_TOKEN }}
+                  PR_URL: ${{ github.event.pull_request.html_url }}
+              run: |
+                  gh pr merge --auto --rebase "$PR_URL"
