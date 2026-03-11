@@ -59,6 +59,31 @@ const injectReactFlowStyles = (container: HTMLElement | ShadowRoot) => {
   }
 };
 
+// Extract UIX Canvas CSS variable declarations from document stylesheets
+// and remap them to :host so they resolve inside Shadow DOM
+const getUixCanvasCSS = (): string => {
+  const stylesheets = Array.from(document.styleSheets);
+  const declarations: string[] = [];
+
+  for (const stylesheet of stylesheets) {
+    try {
+      if (stylesheet.cssRules) {
+        for (const rule of Array.from(stylesheet.cssRules)) {
+          if (rule instanceof CSSStyleRule && rule.cssText.includes('--uix-canvas-')) {
+            // Extract just the declaration block from the rule
+            const match = rule.cssText.match(/\{([^}]+)\}/);
+            if (match?.[1]) {
+              declarations.push(match[1].trim());
+            }
+          }
+        }
+      }
+    } catch {}
+  }
+
+  return declarations.length > 0 ? `:host { ${declarations.join(' ')} }` : '';
+};
+
 // Utility to inject CSS variables into shadow DOM
 const injectCSSVariables = (container: HTMLElement | ShadowRoot) => {
   // Check if CSS variables are already injected
@@ -67,8 +92,8 @@ const injectCSSVariables = (container: HTMLElement | ShadowRoot) => {
     return;
   }
 
-  // Get computed styles from the document root
-  const rootStyles = getComputedStyle(document.documentElement);
+  // Get computed styles from document body (where theme classes and canvas variables are defined)
+  const rootStyles = getComputedStyle(document.body);
   const cssVariables: string[] = [];
 
   // Extract CSS variables that are likely needed
@@ -83,10 +108,14 @@ const injectCSSVariables = (container: HTMLElement | ShadowRoot) => {
     }
   }
 
+  // Also extract canvas variable declarations from stylesheets,
+  // preserving var() references so they resolve via inheritance
+  const canvasCSS = getUixCanvasCSS();
+
   // Create style element with CSS variables
   const style = document.createElement('style');
   style.dataset.cssVariables = 'true';
-  style.textContent = `:host { ${cssVariables.join(' ')} }`;
+  style.textContent = `:host { ${cssVariables.join(' ')} }\n${canvasCSS}`;
 
   // Insert at the beginning of the container
   if (container.firstChild) {
