@@ -680,7 +680,7 @@ globs: ["packages/apollo-wind/**"]
 // Tab: Resources (Use Cases + Best Practices)
 // ============================================================================
 
-const resourceSubTabs = ['Best Practices', 'Use Cases', "What's Not in Scope"] as const;
+const resourceSubTabs = ['Best Practices', 'Skills', 'Use Cases', "What's Not in Scope"] as const;
 type ResourceSubTab = (typeof resourceSubTabs)[number];
 
 function PersonaCard({
@@ -779,6 +779,116 @@ function UseCasesContent() {
   );
 }
 
+function SkillsContent() {
+  return (
+    <div className="space-y-8">
+      <div>
+        <SectionDescription>
+          A ready-made Apollo prototype skill encodes design system rules so the AI applies them
+          automatically when prototyping. Install it for Cursor or Claude — no setup required.
+        </SectionDescription>
+      </div>
+
+      <div>
+        <h3 className="mb-3 text-lg font-semibold text-foreground">Install the Apollo Prototype Skill</h3>
+        <p className="mb-4 text-sm leading-6 text-muted-foreground">
+          Copy the skill from <InlineCode>packages/apollo-wind/skills/apollo-prototype/</InlineCode> to
+          your tool's skills folder:
+        </p>
+
+        <div className="space-y-4">
+          <div className="rounded-lg border border-border bg-card p-4">
+            <h4 className="mb-2 text-sm font-semibold text-foreground">Cursor</h4>
+            <ul className="space-y-1 text-sm leading-6 text-muted-foreground">
+              <li>
+                <span className="font-medium text-foreground">Project:</span>{' '}
+                <InlineCode>.cursor/skills/apollo-prototype/</InlineCode>
+              </li>
+              <li>
+                <span className="font-medium text-foreground">Personal:</span>{' '}
+                <InlineCode>~/.cursor/skills/apollo-prototype/</InlineCode>
+              </li>
+            </ul>
+          </div>
+
+          <div className="rounded-lg border border-border bg-card p-4">
+            <h4 className="mb-2 text-sm font-semibold text-foreground">Claude Code</h4>
+            <ul className="space-y-1 text-sm leading-6 text-muted-foreground">
+              <li>
+                <span className="font-medium text-foreground">Project:</span>{' '}
+                <InlineCode>.claude/skills/apollo-prototype/</InlineCode>
+              </li>
+              <li>
+                <span className="font-medium text-foreground">Personal:</span>{' '}
+                <InlineCode>~/.claude/skills/apollo-prototype/</InlineCode>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <Divider />
+
+      <div>
+        <h3 className="mb-3 text-lg font-semibold text-foreground">Create Your Own Skill</h3>
+        <p className="mb-3 text-sm leading-6 text-muted-foreground">
+          If you need custom rules or workflows, create a skill that encodes Apollo conventions:
+        </p>
+        <ul className="space-y-3 text-sm leading-6 text-muted-foreground">
+          <li>
+            <span className="font-medium text-foreground">What to include.</span>
+            <br />
+            Apollo semantic tokens, theme classes (
+            <InlineCode>future-dark</InlineCode>, <InlineCode>future-light</InlineCode>), component
+            import paths, and rules from <InlineCode>apollo-ai-context.md</InlineCode>.
+          </li>
+          <li>
+            <span className="font-medium text-foreground">References.</span>
+            <br />
+            Use Cursor's create-skill or Codex's skill-creator for the mechanics. Focus your skill
+            description on Apollo-specific triggers (e.g., "Use when building Apollo prototypes or
+            UI with apollo-wind").
+          </li>
+        </ul>
+      </div>
+
+      <Divider />
+
+      <div>
+        <h3 className="mb-3 text-lg font-semibold text-foreground">Common Mistakes to Avoid</h3>
+        <ul className="space-y-3 text-sm leading-6 text-muted-foreground">
+          <li>
+            <span className="font-medium text-foreground">Don't use raw Tailwind colors.</span>
+            <br />
+            Avoid <InlineCode>bg-zinc-900</InlineCode>, <InlineCode>text-gray-400</InlineCode>, etc.
+            Always use semantic tokens (
+            <InlineCode>bg-surface</InlineCode>, <InlineCode>text-foreground-muted</InlineCode>).
+          </li>
+          <li>
+            <span className="font-medium text-foreground">Don't install extra UI libraries.</span>
+            <br />
+            Everything you need is already available in apollo-wind. Adding Material UI, Chakra, or
+            other libraries will conflict with the design system.
+          </li>
+          <li>
+            <span className="font-medium text-foreground">Don't skip the theme wrapper.</span>
+            <br />
+            Components using <InlineCode>future-*</InlineCode> tokens won't render correctly without
+            a theme class on a parent element.
+          </li>
+          <li>
+            <span className="font-medium text-foreground">Don't hardcode light/dark values.</span>
+            <br />
+            The theme system handles this automatically. If you're writing{' '}
+            <InlineCode>bg-white</InlineCode> or <InlineCode>bg-black</InlineCode>, you're bypassing
+            the design system.
+          </li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 function BestPracticesContent() {
   return (
     <div className="space-y-8">
@@ -850,95 +960,6 @@ function BestPracticesContent() {
                 AI structures the page correctly from the start.
               </li>
             </ul>
-          </AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="skills" className="border rounded-lg px-4 mb-3">
-          <AccordionTrigger className="text-base font-semibold hover:no-underline">
-            Creating Skills for Apollo
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-6 pt-1">
-              <ul className="space-y-3 text-sm leading-6 text-muted-foreground">
-                <li>
-                  <span className="font-medium text-foreground">When to create a skill.</span>
-                  <br />
-                  If you prototype with Apollo often and want the AI to consistently follow design
-                  system rules, a skill can encode those conventions so they're applied automatically.
-                </li>
-                <li>
-                  <span className="font-medium text-foreground">What to include.</span>
-                  <br />
-                  Apollo semantic tokens, theme classes (
-                  <InlineCode>future-dark</InlineCode>, <InlineCode>future-light</InlineCode>),
-                  component import paths, and rules from the AI context file. Keep it concise; link
-                  to <InlineCode>apollo-ai-context.md</InlineCode> for full reference.
-                </li>
-                <li>
-                  <span className="font-medium text-foreground">Where to store.</span>
-                  <br />
-                  Project skills (<InlineCode>.cursor/skills/</InlineCode>) for team sharing; personal
-                  skills (<InlineCode>~/.cursor/skills/</InlineCode>) for your own workflow.
-                </li>
-                <li>
-                  <span className="font-medium text-foreground">References.</span>
-                  <br />
-                  Use Cursor's create-skill or Codex's skill-creator for the mechanics. Focus your
-                  skill description on Apollo-specific triggers (e.g., "Use when building Apollo
-                  prototypes or UI with apollo-wind").
-                </li>
-                <li>
-                  <span className="font-medium text-foreground">
-                    Use the Apollo prototype skill (optional).
-                  </span>
-                  <br />
-                  A ready-made skill is available at{' '}
-                  <InlineCode>packages/apollo-wind/skills/apollo-prototype/</InlineCode>.
-                  Copy it to your project's <InlineCode>.cursor/skills/</InlineCode> or personal{' '}
-                  <InlineCode>~/.cursor/skills/</InlineCode> folder. No setup required — the agent
-                  will apply Apollo conventions automatically when prototyping.
-                </li>
-              </ul>
-
-              <div>
-                <h4 className="mb-2 text-sm font-semibold text-foreground">
-                  Common Mistakes to Avoid
-                </h4>
-                <ul className="space-y-3 text-sm leading-6 text-muted-foreground">
-                  <li>
-                    <span className="font-medium text-foreground">Don't use raw Tailwind colors.</span>
-                    <br />
-                    Avoid <InlineCode>bg-zinc-900</InlineCode>,{' '}
-                    <InlineCode>text-gray-400</InlineCode>, etc. Always use semantic tokens (
-                    <InlineCode>bg-surface</InlineCode>,{' '}
-                    <InlineCode>text-foreground-muted</InlineCode>).
-                  </li>
-                  <li>
-                    <span className="font-medium text-foreground">
-                      Don't install extra UI libraries.
-                    </span>
-                    <br />
-                    Everything you need is already available in apollo-wind. Adding Material UI,
-                    Chakra, or other libraries will conflict with the design system.
-                  </li>
-                  <li>
-                    <span className="font-medium text-foreground">Don't skip the theme wrapper.</span>
-                    <br />
-                    Components using <InlineCode>future-*</InlineCode> tokens won't render
-                    correctly without a theme class on a parent element.
-                  </li>
-                  <li>
-                    <span className="font-medium text-foreground">
-                      Don't hardcode light/dark values.
-                    </span>
-                    <br />
-                    The theme system handles this automatically. If you're writing{' '}
-                    <InlineCode>bg-white</InlineCode> or <InlineCode>bg-black</InlineCode>, you're
-                    bypassing the design system.
-                  </li>
-                </ul>
-              </div>
-            </div>
           </AccordionContent>
         </AccordionItem>
 
@@ -1139,6 +1160,7 @@ function ResourcesTab() {
 
       <div>
         {activeSubTab === 'Best Practices' && <BestPracticesContent />}
+        {activeSubTab === 'Skills' && <SkillsContent />}
         {activeSubTab === 'Use Cases' && <UseCasesContent />}
         {activeSubTab === "What's Not in Scope" && <WhatNotInScopeContent />}
       </div>
