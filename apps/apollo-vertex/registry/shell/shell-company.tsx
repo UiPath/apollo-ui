@@ -145,7 +145,7 @@ export const Company = ({
           iconElement
         )}
 
-        <AnimatePresence>
+        <AnimatePresence initial={false}>
           {!isCollapsed && (
             <motion.div
               key="company-text"
@@ -171,7 +171,7 @@ export const Company = ({
         </AnimatePresence>
       </div>
 
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {!isCollapsed && (
           <motion.div
             variants={{
