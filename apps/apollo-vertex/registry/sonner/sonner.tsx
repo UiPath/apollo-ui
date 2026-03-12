@@ -24,6 +24,8 @@ export const apolloToastClassNames: NonNullable<
   success: `!border-success !bg-secondary dark:!bg-[color-mix(in_srgb,var(--success)_25%,var(--popover)_75%)] [&>svg]:!text-[var(--success-fg)] dark:[&>svg]:!text-success ${iconAlign}`,
   warning: `!border-warning !bg-secondary dark:!bg-[color-mix(in_srgb,var(--warning)_25%,var(--popover)_75%)] [&>svg]:!text-warning-foreground dark:[&>svg]:!text-warning ${iconAlign}`,
   error: `!border-destructive !bg-secondary dark:!bg-[color-mix(in_srgb,var(--destructive)_25%,var(--popover)_75%)] [&>svg]:!text-[var(--destructive-fg)] dark:[&>svg]:!text-destructive ${iconAlign}`,
+  closeButton:
+    '!left-auto !right-2 !top-2 !transform-none !border-none !bg-transparent !rounded-sm',
 };
 
 const Toaster = ({ ...props }: ToasterProps) => {
@@ -34,6 +36,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       position="top-center"
+      duration={5000}
       closeButton
       icons={{
         success: <CircleCheckIcon className="size-4" />,
