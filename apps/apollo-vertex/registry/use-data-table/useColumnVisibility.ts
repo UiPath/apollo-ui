@@ -1,3 +1,5 @@
+"use client";
+
 import type { OnChangeFn, VisibilityState } from "@tanstack/react-table";
 
 import { usePersistedColumns } from "./usePersistedColumns";

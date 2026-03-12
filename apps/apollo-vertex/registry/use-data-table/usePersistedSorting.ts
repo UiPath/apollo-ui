@@ -1,7 +1,9 @@
+"use client";
+
 import type { OnChangeFn, SortingState } from "@tanstack/react-table";
 
 import { ENTITY_TABLE_STORAGE_PREFIX } from "@/lib/constants";
-import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
+import { useLocalStorage } from "@uidotdev/usehooks";
 
 export interface UsePersistedSortingOptions {
   storageKey: string;

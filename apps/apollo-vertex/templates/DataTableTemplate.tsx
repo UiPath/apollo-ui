@@ -9,6 +9,7 @@ import {
   MoreHorizontalIcon,
   XCircleIcon,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -240,7 +241,7 @@ const columns: ColumnDef<Payment>[] = [
   },
 ];
 
-export function DataTableTemplate() {
+function DataTableTemplateContent() {
   const tableState = useDataTable({
     data,
     columns,
@@ -263,3 +264,8 @@ export function DataTableTemplate() {
     </div>
   );
 }
+
+export const DataTableTemplate = dynamic(
+  () => Promise.resolve(DataTableTemplateContent),
+  { ssr: false },
+);

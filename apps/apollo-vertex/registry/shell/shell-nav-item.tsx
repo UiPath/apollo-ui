@@ -10,7 +10,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useLocalStorage } from "@/hooks/use-local-storage";
+import { useLocalStorage } from "@uidotdev/usehooks";
 import { cn } from "@/lib/utils";
 import {
   fastFadeTransition,
