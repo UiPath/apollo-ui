@@ -3,9 +3,11 @@
 import {
   type ColumnDef,
   type ColumnFiltersState,
+  type ExpandedState,
   type FilterFn,
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
@@ -108,6 +110,9 @@ interface DataTableProps<TData, TValue> {
   toolbarContent?: (table: TanstackTable<TData>) => React.ReactNode;
   noResultsMessage?: string;
   stickyHeader?: boolean;
+  expanded?: ExpandedState;
+  onExpandedChange?: OnChangeFn<ExpandedState>;
+  renderExpandedRow?: (row: Row<TData>) => React.ReactNode;
 }
 
 function DataTable<TData, TValue>({
@@ -136,6 +141,9 @@ function DataTable<TData, TValue>({
   toolbarContent,
   noResultsMessage,
   stickyHeader = false,
+  expanded,
+  onExpandedChange,
+  renderExpandedRow,
 }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation();
 
@@ -149,10 +157,14 @@ function DataTable<TData, TValue>({
     onRowSelectionChange,
     onGlobalFilterChange,
     onPaginationChange,
+    ...(onExpandedChange ? { onExpandedChange } : {}),
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    ...(renderExpandedRow
+      ? { getExpandedRowModel: getExpandedRowModel() }
+      : {}),
     ...(globalFilterFn ? { globalFilterFn } : {}),
     autoResetPageIndex: false,
     state: {
@@ -163,6 +175,7 @@ function DataTable<TData, TValue>({
       rowSelection,
       globalFilter,
       pagination,
+      ...(expanded ? { expanded } : {}),
     },
   });
 
@@ -209,27 +222,36 @@ function DataTable<TData, TValue>({
               />
             ) : rows.length > 0 ? (
               rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className={
-                    onRowClick
-                      ? "cursor-pointer hover:bg-gradient-to-r hover:from-primary/5 hover:to-secondary/5 transition-all border-l-2 border-transparent hover:border-l-primary"
-                      : ""
-                  }
-                  {...(onRowClick && {
-                    onClick: () => onRowClick(row.original),
-                  })}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
+                <>
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className={
+                      onRowClick
+                        ? "cursor-pointer hover:bg-gradient-to-r hover:from-primary/5 hover:to-secondary/5 transition-all border-l-2 border-transparent hover:border-l-primary"
+                        : ""
+                    }
+                    {...(onRowClick && {
+                      onClick: () => onRowClick(row.original),
+                    })}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                  {renderExpandedRow && row.getIsExpanded() && (
+                    <TableRow data-state="expanded" key={row.id}>
+                      <TableCell colSpan={row.getVisibleCells().length}>
+                        {renderExpandedRow(row)}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </>
               ))
             ) : (
               <TableRow>
