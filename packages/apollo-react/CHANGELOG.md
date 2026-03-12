@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.51.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.51.0...@uipath/apollo-react@3.51.1) (2026-03-12)
+
+### Bug Fixes
+
+* **apollo-react:** fix tool call status text ([6476de5](https://github.com/UiPath/apollo-ui/commit/6476de5a4a5020b841b950db34fcb765f0d0b12a))
+
 ## [@uipath/apollo-react-v3.51.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.50.0...@uipath/apollo-react@3.51.0) (2026-03-11)
 
 ### Features
