@@ -292,7 +292,7 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>((pro
       'tool';
 
     if (status === 'loading') {
-      return _(msg({ id: 'tool-call.running', message: `Running ${toolCallName}...` }));
+      return `Running '${toolCallName}'`;
     }
 
     // Calculate duration
@@ -303,10 +303,8 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>((pro
         ? (new Date(endTimeStamp).getTime() - new Date(startTimeStamp).getTime()) / 1000
         : 0;
 
-    return _(
-      msg({ id: 'tool-call.ran', message: `Ran ${toolCallName} (${duration.toFixed(2)}s)` })
-    );
-  }, [getStatus, toolName, span, startTime, endTime, _]);
+    return `Ran '${toolCallName}' for ${duration.toFixed(2)} seconds`;
+  }, [getStatus, toolName, span, startTime, endTime]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
