@@ -80,12 +80,23 @@ export const columns: ColumnDef<Payment>[] = [
 
 ### 2. Render the DataTable
 
+Use the `useDataTable` hook to manage all table state, then spread it into `DataTable`:
+
 ```tsx
+"use client"
+
 import { DataTable } from "@/components/ui/data-table"
+import { useDataTable } from "@/hooks/use-data-table"
 import { columns } from "./columns"
 
 export default function PaymentsPage({ data }: { data: Payment[] }) {
-  return <DataTable columns={columns} data={data} />
+  const tableState = useDataTable({
+    data,
+    columns,
+    storageKey: "payments",
+  })
+
+  return <DataTable {...tableState} />
 }
 ```
 
@@ -127,6 +138,105 @@ import { DataTableViewOptions } from "@/components/ui/data-table"
 
 <DataTableViewOptions table={table} />
 ```
+
+## State Management Hooks
+
+The Data Table requires external state for sorting, filtering, pagination, column visibility, column order, and row selection. Two hooks are provided that manage this state and return props compatible with `DataTable`:
+
+### useDataTable
+
+A generic hook for managing Data Table state with any data source. It handles persisting sorting, column visibility, and column order to `localStorage`.
+
+#### Installation
+
+```bash
+npx shadcn@latest add @uipath/use-data-table
+```
+
+#### Usage
+
+The hook returns an object that can be spread directly into `DataTable`:
+
+```tsx
+"use client"
+
+import { DataTable } from "@/components/ui/data-table"
+import { useDataTable } from "@/hooks/use-data-table"
+import { columns } from "./columns"
+
+export default function PaymentsPage({ data }: { data: Payment[] }) {
+  const tableState = useDataTable({
+    data,
+    columns,
+    storageKey: "payments",
+    defaultVisibleColumns: ["status", "email", "amount"],
+  })
+
+  return <DataTable {...tableState} />
+}
+```
+
+#### Options
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `data` | `TData[]` | The data array to display |
+| `columns` | `ColumnDef<TData>[]` | TanStack Table column definitions |
+| `storageKey` | `string` | Key used to persist state in `localStorage` |
+| `isLoading` | `boolean` | Optional loading state (default: `false`) |
+| `defaultColumnOrder` | `string[]` | Initial column order (defaults to column definition order) |
+| `defaultVisibleColumns` | `string[]` | Initially visible columns (defaults to all) |
+
+### useEntityDataTable
+
+A specialized hook for entity-based tables that integrates with VSS (Virtual Solution Storage). It extends `useDataTable` by automatically generating column definitions from entity metadata and fetching data via `useLiveQuery`.
+
+#### Installation
+
+```bash
+npx shadcn@latest add @uipath/use-entity-data-table
+```
+
+#### Usage
+
+```tsx
+"use client"
+
+import { DataTable } from "@/components/ui/data-table"
+import { useEntityDataTable } from "@/hooks/use-entity-data-table"
+
+export default function EntityPage({ entity }: { entity: VssEntity }) {
+  const tableState = useEntityDataTable({
+    entity,
+    storageKey: "my-entity",
+    initialVisibleColumnCount: 6,
+    systemFields: ["Id"],
+  })
+
+  return <DataTable {...tableState} />
+}
+```
+
+#### Options
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `entity` | `VssEntity` | The VSS entity definition (provides fields and metadata) |
+| `storageKey` | `string` | Key used to persist state (defaults to `entity-{name}`) |
+| `initialVisibleColumnCount` | `number` | Number of columns visible by default (default: `8`) |
+| `systemFields` | `string[]` | Fields to exclude from the table (default: `["Id"]`) |
+| `columnOrder` | `string[]` | Explicit column order override |
+| `extraColumns` | `ExtraColumn[]` | Additional columns injected at `"start"` or `"end"` |
+| `columnOverrides` | `Record<string, (def) => def>` | Per-column definition overrides |
+
+### Persisted State
+
+Both hooks automatically persist the following state to `localStorage`:
+
+- **Sorting** — stored under `entity-table-sorting-{storageKey}`
+- **Column visibility** — stored under `entity-table-columns-{storageKey}`
+- **Column order** — stored under `entity-table-column-order-{storageKey}`
+- **Global filter** (entity hook only) — stored under `entity-table-global-filter-{storageKey}`
 
 ## Row Selection
 
