@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.51.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.51.1...@uipath/apollo-react@3.51.2) (2026-03-12)
+
+### Bug Fixes
+
+* **apollo-react:** remove back navigation event handler ([70891aa](https://github.com/UiPath/apollo-ui/commit/70891aa16b99185f205119d69ae66b02c456d009))
+
 ## [@uipath/apollo-react-v3.51.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.51.0...@uipath/apollo-react@3.51.1) (2026-03-12)
 
 ### Bug Fixes
