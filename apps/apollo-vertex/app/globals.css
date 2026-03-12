@@ -40,4 +40,16 @@
   a {
     @apply text-primary-700 dark:text-primary-400;
   }
+
+  /* Ensure all clickable elements show pointer cursor */
+  button:not([disabled]),
+  [role="button"]:not([disabled]),
+  a[href],
+  select:not([disabled]),
+  summary,
+  input[type="checkbox"]:not([disabled]),
+  input[type="radio"]:not([disabled]),
+  [tabindex]:not([tabindex="-1"]):not([disabled]) {
+    cursor: pointer;
+  }
 }
