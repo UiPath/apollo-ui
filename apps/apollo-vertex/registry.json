@@ -858,13 +858,13 @@
         "zod",
         "@tanstack/react-query",
         "pkce-challenge",
-        "sonner"
+        "sonner",
+        "@uidotdev/usehooks"
       ],
       "registryDependencies": [
         "button",
         "tooltip",
         "avatar",
-        "@uipath/use-local-storage",
         "dropdown-menu",
         "spinner"
       ],
@@ -940,18 +940,6 @@
         {
           "path": "registry/shell/shell-auth-provider.tsx",
           "type": "registry:ui"
-        }
-      ]
-    },
-    {
-      "name": "use-local-storage",
-      "type": "registry:hook",
-      "title": "useLocalStorage",
-      "description": "A React hook for syncing state with localStorage across tabs.",
-      "files": [
-        {
-          "path": "registry/use-local-storage/use-local-storage.ts",
-          "type": "registry:hook"
         }
       ]
     },

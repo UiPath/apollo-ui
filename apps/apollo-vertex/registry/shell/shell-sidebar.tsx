@@ -1,6 +1,8 @@
+"use client";
+
 import { motion } from "framer-motion";
 import { BarChart3, FolderOpen, Home, Settings, Users } from "lucide-react";
-import { useLocalStorage } from "@/hooks/use-local-storage";
+import { useLocalStorage } from "@uidotdev/usehooks";
 import { cn } from "@/lib/utils";
 import type { CompanyLogo } from "./shell";
 import { Company } from "./shell-company";

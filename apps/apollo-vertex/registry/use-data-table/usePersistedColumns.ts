@@ -1,5 +1,7 @@
+"use client";
+
+import { useLocalStorage } from "@uidotdev/usehooks";
 import { ENTITY_TABLE_COLUMNS_STORAGE_PREFIX } from "@/lib/constants";
-import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 
 export interface UsePersistedColumnsProps {
   storageKey: string;

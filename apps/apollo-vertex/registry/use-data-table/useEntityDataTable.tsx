@@ -1,3 +1,5 @@
+"use client";
+
 import { useLiveQuery } from "@tanstack/react-db";
 import type {
   ColumnFiltersState,
@@ -8,7 +10,7 @@ import { useSolution } from "@uipath/vs-core";
 import { useState } from "react";
 
 import { ENTITY_TABLE_STORAGE_PREFIX } from "@/lib/constants";
-import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
+import { useLocalStorage } from "@uidotdev/usehooks";
 
 import type {
   ColumnDefWithAccessorKey,
@@ -87,7 +89,9 @@ export function useEntityDataTable<
     defaultColumnOrder,
   });
 
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnSearchTerm, setColumnSearchTerm] = useState<ColumnFiltersState>(
+    [],
+  );
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [globalFilter, setGlobalFilter] = useLocalStorage(
     `${ENTITY_TABLE_STORAGE_PREFIX}global-filter-${storageKey}`,
@@ -108,8 +112,8 @@ export function useEntityDataTable<
     onColumnVisibilityChange,
     columnOrder,
     onColumnOrderChange,
-    columnFilters,
-    onColumnFiltersChange: setColumnFilters,
+    columnFilters: columnSearchTerm,
+    onColumnFiltersChange: setColumnSearchTerm,
     rowSelection,
     onRowSelectionChange: setRowSelection,
     globalFilter,
