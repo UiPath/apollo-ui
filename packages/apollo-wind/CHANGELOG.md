@@ -1,3 +1,13 @@
+## [@uipath/apollo-wind-v0.13.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.12.2...@uipath/apollo-wind@0.13.0) (2026-03-12)
+
+### Features
+
+* **apollo-wind:** add horizontal scroll support to ScrollArea ([28f9d0f](https://github.com/uipath/apollo-ui/commit/28f9d0f443c44bf6d60c1e76924437a548fcb32f))
+
+### Bug Fixes
+
+* **apollo-wind:** add overscroll-x to ScrollArea component ([75cfe7e](https://github.com/uipath/apollo-ui/commit/75cfe7eda4af2ba1d41662856fae4cbf985e8edd))
+
 ## [@uipath/apollo-wind-v0.12.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.12.1...@uipath/apollo-wind@0.12.2) (2026-03-10)
 
 ### Bug Fixes

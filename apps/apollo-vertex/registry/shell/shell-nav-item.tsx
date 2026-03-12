@@ -10,8 +10,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 import { cn } from "@/lib/utils";
-import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 import {
   fastFadeTransition,
   iconHoverScale,
@@ -47,7 +47,7 @@ export const NavItem = ({ to, icon: Icon, text }: NavItemProps) => {
       >
         <Icon className="w-4 h-4" />
       </motion.span>
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {!isCollapsed && (
           <motion.span
             key="nav-text"

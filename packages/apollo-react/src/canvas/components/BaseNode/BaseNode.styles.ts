@@ -64,6 +64,20 @@ const getExecutionStatusBorder = (executionStatus?: string) => {
   }
 };
 
+const getValidationStatusBorder = (validationStatus?: string) => {
+  switch (validationStatus) {
+    case 'ERROR':
+    case 'CRITICAL':
+      return css`
+        border-color: var(--uix-canvas-error-icon);
+        background: var(--uix-canvas-error-background);
+        animation: ${pulseAnimation('--uix-canvas-error-icon')} 2s infinite;
+      `;
+    default:
+      return null;
+  }
+};
+
 const getInteractionStateBorder = (interactionState?: string) => {
   switch (interactionState) {
     case 'hover':
@@ -129,6 +143,7 @@ export const BaseContainer = styled.div<{
   backgroundColor?: string;
   shape?: NodeShape;
   executionStatus?: string;
+  validationStatus?: string;
   interactionState?: string;
   suggestionType?: string;
   width?: number;
@@ -183,6 +198,7 @@ export const BaseContainer = styled.div<{
   cursor: pointer;
 
   ${({ executionStatus }) => getExecutionStatusBorder(executionStatus)}
+  ${({ validationStatus }) => getValidationStatusBorder(validationStatus)}
   ${({ interactionState }) => getInteractionStateBorder(interactionState)}
   ${({ suggestionType }) => getSuggestionTypeBorder(suggestionType)}
 

@@ -19,6 +19,7 @@ import {
   withCanvasProviders,
 } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
+import type { ValidationErrorSeverity } from '../../types/validation';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { NodeInspector } from '../NodeInspector';
@@ -645,4 +646,110 @@ export const CustomizedSizes: Story = {
 export const DynamicHandles: Story = {
   name: 'Dynamic Handles',
   render: () => <DynamicHandlesStory />,
+};
+
+// ============================================================================
+// Validation States Story
+// ============================================================================
+
+const VALIDATION_SEVERITIES = ['WARNING', 'ERROR', 'CRITICAL'] as const;
+
+const validationMessages: Record<string, string> = {
+  WARNING: 'Trigger should be connected to at least one node',
+  ERROR: 'URL is required',
+  CRITICAL: 'Node configuration is invalid',
+};
+
+/**
+ * Creates a grid of nodes showing validation states across shapes.
+ */
+function createValidationGrid(): Node<BaseNodeData>[] {
+  const nodes: Node<BaseNodeData>[] = [];
+
+  VALIDATION_SEVERITIES.forEach((severity, rowIndex) => {
+    SHAPES.forEach((shape, colIndex) => {
+      const label = shape === 'rectangle' ? 'Invoice approval agent' : 'Header';
+      const nodeType = shape === 'rectangle' ? 'uipath.agent' : 'uipath.blank-node';
+
+      nodes.push(
+        createNode({
+          id: `validation-${shape}-${severity}`,
+          type: nodeType,
+          position: {
+            x: GRID_CONFIG.startX + colIndex * GRID_CONFIG.gapX,
+            y: GRID_CONFIG.startY + rowIndex * GRID_CONFIG.gapY,
+          },
+          data: {
+            nodeType,
+            version: '1.0.0',
+            display: {
+              label,
+              subLabel: severity,
+              shape,
+            },
+          },
+        })
+      );
+    });
+  });
+
+  return nodes;
+}
+
+function ValidationStatesStory() {
+  const initialNodes = useMemo(() => createValidationGrid(), []);
+  const { canvasProps } = useCanvasStory({ initialNodes });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="Validation States"
+        description="Grid showing warning, error, and critical validation badges across shapes. Warnings show a yellow badge only (no border). Errors/critical show a red badge."
+      />
+    </BaseCanvas>
+  );
+}
+
+export const ValidationStates: Story = {
+  name: 'Validation States',
+  decorators: [
+    (Story) => {
+      const registry = useMemo(() => {
+        const reg = new NodeTypeRegistry();
+        reg.registerManifest(sampleManifest.nodes, sampleManifest.categories);
+        return reg;
+      }, []);
+
+      const contextValue = useMemo(() => ({ registry }), [registry]);
+
+      return (
+        <NodeRegistryContext.Provider value={contextValue}>{Story()}</NodeRegistryContext.Provider>
+      );
+    },
+    withCanvasProviders({
+      executionState: {
+        getNodeExecutionState: () => undefined,
+        getEdgeExecutionState: () => undefined,
+      },
+      validationState: {
+        getElementValidationState: (elementId: string) => {
+          const severity = elementId.split('-').pop() as string;
+          if (!['WARNING', 'ERROR', 'CRITICAL'].includes(severity)) return undefined;
+          return {
+            validationStatus: severity as ValidationErrorSeverity,
+            validationError: {
+              code: `VALIDATION_${severity}`,
+              message: validationMessages[severity] ?? `Validation ${severity.toLowerCase()}`,
+              description: validationMessages[severity] ?? `Validation ${severity.toLowerCase()}`,
+              severity: severity as ValidationErrorSeverity,
+            },
+          };
+        },
+      },
+    }),
+  ],
+  render: () => <ValidationStatesStory />,
 };

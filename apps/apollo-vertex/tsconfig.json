@@ -86,6 +86,9 @@
       "@/components/ui/toggle-group": ["./registry/toggle-group/toggle-group"],
       "@/components/ui/tooltip": ["./registry/tooltip/tooltip"],
       "@/hooks/use-mobile": ["./registry/use-mobile/use-mobile"],
+      "@/hooks/use-local-storage": [
+        "./registry/use-local-storage/use-local-storage"
+      ],
       "@/components/theme-provider/theme-provider": [
         "./registry/theme-provider/theme-provider"
       ]

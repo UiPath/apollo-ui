@@ -1,6 +1,6 @@
 import { ExecutionStatusIcon, NodeIcon } from '@uipath/apollo-react/canvas';
-import { ApIcon } from '@uipath/apollo-react/material/components';
 import { ApTooltip } from '@uipath/apollo-react/material';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 import { memo } from 'react';
 import type { NodeAdornments, NodeStatusContext } from '../components';
 import { getExecutionStatusColor } from '../components/ExecutionStatusIcon/ExecutionStatusIcon';
@@ -80,6 +80,16 @@ export function ValidationErrorIndicator({ message }: { message?: string }) {
   );
 }
 
+export function ValidationWarningIndicator({ message }: { message?: string }) {
+  return (
+    <ApTooltip content={message || 'Validation warning'} placement="bottom">
+      <span style={{ display: 'inline-flex' }}>
+        <ApIcon name="warning" size="16px" color="var(--uix-canvas-warning-icon)" />
+      </span>
+    </ApTooltip>
+  );
+}
+
 const getDefaultAdornments = (context: NodeStatusContext): NodeAdornments => {
   const executionState = context.executionState;
 
@@ -94,11 +104,27 @@ const getDefaultAdornments = (context: NodeStatusContext): NodeAdornments => {
     context.validationState?.validationStatus === ValidationErrorSeverity.ERROR ||
     context.validationState?.validationStatus === ValidationErrorSeverity.CRITICAL;
 
+  const hasValidationWarning =
+    context.validationState?.validationStatus === ValidationErrorSeverity.WARNING;
+
+  const getTopRight = () => {
+    // An active execution status (anything other than 'None') takes priority
+    if (status && status !== 'None')
+      return <ExecutionStatusIndicator status={status} count={count} />;
+    if (hasValidationError)
+      return (
+        <ValidationErrorIndicator message={context.validationState?.validationError?.message} />
+      );
+    if (hasValidationWarning)
+      return (
+        <ValidationWarningIndicator message={context.validationState?.validationError?.message} />
+      );
+    return <ExecutionStatusIndicator status={status} count={count} />;
+  };
+
   return {
     topLeft: hasBreakpoint ? <BreakpointIndicator /> : undefined,
-    topRight: !status && hasValidationError
-      ? <ValidationErrorIndicator message={context.validationState?.validationError?.message} />
-      : <ExecutionStatusIndicator status={status} count={count} />,
+    topRight: getTopRight(),
     bottomLeft: isExecutionStartPoint ? <ExecutionStartPointIndicator /> : undefined,
     bottomRight: isOutputPinned ? <PinnedOutputIndicator /> : undefined,
   };

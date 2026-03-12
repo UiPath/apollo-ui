@@ -479,6 +479,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         className={cx(executionStatus, interactionState)}
         interactionState={interactionState}
         executionStatus={executionStatus}
+        validationStatus={validationState?.validationStatus}
         suggestionType={suggestionType}
         width={width}
         height={height}

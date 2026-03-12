@@ -10,63 +10,15 @@ import {
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/registry/alert/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/registry/alert/alert";
 import { Badge } from "@/registry/badge/badge";
 import { Button } from "@/registry/button/button";
-
 import { Toaster } from "@/registry/sonner/sonner";
-
-// Accessible foreground colors for light mode only.
-// Same hue as the status token but darkened to pass WCAG AA (4.5:1) against --secondary.
-// Dark mode uses the standard status tokens (which already pass 4.5:1 on dark backgrounds).
-const statusForegroundStyles = `
-  :root {
-    --info-fg: oklch(0.49 0.12 210);
-    --success-fg: oklch(0.46 0.10 152);
-    --destructive-fg: oklch(0.50 0.14 18);
-  }
-`;
-
-// Shared icon alignment classes for sonner
-const iconAlign =
-  "[&>[data-icon]]:!items-start [&>[data-icon]>svg]:!mt-0.5";
-
-// Override Sonner's close button position: right side, inside the toast
-const closeButtonStyles = `
-  [data-sonner-toast] [data-close-button] {
-    left: unset !important;
-    right: 8px !important;
-    top: 8px !important;
-    transform: none !important;
-    border: none !important;
-    background: transparent !important;
-    border-radius: 4px !important;
-  }
-`;
-
-// Light: solid secondary bg with status border. Dark: tinted status bg blended with popover.
-// srgb interpolation avoids hue shift when mixing with blue-gray popover
-const toastClassNames = {
-  info: `!border-info !bg-secondary dark:!bg-[color-mix(in_srgb,var(--info)_25%,var(--popover)_75%)] [&>svg]:!text-[var(--info-fg)] dark:[&>svg]:!text-info ${iconAlign} `,
-  success: `!border-success !bg-secondary dark:!bg-[color-mix(in_srgb,var(--success)_25%,var(--popover)_75%)] [&>svg]:!text-[var(--success-fg)] dark:[&>svg]:!text-success ${iconAlign} `,
-  warning: `!border-warning !bg-secondary dark:!bg-[color-mix(in_srgb,var(--warning)_25%,var(--popover)_75%)] [&>svg]:!text-warning-foreground dark:[&>svg]:!text-warning ${iconAlign} `,
-  error: `!border-destructive !bg-secondary dark:!bg-[color-mix(in_srgb,var(--destructive)_25%,var(--popover)_75%)] [&>svg]:!text-[var(--destructive-fg)] dark:[&>svg]:!text-destructive ${iconAlign} `,
-};
 
 export function SonnerExamples() {
   return (
     <div className="space-y-3">
-      <style>{statusForegroundStyles}</style>
-      <style>{closeButtonStyles}</style>
-      <Toaster
-        position="top-center"
-        closeButton
-        toastOptions={{ classNames: toastClassNames }}
-      />
+      <Toaster />
       <div className="flex flex-wrap gap-2">
         <Button
           variant="outline"
@@ -114,7 +66,8 @@ export function SonnerExamples() {
         </Button>
       </div>
       <p className="text-xs text-muted-foreground">
-        Click each button to trigger a toast at the top-center of the screen. Toasts auto-dismiss after 5 seconds.
+        Click each button to trigger a toast at the top-center of the screen.
+        Toasts auto-dismiss after 5 seconds.
       </p>
     </div>
   );
@@ -123,36 +76,38 @@ export function SonnerExamples() {
 export function AlertExamples() {
   return (
     <div className="space-y-3">
-      <style>{statusForegroundStyles}</style>
-      <Alert className="border-transparent bg-info/15 dark:bg-info/25 text-[var(--info-fg)] dark:text-white [&>svg]:text-[var(--info-fg)] dark:[&>svg]:text-white">
+      <Alert status="info" visual="tinted">
         <InfoIcon className="h-4 w-4" />
         <AlertTitle>New version available</AlertTitle>
-        <AlertDescription className="text-[var(--info-fg)] dark:text-white/80">
-          A new version of the platform is ready. Review the changelog for details.
+        <AlertDescription>
+          A new version of the platform is ready. Review the changelog for
+          details.
         </AlertDescription>
       </Alert>
 
-      <Alert className="border-transparent bg-success/10 dark:bg-success/25 text-[var(--success-fg)] dark:text-white [&>svg]:text-[var(--success-fg)] dark:[&>svg]:text-white">
+      <Alert status="success" visual="tinted">
         <CircleCheckIcon className="h-4 w-4" />
         <AlertTitle>Changes saved</AlertTitle>
-        <AlertDescription className="text-[var(--success-fg)] dark:text-white/80">
+        <AlertDescription>
           Your configuration has been updated successfully.
         </AlertDescription>
       </Alert>
 
-      <Alert className="border-transparent bg-warning/15 dark:bg-warning/25 text-warning-foreground dark:text-white [&>svg]:text-warning-foreground dark:[&>svg]:text-warning">
+      <Alert status="warning" visual="tinted">
         <TriangleAlertIcon className="h-4 w-4" />
         <AlertTitle>API rate limit approaching</AlertTitle>
-        <AlertDescription className="text-warning-foreground dark:text-white/80">
-          You have used 90% of your monthly API quota. Consider upgrading your plan.
+        <AlertDescription>
+          You have used 90% of your monthly API quota. Consider upgrading your
+          plan.
         </AlertDescription>
       </Alert>
 
-      <Alert className="border-transparent bg-destructive/10 dark:bg-destructive/25 text-[var(--destructive-fg)] dark:text-white [&>svg]:text-[var(--destructive-fg)] dark:[&>svg]:text-white">
+      <Alert status="error" visual="tinted">
         <OctagonXIcon className="h-4 w-4" />
         <AlertTitle>Connection failed</AlertTitle>
-        <AlertDescription className="text-[var(--destructive-fg)] dark:text-white/80">
-          Unable to reach the server. Check your network connection and try again.
+        <AlertDescription>
+          Unable to reach the server. Check your network connection and try
+          again.
         </AlertDescription>
       </Alert>
     </div>
@@ -161,16 +116,20 @@ export function AlertExamples() {
 
 function DismissibleAlert({
   children,
-  className,
+  status,
+  visual = "outline",
 }: {
   children: ReactNode;
-  className?: string;
+  status: "info" | "success" | "warning" | "error";
+  visual?: "outline" | "tinted" | "subtle";
 }) {
   const [visible, setVisible] = useState(true);
   if (!visible) return null;
   return (
     <div className="relative">
-      <Alert className={className}>{children}</Alert>
+      <Alert status={status} visual={visual}>
+        {children}
+      </Alert>
       <button
         type="button"
         onClick={() => setVisible(false)}
@@ -188,15 +147,16 @@ export function AlertOutlineExamples() {
 
   return (
     <div className="space-y-3" key={resetKey}>
-      <DismissibleAlert className="border-info bg-transparent [&>svg]:text-info">
+      <DismissibleAlert status="info">
         <InfoIcon className="h-4 w-4" />
         <AlertTitle>New version available</AlertTitle>
         <AlertDescription>
-          A new version of the platform is ready. Review the changelog for details.
+          A new version of the platform is ready. Review the changelog for
+          details.
         </AlertDescription>
       </DismissibleAlert>
 
-      <DismissibleAlert className="border-success bg-transparent [&>svg]:text-success">
+      <DismissibleAlert status="success">
         <CircleCheckIcon className="h-4 w-4" />
         <AlertTitle>Changes saved</AlertTitle>
         <AlertDescription>
@@ -204,19 +164,21 @@ export function AlertOutlineExamples() {
         </AlertDescription>
       </DismissibleAlert>
 
-      <DismissibleAlert className="border-warning bg-transparent [&>svg]:text-warning-foreground dark:[&>svg]:text-warning">
+      <DismissibleAlert status="warning">
         <TriangleAlertIcon className="h-4 w-4" />
         <AlertTitle>API rate limit approaching</AlertTitle>
         <AlertDescription>
-          You have used 90% of your monthly API quota. Consider upgrading your plan.
+          You have used 90% of your monthly API quota. Consider upgrading your
+          plan.
         </AlertDescription>
       </DismissibleAlert>
 
-      <DismissibleAlert className="border-destructive bg-transparent [&>svg]:text-destructive">
+      <DismissibleAlert status="error">
         <OctagonXIcon className="h-4 w-4" />
         <AlertTitle>Connection failed</AlertTitle>
         <AlertDescription>
-          Unable to reach the server. Check your network connection and try again.
+          Unable to reach the server. Check your network connection and try
+          again.
         </AlertDescription>
       </DismissibleAlert>
 
@@ -231,60 +193,49 @@ export function AlertOutlineExamples() {
   );
 }
 
-const alertDefaultBgStyles = `
-  :root:not(.dark) .alert-default-bg [data-slot="alert"] {
+// Docs-only: subtle alerts use bg-secondary in light mode to distinguish from the page background
+const alertSubtleBgStyles = `
+  :root:not(.dark) .alert-subtle-bg [data-slot="alert"] {
     background-color: var(--secondary) !important;
   }
 `;
 
-// Override Alert's [&>svg]:text-current which twMerge doesn't reliably resolve
-const alertDefaultIconStyles = `
-  .alert-default-bg [data-slot="alert"].alert-icon-info > svg { color: var(--info-fg) }
-  .alert-default-bg [data-slot="alert"].alert-icon-success > svg { color: var(--success-fg) }
-  .alert-default-bg [data-slot="alert"].alert-icon-warning > svg { color: var(--warning-foreground) }
-  .alert-default-bg [data-slot="alert"].alert-icon-destructive > svg { color: var(--destructive-fg) }
-
-  .dark .alert-default-bg [data-slot="alert"].alert-icon-info > svg { color: var(--info) }
-  .dark .alert-default-bg [data-slot="alert"].alert-icon-success > svg { color: var(--success) }
-  .dark .alert-default-bg [data-slot="alert"].alert-icon-warning > svg { color: var(--warning) }
-  .dark .alert-default-bg [data-slot="alert"].alert-icon-destructive > svg { color: var(--destructive) }
-`;
-
 export function AlertDefaultExamples() {
   return (
-    <div className="alert-default-bg space-y-3">
-      <style>{statusForegroundStyles}</style>
-      <style>{alertDefaultBgStyles}</style>
-      <style>{alertDefaultIconStyles}</style>
-      <Alert className="alert-icon-info">
+    <div className="alert-subtle-bg space-y-3">
+      <style>{alertSubtleBgStyles}</style>
+      <Alert status="info" visual="subtle">
         <InfoIcon className="h-4 w-4" />
-        <AlertTitle className="text-[var(--info-fg)] dark:text-info">New version available</AlertTitle>
+        <AlertTitle>New version available</AlertTitle>
         <AlertDescription>
-          A new version of the platform is ready. Review the changelog for details.
+          A new version of the platform is ready. Review the changelog for
+          details.
         </AlertDescription>
       </Alert>
 
-      <Alert className="alert-icon-success">
+      <Alert status="success" visual="subtle">
         <CircleCheckIcon className="h-4 w-4" />
-        <AlertTitle className="text-[var(--success-fg)] dark:text-success">Changes saved</AlertTitle>
+        <AlertTitle>Changes saved</AlertTitle>
         <AlertDescription>
           Your configuration has been updated successfully.
         </AlertDescription>
       </Alert>
 
-      <Alert className="alert-icon-warning">
+      <Alert status="warning" visual="subtle">
         <TriangleAlertIcon className="h-4 w-4" />
-        <AlertTitle className="text-warning-foreground dark:text-warning">API rate limit approaching</AlertTitle>
+        <AlertTitle>API rate limit approaching</AlertTitle>
         <AlertDescription>
-          You have used 90% of your monthly API quota. Consider upgrading your plan.
+          You have used 90% of your monthly API quota. Consider upgrading your
+          plan.
         </AlertDescription>
       </Alert>
 
-      <Alert className="alert-icon-destructive">
+      <Alert status="error" visual="subtle">
         <OctagonXIcon className="h-4 w-4" />
-        <AlertTitle className="text-[var(--destructive-fg)] dark:text-destructive">Connection failed</AlertTitle>
+        <AlertTitle>Connection failed</AlertTitle>
         <AlertDescription>
-          Unable to reach the server. Check your network connection and try again.
+          Unable to reach the server. Check your network connection and try
+          again.
         </AlertDescription>
       </Alert>
     </div>
@@ -318,7 +269,7 @@ export function CollapsibleAlertExample() {
   }, []);
 
   return (
-    <Alert className="border-warning bg-transparent [&>svg]:text-warning-foreground dark:[&>svg]:text-warning">
+    <Alert status="warning" visual="outline">
       <TriangleAlertIcon className="h-4 w-4" />
       <AlertTitle className="line-clamp-none">
         {missingDocs.length} required documents missing
@@ -326,7 +277,16 @@ export function CollapsibleAlertExample() {
       <AlertDescription className="col-start-2">
         <p>Upload these documents before completing quality check.</p>
         {/* Hidden measurement container to detect overflow */}
-        <div ref={measureRef} className="flex flex-wrap gap-1.5 mt-2" style={{ position: "absolute", visibility: "hidden", left: 0, right: 0 }}>
+        <div
+          ref={measureRef}
+          className="flex flex-wrap gap-1.5 mt-2"
+          style={{
+            position: "absolute",
+            visibility: "hidden",
+            left: 0,
+            right: 0,
+          }}
+        >
           {missingDocs.map((doc) => (
             <Badge key={doc} variant="secondary" status="warning">
               {doc}
@@ -334,7 +294,11 @@ export function CollapsibleAlertExample() {
           ))}
         </div>
         <div
-          style={!expanded && overflows && rowHeight ? { maxHeight: rowHeight, overflow: "hidden" } : {}}
+          style={
+            !expanded && overflows && rowHeight
+              ? { maxHeight: rowHeight, overflow: "hidden" }
+              : {}
+          }
           className="flex flex-wrap gap-1.5 mt-2"
         >
           {missingDocs.map((doc) => (
@@ -359,16 +323,12 @@ export function CollapsibleAlertExample() {
 
 export function ActionAlertExample() {
   return (
-    <Alert className="border-info bg-transparent [&>svg]:text-info">
+    <Alert status="info" visual="outline">
       <InfoIcon className="h-4 w-4" />
       <AlertTitle>12 documents unclassified</AlertTitle>
       <AlertDescription>
         <p>Some documents could not be automatically classified.</p>
-        <Button
-          variant="outline"
-          size="sm"
-          className="mt-1.5"
-        >
+        <Button variant="outline" size="sm" className="mt-1.5">
           Filter unclassified
         </Button>
       </AlertDescription>

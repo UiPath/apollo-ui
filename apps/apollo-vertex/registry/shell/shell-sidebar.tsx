@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { BarChart3, FolderOpen, Home, Settings, Users } from "lucide-react";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 import { cn } from "@/lib/utils";
-import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 import type { CompanyLogo } from "./shell";
 import { Company } from "./shell-company";
 import { MinimalCompany } from "./shell-minimal-company";
@@ -75,10 +75,10 @@ export const Sidebar = ({
       />
       <nav className="flex-1 mt-10 space-y-1 pb-3">
         <NavItem to="/preview/shell" icon={Home} text="Dashboard" />
-        <NavItem to="/" icon={FolderOpen} text="Projects" />
-        <NavItem to="/" icon={BarChart3} text="Analytics" />
-        <NavItem to="/" icon={Users} text="Team" />
-        <NavItem to="/" icon={Settings} text="Settings" />
+        <NavItem to="/projects" icon={FolderOpen} text="Projects" />
+        <NavItem to="/analytics" icon={BarChart3} text="Analytics" />
+        <NavItem to="/team" icon={Users} text="Team" />
+        <NavItem to="/settings" icon={Settings} text="Settings" />
       </nav>
       <div
         className={cn("mt-auto", isCollapsed && "flex flex-col items-center")}

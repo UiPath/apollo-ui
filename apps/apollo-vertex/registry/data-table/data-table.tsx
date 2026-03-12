@@ -3,9 +3,11 @@
 import {
   type ColumnDef,
   type ColumnFiltersState,
+  type ExpandedState,
   type FilterFn,
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
@@ -96,8 +98,8 @@ interface DataTableProps<TData, TValue> {
   onColumnVisibilityChange: OnChangeFn<VisibilityState>;
   columnOrder: string[];
   onColumnOrderChange: OnChangeFn<string[]>;
-  rowSelection: RowSelectionState;
-  onRowSelectionChange: OnChangeFn<RowSelectionState>;
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: OnChangeFn<RowSelectionState>;
   globalFilter: string;
   onGlobalFilterChange: OnChangeFn<string>;
   pagination: PaginationState;
@@ -107,6 +109,10 @@ interface DataTableProps<TData, TValue> {
   enableViewOptions?: boolean;
   toolbarContent?: (table: TanstackTable<TData>) => React.ReactNode;
   noResultsMessage?: string;
+  stickyHeader?: boolean;
+  expanded?: ExpandedState;
+  onExpandedChange?: OnChangeFn<ExpandedState>;
+  renderExpandedRow?: (row: Row<TData>) => React.ReactNode;
 }
 
 function DataTable<TData, TValue>({
@@ -134,8 +140,14 @@ function DataTable<TData, TValue>({
   enableViewOptions = true,
   toolbarContent,
   noResultsMessage,
+  stickyHeader = false,
+  expanded,
+  onExpandedChange,
+  renderExpandedRow,
 }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation();
+
+  const isRowSelectionEnabled = !!(rowSelection && onRowSelectionChange);
 
   const table = useReactTable({
     data,
@@ -144,23 +156,29 @@ function DataTable<TData, TValue>({
     onColumnFiltersChange,
     onColumnVisibilityChange,
     onColumnOrderChange,
-    onRowSelectionChange,
+    ...(isRowSelectionEnabled && { onRowSelectionChange }),
     onGlobalFilterChange,
     onPaginationChange,
+    ...(onExpandedChange ? { onExpandedChange } : {}),
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    ...(renderExpandedRow
+      ? { getExpandedRowModel: getExpandedRowModel() }
+      : {}),
     ...(globalFilterFn ? { globalFilterFn } : {}),
+    enableRowSelection: isRowSelectionEnabled,
     autoResetPageIndex: false,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       columnOrder,
-      rowSelection,
+      ...(isRowSelectionEnabled && { rowSelection }),
       globalFilter,
       pagination,
+      ...(expanded ? { expanded } : {}),
     },
   });
 
@@ -175,9 +193,16 @@ function DataTable<TData, TValue>({
         customContent={toolbarContent?.(table)}
       />
 
-      <div className="overflow-hidden rounded-md border">
+      <div
+        className={cn(
+          "rounded-md border",
+          stickyHeader ? "overflow-auto" : "overflow-hidden",
+        )}
+      >
         <Table>
-          <TableHeader>
+          <TableHeader
+            className={stickyHeader ? "sticky top-0 z-10 bg-background" : ""}
+          >
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
@@ -200,27 +225,36 @@ function DataTable<TData, TValue>({
               />
             ) : rows.length > 0 ? (
               rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className={
-                    onRowClick
-                      ? "cursor-pointer hover:bg-gradient-to-r hover:from-primary/5 hover:to-secondary/5 transition-all border-l-2 border-transparent hover:border-l-primary"
-                      : ""
-                  }
-                  {...(onRowClick && {
-                    onClick: () => onRowClick(row.original),
-                  })}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
+                <>
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className={
+                      onRowClick
+                        ? "cursor-pointer hover:bg-gradient-to-r hover:from-primary/5 hover:to-secondary/5 transition-all border-l-2 border-transparent hover:border-l-primary"
+                        : ""
+                    }
+                    {...(onRowClick && {
+                      onClick: () => onRowClick(row.original),
+                    })}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                  {renderExpandedRow && row.getIsExpanded() && (
+                    <TableRow data-state="expanded" key={row.id}>
+                      <TableCell colSpan={row.getVisibleCells().length}>
+                        {renderExpandedRow(row)}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </>
               ))
             ) : (
               <TableRow>
