@@ -3,6 +3,7 @@
 import type {
   ColumnDef,
   ColumnFiltersState,
+  ExpandedState,
   PaginationState,
   RowSelectionState,
   SortingState,
@@ -10,6 +11,7 @@ import type {
 } from "@tanstack/react-table";
 import {
   CheckCircleIcon,
+  ChevronRightIcon,
   CircleDotIcon,
   ClockIcon,
   MoreHorizontalIcon,
@@ -137,6 +139,29 @@ const statusFilterOptions: DataTableFacetedFilterOption[] = [
 
 const columns: ColumnDef<Payment>[] = [
   {
+    id: "expand",
+    header: () => null,
+    cell: ({ row }) => (
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        onClick={(e) => {
+          e.stopPropagation();
+          row.toggleExpanded();
+        }}
+      >
+        <ChevronRightIcon
+          className={`size-4 transition-transform ${row.getIsExpanded() ? "rotate-90" : ""}`}
+        />
+        <span className="sr-only">
+          {row.getIsExpanded() ? "Collapse row" : "Expand row"}
+        </span>
+      </Button>
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
     id: "select",
     header: ({ table }) => (
       <Checkbox
@@ -223,7 +248,14 @@ const columns: ColumnDef<Payment>[] = [
   },
 ];
 
-const defaultColumnOrder = ["select", "status", "email", "amount", "actions"];
+const defaultColumnOrder = [
+  "expand",
+  "select",
+  "status",
+  "email",
+  "amount",
+  "actions",
+];
 
 export function DataTableTemplate() {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -231,6 +263,7 @@ export function DataTableTemplate() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnOrder, setColumnOrder] = useState<string[]>(defaultColumnOrder);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [expanded, setExpanded] = useState<ExpandedState>({});
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -252,6 +285,31 @@ export function DataTableTemplate() {
         onColumnOrderChange={setColumnOrder}
         rowSelection={rowSelection}
         onRowSelectionChange={setRowSelection}
+        expanded={expanded}
+        onExpandedChange={setExpanded}
+        renderExpandedRow={(row) => (
+          <div className="p-4 text-sm text-muted-foreground">
+            <p>
+              <span className="font-medium text-foreground">Payment ID:</span>{" "}
+              {row.original.id}
+            </p>
+            <p>
+              <span className="font-medium text-foreground">Email:</span>{" "}
+              {row.original.email}
+            </p>
+            <p>
+              <span className="font-medium text-foreground">Amount:</span>{" "}
+              {new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+              }).format(row.original.amount)}
+            </p>
+            <p>
+              <span className="font-medium text-foreground">Status:</span>{" "}
+              {row.original.status}
+            </p>
+          </div>
+        )}
         globalFilter={globalFilter}
         onGlobalFilterChange={setGlobalFilter}
         pagination={pagination}

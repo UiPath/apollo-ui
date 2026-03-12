@@ -1,8 +1,10 @@
 export type {
   ColumnDef,
   ColumnFiltersState,
+  ExpandedState,
   OnChangeFn,
   PaginationState,
+  Row,
   RowSelectionState,
   SortingState,
   Table as TanstackTable,
