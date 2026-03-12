@@ -287,9 +287,19 @@
           "target": "components/ui/ai-chat/utils/ai-chat-provider.ts"
         },
         {
-          "path": "registry/ai-chat/utils/ai-chat-openai-provider.ts",
+          "path": "registry/ai-chat/utils/providers/openai/openai-messages.ts",
           "type": "registry:lib",
-          "target": "components/ui/ai-chat/utils/ai-chat-openai-provider.ts"
+          "target": "components/ui/ai-chat/utils/providers/openai/openai-messages.ts"
+        },
+        {
+          "path": "registry/ai-chat/utils/providers/openai/openai-stream.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/utils/providers/openai/openai-stream.ts"
+        },
+        {
+          "path": "registry/ai-chat/utils/providers/openai/openai-provider.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/utils/providers/openai/openai-provider.ts"
         },
         {
           "path": "registry/ai-chat/utils/ai-chat-api.ts",

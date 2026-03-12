@@ -1,5 +1,5 @@
 import { executeToolCall } from "./ai-chat-api";
-import type { ChatMessage } from "./ai-chat-message-types";
+import type { AssistantMessage, ChatMessage } from "./ai-chat-message-types";
 import type { LLMProvider } from "./ai-chat-provider";
 import type { Tools } from "./ai-chat-tool-types";
 import { extractToolCallParts } from "./ai-chat-utils";
@@ -7,6 +7,7 @@ import { extractToolCallParts } from "./ai-chat-utils";
 export interface AgentLoopOptions {
   tools?: Tools;
   maxToolIterations?: number;
+  onStreamDelta?: (msg: AssistantMessage) => void;
 }
 
 export async function runAgentLoop(
@@ -27,7 +28,15 @@ export async function runAgentLoop(
     }
 
     const resolvedTools = options.tools;
-    const assistantMsg = await provider.chat(buffer, resolvedTools, signal);
+    let assistantMsg: AssistantMessage | undefined;
+
+    for await (const partial of provider.chat(buffer, resolvedTools, signal)) {
+      assistantMsg = partial;
+      options.onStreamDelta?.(partial);
+    }
+
+    if (!assistantMsg) throw new Error("No response from assistant");
+
     buffer.push(assistantMsg);
     onMessage(assistantMsg);
 

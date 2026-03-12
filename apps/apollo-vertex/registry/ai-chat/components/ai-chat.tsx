@@ -12,7 +12,7 @@ import { AiChatMessage } from "./ai-chat-message";
 import { AiChatSuggestions } from "./ai-chat-suggestions";
 import { AiChatToolGroupMessage } from "./ai-chat-tool-group-message";
 
-interface AiChatProps {
+export interface AiChatProps {
   messages: ChatMessage[];
   isLoading: boolean;
   onSendMessage: (content: string) => void;
@@ -76,6 +76,9 @@ export function AiChat({
   const latestChoices = findLatestChoices(messages);
 
   const groupedItems = groupMessages(messages, enableToolGrouping);
+
+  const lastMessageIsAssistant = messages.at(-1)?.role === "assistant";
+  const showLoadingIndicator = isLoading && !lastMessageIsAssistant;
 
   const defaultEmptyState = (
     <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
@@ -170,7 +173,9 @@ export function AiChat({
               />
             )}
 
-            {isLoading && <AiChatLoading assistantName={displayName} />}
+            {showLoadingIndicator && (
+              <AiChatLoading assistantName={displayName} />
+            )}
           </div>
         )}
       </div>

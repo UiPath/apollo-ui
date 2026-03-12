@@ -6,5 +6,5 @@ export interface LLMProvider {
     messages: ChatMessage[],
     tools: Tools | undefined,
     signal: AbortSignal,
-  ): Promise<AssistantMessage>;
+  ): AsyncGenerator<AssistantMessage>;
 }
