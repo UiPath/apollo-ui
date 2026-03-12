@@ -40,10 +40,11 @@ function DataTablePagination<TData>({
       className={cn("flex items-center justify-between px-2", className)}
     >
       <div className="text-muted-foreground flex-1 text-sm">
-        {t("rows_selected", {
-          selected: table.getFilteredSelectedRowModel().rows.length,
-          total: table.getFilteredRowModel().rows.length,
-        })}
+        {table.options.enableRowSelection &&
+          t("rows_selected", {
+            selected: table.getFilteredSelectedRowModel().rows.length,
+            total: table.getFilteredRowModel().rows.length,
+          })}
       </div>
       <div className="flex items-center space-x-6 lg:space-x-8">
         <div className="flex items-center space-x-2">

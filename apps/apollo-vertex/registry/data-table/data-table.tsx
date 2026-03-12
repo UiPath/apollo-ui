@@ -96,8 +96,8 @@ interface DataTableProps<TData, TValue> {
   onColumnVisibilityChange: OnChangeFn<VisibilityState>;
   columnOrder: string[];
   onColumnOrderChange: OnChangeFn<string[]>;
-  rowSelection: RowSelectionState;
-  onRowSelectionChange: OnChangeFn<RowSelectionState>;
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: OnChangeFn<RowSelectionState>;
   globalFilter: string;
   onGlobalFilterChange: OnChangeFn<string>;
   pagination: PaginationState;
@@ -137,6 +137,8 @@ function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation();
 
+  const isRowSelectionEnabled = !!(rowSelection && onRowSelectionChange);
+
   const table = useReactTable({
     data,
     columns,
@@ -144,7 +146,7 @@ function DataTable<TData, TValue>({
     onColumnFiltersChange,
     onColumnVisibilityChange,
     onColumnOrderChange,
-    onRowSelectionChange,
+    ...(isRowSelectionEnabled && { onRowSelectionChange }),
     onGlobalFilterChange,
     onPaginationChange,
     getCoreRowModel: getCoreRowModel(),
@@ -152,13 +154,14 @@ function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     ...(globalFilterFn ? { globalFilterFn } : {}),
+    enableRowSelection: isRowSelectionEnabled,
     autoResetPageIndex: false,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       columnOrder,
-      rowSelection,
+      ...(isRowSelectionEnabled && { rowSelection }),
       globalFilter,
       pagination,
     },
