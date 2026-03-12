@@ -1,5 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import * as React from 'react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { fontFamily } from '@/foundation/Future/typography';
 import { cn } from '@/lib';
 
@@ -229,7 +235,7 @@ with a sidebar navigation and form section. Use the future-dark theme.`}
           A portable markdown file at{' '}
           <InlineCode>packages/apollo-wind/apollo-ai-context.md</InlineCode> containing the full
           Apollo design system reference — stack, components, tokens, patterns, and rules. Both the
-          Use Claude and Use Cursor tabs reference this file.
+          The Claude and Cursor tabs reference this file.
         </SectionDescription>
         <CodeBlock label="apollo-ai-context.md (preview)">{AI_CONTEXT_PREVIEW}</CodeBlock>
       </div>
@@ -674,7 +680,7 @@ globs: ["packages/apollo-wind/**"]
 // Tab: Resources (Use Cases + Best Practices)
 // ============================================================================
 
-const resourceSubTabs = ['Best Practices', 'Use Cases', "What's Not in Scope"] as const;
+const resourceSubTabs = ['Best Practices', 'Skills', 'Use Cases', "What's Not in Scope"] as const;
 type ResourceSubTab = (typeof resourceSubTabs)[number];
 
 function PersonaCard({
@@ -773,69 +779,75 @@ function UseCasesContent() {
   );
 }
 
-function BestPracticesContent() {
+function SkillsContent() {
   return (
     <div className="space-y-8">
       <div>
         <SectionDescription>
-          Guidelines for getting the most out of AI-assisted prototyping with Apollo.
+          A ready-made Apollo prototype skill encodes design system rules so the AI applies them
+          automatically when prototyping. Install it for Cursor or Claude — no setup required.
         </SectionDescription>
       </div>
 
       <div>
-        <h3 className="mb-3 text-lg font-semibold text-foreground">Setting Up an AI Prototype</h3>
-        <ul className="space-y-3 text-sm leading-6 text-muted-foreground">
-          <li>
-            <span className="font-medium text-foreground">Start from an existing template.</span>
-            <br />
-            The Maestro, Admin, Delegate, and Flow templates provide production-ready layouts. Fork
-            one instead of building from scratch.
-          </li>
-          <li>
-            <span className="font-medium text-foreground">Always include the AI context.</span>
-            <br />
-            Whether you use the markdown file or MCP, always give the AI context about Apollo before
-            prompting. Without it, you'll get generic React output that doesn't match the design
-            system.
-          </li>
-          <li>
-            <span className="font-medium text-foreground">Set the theme class first.</span>
-            <br />
-            Apply <InlineCode>future-dark</InlineCode> or <InlineCode>future-light</InlineCode> to
-            your root element before adding any content. This ensures all tokens resolve correctly
-            from the start.
-          </li>
-        </ul>
+        <h3 className="mb-3 text-lg font-semibold text-foreground">Install the Apollo Prototype Skill</h3>
+        <p className="mb-4 text-sm leading-6 text-muted-foreground">
+          Copy the skill from <InlineCode>packages/apollo-wind/skills/apollo-prototype/</InlineCode> to
+          your tool's skills folder:
+        </p>
+
+        <div className="space-y-4">
+          <div className="rounded-lg border border-border bg-card p-4">
+            <h4 className="mb-2 text-sm font-semibold text-foreground">Cursor</h4>
+            <ul className="space-y-1 text-sm leading-6 text-muted-foreground">
+              <li>
+                <span className="font-medium text-foreground">Project:</span>{' '}
+                <InlineCode>.cursor/skills/apollo-prototype/</InlineCode>
+              </li>
+              <li>
+                <span className="font-medium text-foreground">Personal:</span>{' '}
+                <InlineCode>~/.cursor/skills/apollo-prototype/</InlineCode>
+              </li>
+            </ul>
+          </div>
+
+          <div className="rounded-lg border border-border bg-card p-4">
+            <h4 className="mb-2 text-sm font-semibold text-foreground">Claude Code</h4>
+            <ul className="space-y-1 text-sm leading-6 text-muted-foreground">
+              <li>
+                <span className="font-medium text-foreground">Project:</span>{' '}
+                <InlineCode>.claude/skills/apollo-prototype/</InlineCode>
+              </li>
+              <li>
+                <span className="font-medium text-foreground">Personal:</span>{' '}
+                <InlineCode>~/.claude/skills/apollo-prototype/</InlineCode>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <Divider />
 
       <div>
-        <h3 className="mb-3 text-lg font-semibold text-foreground">Writing Effective Prompts</h3>
+        <h3 className="mb-3 text-lg font-semibold text-foreground">Create Your Own Skill</h3>
+        <p className="mb-3 text-sm leading-6 text-muted-foreground">
+          If you need custom rules or workflows, create a skill that encodes Apollo conventions:
+        </p>
         <ul className="space-y-3 text-sm leading-6 text-muted-foreground">
           <li>
-            <span className="font-medium text-foreground">Be specific about components.</span>
+            <span className="font-medium text-foreground">What to include.</span>
             <br />
-            Say "use a shadcn DataTable with sorting and pagination" instead of "add a table." Name
-            the exact components you want.
+            Apollo semantic tokens, theme classes (
+            <InlineCode>future-dark</InlineCode>, <InlineCode>future-light</InlineCode>), component
+            import paths, and rules from <InlineCode>apollo-ai-context.md</InlineCode>.
           </li>
           <li>
-            <span className="font-medium text-foreground">Reference tokens, not colors.</span>
+            <span className="font-medium text-foreground">References.</span>
             <br />
-            Say "use bg-surface-raised for the card background" instead of "make the background dark
-            gray." This ensures theme consistency.
-          </li>
-          <li>
-            <span className="font-medium text-foreground">Iterate in small steps.</span>
-            <br />
-            Build the layout first, then add interactions, then refine styling. Large prompts with
-            many requirements produce worse results than focused, sequential ones.
-          </li>
-          <li>
-            <span className="font-medium text-foreground">Include layout context.</span>
-            <br />
-            Mention "fullscreen layout", "sidebar + main content", or "tabbed interface" so the AI
-            structures the page correctly from the start.
+            Use Cursor's create-skill or Codex's skill-creator for the mechanics. Focus your skill
+            description on Apollo-specific triggers (e.g., "Use when building Apollo prototypes or
+            UI with apollo-wind").
           </li>
         </ul>
       </div>
@@ -849,8 +861,8 @@ function BestPracticesContent() {
             <span className="font-medium text-foreground">Don't use raw Tailwind colors.</span>
             <br />
             Avoid <InlineCode>bg-zinc-900</InlineCode>, <InlineCode>text-gray-400</InlineCode>, etc.
-            Always use semantic tokens (<InlineCode>bg-surface</InlineCode>,{' '}
-            <InlineCode>text-foreground-muted</InlineCode>).
+            Always use semantic tokens (
+            <InlineCode>bg-surface</InlineCode>, <InlineCode>text-foreground-muted</InlineCode>).
           </li>
           <li>
             <span className="font-medium text-foreground">Don't install extra UI libraries.</span>
@@ -873,43 +885,125 @@ function BestPracticesContent() {
           </li>
         </ul>
       </div>
+    </div>
+  );
+}
 
-      <Divider />
-
+function BestPracticesContent() {
+  return (
+    <div className="space-y-8">
       <div>
-        <h3 className="mb-3 text-lg font-semibold text-foreground">Prototype Review Checklist</h3>
-        <SectionDescription>Before sharing a prototype, verify these items:</SectionDescription>
-        <ul className="space-y-2 text-sm leading-6 text-muted-foreground">
-          <li className="flex items-start gap-2">
-            <span className="mt-0.5 text-muted-foreground">&#9744;</span>
-            Theme class applied to root element
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="mt-0.5 text-muted-foreground">&#9744;</span>
-            All colors use semantic tokens (no raw hex or Tailwind palette)
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="mt-0.5 text-muted-foreground">&#9744;</span>
-            Components imported from <InlineCode>@/components/ui/</InlineCode>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="mt-0.5 text-muted-foreground">&#9744;</span>
-            Icons from <InlineCode>lucide-react</InlineCode> only
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="mt-0.5 text-muted-foreground">&#9744;</span>
-            Works in both Future Dark and Future Light themes
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="mt-0.5 text-muted-foreground">&#9744;</span>
-            Uses Inter font family via <InlineCode>fontFamily.base</InlineCode>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="mt-0.5 text-muted-foreground">&#9744;</span>
-            Responsive layout tested at common breakpoints
-          </li>
-        </ul>
+        <SectionDescription>
+          Guidelines for getting the most out of AI-assisted prototyping with Apollo.
+        </SectionDescription>
       </div>
+
+      <Accordion type="multiple" defaultValue={['setting-up']} className="w-full">
+        <AccordionItem value="setting-up" className="border rounded-lg px-4 mb-3">
+          <AccordionTrigger className="text-base font-semibold hover:no-underline">
+            Setting Up an AI Prototype
+          </AccordionTrigger>
+          <AccordionContent>
+            <ul className="space-y-3 text-sm leading-6 text-muted-foreground pt-1">
+              <li>
+                <span className="font-medium text-foreground">Start from an existing template.</span>
+                <br />
+                The Maestro, Admin, Delegate, and Flow templates provide production-ready layouts.
+                Fork one instead of building from scratch.
+              </li>
+              <li>
+                <span className="font-medium text-foreground">Always include the AI context.</span>
+                <br />
+                Whether you use the markdown file or MCP, always give the AI context about Apollo
+                before prompting. Without it, you'll get generic React output that doesn't match the
+                design system.
+              </li>
+              <li>
+                <span className="font-medium text-foreground">Set the theme class first.</span>
+                <br />
+                Apply <InlineCode>future-dark</InlineCode> or <InlineCode>future-light</InlineCode>{' '}
+                to your root element before adding any content. This ensures all tokens resolve
+                correctly from the start.
+              </li>
+            </ul>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="prompts" className="border rounded-lg px-4 mb-3">
+          <AccordionTrigger className="text-base font-semibold hover:no-underline">
+            Writing Effective Prompts
+          </AccordionTrigger>
+          <AccordionContent>
+            <ul className="space-y-3 text-sm leading-6 text-muted-foreground pt-1">
+              <li>
+                <span className="font-medium text-foreground">Be specific about components.</span>
+                <br />
+                Say "use a shadcn DataTable with sorting and pagination" instead of "add a table."
+                Name the exact components you want.
+              </li>
+              <li>
+                <span className="font-medium text-foreground">Reference tokens, not colors.</span>
+                <br />
+                Say "use bg-surface-raised for the card background" instead of "make the
+                background dark gray." This ensures theme consistency.
+              </li>
+              <li>
+                <span className="font-medium text-foreground">Iterate in small steps.</span>
+                <br />
+                Build the layout first, then add interactions, then refine styling. Large prompts
+                with many requirements produce worse results than focused, sequential ones.
+              </li>
+              <li>
+                <span className="font-medium text-foreground">Include layout context.</span>
+                <br />
+                Mention "fullscreen layout", "sidebar + main content", or "tabbed interface" so the
+                AI structures the page correctly from the start.
+              </li>
+            </ul>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="checklist" className="border rounded-lg px-4">
+          <AccordionTrigger className="text-base font-semibold hover:no-underline">
+            Prototype Review Checklist
+          </AccordionTrigger>
+          <AccordionContent>
+            <p className="mb-4 text-sm leading-6 text-muted-foreground">
+              Before sharing a prototype, verify these items:
+            </p>
+            <ul className="space-y-2 text-sm leading-6 text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 text-muted-foreground">&#9744;</span>
+                Theme class applied to root element
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 text-muted-foreground">&#9744;</span>
+                All colors use semantic tokens (no raw hex or Tailwind palette)
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 text-muted-foreground">&#9744;</span>
+                Components imported from <InlineCode>@/components/ui/</InlineCode>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 text-muted-foreground">&#9744;</span>
+                Icons from <InlineCode>lucide-react</InlineCode> only
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 text-muted-foreground">&#9744;</span>
+                Works in both Future Dark and Future Light themes
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 text-muted-foreground">&#9744;</span>
+                Uses Inter font family via <InlineCode>fontFamily.base</InlineCode>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 text-muted-foreground">&#9744;</span>
+                Responsive layout tested at common breakpoints
+              </li>
+            </ul>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 }
@@ -1066,6 +1160,7 @@ function ResourcesTab() {
 
       <div>
         {activeSubTab === 'Best Practices' && <BestPracticesContent />}
+        {activeSubTab === 'Skills' && <SkillsContent />}
         {activeSubTab === 'Use Cases' && <UseCasesContent />}
         {activeSubTab === "What's Not in Scope" && <WhatNotInScopeContent />}
       </div>

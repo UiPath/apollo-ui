@@ -63,7 +63,7 @@ const preview: Preview = {
         order: [
           'Introduction',
           'Theme',
-          ['Colors', 'Icons', 'Spacing', 'Typography', 'Future', ['*', 'Theme']],
+          ['Colors', 'Icons', 'Spacing', 'Typography', 'Future', ['Theme', '*']],
           'Components',
           [
             'All Components',
@@ -76,7 +76,7 @@ const preview: Preview = {
             'UiPath',
           ],
           'Templates',
-          ['Admin', 'Delegate', 'Flow', 'Maestro', 'Future'],
+          ['Admin', 'Delegate', 'Flow', 'Maestro', 'Studio', 'Future'],
           'Forms',
           'Experiments',
           '*',

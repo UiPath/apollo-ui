@@ -337,64 +337,64 @@ body.light-hc {
 
 .future-dark {
   /* ── Surfaces ─────────────────────────────────────────────────────────── */
-  --surface: #09090b;
-  /* zinc-950  — page / canvas */
-  --surface-raised: #18181b;
-  /* zinc-900  — cards, overlays, panels */
-  --surface-overlay: #27272a;
-  /* zinc-800  — panels, inputs, tabs */
-  --surface-hover: #3f3f46;
-  /* zinc-700  — hover, selected nav */
-  --surface-muted: #71717a;
-  /* zinc-500  — badges, indicators */
-  --surface-inverse: #fafafa;
-  /* zinc-50   — buttons on dark bg */
+  --surface: var(--color-zinc-950);
+  /* page / canvas */
+  --surface-raised: var(--color-zinc-900);
+  /* cards, overlays, panels */
+  --surface-overlay: var(--color-zinc-800);
+  /* panels, inputs, tabs */
+  --surface-hover: var(--color-zinc-700);
+  /* hover, selected nav */
+  --surface-muted: var(--color-zinc-500);
+  /* badges, indicators */
+  --surface-inverse: var(--color-zinc-50);
+  /* buttons on dark bg */
 
   /* ── Brand ──────────────────────────────────────────────────────────── */
-  --brand: #0891b2;
-  /* cyan-600  — logo, submit, run */
-  --brand-subtle: #083344;
-  /* cyan-950  — status badge, active nav */
+  --brand: var(--color-cyan-600);
+  /* logo, submit, run */
+  --brand-subtle: var(--color-cyan-950);
+  /* status badge, active nav */
 
   /* ── Foreground (text / icons) ────────────────────────────────────────── */
-  --foreground: #fafafa;
-  /* zinc-50   — primary headings */
-  --foreground-secondary: #f4f4f5;
-  /* zinc-100  — body, messages */
-  --foreground-hover: #d4d4d8;
-  /* zinc-300  — hover states */
-  --foreground-muted: #a1a1aa;
-  /* zinc-400  — nav, secondary UI */
-  --foreground-subtle: #71717a;
-  /* zinc-500  — labels, muted */
-  --foreground-inverse: #09090b;
-  /* zinc-950  — icons on light bg */
-  --foreground-on-accent: #fafafa;
-  /* zinc-50   — text on accent bg */
-  --foreground-accent: #0891b2;
-  /* cyan-600  — accent text */
-  --foreground-accent-muted: #22d3ee;
-  /* cyan-400 — muted accent text */
+  --foreground: var(--color-zinc-50);
+  /* primary headings */
+  --foreground-secondary: var(--color-zinc-100);
+  /* body, messages */
+  --foreground-hover: var(--color-zinc-300);
+  /* hover states */
+  --foreground-muted: var(--color-zinc-400);
+  /* nav, secondary UI */
+  --foreground-subtle: var(--color-zinc-500);
+  /* labels, muted */
+  --foreground-inverse: var(--color-zinc-950);
+  /* icons on light bg */
+  --foreground-on-accent: var(--color-zinc-50);
+  /* text on accent bg */
+  --foreground-accent: var(--color-cyan-600);
+  /* accent text */
+  --foreground-accent-muted: var(--color-cyan-400);
+  /* muted accent text */
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
-  --ap-wind-border: #3f3f46;
-  /* zinc-700  — primary borders */
-  --border-subtle: #27272a;
-  /* zinc-800  — subtle dividers */
-  --border-muted: #18181b;
-  /* zinc-900  — content borders */
-  --border-deep: #09090b;
-  /* zinc-950  — nested containers */
-  --border-inverse: #e4e4e7;
-  /* zinc-200  — borders on inverse bg */
-  --border-hover: #52525b;
-  /* zinc-600  — border hover state */
+  --ap-wind-border: var(--color-zinc-700);
+  /* primary borders */
+  --border-subtle: var(--color-zinc-800);
+  /* subtle dividers */
+  --border-muted: var(--color-zinc-900);
+  /* content borders */
+  --border-deep: var(--color-zinc-950);
+  /* nested containers */
+  --border-inverse: var(--color-zinc-200);
+  /* borders on inverse bg */
+  --border-hover: var(--color-zinc-600);
+  /* border hover state */
 
   /* ── Ring ──────────────────────────────────────────────────────────────── */
-  --ring: #52525b;
-  /* zinc-600  — selection ring */
+  --ring: var(--color-zinc-600);
+  /* selection ring */
 
-  /* ── Gradients ───────────────────────────────────────────────────────── */
+  /* ── Gradients (kept as hex — adjusted values that don't map 1:1 to palette steps) ── */
   --gradient-1: linear-gradient(127deg, #3f3f47 25.94%, #27272a 74.06%);
   /* zinc-700 → zinc-800 */
   --gradient-2: linear-gradient(128deg, #09090b 1.26%, #18181b 52.69%);
@@ -407,6 +407,20 @@ body.light-hc {
   /* zinc-950 → zinc-900 */
   --gradient-6: linear-gradient(106deg, #0092b8 28.08%, #053345 71.92%);
   /* cyan-600 → cyan-950 */
+
+  /* ── Code window / syntax ────────────────────────────────────────────── */
+  --code-rest: var(--color-zinc-400);
+  /* default text, identifiers, plain code */
+  --code-punctuation: var(--color-zinc-500);
+  /* brackets, commas, semicolons */
+  --code-key: var(--color-cyan-400);
+  /* keywords, properties, attributes */
+  --code-string: var(--color-emerald-400);
+  /* string values */
+  --code-number: var(--color-amber-400);
+  /* numeric literals */
+  --code-literal: var(--color-violet-400);
+  /* booleans, null, undefined */
 
   /* ── shadcn aliases — maps to standard names for shadcn component compat ── */
   --background: var(--surface);
@@ -422,9 +436,9 @@ body.light-hc {
   --muted-foreground: var(--foreground-muted);
   --accent: var(--surface-hover);
   --accent-foreground: var(--foreground);
-  --destructive: #ef4444;
-  --destructive-foreground: #fafafa;
-  /* zinc-50 — text on destructive bg */
+  --destructive: var(--color-red-500);
+  --destructive-foreground: var(--color-zinc-50);
+  /* text on destructive bg */
   --border-de-emp: var(--border-subtle);
   --input: var(--ap-wind-border);
 }
@@ -435,64 +449,64 @@ body.light-hc {
 
 .future-light {
   /* ── Surfaces ─────────────────────────────────────────────────────────── */
-  --surface: #fafafa;
-  /* zinc-50   — page / canvas */
-  --surface-raised: #f4f4f5;
-  /* zinc-100  — cards, overlays, panels */
-  --surface-overlay: #e4e4e7;
-  /* zinc-200  — panels, inputs, tabs */
-  --surface-hover: #d4d4d8;
-  /* zinc-300  — hover, selected nav */
-  --surface-muted: #a1a1aa;
-  /* zinc-400  — badges, indicators */
-  --surface-inverse: #09090b;
-  /* zinc-950  — buttons on light bg */
+  --surface: var(--color-zinc-50);
+  /* page / canvas */
+  --surface-raised: var(--color-zinc-100);
+  /* cards, overlays, panels */
+  --surface-overlay: var(--color-zinc-200);
+  /* panels, inputs, tabs */
+  --surface-hover: var(--color-zinc-300);
+  /* hover, selected nav */
+  --surface-muted: var(--color-zinc-400);
+  /* badges, indicators */
+  --surface-inverse: var(--color-zinc-950);
+  /* buttons on light bg */
 
   /* ── Brand ──────────────────────────────────────────────────────────── */
-  --brand: #0891b2;
-  /* cyan-600  — logo, submit, run */
-  --brand-subtle: #ecfeff;
-  /* cyan-50   — status badge, active nav */
+  --brand: var(--color-cyan-600);
+  /* logo, submit, run */
+  --brand-subtle: var(--color-cyan-50);
+  /* status badge, active nav */
 
   /* ── Foreground (text / icons) ────────────────────────────────────────── */
-  --foreground: #09090b;
-  /* zinc-950  — primary headings */
-  --foreground-secondary: #18181b;
-  /* zinc-900  — body, messages */
-  --foreground-hover: #52525b;
-  /* zinc-600  — hover states */
-  --foreground-muted: #71717a;
-  /* zinc-500  — nav, secondary UI */
-  --foreground-subtle: #a1a1aa;
-  /* zinc-400  — labels, muted */
-  --foreground-inverse: #fafafa;
-  /* zinc-50   — icons on dark bg */
-  --foreground-on-accent: #fafafa;
-  /* zinc-50   — text on accent bg */
-  --foreground-accent: #0891b2;
-  /* cyan-600  — accent text */
-  --foreground-accent-muted: #0891b2;
-  /* cyan-600 — muted accent text */
+  --foreground: var(--color-zinc-950);
+  /* primary headings */
+  --foreground-secondary: var(--color-zinc-900);
+  /* body, messages */
+  --foreground-hover: var(--color-zinc-600);
+  /* hover states */
+  --foreground-muted: var(--color-zinc-500);
+  /* nav, secondary UI */
+  --foreground-subtle: var(--color-zinc-400);
+  /* labels, muted */
+  --foreground-inverse: var(--color-zinc-50);
+  /* icons on dark bg */
+  --foreground-on-accent: var(--color-zinc-50);
+  /* text on accent bg */
+  --foreground-accent: var(--color-cyan-600);
+  /* accent text */
+  --foreground-accent-muted: var(--color-cyan-600);
+  /* muted accent text */
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
-  --ap-wind-border: #d4d4d8;
-  /* zinc-300  — primary borders */
-  --border-subtle: #e4e4e7;
-  /* zinc-200  — subtle dividers */
-  --border-muted: #f4f4f5;
-  /* zinc-100  — content borders */
-  --border-deep: #fafafa;
-  /* zinc-50   — nested containers */
-  --border-inverse: #3f3f46;
-  /* zinc-700  — borders on inverse bg */
-  --border-hover: #a1a1aa;
-  /* zinc-400  — border hover state */
+  --ap-wind-border: var(--color-zinc-300);
+  /* primary borders */
+  --border-subtle: var(--color-zinc-200);
+  /* subtle dividers */
+  --border-muted: var(--color-zinc-100);
+  /* content borders */
+  --border-deep: var(--color-zinc-50);
+  /* nested containers */
+  --border-inverse: var(--color-zinc-700);
+  /* borders on inverse bg */
+  --border-hover: var(--color-zinc-400);
+  /* border hover state */
 
   /* ── Ring ──────────────────────────────────────────────────────────────── */
-  --ring: #a1a1aa;
-  /* zinc-400  — selection ring */
+  --ring: var(--color-zinc-400);
+  /* selection ring */
 
-  /* ── Gradients ───────────────────────────────────────────────────────── */
+  /* ── Gradients (kept as hex — adjusted values that don't map 1:1 to palette steps) ── */
   --gradient-1: linear-gradient(127deg, #e4e4e7 25.94%, #f4f4f5 74.06%);
   /* zinc-200 → zinc-100 */
   --gradient-2: linear-gradient(128deg, #fafafa 1.26%, #fafafa 52.69%);
@@ -505,6 +519,20 @@ body.light-hc {
   /* zinc-50 → zinc-50 */
   --gradient-6: linear-gradient(106deg, #22d3ee 28.08%, #cffafe 71.92%);
   /* cyan-400 → cyan-100 */
+
+  /* ── Code window / syntax ────────────────────────────────────────────── */
+  --code-rest: var(--color-zinc-600);
+  /* default text, identifiers, plain code */
+  --code-punctuation: var(--color-zinc-500);
+  /* brackets, commas, semicolons */
+  --code-key: var(--color-cyan-700);
+  /* keywords, properties, attributes */
+  --code-string: var(--color-emerald-700);
+  /* string values */
+  --code-number: var(--color-amber-700);
+  /* numeric literals */
+  --code-literal: var(--color-violet-600);
+  /* booleans, null, undefined */
 
   /* ── shadcn aliases ──────────────────────────────────────────────────── */
   --background: var(--surface);
@@ -520,9 +548,9 @@ body.light-hc {
   --muted-foreground: var(--foreground-muted);
   --accent: var(--surface-hover);
   --accent-foreground: var(--foreground);
-  --destructive: #ef4444;
-  --destructive-foreground: #fafafa;
-  /* zinc-50 — text on destructive bg */
+  --destructive: var(--color-red-500);
+  --destructive-foreground: var(--color-zinc-50);
+  /* text on destructive bg */
   --border-de-emp: var(--border-subtle);
   --input: var(--ap-wind-border);
 }
@@ -1022,4 +1050,23 @@ body.light-hc {
 
 @utility bg-gradient-6 {
   background-image: var(--gradient-6);
+}
+
+/* ============================================================================
+ * Collapsible animations (Radix UI CollapsibleContent)
+ * ============================================================================ */
+
+@keyframes collapsible-down {
+  from { height: 0; opacity: 0; }
+  to { height: var(--radix-collapsible-content-height); opacity: 1; }
+}
+
+@keyframes collapsible-up {
+  from { height: var(--radix-collapsible-content-height); opacity: 1; }
+  to { height: 0; opacity: 0; }
+}
+
+@theme inline {
+  --animate-collapsible-down: collapsible-down 200ms ease-out;
+  --animate-collapsible-up: collapsible-up 200ms ease-out;
 }
