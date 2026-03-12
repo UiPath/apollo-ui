@@ -4,15 +4,15 @@
 [![pnpm](https://img.shields.io/badge/maintained%20with-pnpm-cc00ff.svg)](https://pnpm.io/)
 [![Turborepo](https://img.shields.io/badge/built%20with-Turborepo-ef4444.svg)](https://turbo.build/)
 
-Apollo v.4 is UiPath's open-source design system for building consistent user experiences across all UiPath products.
+Apollo v.4 is UiPath's open-source design system monorepo. It houses multiple design systems used by different teams across UiPath — from Material UI-based components to Tailwind/shadcn implementations — all in one place.
 
 ## Table of Contents
 - [✨ Features](#-features)
 - [📦 Package Dependency Graph](#-package-dependency-graph)
 - [📁 Repository Structure](#-repository-structure)
-- [📦 Packages](#-packages)
+- [📦 Packages & Design Systems](#-packages--design-systems)
   - [Core Foundation](#core-foundation)
-  - [Framework Implementations](#framework-implementations)
+  - [Design Systems](#design-systems)
   - [Web Components](#web-components)
 - [🎨 Live Demos](#-live-demos)
 - [📚 Documentation](#-documentation)
@@ -24,6 +24,7 @@ Apollo v.4 is UiPath's open-source design system for building consistent user ex
 - 🎨 **Design Tokens** - 1300+ icons, comprehensive color system, typography, spacing
 - ⚛️ **React Components** - Built on Material UI with Apollo theming
 - 🎐 **Tailwind CSS** - Modern utility-first styling with shadcn/ui
+- 🧩 **shadcn Registry** - Installable components via `npx shadcn add @uipath/...`
 - 🌐 **Web Components** - Cross-framework components for maximum flexibility
 - 📘 **TypeScript** - Full type safety across all packages
 - 📚 **Storybook** - Interactive component documentation
@@ -37,11 +38,13 @@ graph RL
     Wind["@uipath/apollo-wind<br/>Tailwind + shadcn/ui"] -->|requires| Core
     React -->|requires| Wind
     Chat["@uipath/ap-chat<br/>Chat Web Component"] -->|requires| React
+    Vertex["apollo-vertex<br/>Vertical Solutions Design System"]
 
     style Core fill:#374151,stroke:#ef4444,stroke-width:3px,color:#fff
     style React fill:#1e3a8a,stroke:#3b82f6,stroke-width:3px,color:#fff
     style Wind fill:#164e63,stroke:#06b6d4,stroke-width:3px,color:#fff
     style Chat fill:#064e3b,stroke:#10b981,stroke-width:3px,color:#fff
+    style Vertex fill:#4a1d96,stroke:#8b5cf6,stroke-width:3px,color:#fff
 ```
 
 ## 📁 Repository Structure
@@ -56,9 +59,9 @@ apollo-ui/
 ├── web-packages/          # Cross-framework web components
 │   └── ap-chat/           # 💬 Chat web component
 │
-└── apps/                  # Demo & development applications
-    ├── apollo-vertex/     # 🌟 Main Storybook hub
-    ├── storybook/         # 📚 Component documentation
+└── apps/                  # Applications
+    ├── apollo-vertex/     # 🧩 shadcn component registry + Next.js docs site
+    ├── storybook/         # 📚 Storybook component documentation
     └── react-playground/  # 🔬 React testing environment
 ```
 
@@ -101,7 +104,7 @@ Preview versions are published when the `dev-packages` label is added to a PR. R
 
 ---
 
-## 📦 Packages
+## 📦 Packages & Design Systems
 
 ### Core Foundation
 
@@ -109,19 +112,25 @@ Preview versions are published when the `dev-packages` label is added to a PR. R
 |---------|---------|-----------|
 | **[@uipath/apollo-core](./packages/apollo-core)** | [![npm](https://img.shields.io/npm/v/@uipath/apollo-core)](https://www.npmjs.com/package/@uipath/apollo-core) | [![downloads](https://img.shields.io/npm/dm/@uipath/apollo-core)](https://www.npmjs.com/package/@uipath/apollo-core) |
 
-Design tokens, 1300+ icons, and fonts. Framework-agnostic foundation for the design system.
+Design tokens, 1300+ icons, and fonts. Framework-agnostic foundation shared across design systems.
 
 ---
 
-### Framework Implementations
+### Design Systems
 
-| Package | Version | Downloads |
-|---------|---------|-----------|
-| **[@uipath/apollo-react](./packages/apollo-react)** | [![npm](https://img.shields.io/npm/v/@uipath/apollo-react)](https://www.npmjs.com/package/@uipath/apollo-react) | [![downloads](https://img.shields.io/npm/dm/@uipath/apollo-react)](https://www.npmjs.com/package/@uipath/apollo-react) |
-| **[@uipath/apollo-wind](./packages/apollo-wind)** | [![npm](https://img.shields.io/npm/v/@uipath/apollo-wind)](https://www.npmjs.com/package/@uipath/apollo-wind) | [![downloads](https://img.shields.io/npm/dm/@uipath/apollo-wind)](https://www.npmjs.com/package/@uipath/apollo-wind) |
+| System | Location | Tech | Consumed via |
+|--------|----------|------|--------------|
+| **[apollo-react](./packages/apollo-react)** | `packages/apollo-react` | React + Material UI | npm package |
+| **[apollo-wind](./packages/apollo-wind)** | `packages/apollo-wind` | Tailwind + shadcn/ui | npm package |
+| **[apollo-vertex](./apps/apollo-vertex)** | `apps/apollo-vertex` | Next.js + Tailwind + Radix | shadcn registry |
 
-- **apollo-react**: Canvas/workflow components, ApChat, icons, Material UI themes (Material UI in maintenance mode)
-- **apollo-wind**: Modern Tailwind CSS + shadcn/ui components (recommended for new development)
+- **apollo-react**: Canvas/workflow components, ApChat, icons, Material UI themes
+- **apollo-wind**: Tailwind CSS + shadcn/ui components published as an npm package
+- **apollo-vertex**: Design system for vertical solutions. Components are distributed via the `@uipath` shadcn registry and installed directly into consumer projects:
+
+```bash
+npx shadcn@latest add @uipath/button @uipath/checkbox @uipath/input
+```
 
 ---
 
@@ -141,7 +150,7 @@ Framework-agnostic AI chat interface web component for vanilla JS, Vue, Angular,
 
 Explore our components in interactive Storybook environments:
 
-- **[Apollo Vertex](https://apollo-vertex.vercel.app/)** - Complete design system showcase
+- **[Apollo Vertex](https://apollo-vertex.vercel.app/)** - Vertical solutions components and docs
 - **[Canvas Components](https://apollo-canvas.vercel.app/)** - Workflow and canvas demos
 - **[React Playground](https://apollo-ui-react.vercel.app/)** - Material UI components, design tokens, CSS vars, icons, and chat component
 - **[Wind Components](https://apollo-wind.vercel.app/)** - Tailwind CSS components
@@ -152,6 +161,7 @@ Explore our components in interactive Storybook environments:
 - **[@uipath/apollo-react](./packages/apollo-react/README.md)** - React components and canvas
 - **[@uipath/apollo-wind](./packages/apollo-wind/README.md)** - Tailwind components
 - **[@uipath/ap-chat](./web-packages/ap-chat/README.md)** - Chat web component
+- **[Apollo Vertex](./apps/apollo-vertex)** - Vertical solutions design system
 - **[Contributing Guide](./CONTRIBUTING.md)** - How to contribute
 
 ## 🚀 Contributing
