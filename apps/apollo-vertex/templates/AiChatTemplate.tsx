@@ -4,11 +4,11 @@ import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AiChat } from "@/registry/ai-chat/components/ai-chat";
 import { useAiChat } from "@/registry/ai-chat/hooks/use-ai-chat";
-import { OpenAIChatProvider } from "@/registry/ai-chat/utils/ai-chat-openai-provider";
 import type {
   ChatMessage,
   ToolResultChoices,
 } from "@/registry/ai-chat/utils/ai-chat-types";
+import { OpenAIChatProvider } from "@/registry/ai-chat/utils/providers/openai/openai-provider";
 import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
 
 const delay = (ms: number): Promise<void> =>
@@ -270,7 +270,6 @@ function AiChatDemo() {
       model: "demo-model",
       accessToken: "demo-token",
       systemPrompt: "You are a helpful demo assistant.",
-      fallbackResponse: "Done.",
     }),
   });
 

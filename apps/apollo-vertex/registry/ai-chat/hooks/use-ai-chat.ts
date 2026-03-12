@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { resolveConfig } from "../utils/ai-chat-api";
 import { runAgentLoop } from "../utils/ai-chat-loop";
-import type { ChatMessage } from "../utils/ai-chat-message-types";
+import type {
+  AssistantMessage,
+  ChatMessage,
+} from "../utils/ai-chat-message-types";
 import type { UseAiChatOptions, UseAiChatReturn } from "../utils/ai-chat-types";
 
 function loadMessages(key: string | undefined): ChatMessage[] {
@@ -33,6 +36,8 @@ export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
   const [messages, setMessages] = useState<ChatMessage[]>(() =>
     loadMessages(storageKey),
   );
+  const [streamingMessage, setStreamingMessage] =
+    useState<AssistantMessage | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -92,8 +97,13 @@ export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
       await runAgentLoop(
         initialMessages,
         provider,
-        { tools, maxToolIterations: options.maxToolIterations },
+        {
+          tools,
+          maxToolIterations: options.maxToolIterations,
+          onStreamDelta: (partial) => setStreamingMessage(partial),
+        },
         (msg) => {
+          if (msg.role === "assistant") setStreamingMessage(null);
           setMessages((prev) => {
             const next = [...prev, msg];
             saveMessages(storageKey, next);
@@ -109,6 +119,7 @@ export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
       options.onError?.(errorObj);
     } finally {
       setIsLoading(false);
+      setStreamingMessage(null);
       abortControllerRef.current = null;
     }
   };
@@ -128,7 +139,7 @@ export function useAiChat(options: UseAiChatOptions): UseAiChatReturn {
   }, [storageKey]);
 
   return {
-    messages,
+    messages: streamingMessage ? [...messages, streamingMessage] : messages,
     isLoading,
     error,
     tools,

@@ -16,7 +16,7 @@ export type {
 export type {
   OpenAIChatProvider,
   OpenAIChatProviderConfig,
-} from "./ai-chat-openai-provider";
+} from "./providers/openai/openai-provider";
 export type { LLMProvider } from "./ai-chat-provider";
 
 export type {
