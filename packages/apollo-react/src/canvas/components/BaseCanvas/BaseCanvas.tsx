@@ -107,6 +107,8 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
   const { isReady } = useAutoLayout(nodes, initialAutoLayout, fitViewOptions);
   const { ensureNodesInView, ensureAllNodesInView, centerNode } = useEnsureNodesInView();
 
+  console.log('test change');
+
   // Maintain specified nodes in view when canvas resizes
   // This ensures important nodes remain visible in responsive layouts
   // The hook only pans the viewport without changing the zoom level
