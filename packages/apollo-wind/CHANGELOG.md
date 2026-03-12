@@ -1,3 +1,20 @@
+## [@uipath/apollo-wind-v0.14.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.13.0...@uipath/apollo-wind@0.14.0) (2026-03-12)
+
+### Features
+
+* **apollo-wind:** add Apollo prototype skill file ([52f4b1d](https://github.com/uipath/apollo-ui/commit/52f4b1d036cb8643282e94ba4d54f130f67e9f4c))
+* **apollo-wind:** add Apollo prototype skill reference to Best Practices ([94cf191](https://github.com/uipath/apollo-ui/commit/94cf19107b36e57f30fbe8e4c4b52ea712b89325))
+* **apollo-wind:** add CLI tab to Getting Started, remove from Prototyping ([e4b6f34](https://github.com/uipath/apollo-ui/commit/e4b6f34235a6b05ee2d1772258c55ff5bf316c28))
+* **apollo-wind:** add Skills sub-tab to Resources, promote from Best Practices accordion ([3375317](https://github.com/uipath/apollo-ui/commit/3375317bf25f4cc1c880b79be180887493f10840))
+* **apollo-wind:** migrate Future themes to Tailwind v4 vars and add code syntax tokens ([ff0c626](https://github.com/uipath/apollo-ui/commit/ff0c62658e13261dbec66108fa58d2ea550f308a))
+* **apollo-wind:** refactor Best Practices into accordions, add Skills section ([0a8c148](https://github.com/uipath/apollo-ui/commit/0a8c148dd66c1996a045c09cfe9f04768d6a86d4))
+* **apollo-wind:** update FlowPanel and ChatComposer with Figma design system ([cef1fae](https://github.com/uipath/apollo-ui/commit/cef1fae5bd7dfa7a3ba11c6ee3b49f8dfb7dfc3b))
+
+### Bug Fixes
+
+* **apollo-wind:** left-align dark/light swatches, move Future last in sidebar ([b7442e6](https://github.com/uipath/apollo-ui/commit/b7442e63da31f78ec697ce63a96f9e29258a0ae9))
+* **apollo-wind:** Theme page — reorder sidebar, add consumer-apps note ([f36b637](https://github.com/uipath/apollo-ui/commit/f36b637b747328f789842800a684a97144c8e459))
+
 ## [@uipath/apollo-wind-v0.13.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.12.2...@uipath/apollo-wind@0.13.0) (2026-03-12)
 
 ### Features
