@@ -8,7 +8,7 @@ import type {
   ChatMessage,
   ToolResultChoices,
 } from "@/registry/ai-chat/utils/ai-chat-types";
-import { OpenAIChatProvider } from "@/registry/ai-chat/utils/providers/openai/openai-provider";
+import { OpenAIProvider } from "@/registry/ai-chat/utils/providers/agenthub/openai/openai-provider";
 import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
 
 const delay = (ms: number): Promise<void> =>
@@ -265,7 +265,7 @@ function AiChatDemo() {
   const abortRef = useRef<AbortController | null>(null);
 
   const chat = useAiChat({
-    provider: new OpenAIChatProvider({
+    provider: new OpenAIProvider({
       baseUrl: "/api/mock",
       model: "demo-model",
       accessToken: "demo-token",

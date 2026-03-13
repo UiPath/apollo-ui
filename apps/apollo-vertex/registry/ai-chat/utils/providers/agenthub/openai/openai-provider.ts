@@ -1,16 +1,25 @@
-import { getAccessToken } from "../../ai-chat-api";
+import { getAccessToken } from "../../../ai-chat-api";
 import type {
   AssistantMessage,
   ChatMessage,
-} from "../../ai-chat-message-types";
-import type { LLMProvider } from "../../ai-chat-provider";
-import type { Tools } from "../../ai-chat-tool-types";
-import { buildOpenAIMessages, buildToolDefinitions } from "./openai-messages";
-import { readOpenAIStream } from "./openai-stream";
+} from "../../../ai-chat-message-types";
+import type { LLMProvider } from "../../../ai-chat-provider";
+import type { Tools } from "../../../ai-chat-tool-types";
+import { buildBaseMessages } from "../utils/agenthub-messages";
+import { readAIStream } from "../utils/agenthub-stream";
+import { buildOpenAIToolDefinitions } from "./openai-messages";
 
-export interface OpenAIChatProviderConfig {
+/**
+ * Provider for OpenAI models via the UiPath AgentHub OpenAI-compatible endpoint.
+ * Uses standard OpenAI request format (tool definitions, message structure).
+ *
+ * For Anthropic models via AgentHub, use AnthropicProvider instead.
+ */
+export interface OpenAIProviderConfig {
+  /** AgentHub base URL, e.g. `https://cloud.uipath.com/{org}/{tenant}/agenthub_/llm/api` */
   baseUrl: string;
   model: string;
+  /** Azure OpenAI API version, e.g. `2024-08-01-preview` */
   apiVersion?: string;
   accessToken: string | (() => string | null);
   systemPrompt?: string | (() => string);
@@ -19,8 +28,8 @@ export interface OpenAIChatProviderConfig {
   temperature?: number;
 }
 
-export class OpenAIChatProvider implements LLMProvider {
-  constructor(private readonly config: OpenAIChatProviderConfig) {}
+export class OpenAIProvider implements LLMProvider {
+  constructor(private readonly config: OpenAIProviderConfig) {}
 
   private buildUrl(): string {
     const apiVersion = this.config.apiVersion
@@ -35,14 +44,14 @@ export class OpenAIChatProvider implements LLMProvider {
   ): Record<string, unknown> {
     const body: Record<string, unknown> = {
       model: this.config.model,
-      messages: buildOpenAIMessages(messages, this.config.systemPrompt),
+      messages: buildBaseMessages(messages, this.config.systemPrompt),
       max_tokens: this.config.maxTokens ?? 2048,
       temperature: this.config.temperature ?? 0.7,
       stream: true,
     };
 
     if (tools && Object.keys(tools).length > 0) {
-      body["tools"] = buildToolDefinitions(tools);
+      body["tools"] = buildOpenAIToolDefinitions(tools);
       body["tool_choice"] = this.config.toolChoice ?? "auto";
     }
 
@@ -74,6 +83,6 @@ export class OpenAIChatProvider implements LLMProvider {
 
     if (!response.body) throw new Error("No response body");
 
-    yield* readOpenAIStream(response.body);
+    yield* readAIStream(response.body);
   }
 }

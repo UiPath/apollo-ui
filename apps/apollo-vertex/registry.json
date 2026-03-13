@@ -287,19 +287,34 @@
           "target": "components/ui/ai-chat/utils/ai-chat-provider.ts"
         },
         {
-          "path": "registry/ai-chat/utils/providers/openai/openai-messages.ts",
+          "path": "registry/ai-chat/utils/providers/agenthub/utils/agenthub-stream.ts",
           "type": "registry:lib",
-          "target": "components/ui/ai-chat/utils/providers/openai/openai-messages.ts"
+          "target": "components/ui/ai-chat/utils/providers/agenthub/utils/agenthub-stream.ts"
         },
         {
-          "path": "registry/ai-chat/utils/providers/openai/openai-stream.ts",
+          "path": "registry/ai-chat/utils/providers/agenthub/utils/agenthub-messages.ts",
           "type": "registry:lib",
-          "target": "components/ui/ai-chat/utils/providers/openai/openai-stream.ts"
+          "target": "components/ui/ai-chat/utils/providers/agenthub/utils/agenthub-messages.ts"
         },
         {
-          "path": "registry/ai-chat/utils/providers/openai/openai-provider.ts",
+          "path": "registry/ai-chat/utils/providers/agenthub/openai/openai-messages.ts",
           "type": "registry:lib",
-          "target": "components/ui/ai-chat/utils/providers/openai/openai-provider.ts"
+          "target": "components/ui/ai-chat/utils/providers/agenthub/openai/openai-messages.ts"
+        },
+        {
+          "path": "registry/ai-chat/utils/providers/agenthub/openai/openai-provider.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/utils/providers/agenthub/openai/openai-provider.ts"
+        },
+        {
+          "path": "registry/ai-chat/utils/providers/agenthub/anthropic/anthropic-messages.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/utils/providers/agenthub/anthropic/anthropic-messages.ts"
+        },
+        {
+          "path": "registry/ai-chat/utils/providers/agenthub/anthropic/anthropic-provider.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/utils/providers/agenthub/anthropic/anthropic-provider.ts"
         },
         {
           "path": "registry/ai-chat/utils/ai-chat-api.ts",
@@ -1229,7 +1244,12 @@
       "type": "registry:ui",
       "title": "Date Picker",
       "description": "A date picker component.",
-      "dependencies": ["luxon", "@types/luxon", "lucide-react", "react-i18next"],
+      "dependencies": [
+        "luxon",
+        "@types/luxon",
+        "lucide-react",
+        "react-i18next"
+      ],
       "registryDependencies": ["button", "popover", "calendar"],
       "files": [
         {

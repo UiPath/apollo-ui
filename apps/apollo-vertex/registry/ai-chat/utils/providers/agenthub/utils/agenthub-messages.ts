@@ -1,13 +1,16 @@
-import { z } from "zod";
-import { resolveConfig } from "../../ai-chat-api";
+import { resolveConfig } from "../../../ai-chat-api";
 import type {
   ChatMessage,
   TextPart,
   ToolCallPart,
-} from "../../ai-chat-message-types";
-import type { Tools } from "../../ai-chat-tool-types";
+} from "../../../ai-chat-message-types";
 
-export interface OpenAIMessage {
+/**
+ * Intermediate message format shared by all AgentHub providers.
+ * Matches the OpenAI message shape — each provider transforms this into
+ * its own wire format (OpenAI-native or Anthropic-normalized).
+ */
+export interface BaseMessage {
   role: "system" | "user" | "assistant" | "tool";
   content: string | null;
   tool_calls?: {
@@ -19,16 +22,19 @@ export interface OpenAIMessage {
 }
 
 /**
- * Converts internal ChatMessage[] to the OpenAI API message format.
+ * Converts internal ChatMessage[] to the shared BaseMessage format.
+ * Handles system prompts, user messages, assistant messages (with or without
+ * tool calls), and tool result messages — including display-tool acknowledgment
+ * so the LLM doesn't re-issue tools that were already shown to the user.
  */
-export function buildOpenAIMessages(
+export function buildBaseMessages(
   messages: ChatMessage[],
   systemPrompt?: string | (() => string),
-): OpenAIMessage[] {
-  const apiMessages: OpenAIMessage[] = [];
+): BaseMessage[] {
+  const result: BaseMessage[] = [];
 
   if (systemPrompt) {
-    apiMessages.push({ role: "system", content: resolveConfig(systemPrompt) });
+    result.push({ role: "system", content: resolveConfig(systemPrompt) });
   }
 
   for (let i = 0; i < messages.length; i++) {
@@ -37,7 +43,7 @@ export function buildOpenAIMessages(
 
     if (msg.role === "tool") {
       for (const part of msg.content) {
-        apiMessages.push({
+        result.push({
           role: "tool",
           content:
             typeof part.result === "string"
@@ -50,7 +56,7 @@ export function buildOpenAIMessages(
     }
 
     if (msg.role === "user") {
-      apiMessages.push({
+      result.push({
         role: "user",
         content: msg.content.map((p) => p.text).join(""),
       });
@@ -79,17 +85,17 @@ export function buildOpenAIMessages(
         // Display-tool calls: the loop stopped without sending results back to
         // the LLM. Include synthetic acknowledgments so the LLM knows these
         // tools were already shown and doesn't re-issue them on the next turn.
-        apiMessages.push({
+        result.push({
           role: "assistant",
           content: textContent || null,
           tool_calls: toolCallParts.map((tc) => ({
             id: tc.toolCallId,
-            type: "function",
+            type: "function" as const,
             function: { name: tc.toolName, arguments: JSON.stringify(tc.args) },
           })),
         });
         for (const tc of toolCallParts) {
-          apiMessages.push({
+          result.push({
             role: "tool",
             content: "Displayed to user.",
             tool_call_id: tc.toolCallId,
@@ -98,30 +104,19 @@ export function buildOpenAIMessages(
         continue;
       }
 
-      apiMessages.push({
+      result.push({
         role: "assistant",
         content: textContent || null,
         tool_calls: toolCallParts.map((tc) => ({
           id: tc.toolCallId,
-          type: "function",
+          type: "function" as const,
           function: { name: tc.toolName, arguments: JSON.stringify(tc.args) },
         })),
       });
     } else {
-      apiMessages.push({ role: "assistant", content: textContent });
+      result.push({ role: "assistant", content: textContent });
     }
   }
 
-  return apiMessages;
-}
-
-export function buildToolDefinitions(tools: Tools) {
-  return Object.entries(tools).map(([name, tool]) => ({
-    type: "function" as const,
-    function: {
-      name,
-      description: tool.description,
-      parameters: z.toJSONSchema(tool.inputSchema),
-    },
-  }));
+  return result;
 }

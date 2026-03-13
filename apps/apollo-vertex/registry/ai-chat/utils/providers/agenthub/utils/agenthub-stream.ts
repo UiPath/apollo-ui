@@ -2,7 +2,7 @@ import type {
   AssistantMessage,
   TextPart,
   ToolCallPart,
-} from "../../ai-chat-message-types";
+} from "../../../ai-chat-message-types";
 
 interface ToolCallChunk {
   index: number;
@@ -36,8 +36,11 @@ function accumulateToolCall(
  * Reads an OpenAI-compatible SSE streaming response body and yields partial
  * AssistantMessages as tokens arrive, with a final yield that includes any
  * resolved tool calls.
+ *
+ * Used by both the OpenAI and Anthropic AgentHub providers — both endpoints
+ * return OpenAI-compatible SSE regardless of the underlying model.
  */
-export async function* readOpenAIStream(
+export async function* readAIStream(
   body: ReadableStream<Uint8Array>,
 ): AsyncGenerator<AssistantMessage> {
   const reader = body.getReader();
@@ -47,7 +50,6 @@ export async function* readOpenAIStream(
   const msgId = crypto.randomUUID();
   const msgTimestamp = Date.now();
 
-  // Tool call args arrive fragmented across chunks — accumulate by index.
   const toolAccumulators = new Map<number, ToolAccumulator>();
 
   try {
@@ -62,9 +64,9 @@ export async function* readOpenAIStream(
 
       for (const line of lines) {
         const trimmed = line.trim();
-        if (!trimmed.startsWith("data: ")) continue;
+        if (!trimmed.startsWith("data:")) continue;
 
-        const payload = trimmed.slice(6).trim();
+        const payload = trimmed.slice(5).trim();
         if (payload === "[DONE]") break outer;
 
         let chunk: StreamChunk;
@@ -96,9 +98,6 @@ export async function* readOpenAIStream(
     reader.releaseLock();
   }
 
-  // Yield final message with resolved tool calls.
-  // For text-only responses the last yield above is already complete;
-  // this only fires when tool calls are present.
   if (toolAccumulators.size > 0) {
     const toolCallParts: ToolCallPart[] = Array.from(toolAccumulators.entries())
       .toSorted(([a], [b]) => a - b)
