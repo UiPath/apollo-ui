@@ -9,12 +9,11 @@ import type { TranslationKey } from "./shell-translation-key";
 interface MinimalNavItemProps {
   to: string;
   label: TranslationKey;
-  active?: boolean;
 }
 
-export const MinimalNavItem = ({ to, label, active }: MinimalNavItemProps) => {
+export const MinimalNavItem = ({ to, label }: MinimalNavItemProps) => {
   const pathname = usePathname();
-  const isActive = active ?? (pathname === to || pathname.startsWith(`${to}/`));
+  const isActive = pathname === to;
 
   return (
     <Link

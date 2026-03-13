@@ -17,14 +17,16 @@ import {
   iconHoverScale,
   textFadeVariants,
 } from "./shell-animations";
+import { Text } from "./shell-text";
+import type { TranslationKey } from "./shell-translation-key";
 
 interface NavItemProps {
   to: string;
   icon: LucideIcon;
-  text: string;
+  label: TranslationKey;
 }
 
-export const NavItem = ({ to, icon: Icon, text }: NavItemProps) => {
+export const NavItem = ({ to, icon: Icon, label }: NavItemProps) => {
   const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
   const pathname = usePathname();
   const isActive = pathname === to || pathname.startsWith(`${to}/`);
@@ -62,7 +64,7 @@ export const NavItem = ({ to, icon: Icon, text }: NavItemProps) => {
             exit="exit"
             transition={fastFadeTransition}
           >
-            {text}
+            <Text value={label} />
           </motion.span>
         )}
       </AnimatePresence>
@@ -75,7 +77,7 @@ export const NavItem = ({ to, icon: Icon, text }: NavItemProps) => {
         <Tooltip>
           <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
           <TooltipContent side="right" sideOffset={8}>
-            {text}
+            <Text value={label} />
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

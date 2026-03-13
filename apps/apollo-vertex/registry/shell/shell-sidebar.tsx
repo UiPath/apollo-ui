@@ -1,10 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { BarChart3, FolderOpen, Home, Settings, Users } from "lucide-react";
 import { useLocalStorage } from "@uidotdev/usehooks";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import type { CompanyLogo } from "./shell";
+import type { CompanyLogo, ShellNavItem } from "./shell";
 import { Company } from "./shell-company";
 import { MinimalCompany } from "./shell-minimal-company";
 import { MinimalNavItem } from "./shell-minimal-nav-item";
@@ -16,6 +15,7 @@ interface SidebarProps {
   productName: string;
   variant?: "minimal";
   companyLogo?: CompanyLogo;
+  navItems: ShellNavItem[];
 }
 
 export const Sidebar = ({
@@ -23,6 +23,7 @@ export const Sidebar = ({
   productName,
   variant,
   companyLogo,
+  navItems,
 }: SidebarProps) => {
   const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
 
@@ -38,13 +39,9 @@ export const Sidebar = ({
         />
 
         <nav className="absolute left-1/2 -translate-x-1/2 flex items-center bg-muted dark:bg-[oklch(0.24_0.033_254)] rounded-full p-1.5 overflow-x-auto scrollbar-thin">
-          <MinimalNavItem
-            to="/templates/shell-template"
-            label="dashboard"
-            active
-          />
-          <MinimalNavItem to="/projects" label="projects" />
-          <MinimalNavItem to="/analytics" label="analytics" />
+          {navItems.map((item) => (
+            <MinimalNavItem key={item.path} to={item.path} label={item.label} />
+          ))}
         </nav>
 
         <div className="flex items-center gap-2">
@@ -76,11 +73,14 @@ export const Sidebar = ({
         companyLogo={companyLogo}
       />
       <nav className="flex-1 mt-10 space-y-1 pb-3">
-        <NavItem to="/preview/shell" icon={Home} text="Dashboard" />
-        <NavItem to="/projects" icon={FolderOpen} text="Projects" />
-        <NavItem to="/analytics" icon={BarChart3} text="Analytics" />
-        <NavItem to="/team" icon={Users} text="Team" />
-        <NavItem to="/settings" icon={Settings} text="Settings" />
+        {navItems.map((item) => (
+          <NavItem
+            key={item.path}
+            to={item.path}
+            icon={item.icon}
+            label={item.label}
+          />
+        ))}
       </nav>
       <div
         className={cn("mt-auto", isCollapsed && "flex flex-col items-center")}
