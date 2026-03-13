@@ -25,7 +25,7 @@ export const apolloToastClassNames: NonNullable<
   warning: `!border-warning !bg-secondary dark:!bg-[color-mix(in_srgb,var(--warning)_25%,var(--popover)_75%)] [&>svg]:!text-warning-foreground dark:[&>svg]:!text-warning ${iconAlign}`,
   error: `!border-destructive !bg-secondary dark:!bg-[color-mix(in_srgb,var(--destructive)_25%,var(--popover)_75%)] [&>svg]:!text-[var(--destructive-fg)] dark:[&>svg]:!text-destructive ${iconAlign}`,
   closeButton:
-    '!left-auto !right-2 !top-2 !transform-none !border-none !bg-transparent !rounded-sm',
+    "!left-auto !right-2 !top-2 !transform-none !border-none !bg-transparent !rounded-sm",
 };
 
 const Toaster = ({ ...props }: ToasterProps) => {
