@@ -1,7 +1,9 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { PropsWithChildren } from "react";
+import { BarChart3, FolderOpen, Home, Settings, Users } from "lucide-react";
+import type { PropsWithChildren } from "react";
+import type { ShellNavItem } from "@/registry/shell/shell";
 import { ApolloShell } from "@/registry/shell/shell";
 
 interface ShellTemplateProps {
@@ -9,6 +11,28 @@ interface ShellTemplateProps {
 }
 const queryClient = new QueryClient();
 const baseUrl = typeof window === "undefined" ? "" : window.location.origin;
+
+const navItems: ShellNavItem[] = [
+  { path: "/preview/shell/dashboard", label: "dashboard", icon: Home },
+  { path: "/preview/shell/projects", label: "projects", icon: FolderOpen },
+  { path: "/preview/shell/analytics", label: "analytics", icon: BarChart3 },
+  { path: "/preview/shell/team", label: "team", icon: Users },
+  { path: "/preview/shell/settings", label: "settings", icon: Settings },
+];
+
+const minimalNavItems: ShellNavItem[] = [
+  { path: "/preview/shell-minimal", label: "dashboard", icon: Home },
+  {
+    path: "/preview/shell-minimal/projects",
+    label: "projects",
+    icon: FolderOpen,
+  },
+  {
+    path: "/preview/shell-minimal/analytics",
+    label: "analytics",
+    icon: BarChart3,
+  },
+];
 
 export function ShellTemplate({
   variant,
@@ -28,6 +52,7 @@ export function ShellTemplate({
         clientId="e74e5981-cde0-4cd4-971c-6525cfba86b5"
         scope="openid profile email offline_access"
         baseUrl={baseUrl}
+        navItems={variant === "minimal" ? minimalNavItems : navItems}
       >
         {children}
       </ApolloShell>

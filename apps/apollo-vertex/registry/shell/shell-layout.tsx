@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from "react";
-import type { CompanyLogo } from "./shell";
+import type { CompanyLogo, ShellNavItem } from "./shell";
 import { Sidebar } from "./shell-sidebar";
 import { useTheme } from "./shell-theme-provider";
 
@@ -10,6 +10,7 @@ interface ShellLayoutProps {
   productName: string;
   variant?: "minimal";
   companyLogo?: CompanyLogo;
+  navItems: ShellNavItem[];
 }
 
 function DarkGradientBackground() {
@@ -161,6 +162,7 @@ export function ShellLayout({
   productName,
   variant,
   companyLogo,
+  navItems,
 }: PropsWithChildren<ShellLayoutProps>) {
   if (variant === "minimal") {
     return (
@@ -172,6 +174,7 @@ export function ShellLayout({
             variant={variant}
             productName={productName}
             companyLogo={companyLogo}
+            navItems={navItems}
           />
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             {children}
@@ -189,6 +192,7 @@ export function ShellLayout({
         variant={variant}
         productName={productName}
         companyLogo={companyLogo}
+        navItems={navItems}
       />
       <main className="flex-1 flex flex-col overflow-hidden relative">
         <div className="flex-1 overflow-y-auto custom-scrollbar">

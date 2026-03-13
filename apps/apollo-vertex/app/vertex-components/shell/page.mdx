@@ -10,7 +10,7 @@ A component that includes OAuth2 authentication and a collapsible sidebar.
   </div>
 </div>
 
-<a href="/preview/shell" target="_blank" rel="noopener noreferrer">Open standalone preview ↗</a>
+<a href="/preview/shell/dashboard" target="_blank" rel="noopener noreferrer">Open standalone preview ↗</a>
 
 ## Minimal Header Variant
 
@@ -43,9 +43,15 @@ The `ApolloShell` component must be wrapped in a `QueryClientProvider` from `@ta
 
 ```tsx
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Home, Settings } from 'lucide-react';
 import { ApolloShell } from '@/components/ui/shell';
 
 const queryClient = new QueryClient();
+
+const navItems = [
+  { path: '/dashboard', label: 'dashboard', icon: Home },
+  { path: '/settings', label: 'settings', icon: Settings },
+];
 
 function App() {
   return (
@@ -56,6 +62,7 @@ function App() {
         baseUrl={window.location.origin}
         companyName="Your Company"
         productName="Your Product"
+        navItems={navItems}
       >
         {/* your authenticated app content */}
         <YourApp />
