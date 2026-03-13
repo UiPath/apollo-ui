@@ -76,20 +76,11 @@ export function SonnerExamples() {
 export function AlertExamples() {
   return (
     <div className="space-y-3">
-      <Alert status="info" visual="tinted">
+      <Alert status="default" visual="tinted">
         <InfoIcon className="h-4 w-4" />
         <AlertTitle>New version available</AlertTitle>
         <AlertDescription>
-          A new version of the platform is ready. Review the changelog for
-          details.
-        </AlertDescription>
-      </Alert>
-
-      <Alert status="success" visual="tinted">
-        <CircleCheckIcon className="h-4 w-4" />
-        <AlertTitle>Changes saved</AlertTitle>
-        <AlertDescription>
-          Your configuration has been updated successfully.
+          A new version of the platform is ready. Review the changelog for details.
         </AlertDescription>
       </Alert>
 
@@ -120,7 +111,7 @@ function DismissibleAlert({
   visual = "outline",
 }: {
   children: ReactNode;
-  status: "info" | "success" | "warning" | "error";
+  status: "default" | "warning" | "error";
   visual?: "outline" | "tinted" | "subtle";
 }) {
   const [visible, setVisible] = useState(true);
@@ -147,20 +138,12 @@ export function AlertOutlineExamples() {
 
   return (
     <div className="space-y-3" key={resetKey}>
-      <DismissibleAlert status="info">
+      <DismissibleAlert status="default">
         <InfoIcon className="h-4 w-4" />
         <AlertTitle>New version available</AlertTitle>
         <AlertDescription>
           A new version of the platform is ready. Review the changelog for
           details.
-        </AlertDescription>
-      </DismissibleAlert>
-
-      <DismissibleAlert status="success">
-        <CircleCheckIcon className="h-4 w-4" />
-        <AlertTitle>Changes saved</AlertTitle>
-        <AlertDescription>
-          Your configuration has been updated successfully.
         </AlertDescription>
       </DismissibleAlert>
 
@@ -204,7 +187,7 @@ export function AlertDefaultExamples() {
   return (
     <div className="alert-subtle-bg space-y-3">
       <style>{alertSubtleBgStyles}</style>
-      <Alert status="info" visual="subtle">
+      <Alert status="default" visual="subtle">
         <InfoIcon className="h-4 w-4" />
         <AlertTitle>New version available</AlertTitle>
         <AlertDescription>
@@ -323,7 +306,7 @@ export function CollapsibleAlertExample() {
 
 export function ActionAlertExample() {
   return (
-    <Alert status="info" visual="outline">
+    <Alert status="default" visual="outline">
       <InfoIcon className="h-4 w-4" />
       <AlertTitle>12 documents unclassified</AlertTitle>
       <AlertDescription>
