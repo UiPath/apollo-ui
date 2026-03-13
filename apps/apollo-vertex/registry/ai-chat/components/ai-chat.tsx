@@ -1,32 +1,28 @@
 "use client";
 
+import type { UIMessage } from "@tanstack/ai-client";
 import { AlertCircle, Sparkles } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ChatMessage } from "../utils/ai-chat-message-types";
-import type { ChoiceOption, Tools } from "../utils/ai-chat-tool-types";
-import { findLatestChoices, groupMessages } from "../utils/ai-chat-utils";
+import type { ChoiceOption } from "../types";
+import { findLatestChoices } from "../utils/ai-chat-utils";
 import { AiChatInput } from "./ai-chat-input";
 import { AiChatLoading } from "./ai-chat-loading";
-import { AiChatMessage } from "./ai-chat-message";
 import { AiChatSuggestions } from "./ai-chat-suggestions";
-import { AiChatToolGroupMessage } from "./ai-chat-tool-group-message";
 
 export interface AiChatProps {
-  messages: ChatMessage[];
+  messages: UIMessage[];
   isLoading: boolean;
   onSendMessage: (content: string) => void;
   onStop: () => void;
   onClearChat?: () => void;
   onChoiceSelect?: (option: ChoiceOption) => void;
-  tools?: Tools;
+  children?: ReactNode;
   assistantName?: string;
   title?: string;
   emptyState?: ReactNode;
   placeholder?: string;
   showClearButton?: boolean;
-  toolDisplayNames?: Record<string, string>;
-  enableToolGrouping?: boolean;
   error?: Error | null;
 }
 
@@ -37,14 +33,12 @@ export function AiChat({
   onStop,
   onClearChat,
   onChoiceSelect,
-  tools,
+  children,
   assistantName,
   title,
   emptyState,
   placeholder,
   showClearButton = true,
-  toolDisplayNames,
-  enableToolGrouping = false,
   error,
 }: AiChatProps) {
   const { t } = useTranslation();
@@ -74,8 +68,6 @@ export function AiChat({
   };
 
   const latestChoices = findLatestChoices(messages);
-
-  const groupedItems = groupMessages(messages, enableToolGrouping);
 
   const lastMessageIsAssistant = messages.at(-1)?.role === "assistant";
   const showLoadingIndicator = isLoading && !lastMessageIsAssistant;
@@ -128,36 +120,11 @@ export function AiChat({
         aria-atomic="false"
         className="flex-1 overflow-y-auto p-4"
       >
-        {groupedItems.length === 0 ? (
+        {messages.length === 0 ? (
           (emptyState ?? defaultEmptyState)
         ) : (
           <div ref={contentRef} className="space-y-4">
-            {groupedItems.map((item, idx) => {
-              if (item.kind === "tool-group") {
-                const isLast = !groupedItems
-                  .slice(idx + 1)
-                  .some((g) => g.kind === "tool-group");
-                return (
-                  <AiChatToolGroupMessage
-                    key={item.id}
-                    toolCalls={item.toolCalls}
-                    isLatest={isLast}
-                    assistantName={displayName}
-                    toolDisplayNames={toolDisplayNames}
-                  />
-                );
-              }
-
-              const message = item.message;
-              return (
-                <AiChatMessage
-                  key={message.id}
-                  message={message}
-                  tools={tools}
-                  assistantName={displayName}
-                />
-              );
-            })}
+            {children}
 
             {latestChoices && !isLoading && (
               <AiChatSuggestions
@@ -194,20 +161,3 @@ export function AiChat({
     </div>
   );
 }
-
-export type {
-  ChoiceOption,
-  DisplayTool,
-  ExecuteTool,
-  Tool,
-  ToolResult,
-  ToolResultChoices,
-  Tools,
-} from "../utils/ai-chat-types";
-export { AiChatInput } from "./ai-chat-input";
-export { AiChatLoading } from "./ai-chat-loading";
-export { AiChatMarkdown } from "./ai-chat-markdown";
-export { AiChatMessage } from "./ai-chat-message";
-export { AiChatSuggestions } from "./ai-chat-suggestions";
-export { AiChatToolGroup } from "./ai-chat-tool-group";
-export { AiChatToolGroupMessage } from "./ai-chat-tool-group-message";
