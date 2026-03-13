@@ -2,7 +2,7 @@ import { AiChatTemplate } from '@/templates/AiChatTemplate';
 
 # AI Chat
 
-A generic, reusable, and type-safe AI chat component for the Apollo Design System. Built with React, TypeScript, Tailwind CSS, and Zod, it supports OpenAI-compatible LLM APIs (OpenAI, Azure OpenAI, Ollama) with a pluggable `LLMProvider` interface, with an agentic tool loop, Zod-typed tool calling, markdown rendering, collapsible tool groups, suggestion buttons, and error display.
+A reusable AI chat UI component for the Apollo Design System. Built with React, TypeScript, Tailwind CSS, and Zod. Designed to work with [TanStack AI](https://tanstack.com/ai) — you bring `useChat` and a connection adapter, the component handles rendering messages, tool calls, markdown, tool groups, suggestions, and errors.
 
 <div className="not-prose my-8">
   <AiChatTemplate />
@@ -10,15 +10,13 @@ A generic, reusable, and type-safe AI chat component for the Apollo Design Syste
 
 ## Features
 
-- **OpenAI-compatible API** — Works with OpenAI, Azure OpenAI, Ollama, and any compatible endpoint via `LLMProvider`
-- **Agentic Tool Loop** — Automatically re-calls the LLM until no more tool calls remain
-- **Zod Tool Calling** — Define tools with Zod schemas; input is validated and typed end-to-end
+- **TanStack AI Integration** — Works with `useChat` from `@tanstack/ai-react` and `UIMessage` types
+- **Typed Display Tools** — Define display tools with `toolRenderer()` — name and schema come from the TanStack AI tool definition, render args are fully typed
+- **AgentHub Adapter** — Built-in custom adapter for the UiPath AgentHub normalized LLM endpoint (OpenAI + Anthropic models)
 - **Markdown Rendering** — Renders assistant responses with GitHub Flavored Markdown
 - **Collapsible Tool Groups** — Consecutive tool-only steps are grouped into expandable badges
 - **Suggestion Buttons** — Interactive choice buttons rendered from tool results
 - **Error Display** — Inline error banner for API and network errors
-- **Message Injection** — `appendMessages` for programmatic message insertion
-- **Session Storage** — Persist conversations to `sessionStorage` with a `storageKey`; omit for in-memory only
 - **i18n Support** — Built-in internationalization via react-i18next
 - **Accessible** — WCAG 2.1 compliant with keyboard navigation and ARIA live regions
 
@@ -31,186 +29,178 @@ npx shadcn@latest add @uipath/ai-chat
 Install peer dependencies:
 
 ```bash
-npm install zod lucide-react react-i18next react-markdown remark-gfm
+npm install @tanstack/ai @tanstack/ai-client @tanstack/ai-react zod lucide-react react-i18next react-markdown remark-gfm
 ```
 
 ## Quick Start
 
 ```tsx
+import { toolDefinition } from '@tanstack/ai';
+import { clientTools } from '@tanstack/ai-client';
+import { stream, useChat } from '@tanstack/ai-react';
 import { AiChat } from '@/components/ui/ai-chat/components/ai-chat';
-import { useAiChat } from '@/components/ui/ai-chat/hooks/use-ai-chat';
-import { OpenAIChatProvider } from '@/components/ui/ai-chat/utils/ai-chat-openai-provider';
+import { createAgentHubStreamFactory } from '@/components/ui/ai-chat/adapters/agenthub/adapter';
 
 function BasicChat() {
-  const chat = useAiChat({
-    provider: new OpenAIChatProvider({
-      baseUrl: 'https://api.openai.com/v1',
-      model: 'gpt-4o',
-      accessToken: () => getApiToken(),
-      systemPrompt: 'You are a helpful assistant.',
-    }),
+  const config = {
+    baseUrl: 'https://cloud.uipath.com/{org}/{tenant}/agenthub_/llm/api',
+    model: { vendor: 'openai' as const, name: 'gpt-4o' },
+    accessToken: () => getAccessToken(),
+    systemPrompt: 'You are a helpful assistant.',
+  };
+
+  const connection = stream((messages) =>
+    createAgentHubStreamFactory(config)(messages),
+  );
+
+  const { messages, sendMessage, isLoading, stop, clear, error } = useChat({
+    connection,
   });
 
   return (
     <AiChat
-      messages={chat.messages}
-      isLoading={chat.isLoading}
-      onSendMessage={chat.sendMessage}
-      onStop={chat.stop}
-      onClearChat={chat.clearChat}
-      error={chat.error}
+      messages={messages}
+      isLoading={isLoading}
+      onSendMessage={(text) => sendMessage(text)}
+      onStop={stop}
+      onClearChat={clear}
+      error={error}
       title="AI Assistant"
     />
   );
 }
 ```
 
-## Tool Calling
+## AgentHub Adapter
 
-There are two kinds of tools — **`ExecuteTool`** runs logic in the agentic loop and sends a result back to the LLM, **`DisplayTool`** renders UI and stops the loop (no result sent to the LLM).
+The built-in adapter for the **UiPath AgentHub** normalized LLM endpoint. It converts TanStack AI `UIMessage` arrays to the AgentHub wire format, calls the endpoint, and parses the SSE response back into AG-UI `StreamChunk` events.
 
-Pass your tools to both `useAiChat` (for the agentic loop) and `<AiChat>` (for rendering). They share the same `Tools` map.
+```tsx
+import { createAgentHubStreamFactory, type AgentHubAdapterConfig } from '@/components/ui/ai-chat/adapters/agenthub/adapter';
 
-### ExecuteTool
+const config: AgentHubAdapterConfig = {
+  baseUrl: 'https://cloud.uipath.com/{org}/{tenant}/agenthub_/llm/api',
+  model: { vendor: 'openai', name: 'gpt-4o' },
+  accessToken: () => getAccessToken(),
+  systemPrompt: 'You are a helpful assistant.',  // also accepts () => string
+  maxTokens: 2048,
+  temperature: 0.7,
+  tools: toolDefs,  // client tools — wire format is derived automatically
+};
 
-Has a required `execute`. The agentic loop calls `execute`, sends the result back to the LLM, and continues until no more tool calls remain.
+const connection = stream((messages) =>
+  createAgentHubStreamFactory(config)(messages),
+);
+```
+
+The `model.vendor` field controls wire-format differences:
+- **`"openai"`** — flat tool definitions (`{ name, description, parameters }`)
+- **`"anthropic"`** — Anthropic tool format (`{ type: "custom", input_schema }`), non-empty assistant content on tool-call messages
+- The `X-UiPath-LlmGateway-NormalizedApi-ModelName` header is always sent for routing
+- Responses are always OpenAI-compatible SSE regardless of the underlying model
+
+---
+
+## Display Tools
+
+Display tools render UI inline in the chat when the LLM calls them. Use `toolRenderer()` to create a typed renderer directly from a TanStack AI tool definition — the name and schema come from the definition, so there's no duplication.
 
 ```tsx
 import { z } from 'zod';
-import { useAiChat } from '@/components/ui/ai-chat/hooks/use-ai-chat';
-import { OpenAIChatProvider } from '@/components/ui/ai-chat/utils/ai-chat-openai-provider';
-import type { Tools } from '@/components/ui/ai-chat/utils/ai-chat-types';
+import { toolDefinition } from '@tanstack/ai';
+import { clientTools } from '@tanstack/ai-client';
+import { buildToolRenderers, toolRenderer } from '@/components/ui/ai-chat/types';
 
-const tools: Tools = {
-  search_records: {
-    description: 'Search the database for matching records',
-    inputSchema: z.object({
-      query: z.string().describe('The search query'),
-      limit: z.number().optional().describe('Max results to return'),
-    }),
-    execute: async ({ query, limit }) => {
-      // args are fully typed from the Zod schema
-      return await searchDatabase(query, limit);
-    },
-  },
-};
+// 1. Define the schema
+const showResultsInput = z.object({
+  entityName: z.string(),
+  columns: z.array(z.string()),
+});
 
-function AgenticChat() {
-  const chat = useAiChat({
-    provider: new OpenAIChatProvider({
-      baseUrl: 'https://api.openai.com/v1',
-      model: 'gpt-4o',
-      accessToken: () => getApiToken(),
-    }),
-    tools,
-    maxToolIterations: 10, // default
-  });
+// 2. Define the TanStack AI tool (for the LLM)
+const showResultsDef = toolDefinition({
+  name: 'show_results',
+  description: 'Display a results table',
+  inputSchema: showResultsInput,
+  outputSchema: z.object({ displayed: z.boolean() }),
+});
 
-  return (
-    <AiChat
-      messages={chat.messages}
-      isLoading={chat.isLoading}
-      onSendMessage={chat.sendMessage}
-      onStop={chat.stop}
-      tools={tools}
-      enableToolGrouping
-      toolDisplayNames={{ search_records: 'Searching Records' }}
-    />
-  );
-}
+const showResults = showResultsDef.client(() => ({ displayed: true }));
+const toolDefs = clientTools(showResults);
+
+// 3. Define renderers — name and schema come from the tool definition
+const toolRenderers = buildToolRenderers(
+  toolRenderer(showResultsDef, ({ entityName, columns }) => (
+    // entityName is string, columns is string[] — fully typed!
+    <ResultsTable entity={entityName} columns={columns} />
+  )),
+);
+
+// 4. Wire it up
+const { messages, sendMessage, isLoading, stop } = useChat({
+  connection,
+  tools: toolDefs,
+});
+
+<AiChat
+  messages={messages}
+  isLoading={isLoading}
+  onSendMessage={(text) => sendMessage(text)}
+  onStop={stop}
+  toolRenderers={toolRenderers}
+/>
 ```
 
-### DisplayTool
-
-Has a required `render` and no `execute`. When the LLM calls a display tool, the loop stops immediately — no result is sent back — and the `render` function produces the UI.
-
-```tsx
-import type { DisplayTool, Tools } from '@/components/ui/ai-chat/utils/ai-chat-types';
-
-const tools: Tools = {
-  show_results_table: {
-    description: 'Render a data table for the user',
-    inputSchema: z.object({
-      entityName: z.string(),
-      columns: z.array(z.string()),
-    }),
-    render: (args) => (
-      <ResultsTable
-        entity={args.entityName}
-        columns={args.columns}
-      />
-    ),
-  } satisfies DisplayTool,
-};
-
-function DisplayChat() {
-  const chat = useAiChat({
-    provider: new OpenAIChatProvider({ baseUrl, model, accessToken }),
-    tools,
-  });
-
-  return (
-    <AiChat
-      messages={chat.messages}
-      isLoading={chat.isLoading}
-      onSendMessage={chat.sendMessage}
-      onStop={chat.stop}
-      tools={tools}
-    />
-  );
-}
-```
+**How it works:**
+- `toolRenderer(def, render)` extracts `name` and `inputSchema` from the tool definition — single source of truth
+- The render function args are inferred from the definition's schema — full autocomplete, no `as` casts
+- At runtime, `AiChatMessage` calls `schema.safeParse()` on the raw tool-call arguments before passing them to your render function
+- `buildToolRenderers(...)` collects the entries into a `ToolRenderers` record
 
 ## Suggestion Buttons
 
-Return a `ToolResultChoices` object from any tool's `execute` to render interactive choice buttons in the UI. Buttons disappear after the user sends another message.
+Return a choices object as a tool result content to render interactive suggestion buttons. Buttons disappear after the user sends another message.
+
+The choices format:
+```json
+{
+  "type": "choices",
+  "prompt": "How would you like to proceed?",
+  "options": [
+    { "id": "approve", "label": "Approve Document", "recommended": true },
+    { "id": "reject", "label": "Reject Document" }
+  ]
+}
+```
+
+Handle selection explicitly or let the default behavior send `option.label` as a message:
 
 ```tsx
-import type { ToolResultChoices } from '@/components/ui/ai-chat/utils/ai-chat-types';
-
-const tools: Tools = {
-  request_approval: {
-    description: 'Ask the user how to proceed',
-    inputSchema: z.object({}),
-    execute: (): ToolResultChoices => ({
-      type: 'choices',
-      prompt: 'How would you like to proceed?',
-      options: [
-        { id: 'approve', label: 'Approve Document', recommended: true },
-        { id: 'reject', label: 'Reject Document' },
-        { id: 'request', label: 'Request Changes' },
-      ],
-    }),
-  },
-};
-
-// Optionally handle the selection explicitly (default: sends option.label as a message)
 <AiChat
-  messages={chat.messages}
-  isLoading={chat.isLoading}
-  onSendMessage={chat.sendMessage}
-  onStop={chat.stop}
+  messages={messages}
+  isLoading={isLoading}
+  onSendMessage={(text) => sendMessage(text)}
+  onStop={stop}
   onChoiceSelect={(option) => {
-    chat.sendMessage(option.value ?? option.label);
+    sendMessage(option.value ?? option.label);
   }}
 />
 ```
 
 ## Tool Grouping
 
-Group consecutive tool-only assistant messages into expandable badges — useful when the agentic loop performs multiple steps before replying.
+Group consecutive tool-only assistant messages into expandable badges — useful when the LLM performs multiple tool calls before replying.
 
 ```tsx
 <AiChat
-  messages={chat.messages}
-  isLoading={chat.isLoading}
-  onSendMessage={chat.sendMessage}
-  onStop={chat.stop}
+  messages={messages}
+  isLoading={isLoading}
+  onSendMessage={(text) => sendMessage(text)}
+  onStop={stop}
   enableToolGrouping
   toolDisplayNames={{
     search_database: 'Searching Database',
     filter_results: 'Filtering Results',
-    generate_report: 'Generating Report',
   }}
 />
 ```
@@ -220,274 +210,109 @@ Group consecutive tool-only assistant messages into expandable badges — useful
 
 ## Error Display
 
-Pass an `Error` object to show an inline error banner above the input:
+Pass an `Error` object to show an inline error banner:
 
 ```tsx
 <AiChat
-  messages={chat.messages}
-  isLoading={chat.isLoading}
-  onSendMessage={chat.sendMessage}
-  onStop={chat.stop}
-  error={chat.error}  // set automatically by useAiChat on API errors
+  messages={messages}
+  isLoading={isLoading}
+  onSendMessage={(text) => sendMessage(text)}
+  onStop={stop}
+  error={error}
 />
 ```
-
-You can also pass a custom error (e.g. from your own validation):
-
-```tsx
-const [customError, setCustomError] = useState<Error | null>(null);
-
-<AiChat
-  messages={chat.messages}
-  isLoading={chat.isLoading}
-  onSendMessage={chat.sendMessage}
-  onStop={chat.stop}
-  error={customError}
-/>
-```
-
-## Message Injection (`appendMessages`)
-
-Append messages directly to the chat history without making an LLM request — useful for mock playback, streaming integrations, or preloading historical context.
-
-```tsx
-const chat = useAiChat({ provider });
-
-chat.appendMessages([
-  {
-    id: crypto.randomUUID(),
-    role: 'assistant',
-    content: [{ type: 'text', text: 'Here are your results.' }],
-    timestamp: Date.now(),
-  },
-]);
-```
-
-## Dynamic System Prompt
-
-Pass `systemPrompt` as a function in the provider config — it is called on every LLM request so it always reflects current state:
-
-```tsx
-function DynamicChat({ currentUser, currentContext }) {
-  const chat = useAiChat({
-    provider: new OpenAIChatProvider({
-      baseUrl: 'https://api.openai.com/v1',
-      model: 'gpt-4o',
-      accessToken: () => getApiToken(),
-      systemPrompt: () =>
-        `You are assisting ${currentUser.name}. Context: ${currentContext}.`,
-    }),
-  });
-}
-```
-
-## Per-Context Storage
-
-Pass a dynamic `storageKey` to persist history in `sessionStorage` and automatically reset when the context changes (e.g. switching between records):
-
-```tsx
-const chat = useAiChat({
-  provider: new OpenAIChatProvider({ ... }),
-  storageKey: `chat_${recordId}`,  // resets automatically when recordId changes
-});
-```
-
-Omit `storageKey` entirely to use in-memory storage (history is lost on unmount/refresh).
 
 ---
 
 ## API Reference
 
-### `useAiChat(options)`
-
-Main hook for AI chat functionality.
-
-**Options:**
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `provider` | `LLMProvider` | required | LLM provider instance (`OpenAIChatProvider` or any custom `LLMProvider`) |
-| `tools` | `Tools \| () => Tools` | — | Tool definitions; if a function, evaluated once per render to produce the resolved tools |
-| `maxToolIterations` | `number` | `10` | Max agentic loop iterations before throwing |
-| `storageKey` | `string` | — | `sessionStorage` key for history persistence; omit for in-memory only |
-| `onError` | `(error: Error) => void` | — | Called when a request fails |
-
-**Returns:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `messages` | `ChatMessage[]` | Full conversation history |
-| `isLoading` | `boolean` | True while waiting for LLM response |
-| `error` | `Error \| null` | Last API error (cleared on next send) |
-| `tools` | `Tools \| undefined` | Resolved tools — pass directly to `<AiChat tools={chat.tools}>` |
-| `sendMessage` | `(content: string) => Promise<void>` | Send a user message |
-| `stop` | `() => void` | Abort the in-flight request |
-| `clearChat` | `() => void` | Clear history and storage |
-| `appendMessages` | `(msgs: ChatMessage[]) => void` | Inject messages without an LLM call |
-
 ### `<AiChat>`
 
-Main chat UI component.
+Main chat UI component. Works with TanStack AI's `UIMessage` format.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `messages` | `ChatMessage[]` | required | Messages array |
-| `isLoading` | `boolean` | required | Loading state |
-| `onSendMessage` | `(content: string) => void` | required | Message handler |
-| `onStop` | `() => void` | required | Stop handler |
+| `messages` | `UIMessage[]` | required | Messages from `useChat` |
+| `isLoading` | `boolean` | required | Loading state from `useChat` |
+| `onSendMessage` | `(content: string) => void` | required | Send handler |
+| `onStop` | `() => void` | required | Stop/abort handler |
 | `onClearChat` | `() => void` | — | Clear handler |
 | `onChoiceSelect` | `(option: ChoiceOption) => void` | — | Suggestion button handler (default: sends `option.label`) |
-| `tools` | `Tools` | — | Tool map — calls `tool.render(args)` per display tool call |
+| `toolRenderers` | `ToolRenderers` | — | Map of tool names to `DisplayTool` instances (created via `toolRenderer()`) |
 | `assistantName` | `string` | `"AI Assistant"` | Assistant display name |
-| `title` | `string` | — | Chat title shown in the header |
+| `title` | `string` | — | Chat title in the header |
 | `emptyState` | `ReactNode` | — | Custom empty state |
 | `placeholder` | `string` | — | Input placeholder |
-| `showClearButton` | `boolean` | `true` | Show the clear conversation button |
-| `toolDisplayNames` | `Record<string, string>` | — | Human-readable names for tools (empty string hides the tool) |
-| `enableToolGrouping` | `boolean` | `false` | Group consecutive tool-only messages into collapsible badges |
-| `error` | `Error \| null` | — | Renders an inline error banner when set |
+| `showClearButton` | `boolean` | `true` | Show the clear button |
+| `toolDisplayNames` | `Record<string, string>` | — | Human-readable tool names (empty string hides the tool) |
+| `enableToolGrouping` | `boolean` | `false` | Group consecutive tool-only messages |
+| `error` | `Error \| null` | — | Inline error banner |
+
+### `AgentHubAdapterConfig`
+
+Configuration for the AgentHub adapter.
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `baseUrl` | `string` | required | AgentHub base URL (`/chat/completions` is appended) |
+| `model` | `{ vendor: 'openai' \| 'anthropic'; name: string }` | required | Model config |
+| `accessToken` | `string \| () => string \| null` | required | Bearer token (refreshed per request if function) |
+| `systemPrompt` | `string \| () => string` | — | System prompt prepended to messages (function form is called per request) |
+| `maxTokens` | `number` | `2048` | Max response tokens |
+| `temperature` | `number` | `0.7` | Sampling temperature |
+| `tools` | `ReadonlyArray<AnyClientTool>` | — | Client tools — wire-format definitions are derived automatically |
+
+### `toolRenderer(def, render)`
+
+Create a named display tool renderer from a TanStack AI tool definition. Extracts the name and inputSchema — single source of truth.
+
+```tsx
+import { buildToolRenderers, toolRenderer } from '@/components/ui/ai-chat/types';
+
+const toolRenderers = buildToolRenderers(
+  toolRenderer(myToolDef, ({ name }) => <div>Hello {name}</div>),
+  // name is typed from myToolDef.inputSchema — full autocomplete
+);
+```
+
+### `buildToolRenderers(...entries)`
+
+Collects `toolRenderer()` results into a `ToolRenderers` record.
+
+```tsx
+const renderers = buildToolRenderers(
+  toolRenderer(toolA, renderA),
+  toolRenderer(toolB, renderB),
+);
+```
 
 ---
 
 ## TypeScript
 
 ```tsx
-import type {
-  // Message types
-  ChatMessage,
-  UserMessage,
-  AssistantMessage,
-  ToolMessage,
-  // Content parts
-  TextPart,
-  ToolCallPart,
-  ToolResultPart,
-  ContentPart,
-  // Tool types
-  Tool,
-  ExecuteTool,
-  DisplayTool,
-  Tools,
-  MaybePromise,
-  // UI types
-  ChoiceOption,
-  ToolResult,
-  ToolResultChoices,
-  // Provider types
-  LLMProvider,
-  OpenAIChatProviderConfig,
-  UseAiChatOptions,
-  UseAiChatReturn,
-} from '@/components/ui/ai-chat/utils/ai-chat-types';
+// TanStack AI types (messages, parts)
+import type { UIMessage } from '@tanstack/ai-client';
+import type { ToolCallPart, TextPart, ToolResultPart } from '@tanstack/ai-client';
 
-import { OpenAIChatProvider } from '@/components/ui/ai-chat/utils/ai-chat-openai-provider';
+// Display tool types
+import {
+  buildToolRenderers,
+  toolRenderer,
+  type DisplayTool,
+  type ToolRenderers,
+} from '@/components/ui/ai-chat/types';
 
-// Standalone markdown renderer (same styling as assistant messages)
+// Choice types (app-specific, not from TanStack AI)
+import type { ChoiceOption, ToolResultChoices } from '@/components/ui/ai-chat/types';
+
+// AgentHub adapter
+import {
+  createAgentHubStreamFactory,
+  type AgentHubAdapterConfig,
+  type AgentHubVendor,
+} from '@/components/ui/ai-chat/adapters/agenthub/adapter';
+
+// Standalone markdown renderer
 import { AiChatMarkdown } from '@/components/ui/ai-chat/components/ai-chat-markdown';
-```
-
-### Key Types
-
-**ChatMessage** — Discriminated union by role
-
-```tsx
-type ChatMessage = UserMessage | AssistantMessage | ToolMessage;
-
-interface UserMessage {
-  role: 'user';
-  id: string;
-  content: TextPart[];          // always an array of parts
-  timestamp: number;
-}
-
-interface AssistantMessage {
-  role: 'assistant';
-  id: string;
-  content: Array<TextPart | ToolCallPart>;
-  timestamp: number;
-}
-
-interface ToolMessage {
-  role: 'tool';
-  id: string;
-  content: ToolResultPart[];
-  timestamp: number;
-}
-```
-
-**Content Parts** — Discriminated by `type`
-
-```tsx
-interface TextPart     { type: 'text';        text: string }
-interface ToolCallPart { type: 'tool-call';   toolCallId: string; toolName: string; args: Record<string, unknown> }
-interface ToolResultPart { type: 'tool-result'; toolCallId: string; toolName: string; result: unknown }
-```
-
-**Tool** — Union of `ExecuteTool` and `DisplayTool`; parametric on Zod schemas
-
-```tsx
-// Runs logic in the agentic loop; result sent back to the LLM
-interface ExecuteTool<
-  TInputSchema extends ZodType = ZodType,
-  TOutputSchema extends ZodType = ZodType,
-> {
-  description: string;
-  inputSchema: TInputSchema;
-  outputSchema?: TOutputSchema;
-  execute(args: z.infer<TInputSchema>): MaybePromise<z.infer<TOutputSchema>>;
-}
-
-// Renders UI and stops the agentic loop; no result sent to the LLM
-interface DisplayTool<TInputSchema extends ZodType = ZodType> {
-  description: string;
-  inputSchema: TInputSchema;
-  render(args: z.infer<TInputSchema>): ReactNode;
-}
-
-type Tools = Record<string, Tool>;
-```
-
-**LLMProvider** — Interface implemented by all providers
-
-```tsx
-interface LLMProvider {
-  chat(
-    messages: ChatMessage[],
-    tools: Tools | undefined,
-    signal: AbortSignal,
-  ): Promise<AssistantMessage>;
-}
-```
-
-**OpenAIChatProviderConfig** — OpenAI, Azure OpenAI, Ollama, and compatible endpoints
-
-```tsx
-interface OpenAIChatProviderConfig {
-  baseUrl: string;
-  model: string;
-  apiVersion?: string;                         // appended as ?api-version= (Azure)
-  accessToken: string | (() => string | null); // refreshed per request
-  systemPrompt?: string | (() => string);
-  toolChoice?: 'auto' | 'none' | 'required';
-  maxTokens?: number;                          // default 2048
-  temperature?: number;                        // default 0.7
-  fallbackResponse?: string;
-}
-```
-
-**ToolResultChoices** — Return this from `execute` to render suggestion buttons
-
-```tsx
-interface ToolResultChoices {
-  type: 'choices';
-  prompt: string;
-  options: ChoiceOption[];
-}
-
-interface ChoiceOption {
-  id: string;
-  label: string;
-  value?: string;               // sent as message if provided, otherwise label
-  recommended?: boolean;        // highlights the option
-}
 ```

@@ -2,35 +2,42 @@
 
 import { Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type {
-  ChatMessage,
-  TextPart,
-  ToolCallPart,
-} from "../utils/ai-chat-message-types";
-import type { Tools } from "../utils/ai-chat-tool-types";
+import type { TextPart, ToolCallPart, UIMessage } from "@tanstack/ai-client";
+import type { DisplayTool, ToolRenderers } from "../types";
 import { AiChatMarkdown } from "./ai-chat-markdown";
 
 interface AiChatMessageProps {
-  message: ChatMessage;
-  tools?: Tools;
+  message: UIMessage;
+  toolRenderers?: ToolRenderers;
   assistantName?: string;
 }
 
-function getDisplayText(message: ChatMessage): string {
-  if (message.role === "user")
-    return message.content.map((p) => p.text).join("");
-  if (message.role === "assistant") {
-    return message.content
-      .filter((p): p is TextPart => p.type === "text")
-      .map((p) => p.text)
-      .join("");
+function getDisplayText(message: UIMessage): string {
+  return message.parts
+    .filter((p): p is TextPart => p.type === "text")
+    .map((p) => p.content)
+    .join("");
+}
+
+function renderToolCall(tc: ToolCallPart, tool: DisplayTool) {
+  const raw = tc.input ?? tryParseJSON(tc.arguments);
+  if (raw == null) return null;
+  const result = tool.inputSchema.safeParse(raw);
+  if (!result.success) return null;
+  return tool.render(result.data);
+}
+
+function tryParseJSON(str: string): unknown {
+  try {
+    return JSON.parse(str);
+  } catch {
+    return null;
   }
-  return "";
 }
 
 export function AiChatMessage({
   message,
-  tools,
+  toolRenderers,
   assistantName,
 }: AiChatMessageProps) {
   const { t } = useTranslation();
@@ -38,17 +45,16 @@ export function AiChatMessage({
   const displayName = assistantName ?? t("ai_assistant");
   const displayContent = getDisplayText(message);
 
-  const toolCallParts: ToolCallPart[] =
-    message.role === "assistant"
-      ? message.content.filter((p): p is ToolCallPart => p.type === "tool-call")
-      : [];
+  const toolCallParts = message.parts.filter(
+    (p): p is ToolCallPart => p.type === "tool-call",
+  );
 
   const displayRenders = toolCallParts.flatMap((tc) => {
-    const tool = tools?.[tc.toolName];
-    if (!tool || "execute" in tool) return [];
-    const parsed = tool.inputSchema.safeParse(tc.args);
-    const args = parsed.success ? parsed.data : tc.args;
-    return [<div key={tc.toolCallId}>{tool.render(args)}</div>];
+    const tool = toolRenderers?.[tc.name];
+    if (!tool) return [];
+    const rendered = renderToolCall(tc, tool);
+    if (!rendered) return [];
+    return [<div key={tc.id}>{rendered}</div>];
   });
 
   if (!isUser && !displayContent && displayRenders.length === 0) return null;

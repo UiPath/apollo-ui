@@ -3,8 +3,8 @@
 import { AlertCircle, Sparkles } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ChatMessage } from "../utils/ai-chat-message-types";
-import type { ChoiceOption, Tools } from "../utils/ai-chat-tool-types";
+import type { UIMessage } from "@tanstack/ai-client";
+import type { ChoiceOption, ToolRenderers } from "../types";
 import { findLatestChoices, groupMessages } from "../utils/ai-chat-utils";
 import { AiChatInput } from "./ai-chat-input";
 import { AiChatLoading } from "./ai-chat-loading";
@@ -13,13 +13,13 @@ import { AiChatSuggestions } from "./ai-chat-suggestions";
 import { AiChatToolGroupMessage } from "./ai-chat-tool-group-message";
 
 export interface AiChatProps {
-  messages: ChatMessage[];
+  messages: UIMessage[];
   isLoading: boolean;
   onSendMessage: (content: string) => void;
   onStop: () => void;
   onClearChat?: () => void;
   onChoiceSelect?: (option: ChoiceOption) => void;
-  tools?: Tools;
+  toolRenderers?: ToolRenderers;
   assistantName?: string;
   title?: string;
   emptyState?: ReactNode;
@@ -37,7 +37,7 @@ export function AiChat({
   onStop,
   onClearChat,
   onChoiceSelect,
-  tools,
+  toolRenderers,
   assistantName,
   title,
   emptyState,
@@ -153,7 +153,7 @@ export function AiChat({
                 <AiChatMessage
                   key={message.id}
                   message={message}
-                  tools={tools}
+                  toolRenderers={toolRenderers}
                   assistantName={displayName}
                 />
               );
@@ -194,20 +194,3 @@ export function AiChat({
     </div>
   );
 }
-
-export type {
-  ChoiceOption,
-  DisplayTool,
-  ExecuteTool,
-  Tool,
-  ToolResult,
-  ToolResultChoices,
-  Tools,
-} from "../utils/ai-chat-types";
-export { AiChatInput } from "./ai-chat-input";
-export { AiChatLoading } from "./ai-chat-loading";
-export { AiChatMarkdown } from "./ai-chat-markdown";
-export { AiChatMessage } from "./ai-chat-message";
-export { AiChatSuggestions } from "./ai-chat-suggestions";
-export { AiChatToolGroup } from "./ai-chat-tool-group";
-export { AiChatToolGroupMessage } from "./ai-chat-tool-group-message";
