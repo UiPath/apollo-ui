@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.52.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.51.2...@uipath/apollo-react@3.52.0) (2026-03-13)
+
+### Features
+
+* **apollo-react:** support skeleton loader in BaseNode ([00f4e1a](https://github.com/UiPath/apollo-ui/commit/00f4e1a34e60b36b73ee62f8107c567f5c386dfc))
+
 ## [@uipath/apollo-react-v3.51.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.51.1...@uipath/apollo-react@3.51.2) (2026-03-12)
 
 ### Bug Fixes
