@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.52.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.52.0...@uipath/apollo-react@3.52.1) (2026-03-14)
+
+### Bug Fixes
+
+* **apollo-react:** remove redundant shadow DOM style injection ([7063590](https://github.com/UiPath/apollo-ui/commit/7063590bbbc86ee5df912484b998d9ba1d8f6fdc))
+
 ## [@uipath/apollo-react-v3.52.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.51.2...@uipath/apollo-react@3.52.0) (2026-03-13)
 
 ### Features
