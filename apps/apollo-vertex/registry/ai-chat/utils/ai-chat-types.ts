@@ -12,13 +12,7 @@ export type {
   ToolResultPart,
   UserMessage,
 } from "./ai-chat-message-types";
-
-export type {
-  OpenAIChatProvider,
-  OpenAIChatProviderConfig,
-} from "./providers/openai/openai-provider";
 export type { LLMProvider } from "./ai-chat-provider";
-
 export type {
   ChoiceOption,
   DisplayTool,
@@ -29,6 +23,10 @@ export type {
   ToolResultChoices,
   Tools,
 } from "./ai-chat-tool-types";
+export type { AnthropicProviderConfig } from "./providers/agenthub/anthropic/anthropic-provider";
+export { AnthropicProvider } from "./providers/agenthub/anthropic/anthropic-provider";
+export type { OpenAIProviderConfig } from "./providers/agenthub/openai/openai-provider";
+export { OpenAIProvider } from "./providers/agenthub/openai/openai-provider";
 
 export interface UseAiChatOptions {
   provider: LLMProvider;

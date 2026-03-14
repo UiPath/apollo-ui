@@ -2,7 +2,7 @@ import { AiChatTemplate } from '@/templates/AiChatTemplate';
 
 # AI Chat
 
-A generic, reusable, and type-safe AI chat component for the Apollo Design System. Built with React, TypeScript, Tailwind CSS, and Zod, it supports OpenAI-compatible LLM APIs (OpenAI, Azure OpenAI, Ollama) with a pluggable `LLMProvider` interface, with an agentic tool loop, Zod-typed tool calling, markdown rendering, collapsible tool groups, suggestion buttons, and error display.
+A generic, reusable, and type-safe AI chat component for the Apollo Design System. Built with React, TypeScript, Tailwind CSS, and Zod, it supports a pluggable `LLMProvider` interface with built-in providers for UiPath AgentHub (OpenAI and Anthropic models), plus an agentic tool loop, Zod-typed tool calling, markdown rendering, collapsible tool groups, suggestion buttons, and error display.
 
 <div className="not-prose my-8">
   <AiChatTemplate />
@@ -39,14 +39,14 @@ npm install zod lucide-react react-i18next react-markdown remark-gfm
 ```tsx
 import { AiChat } from '@/components/ui/ai-chat/components/ai-chat';
 import { useAiChat } from '@/components/ui/ai-chat/hooks/use-ai-chat';
-import { OpenAIChatProvider } from '@/components/ui/ai-chat/utils/ai-chat-openai-provider';
+import { OpenAIProvider } from '@/components/ui/ai-chat/utils/providers/agenthub/openai/openai-provider';
 
 function BasicChat() {
   const chat = useAiChat({
-    provider: new OpenAIChatProvider({
-      baseUrl: 'https://api.openai.com/v1',
+    provider: new OpenAIProvider({
+      baseUrl: 'https://cloud.uipath.com/{org}/{tenant}/agenthub_/llm/api',
       model: 'gpt-4o',
-      accessToken: () => getApiToken(),
+      accessToken: () => getAccessToken(),
       systemPrompt: 'You are a helpful assistant.',
     }),
   });
@@ -65,6 +65,73 @@ function BasicChat() {
 }
 ```
 
+## Providers
+
+The component ships with two built-in providers for the **UiPath AgentHub** normalized LLM gateway. Both implement `LLMProvider` and return an async generator of `AssistantMessage`.
+
+### `OpenAIProvider`
+
+For OpenAI and Azure OpenAI models served through the AgentHub OpenAI-compatible endpoint.
+
+```tsx
+import { OpenAIProvider } from '@/components/ui/ai-chat/utils/providers/agenthub/openai/openai-provider';
+
+const provider = new OpenAIProvider({
+  // AgentHub base URL — /chat/completions is appended automatically
+  baseUrl: 'https://cloud.uipath.com/{org}/{tenant}/agenthub_/llm/api',
+  model: 'gpt-4o',
+  accessToken: () => getAccessToken(),   // refreshed on every request
+  systemPrompt: 'You are a helpful assistant.',
+  apiVersion: '2024-08-01-preview',      // optional: appended as ?api-version= (Azure)
+  toolChoice: 'auto',                    // 'auto' | 'none' | 'required'
+  maxTokens: 2048,
+  temperature: 0.7,
+});
+```
+
+### `AnthropicProvider`
+
+For Anthropic (Claude) models via the AgentHub normalized endpoint. Sends Anthropic-native message and tool formats; the gateway translates these and returns OpenAI-compatible SSE.
+
+```tsx
+import { AnthropicProvider } from '@/components/ui/ai-chat/utils/providers/agenthub/anthropic/anthropic-provider';
+
+const provider = new AnthropicProvider({
+  // Full endpoint URL — no path is appended
+  baseUrl: 'https://cloud.uipath.com/{org}/{tenant}/agenthub_/llm/api/chat/completions',
+  // Model name sent as X-UiPath-LlmGateway-NormalizedApi-ModelName header
+  modelName: 'anthropic.claude-sonnet-4-5-20250929-v1:0',
+  accessToken: () => getAccessToken(),
+  systemPrompt: 'You are a helpful assistant.',
+  toolChoice: 'auto',                    // 'auto' | 'none' | 'required'
+  maxTokens: 2048,
+  temperature: 0.7,
+});
+```
+
+### Custom `LLMProvider`
+
+Implement the `LLMProvider` interface to connect any backend:
+
+```tsx
+import type { LLMProvider } from '@/components/ui/ai-chat/utils/ai-chat-provider';
+import type { AssistantMessage, ChatMessage } from '@/components/ui/ai-chat/utils/ai-chat-message-types';
+import type { Tools } from '@/components/ui/ai-chat/utils/ai-chat-tool-types';
+
+class MyProvider implements LLMProvider {
+  async *chat(
+    messages: ChatMessage[],
+    tools: Tools | undefined,
+    signal: AbortSignal,
+  ): AsyncGenerator<AssistantMessage> {
+    // yield partial messages as tokens arrive, yield the final message last
+    yield { id: crypto.randomUUID(), role: 'assistant', content: [{ type: 'text', text: 'Hello!' }], timestamp: Date.now() };
+  }
+}
+```
+
+---
+
 ## Tool Calling
 
 There are two kinds of tools — **`ExecuteTool`** runs logic in the agentic loop and sends a result back to the LLM, **`DisplayTool`** renders UI and stops the loop (no result sent to the LLM).
@@ -78,7 +145,7 @@ Has a required `execute`. The agentic loop calls `execute`, sends the result bac
 ```tsx
 import { z } from 'zod';
 import { useAiChat } from '@/components/ui/ai-chat/hooks/use-ai-chat';
-import { OpenAIChatProvider } from '@/components/ui/ai-chat/utils/ai-chat-openai-provider';
+import { OpenAIProvider } from '@/components/ui/ai-chat/utils/providers/agenthub/openai/openai-provider';
 import type { Tools } from '@/components/ui/ai-chat/utils/ai-chat-types';
 
 const tools: Tools = {
@@ -97,10 +164,10 @@ const tools: Tools = {
 
 function AgenticChat() {
   const chat = useAiChat({
-    provider: new OpenAIChatProvider({
-      baseUrl: 'https://api.openai.com/v1',
+    provider: new OpenAIProvider({
+      baseUrl: 'https://cloud.uipath.com/{org}/{tenant}/agenthub_/llm/api',
       model: 'gpt-4o',
-      accessToken: () => getApiToken(),
+      accessToken: () => getAccessToken(),
     }),
     tools,
     maxToolIterations: 10, // default
@@ -145,7 +212,7 @@ const tools: Tools = {
 
 function DisplayChat() {
   const chat = useAiChat({
-    provider: new OpenAIChatProvider({ baseUrl, model, accessToken }),
+    provider: new OpenAIProvider({ baseUrl, model, accessToken }),
     tools,
   });
 
@@ -270,10 +337,10 @@ Pass `systemPrompt` as a function in the provider config — it is called on eve
 ```tsx
 function DynamicChat({ currentUser, currentContext }) {
   const chat = useAiChat({
-    provider: new OpenAIChatProvider({
-      baseUrl: 'https://api.openai.com/v1',
+    provider: new OpenAIProvider({
+      baseUrl: 'https://cloud.uipath.com/{org}/{tenant}/agenthub_/llm/api',
       model: 'gpt-4o',
-      accessToken: () => getApiToken(),
+      accessToken: () => getAccessToken(),
       systemPrompt: () =>
         `You are assisting ${currentUser.name}. Context: ${currentContext}.`,
     }),
@@ -287,7 +354,7 @@ Pass a dynamic `storageKey` to persist history in `sessionStorage` and automatic
 
 ```tsx
 const chat = useAiChat({
-  provider: new OpenAIChatProvider({ ... }),
+  provider: new OpenAIProvider({ ... }),
   storageKey: `chat_${recordId}`,  // resets automatically when recordId changes
 });
 ```
@@ -306,7 +373,7 @@ Main hook for AI chat functionality.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `provider` | `LLMProvider` | required | LLM provider instance (`OpenAIChatProvider` or any custom `LLMProvider`) |
+| `provider` | `LLMProvider` | required | LLM provider instance (`OpenAIProvider`, `AnthropicProvider`, or any custom `LLMProvider`) |
 | `tools` | `Tools \| () => Tools` | — | Tool definitions; if a function, evaluated once per render to produce the resolved tools |
 | `maxToolIterations` | `number` | `10` | Max agentic loop iterations before throwing |
 | `storageKey` | `string` | — | `sessionStorage` key for history persistence; omit for in-memory only |
@@ -373,14 +440,20 @@ import type {
   ChoiceOption,
   ToolResult,
   ToolResultChoices,
-  // Provider types
-  LLMProvider,
-  OpenAIChatProviderConfig,
+  // Hook types
   UseAiChatOptions,
   UseAiChatReturn,
 } from '@/components/ui/ai-chat/utils/ai-chat-types';
 
-import { OpenAIChatProvider } from '@/components/ui/ai-chat/utils/ai-chat-openai-provider';
+// Provider interface
+import type { LLMProvider } from '@/components/ui/ai-chat/utils/ai-chat-provider';
+
+// Built-in providers
+import { OpenAIProvider } from '@/components/ui/ai-chat/utils/providers/agenthub/openai/openai-provider';
+import type { OpenAIProviderConfig } from '@/components/ui/ai-chat/utils/providers/agenthub/openai/openai-provider';
+
+import { AnthropicProvider } from '@/components/ui/ai-chat/utils/providers/agenthub/anthropic/anthropic-provider';
+import type { AnthropicProviderConfig } from '@/components/ui/ai-chat/utils/providers/agenthub/anthropic/anthropic-provider';
 
 // Standalone markdown renderer (same styling as assistant messages)
 import { AiChatMarkdown } from '@/components/ui/ai-chat/components/ai-chat-markdown';
@@ -455,15 +528,15 @@ interface LLMProvider {
     messages: ChatMessage[],
     tools: Tools | undefined,
     signal: AbortSignal,
-  ): Promise<AssistantMessage>;
+  ): AsyncGenerator<AssistantMessage>;
 }
 ```
 
-**OpenAIChatProviderConfig** — OpenAI, Azure OpenAI, Ollama, and compatible endpoints
+**OpenAIProviderConfig** — for OpenAI / Azure OpenAI models via AgentHub
 
 ```tsx
-interface OpenAIChatProviderConfig {
-  baseUrl: string;
+interface OpenAIProviderConfig {
+  baseUrl: string;                             // AgentHub base URL; /chat/completions is appended
   model: string;
   apiVersion?: string;                         // appended as ?api-version= (Azure)
   accessToken: string | (() => string | null); // refreshed per request
@@ -471,7 +544,20 @@ interface OpenAIChatProviderConfig {
   toolChoice?: 'auto' | 'none' | 'required';
   maxTokens?: number;                          // default 2048
   temperature?: number;                        // default 0.7
-  fallbackResponse?: string;
+}
+```
+
+**AnthropicProviderConfig** — for Anthropic (Claude) models via AgentHub normalized endpoint
+
+```tsx
+interface AnthropicProviderConfig {
+  baseUrl: string;                             // full endpoint URL; no path appended
+  modelName: string;                           // sent as X-UiPath-LlmGateway-NormalizedApi-ModelName
+  accessToken: string | (() => string | null);
+  systemPrompt?: string | (() => string);
+  toolChoice?: 'auto' | 'none' | 'required';
+  maxTokens?: number;                          // default 2048
+  temperature?: number;                        // default 0.7
 }
 ```
 
