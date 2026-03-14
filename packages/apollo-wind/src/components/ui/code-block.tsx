@@ -10,7 +10,8 @@ import {
   prism,
   vs,
   vscDarkPlus,
-} from 'react-syntax-highlighter/dist/esm/styles/prism';
+} from 'react-syntax-highlighter/dist/esm/styles/prism/index.js';
+
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib';
 
@@ -187,7 +188,8 @@ function getBodyTheme(): CodeBlockTheme {
   const bodyClasses = document.body.classList;
   const htmlClasses = document.documentElement.classList;
   return (
-    BODY_CLASS_PRIORITY.find((t) => bodyClasses.contains(t) || htmlClasses.contains(t)) ?? 'future-dark'
+    BODY_CLASS_PRIORITY.find((t) => bodyClasses.contains(t) || htmlClasses.contains(t)) ??
+    'future-dark'
   );
 }
 
