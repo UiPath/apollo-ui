@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocalStorage } from "@uidotdev/usehooks";
 import { AnimatePresence, motion } from "framer-motion";
 import { Box, PanelLeft } from "lucide-react";
 import { useState } from "react";
@@ -10,7 +11,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useLocalStorage } from "@uidotdev/usehooks";
 import type { CompanyLogo } from "./shell";
 import {
   fastFadeTransition,

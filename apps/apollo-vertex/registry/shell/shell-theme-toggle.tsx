@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocalStorage } from "@uidotdev/usehooks";
 import { Moon, Sun } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useLocalStorage } from "@uidotdev/usehooks";
 import { useTheme } from "./shell-theme-provider";
 
 export function ThemeToggle() {
