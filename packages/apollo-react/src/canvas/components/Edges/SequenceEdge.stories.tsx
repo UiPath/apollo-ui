@@ -955,6 +955,182 @@ function LoopEdgesStory() {
 }
 
 // ============================================================================
+// ELK Routing Story
+// ============================================================================
+
+function ElkRoutingStory() {
+  const initialNodes = useMemo(
+    () => [
+      createStickyNote(
+        'sticky-elk',
+        'green',
+        '**ELK Routing**\nEdges with `data.elkRouting` use orthogonal bend points to route around nodes',
+        { x: 48, y: 32 },
+        { width: 880, height: 800 },
+      ),
+
+      // Row 1: Straight edge
+      createNode({
+        id: 'elk-a1',
+        label: 'Source',
+        x: 96,
+        y: 96,
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'elk-b1',
+        label: 'Target',
+        x: 352,
+        y: 96,
+        targetPositions: [Position.Left],
+      }),
+
+      // Row 2: Routed around obstacle
+      createNode({
+        id: 'elk-a2',
+        label: 'Source',
+        x: 96,
+        y: 288,
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'elk-obstacle',
+        label: 'Obstacle',
+        x: 352,
+        y: 288,
+        targetPositions: [Position.Left],
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'elk-b2',
+        label: 'Target',
+        x: 608,
+        y: 288,
+        targetPositions: [Position.Left],
+      }),
+
+      // Row 3: S-shape with label
+      createNode({
+        id: 'elk-a3',
+        label: 'Source',
+        x: 96,
+        y: 480,
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'elk-b3',
+        label: 'Target',
+        x: 352,
+        y: 576,
+        targetPositions: [Position.Left],
+      }),
+
+      // Info panel
+      createStickyNote(
+        'sticky-elk-info',
+        'pink',
+        '## ELK Edge Routing\n\nWhen `edge.data.elkRouting` is set, SequenceEdge draws an orthogonal path with rounded corners using ELK-computed bend points.\n\n**Row 1:** Straight — only start/end points, no bends\n**Row 2:** Routed around obstacle — bend points go above\n**Row 3:** S-shape with edge label — vertical + horizontal bends',
+        { x: 48, y: 864 },
+        { width: 480, height: 224 },
+      ),
+    ],
+    [],
+  );
+
+  const initialEdges: Edge[] = useMemo(
+    () => [
+      // Row 1: Straight
+      {
+        id: 'e-elk-straight',
+        source: 'elk-a1',
+        target: 'elk-b1',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+        data: {
+          elkRouting: [
+            { x: 256, y: 144 },
+            { x: 352, y: 144 },
+          ],
+        },
+      },
+
+      // Row 2: Routed around obstacle
+      {
+        id: 'e-elk-routed',
+        source: 'elk-a2',
+        target: 'elk-b2',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+        data: {
+          elkRouting: [
+            { x: 256, y: 336 },
+            { x: 304, y: 336 },
+            { x: 304, y: 240 },
+            { x: 560, y: 240 },
+            { x: 560, y: 336 },
+            { x: 608, y: 336 },
+          ],
+        },
+      },
+
+      // Normal edges through obstacle
+      {
+        id: 'e-elk-obstacle-in',
+        source: 'elk-a2',
+        target: 'elk-obstacle',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+      },
+      {
+        id: 'e-elk-obstacle-out',
+        source: 'elk-obstacle',
+        target: 'elk-b2',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+      },
+
+      // Row 3: S-shape with label
+      {
+        id: 'e-elk-s-shape',
+        source: 'elk-a3',
+        target: 'elk-b3',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+        data: {
+          label: 'Routed',
+          elkRouting: [
+            { x: 256, y: 528 },
+            { x: 304, y: 528 },
+            { x: 304, y: 624 },
+            { x: 352, y: 624 },
+          ],
+        },
+      },
+    ],
+    [],
+  );
+
+  const { canvasProps } = useCanvasStory({
+    initialNodes,
+    initialEdges,
+    additionalNodeTypes: nodeTypes,
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} edgeTypes={edgeTypes} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+// ============================================================================
 // Exported Stories
 // ============================================================================
 
@@ -1005,6 +1181,18 @@ export const LoopEdges: Story = {
       description: {
         story:
           'Demonstrates loop edges with custom paths. SequenceEdge automatically detects self-loops and loopBack edges, rendering them with paths that go below the node. Success handle loops have larger dimensions than output handle loops.',
+      },
+    },
+  },
+};
+
+export const ElkRouting: Story = {
+  render: () => <ElkRoutingStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates ELK edge routing support. When edge.data.elkRouting is set with routing points from ELK\'s layered algorithm (ORTHOGONAL edge routing), SequenceEdge renders an orthogonal path with rounded corners. The first and last routing points are replaced by React Flow handle coordinates; intermediate points are the bend points. Row 1: straight edge, Row 2: edge routed around an obstacle, Row 3: S-shape with edge label.',
       },
     },
   },
