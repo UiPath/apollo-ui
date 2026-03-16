@@ -48,6 +48,9 @@ const DEFAULT_MODE_TOOLBARS: Record<string, ModeToolbarConfig> = {
   evaluation: {
     actions: [...DEFAULT_ACTIONS_FOR_ALL_MODES],
   },
+  readonly: {
+    actions: [],
+  },
 };
 
 // Stub toolbar registry - consumers can inject their own
