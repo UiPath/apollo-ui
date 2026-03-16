@@ -1,3 +1,13 @@
+## [@uipath/apollo-wind-v0.15.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.14.0...@uipath/apollo-wind@0.15.0) (2026-03-16)
+
+### Features
+
+* **apollo-wind:** add Flow Node Expandable and Hover Menu components ([1f73dc3](https://github.com/uipath/apollo-ui/commit/1f73dc30f75cfa166c1c610d8ef261d73dc64159))
+
+### Bug Fixes
+
+* **apollo-wind:** apply code review fixes across canvas node components ([8ac1bef](https://github.com/uipath/apollo-ui/commit/8ac1befc5a799998858ff8aa337d64588c0254bb))
+
 ## [@uipath/apollo-wind-v0.14.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.13.0...@uipath/apollo-wind@0.14.0) (2026-03-12)
 
 ### Features
