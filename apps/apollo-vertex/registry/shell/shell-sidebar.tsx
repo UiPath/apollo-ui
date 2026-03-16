@@ -4,7 +4,9 @@ import { useLocalStorage } from "@uidotdev/usehooks";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { CompanyLogo, ShellNavItem } from "./shell";
+import { sidebarSpring } from "./shell-animations";
 import { Company } from "./shell-company";
+import { SIDEBAR_COLLAPSED_KEY } from "./shell-constants";
 import { MinimalCompany } from "./shell-minimal-company";
 import { MinimalNavItem } from "./shell-minimal-nav-item";
 import { NavItem } from "./shell-nav-item";
@@ -25,7 +27,7 @@ export const Sidebar = ({
   companyLogo,
   navItems,
 }: SidebarProps) => {
-  const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
+  const [isCollapsed] = useLocalStorage(SIDEBAR_COLLAPSED_KEY, false);
 
   const sidebarWidth = isCollapsed ? "w-16" : "w-[280px]";
 
@@ -60,12 +62,7 @@ export const Sidebar = ({
       animate={{
         width: isCollapsed ? 64 : 280,
       }}
-      transition={{
-        type: "spring",
-        stiffness: 400,
-        damping: 30,
-        mass: 0.8,
-      }}
+      transition={sidebarSpring}
     >
       <Company
         companyName={companyName}
@@ -83,7 +80,10 @@ export const Sidebar = ({
         ))}
       </nav>
       <div
-        className={cn("mt-auto", isCollapsed && "flex flex-col items-center")}
+        className={cn(
+          "mt-auto py-1.5",
+          isCollapsed ? "flex flex-col items-center" : "",
+        )}
       >
         <UserProfile isCollapsed={isCollapsed} />
       </div>

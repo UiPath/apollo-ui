@@ -10,11 +10,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SIDEBAR_COLLAPSED_KEY } from "./shell-constants";
 import { useTheme } from "./shell-theme-provider";
 
 export function ThemeToggle() {
   const { t } = useTranslation();
-  const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
+  const [isCollapsed] = useLocalStorage(SIDEBAR_COLLAPSED_KEY, false);
   const { setTheme } = useTheme();
 
   return (

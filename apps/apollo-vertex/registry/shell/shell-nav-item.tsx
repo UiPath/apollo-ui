@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocalStorage } from "@uidotdev/usehooks";
 import { AnimatePresence, motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
@@ -10,13 +11,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useLocalStorage } from "@uidotdev/usehooks";
 import { cn } from "@/lib/utils";
 import {
   fastFadeTransition,
   iconHoverScale,
   textFadeVariants,
 } from "./shell-animations";
+import { SIDEBAR_COLLAPSED_KEY } from "./shell-constants";
 import { Text } from "./shell-text";
 import type { TranslationKey } from "./shell-translation-key";
 
@@ -27,7 +28,7 @@ interface NavItemProps {
 }
 
 export const NavItem = ({ to, icon: Icon, label }: NavItemProps) => {
-  const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
+  const [isCollapsed] = useLocalStorage(SIDEBAR_COLLAPSED_KEY, false);
   const pathname = usePathname();
   const isActive = pathname === to || pathname.startsWith(`${to}/`);
 

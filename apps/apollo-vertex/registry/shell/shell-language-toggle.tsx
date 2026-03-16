@@ -1,7 +1,7 @@
 "use client";
 
 import { Globe } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,45 +10,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SUPPORTED_LOCALES, type SupportedLocale } from "@/lib/i18n";
+import type { SupportedLocale } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
+import { LANGUAGE_CHANGED_EVENT, LOCALE_OPTIONS } from "./shell-constants";
 import { Text } from "./shell-text";
-import type { TranslationKey } from "./shell-translation-key";
 
 export type LanguageChangedEvent = {
-  selectedLanguageId: string;
+  selectedLanguageId: SupportedLocale;
 };
-
-const MAP_LOCALE_TO_TRANSLATION_KEY: Record<SupportedLocale, TranslationKey> = {
-  en: "english",
-  de: "german",
-  es: "spanish",
-  "es-MX": "spanish-mx",
-  fr: "french",
-  ja: "japanese",
-  ko: "korean",
-  pt: "portuguese",
-  "pt-BR": "portuguese-br",
-  ro: "romanian",
-  ru: "russian",
-  tr: "turkish",
-  "zh-CN": "chinese-cn",
-  "zh-TW": "chinese-tw",
-};
-
-const OPTIONS = SUPPORTED_LOCALES.map((locale) => ({
-  code: locale,
-  translationKey: MAP_LOCALE_TO_TRANSLATION_KEY[locale],
-}));
 
 export function LanguageToggle() {
   const { i18n } = useTranslation();
-  const [language, setLanguageState] = useState(i18n.language);
+  const language = i18n.language;
 
-  const setLanguage = useCallback((code: string) => {
-    setLanguageState(code);
-
+  const setLanguage = useCallback((code: SupportedLocale) => {
     document.dispatchEvent(
-      new CustomEvent<LanguageChangedEvent>("languageChanged", {
+      new CustomEvent<LanguageChangedEvent>(LANGUAGE_CHANGED_EVENT, {
         detail: { selectedLanguageId: code },
       }),
     );
@@ -62,11 +39,11 @@ export function LanguageToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {OPTIONS.map((locale) => (
+        {LOCALE_OPTIONS.map((locale) => (
           <DropdownMenuItem
             key={locale.code}
             onClick={() => setLanguage(locale.code)}
-            className={language === locale.code ? "bg-accent" : ""}
+            className={cn(language === locale.code ? "bg-accent" : "")}
           >
             <Text value={locale.translationKey} />
           </DropdownMenuItem>
