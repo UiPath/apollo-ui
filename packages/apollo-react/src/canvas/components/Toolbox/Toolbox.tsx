@@ -320,7 +320,7 @@ export function Toolbox<T>({
   ]);
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} data-testid="toolbox-container">
       <Column px={20} py={12} gap={12} w={320} h={440}>
         <Header
           title={currentParentItem?.name || title}
