@@ -1,10 +1,12 @@
 import styled from '@emotion/styled';
+import { getExecutionStatusBorder } from '../../styles/execution-status';
 
 export const GroupContainer = styled.div<{
   backgroundColor?: string;
   borderColor?: string;
   selected?: boolean;
   collapsed?: boolean;
+  executionStatus?: string;
 }>`
   position: relative;
   width: 100%;
@@ -15,16 +17,20 @@ export const GroupContainer = styled.div<{
     ${({ borderColor, selected }) =>
       selected
         ? 'var(--uix-canvas-primary)'
-        : borderColor || 'var(--uix-canvas-border)'} !important;
+        : borderColor || 'var(--uix-canvas-border)'};
   border-radius: 16px !important;
   transition: border-color 0.2s ease;
   overflow: visible;
   box-shadow: ${({ selected }) => (selected ? '0 0 0 1px var(--uix-canvas-primary)' : 'none')};
   padding: 0 !important;
 
+  ${({ executionStatus }) => getExecutionStatusBorder(executionStatus)}
+
   &:hover {
-    border-color: ${({ selected }) =>
-      selected ? 'var(--uix-canvas-primary)' : 'var(--uix-canvas-border-hover)'} !important;
+    ${({ selected, executionStatus }) =>
+      executionStatus
+        ? ''
+        : `border-color: ${selected ? 'var(--uix-canvas-primary)' : 'var(--uix-canvas-border-hover)'};`}
   }
 `;
 
@@ -112,6 +118,7 @@ export const GroupHeaderButton = styled.button<{ $disabled?: boolean }>`
 export const GroupHeaderSeparator = styled.div`
   width: 1px;
   height: 20px;
+  margin: 0 4px;
   background: var(--uix-canvas-border-grid);
   align-self: center;
 `;
