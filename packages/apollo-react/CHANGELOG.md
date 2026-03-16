@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.53.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.52.1...@uipath/apollo-react@3.53.0) (2026-03-16)
+
+### Features
+
+* **apollo-react:** add data testid for e2es [MST-7066] ([0d97a39](https://github.com/UiPath/apollo-ui/commit/0d97a39e9b272ba65f71f3dc4c6336b65d0773d4))
+
 ## [@uipath/apollo-react-v3.52.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.52.0...@uipath/apollo-react@3.52.1) (2026-03-14)
 
 ### Bug Fixes
