@@ -29,8 +29,14 @@ export const ListItemButton = styled(motion.button)`
   width: 100%;
   transition: all 0.15s ease;
 
-  &:hover {
+  &:hover,
+  &.active {
     background: var(--uix-canvas-background-hover);
+  }
+
+  &.active {
+    outline: 1px solid var(--uix-canvas-primary);
+    outline-offset: -1px;
   }
 `;
 

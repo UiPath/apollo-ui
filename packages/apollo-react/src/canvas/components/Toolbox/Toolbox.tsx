@@ -1,14 +1,16 @@
 import { useNavigationStack } from '@uipath/apollo-react/canvas/hooks';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useListRef } from 'react-window';
 import { Header } from './Header';
-import { type ListItem, ListView } from './ListView';
+import { type ListItem, ListView, type ListViewHandle, type RenderItem } from './ListView';
 import { SearchBox } from './SearchBox';
 import { AnimatedContainer, AnimatedContent } from './Toolbox.styles';
 
 type AnimationDirection = 'forward' | 'back';
 
 const TRANSITION_DURATION = 150;
+const SEARCH_BAR_INDEX = -1;
 
 /**
  * BFS for item by id.
@@ -58,6 +60,34 @@ export interface ToolboxProps<T> {
   onSearch?: ToolboxSearchHandler<T>;
 }
 
+function getNextSelectableIndex(
+  renderedItems: RenderItem<ListItem>[],
+  currentIndex: number,
+  direction: 'up' | 'down'
+): number {
+  const numericDirection = direction === 'up' ? -1 : 1;
+  let next = currentIndex + numericDirection;
+  while (next >= 0 && next < renderedItems.length) {
+    if (renderedItems[next]?.type === 'item') return next;
+    next += numericDirection;
+  }
+  return SEARCH_BAR_INDEX;
+}
+
+function getFirstSelectableIndex(renderedItems: RenderItem<ListItem>[]): number {
+  for (let i = 0; i < renderedItems.length; i++) {
+    if (renderedItems[i]?.type === 'item') return i;
+  }
+  return SEARCH_BAR_INDEX;
+}
+
+function getLastSelectableIndex(renderedItems: RenderItem<ListItem>[]): number {
+  for (let i = renderedItems.length - 1; i >= 0; i--) {
+    if (renderedItems[i]?.type === 'item') return i;
+  }
+  return SEARCH_BAR_INDEX;
+}
+
 function searchLeafItems<T>(items: ListItem<T>[], query: string): ListItem<T>[] {
   const results: ListItem<T>[] = [];
 
@@ -101,12 +131,22 @@ export function Toolbox<T>({
     parentItem: ListItem<T> | null;
   }>();
 
+  const [activeIndex, setActiveIndex] = useState(SEARCH_BAR_INDEX);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const searchIdRef = useRef(0);
   const initialItemsRef = useRef(initialItems);
+  const listRef = useListRef(null);
+  const listViewRef = useRef<ListViewHandle<ListItem<T>>>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const isSearching = useMemo(() => search.length > 0, [search]);
+
+  const displayedItems = useMemo(
+    () => (isSearching && !isSearchingInitialItems ? searchedItems : items),
+    [isSearching, isSearchingInitialItems, searchedItems, items]
+  );
 
   const startTransition = useCallback((direction: AnimationDirection) => {
     if (transitionTimeoutRef.current) {
@@ -121,11 +161,26 @@ export function Toolbox<T>({
     }, TRANSITION_DURATION);
   }, []);
 
+  const navigateToIndex = useCallback(
+    (index: number) => {
+      setActiveIndex(index);
+
+      if (index === SEARCH_BAR_INDEX) {
+        searchInputRef.current?.focus();
+        return;
+      }
+
+      listRef.current?.scrollToRow({ index, align: 'auto' });
+    },
+    [listRef]
+  );
+
   const clearSearch = useCallback(() => {
     setSearch('');
     setSearchedItems([]);
     setSearchLoading(false);
     setIsSearchingInitialItems(true);
+    setActiveIndex(SEARCH_BAR_INDEX);
   }, []);
 
   const handleSearch = useCallback(
@@ -139,6 +194,7 @@ export function Toolbox<T>({
       }
 
       setSearch(query);
+      setActiveIndex(SEARCH_BAR_INDEX);
       searchIdRef.current += 1;
       const currentRequestId = searchIdRef.current;
 
@@ -162,6 +218,7 @@ export function Toolbox<T>({
 
   const handleBackTransition = useCallback(() => {
     startTransition('back');
+    setActiveIndex(SEARCH_BAR_INDEX);
 
     const previousState = navigationStack.pop();
 
@@ -195,6 +252,7 @@ export function Toolbox<T>({
       setItems(nestedItems);
       setCurrentParentItem(item);
       clearSearch();
+      setActiveIndex(SEARCH_BAR_INDEX);
       startTransition('forward');
       setChildrenLoading(false);
     },
@@ -283,6 +341,113 @@ export function Toolbox<T>({
     }
   }, [items]);
 
+  const activeDescendantId = useMemo(() => {
+    if (activeIndex < 0) return undefined;
+    const renderItem = listViewRef.current?.renderedItems[activeIndex];
+    if (renderItem?.type === 'item') return `toolbox-item-${renderItem.item.id}`;
+    return undefined;
+  }, [activeIndex]);
+
+  const handleNavigationKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (isTransitioning) return;
+
+      const renderedItems = listViewRef.current?.renderedItems ?? [];
+
+      const navigateDown = () => {
+        if (activeIndex === SEARCH_BAR_INDEX) {
+          const firstIndex = getFirstSelectableIndex(renderedItems);
+          if (firstIndex !== SEARCH_BAR_INDEX) navigateToIndex(firstIndex);
+        } else {
+          const nextIndex = getNextSelectableIndex(renderedItems, activeIndex, 'down');
+          if (nextIndex !== SEARCH_BAR_INDEX) {
+            navigateToIndex(nextIndex);
+          } else {
+            const firstIndex = getFirstSelectableIndex(renderedItems);
+            if (firstIndex !== SEARCH_BAR_INDEX) navigateToIndex(firstIndex);
+          }
+        }
+      };
+
+      const navigateUp = () => {
+        navigateToIndex(getNextSelectableIndex(renderedItems, activeIndex, 'up'));
+      };
+
+      switch (e.key) {
+        case 'ArrowDown': {
+          e.preventDefault();
+          navigateDown();
+          break;
+        }
+        case 'ArrowUp': {
+          e.preventDefault();
+          navigateUp();
+          break;
+        }
+        case 'Enter': {
+          if (activeIndex === SEARCH_BAR_INDEX) break;
+
+          const renderItem = renderedItems[activeIndex];
+          if (renderItem?.type === 'item') {
+            e.preventDefault();
+            handleItemSelect(renderItem.item);
+          }
+          break;
+        }
+        case 'ArrowRight': {
+          const renderItem = renderedItems[activeIndex];
+          if (renderItem?.type === 'item' && renderItem.item.children) {
+            e.preventDefault();
+            handleItemSelect(renderItem.item);
+          }
+          break;
+        }
+        case 'ArrowLeft': {
+          if (!navigationStack.canGoBack || (activeIndex === SEARCH_BAR_INDEX && search.length > 0))
+            return;
+
+          e.preventDefault();
+          handleBackTransition();
+          break;
+        }
+        case 'Tab': {
+          e.preventDefault();
+          if (e.shiftKey) {
+            navigateUp();
+          } else {
+            navigateDown();
+          }
+          break;
+        }
+        case 'Home': {
+          if (activeIndex === SEARCH_BAR_INDEX) break;
+
+          e.preventDefault();
+          const firstIndex = getFirstSelectableIndex(renderedItems);
+          if (firstIndex !== SEARCH_BAR_INDEX) navigateToIndex(firstIndex);
+          break;
+        }
+        case 'End': {
+          if (activeIndex === SEARCH_BAR_INDEX) break;
+
+          e.preventDefault();
+          const lastIndex = getLastSelectableIndex(renderedItems);
+          if (lastIndex !== SEARCH_BAR_INDEX) navigateToIndex(lastIndex);
+          break;
+        }
+      }
+    },
+    [
+      search,
+      isTransitioning,
+      activeIndex,
+      navigationStack.canGoBack,
+      navigateToIndex,
+      handleItemSelect,
+      handleBackTransition,
+    ]
+  );
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -333,17 +498,23 @@ export function Toolbox<T>({
           onChange={handleSearch}
           clear={clearSearch}
           placeholder="Search"
+          inputRef={searchInputRef}
+          onNavigationKeyDown={handleNavigationKeyDown}
+          activeDescendantId={activeDescendantId}
         />
 
         <AnimatedContainer>
           <AnimatedContent entering={isTransitioning} direction={animationDirection}>
             <ListView
+              ref={listViewRef}
               isLoading={childrenLoading || searchLoading || loading}
-              items={isSearching && !isSearchingInitialItems ? searchedItems : items}
+              items={displayedItems}
+              activeIndex={activeIndex}
+              listRef={listRef}
               emptyStateMessage={isSearching ? 'No matching nodes found' : 'No nodes found'}
-              enableSections={!isSearching}
               onItemClick={handleItemSelect}
               onItemHover={onItemHover}
+              enableSections={!isSearching}
             />
           </AnimatedContent>
         </AnimatedContainer>

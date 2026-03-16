@@ -99,14 +99,14 @@ describe('AddNodePanel', () => {
     onClose: mockOnClose,
   };
 
-  it("should render with title 'Add Node'", () => {
+  it("should render with title 'Add node'", () => {
     render(
       <NodeRegistryProvider manifest={mockManifest}>
         <AddNodePanel {...defaultProps} />
       </NodeRegistryProvider>
     );
 
-    expect(screen.getByTestId('toolbox-title')).toHaveTextContent('Add Node');
+    expect(screen.getByTestId('toolbox-title')).toHaveTextContent('Add node');
   });
 
   it('should transform empty registry into empty list items', () => {

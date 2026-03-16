@@ -3,8 +3,8 @@ import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { NodeIcon, partition } from '@uipath/apollo-react/canvas/utils';
 import { ApSkeleton, ApTypography } from '@uipath/apollo-react/material';
 import { ApIcon, ApTooltip } from '@uipath/apollo-react/material/components';
-import { memo, useCallback, useMemo } from 'react';
-import type { RowComponentProps } from 'react-window';
+import { forwardRef, memo, useCallback, useImperativeHandle, useMemo } from 'react';
+import type { ListImperativeAPI, RowComponentProps } from 'react-window';
 import { useCanvasTheme } from '../BaseCanvas/CanvasThemeContext';
 import { IconContainer, ListItemButton, SectionHeader, StyledList } from './ListView.styles';
 
@@ -35,12 +35,55 @@ export type ListItem<T = any> = {
   children?: ListItem<T>[] | ((id: string, name: string) => Promise<ListItem<T>[]>);
 };
 
-type RenderItem<T extends ListItem> =
+export type RenderItem<T extends ListItem> =
   | { type: 'section'; sectionName: string }
   | { type: 'item'; item: T };
 
+export function buildRenderedItems<T extends ListItem>(
+  items: T[],
+  enableSections: boolean
+): RenderItem<T>[] {
+  const result: RenderItem<T>[] = [];
+
+  if (items.length === 0) return result;
+
+  if (!enableSections) {
+    // if sections are disabled, return all items as is
+    for (const item of items) {
+      result.push({ type: 'item', item });
+    }
+    return result;
+  }
+
+  const [itemsWithSection, itemsWithoutSection] = partition(items, (item) => !!item.section);
+
+  // process items without sections first
+  for (const item of itemsWithoutSection) {
+    result.push({ type: 'item', item });
+  }
+
+  // return early if no items with sections
+  if (itemsWithSection.length === 0) {
+    return result;
+  }
+
+  // process items with sections next
+  const sections = Array.from(new Set(itemsWithSection.map((item) => item.section)));
+
+  for (const section of sections) {
+    result.push({ type: 'section', sectionName: section as string });
+
+    for (const item of itemsWithSection.filter((item) => item.section === section)) {
+      result.push({ type: 'item', item });
+    }
+  }
+
+  return result;
+}
+
 export interface ListViewRowProps<T extends ListItem> {
   renderedItems: RenderItem<T>[];
+  activeIndex: number;
   isLoading?: boolean;
   isDarkMode?: boolean;
   onItemClick: (item: T) => void;
@@ -55,6 +98,7 @@ const ListViewRow = memo(
     style,
     ariaAttributes,
     renderedItems,
+    activeIndex,
     isLoading,
     isDarkMode,
     onItemClick,
@@ -97,13 +141,19 @@ const ListViewRow = memo(
     const item = renderItem.item;
     const bgColor = isDarkMode ? (item.colorDark ?? item.color) : item.color;
 
+    const isActive = index === activeIndex;
+
     return (
       <ListItemButton
         {...ariaAttributes}
+        tabIndex={-1}
+        id={`toolbox-item-${item.id}`}
+        role="option"
+        aria-selected={isActive}
         style={buttonStyle}
         onClick={handleButtonClick}
         onHoverStart={handleButtonHover}
-        className={isLoading ? 'loading' : ''}
+        className={`${isLoading ? 'loading' : ''} ${isActive ? 'active' : ''}`}
         disabled={isLoading}
       >
         <IconContainerMemoized
@@ -150,8 +200,14 @@ const ListViewRow = memo(
   }
 ) as <T extends ListItem>(props: RowComponentProps<ListViewRowProps<T>>) => React.ReactElement;
 
+export interface ListViewHandle<T extends ListItem = ListItem> {
+  renderedItems: RenderItem<T>[];
+}
+
 interface ListViewProps<T extends ListItem> {
   items: T[];
+  activeIndex?: number;
+  listRef?: React.RefObject<ListImperativeAPI | null>;
   onItemClick: (item: T) => void;
   onItemHover?: (item: T) => void;
   emptyStateMessage?: string;
@@ -160,59 +216,32 @@ interface ListViewProps<T extends ListItem> {
   enableSections?: boolean;
 }
 
-export const ListView = memo(function ListView<T extends ListItem>({
-  items,
-  onItemClick,
-  onItemHover,
-  emptyStateMessage = 'No items found',
-  emptyStateIcon = 'search_off',
-  isLoading = false,
-  enableSections = true,
-}: ListViewProps<T>) {
+const ListViewInner = forwardRef(function ListView<T extends ListItem>(
+  {
+    items,
+    activeIndex = -1,
+    listRef,
+    onItemClick,
+    onItemHover,
+    emptyStateMessage = 'No items found',
+    emptyStateIcon = 'search_off',
+    isLoading = false,
+    enableSections = true,
+  }: ListViewProps<T>,
+  ref: React.Ref<ListViewHandle<T>>
+) {
   const { isDarkMode } = useCanvasTheme();
 
-  const renderedItems = useMemo<RenderItem<T>[]>(() => {
-    const result: RenderItem<T>[] = [];
+  const renderedItems = useMemo(
+    () => buildRenderedItems(items, enableSections),
+    [items, enableSections]
+  );
 
-    if (items.length === 0) return result;
-
-    if (!enableSections) {
-      // if sections are disabled, return all items as is
-      for (const item of items) {
-        result.push({ type: 'item', item });
-      }
-      return result;
-    }
-
-    const [itemsWithSection, itemsWithoutSection] = partition(items, (item) => !!item.section);
-
-    // process items without sections first
-    for (const item of itemsWithoutSection) {
-      result.push({ type: 'item', item });
-    }
-
-    // return early if no items with sections
-    if (itemsWithSection.length === 0) {
-      return result;
-    }
-
-    // process items with sections next
-    const sections = Array.from(new Set(itemsWithSection.map((item) => item.section)));
-
-    for (const section of sections) {
-      result.push({ type: 'section', sectionName: section as string });
-
-      for (const item of itemsWithSection.filter((item) => item.section === section)) {
-        result.push({ type: 'item', item });
-      }
-    }
-
-    return result;
-  }, [items, enableSections]);
+  useImperativeHandle(ref, () => ({ renderedItems }), [renderedItems]);
 
   const rowProps = useMemo(
-    () => ({ renderedItems, isLoading, isDarkMode, onItemClick, onItemHover }),
-    [renderedItems, isLoading, isDarkMode, onItemClick, onItemHover]
+    () => ({ renderedItems, activeIndex, isLoading, isDarkMode, onItemClick, onItemHover }),
+    [renderedItems, activeIndex, isLoading, isDarkMode, onItemClick, onItemHover]
   );
 
   // Only show skeleton loaders when loading and no items exist
@@ -243,6 +272,9 @@ export const ListView = memo(function ListView<T extends ListItem>({
 
   return (
     <StyledList
+      id="toolbox-listbox"
+      role="listbox"
+      listRef={listRef}
       rowProps={rowProps}
       rowComponent={ListViewRow}
       rowCount={renderedItems.length}
@@ -251,3 +283,7 @@ export const ListView = memo(function ListView<T extends ListItem>({
     />
   );
 });
+
+export const ListView = memo(ListViewInner) as <T extends ListItem>(
+  props: ListViewProps<T> & { ref?: React.Ref<ListViewHandle<T>> }
+) => React.ReactElement | null;
