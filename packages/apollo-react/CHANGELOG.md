@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.54.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.53.0...@uipath/apollo-react@3.54.0) (2026-03-16)
+
+### Features
+
+* **apollo-react:** update group node for group node support ([776283a](https://github.com/UiPath/apollo-ui/commit/776283a01ccb98d71cb531d86502125b64d916bb))
+
 ## [@uipath/apollo-react-v3.53.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.52.1...@uipath/apollo-react@3.53.0) (2026-03-16)
 
 ### Features
