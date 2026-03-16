@@ -940,6 +940,18 @@
         {
           "path": "registry/shell/shell-auth-provider.tsx",
           "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-company-logo.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-constants.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-user-profile-menu-items.tsx",
+          "type": "registry:ui"
         }
       ]
     },

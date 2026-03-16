@@ -2,7 +2,7 @@
 
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { AnimatePresence, motion } from "framer-motion";
-import { Box, PanelLeft } from "lucide-react";
+import { PanelLeft } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -18,6 +18,8 @@ import {
   scaleVariants,
   textFadeVariants,
 } from "./shell-animations";
+import { CompanyLogoIcon } from "./shell-company-logo";
+import { SIDEBAR_COLLAPSED_KEY } from "./shell-constants";
 
 interface CompanyProps {
   companyName: string;
@@ -67,24 +69,7 @@ function CollapsedLogo({ companyLogo, onExpand }: CollapsedLogoProps) {
                     exit={{ opacity: 0, scale: 0.8 }}
                     transition={{ duration: 0.15 }}
                   >
-                    {companyLogo ? (
-                      <>
-                        <img
-                          src={companyLogo.url}
-                          alt={companyLogo.alt}
-                          className={`w-4 h-auto ${companyLogo.darkUrl ? "dark:hidden" : ""}`}
-                        />
-                        {companyLogo.darkUrl && (
-                          <img
-                            src={companyLogo.darkUrl}
-                            alt={companyLogo.alt}
-                            className="w-4 h-auto hidden dark:block"
-                          />
-                        )}
-                      </>
-                    ) : (
-                      <Box className="w-4 h-4 text-background" />
-                    )}
+                    <CompanyLogoIcon companyLogo={companyLogo} />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -104,7 +89,7 @@ export const Company = ({
 }: CompanyProps) => {
   const { t } = useTranslation();
   const [isCollapsed, setIsCollapsed] = useLocalStorage(
-    "sidebar-collapsed",
+    SIDEBAR_COLLAPSED_KEY,
     false,
   );
   const iconElement = (
@@ -112,24 +97,7 @@ export const Company = ({
       className="w-8 h-8 rounded-[4px] bg-primary-700 dark:bg-primary-400 flex items-center justify-center shrink-0"
       {...(isCollapsed ? { whileHover: iconHoverScale } : {})}
     >
-      {companyLogo ? (
-        <>
-          <img
-            src={companyLogo.url}
-            alt={companyLogo.alt}
-            className={`w-4 h-auto ${companyLogo.darkUrl ? "dark:hidden" : ""}`}
-          />
-          {companyLogo.darkUrl && (
-            <img
-              src={companyLogo.darkUrl}
-              alt={companyLogo.alt}
-              className="w-4 h-auto hidden dark:block"
-            />
-          )}
-        </>
-      ) : (
-        <Box className="w-4 h-4 text-background" />
-      )}
+      <CompanyLogoIcon companyLogo={companyLogo} />
     </motion.div>
   );
 
