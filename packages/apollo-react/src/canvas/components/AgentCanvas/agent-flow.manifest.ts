@@ -281,6 +281,32 @@ export const memoryResourceManifest: NodeManifest = {
   ],
 };
 
+export const a2aResourceManifest: NodeManifest = {
+  nodeType: 'uipath.resource.a2a',
+  version: '1.0.0',
+  category: 'resource',
+  tags: ['resource', 'a2a', 'agent-to-agent', 'protocol'],
+  sortOrder: 6,
+  display: {
+    label: 'A2A Resource',
+    description: 'Agent-to-Agent Protocol resource',
+    icon: 'hub',
+    shape: 'circle',
+  },
+  handleConfiguration: [
+    {
+      position: 'top',
+      handles: [
+        {
+          id: 'input',
+          type: 'target',
+          handleType: 'artifact',
+        },
+      ],
+    },
+  ],
+};
+
 // ============================================================================
 // Combined Manifest
 // ============================================================================
@@ -296,5 +322,6 @@ export const agentFlowManifest = {
     mcpResourceManifest,
     escalationResourceManifest,
     memoryResourceManifest,
+    a2aResourceManifest,
   ],
 };
