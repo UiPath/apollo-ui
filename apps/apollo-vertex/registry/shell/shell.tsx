@@ -4,6 +4,10 @@ import { ShellAuthProvider, useAuth } from "./shell-auth-provider";
 import { ShellLayout } from "./shell-layout";
 import { LocaleProvider } from "./shell-locale-provider";
 import { ShellLogin } from "./shell-login";
+import {
+  type ShellLinkComponent,
+  ShellRouterProvider,
+} from "./shell-router-context";
 import type { TranslationKey } from "./shell-translation-key";
 import { ShellUserProvider } from "./shell-user-provider";
 
@@ -32,6 +36,8 @@ interface ApolloShellProps extends ApolloShellComponentProps {
   scope: string;
   baseUrl: string;
   variant?: "minimal";
+  linkComponent: ShellLinkComponent;
+  pathname: string;
 }
 
 const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
@@ -72,20 +78,24 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   companyLogo,
   variant,
   navItems,
+  linkComponent,
+  pathname,
 }) => {
   return (
-    <ShellAuthProvider clientId={clientId} scope={scope} baseUrl={baseUrl}>
-      <LocaleProvider>
-        <ApolloShellComponent
-          companyName={companyName}
-          productName={productName}
-          companyLogo={companyLogo}
-          variant={variant}
-          navItems={navItems}
-        >
-          {children}
-        </ApolloShellComponent>
-      </LocaleProvider>
-    </ShellAuthProvider>
+    <ShellRouterProvider linkComponent={linkComponent} pathname={pathname}>
+      <ShellAuthProvider clientId={clientId} scope={scope} baseUrl={baseUrl}>
+        <LocaleProvider>
+          <ApolloShellComponent
+            companyName={companyName}
+            productName={productName}
+            companyLogo={companyLogo}
+            variant={variant}
+            navItems={navItems}
+          >
+            {children}
+          </ApolloShellComponent>
+        </LocaleProvider>
+      </ShellAuthProvider>
+    </ShellRouterProvider>
   );
 };

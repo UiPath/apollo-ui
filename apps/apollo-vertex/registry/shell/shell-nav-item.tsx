@@ -1,4 +1,3 @@
-import { Link, useLocation } from "@tanstack/react-router";
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { AnimatePresence, motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
@@ -15,6 +14,7 @@ import {
   textFadeVariants,
 } from "./shell-animations";
 import { SIDEBAR_COLLAPSED_KEY } from "./shell-constants";
+import { ShellLink, useShellPathname } from "./shell-router-context";
 import { Text } from "./shell-text";
 import type { TranslationKey } from "./shell-translation-key";
 
@@ -26,11 +26,11 @@ interface NavItemProps {
 
 export const NavItem = ({ to, icon: Icon, label }: NavItemProps) => {
   const [isCollapsed] = useLocalStorage(SIDEBAR_COLLAPSED_KEY, false);
-  const { pathname } = useLocation();
+  const pathname = useShellPathname();
   const isActive = pathname === to || pathname.startsWith(`${to}/`);
 
   const linkContent = (
-    <Link
+    <ShellLink
       to={to}
       className={cn(
         "flex items-center rounded-md transition-colors duration-200",
@@ -66,7 +66,7 @@ export const NavItem = ({ to, icon: Icon, label }: NavItemProps) => {
           </motion.span>
         )}
       </AnimatePresence>
-    </Link>
+    </ShellLink>
   );
 
   if (isCollapsed) {
