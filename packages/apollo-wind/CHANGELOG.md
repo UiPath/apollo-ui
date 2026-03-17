@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v0.15.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.0...@uipath/apollo-wind@0.15.1) (2026-03-17)
+
+### Bug Fixes
+
+* **apollo-wind:** attempt to fix prism import issue ([bd5ba84](https://github.com/uipath/apollo-ui/commit/bd5ba8460c2c35e6312af58309f7e2552bcdd255))
+
 ## [@uipath/apollo-wind-v0.15.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.14.0...@uipath/apollo-wind@0.15.0) (2026-03-16)
 
 ### Features
