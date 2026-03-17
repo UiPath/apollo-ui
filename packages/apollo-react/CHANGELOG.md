@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.55.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.54.1...@uipath/apollo-react@3.55.0) (2026-03-17)
+
+### Features
+
+* **apollo-react:** add a2a resource type to Agent Canvas ([a3974e5](https://github.com/UiPath/apollo-ui/commit/a3974e572f9eb9e241688921809604440583708f))
+
 ## [@uipath/apollo-react-v3.54.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.54.0...@uipath/apollo-react@3.54.1) (2026-03-17)
 
 ### Bug Fixes
