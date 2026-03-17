@@ -1,33 +1,3 @@
-## [@uipath/apollo-react-v3.55.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.54.1...@uipath/apollo-react@3.55.0) (2026-03-17)
-
-### Features
-
-* **apollo-react:** add a2a resource type to Agent Canvas ([a3974e5](https://github.com/UiPath/apollo-ui/commit/a3974e572f9eb9e241688921809604440583708f))
-
-## [@uipath/apollo-react-v3.54.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.54.0...@uipath/apollo-react@3.54.1) (2026-03-17)
-
-### Bug Fixes
-
-* **ci:** vulnerabilities on packages ([9dc7752](https://github.com/UiPath/apollo-ui/commit/9dc7752ca1d9e253ec58e3c2c37c5d124ed73769))
-
-## [@uipath/apollo-react-v3.54.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.53.0...@uipath/apollo-react@3.54.0) (2026-03-16)
-
-### Features
-
-* **apollo-react:** update group node for group node support ([776283a](https://github.com/UiPath/apollo-ui/commit/776283a01ccb98d71cb531d86502125b64d916bb))
-
-## [@uipath/apollo-react-v3.53.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.52.1...@uipath/apollo-react@3.53.0) (2026-03-16)
-
-### Features
-
-* **apollo-react:** add data testid for e2es [MST-7066] ([0d97a39](https://github.com/UiPath/apollo-ui/commit/0d97a39e9b272ba65f71f3dc4c6336b65d0773d4))
-
-## [@uipath/apollo-react-v3.52.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.52.0...@uipath/apollo-react@3.52.1) (2026-03-14)
-
-### Bug Fixes
-
-* **apollo-react:** remove redundant shadow DOM style injection ([7063590](https://github.com/UiPath/apollo-ui/commit/7063590bbbc86ee5df912484b998d9ba1d8f6fdc))
-
 ## [@uipath/apollo-react-v3.52.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.51.2...@uipath/apollo-react@3.52.0) (2026-03-13)
 
 ### Features

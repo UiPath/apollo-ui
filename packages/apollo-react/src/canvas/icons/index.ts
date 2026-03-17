@@ -1,4 +1,3 @@
-export { A2aIcon } from './A2aIcon';
 export { AgentDiagramIcon } from './AgentDiagramIcon';
 export { AgentIcon } from './AgentIcon';
 export { AgentProject } from './AgentProject';

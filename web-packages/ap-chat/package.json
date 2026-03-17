@@ -1,6 +1,6 @@
 {
   "name": "@uipath/ap-chat",
-  "version": "1.5.3",
+  "version": "1.5.1",
   "description": "Apollo Design System - Autopilot Chat web component",
   "repository": {
     "type": "git",
@@ -68,12 +68,12 @@
     "@rslib/core": "^0.19.6",
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.2",
-    "@vitest/coverage-v8": "^4.1.0",
-    "@vitest/ui": "^4.1.0",
+    "@vitest/coverage-v8": "^4.0.14",
+    "@vitest/ui": "^4.0.14",
     "happy-dom": "^20.0.0",
     "source-map-explorer": "^2.5.3",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.0",
+    "vitest": "^4.0.14",
     "webpack-bundle-analyzer": "^5.0.1"
   }
 }

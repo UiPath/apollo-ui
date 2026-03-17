@@ -1,32 +1,3 @@
-## [@uipath/apollo-wind-v0.15.3](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.2...@uipath/apollo-wind@0.15.3) (2026-03-17)
-
-### Bug Fixes
-
-* **apollo-wind:** more generic selectors ([dc921e5](https://github.com/uipath/apollo-ui/commit/dc921e572395d46989f942c3138616e8ef14ef58))
-
-## [@uipath/apollo-wind-v0.15.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.1...@uipath/apollo-wind@0.15.2) (2026-03-17)
-
-### Bug Fixes
-
-* **ci:** code scanning alerts ([f731813](https://github.com/uipath/apollo-ui/commit/f731813037e0c7d9d7dc876be83f1edbe047273d))
-* **ci:** vulnerabilities on packages ([9dc7752](https://github.com/uipath/apollo-ui/commit/9dc7752ca1d9e253ec58e3c2c37c5d124ed73769))
-
-## [@uipath/apollo-wind-v0.15.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.0...@uipath/apollo-wind@0.15.1) (2026-03-17)
-
-### Bug Fixes
-
-* **apollo-wind:** attempt to fix prism import issue ([bd5ba84](https://github.com/uipath/apollo-ui/commit/bd5ba8460c2c35e6312af58309f7e2552bcdd255))
-
-## [@uipath/apollo-wind-v0.15.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.14.0...@uipath/apollo-wind@0.15.0) (2026-03-16)
-
-### Features
-
-* **apollo-wind:** add Flow Node Expandable and Hover Menu components ([1f73dc3](https://github.com/uipath/apollo-ui/commit/1f73dc30f75cfa166c1c610d8ef261d73dc64159))
-
-### Bug Fixes
-
-* **apollo-wind:** apply code review fixes across canvas node components ([8ac1bef](https://github.com/uipath/apollo-ui/commit/8ac1befc5a799998858ff8aa337d64588c0254bb))
-
 ## [@uipath/apollo-wind-v0.14.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.13.0...@uipath/apollo-wind@0.14.0) (2026-03-12)
 
 ### Features

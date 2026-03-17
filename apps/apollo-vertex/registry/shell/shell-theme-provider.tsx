@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useState } from "react";
-import { THEME_STORAGE_KEY } from "./shell-constants";
 
 export type Theme = "light" | "dark" | "system";
 
@@ -181,7 +180,7 @@ function clearThemeConfig() {
 export function ThemeProvider({
   children,
   themeConfig,
-  storageKey = THEME_STORAGE_KEY,
+  storageKey = "vss-ui-theme",
 }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window === "undefined") return "system";
@@ -240,7 +239,7 @@ export function ThemeProvider({
 export const useTheme = () => {
   const context = useContext(ThemeProviderContext);
 
-  if (context == null) {
+  if (!context) {
     throw new Error("useTheme must be used within a ThemeProvider");
   }
 

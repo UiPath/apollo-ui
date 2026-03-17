@@ -39,7 +39,6 @@ export const getAgentGroupBottomPosition = (
     [ResourceNodeType.MCP]: [],
     [ResourceNodeType.Tool]: [],
     [ResourceNodeType.MemorySpace]: [],
-    [ResourceNodeType.A2A]: [],
   };
 
   // Group nodes by which handle they're connected to
@@ -93,7 +92,6 @@ const arrangeAgent = (
     [ResourceNodeType.MCP]: [],
     [ResourceNodeType.Tool]: [],
     [ResourceNodeType.MemorySpace]: [],
-    [ResourceNodeType.A2A]: [],
   };
 
   // Group nodes by which handle they're connected to, excluding nodes with explicit positions

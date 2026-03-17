@@ -23,7 +23,7 @@
   * Each theme uses semantic tokens from apollo-core with hardcoded fallbacks
   */
 
-body.dark, .dark {
+body.dark {
   /* ── Surfaces ─────────────────────────────────────────────────────────── */
   --surface: var(--color-background, #182027);
   --surface-raised: var(--color-background-raised, #273139);
@@ -100,7 +100,7 @@ body.dark, .dark {
   color-scheme: dark;
 }
 
-body.dark-hc, .dark-hc {
+body.dark-hc {
   /* ── Surfaces ─────────────────────────────────────────────────────────── */
   --surface: var(--color-background, #182027);
   --surface-raised: var(--color-background-raised, #273139);
@@ -177,7 +177,7 @@ body.dark-hc, .dark-hc {
   color-scheme: dark;
 }
 
-body.light, .light {
+body.light {
   /* ── Surfaces ─────────────────────────────────────────────────────────── */
   --surface: var(--color-background, #ffffff);
   --surface-raised: var(--color-background-raised, #ffffff);
@@ -254,7 +254,7 @@ body.light, .light {
   color-scheme: light;
 }
 
-body.light-hc, .light-hc {
+body.light-hc {
   /* ── Surfaces ─────────────────────────────────────────────────────────── */
   --surface: var(--color-background, #ffffff);
   --surface-raised: var(--color-background-raised, #ffffff);
@@ -335,7 +335,7 @@ body.light-hc, .light-hc {
  * FUTURE — Dark theme (default for Future templates)
  * ============================================================================ */
 
-body.future-dark, .future-dark {
+.future-dark {
   /* ── Surfaces ─────────────────────────────────────────────────────────── */
   --surface: var(--color-zinc-950);
   /* page / canvas */
@@ -447,7 +447,7 @@ body.future-dark, .future-dark {
  * FUTURE — Light theme
  * ============================================================================ */
 
-body.future-light, .future-light {
+.future-light {
   /* ── Surfaces ─────────────────────────────────────────────────────────── */
   --surface: var(--color-zinc-50);
   /* page / canvas */
@@ -563,7 +563,7 @@ body.future-light, .future-light {
  * a quick sketch or blueprint so stakeholders focus on layout, not polish.
  * ============================================================================ */
 
-body.wireframe, .wireframe {
+.wireframe {
   /* ── Surfaces ─────────────────────────────────────────────────────────── */
   --surface: #ffffff;
   --surface-raised: #f9fafb;
@@ -627,9 +627,6 @@ body.wireframe, .wireframe {
 }
 
 /* Wireframe overrides: dashed borders everywhere, reduced rounding */
-body.wireframe *,
-body.wireframe *::before,
-body.wireframe *::after,
 .wireframe *,
 .wireframe *::before,
 .wireframe *::after {
@@ -645,7 +642,7 @@ body.wireframe *::after,
  * Source: apps/apollo-vertex/app/themes.ts  (default.config.dark)
  * ============================================================================ */
 
-body.vertex, .vertex {
+.vertex {
   /* ── Surfaces ─────────────────────────────────────────────────────────── */
   --surface: oklch(0.21 0.03 258.5);
   /* deep blue-grey — page / canvas */
@@ -740,7 +737,7 @@ body.vertex, .vertex {
  * Source: packages/apollo-core/src/tokens/jss/palette.ts  (darkPalette)
  * ============================================================================ */
 
-body.canvas, .canvas {
+.canvas {
   /* ── Surfaces ─────────────────────────────────────────────────────────── */
   --surface: #182027;
   /* ColorBackgroundDark — page / canvas */

@@ -1,4 +1,7 @@
-import { Link, useLocation } from "@tanstack/react-router";
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Text } from "./shell-text";
 import type { TranslationKey } from "./shell-translation-key";
@@ -9,12 +12,12 @@ interface MinimalNavItemProps {
 }
 
 export const MinimalNavItem = ({ to, label }: MinimalNavItemProps) => {
-  const { pathname } = useLocation();
+  const pathname = usePathname();
   const isActive = pathname === to;
 
   return (
     <Link
-      to={to}
+      href={to}
       className={cn(
         "px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 shrink-0 whitespace-nowrap",
         isActive

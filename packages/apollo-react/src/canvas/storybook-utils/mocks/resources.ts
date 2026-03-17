@@ -1,5 +1,4 @@
 import {
-  type AgentFlowA2aResource,
   type AgentFlowContextResource,
   type AgentFlowEscalationResource,
   type AgentFlowMcpResource,
@@ -58,14 +57,6 @@ export const sampleMcpServers = [
 ] as const;
 
 /**
- * Sample A2A agent data for stories.
- */
-export const sampleA2aAgents = [
-  { name: 'Billing Agent', description: 'Handles billing inquiries via A2A' },
-  { name: 'Support Agent', description: 'Customer support agent via A2A protocol' },
-] as const;
-
-/**
  * Creates a resource generator with encapsulated state.
  * Each call to the returned generator produces the next resource in sequence.
  *
@@ -82,7 +73,6 @@ export function createResourceGenerators() {
   let toolIndex = 0;
   let escalationIndex = 0;
   let mcpIndex = 0;
-  let a2aIndex = 0;
 
   return {
     /**
@@ -176,23 +166,6 @@ export function createResourceGenerators() {
     },
 
     /**
-     * Creates a sample A2A resource.
-     */
-    a2a: (overrides?: Partial<AgentFlowA2aResource>): AgentFlowA2aResource => {
-      const sample = sampleA2aAgents[a2aIndex % sampleA2aAgents.length]!;
-      a2aIndex++;
-      return {
-        id: generateResourceId(),
-        type: 'a2a',
-        name: sample.name,
-        description: sample.description,
-        hasBreakpoint: false,
-        hasGuardrails: false,
-        ...overrides,
-      };
-    },
-
-    /**
      * Resets all counters to start from the beginning.
      */
     reset: () => {
@@ -200,7 +173,6 @@ export function createResourceGenerators() {
       toolIndex = 0;
       escalationIndex = 0;
       mcpIndex = 0;
-      a2aIndex = 0;
     },
   };
 }

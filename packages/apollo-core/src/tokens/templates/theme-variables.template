@@ -1,6 +1,6 @@
 @import "./variables";
 
-body.light, .light {
+body.light {
 <% _.each(allProperties, function(property) { if (property.name.endsWith('light')) {
 %>  --<%= property.name.slice(0, -'-light'.length) %>: #{$<%= property.name %>};
 <% }}); %>
@@ -8,7 +8,7 @@ body.light, .light {
   color-scheme: light;
 }
 
-body.light-hc, .light-hc {
+body.light-hc {
 <% _.each(allProperties, function(property) { if (property.name.endsWith('light-hc')) {
 %>  --<%= property.name.slice(0, -'-light-hc'.length) %>: #{$<%= property.name %>};
 <% }}); %>
@@ -16,7 +16,7 @@ body.light-hc, .light-hc {
   color-scheme: light;
 }
 
-body.dark, .dark {
+body.dark {
 <% _.each(allProperties, function(property) { if (property.name.endsWith('dark')) {
 %>  --<%= property.name.slice(0, -'-dark'.length) %>: #{$<%= property.name %>};
 <% }}); %>
@@ -24,7 +24,7 @@ body.dark, .dark {
   color-scheme: dark;
 }
 
-body.dark-hc, .dark-hc {
+body.dark-hc {
 <% _.each(allProperties, function(property) { if (property.name.endsWith('dark-hc')) {
 %>  --<%= property.name.slice(0, -'-dark-hc'.length) %>: #{$<%= property.name %>};
 <% }}); %>

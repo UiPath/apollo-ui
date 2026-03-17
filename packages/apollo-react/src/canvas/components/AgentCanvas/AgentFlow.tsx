@@ -86,12 +86,11 @@ const AGENT_FLOW_FIT_VIEW_OPTIONS = {
 
 // agent node wrapper
 const createAgentNodeWrapper = (handlers: {
-  onAddResource?: (type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace' | 'a2a') => void;
+  onAddResource?: (type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace') => void;
   translations?: AgentNodeTranslations;
   suggestionTranslations?: SuggestionTranslations;
   enableMcpTools?: boolean;
   enableMemory?: boolean;
-  enableA2a?: boolean;
   enableInstructions?: boolean;
   healthScore?: number;
   onHealthScoreClick?: () => void;
@@ -137,15 +136,6 @@ const createAgentNodeWrapper = (handlers: {
         node.data.parentNodeId === props.id
     );
 
-    const hasA2a =
-      handlers.enableA2a === true &&
-      nodes.some(
-        (node) =>
-          isAgentFlowResourceNode(node) &&
-          node.data.type === 'a2a' &&
-          node.data.parentNodeId === props.id
-      );
-
     // Check if agent itself is running OR if any of its resources are running on view mode OR if it's processing a suggestion
     const agentRunning = hasAgentRunning(storeProps.spans);
     const resourceRunning = nodes.some(
@@ -186,8 +176,6 @@ const createAgentNodeWrapper = (handlers: {
         hasTool={hasTool}
         hasMcp={hasMcp}
         hasMemory={hasMemory}
-        hasA2a={hasA2a}
-        a2aEnabled={handlers.enableA2a === true}
         mcpEnabled={handlers.enableMcpTools !== false}
         mode={storeProps.mode}
         hasError={hasError}
@@ -276,7 +264,6 @@ const AgentFlowInner = memo(
     canvasRef,
     enableMcpTools,
     enableMemory,
-    enableA2a,
     enableStickyNotes,
     enableInstructions,
     healthScore,
@@ -373,7 +360,7 @@ const AgentFlowInner = memo(
 
     const nodeTypes = useMemo(() => {
       const handleAddResource = (
-        type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace' | 'a2a'
+        type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace'
       ) => {
         // Use createResourcePlaceholder which will either create a placeholder or call onAddResource
         createResourcePlaceholder(type);
@@ -389,7 +376,6 @@ const AgentFlowInner = memo(
           suggestionTranslations,
           enableMcpTools,
           enableMemory,
-          enableA2a,
           enableInstructions,
           healthScore,
           onHealthScoreClick,
@@ -595,7 +581,6 @@ const AgentFlowInner = memo(
       if (!isAgentFlowResourceNode(node)) return true;
       if (node.data.isVirtual) return true; // Always keep virtual nodes
       if (node.data.type === 'memorySpace') return !!enableMemory;
-      if (node.data.type === 'a2a') return !!enableA2a;
       return true;
     });
 

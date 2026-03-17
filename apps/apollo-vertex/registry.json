@@ -940,18 +940,6 @@
         {
           "path": "registry/shell/shell-auth-provider.tsx",
           "type": "registry:ui"
-        },
-        {
-          "path": "registry/shell/shell-company-logo.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "registry/shell/shell-constants.ts",
-          "type": "registry:ui"
-        },
-        {
-          "path": "registry/shell/shell-user-profile-menu-items.tsx",
-          "type": "registry:ui"
         }
       ]
     },
@@ -1241,12 +1229,7 @@
       "type": "registry:ui",
       "title": "Date Picker",
       "description": "A date picker component.",
-      "dependencies": [
-        "luxon",
-        "@types/luxon",
-        "lucide-react",
-        "react-i18next"
-      ],
+      "dependencies": ["luxon", "@types/luxon", "lucide-react", "react-i18next"],
       "registryDependencies": ["button", "popover", "calendar"],
       "files": [
         {

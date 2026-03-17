@@ -1,4 +1,5 @@
-import { useLocalStorage } from "@uidotdev/usehooks";
+"use client";
+
 import { Moon, Sun } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -8,12 +9,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SIDEBAR_COLLAPSED_KEY } from "./shell-constants";
+import { useLocalStorage } from "@uidotdev/usehooks";
 import { useTheme } from "./shell-theme-provider";
 
 export function ThemeToggle() {
   const { t } = useTranslation();
-  const [isCollapsed] = useLocalStorage(SIDEBAR_COLLAPSED_KEY, false);
+  const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
   const { setTheme } = useTheme();
 
   return (

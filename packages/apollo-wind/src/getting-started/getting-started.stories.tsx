@@ -21,6 +21,10 @@ function resolveThemeClass(value: string) {
 // Shared components
 // ============================================================================
 
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">{children}</h2>;
+}
+
 function SectionDescription({ children }: { children: React.ReactNode }) {
   return <p className="mb-6 text-base leading-7 text-muted-foreground">{children}</p>;
 }
