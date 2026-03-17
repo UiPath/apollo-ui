@@ -149,9 +149,6 @@ export const ResourceNode = memo(
         case 'mcp':
           icon = <Icons.McpIcon w={40} h={40} />;
           break;
-        case 'a2a':
-          icon = <Icons.A2aIcon w={40} h={40} />;
-          break;
         case 'tool':
           icon = <ToolResourceIcon size={48} tool={data} />;
           break;
@@ -404,7 +401,7 @@ export const ResourceNode = memo(
           position: Position.Top,
           handles: toolTopHandles,
           visible:
-            (data.type === 'tool' || data.type === 'mcp' || data.type === 'a2a') &&
+            (data.type === 'tool' || data.type === 'mcp') &&
             connectedHandlePosition === Position.Top,
         },
         ...(data.isExpandable
@@ -413,7 +410,7 @@ export const ResourceNode = memo(
                 position: Position.Bottom,
                 handles: toolBottomHandles,
                 visible:
-                  (data.type === 'tool' || data.type === 'mcp' || data.type === 'a2a') &&
+                  (data.type === 'tool' || data.type === 'mcp') &&
                   connectedHandlePosition === Position.Bottom,
               },
             ]
@@ -459,8 +456,6 @@ export const ResourceNode = memo(
           return 'uipath.resource.escalation';
         case 'memorySpace':
           return 'uipath.resource.memory';
-        case 'a2a':
-          return 'uipath.resource.a2a';
         default:
           return 'uipath.resource.tool'; // fallback
       }

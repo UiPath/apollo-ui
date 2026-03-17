@@ -101,17 +101,6 @@ npm view @microsoft/api-extractor@7.57.6 dependencies.minimatch
 - Verify: `pnpm audit` again (or `npm audit` / `yarn audit`)
 - **Important**: If you have packages with `"latest"` as version specifier, update commands will also update those packages. If update doesn't work, proceed to Step 7.5 (lockfile patching) before considering overrides.
 
-**CRITICAL: If `pnpm update vulnerable-package --depth Infinity` doesn't work despite a compatible `^` range:**
-
-pnpm resolves transitive dependencies based on the parent's resolution context. Updating the vulnerable package directly often has no effect because pnpm doesn't re-resolve already-locked transitive deps in isolation. Instead:
-
-1. **Update the DIRECT dependency** that transitively pulls in the vulnerable package (e.g., `pnpm update vitest` instead of `pnpm update flatted`)
-2. Updating the direct dependency forces pnpm to freshly resolve its entire subtree, which picks up the newer compatible version
-3. If the direct dependency has a newer version available, update it — even if the vulnerability isn't in its direct deps, the fresh resolution often pulls in patched transitive versions
-4. Only if updating all direct and intermediate parents fails should you proceed to Step 7.5 (lockfile patching) or consider an override
-
-**Do NOT skip to overrides just because `pnpm update <transitive-dep>` didn't work.** The failure is a pnpm lockfile behavior, not proof that no fix exists.
-
 **If exact version:**
 - Parent package must be updated (continue to Step 4)
 
@@ -394,7 +383,6 @@ pnpm audit
 | Not verifying ^ ranges | Assume exact when it's ^ | Use `npm view` to check |
 | Running update when "latest" exists | Updates unrelated packages | Use lockfile patching (Step 7.5) |
 | Skipping lockfile patching | Jump to overrides too quickly | Try patching before overrides |
-| `pnpm update <transitive>` failed, adding override | pnpm doesn't re-resolve locked transitive deps this way | Update the DIRECT dependency that pulls it in instead |
 
 ## Red Flags - STOP and Investigate Deeper
 
@@ -412,7 +400,6 @@ These thoughts mean you're taking shortcuts:
 | "Let me add it to devDeps" | Only if it's a peer dep. Try updates first. |
 | "Update commands don't work" | Did you try lockfile patching (Step 7.5)? |
 | "I have packages with 'latest'" | Use lockfile patching to avoid updating them |
-| "`pnpm update` didn't work, must need override" | pnpm won't re-resolve locked transitive deps directly. Update the parent/direct dep instead. |
 
 **When you think "this needs an override":** Go back and verify you completed Steps 3-6. Every single one.
 
@@ -541,42 +528,6 @@ npm view @modelcontextprotocol/sdk@latest dependencies.hono peerDependencies.hon
 # 4. Only override if no other option
 ```
 
-### Example 4: pnpm Lockfile Won't Update Transitive Dep (flatted)
-
-**Vulnerability:** flatted@3.3.3 needs >=3.4.0, parent `flat-cache` uses `^3.3.3`
-
-❌ **Bad approach:**
-```bash
-# pnpm update flatted --depth Infinity didn't work
-# Range is ^3.3.3 which allows 3.4.x, but lockfile stuck at 3.3.3
-# "Must need an override"
-"flatted": "^3.4.0"  # WRONG - didn't try updating parents
-```
-
-✅ **Correct approach:**
-```bash
-# 1. pnpm update flatted --depth Infinity didn't work
-# This is NORMAL pnpm behavior - it doesn't re-resolve locked transitive deps
-
-# 2. Trace the chain to find direct dependencies
-pnpm ls flatted --depth=20
-# Shows: stylelint > file-entry-cache > flat-cache > flatted 3.3.3
-# Also:  vitest > @vitest/ui > flatted 3.3.4
-
-# 3. Update the DIRECT dependency instead
-pnpm update vitest  # vitest 4.0.14 → 4.1.0
-
-# 4. This forces fresh resolution of vitest's entire subtree
-# AND triggers pnpm to re-resolve other instances of flatted
-# Result: flatted 3.4.1 everywhere
-
-# 5. Key insight: updating vitest (direct dep) fixed flatted
-# in BOTH the vitest chain AND the stylelint chain,
-# because pnpm re-resolved all flatted instances together
-```
-
-**Why this works:** pnpm deduplicates packages. When a direct dependency update triggers a fresh resolution, pnpm re-resolves ALL instances of the transitive package across the entire lockfile, not just the ones in that dependency's subtree. Updating ANY direct dep that uses the vulnerable transitive package can fix it everywhere.
-
 ## Rationalization Table
 
 | Excuse | Reality | What to Do Instead |
@@ -589,7 +540,6 @@ pnpm update vitest  # vitest 4.0.14 → 4.1.0
 | "Security team said use overrides" | They meant as LAST resort | Do full analysis first |
 | "Let me change audit-level" | User explicitly forbids this | NEVER change audit settings |
 | "Already at latest webpack" | Did you try lockfile update? | `pnpm update webpack` might work |
-| "`pnpm update <pkg> --depth Infinity` didn't work, range allows it but lockfile won't budge" | pnpm doesn't re-resolve locked transitive deps this way | Update the DIRECT parent dependency instead — it forces fresh subtree resolution |
 
 ## Critical Rules
 
@@ -622,7 +572,6 @@ pnpm update vitest  # vitest 4.0.14 → 4.1.0
 | Scenario | Action |
 |----------|--------|
 | Package uses `^` range | Try update: `pnpm update pkg --depth Infinity` / `npm update pkg` / `yarn upgrade pkg` |
-| `pnpm update <transitive>` fails despite `^` range | Update the DIRECT dependency that pulls it in (forces fresh subtree resolution) |
 | Update doesn't work (^ range) | Try lockfile patching (Step 7.5) |
 | Package uses exact version | Check parent for updates |
 | Parent at latest | Check intermediate packages |

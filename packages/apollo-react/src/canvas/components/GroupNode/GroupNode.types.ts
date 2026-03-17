@@ -16,12 +16,9 @@ export interface GroupNodeData extends BaseNodeData {
   /** Whether the group is collapsed (children hidden) */
   collapsed?: boolean;
 
-  /** Stored height before collapse, used to restore on expand */
-  expandedHeight?: number;
-
-  /** @deprecated No longer used — dimensions are controlled via node.style or React Flow's resize */
+  /** Custom width for the group (optional) */
   width?: number;
 
-  /** @deprecated No longer used — dimensions are controlled via node.style or React Flow's resize */
+  /** Custom height for the group (optional) */
   height?: number;
 }

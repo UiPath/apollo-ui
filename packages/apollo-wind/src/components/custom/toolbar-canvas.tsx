@@ -50,9 +50,7 @@ function ToolbarButton({
       onClick={onClick}
       aria-label={label}
     >
-      <div className="h-5 w-5 transition-transform group-hover:scale-[1.2]">
-        <Icon className="h-full w-full" />
-      </div>
+      <Icon className="h-5 w-5 group-hover:h-6 group-hover:w-6" />
     </button>
   );
 }

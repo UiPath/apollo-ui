@@ -1,20 +1,22 @@
-import { Link, useLocation } from "@tanstack/react-router";
-import { useLocalStorage } from "@uidotdev/usehooks";
+"use client";
+
 import { AnimatePresence, motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useLocalStorage } from "@uidotdev/usehooks";
 import { cn } from "@/lib/utils";
 import {
   fastFadeTransition,
   iconHoverScale,
   textFadeVariants,
 } from "./shell-animations";
-import { SIDEBAR_COLLAPSED_KEY } from "./shell-constants";
 import { Text } from "./shell-text";
 import type { TranslationKey } from "./shell-translation-key";
 
@@ -25,13 +27,13 @@ interface NavItemProps {
 }
 
 export const NavItem = ({ to, icon: Icon, label }: NavItemProps) => {
-  const [isCollapsed] = useLocalStorage(SIDEBAR_COLLAPSED_KEY, false);
-  const { pathname } = useLocation();
+  const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
+  const pathname = usePathname();
   const isActive = pathname === to || pathname.startsWith(`${to}/`);
 
   const linkContent = (
     <Link
-      to={to}
+      href={to}
       className={cn(
         "flex items-center rounded-md transition-colors duration-200",
         "h-8 text-sm font-medium",

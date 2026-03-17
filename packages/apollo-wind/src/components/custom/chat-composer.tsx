@@ -30,6 +30,7 @@ export function ChatComposer({
   onSubmit,
 }: ChatComposerProps) {
   const [value, setValue] = React.useState('');
+  const [focused, setFocused] = React.useState(false);
 
   const handleSubmit = () => {
     if (value.trim()) {
@@ -63,6 +64,8 @@ export function ChatComposer({
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
         />
 
         {/* Bottom toolbar */}
@@ -108,15 +111,20 @@ export function ChatComposer({
                 onClick={handleSubmit}
                 aria-label="Submit message"
               >
-                <CornerRightUp className="h-5 w-5 text-foreground-on-accent" />
+                <CornerRightUp className="h-5 w-5 text-white" />
               </button>
             ) : (
               <button
                 type="button"
-                className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-hover group-focus-within/input:bg-foreground-accent hover:bg-foreground-accent-muted"
+                className={cn(
+                  'flex h-8 w-8 items-center justify-center rounded-lg',
+                  focused
+                    ? 'bg-foreground-accent hover:bg-foreground-accent-muted'
+                    : 'bg-surface-hover hover:bg-foreground-accent-muted'
+                )}
                 aria-label="Voice input"
               >
-                <Mic className="h-5 w-5 text-foreground-on-accent" />
+                <Mic className="h-5 w-5 text-white" />
               </button>
             )}
           </div>

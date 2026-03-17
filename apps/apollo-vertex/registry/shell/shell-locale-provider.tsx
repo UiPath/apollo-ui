@@ -7,7 +7,6 @@ import {
 import { useTranslation } from "react-i18next";
 import { Spinner } from "@/components/ui/spinner";
 import { configurei18n } from "@/lib/i18n";
-import { LANGUAGE_CHANGED_EVENT } from "./shell-constants";
 import type { LanguageChangedEvent } from "./shell-language-toggle";
 
 export const LocaleProviderComponent = ({ children }: PropsWithChildren) => {
@@ -21,12 +20,9 @@ export const LocaleProviderComponent = ({ children }: PropsWithChildren) => {
   });
 
   useEffect(() => {
-    document.addEventListener(LANGUAGE_CHANGED_EVENT, handleLanguageChanged);
+    document.addEventListener("languageChanged", handleLanguageChanged);
     return () =>
-      document.removeEventListener(
-        LANGUAGE_CHANGED_EVENT,
-        handleLanguageChanged,
-      );
+      document.removeEventListener("languageChanged", handleLanguageChanged);
   }, []);
 
   return children;

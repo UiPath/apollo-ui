@@ -66,13 +66,11 @@ interface AgentNodeProps {
   hasEscalation?: boolean;
   hasTool?: boolean;
   hasMcp?: boolean;
-  hasA2a?: boolean;
-  a2aEnabled?: boolean;
   mcpEnabled?: boolean;
   hasError?: boolean;
   hasSuccess?: boolean;
   hasRunning?: boolean;
-  onAddResource?: (type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace' | 'a2a') => void;
+  onAddResource?: (type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace') => void;
   onAddInstructions?: () => void;
   translations: AgentNodeTranslations;
   enableMemory?: boolean;
@@ -99,8 +97,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     hasEscalation = false,
     hasTool = false,
     hasMcp = false,
-    hasA2a = false,
-    a2aEnabled = false,
     mcpEnabled = true,
     hasError = false,
     hasSuccess = false,
@@ -214,8 +210,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   const displayTool = mode === 'design' || (mode === 'view' && hasTool);
   const isMcpEnabled = mcpEnabled !== false;
   const displayMcp = (mode === 'design' && isMcpEnabled) || (mode === 'view' && !!hasMcp);
-  const isA2aEnabled = a2aEnabled === true;
-  const displayA2a = (mode === 'design' && isA2aEnabled) || (mode === 'view' && !!hasA2a);
 
   // Create handle configurations
   const handleConfigurations = useMemo((): HandleGroupManifest[] => {
@@ -266,7 +260,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       });
     }
 
-    if (displayContext || displayTool || displayMcp || displayA2a) {
+    if (displayContext || displayTool || displayMcp) {
       bottomHandles.push(
         {
           id: ResourceNodeType.Context,
@@ -289,15 +283,13 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           showButton: mode === 'design',
           color: 'var(--uix-canvas-foreground-de-emp)',
           labelBackgroundColor: 'var(--uix-canvas-background-secondary)',
-          visible: displayTool || displayMcp || displayA2a,
+          visible: displayTool || displayMcp,
           onAction: (_e: HandleActionEvent) => {
             // Default to tool when both are available, or show the available option
             if (displayTool) {
               onAddResource?.('tool');
             } else if (displayMcp) {
               onAddResource?.('mcp');
-            } else if (displayA2a) {
-              onAddResource?.('a2a');
             }
           },
         }
@@ -316,7 +308,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     displayMemory,
     displayMcp,
     displayTool,
-    displayA2a,
     displayEscalation,
     hasMemory,
     onAddResource,
@@ -606,8 +597,6 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
     hasEscalation,
     hasTool,
     hasMcp,
-    hasA2a,
-    a2aEnabled,
     mcpEnabled,
     hasError,
     hasSuccess,
@@ -634,8 +623,6 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
       hasEscalation={hasEscalation}
       hasTool={hasTool}
       hasMcp={hasMcp}
-      hasA2a={hasA2a}
-      a2aEnabled={a2aEnabled}
       mcpEnabled={mcpEnabled}
       hasError={hasError}
       hasSuccess={hasSuccess}

@@ -86,16 +86,10 @@ const sampleMcp = [
   },
 ];
 
-const sampleA2aAgents = [
-  { name: 'Billing Agent', description: 'Handles billing inquiries via A2A' },
-  { name: 'Support Agent', description: 'Customer support agent via A2A protocol' },
-];
-
 let contextIndex = 0;
 let toolIndex = 0;
 let escalationIndex = 0;
 let mcpIndex = 0;
-let a2aIndex = 0;
 
 const createSampleContext = (): AgentFlowResource => {
   const sample = sampleContexts[contextIndex % sampleContexts.length] as NonNullable<
@@ -166,21 +160,6 @@ const createSampleMemorySpace = (): AgentFlowResource => {
     type: 'memorySpace',
     name: 'Agent Memory Space',
     description: 'Memory space for the agent',
-  };
-};
-
-const createSampleA2a = (): AgentFlowResource => {
-  const sample = sampleA2aAgents[a2aIndex % sampleA2aAgents.length] as NonNullable<
-    (typeof sampleA2aAgents)[number]
-  >;
-  a2aIndex++;
-  return {
-    id: generateResourceId(),
-    type: 'a2a',
-    name: sample.name,
-    description: sample.description,
-    hasBreakpoint: false,
-    hasGuardrails: false,
   };
 };
 
@@ -433,10 +412,6 @@ const AgentFlowWrapper = ({
       }
       case 'memorySpace': {
         newResource = createSampleMemorySpace();
-        break;
-      }
-      case 'a2a': {
-        newResource = createSampleA2a();
         break;
       }
       default: {
@@ -739,9 +714,6 @@ const DesignModePlayground = () => {
         break;
       case 'memorySpace':
         newResource = createSampleMemorySpace();
-        break;
-      case 'a2a':
-        newResource = createSampleA2a();
         break;
       default:
         return;

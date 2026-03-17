@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { FileText, Mail } from 'lucide-react';
 import { FlowNode } from './flow-node';
 
 const meta = {
@@ -15,15 +16,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: () => (
     <div className="bg-surface p-8">
-      <FlowNode title="Node title" subtitle="Secondary title" forceState="default" />
-    </div>
-  ),
-};
-
-export const Hover: Story = {
-  render: () => (
-    <div className="bg-surface p-8">
-      <FlowNode title="Node title" subtitle="Secondary title" forceState="hover" />
+      <FlowNode title="AI Agent" />
     </div>
   ),
 };
@@ -31,15 +24,22 @@ export const Hover: Story = {
 export const Selected: Story = {
   render: () => (
     <div className="bg-surface p-8">
-      <FlowNode title="Node title" subtitle="Secondary title" forceState="selected" />
+      <FlowNode title="AI Agent" selected />
     </div>
   ),
 };
 
-export const SelectedHover: Story = {
+export const CustomIcon: Story = {
   render: () => (
-    <div className="bg-surface p-8">
-      <FlowNode title="Node title" subtitle="Secondary title" forceState="selected-hover" />
+    <div className="flex gap-4 bg-surface p-8">
+      <FlowNode
+        title="Extract Data"
+        icon={<FileText className="h-5 w-5 text-brand-foreground" />}
+      />
+      <FlowNode
+        title="Send Email"
+        icon={<Mail className="h-5 w-5 text-brand-foreground" />}
+      />
     </div>
   ),
 };

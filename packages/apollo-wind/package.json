@@ -1,6 +1,6 @@
 {
   "name": "@uipath/apollo-wind",
-  "version": "0.15.3",
+  "version": "0.14.0",
   "description": "UiPath wind design system - A Tailwind CSS based React component library",
   "type": "module",
   "main": "./dist/index.js",
@@ -149,8 +149,8 @@
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.2",
     "@types/react-syntax-highlighter": "^15.5.13",
-    "@vitest/coverage-v8": "^4.1.0",
-    "@vitest/ui": "^4.1.0",
+    "@vitest/coverage-v8": "^4.0.14",
+    "@vitest/ui": "^4.0.14",
     "ajv": "^8.18.0",
     "autoprefixer": "^10.4.22",
     "globals": "^16.5.0",
@@ -165,7 +165,7 @@
     "storybook": "^10.2.15",
     "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.0"
+    "vitest": "^4.0.14"
   },
   "keywords": [
     "react",
