@@ -1,5 +1,3 @@
-"use client";
-
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { Moon, Sun } from "lucide-react";
 import { useTranslation } from "react-i18next";

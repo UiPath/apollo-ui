@@ -1,5 +1,3 @@
-"use client";
-
 import { Globe, LogOut, Monitor, Moon, Sun } from "lucide-react";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
