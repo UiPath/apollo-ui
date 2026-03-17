@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.54.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.54.0...@uipath/apollo-react@3.54.1) (2026-03-17)
+
+### Bug Fixes
+
+* **ci:** vulnerabilities on packages ([9dc7752](https://github.com/UiPath/apollo-ui/commit/9dc7752ca1d9e253ec58e3c2c37c5d124ed73769))
+
 ## [@uipath/apollo-react-v3.54.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.53.0...@uipath/apollo-react@3.54.0) (2026-03-16)
 
 ### Features

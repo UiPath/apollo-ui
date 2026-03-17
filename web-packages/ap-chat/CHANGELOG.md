@@ -1,3 +1,9 @@
+## [@uipath/ap-chat-v1.5.2](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.5.1...@uipath/ap-chat@1.5.2) (2026-03-17)
+
+### Bug Fixes
+
+* **ci:** vulnerabilities on packages ([9dc7752](https://github.com/UiPath/apollo-ui/commit/9dc7752ca1d9e253ec58e3c2c37c5d124ed73769))
+
 ## [@uipath/ap-chat-v1.5.1](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.5.0...@uipath/ap-chat@1.5.1) (2026-03-05)
 
 ### Bug Fixes

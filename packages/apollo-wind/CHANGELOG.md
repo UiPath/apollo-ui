@@ -1,3 +1,10 @@
+## [@uipath/apollo-wind-v0.15.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.1...@uipath/apollo-wind@0.15.2) (2026-03-17)
+
+### Bug Fixes
+
+* **ci:** code scanning alerts ([f731813](https://github.com/uipath/apollo-ui/commit/f731813037e0c7d9d7dc876be83f1edbe047273d))
+* **ci:** vulnerabilities on packages ([9dc7752](https://github.com/uipath/apollo-ui/commit/9dc7752ca1d9e253ec58e3c2c37c5d124ed73769))
+
 ## [@uipath/apollo-wind-v0.15.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.0...@uipath/apollo-wind@0.15.1) (2026-03-17)
 
 ### Bug Fixes

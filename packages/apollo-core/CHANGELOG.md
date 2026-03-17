@@ -1,3 +1,9 @@
+## [@uipath/apollo-core-v5.7.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.7.1...@uipath/apollo-core@5.7.2) (2026-03-17)
+
+### Bug Fixes
+
+* **ci:** vulnerabilities on packages ([9dc7752](https://github.com/UiPath/apollo-ui/commit/9dc7752ca1d9e253ec58e3c2c37c5d124ed73769))
+
 ## [@uipath/apollo-core-v5.7.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.7.0...@uipath/apollo-core@5.7.1) (2026-03-05)
 
 ### Bug Fixes
