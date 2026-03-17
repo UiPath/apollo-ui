@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v0.15.3](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.2...@uipath/apollo-wind@0.15.3) (2026-03-17)
+
+### Bug Fixes
+
+* **apollo-wind:** more generic selectors ([dc921e5](https://github.com/uipath/apollo-ui/commit/dc921e572395d46989f942c3138616e8ef14ef58))
+
 ## [@uipath/apollo-wind-v0.15.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.1...@uipath/apollo-wind@0.15.2) (2026-03-17)
 
 ### Bug Fixes
