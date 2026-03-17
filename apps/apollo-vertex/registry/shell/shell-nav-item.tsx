@@ -1,10 +1,7 @@
-"use client";
-
+import { Link, useLocation } from "@tanstack/react-router";
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { AnimatePresence, motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   Tooltip,
   TooltipContent,
@@ -29,12 +26,12 @@ interface NavItemProps {
 
 export const NavItem = ({ to, icon: Icon, label }: NavItemProps) => {
   const [isCollapsed] = useLocalStorage(SIDEBAR_COLLAPSED_KEY, false);
-  const pathname = usePathname();
+  const { pathname } = useLocation();
   const isActive = pathname === to || pathname.startsWith(`${to}/`);
 
   const linkContent = (
     <Link
-      href={to}
+      to={to}
       className={cn(
         "flex items-center rounded-md transition-colors duration-200",
         "h-8 text-sm font-medium",
