@@ -149,8 +149,8 @@
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.2",
     "@types/react-syntax-highlighter": "^15.5.13",
-    "@vitest/coverage-v8": "^4.0.14",
-    "@vitest/ui": "^4.0.14",
+    "@vitest/coverage-v8": "^4.1.0",
+    "@vitest/ui": "^4.1.0",
     "ajv": "^8.18.0",
     "autoprefixer": "^10.4.22",
     "globals": "^16.5.0",
@@ -165,7 +165,7 @@
     "storybook": "^10.2.15",
     "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.14"
+    "vitest": "^4.1.0"
   },
   "keywords": [
     "react",
