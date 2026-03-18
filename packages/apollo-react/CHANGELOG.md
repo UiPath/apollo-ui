@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.56.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.55.1...@uipath/apollo-react@3.56.0) (2026-03-18)
+
+### Features
+
+* **apollo-react:** add keyboard navigation and focus lock to Toolbox ([fa63bfa](https://github.com/UiPath/apollo-ui/commit/fa63bfa21b70b732a192dc41b47ab43d47b4efb9))
+
 ## [@uipath/apollo-react-v3.55.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.55.0...@uipath/apollo-react@3.55.1) (2026-03-18)
 
 ### Bug Fixes
