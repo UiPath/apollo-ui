@@ -647,53 +647,6 @@ function DynamicHandlesStory() {
   );
 }
 
-/**
- * Creates nodes demonstrating loading/skeleton states for all shapes.
- * Uses `data.loading: true` to enable the skeleton state.
- */
-function createLoadingGrid(): Node<BaseNodeData>[] {
-  const shapes = [
-    { type: 'uipath.blank-node', shape: 'square' as const, label: 'Square' },
-    { type: 'uipath.control-flow.terminate', shape: 'circle' as const, label: 'Circle' },
-    { type: 'uipath.agent', shape: 'rectangle' as const, label: 'Rectangle' },
-  ];
-
-  return shapes.map((config, index) =>
-    createNode({
-      id: `loading-${config.shape}`,
-      type: config.type,
-      position: { x: 96 + index * 192, y: 96 },
-      data: {
-        nodeType: config.type,
-        version: '1.0.0',
-        loading: true, // Enable skeleton loading state
-        display: {
-          label: config.label,
-          subLabel: 'Loading...',
-          shape: config.shape,
-        },
-      },
-    })
-  );
-}
-
-function LoadingStory() {
-  const initialNodes = useMemo(() => createLoadingGrid(), []);
-  const { canvasProps } = useCanvasStory({ initialNodes });
-
-  return (
-    <BaseCanvas {...canvasProps} mode="design">
-      <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} />
-      </Panel>
-      <StoryInfoPanel
-        title="Loading State"
-        description="Nodes in skeleton loading state for circle, square, and rectangle shapes."
-      />
-    </BaseCanvas>
-  );
-}
-
 // ============================================================================
 // Exported Stories
 // ============================================================================
@@ -778,6 +731,144 @@ function ValidationStatesStory() {
   );
 }
 
+// ============================================================================
+// Adornments Story
+// ============================================================================
+
+/**
+ * Adornment configurations for the grid.
+ * Each row demonstrates a different adornment position/type.
+ */
+const ADORNMENT_ROWS = [
+  { key: 'breakpoint', label: 'Breakpoint (top-left)' },
+  { key: 'status-completed', label: 'Status: Completed (top-right)' },
+  { key: 'status-inprogress', label: 'Status: InProgress (top-right)' },
+  { key: 'status-failed', label: 'Status: Failed (top-right)' },
+  { key: 'start-point', label: 'Start Point (bottom-left)' },
+  { key: 'square-dashed', label: 'Square Dashed (bottom-right)' },
+  { key: 'all', label: 'All Adornments' },
+  { key: 'multi-exec', label: 'Multi-execution (count: 5)' },
+] as const;
+
+/**
+ * Creates nodes demonstrating all adornment types across shapes.
+ */
+function createAdornmentGrid(): Node<BaseNodeData>[] {
+  const nodes: Node<BaseNodeData>[] = [];
+
+  ADORNMENT_ROWS.forEach((row, rowIndex) => {
+    SHAPES.forEach((shape, colIndex) => {
+      const label = shape === 'rectangle' ? 'Invoice approval agent' : 'Header';
+      const nodeType = shape === 'rectangle' ? 'uipath.agent' : 'uipath.blank-node';
+
+      nodes.push(
+        createNode({
+          id: `adorn-${row.key}-${shape}`,
+          type: nodeType,
+          position: {
+            x: GRID_CONFIG.startX + colIndex * GRID_CONFIG.gapX,
+            y: GRID_CONFIG.startY + rowIndex * GRID_CONFIG.gapY,
+          },
+          data: {
+            nodeType,
+            version: '1.0.0',
+            display: {
+              label,
+              subLabel: row.label,
+              shape,
+            },
+          },
+        })
+      );
+    });
+  });
+
+  return nodes;
+}
+
+/**
+ * Maps adornment row keys to execution states.
+ */
+function getAdornmentExecutionState(key: string) {
+  switch (key) {
+    case 'breakpoint':
+      return { status: 'None' as const, debug: true };
+    case 'status-completed':
+      return { status: 'Completed' as const };
+    case 'status-inprogress':
+      return { status: 'InProgress' as const };
+    case 'status-failed':
+      return { status: 'Failed' as const };
+    case 'start-point':
+      return { status: 'None' as const, isExecutionStartPoint: true };
+    case 'square-dashed':
+      return { status: 'None' as const, isOutputPinned: true };
+    case 'all':
+      return {
+        status: 'Completed' as const,
+        debug: true,
+        isExecutionStartPoint: true,
+        isOutputPinned: true,
+      };
+    case 'multi-exec':
+      return { status: 'Completed' as const, count: 5 };
+    default:
+      return undefined;
+  }
+}
+
+function AdornmentsStory() {
+  const initialNodes = useMemo(() => createAdornmentGrid(), []);
+  const { canvasProps } = useCanvasStory({ initialNodes });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="Adornments"
+        description="Grid showing all adornment types across shapes. Each row demonstrates a different adornment: breakpoint (top-left), execution status (top-right), execution start point (bottom-left), square dashed (bottom-right), and all combined."
+      />
+    </BaseCanvas>
+  );
+}
+
+export const Adornments: Story = {
+  name: 'Adornments',
+  decorators: [
+    (Story) => {
+      const registry = useMemo(() => {
+        const reg = new NodeTypeRegistry();
+        reg.registerManifest(sampleManifest.nodes, sampleManifest.categories);
+        return reg;
+      }, []);
+
+      const contextValue = useMemo(() => ({ registry }), [registry]);
+
+      return (
+        <NodeRegistryContext.Provider value={contextValue}>{Story()}</NodeRegistryContext.Provider>
+      );
+    },
+    withCanvasProviders({
+      executionState: {
+        getNodeExecutionState: (nodeId: string) => {
+          // Extract the adornment key from node IDs like "adorn-breakpoint-circle"
+          const parts = nodeId.split('-');
+          // Rejoin all parts between first and last to get the key (handles keys with dashes)
+          const key = parts.slice(1, -1).join('-');
+          return getAdornmentExecutionState(key);
+        },
+        getEdgeExecutionState: () => undefined,
+      },
+      validationState: {
+        getElementValidationState: () => undefined,
+      },
+    }),
+  ],
+  render: () => <AdornmentsStory />,
+};
+
 export const ValidationStates: Story = {
   name: 'Validation States',
   decorators: [
@@ -817,9 +908,4 @@ export const ValidationStates: Story = {
     }),
   ],
   render: () => <ValidationStatesStory />,
-};
-
-export const Loading: Story = {
-  name: 'Loading',
-  render: () => <LoadingStory />,
 };
