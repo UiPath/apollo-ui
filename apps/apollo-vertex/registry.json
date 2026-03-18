@@ -871,6 +871,10 @@
       "files": [
         { "path": "registry/shell/shell.tsx", "type": "registry:ui" },
         {
+          "path": "registry/shell/shell-router-context.tsx",
+          "type": "registry:ui"
+        },
+        {
           "path": "registry/shell/shell-layout.tsx",
           "type": "registry:ui"
         },

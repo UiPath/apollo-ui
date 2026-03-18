@@ -1,13 +1,9 @@
-import { ShellTemplate } from '@/templates/ShellTemplate';
-
 # Shell
 
 A component that includes OAuth2 authentication and a collapsible sidebar.
 
 <div className="not-prose my-8 rounded-lg overflow-hidden" style={{ height: '600px' }}>
-  <div className="[&_.h-screen]:!h-full h-full">
-    <ShellTemplate />
-  </div>
+  <iframe src="/preview/shell/dashboard" className="w-full h-full border-0" />
 </div>
 
 <a href="/preview/shell/dashboard" target="_blank" rel="noopener noreferrer">Open standalone preview ↗</a>
@@ -17,9 +13,7 @@ A component that includes OAuth2 authentication and a collapsible sidebar.
 Use the `variant="minimal"` prop to render a horizontal header layout instead of the default sidebar.
 
 <div className="not-prose my-8 rounded-lg overflow-hidden" style={{ height: '600px' }}>
-  <div className="[&_.h-screen]:!h-full h-full">
-    <ShellTemplate variant="minimal" />
-  </div>
+  <iframe src="/preview/shell-minimal" className="w-full h-full border-0" />
 </div>
 
 <a href="/preview/shell-minimal" target="_blank" rel="noopener noreferrer">Open standalone preview ↗</a>
@@ -43,6 +37,7 @@ The `ApolloShell` component must be wrapped in a `QueryClientProvider` from `@ta
 
 ```tsx
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Link, useLocation } from '@tanstack/react-router';
 import { Home, Settings } from 'lucide-react';
 import { ApolloShell } from '@/components/ui/shell';
 
@@ -54,6 +49,8 @@ const navItems = [
 ];
 
 function App() {
+  const { pathname } = useLocation();
+
   return (
     <QueryClientProvider client={queryClient}>
       <ApolloShell
@@ -63,6 +60,8 @@ function App() {
         companyName="Your Company"
         productName="Your Product"
         navItems={navItems}
+        linkComponent={Link}
+        pathname={pathname}
       >
         {/* your authenticated app content */}
         <YourApp />

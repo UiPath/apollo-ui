@@ -2,6 +2,8 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BarChart3, FolderOpen, Home, Settings, Users } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { PropsWithChildren } from "react";
 import type { ShellNavItem } from "@/registry/shell/shell";
 import { ApolloShell } from "@/registry/shell/shell";
@@ -38,6 +40,8 @@ export function ShellTemplate({
   variant,
   children,
 }: PropsWithChildren<ShellTemplateProps>) {
+  const pathname = usePathname();
+
   return (
     <QueryClientProvider client={queryClient}>
       <ApolloShell
@@ -53,6 +57,8 @@ export function ShellTemplate({
         scope="openid profile email offline_access"
         baseUrl={baseUrl}
         navItems={variant === "minimal" ? minimalNavItems : navItems}
+        linkComponent={Link}
+        pathname={pathname}
       >
         {children}
       </ApolloShell>

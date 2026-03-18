@@ -1,5 +1,5 @@
-import { Link, useLocation } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { ShellLink, useShellPathname } from "./shell-router-context";
 import { Text } from "./shell-text";
 import type { TranslationKey } from "./shell-translation-key";
 
@@ -9,11 +9,11 @@ interface MinimalNavItemProps {
 }
 
 export const MinimalNavItem = ({ to, label }: MinimalNavItemProps) => {
-  const { pathname } = useLocation();
+  const pathname = useShellPathname();
   const isActive = pathname === to;
 
   return (
-    <Link
+    <ShellLink
       to={to}
       className={cn(
         "px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 shrink-0 whitespace-nowrap",
@@ -23,6 +23,6 @@ export const MinimalNavItem = ({ to, label }: MinimalNavItemProps) => {
       )}
     >
       <Text value={label} />
-    </Link>
+    </ShellLink>
   );
 };
