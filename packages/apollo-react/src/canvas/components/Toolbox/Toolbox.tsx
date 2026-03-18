@@ -328,7 +328,12 @@ export function Toolbox<T>({
           showBackButton={navigationStack.canGoBack}
         />
 
-        <SearchBox value={search} onChange={handleSearch} clear={clearSearch} placeholder="Search" />
+        <SearchBox
+          value={search}
+          onChange={handleSearch}
+          clear={clearSearch}
+          placeholder="Search"
+        />
 
         <AnimatedContainer>
           <AnimatedContent entering={isTransitioning} direction={animationDirection}>

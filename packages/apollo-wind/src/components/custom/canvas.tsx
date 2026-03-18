@@ -24,13 +24,6 @@ export interface CanvasProps {
  */
 export function Canvas({ className, children }: CanvasProps) {
   return (
-    <div
-      className={cn(
-        'flex flex-1 flex-col overflow-auto bg-surface',
-        className
-      )}
-    >
-      {children}
-    </div>
+    <div className={cn('flex flex-1 flex-col overflow-auto bg-surface', className)}>{children}</div>
   );
 }

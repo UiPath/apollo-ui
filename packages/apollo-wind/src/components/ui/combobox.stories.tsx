@@ -80,9 +80,7 @@ function MultiSelectCombobox() {
   const [selected, setSelected] = React.useState<string[]>([]);
 
   const toggle = (val: string) => {
-    setSelected((prev) =>
-      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
-    );
+    setSelected((prev) => (prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]));
   };
 
   const remove = (val: string) => {
@@ -99,9 +97,7 @@ function MultiSelectCombobox() {
             aria-expanded={open}
             className="w-[320px] justify-between"
           >
-            {selected.length > 0
-              ? `${selected.length} selected`
-              : 'Select frameworks...'}
+            {selected.length > 0 ? `${selected.length} selected` : 'Select frameworks...'}
             <ChevronsUpDown className="opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -112,9 +108,18 @@ function MultiSelectCombobox() {
               <CommandEmpty>No results found.</CommandEmpty>
               <CommandGroup>
                 {frameworks.map((item) => (
-                  <CommandItem key={item.value} value={item.value} onSelect={() => toggle(item.value)}>
+                  <CommandItem
+                    key={item.value}
+                    value={item.value}
+                    onSelect={() => toggle(item.value)}
+                  >
                     {item.label}
-                    <Check className={cn('ml-auto', selected.includes(item.value) ? 'opacity-100' : 'opacity-0')} />
+                    <Check
+                      className={cn(
+                        'ml-auto',
+                        selected.includes(item.value) ? 'opacity-100' : 'opacity-0'
+                      )}
+                    />
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -129,7 +134,11 @@ function MultiSelectCombobox() {
             return (
               <Badge key={val} variant="secondary" className="gap-1">
                 {item?.label}
-                <button type="button" onClick={() => remove(val)} className="ml-0.5 rounded-full hover:bg-muted">
+                <button
+                  type="button"
+                  onClick={() => remove(val)}
+                  className="ml-0.5 rounded-full hover:bg-muted"
+                >
                   <X className="h-3 w-3" />
                 </button>
               </Badge>
@@ -169,7 +178,12 @@ function CustomDisplayCombobox() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" aria-expanded={open} className="w-[320px] justify-between">
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-[320px] justify-between"
+        >
           {selected ? (
             <span className="flex items-center gap-2">
               <span>{selected.emoji}</span>
@@ -191,7 +205,10 @@ function CustomDisplayCombobox() {
                 <CommandItem
                   key={item.value}
                   value={item.value}
-                  onSelect={(v) => { setValue(v === value ? '' : v); setOpen(false); }}
+                  onSelect={(v) => {
+                    setValue(v === value ? '' : v);
+                    setOpen(false);
+                  }}
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-lg">{item.emoji}</span>
@@ -200,7 +217,9 @@ function CustomDisplayCombobox() {
                       <p className="text-xs text-muted-foreground">{item.desc}</p>
                     </div>
                   </div>
-                  <Check className={cn('ml-auto', value === item.value ? 'opacity-100' : 'opacity-0')} />
+                  <Check
+                    className={cn('ml-auto', value === item.value ? 'opacity-100' : 'opacity-0')}
+                  />
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -261,7 +280,12 @@ function AsyncCombobox() {
       <p className="text-sm text-muted-foreground">Simulates a 500ms async search delay.</p>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" role="combobox" aria-expanded={open} className="w-[280px] justify-between">
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-[280px] justify-between"
+          >
             {selected ? selected.label : 'Search libraries...'}
             <ChevronsUpDown className="opacity-50" />
           </Button>
@@ -282,10 +306,18 @@ function AsyncCombobox() {
                     <CommandItem
                       key={item.value}
                       value={item.value}
-                      onSelect={(v) => { setValue(v === value ? '' : v); setOpen(false); }}
+                      onSelect={(v) => {
+                        setValue(v === value ? '' : v);
+                        setOpen(false);
+                      }}
                     >
                       {item.label}
-                      <Check className={cn('ml-auto', value === item.value ? 'opacity-100' : 'opacity-0')} />
+                      <Check
+                        className={cn(
+                          'ml-auto',
+                          value === item.value ? 'opacity-100' : 'opacity-0'
+                        )}
+                      />
                     </CommandItem>
                   ))}
                 </CommandGroup>

@@ -17,8 +17,7 @@ const sampleMessages = [
   {
     id: '1',
     role: 'user' as const,
-    content:
-      'Tell me what tools the Excel agent is using',
+    content: 'Tell me what tools the Excel agent is using',
   },
   {
     id: '2',
@@ -41,8 +40,7 @@ const sampleMessages = [
         {
           icon: 'search' as const,
           title: 'WebSearchTool',
-          description:
-            'Checking categorized tabs to better understand spam and volume sources.',
+          description: 'Checking categorized tabs to better understand spam and volume sources.',
         },
         {
           icon: 'bot' as const,

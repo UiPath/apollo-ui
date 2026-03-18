@@ -37,7 +37,8 @@ export function PromptSuggestions({
   return (
     <div className={cn('flex flex-col items-start gap-2', className)}>
       {suggestions.map((suggestion) => (
-        <button type="button"
+        <button
+          type="button"
           key={suggestion.id}
           className="flex h-10 items-center rounded-xl border border-border-subtle bg-surface-raised hover:border-border-hover px-4 py-2.5 text-sm font-normal leading-5 text-foreground-secondary transition-colors hover:bg-surface-hover hover:text-foreground"
           onClick={() => onSelect?.(suggestion)}

@@ -94,13 +94,7 @@ export const PriceRangeFilter = {
               {formatPrice(value[0])} – {formatPrice(value[1])}
             </span>
           </div>
-          <Slider
-            value={value}
-            min={min}
-            max={max}
-            step={25}
-            onValueChange={setValue}
-          />
+          <Slider value={value} min={min} max={max} step={25} onValueChange={setValue} />
         </div>
       </div>
     );

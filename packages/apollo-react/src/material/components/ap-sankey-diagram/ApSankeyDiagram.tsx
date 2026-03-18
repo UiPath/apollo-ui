@@ -245,7 +245,7 @@ export function computeSankeyDimensions(
     maxNodesPerColumn * (minNodeHeight + nodePadding) - nodePadding + marginTop + marginBottom;
 
   return { minWidth, minHeight };
-};
+}
 
 // Truncate text to fit within a pixel width, measured via canvas
 const truncateToFit = (text: string, maxWidth: number, ctx: CanvasRenderingContext2D): string => {

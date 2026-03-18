@@ -378,7 +378,11 @@ function ColorsGallery() {
             title="Primary & Brand"
             colors={[
               { name: 'Primary', cssVar: '--primary', description: 'Main color' },
-              { name: 'Primary Foreground', cssVar: '--primary-foreground', description: 'Text on primary' },
+              {
+                name: 'Primary Foreground',
+                cssVar: '--primary-foreground',
+                description: 'Text on primary',
+              },
               { name: 'Brand', cssVar: '--brand', description: 'Brand color' },
               { name: 'Brand Hover', cssVar: '--brand-hover', description: 'Brand hover' },
             ]}
@@ -409,8 +413,16 @@ function ColorsGallery() {
             title="Text Colors"
             colors={[
               { name: 'Foreground', cssVar: '--foreground', description: 'Default text' },
-              { name: 'Muted Foreground', cssVar: '--muted-foreground', description: 'Secondary text' },
-              { name: 'Foreground Subtle', cssVar: '--foreground-subtle', description: 'Subtle text' },
+              {
+                name: 'Muted Foreground',
+                cssVar: '--muted-foreground',
+                description: 'Secondary text',
+              },
+              {
+                name: 'Foreground Subtle',
+                cssVar: '--foreground-subtle',
+                description: 'Subtle text',
+              },
             ]}
           />
 
@@ -449,11 +461,23 @@ function ColorsGallery() {
             title="Surfaces"
             colors={[
               { name: 'Surface', cssVar: '--surface', description: 'Base surface' },
-              { name: 'Surface Raised', cssVar: '--surface-raised', description: 'Elevated surfaces' },
-              { name: 'Surface Overlay', cssVar: '--surface-overlay', description: 'Overlays, dialogs' },
+              {
+                name: 'Surface Raised',
+                cssVar: '--surface-raised',
+                description: 'Elevated surfaces',
+              },
+              {
+                name: 'Surface Overlay',
+                cssVar: '--surface-overlay',
+                description: 'Overlays, dialogs',
+              },
               { name: 'Surface Hover', cssVar: '--surface-hover', description: 'Hover state' },
               { name: 'Surface Muted', cssVar: '--surface-muted', description: 'Muted surfaces' },
-              { name: 'Surface Inverse', cssVar: '--surface-inverse', description: 'Inverse backgrounds' },
+              {
+                name: 'Surface Inverse',
+                cssVar: '--surface-inverse',
+                description: 'Inverse backgrounds',
+              },
             ]}
             compact
           />
@@ -474,9 +498,21 @@ function ColorsGallery() {
             title="Foreground Variants"
             colors={[
               { name: 'Foreground Muted', cssVar: '--foreground-muted', description: 'Muted text' },
-              { name: 'Foreground Subtle', cssVar: '--foreground-subtle', description: 'Subtle text' },
-              { name: 'Foreground Inverse', cssVar: '--foreground-inverse', description: 'Inverse text' },
-              { name: 'Foreground On Accent', cssVar: '--foreground-on-accent', description: 'Text on accent' },
+              {
+                name: 'Foreground Subtle',
+                cssVar: '--foreground-subtle',
+                description: 'Subtle text',
+              },
+              {
+                name: 'Foreground Inverse',
+                cssVar: '--foreground-inverse',
+                description: 'Inverse text',
+              },
+              {
+                name: 'Foreground On Accent',
+                cssVar: '--foreground-on-accent',
+                description: 'Text on accent',
+              },
             ]}
             compact
           />
@@ -487,7 +523,11 @@ function ColorsGallery() {
               { name: 'Border Subtle', cssVar: '--border-subtle', description: 'Subtle borders' },
               { name: 'Border Muted', cssVar: '--border-muted', description: 'Muted borders' },
               { name: 'Border Deep', cssVar: '--border-deep', description: 'Deep borders' },
-              { name: 'Border Inverse', cssVar: '--border-inverse', description: 'Inverse borders' },
+              {
+                name: 'Border Inverse',
+                cssVar: '--border-inverse',
+                description: 'Inverse borders',
+              },
               { name: 'Border Hover', cssVar: '--border-hover', description: 'Hover state' },
             ]}
             compact

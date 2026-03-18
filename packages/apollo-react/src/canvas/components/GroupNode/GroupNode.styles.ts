@@ -15,9 +15,7 @@ export const GroupContainer = styled.div<{
     backgroundColor || 'var(--uix-canvas-background-raised)'} !important;
   border: 2px solid
     ${({ borderColor, selected }) =>
-      selected
-        ? 'var(--uix-canvas-primary)'
-        : borderColor || 'var(--uix-canvas-border)'};
+      selected ? 'var(--uix-canvas-primary)' : borderColor || 'var(--uix-canvas-border)'};
   border-radius: 16px !important;
   transition: border-color 0.2s ease;
   overflow: visible;

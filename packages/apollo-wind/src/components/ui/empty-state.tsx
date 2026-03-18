@@ -24,7 +24,10 @@ export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
-  ({ icon, code, title, description, action, secondaryAction, className, children, ...props }, ref) => {
+  (
+    { icon, code, title, description, action, secondaryAction, className, children, ...props },
+    ref
+  ) => {
     const hasSimpleActions = !children && (action || secondaryAction);
 
     return (
@@ -33,11 +36,7 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
         className={cn('flex flex-col items-center justify-center p-8 text-center', className)}
         {...props}
       >
-        {icon && (
-          <div className="mb-6 flex items-center justify-center">
-            {icon}
-          </div>
-        )}
+        {icon && <div className="mb-6 flex items-center justify-center">{icon}</div>}
         {code && (
           <h1 className="text-[40px] font-bold tracking-[-0.8px] leading-none mb-4">{code}</h1>
         )}
@@ -58,9 +57,7 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
           </div>
         )}
         {children && (
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-            {children}
-          </div>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">{children}</div>
         )}
       </div>
     );

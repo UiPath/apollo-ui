@@ -164,9 +164,7 @@ function IconRail({
                       activeId === item.id && 'bg-surface-hover text-foreground-hover'
                     )}
                   >
-                    <div className="h-5 w-5 group-hover:scale-[1.2]">
-                      {item.icon}
-                    </div>
+                    <div className="h-5 w-5 group-hover:scale-[1.2]">{item.icon}</div>
                   </div>
                 </button>
               </TooltipTrigger>
@@ -208,15 +206,18 @@ function ToolCard({ card }: { card: FlowPanelToolCard }) {
             <span className="whitespace-nowrap text-sm font-normal leading-5 text-foreground">
               {card.title}
             </span>
-            <ChevronUp className={cn('h-4 w-4 shrink-0 text-foreground-muted transition-transform duration-200', !open && 'rotate-180')} />
+            <ChevronUp
+              className={cn(
+                'h-4 w-4 shrink-0 text-foreground-muted transition-transform duration-200',
+                !open && 'rotate-180'
+              )}
+            />
           </button>
         </CollapsibleTrigger>
         {/* Body */}
         <CollapsibleContent className="overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
           <div className="flex flex-col gap-2 pb-4 pt-1">
-            <p className="px-4 py-[5px] text-xs text-foreground-muted">
-              Agents and tools used
-            </p>
+            <p className="px-4 py-[5px] text-xs text-foreground-muted">Agents and tools used</p>
             <div className="flex flex-col gap-3">
               {card.items.map((item, i) => {
                 const Icon = toolIconMap[item.icon];
@@ -303,7 +304,12 @@ function DefaultChatContent({ chatMessages }: { chatMessages: FlowPanelChatMessa
                     <span className="text-sm font-medium leading-5 text-foreground-muted">
                       {msg.traceLabel}
                     </span>
-                    <ChevronUp className={cn('h-4 w-4 shrink-0 text-foreground-muted transition-transform duration-200', !traceOpen && 'rotate-180')} />
+                    <ChevronUp
+                      className={cn(
+                        'h-4 w-4 shrink-0 text-foreground-muted transition-transform duration-200',
+                        !traceOpen && 'rotate-180'
+                      )}
+                    />
                   </button>
                 </CollapsibleTrigger>
                 {msg.toolCard && (
@@ -343,9 +349,7 @@ function ExpandedPanel({
     <div className="flex h-full w-[420px] shrink-0 flex-col justify-between overflow-hidden bg-surface-overlay px-4 pb-4 pt-3">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="text-base font-bold leading-9 tracking-tight text-foreground">
-          Flow
-        </span>
+        <span className="text-base font-bold leading-9 tracking-tight text-foreground">Flow</span>
         <button
           type="button"
           className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"

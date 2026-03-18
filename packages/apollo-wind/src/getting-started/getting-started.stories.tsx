@@ -208,12 +208,20 @@ const cliComponents = [
   { category: 'Forms', name: 'slider', description: 'Range input' },
   { category: 'Forms', name: 'label', description: 'Form field label' },
   { category: 'Forms', name: 'search', description: 'Search input with clear action' },
-  { category: 'Forms', name: 'file-upload', description: 'Drag-and-drop file input with per-file errors' },
+  {
+    category: 'Forms',
+    name: 'file-upload',
+    description: 'Drag-and-drop file input with per-file errors',
+  },
   { category: 'Forms', name: 'stepper', description: 'Multi-step form progress' },
   // Date & Time
   { category: 'Date & Time', name: 'calendar', description: 'Month calendar picker' },
   { category: 'Date & Time', name: 'date-picker', description: 'Date input with popover' },
-  { category: 'Date & Time', name: 'datetime-picker', description: 'Combined date and time picker' },
+  {
+    category: 'Date & Time',
+    name: 'datetime-picker',
+    description: 'Combined date and time picker',
+  },
   // Layout
   { category: 'Layout', name: 'card', description: 'Content container with header and body' },
   { category: 'Layout', name: 'separator', description: 'Horizontal or vertical divider' },
@@ -260,10 +268,22 @@ const cliComponents = [
   { category: 'Custom Apollo', name: 'flow-node', description: 'Workflow canvas node' },
   { category: 'Custom Apollo', name: 'flow-properties', description: 'Node properties panel' },
   { category: 'Custom Apollo', name: 'grid-maestro', description: 'Maestro-style data grid' },
-  { category: 'Custom Apollo', name: 'chat-composer', description: 'AI chat input with attachments' },
+  {
+    category: 'Custom Apollo',
+    name: 'chat-composer',
+    description: 'AI chat input with attachments',
+  },
   { category: 'Custom Apollo', name: 'chat-steps-view', description: 'AI thinking steps display' },
-  { category: 'Custom Apollo', name: 'chat-first-experience', description: 'Empty chat onboarding state' },
-  { category: 'Custom Apollo', name: 'chat-prompt-suggestions', description: 'Suggested prompt chips' },
+  {
+    category: 'Custom Apollo',
+    name: 'chat-first-experience',
+    description: 'Empty chat onboarding state',
+  },
+  {
+    category: 'Custom Apollo',
+    name: 'chat-prompt-suggestions',
+    description: 'Suggested prompt chips',
+  },
   { category: 'Custom Apollo', name: 'canvas', description: 'Pannable, zoomable canvas area' },
 ] as const;
 
@@ -299,8 +319,8 @@ function PrereqsTooltip() {
           <p className="mb-2 text-xs font-medium text-foreground">Before you begin</p>
           <ul className="space-y-1.5 text-xs leading-5 text-muted-foreground">
             <li>
-              <span className="font-medium text-foreground">Node 18+</span> — required by the
-              shadcn CLI
+              <span className="font-medium text-foreground">Node 18+</span> — required by the shadcn
+              CLI
             </li>
             <li>
               <span className="font-medium text-foreground">Tailwind CSS v4</span> — uses{' '}
@@ -313,8 +333,8 @@ function PrereqsTooltip() {
               </code>
             </li>
             <li>
-              <span className="font-medium text-foreground">React project</span> — Vite, Next.js,
-              or any React setup
+              <span className="font-medium text-foreground">React project</span> — Vite, Next.js, or
+              any React setup
             </li>
           </ul>
         </div>
@@ -372,9 +392,7 @@ function CLITab() {
   const [copiedComponent, setCopiedComponent] = React.useState<string | null>(null);
 
   const handleCopyComponent = (name: string) => {
-    navigator.clipboard.writeText(
-      `npx shadcn@latest add https://ui.uipath.com/r/${name}.json`
-    );
+    navigator.clipboard.writeText(`npx shadcn@latest add https://ui.uipath.com/r/${name}.json`);
     setCopiedComponent(name);
     setTimeout(() => setCopiedComponent(null), 2000);
   };
@@ -386,8 +404,8 @@ function CLITab() {
       {/* Why CLI */}
       <div>
         <InfoCallout>
-          The Apollo registry is in development. Commands on this page reflect the target
-          experience and will work once the registry is published.
+          The Apollo registry is in development. Commands on this page reflect the target experience
+          and will work once the registry is published.
         </InfoCallout>
         <div className="mt-6">
           <SectionDescription>
@@ -404,8 +422,7 @@ function CLITab() {
       <div>
         <h3 className="mb-1 text-lg font-semibold text-foreground">Quick Start</h3>
         <p className="mb-6 flex flex-wrap items-center gap-2 text-base leading-7 text-muted-foreground">
-          Three commands to get Apollo components and theming into your project.{' '}
-          <PrereqsTooltip />
+          Three commands to get Apollo components and theming into your project. <PrereqsTooltip />
         </p>
 
         <div className="space-y-4">
@@ -419,18 +436,16 @@ function CLITab() {
           <StepItem step={2} title="Add the Apollo theme preset">
             <CodeBlock>{`npx shadcn@latest add https://ui.uipath.com/r/theme.json`}</CodeBlock>
             <p>
-              Installs the Apollo CSS theme file and adds the{' '}
-              <InlineCode>future-dark</InlineCode> and <InlineCode>future-light</InlineCode> classes
-              to your project.
+              Installs the Apollo CSS theme file and adds the <InlineCode>future-dark</InlineCode>{' '}
+              and <InlineCode>future-light</InlineCode> classes to your project.
             </p>
           </StepItem>
 
           <StepItem step={3} title="Add your first component">
             <CodeBlock>{`npx shadcn@latest add https://ui.uipath.com/r/button.json`}</CodeBlock>
             <p>
-              Copies the component source into{' '}
-              <InlineCode>src/components/ui/button.tsx</InlineCode>. It's yours to use, read, and
-              modify.
+              Copies the component source into <InlineCode>src/components/ui/button.tsx</InlineCode>
+              . It's yours to use, read, and modify.
             </p>
           </StepItem>
         </div>

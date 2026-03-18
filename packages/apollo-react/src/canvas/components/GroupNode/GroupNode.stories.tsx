@@ -220,7 +220,13 @@ function WithHeaderActionsStory() {
 
   const initialNodes = useMemo(
     (): Node<GroupNodeData | BaseNodeData>[] => [
-      createGroupNode('group-1', 'Agent Workflow', 'smart_toy', { x: 50, y: 100 }, { width: 600, height: 250 }),
+      createGroupNode(
+        'group-1',
+        'Agent Workflow',
+        'smart_toy',
+        { x: 50, y: 100 },
+        { width: 600, height: 250 }
+      ),
       createChildNode('node-1', 'Classifier', { x: 30, y: 60 }, 'group-1'),
       createChildNode('node-2', 'Extractor', { x: 200, y: 60 }, 'group-1'),
     ],
@@ -251,13 +257,7 @@ export const WithHeaderActions: Story = {
 // ============================================================================
 
 /** Wrapper that shows execution status in the group header with border coloring and tooltip */
-function GroupNodeWithStatus({
-  status,
-  message,
-}: {
-  status: string;
-  message?: string;
-}) {
+function GroupNodeWithStatus({ status, message }: { status: string; message?: string }) {
   return function GroupNodeStatusWrapper(props: React.ComponentProps<typeof GroupNode>) {
     const tooltipContent = message || status;
     return (
@@ -267,7 +267,15 @@ function GroupNodeWithStatus({
           executionMessage: message,
           headerActions: (
             <ApTooltip content={tooltipContent} placement="top">
-              <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24 }}>
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 24,
+                  height: 24,
+                }}
+              >
                 <ExecutionStatusIcon status={status} size={16} />
               </span>
             </ApTooltip>
@@ -284,11 +292,16 @@ function WithExecutionStatusStory() {
   const CompletedGroupNode = useMemo(() => GroupNodeWithStatus({ status: 'Completed' }), []);
   const InProgressGroupNode = useMemo(() => GroupNodeWithStatus({ status: 'InProgress' }), []);
   const FailedGroupNode = useMemo(
-    () => GroupNodeWithStatus({ status: 'Failed', message: 'SMTP connection refused: unable to reach mail server at port 587' }),
+    () =>
+      GroupNodeWithStatus({
+        status: 'Failed',
+        message: 'SMTP connection refused: unable to reach mail server at port 587',
+      }),
     []
   );
   const PausedGroupNode = useMemo(
-    () => GroupNodeWithStatus({ status: 'Paused', message: 'Waiting for manual approval from admin' }),
+    () =>
+      GroupNodeWithStatus({ status: 'Paused', message: 'Waiting for manual approval from admin' }),
     []
   );
 
@@ -306,7 +319,13 @@ function WithExecutionStatusStory() {
   const initialNodes = useMemo(
     (): Node<GroupNodeData | BaseNodeData>[] => [
       {
-        ...createGroupNode('group-completed', 'Data Pipeline', 'account_tree', { x: 50, y: 50 }, { width: 500, height: 220 }),
+        ...createGroupNode(
+          'group-completed',
+          'Data Pipeline',
+          'account_tree',
+          { x: 50, y: 50 },
+          { width: 500, height: 220 }
+        ),
         type: 'group-completed',
       },
       createChildNode('n-c-1', 'Validate', { x: 30, y: 60 }, 'group-completed'),
@@ -314,21 +333,39 @@ function WithExecutionStatusStory() {
       createChildNode('n-c-3', 'Store', { x: 370, y: 60 }, 'group-completed'),
 
       {
-        ...createGroupNode('group-in-progress', 'ML Training', 'model_training', { x: 620, y: 50 }, { width: 400, height: 220 }),
+        ...createGroupNode(
+          'group-in-progress',
+          'ML Training',
+          'model_training',
+          { x: 620, y: 50 },
+          { width: 400, height: 220 }
+        ),
         type: 'group-in-progress',
       },
       createChildNode('n-ip-1', 'Preprocess', { x: 30, y: 60 }, 'group-in-progress'),
       createChildNode('n-ip-2', 'Train', { x: 200, y: 60 }, 'group-in-progress'),
 
       {
-        ...createGroupNode('group-failed', 'Email Sender', 'mail', { x: 50, y: 340 }, { width: 400, height: 220 }),
+        ...createGroupNode(
+          'group-failed',
+          'Email Sender',
+          'mail',
+          { x: 50, y: 340 },
+          { width: 400, height: 220 }
+        ),
         type: 'group-failed',
       },
       createChildNode('n-f-1', 'Template', { x: 30, y: 60 }, 'group-failed'),
       createChildNode('n-f-2', 'Send', { x: 200, y: 60 }, 'group-failed'),
 
       {
-        ...createGroupNode('group-paused', 'Approval Flow', 'approval', { x: 520, y: 340 }, { width: 500, height: 220 }),
+        ...createGroupNode(
+          'group-paused',
+          'Approval Flow',
+          'approval',
+          { x: 520, y: 340 },
+          { width: 500, height: 220 }
+        ),
         type: 'group-paused',
       },
       createChildNode('n-p-1', 'Request', { x: 30, y: 60 }, 'group-paused'),
@@ -393,7 +430,13 @@ function WithoutCollapseStory() {
 
   const initialNodes = useMemo(
     (): Node<GroupNodeData | BaseNodeData>[] => [
-      createGroupNode('group-1', 'Static Group', 'lock', { x: 50, y: 100 }, { width: 600, height: 250 }),
+      createGroupNode(
+        'group-1',
+        'Static Group',
+        'lock',
+        { x: 50, y: 100 },
+        { width: 600, height: 250 }
+      ),
       createChildNode('node-1', 'Step A', { x: 30, y: 60 }, 'group-1'),
       createChildNode('node-2', 'Step B', { x: 200, y: 60 }, 'group-1'),
       createChildNode('node-3', 'Step C', { x: 370, y: 60 }, 'group-1'),
@@ -433,13 +476,7 @@ export const WithoutCollapse: Story = {
 // ============================================================================
 
 /** Wrapper: execution status + no collapse + no 3-dot menu */
-function GroupNodeMinimalWithStatus({
-  status,
-  message,
-}: {
-  status: string;
-  message?: string;
-}) {
+function GroupNodeMinimalWithStatus({ status, message }: { status: string; message?: string }) {
   return function GroupNodeMinimalStatusWrapper(props: React.ComponentProps<typeof GroupNode>) {
     const tooltipContent = message || status;
     return (
@@ -451,7 +488,15 @@ function GroupNodeMinimalWithStatus({
           hideMoreOptions: true,
           headerActions: (
             <ApTooltip content={tooltipContent} placement="top">
-              <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24 }}>
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 24,
+                  height: 24,
+                }}
+              >
                 <ExecutionStatusIcon status={status} size={16} />
               </span>
             </ApTooltip>
@@ -483,7 +528,13 @@ function MinimalWithExecutionStatusStory() {
   const initialNodes = useMemo(
     (): Node<GroupNodeData | BaseNodeData>[] => [
       {
-        ...createGroupNode('group-completed', 'ETL Pipeline', 'account_tree', { x: 50, y: 100 }, { width: 500, height: 220 }),
+        ...createGroupNode(
+          'group-completed',
+          'ETL Pipeline',
+          'account_tree',
+          { x: 50, y: 100 },
+          { width: 500, height: 220 }
+        ),
         type: 'group-completed',
       },
       createChildNode('n-c-1', 'Extract', { x: 30, y: 60 }, 'group-completed'),
@@ -491,7 +542,13 @@ function MinimalWithExecutionStatusStory() {
       createChildNode('n-c-3', 'Transform', { x: 370, y: 60 }, 'group-completed'),
 
       {
-        ...createGroupNode('group-failed', 'Notification Service', 'mail', { x: 620, y: 100 }, { width: 400, height: 220 }),
+        ...createGroupNode(
+          'group-failed',
+          'Notification Service',
+          'mail',
+          { x: 620, y: 100 },
+          { width: 400, height: 220 }
+        ),
         type: 'group-failed',
       },
       createChildNode('n-f-1', 'Template', { x: 30, y: 60 }, 'group-failed'),
@@ -552,12 +609,24 @@ function MinimalStory() {
 
   const initialNodes = useMemo(
     (): Node<GroupNodeData | BaseNodeData>[] => [
-      createGroupNode('group-1', 'Simple Group', 'folder', { x: 50, y: 100 }, { width: 600, height: 250 }),
+      createGroupNode(
+        'group-1',
+        'Simple Group',
+        'folder',
+        { x: 50, y: 100 },
+        { width: 600, height: 250 }
+      ),
       createChildNode('node-1', 'Step A', { x: 30, y: 60 }, 'group-1'),
       createChildNode('node-2', 'Step B', { x: 200, y: 60 }, 'group-1'),
       createChildNode('node-3', 'Step C', { x: 370, y: 60 }, 'group-1'),
 
-      createGroupNode('group-2', 'No Icon Group', undefined, { x: 750, y: 100 }, { width: 400, height: 250 }),
+      createGroupNode(
+        'group-2',
+        'No Icon Group',
+        undefined,
+        { x: 750, y: 100 },
+        { width: 400, height: 250 }
+      ),
       createChildNode('node-4', 'Task 1', { x: 30, y: 60 }, 'group-2'),
       createChildNode('node-5', 'Task 2', { x: 200, y: 60 }, 'group-2'),
     ],

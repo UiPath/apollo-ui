@@ -324,19 +324,13 @@ export class CategoryTree {
       return this;
     }
 
-    const searchWords = searchTerm
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(Boolean);
+    const searchWords = searchTerm.toLowerCase().split(/\s+/).filter(Boolean);
 
     if (searchWords.length === 0) {
       return this;
     }
 
-    const matchesAllWords = (
-      node: NodeManifest,
-      ancestorCategoryNames: string[],
-    ): boolean => {
+    const matchesAllWords = (node: NodeManifest, ancestorCategoryNames: string[]): boolean => {
       const searchableTexts = [
         node.display.label.toLowerCase(),
         node.nodeType.toLowerCase(),
@@ -347,24 +341,17 @@ export class CategoryTree {
         ...ancestorCategoryNames,
       ];
 
-      return searchWords.every((word) =>
-        searchableTexts.some((text) => text.includes(word)),
-      );
+      return searchWords.every((word) => searchableTexts.some((text) => text.includes(word)));
     };
 
-    const filterTree = (
-      tree: CategoryTreeNode[],
-      ancestorNames: string[],
-    ): CategoryTreeNode[] => {
+    const filterTree = (tree: CategoryTreeNode[], ancestorNames: string[]): CategoryTreeNode[] => {
       const filtered: CategoryTreeNode[] = [];
 
       for (const item of tree) {
         const categoryNames = [...ancestorNames, item.name.toLowerCase()];
 
         const nestedCategories = filterTree(item.nestedCategories, categoryNames);
-        const nodes = item.nodes.filter((node) =>
-          matchesAllWords(node, categoryNames),
-        );
+        const nodes = item.nodes.filter((node) => matchesAllWords(node, categoryNames));
 
         if (nestedCategories.length > 0 || nodes.length > 0) {
           filtered.push({ ...item, nestedCategories, nodes });
@@ -375,9 +362,7 @@ export class CategoryTree {
     };
 
     const filteredRoots = filterTree(this.rootCategories, []);
-    const filteredRootNodes = this.rootNodes.filter((node) =>
-      matchesAllWords(node, []),
-    );
+    const filteredRootNodes = this.rootNodes.filter((node) => matchesAllWords(node, []));
 
     return CategoryTree.fromPrebuilt(filteredRoots, filteredRootNodes);
   }

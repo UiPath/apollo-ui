@@ -48,28 +48,41 @@ export const Align = {
     <div className="flex items-center justify-center gap-6 py-10">
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm">Start</Button>
+          <Button variant="outline" size="sm">
+            Start
+          </Button>
         </PopoverTrigger>
         <PopoverContent align="start" className="w-60">
-          <p className="text-sm">Aligned to the <span className="font-medium">start</span> (left edge) of the trigger.</p>
+          <p className="text-sm">
+            Aligned to the <span className="font-medium">start</span> (left edge) of the trigger.
+          </p>
         </PopoverContent>
       </Popover>
 
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm">Center</Button>
+          <Button variant="outline" size="sm">
+            Center
+          </Button>
         </PopoverTrigger>
         <PopoverContent align="center" className="w-60">
-          <p className="text-sm">Aligned to the <span className="font-medium">center</span> of the trigger. This is the default.</p>
+          <p className="text-sm">
+            Aligned to the <span className="font-medium">center</span> of the trigger. This is the
+            default.
+          </p>
         </PopoverContent>
       </Popover>
 
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm">End</Button>
+          <Button variant="outline" size="sm">
+            End
+          </Button>
         </PopoverTrigger>
         <PopoverContent align="end" className="w-60">
-          <p className="text-sm">Aligned to the <span className="font-medium">end</span> (right edge) of the trigger.</p>
+          <p className="text-sm">
+            Aligned to the <span className="font-medium">end</span> (right edge) of the trigger.
+          </p>
         </PopoverContent>
       </Popover>
     </div>
@@ -177,7 +190,11 @@ export const Examples = {
               <h4 className="text-sm font-medium">Notification Preferences</h4>
               <Separator />
               {[
-                { label: 'Email notifications', desc: 'Receive updates via email', defaultChecked: true },
+                {
+                  label: 'Email notifications',
+                  desc: 'Receive updates via email',
+                  defaultChecked: true,
+                },
                 { label: 'Push notifications', desc: 'Browser push alerts', defaultChecked: false },
                 { label: 'Weekly digest', desc: 'Summary every Monday', defaultChecked: true },
               ].map((item) => (
@@ -210,7 +227,9 @@ export const Examples = {
               <h4 className="text-sm font-medium">Display Settings</h4>
               <Separator />
               <div className="space-y-2">
-                <Label htmlFor="density" className="text-xs">Density</Label>
+                <Label htmlFor="density" className="text-xs">
+                  Density
+                </Label>
                 <div className="flex gap-2">
                   {['Compact', 'Default', 'Comfortable'].map((opt) => (
                     <button
@@ -226,7 +245,9 @@ export const Examples = {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="rows" className="text-xs">Rows per page</Label>
+                <Label htmlFor="rows" className="text-xs">
+                  Rows per page
+                </Label>
                 <Input id="rows" defaultValue="25" className="h-8" />
               </div>
             </div>

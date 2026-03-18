@@ -1,34 +1,19 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsibleContent,
-} from "@/components/ui/collapsible";
-import {
-  Folder,
-  ChevronRight,
-  Box,
-  Search,
-  MoreHorizontal,
-  Info,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import * as React from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { Folder, ChevronRight, Box, Search, MoreHorizontal, Info } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-} from "@/components/ui/context-menu";
-import { X } from "lucide-react";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
+} from '@/components/ui/context-menu';
+import { X } from 'lucide-react';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,11 +22,11 @@ import {
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 
 /**
  * Action shown in the item's dropdown menu (Edit, Delete, etc.).
@@ -99,7 +84,7 @@ export interface TreeViewMenuItem {
  * - `"single"`: Only one item can be selected at a time
  * - `"none"`: No selection; expand/collapse only
  */
-export type TreeViewSelectionMode = "single" | "multiple" | "none";
+export type TreeViewSelectionMode = 'single' | 'multiple' | 'none';
 
 export interface TreeViewProps {
   className?: string;
@@ -112,7 +97,7 @@ export interface TreeViewProps {
   showSelectionCheckboxes?: boolean;
   /** Selection behavior: "multiple" (default), "single", or "none" */
   selectionMode?: TreeViewSelectionMode;
-  checkboxPosition?: "left" | "right";
+  checkboxPosition?: 'left' | 'right';
   searchPlaceholder?: string;
   selectionText?: string;
   checkboxLabels?: {
@@ -163,24 +148,24 @@ const buildItemMap = (items: TreeViewItem[]): Map<string, TreeViewItem> => {
 const getCheckState = (
   item: TreeViewItem,
   itemMap: Map<string, TreeViewItem>
-): "checked" | "unchecked" | "indeterminate" => {
+): 'checked' | 'unchecked' | 'indeterminate' => {
   // Get the original item from the map
   const originalItem = itemMap.get(item.id);
-  if (!originalItem) return "unchecked";
+  if (!originalItem) return 'unchecked';
 
   // If it's a leaf node (no children), return its check state
   if (!originalItem.children || originalItem.children.length === 0) {
-    return originalItem.checked ? "checked" : "unchecked";
+    return originalItem.checked ? 'checked' : 'unchecked';
   }
 
   // Count the check states of immediate children
   let checkedCount = 0;
   let indeterminateCount = 0;
 
-  originalItem.children.forEach(child => {
+  originalItem.children.forEach((child) => {
     const childState = getCheckState(child, itemMap);
-    if (childState === "checked") checkedCount++;
-    if (childState === "indeterminate") indeterminateCount++;
+    if (childState === 'checked') checkedCount++;
+    if (childState === 'indeterminate') indeterminateCount++;
   });
 
   // Calculate parent state based on children states
@@ -188,14 +173,14 @@ const getCheckState = (
 
   // If all children are checked
   if (checkedCount === totalChildren) {
-    return "checked";
+    return 'checked';
   }
   // If any child is checked or indeterminate
   if (checkedCount > 0 || indeterminateCount > 0) {
-    return "indeterminate";
+    return 'indeterminate';
   }
   // If no children are checked or indeterminate
-  return "unchecked";
+  return 'unchecked';
 };
 
 // Add this default icon map
@@ -228,7 +213,7 @@ function TreeItem({
   const isSelected = selectedIds.has(item.id);
   const isDisabled = item.disabled === true;
   const itemRef = useRef<HTMLDivElement>(null);
-  const [selectionStyle, setSelectionStyle] = useState("");
+  const [selectionStyle, setSelectionStyle] = useState('');
 
   // Get all visible items in order
   const getVisibleItems = useCallback(
@@ -249,7 +234,7 @@ function TreeItem({
 
   useEffect(() => {
     if (!isSelected) {
-      setSelectionStyle("");
+      setSelectionStyle('');
       return;
     }
 
@@ -266,29 +251,20 @@ function TreeItem({
     const roundTop = !isPrevSelected;
     const roundBottom = !isNextSelected;
 
-    setSelectionStyle(
-      `${roundTop ? "rounded-t-md" : ""} ${roundBottom ? "rounded-b-md" : ""}`
-    );
-  }, [
-    isSelected,
-    selectedIds,
-    expandedIds,
-    item.id,
-    getVisibleItems,
-    allItems,
-  ]);
+    setSelectionStyle(`${roundTop ? 'rounded-t-md' : ''} ${roundBottom ? 'rounded-b-md' : ''}`);
+  }, [isSelected, selectedIds, expandedIds, item.id, getVisibleItems, allItems]);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
 
-    if (isDisabled || selectionMode === "none") return;
+    if (isDisabled || selectionMode === 'none') return;
 
     let newSelection = new Set(selectedIds);
 
     if (!itemRef.current) return;
 
-    if (selectionMode === "single") {
+    if (selectionMode === 'single') {
       newSelection = new Set([item.id]);
       lastSelectedId.current = item.id;
       onSelect(newSelection);
@@ -299,23 +275,18 @@ function TreeItem({
     }
 
     if (e.shiftKey && lastSelectedId.current !== null) {
-      const items = Array.from(
-        document.querySelectorAll("[data-tree-item]")
-      ) as HTMLElement[];
+      const items = Array.from(document.querySelectorAll('[data-tree-item]')) as HTMLElement[];
       const lastIndex = items.findIndex(
-        (el) => el.getAttribute("data-id") === lastSelectedId.current
+        (el) => el.getAttribute('data-id') === lastSelectedId.current
       );
       const currentIndex = items.findIndex((el) => el === itemRef.current);
-      const [start, end] = [
-        Math.min(lastIndex, currentIndex),
-        Math.max(lastIndex, currentIndex),
-      ];
+      const [start, end] = [Math.min(lastIndex, currentIndex), Math.max(lastIndex, currentIndex)];
 
       items.slice(start, end + 1).forEach((el) => {
-        const id = el.getAttribute("data-id");
-        const isDisabledEl = el.getAttribute("data-disabled") === "true";
+        const id = el.getAttribute('data-id');
+        const isDisabledEl = el.getAttribute('data-disabled') === 'true';
         const parentFolderClosed = el.closest('[data-folder-closed="true"]');
-        const isClosedFolder = el.getAttribute("data-folder-closed") === "true";
+        const isClosedFolder = el.getAttribute('data-folder-closed') === 'true';
 
         if (id && !isDisabledEl && (isClosedFolder || !parentFolderClosed)) {
           newSelection.add(id);
@@ -355,7 +326,7 @@ function TreeItem({
     if (onAccessChange) {
       const currentState = getCheckState(item, itemMap);
       // Toggle between checked and unchecked, treating indeterminate as unchecked
-      const newChecked = currentState === "checked" ? false : true;
+      const newChecked = currentState === 'checked' ? false : true;
       onAccessChange(item, newChecked);
     }
   };
@@ -372,14 +343,9 @@ function TreeItem({
   const getItemPath = (item: TreeViewItem, items: TreeViewItem[]): string => {
     const path: string[] = [item.name];
 
-    const findParent = (
-      currentItem: TreeViewItem,
-      allItems: TreeViewItem[]
-    ) => {
+    const findParent = (currentItem: TreeViewItem, allItems: TreeViewItem[]) => {
       for (const potentialParent of allItems) {
-        if (
-          potentialParent.children?.some((child) => child.id === currentItem.id)
-        ) {
+        if (potentialParent.children?.some((child) => child.id === currentItem.id)) {
           path.unshift(potentialParent.name);
           findParent(potentialParent, allItems);
           break;
@@ -391,7 +357,7 @@ function TreeItem({
     };
 
     findParent(item, items);
-    return path.join(" → ");
+    return path.join(' → ');
   };
 
   // Add function to count selected items in a folder
@@ -413,8 +379,7 @@ function TreeItem({
   };
 
   // Get selected count only if item has children and is collapsed
-  const selectedCount =
-    (item.children && !isOpen && getSelectedChildrenCount(item)) || null;
+  const selectedCount = (item.children && !isOpen && getSelectedChildrenCount(item)) || null;
 
   return (
     <ContextMenu>
@@ -424,7 +389,7 @@ function TreeItem({
             ref={itemRef}
             role="treeitem"
             aria-expanded={item.children ? isOpen : undefined}
-            aria-selected={isSelected && selectionMode !== "none"}
+            aria-selected={isSelected && selectionMode !== 'none'}
             aria-disabled={isDisabled}
             tabIndex={0}
             data-tree-item
@@ -434,11 +399,11 @@ function TreeItem({
             data-disabled={isDisabled}
             className={`select-none rounded-md px-1 ${
               isDisabled
-                ? "cursor-not-allowed opacity-50 text-muted-foreground"
+                ? 'cursor-not-allowed opacity-50 text-muted-foreground'
                 : `cursor-pointer ${
-                    isSelected && selectionMode !== "none"
+                    isSelected && selectionMode !== 'none'
                       ? `bg-accent ${selectionStyle}`
-                      : "text-foreground hover:bg-muted/50"
+                      : 'text-foreground hover:bg-muted/50'
                   }`
             }`}
             style={{ paddingLeft: `${depth * 20}px` }}
@@ -453,14 +418,8 @@ function TreeItem({
             <div className="flex items-center h-8 min-w-0">
               {item.children ? (
                 <div className="flex items-center gap-2 flex-1 min-w-0 group">
-                  <Collapsible
-                    open={isOpen}
-                    onOpenChange={(open) => onToggleExpand(item.id, open)}
-                  >
-                    <CollapsibleTrigger
-                      asChild
-                      onClick={(e) => e.stopPropagation()}
-                    >
+                  <Collapsible open={isOpen} onOpenChange={(open) => onToggleExpand(item.id, open)}>
+                    <CollapsibleTrigger asChild onClick={(e) => e.stopPropagation()}>
                       <Button variant="ghost" size="icon" className="h-6 w-6">
                         <motion.div
                           initial={false}
@@ -479,7 +438,7 @@ function TreeItem({
                       onClick={handleAccessClick}
                       aria-label={`Toggle access for ${item.name}`}
                     >
-                      {getCheckState(item, itemMap) === "checked" && (
+                      {getCheckState(item, itemMap) === 'checked' && (
                         <div className="w-4 h-4 border rounded bg-primary border-primary flex items-center justify-center">
                           <svg
                             className="h-3 w-3 text-primary-foreground"
@@ -496,10 +455,10 @@ function TreeItem({
                           </svg>
                         </div>
                       )}
-                      {getCheckState(item, itemMap) === "unchecked" && (
+                      {getCheckState(item, itemMap) === 'unchecked' && (
                         <div className="w-4 h-4 border rounded border-input" />
                       )}
-                      {getCheckState(item, itemMap) === "indeterminate" && (
+                      {getCheckState(item, itemMap) === 'indeterminate' && (
                         <div className="w-4 h-4 border rounded bg-primary border-primary flex items-center justify-center">
                           <div className="h-0.5 w-2 bg-primary-foreground" />
                         </div>
@@ -508,9 +467,7 @@ function TreeItem({
                   )}
                   {renderIcon()}
                   <span className="flex-1 min-w-0 truncate">{item.name}</span>
-                  {item.badge && (
-                    <span className="shrink-0 ml-1">{item.badge}</span>
-                  )}
+                  {item.badge && <span className="shrink-0 ml-1">{item.badge}</span>}
                   {item.meta && (
                     <span className="text-xs text-muted-foreground shrink-0 ml-1 truncate max-w-[6rem]">
                       {item.meta}
@@ -557,19 +514,19 @@ function TreeItem({
                               <h4 className="font-semibold">{item.name}</h4>
                               <div className="text-muted-foreground space-y-1">
                                 <div>
-                                  <span className="font-medium">Type:</span>{" "}
+                                  <span className="font-medium">Type:</span>{' '}
                                   {item.type.charAt(0).toUpperCase() +
-                                    item.type.slice(1).replace("_", " ")}
+                                    item.type.slice(1).replace('_', ' ')}
                                 </div>
                                 <div>
                                   <span className="font-medium">ID:</span> {item.id}
                                 </div>
                                 <div>
-                                  <span className="font-medium">Location:</span>{" "}
+                                  <span className="font-medium">Location:</span>{' '}
                                   {getItemPath(item, allItems)}
                                 </div>
                                 <div>
-                                  <span className="font-medium">Items:</span>{" "}
+                                  <span className="font-medium">Items:</span>{' '}
                                   {item.children?.length ?? 0} direct items
                                 </div>
                               </div>
@@ -595,19 +552,19 @@ function TreeItem({
                           <h4 className="text-sm font-semibold">{item.name}</h4>
                           <div className="text-sm text-muted-foreground space-y-1">
                             <div>
-                              <span className="font-medium">Type:</span>{" "}
+                              <span className="font-medium">Type:</span>{' '}
                               {item.type.charAt(0).toUpperCase() +
-                                item.type.slice(1).replace("_", " ")}
+                                item.type.slice(1).replace('_', ' ')}
                             </div>
                             <div>
                               <span className="font-medium">ID:</span> {item.id}
                             </div>
                             <div>
-                              <span className="font-medium">Location:</span>{" "}
+                              <span className="font-medium">Location:</span>{' '}
                               {getItemPath(item, allItems)}
                             </div>
                             <div>
-                              <span className="font-medium">Items:</span>{" "}
+                              <span className="font-medium">Items:</span>{' '}
                               {item.children?.length ?? 0} direct items
                             </div>
                           </div>
@@ -622,12 +579,12 @@ function TreeItem({
                     <Checkbox
                       checked={isSelected}
                       onCheckedChange={(checked) => {
-                        if (selectionMode === "none") return;
+                        if (selectionMode === 'none') return;
                         const newSelection =
-                          selectionMode === "single"
+                          selectionMode === 'single'
                             ? new Set(checked ? [item.id] : [])
                             : new Set(selectedIds);
-                        if (selectionMode === "multiple") {
+                        if (selectionMode === 'multiple') {
                           if (checked) newSelection.add(item.id);
                           else newSelection.delete(item.id);
                         }
@@ -668,9 +625,7 @@ function TreeItem({
                   )}
                   {renderIcon()}
                   <span className="flex-1 min-w-0 truncate">{item.name}</span>
-                  {item.badge && (
-                    <span className="shrink-0 ml-1">{item.badge}</span>
-                  )}
+                  {item.badge && <span className="shrink-0 ml-1">{item.badge}</span>}
                   {item.meta && (
                     <span className="text-xs text-muted-foreground shrink-0 ml-1 truncate max-w-[6rem]">
                       {item.meta}
@@ -709,15 +664,15 @@ function TreeItem({
                               <h4 className="font-semibold">{item.name}</h4>
                               <div className="text-muted-foreground space-y-1">
                                 <div>
-                                  <span className="font-medium">Type:</span>{" "}
+                                  <span className="font-medium">Type:</span>{' '}
                                   {item.type.charAt(0).toUpperCase() +
-                                    item.type.slice(1).replace("_", " ")}
+                                    item.type.slice(1).replace('_', ' ')}
                                 </div>
                                 <div>
                                   <span className="font-medium">ID:</span> {item.id}
                                 </div>
                                 <div>
-                                  <span className="font-medium">Location:</span>{" "}
+                                  <span className="font-medium">Location:</span>{' '}
                                   {getItemPath(item, allItems)}
                                 </div>
                               </div>
@@ -743,15 +698,15 @@ function TreeItem({
                           <h4 className="text-sm font-semibold">{item.name}</h4>
                           <div className="text-sm text-muted-foreground space-y-1">
                             <div>
-                              <span className="font-medium">Type:</span>{" "}
+                              <span className="font-medium">Type:</span>{' '}
                               {item.type.charAt(0).toUpperCase() +
-                                item.type.slice(1).replace("_", " ")}
+                                item.type.slice(1).replace('_', ' ')}
                             </div>
                             <div>
                               <span className="font-medium">ID:</span> {item.id}
                             </div>
                             <div>
-                              <span className="font-medium">Location:</span>{" "}
+                              <span className="font-medium">Location:</span>{' '}
                               {getItemPath(item, allItems)}
                             </div>
                           </div>
@@ -765,16 +720,13 @@ function TreeItem({
           </div>
 
           {item.children && (
-            <Collapsible
-              open={isOpen}
-              onOpenChange={(open) => onToggleExpand(item.id, open)}
-            >
+            <Collapsible open={isOpen} onOpenChange={(open) => onToggleExpand(item.id, open)}>
               <AnimatePresence initial={false}>
                 {isOpen && (
                   <CollapsibleContent forceMount asChild>
                     <motion.div
                       initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
+                      animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.05 }}
                     >
@@ -814,15 +766,11 @@ function TreeItem({
           <ContextMenuItem
             key={menuItem.id}
             onClick={() => {
-              const items = selectedIds.has(item.id)
-                ? getSelectedItems()
-                : [item];
+              const items = selectedIds.has(item.id) ? getSelectedItems() : [item];
               menuItem.action(items);
             }}
           >
-            {menuItem.icon && (
-              <span className="mr-2 h-4 w-4">{menuItem.icon}</span>
-            )}
+            {menuItem.icon && <span className="mr-2 h-4 w-4">{menuItem.icon}</span>}
             {menuItem.label}
           </ContextMenuItem>
         ))}
@@ -850,17 +798,17 @@ export default function TreeView({
   className,
   containerClassName,
   checkboxLabels = {
-    check: "Check",
-    uncheck: "Uncheck",
+    check: 'Check',
+    uncheck: 'Uncheck',
   },
   data,
   iconMap,
-  searchPlaceholder = "Search...",
-  selectionText = "selected",
+  searchPlaceholder = 'Search...',
+  selectionText = 'selected',
   showExpandAll = true,
   showCheckboxes = false,
   showSelectionCheckboxes = false,
-  selectionMode = "multiple",
+  selectionMode = 'multiple',
   title,
   getIcon,
   onSelectionChange,
@@ -877,7 +825,7 @@ export default function TreeView({
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [isDragging, setIsDragging] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   const dragRef = useRef<HTMLDivElement>(null);
   const lastSelectedId = useRef<string | null>(null);
@@ -941,7 +889,7 @@ export default function TreeView({
   // Update expanded IDs when search changes
   useEffect(() => {
     if (searchQuery.trim()) {
-      setExpandedIds(prev => new Set([...prev, ...searchExpandedIds]));
+      setExpandedIds((prev) => new Set([...prev, ...searchExpandedIds]));
     }
   }, [searchExpandedIds, searchQuery]);
 
@@ -954,7 +902,7 @@ export default function TreeView({
         (dragRef.current && dragRef.current.contains(target)) ||
         // Ignore clicks on context menus
         target.closest('[role="menu"]') ||
-        target.closest("[data-radix-popper-content-wrapper]");
+        target.closest('[data-radix-popper-content-wrapper]');
 
       if (!clickedInside) {
         setSelectedIds(new Set());
@@ -962,8 +910,8 @@ export default function TreeView({
       }
     };
 
-    document.addEventListener("mousedown", handleClickAway);
-    return () => document.removeEventListener("mousedown", handleClickAway);
+    document.addEventListener('mousedown', handleClickAway);
+    return () => document.removeEventListener('mousedown', handleClickAway);
   }, []);
 
   // Function to collect all folder IDs
@@ -1022,9 +970,7 @@ export default function TreeView({
       if (!item.children) return true;
 
       // Check if any children of this item are selected
-      const hasSelectedChildren = item.children.some((child) =>
-        selectedIdsSet.has(child.id)
-      );
+      const hasSelectedChildren = item.children.some((child) => selectedIdsSet.has(child.id));
 
       // Only include this item if none of its children are selected
       return !hasSelectedChildren;
@@ -1033,14 +979,14 @@ export default function TreeView({
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     // Only track on left click and not on buttons
-    if (e.button !== 0 || (e.target as HTMLElement).closest("button")) return;
+    if (e.button !== 0 || (e.target as HTMLElement).closest('button')) return;
 
     setDragStartPosition({ x: e.clientX, y: e.clientY });
   }, []);
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
-      if (selectionMode === "none") return;
+      if (selectionMode === 'none') return;
 
       // Check if primary button is still held down
       if (!(e.buttons & 1)) {
@@ -1077,7 +1023,7 @@ export default function TreeView({
       if (!dragRef.current) return;
 
       const items = Array.from(
-        dragRef.current.querySelectorAll("[data-tree-item]")
+        dragRef.current.querySelectorAll('[data-tree-item]')
       ) as HTMLElement[];
 
       const startY = dragStart;
@@ -1087,9 +1033,7 @@ export default function TreeView({
         Math.max(startY || 0, currentY),
       ];
 
-      const newSelection = new Set(
-        e.shiftKey || e.ctrlKey ? Array.from(selectedIds) : []
-      );
+      const newSelection = new Set(e.shiftKey || e.ctrlKey ? Array.from(selectedIds) : []);
 
       items.forEach((item) => {
         const rect = item.getBoundingClientRect();
@@ -1097,13 +1041,10 @@ export default function TreeView({
         const itemBottom = rect.top + rect.height;
 
         if (itemBottom >= selectionStart && itemTop <= selectionEnd) {
-          const id = item.getAttribute("data-id");
-          const isDisabledEl = item.getAttribute("data-disabled") === "true";
-          const isClosedFolder =
-            item.getAttribute("data-folder-closed") === "true";
-          const parentFolderClosed = item.closest(
-            '[data-folder-closed="true"]'
-          );
+          const id = item.getAttribute('data-id');
+          const isDisabledEl = item.getAttribute('data-disabled') === 'true';
+          const isClosedFolder = item.getAttribute('data-folder-closed') === 'true';
+          const parentFolderClosed = item.closest('[data-folder-closed="true"]');
 
           if (id && !isDisabledEl && (isClosedFolder || !parentFolderClosed)) {
             newSelection.add(id);
@@ -1126,12 +1067,12 @@ export default function TreeView({
   // Add cleanup for mouse events
   useEffect(() => {
     if (isDragging) {
-      document.addEventListener("mouseup", handleMouseUp);
-      document.addEventListener("mouseleave", handleMouseUp);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('mouseleave', handleMouseUp);
     }
     return () => {
-      document.removeEventListener("mouseup", handleMouseUp);
-      document.removeEventListener("mouseleave", handleMouseUp);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('mouseleave', handleMouseUp);
     };
   }, [isDragging, handleMouseUp]);
 
@@ -1143,17 +1084,15 @@ export default function TreeView({
   }, [selectedIds, onSelectionChange, getSelectedItems]);
 
   return (
-    <div className={cn("flex gap-4 min-w-0", containerClassName ? "w-full" : "")}>
+    <div className={cn('flex gap-4 min-w-0', containerClassName ? 'w-full' : '')}>
       <div
         ref={treeRef}
         className={cn(
-          "bg-background rounded-xl border space-y-4 relative shadow-lg flex flex-col min-w-0 overflow-hidden",
-          containerClassName ?? "p-6 max-w-2xl w-[600px]"
+          'bg-background rounded-xl border space-y-4 relative shadow-lg flex flex-col min-w-0 overflow-hidden',
+          containerClassName ?? 'p-6 max-w-2xl w-[600px]'
         )}
       >
-        {title && (
-          <div className="text-sm font-medium text-foreground shrink-0">{title}</div>
-        )}
+        {title && <div className="text-sm font-medium text-foreground shrink-0">{title}</div>}
         <div className="relative w-full shrink-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -1167,16 +1106,26 @@ export default function TreeView({
           <div className="flex gap-2">
             {showExpandAll && (
               <>
-                <Button variant="ghost" size="sm" className="h-6 px-1.5 text-xs" onClick={handleExpandAll}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-1.5 text-xs"
+                  onClick={handleExpandAll}
+                >
                   Expand
                 </Button>
-                <Button variant="ghost" size="sm" className="h-6 px-1.5 text-xs" onClick={handleCollapseAll}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-1.5 text-xs"
+                  onClick={handleCollapseAll}
+                >
                   Collapse
                 </Button>
               </>
             )}
           </div>
-          {selectionMode !== "none" && selectedIds.size > 0 ? (
+          {selectionMode !== 'none' && selectedIds.size > 0 ? (
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
                 {selectedIds.size} {selectionText}
@@ -1233,10 +1182,7 @@ export default function TreeView({
         <section
           ref={dragRef}
           aria-label="Tree view content"
-          className={cn(
-            "rounded-lg relative select-none min-w-0 overflow-x-hidden",
-            className
-          )}
+          className={cn('rounded-lg relative select-none min-w-0 overflow-x-hidden', className)}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
         >
@@ -1244,13 +1190,8 @@ export default function TreeView({
             <div
               className="absolute inset-0 bg-blue-500/0 pointer-events-none"
               style={{
-                top: Math.min(
-                  dragStart || 0,
-                  dragStart === null ? 0 : currentMousePos
-                ),
-                height: Math.abs(
-                  (dragStart || 0) - (dragStart === null ? 0 : currentMousePos)
-                ),
+                top: Math.min(dragStart || 0, dragStart === null ? 0 : currentMousePos),
+                height: Math.abs((dragStart || 0) - (dragStart === null ? 0 : currentMousePos)),
               }}
             />
           )}

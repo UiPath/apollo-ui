@@ -102,7 +102,16 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
       isDragging: dragging,
       mode,
     }),
-    [id, executionStatusOverride, executionState, validationState, isConnecting, selected, dragging, mode]
+    [
+      id,
+      executionStatusOverride,
+      executionState,
+      validationState,
+      isConnecting,
+      selected,
+      dragging,
+      mode,
+    ]
   );
 
   // Callbacks: Use props only (no longer in data)

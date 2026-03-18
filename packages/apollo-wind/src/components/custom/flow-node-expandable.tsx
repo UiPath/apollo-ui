@@ -66,7 +66,7 @@ export function FlowNodeExpandable({
         isSelectedHover && 'border-2 border-foreground-accent-muted',
         // CSS selected hover
         !forceState && isSelected && 'group-hover:border-foreground-accent-muted',
-        className,
+        className
       )}
     >
       {/* ── Header ───────────────────────────────────────────────────── */}
@@ -76,9 +76,7 @@ export function FlowNodeExpandable({
           <div className="flex items-center justify-center rounded-xl bg-surface size-8 shrink-0">
             {icon ?? <Workflow className="h-5 w-5 text-foreground-muted" />}
           </div>
-          <span className="text-sm font-medium text-foreground whitespace-nowrap">
-            {title}
-          </span>
+          <span className="text-sm font-medium text-foreground whitespace-nowrap">{title}</span>
         </div>
         <button
           type="button"
@@ -91,9 +89,7 @@ export function FlowNodeExpandable({
       </div>
 
       {/* ── Content area (expanded only) ─────────────────────────────── */}
-      {expanded && (
-        <div className="flex-1 min-h-0 rounded-lg bg-surface" />
-      )}
+      {expanded && <div className="flex-1 min-h-0 rounded-lg bg-surface" />}
     </div>
   );
 }

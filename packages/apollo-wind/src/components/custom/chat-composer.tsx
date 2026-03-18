@@ -48,12 +48,7 @@ export function ChatComposer({
   const showEnter = value.length > 0;
 
   return (
-    <div
-      className={cn(
-        'w-full max-w-[800px] rounded-[32px] bg-surface-raised p-2',
-        className
-      )}
-    >
+    <div className={cn('w-full max-w-[800px] rounded-[32px] bg-surface-raised p-2', className)}>
       <div className="group/input flex flex-col gap-3 rounded-[24px] border border-border bg-surface pb-3 pl-4 pr-3 pt-4 transition-colors hover:border-border-hover focus-within:border-border-hover">
         {/* Text area */}
         <textarea

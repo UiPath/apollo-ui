@@ -1,12 +1,5 @@
 import type { Meta } from '@storybook/react-vite';
-import {
-  Calendar,
-  ExternalLink,
-  GitBranch,
-  MapPin,
-  Star,
-  Users,
-} from 'lucide-react';
+import { Calendar, ExternalLink, GitBranch, MapPin, Star, Users } from 'lucide-react';
 import { Button } from './button';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card';
 import { Separator } from './separator';
@@ -61,7 +54,9 @@ export const Sides = {
     <div className="flex items-center justify-center gap-8 py-20">
       <HoverCard>
         <HoverCardTrigger asChild>
-          <Button variant="outline" size="sm">Top</Button>
+          <Button variant="outline" size="sm">
+            Top
+          </Button>
         </HoverCardTrigger>
         <HoverCardContent side="top" className="w-60">
           <p className="text-sm">This card opens above the trigger element.</p>
@@ -70,7 +65,9 @@ export const Sides = {
 
       <HoverCard>
         <HoverCardTrigger asChild>
-          <Button variant="outline" size="sm">Bottom</Button>
+          <Button variant="outline" size="sm">
+            Bottom
+          </Button>
         </HoverCardTrigger>
         <HoverCardContent side="bottom" className="w-60">
           <p className="text-sm">This card opens below the trigger element.</p>
@@ -79,7 +76,9 @@ export const Sides = {
 
       <HoverCard>
         <HoverCardTrigger asChild>
-          <Button variant="outline" size="sm">Left</Button>
+          <Button variant="outline" size="sm">
+            Left
+          </Button>
         </HoverCardTrigger>
         <HoverCardContent side="left" className="w-60">
           <p className="text-sm">This card opens to the left of the trigger element.</p>
@@ -88,7 +87,9 @@ export const Sides = {
 
       <HoverCard>
         <HoverCardTrigger asChild>
-          <Button variant="outline" size="sm">Right</Button>
+          <Button variant="outline" size="sm">
+            Right
+          </Button>
         </HoverCardTrigger>
         <HoverCardContent side="right" className="w-60">
           <p className="text-sm">This card opens to the right of the trigger element.</p>
@@ -109,7 +110,10 @@ export const Panels = {
       {/* User card */}
       <HoverCard>
         <HoverCardTrigger asChild>
-          <button type="button" className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-accent transition-colors">
+          <button
+            type="button"
+            className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-accent transition-colors"
+          >
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
               JC
             </div>
@@ -151,7 +155,10 @@ export const Panels = {
       {/* Repo card */}
       <HoverCard>
         <HoverCardTrigger asChild>
-          <button type="button" className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-accent transition-colors">
+          <button
+            type="button"
+            className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-accent transition-colors"
+          >
             <GitBranch className="h-4 w-4 text-muted-foreground" />
             <span>apollo-ui</span>
           </button>
@@ -160,10 +167,13 @@ export const Panels = {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-semibold">uipath/apollo-ui</h4>
-              <span className="rounded-full border px-2 py-0.5 text-[10px] text-muted-foreground">Public</span>
+              <span className="rounded-full border px-2 py-0.5 text-[10px] text-muted-foreground">
+                Public
+              </span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Open-source design system for UiPath. Unified component library for React and Web Components.
+              Open-source design system for UiPath. Unified component library for React and Web
+              Components.
             </p>
             <Separator />
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -195,9 +205,30 @@ export const DataTables = {
   name: 'Data Tables',
   render: () => {
     const rows = [
-      { id: 'PRJ-001', name: 'Website Redesign', owner: 'Jane C.', status: 'Active', updated: 'Feb 10', desc: 'Complete overhaul of the marketing website with new brand guidelines and improved UX.' },
-      { id: 'PRJ-002', name: 'Mobile App v2', owner: 'Alex M.', status: 'Paused', updated: 'Feb 8', desc: 'Second major version of the iOS and Android apps with offline support.' },
-      { id: 'PRJ-003', name: 'API Migration', owner: 'Sam W.', status: 'Active', updated: 'Feb 5', desc: 'Migrate REST endpoints to GraphQL with backward compatibility layer.' },
+      {
+        id: 'PRJ-001',
+        name: 'Website Redesign',
+        owner: 'Jane C.',
+        status: 'Active',
+        updated: 'Feb 10',
+        desc: 'Complete overhaul of the marketing website with new brand guidelines and improved UX.',
+      },
+      {
+        id: 'PRJ-002',
+        name: 'Mobile App v2',
+        owner: 'Alex M.',
+        status: 'Paused',
+        updated: 'Feb 8',
+        desc: 'Second major version of the iOS and Android apps with offline support.',
+      },
+      {
+        id: 'PRJ-003',
+        name: 'API Migration',
+        owner: 'Sam W.',
+        status: 'Active',
+        updated: 'Feb 5',
+        desc: 'Migrate REST endpoints to GraphQL with backward compatibility layer.',
+      },
     ];
 
     return (
@@ -211,12 +242,18 @@ export const DataTables = {
         </div>
         {/* Rows */}
         {rows.map((row) => (
-          <div key={row.id} className="flex items-center gap-4 border-b last:border-0 px-4 py-2.5 text-sm">
+          <div
+            key={row.id}
+            className="flex items-center gap-4 border-b last:border-0 px-4 py-2.5 text-sm"
+          >
             <span className="w-[70px] tabular-nums text-muted-foreground">{row.id}</span>
             <span className="flex-1">
               <HoverCard>
                 <HoverCardTrigger asChild>
-                  <button type="button" className="font-medium underline-offset-4 hover:underline text-left">
+                  <button
+                    type="button"
+                    className="font-medium underline-offset-4 hover:underline text-left"
+                  >
                     {row.name}
                   </button>
                 </HoverCardTrigger>
@@ -224,9 +261,13 @@ export const DataTables = {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <h4 className="text-sm font-semibold">{row.name}</h4>
-                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                        row.status === 'Active' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                          row.status === 'Active'
+                            ? 'bg-primary/10 text-primary'
+                            : 'bg-muted text-muted-foreground'
+                        }`}
+                      >
                         {row.status}
                       </span>
                     </div>
@@ -242,9 +283,13 @@ export const DataTables = {
             </span>
             <span className="w-[70px] text-muted-foreground">{row.owner}</span>
             <span className="w-[70px]">
-              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                row.status === 'Active' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-              }`}>
+              <span
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                  row.status === 'Active'
+                    ? 'bg-primary/10 text-primary'
+                    : 'bg-muted text-muted-foreground'
+                }`}
+              >
                 {row.status}
               </span>
             </span>
@@ -275,7 +320,8 @@ export const LinksAndReferences = {
             <div className="space-y-2">
               <h4 className="text-sm font-semibold">Radix UI</h4>
               <p className="text-xs text-muted-foreground">
-                An open-source component library optimized for fast development, easy maintenance, and accessibility.
+                An open-source component library optimized for fast development, easy maintenance,
+                and accessibility.
               </p>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <ExternalLink className="h-3 w-3" />
@@ -283,8 +329,8 @@ export const LinksAndReferences = {
               </div>
             </div>
           </HoverCardContent>
-        </HoverCard>
-        {' '}primitives with{' '}
+        </HoverCard>{' '}
+        primitives with{' '}
         <HoverCard>
           <HoverCardTrigger asChild>
             <a href="#demo" className="font-medium underline underline-offset-4 hover:no-underline">
@@ -295,7 +341,8 @@ export const LinksAndReferences = {
             <div className="space-y-2">
               <h4 className="text-sm font-semibold">Tailwind CSS</h4>
               <p className="text-xs text-muted-foreground">
-                A utility-first CSS framework packed with classes that can be composed to build any design, directly in your markup.
+                A utility-first CSS framework packed with classes that can be composed to build any
+                design, directly in your markup.
               </p>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <ExternalLink className="h-3 w-3" />
@@ -303,8 +350,8 @@ export const LinksAndReferences = {
               </div>
             </div>
           </HoverCardContent>
-        </HoverCard>
-        {' '}styling. Documentation is powered by{' '}
+        </HoverCard>{' '}
+        styling. Documentation is powered by{' '}
         <HoverCard>
           <HoverCardTrigger asChild>
             <a href="#demo" className="font-medium underline underline-offset-4 hover:no-underline">
@@ -315,7 +362,8 @@ export const LinksAndReferences = {
             <div className="space-y-2">
               <h4 className="text-sm font-semibold">Storybook</h4>
               <p className="text-xs text-muted-foreground">
-                A frontend workshop for building UI components and pages in isolation. Used for development, testing, and documentation.
+                A frontend workshop for building UI components and pages in isolation. Used for
+                development, testing, and documentation.
               </p>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <ExternalLink className="h-3 w-3" />
@@ -323,7 +371,8 @@ export const LinksAndReferences = {
               </div>
             </div>
           </HoverCardContent>
-        </HoverCard>.
+        </HoverCard>
+        .
       </p>
     </div>
   ),

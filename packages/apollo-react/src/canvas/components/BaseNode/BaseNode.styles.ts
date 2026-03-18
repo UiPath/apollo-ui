@@ -37,7 +37,6 @@ const getIconDimensions = (
   return { iconWidth, iconHeight };
 };
 
-
 const getValidationStatusBorder = (validationStatus?: string) => {
   switch (validationStatus) {
     case 'ERROR':

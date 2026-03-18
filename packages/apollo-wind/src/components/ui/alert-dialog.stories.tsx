@@ -38,7 +38,8 @@ export const Basic = {
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will apply the changes to your account settings. You can update them again at any time.
+            This will apply the changes to your account settings. You can update them again at any
+            time.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -65,7 +66,8 @@ export const Destructive = {
         <AlertDialogHeader>
           <AlertDialogTitle>Delete your account?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete your account, all your projects, and remove your data from our servers.
+            This action cannot be undone. This will permanently delete your account, all your
+            projects, and remove your data from our servers.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -90,14 +92,14 @@ export const Sizes = {
       {/* Small */}
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button variant="outline" size="sm">Small Dialog</Button>
+          <Button variant="outline" size="sm">
+            Small Dialog
+          </Button>
         </AlertDialogTrigger>
         <AlertDialogContent className="max-w-sm">
           <AlertDialogHeader>
             <AlertDialogTitle>Discard draft?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Your unsaved changes will be lost.
-            </AlertDialogDescription>
+            <AlertDialogDescription>Your unsaved changes will be lost.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Keep Editing</AlertDialogCancel>
@@ -109,13 +111,16 @@ export const Sizes = {
       {/* Default */}
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button variant="outline" size="sm">Default Dialog</Button>
+          <Button variant="outline" size="sm">
+            Default Dialog
+          </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm changes</AlertDialogTitle>
             <AlertDialogDescription>
-              You are about to update the project settings. This will affect all team members currently working on this project.
+              You are about to update the project settings. This will affect all team members
+              currently working on this project.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -128,13 +133,18 @@ export const Sizes = {
       {/* Large */}
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button variant="outline" size="sm">Large Dialog</Button>
+          <Button variant="outline" size="sm">
+            Large Dialog
+          </Button>
         </AlertDialogTrigger>
         <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Review and confirm</AlertDialogTitle>
             <AlertDialogDescription>
-              You are about to publish this workflow to production. Please review the following details before confirming. This action will deploy the latest version and may affect active users. Ensure all tests have passed and the staging environment has been verified.
+              You are about to publish this workflow to production. Please review the following
+              details before confirming. This action will deploy the latest version and may affect
+              active users. Ensure all tests have passed and the staging environment has been
+              verified.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -158,13 +168,16 @@ export const Examples = {
       {/* Unsaved changes */}
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button variant="outline" size="sm">Unsaved Changes</Button>
+          <Button variant="outline" size="sm">
+            Unsaved Changes
+          </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Unsaved changes</AlertDialogTitle>
             <AlertDialogDescription>
-              You have unsaved changes. If you leave now, your changes will be lost. Do you want to save before leaving?
+              You have unsaved changes. If you leave now, your changes will be lost. Do you want to
+              save before leaving?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -177,13 +190,16 @@ export const Examples = {
       {/* Remove team member */}
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button variant="outline" size="sm">Remove Member</Button>
+          <Button variant="outline" size="sm">
+            Remove Member
+          </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Remove team member?</AlertDialogTitle>
             <AlertDialogDescription>
-              Jane Doe will lose access to all projects and resources in this workspace. You can invite them back at any time.
+              Jane Doe will lose access to all projects and resources in this workspace. You can
+              invite them back at any time.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -198,7 +214,9 @@ export const Examples = {
       {/* Sign out */}
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button variant="outline" size="sm">Sign Out</Button>
+          <Button variant="outline" size="sm">
+            Sign Out
+          </Button>
         </AlertDialogTrigger>
         <AlertDialogContent className="max-w-sm">
           <AlertDialogHeader>
@@ -217,13 +235,16 @@ export const Examples = {
       {/* Reset to defaults */}
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button variant="outline" size="sm">Reset Settings</Button>
+          <Button variant="outline" size="sm">
+            Reset Settings
+          </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Reset to default settings?</AlertDialogTitle>
             <AlertDialogDescription>
-              All your custom preferences, themes, and notification settings will be restored to their default values. This cannot be undone.
+              All your custom preferences, themes, and notification settings will be restored to
+              their default values. This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -354,7 +375,9 @@ export const DataGridDelete = {
               />
               <span className="w-[200px] font-medium truncate">{row.name}</span>
               <span className="w-[100px] text-muted-foreground">{row.type}</span>
-              <span className="ml-auto w-[120px] text-right text-muted-foreground">{row.modified}</span>
+              <span className="ml-auto w-[120px] text-right text-muted-foreground">
+                {row.modified}
+              </span>
             </div>
           ))}
           {rows.length === 0 && (
