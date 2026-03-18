@@ -6,6 +6,10 @@ permissions:
   contents: read
   pull-requests: write
 
+env:
+  GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+  NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
 jobs:
   dependency-review:
     name: Dependencies license check
@@ -16,22 +20,65 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4
+
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
+          cache: 'pnpm'
 
-      - name: Generate UiPath-approved license allowlist
-        id: licenses
-        shell: bash
-        # Source: https://uipath.atlassian.net/wiki/spaces/LEG/pages/2861433455/FOSS+license+standard (GO section)
-        run: |
-          ALLOW="$(npx -y tsx scripts/allowed-licenses.ts)"
-          echo "allow=$ALLOW" >> "$GITHUB_OUTPUT"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Dependency Review
-        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+      - name: Check licenses
+        id: check
+        run: npx -y tsx scripts/check-licenses.ts
+        continue-on-error: true
+
+      - name: Post or update PR comment
+        if: "!github.event.pull_request.head.repo.fork"
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         with:
-          fail-on-severity: high
-          allow-licenses: ${{ steps.licenses.outputs.allow }}
-          comment-summary-in-pr: always
+          script: |
+            const fs = require('fs');
+            const reportPath = '/tmp/license-report.md';
+            const marker = '<!-- dependency-license-review -->';
+
+            let report;
+            try {
+              report = fs.readFileSync(reportPath, 'utf8');
+            } catch {
+              report = '# Dependency License Review\n\n:x: License check script failed before generating a report. Check the workflow logs.';
+            }
+
+            const body = `${marker}\n${report}`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c => c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Fail if license violations found
+        if: steps.check.outcome == 'failure'
+        run: exit 1
