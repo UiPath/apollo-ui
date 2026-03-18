@@ -404,8 +404,25 @@ function CLITab() {
       {/* Why CLI */}
       <div>
         <InfoCallout>
-          The Apollo registry is in development. Commands on this page reflect the target experience
-          and will work once the registry is published.
+          <p className="mb-2 font-medium text-foreground">Work in progress</p>
+          <p>
+            This is the <span className="font-medium text-foreground">Apollo Wind CLI</span> — a
+            frontend-specific tool for Tailwind-based projects using{' '}
+            <InlineCode>@uipath/apollo-wind</InlineCode>. The registry is not yet published;
+            commands on this page reflect the target experience and will work once it is.
+          </p>
+          <p className="mt-2">
+            Other teams at UiPath are also building CLIs for different parts of the stack. Check the{' '}
+            <a
+              href="https://github.com/UiPath"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary underline"
+            >
+              UiPath GitHub
+            </a>{' '}
+            for the full picture.
+          </p>
         </InfoCallout>
         <div className="mt-6">
           <SectionDescription>

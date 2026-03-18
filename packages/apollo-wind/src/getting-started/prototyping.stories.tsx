@@ -15,7 +15,7 @@ import { cn } from '@/lib';
 
 type PrototypingArgs = { tab: string };
 
-const meta = {
+const meta: Meta<PrototypingArgs> = {
   title: 'Introduction/Prototyping',
   parameters: {
     layout: 'fullscreen',
@@ -26,7 +26,7 @@ const meta = {
       options: ['Overview', 'Skills', 'Prototype', 'w/ Figma', 'w/ Claude', 'w/ Cursor', 'Resources'],
     },
   },
-} satisfies Meta<PrototypingArgs>;
+};
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -791,78 +791,77 @@ function UseCasesContent() {
 // Skills data
 // ============================================================================
 
-type SkillType = 'Cursor' | 'Claude Code';
+type SkillSurface = 'Cursor' | 'Claude Code';
 
 interface Skill {
   name: string;
-  types: SkillType[];
-  use: string;
+  description: string;
+  category: string;
+  surfaces: SkillSurface[];
   sourcePath: string;
 }
 
 const SKILLS: Skill[] = [
   {
+    name: 'apollo-install',
+    description:
+      'Sets up and launches the Apollo Wind Storybook from scratch — clones the repo, installs dependencies, builds, and starts the dev server.',
+    category: 'Setup',
+    surfaces: ['Cursor', 'Claude Code'],
+    sourcePath: 'packages/apollo-wind/skills/apollo-install/',
+  },
+  {
+    name: 'apollo-repo-sync',
+    description:
+      'Keeps apollo-wind up to date in a prototype repo — installs on first use and syncs to the latest version each session so new components and styles are always available.',
+    category: 'Setup',
+    surfaces: ['Cursor', 'Claude Code'],
+    sourcePath: 'packages/apollo-wind/skills/apollo-repo-sync/',
+  },
+  {
     name: 'apollo-prototype',
-    types: ['Cursor', 'Claude Code'],
-    use: 'Prototyping — encodes Apollo Wind design system rules so the AI applies tokens, components, and patterns automatically',
+    description:
+      'Encodes Apollo Wind design system rules so the AI applies tokens, components, and patterns automatically when prototyping.',
+    category: 'Prototype',
+    surfaces: ['Cursor', 'Claude Code'],
     sourcePath: 'packages/apollo-wind/skills/apollo-prototype/',
   },
 ];
 
 interface ExternalSkill {
   name: string;
-  types: SkillType[];
-  use: string;
+  description: string;
+  category: string;
+  surfaces: SkillSurface[];
   url: string;
   author?: string;
 }
 
 const EXTERNAL_SKILLS: ExternalSkill[] = [];
 
-const TYPE_COLORS: Record<SkillType, string> = {
+const SURFACE_COLORS: Record<SkillSurface, string> = {
   Cursor: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
   'Claude Code': 'bg-orange-500/10 text-orange-400 border-orange-500/20',
 };
 
-function TypeBadge({ type }: { type: SkillType }) {
+function SurfaceBadge({ surface }: { surface: SkillSurface }) {
   return (
     <span
       className={cn(
         'inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium',
-        TYPE_COLORS[type]
+        SURFACE_COLORS[surface]
       )}
     >
-      {type}
+      {surface}
     </span>
   );
 }
 
-function ExternalSkillRow({ skill }: { skill: ExternalSkill }) {
+function CategoryBadge({ category }: { category: string }) {
   return (
-    <div className="flex items-start gap-4 border-b border-border px-4 py-4 last:border-0">
-      <div className="min-w-0 flex-1">
-        <div className="mb-1.5 flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium text-foreground">{skill.name}</span>
-          <div className="flex flex-wrap gap-1.5">
-            {skill.types.map((t) => (
-              <TypeBadge key={t} type={t} />
-            ))}
-          </div>
-          {skill.author && (
-            <span className="text-xs text-muted-foreground">by {skill.author}</span>
-          )}
-        </div>
-        <p className="text-sm leading-6 text-muted-foreground">{skill.use}</p>
-      </div>
-      <a
-        href={skill.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="shrink-0 rounded-md border border-border bg-muted/50 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-      >
-        View
-      </a>
-    </div>
+    <span className="inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+      {category}
+    </span>
   );
 }
 
@@ -882,13 +881,14 @@ function SkillRow({ skill }: { skill: Skill }) {
           <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-medium text-foreground">
             {skill.name}
           </code>
+          <CategoryBadge category={skill.category} />
           <div className="flex flex-wrap gap-1.5">
-            {skill.types.map((t) => (
-              <TypeBadge key={t} type={t} />
+            {skill.surfaces.map((s) => (
+              <SurfaceBadge key={s} surface={s} />
             ))}
           </div>
         </div>
-        <p className="text-sm leading-6 text-muted-foreground">{skill.use}</p>
+        <p className="text-sm leading-6 text-muted-foreground">{skill.description}</p>
       </div>
       <button
         type="button"
@@ -897,6 +897,36 @@ function SkillRow({ skill }: { skill: Skill }) {
       >
         {copied ? 'Copied!' : 'Copy path'}
       </button>
+    </div>
+  );
+}
+
+function ExternalSkillRow({ skill }: { skill: ExternalSkill }) {
+  return (
+    <div className="flex items-start gap-4 border-b border-border px-4 py-4 last:border-0">
+      <div className="min-w-0 flex-1">
+        <div className="mb-1.5 flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-foreground">{skill.name}</span>
+          <CategoryBadge category={skill.category} />
+          <div className="flex flex-wrap gap-1.5">
+            {skill.surfaces.map((s) => (
+              <SurfaceBadge key={s} surface={s} />
+            ))}
+          </div>
+          {skill.author && (
+            <span className="text-xs text-muted-foreground">by {skill.author}</span>
+          )}
+        </div>
+        <p className="text-sm leading-6 text-muted-foreground">{skill.description}</p>
+      </div>
+      <a
+        href={skill.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="shrink-0 rounded-md border border-border bg-muted/50 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+      >
+        View
+      </a>
     </div>
   );
 }
@@ -920,29 +950,26 @@ function SkillsTab() {
 
       {/* Marketplace list */}
       <div className="overflow-hidden rounded-xl border border-border bg-card">
-        {/* List header with Internal / External toggle */}
-        <div className="flex items-center justify-between border-b border-border bg-muted/30 px-4 py-2.5">
-          <div className="inline-flex rounded-md border border-border bg-background p-0.5">
-            {(['Internal', 'External'] as const).map((view) => (
-              <button
-                key={view}
-                type="button"
-                onClick={() => setSkillView(view)}
-                className={cn(
-                  'cursor-pointer rounded px-3 py-1 text-xs font-medium transition-colors',
-                  skillView === view
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                {view}
-              </button>
-            ))}
-          </div>
-          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {skillView === 'Internal' ? 'Install' : 'Link'}
-          </span>
+        {/* Internal / External toggle */}
+        <div className="flex gap-1 border-b border-border px-4">
+          {(['Internal', 'External'] as const).map((view) => (
+            <button
+              key={view}
+              type="button"
+              onClick={() => setSkillView(view)}
+              className={cn(
+                'cursor-pointer px-3 pb-3 pt-3 text-sm font-medium transition-colors',
+                skillView === view
+                  ? 'border-b-2 border-primary text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {view}
+            </button>
+          ))}
         </div>
+
+
 
         {skillView === 'Internal' && SKILLS.map((skill) => (
           <SkillRow key={skill.name} skill={skill} />
@@ -971,21 +998,23 @@ function SkillsTab() {
         )}
       </div>
 
-      <InfoCallout>
-        Want to contribute a skill? Add it to{' '}
-        <InlineCode>packages/apollo-wind/skills/</InlineCode> and open a PR. See the{' '}
-        <span className="font-medium text-foreground">Create Your Own Skill</span> section below for
-        what to include. If you can't open a PR, post your skill to the{' '}
-        <a
-          href="https://uipath.enterprise.slack.com/archives/C0172850BEH"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-medium text-primary underline"
-        >
-          #apollo
-        </a>{' '}
-        Slack channel and the team will handle it.
-      </InfoCallout>
+      <div className="border-l-2 border-primary pl-4 text-sm leading-6 text-muted-foreground">
+        <p className="mb-0.5 font-medium text-foreground">Want to contribute a skill?</p>
+        <p>
+          Add it to <InlineCode>packages/apollo-wind/skills/</InlineCode> and open a PR. See{' '}
+          <span className="font-medium text-foreground">Create Your Own Skill</span> below for what
+          to include. If you can't open a PR, post it to the{' '}
+          <a
+            href="https://uipath.enterprise.slack.com/archives/C0172850BEH"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-primary underline"
+          >
+            #apollo
+          </a>{' '}
+          Slack channel and the team will handle it.
+        </p>
+      </div>
 
       <Divider />
 
