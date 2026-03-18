@@ -13,12 +13,20 @@ import { cn } from '@/lib';
 // Meta
 // ============================================================================
 
+type PrototypingArgs = { tab: string };
+
 const meta = {
   title: 'Introduction/Prototyping',
   parameters: {
     layout: 'fullscreen',
   },
-} satisfies Meta;
+  argTypes: {
+    tab: {
+      control: 'select',
+      options: ['Overview', 'Skills', 'Prototype', 'w/ Figma', 'w/ Claude', 'w/ Cursor', 'Resources'],
+    },
+  },
+} satisfies Meta<PrototypingArgs>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -801,6 +809,16 @@ const SKILLS: Skill[] = [
   },
 ];
 
+interface ExternalSkill {
+  name: string;
+  types: SkillType[];
+  use: string;
+  url: string;
+  author?: string;
+}
+
+const EXTERNAL_SKILLS: ExternalSkill[] = [];
+
 const TYPE_COLORS: Record<SkillType, string> = {
   Cursor: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
   'Claude Code': 'bg-orange-500/10 text-orange-400 border-orange-500/20',
@@ -816,6 +834,35 @@ function TypeBadge({ type }: { type: SkillType }) {
     >
       {type}
     </span>
+  );
+}
+
+function ExternalSkillRow({ skill }: { skill: ExternalSkill }) {
+  return (
+    <div className="flex items-start gap-4 border-b border-border px-4 py-4 last:border-0">
+      <div className="min-w-0 flex-1">
+        <div className="mb-1.5 flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-foreground">{skill.name}</span>
+          <div className="flex flex-wrap gap-1.5">
+            {skill.types.map((t) => (
+              <TypeBadge key={t} type={t} />
+            ))}
+          </div>
+          {skill.author && (
+            <span className="text-xs text-muted-foreground">by {skill.author}</span>
+          )}
+        </div>
+        <p className="text-sm leading-6 text-muted-foreground">{skill.use}</p>
+      </div>
+      <a
+        href={skill.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="shrink-0 rounded-md border border-border bg-muted/50 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+      >
+        View
+      </a>
+    </div>
   );
 }
 
@@ -859,6 +906,8 @@ function SkillRow({ skill }: { skill: Skill }) {
 // ============================================================================
 
 function SkillsTab() {
+  const [skillView, setSkillView] = React.useState<'Internal' | 'External'>('Internal');
+
   return (
     <div className="space-y-8">
       <div>
@@ -871,19 +920,55 @@ function SkillsTab() {
 
       {/* Marketplace list */}
       <div className="overflow-hidden rounded-xl border border-border bg-card">
-        {/* List header */}
-        <div className="grid grid-cols-[1fr_auto] border-b border-border bg-muted/30 px-4 py-2.5">
+        {/* List header with Internal / External toggle */}
+        <div className="flex items-center justify-between border-b border-border bg-muted/30 px-4 py-2.5">
+          <div className="inline-flex rounded-md border border-border bg-background p-0.5">
+            {(['Internal', 'External'] as const).map((view) => (
+              <button
+                key={view}
+                type="button"
+                onClick={() => setSkillView(view)}
+                className={cn(
+                  'cursor-pointer rounded px-3 py-1 text-xs font-medium transition-colors',
+                  skillView === view
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {view}
+              </button>
+            ))}
+          </div>
           <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Skill
-          </span>
-          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Install
+            {skillView === 'Internal' ? 'Install' : 'Link'}
           </span>
         </div>
 
-        {SKILLS.map((skill) => (
+        {skillView === 'Internal' && SKILLS.map((skill) => (
           <SkillRow key={skill.name} skill={skill} />
         ))}
+
+        {skillView === 'External' && EXTERNAL_SKILLS.length > 0 && EXTERNAL_SKILLS.map((skill) => (
+          <ExternalSkillRow key={skill.name} skill={skill} />
+        ))}
+
+        {skillView === 'External' && EXTERNAL_SKILLS.length === 0 && (
+          <div className="px-4 py-10 text-center">
+            <p className="mb-1 text-sm font-medium text-foreground">No external skills yet</p>
+            <p className="text-sm text-muted-foreground">
+              Know a skill worth listing? Share it in the{' '}
+              <a
+                href="https://uipath.enterprise.slack.com/archives/C0172850BEH"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-primary underline"
+              >
+                #apollo
+              </a>{' '}
+              Slack channel.
+            </p>
+          </div>
+        )}
       </div>
 
       <InfoCallout>
@@ -1301,8 +1386,25 @@ const tabs = [
 ] as const;
 type TabId = (typeof tabs)[number];
 
-function PrototypingPage({ globalTheme }: { globalTheme: string }) {
-  const [activeTab, setActiveTab] = React.useState<TabId>('Overview');
+function PrototypingPage({
+  globalTheme,
+  initialTab = 'Overview',
+  onTabChange,
+}: {
+  globalTheme: string;
+  initialTab?: TabId;
+  onTabChange?: (tab: TabId) => void;
+}) {
+  const [activeTab, setActiveTab] = React.useState<TabId>(initialTab);
+
+  React.useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
+
+  const handleTabChange = (tab: TabId) => {
+    setActiveTab(tab);
+    onTabChange?.(tab);
+  };
 
   const activeThemeClass = resolveThemeClass(globalTheme);
 
@@ -1334,7 +1436,7 @@ function PrototypingPage({ globalTheme }: { globalTheme: string }) {
                   ? 'border-b-2 border-primary text-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               )}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => handleTabChange(tab)}
             >
               {tab}
             </button>
@@ -1361,5 +1463,14 @@ function PrototypingPage({ globalTheme }: { globalTheme: string }) {
 // ============================================================================
 
 export const Default: Story = {
-  render: (_, { globals }) => <PrototypingPage globalTheme={globals.theme || 'future-dark'} />,
+  args: {
+    tab: 'Overview',
+  },
+  render: (args, { globals, updateArgs }) => (
+    <PrototypingPage
+      globalTheme={globals.theme || 'future-dark'}
+      initialTab={args.tab as TabId}
+      onTabChange={(tab) => updateArgs({ tab })}
+    />
+  ),
 };
