@@ -262,14 +262,14 @@ with a sidebar navigation and form section. Use the future-dark theme.`}
 }
 
 // ============================================================================
-// Tab: Use Playground
+// Tab: Prototype
 // ============================================================================
 
 function UsePlaygroundTab() {
   return (
     <div className="space-y-8">
       <div>
-        <SectionTitle>Use Playground</SectionTitle>
+        <SectionTitle>Prototype</SectionTitle>
         <SectionDescription>
           This playground enables UiPath team members to quickly set up a prototype app in just a
           few clicks. Its purpose is to help less technical users launch a functional prototype
@@ -680,7 +680,7 @@ globs: ["packages/apollo-wind/**"]
 // Tab: Resources (Use Cases + Best Practices)
 // ============================================================================
 
-const resourceSubTabs = ['Best Practices', 'Skills', 'Use Cases', "What's Not in Scope"] as const;
+const resourceSubTabs = ['Best Practices', 'Use Cases', "What's Not in Scope"] as const;
 type ResourceSubTab = (typeof resourceSubTabs)[number];
 
 function PersonaCard({
@@ -779,23 +779,136 @@ function UseCasesContent() {
   );
 }
 
-function SkillsContent() {
+// ============================================================================
+// Skills data
+// ============================================================================
+
+type SkillType = 'Cursor' | 'Claude Code';
+
+interface Skill {
+  name: string;
+  types: SkillType[];
+  use: string;
+  sourcePath: string;
+}
+
+const SKILLS: Skill[] = [
+  {
+    name: 'apollo-prototype',
+    types: ['Cursor', 'Claude Code'],
+    use: 'Prototyping — encodes Apollo Wind design system rules so the AI applies tokens, components, and patterns automatically',
+    sourcePath: 'packages/apollo-wind/skills/apollo-prototype/',
+  },
+];
+
+const TYPE_COLORS: Record<SkillType, string> = {
+  Cursor: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+  'Claude Code': 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+};
+
+function TypeBadge({ type }: { type: SkillType }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium',
+        TYPE_COLORS[type]
+      )}
+    >
+      {type}
+    </span>
+  );
+}
+
+function SkillRow({ skill }: { skill: Skill }) {
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(skill.sourcePath);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="flex items-start gap-4 border-b border-border px-4 py-4 last:border-0">
+      <div className="min-w-0 flex-1">
+        <div className="mb-1.5 flex flex-wrap items-center gap-2">
+          <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-medium text-foreground">
+            {skill.name}
+          </code>
+          <div className="flex flex-wrap gap-1.5">
+            {skill.types.map((t) => (
+              <TypeBadge key={t} type={t} />
+            ))}
+          </div>
+        </div>
+        <p className="text-sm leading-6 text-muted-foreground">{skill.use}</p>
+      </div>
+      <button
+        type="button"
+        onClick={handleCopy}
+        className="shrink-0 cursor-pointer rounded-md border border-border bg-muted/50 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+      >
+        {copied ? 'Copied!' : 'Copy path'}
+      </button>
+    </div>
+  );
+}
+
+// ============================================================================
+// Tab: Skills
+// ============================================================================
+
+function SkillsTab() {
   return (
     <div className="space-y-8">
       <div>
+        <SectionTitle>Skills</SectionTitle>
         <SectionDescription>
-          A ready-made Apollo prototype skill encodes design system rules so the AI applies them
-          automatically when prototyping. Install it for Cursor or Claude — no setup required.
+          Skills encode design system rules so the AI applies them automatically. Install an
+          existing skill for instant context, or contribute your own to the library.
         </SectionDescription>
       </div>
 
+      {/* Marketplace list */}
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        {/* List header */}
+        <div className="grid grid-cols-[1fr_auto] border-b border-border bg-muted/30 px-4 py-2.5">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Skill
+          </span>
+          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Install
+          </span>
+        </div>
+
+        {SKILLS.map((skill) => (
+          <SkillRow key={skill.name} skill={skill} />
+        ))}
+      </div>
+
+      <InfoCallout>
+        Want to contribute a skill? Add it to{' '}
+        <InlineCode>packages/apollo-wind/skills/</InlineCode> and open a PR. See the{' '}
+        <span className="font-medium text-foreground">Create Your Own Skill</span> section below for
+        what to include. If you can't open a PR, post your skill to the{' '}
+        <a
+          href="https://uipath.enterprise.slack.com/archives/C0172850BEH"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-primary underline"
+        >
+          #apollo
+        </a>{' '}
+        Slack channel and the team will handle it.
+      </InfoCallout>
+
+      <Divider />
+
+      {/* Installation */}
       <div>
-        <h3 className="mb-3 text-lg font-semibold text-foreground">
-          Install the Apollo Prototype Skill
-        </h3>
+        <h3 className="mb-3 text-lg font-semibold text-foreground">Install a Skill</h3>
         <p className="mb-4 text-sm leading-6 text-muted-foreground">
-          Copy the skill from <InlineCode>packages/apollo-wind/skills/apollo-prototype/</InlineCode>{' '}
-          to your tool's skills folder:
+          Copy the skill folder from the source path above into your tool's skills directory:
         </p>
 
         <div className="space-y-4">
@@ -804,11 +917,11 @@ function SkillsContent() {
             <ul className="space-y-1 text-sm leading-6 text-muted-foreground">
               <li>
                 <span className="font-medium text-foreground">Project:</span>{' '}
-                <InlineCode>.cursor/skills/apollo-prototype/</InlineCode>
+                <InlineCode>.cursor/skills/&lt;skill-name&gt;/</InlineCode>
               </li>
               <li>
                 <span className="font-medium text-foreground">Personal:</span>{' '}
-                <InlineCode>~/.cursor/skills/apollo-prototype/</InlineCode>
+                <InlineCode>~/.cursor/skills/&lt;skill-name&gt;/</InlineCode>
               </li>
             </ul>
           </div>
@@ -818,11 +931,11 @@ function SkillsContent() {
             <ul className="space-y-1 text-sm leading-6 text-muted-foreground">
               <li>
                 <span className="font-medium text-foreground">Project:</span>{' '}
-                <InlineCode>.claude/skills/apollo-prototype/</InlineCode>
+                <InlineCode>.claude/skills/&lt;skill-name&gt;/</InlineCode>
               </li>
               <li>
                 <span className="font-medium text-foreground">Personal:</span>{' '}
-                <InlineCode>~/.claude/skills/apollo-prototype/</InlineCode>
+                <InlineCode>~/.claude/skills/&lt;skill-name&gt;/</InlineCode>
               </li>
             </ul>
           </div>
@@ -831,6 +944,7 @@ function SkillsContent() {
 
       <Divider />
 
+      {/* Create your own */}
       <div>
         <h3 className="mb-3 text-lg font-semibold text-foreground">Create Your Own Skill</h3>
         <p className="mb-3 text-sm leading-6 text-muted-foreground">
@@ -856,6 +970,7 @@ function SkillsContent() {
 
       <Divider />
 
+      {/* Common mistakes */}
       <div>
         <h3 className="mb-3 text-lg font-semibold text-foreground">Common Mistakes to Avoid</h3>
         <ul className="space-y-3 text-sm leading-6 text-muted-foreground">
@@ -1164,7 +1279,6 @@ function ResourcesTab() {
 
       <div>
         {activeSubTab === 'Best Practices' && <BestPracticesContent />}
-        {activeSubTab === 'Skills' && <SkillsContent />}
         {activeSubTab === 'Use Cases' && <UseCasesContent />}
         {activeSubTab === "What's Not in Scope" && <WhatNotInScopeContent />}
       </div>
@@ -1178,10 +1292,11 @@ function ResourcesTab() {
 
 const tabs = [
   'Overview',
-  'Use Playground',
-  'Use Figma',
-  'Use Claude',
-  'Use Cursor',
+  'Skills',
+  'Prototype',
+  'w/ Figma',
+  'w/ Claude',
+  'w/ Cursor',
   'Resources',
 ] as const;
 type TabId = (typeof tabs)[number];
@@ -1229,10 +1344,11 @@ function PrototypingPage({ globalTheme }: { globalTheme: string }) {
         {/* Tab content */}
         <div className="pt-6">
           {activeTab === 'Overview' && <OverviewTab />}
-          {activeTab === 'Use Playground' && <UsePlaygroundTab />}
-          {activeTab === 'Use Figma' && <UseFigmaTab />}
-          {activeTab === 'Use Claude' && <UseClaudeTab />}
-          {activeTab === 'Use Cursor' && <UseCursorTab />}
+          {activeTab === 'Skills' && <SkillsTab />}
+          {activeTab === 'Prototype' && <UsePlaygroundTab />}
+          {activeTab === 'w/ Figma' && <UseFigmaTab />}
+          {activeTab === 'w/ Claude' && <UseClaudeTab />}
+          {activeTab === 'w/ Cursor' && <UseCursorTab />}
           {activeTab === 'Resources' && <ResourcesTab />}
         </div>
       </div>
