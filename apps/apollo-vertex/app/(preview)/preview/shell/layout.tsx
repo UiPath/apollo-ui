@@ -1,7 +1,8 @@
 "use client";
 
-import { ShellTemplate } from "@/templates/shell/ShellTemplateDynamic";
+import type { ReactNode } from "react";
+import { ShellTemplate } from "@/templates/shell/ShellContextTemplate";
 
-export default function ShellLayout() {
-  return <ShellTemplate />;
+export default function ShellLayout({ children }: { children: ReactNode }) {
+  return <ShellTemplate>{children}</ShellTemplate>;
 }
