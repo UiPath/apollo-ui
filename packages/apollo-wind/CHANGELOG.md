@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v1.0.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.0.1...@uipath/apollo-wind@1.0.2) (2026-03-18)
+
+### Bug Fixes
+
+* **apollo-wind:** have buttons be of type='button' by default ([36cebc6](https://github.com/uipath/apollo-ui/commit/36cebc6a68e14207e10e2179b3687355e6481ed8))
+
 ## [@uipath/apollo-wind-v1.0.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.0.0...@uipath/apollo-wind@1.0.1) (2026-03-18)
 
 ### Bug Fixes
