@@ -1,3 +1,13 @@
+## [@uipath/apollo-wind-v1.0.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.3...@uipath/apollo-wind@1.0.0) (2026-03-18)
+
+### ⚠ BREAKING CHANGES
+
+* **apollo-wind:** consumers must update direction→orientation, numeric sizes→string percentages
+
+### Bug Fixes
+
+* **apollo-wind:** upgrade react-resizable-panels to v4 ([32f18ad](https://github.com/uipath/apollo-ui/commit/32f18adda0faf89d07b68dc5e00152538b83beff))
+
 ## [@uipath/apollo-wind-v0.15.3](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.2...@uipath/apollo-wind@0.15.3) (2026-03-17)
 
 ### Bug Fixes
