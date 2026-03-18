@@ -36,7 +36,7 @@ export const UserProfile = ({ isCollapsed }: UserProfileProps) => {
           <DropdownMenuTrigger asChild>
             <motion.button
               type="button"
-              className="flex items-center justify-center cursor-pointer rounded-full"
+              className="flex items-center justify-center cursor-pointer rounded-full p-1"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
@@ -76,7 +76,7 @@ export const UserProfile = ({ isCollapsed }: UserProfileProps) => {
             <motion.button
               type="button"
               key="expanded"
-              className="flex items-center gap-3 w-full min-w-0 cursor-pointer rounded-lg px-1 hover:bg-sidebar-accent transition-colors"
+              className="flex items-center gap-3 w-full min-w-0 cursor-pointer rounded-lg p-1 hover:bg-sidebar-accent transition-colors"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}

@@ -25,6 +25,7 @@ export interface ApolloShellComponentProps extends PropsWithChildren {
   variant?: "minimal";
   companyLogo?: CompanyLogo;
   navItems: ShellNavItem[];
+  loginDescription?: string;
 }
 
 interface ApolloShellProps extends ApolloShellComponentProps {
@@ -41,10 +42,11 @@ const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
   companyLogo,
   variant,
   navItems,
+  loginDescription,
 }) => {
   const { accessToken } = useAuth();
   if (!accessToken) {
-    return <ShellLogin />;
+    return <ShellLogin title={productName} description={loginDescription} />;
   }
 
   return (
@@ -72,6 +74,7 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   companyLogo,
   variant,
   navItems,
+  loginDescription,
 }) => {
   return (
     <ShellAuthProvider clientId={clientId} scope={scope} baseUrl={baseUrl}>
@@ -82,6 +85,7 @@ export const ApolloShell: FC<ApolloShellProps> = ({
           companyLogo={companyLogo}
           variant={variant}
           navItems={navItems}
+          loginDescription={loginDescription}
         >
           {children}
         </ApolloShellComponent>
