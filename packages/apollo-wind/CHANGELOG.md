@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v1.1.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.0.2...@uipath/apollo-wind@1.1.0) (2026-03-18)
+
+### Features
+
+* **apollo-wind:** elevate Skills to top-level tab with marketplace UI ([ba12395](https://github.com/uipath/apollo-ui/commit/ba1239512c54a77cb40caa5f9fdb7950c11af033)), closes [#apollo](https://github.com/uipath/apollo-ui/issues/apollo)
+
 ## [@uipath/apollo-wind-v1.0.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.0.1...@uipath/apollo-wind@1.0.2) (2026-03-18)
 
 ### Bug Fixes
