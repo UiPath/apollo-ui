@@ -642,6 +642,210 @@ describe('Toolbox', () => {
     });
   });
 
+  describe('Active index restoration on back navigation', () => {
+    const nestedItems: ListItem[] = [
+      {
+        id: 'item-1',
+        name: 'Item 1',
+        data: {},
+        icon: { name: 'star' },
+      },
+      {
+        id: 'item-2',
+        name: 'Item 2',
+        data: {},
+        icon: { name: 'star' },
+      },
+      {
+        id: 'category',
+        name: 'Category',
+        data: {},
+        icon: { name: 'folder' },
+        children: [
+          {
+            id: 'child-1',
+            name: 'Child 1',
+            data: {},
+            icon: { name: 'file' },
+          },
+          {
+            id: 'subcategory',
+            name: 'Subcategory',
+            data: {},
+            icon: { name: 'folder' },
+            children: [
+              {
+                id: 'grandchild-1',
+                name: 'Grandchild 1',
+                data: {},
+                icon: { name: 'file' },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'item-3',
+        name: 'Item 3',
+        data: {},
+        icon: { name: 'star' },
+      },
+    ];
+
+    const getActiveItem = () => document.querySelector('[aria-selected="true"]');
+
+    it('should restore active index when navigating back via keyboard (ArrowLeft)', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      render(<Toolbox {...defaultProps} initialItems={nestedItems} />);
+
+      // Navigate to Category (3rd item)
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Category');
+
+      // Enter the category
+      await timedUser.keyboard('{ArrowRight}');
+      expect(screen.getByText('Child 1')).toBeInTheDocument();
+
+      // Wait for transition
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      // Navigate back
+      await timedUser.keyboard('{ArrowLeft}');
+
+      // Should restore to Category (the item we entered from)
+      expect(getActiveItem()).toHaveTextContent('Category');
+
+      vi.useRealTimers();
+    });
+
+    it('should restore active index when navigating back via mouse click', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      render(<Toolbox {...defaultProps} initialItems={nestedItems} />);
+
+      // Click Category to enter it (mouse click)
+      await timedUser.click(screen.getByText('Category'));
+      expect(screen.getByText('Child 1')).toBeInTheDocument();
+
+      // Wait for transition
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      // Click back button
+      await timedUser.click(screen.getByRole('button', { name: /back/i }));
+
+      // Should restore to Category
+      expect(getActiveItem()).toHaveTextContent('Category');
+
+      vi.useRealTimers();
+    });
+
+    it('should restore correct index through multiple levels of nesting', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      render(<Toolbox {...defaultProps} initialItems={nestedItems} />);
+
+      // Navigate to Category and enter it
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Category');
+      await timedUser.keyboard('{ArrowRight}');
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      // Navigate to Subcategory and enter it
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Subcategory');
+      await timedUser.keyboard('{ArrowRight}');
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      // Should be in Subcategory now
+      expect(screen.getByText('Grandchild 1')).toBeInTheDocument();
+
+      // Go back to Category level — should restore Subcategory
+      await timedUser.keyboard('{ArrowLeft}');
+      await act(() => vi.advanceTimersByTimeAsync(200));
+      expect(getActiveItem()).toHaveTextContent('Subcategory');
+
+      // Go back to root — should restore Category
+      await timedUser.keyboard('{ArrowLeft}');
+      expect(getActiveItem()).toHaveTextContent('Category');
+
+      vi.useRealTimers();
+    });
+
+    it('should reset to search bar on back if search was active when entering', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      // Use onSearch that returns the category item so we can enter it from search
+      const categoryItem = nestedItems.find((i) => i.id === 'category')!;
+      const onSearch = vi.fn().mockResolvedValue([categoryItem]);
+
+      render(<Toolbox {...defaultProps} initialItems={nestedItems} onSearch={onSearch} />);
+
+      // Search for "Category"
+      const searchInput = screen.getByPlaceholderText('Search');
+      await timedUser.type(searchInput, 'cat');
+
+      // Navigate to Category result and enter it
+      await timedUser.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Category');
+      await timedUser.keyboard('{Enter}');
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      expect(screen.getByText('Child 1')).toBeInTheDocument();
+
+      // Navigate back
+      await timedUser.keyboard('{ArrowLeft}');
+
+      // Should reset to search bar, not restore the search result index
+      expect(getActiveItem()).not.toBeInTheDocument();
+      expect(searchInput).toHaveFocus();
+
+      vi.useRealTimers();
+    });
+
+    it('should produce same restoration behavior for keyboard Enter and mouse click', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      // Test keyboard path
+      const { unmount } = render(<Toolbox {...defaultProps} initialItems={nestedItems} />);
+
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Category');
+      await timedUser.keyboard('{Enter}');
+      await act(() => vi.advanceTimersByTimeAsync(200));
+      await timedUser.keyboard('{ArrowLeft}');
+      const keyboardRestoredItem = getActiveItem();
+
+      unmount();
+
+      // Test mouse path
+      render(<Toolbox {...defaultProps} initialItems={nestedItems} />);
+
+      await timedUser.click(screen.getByText('Category'));
+      await act(() => vi.advanceTimersByTimeAsync(200));
+      await timedUser.click(screen.getByRole('button', { name: /back/i }));
+      const mouseRestoredItem = getActiveItem();
+
+      // Both should restore to Category
+      expect(keyboardRestoredItem).toHaveTextContent('Category');
+      expect(mouseRestoredItem).toHaveTextContent('Category');
+
+      vi.useRealTimers();
+    });
+  });
+
   describe('Smart item updates (initialItems prop changes)', () => {
     let user: UserEvent;
 

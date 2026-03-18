@@ -9,7 +9,9 @@ interface SearchBoxProps {
   clear: () => void;
   placeholder?: string;
   inputRef?: React.RefObject<HTMLInputElement | null>;
+  clearButtonRef?: React.RefObject<HTMLButtonElement | null>;
   onNavigationKeyDown?: (e: React.KeyboardEvent) => void;
+  navigateToFirstItem?: () => void;
   activeDescendantId?: string;
 }
 
@@ -19,7 +21,9 @@ export const SearchBox = memo(function SearchBox({
   clear,
   placeholder = 'Search...',
   inputRef: externalInputRef,
+  clearButtonRef,
   onNavigationKeyDown,
+  navigateToFirstItem,
   activeDescendantId,
 }: SearchBoxProps) {
   const internalRef = useRef<HTMLInputElement>(null);
@@ -28,6 +32,17 @@ export const SearchBox = memo(function SearchBox({
   useEffect(() => {
     inputRef.current?.focus();
   }, [inputRef]);
+
+  const handleClearButtonKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      inputRef.current?.focus();
+
+      if (!e.shiftKey) {
+        navigateToFirstItem?.();
+      }
+    }
+  };
 
   return (
     <StyledSearchForm
@@ -54,7 +69,13 @@ export const SearchBox = memo(function SearchBox({
           aria-activedescendant={activeDescendantId}
         />
         {value && (
-          <button type="button" className="searchbox-clear" onClick={clear}>
+          <button
+            ref={clearButtonRef}
+            type="button"
+            className="searchbox-clear"
+            onClick={clear}
+            onKeyDown={handleClearButtonKeyDown}
+          >
             <ApIcon name="close" size="16px" />
           </button>
         )}
