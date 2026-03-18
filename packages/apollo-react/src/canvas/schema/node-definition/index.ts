@@ -1,23 +1,26 @@
-export type { CategoryManifest } from './category-manifest';
-export { categoryManifestSchema } from './category-manifest';
-export type { ConnectionConstraint, HandleTarget } from './constraints';
-// Re-export types
 export type {
+  CategoryManifest,
+  ConnectionConstraint,
   HandleCategory,
+  HandleConfigurationSpecificPosition,
   HandleGroupManifest,
   HandleGroupOverride,
   HandleManifest,
   HandlePosition,
+  HandleTarget,
   HandleType,
-} from './handle';
-// Re-export schemas
+} from '@uipath/flow-node-schema';
+
 export {
+  categoryManifestSchema,
   handleGroupManifestSchema,
   handleGroupOverrideSchema,
   handleManifestSchema,
   handlePositionSchema,
   handleTypeDisplaySchema,
   handleTypeSchema,
-} from './handle';
+} from '@uipath/flow-node-schema';
+
+// Re-export from local file to preserve narrowed NodeManifest type (form?: FormSchema)
 export type { NodeDisplayManifest, NodeManifest, NodeShape } from './node-manifest';
 export { nodeDisplayManifestSchema, nodeManifestSchema, nodeShapeSchema } from './node-manifest';

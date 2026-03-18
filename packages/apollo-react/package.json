@@ -218,6 +218,7 @@
     "sanitize-html": "^2.17.0",
     "unist-util-visit": "^5.0.0",
     "use-sync-external-store": "^1.2.0",
+    "@uipath/flow-node-schema": "workspace:*",
     "zod": "^4.3.5",
     "zustand": "^5.0.9"
   },

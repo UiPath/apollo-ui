@@ -14,6 +14,7 @@ module.exports = {
         'apollo-react',
         'apollo-wind',
         'ap-chat',
+        'flow-node-schema',
 
         // Apps scopes
         'apollo-vertex',

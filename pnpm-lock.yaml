@@ -575,6 +575,9 @@ importers:
       '@uipath/apollo-wind':
         specifier: workspace:*
         version: link:../apollo-wind
+      '@uipath/flow-node-schema':
+        specifier: workspace:*
+        version: link:../flow-node-schema
       '@xyflow/react':
         specifier: 12.8.2
         version: 12.8.2(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -1060,6 +1063,25 @@ importers:
       storybook:
         specifier: ^10.2.15
         version: 10.2.15(@testing-library/dom@10.4.1)(prettier@3.8.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^4.1.0
+        version: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@24.10.1)(@vitest/ui@4.1.0)(happy-dom@20.0.11)(jsdom@27.3.0)(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(vite@7.3.1(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.94.2)(terser@5.43.1)(tsx@4.20.6)(yaml@2.8.1))
+
+  packages/flow-node-schema:
+    dependencies:
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
+    devDependencies:
+      '@rslib/core':
+        specifier: ^0.19.6
+        version: 0.19.6(@microsoft/api-extractor@7.57.6(@types/node@24.10.1))(typescript@5.9.3)
+      '@vitest/coverage-v8':
+        specifier: ^4.1.0
+        version: 4.1.0(vitest@4.1.0)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -12801,10 +12823,10 @@ snapshots:
       '@babel/helper-compilation-targets': 7.27.2
       '@babel/helper-module-transforms': 7.28.3(@babel/core@7.28.5)
       '@babel/helpers': 7.28.4
-      '@babel/parser': 7.28.5
+      '@babel/parser': 7.29.2
       '@babel/template': 7.27.2
       '@babel/traverse': 7.28.5
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
       '@jridgewell/remapping': 2.3.5
       convert-source-map: 2.0.0
       debug: 4.4.3
@@ -12824,7 +12846,7 @@ snapshots:
 
   '@babel/helper-annotate-as-pure@7.27.3':
     dependencies:
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
 
   '@babel/helper-compilation-targets@7.27.2':
     dependencies:
@@ -12870,14 +12892,14 @@ snapshots:
   '@babel/helper-member-expression-to-functions@7.28.5':
     dependencies:
       '@babel/traverse': 7.28.5
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
     transitivePeerDependencies:
       - supports-color
 
   '@babel/helper-module-imports@7.27.1':
     dependencies:
       '@babel/traverse': 7.28.5
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
     transitivePeerDependencies:
       - supports-color
 
@@ -12892,7 +12914,7 @@ snapshots:
 
   '@babel/helper-optimise-call-expression@7.27.1':
     dependencies:
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
 
   '@babel/helper-plugin-utils@7.27.1': {}
 
@@ -12917,7 +12939,7 @@ snapshots:
   '@babel/helper-skip-transparent-expression-wrappers@7.27.1':
     dependencies:
       '@babel/traverse': 7.28.5
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
     transitivePeerDependencies:
       - supports-color
 
@@ -12931,18 +12953,18 @@ snapshots:
     dependencies:
       '@babel/template': 7.27.2
       '@babel/traverse': 7.28.5
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
     transitivePeerDependencies:
       - supports-color
 
   '@babel/helpers@7.28.4':
     dependencies:
       '@babel/template': 7.27.2
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
 
   '@babel/parser@7.28.5':
     dependencies:
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
 
   '@babel/parser@7.29.2':
     dependencies:
@@ -13327,7 +13349,7 @@ snapshots:
       '@babel/helper-module-imports': 7.27.1
       '@babel/helper-plugin-utils': 7.27.1
       '@babel/plugin-syntax-jsx': 7.27.1(@babel/core@7.28.5)
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
     transitivePeerDependencies:
       - supports-color
 
@@ -13495,7 +13517,7 @@ snapshots:
     dependencies:
       '@babel/core': 7.28.5
       '@babel/helper-plugin-utils': 7.27.1
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
       esutils: 2.0.3
 
   '@babel/preset-react@7.28.5(@babel/core@7.28.5)':
@@ -13530,17 +13552,17 @@ snapshots:
   '@babel/template@7.27.2':
     dependencies:
       '@babel/code-frame': 7.27.1
-      '@babel/parser': 7.28.5
-      '@babel/types': 7.28.5
+      '@babel/parser': 7.29.2
+      '@babel/types': 7.29.0
 
   '@babel/traverse@7.28.5':
     dependencies:
       '@babel/code-frame': 7.27.1
       '@babel/generator': 7.28.5
       '@babel/helper-globals': 7.28.0
-      '@babel/parser': 7.28.5
+      '@babel/parser': 7.29.2
       '@babel/template': 7.27.2
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
       debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
@@ -14624,7 +14646,7 @@ snapshots:
     dependencies:
       '@babel/core': 7.28.5
       '@babel/runtime': 7.28.4
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
       '@lingui/conf': 5.6.1(typescript@5.9.3)
       '@lingui/core': 5.6.1(@lingui/babel-plugin-lingui-macro@5.6.1(babel-plugin-macros@3.1.0)(typescript@5.9.3))(babel-plugin-macros@3.1.0)
       '@lingui/message-utils': 5.6.1
@@ -17048,7 +17070,7 @@ snapshots:
 
   '@svgr/hast-util-to-babel-ast@8.0.0':
     dependencies:
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
       entities: 4.5.0
 
   '@svgr/plugin-jsx@8.1.0(@svgr/core@8.1.0(typescript@5.9.3))':
@@ -17412,16 +17434,16 @@ snapshots:
 
   '@types/babel__generator@7.27.0':
     dependencies:
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
 
   '@types/babel__template@7.4.4':
     dependencies:
-      '@babel/parser': 7.28.5
-      '@babel/types': 7.28.5
+      '@babel/parser': 7.29.2
+      '@babel/types': 7.29.0
 
   '@types/babel__traverse@7.28.0':
     dependencies:
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
 
   '@types/chai@5.2.3':
     dependencies:

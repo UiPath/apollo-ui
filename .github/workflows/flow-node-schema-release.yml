@@ -1,0 +1,85 @@
+name: Flow Node Schema Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/flow-node-schema/**'
+      - '.github/workflows/flow-node-schema-release.yml'
+
+env:
+  GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+  NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+  TURBO_TELEMETRY_DISABLED: 1
+  DO_NOT_TRACK: 1
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release @uipath/flow-node-schema
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build flow-node-schema
+        run: pnpm --filter @uipath/flow-node-schema build
+
+      - name: Test flow-node-schema
+        run: pnpm --filter @uipath/flow-node-schema test
+
+      - name: Setup git user
+        run: |
+          git config --global user.name "semantic-release-bot"
+          git config --global user.email "semantic-release-bot@users.noreply.github.com"
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          HUSKY: 0
+        working-directory: packages/flow-node-schema
+        run: semantic-release
+
+      - name: Commit version bump
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          if [ -n "$(git status --porcelain packages/flow-node-schema)" ]; then
+            git add packages/flow-node-schema/
+            git commit -m "chore(release): @uipath/flow-node-schema version bump [skip ci]"
+
+            if ! git push; then
+              echo "::error::Failed to push version bump commit"
+              exit 1
+            fi
+            echo "✓ Pushed version bump commit"
+          else
+            echo "No changes to commit"
+          fi
