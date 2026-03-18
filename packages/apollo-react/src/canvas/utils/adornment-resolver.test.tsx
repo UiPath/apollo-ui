@@ -67,9 +67,9 @@ describe('resolveAdornments', () => {
     expect(result.bottomLeft).toBeTruthy();
   });
 
-  // ── Pinned output (bottomRight) ─────────────────────────
+  // ── Square dashed (bottomRight) ─────────────────────────
 
-  it('shows pinned output indicator when isOutputPinned', () => {
+  it('shows square dashed indicator when isOutputPinned', () => {
     const result = resolveAdornments({
       ...baseContext,
       executionState: { status: 'None', isOutputPinned: true },

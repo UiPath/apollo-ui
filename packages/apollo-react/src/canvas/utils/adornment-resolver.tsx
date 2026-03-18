@@ -58,11 +58,11 @@ function ExecutionStatusIndicatorInternal({ status, count }: { status?: string; 
   );
 }
 
-function PinnedOutputIndicator() {
+function SquareDashedIndicator() {
   return (
     <ApTooltip content="Node output is mocked" placement="bottom">
       <span style={{ display: 'inline-flex' }}>
-        <NodeIcon icon="pinned-output" size={16} color="var(--color-foreground-emp)" />
+        <NodeIcon icon="square-dashed" size={16} color="var(--color-foreground-emp)" />
       </span>
     </ApTooltip>
   );
@@ -126,7 +126,7 @@ const getDefaultAdornments = (context: NodeStatusContext): NodeAdornments => {
     topLeft: hasBreakpoint ? <BreakpointIndicator /> : undefined,
     topRight: getTopRight(),
     bottomLeft: isExecutionStartPoint ? <ExecutionStartPointIndicator /> : undefined,
-    bottomRight: isOutputPinned ? <PinnedOutputIndicator /> : undefined,
+    bottomRight: isOutputPinned ? <SquareDashedIndicator /> : undefined,
   };
 };
 
