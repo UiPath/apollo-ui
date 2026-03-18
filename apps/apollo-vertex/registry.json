@@ -857,6 +857,7 @@
         "jwt-decode",
         "zod",
         "@tanstack/react-query",
+        "@tanstack/react-router",
         "pkce-challenge",
         "sonner",
         "@uidotdev/usehooks"
