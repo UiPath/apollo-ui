@@ -223,6 +223,11 @@ const StageNodeComponent = (props: StageNodeProps) => {
           onStageTitleChange(label);
         }
       }
+      // Prevent keyboard events from the title input from bubbling to xyflow
+      // and triggering canvas-level actions like node deletion or copy/paste.
+      if (e.key !== 'Escape') {
+        e.stopPropagation();
+      }
     },
     [onStageTitleChange, label]
   );
