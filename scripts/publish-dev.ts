@@ -2,8 +2,8 @@
 /**
  * Publish a package with a dev version suffix.
  *
- * Usage: pnpm publish:dev <package-name> <suffix>
- * Example: pnpm publish:dev @uipath/apollo-react test
+ * Usage: bun run publish:dev <package-name> <suffix>
+ * Example: bun run publish:dev @uipath/apollo-react test
  *   -> Publishes @uipath/apollo-react@3.19.3-test
  */
 
@@ -41,8 +41,8 @@ function main() {
   const args = process.argv.slice(2);
 
   if (args.length < 2) {
-    console.error('Usage: pnpm publish:dev <package-name> <suffix>');
-    console.error('Example: pnpm publish:dev @uipath/apollo-react test');
+    console.error('Usage: bun run publish:dev <package-name> <suffix>');
+    console.error('Example: bun run publish:dev @uipath/apollo-react test');
     console.error('\nAvailable packages:');
     for (const name of getAllPackageNames()) {
       console.error(`  - ${name}`);
@@ -87,11 +87,10 @@ function main() {
     console.log(`Updated version to ${devVersion}`);
 
     // Publish with 'dev' tag to both registries
-    // Note: Assumes package is already built (run `pnpm build` first)
+    // Note: Assumes package is already built (run `bun run build` first)
     console.log('\nPublishing with tag "dev" to both registries...');
 
     const publishArgs = [
-      '--no-git-checks',
       '--access', 'public',
       '--tag', 'dev',
     ];
@@ -99,7 +98,7 @@ function main() {
     // Publish to npm
     console.log('\n📦 Publishing to npm...');
     execFileSync(
-      'pnpm',
+      'npm',
       [
         'publish',
         ...publishArgs,
@@ -120,7 +119,7 @@ function main() {
     // Publish to GitHub Package Registry
     console.log('\n📦 Publishing to GitHub Package Registry...');
     execFileSync(
-      'pnpm',
+      'npm',
       [
         'publish',
         ...publishArgs,

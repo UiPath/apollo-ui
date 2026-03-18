@@ -25,8 +25,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -34,15 +34,14 @@ jobs:
           node-version: "22"
           registry-url: "https://npm.pkg.github.com"
           scope: "@uipath"
-          cache: "pnpm"
 
       - name: Install dependencies
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
-        run: pnpm install
+        run: bun install
 
       - name: Build registry
-        run: pnpm --filter apollo-vertex registry:build
+        run: bun run --filter apollo-vertex registry:build
 
       - name: Generate matrix batches
         id: matrix
@@ -63,13 +62,13 @@ jobs:
           echo "result=${MATRIX}" >> "${GITHUB_OUTPUT}"
 
       - name: Create base shadcn app
-        run: cd ${{ runner.temp }} && pnpx shadcn@latest init --preset a0 --template next --name minimal-app
+        run: cd ${{ runner.temp }} && bunx shadcn@latest init --preset a0 --template next --name minimal-app
 
       - name: Configure @uipath registry
         working-directory: ${{ runner.temp }}/minimal-app
         env:
           REGISTRY_URL: http://localhost:3000
-        run: pnpx tsx ${{ github.workspace }}/.github/scripts/test-registry/configure-registry.ts
+        run: bunx tsx ${{ github.workspace }}/.github/scripts/test-registry/configure-registry.ts
 
       - name: Copy locales into base app
         run: cp -r apps/apollo-vertex/locales ${{ runner.temp }}/minimal-app/locales
@@ -106,10 +105,11 @@ jobs:
           sparse-checkout: |
             .github/scripts/test-registry
             package.json
-            pnpm-lock.yaml
+            bun.lock
+            .npmrc
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -138,7 +138,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
           COMPONENTS: ${{ matrix.components }}
           BASE_APP_PATH: ${{ runner.temp }}/base-app
-        run: pnpx tsx ${{ github.workspace }}/.github/scripts/test-registry/test-registry.ts
+        run: bunx tsx ${{ github.workspace }}/.github/scripts/test-registry/test-registry.ts
 
   registry-check:
     name: Apollo Vertex Registry Check

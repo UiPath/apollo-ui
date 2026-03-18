@@ -6,7 +6,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "rsbuild dev",
-		"build": "pnpm typecheck && rsbuild build",
+		"build": "bun run typecheck && rsbuild build",
 		"preview": "rsbuild preview",
 		"clean": "rm -rf dist",
 		"typecheck": "tsc --noEmit",

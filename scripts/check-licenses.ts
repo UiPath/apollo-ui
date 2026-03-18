@@ -1,8 +1,8 @@
 #!/usr/bin/env tsx
 /**
  * Validates all dependency licenses against UiPath FOSS license standard.
- * Uses `pnpm licenses list` which reads package.json license fields directly,
- * covering the full transitive dependency tree from the lockfile.
+ * Uses `license-checker` to read package.json license fields directly,
+ * covering the full transitive dependency tree from node_modules.
  *
  * Source: https://uipath.atlassian.net/wiki/spaces/LEG/pages/2861433455/FOSS+license+standard
  * Policy: GO (Permissive Licenses) - approved for use and distribution without legal approval
@@ -96,8 +96,26 @@ function writeReport(markdown: string) {
 }
 
 try {
-  const json = execSync('pnpm licenses list --json', { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 });
-  const data: Record<string, PackageInfo[]> = JSON.parse(json);
+  const json = execSync('npx -y license-checker --json --excludePrivatePackages', { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 });
+  const rawData: Record<string, { licenses: string; repository?: string; path?: string }> = JSON.parse(json);
+
+  // Transform license-checker format (keyed by pkg@version) to group-by-license format
+  const data: Record<string, PackageInfo[]> = {};
+  for (const [pkgAtVersion, info] of Object.entries(rawData)) {
+    const lastAt = pkgAtVersion.lastIndexOf('@');
+    const name = lastAt > 0 ? pkgAtVersion.substring(0, lastAt) : pkgAtVersion;
+    const version = lastAt > 0 ? pkgAtVersion.substring(lastAt + 1) : 'unknown';
+    const license = String(info.licenses || 'Unknown');
+
+    if (!data[license]) data[license] = [];
+    const existing = data[license].find(p => p.name === name);
+    if (existing) {
+      existing.versions.push(version);
+      if (info.path) existing.paths.push(info.path);
+    } else {
+      data[license].push({ name, versions: [version], paths: info.path ? [info.path] : [], license });
+    }
+  }
 
   const total = Object.values(data).reduce((sum, pkgs) => sum + pkgs.length, 0);
   const violations: { name: string; version: string; license: string }[] = [];

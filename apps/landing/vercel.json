@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd ../.. && pnpm turbo build --filter=apollo-landing",
-  "installCommand": "cd ../.. && pnpm install",
+  "buildCommand": "cd ../.. && bun run turbo build --filter=apollo-landing",
+  "installCommand": "cd ../.. && bun install",
   "outputDirectory": "dist",
   "framework": null,
   "ignoreCommand": "git diff HEAD^ HEAD --quiet ."

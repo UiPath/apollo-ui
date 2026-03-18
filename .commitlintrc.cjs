@@ -1,5 +1,5 @@
 module.exports = {
-  extends: ['@commitlint/config-conventional', '@commitlint/config-pnpm-scopes'],
+  extends: ['@commitlint/config-conventional'],
   rules: {
     // Require scope to be present
     'scope-empty': [2, 'never'],

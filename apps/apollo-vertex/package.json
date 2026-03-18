@@ -5,8 +5,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "pnpm generate:theme && next --turbopack",
-    "build": "pnpm generate:theme && pnpm registry:build && next build",
+    "dev": "bun run generate:theme && next --turbopack",
+    "build": "bun run generate:theme && bun run registry:build && next build",
     "start": "next start",
     "generate:theme": "node --experimental-strip-types scripts/generate-theme-css.ts",
     "registry:build": "shadcn build && node --experimental-strip-types scripts/generate-registry-index.ts",
@@ -20,7 +20,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.18.1",
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",

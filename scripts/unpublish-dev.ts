@@ -2,12 +2,12 @@
 /**
  * Unpublish a dev version of a package from npm registry.
  *
- * Usage: pnpm unpublish:dev <package-name> <suffix-or-version>
- * Example: pnpm unpublish:dev @uipath/apollo-react test
+ * Usage: bun run unpublish:dev <package-name> <suffix-or-version>
+ * Example: bun run unpublish:dev @uipath/apollo-react test
  *   -> Unpublishes @uipath/apollo-react@3.19.3-test
  *
  * Or with full version:
- * Example: pnpm unpublish:dev @uipath/apollo-react 3.19.3-test
+ * Example: bun run unpublish:dev @uipath/apollo-react 3.19.3-test
  *   -> Unpublishes @uipath/apollo-react@3.19.3-test
  *
  * Requires NPM_AUTH_TOKEN environment variable.
@@ -135,7 +135,7 @@ async function unpublishFromRegistry(
 
     try {
       const result = execFileSync(
-        'pnpm',
+        'npm',
         ['unpublish', fullPackage, `--@uipath:registry=${registry}`, '--force'],
         {
           stdio: ['inherit', 'pipe', 'pipe'], // Capture stdout/stderr but show stdin
@@ -186,7 +186,7 @@ async function unpublishFromRegistry(
 
         try {
           const result = execFileSync(
-            'pnpm',
+            'npm',
             ['deprecate', fullPackage, 'Dev package - use latest version', `--@uipath:registry=${registry}`],
             {
               stdio: ['inherit', 'pipe', 'pipe'],
@@ -275,16 +275,16 @@ async function main() {
   const args = process.argv.slice(2);
 
   if (args.length < 2) {
-    console.error('Usage: pnpm unpublish:dev <package-name> <suffix-or-version>');
+    console.error('Usage: bun run unpublish:dev <package-name> <suffix-or-version>');
     console.error('');
     console.error('Examples:');
-    console.error('  pnpm unpublish:dev @uipath/apollo-react test');
+    console.error('  bun run unpublish:dev @uipath/apollo-react test');
     console.error('    -> Unpublishes @uipath/apollo-react@<current>-test');
     console.error('');
-    console.error('  pnpm unpublish:dev @uipath/apollo-react 3.19.3-test');
+    console.error('  bun run unpublish:dev @uipath/apollo-react 3.19.3-test');
     console.error('    -> Unpublishes @uipath/apollo-react@3.19.3-test');
     console.error('');
-    console.error('  pnpm unpublish:dev @uipath/apollo-react pr123');
+    console.error('  bun run unpublish:dev @uipath/apollo-react pr123');
     console.error('    -> Unpublishes @uipath/apollo-react@<current>-pr123');
     console.error('');
     console.error('Requires: NPM_AUTH_TOKEN env var');

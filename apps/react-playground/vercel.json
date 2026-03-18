@@ -1,6 +1,6 @@
 {
-	"buildCommand": "cd ../.. && pnpm turbo build --filter=react-playground",
-	"installCommand": "cd ../.. && pnpm install",
+	"buildCommand": "cd ../.. && bun run turbo build --filter=react-playground",
+	"installCommand": "cd ../.. && bun install",
 	"outputDirectory": "dist",
 	"framework": null,
 	"ignoreCommand": "git diff HEAD^ HEAD --quiet . && git diff HEAD^ HEAD --quiet ../../packages",

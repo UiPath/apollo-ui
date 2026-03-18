@@ -1,9 +1,0 @@
-packages:
-  - 'packages/*'
-  - 'web-packages/*'
-  - 'apps/*'
-
-# dompurify XSS - FIXME: no patch available yet
-auditConfig:
-  ignoreGhsas:
-    - GHSA-v2wj-7wpq-c8vv
