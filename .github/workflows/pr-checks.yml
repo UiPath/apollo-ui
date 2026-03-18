@@ -24,6 +24,7 @@ jobs:
       fail-fast: false
       matrix:
         check:
+          - Format
           - Lint
           - Lint CSS
           - Lint Deps
@@ -58,6 +59,10 @@ jobs:
           key: ${{ runner.os }}-turbo-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-turbo-
+
+      - name: Run Format Check
+        if: matrix.check == 'Format'
+        run: pnpm format:check --affected
 
       - name: Run Lint
         if: matrix.check == 'Lint'
@@ -113,16 +118,11 @@ jobs:
             .turbo/
           retention-days: 3
 
-  audit:
-    name: ${{ matrix.check }}
+  detect-lockfile-changes:
+    name: Detect Lockfile Changes
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        check:
-          - Audit All Dependencies
-          - Audit Production Dependencies
-
+    outputs:
+      changed: ${{ steps.lockfile_check.outputs.changed }}
     steps:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -139,29 +139,41 @@ jobs:
             echo "changed=false" >> $GITHUB_OUTPUT
           fi
 
+  audit:
+    name: ${{ matrix.check }}
+    needs: detect-lockfile-changes
+    if: needs.detect-lockfile-changes.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        check:
+          - Audit All Dependencies
+          - Audit Production Dependencies
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
       - name: Setup pnpm
-        if: steps.lockfile_check.outputs.changed == 'true'
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4
 
       - name: Setup Node.js
-        if: steps.lockfile_check.outputs.changed == 'true'
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: 'pnpm'
 
       - name: Install dependencies
-        if: steps.lockfile_check.outputs.changed == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Run Audit All Dependencies
-        if: matrix.check == 'Audit All Dependencies' && steps.lockfile_check.outputs.changed == 'true'
+        if: matrix.check == 'Audit All Dependencies'
         run: pnpm audit
 
       - name: Run Audit Production Dependencies
-        if: matrix.check == 'Audit Production Dependencies' && steps.lockfile_check.outputs.changed == 'true'
+        if: matrix.check == 'Audit Production Dependencies'
         run: pnpm audit --prod
-
-      - name: Skip audit
-        if: steps.lockfile_check.outputs.changed == 'false'
-        run: echo "⏭️ Skipping audit - pnpm-lock.yaml not changed"
