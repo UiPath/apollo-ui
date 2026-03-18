@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.57.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.56.0...@uipath/apollo-react@3.57.0) (2026-03-18)
+
+### Features
+
+* **apollo-react:** keydown event for stage node ([ca42a3b](https://github.com/UiPath/apollo-ui/commit/ca42a3b64675fd11ebf75a11da185ce3ade02a82))
+
 ## [@uipath/apollo-react-v3.56.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.55.1...@uipath/apollo-react@3.56.0) (2026-03-18)
 
 ### Features
