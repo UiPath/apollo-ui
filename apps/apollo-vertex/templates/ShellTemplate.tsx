@@ -53,6 +53,7 @@ export function ShellTemplate({
         scope="openid profile email offline_access"
         baseUrl={baseUrl}
         navItems={variant === "minimal" ? minimalNavItems : navItems}
+        loginDescription="Sign in to access your workspace and manage your projects."
       >
         {children}
       </ApolloShell>
