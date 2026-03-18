@@ -26,6 +26,7 @@
     "@storybook/addon-links": "^10.2.15",
     "@storybook/react": "^10.2.15",
     "@storybook/react-vite": "^10.2.15",
+    "prettier": "^3.8.1",
     "react-scan": "^0.4.3",
     "storybook": "^10.2.15",
     "typescript": "^5.9.3",
