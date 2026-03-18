@@ -1,3 +1,10 @@
+## [@uipath/apollo-wind-v1.0.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.0.0...@uipath/apollo-wind@1.0.1) (2026-03-18)
+
+### Bug Fixes
+
+* **repo:** run format ([2e7fea6](https://github.com/uipath/apollo-ui/commit/2e7fea677d51458592a9db1044cb5febdfae08bb))
+* **repo:** security vulnerabilities ([1fa7647](https://github.com/uipath/apollo-ui/commit/1fa7647ebfda6556d46d885e4a6ab9405f17ef1b))
+
 ## [@uipath/apollo-wind-v1.0.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.3...@uipath/apollo-wind@1.0.0) (2026-03-18)
 
 ### ⚠ BREAKING CHANGES

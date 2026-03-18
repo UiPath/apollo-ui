@@ -1,3 +1,9 @@
+## [@uipath/ap-chat-v1.5.4](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.5.3...@uipath/ap-chat@1.5.4) (2026-03-18)
+
+### Bug Fixes
+
+* **repo:** run format ([2e7fea6](https://github.com/UiPath/apollo-ui/commit/2e7fea677d51458592a9db1044cb5febdfae08bb))
+
 ## [@uipath/ap-chat-v1.5.3](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.5.2...@uipath/ap-chat@1.5.3) (2026-03-17)
 
 ### Bug Fixes
