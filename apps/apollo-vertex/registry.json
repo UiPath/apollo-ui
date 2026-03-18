@@ -794,7 +794,7 @@
       "type": "registry:ui",
       "title": "Resizable",
       "description": "Accessible resizable panel groups and layouts.",
-      "dependencies": ["react-resizable-panels@^3.0.6"],
+      "dependencies": ["react-resizable-panels@^4.7.3"],
       "files": [
         {
           "path": "registry/resizable/resizable.tsx",
