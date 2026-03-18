@@ -790,10 +790,12 @@ function SkillsContent() {
       </div>
 
       <div>
-        <h3 className="mb-3 text-lg font-semibold text-foreground">Install the Apollo Prototype Skill</h3>
+        <h3 className="mb-3 text-lg font-semibold text-foreground">
+          Install the Apollo Prototype Skill
+        </h3>
         <p className="mb-4 text-sm leading-6 text-muted-foreground">
-          Copy the skill from <InlineCode>packages/apollo-wind/skills/apollo-prototype/</InlineCode> to
-          your tool's skills folder:
+          Copy the skill from <InlineCode>packages/apollo-wind/skills/apollo-prototype/</InlineCode>{' '}
+          to your tool's skills folder:
         </p>
 
         <div className="space-y-4">
@@ -838,9 +840,9 @@ function SkillsContent() {
           <li>
             <span className="font-medium text-foreground">What to include.</span>
             <br />
-            Apollo semantic tokens, theme classes (
-            <InlineCode>future-dark</InlineCode>, <InlineCode>future-light</InlineCode>), component
-            import paths, and rules from <InlineCode>apollo-ai-context.md</InlineCode>.
+            Apollo semantic tokens, theme classes (<InlineCode>future-dark</InlineCode>,{' '}
+            <InlineCode>future-light</InlineCode>), component import paths, and rules from{' '}
+            <InlineCode>apollo-ai-context.md</InlineCode>.
           </li>
           <li>
             <span className="font-medium text-foreground">References.</span>
@@ -861,8 +863,8 @@ function SkillsContent() {
             <span className="font-medium text-foreground">Don't use raw Tailwind colors.</span>
             <br />
             Avoid <InlineCode>bg-zinc-900</InlineCode>, <InlineCode>text-gray-400</InlineCode>, etc.
-            Always use semantic tokens (
-            <InlineCode>bg-surface</InlineCode>, <InlineCode>text-foreground-muted</InlineCode>).
+            Always use semantic tokens (<InlineCode>bg-surface</InlineCode>,{' '}
+            <InlineCode>text-foreground-muted</InlineCode>).
           </li>
           <li>
             <span className="font-medium text-foreground">Don't install extra UI libraries.</span>
@@ -906,7 +908,9 @@ function BestPracticesContent() {
           <AccordionContent>
             <ul className="space-y-3 text-sm leading-6 text-muted-foreground pt-1">
               <li>
-                <span className="font-medium text-foreground">Start from an existing template.</span>
+                <span className="font-medium text-foreground">
+                  Start from an existing template.
+                </span>
                 <br />
                 The Maestro, Admin, Delegate, and Flow templates provide production-ready layouts.
                 Fork one instead of building from scratch.
@@ -944,8 +948,8 @@ function BestPracticesContent() {
               <li>
                 <span className="font-medium text-foreground">Reference tokens, not colors.</span>
                 <br />
-                Say "use bg-surface-raised for the card background" instead of "make the
-                background dark gray." This ensures theme consistency.
+                Say "use bg-surface-raised for the card background" instead of "make the background
+                dark gray." This ensures theme consistency.
               </li>
               <li>
                 <span className="font-medium text-foreground">Iterate in small steps.</span>

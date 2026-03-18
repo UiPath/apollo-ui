@@ -429,7 +429,9 @@ function ColorTokenTable({ groups }: { groups: ColorGroup[] }) {
             <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">
               Tailwind Class
             </th>
-            <th className="w-56 px-4 py-2.5 text-left font-medium text-foreground-muted">CSS Variable</th>
+            <th className="w-56 px-4 py-2.5 text-left font-medium text-foreground-muted">
+              CSS Variable
+            </th>
             <th className="px-4 py-2.5 text-center font-medium text-foreground-muted">Dark</th>
             <th className="px-4 py-2.5 text-center font-medium text-foreground-muted">Light</th>
           </tr>
@@ -545,7 +547,9 @@ function CodeSyntaxTable({ tokens }: { tokens: CodeSyntaxToken[] }) {
             <th className="px-4 py-2.5 text-left font-medium text-foreground-muted">
               Tailwind Class
             </th>
-            <th className="w-56 px-4 py-2.5 text-left font-medium text-foreground-muted">CSS Variable</th>
+            <th className="w-56 px-4 py-2.5 text-left font-medium text-foreground-muted">
+              CSS Variable
+            </th>
             <th className="px-4 py-2.5 text-center font-medium text-foreground-muted">Dark</th>
             <th className="px-4 py-2.5 text-center font-medium text-foreground-muted">Light</th>
           </tr>
@@ -737,7 +741,9 @@ export const Default: Story = {
           <p className="mb-6 text-sm text-foreground-muted">
             Semantic color tokens scoped to specific components. Each token maps to a Tailwind v4
             palette variable and resolves to a different value in dark and light themes. Reference
-            tokens directly via <code style={{ fontFamily: fontFamily.monospace }}>var(--code-*)</code> in component styles.
+            tokens directly via{' '}
+            <code style={{ fontFamily: fontFamily.monospace }}>var(--code-*)</code> in component
+            styles.
           </p>
           <h3
             className="mb-3 text-sm font-semibold tracking-tight text-foreground"

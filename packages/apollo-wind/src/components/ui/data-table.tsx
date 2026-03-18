@@ -85,7 +85,7 @@ export function DataTable<TData, TValue>({
       if (!isControlled) setInternalRowSelection(next);
       controlledOnRowSelectionChange?.(next);
     },
-    [isControlled, rowSelection, controlledOnRowSelectionChange],
+    [isControlled, rowSelection, controlledOnRowSelectionChange]
   );
 
   // Wrap columns with editable cell renderer if editable mode is enabled

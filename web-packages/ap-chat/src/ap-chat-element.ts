@@ -254,7 +254,10 @@ export class ApChat extends HTMLElement {
     // This ensures theme variables are available everywhere in the shadow tree
     const transformedThemeVariablesCSS = apolloThemeVariablesCSS
       .replace(/:root\s*\{/g, ':host {')
-      .replace(/body\.(light|dark|light-hc|dark-hc)(?:,\s*\.\1)?\s*\{/g, ':host(.$1), :host(.$1) * {'); // Apply to host and all descendants
+      .replace(
+        /body\.(light|dark|light-hc|dark-hc)(?:,\s*\.\1)?\s*\{/g,
+        ':host(.$1), :host(.$1) * {'
+      ); // Apply to host and all descendants
 
     const shadowStyleSheet = new CSSStyleSheet();
     const allStyles = [

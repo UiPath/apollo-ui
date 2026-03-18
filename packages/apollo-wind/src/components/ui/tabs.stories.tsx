@@ -150,9 +150,7 @@ export const Examples = {
             <Card>
               <CardHeader>
                 <CardTitle>Profile</CardTitle>
-                <CardDescription>
-                  Update your personal information.
-                </CardDescription>
+                <CardDescription>Update your personal information.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-1">
@@ -173,9 +171,7 @@ export const Examples = {
             <Card>
               <CardHeader>
                 <CardTitle>Notifications</CardTitle>
-                <CardDescription>
-                  Configure how you receive notifications.
-                </CardDescription>
+                <CardDescription>Configure how you receive notifications.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -243,7 +239,10 @@ export const Examples = {
                 { name: 'Pro', price: '$29', desc: 'For small teams' },
                 { name: 'Enterprise', price: '$99', desc: 'For organizations' },
               ].map((plan) => (
-                <div key={plan.name} className="flex items-center justify-between rounded-lg border p-4">
+                <div
+                  key={plan.name}
+                  className="flex items-center justify-between rounded-lg border p-4"
+                >
                   <div>
                     <p className="text-sm font-medium">{plan.name}</p>
                     <p className="text-xs text-muted-foreground">{plan.desc}</p>
@@ -263,7 +262,10 @@ export const Examples = {
                 { name: 'Pro', price: '$23', desc: 'For small teams' },
                 { name: 'Enterprise', price: '$79', desc: 'For organizations' },
               ].map((plan) => (
-                <div key={plan.name} className="flex items-center justify-between rounded-lg border p-4">
+                <div
+                  key={plan.name}
+                  className="flex items-center justify-between rounded-lg border p-4"
+                >
                   <div>
                     <p className="text-sm font-medium">{plan.name}</p>
                     <p className="text-xs text-muted-foreground">{plan.desc}</p>
@@ -310,17 +312,23 @@ export const Examples = {
           </TabsContent>
           <TabsContent value="automations">
             <div className="pt-4">
-              <p className="text-sm text-muted-foreground">Your active automations and workflows.</p>
+              <p className="text-sm text-muted-foreground">
+                Your active automations and workflows.
+              </p>
             </div>
           </TabsContent>
           <TabsContent value="logs">
             <div className="pt-4">
-              <p className="text-sm text-muted-foreground">Recent execution logs and audit trail.</p>
+              <p className="text-sm text-muted-foreground">
+                Recent execution logs and audit trail.
+              </p>
             </div>
           </TabsContent>
           <TabsContent value="settings">
             <div className="pt-4">
-              <p className="text-sm text-muted-foreground">Workspace configuration and preferences.</p>
+              <p className="text-sm text-muted-foreground">
+                Workspace configuration and preferences.
+              </p>
             </div>
           </TabsContent>
         </Tabs>

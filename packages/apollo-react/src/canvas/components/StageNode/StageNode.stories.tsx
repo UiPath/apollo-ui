@@ -1322,9 +1322,7 @@ const AddTaskLoadingStory = () => {
         data: {
           stageDetails: {
             label: 'Async children (click +)',
-            tasks: [
-              [{ id: 'task-1', label: 'Existing Task', icon: <VerificationIcon /> }],
-            ],
+            tasks: [[{ id: 'task-1', label: 'Existing Task', icon: <VerificationIcon /> }]],
           },
           // Children loading: items already available, level 2 loads on click
           addTaskLoading: false,

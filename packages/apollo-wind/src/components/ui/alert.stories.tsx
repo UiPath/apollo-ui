@@ -60,9 +60,7 @@ export const AlertWithIcons = {
       <Alert>
         <Terminal className="h-4 w-4" />
         <AlertTitle>Terminal</AlertTitle>
-        <AlertDescription>
-          You can add components to your app using the CLI.
-        </AlertDescription>
+        <AlertDescription>You can add components to your app using the CLI.</AlertDescription>
       </Alert>
 
       <Alert>
@@ -76,9 +74,7 @@ export const AlertWithIcons = {
       <Alert>
         <CheckCircle2 className="h-4 w-4" />
         <AlertTitle>Success</AlertTitle>
-        <AlertDescription>
-          Your changes have been saved successfully.
-        </AlertDescription>
+        <AlertDescription>Your changes have been saved successfully.</AlertDescription>
       </Alert>
 
       <Alert>
@@ -92,9 +88,7 @@ export const AlertWithIcons = {
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>Error</AlertTitle>
-        <AlertDescription>
-          Your session has expired. Please log in again.
-        </AlertDescription>
+        <AlertDescription>Your session has expired. Please log in again.</AlertDescription>
       </Alert>
     </div>
   ),
@@ -109,8 +103,16 @@ export const DismissibleAlert = {
   render: () => {
     const [alerts, setAlerts] = useState([
       { id: 1, title: 'Tip', description: 'You can dismiss this alert by clicking the X button.' },
-      { id: 2, title: 'Reminder', description: 'Your trial expires in 3 days. Upgrade to keep access.' },
-      { id: 3, title: 'Notice', description: 'Scheduled maintenance this Saturday from 2–4 AM UTC.' },
+      {
+        id: 2,
+        title: 'Reminder',
+        description: 'Your trial expires in 3 days. Upgrade to keep access.',
+      },
+      {
+        id: 3,
+        title: 'Notice',
+        description: 'Scheduled maintenance this Saturday from 2–4 AM UTC.',
+      },
     ]);
 
     const dismiss = (id: number) => setAlerts((prev) => prev.filter((a) => a.id !== id));
@@ -153,11 +155,14 @@ export const AlertWithActions = {
         <AlertTitle>Update Available</AlertTitle>
         <AlertDescription>
           <p className="mb-3">
-            A new version of the application is available. Update now to get the latest features and bug fixes.
+            A new version of the application is available. Update now to get the latest features and
+            bug fixes.
           </p>
           <div className="flex gap-2">
             <Button size="sm">Update Now</Button>
-            <Button size="sm" variant="outline">Later</Button>
+            <Button size="sm" variant="outline">
+              Later
+            </Button>
           </div>
         </AlertDescription>
       </Alert>
@@ -170,8 +175,12 @@ export const AlertWithActions = {
             We were unable to process your payment. Please update your billing information.
           </p>
           <div className="flex gap-2">
-            <Button size="sm" variant="destructive">Update Billing</Button>
-            <Button size="sm" variant="outline" className="text-foreground">Contact Support</Button>
+            <Button size="sm" variant="destructive">
+              Update Billing
+            </Button>
+            <Button size="sm" variant="outline" className="text-foreground">
+              Contact Support
+            </Button>
           </div>
         </AlertDescription>
       </Alert>
@@ -203,9 +212,14 @@ export const AlertWithLinks = {
         <AlertTitle>Getting Started</AlertTitle>
         <AlertDescription>
           New to the platform? Check out our{' '}
-          <a href="#demo" className="font-medium underline underline-offset-4 hover:no-underline">quick start guide</a>
-          {' '}or browse the{' '}
-          <a href="#demo" className="font-medium underline underline-offset-4 hover:no-underline">component library</a>.
+          <a href="#demo" className="font-medium underline underline-offset-4 hover:no-underline">
+            quick start guide
+          </a>{' '}
+          or browse the{' '}
+          <a href="#demo" className="font-medium underline underline-offset-4 hover:no-underline">
+            component library
+          </a>
+          .
         </AlertDescription>
       </Alert>
     </div>
@@ -271,7 +285,8 @@ export const SystemStatus = {
         <WifiOff className="h-4 w-4" />
         <AlertTitle>Service Outage</AlertTitle>
         <AlertDescription>
-          The API gateway is currently unavailable. We are working to restore service as quickly as possible.
+          The API gateway is currently unavailable. We are working to restore service as quickly as
+          possible.
         </AlertDescription>
       </Alert>
     </div>
@@ -291,11 +306,14 @@ export const FeatureAnnouncement = {
         <AlertTitle>New: Dark Mode Support</AlertTitle>
         <AlertDescription>
           <p className="mb-3">
-            We've added dark mode across the entire platform. Your preference syncs automatically across all devices.
+            We've added dark mode across the entire platform. Your preference syncs automatically
+            across all devices.
           </p>
           <div className="flex gap-2">
             <Button size="sm">Try It Out</Button>
-            <Button size="sm" variant="outline">Learn More</Button>
+            <Button size="sm" variant="outline">
+              Learn More
+            </Button>
           </div>
         </AlertDescription>
       </Alert>
@@ -316,11 +334,16 @@ export const SecurityNotice = {
         <AlertTitle>Suspicious Login Detected</AlertTitle>
         <AlertDescription>
           <p className="mb-3">
-            A login was attempted from an unrecognized device in San Francisco, CA. If this wasn't you, secure your account immediately.
+            A login was attempted from an unrecognized device in San Francisco, CA. If this wasn't
+            you, secure your account immediately.
           </p>
           <div className="flex gap-2">
-            <Button size="sm" variant="destructive">Secure Account</Button>
-            <Button size="sm" variant="outline" className="text-foreground">That Was Me</Button>
+            <Button size="sm" variant="destructive">
+              Secure Account
+            </Button>
+            <Button size="sm" variant="outline" className="text-foreground">
+              That Was Me
+            </Button>
           </div>
         </AlertDescription>
       </Alert>
@@ -329,7 +352,8 @@ export const SecurityNotice = {
         <ShieldAlert className="h-4 w-4" />
         <AlertTitle>Two-Factor Authentication</AlertTitle>
         <AlertDescription>
-          Your account does not have two-factor authentication enabled. We strongly recommend enabling it for additional security.{' '}
+          Your account does not have two-factor authentication enabled. We strongly recommend
+          enabling it for additional security.{' '}
           <a href="#demo" className="font-medium underline underline-offset-4 hover:no-underline">
             Enable 2FA
           </a>

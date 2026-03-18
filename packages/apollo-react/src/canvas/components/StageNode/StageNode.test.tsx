@@ -660,7 +660,11 @@ describe('StageNode - Add Task Loading State', () => {
 
     rerender(
       <ReactFlowProvider>
-        <StageNode {...defaultProps} onAddTaskFromToolbox={onAddTaskFromToolbox} addTaskLoading={false} />
+        <StageNode
+          {...defaultProps}
+          onAddTaskFromToolbox={onAddTaskFromToolbox}
+          addTaskLoading={false}
+        />
       </ReactFlowProvider>
     );
 

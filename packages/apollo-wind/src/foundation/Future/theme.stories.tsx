@@ -55,8 +55,8 @@ function themePair(value: string): [string, string] | [string] {
   const pairs: Record<string, [string, string]> = {
     'future-dark': ['future-dark', 'future-light'],
     'future-light': ['future-light', 'future-dark'],
-    'dark': ['dark', 'light'],
-    'light': ['light', 'dark'],
+    dark: ['dark', 'light'],
+    light: ['light', 'dark'],
     'dark-hc': ['dark-hc', 'light-hc'],
     'light-hc': ['light-hc', 'dark-hc'],
   };
@@ -521,11 +521,11 @@ function ThemePage({ globalTheme }: { globalTheme: string }) {
           className="mb-6 rounded-lg border border-border bg-muted/50 px-4 py-3 text-sm leading-relaxed text-muted-foreground"
           style={{ fontFamily: fontFamily.base }}
         >
-          <strong className="text-foreground">For consumer apps, use Core themes</strong>{' '}
-          — apply <InlineCode>light</InlineCode>, <InlineCode>dark</InlineCode>,{' '}
-          <InlineCode>light-hc</InlineCode>, or <InlineCode>dark-hc</InlineCode> as
-          a class on <InlineCode>&lt;body&gt;</InlineCode>. Future and Demo themes
-          are intended for internal prototyping and experimentation.
+          <strong className="text-foreground">For consumer apps, use Core themes</strong> — apply{' '}
+          <InlineCode>light</InlineCode>, <InlineCode>dark</InlineCode>,{' '}
+          <InlineCode>light-hc</InlineCode>, or <InlineCode>dark-hc</InlineCode> as a class on{' '}
+          <InlineCode>&lt;body&gt;</InlineCode>. Future and Demo themes are intended for internal
+          prototyping and experimentation.
         </p>
 
         <div className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-1.5 text-sm text-muted-foreground">

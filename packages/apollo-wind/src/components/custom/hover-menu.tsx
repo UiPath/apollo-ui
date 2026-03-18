@@ -55,7 +55,7 @@ export function HoverMenu({ className, onPlay, onEdit, onDelete, onMore }: Hover
     <div
       className={cn(
         'flex h-10 items-center gap-1 rounded-xl border border-surface-overlay bg-surface-raised px-2 py-1',
-        className,
+        className
       )}
     >
       <MenuButton icon={Play} label="Run node" onClick={onPlay} />

@@ -173,5 +173,3 @@ export function StudioPanelSelection({
     </div>
   );
 }
-
-

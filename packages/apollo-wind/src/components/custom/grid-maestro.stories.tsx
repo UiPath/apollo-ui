@@ -23,10 +23,18 @@ export const Default: Story = {
   render: () => (
     <Canvas>
       <Grid>
-        <GridItem><SampleCard label="Column 1" /></GridItem>
-        <GridItem><SampleCard label="Column 2" /></GridItem>
-        <GridItem><SampleCard label="Column 3" /></GridItem>
-        <GridItem><SampleCard label="Column 4" /></GridItem>
+        <GridItem>
+          <SampleCard label="Column 1" />
+        </GridItem>
+        <GridItem>
+          <SampleCard label="Column 2" />
+        </GridItem>
+        <GridItem>
+          <SampleCard label="Column 3" />
+        </GridItem>
+        <GridItem>
+          <SampleCard label="Column 4" />
+        </GridItem>
       </Grid>
     </Canvas>
   ),

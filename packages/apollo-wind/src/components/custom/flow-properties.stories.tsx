@@ -54,11 +54,7 @@ export const Default: Story = {
 export const Collapsed: Story = {
   render: () => (
     <div className="bg-surface p-4">
-      <FlowProperties
-        expanded={false}
-        flowName="Invoice processing"
-        flowType="Workflow"
-      />
+      <FlowProperties expanded={false} flowName="Invoice processing" flowType="Workflow" />
     </div>
   ),
 };
@@ -70,12 +66,7 @@ export const Expanded: Story = {
       <div className="flex flex-1 items-center justify-center text-sm text-foreground-muted">
         Canvas area
       </div>
-      <FlowProperties
-        expanded
-        nodeName="AI Agent"
-        nodeType="AI Agent"
-        activeTab="properties"
-      />
+      <FlowProperties expanded nodeName="AI Agent" nodeType="AI Agent" activeTab="properties" />
     </div>
   ),
 };

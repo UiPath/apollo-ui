@@ -50,12 +50,7 @@ export function ChatFirstExperience({
   onSubmit,
 }: ChatFirstExperienceProps) {
   return (
-    <div
-      className={cn(
-        'flex flex-1 flex-col items-center justify-center',
-        className
-      )}
-    >
+    <div className={cn('flex flex-1 flex-col items-center justify-center', className)}>
       {/* 800px content container */}
       <div className="flex w-full max-w-[800px] flex-col items-center gap-[37px]">
         {/* Greeting */}
@@ -69,10 +64,7 @@ export function ChatFirstExperience({
         </div>
 
         {/* Composer */}
-        <ChatComposer
-          placeholder={composerPlaceholder}
-          onSubmit={onSubmit}
-        />
+        <ChatComposer placeholder={composerPlaceholder} onSubmit={onSubmit} />
 
         {/* Prompt suggestions */}
         <PromptSuggestions

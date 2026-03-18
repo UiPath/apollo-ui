@@ -72,16 +72,24 @@ export const Link = {
   render: () => (
     <div className="flex flex-wrap items-center gap-3">
       <a href="#demo" className="no-underline">
-        <Badge variant="default" className="cursor-pointer">Default</Badge>
+        <Badge variant="default" className="cursor-pointer">
+          Default
+        </Badge>
       </a>
       <a href="#demo" className="no-underline">
-        <Badge variant="secondary" className="cursor-pointer">Secondary</Badge>
+        <Badge variant="secondary" className="cursor-pointer">
+          Secondary
+        </Badge>
       </a>
       <a href="#demo" className="no-underline">
-        <Badge variant="destructive" className="cursor-pointer">Destructive</Badge>
+        <Badge variant="destructive" className="cursor-pointer">
+          Destructive
+        </Badge>
       </a>
       <a href="#demo" className="no-underline">
-        <Badge variant="outline" className="cursor-pointer">Outline</Badge>
+        <Badge variant="outline" className="cursor-pointer">
+          Outline
+        </Badge>
       </a>
     </div>
   ),
@@ -144,7 +152,9 @@ export const Examples = {
         <p className="text-sm font-medium mb-3">Tags</p>
         <div className="flex flex-wrap items-center gap-2">
           {['React', 'TypeScript', 'Tailwind', 'Radix UI', 'Storybook'].map((tag) => (
-            <Badge key={tag} variant="secondary">{tag}</Badge>
+            <Badge key={tag} variant="secondary">
+              {tag}
+            </Badge>
           ))}
         </div>
       </div>
@@ -155,15 +165,27 @@ export const Examples = {
         <div className="flex items-center gap-6">
           <div className="relative">
             <span className="text-sm font-medium">Inbox</span>
-            <Badge className="absolute -top-2 -right-6 h-5 min-w-5 justify-center px-1.5 text-[10px]">3</Badge>
+            <Badge className="absolute -top-2 -right-6 h-5 min-w-5 justify-center px-1.5 text-[10px]">
+              3
+            </Badge>
           </div>
           <div className="relative">
             <span className="text-sm font-medium">Alerts</span>
-            <Badge variant="destructive" className="absolute -top-2 -right-7 h-5 min-w-5 justify-center px-1.5 text-[10px]">12</Badge>
+            <Badge
+              variant="destructive"
+              className="absolute -top-2 -right-7 h-5 min-w-5 justify-center px-1.5 text-[10px]"
+            >
+              12
+            </Badge>
           </div>
           <div className="relative">
             <span className="text-sm font-medium">Tasks</span>
-            <Badge variant="secondary" className="absolute -top-2 -right-8 h-5 min-w-5 justify-center px-1.5 text-[10px]">99+</Badge>
+            <Badge
+              variant="secondary"
+              className="absolute -top-2 -right-8 h-5 min-w-5 justify-center px-1.5 text-[10px]"
+            >
+              99+
+            </Badge>
           </div>
         </div>
       </div>

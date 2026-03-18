@@ -1,11 +1,5 @@
 import * as React from 'react';
-import {
-  ZoomIn,
-  ZoomOut,
-  Maximize2,
-  LayoutGrid,
-  GitCommitHorizontal,
-} from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize2, LayoutGrid, GitCommitHorizontal } from 'lucide-react';
 import { cn } from '@/lib';
 
 // ============================================================================
@@ -139,9 +133,21 @@ export function FlowViewToolbar({
 
       {/* Node size selector */}
       <div className="flex w-10 flex-col items-center gap-2 rounded-[20px] border border-border-subtle bg-surface-raised p-1">
-        <NodeSizeButton size="s" isActive={activeNodeSize === 's'} onClick={() => onNodeSizeChange?.('s')} />
-        <NodeSizeButton size="m" isActive={activeNodeSize === 'm'} onClick={() => onNodeSizeChange?.('m')} />
-        <NodeSizeButton size="l" isActive={activeNodeSize === 'l'} onClick={() => onNodeSizeChange?.('l')} />
+        <NodeSizeButton
+          size="s"
+          isActive={activeNodeSize === 's'}
+          onClick={() => onNodeSizeChange?.('s')}
+        />
+        <NodeSizeButton
+          size="m"
+          isActive={activeNodeSize === 'm'}
+          onClick={() => onNodeSizeChange?.('m')}
+        />
+        <NodeSizeButton
+          size="l"
+          isActive={activeNodeSize === 'l'}
+          onClick={() => onNodeSizeChange?.('l')}
+        />
       </div>
     </div>
   );

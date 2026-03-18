@@ -1,13 +1,5 @@
 import * as React from 'react';
-import {
-  Workflow,
-  ListChecks,
-  Undo2,
-  Redo2,
-  Play,
-  Plus,
-  StickyNote,
-} from 'lucide-react';
+import { Workflow, ListChecks, Undo2, Redo2, Play, Plus, StickyNote } from 'lucide-react';
 import { cn } from '@/lib';
 
 // ============================================================================
@@ -94,10 +86,7 @@ export function FlowCanvasToolbar({
           onClick={() => onModeChange?.('build')}
         >
           <Workflow
-            className={cn(
-              'h-5 w-5',
-              activeMode === 'build' ? 'text-foreground-accent' : ''
-            )}
+            className={cn('h-5 w-5', activeMode === 'build' ? 'text-foreground-accent' : '')}
           />
           <span>Build</span>
         </button>
@@ -113,10 +102,7 @@ export function FlowCanvasToolbar({
           onClick={() => onModeChange?.('evaluate')}
         >
           <ListChecks
-            className={cn(
-              'h-5 w-5',
-              activeMode === 'evaluate' ? 'text-foreground-accent' : ''
-            )}
+            className={cn('h-5 w-5', activeMode === 'evaluate' ? 'text-foreground-accent' : '')}
           />
           <span>Evaluate</span>
         </button>
