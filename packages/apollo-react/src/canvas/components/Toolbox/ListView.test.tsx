@@ -236,7 +236,8 @@ describe('ListView', () => {
         expect.objectContaining({
           id: 'item-1',
           name: 'Item 1',
-        })
+        }),
+        0
       );
     });
 

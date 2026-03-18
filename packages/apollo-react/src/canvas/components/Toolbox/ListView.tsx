@@ -86,7 +86,7 @@ export interface ListViewRowProps<T extends ListItem> {
   activeIndex: number;
   isLoading?: boolean;
   isDarkMode?: boolean;
-  onItemClick: (item: T) => void;
+  onItemClick: (item: T, index: number) => void;
   onItemHover?: (item: T) => void;
 }
 
@@ -114,7 +114,7 @@ const ListViewRow = memo(
     const handleButtonClick = useCallback(() => {
       const clickTarget = renderedItems[index];
       if (clickTarget?.type === 'item') {
-        onItemClick(clickTarget.item);
+        onItemClick(clickTarget.item, index);
       }
     }, [onItemClick, renderedItems, index]);
 
@@ -208,7 +208,7 @@ interface ListViewProps<T extends ListItem> {
   items: T[];
   activeIndex?: number;
   listRef?: React.RefObject<ListImperativeAPI | null>;
-  onItemClick: (item: T) => void;
+  onItemClick: (item: T, index: number) => void;
   onItemHover?: (item: T) => void;
   emptyStateMessage?: string;
   emptyStateIcon?: string;

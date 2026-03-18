@@ -129,6 +129,7 @@ export function Toolbox<T>({
   const navigationStack = useNavigationStack<{
     items: ListItem<T>[];
     parentItem: ListItem<T> | null;
+    activeIndex: number;
   }>();
 
   const [activeIndex, setActiveIndex] = useState(SEARCH_BAR_INDEX);
@@ -140,6 +141,7 @@ export function Toolbox<T>({
   const listRef = useListRef(null);
   const listViewRef = useRef<ListViewHandle<ListItem<T>>>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const clearButtonRef = useRef<HTMLButtonElement>(null);
 
   const isSearching = useMemo(() => search.length > 0, [search]);
 
@@ -164,24 +166,30 @@ export function Toolbox<T>({
   const navigateToIndex = useCallback(
     (index: number) => {
       setActiveIndex(index);
+      searchInputRef.current?.focus();
 
-      if (index === SEARCH_BAR_INDEX) {
-        searchInputRef.current?.focus();
-        return;
+      if (index !== SEARCH_BAR_INDEX) {
+        requestAnimationFrame(() => {
+          listRef.current?.scrollToRow({ index, align: 'auto' });
+        });
       }
-
-      listRef.current?.scrollToRow({ index, align: 'auto' });
     },
     [listRef]
   );
+
+  const navigateToFirstItem = useCallback(() => {
+    const renderedItems = listViewRef.current?.renderedItems ?? [];
+    const firstIndex = getFirstSelectableIndex(renderedItems);
+    if (firstIndex !== SEARCH_BAR_INDEX) navigateToIndex(firstIndex);
+  }, [navigateToIndex]);
 
   const clearSearch = useCallback(() => {
     setSearch('');
     setSearchedItems([]);
     setSearchLoading(false);
     setIsSearchingInitialItems(true);
-    setActiveIndex(SEARCH_BAR_INDEX);
-  }, []);
+    navigateToIndex(SEARCH_BAR_INDEX);
+  }, [navigateToIndex]);
 
   const handleSearch = useCallback(
     async (query: string) => {
@@ -218,7 +226,6 @@ export function Toolbox<T>({
 
   const handleBackTransition = useCallback(() => {
     startTransition('back');
-    setActiveIndex(SEARCH_BAR_INDEX);
 
     const previousState = navigationStack.pop();
 
@@ -227,15 +234,20 @@ export function Toolbox<T>({
       setCurrentParentItem(previousState.data.parentItem);
     }
 
-    if (isSearching) {
-      clearSearch();
-    }
+    // Reset search state without calling clearSearch (which navigates to search bar).
+    setSearch('');
+    setSearchedItems([]);
+    setSearchLoading(false);
+    setIsSearchingInitialItems(true);
+
+    const restoredIndex = previousState?.data.activeIndex ?? SEARCH_BAR_INDEX;
+    navigateToIndex(restoredIndex);
 
     onBack?.();
-  }, [navigationStack, isSearching, onBack, clearSearch, startTransition]);
+  }, [navigationStack, onBack, startTransition, navigateToIndex]);
 
   const handleItemSelect = useCallback(
-    async (item: ListItem<T>) => {
+    async (item: ListItem<T>, index?: number) => {
       if (!item.children) {
         onItemSelect(item);
         return;
@@ -245,9 +257,14 @@ export function Toolbox<T>({
         typeof item.children === 'function'
           ? await item.children(item.id, item.name)
           : item.children;
+      const savedIndex = isSearching ? SEARCH_BAR_INDEX : (index ?? activeIndex);
       navigationStack.push({
         title: currentParentItem?.name || title,
-        data: { items, parentItem: currentParentItem },
+        data: {
+          items,
+          parentItem: currentParentItem,
+          activeIndex: savedIndex,
+        },
       });
       setItems(nestedItems);
       setCurrentParentItem(item);
@@ -256,7 +273,17 @@ export function Toolbox<T>({
       startTransition('forward');
       setChildrenLoading(false);
     },
-    [navigationStack, currentParentItem, title, items, clearSearch, startTransition, onItemSelect]
+    [
+      navigationStack,
+      currentParentItem,
+      title,
+      items,
+      activeIndex,
+      isSearching,
+      clearSearch,
+      startTransition,
+      onItemSelect,
+    ]
   );
 
   useEffect(() => {
@@ -303,6 +330,7 @@ export function Toolbox<T>({
           data: {
             items: newInitialItems,
             parentItem: null,
+            activeIndex: stackItem.data.activeIndex,
           },
         };
       }
@@ -320,6 +348,7 @@ export function Toolbox<T>({
         data: {
           items: updatedItems,
           parentItem: updatedParentItem,
+          activeIndex: stackItem.data.activeIndex,
         },
       };
     });
@@ -356,15 +385,13 @@ export function Toolbox<T>({
 
       const navigateDown = () => {
         if (activeIndex === SEARCH_BAR_INDEX) {
-          const firstIndex = getFirstSelectableIndex(renderedItems);
-          if (firstIndex !== SEARCH_BAR_INDEX) navigateToIndex(firstIndex);
+          navigateToFirstItem();
         } else {
           const nextIndex = getNextSelectableIndex(renderedItems, activeIndex, 'down');
           if (nextIndex !== SEARCH_BAR_INDEX) {
             navigateToIndex(nextIndex);
           } else {
-            const firstIndex = getFirstSelectableIndex(renderedItems);
-            if (firstIndex !== SEARCH_BAR_INDEX) navigateToIndex(firstIndex);
+            navigateToFirstItem();
           }
         }
       };
@@ -384,8 +411,9 @@ export function Toolbox<T>({
           navigateUp();
           break;
         }
+        case ' ':
         case 'Enter': {
-          if (activeIndex === SEARCH_BAR_INDEX) break;
+          if (activeIndex === SEARCH_BAR_INDEX) return;
 
           const renderItem = renderedItems[activeIndex];
           if (renderItem?.type === 'item') {
@@ -411,9 +439,25 @@ export function Toolbox<T>({
           break;
         }
         case 'Tab': {
+          // When on the search bar with text, defer behavior handling to SearchBox
+          if (activeIndex === SEARCH_BAR_INDEX && search.length > 0 && !e.shiftKey) {
+            break;
+          }
+
           e.preventDefault();
+
+          if (activeIndex === SEARCH_BAR_INDEX && e.shiftKey) {
+            break;
+          }
+
           if (e.shiftKey) {
             navigateUp();
+
+            // If the clear button is showing, allow shift+tab to focus it from the search bar
+            const nextUp = getNextSelectableIndex(renderedItems, activeIndex, 'up');
+            if (nextUp === SEARCH_BAR_INDEX && search.length > 0) {
+              clearButtonRef.current?.focus();
+            }
           } else {
             navigateDown();
           }
@@ -423,8 +467,7 @@ export function Toolbox<T>({
           if (activeIndex === SEARCH_BAR_INDEX) break;
 
           e.preventDefault();
-          const firstIndex = getFirstSelectableIndex(renderedItems);
-          if (firstIndex !== SEARCH_BAR_INDEX) navigateToIndex(firstIndex);
+          navigateToFirstItem();
           break;
         }
         case 'End': {
@@ -443,6 +486,7 @@ export function Toolbox<T>({
       activeIndex,
       navigationStack.canGoBack,
       navigateToIndex,
+      navigateToFirstItem,
       handleItemSelect,
       handleBackTransition,
     ]
@@ -499,7 +543,9 @@ export function Toolbox<T>({
           clear={clearSearch}
           placeholder="Search"
           inputRef={searchInputRef}
+          clearButtonRef={clearButtonRef}
           onNavigationKeyDown={handleNavigationKeyDown}
+          navigateToFirstItem={navigateToFirstItem}
           activeDescendantId={activeDescendantId}
         />
 
