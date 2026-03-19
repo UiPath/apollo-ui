@@ -1,7 +1,7 @@
 "use client";
 
 import { Maximize2, Minimize2 } from "lucide-react";
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/registry/button/button";
 import {
@@ -21,19 +21,23 @@ export function PreviewFullScreen({
   height?: number;
   title: string;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
+
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <div
         className="relative not-prose my-8 rounded-lg overflow-hidden group"
         style={{ height }}
       >
-        <div className="[&_.h-screen]:!h-full h-full">{children}</div>
+        {!isOpen && (
+          <div className="[&_.h-screen]:!h-full h-full">{children}</div>
+        )}
         <DialogTrigger asChild>
           <Button
             variant="outline"
             size="icon-sm"
-            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm"
+            className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-300 bg-background/80 backdrop-blur-sm"
             aria-label={t("enter_full_screen")}
             title={t("enter_full_screen")}
           >
@@ -48,7 +52,7 @@ export function PreviewFullScreen({
           <Button
             variant="outline"
             size="icon-sm"
-            className="absolute top-4 right-4 z-10"
+            className="absolute top-4 right-4 z-20"
             aria-label={t("exit_full_screen")}
             title={t("exit_full_screen")}
           >
