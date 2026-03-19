@@ -219,6 +219,35 @@ export const Default: Story = {
           })),
         },
       },
+      {
+        id: '2',
+        type: 'stage',
+        position: { x: 752, y: 96 },
+        width: 304,
+        data: {
+          onReplaceTaskFromToolbox: () => {},
+          stageDetails: {
+            label: 'Validation - Failed',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Data Validation', icon: <VerificationIcon /> }],
+              [{ id: '2', label: 'Compliance Check', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              label: 'error message',
+              status: 'Failed',
+            },
+            taskStatus: {
+              '2': {
+                status: 'Failed',
+                message: 'Compliance requirements not met',
+              },
+            },
+          },
+        },
+      },
     ],
   },
   args: {},
