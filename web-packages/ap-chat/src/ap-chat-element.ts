@@ -255,7 +255,7 @@ export class ApChat extends HTMLElement {
     const transformedThemeVariablesCSS = apolloThemeVariablesCSS
       .replace(/:root\s*\{/g, ':host {')
       .replace(
-        /body\.(light|dark|light-hc|dark-hc)(?:,\s*\.\1)?\s*\{/g,
+        /body\.(light|dark|light-hc|dark-hc)(?:,\s*\.apollo-design\.\1)?\s*\{/g,
         ':host(.$1), :host(.$1) * {'
       ); // Apply to host and all descendants
 
