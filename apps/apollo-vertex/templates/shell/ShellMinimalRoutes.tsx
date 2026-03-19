@@ -1,5 +1,5 @@
 import { createRoute, Outlet } from "@tanstack/react-router";
-import { LoanQcDashboard } from "@/app/(preview)/preview/shell-minimal/loan-qc-dashboard";
+import { LoanQcDashboard } from "./LoanQcDashboard";
 import { NotFoundPage, PlaceholderPage } from "./ShellPages";
 import { ShellWrapper } from "./ShellRoot";
 import { rootRoute } from "./ShellRouteTree";

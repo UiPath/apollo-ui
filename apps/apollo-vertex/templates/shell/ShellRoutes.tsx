@@ -1,5 +1,5 @@
 import { createRoute, Outlet } from "@tanstack/react-router";
-import { InvoiceDashboard } from "@/app/(preview)/preview/shell/invoice-dashboard";
+import { InvoiceDashboard } from "./InvoiceDashboard";
 import { NotFoundPage, PlaceholderPage, SelectPage } from "./ShellPages";
 import { ShellWrapper } from "./ShellRoot";
 import { rootRoute } from "./ShellRouteTree";
