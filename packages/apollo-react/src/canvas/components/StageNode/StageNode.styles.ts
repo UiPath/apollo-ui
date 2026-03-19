@@ -171,7 +171,6 @@ export const StageTask = styled.div<{
   selected?: boolean;
   isParallel?: boolean;
   isDragEnabled?: boolean;
-  isMenuOpen?: boolean;
 }>`
   position: relative;
   display: flex;
@@ -193,10 +192,6 @@ export const StageTask = styled.div<{
   height: ${({ isDragEnabled }) => (isDragEnabled ? '100%' : 'auto')};
 
   .task-menu-icon-button {
-    display: ${({ isMenuOpen }) => (isMenuOpen ? 'flex' : 'none')};
-  }
-
-  &:hover .task-menu-icon-button {
     display: flex;
   }
 

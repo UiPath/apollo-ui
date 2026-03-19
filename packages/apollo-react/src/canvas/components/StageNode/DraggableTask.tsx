@@ -4,6 +4,7 @@ import { FontVariantToken, Padding, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import {
   ApBadge,
+  ApIconButton,
   ApTooltip,
   ApTypography,
   BadgeSize,
@@ -76,7 +77,9 @@ export const TaskContent = memo(({ task, taskExecution, isDragging }: TaskConten
         {taskExecution?.status &&
           (taskExecution.message ? (
             <ApTooltip content={taskExecution.message} placement="top">
-              <ExecutionStatusIcon status={taskExecution.status} />
+              <ApIconButton size="small">
+                <ExecutionStatusIcon status={taskExecution.status} />
+              </ApIconButton>
             </ApTooltip>
           ) : (
             <ExecutionStatusIcon status={taskExecution.status} />
@@ -194,7 +197,6 @@ const DraggableTaskComponent = ({
       status={taskExecution?.status}
       isParallel={isParallel}
       isDragEnabled={!isDragDisabled}
-      isMenuOpen={isMenuOpen}
       onClick={handleClick}
       {...(contextMenuItems.length > 0 && { onContextMenu: handleContextMenu })}
     >
