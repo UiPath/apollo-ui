@@ -1,9 +1,10 @@
 "use client";
 
+import type { AnyClientTool } from "@tanstack/ai";
+import type { UIMessage } from "@tanstack/ai-client";
 import { AlertCircle, Sparkles } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { UIMessage } from "@tanstack/ai-client";
 import type { ChoiceOption, ToolRenderers } from "../types";
 import { findLatestChoices, groupMessages } from "../utils/ai-chat-utils";
 import { AiChatInput } from "./ai-chat-input";
@@ -12,14 +13,16 @@ import { AiChatMessage } from "./ai-chat-message";
 import { AiChatSuggestions } from "./ai-chat-suggestions";
 import { AiChatToolGroupMessage } from "./ai-chat-tool-group-message";
 
-export interface AiChatProps {
-  messages: UIMessage[];
+export interface AiChatProps<
+  TTools extends ReadonlyArray<AnyClientTool> = ReadonlyArray<AnyClientTool>,
+> {
+  messages: UIMessage<TTools>[];
   isLoading: boolean;
   onSendMessage: (content: string) => void;
   onStop: () => void;
   onClearChat?: () => void;
   onChoiceSelect?: (option: ChoiceOption) => void;
-  toolRenderers?: ToolRenderers;
+  toolRenderers?: ToolRenderers<TTools>;
   assistantName?: string;
   title?: string;
   emptyState?: ReactNode;
@@ -30,7 +33,9 @@ export interface AiChatProps {
   error?: Error | null;
 }
 
-export function AiChat({
+export function AiChat<
+  TTools extends ReadonlyArray<AnyClientTool> = ReadonlyArray<AnyClientTool>,
+>({
   messages,
   isLoading,
   onSendMessage,
@@ -46,7 +51,7 @@ export function AiChat({
   toolDisplayNames,
   enableToolGrouping = false,
   error,
-}: AiChatProps) {
+}: AiChatProps<TTools>) {
   const { t } = useTranslation();
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);

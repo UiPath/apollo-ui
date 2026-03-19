@@ -1,14 +1,28 @@
 "use client";
 
+import type { AnyClientTool } from "@tanstack/ai";
+import type { TextPart, ToolCallPart, UIMessage } from "@tanstack/ai-client";
 import { Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { TextPart, ToolCallPart, UIMessage } from "@tanstack/ai-client";
-import type { DisplayTool, ToolRenderers } from "../types";
+import type { ToolRenderers } from "../types";
 import { AiChatMarkdown } from "./ai-chat-markdown";
 
-interface AiChatMessageProps {
-  message: UIMessage;
-  toolRenderers?: ToolRenderers;
+function getToolRenderer<
+  TTools extends ReadonlyArray<AnyClientTool>,
+  TName extends TTools[number]["name"],
+>(
+  renderers: ToolRenderers<TTools> | undefined,
+  name: TName,
+): ToolRenderers<TTools>[TName] | undefined {
+  if (!renderers) return;
+  return renderers[name];
+}
+
+interface AiChatMessageProps<
+  TTools extends ReadonlyArray<AnyClientTool> = ReadonlyArray<AnyClientTool>,
+> {
+  message: UIMessage<TTools>;
+  toolRenderers?: ToolRenderers<TTools>;
   assistantName?: string;
 }
 
@@ -19,14 +33,6 @@ function getDisplayText(message: UIMessage): string {
     .join("");
 }
 
-function renderToolCall(tc: ToolCallPart, tool: DisplayTool) {
-  const raw = tc.input ?? tryParseJSON(tc.arguments);
-  if (raw == null) return null;
-  const result = tool.inputSchema.safeParse(raw);
-  if (!result.success) return null;
-  return tool.render(result.data);
-}
-
 function tryParseJSON(str: string): unknown {
   try {
     return JSON.parse(str);
@@ -35,24 +41,31 @@ function tryParseJSON(str: string): unknown {
   }
 }
 
-export function AiChatMessage({
-  message,
-  toolRenderers,
-  assistantName,
-}: AiChatMessageProps) {
+export function AiChatMessage<
+  TTools extends ReadonlyArray<AnyClientTool> = ReadonlyArray<AnyClientTool>,
+>({ message, toolRenderers, assistantName }: AiChatMessageProps<TTools>) {
   const { t } = useTranslation();
   const isUser = message.role === "user";
   const displayName = assistantName ?? t("ai_assistant");
   const displayContent = getDisplayText(message);
 
   const toolCallParts = message.parts.filter(
-    (p): p is ToolCallPart => p.type === "tool-call",
+    (p): p is ToolCallPart<TTools> => p.type === "tool-call",
   );
 
   const displayRenders = toolCallParts.flatMap((tc) => {
-    const tool = toolRenderers?.[tc.name];
-    if (!tool) return [];
-    const rendered = renderToolCall(tc, tool);
+    const render = getToolRenderer(toolRenderers, tc.name);
+    if (!render) return [];
+
+    if (tc.input != null) {
+      const rendered = render(tc.input);
+      if (!rendered) return [];
+      return [<div key={tc.id}>{rendered}</div>];
+    }
+
+    const parsed = tryParseJSON(tc.arguments);
+    if (parsed == null) return [];
+    const rendered = render(parsed as Parameters<typeof render>[0]);
     if (!rendered) return [];
     return [<div key={tc.id}>{rendered}</div>];
   });

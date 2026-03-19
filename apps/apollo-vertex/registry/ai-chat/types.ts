@@ -1,29 +1,12 @@
+import type { AnyClientTool, InferToolInput } from "@tanstack/ai";
 import type { ReactNode } from "react";
-import type { ZodType, z } from "zod";
 
-export interface DisplayTool<T extends ZodType = ZodType> {
-  inputSchema: T;
-  render: (args: z.infer<T>) => ReactNode;
-}
-
-export type ToolRenderers = Record<string, DisplayTool>;
-
-export function toolRenderer<TInput extends ZodType>(
-  toolDef: { name: string; inputSchema?: TInput },
-  render: (args: z.infer<TInput>) => ReactNode,
-): [string, DisplayTool<TInput>] {
-  if (!toolDef.inputSchema) {
-    throw new Error(
-      `Tool "${toolDef.name}" requires an inputSchema for rendering`,
-    );
-  }
-  return [toolDef.name, { inputSchema: toolDef.inputSchema, render }];
-}
-
-export function buildToolRenderers(
-  ...entries: Array<[string, DisplayTool]>
-): ToolRenderers {
-  return Object.fromEntries(entries);
-}
+export type ToolRenderers<
+  TTools extends ReadonlyArray<AnyClientTool> = ReadonlyArray<AnyClientTool>,
+> = {
+  [K in TTools[number]["name"]]?: (
+    args: InferToolInput<Extract<TTools[number], { name: K }>>,
+  ) => ReactNode;
+};
 
 export type { ChoiceOption, ToolResultChoices } from "./utils/ai-chat-utils";
