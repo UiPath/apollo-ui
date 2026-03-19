@@ -23,7 +23,15 @@ const meta: Meta<PrototypingArgs> = {
   argTypes: {
     tab: {
       control: 'select',
-      options: ['Overview', 'Skills', 'Prototype', 'w/ Figma', 'w/ Claude', 'w/ Cursor', 'Resources'],
+      options: [
+        'Overview',
+        'Skills',
+        'Prototype',
+        'w/ Figma',
+        'w/ Claude',
+        'w/ Cursor',
+        'Resources',
+      ],
     },
   },
 };
@@ -913,9 +921,7 @@ function ExternalSkillRow({ skill }: { skill: ExternalSkill }) {
               <SurfaceBadge key={s} surface={s} />
             ))}
           </div>
-          {skill.author && (
-            <span className="text-xs text-muted-foreground">by {skill.author}</span>
-          )}
+          {skill.author && <span className="text-xs text-muted-foreground">by {skill.author}</span>}
         </div>
         <p className="text-sm leading-6 text-muted-foreground">{skill.description}</p>
       </div>
@@ -969,15 +975,12 @@ function SkillsTab() {
           ))}
         </div>
 
+        {skillView === 'Internal' &&
+          SKILLS.map((skill) => <SkillRow key={skill.name} skill={skill} />)}
 
-
-        {skillView === 'Internal' && SKILLS.map((skill) => (
-          <SkillRow key={skill.name} skill={skill} />
-        ))}
-
-        {skillView === 'External' && EXTERNAL_SKILLS.length > 0 && EXTERNAL_SKILLS.map((skill) => (
-          <ExternalSkillRow key={skill.name} skill={skill} />
-        ))}
+        {skillView === 'External' &&
+          EXTERNAL_SKILLS.length > 0 &&
+          EXTERNAL_SKILLS.map((skill) => <ExternalSkillRow key={skill.name} skill={skill} />)}
 
         {skillView === 'External' && EXTERNAL_SKILLS.length === 0 && (
           <div className="px-4 py-10 text-center">
