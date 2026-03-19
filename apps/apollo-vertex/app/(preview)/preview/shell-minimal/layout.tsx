@@ -1,12 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { ShellTemplate } from "@/templates/shell/ShellContextTemplate";
+import { ShellTemplate } from "@/templates/shell/ShellTemplateDynamic";
 
-export default function ShellMinimalLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  return <ShellTemplate variant="minimal">{children}</ShellTemplate>;
+export default function ShellMinimalLayout() {
+  return <ShellTemplate variant="minimal" />;
 }
