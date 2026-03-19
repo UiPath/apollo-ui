@@ -5,6 +5,31 @@ import { motion } from 'motion/react';
 // Sticky notes must be below edges (z-index: 0). We use -10 instead of -1 to allow for future layers between sticky notes and edges if needed.
 export const STICKY_NOTE_BELOW_EDGE_Z_INDEX = -10;
 
+const stickyNoteContentStyles = `
+  width: 100%;
+  height: 100%;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--uix-canvas-foreground);
+
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--uix-canvas-border);
+    border-radius: 4px;
+  }
+`;
+
 // Resize controls need to be above the sticky note content to be interactable
 export const RESIZE_CONTROL_Z_INDEX = 100;
 
@@ -54,21 +79,15 @@ export const StickyNoteContainer = styled.div<{
 `;
 
 export const StickyNoteTextArea = styled.textarea<{ isEditing: boolean }>`
-  width: 100%;
-  height: 100%;
+  ${stickyNoteContentStyles}
+
   background: transparent;
   border: none;
   outline: none;
   resize: none;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--uix-canvas-foreground);
   cursor: ${(props) => (props.isEditing ? 'text' : 'move')};
   user-select: ${(props) => (props.isEditing ? 'text' : 'none')};
   pointer-events: ${(props) => (props.isEditing ? 'auto' : 'none')};
-  overflow-y: auto;
 
   &::placeholder {
     color: var(--uix-canvas-foreground-de-emp);
@@ -82,14 +101,8 @@ export const StickyNoteTextArea = styled.textarea<{ isEditing: boolean }>`
 `;
 
 export const StickyNoteMarkdown = styled.div`
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--uix-canvas-foreground);
+  ${stickyNoteContentStyles}
+
   word-wrap: break-word;
 
   /* Markdown styles */

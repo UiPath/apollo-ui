@@ -1,3 +1,16 @@
+## [@uipath/apollo-wind-v1.2.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.2.0...@uipath/apollo-wind@1.2.1) (2026-03-19)
+
+### Bug Fixes
+
+* **apollo-wind:** format ([bb4787e](https://github.com/uipath/apollo-ui/commit/bb4787e68129f4576945c437970455de8027c471))
+
+## [@uipath/apollo-wind-v1.2.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.1.0...@uipath/apollo-wind@1.2.0) (2026-03-18)
+
+### Features
+
+* **apollo-wind:** linkable tabs and internal/external skills toggle ([1e6d7de](https://github.com/uipath/apollo-ui/commit/1e6d7de0646b1c0849537951388abceff9c28b86)), closes [#apollo](https://github.com/uipath/apollo-ui/issues/apollo)
+* **apollo-wind:** skills UX polish and CLI scope callout ([acf03bb](https://github.com/uipath/apollo-ui/commit/acf03bba29f9f9336fa6dba73322b793ed6df5ce))
+
 ## [@uipath/apollo-wind-v1.1.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.0.2...@uipath/apollo-wind@1.1.0) (2026-03-18)
 
 ### Features

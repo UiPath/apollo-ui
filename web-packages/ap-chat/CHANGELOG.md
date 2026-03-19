@@ -1,3 +1,10 @@
+## [@uipath/ap-chat-v1.5.5](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.5.4...@uipath/ap-chat@1.5.5) (2026-03-19)
+
+### Bug Fixes
+
+* **ap-chat:** export types ([57c4e82](https://github.com/UiPath/apollo-ui/commit/57c4e82ea966025662a5f27f20b5901be4cbe140))
+* **ap-chat:** regex for injecting styles ([1824cd4](https://github.com/UiPath/apollo-ui/commit/1824cd45fd4a87b29aecde537a6a3b16d6eddd7b))
+
 ## [@uipath/ap-chat-v1.5.4](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.5.3...@uipath/ap-chat@1.5.4) (2026-03-18)
 
 ### Bug Fixes
