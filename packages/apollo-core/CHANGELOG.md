@@ -1,3 +1,9 @@
+## [@uipath/apollo-core-v5.7.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.7.3...@uipath/apollo-core@5.7.4) (2026-03-19)
+
+### Bug Fixes
+
+* **apollo-core:** too generic theme name ([339da18](https://github.com/UiPath/apollo-ui/commit/339da18026408386879ba6e2acebe18fa6f96651))
+
 ## [@uipath/apollo-core-v5.7.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.7.2...@uipath/apollo-core@5.7.3) (2026-03-17)
 
 ### Bug Fixes
