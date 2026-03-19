@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.58.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.57.0...@uipath/apollo-react@3.58.0) (2026-03-19)
+
+### Features
+
+* **apollo-react:** add line break support to sticky notes ([456e35e](https://github.com/UiPath/apollo-ui/commit/456e35e7a1d01cfd54dde3f9bfa21fa5b1271b71))
+
 ## [@uipath/apollo-react-v3.57.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.56.0...@uipath/apollo-react@3.57.0) (2026-03-18)
 
 ### Features
