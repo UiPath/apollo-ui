@@ -26,7 +26,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "NODE_ENV=production rsbuild build",
+    "build": "NODE_ENV=production rsbuild build && tsc --project tsconfig.build.json",
     "build:analyze": "NODE_ENV=production BUNDLE_ANALYZE=true rsbuild build",
     "dev": "NODE_ENV=development rsbuild dev",
     "lint": "biome lint src",
