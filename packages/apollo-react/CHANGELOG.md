@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.58.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.58.0...@uipath/apollo-react@3.58.1) (2026-03-19)
+
+### Bug Fixes
+
+* **apollo-react:** improve Toolbox keyboard nav with Space, Tab, and index restore ([5ea1057](https://github.com/UiPath/apollo-ui/commit/5ea105735d4634b079d88f707021cd1e3376736f))
+
 ## [@uipath/apollo-react-v3.58.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.57.0...@uipath/apollo-react@3.58.0) (2026-03-19)
 
 ### Features
