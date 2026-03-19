@@ -31,6 +31,13 @@ export interface ShellTemplateProps {
   variant?: "minimal";
 }
 
+const SHELL_PREVIEW_PATH_KEY = "shell-preview-path";
+const SHELL_MINIMAL_PREVIEW_PATH_KEY = "shell-minimal-preview-path";
+
+type ShellPreviewPathKey =
+  | typeof SHELL_PREVIEW_PATH_KEY
+  | typeof SHELL_MINIMAL_PREVIEW_PATH_KEY;
+
 const queryClient = new QueryClient();
 
 const catchAllRoute = createRoute({
@@ -58,29 +65,31 @@ const routeTree = rootRoute.addChildren([
   catchAllRoute,
 ]);
 
-function getInitialEntry(variant?: "minimal") {
-  if (variant === "minimal") {
-    return "/preview/shell-minimal";
-  }
-  if (
-    typeof window !== "undefined" &&
-    window.location.pathname.startsWith("/preview/shell")
-  ) {
-    return window.location.pathname;
-  }
-  return "/preview/shell";
+function getInitialEntry(storageKey: ShellPreviewPathKey, variant?: "minimal") {
+  const stored = localStorage.getItem(storageKey);
+  if (stored) return stored;
+  return variant === "minimal" ? "/preview/shell-minimal" : "/preview/shell";
 }
 
-function createShellRouter(variant?: "minimal") {
+function createShellRouter(
+  storageKey: ShellPreviewPathKey,
+  variant?: "minimal",
+) {
   const history = createMemoryHistory({
-    initialEntries: [getInitialEntry(variant)],
+    initialEntries: [getInitialEntry(storageKey, variant)],
   });
   return createRouter({ routeTree, history });
 }
 
 export function ShellTemplate({ variant }: ShellTemplateProps) {
-  const router = createShellRouter(variant);
-
+  const storageKey =
+    variant === "minimal"
+      ? SHELL_MINIMAL_PREVIEW_PATH_KEY
+      : SHELL_PREVIEW_PATH_KEY;
+  const router = createShellRouter(storageKey, variant);
+  router.subscribe("onResolved", ({ toLocation }) => {
+    localStorage.setItem(storageKey, toLocation.pathname);
+  });
   return (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
