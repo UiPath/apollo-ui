@@ -1,3 +1,5 @@
+"use client";
+
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { AnimatePresence, motion } from "framer-motion";
 import { PanelLeft } from "lucide-react";

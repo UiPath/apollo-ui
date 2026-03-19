@@ -1,3 +1,5 @@
+"use client";
+
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
