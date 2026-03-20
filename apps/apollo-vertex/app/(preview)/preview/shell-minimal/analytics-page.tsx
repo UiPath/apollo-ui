@@ -88,11 +88,46 @@ const initialTimeline = [
 ];
 
 const lineItems = [
-  { line: 1, description: "Industrial Bearings (SKF 6205)", partNo: "SKF-6205-2RS", qty: 120, unitPrice: 20.00, total: 2400.00 },
-  { line: 2, description: "Hydraulic Cylinder Seals", partNo: "HCS-4450-KIT", qty: 50, unitPrice: 38.50, total: 1925.00 },
-  { line: 3, description: "Precision Machined Shafts", partNo: "PMS-1020-SS", qty: 25, unitPrice: 185.00, total: 4625.00 },
-  { line: 4, description: "Linear Guide Rails", partNo: "LGR-20-800", qty: 10, unitPrice: 245.00, total: 2450.00 },
-  { line: 5, description: "Coupling Assemblies", partNo: "CA-30-FL", qty: 15, unitPrice: 70.00, total: 1050.00 },
+  {
+    line: 1,
+    description: "Industrial Bearings (SKF 6205)",
+    partNo: "SKF-6205-2RS",
+    qty: 120,
+    unitPrice: 20.0,
+    total: 2400.0,
+  },
+  {
+    line: 2,
+    description: "Hydraulic Cylinder Seals",
+    partNo: "HCS-4450-KIT",
+    qty: 50,
+    unitPrice: 38.5,
+    total: 1925.0,
+  },
+  {
+    line: 3,
+    description: "Precision Machined Shafts",
+    partNo: "PMS-1020-SS",
+    qty: 25,
+    unitPrice: 185.0,
+    total: 4625.0,
+  },
+  {
+    line: 4,
+    description: "Linear Guide Rails",
+    partNo: "LGR-20-800",
+    qty: 10,
+    unitPrice: 245.0,
+    total: 2450.0,
+  },
+  {
+    line: 5,
+    description: "Coupling Assemblies",
+    partNo: "CA-30-FL",
+    qty: 15,
+    unitPrice: 70.0,
+    total: 1050.0,
+  },
 ];
 
 const tabs = ["All", "Findings", "Activity"] as const;
@@ -106,7 +141,9 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
   const [activeTab, setActiveTab] = useState<Tab>("All");
   const [view, setView] = useState<"summary" | "table">("summary");
   const [selectedFinding, setSelectedFinding] = useState<number | null>(null);
-  const [chatMessages, setChatMessages] = useState<{ text: string; status: "loading" | "done" }[]>([]);
+  const [chatMessages, setChatMessages] = useState<
+    { text: string; status: "loading" | "done" }[]
+  >([]);
   const [duplicateMarked, setDuplicateMarked] = useState(false);
   const [net45Accepted, setNet45Accepted] = useState(false);
   const [timelineItems, setTimelineItems] = useState(initialTimeline);
@@ -119,18 +156,32 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
 
   const handleMarkDuplicate = useCallback(() => {
     setDuplicateMarked(true);
-    setChatMessages((prev) => [...prev, { text: "Marking line item #3 as duplicate across INV-4021 and INV-3987...", status: "loading" }]);
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        text: "Marking line item #3 as duplicate across INV-4021 and INV-3987...",
+        status: "loading",
+      },
+    ]);
     setTimeout(() => {
       setChatMessages((prev) =>
-        prev.map((m, i) => (i === prev.length - 1 ? { ...m, status: "done" as const } : m))
+        prev.map((m, i) =>
+          i === prev.length - 1 ? { ...m, status: "done" as const } : m,
+        ),
       );
       setTimeout(() => {
         setChatMessages((prev) => [
           ...prev,
-          { text: "Done — line item #3 (Industrial Bearings, $2,400.00) has been flagged as a duplicate. The charge has been excluded from the payment total. Updated invoice amount: $10,050.00.", status: "done" },
+          {
+            text: "Done — line item #3 (Industrial Bearings, $2,400.00) has been flagged as a duplicate. The charge has been excluded from the payment total. Updated invoice amount: $10,050.00.",
+            status: "done",
+          },
         ]);
         setTimelineItems((prev) => [
-          { text: "Line item #3 marked as duplicate — charge excluded from payment total.", time: "Just now" },
+          {
+            text: "Line item #3 marked as duplicate — charge excluded from payment total.",
+            time: "Just now",
+          },
           ...prev,
         ]);
       }, 800);
@@ -139,18 +190,32 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
 
   const handleAcceptNet45 = useCallback(() => {
     setNet45Accepted(true);
-    setChatMessages((prev) => [...prev, { text: "Updating payment terms to Net 45 for INV-4021...", status: "loading" }]);
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        text: "Updating payment terms to Net 45 for INV-4021...",
+        status: "loading",
+      },
+    ]);
     setTimeout(() => {
       setChatMessages((prev) =>
-        prev.map((m, i) => (i === prev.length - 1 ? { ...m, status: "done" as const } : m))
+        prev.map((m, i) =>
+          i === prev.length - 1 ? { ...m, status: "done" as const } : m,
+        ),
       );
       setTimeout(() => {
         setChatMessages((prev) => [
           ...prev,
-          { text: "Done — payment terms updated to Net 45. Due date adjusted to April 11, 2026. Vendor master record VMR-AC-0042 has been flagged for review to align with the updated terms.", status: "done" },
+          {
+            text: "Done — payment terms updated to Net 45. Due date adjusted to April 11, 2026. Vendor master record VMR-AC-0042 has been flagged for review to align with the updated terms.",
+            status: "done",
+          },
         ]);
         setTimelineItems((prev) => [
-          { text: "Payment terms updated to Net 45 — due date adjusted to Apr 11, 2026.", time: "Just now" },
+          {
+            text: "Payment terms updated to Net 45 — due date adjusted to Apr 11, 2026.",
+            time: "Just now",
+          },
           ...prev,
         ]);
       }, 800);
@@ -222,16 +287,23 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
-                style={{ boxShadow: "0 0 16px color-mix(in oklch, var(--color-primary) 40%, transparent)" }}
+                style={{
+                  boxShadow:
+                    "0 0 16px color-mix(in oklch, var(--color-primary) 40%, transparent)",
+                }}
               >
                 Approve Payment
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Approve payment for INV-4021?</AlertDialogTitle>
+                <AlertDialogTitle>
+                  Approve payment for INV-4021?
+                </AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will authorize a payment of $12,450.00 to Acme Corp under purchase order PO-7710. Once confirmed, the payment will be queued for processing and cannot be reversed.
+                  This will authorize a payment of $12,450.00 to Acme Corp under
+                  purchase order PO-7710. Once confirmed, the payment will be
+                  queued for processing and cannot be reversed.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -358,196 +430,225 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
           >
-        {/* Left Panel — Notifications */}
-        <div className="relative overflow-hidden">
-          <div className="overflow-y-auto h-full p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold">Notifications</h2>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <span>Recent</span>
-              </div>
-            </div>
+            {/* Left Panel — Notifications */}
+            <div className="relative overflow-hidden">
+              <div className="overflow-y-auto h-full p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-semibold">Notifications</h2>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <span>Recent</span>
+                  </div>
+                </div>
 
-            {/* Tabs */}
-            <div className="flex gap-1 mb-6">
-              {tabs.map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => setActiveTab(tab)}
-                  className={cn(
-                    "px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
-                    activeTab === tab
-                      ? "bg-muted text-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-                  )}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-
-            {/* Findings */}
-            {(activeTab === "All" || activeTab === "Findings") && (
-              <>
-                <h3 className="text-xs font-semibold text-muted-foreground mb-3">
-                  Findings
-                </h3>
-                <div className="space-y-3 mb-8">
-                  {findings.map((finding, i) => (
-                    <div
-                      key={finding.label}
-                      role={finding.detail ? "button" : undefined}
-                      tabIndex={finding.detail ? 0 : undefined}
-                      onClick={finding.detail ? () => { setSelectedFinding(prev => prev === i ? null : i); setChatMessages([]); setDuplicateMarked(false); setNet45Accepted(false); } : undefined}
+                {/* Tabs */}
+                <div className="flex gap-1 mb-6">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setActiveTab(tab)}
                       className={cn(
-                        "p-3 rounded-lg border transition-colors",
-                        finding.detail && "cursor-pointer",
-                        selectedFinding === i
-                          ? "border-primary bg-primary/5"
-                          : "border-border/50 bg-card/50",
+                        "px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                        activeTab === tab
+                          ? "bg-muted text-foreground"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                       )}
                     >
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          <finding.icon className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">{finding.label}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">
-                            {finding.time}
-                          </span>
-                          <div className={cn(
-                            "w-2 h-2 rounded-full",
-                            finding.severity === "medium" ? "bg-warning" : "bg-muted-foreground/50",
-                          )} />
-                        </div>
-                      </div>
-                      {finding.description && (
-                        <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                          {finding.description}
-                        </p>
-                      )}
-                    </div>
+                      {tab}
+                    </button>
                   ))}
                 </div>
-              </>
-            )}
 
-            {/* Activity Timeline */}
-            {(activeTab === "All" || activeTab === "Activity") && (
-              <>
-                <h3 className="text-xs font-semibold text-muted-foreground mb-3">
-                  Activity timeline
-                </h3>
-                <div className="space-y-0">
-                  {timelineItems.map((item, i) => (
-                    <div key={i} className="flex gap-3 pb-6 relative">
-                      <div className="flex flex-col items-center">
-                        <div className="w-2 h-2 rounded-full bg-foreground/30 mt-1.5 shrink-0" />
-                        {i < timelineItems.length - 1 && (
-                          <div className="w-px flex-1 bg-border mt-1" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm leading-relaxed">{item.text}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {item.time}
-                        </p>
-                      </div>
+                {/* Findings */}
+                {(activeTab === "All" || activeTab === "Findings") && (
+                  <>
+                    <h3 className="text-xs font-semibold text-muted-foreground mb-3">
+                      Findings
+                    </h3>
+                    <div className="space-y-3 mb-8">
+                      {findings.map((finding, i) => (
+                        <div
+                          key={finding.label}
+                          role={finding.detail ? "button" : undefined}
+                          tabIndex={finding.detail ? 0 : undefined}
+                          onClick={
+                            finding.detail
+                              ? () => {
+                                  setSelectedFinding((prev) =>
+                                    prev === i ? null : i,
+                                  );
+                                  setChatMessages([]);
+                                  setDuplicateMarked(false);
+                                  setNet45Accepted(false);
+                                }
+                              : undefined
+                          }
+                          className={cn(
+                            "p-3 rounded-lg border transition-colors",
+                            finding.detail && "cursor-pointer",
+                            selectedFinding === i
+                              ? "border-primary bg-primary/5"
+                              : "border-border/50 bg-card/50",
+                          )}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <finding.icon className="w-4 h-4 text-muted-foreground" />
+                              <span className="text-sm font-medium">
+                                {finding.label}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground">
+                                {finding.time}
+                              </span>
+                              <div
+                                className={cn(
+                                  "w-2 h-2 rounded-full",
+                                  finding.severity === "medium"
+                                    ? "bg-warning"
+                                    : "bg-muted-foreground/50",
+                                )}
+                              />
+                            </div>
+                          </div>
+                          {finding.description && (
+                            <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                              {finding.description}
+                            </p>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-          <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[88px] bg-gradient-to-t from-background to-transparent z-10" />
-        </div>
+                  </>
+                )}
 
-        {/* Center Panel — AI Summary */}
-        <div className="flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto py-6 pl-6 pr-12">
-              {/* Agent Message */}
-              <div className="mb-8">
-                <div className="flex items-center gap-2 mb-6">
-                  <h2 className="text-sm font-semibold">AI Summary</h2>
-                  <span className="text-xs text-muted-foreground">
-                    2m ago
-                  </span>
-                </div>
-                <AnimatePresence mode="wait">
-                  {selectedFinding !== null && findings[selectedFinding]?.detail ? (
-                    <motion.div
-                      key={`finding-${selectedFinding}`}
-                      className="space-y-4"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.2, ease: "easeInOut" }}
-                    >
-                      <h2 className="text-2xl font-semibold leading-tight">
-                        {findings[selectedFinding].detail.headline}
-                      </h2>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {findings[selectedFinding].detail.summary}
-                      </p>
-                      <div className="flex gap-2 pt-2">
-                        {findings[selectedFinding].detail.actions.map((action) => {
-                          const isActive =
-                            (action === "Mark as Duplicate" && duplicateMarked) ||
-                            (action === "Accept Net 45" && net45Accepted);
-                          return (
-                            <Button
-                              key={action}
-                              variant="outline"
-                              size="sm"
-                              onClick={
-                                action === "Mark as Duplicate" ? handleMarkDuplicate
-                                : action === "Accept Net 45" ? handleAcceptNet45
-                                : undefined
-                              }
-                              disabled={isActive}
-                              className={isActive ? "bg-accent/80 text-accent-foreground" : undefined}
-                            >
-                              {action}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="default-summary"
-                      className="space-y-4"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.2, ease: "easeInOut" }}
-                    >
-                      <h2 className="text-2xl font-semibold leading-tight">
-                        INV-4021 from Acme Corp has been fully processed and is
-                        ready for payment approval.
-                      </h2>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        The three-way match between the invoice, purchase order
-                        PO-7710, and goods receipt GRN-8842 was completed
-                        successfully. Two findings were flagged: a potential
-                        duplicate line item and a payment terms discrepancy.
-                        Neither is blocking, but both may warrant review before
-                        final approval.
-                      </p>
-                      <div className="flex gap-2 pt-2">
-                        <Button variant="outline" size="sm">
-                          Review Findings
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          Approve Payment
-                        </Button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {/* Activity Timeline */}
+                {(activeTab === "All" || activeTab === "Activity") && (
+                  <>
+                    <h3 className="text-xs font-semibold text-muted-foreground mb-3">
+                      Activity timeline
+                    </h3>
+                    <div className="space-y-0">
+                      {timelineItems.map((item, i) => (
+                        <div key={i} className="flex gap-3 pb-6 relative">
+                          <div className="flex flex-col items-center">
+                            <div className="w-2 h-2 rounded-full bg-foreground/30 mt-1.5 shrink-0" />
+                            {i < timelineItems.length - 1 && (
+                              <div className="w-px flex-1 bg-border mt-1" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm leading-relaxed">
+                              {item.text}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {item.time}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
+              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[88px] bg-gradient-to-t from-background to-transparent z-10" />
+            </div>
+
+            {/* Center Panel — AI Summary */}
+            <div className="flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto py-6 pl-6 pr-12">
+                {/* Agent Message */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-6">
+                    <h2 className="text-sm font-semibold">AI Summary</h2>
+                    <span className="text-xs text-muted-foreground">
+                      2m ago
+                    </span>
+                  </div>
+                  <AnimatePresence mode="wait">
+                    {selectedFinding !== null &&
+                    findings[selectedFinding]?.detail ? (
+                      <motion.div
+                        key={`finding-${selectedFinding}`}
+                        className="space-y-4"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                      >
+                        <h2 className="text-2xl font-semibold leading-tight">
+                          {findings[selectedFinding].detail.headline}
+                        </h2>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {findings[selectedFinding].detail.summary}
+                        </p>
+                        <div className="flex gap-2 pt-2">
+                          {findings[selectedFinding].detail.actions.map(
+                            (action) => {
+                              const isActive =
+                                (action === "Mark as Duplicate" &&
+                                  duplicateMarked) ||
+                                (action === "Accept Net 45" && net45Accepted);
+                              return (
+                                <Button
+                                  key={action}
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={
+                                    action === "Mark as Duplicate"
+                                      ? handleMarkDuplicate
+                                      : action === "Accept Net 45"
+                                        ? handleAcceptNet45
+                                        : undefined
+                                  }
+                                  disabled={isActive}
+                                  className={
+                                    isActive
+                                      ? "bg-accent/80 text-accent-foreground"
+                                      : undefined
+                                  }
+                                >
+                                  {action}
+                                </Button>
+                              );
+                            },
+                          )}
+                        </div>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="default-summary"
+                        className="space-y-4"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                      >
+                        <h2 className="text-2xl font-semibold leading-tight">
+                          INV-4021 from Acme Corp has been fully processed and
+                          is ready for payment approval.
+                        </h2>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          The three-way match between the invoice, purchase
+                          order PO-7710, and goods receipt GRN-8842 was
+                          completed successfully. Two findings were flagged: a
+                          potential duplicate line item and a payment terms
+                          discrepancy. Neither is blocking, but both may warrant
+                          review before final approval.
+                        </p>
+                        <div className="flex gap-2 pt-2">
+                          <Button variant="outline" size="sm">
+                            Review Findings
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            Approve Payment
+                          </Button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
 
                 {/* Chat Messages */}
                 {chatMessages.length > 0 && (
@@ -572,71 +673,71 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
                     ))}
                   </div>
                 )}
-          </div>
-
-          {/* Chat Input */}
-          <div className="px-6 pb-6">
-              <div className="relative rounded-xl border border-border/50 bg-card/50">
-                <textarea
-                  placeholder="Ask about this invoice..."
-                  className="w-full resize-none rounded-xl bg-transparent px-4 py-3 pr-12 text-sm placeholder:text-muted-foreground focus:outline-none min-h-[80px]"
-                  rows={2}
-                />
-                <button
-                  type="button"
-                  className="absolute bottom-3 right-3 p-1.5 rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors"
-                >
-                  <ArrowUp className="w-4 h-4" />
-                </button>
               </div>
-          </div>
-        </div>
 
-        {/* Right Panel — Invoice Details */}
-        <div className="overflow-y-auto p-6">
-          <h2 className="text-sm font-semibold mb-6">Invoice Details</h2>
+              {/* Chat Input */}
+              <div className="px-6 pb-6">
+                <div className="relative rounded-xl border border-border/50 bg-card/50">
+                  <textarea
+                    placeholder="Ask about this invoice..."
+                    className="w-full resize-none rounded-xl bg-transparent px-4 py-3 pr-12 text-sm placeholder:text-muted-foreground focus:outline-none min-h-[80px]"
+                    rows={2}
+                  />
+                  <button
+                    type="button"
+                    className="absolute bottom-3 right-3 p-1.5 rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors"
+                  >
+                    <ArrowUp className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
 
-          <div className="space-y-5">
-            <div>
-              <p className="text-xs text-muted-foreground mb-0.5">
-                Invoice amount
-              </p>
-              <p className="text-lg font-bold">$12,450.00</p>
+            {/* Right Panel — Invoice Details */}
+            <div className="overflow-y-auto p-6">
+              <h2 className="text-sm font-semibold mb-6">Invoice Details</h2>
+
+              <div className="space-y-5">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">
+                    Invoice amount
+                  </p>
+                  <p className="text-lg font-bold">$12,450.00</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">Vendor</p>
+                  <p className="text-sm font-semibold">Acme Corp</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">
+                    Purchase order
+                  </p>
+                  <p className="text-sm font-semibold">PO-7710</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">
+                    Payment terms
+                  </p>
+                  <p className="text-sm font-semibold">Net 45</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">
+                    Due date
+                  </p>
+                  <p className="text-sm font-semibold">Apr 11, 2026</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">
+                    Description
+                  </p>
+                  <p className="text-sm leading-relaxed">
+                    Q1 2026 order for industrial bearings, hydraulic seals, and
+                    precision machining components for the Detroit manufacturing
+                    facility.
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-0.5">
-                Vendor
-              </p>
-              <p className="text-sm font-semibold">Acme Corp</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-0.5">
-                Purchase order
-              </p>
-              <p className="text-sm font-semibold">PO-7710</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-0.5">
-                Payment terms
-              </p>
-              <p className="text-sm font-semibold">Net 45</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-0.5">
-                Due date
-              </p>
-              <p className="text-sm font-semibold">Apr 11, 2026</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-0.5">Description</p>
-              <p className="text-sm leading-relaxed">
-                Q1 2026 order for industrial bearings, hydraulic seals, and
-                precision machining components for the Detroit manufacturing
-                facility.
-              </p>
-            </div>
-          </div>
-        </div>
           </motion.div>
         ) : (
           <motion.div
@@ -662,28 +763,50 @@ export function AnalyticsPage({ visible }: { visible: boolean }) {
               <TableBody>
                 {lineItems.map((item) => (
                   <TableRow key={item.line}>
-                    <TableCell className="text-muted-foreground">{item.line}</TableCell>
-                    <TableCell className="font-medium">{item.description}</TableCell>
-                    <TableCell className="text-muted-foreground font-mono text-xs">{item.partNo}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {item.line}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {item.description}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground font-mono text-xs">
+                      {item.partNo}
+                    </TableCell>
                     <TableCell className="text-right">{item.qty}</TableCell>
-                    <TableCell className="text-right">{fmt(item.unitPrice)}</TableCell>
-                    <TableCell className="text-right font-medium">{fmt(item.total)}</TableCell>
+                    <TableCell className="text-right">
+                      {fmt(item.unitPrice)}
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      {fmt(item.total)}
+                    </TableCell>
                   </TableRow>
                 ))}
                 <TableRow>
                   <TableCell colSpan={4} />
-                  <TableCell className="text-right text-sm text-muted-foreground">Subtotal</TableCell>
-                  <TableCell className="text-right font-semibold">$12,450.00</TableCell>
+                  <TableCell className="text-right text-sm text-muted-foreground">
+                    Subtotal
+                  </TableCell>
+                  <TableCell className="text-right font-semibold">
+                    $12,450.00
+                  </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell colSpan={4} />
-                  <TableCell className="text-right text-sm text-muted-foreground">Tax (0%)</TableCell>
-                  <TableCell className="text-right text-muted-foreground">$0.00</TableCell>
+                  <TableCell className="text-right text-sm text-muted-foreground">
+                    Tax (0%)
+                  </TableCell>
+                  <TableCell className="text-right text-muted-foreground">
+                    $0.00
+                  </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell colSpan={4} />
-                  <TableCell className="text-right text-sm font-semibold">Total</TableCell>
-                  <TableCell className="text-right text-lg font-bold">$12,450.00</TableCell>
+                  <TableCell className="text-right text-sm font-semibold">
+                    Total
+                  </TableCell>
+                  <TableCell className="text-right text-lg font-bold">
+                    $12,450.00
+                  </TableCell>
                 </TableRow>
               </TableBody>
             </Table>

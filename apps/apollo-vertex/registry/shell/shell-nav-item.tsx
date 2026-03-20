@@ -26,7 +26,13 @@ interface NavItemProps {
   onClick?: (e: React.MouseEvent) => void;
 }
 
-export const NavItem = ({ to, icon: Icon, text, active, onClick }: NavItemProps) => {
+export const NavItem = ({
+  to,
+  icon: Icon,
+  text,
+  active,
+  onClick,
+}: NavItemProps) => {
   const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
   const pathname = usePathname();
   const isActive = active ?? (pathname === to || pathname.startsWith(`${to}/`));

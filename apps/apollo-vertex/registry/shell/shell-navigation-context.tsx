@@ -7,9 +7,8 @@ interface ShellNavigationContextValue {
   onNavigate: (page: string) => void;
 }
 
-const ShellNavigationContext = createContext<ShellNavigationContextValue | null>(
-  null,
-);
+const ShellNavigationContext =
+  createContext<ShellNavigationContextValue | null>(null);
 
 export function ShellNavigationProvider({
   activePage,

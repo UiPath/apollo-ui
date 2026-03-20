@@ -8,12 +8,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
   Table,
@@ -33,15 +28,54 @@ const kpis = [
 ];
 
 const invoices = [
-  { id: "INV-4021", vendor: "Acme Corp", amount: "$12,450.00", status: "Processed" as const, date: "Feb 25, 2026" },
-  { id: "INV-4020", vendor: "Global Supplies Ltd", amount: "$3,280.50", status: "Pending" as const, date: "Feb 25, 2026" },
-  { id: "INV-4019", vendor: "TechParts Inc", amount: "$8,920.00", status: "In Review" as const, date: "Feb 24, 2026" },
-  { id: "INV-4018", vendor: "Office Depot", amount: "$1,150.75", status: "Processed" as const, date: "Feb 24, 2026" },
-  { id: "INV-4017", vendor: "CloudServ Solutions", amount: "$24,000.00", status: "Failed" as const, date: "Feb 23, 2026" },
-  { id: "INV-4016", vendor: "Metro Logistics", amount: "$6,780.00", status: "Processed" as const, date: "Feb 23, 2026" },
+  {
+    id: "INV-4021",
+    vendor: "Acme Corp",
+    amount: "$12,450.00",
+    status: "Processed" as const,
+    date: "Feb 25, 2026",
+  },
+  {
+    id: "INV-4020",
+    vendor: "Global Supplies Ltd",
+    amount: "$3,280.50",
+    status: "Pending" as const,
+    date: "Feb 25, 2026",
+  },
+  {
+    id: "INV-4019",
+    vendor: "TechParts Inc",
+    amount: "$8,920.00",
+    status: "In Review" as const,
+    date: "Feb 24, 2026",
+  },
+  {
+    id: "INV-4018",
+    vendor: "Office Depot",
+    amount: "$1,150.75",
+    status: "Processed" as const,
+    date: "Feb 24, 2026",
+  },
+  {
+    id: "INV-4017",
+    vendor: "CloudServ Solutions",
+    amount: "$24,000.00",
+    status: "Failed" as const,
+    date: "Feb 23, 2026",
+  },
+  {
+    id: "INV-4016",
+    vendor: "Metro Logistics",
+    amount: "$6,780.00",
+    status: "Processed" as const,
+    date: "Feb 23, 2026",
+  },
 ];
 
-const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+const statusVariant: Record<
+  string,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
   Processed: "default",
   Pending: "secondary",
   Failed: "destructive",
@@ -95,7 +129,8 @@ export function InvoiceDashboard({ visible }: { visible: boolean }) {
             <CardContent>
               <div className="text-2xl font-bold">{kpi.value}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                <span className="text-emerald-500">{kpi.change}</span> from last week
+                <span className="text-emerald-500">{kpi.change}</span> from last
+                week
               </p>
             </CardContent>
           </Card>
@@ -122,16 +157,26 @@ export function InvoiceDashboard({ visible }: { visible: boolean }) {
               {invoices.map((inv, i) => (
                 <TableRow
                   key={inv.id}
-                  className={i === 0 ? "cursor-pointer hover:bg-muted/50 transition-colors" : ""}
-                  onClick={i === 0 ? () => nav?.onNavigate("analytics") : undefined}
+                  className={
+                    i === 0
+                      ? "cursor-pointer hover:bg-muted/50 transition-colors"
+                      : ""
+                  }
+                  onClick={
+                    i === 0 ? () => nav?.onNavigate("analytics") : undefined
+                  }
                 >
                   <TableCell className="font-medium">{inv.id}</TableCell>
                   <TableCell>{inv.vendor}</TableCell>
                   <TableCell>{inv.amount}</TableCell>
                   <TableCell>
-                    <Badge variant={statusVariant[inv.status]}>{inv.status}</Badge>
+                    <Badge variant={statusVariant[inv.status]}>
+                      {inv.status}
+                    </Badge>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{inv.date}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {inv.date}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -149,12 +194,17 @@ export function InvoiceDashboard({ visible }: { visible: boolean }) {
           <CardContent>
             <div className="flex items-end gap-3 h-32">
               {activityBars.map((bar) => (
-                <div key={bar.label} className="flex-1 flex flex-col items-center gap-1">
+                <div
+                  key={bar.label}
+                  className="flex-1 flex flex-col items-center gap-1"
+                >
                   <div
                     className="w-full bg-primary/80 rounded-t-sm"
                     style={{ height: `${bar.height}%` }}
                   />
-                  <span className="text-xs text-muted-foreground">{bar.label}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {bar.label}
+                  </span>
                 </div>
               ))}
             </div>
@@ -173,7 +223,9 @@ export function InvoiceDashboard({ visible }: { visible: boolean }) {
                   <div className="mt-1.5 w-2 h-2 rounded-full bg-primary shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm">{event.text}</p>
-                    <p className="text-xs text-muted-foreground">{event.time}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {event.time}
+                    </p>
                   </div>
                 </div>
               ))}

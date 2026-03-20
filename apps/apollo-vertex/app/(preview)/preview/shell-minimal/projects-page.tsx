@@ -2,18 +2,14 @@
 
 import { Clock, FolderOpen, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
 const projects = [
   {
     name: "AP Automation",
-    description: "End-to-end accounts payable invoice processing with OCR extraction and three-way matching.",
+    description:
+      "End-to-end accounts payable invoice processing with OCR extraction and three-way matching.",
     status: "Active" as const,
     progress: 78,
     lastActivity: "2 hours ago",
@@ -22,7 +18,8 @@ const projects = [
   },
   {
     name: "PO Matching",
-    description: "Automated purchase order matching against invoices and goods receipts for variance detection.",
+    description:
+      "Automated purchase order matching against invoices and goods receipts for variance detection.",
     status: "Active" as const,
     progress: 92,
     lastActivity: "30 min ago",
@@ -31,7 +28,8 @@ const projects = [
   },
   {
     name: "Expense Reports",
-    description: "Employee expense report processing with policy compliance checks and approval routing.",
+    description:
+      "Employee expense report processing with policy compliance checks and approval routing.",
     status: "In Review" as const,
     progress: 45,
     lastActivity: "1 day ago",
@@ -40,7 +38,8 @@ const projects = [
   },
   {
     name: "Vendor Onboarding",
-    description: "New vendor registration and validation workflow with tax document verification.",
+    description:
+      "New vendor registration and validation workflow with tax document verification.",
     status: "Draft" as const,
     progress: 20,
     lastActivity: "3 days ago",
@@ -79,7 +78,8 @@ export function ProjectsPage({ visible }: { visible: boolean }) {
           <CardContent>
             <div className="text-2xl font-bold">4</div>
             <p className="text-xs text-muted-foreground mt-1">
-              <span className="text-emerald-500">2 active</span> · 1 in review · 1 draft
+              <span className="text-emerald-500">2 active</span> · 1 in review ·
+              1 draft
             </p>
           </CardContent>
         </Card>
@@ -123,7 +123,10 @@ export function ProjectsPage({ visible }: { visible: boolean }) {
                   </div>
                   <div>
                     <CardTitle className="text-base">{project.name}</CardTitle>
-                    <Badge variant={statusVariant[project.status]} className="mt-1">
+                    <Badge
+                      variant={statusVariant[project.status]}
+                      className="mt-1"
+                    >
                       {project.status}
                     </Badge>
                   </div>
@@ -138,7 +141,9 @@ export function ProjectsPage({ visible }: { visible: boolean }) {
                 <div>
                   <div className="flex items-center justify-between text-sm mb-1.5">
                     <span>Completion</span>
-                    <span className="text-muted-foreground">{project.progress}%</span>
+                    <span className="text-muted-foreground">
+                      {project.progress}%
+                    </span>
                   </div>
                   <Progress value={project.progress} />
                 </div>

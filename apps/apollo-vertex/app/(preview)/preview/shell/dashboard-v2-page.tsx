@@ -43,7 +43,6 @@ export function DashboardV2Page({ visible }: { visible: boolean }) {
 
   return (
     <div className="relative h-full overflow-hidden pt-24 pb-6 px-6 grid grid-cols-2 gap-1">
-
       {/* Background gradient — shaped illumination */}
       <svg
         className="absolute -inset-6 w-[calc(100%+48px)] h-[calc(100%+48px)] pointer-events-none translate-y-12"
@@ -69,8 +68,16 @@ export function DashboardV2Page({ visible }: { visible: boolean }) {
             colorInterpolationFilters="sRGB"
           >
             <feFlood floodOpacity="0" result="BackgroundImageFix" />
-            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
-            <feGaussianBlur stdDeviation="37.5" result="effect1_foregroundBlur" />
+            <feBlend
+              mode="normal"
+              in="SourceGraphic"
+              in2="BackgroundImageFix"
+              result="shape"
+            />
+            <feGaussianBlur
+              stdDeviation="37.5"
+              result="effect1_foregroundBlur"
+            />
           </filter>
           <linearGradient
             id="bg-gradient"
@@ -89,8 +96,12 @@ export function DashboardV2Page({ visible }: { visible: boolean }) {
       {/* Page header */}
       <div className="absolute top-0 left-0 right-0 px-6 pt-6 flex items-end justify-between">
         <div className="pointer-events-none">
-          <p className="text-xs text-muted-foreground"><span className="font-bold">UiPath™</span> Vertical Solutions</p>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">Dashboard Layouts</h1>
+          <p className="text-xs text-muted-foreground">
+            <span className="font-bold">UiPath™</span> Vertical Solutions
+          </p>
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">
+            Dashboard Layouts
+          </h1>
         </div>
         <Select value={layout} onValueChange={setLayout}>
           <SelectTrigger className="w-48 h-8 text-sm">
@@ -107,11 +118,17 @@ export function DashboardV2Page({ visible }: { visible: boolean }) {
       <div className="flex flex-col gap-1">
         <GlassCard
           className="flex-1"
-          style={{ background: "linear-gradient(110.17deg, #F8F8FE 6.21%, rgba(255, 255, 255, 0) 43.31%), white" }}
+          style={{
+            background:
+              "linear-gradient(110.17deg, #F8F8FE 6.21%, rgba(255, 255, 255, 0) 43.31%), white",
+          }}
         />
         <GlassCard
           className="h-16 shrink-0 bg-white/95 dark:bg-white/10"
-          style={{ boxShadow: "0 4px 24px -4px rgba(0,0,0,0.06), 0 1px 4px -1px rgba(0,0,0,0.04), inset 0 1px 0 0 rgba(255,255,255,0.90)" }}
+          style={{
+            boxShadow:
+              "0 4px 24px -4px rgba(0,0,0,0.06), 0 1px 4px -1px rgba(0,0,0,0.04), inset 0 1px 0 0 rgba(255,255,255,0.90)",
+          }}
         />
       </div>
 
@@ -132,7 +149,6 @@ export function DashboardV2Page({ visible }: { visible: boolean }) {
           <GlassCard className="bg-white/95 dark:bg-white/10 col-span-1 max-md:min-h-40 max-md:shrink-0" />
         </div>
       )}
-
     </div>
   );
 }

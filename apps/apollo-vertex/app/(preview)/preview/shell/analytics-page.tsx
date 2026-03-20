@@ -568,8 +568,7 @@ const invoiceConfigs: Record<string, InvoiceConfig> = {
             {
               label: "Approve Overage",
               handler: {
-                chatLoading:
-                  "Recording budget overage approval for PO-7655...",
+                chatLoading: "Recording budget overage approval for PO-7655...",
                 chatDone:
                   "Done — budget overage of $1,750.00 approved for PO-7655. Invoice amount of $19,750.00 accepted. Manager approval logged.",
                 timelineEntry:

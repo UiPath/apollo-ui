@@ -166,7 +166,8 @@ export function LoanQcDashboard({ visible }: { visible: boolean }) {
             <CardContent>
               <div className="text-2xl font-bold">{kpi.value}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                <span className="text-emerald-500">{kpi.change}</span> from last week
+                <span className="text-emerald-500">{kpi.change}</span> from last
+                week
               </p>
             </CardContent>
           </Card>

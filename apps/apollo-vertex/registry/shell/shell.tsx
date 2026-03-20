@@ -23,6 +23,7 @@ export interface ApolloShellComponentProps extends PropsWithChildren {
   companyLogo?: CompanyLogo;
   sidebarActions?: ReactNode;
   headerActions?: ReactNode;
+  backgroundMode?: string;
 }
 
 const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
@@ -33,6 +34,7 @@ const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
   variant,
   sidebarActions,
   headerActions,
+  backgroundMode,
 }) => {
   const { accessToken } = useAuth();
   if (!accessToken) {
@@ -48,6 +50,7 @@ const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
         variant={variant}
         sidebarActions={sidebarActions}
         headerActions={headerActions}
+        backgroundMode={backgroundMode}
       >
         {children}
       </ShellLayout>
@@ -65,7 +68,9 @@ const MOCK_AUTH_CONTEXT: AuthContextValue = {
 };
 
 const MockAuthProvider: FC<PropsWithChildren> = ({ children }) => (
-  <AuthContext.Provider value={MOCK_AUTH_CONTEXT}>{children}</AuthContext.Provider>
+  <AuthContext.Provider value={MOCK_AUTH_CONTEXT}>
+    {children}
+  </AuthContext.Provider>
 );
 
 type ApolloShellProps = ApolloShellComponentProps &
@@ -86,6 +91,7 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   bypassAuth,
   sidebarActions,
   headerActions,
+  backgroundMode,
 }) => {
   const AuthWrapper = bypassAuth
     ? MockAuthProvider
@@ -109,6 +115,7 @@ export const ApolloShell: FC<ApolloShellProps> = ({
           variant={variant}
           sidebarActions={sidebarActions}
           headerActions={headerActions}
+          backgroundMode={backgroundMode}
         >
           {children}
         </ApolloShellComponent>

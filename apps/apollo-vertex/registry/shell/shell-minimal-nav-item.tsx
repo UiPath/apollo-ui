@@ -13,7 +13,12 @@ interface MinimalNavItemProps {
   onClick?: (e: React.MouseEvent) => void;
 }
 
-export const MinimalNavItem = ({ to, label, active, onClick }: MinimalNavItemProps) => {
+export const MinimalNavItem = ({
+  to,
+  label,
+  active,
+  onClick,
+}: MinimalNavItemProps) => {
   const pathname = usePathname();
   const isActive = active ?? (pathname === to || pathname.startsWith(`${to}/`));
 
