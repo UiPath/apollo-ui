@@ -3,10 +3,6 @@ name: Apollo Vertex Registry Check
 on:
   pull_request:
     branches: [main]
-    paths:
-      - "apps/apollo-vertex/**"
-      - ".github/scripts/test-registry/**"
-      - ".github/workflows/apollo-vertex-registry-check.yml"
 
 concurrency:
   group: test-registry-${{ github.ref }}
@@ -16,8 +12,32 @@ permissions:
   contents: read
 
 jobs:
+  detect-changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      has_vertex_changes: ${{ steps.check.outputs.has_vertex_changes }}
+    steps:
+      - name: Check for vertex changes
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          VERTEX_FILES=$(gh pr diff "$PR_URL" --name-only | grep -E '^(apps/apollo-vertex/|\.github/scripts/test-registry/|\.github/workflows/apollo-vertex-registry-check\.yml)' || true)
+          if [ -n "$VERTEX_FILES" ]; then
+            echo "has_vertex_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_vertex_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
   prepare:
     name: Prepare
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_vertex_changes == 'true'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.matrix.outputs.result }}
@@ -93,7 +113,8 @@ jobs:
 
   test-components:
     name: Test batch ${{ matrix.batch_index }}
-    needs: prepare
+    needs: [detect-changes, prepare]
+    if: needs.detect-changes.outputs.has_vertex_changes == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -142,12 +163,16 @@ jobs:
 
   registry-check:
     name: Apollo Vertex Registry Check
-    needs: test-components
+    needs: [detect-changes, test-components]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Check results
         run: |
+          if [ "${{ needs.detect-changes.outputs.has_vertex_changes }}" != "true" ]; then
+            echo "No relevant changes detected — skipping registry check"
+            exit 0
+          fi
           if [ "${{ needs.test-components.result }}" != "success" ]; then
             echo "Some registry component tests failed"
             exit 1
