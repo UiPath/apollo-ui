@@ -251,6 +251,7 @@
         "@tanstack/ai@^0.8.1",
         "@tanstack/ai-client@^0.7.2",
         "@tanstack/ai-react@^0.7.2",
+        "eventsource-parser@^3.0.6",
         "zod",
         "lucide-react",
         "react-i18next",
@@ -283,11 +284,6 @@
           "path": "registry/ai-chat/adapters/agenthub/messages.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/adapters/agenthub/messages.ts"
-        },
-        {
-          "path": "registry/ai-chat/adapters/agenthub/sse.ts",
-          "type": "registry:lib",
-          "target": "components/ui/ai-chat/adapters/agenthub/sse.ts"
         },
         {
           "path": "registry/ai-chat/adapters/agenthub/stream.ts",

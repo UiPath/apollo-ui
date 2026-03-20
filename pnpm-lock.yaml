@@ -221,6 +221,9 @@ importers:
       embla-carousel-react:
         specifier: ^8.6.0
         version: 8.6.0(react@19.2.3)
+      eventsource-parser:
+        specifier: ^3.0.6
+        version: 3.0.6
       framer-motion:
         specifier: ^12.26.2
         version: 12.26.2(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -329,7 +332,7 @@ importers:
         version: 1.4.0
       shadcn:
         specifier: latest
-        version: 4.0.8(@types/node@24.10.1)(babel-plugin-macros@3.1.0)(typescript@5.9.3)
+        version: 4.1.0(@types/node@24.10.1)(babel-plugin-macros@3.1.0)(typescript@5.9.3)
       tw-animate-css:
         specifier: ^1.4.0
         version: 1.4.0
@@ -11282,8 +11285,8 @@ packages:
   setprototypeof@1.2.0:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
 
-  shadcn@4.0.8:
-    resolution: {integrity: sha512-DVAyeo95TQ/OvaHugLm5V0Dqz3al+dnoP3mZdWWxKJ33IYG1jN5B3sGZyNaYsfzm7JsWokfksSzDl83LnmMing==}
+  shadcn@4.1.0:
+    resolution: {integrity: sha512-3zETJ+0Ezj69FS6RL0HOkLKKAR5yXisXx1iISJdfLQfrUqj/VIQlanQi1Ukk+9OE+XHZVj4FQNTBSfbr2CyCYg==}
     hasBin: true
 
   shallowequal@1.1.0:
@@ -24114,7 +24117,7 @@ snapshots:
 
   setprototypeof@1.2.0: {}
 
-  shadcn@4.0.8(@types/node@24.10.1)(babel-plugin-macros@3.1.0)(typescript@5.9.3):
+  shadcn@4.1.0(@types/node@24.10.1)(babel-plugin-macros@3.1.0)(typescript@5.9.3):
     dependencies:
       '@babel/core': 7.28.5
       '@babel/parser': 7.28.5

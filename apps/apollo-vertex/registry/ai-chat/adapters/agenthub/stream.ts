@@ -1,7 +1,7 @@
 import type { StreamChunk } from "@tanstack/ai";
 import type { UIMessage } from "@tanstack/ai-client";
+import { EventSourceParserStream } from "eventsource-parser/stream";
 import { toNormalizedMessages } from "./messages";
-import { parseSSEStream } from "./sse";
 import { buildToolDefinitions } from "./tools";
 import type { AgentHubAdapterConfig } from "./types";
 
@@ -148,33 +148,54 @@ async function* toStreamChunks(
     { id: string; name: string; arguments: string }
   >();
 
-  for await (const raw of parseSSEStream(body)) {
-    const chunk = raw as OpenAIChatStreamChunk;
-    const choice = chunk.choices?.[0];
-    if (!choice) continue;
+  const eventStream = body
+    .pipeThrough(new TextDecoderStream() as TransformStream<Uint8Array, string>)
+    .pipeThrough(new EventSourceParserStream());
 
-    if (choice.finish_reason) {
-      finishReason = choice.finish_reason;
-    }
+  const reader = eventStream.getReader();
+  try {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      // eslint-disable-next-line no-await-in-loop
+      const { done, value: event } = await reader.read();
+      if (done) break;
+      if (event.data === "[DONE]") break;
 
-    const delta = choice.delta;
+      let chunk: OpenAIChatStreamChunk;
+      try {
+        chunk = JSON.parse(event.data) as OpenAIChatStreamChunk;
+      } catch {
+        continue;
+      }
 
-    // Text content
-    if (delta?.content) {
-      yield {
-        type: "TEXT_MESSAGE_CONTENT" as const,
-        messageId,
-        delta: delta.content,
-        timestamp: Date.now(),
-      };
-    }
+      const choice = chunk.choices?.[0];
+      if (!choice) continue;
 
-    // Tool calls
-    if (delta?.tool_calls) {
-      for (const tc of delta.tool_calls) {
-        yield* handleToolCallDelta(tc, toolCalls, messageId);
+      if (choice.finish_reason) {
+        finishReason = choice.finish_reason;
+      }
+
+      const delta = choice.delta;
+
+      // Text content
+      if (delta?.content) {
+        yield {
+          type: "TEXT_MESSAGE_CONTENT" as const,
+          messageId,
+          delta: delta.content,
+          timestamp: Date.now(),
+        };
+      }
+
+      // Tool calls
+      if (delta?.tool_calls) {
+        for (const tc of delta.tool_calls) {
+          yield* handleToolCallDelta(tc, toolCalls, messageId);
+        }
       }
     }
+  } finally {
+    reader.releaseLock();
   }
 
   // Close open tool calls and trigger client-side execution

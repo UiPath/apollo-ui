@@ -11,7 +11,7 @@ A reusable AI chat UI component for the Apollo Design System. Built with React, 
 ## Features
 
 - **TanStack AI Integration** — Works with `useChat` from `@tanstack/ai-react` and `UIMessage` types
-- **Typed Display Tools** — Define display tools with `toolRenderer()` — name and schema come from the TanStack AI tool definition, render args are fully typed
+- **Type-Safe Display Tools** — `AiChat<TTools>` is generic over your tools — renderer keys are constrained to actual tool names, and render function args are inferred from each tool's `inputSchema`
 - **AgentHub Adapter** — Built-in custom adapter for the UiPath AgentHub normalized LLM endpoint (OpenAI + Anthropic models)
 - **Markdown Rendering** — Renders assistant responses with GitHub Flavored Markdown
 - **Collapsible Tool Groups** — Consecutive tool-only steps are grouped into expandable badges
@@ -29,7 +29,7 @@ npx shadcn@latest add @uipath/ai-chat
 Install peer dependencies:
 
 ```bash
-npm install @tanstack/ai @tanstack/ai-client @tanstack/ai-react zod lucide-react react-i18next react-markdown remark-gfm
+npm install @tanstack/ai @tanstack/ai-client @tanstack/ai-react eventsource-parser zod lucide-react react-i18next react-markdown remark-gfm
 ```
 
 ## Quick Start
@@ -103,21 +103,22 @@ The `model.vendor` field controls wire-format differences:
 
 ## Display Tools
 
-Display tools render UI inline in the chat when the LLM calls them. Use `toolRenderer()` to create a typed renderer directly from a TanStack AI tool definition — the name and schema come from the definition, so there's no duplication.
+Display tools render UI inline in the chat when the LLM calls them. `AiChat<TTools>` is generic — pass `ToolRenderers<typeof toolDefs>` and TypeScript enforces that renderer keys match tool names and render args match each tool's `inputSchema`.
 
 ```tsx
 import { z } from 'zod';
 import { toolDefinition } from '@tanstack/ai';
 import { clientTools } from '@tanstack/ai-client';
-import { buildToolRenderers, toolRenderer } from '@/components/ui/ai-chat/types';
+import { stream, useChat } from '@tanstack/ai-react';
+import { AiChat } from '@/components/ui/ai-chat/components/ai-chat';
+import type { ToolRenderers } from '@/components/ui/ai-chat/types';
 
-// 1. Define the schema
+// 1. Define tools
 const showResultsInput = z.object({
   entityName: z.string(),
   columns: z.array(z.string()),
 });
 
-// 2. Define the TanStack AI tool (for the LLM)
 const showResultsDef = toolDefinition({
   name: 'show_results',
   description: 'Display a results table',
@@ -128,15 +129,16 @@ const showResultsDef = toolDefinition({
 const showResults = showResultsDef.client(() => ({ displayed: true }));
 const toolDefs = clientTools(showResults);
 
-// 3. Define renderers — name and schema come from the tool definition
-const toolRenderers = buildToolRenderers(
-  toolRenderer(showResultsDef, ({ entityName, columns }) => (
+// 2. Define renderers — keys and args are type-checked from toolDefs
+const toolRenderers: ToolRenderers<typeof toolDefs> = {
+  show_results: ({ entityName, columns }) => (
     // entityName is string, columns is string[] — fully typed!
     <ResultsTable entity={entityName} columns={columns} />
-  )),
-);
+  ),
+  // typo_tool: () => ...  ← TypeScript ERROR: not a valid tool name
+};
 
-// 4. Wire it up
+// 3. Wire it up
 const { messages, sendMessage, isLoading, stop } = useChat({
   connection,
   tools: toolDefs,
@@ -152,10 +154,9 @@ const { messages, sendMessage, isLoading, stop } = useChat({
 ```
 
 **How it works:**
-- `toolRenderer(def, render)` extracts `name` and `inputSchema` from the tool definition — single source of truth
-- The render function args are inferred from the definition's schema — full autocomplete, no `as` casts
-- At runtime, `AiChatMessage` calls `schema.safeParse()` on the raw tool-call arguments before passing them to your render function
-- `buildToolRenderers(...)` collects the entries into a `ToolRenderers` record
+- `ToolRenderers<typeof toolDefs>` is a mapped type — each key is a tool name, each value is a render function with args inferred from that tool's `inputSchema`
+- TypeScript catches typos in tool names and wrong arg types at compile time
+- At runtime, `AiChatMessage` uses `tc.input` (pre-parsed by TanStack AI) with a `JSON.parse(tc.arguments)` fallback
 
 ## Suggestion Buttons
 
@@ -226,19 +227,19 @@ Pass an `Error` object to show an inline error banner:
 
 ## API Reference
 
-### `<AiChat>`
+### `<AiChat<TTools>>`
 
-Main chat UI component. Works with TanStack AI's `UIMessage` format.
+Generic chat UI component. `TTools` is inferred from `toolRenderers` — pass `ToolRenderers<typeof toolDefs>` for full type safety.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `messages` | `UIMessage[]` | required | Messages from `useChat` |
+| `messages` | `UIMessage<TTools>[]` | required | Messages from `useChat` |
 | `isLoading` | `boolean` | required | Loading state from `useChat` |
 | `onSendMessage` | `(content: string) => void` | required | Send handler |
 | `onStop` | `() => void` | required | Stop/abort handler |
 | `onClearChat` | `() => void` | — | Clear handler |
 | `onChoiceSelect` | `(option: ChoiceOption) => void` | — | Suggestion button handler (default: sends `option.label`) |
-| `toolRenderers` | `ToolRenderers` | — | Map of tool names to `DisplayTool` instances (created via `toolRenderer()`) |
+| `toolRenderers` | `ToolRenderers<TTools>` | — | Typed map of tool names to render functions |
 | `assistantName` | `string` | `"AI Assistant"` | Assistant display name |
 | `title` | `string` | — | Chat title in the header |
 | `emptyState` | `ReactNode` | — | Custom empty state |
@@ -247,6 +248,19 @@ Main chat UI component. Works with TanStack AI's `UIMessage` format.
 | `toolDisplayNames` | `Record<string, string>` | — | Human-readable tool names (empty string hides the tool) |
 | `enableToolGrouping` | `boolean` | `false` | Group consecutive tool-only messages |
 | `error` | `Error \| null` | — | Inline error banner |
+
+### `ToolRenderers<TTools>`
+
+Mapped type that constrains renderer keys to actual tool names and infers render function args from each tool's `inputSchema`.
+
+```tsx
+import type { ToolRenderers } from '@/components/ui/ai-chat/types';
+
+// Keys and args are fully typed from toolDefs
+const renderers: ToolRenderers<typeof toolDefs> = {
+  show_results: ({ entityName, columns }) => <ResultsTable ... />,
+};
+```
 
 ### `AgentHubAdapterConfig`
 
@@ -262,30 +276,6 @@ Configuration for the AgentHub adapter.
 | `temperature` | `number` | `0.7` | Sampling temperature |
 | `tools` | `ReadonlyArray<AnyClientTool>` | — | Client tools — wire-format definitions are derived automatically |
 
-### `toolRenderer(def, render)`
-
-Create a named display tool renderer from a TanStack AI tool definition. Extracts the name and inputSchema — single source of truth.
-
-```tsx
-import { buildToolRenderers, toolRenderer } from '@/components/ui/ai-chat/types';
-
-const toolRenderers = buildToolRenderers(
-  toolRenderer(myToolDef, ({ name }) => <div>Hello {name}</div>),
-  // name is typed from myToolDef.inputSchema — full autocomplete
-);
-```
-
-### `buildToolRenderers(...entries)`
-
-Collects `toolRenderer()` results into a `ToolRenderers` record.
-
-```tsx
-const renderers = buildToolRenderers(
-  toolRenderer(toolA, renderA),
-  toolRenderer(toolB, renderB),
-);
-```
-
 ---
 
 ## TypeScript
@@ -295,13 +285,8 @@ const renderers = buildToolRenderers(
 import type { UIMessage } from '@tanstack/ai-client';
 import type { ToolCallPart, TextPart, ToolResultPart } from '@tanstack/ai-client';
 
-// Display tool types
-import {
-  buildToolRenderers,
-  toolRenderer,
-  type DisplayTool,
-  type ToolRenderers,
-} from '@/components/ui/ai-chat/types';
+// Tool renderers (generic mapped type)
+import type { ToolRenderers } from '@/components/ui/ai-chat/types';
 
 // Choice types (app-specific, not from TanStack AI)
 import type { ChoiceOption, ToolResultChoices } from '@/components/ui/ai-chat/types';
