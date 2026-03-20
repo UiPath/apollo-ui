@@ -44,7 +44,7 @@ const queryClient = new QueryClient();
 const catchAllRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "$",
-  component: () => <NotFoundPage href="/preview/shell/dashboard" />,
+  component: () => <NotFoundPage to="/preview/shell/dashboard" />,
 });
 
 const routeTree = rootRoute.addChildren([

@@ -53,5 +53,5 @@ export const shellSettingsRoute = createRoute({
 export const shellCatchAllRoute = createRoute({
   getParentRoute: () => shellRoute,
   path: "$",
-  component: () => <NotFoundPage href="/preview/shell/dashboard" />,
+  component: () => <NotFoundPage to="/preview/shell/dashboard" />,
 });
