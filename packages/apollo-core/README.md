@@ -10,6 +10,7 @@ Apollo Core provides the foundational design elements for the UiPath Apollo Desi
 - **Icons**: 1300+ SVG icons for UI and activities
 - **Fonts**: Typography assets
 
+
 ## Installation
 
 ```bash
