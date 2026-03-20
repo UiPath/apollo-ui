@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.58.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.58.1...@uipath/apollo-react@3.58.2) (2026-03-20)
+
+### Bug Fixes
+
+* **apollo-react:** task status icon tooltip [MST-7296] ([e578bf8](https://github.com/UiPath/apollo-ui/commit/e578bf82d33e898c1cc5adefb7886f405a49b12f))
+
 ## [@uipath/apollo-react-v3.58.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.58.0...@uipath/apollo-react@3.58.1) (2026-03-19)
 
 ### Bug Fixes
