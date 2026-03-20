@@ -190,7 +190,7 @@ Avoid near-duplicate components:
 
 ## Git Workflow
 
-Follow conventional commits:
+Follow conventional commits. Commit body lines must not be longer than 100 characters.
 ```
 type(scope): description
 
