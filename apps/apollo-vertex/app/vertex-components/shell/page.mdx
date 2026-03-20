@@ -3,7 +3,7 @@ import { PreviewFullScreen } from '@/app/components/preview-full-screen';
 
 # Shell
 
-A component that includes OAuth2 authentication and a collapsible sidebar.
+A component with a collapsible sidebar, theme and language toggles, and optional OAuth2 authentication.
 
 <PreviewFullScreen title="Shell preview">
     <ShellTemplate />
@@ -19,7 +19,7 @@ Use the `variant="minimal"` prop to render a horizontal header layout instead of
 
 ## Features
 
-- **OAuth2 Authentication**: Built-in authorization code flow with PKCE
+- **Optional OAuth2 Authentication**: Plug-and-play authorization code flow with PKCE
 - **Theme Toggle**: Built-in light/dark mode support
 - **Language Toggle**: Built-in language switcher for internationalization
 - **User Profile**: Dropdown menu with user information and sign-out
@@ -32,12 +32,42 @@ npx shadcn@latest add @uipath/shell
 
 ## Usage
 
-The `ApolloShell` component must be wrapped in a `QueryClientProvider` from `@tanstack/react-query`.
+The shell works out of the box without authentication. Just provide layout props:
+
+```tsx
+import { Home, Settings } from 'lucide-react';
+import { ApolloShell } from '@/components/ui/shell';
+
+const navItems = [
+  { path: '/dashboard', label: 'dashboard', icon: Home },
+  { path: '/settings', label: 'settings', icon: Settings },
+];
+
+function App() {
+  return (
+    <ApolloShell
+      companyName="Your Company"
+      productName="Your Product"
+      navItems={navItems}
+    >
+      <YourApp />
+    </ApolloShell>
+  );
+}
+```
+
+## Adding Authentication
+
+To enable built-in OAuth2 authentication with PKCE, wrap the shell with `ShellAuthProvider`.
+Both `ShellAuthProvider` and `ApolloShell` must be inside a `QueryClientProvider` from `@tanstack/react-query`.
+
+When a `ShellAuthProvider` is present, the shell automatically shows a login screen until the user is authenticated.
 
 ```tsx
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Home, Settings } from 'lucide-react';
 import { ApolloShell } from '@/components/ui/shell';
+import { ShellAuthProvider } from '@/components/ui/shell-auth-provider';
 
 const queryClient = new QueryClient();
 
@@ -49,17 +79,19 @@ const navItems = [
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ApolloShell
+      <ShellAuthProvider
         clientId="your-client-id"
         scope="openid profile email offline_access"
         baseUrl={window.location.origin}
-        companyName="Your Company"
-        productName="Your Product"
-        navItems={navItems}
       >
-        {/* your authenticated app content */}
-        <YourApp />
-      </ApolloShell>
+        <ApolloShell
+          companyName="Your Company"
+          productName="Your Product"
+          navItems={navItems}
+        >
+          <YourApp />
+        </ApolloShell>
+      </ShellAuthProvider>
     </QueryClientProvider>
   );
 }
