@@ -53,7 +53,7 @@ Use a **fixup/rebase workflow** to keep commits clean and meaningful.
 
 ## Project Overview
 
-Apollo v.4 is an open-source design system for UiPath, built to provide a unified component library for both internal and external consumers. This monorepo contains design tokens, utilities, and framework-specific implementations (React, Web Components).
+Apollo v.4 is UiPath's open-source design system monorepo. It houses multiple design systems used by different teams — from Material UI-based components to Tailwind/shadcn implementations — along with shared design tokens, utilities, and cross-framework components.
 
 ### Goals
 
@@ -83,6 +83,7 @@ This is the **UiPath/apollo-ui** public repository - the open-source design syst
 - **React**: Primary component library with Material UI theming
 - **Web Components**: Cross-framework components using standard web APIs
 - **Tailwind CSS + shadcn/ui**: Modern styling approach (apollo-wind package)
+- **shadcn Registry**: Installable components via `@uipath` registry (apollo-vertex app)
 
 ### Testing & Documentation
 
@@ -103,7 +104,8 @@ apollo-ui/
 │       ├── visual-regression.yml
 │       └── publish.yml         # NPM publishing
 │
-├── apps/                       # Development applications
+├── apps/                       # Applications
+│   ├── apollo-vertex/          # shadcn component registry + Next.js docs site
 │   ├── storybook/              # Storybook documentation
 │   ├── react-playground/       # React testing environment
 │
@@ -184,6 +186,27 @@ apollo-ui/
 - **Technology**: Web Components (Custom Elements)
 - **Exports**: `<ap-chat>` custom element
 
+### Apps
+
+#### `apollo-vertex`
+
+- **Purpose**: Design system for UiPath vertical solutions, distributed as a `@uipath` shadcn registry with a Next.js documentation site
+- **Location**: `apps/apollo-vertex/`
+- **Technology**: Next.js 16, Tailwind CSS 4, Radix UI, shadcn/ui, Nextra
+- **Standalone**: No dependencies on other monorepo packages
+- **Structure**:
+  ```
+  apollo-vertex/
+  ├── app/                    # Next.js app router pages
+  ├── registry/               # Component source (installed via npx shadcn add @uipath/...)
+  │   ├── button/
+  │   ├── checkbox/
+  │   └── [component]/
+  ├── templates/              # Page templates
+  └── lib/                    # Utilities (cn, etc.)
+  ```
+- **Key distinction**: The `registry/` directory is the source of truth for all `@uipath` shadcn components. Edits here are what consumers install via `npx shadcn@latest add @uipath/<component>`.
+
 ## Package Dependencies
 
 ```
@@ -192,6 +215,8 @@ apollo-core (tokens, icons, fonts)
 ├─→ apollo-react (React + MUI)
 │   └─→ ap-chat (Web Component)
 └─→ apollo-wind (Tailwind + shadcn)
+
+apollo-vertex (standalone — shadcn registry + docs app)
 ```
 
 ---
@@ -200,8 +225,9 @@ apollo-core (tokens, icons, fonts)
 
 ### Naming Conventions
 
-- **React components**: `Ap` prefix (e.g., `ApButton`, `ApTextField`)
+- **React components** (apollo-react): `Ap` prefix (e.g., `ApButton`, `ApTextField`)
 - **Web components**: `ap-` prefix (e.g., `<ap-chat>`)
+- **Vertex registry components**: PascalCase, no prefix (e.g., `Button`, `Checkbox`)
 
 ### Component Structure
 
@@ -219,20 +245,25 @@ apollo-core (tokens, icons, fonts)
 
 **Other packages** export only what's relevant to their purpose (e.g., web components export custom elements only).
 
-### Usage Pattern
+### Usage Patterns
 
+**apollo-react (Material UI):**
 ```typescript
-// Import CSS variables
 import '@uipath/apollo-react/core/theme.css';
-
-// Import components
 import { ApButton, ApTextField } from '@uipath/apollo-react/components';
-
-// Import tokens
 import { ColorOrange500, SpacingMd } from '@uipath/apollo-react/core';
-
-// Import theme
 import { apolloMaterialUiThemeDark } from '@uipath/apollo-react/theme';
+```
+
+**apollo-vertex (shadcn registry):**
+```bash
+# Install components into your project
+npx shadcn@latest add @uipath/button @uipath/checkbox
+```
+```typescript
+// Components are copied into your project and imported locally
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 ```
 
 ---
@@ -269,6 +300,7 @@ import { apolloMaterialUiThemeDark } from '@uipath/apollo-react/theme';
 
 ### Adding a New Component
 
+**For apollo-react or web-packages:**
 1. Identify which package (apollo-react, or web-packages)
 2. Create component following naming conventions
 3. Use design tokens from apollo-core
@@ -276,6 +308,13 @@ import { apolloMaterialUiThemeDark } from '@uipath/apollo-react/theme';
 5. Add unit tests
 6. Add visual regression tests
 7. Document usage and API
+
+**For apollo-vertex (shadcn registry):**
+1. Create a new directory under `apps/apollo-vertex/registry/<component>/`
+2. Follow shadcn/ui patterns (Radix primitives, cva variants, `cn()` utility)
+3. Use `data-slot` attributes for styling hooks
+4. Preview in the dev app with `pnpm dev` (from `apps/apollo-vertex/`)
+5. Run `pnpm lint` and `pnpm format` before committing
 
 ### Package Structure Requirements
 
@@ -289,7 +328,8 @@ Each package must include:
 
 ### File Naming
 
-- Component files: PascalCase (e.g., `ApButton.tsx`)
+- Component files (apollo-react): PascalCase (e.g., `ApButton.tsx`)
+- Component files (apollo-vertex): kebab-case (e.g., `button.tsx`, `button-group.tsx`)
 - Utility files: camelCase (e.g., `formatDate.ts`)
 - Test files: `*.test.ts` or `*.spec.ts`
 - Story files: `*.stories.tsx`
