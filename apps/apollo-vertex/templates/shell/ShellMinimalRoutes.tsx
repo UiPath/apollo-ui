@@ -35,5 +35,5 @@ export const shellMinimalAnalyticsRoute = createRoute({
 export const shellMinimalCatchAllRoute = createRoute({
   getParentRoute: () => shellMinimalRoute,
   path: "$",
-  component: () => <NotFoundPage href="/preview/shell-minimal" />,
+  component: () => <NotFoundPage to="/preview/shell-minimal" />,
 });

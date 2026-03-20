@@ -13,14 +13,14 @@ export function PlaceholderPage({ title }: { title: string }) {
   );
 }
 
-export function NotFoundPage({ href }: { href: string }) {
+export function NotFoundPage({ to }: { to: string }) {
   return (
     <div className="flex items-center justify-center h-full">
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-semibold">Page not found</h1>
         <p className="text-muted-foreground">The page does not exist.</p>
         <Link
-          to={href}
+          to={to}
           className="inline-block text-sm text-primary hover:underline"
         >
           Go to dashboard
