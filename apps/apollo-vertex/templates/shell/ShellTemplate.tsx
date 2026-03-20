@@ -7,6 +7,7 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   shellMinimalAnalyticsRoute,
   shellMinimalCatchAllRoute,
@@ -86,10 +87,14 @@ export function ShellTemplate({ variant }: ShellTemplateProps) {
     variant === "minimal"
       ? SHELL_MINIMAL_PREVIEW_PATH_KEY
       : SHELL_PREVIEW_PATH_KEY;
-  const router = createShellRouter(storageKey, variant);
-  router.subscribe("onResolved", ({ toLocation }) => {
-    localStorage.setItem(storageKey, toLocation.pathname);
-  });
+  const [router] = useState(() => createShellRouter(storageKey, variant));
+
+  useEffect(() => {
+    const unsubscribe = router.subscribe("onResolved", ({ toLocation }) => {
+      localStorage.setItem(storageKey, toLocation.pathname);
+    });
+    return unsubscribe;
+  }, [router, storageKey]);
   return (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
