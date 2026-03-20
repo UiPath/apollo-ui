@@ -1,5 +1,6 @@
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { motion } from "framer-motion";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import type { CompanyLogo, ShellNavItem } from "./shell";
 import { sidebarSpring } from "./shell-animations";
@@ -8,6 +9,7 @@ import { SIDEBAR_COLLAPSED_KEY } from "./shell-constants";
 import { MinimalCompany } from "./shell-minimal-company";
 import { MinimalNavItem } from "./shell-minimal-nav-item";
 import { NavItem } from "./shell-nav-item";
+import { useShellNavigation } from "./shell-navigation-context";
 import { UserProfile } from "./shell-user-profile";
 
 interface SidebarProps {
@@ -16,6 +18,8 @@ interface SidebarProps {
   variant?: "minimal";
   companyLogo?: CompanyLogo;
   navItems: ShellNavItem[];
+  sidebarActions?: ReactNode;
+  headerActions?: ReactNode;
 }
 
 export const Sidebar = ({
@@ -24,10 +28,20 @@ export const Sidebar = ({
   variant,
   companyLogo,
   navItems,
+  sidebarActions,
+  headerActions,
 }: SidebarProps) => {
   const [isCollapsed] = useLocalStorage(SIDEBAR_COLLAPSED_KEY, false);
+  const nav = useShellNavigation();
 
   const sidebarWidth = isCollapsed ? "w-16" : "w-[280px]";
+
+  const handleNavigate = (page: string) => (e: React.MouseEvent) => {
+    if (nav) {
+      e.preventDefault();
+      nav.onNavigate(page);
+    }
+  };
 
   if (variant === "minimal") {
     return (
@@ -45,6 +59,7 @@ export const Sidebar = ({
         </nav>
 
         <div className="flex items-center gap-2">
+          {headerActions}
           <UserProfile isCollapsed />
         </div>
       </header>
@@ -76,6 +91,7 @@ export const Sidebar = ({
             label={item.label}
           />
         ))}
+        {sidebarActions}
       </nav>
       <div
         className={cn(

@@ -1,4 +1,4 @@
-import type { PropsWithChildren } from "react";
+import type { PropsWithChildren, ReactNode } from "react";
 import type { CompanyLogo, ShellNavItem } from "./shell";
 import { Sidebar } from "./shell-sidebar";
 import { useTheme } from "./shell-theme-provider";
@@ -11,6 +11,9 @@ interface ShellLayoutProps {
   variant?: "minimal";
   companyLogo?: CompanyLogo;
   navItems: ShellNavItem[];
+  sidebarActions?: ReactNode;
+  headerActions?: ReactNode;
+  backgroundMode?: string;
 }
 
 function DarkGradientBackground() {
@@ -156,6 +159,69 @@ function GradientBackground() {
   return <LightGradientBackground />;
 }
 
+function ExpressiveBackground() {
+  return (
+    <>
+      <div className="absolute inset-0 overflow-hidden pointer-events-none transition-opacity duration-300">
+        <div
+          className="absolute"
+          style={{
+            width: "60%",
+            height: "70%",
+            left: "35%",
+            top: "20%",
+            background: "rgba(78, 9, 77, 0.6)",
+            filter: "blur(90px)",
+          }}
+        />
+        <div
+          className="absolute"
+          style={{
+            width: "80%",
+            height: "60%",
+            left: "-5%",
+            top: "-5%",
+            background: "#223045",
+            filter: "blur(60px)",
+          }}
+        />
+        <div
+          className="absolute"
+          style={{
+            width: "75%",
+            height: "65%",
+            left: "-10%",
+            top: "0",
+            background: "rgba(244, 66, 35, 0.27)",
+            filter: "blur(90px)",
+            transform: "rotate(23.94deg)",
+          }}
+        />
+        <div
+          className="absolute"
+          style={{
+            width: "85%",
+            height: "45%",
+            left: "30%",
+            top: "-20%",
+            background:
+              "linear-gradient(257.56deg, rgba(152, 166, 184, 0.5) 36.7%, rgba(68, 74, 82, 0.5) 88.5%)",
+            filter: "blur(100px)",
+            transform: "rotate(-13.86deg)",
+          }}
+        />
+      </div>
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "rgba(25, 13, 51, 0.79)",
+          mixBlendMode: "overlay",
+        }}
+      />
+    </>
+  );
+}
+
 export function ShellLayout({
   children,
   companyName,
@@ -163,6 +229,9 @@ export function ShellLayout({
   variant,
   companyLogo,
   navItems,
+  sidebarActions,
+  headerActions,
+  backgroundMode,
 }: PropsWithChildren<ShellLayoutProps>) {
   if (variant === "minimal") {
     return (
@@ -175,6 +244,8 @@ export function ShellLayout({
             productName={productName}
             companyLogo={companyLogo}
             navItems={navItems}
+            sidebarActions={sidebarActions}
+            headerActions={headerActions}
           />
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             {children}
@@ -185,17 +256,26 @@ export function ShellLayout({
   }
 
   return (
-    <div className="h-screen overflow-hidden flex bg-background dark:bg-sidebar relative">
-      <GradientBackground />
+    <div
+      className="h-screen overflow-hidden flex bg-background dark:bg-sidebar relative"
+      style={{
+        backgroundColor:
+          backgroundMode === "expressive" ? "#190D33" : undefined,
+      }}
+    >
+      {backgroundMode === "default" && <GradientBackground />}
+      {backgroundMode === "expressive" && <ExpressiveBackground />}
+      {!backgroundMode && <GradientBackground />}
       <Sidebar
         companyName={companyName}
         variant={variant}
         productName={productName}
         companyLogo={companyLogo}
         navItems={navItems}
+        sidebarActions={sidebarActions}
       />
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 overflow-y-auto custom-scrollbar relative z-10">
           {children}
         </div>
       </main>

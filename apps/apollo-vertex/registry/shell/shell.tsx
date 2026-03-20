@@ -1,6 +1,11 @@
 import type { LucideIcon } from "lucide-react";
-import type { FC, PropsWithChildren } from "react";
-import { ShellAuthProvider, useAuth } from "./shell-auth-provider";
+import type { FC, PropsWithChildren, ReactNode } from "react";
+import {
+  AuthContext,
+  type AuthContextValue,
+  ShellAuthProvider,
+  useAuth,
+} from "./shell-auth-provider";
 import { ShellLayout } from "./shell-layout";
 import { LocaleProvider } from "./shell-locale-provider";
 import { ShellLogin } from "./shell-login";
@@ -26,13 +31,9 @@ export interface ApolloShellComponentProps extends PropsWithChildren {
   companyLogo?: CompanyLogo;
   navItems: ShellNavItem[];
   loginDescription?: string;
-}
-
-interface ApolloShellProps extends ApolloShellComponentProps {
-  clientId: string;
-  scope: string;
-  baseUrl: string;
-  variant?: "minimal";
+  sidebarActions?: ReactNode;
+  headerActions?: ReactNode;
+  backgroundMode?: string;
 }
 
 const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
@@ -43,6 +44,9 @@ const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
   variant,
   navItems,
   loginDescription,
+  sidebarActions,
+  headerActions,
+  backgroundMode,
 }) => {
   const { accessToken } = useAuth();
   if (!accessToken) {
@@ -57,12 +61,36 @@ const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
         companyLogo={companyLogo}
         variant={variant}
         navItems={navItems}
+        sidebarActions={sidebarActions}
+        headerActions={headerActions}
+        backgroundMode={backgroundMode}
       >
         {children}
       </ShellLayout>
     </ShellUserProvider>
   );
 };
+
+const MOCK_AUTH_CONTEXT: AuthContextValue = {
+  user: { name: "Dev User", email: "dev@localhost", sub: "dev-user-001" },
+  isAuthenticated: true,
+  isLoading: false,
+  login: async () => {},
+  logout: () => {},
+  accessToken: "bypass-token",
+};
+
+const MockAuthProvider: FC<PropsWithChildren> = ({ children }) => (
+  <AuthContext.Provider value={MOCK_AUTH_CONTEXT}>
+    {children}
+  </AuthContext.Provider>
+);
+
+type ApolloShellProps = ApolloShellComponentProps &
+  (
+    | { bypassAuth: true; clientId?: string; scope?: string; baseUrl?: string }
+    | { bypassAuth?: false; clientId: string; scope: string; baseUrl: string }
+  );
 
 export const ApolloShell: FC<ApolloShellProps> = ({
   clientId,
@@ -75,9 +103,25 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   variant,
   navItems,
   loginDescription,
+  bypassAuth,
+  sidebarActions,
+  headerActions,
+  backgroundMode,
 }) => {
+  const AuthWrapper = bypassAuth
+    ? MockAuthProvider
+    : ({ children }: PropsWithChildren) => (
+        <ShellAuthProvider
+          clientId={clientId!}
+          scope={scope!}
+          baseUrl={baseUrl!}
+        >
+          {children}
+        </ShellAuthProvider>
+      );
+
   return (
-    <ShellAuthProvider clientId={clientId} scope={scope} baseUrl={baseUrl}>
+    <AuthWrapper>
       <LocaleProvider>
         <ApolloShellComponent
           companyName={companyName}
@@ -86,10 +130,13 @@ export const ApolloShell: FC<ApolloShellProps> = ({
           variant={variant}
           navItems={navItems}
           loginDescription={loginDescription}
+          sidebarActions={sidebarActions}
+          headerActions={headerActions}
+          backgroundMode={backgroundMode}
         >
           {children}
         </ApolloShellComponent>
       </LocaleProvider>
-    </ShellAuthProvider>
+    </AuthWrapper>
   );
 };

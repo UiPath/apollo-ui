@@ -138,7 +138,9 @@ const severityColor: Record<string, string> = {
   low: "bg-primary",
 };
 
-export function LoanQcDashboard() {
+export function LoanQcDashboard({ visible }: { visible: boolean }) {
+  if (!visible) return null;
+
   return (
     <div className="p-8 space-y-4 relative z-10">
       {/* Header */}

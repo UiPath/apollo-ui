@@ -39,7 +39,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       duration={5000}
       closeButton
       icons={{
-        success: <CircleCheckIcon className="size-4" />,
+        success: <CircleCheckIcon className="size-4 text-emerald-400" />,
         info: <InfoIcon className="size-4" />,
         warning: <TriangleAlertIcon className="size-4" />,
         error: <OctagonXIcon className="size-4" />,

@@ -22,16 +22,25 @@ interface NavItemProps {
   to: string;
   icon: LucideIcon;
   label: TranslationKey;
+  active?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
-export const NavItem = ({ to, icon: Icon, label }: NavItemProps) => {
+export const NavItem = ({
+  to,
+  icon: Icon,
+  label,
+  active,
+  onClick,
+}: NavItemProps) => {
   const [isCollapsed] = useLocalStorage(SIDEBAR_COLLAPSED_KEY, false);
   const { pathname } = useLocation();
-  const isActive = pathname === to || pathname.startsWith(`${to}/`);
+  const isActive = active ?? (pathname === to || pathname.startsWith(`${to}/`));
 
   const linkContent = (
     <Link
       to={to}
+      onClick={onClick}
       className={cn(
         "flex items-center rounded-md transition-colors duration-200",
         "h-8 text-sm font-medium",

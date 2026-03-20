@@ -101,6 +101,7 @@
       "undici": "^6.24.0",
       "caniuse-lite": "1.0.30001756",
       "hono": ">=4.12.7"
-    }
+    },
+    "onlyBuiltDependencies": ["esbuild"]
   }
 }

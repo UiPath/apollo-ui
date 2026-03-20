@@ -6,15 +6,23 @@ import type { TranslationKey } from "./shell-translation-key";
 interface MinimalNavItemProps {
   to: string;
   label: TranslationKey;
+  active?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
-export const MinimalNavItem = ({ to, label }: MinimalNavItemProps) => {
+export const MinimalNavItem = ({
+  to,
+  label,
+  active,
+  onClick,
+}: MinimalNavItemProps) => {
   const { pathname } = useLocation();
-  const isActive = pathname === to;
+  const isActive = active ?? (pathname === to || pathname.startsWith(`${to}/`));
 
   return (
     <Link
       to={to}
+      onClick={onClick}
       className={cn(
         "px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 shrink-0 whitespace-nowrap",
         isActive
