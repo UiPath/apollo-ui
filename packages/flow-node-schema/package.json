@@ -1,0 +1,58 @@
+{
+  "name": "@uipath/flow-node-schema",
+  "version": "1.0.0",
+  "description": "Lightweight Zod schemas for UiPath flow/canvas definitions — no React or UI dependencies",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UiPath/apollo-ui.git",
+    "directory": "packages/flow-node-schema"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rslib build",
+    "dev": "rslib build --watch",
+    "lint": "biome lint src",
+    "lint:fix": "biome lint --write src",
+    "format": "biome format --write src",
+    "format:check": "biome format src",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "zod",
+    "schema",
+    "flow",
+    "canvas",
+    "workflow",
+    "apollo",
+    "uipath"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "dependencies": {
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@rslib/core": "^0.19.6",
+    "@vitest/coverage-v8": "^4.1.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0"
+  }
+}
