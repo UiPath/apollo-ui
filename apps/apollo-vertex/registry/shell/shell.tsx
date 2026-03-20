@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { FC, PropsWithChildren } from "react";
-import { ShellAuthProvider, useAuth } from "./shell-auth-provider";
+import { useContext } from "react";
+import { AuthContext, useAuth } from "./shell-auth-provider";
 import { ShellLayout } from "./shell-layout";
 import { LocaleProvider } from "./shell-locale-provider";
 import { ShellLogin } from "./shell-login";
@@ -19,7 +20,7 @@ export interface ShellNavItem {
   icon: LucideIcon;
 }
 
-export interface ApolloShellComponentProps extends PropsWithChildren {
+export interface ApolloShellProps extends PropsWithChildren {
   companyName: string;
   productName: string;
   variant?: "minimal";
@@ -28,14 +29,7 @@ export interface ApolloShellComponentProps extends PropsWithChildren {
   loginDescription?: string;
 }
 
-interface ApolloShellProps extends ApolloShellComponentProps {
-  clientId: string;
-  scope: string;
-  baseUrl: string;
-  variant?: "minimal";
-}
-
-const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
+const ApolloShellContent: FC<ApolloShellProps> = ({
   children,
   companyName,
   productName,
@@ -44,8 +38,10 @@ const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
   navItems,
   loginDescription,
 }) => {
+  const authContext = useContext(AuthContext);
   const { accessToken } = useAuth();
-  if (!accessToken) {
+
+  if (authContext && !accessToken) {
     return <ShellLogin title={productName} description={loginDescription} />;
   }
 
@@ -65,9 +61,6 @@ const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
 };
 
 export const ApolloShell: FC<ApolloShellProps> = ({
-  clientId,
-  scope,
-  baseUrl,
   children,
   companyName,
   productName,
@@ -77,19 +70,17 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   loginDescription,
 }) => {
   return (
-    <ShellAuthProvider clientId={clientId} scope={scope} baseUrl={baseUrl}>
-      <LocaleProvider>
-        <ApolloShellComponent
-          companyName={companyName}
-          productName={productName}
-          companyLogo={companyLogo}
-          variant={variant}
-          navItems={navItems}
-          loginDescription={loginDescription}
-        >
-          {children}
-        </ApolloShellComponent>
-      </LocaleProvider>
-    </ShellAuthProvider>
+    <LocaleProvider>
+      <ApolloShellContent
+        companyName={companyName}
+        productName={productName}
+        companyLogo={companyLogo}
+        variant={variant}
+        navItems={navItems}
+        loginDescription={loginDescription}
+      >
+        {children}
+      </ApolloShellContent>
+    </LocaleProvider>
   );
 };
