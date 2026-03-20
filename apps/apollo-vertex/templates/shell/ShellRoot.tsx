@@ -42,9 +42,6 @@ export function ShellWrapper({
         alt: "UiPath logo",
       }}
       variant={variant}
-      clientId="e74e5981-cde0-4cd4-971c-6525cfba86b5"
-      scope="openid profile email offline_access"
-      baseUrl={typeof window === "undefined" ? "" : window.location.origin}
       navItems={variant === "minimal" ? minimalNavItems : navItems}
     >
       {children}

@@ -53,12 +53,20 @@ const decodeJWT = (token: string): UserInfo | null => {
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
-export const useAuth = () => {
+const noAuthDefaults: AuthContextValue = {
+  user: null,
+  isAuthenticated: false,
+  isLoading: false,
+  // oxlint-disable-next-line no-empty-function
+  login: async () => {},
+  // oxlint-disable-next-line no-empty-function
+  logout: () => {},
+  accessToken: null,
+};
+
+export const useAuth = (): AuthContextValue => {
   const context = useContext(AuthContext);
-  if (context == null) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
+  return context ?? noAuthDefaults;
 };
 
 interface UseAccessTokenProps {
