@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.59.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.58.2...@uipath/apollo-react@3.59.0) (2026-03-20)
+
+### Features
+
+* **apollo-react:** add adornments story and rename to SquareDashedIndicator [MST-7454] ([a1aae5a](https://github.com/UiPath/apollo-ui/commit/a1aae5adc67481a85fe81ce06ffe01dd2a7e41fc))
+
 ## [@uipath/apollo-react-v3.58.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.58.1...@uipath/apollo-react@3.58.2) (2026-03-20)
 
 ### Bug Fixes
