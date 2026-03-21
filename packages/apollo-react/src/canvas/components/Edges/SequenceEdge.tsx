@@ -1,11 +1,26 @@
 import { type EdgeProps, Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { memo, useRef, useState } from 'react';
-import { PREVIEW_EDGE_ID } from '../../constants';
+import { memo, useMemo, useRef, useState } from 'react';
+
+import { EDGE_BORDER_RADIUS, HANDLE_OFFSETS, PREVIEW_EDGE_ID } from '../../constants';
 import { useEdgeExecutionState, useEdgePath, useElementValidationStatus } from '../../hooks';
 import type { NodeExecutionStateWithDebug } from '../../types/execution';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
 import { EdgeToolbar, useEdgeToolbarState } from '../Toolbar';
+import {
+  arrowFromLastSegment,
+  buildOrthogonalPath,
+  calculatePathMidpoint,
+  type RoutingPoint,
+} from './EdgeRoutingUtils';
 import { edgeTargetStatusToEdgeColor, getStatusAnimation } from './EdgeUtils';
+
+/** Typed edge data for SequenceEdge. */
+export interface SequenceEdgeData {
+  label?: string;
+  isDiffAdded?: boolean;
+  isDiffRemoved?: boolean;
+  elkRouting?: RoutingPoint[];
+}
 
 const ARROW_SIZE = 10;
 
@@ -17,14 +32,6 @@ const ANGLE_MAP: Record<Position, number> = {
   [Position.Right]: Math.PI, // Edge enters right side, arrow points left
   [Position.Top]: Math.PI / 2, // Edge enters top, arrow points down
   [Position.Bottom]: -Math.PI / 2, // Edge enters bottom, arrow points up
-};
-
-// Offset to position start/arrow slightly away from the node edge
-const ARROW_OFFSETS: Record<Position, { x: number; y: number }> = {
-  [Position.Left]: { x: 8, y: 0 },
-  [Position.Right]: { x: -8, y: 0 },
-  [Position.Top]: { x: 0, y: 8 },
-  [Position.Bottom]: { x: 0, y: -8 },
 };
 
 // Custom comparison to prevent re-renders during pan/zoom
@@ -81,14 +88,15 @@ export const SequenceEdge = memo(function SequenceEdge({
     ? ((executionStatus as NodeExecutionStateWithDebug)?.status ?? executionStatus)
     : validationStatus;
 
+  const edgeData = data as SequenceEdgeData | undefined;
+
   // Check if this edge has diff styling applied
-  const isDiffAdded = data?.isDiffAdded === true;
-  const isDiffRemoved = data?.isDiffRemoved === true;
+  const isDiffAdded = edgeData?.isDiffAdded === true;
+  const isDiffRemoved = edgeData?.isDiffRemoved === true;
 
-  const angle = ANGLE_MAP[targetPosition];
-  const { x: offsetX, y: offsetY } = ARROW_OFFSETS[targetPosition];
-
-  const { edgePath, labelX, labelY } = useEdgePath({
+  // Standard path from useEdgePath (always computed — hooks cannot be called
+  // conditionally, and we need isLoopEdge to decide the ELK branch)
+  const standardPath = useEdgePath({
     sourceNodeId: source,
     targetNodeId: target,
     sourceHandleId,
@@ -100,6 +108,46 @@ export const SequenceEdge = memo(function SequenceEdge({
     targetY,
     targetPosition,
   });
+
+  // Use ELK-computed routing when available (avoids nodes after auto-layout).
+  // ELK routing is intentionally ignored for loop edges because SequenceEdge
+  // has purpose-built loop paths that handle self-loops and loopBack edges.
+  const elkRouting = edgeData?.elkRouting;
+  const useElk = !!elkRouting && elkRouting.length >= 2 && !standardPath.isLoopEdge;
+
+  const elkPath = useMemo(() => {
+    if (!useElk || !elkRouting) return null;
+
+    const { x: sourceOffsetX, y: sourceOffsetY } = HANDLE_OFFSETS[sourcePosition];
+    const rawPoints: RoutingPoint[] = [
+      { x: sourceX + sourceOffsetX, y: sourceY + sourceOffsetY },
+      // Keep only intermediate bend points; first/last are replaced by handle coords
+      ...elkRouting.slice(1, -1),
+      { x: targetX, y: targetY },
+    ];
+
+    // buildOrthogonalPath orthogonalizes internally and returns the
+    // axis-aligned points so arrow/label use the same geometry as the path.
+    const { path: edgePath, orthoPoints } = buildOrthogonalPath(rawPoints, EDGE_BORDER_RADIUS);
+    const mid = calculatePathMidpoint(orthoPoints);
+    const arrow = arrowFromLastSegment(orthoPoints);
+
+    return {
+      edgePath,
+      labelX: mid.x,
+      labelY: mid.y,
+      arrowAngle: arrow.angle,
+      arrowOffsetX: arrow.offsetX,
+      arrowOffsetY: arrow.offsetY,
+    };
+  }, [useElk, elkRouting, sourceX, sourceY, sourcePosition, targetX, targetY]);
+
+  const edgePath = elkPath?.edgePath ?? standardPath.edgePath;
+  const labelX = elkPath?.labelX ?? standardPath.labelX;
+  const labelY = elkPath?.labelY ?? standardPath.labelY;
+  const arrowAngle = elkPath?.arrowAngle ?? ANGLE_MAP[targetPosition];
+  const arrowOffsetX = elkPath?.arrowOffsetX ?? HANDLE_OFFSETS[targetPosition].x;
+  const arrowOffsetY = elkPath?.arrowOffsetY ?? HANDLE_OFFSETS[targetPosition].y;
 
   // Edge toolbar state
   const {
@@ -189,22 +237,22 @@ export const SequenceEdge = memo(function SequenceEdge({
         <polygon
           points={`
             ${targetX},${targetY}
-            ${targetX - ARROW_SIZE * Math.cos(angle - Math.PI / 6)},${targetY - ARROW_SIZE * Math.sin(angle - Math.PI / 6)}
-            ${targetX - ARROW_SIZE * Math.cos(angle + Math.PI / 6)},${targetY - ARROW_SIZE * Math.sin(angle + Math.PI / 6)}
+            ${targetX - ARROW_SIZE * Math.cos(arrowAngle - Math.PI / 6)},${targetY - ARROW_SIZE * Math.sin(arrowAngle - Math.PI / 6)}
+            ${targetX - ARROW_SIZE * Math.cos(arrowAngle + Math.PI / 6)},${targetY - ARROW_SIZE * Math.sin(arrowAngle + Math.PI / 6)}
           `}
           fill={edgeColor}
           style={{
             pointerEvents: 'none',
             opacity: style?.opacity !== undefined ? style.opacity : 1,
             transition: 'fill 0.2s ease, opacity 0.2s ease',
-            transform: `translate(${offsetX}px, ${offsetY}px)`,
+            transform: `translate(${arrowOffsetX}px, ${arrowOffsetY}px)`,
           }}
         />
 
         {getStatusAnimation(status, edgePath)}
 
         {/* Edge label from data */}
-        {typeof data?.label === 'string' && data.label.length > 0 && (
+        {typeof edgeData?.label === 'string' && edgeData.label.length > 0 && (
           <foreignObject
             x={labelX}
             y={labelY}
@@ -230,7 +278,7 @@ export const SequenceEdge = memo(function SequenceEdge({
                 boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
               }}
             >
-              {data.label}
+              {edgeData.label}
             </div>
           </foreignObject>
         )}
