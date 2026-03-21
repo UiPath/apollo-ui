@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DashboardGlow } from "./DashboardGlow";
 
 // --- Layout type ---
 
@@ -119,30 +120,36 @@ export function DashboardContent() {
   const [layout, setLayout] = useState<LayoutType>("executive");
 
   return (
-    <div className="p-6 space-y-4 relative z-10">
-      {/* Header with layout toggle */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-base font-bold">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            {layoutDescriptions[layout]}
-          </p>
+    <div className="relative">
+      <DashboardGlow />
+      <div className="p-6 space-y-4 relative z-10">
+        {/* Header with layout toggle */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-base font-bold">Dashboard</h1>
+            <p className="text-sm text-muted-foreground">
+              {layoutDescriptions[layout]}
+            </p>
+          </div>
+          <Tabs
+            value={layout}
+            onValueChange={(v) => setLayout(v as LayoutType)}
+          >
+            <TabsList>
+              {(Object.keys(layoutLabels) as LayoutType[]).map((key) => (
+                <TabsTrigger key={key} value={key}>
+                  {layoutLabels[key]}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </div>
-        <Tabs value={layout} onValueChange={(v) => setLayout(v as LayoutType)}>
-          <TabsList>
-            {(Object.keys(layoutLabels) as LayoutType[]).map((key) => (
-              <TabsTrigger key={key} value={key}>
-                {layoutLabels[key]}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-      </div>
 
-      {/* Layout content */}
-      {layout === "executive" && <ExecutiveLayout />}
-      {layout === "operational" && <OperationalLayout />}
-      {layout === "analytics" && <AnalyticsLayout />}
+        {/* Layout content */}
+        {layout === "executive" && <ExecutiveLayout />}
+        {layout === "operational" && <OperationalLayout />}
+        {layout === "analytics" && <AnalyticsLayout />}
+      </div>
     </div>
   );
 }
