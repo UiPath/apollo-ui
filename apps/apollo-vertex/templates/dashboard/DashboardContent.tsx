@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardGlow } from "./DashboardGlow";
@@ -109,6 +110,98 @@ function InsightGrid({
   );
 }
 
+// --- Prompt bar ---
+
+function PromptBar({ shared, cards }: { shared: string; cards: CardConfig }) {
+  const [value, setValue] = useState("");
+  const hasInput = value.trim().length > 0;
+
+  return (
+    <div className="group rounded-2xl p-[2px] focus-within:bg-gradient-to-r focus-within:from-insight-500/75 focus-within:to-primary-400/75 transition-all">
+      {/* Suggestion pills */}
+      <div className="grid grid-rows-[0fr] focus-within:grid-rows-[1fr] group-focus-within:grid-rows-[1fr] transition-[grid-template-rows] duration-300">
+        <div className="overflow-hidden">
+          <div className="px-3 pt-2 pb-2 flex gap-2">
+            <Badge
+              variant="secondary"
+              status="info"
+              className="!bg-white/35 !text-foreground opacity-0 translate-y-2 group-focus-within:opacity-100 group-focus-within:translate-y-0 transition-all duration-300 cursor-pointer"
+            >
+              Show me top risk factors
+            </Badge>
+            <Badge
+              variant="secondary"
+              status="info"
+              className="!bg-white/35 !text-foreground opacity-0 translate-y-2 group-focus-within:opacity-100 group-focus-within:translate-y-0 transition-all duration-300 delay-75 cursor-pointer"
+            >
+              Compare Q1 vs Q2 performance
+            </Badge>
+          </div>
+        </div>
+      </div>
+      {/* Input */}
+      <div
+        className={`flex items-center rounded-[14px] px-4 py-3 !bg-white/80 backdrop-blur-sm transition-colors ${shared}`}
+        style={cardBgStyle(
+          cards.promptBg,
+          cards.promptOpacity,
+          cards.promptGradient,
+        )}
+      >
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="What would you like to understand about loan performance?"
+          className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        />
+        <div className="flex items-center gap-2 ml-3">
+          <button
+            type="button"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Voice input"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="size-4"
+            >
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" x2="12" y1="19" y2="22" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            disabled={!hasInput}
+            className="size-8 rounded-full bg-gradient-to-br from-insight-500 to-primary-400 flex items-center justify-center text-white transition-opacity disabled:opacity-30"
+            aria-label="Submit"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="size-4"
+            >
+              <path d="m5 12 7-7 7 7" />
+              <path d="M12 19V5" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // --- Layout renderers ---
 
 function ExecutiveLayout({
@@ -124,18 +217,12 @@ function ExecutiveLayout({
   const gapStyle = { gap: `${layout.gap}px` };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2" style={gapStyle}>
+    <div className="grid grid-cols-1 lg:grid-cols-2 h-full" style={gapStyle}>
       {/* Left half */}
-      <div
-        className="grid"
-        style={{
-          ...gapStyle,
-          gridTemplateRows: `${layout.overviewRatio}fr ${layout.promptRatio}fr`,
-        }}
-      >
+      <div className="flex flex-col" style={gapStyle}>
         <Card
           variant="glass"
-          className={`!bg-white ${shared}`}
+          className={`!bg-white flex-1 ${shared}`}
           style={cardBgStyle(
             cards.overviewBg,
             cards.overviewOpacity,
@@ -155,26 +242,7 @@ function ExecutiveLayout({
             <p>Avg. deal cycle: 32 days (-4 days)</p>
           </CardContent>
         </Card>
-        <Card
-          variant="glass"
-          className={`!bg-white/80 ${shared}`}
-          style={cardBgStyle(
-            cards.promptBg,
-            cards.promptOpacity,
-            cards.promptGradient,
-          )}
-        >
-          <CardHeader>
-            <CardTitle className="text-sm font-bold tracking-tight">
-              Conversational Prompt Bar
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            <div className="rounded-md border px-3 py-2 bg-muted/50">
-              Ask a question about your data...
-            </div>
-          </CardContent>
-        </Card>
+        <PromptBar shared={shared} cards={cards} />
       </div>
       {/* Right half — insight grid */}
       <InsightGrid layout={layout} shared={shared} cards={cards} />
@@ -214,7 +282,7 @@ export function DashboardContent() {
 
   return (
     <div
-      className="relative"
+      className="relative h-full"
       style={
         layoutCfg.containerBg === "none"
           ? {}
@@ -231,7 +299,7 @@ export function DashboardContent() {
         onLayoutChange={setLayoutCfg}
       />
       <div
-        className="space-y-4 relative z-10"
+        className="flex flex-col gap-4 relative z-10 h-full"
         style={{ padding: layoutCfg.padding }}
       >
         {/* Header with layout toggle */}
@@ -259,11 +327,13 @@ export function DashboardContent() {
         </div>
 
         {/* Layout content */}
-        {layout === "executive" && (
-          <ExecutiveLayout cards={darkCards} layout={layoutCfg} />
-        )}
-        {layout === "operational" && <OperationalLayout />}
-        {layout === "analytics" && <AnalyticsLayout />}
+        <div className="flex-1 min-h-0">
+          {layout === "executive" && (
+            <ExecutiveLayout cards={darkCards} layout={layoutCfg} />
+          )}
+          {layout === "operational" && <OperationalLayout />}
+          {layout === "analytics" && <AnalyticsLayout />}
+        </div>
       </div>
     </div>
   );
