@@ -4,21 +4,166 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardGlow } from "./DashboardGlow";
+import {
+  defaultDarkCards,
+  defaultDarkGlow,
+  defaultLayout,
+  type CardConfig,
+  type CardGradient,
+  type GlowConfig,
+  type LayoutConfig,
+} from "./glow-config";
+import { GlowDevControls } from "./GlowDevControls";
 
 // --- Layout type ---
 
 type LayoutType = "executive" | "operational" | "analytics";
 
+// --- Helpers ---
+
+function resolveColor(value: string): string {
+  if (typeof document === "undefined") return value;
+  const match = value.match(/^var\(--(.+)\)$/);
+  if (!match) return value;
+  const computed = getComputedStyle(document.documentElement).getPropertyValue(
+    `--${match[1]}`,
+  );
+  return computed.trim() || value;
+}
+
+function cardBgStyle(
+  bg: string,
+  opacity: number,
+  gradient: CardGradient,
+): React.CSSProperties {
+  if (gradient.enabled) {
+    const start = resolveColor(gradient.start);
+    const end = resolveColor(gradient.end);
+    const alpha = gradient.opacity / 100;
+    return {
+      "--card-bg-override": `linear-gradient(${gradient.angle}deg, color-mix(in srgb, ${start} ${alpha * 100}%, transparent), color-mix(in srgb, ${end} ${alpha * 100}%, transparent))`,
+      borderColor: "transparent",
+    } as React.CSSProperties;
+  }
+  const value =
+    bg === "white"
+      ? `rgba(255,255,255,${opacity / 100})`
+      : `color-mix(in srgb, var(--${bg}) ${opacity}%, transparent)`;
+  return { "--card-bg-override": value } as React.CSSProperties;
+}
+
+// --- Helpers ---
+
+const sizeToFr: Record<string, string> = { sm: "1fr", md: "2fr", lg: "1fr" };
+
+const insightData = [
+  { t: "Churn risk detected for 3 accounts", s: "Estimated impact: $120K ARR" },
+  { t: "Q1 target: 85% achieved", s: "15 days remaining in quarter" },
+  { t: "Support tickets down 12% WoW", s: "Avg. resolution: 4.2 hrs" },
+  { t: "3 automations flagged for review", s: "Success rate: 98.1%" },
+];
+
+function InsightGrid({
+  layout,
+  shared,
+  cards,
+}: {
+  layout: LayoutConfig;
+  shared: string;
+  cards: CardConfig;
+}) {
+  const gapStyle = { gap: `${layout.gap}px` };
+  const visibleCards = insightData
+    .map((item, i) => ({ item, cfg: layout.insightCards[i] }))
+    .filter(({ cfg }) => cfg.visible);
+
+  // Group into rows of 2
+  const rows: (typeof visibleCards)[] = [];
+  for (let i = 0; i < visibleCards.length; i += 2) {
+    rows.push(visibleCards.slice(i, i + 2));
+  }
+
+  return (
+    <div className="flex flex-col" style={gapStyle}>
+      {rows.map((row) => {
+        const cols = row
+          .map(({ cfg }) => (cfg.size === "lg" ? "1fr" : sizeToFr[cfg.size]))
+          .join(" ");
+        return (
+          <div
+            key={row.map(({ item }) => item.t).join()}
+            className="grid flex-1"
+            style={{ ...gapStyle, gridTemplateColumns: cols }}
+          >
+            {row.map(({ item, cfg }) => {
+              const spanClass = cfg.size === "lg" && row.length === 1 ? "" : "";
+              return (
+                <Card
+                  key={item.t}
+                  variant="glass"
+                  className={`!bg-white/90 ${shared} ${spanClass}`}
+                  style={cardBgStyle(
+                    cards.insightBg,
+                    cards.insightOpacity,
+                    cards.insightGradient,
+                  )}
+                >
+                  <CardHeader>
+                    <CardTitle className="text-sm font-bold tracking-tight">
+                      Insight
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-sm text-muted-foreground space-y-1">
+                    <p>{item.t}</p>
+                    <p>{item.s}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // --- Layout renderers ---
 
-function ExecutiveLayout() {
+function ExecutiveLayout({
+  cards,
+  layout,
+}: {
+  cards: CardConfig;
+  layout: LayoutConfig;
+}) {
+  const borderClass = cards.borderVisible ? "" : "dark:!border-transparent";
+  const blurClass = cards.backdropBlur ? "" : "dark:!backdrop-blur-none";
+  const shared = `!shadow-none dark:![background:var(--card-bg-override)] ${borderClass} ${blurClass}`;
+  const gapStyle = { gap: `${layout.gap}px` };
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      {/* Left half — 80/20 split */}
-      <div className="grid grid-rows-[4fr_1fr] gap-4">
-        <Card variant="glass">
+    <div className="grid grid-cols-1 lg:grid-cols-2" style={gapStyle}>
+      {/* Left half */}
+      <div
+        className="grid"
+        style={{
+          ...gapStyle,
+          gridTemplateRows: `${layout.overviewRatio}fr ${layout.promptRatio}fr`,
+        }}
+      >
+        <Card
+          variant="glass"
+          className={`!bg-white ${shared}`}
+          style={cardBgStyle(
+            cards.overviewBg,
+            cards.overviewOpacity,
+            cards.overviewGradient,
+          )}
+        >
           <CardHeader>
-            <CardTitle className="text-base font-bold">Overview</CardTitle>
+            <CardTitle className="text-sm font-bold tracking-tight">
+              Overview
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-2">
             <p>Total revenue this quarter: $2.4M (+14%)</p>
@@ -28,9 +173,17 @@ function ExecutiveLayout() {
             <p>Avg. deal cycle: 32 days (-4 days)</p>
           </CardContent>
         </Card>
-        <Card variant="glass">
+        <Card
+          variant="glass"
+          className={`!bg-white/80 ${shared}`}
+          style={cardBgStyle(
+            cards.promptBg,
+            cards.promptOpacity,
+            cards.promptGradient,
+          )}
+        >
           <CardHeader>
-            <CardTitle className="text-base font-bold">
+            <CardTitle className="text-sm font-bold tracking-tight">
               Conversational Prompt Bar
             </CardTitle>
           </CardHeader>
@@ -41,45 +194,8 @@ function ExecutiveLayout() {
           </CardContent>
         </Card>
       </div>
-      {/* Right half — 2x2 grid */}
-      <div className="grid grid-cols-2 grid-rows-2 gap-4">
-        <Card variant="glass">
-          <CardHeader>
-            <CardTitle className="text-base font-bold">Insight</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground space-y-1">
-            <p>Churn risk detected for 3 accounts</p>
-            <p>Estimated impact: $120K ARR</p>
-          </CardContent>
-        </Card>
-        <Card variant="glass">
-          <CardHeader>
-            <CardTitle className="text-base font-bold">Insight</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground space-y-1">
-            <p>Q1 target: 85% achieved</p>
-            <p>15 days remaining in quarter</p>
-          </CardContent>
-        </Card>
-        <Card variant="glass">
-          <CardHeader>
-            <CardTitle className="text-base font-bold">Insight</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground space-y-1">
-            <p>Support tickets down 12% WoW</p>
-            <p>Avg. resolution: 4.2 hrs</p>
-          </CardContent>
-        </Card>
-        <Card variant="glass">
-          <CardHeader>
-            <CardTitle className="text-base font-bold">Insight</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground space-y-1">
-            <p>3 automations flagged for review</p>
-            <p>Success rate: 98.1%</p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Right half — insight grid */}
+      <InsightGrid layout={layout} shared={shared} cards={cards} />
     </div>
   );
 }
@@ -118,15 +234,36 @@ const layoutDescriptions: Record<LayoutType, string> = {
 
 export function DashboardContent() {
   const [layout, setLayout] = useState<LayoutType>("executive");
+  const [darkGlow, setDarkGlow] = useState<GlowConfig>(defaultDarkGlow);
+  const [darkCards, setDarkCards] = useState<CardConfig>(defaultDarkCards);
+  const [layoutCfg, setLayoutCfg] = useState<LayoutConfig>(defaultLayout);
 
   return (
-    <div className="relative">
-      <DashboardGlow />
-      <div className="p-6 space-y-4 relative z-10">
+    <div
+      className="relative"
+      style={
+        layoutCfg.containerBg === "none"
+          ? {}
+          : { backgroundColor: `var(--${layoutCfg.containerBg})` }
+      }
+    >
+      <DashboardGlow darkConfig={darkGlow} />
+      <GlowDevControls
+        glowConfig={darkGlow}
+        onGlowChange={setDarkGlow}
+        cardConfig={darkCards}
+        onCardChange={setDarkCards}
+        layoutConfig={layoutCfg}
+        onLayoutChange={setLayoutCfg}
+      />
+      <div
+        className="space-y-4 relative z-10"
+        style={{ padding: layoutCfg.padding }}
+      >
         {/* Header with layout toggle */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-base font-bold">Dashboard</h1>
+            <h1 className="text-sm font-bold tracking-tight">Dashboard</h1>
             <p className="text-sm text-muted-foreground">
               {layoutDescriptions[layout]}
             </p>
@@ -146,7 +283,9 @@ export function DashboardContent() {
         </div>
 
         {/* Layout content */}
-        {layout === "executive" && <ExecutiveLayout />}
+        {layout === "executive" && (
+          <ExecutiveLayout cards={darkCards} layout={layoutCfg} />
+        )}
         {layout === "operational" && <OperationalLayout />}
         {layout === "analytics" && <AnalyticsLayout />}
       </div>
