@@ -96,7 +96,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const isReadOnly = !!stageDetails?.isReadOnly;
   const icon = stageDetails?.icon;
   const selectedTaskId = stageDetails?.selectedTaskId;
-  const defaultContent = stageDetails?.defaultContent || 'Add first task';
+  const defaultContent =
+    stageDetails?.defaultContent || (isReadOnly ? 'No tasks' : 'Add first task');
 
   const status = execution?.stageStatus?.status;
   const statusLabel = execution?.stageStatus?.label;
