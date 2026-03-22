@@ -8,12 +8,14 @@ import {
   defaultDarkCards,
   defaultDarkGlow,
   defaultLayout,
+  getInsightCardClasses,
   type CardConfig,
   type CardGradient,
   type GlowConfig,
   type LayoutConfig,
 } from "./glow-config";
 import { GlowDevControls } from "./GlowDevControls";
+import { InsightCardBody } from "./insight-card-renderers";
 
 // --- Layout type ---
 
@@ -21,27 +23,15 @@ type LayoutType = "executive" | "operational" | "analytics";
 
 // --- Helpers ---
 
-function resolveColor(value: string): string {
-  if (typeof document === "undefined") return value;
-  const match = value.match(/^var\(--(.+)\)$/);
-  if (!match) return value;
-  const computed = getComputedStyle(document.documentElement).getPropertyValue(
-    `--${match[1]}`,
-  );
-  return computed.trim() || value;
-}
-
 function cardBgStyle(
   bg: string,
   opacity: number,
   gradient: CardGradient,
 ): React.CSSProperties {
   if (gradient.enabled) {
-    const start = resolveColor(gradient.start);
-    const end = resolveColor(gradient.end);
     const alpha = gradient.opacity / 100;
     return {
-      "--card-bg-override": `linear-gradient(${gradient.angle}deg, color-mix(in srgb, ${start} ${alpha * 100}%, transparent), color-mix(in srgb, ${end} ${alpha * 100}%, transparent))`,
+      "--card-bg-override": `linear-gradient(${gradient.angle}deg, color-mix(in srgb, ${gradient.start} ${alpha * 100}%, transparent), color-mix(in srgb, ${gradient.end} ${alpha * 100}%, transparent))`,
       borderColor: "transparent",
     } as React.CSSProperties;
   }
@@ -56,13 +46,6 @@ function cardBgStyle(
 
 const sizeToFr: Record<string, string> = { sm: "1fr", md: "2fr", lg: "1fr" };
 
-const insightData = [
-  { t: "Churn risk detected for 3 accounts", s: "Estimated impact: $120K ARR" },
-  { t: "Q1 target: 85% achieved", s: "15 days remaining in quarter" },
-  { t: "Support tickets down 12% WoW", s: "Avg. resolution: 4.2 hrs" },
-  { t: "3 automations flagged for review", s: "Success rate: 98.1%" },
-];
-
 function InsightGrid({
   layout,
   shared,
@@ -73,8 +56,8 @@ function InsightGrid({
   cards: CardConfig;
 }) {
   const gapStyle = { gap: `${layout.gap}px` };
-  const visibleCards = insightData
-    .map((item, i) => ({ item, cfg: layout.insightCards[i] }))
+  const visibleCards = layout.insightCards
+    .map((cfg, i) => ({ cfg, idx: i }))
     .filter(({ cfg }) => cfg.visible);
 
   // Group into rows of 2
@@ -91,17 +74,17 @@ function InsightGrid({
           .join(" ");
         return (
           <div
-            key={row.map(({ item }) => item.t).join()}
+            key={row.map(({ idx }) => idx).join("-")}
             className="grid flex-1"
             style={{ ...gapStyle, gridTemplateColumns: cols }}
           >
-            {row.map(({ item, cfg }) => {
-              const spanClass = cfg.size === "lg" && row.length === 1 ? "" : "";
+            {row.map(({ cfg, idx }) => {
+              const classes = getInsightCardClasses(cfg.content);
               return (
                 <Card
-                  key={item.t}
+                  key={idx}
                   variant="glass"
-                  className={`!bg-white/90 ${shared} ${spanClass}`}
+                  className={`!bg-white/90 ${shared} ${classes.cardClassName}`}
                   style={cardBgStyle(
                     cards.insightBg,
                     cards.insightOpacity,
@@ -110,12 +93,11 @@ function InsightGrid({
                 >
                   <CardHeader>
                     <CardTitle className="text-sm font-bold tracking-tight">
-                      Insight
+                      {cfg.content.title}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="text-sm text-muted-foreground space-y-1">
-                    <p>{item.t}</p>
-                    <p>{item.s}</p>
+                  <CardContent className={classes.contentClassName}>
+                    <InsightCardBody content={cfg.content} />
                   </CardContent>
                 </Card>
               );
@@ -224,14 +206,6 @@ const layoutLabels: Record<LayoutType, string> = {
   analytics: "Analytics",
 };
 
-const layoutDescriptions: Record<LayoutType, string> = {
-  executive: "High-level overview with KPIs, summary table, and activity chart",
-  operational:
-    "Detailed operational view with data table, activity feed, and pipeline",
-  analytics:
-    "Data-focused layout with charts, compliance metrics, and detailed table",
-};
-
 export function DashboardContent() {
   const [layout, setLayout] = useState<LayoutType>("executive");
   const [darkGlow, setDarkGlow] = useState<GlowConfig>(defaultDarkGlow);
@@ -263,9 +237,11 @@ export function DashboardContent() {
         {/* Header with layout toggle */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-sm font-bold tracking-tight">Dashboard</h1>
-            <p className="text-sm text-muted-foreground">
-              {layoutDescriptions[layout]}
+            <h1 className="text-xs tracking-tight">
+              <span className="font-bold">UiPath</span> Vertical Solutions
+            </h1>
+            <p className="text-2xl font-bold tracking-tight">
+              {layoutLabels[layout]} Dashboard
             </p>
           </div>
           <Tabs
