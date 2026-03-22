@@ -66,44 +66,39 @@ function KpiContent({ title }: { title: string }) {
 
 function DonutContent() {
   return (
-    <>
-      <div className="flex items-center justify-center flex-1">
-        <div className="relative size-3/4 aspect-square">
-          <svg viewBox="0 0 36 36" className="size-full -rotate-90">
-            <circle
-              cx="18"
-              cy="18"
-              r="15.5"
-              fill="none"
-              className="stroke-muted"
-              strokeWidth="2"
-            />
-            <circle
-              cx="18"
-              cy="18"
-              r="15.5"
-              fill="none"
-              className="stroke-chart-1"
-              strokeWidth="2"
-              strokeDasharray="97.39"
-              strokeDashoffset={97.39 * (1 - 0.47)}
-              strokeLinecap="round"
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-2xl font-normal tracking-tight leading-none">
-              47%
-            </span>
-            <span className="text-[10px] text-muted-foreground mt-0.5">
-              funded
-            </span>
-          </div>
+    <div className="flex items-center justify-center flex-1">
+      <div className="relative size-3/4 aspect-square">
+        <svg viewBox="0 0 36 36" className="size-full -rotate-90">
+          <circle
+            cx="18"
+            cy="18"
+            r="15.5"
+            fill="none"
+            className="stroke-muted"
+            strokeWidth="2"
+          />
+          <circle
+            cx="18"
+            cy="18"
+            r="15.5"
+            fill="none"
+            className="stroke-chart-1"
+            strokeWidth="2"
+            strokeDasharray="97.39"
+            strokeDashoffset={97.39 * (1 - 0.47)}
+            strokeLinecap="round"
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-2xl font-normal tracking-tight leading-none">
+            47%
+          </span>
+          <span className="text-[10px] text-muted-foreground mt-0.5">
+            funded
+          </span>
         </div>
       </div>
-      <p className="text-xs font-normal text-muted-foreground mt-auto">
-        $1.58M away from your $3M funded target — 3 closings to go
-      </p>
-    </>
+    </div>
   );
 }
 
@@ -138,23 +133,18 @@ function SparklineContent() {
     .join(" ");
 
   return (
-    <>
-      <div className="flex items-center justify-center flex-1">
-        <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-16" fill="none">
-          <polyline
-            points={points}
-            className="stroke-chart-1"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="none"
-          />
-        </svg>
-      </div>
-      <p className="text-xs font-normal text-muted-foreground mt-auto">
-        Trending upward over the last 12 weeks
-      </p>
-    </>
+    <div className="flex items-center justify-center flex-1">
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-16" fill="none">
+        <polyline
+          points={points}
+          className="stroke-chart-1"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+      </svg>
+    </div>
   );
 }
 
@@ -169,24 +159,121 @@ function AreaContent() {
   const areaPath = `0,${h} ${linePoints} ${w},${h}`;
 
   return (
-    <>
-      <div className="flex items-center justify-center flex-1">
-        <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-16" fill="none">
-          <polygon points={areaPath} className="fill-chart-1/20" />
-          <polyline
-            points={linePoints}
-            className="stroke-chart-1"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="none"
-          />
-        </svg>
+    <div className="flex items-center justify-center flex-1">
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-16" fill="none">
+        <polygon points={areaPath} className="fill-chart-1/20" />
+        <polyline
+          points={linePoints}
+          className="stroke-chart-1"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+      </svg>
+    </div>
+  );
+}
+
+const stackedBarData = [
+  {
+    label: "Mon",
+    segments: [
+      { value: 30, color: "bg-chart-1" },
+      { value: 20, color: "bg-chart-2" },
+      { value: 10, color: "bg-chart-3" },
+    ],
+  },
+  {
+    label: "Tue",
+    segments: [
+      { value: 40, color: "bg-chart-1" },
+      { value: 15, color: "bg-chart-2" },
+      { value: 20, color: "bg-chart-3" },
+    ],
+  },
+  {
+    label: "Wed",
+    segments: [
+      { value: 25, color: "bg-chart-1" },
+      { value: 30, color: "bg-chart-2" },
+      { value: 15, color: "bg-chart-3" },
+    ],
+  },
+  {
+    label: "Thu",
+    segments: [
+      { value: 45, color: "bg-chart-1" },
+      { value: 10, color: "bg-chart-2" },
+      { value: 25, color: "bg-chart-3" },
+    ],
+  },
+  {
+    label: "Fri",
+    segments: [
+      { value: 35, color: "bg-chart-1" },
+      { value: 25, color: "bg-chart-2" },
+      { value: 18, color: "bg-chart-3" },
+    ],
+  },
+];
+
+function StackedBarContent() {
+  const maxTotal = Math.max(
+    ...stackedBarData.map((d) =>
+      d.segments.reduce((sum, s) => sum + s.value, 0),
+    ),
+  );
+
+  const barMaxHeight = 140;
+
+  const legendItems = [
+    { label: "Approved", color: "bg-chart-1" },
+    { label: "Pending", color: "bg-chart-2" },
+    { label: "Rejected", color: "bg-chart-3" },
+  ];
+
+  return (
+    <div>
+      <div className="flex items-end justify-between">
+        {stackedBarData.map((bar) => {
+          const total = bar.segments.reduce((sum, s) => sum + s.value, 0);
+          const barHeight = (total / maxTotal) * barMaxHeight;
+          return (
+            <div
+              key={bar.label}
+              className="w-4 flex flex-col items-center gap-1"
+            >
+              <div
+                className="w-full flex flex-col-reverse rounded-t-sm overflow-hidden"
+                style={{ height: barHeight }}
+              >
+                {bar.segments.map((seg) => (
+                  <div
+                    key={seg.color}
+                    className={seg.color}
+                    style={{ flex: seg.value }}
+                  />
+                ))}
+              </div>
+              <span className="text-[10px] text-muted-foreground">
+                {bar.label}
+              </span>
+            </div>
+          );
+        })}
       </div>
-      <p className="text-xs font-normal text-muted-foreground mt-auto">
-        Volume trending up — 16% increase over prior period
-      </p>
-    </>
+      <div className="flex items-center gap-4 mt-4">
+        {legendItems.map((item) => (
+          <div key={item.label} className="flex items-center gap-1.5">
+            <div className={`size-2 rounded-full ${item.color}`} />
+            <span className="text-[10px] text-muted-foreground">
+              {item.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -197,5 +284,6 @@ export function InsightCardBody({ content }: { content: InsightCardContent }) {
   if (content.chartType === "horizontal-bars") return <HorizontalBarsContent />;
   if (content.chartType === "donut") return <DonutContent />;
   if (content.chartType === "sparkline") return <SparklineContent />;
+  if (content.chartType === "stacked-bar") return <StackedBarContent />;
   return <AreaContent />;
 }
