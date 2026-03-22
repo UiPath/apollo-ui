@@ -53,7 +53,12 @@ export const defaultDarkGlow: GlowConfig = {
 export type CardSize = "sm" | "md" | "lg";
 
 export type InsightCardType = "kpi" | "chart";
-export type ChartType = "donut" | "horizontal-bars" | "sparkline" | "area";
+export type ChartType =
+  | "donut"
+  | "horizontal-bars"
+  | "sparkline"
+  | "area"
+  | "stacked-bar";
 
 export interface InsightCardContent {
   type: InsightCardType;
@@ -109,12 +114,12 @@ export const defaultLayout: LayoutConfig = {
       visible: true,
       content: {
         type: "chart",
-        chartType: "donut",
+        chartType: "stacked-bar",
         title: "Pipeline",
       },
     },
     {
-      size: "md",
+      size: "sm",
       visible: true,
       content: {
         type: "kpi",
@@ -165,6 +170,7 @@ export const chartTypeOptions = [
   { label: "Horizontal Bars", value: "horizontal-bars" },
   { label: "Sparkline", value: "sparkline" },
   { label: "Area", value: "area" },
+  { label: "Stacked Bar", value: "stacked-bar" },
 ];
 
 export const bgColorOptions = [
