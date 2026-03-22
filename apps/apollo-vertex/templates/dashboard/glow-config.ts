@@ -42,19 +42,29 @@ export const defaultLightGlow: GlowConfig = {
 
 export const defaultDarkGlow: GlowConfig = {
   start: "var(--insight-700)",
-  end: "var(--primary-800)",
-  containerOpacity: 25,
+  end: "var(--primary-600)",
+  containerOpacity: 45,
   fillOpacity: 1,
   startStopOpacity: 1,
-  endStopOpacity: 0.5,
-  endOffset: 0.4,
+  endStopOpacity: 0.4,
+  endOffset: 0.5,
 };
 
 export type CardSize = "sm" | "md" | "lg";
 
+export type InsightCardType = "kpi" | "chart";
+export type ChartType = "donut" | "horizontal-bars" | "sparkline" | "area";
+
+export interface InsightCardContent {
+  type: InsightCardType;
+  chartType: ChartType;
+  title: string;
+}
+
 export interface InsightCardConfig {
   size: CardSize;
   visible: boolean;
+  content: InsightCardContent;
 }
 
 export interface LayoutConfig {
@@ -76,10 +86,42 @@ export const defaultLayout: LayoutConfig = {
   overviewRatio: 4,
   promptRatio: 1,
   insightCards: [
-    { size: "md", visible: true },
-    { size: "md", visible: true },
-    { size: "md", visible: true },
-    { size: "md", visible: true },
+    {
+      size: "sm",
+      visible: true,
+      content: {
+        type: "kpi",
+        chartType: "donut",
+        title: "Upfront decision efficiency",
+      },
+    },
+    {
+      size: "md",
+      visible: true,
+      content: {
+        type: "chart",
+        chartType: "horizontal-bars",
+        title: "Top issues",
+      },
+    },
+    {
+      size: "md",
+      visible: true,
+      content: {
+        type: "chart",
+        chartType: "donut",
+        title: "Pipeline",
+      },
+    },
+    {
+      size: "md",
+      visible: true,
+      content: {
+        type: "kpi",
+        chartType: "donut",
+        title: "SLA compliance",
+      },
+    },
   ],
   padding: 24,
   containerBg: "none",
@@ -113,6 +155,18 @@ export const primaryOptions = [
   { label: "900", value: "var(--primary-900)" },
 ];
 
+export const cardTypeOptions = [
+  { label: "KPI", value: "kpi" },
+  { label: "Chart", value: "chart" },
+];
+
+export const chartTypeOptions = [
+  { label: "Donut", value: "donut" },
+  { label: "Horizontal Bars", value: "horizontal-bars" },
+  { label: "Sparkline", value: "sparkline" },
+  { label: "Area", value: "area" },
+];
+
 export const bgColorOptions = [
   { label: "white", value: "white" },
   { label: "sidebar", value: "sidebar" },
@@ -121,15 +175,32 @@ export const bgColorOptions = [
   { label: "muted", value: "muted" },
 ];
 
+export function getInsightCardClasses(content: InsightCardContent): {
+  cardClassName: string;
+  contentClassName: string;
+} {
+  if (content.type === "kpi") {
+    return {
+      cardClassName: "!gap-4",
+      contentClassName: "flex-1 flex flex-col",
+    };
+  }
+  const isBarChart = content.chartType === "horizontal-bars";
+  return {
+    cardClassName: content.chartType === "donut" ? "!gap-0" : "",
+    contentClassName: isBarChart ? "flex-1" : "flex-1 flex flex-col",
+  };
+}
+
 export const defaultDarkCards: CardConfig = {
-  overviewBg: "white",
-  overviewOpacity: 6,
-  overviewGradient: { ...defaultGradient },
-  insightBg: "white",
-  insightOpacity: 6,
+  overviewBg: "sidebar",
+  overviewOpacity: 69,
+  overviewGradient: { ...defaultGradient, opacity: 30 },
+  insightBg: "sidebar",
+  insightOpacity: 54,
   insightGradient: { ...defaultGradient },
-  promptBg: "white",
-  promptOpacity: 6,
+  promptBg: "sidebar",
+  promptOpacity: 80,
   promptGradient: { ...defaultGradient },
   borderVisible: false,
   backdropBlur: true,

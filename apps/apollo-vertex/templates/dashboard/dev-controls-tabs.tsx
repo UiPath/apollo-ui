@@ -2,13 +2,17 @@
 
 import {
   bgColorOptions,
+  cardTypeOptions,
+  chartTypeOptions,
   insightOptions,
   primaryOptions,
   type CardConfig,
   type CardGradient,
   type CardSize,
+  type ChartType,
   type GlowConfig,
   type InsightCardConfig,
+  type InsightCardType,
   type LayoutConfig,
 } from "./glow-config";
 import { SelectControl, Slider, Toggle } from "./dev-controls-primitives";
@@ -316,7 +320,7 @@ export function LayoutTab({
         (label, i) => (
           <div key={label} className="space-y-1 pb-2 border-b border-muted">
             <div className="flex items-center justify-between">
-              <span className="text-xs">{label}</span>
+              <span className="text-xs font-medium">{label}</span>
               <Toggle
                 label=""
                 checked={config.insightCards[i].visible}
@@ -324,12 +328,60 @@ export function LayoutTab({
               />
             </div>
             {config.insightCards[i].visible && (
-              <SelectControl
-                label="Size"
-                value={config.insightCards[i].size}
-                options={sizeOptions}
-                onChange={(v) => updateInsightCard(i, { size: v as CardSize })}
-              />
+              <>
+                <SelectControl
+                  label="Size"
+                  value={config.insightCards[i].size}
+                  options={sizeOptions}
+                  onChange={(v) =>
+                    updateInsightCard(i, { size: v as CardSize })
+                  }
+                />
+                <SelectControl
+                  label="Type"
+                  value={config.insightCards[i].content.type}
+                  options={cardTypeOptions}
+                  onChange={(v) =>
+                    updateInsightCard(i, {
+                      content: {
+                        ...config.insightCards[i].content,
+                        type: v as InsightCardType,
+                      },
+                    })
+                  }
+                />
+                {config.insightCards[i].content.type === "chart" && (
+                  <SelectControl
+                    label="Chart"
+                    value={config.insightCards[i].content.chartType}
+                    options={chartTypeOptions}
+                    onChange={(v) =>
+                      updateInsightCard(i, {
+                        content: {
+                          ...config.insightCards[i].content,
+                          chartType: v as ChartType,
+                        },
+                      })
+                    }
+                  />
+                )}
+                <div>
+                  <div className="text-xs mb-1">Title</div>
+                  <input
+                    type="text"
+                    value={config.insightCards[i].content.title}
+                    onChange={(e) =>
+                      updateInsightCard(i, {
+                        content: {
+                          ...config.insightCards[i].content,
+                          title: e.target.value,
+                        },
+                      })
+                    }
+                    className="w-full h-7 rounded border bg-background px-1 text-xs"
+                  />
+                </div>
+              </>
             )}
           </div>
         ),
