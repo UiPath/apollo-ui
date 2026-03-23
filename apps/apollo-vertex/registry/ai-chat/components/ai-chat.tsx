@@ -5,7 +5,7 @@ import type { UIMessage } from "@tanstack/ai-client";
 import { AlertCircle, Sparkles } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ChoiceOption, ToolRenderers } from "../types";
+import type { ChoiceOption } from "../types";
 import { findLatestChoices, groupMessages } from "../utils/ai-chat-utils";
 import { AiChatInput } from "./ai-chat-input";
 import { AiChatLoading } from "./ai-chat-loading";
@@ -22,7 +22,7 @@ export interface AiChatProps<
   onStop: () => void;
   onClearChat?: () => void;
   onChoiceSelect?: (option: ChoiceOption) => void;
-  toolRenderers?: ToolRenderers<TTools>;
+  renderMessage?: (message: UIMessage<TTools>) => ReactNode;
   assistantName?: string;
   title?: string;
   emptyState?: ReactNode;
@@ -42,7 +42,7 @@ export function AiChat<
   onStop,
   onClearChat,
   onChoiceSelect,
-  toolRenderers,
+  renderMessage,
   assistantName,
   title,
   emptyState,
@@ -154,11 +154,14 @@ export function AiChat<
               }
 
               const message = item.message;
+              if (renderMessage) {
+                return <div key={message.id}>{renderMessage(message)}</div>;
+              }
+
               return (
                 <AiChatMessage
                   key={message.id}
                   message={message}
-                  toolRenderers={toolRenderers}
                   assistantName={displayName}
                 />
               );

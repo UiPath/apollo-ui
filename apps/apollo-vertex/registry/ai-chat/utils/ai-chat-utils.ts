@@ -56,16 +56,16 @@ export function findLatestChoices(
   return null;
 }
 
-export type GroupedItem =
-  | { kind: "message"; message: UIMessage }
+export type GroupedItem<TMsg extends UIMessage = UIMessage> =
+  | { kind: "message"; message: TMsg }
   | { kind: "tool-group"; id: string; toolCalls: ToolCallPart[] };
 
 type PendingTools = { toolCalls: ToolCallPart[]; groupId: string };
 
-function flushPendingTools(
-  items: GroupedItem[],
+function flushPendingTools<TMsg extends UIMessage>(
+  items: GroupedItem<TMsg>[],
   pending: PendingTools,
-): GroupedItem[] {
+): GroupedItem<TMsg>[] {
   if (pending.toolCalls.length === 0) return items;
   return [
     ...items,
@@ -77,10 +77,10 @@ function flushPendingTools(
   ];
 }
 
-export function groupMessages(
-  messages: UIMessage[],
+export function groupMessages<TMsg extends UIMessage>(
+  messages: TMsg[],
   enableToolGrouping: boolean,
-): GroupedItem[] {
+): GroupedItem<TMsg>[] {
   if (!enableToolGrouping) {
     return messages.map((message) => ({ kind: "message" as const, message }));
   }
@@ -90,7 +90,7 @@ export function groupMessages(
   );
 
   const { items, pending } = visible.reduce<{
-    items: GroupedItem[];
+    items: GroupedItem<TMsg>[];
     pending: PendingTools;
   }>(
     (acc, msg) => {
