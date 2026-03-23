@@ -5,6 +5,7 @@ const withNextra = nextra({
 });
 
 export default withNextra({
+  reactCompiler: true,
   turbopack: {
     resolveAlias: {
       "next-mdx-import-source-file": "./mdx-components.tsx",
