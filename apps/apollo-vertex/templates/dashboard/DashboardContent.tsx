@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardGlow } from "./DashboardGlow";
@@ -17,6 +16,8 @@ import {
 } from "./glow-config";
 import { GlowDevControls } from "./GlowDevControls";
 import { InsightCardBody } from "./insight-card-renderers";
+import { DashboardLoading } from "./DashboardLoading";
+import { PromptBar } from "./PromptBar";
 
 // --- Layout type ---
 
@@ -110,98 +111,6 @@ function InsightGrid({
   );
 }
 
-// --- Prompt bar ---
-
-function PromptBar({ shared, cards }: { shared: string; cards: CardConfig }) {
-  const [value, setValue] = useState("");
-  const hasInput = value.trim().length > 0;
-
-  return (
-    <div className="group rounded-2xl p-[2px] focus-within:bg-gradient-to-r focus-within:from-insight-500/75 focus-within:to-primary-400/75 transition-all">
-      {/* Suggestion pills */}
-      <div className="grid grid-rows-[0fr] focus-within:grid-rows-[1fr] group-focus-within:grid-rows-[1fr] transition-[grid-template-rows] duration-300">
-        <div className="overflow-hidden">
-          <div className="px-3 pt-2 pb-2 flex gap-2">
-            <Badge
-              variant="secondary"
-              status="info"
-              className="!bg-white/35 !text-foreground opacity-0 translate-y-2 group-focus-within:opacity-100 group-focus-within:translate-y-0 transition-all duration-300 cursor-pointer"
-            >
-              Show me top risk factors
-            </Badge>
-            <Badge
-              variant="secondary"
-              status="info"
-              className="!bg-white/35 !text-foreground opacity-0 translate-y-2 group-focus-within:opacity-100 group-focus-within:translate-y-0 transition-all duration-300 delay-75 cursor-pointer"
-            >
-              Compare Q1 vs Q2 performance
-            </Badge>
-          </div>
-        </div>
-      </div>
-      {/* Input */}
-      <div
-        className={`flex items-center rounded-[14px] px-4 py-3 !bg-white/80 backdrop-blur-sm transition-colors ${shared}`}
-        style={cardBgStyle(
-          cards.promptBg,
-          cards.promptOpacity,
-          cards.promptGradient,
-        )}
-      >
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder="What would you like to understand about loan performance?"
-          className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-        />
-        <div className="flex items-center gap-2 ml-3">
-          <button
-            type="button"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Voice input"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="size-4"
-            >
-              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-              <line x1="12" x2="12" y1="19" y2="22" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            disabled={!hasInput}
-            className="size-8 rounded-full bg-gradient-to-br from-insight-500 to-primary-400 flex items-center justify-center text-white transition-opacity disabled:opacity-30"
-            aria-label="Submit"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="size-4"
-            >
-              <path d="m5 12 7-7 7 7" />
-              <path d="M12 19V5" />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // --- Layout renderers ---
 
 function ExecutiveLayout({
@@ -222,24 +131,126 @@ function ExecutiveLayout({
       <div className="flex flex-col" style={gapStyle}>
         <Card
           variant="glass"
-          className={`!bg-white flex-1 ${shared}`}
+          className={`!bg-white flex-1 !gap-4 !pb-0 overflow-hidden ${shared}`}
           style={cardBgStyle(
             cards.overviewBg,
             cards.overviewOpacity,
             cards.overviewGradient,
           )}
         >
-          <CardHeader>
+          <CardHeader className="!pt-8 !gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="size-5 text-foreground"
+            >
+              <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .963L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+            </svg>
             <CardTitle className="text-sm font-bold tracking-tight">
-              Overview
+              Good morning, Peter
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground space-y-2">
-            <p>Total revenue this quarter: $2.4M (+14%)</p>
-            <p>Active users: 12,847 across 3 regions</p>
-            <p>Top performing segment: Enterprise ($1.8M)</p>
-            <p>Pipeline value: $4.2M (68 deals)</p>
-            <p>Avg. deal cycle: 32 days (-4 days)</p>
+          <CardContent className="flex-1 flex flex-col !pb-0">
+            <div>
+              <p className="text-4xl font-bold tracking-tight pr-16">
+                Loan volume scales as setup time drops by 3.5 days.
+              </p>
+              <p className="text-sm font-normal text-muted-foreground pr-32 mt-8 leading-relaxed">
+                Setup time declined ↓21% month over month while volume increased
+                ↑18%.
+              </p>
+            </div>
+            <div className="flex-1 relative min-h-0">
+              <svg
+                viewBox="0 0 200 60"
+                preserveAspectRatio="none"
+                className="absolute inset-0 w-full h-full"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <defs>
+                  <linearGradient id="spark-fill" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="0%"
+                      className="[stop-color:var(--insight-500)]"
+                      stopOpacity="0.7"
+                    />
+                    <stop
+                      offset="100%"
+                      className="[stop-color:var(--primary-400)]"
+                      stopOpacity="0"
+                    />
+                  </linearGradient>
+                  <linearGradient id="spark-stroke" x1="0" y1="0" x2="1" y2="0">
+                    <stop
+                      offset="0%"
+                      className="[stop-color:var(--insight-500)]"
+                    />
+                    <stop
+                      offset="100%"
+                      className="[stop-color:var(--primary-400)]"
+                    />
+                  </linearGradient>
+                </defs>
+                {/* Horizontal guide lines */}
+                <line
+                  x1="0"
+                  y1="15"
+                  x2="200"
+                  y2="15"
+                  className="stroke-foreground/5"
+                  strokeWidth="1"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <line
+                  x1="0"
+                  y1="30"
+                  x2="200"
+                  y2="30"
+                  className="stroke-foreground/5"
+                  strokeWidth="1"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <line
+                  x1="0"
+                  y1="45"
+                  x2="200"
+                  y2="45"
+                  className="stroke-foreground/5"
+                  strokeWidth="1"
+                  vectorEffect="non-scaling-stroke"
+                />
+                {/* Benchmark line */}
+                <line
+                  x1="0"
+                  y1="25"
+                  x2="200"
+                  y2="25"
+                  className="stroke-foreground/20"
+                  strokeWidth="1"
+                  vectorEffect="non-scaling-stroke"
+                  strokeDasharray="4 4"
+                />
+                {/* Fill area */}
+                <path
+                  d="M0,42 C11,40 22,36 33,34 C44,32 55,38 67,35 C78,32 89,22 100,20 C111,18 122,26 133,24 C144,22 155,14 167,12 C178,10 189,15 200,10 L200,60 L0,60 Z"
+                  fill="url(#spark-fill)"
+                />
+                <path
+                  d="M0,42 C11,40 22,36 33,34 C44,32 55,38 67,35 C78,32 89,22 100,20 C111,18 122,26 133,24 C144,22 155,14 167,12 C178,10 189,15 200,10"
+                  className="stroke-foreground"
+                  strokeWidth="2"
+                  vectorEffect="non-scaling-stroke"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+              </svg>
+            </div>
           </CardContent>
         </Card>
         <PromptBar shared={shared} cards={cards} />
@@ -279,62 +290,73 @@ export function DashboardContent() {
   const [darkGlow, setDarkGlow] = useState<GlowConfig>(defaultDarkGlow);
   const [darkCards, setDarkCards] = useState<CardConfig>(defaultDarkCards);
   const [layoutCfg, setLayoutCfg] = useState<LayoutConfig>(defaultLayout);
+  const [replayCount, setReplayCount] = useState(0);
 
   return (
-    <div
-      className="relative h-full"
-      style={
-        layoutCfg.containerBg === "none"
-          ? {}
-          : { backgroundColor: `var(--${layoutCfg.containerBg})` }
-      }
-    >
-      <DashboardGlow darkConfig={darkGlow} />
-      <GlowDevControls
-        glowConfig={darkGlow}
-        onGlowChange={setDarkGlow}
-        cardConfig={darkCards}
-        onCardChange={setDarkCards}
-        layoutConfig={layoutCfg}
-        onLayoutChange={setLayoutCfg}
-      />
+    <DashboardLoading triggerReplay={replayCount}>
       <div
-        className="flex flex-col gap-4 relative z-10 h-full"
-        style={{ padding: layoutCfg.padding }}
+        className="relative h-full"
+        style={
+          layoutCfg.containerBg === "none"
+            ? {}
+            : { backgroundColor: `var(--${layoutCfg.containerBg})` }
+        }
       >
-        {/* Header with layout toggle */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-xs tracking-tight">
-              <span className="font-bold">UiPath</span> Vertical Solutions
-            </h1>
-            <p className="text-2xl font-bold tracking-tight">
-              {layoutLabels[layout]} Dashboard
-            </p>
+        <DashboardGlow darkConfig={darkGlow} />
+        <GlowDevControls
+          glowConfig={darkGlow}
+          onGlowChange={setDarkGlow}
+          cardConfig={darkCards}
+          onCardChange={setDarkCards}
+          layoutConfig={layoutCfg}
+          onLayoutChange={setLayoutCfg}
+        />
+        <div
+          className="flex flex-col gap-4 relative z-10 h-full"
+          style={{ padding: layoutCfg.padding }}
+        >
+          {/* Header with layout toggle */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-xs tracking-tight">
+                <span className="font-bold">UiPath</span> Vertical Solutions
+              </h1>
+              <p className="text-2xl font-bold tracking-tight">
+                {layoutLabels[layout]} Dashboard
+              </p>
+            </div>
+            <Tabs
+              value={layout}
+              onValueChange={(v) => setLayout(v as LayoutType)}
+              className="hidden"
+            >
+              <TabsList>
+                {(Object.keys(layoutLabels) as LayoutType[]).map((key) => (
+                  <TabsTrigger key={key} value={key}>
+                    {layoutLabels[key]}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+            <button
+              type="button"
+              onClick={() => setReplayCount((c) => c + 1)}
+              className="h-9 px-3 rounded-lg border bg-muted text-xs font-medium hover:bg-muted/80 transition-colors"
+            >
+              Replay Intro
+            </button>
           </div>
-          <Tabs
-            value={layout}
-            onValueChange={(v) => setLayout(v as LayoutType)}
-          >
-            <TabsList>
-              {(Object.keys(layoutLabels) as LayoutType[]).map((key) => (
-                <TabsTrigger key={key} value={key}>
-                  {layoutLabels[key]}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        </div>
 
-        {/* Layout content */}
-        <div className="flex-1 min-h-0">
-          {layout === "executive" && (
-            <ExecutiveLayout cards={darkCards} layout={layoutCfg} />
-          )}
-          {layout === "operational" && <OperationalLayout />}
-          {layout === "analytics" && <AnalyticsLayout />}
+          {/* Layout content */}
+          <div className="flex-1 min-h-0">
+            {layout === "executive" && (
+              <ExecutiveLayout cards={darkCards} layout={layoutCfg} />
+            )}
+            {layout === "operational" && <OperationalLayout />}
+            {layout === "analytics" && <AnalyticsLayout />}
+          </div>
         </div>
       </div>
-    </div>
+    </DashboardLoading>
   );
 }

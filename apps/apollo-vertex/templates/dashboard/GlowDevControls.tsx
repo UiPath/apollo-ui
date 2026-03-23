@@ -24,7 +24,7 @@ export function GlowDevControls({
   layoutConfig,
   onLayoutChange,
 }: DevControlsProps) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<Tab>("glow");
 
   const configMap = {
