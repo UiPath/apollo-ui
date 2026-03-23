@@ -19,11 +19,7 @@ import { InsightCardBody } from "./insight-card-renderers";
 import { DashboardLoading } from "./DashboardLoading";
 import { PromptBar } from "./PromptBar";
 
-// --- Layout type ---
-
 type LayoutType = "executive" | "operational" | "analytics";
-
-// --- Helpers ---
 
 function cardBgStyle(
   bg: string,
@@ -45,9 +41,7 @@ function cardBgStyle(
 }
 
 // --- Helpers ---
-
 const sizeToFr: Record<string, string> = { sm: "1fr", md: "2fr", lg: "1fr" };
-
 function InsightGrid({
   layout,
   shared,
@@ -131,31 +125,29 @@ function ExecutiveLayout({
       <div className="flex flex-col" style={gapStyle}>
         <Card
           variant="glass"
-          className={`!bg-white flex-1 !gap-4 !pb-0 overflow-hidden ${shared}`}
+          className={`!bg-white flex-1 !gap-4 !p-8 !pt-10 overflow-hidden ${shared}`}
           style={cardBgStyle(
             cards.overviewBg,
             cards.overviewOpacity,
             cards.overviewGradient,
           )}
         >
-          <CardHeader className="!pt-8 !gap-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="size-5 text-foreground"
-            >
-              <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .963L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
-            </svg>
+          <CardHeader className="!p-0 !gap-2">
+            <img
+              src="/Autopilot_dark.svg"
+              alt="Autopilot"
+              className="size-5 block dark:hidden"
+            />
+            <img
+              src="/Autopilot_light.svg"
+              alt="Autopilot"
+              className="size-5 hidden dark:block"
+            />
             <CardTitle className="text-sm font-bold tracking-tight">
               Good morning, Peter
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-1 flex flex-col !pb-0">
+          <CardContent className="flex-1 flex flex-col !p-0">
             <div>
               <p className="text-4xl font-bold tracking-tight pr-16">
                 Loan volume scales as setup time drops by 3.5 days.
@@ -165,37 +157,40 @@ function ExecutiveLayout({
                 ↑18%.
               </p>
             </div>
-            <div className="flex-1 relative min-h-0">
+            <div className="flex-1 min-h-0 mt-4 mb-6 relative pl-8 pr-1">
               <svg
-                viewBox="0 0 200 60"
+                viewBox="0 0 200 70"
                 preserveAspectRatio="none"
-                className="absolute inset-0 w-full h-full"
+                className="w-full h-full rounded-xl"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <defs>
-                  <linearGradient id="spark-fill" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient
+                    id="overview-spark-fill"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
                     <stop
                       offset="0%"
-                      className="[stop-color:var(--insight-500)]"
-                      stopOpacity="0.7"
+                      style={{
+                        stopColor: "var(--insight-500)",
+                        stopOpacity: 0.15,
+                      }}
                     />
                     <stop
                       offset="100%"
-                      className="[stop-color:var(--primary-400)]"
-                      stopOpacity="0"
+                      style={{
+                        stopColor: "var(--primary-400)",
+                        stopOpacity: 0,
+                      }}
                     />
                   </linearGradient>
-                  <linearGradient id="spark-stroke" x1="0" y1="0" x2="1" y2="0">
-                    <stop
-                      offset="0%"
-                      className="[stop-color:var(--insight-500)]"
-                    />
-                    <stop
-                      offset="100%"
-                      className="[stop-color:var(--primary-400)]"
-                    />
-                  </linearGradient>
+                  <filter id="overview-fill-blur">
+                    <feGaussianBlur stdDeviation="9" />
+                  </filter>
                 </defs>
                 {/* Horizontal guide lines */}
                 <line
@@ -236,13 +231,15 @@ function ExecutiveLayout({
                   vectorEffect="non-scaling-stroke"
                   strokeDasharray="4 4"
                 />
-                {/* Fill area */}
+                {/* Fill area with soft edges */}
                 <path
-                  d="M0,42 C11,40 22,36 33,34 C44,32 55,38 67,35 C78,32 89,22 100,20 C111,18 122,26 133,24 C144,22 155,14 167,12 C178,10 189,15 200,10 L200,60 L0,60 Z"
-                  fill="url(#spark-fill)"
+                  d="M0,42 C11,40 22,36 33,34 C44,32 55,38 67,35 C78,32 89,22 100,20 C111,18 122,26 133,24 C144,22 155,14 167,12 C178,10 189,15 200,8 L200,60 L0,60 Z"
+                  fill="url(#overview-spark-fill)"
+                  filter="url(#overview-fill-blur)"
                 />
+                {/* Line */}
                 <path
-                  d="M0,42 C11,40 22,36 33,34 C44,32 55,38 67,35 C78,32 89,22 100,20 C111,18 122,26 133,24 C144,22 155,14 167,12 C178,10 189,15 200,10"
+                  d="M0,42 C11,40 22,36 33,34 C44,32 55,38 67,35 C78,32 89,22 100,20 C111,18 122,26 133,24 C144,22 155,14 167,12 C178,10 189,15 200,8"
                   className="stroke-foreground"
                   strokeWidth="2"
                   vectorEffect="non-scaling-stroke"
@@ -250,6 +247,47 @@ function ExecutiveLayout({
                   fill="none"
                 />
               </svg>
+              {/* Y-axis labels */}
+              <span
+                className="absolute left-0 text-[10px] text-muted-foreground/50 -translate-y-1/2"
+                style={{ top: "calc(15 / 70 * 100%)" }}
+              >
+                200
+              </span>
+              <span
+                className="absolute left-0 text-[10px] text-muted-foreground/50 -translate-y-1/2"
+                style={{ top: "calc(25 / 70 * 100%)" }}
+              >
+                150
+              </span>
+              <span
+                className="absolute left-0 text-[10px] text-muted-foreground/50 -translate-y-1/2"
+                style={{ top: "calc(30 / 70 * 100%)" }}
+              >
+                100
+              </span>
+              <span
+                className="absolute left-0 text-[10px] text-muted-foreground/50 -translate-y-1/2"
+                style={{ top: "calc(45 / 70 * 100%)" }}
+              >
+                50
+              </span>
+              {/* Target label */}
+              <span
+                className="absolute right-0 text-[10px] text-muted-foreground/50 -translate-y-full -mt-0.5"
+                style={{ top: "calc(25 / 70 * 100%)" }}
+              >
+                Target
+              </span>
+              {/* Dot at end of line */}
+              <div
+                className="absolute size-2 rounded-full bg-foreground"
+                style={{
+                  top: "calc(8 / 70 * 100%)",
+                  right: "4px",
+                  transform: "translate(50%, -50%)",
+                }}
+              />
             </div>
           </CardContent>
         </Card>
