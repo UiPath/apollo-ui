@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.59.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.59.1...@uipath/apollo-react@3.59.2) (2026-03-23)
+
+### Bug Fixes
+
+* **apollo-react:** show 'No tasks' text in read-only empty stage nodes ([680669b](https://github.com/UiPath/apollo-ui/commit/680669b754f1295d5fac75b3df4f19a0505f4558))
+
 ## [@uipath/apollo-react-v3.59.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.59.0...@uipath/apollo-react@3.59.1) (2026-03-23)
 
 ### Bug Fixes
