@@ -104,7 +104,7 @@ function DonutContent() {
 
 function HorizontalBarsContent() {
   return (
-    <div className="flex flex-col justify-between h-4/5">
+    <div className="flex flex-col gap-4">
       {barSamples.map((issue) => (
         <div key={issue.label}>
           <div className="flex items-center justify-between text-xs mb-1.5">
