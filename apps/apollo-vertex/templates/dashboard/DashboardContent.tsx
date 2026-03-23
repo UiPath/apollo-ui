@@ -278,7 +278,7 @@ export function DashboardContent() {
               <p className="text-2xl font-bold tracking-tight flex items-center gap-2">
                 {layoutLabels[layout]} Dashboard
                 <Badge variant="secondary" status="info">
-                  Experiment
+                  Experimental
                 </Badge>
               </p>
             </div>
