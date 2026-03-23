@@ -834,6 +834,14 @@ const SKILLS: Skill[] = [
     surfaces: ['Cursor', 'Claude Code'],
     sourcePath: 'packages/apollo-wind/skills/apollo-prototype/',
   },
+  {
+    name: 'apollo-writing',
+    description:
+      'Applies UiPath UX writing guidelines to UI copy — labels, buttons, errors, modals, empty states, and all microcopy.',
+    category: 'Writing',
+    surfaces: ['Cursor', 'Claude Code'],
+    sourcePath: 'packages/apollo-wind/skills/apollo-writing/',
+  },
 ];
 
 interface ExternalSkill {
