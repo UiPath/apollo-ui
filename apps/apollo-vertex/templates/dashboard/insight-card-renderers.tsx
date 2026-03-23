@@ -37,6 +37,7 @@ const barSamples = [
   { label: "Credit report >120 days old", value: 29, color: "bg-chart-2" },
   { label: "Owner name mismatch", value: 23, color: "bg-chart-3" },
   { label: "High DTI ratio", value: 14, color: "bg-chart-4" },
+  { label: "Missing appraisal docs", value: 11, color: "bg-chart-5" },
 ];
 
 const sparklinePoints = [4, 7, 5, 9, 6, 8, 12, 10, 14, 11, 15, 13];
@@ -104,18 +105,22 @@ function DonutContent() {
 
 function HorizontalBarsContent() {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       {barSamples.map((issue) => (
         <div key={issue.label}>
           <div className="flex items-center justify-between text-xs mb-1.5">
             <span className="font-medium">{issue.label}</span>
             <span className="font-bold">{issue.value}%</span>
           </div>
-          <div className="h-1 w-full rounded-full bg-muted">
+          <div className="h-1 w-full rounded-full bg-muted relative">
             <div
-              className={`h-full rounded-full ${issue.color}`}
+              className={`h-full rounded-full ${issue.color} relative`}
               style={{ width: `${issue.value}%` }}
-            />
+            >
+              <div
+                className={`absolute inset-0 ${issue.color} rounded-full opacity-35 dark:opacity-55 blur-[4px]`}
+              />
+            </div>
           </div>
         </div>
       ))}
@@ -245,16 +250,27 @@ function StackedBarContent() {
               className="w-4 flex flex-col items-center gap-1"
             >
               <div
-                className="w-full flex flex-col-reverse rounded-t-sm overflow-hidden"
+                className="w-full flex flex-col-reverse rounded-t-sm overflow-visible relative"
                 style={{ height: barHeight }}
               >
-                {bar.segments.map((seg) => (
-                  <div
-                    key={seg.color}
-                    className={seg.color}
-                    style={{ flex: seg.value }}
-                  />
-                ))}
+                <div className="absolute inset-0 flex flex-col-reverse rounded-t-sm overflow-hidden">
+                  {bar.segments.map((seg) => (
+                    <div
+                      key={seg.color}
+                      className={`${seg.color} relative`}
+                      style={{ flex: seg.value }}
+                    />
+                  ))}
+                </div>
+                <div className="absolute inset-0 flex flex-col-reverse rounded-t-sm opacity-35 dark:opacity-55 blur-[4px]">
+                  {bar.segments.map((seg) => (
+                    <div
+                      key={`glow-${seg.color}`}
+                      className={seg.color}
+                      style={{ flex: seg.value }}
+                    />
+                  ))}
+                </div>
               </div>
               <span className="text-[10px] text-muted-foreground">
                 {bar.label}
