@@ -231,20 +231,25 @@ This keeps the PR history clean with meaningful, non-duplicate commits.
 
 ### Finalizing Changes
 
-After implementing components or making changes, **always run linting and formatting**:
+After implementing components or making changes, **always run the build, linting, and formatting**:
 
 ```bash
+bun run build
 bun run lint
 bun run format
 ```
+
+If build errors are found:
+1. Review the error output from `bun run build`
+2. Fix any type errors, missing imports, or other build issues
+3. Re-run `bun run build` to confirm the errors are resolved
 
 If linting or formatting issues are found:
 1. Review the issues reported by `bun run lint`
 2. Fix any issues manually if needed
 3. Run `bun run format` to auto-format the code
-4. Commit any formatting or lint fixes before pushing
 
-This ensures all code follows the project's style guidelines and catches any issues before submitting the PR.
+Commit any build, formatting, or lint fixes before pushing. This ensures all code compiles correctly, follows the project's style guidelines, and catches any issues before submitting the PR.
 
 ## Theme & Color Token Updates
 
