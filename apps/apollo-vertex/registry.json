@@ -246,8 +246,12 @@
       "name": "ai-chat",
       "type": "registry:ui",
       "title": "AI Chat",
-      "description": "A generic, reusable, and type-safe AI chat component with OpenAI-compatible API support, agentic tool loop, Zod-typed tool calling, markdown rendering, collapsible tool groups, suggestion buttons, error display, message injection, and per-context storage",
+      "description": "A reusable AI chat UI component for TanStack AI with typed display tools, AgentHub adapter, markdown rendering, collapsible tool groups, suggestion buttons, and error display",
       "dependencies": [
+        "@tanstack/ai@^0.8.1",
+        "@tanstack/ai-client@^0.7.2",
+        "@tanstack/ai-react@^0.7.2",
+        "eventsource-parser@^3.0.6",
         "zod",
         "lucide-react",
         "react-i18next",
@@ -257,19 +261,9 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "registry/ai-chat/utils/ai-chat-message-types.ts",
+          "path": "registry/ai-chat/types.ts",
           "type": "registry:lib",
-          "target": "components/ui/ai-chat/utils/ai-chat-message-types.ts"
-        },
-        {
-          "path": "registry/ai-chat/utils/ai-chat-tool-types.ts",
-          "type": "registry:lib",
-          "target": "components/ui/ai-chat/utils/ai-chat-tool-types.ts"
-        },
-        {
-          "path": "registry/ai-chat/utils/ai-chat-types.ts",
-          "type": "registry:lib",
-          "target": "components/ui/ai-chat/utils/ai-chat-types.ts"
+          "target": "components/ui/ai-chat/types.ts"
         },
         {
           "path": "registry/ai-chat/utils/ai-chat-utils.ts",
@@ -277,39 +271,29 @@
           "target": "components/ui/ai-chat/utils/ai-chat-utils.ts"
         },
         {
-          "path": "registry/ai-chat/utils/ai-chat-loop.ts",
+          "path": "registry/ai-chat/adapters/agenthub/types.ts",
           "type": "registry:lib",
-          "target": "components/ui/ai-chat/utils/ai-chat-loop.ts"
+          "target": "components/ui/ai-chat/adapters/agenthub/types.ts"
         },
         {
-          "path": "registry/ai-chat/utils/ai-chat-provider.ts",
+          "path": "registry/ai-chat/adapters/agenthub/adapter.ts",
           "type": "registry:lib",
-          "target": "components/ui/ai-chat/utils/ai-chat-provider.ts"
+          "target": "components/ui/ai-chat/adapters/agenthub/adapter.ts"
         },
         {
-          "path": "registry/ai-chat/utils/providers/openai/openai-messages.ts",
+          "path": "registry/ai-chat/adapters/agenthub/messages.ts",
           "type": "registry:lib",
-          "target": "components/ui/ai-chat/utils/providers/openai/openai-messages.ts"
+          "target": "components/ui/ai-chat/adapters/agenthub/messages.ts"
         },
         {
-          "path": "registry/ai-chat/utils/providers/openai/openai-stream.ts",
+          "path": "registry/ai-chat/adapters/agenthub/stream.ts",
           "type": "registry:lib",
-          "target": "components/ui/ai-chat/utils/providers/openai/openai-stream.ts"
+          "target": "components/ui/ai-chat/adapters/agenthub/stream.ts"
         },
         {
-          "path": "registry/ai-chat/utils/providers/openai/openai-provider.ts",
+          "path": "registry/ai-chat/adapters/agenthub/tools.ts",
           "type": "registry:lib",
-          "target": "components/ui/ai-chat/utils/providers/openai/openai-provider.ts"
-        },
-        {
-          "path": "registry/ai-chat/utils/ai-chat-api.ts",
-          "type": "registry:lib",
-          "target": "components/ui/ai-chat/utils/ai-chat-api.ts"
-        },
-        {
-          "path": "registry/ai-chat/hooks/use-ai-chat.ts",
-          "type": "registry:hook",
-          "target": "components/ui/ai-chat/hooks/use-ai-chat.ts"
+          "target": "components/ui/ai-chat/adapters/agenthub/tools.ts"
         },
         {
           "path": "registry/ai-chat/components/ai-chat.tsx",

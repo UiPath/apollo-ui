@@ -1,65 +1,72 @@
-import type {
-  AssistantMessage,
-  ChatMessage,
-  ToolCallPart,
-} from "./ai-chat-message-types";
-import {
-  type ToolResultChoices,
-  toolResultChoicesSchema,
-} from "./ai-chat-tool-types";
+import type { ToolCallPart, UIMessage } from "@tanstack/ai-client";
+import { z } from "zod";
 
-export type GroupedItem =
-  | { kind: "message"; message: ChatMessage }
-  | { kind: "tool-group"; id: string; toolCalls: ToolCallPart[] };
-
-type PendingTools = { toolCalls: ToolCallPart[]; groupId: string };
-
-function hasUserResponseAfter(
-  messages: ChatMessage[],
-  afterIndex: number,
-): boolean {
-  return messages.slice(afterIndex + 1).some((m) => m.role === "user");
+function extractToolCallParts(parts: UIMessage["parts"]): ToolCallPart[] {
+  return parts.filter((p): p is ToolCallPart => p.type === "tool-call");
 }
 
+function isToolOnlyMessage(message: UIMessage): boolean {
+  if (message.role !== "assistant") return false;
+  return (
+    message.parts.length > 0 &&
+    message.parts.every(
+      (p) => p.type === "tool-call" || p.type === "tool-result",
+    )
+  );
+}
+
+const choiceOptionSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  value: z.string().optional(),
+  recommended: z.boolean().optional(),
+});
+
+const toolResultChoicesSchema = z.object({
+  type: z.literal("choices"),
+  prompt: z.string(),
+  options: z.array(choiceOptionSchema),
+});
+
+export type ChoiceOption = z.infer<typeof choiceOptionSchema>;
+export type ToolResultChoices = z.infer<typeof toolResultChoicesSchema>;
+
 export function findLatestChoices(
-  messages: ChatMessage[],
+  messages: UIMessage[],
 ): ToolResultChoices | null {
   for (let i = messages.length - 1; i >= 0; i--) {
     const msg = messages[i];
-    if (!msg || msg.role !== "tool") continue;
-    if (hasUserResponseAfter(messages, i)) continue;
+    if (!msg || msg.role !== "assistant") continue;
+    // Don't show choices if the user already responded after this message
+    const hasUserAfter = messages.slice(i + 1).some((m) => m.role === "user");
+    if (hasUserAfter) continue;
 
-    for (const part of msg.content) {
-      if (part.type === "tool-result") {
-        const parsed = toolResultChoicesSchema.safeParse(part.result);
-        if (!parsed.success) continue;
-        return parsed.data;
+    for (const part of msg.parts) {
+      if (part.type !== "tool-result" || !("content" in part)) continue;
+      try {
+        const result = toolResultChoicesSchema.safeParse(
+          JSON.parse(part.content),
+        );
+        if (result.success) return result.data;
+      } catch {
+        // invalid JSON, skip
       }
     }
   }
   return null;
 }
 
-export function extractToolCallParts(
-  content: AssistantMessage["content"],
-): ToolCallPart[] {
-  return content.filter((p): p is ToolCallPart => p.type === "tool-call");
-}
+export type GroupedItem<TMsg extends UIMessage = UIMessage> =
+  | { kind: "message"; message: TMsg }
+  | { kind: "tool-group"; id: string; toolCalls: ToolCallPart[] };
 
-function isToolOnlyMessage(message: ChatMessage): boolean {
-  if (message.role !== "assistant") return false;
-  return (
-    message.content.length > 0 &&
-    message.content.every((p) => p.type === "tool-call")
-  );
-}
+type PendingTools = { toolCalls: ToolCallPart[]; groupId: string };
 
-function flushPendingTools(
-  items: GroupedItem[],
+function flushPendingTools<TMsg extends UIMessage>(
+  items: GroupedItem<TMsg>[],
   pending: PendingTools,
-): GroupedItem[] {
+): GroupedItem<TMsg>[] {
   if (pending.toolCalls.length === 0) return items;
-
   return [
     ...items,
     {
@@ -70,14 +77,12 @@ function flushPendingTools(
   ];
 }
 
-export function groupMessages(
-  messages: ChatMessage[],
+export function groupMessages<TMsg extends UIMessage>(
+  messages: TMsg[],
   enableToolGrouping: boolean,
-): GroupedItem[] {
+): GroupedItem<TMsg>[] {
   if (!enableToolGrouping) {
-    return messages
-      .filter((m) => m.role !== "tool")
-      .map((message) => ({ kind: "message" as const, message }));
+    return messages.map((message) => ({ kind: "message" as const, message }));
   }
 
   const visible = messages.filter(
@@ -85,13 +90,12 @@ export function groupMessages(
   );
 
   const { items, pending } = visible.reduce<{
-    items: GroupedItem[];
+    items: GroupedItem<TMsg>[];
     pending: PendingTools;
   }>(
     (acc, msg) => {
       if (isToolOnlyMessage(msg)) {
-        const newToolCalls =
-          msg.role === "assistant" ? extractToolCallParts(msg.content) : [];
+        const newToolCalls = extractToolCallParts(msg.parts);
         return {
           items: acc.items,
           pending: {

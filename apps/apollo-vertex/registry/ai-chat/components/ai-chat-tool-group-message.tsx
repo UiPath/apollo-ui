@@ -1,7 +1,7 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
-import type { ToolCallPart } from "../utils/ai-chat-message-types";
+import type { ToolCallPart } from "@tanstack/ai-client";
 import { AiChatToolGroup } from "./ai-chat-tool-group";
 
 interface AiChatToolGroupMessageProps {
@@ -18,9 +18,7 @@ export function AiChatToolGroupMessage({
   toolDisplayNames,
 }: AiChatToolGroupMessageProps) {
   const visibleToolCalls = toolDisplayNames
-    ? toolCalls.filter(
-        (tc) => (toolDisplayNames[tc.toolName] ?? tc.toolName) !== "",
-      )
+    ? toolCalls.filter((tc) => (toolDisplayNames[tc.name] ?? tc.name) !== "")
     : toolCalls;
 
   if (visibleToolCalls.length === 0) return null;
