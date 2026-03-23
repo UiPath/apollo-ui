@@ -2,7 +2,6 @@
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["unicorn", "typescript", "oxc", "react", "import"],
   "jsPlugins": [
-    "eslint-plugin-react",
     { "name": "shaggy-eslint-plugin-react", "specifier": "eslint-plugin-react" }
   ],
   "categories": {

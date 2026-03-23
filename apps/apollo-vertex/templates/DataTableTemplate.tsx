@@ -134,6 +134,7 @@ const columns: ColumnDef<Payment>[] = [
   {
     id: "expand",
     header: () => null,
+    minSize: 32,
     cell: ({ row }) => (
       <Button
         variant="ghost"
@@ -156,6 +157,7 @@ const columns: ColumnDef<Payment>[] = [
   },
   {
     id: "select",
+    minSize: 32,
     header: ({ table }) => (
       <Checkbox
         checked={
@@ -178,6 +180,7 @@ const columns: ColumnDef<Payment>[] = [
   },
   {
     accessorKey: "status",
+    minSize: 100,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
@@ -189,12 +192,14 @@ const columns: ColumnDef<Payment>[] = [
   },
   {
     accessorKey: "email",
+    minSize: 100,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Email" />
     ),
   },
   {
     accessorKey: "amount",
+    minSize: 100,
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
@@ -214,6 +219,7 @@ const columns: ColumnDef<Payment>[] = [
   {
     id: "actions",
     enableHiding: false,
+    minSize: 32,
     cell: ({ row }) => {
       const payment = row.original;
       return (
@@ -253,6 +259,7 @@ function DataTableTemplateContent() {
     <div className="p-4">
       <DataTable
         {...tableState}
+        enableColumnResizing
         toolbarContent={(table) => (
           <DataTableFacetedFilter
             column={table.getColumn("status")}
