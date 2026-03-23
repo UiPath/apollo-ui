@@ -234,7 +234,7 @@ function AnalyticsLayout() {
 // --- Main component ---
 
 const layoutLabels: Record<LayoutType, string> = {
-  executive: "Executive",
+  executive: "Product",
   operational: "Operational",
   analytics: "Analytics",
 };
