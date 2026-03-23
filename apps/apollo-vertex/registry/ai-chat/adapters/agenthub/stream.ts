@@ -152,50 +152,39 @@ async function* toStreamChunks(
     .pipeThrough(new TextDecoderStream() as TransformStream<Uint8Array, string>)
     .pipeThrough(new EventSourceParserStream());
 
-  const reader = eventStream.getReader();
-  try {
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      // eslint-disable-next-line no-await-in-loop
-      const { done, value: event } = await reader.read();
-      if (done) break;
-      if (event.data === "[DONE]") break;
+  for await (const event of eventStream) {
+    if (event.data === "[DONE]") break;
 
-      let chunk: OpenAIChatStreamChunk;
-      try {
-        chunk = JSON.parse(event.data) as OpenAIChatStreamChunk;
-      } catch {
-        continue;
-      }
+    let chunk: OpenAIChatStreamChunk;
+    try {
+      chunk = JSON.parse(event.data) as OpenAIChatStreamChunk;
+    } catch {
+      continue;
+    }
 
-      const choice = chunk.choices?.[0];
-      if (!choice) continue;
+    const choice = chunk.choices?.[0];
+    if (!choice) continue;
 
-      if (choice.finish_reason) {
-        finishReason = choice.finish_reason;
-      }
+    if (choice.finish_reason) {
+      finishReason = choice.finish_reason;
+    }
 
-      const delta = choice.delta;
+    const delta = choice.delta;
 
-      // Text content
-      if (delta?.content) {
-        yield {
-          type: "TEXT_MESSAGE_CONTENT" as const,
-          messageId,
-          delta: delta.content,
-          timestamp: Date.now(),
-        };
-      }
+    if (delta?.content) {
+      yield {
+        type: "TEXT_MESSAGE_CONTENT" as const,
+        messageId,
+        delta: delta.content,
+        timestamp: Date.now(),
+      };
+    }
 
-      // Tool calls
-      if (delta?.tool_calls) {
-        for (const tc of delta.tool_calls) {
-          yield* handleToolCallDelta(tc, toolCalls, messageId);
-        }
+    if (delta?.tool_calls) {
+      for (const tc of delta.tool_calls) {
+        yield* handleToolCallDelta(tc, toolCalls, messageId);
       }
     }
-  } finally {
-    reader.releaseLock();
   }
 
   // Close open tool calls and trigger client-side execution
