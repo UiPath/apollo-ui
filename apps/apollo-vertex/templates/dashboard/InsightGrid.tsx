@@ -153,7 +153,7 @@ export function InsightGrid({
                 <Card
                   key={idx}
                   variant="glass"
-                  className={`!bg-white/80 ${shared} ${classes.cardClassName} group/card relative transition-all duration-300 ease-in-out overflow-hidden`}
+                  className={`${isThis && isExpanding ? "!bg-white dark:!bg-card" : "!bg-white/70"} ${shared} ${classes.cardClassName} group/card relative transition-all duration-300 ease-in-out overflow-hidden`}
                   style={{
                     ...cardBgStyle(
                       cards.insightBg,
@@ -198,29 +198,31 @@ export function InsightGrid({
                   <CardContent className={classes.contentClassName}>
                     <InsightCardBody content={cfg.content} />
                   </CardContent>
-                  {isThis && isExpanding && (phase === "height" || phase === "full") && (
-                    <div
-                      className={`flex-1 mx-6 mb-6 rounded-lg overflow-hidden transition-all duration-300 ${
-                        phase === "full"
-                          ? "opacity-100 translate-y-0"
-                          : "opacity-0 translate-y-2"
-                      }`}
-                    >
-                      {phase === "full" ? (
-                        <div className="h-full border border-dashed border-muted-foreground/15 bg-muted/30 rounded-lg flex items-center justify-center">
-                          <span className="text-xs text-muted-foreground/40">
-                            Additional content
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="h-full space-y-3 p-4">
-                          <div className="h-3 w-2/3 rounded-full bg-muted/50 animate-pulse" />
-                          <div className="h-3 w-1/2 rounded-full bg-muted/50 animate-pulse" />
-                          <div className="h-3 w-3/4 rounded-full bg-muted/50 animate-pulse" />
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  {isThis &&
+                    isExpanding &&
+                    (phase === "height" || phase === "full") && (
+                      <div
+                        className={`flex-1 mx-6 mb-6 rounded-lg overflow-hidden transition-all duration-300 ${
+                          phase === "full"
+                            ? "opacity-100 translate-y-0"
+                            : "opacity-0 translate-y-2"
+                        }`}
+                      >
+                        {phase === "full" ? (
+                          <div className="h-full border border-dashed border-muted-foreground/15 bg-muted/30 rounded-lg flex items-center justify-center">
+                            <span className="text-xs text-muted-foreground/40">
+                              Additional content
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="h-full space-y-3 p-4">
+                            <div className="h-3 w-2/3 rounded-full bg-muted/50 animate-pulse" />
+                            <div className="h-3 w-1/2 rounded-full bg-muted/50 animate-pulse" />
+                            <div className="h-3 w-3/4 rounded-full bg-muted/50 animate-pulse" />
+                          </div>
+                        )}
+                      </div>
+                    )}
                 </Card>
               );
             })}

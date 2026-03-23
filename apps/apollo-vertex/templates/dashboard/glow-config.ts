@@ -251,7 +251,7 @@ export const defaultDarkCards: CardConfig = {
   overviewOpacity: 69,
   overviewGradient: { ...defaultGradient, opacity: 30 },
   insightBg: "sidebar",
-  insightOpacity: 70,
+  insightOpacity: 60,
   insightGradient: { ...defaultGradient },
   promptBg: "sidebar",
   promptOpacity: 80,

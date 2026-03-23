@@ -73,8 +73,9 @@ export function PromptBar({
         <div className="flex items-center gap-2 ml-3">
           <button
             type="button"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Voice input"
+            onMouseDown={(e) => e.preventDefault()}
+            className="size-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+            aria-label="Settings"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -86,9 +87,10 @@ export function PromptBar({
               strokeLinejoin="round"
               className="size-4"
             >
-              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-              <line x1="12" x2="12" y1="19" y2="22" />
+              <path d="M20 7h-9" />
+              <path d="M14 17H5" />
+              <circle cx="17" cy="17" r="3" />
+              <circle cx="7" cy="7" r="3" />
             </svg>
           </button>
           <button
