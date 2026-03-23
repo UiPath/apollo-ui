@@ -49,7 +49,7 @@ function NavigateIcon() {
   );
 }
 
-type ExpandPhase = "idle" | "width" | "full";
+type ExpandPhase = "idle" | "width" | "height" | "full";
 
 export function InsightGrid({
   layout,
@@ -68,10 +68,13 @@ export function InsightGrid({
       setPhase("idle");
       return;
     }
-    // Start with width expansion
     requestAnimationFrame(() => setPhase("width"));
-    const timer = setTimeout(() => setPhase("full"), 300);
-    return () => clearTimeout(timer);
+    const t1 = setTimeout(() => setPhase("height"), 300);
+    const t2 = setTimeout(() => setPhase("full"), 600);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, [expandedIdx]);
 
   const gapStyle = { gap: `${layout.gap}px` };
@@ -95,7 +98,10 @@ export function InsightGrid({
   };
 
   return (
-    <div className="relative flex flex-col h-full" style={gapStyle}>
+    <div
+      className="relative flex flex-col h-full transition-all duration-300 ease-in-out"
+      style={{ gap: phase === "height" || phase === "full" ? 0 : layout.gap }}
+    >
       {rows.map((row, rowIndex) => {
         const isRowWithExpanded = rowIndex === expandedRow;
         const isOtherRow = isExpanding && !isRowWithExpanded;
@@ -125,9 +131,17 @@ export function InsightGrid({
             style={{
               ...gapStyle,
               gridTemplateColumns: cols,
-              flex: isOtherRow && phase === "full" ? "0" : "1",
-              opacity: isOtherRow && phase === "full" ? 0 : 1,
-              minHeight: isOtherRow && phase === "full" ? 0 : "auto",
+              flex:
+                isOtherRow && (phase === "height" || phase === "full")
+                  ? "0"
+                  : "1",
+              maxHeight: isOtherRow && phase === "full" ? 0 : 9999,
+              opacity:
+                isOtherRow && (phase === "height" || phase === "full") ? 0 : 1,
+              transform:
+                isOtherRow && (phase === "height" || phase === "full")
+                  ? "scale(0.95)"
+                  : "scale(1)",
             }}
           >
             {row.map(({ cfg, idx }) => {
@@ -184,6 +198,29 @@ export function InsightGrid({
                   <CardContent className={classes.contentClassName}>
                     <InsightCardBody content={cfg.content} />
                   </CardContent>
+                  {isThis && isExpanding && (
+                    <div
+                      className={`flex-1 mx-6 mb-6 rounded-lg overflow-hidden transition-all duration-300 ${
+                        phase === "full"
+                          ? "opacity-100 translate-y-0"
+                          : "opacity-0 translate-y-2"
+                      }`}
+                    >
+                      {phase === "full" ? (
+                        <div className="h-full border border-dashed border-muted-foreground/15 bg-muted/30 rounded-lg flex items-center justify-center">
+                          <span className="text-xs text-muted-foreground/40">
+                            Additional content
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="h-full space-y-3 p-4">
+                          <div className="h-3 w-2/3 rounded-full bg-muted/50 animate-pulse" />
+                          <div className="h-3 w-1/2 rounded-full bg-muted/50 animate-pulse" />
+                          <div className="h-3 w-3/4 rounded-full bg-muted/50 animate-pulse" />
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </Card>
               );
             })}
