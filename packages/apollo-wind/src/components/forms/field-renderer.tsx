@@ -261,7 +261,7 @@ export function FormFieldRenderer({
   if (isCustomField(field) && customComponents[field.component]) {
     const CustomComponent = customComponents[field.component];
     return (
-      <div style={gridStyle}>
+      <div className="empty:hidden" style={gridStyle}>
         <Controller
           name={field.name}
           control={control}
@@ -282,7 +282,7 @@ export function FormFieldRenderer({
   }
 
   return (
-    <div style={gridStyle}>
+    <div className="empty:hidden" style={gridStyle}>
       <Controller
         name={field.name}
         control={control}

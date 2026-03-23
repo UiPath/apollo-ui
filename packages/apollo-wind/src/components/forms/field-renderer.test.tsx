@@ -340,6 +340,57 @@ describe('FormFieldRenderer', () => {
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper).toHaveStyle({ gridColumn: 'span 1' });
     });
+
+    it('hides grid cell wrapper when custom component returns null', () => {
+      const NullComponent = () => null;
+
+      const field: FieldMetadata = {
+        name: 'null_custom',
+        type: 'custom',
+        label: 'Null Custom',
+        component: 'NullComponent',
+      };
+
+      const { container } = render(
+        <FormWrapper>
+          <FormFieldRenderer
+            field={field}
+            context={createMockContext()}
+            customComponents={{ NullComponent }}
+          />
+        </FormWrapper>
+      );
+
+      const wrapper = container.firstChild as HTMLElement;
+      expect(wrapper).toHaveClass('empty:hidden');
+      // The div should be empty since the custom component returned null
+      expect(wrapper.childNodes).toHaveLength(0);
+    });
+
+    it('does not hide grid cell wrapper when custom component renders content', () => {
+      const VisibleComponent = () => <div data-testid="custom-content">Hello</div>;
+
+      const field: FieldMetadata = {
+        name: 'visible_custom',
+        type: 'custom',
+        label: 'Visible Custom',
+        component: 'VisibleComponent',
+      };
+
+      const { container } = render(
+        <FormWrapper>
+          <FormFieldRenderer
+            field={field}
+            context={createMockContext()}
+            customComponents={{ VisibleComponent }}
+          />
+        </FormWrapper>
+      );
+
+      const wrapper = container.firstChild as HTMLElement;
+      expect(wrapper).toHaveClass('empty:hidden');
+      expect(screen.getByTestId('custom-content')).toBeInTheDocument();
+    });
   });
 
   describe('accessibility', () => {
