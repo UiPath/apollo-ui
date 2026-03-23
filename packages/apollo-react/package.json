@@ -129,18 +129,18 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run build:icons && pnpm run i18n:compile && rslib build",
-    "build:analyze": "ANALYZE=true pnpm run build",
+    "build": "bun run build:icons && bun run i18n:compile && rslib build",
+    "build:analyze": "ANALYZE=true bun run build",
     "build:icons": "tsx scripts/icons-build.ts",
     "dev": "rslib build --watch",
     "lint": "biome lint src",
     "lint:fix": "biome lint --write src",
     "format": "biome format --write src",
     "format:check": "biome format src",
-    "test": "pnpm run i18n:compile && vitest --run",
+    "test": "bun run i18n:compile && vitest --run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "pnpm run i18n:compile && vitest --run --coverage",
+    "test:coverage": "bun run i18n:compile && vitest --run --coverage",
     "clean": "rm -rf dist",
     "i18n:extract": "lingui extract",
     "i18n:extract:watch": "lingui extract --watch",
@@ -222,6 +222,7 @@
     "zustand": "^5.0.9"
   },
   "devDependencies": {
+    "@lingui/babel-plugin-lingui-macro": "^5.6.1",
     "@lingui/cli": "^5.6.1",
     "@lingui/conf": "^5.6.1",
     "@lingui/format-json": "^5.6.1",

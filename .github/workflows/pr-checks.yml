@@ -40,17 +40,16 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
-          cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Cache Turborepo
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
@@ -62,31 +61,31 @@ jobs:
 
       - name: Run Format Check
         if: matrix.check == 'Format'
-        run: pnpm format:check --affected
+        run: bun run format:check --affected
 
       - name: Run Lint
         if: matrix.check == 'Lint'
-        run: pnpm lint --affected
+        run: bun run lint --affected
 
       - name: Run Lint CSS
         if: matrix.check == 'Lint CSS'
-        run: pnpm lint:css --affected
+        run: bun run lint:css --affected
 
       - name: Run Lint Deps
         if: matrix.check == 'Lint Deps'
-        run: pnpm lint:deps --affected
+        run: bun run lint:deps --affected
 
       - name: Run Check Dependency Consistency
         if: matrix.check == 'Check Dependency Consistency'
-        run: pnpm check:dependencies
+        run: bun run check:dependencies
 
       - name: Run Typecheck
         if: matrix.check == 'Typecheck'
-        run: pnpm typecheck --affected
+        run: bun run typecheck --affected
 
       - name: Run Test Coverage
         if: matrix.check == 'Test Coverage'
-        run: pnpm test:coverage --affected
+        run: bun run test:coverage --affected
 
       - name: Upload Coverage
         if: matrix.check == 'Test Coverage'
@@ -99,12 +98,12 @@ jobs:
       - name: Run Build
         if: matrix.check == 'Build'
         run: |
-          if git diff --name-only origin/main...HEAD | grep -qE '^(pnpm-lock\.yaml|package\.json)$'; then
+          if git diff --name-only origin/main...HEAD | grep -qE '^(bun\.lock|package\.json)$'; then
             echo "📦 Root dependency files changed - building all packages"
-            pnpm build
+            bun run build
           else
             echo "🎯 Building affected packages only"
-            pnpm build --affected
+            bun run build --affected
           fi
 
       - name: Upload Failure Artifacts
@@ -133,7 +132,7 @@ jobs:
       - name: Check for lockfile changes
         id: lockfile_check
         run: |
-          if git diff --name-only origin/main...HEAD | grep -q '^pnpm-lock\.yaml$'; then
+          if git diff --name-only origin/main...HEAD | grep -q '^bun\.lock$'; then
             echo "changed=true" >> $GITHUB_OUTPUT
           else
             echo "changed=false" >> $GITHUB_OUTPUT
@@ -158,22 +157,28 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
-          cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
+
+      - name: Generate package-lock.json for audit
+        run: |
+          # npm doesn't understand workspace:* protocol - temporarily replace for lockfile generation
+          find . -name 'package.json' -not -path '*/node_modules/*' -exec sed -i 's/"workspace:\*"/"*"/g' {} +
+          npm i --package-lock-only --ignore-scripts
+          git checkout -- '*/package.json' package.json
 
       - name: Run Audit All Dependencies
         if: matrix.check == 'Audit All Dependencies'
-        run: pnpm audit
+        run: npm audit
 
       - name: Run Audit Production Dependencies
         if: matrix.check == 'Audit Production Dependencies'
-        run: pnpm audit --prod
+        run: npm audit --omit=dev

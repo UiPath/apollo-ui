@@ -39,7 +39,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run build:tokens && pnpm run build:fonts && pnpm run process:icons && pnpm run build:icons && rslib build",
+    "build": "bun run build:tokens && bun run build:fonts && bun run process:icons && bun run build:icons && rslib build",
     "build:tokens": "node build-tokens.js",
     "build:fonts": "postcss 'src/fonts/**/*.base-css' --base src/fonts --dir src/fonts --ext .css --verbose",
     "build:icons": "tsx scripts/generate-icons.ts",

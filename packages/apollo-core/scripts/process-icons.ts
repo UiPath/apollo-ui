@@ -11,8 +11,8 @@
  * 5. Generates TypeScript exports
  *
  * Usage:
- *   pnpm process-icons           # Process and rename icons
- *   pnpm process-icons --dry-run # Preview changes without renaming
+ *   bun run process-icons           # Process and rename icons
+ *   bun run process-icons --dry-run # Preview changes without renaming
  */
 
 import {
@@ -623,7 +623,7 @@ async function main(): Promise<void> {
   if (DRY_RUN) {
     console.log('🧪 This was a dry run. No changes were made.\n');
     console.log('💡 Run without --dry-run to actually rename:');
-    console.log('   pnpm process-icons\n');
+    console.log('   bun run process-icons\n');
     process.exit(0);
   }
 
@@ -668,8 +668,8 @@ async function main(): Promise<void> {
   console.log(`📊 Unique names: ${usedNames.size}`);
 
   console.log('\n💡 Next steps:');
-  console.log('   1. Run: pnpm build:icons');
-  console.log('   2. Run: pnpm build\n');
+  console.log('   1. Run: bun run build:icons');
+  console.log('   2. Run: bun run build\n');
 }
 
 main().catch((error) => {

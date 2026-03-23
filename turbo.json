@@ -1,6 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["**/.env.*local", "tsconfig.json", "pnpm-lock.json"],
+  "globalDependencies": ["**/.env.*local", "tsconfig.json", "bun.lock"],
   "concurrency": "15",
   "tasks": {
     "build": {

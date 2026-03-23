@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { cpSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -19,22 +19,28 @@ function testComponent(component: string, baseAppPath: string): TestResult {
       filter: (src) => !src.includes('node_modules'),
     });
 
+    // Copy .npmrc so bun can resolve scoped registries (e.g. @uipath)
+    const npmrcPath = process.env.NPM_CONFIG_USERCONFIG;
+    if (npmrcPath && existsSync(npmrcPath)) {
+      copyFileSync(npmrcPath, join(testDir, '.npmrc'));
+    }
+
     // Install dependencies in the temp directory
-    execFileSync('pnpm', ['install'], {
+    execFileSync('bun', ['install'], {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd: testDir,
     });
 
     // Install the component from registry
-    const addOutput = execFileSync('pnpm', ['exec', 'shadcn', 'add', `@uipath/${component}`], {
+    const addOutput = execFileSync('bunx', ['shadcn', 'add', `@uipath/${component}`], {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd: testDir,
     });
 
     // Run build to verify all imports resolve correctly
-    const buildOutput = execFileSync('pnpm', ['run', 'build'], {
+    const buildOutput = execFileSync('bun', ['run', 'build'], {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd: testDir,

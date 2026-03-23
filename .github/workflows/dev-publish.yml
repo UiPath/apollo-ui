@@ -147,17 +147,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
-          cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Cleanup previous version
         env:
@@ -172,7 +171,7 @@ jobs:
           version="${PACKAGE_VERSION##*@}"
 
           echo "Cleaning up: $PACKAGE_VERSION"
-          pnpm unpublish:dev "$pkg_name" "$version"
+          bun run unpublish:dev "$pkg_name" "$version"
 
   update-comment-publishing:
     name: Update Comment - Publishing
@@ -187,17 +186,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
-          cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Create initial PR comment
         env:
@@ -207,7 +205,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           SHORT_SHA="${SHORT_SHA:0:7}"
-          pnpm exec tsx scripts/create-dev-comment.ts
+          bunx tsx scripts/create-dev-comment.ts
 
   publish:
     name: Publish ${{ matrix.package }}
@@ -226,22 +224,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
-          cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Build package
         env:
           PACKAGE: ${{ matrix.package }}
-        run: pnpm build --filter="$PACKAGE"
+        run: bun run build --filter="$PACKAGE"
 
       - name: Publish package
         id: publish
@@ -271,7 +268,7 @@ jobs:
             exit 1
           fi
 
-          if pnpm publish:dev "$PACKAGE" "$SUFFIX"; then
+          if bun run publish:dev "$PACKAGE" "$SUFFIX"; then
             echo "full_version=$PACKAGE@$version-$SUFFIX" >> $GITHUB_OUTPUT
             echo "status=success" >> $GITHUB_OUTPUT
           else
@@ -287,7 +284,7 @@ jobs:
           FULL_VERSION: ${{ steps.publish.outputs.full_version }}
           PUBLISH_STATUS: ${{ steps.publish.outputs.status }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm exec tsx scripts/update-dev-comment-row.ts
+        run: bunx tsx scripts/update-dev-comment-row.ts
 
   update-comment-cleanup:
     name: Update Comment - Cleanup Only
