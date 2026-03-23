@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardGlow } from "./DashboardGlow";
@@ -274,8 +275,11 @@ export function DashboardContent() {
               <h1 className="text-xs tracking-tight">
                 <span className="font-bold">UiPath</span> Vertical Solutions
               </h1>
-              <p className="text-2xl font-bold tracking-tight">
+              <p className="text-2xl font-bold tracking-tight flex items-center gap-2">
                 {layoutLabels[layout]} Dashboard
+                <Badge variant="secondary" status="info">
+                  Experiment
+                </Badge>
               </p>
             </div>
             <Tabs
