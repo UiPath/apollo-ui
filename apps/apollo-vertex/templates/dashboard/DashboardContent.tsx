@@ -207,7 +207,9 @@ function ExecutiveLayout({
         <PromptBar shared={shared} cards={cards} />
       </div>
       {/* Right half — insight grid */}
-      <InsightGrid layout={layout} shared={shared} cards={cards} />
+      <div className="overflow-hidden relative">
+        <InsightGrid layout={layout} shared={shared} cards={cards} />
+      </div>
     </div>
   );
 }
@@ -246,7 +248,7 @@ export function DashboardContent() {
   return (
     <DashboardLoading triggerReplay={replayCount}>
       <div
-        className="relative h-full"
+        className="relative h-full overflow-hidden"
         style={
           layoutCfg.containerBg === "none"
             ? {}

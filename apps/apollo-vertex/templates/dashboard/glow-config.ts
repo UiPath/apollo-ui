@@ -98,7 +98,7 @@ export const defaultLayout: LayoutConfig = {
     {
       size: "sm",
       visible: true,
-      interaction: "static",
+      interaction: "expand",
       content: {
         type: "kpi",
         chartType: "donut",
@@ -108,7 +108,7 @@ export const defaultLayout: LayoutConfig = {
     {
       size: "md",
       visible: true,
-      interaction: "static",
+      interaction: "expand",
       content: {
         type: "chart",
         chartType: "horizontal-bars",
@@ -118,7 +118,7 @@ export const defaultLayout: LayoutConfig = {
     {
       size: "md",
       visible: true,
-      interaction: "static",
+      interaction: "expand",
       content: {
         type: "chart",
         chartType: "stacked-bar",
@@ -128,7 +128,7 @@ export const defaultLayout: LayoutConfig = {
     {
       size: "sm",
       visible: true,
-      interaction: "static",
+      interaction: "expand",
       content: {
         type: "kpi",
         chartType: "donut",
