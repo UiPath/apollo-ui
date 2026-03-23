@@ -190,7 +190,7 @@ export function mergeGroupDown<T>(tasks: T[][], groupIndex: number, taskIndex: n
 
   if (belowGroup) {
     // Add task to the group below
-    updatedTasks[groupIndex + 1] = [...belowGroup, task];
+    updatedTasks[groupIndex + 1] = [task, ...belowGroup];
 
     // Remove task from current group or remove group if empty
     if (currentGroupWithoutTask.length > 0) {
