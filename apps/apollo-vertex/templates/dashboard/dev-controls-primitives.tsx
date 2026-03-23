@@ -86,3 +86,28 @@ export function Toggle({
     </label>
   );
 }
+
+export function TextInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <div>
+      <div className="text-xs mb-1">{label}</div>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full h-7 rounded border bg-background px-1 text-xs"
+        placeholder={placeholder}
+      />
+    </div>
+  );
+}

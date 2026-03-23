@@ -5,107 +5,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardGlow } from "./DashboardGlow";
 import {
+  cardBgStyle,
   defaultDarkCards,
   defaultDarkGlow,
   defaultLayout,
-  getInsightCardClasses,
   type CardConfig,
-  type CardGradient,
   type GlowConfig,
   type LayoutConfig,
 } from "./glow-config";
 import { GlowDevControls } from "./GlowDevControls";
-import { InsightCardBody } from "./insight-card-renderers";
+import { InsightGrid } from "./InsightGrid";
 import { DashboardLoading } from "./DashboardLoading";
 import { PromptBar } from "./PromptBar";
 
 type LayoutType = "executive" | "operational" | "analytics";
-
-function cardBgStyle(
-  bg: string,
-  opacity: number,
-  gradient: CardGradient,
-): React.CSSProperties {
-  if (gradient.enabled) {
-    const alpha = gradient.opacity / 100;
-    return {
-      "--card-bg-override": `linear-gradient(${gradient.angle}deg, color-mix(in srgb, ${gradient.start} ${alpha * 100}%, transparent), color-mix(in srgb, ${gradient.end} ${alpha * 100}%, transparent))`,
-      borderColor: "transparent",
-    } as React.CSSProperties;
-  }
-  const value =
-    bg === "white"
-      ? `rgba(255,255,255,${opacity / 100})`
-      : `color-mix(in srgb, var(--${bg}) ${opacity}%, transparent)`;
-  return { "--card-bg-override": value } as React.CSSProperties;
-}
-
-// --- Helpers ---
-const sizeToFr: Record<string, string> = { sm: "1fr", md: "2fr", lg: "1fr" };
-function InsightGrid({
-  layout,
-  shared,
-  cards,
-}: {
-  layout: LayoutConfig;
-  shared: string;
-  cards: CardConfig;
-}) {
-  const gapStyle = { gap: `${layout.gap}px` };
-  const visibleCards = layout.insightCards
-    .map((cfg, i) => ({ cfg, idx: i }))
-    .filter(({ cfg }) => cfg.visible);
-
-  // Group into rows of 2
-  const rows: (typeof visibleCards)[] = [];
-  for (let i = 0; i < visibleCards.length; i += 2) {
-    rows.push(visibleCards.slice(i, i + 2));
-  }
-
-  return (
-    <div className="flex flex-col" style={gapStyle}>
-      {rows.map((row) => {
-        const cols = row
-          .map(({ cfg }) => (cfg.size === "lg" ? "1fr" : sizeToFr[cfg.size]))
-          .join(" ");
-        return (
-          <div
-            key={row.map(({ idx }) => idx).join("-")}
-            className="grid flex-1"
-            style={{ ...gapStyle, gridTemplateColumns: cols }}
-          >
-            {row.map(({ cfg, idx }) => {
-              const classes = getInsightCardClasses(cfg.content);
-              return (
-                <Card
-                  key={idx}
-                  variant="glass"
-                  className={`!bg-white/90 ${shared} ${classes.cardClassName}`}
-                  style={cardBgStyle(
-                    cards.insightBg,
-                    cards.insightOpacity,
-                    cards.insightGradient,
-                  )}
-                >
-                  <CardHeader>
-                    <CardTitle className="text-sm font-bold tracking-tight">
-                      {cfg.content.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className={classes.contentClassName}>
-                    <InsightCardBody content={cfg.content} />
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// --- Layout renderers ---
 
 function ExecutiveLayout({
   cards,
