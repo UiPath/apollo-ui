@@ -77,7 +77,6 @@ export function InsightGrid({
     };
   }, [expandedIdx]);
 
-  const gapStyle = { gap: `${layout.gap}px` };
   const visibleCards = layout.insightCards
     .map((cfg, i) => ({ cfg, idx: i }))
     .filter(({ cfg }) => cfg.visible);
@@ -129,7 +128,7 @@ export function InsightGrid({
             key={row.map(({ idx }) => idx).join("-")}
             className="grid transition-all duration-300 ease-in-out overflow-hidden"
             style={{
-              ...gapStyle,
+              gap: isRowWithExpanded && phase !== "idle" ? 0 : layout.gap,
               gridTemplateColumns: cols,
               flex:
                 isOtherRow && (phase === "height" || phase === "full")
