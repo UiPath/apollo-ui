@@ -504,9 +504,9 @@ const StageNodeComponent = (props: StageNodeProps) => {
     >
       <StageContainer selected={selected} status={status} width={width} style={taskWidthStyle}>
         <StageHeader isException={isException}>
-          <Row gap={Spacing.SpacingMicro} align="center">
+          <Row gap={Spacing.SpacingMicro} align="center" flex={1} minW={0}>
             {icon}
-            <Column py={2}>
+            <Column py={2} flex={1} minW={0}>
               <ApTypography
                 variant={
                   isStageTitleEditing ? FontVariantToken.fontSizeM : FontVariantToken.fontSizeMBold

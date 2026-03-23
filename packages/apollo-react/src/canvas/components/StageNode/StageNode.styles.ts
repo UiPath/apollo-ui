@@ -78,9 +78,10 @@ export const StageHeader = styled.div<{ isException?: boolean }>`
 `;
 
 export const StageTitleContainer = styled.div<{ isEditing?: boolean }>`
-  display: inline-block;
+  display: block;
   border-radius: 4px;
   height: 100%;
+  width: 100%;
   border: ${(props) => (props.isEditing ? '1px solid var(--uix-canvas-border-de-emp)' : 'none')};
 `;
 
@@ -97,8 +98,8 @@ export const StageTitleInput = styled.input<{
   background: transparent;
   text-overflow: ellipsis;
   border-radius: 2px;
+  width: 100%;
   min-width: 100px;
-  max-width: 220px;
   padding: ${(props) => (props.isStageTitleEditable ? 'none' : `${Padding.PadS} 0px`)};
 
   &:focus {

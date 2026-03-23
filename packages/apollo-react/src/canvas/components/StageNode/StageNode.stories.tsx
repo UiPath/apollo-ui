@@ -1290,6 +1290,138 @@ export const AddAndReplaceTasks: Story = {
   args: {},
 };
 
+const InlineTitleEditStory = () => {
+  const StageNodeWrapper = useMemo(
+    () =>
+      function StageNodeWrapperComponent(props: any) {
+        return <StageNode {...props} {...props.data} />;
+      },
+    []
+  );
+
+  const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), [StageNodeWrapper]);
+  const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
+
+  const initialNodes = useMemo(
+    () => [
+      {
+        id: 'editable-stage',
+        type: 'stage' as const,
+        position: { x: 48, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Click to Edit Title',
+            tasks: [
+              [{ id: '1', label: 'KYC Verification', icon: <VerificationIcon /> }],
+              [{ id: '2', label: 'Document Review', icon: <DocumentIcon /> }],
+            ],
+          },
+          onTaskAdd: () => {
+            window.alert('Add task functionality - this would open a dialog to add a new task');
+          },
+        },
+      },
+      {
+        id: 'long-title-stage',
+        type: 'stage' as const,
+        position: { x: 400, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'A Very Long Stage Title That Should Truncate With Ellipsis',
+            tasks: [
+              [{ id: '1', label: 'Processing Task', icon: <ProcessIcon /> }],
+            ],
+          },
+          onTaskAdd: () => {
+            window.alert('Add task functionality - this would open a dialog to add a new task');
+          },
+        },
+      },
+    ],
+    []
+  );
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
+  const createTitleChangeHandler = useCallback(
+    (nodeId: string) => (newTitle: string) => {
+      setNodes((nds) =>
+        nds.map((node) =>
+          node.id === nodeId
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  stageDetails: {
+                    ...node.data.stageDetails,
+                    label: newTitle,
+                  },
+                },
+              }
+            : node
+        )
+      );
+    },
+    [setNodes]
+  );
+
+  const nodesWithHandlers = useMemo(
+    () =>
+      nodes.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          onStageTitleChange: createTitleChangeHandler(node.id),
+        },
+      })),
+    [nodes, createTitleChangeHandler]
+  );
+
+  const onConnect = useCallback(
+    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
+    [setEdges]
+  );
+
+  return (
+    <div style={{ width: '100vw', height: '100vh' }}>
+      <ReactFlowProvider>
+        <BaseCanvas
+          nodes={nodesWithHandlers}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          mode="design"
+          connectionMode={ConnectionMode.Strict}
+          defaultEdgeOptions={{ type: 'stage' }}
+          connectionLineComponent={StageConnectionEdge}
+          elevateEdgesOnSelect
+          defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
+        >
+          <Panel position="bottom-right">
+            <CanvasPositionControls translations={DefaultCanvasTranslations} />
+          </Panel>
+        </BaseCanvas>
+      </ReactFlowProvider>
+    </div>
+  );
+};
+
+export const EditableStageTitle: Story = {
+  name: 'Editable Stage Title',
+  parameters: {
+    useCustomRender: true,
+  },
+  render: () => <InlineTitleEditStory />,
+  args: {},
+};
+
 // Simulate async children fetch (2s delay)
 const fetchChildren = (id: string): Promise<ListItem[]> =>
   new Promise((resolve) => {
