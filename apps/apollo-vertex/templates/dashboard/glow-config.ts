@@ -66,10 +66,14 @@ export interface InsightCardContent {
   title: string;
 }
 
+export type CardInteraction = "static" | "expand" | "navigate";
+
 export interface InsightCardConfig {
   size: CardSize;
   visible: boolean;
   content: InsightCardContent;
+  interaction: CardInteraction;
+  navigateTo?: string;
 }
 
 export interface LayoutConfig {
@@ -94,6 +98,7 @@ export const defaultLayout: LayoutConfig = {
     {
       size: "sm",
       visible: true,
+      interaction: "static",
       content: {
         type: "kpi",
         chartType: "donut",
@@ -103,6 +108,7 @@ export const defaultLayout: LayoutConfig = {
     {
       size: "md",
       visible: true,
+      interaction: "static",
       content: {
         type: "chart",
         chartType: "horizontal-bars",
@@ -112,6 +118,7 @@ export const defaultLayout: LayoutConfig = {
     {
       size: "md",
       visible: true,
+      interaction: "static",
       content: {
         type: "chart",
         chartType: "stacked-bar",
@@ -121,6 +128,7 @@ export const defaultLayout: LayoutConfig = {
     {
       size: "sm",
       visible: true,
+      interaction: "static",
       content: {
         type: "kpi",
         chartType: "donut",
@@ -165,12 +173,33 @@ export const cardTypeOptions = [
   { label: "Chart", value: "chart" },
 ];
 
+export const interactionOptions = [
+  { label: "Static", value: "static" },
+  { label: "Expand", value: "expand" },
+  { label: "Navigate", value: "navigate" },
+];
+
 export const chartTypeOptions = [
   { label: "Donut", value: "donut" },
   { label: "Horizontal Bars", value: "horizontal-bars" },
   { label: "Sparkline", value: "sparkline" },
   { label: "Area", value: "area" },
   { label: "Stacked Bar", value: "stacked-bar" },
+];
+
+export const sizeOptions = [
+  { label: "Small (1 col)", value: "sm" },
+  { label: "Medium (1 col)", value: "md" },
+  { label: "Large (full)", value: "lg" },
+];
+
+export const containerBgOptions = [
+  { label: "None", value: "none" },
+  { label: "white", value: "white" },
+  { label: "sidebar", value: "sidebar" },
+  { label: "card", value: "card" },
+  { label: "background", value: "background" },
+  { label: "muted", value: "muted" },
 ];
 
 export const bgColorOptions = [
@@ -180,6 +209,25 @@ export const bgColorOptions = [
   { label: "background", value: "background" },
   { label: "muted", value: "muted" },
 ];
+
+export function cardBgStyle(
+  bg: string,
+  opacity: number,
+  gradient: CardGradient,
+): React.CSSProperties {
+  if (gradient.enabled) {
+    const alpha = gradient.opacity / 100;
+    return {
+      "--card-bg-override": `linear-gradient(${gradient.angle}deg, color-mix(in srgb, ${gradient.start} ${alpha * 100}%, transparent), color-mix(in srgb, ${gradient.end} ${alpha * 100}%, transparent))`,
+      borderColor: "transparent",
+    } as React.CSSProperties;
+  }
+  const value =
+    bg === "white"
+      ? `rgba(255,255,255,${opacity / 100})`
+      : `color-mix(in srgb, var(--${bg}) ${opacity}%, transparent)`;
+  return { "--card-bg-override": value } as React.CSSProperties;
+}
 
 export function getInsightCardClasses(content: InsightCardContent): {
   cardClassName: string;

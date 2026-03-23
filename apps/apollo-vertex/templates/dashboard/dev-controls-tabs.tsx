@@ -4,10 +4,14 @@ import {
   bgColorOptions,
   cardTypeOptions,
   chartTypeOptions,
+  containerBgOptions,
   insightOptions,
+  interactionOptions,
   primaryOptions,
+  sizeOptions,
   type CardConfig,
   type CardGradient,
+  type CardInteraction,
   type CardSize,
   type ChartType,
   type GlowConfig,
@@ -15,7 +19,12 @@ import {
   type InsightCardType,
   type LayoutConfig,
 } from "./glow-config";
-import { SelectControl, Slider, Toggle } from "./dev-controls-primitives";
+import {
+  SelectControl,
+  Slider,
+  TextInput,
+  Toggle,
+} from "./dev-controls-primitives";
 
 function GradientSection({
   gradient,
@@ -233,17 +242,6 @@ export function CardsTab({
   );
 }
 
-const sizeOptions = [
-  { label: "Small (1 col)", value: "sm" },
-  { label: "Medium (1 col)", value: "md" },
-  { label: "Large (full)", value: "lg" },
-];
-
-const containerBgOptions = [
-  { label: "None", value: "none" },
-  ...bgColorOptions,
-];
-
 export function LayoutTab({
   config,
   onChange,
@@ -294,7 +292,6 @@ export function LayoutTab({
         onChange={(v) => update({ padding: v })}
         displayValue={`${config.padding}px`}
       />
-
       <div className="text-xs font-medium border-b pb-1 pt-1">Left Column</div>
       <Slider
         label="Overview Ratio"
@@ -312,7 +309,6 @@ export function LayoutTab({
         step={1}
         onChange={(v) => update({ promptRatio: v })}
       />
-
       <div className="text-xs font-medium border-b pb-1 pt-1">
         Insight Cards
       </div>
@@ -365,22 +361,33 @@ export function LayoutTab({
                     }
                   />
                 )}
-                <div>
-                  <div className="text-xs mb-1">Title</div>
-                  <input
-                    type="text"
-                    value={config.insightCards[i].content.title}
-                    onChange={(e) =>
-                      updateInsightCard(i, {
-                        content: {
-                          ...config.insightCards[i].content,
-                          title: e.target.value,
-                        },
-                      })
-                    }
-                    className="w-full h-7 rounded border bg-background px-1 text-xs"
+                <TextInput
+                  label="Title"
+                  value={config.insightCards[i].content.title}
+                  onChange={(v) =>
+                    updateInsightCard(i, {
+                      content: { ...config.insightCards[i].content, title: v },
+                    })
+                  }
+                />
+                <SelectControl
+                  label="Interaction"
+                  value={config.insightCards[i].interaction}
+                  options={interactionOptions}
+                  onChange={(v) =>
+                    updateInsightCard(i, {
+                      interaction: v as CardInteraction,
+                    })
+                  }
+                />
+                {config.insightCards[i].interaction === "navigate" && (
+                  <TextInput
+                    label="Navigate to"
+                    value={config.insightCards[i].navigateTo ?? ""}
+                    onChange={(v) => updateInsightCard(i, { navigateTo: v })}
+                    placeholder="/preview/dashboard/..."
                   />
-                </div>
+                )}
               </>
             )}
           </div>
