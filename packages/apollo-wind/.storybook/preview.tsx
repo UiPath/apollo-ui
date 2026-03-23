@@ -63,7 +63,15 @@ const preview: Preview = {
         order: [
           'Introduction',
           'Theme',
-          ['Colors', 'Icons', 'Spacing', 'Typography', 'Future', ['Theme', '*']],
+          [
+            'Colors',
+            'Logos',
+            'Icons',
+            'Spacing',
+            'Typography',
+            'Future',
+            ['Theme', 'Colors', 'Icons', '*'],
+          ],
           'Components',
           [
             'All Components',
