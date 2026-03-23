@@ -1,3 +1,9 @@
+## [@uipath/apollo-core-v5.8.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.7.4...@uipath/apollo-core@5.8.0) (2026-03-23)
+
+### Features
+
+* **apollo-wind:** add Logos page with brand and product logo library ([2cda272](https://github.com/UiPath/apollo-ui/commit/2cda272c807356e6e13f0c0f20b3183485561b30))
+
 ## [@uipath/apollo-core-v5.7.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.7.3...@uipath/apollo-core@5.7.4) (2026-03-19)
 
 ### Bug Fixes

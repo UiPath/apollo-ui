@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.60.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.59.2...@uipath/apollo-react@3.60.0) (2026-03-23)
+
+### Features
+
+* **apollo-wind:** add Logos page with brand and product logo library ([2cda272](https://github.com/UiPath/apollo-ui/commit/2cda272c807356e6e13f0c0f20b3183485561b30))
+
 ## [@uipath/apollo-react-v3.59.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.59.1...@uipath/apollo-react@3.59.2) (2026-03-23)
 
 ### Bug Fixes

@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v1.4.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.3.0...@uipath/apollo-wind@1.4.0) (2026-03-23)
+
+### Features
+
+* **apollo-wind:** add Logos page with brand and product logo library ([2cda272](https://github.com/uipath/apollo-ui/commit/2cda272c807356e6e13f0c0f20b3183485561b30))
+
 ## [@uipath/apollo-wind-v1.3.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.2.1...@uipath/apollo-wind@1.3.0) (2026-03-23)
 
 ### Features
