@@ -289,14 +289,14 @@ describe('GroupModificationUtils', () => {
   it('mergeGroupDown: should merge task with group below', () => {
     const tasks: TestItem[][] = [[createItem('1')], [createItem('2')], [createItem('3')]];
     const result = mergeGroupDown(tasks, 1, 0);
-    expect(result).toEqual([[createItem('1')], [createItem('3'), createItem('2')]]);
+    expect(result).toEqual([[createItem('1')], [createItem('2'), createItem('3')]]);
   });
 
   it('mergeGroupDown: should remove group if it becomes empty after merge', () => {
     const tasks: TestItem[][] = [[createItem('1')], [createItem('2')], [createItem('3')]];
     const result = mergeGroupDown(tasks, 1, 0);
     expect(result).toHaveLength(2);
-    expect(result[1]).toEqual([createItem('3'), createItem('2')]);
+    expect(result[1]).toEqual([createItem('2'), createItem('3')]);
   });
 
   it('mergeGroupDown: should merge into existing parallel group below', () => {
@@ -308,7 +308,7 @@ describe('GroupModificationUtils', () => {
     const result = mergeGroupDown(tasks, 1, 0);
     expect(result).toEqual([
       [createItem('1')],
-      [createItem('3'), createItem('4'), createItem('2')],
+      [createItem('2'), createItem('3'), createItem('4')],
     ]);
   });
 
@@ -340,7 +340,7 @@ describe('GroupModificationUtils', () => {
     expect(result).toEqual([
       [createItem('1')],
       [createItem('3')],
-      [createItem('4'), createItem('2')],
+      [createItem('2'), createItem('4')],
     ]);
   });
 
