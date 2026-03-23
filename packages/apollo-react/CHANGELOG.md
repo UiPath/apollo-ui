@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.59.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.59.0...@uipath/apollo-react@3.59.1) (2026-03-23)
+
+### Bug Fixes
+
+* **apollo-react:** preserve task order when creating parallel group with task below ([c65fa2b](https://github.com/UiPath/apollo-ui/commit/c65fa2b91bb293ac3bf9cecc7c4c4aa4524688d6))
+
 ## [@uipath/apollo-react-v3.59.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.58.2...@uipath/apollo-react@3.59.0) (2026-03-20)
 
 ### Features
