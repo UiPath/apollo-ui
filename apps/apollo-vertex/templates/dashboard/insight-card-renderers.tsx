@@ -234,8 +234,8 @@ function StackedBarContent() {
   ];
 
   return (
-    <div>
-      <div className="flex items-end justify-between">
+    <div className="flex flex-col h-full">
+      <div className="flex items-end justify-between flex-1">
         {stackedBarData.map((bar) => {
           const total = bar.segments.reduce((sum, s) => sum + s.value, 0);
           const barHeight = (total / maxTotal) * barMaxHeight;
@@ -263,7 +263,7 @@ function StackedBarContent() {
           );
         })}
       </div>
-      <div className="flex items-center gap-4 mt-4">
+      <div className="flex items-center gap-4 mt-auto pt-4">
         {legendItems.map((item) => (
           <div key={item.label} className="flex items-center gap-1.5">
             <div className={`size-2 rounded-full ${item.color}`} />

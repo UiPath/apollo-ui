@@ -39,7 +39,7 @@ function ExecutiveLayout({
       <div className="flex flex-col" style={gapStyle}>
         <Card
           variant="glass"
-          className={`!bg-white flex-1 !gap-4 !p-8 !pt-10 overflow-hidden ${shared}`}
+          className={`!bg-white/90 flex-1 !gap-4 !p-8 !pt-10 overflow-hidden ${shared}`}
           style={cardBgStyle(
             cards.overviewBg,
             cards.overviewOpacity,

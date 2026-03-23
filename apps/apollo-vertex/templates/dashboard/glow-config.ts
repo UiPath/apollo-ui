@@ -98,7 +98,7 @@ export const defaultLayout: LayoutConfig = {
     {
       size: "sm",
       visible: true,
-      interaction: "expand",
+      interaction: "static",
       content: {
         type: "kpi",
         chartType: "donut",
@@ -128,7 +128,7 @@ export const defaultLayout: LayoutConfig = {
     {
       size: "sm",
       visible: true,
-      interaction: "expand",
+      interaction: "static",
       content: {
         type: "kpi",
         chartType: "donut",
@@ -251,7 +251,7 @@ export const defaultDarkCards: CardConfig = {
   overviewOpacity: 69,
   overviewGradient: { ...defaultGradient, opacity: 30 },
   insightBg: "sidebar",
-  insightOpacity: 54,
+  insightOpacity: 70,
   insightGradient: { ...defaultGradient },
   promptBg: "sidebar",
   promptOpacity: 80,

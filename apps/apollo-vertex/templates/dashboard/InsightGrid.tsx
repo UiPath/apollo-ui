@@ -153,7 +153,7 @@ export function InsightGrid({
                 <Card
                   key={idx}
                   variant="glass"
-                  className={`!bg-white/90 ${shared} ${classes.cardClassName} group/card relative transition-all duration-300 ease-in-out overflow-hidden`}
+                  className={`!bg-white/80 ${shared} ${classes.cardClassName} group/card relative transition-all duration-300 ease-in-out overflow-hidden`}
                   style={{
                     ...cardBgStyle(
                       cards.insightBg,
@@ -198,7 +198,7 @@ export function InsightGrid({
                   <CardContent className={classes.contentClassName}>
                     <InsightCardBody content={cfg.content} />
                   </CardContent>
-                  {isThis && isExpanding && (
+                  {isThis && isExpanding && (phase === "height" || phase === "full") && (
                     <div
                       className={`flex-1 mx-6 mb-6 rounded-lg overflow-hidden transition-all duration-300 ${
                         phase === "full"
