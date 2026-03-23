@@ -1,0 +1,23 @@
+import { DashboardTemplate } from '@/templates/dashboard/DashboardTemplateDynamic';
+import { PreviewFullScreen } from '@/app/components/preview-full-screen';
+
+# Dashboard
+
+Dashboard layout patterns using Card tiles in configurable grid arrangements.
+Use the layout toggle inside the preview to switch between Executive, Operational, and Analytics configurations.
+
+## Sidebar Shell
+
+<PreviewFullScreen title="Dashboard layout - sidebar shell">
+    <DashboardTemplate />
+</PreviewFullScreen>
+
+<a href="/preview/dashboard" target="_blank" className="text-sm text-primary hover:underline">Open standalone preview →</a>
+
+## Minimal Header Shell
+
+<PreviewFullScreen title="Dashboard layout - minimal shell">
+    <DashboardTemplate shellVariant="minimal" />
+</PreviewFullScreen>
+
+<a href="/preview/dashboard-minimal" target="_blank" className="text-sm text-primary hover:underline">Open standalone preview →</a>
