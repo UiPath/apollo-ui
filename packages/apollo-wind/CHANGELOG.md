@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v1.3.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.2.1...@uipath/apollo-wind@1.3.0) (2026-03-23)
+
+### Features
+
+* **apollo-wind:** add apollo-writing skill with UiPath UX writing guidelines ([5cdb224](https://github.com/uipath/apollo-ui/commit/5cdb224dd713b57fd58eb816769927334652a940))
+
 ## [@uipath/apollo-wind-v1.2.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.2.0...@uipath/apollo-wind@1.2.1) (2026-03-19)
 
 ### Bug Fixes
