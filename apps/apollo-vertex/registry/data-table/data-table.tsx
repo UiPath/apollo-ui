@@ -18,7 +18,6 @@ import {
   type RowSelectionState,
   type SortingState,
   type Table as TanstackTable,
-  useReactTable,
   type VisibilityState,
 } from "@tanstack/react-table";
 import * as React from "react";
@@ -40,8 +39,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useReactTableCompat } from "@/hooks/useReactTableCompat";
 import { cn } from "@/lib/utils";
-
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableSkeleton } from "./data-table-skeleton";
 import { DataTableToolbar } from "./data-table-toolbar";
@@ -151,7 +150,7 @@ function DataTable<TData, TValue>({
 
   const isRowSelectionEnabled = !!(rowSelection && onRowSelectionChange);
 
-  const table = useReactTable({
+  const table = useReactTableCompat({
     data,
     columns,
     onSortingChange,
