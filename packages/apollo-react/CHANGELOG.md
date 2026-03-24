@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.60.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.60.1...@uipath/apollo-react@3.60.2) (2026-03-24)
+
+### Bug Fixes
+
+* **apollo-react:** add Warning state for stages and stage tasks ([3e2bd31](https://github.com/UiPath/apollo-ui/commit/3e2bd318a3c9198fd858f16e911952a2736d34ac))
+
 ## [@uipath/apollo-react-v3.60.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.60.0...@uipath/apollo-react@3.60.1) (2026-03-24)
 
 ### Bug Fixes
