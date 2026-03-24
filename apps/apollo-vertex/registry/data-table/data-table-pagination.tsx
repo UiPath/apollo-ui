@@ -28,6 +28,7 @@ function DataTablePagination<TData>({
   paginationSizes = [10, 20, 30, 40, 50],
   className,
 }: DataTablePaginationProps<TData>) {
+  "use no memo";
   const { t } = useTranslation();
   const { pageIndex, pageSize } = table.getState().pagination;
   const pageCount = table.getPageCount();

@@ -146,6 +146,7 @@ function DataTable<TData, TValue>({
   onExpandedChange,
   renderExpandedRow,
 }: DataTableProps<TData, TValue>) {
+  "use no memo";
   const { t } = useTranslation();
 
   const isRowSelectionEnabled = !!(rowSelection && onRowSelectionChange);

@@ -21,6 +21,7 @@ function DataTableToolbar<TData>({
   enableViewOptions,
   customContent,
 }: DataTableToolbarProps<TData>) {
+  "use no memo";
   if (!enableSearch && !enableViewOptions && !customContent) return null;
 
   return (

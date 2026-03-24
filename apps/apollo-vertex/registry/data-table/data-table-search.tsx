@@ -13,6 +13,7 @@ function DataTableSearch<TData>({
   placeholder,
   className,
 }: DataTableSearchProps<TData>) {
+  "use no memo";
   const { t } = useTranslation();
   return (
     <div data-slot="data-table-search" className={className}>

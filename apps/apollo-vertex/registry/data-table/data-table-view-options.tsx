@@ -23,6 +23,7 @@ function DataTableViewOptions<TData>({
   table,
   className,
 }: DataTableViewOptionsProps<TData>) {
+  "use no memo";
   const { t } = useTranslation();
 
   const allReorderableColumns = table
