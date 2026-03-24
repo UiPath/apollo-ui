@@ -10,6 +10,7 @@ export function getExecutionStatusColor(status: string | undefined): string {
     case 'Completed':
       return 'var(--color-success-icon)';
     case 'Paused':
+    case 'Warning':
       return 'var(--color-warning-icon)';
     case 'Cancelled':
       return 'var(--color-error-icon)';
@@ -52,6 +53,7 @@ export function ExecutionStatusIcon({
     | 'Failed'
     | 'NotExecuted'
     | 'Terminated'
+    | 'Warning'
     | string;
   size?: number;
 }) {
@@ -65,6 +67,8 @@ export function ExecutionStatusIcon({
         return <ApIcon color={color} name="check_circle" size={`${size}px`} />;
       case 'Paused':
         return <ApIcon color={color} name="pause" size={`${size}px`} />;
+      case 'Warning':
+        return <ApIcon color={color} name="warning" size={`${size}px`} />;
       case 'Failed':
         return <ApIcon color={color} name="error" size={`${size}px`} />;
       case 'Terminated':

@@ -30,6 +30,7 @@ export const getExecutionStatusBorder = (executionStatus?: string) => {
         border-color: var(--uix-canvas-success-icon);
       `;
     case 'Paused':
+    case 'Warning':
     case 'WARNING': {
       return css`
         border-color: var(--uix-canvas-warning-icon);

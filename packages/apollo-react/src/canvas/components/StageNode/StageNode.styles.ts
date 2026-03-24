@@ -48,7 +48,7 @@ export const StageContainer = styled.div<{
     `}
 
   ${({ status }) =>
-    status === 'Paused' &&
+    (status === 'Paused' || status === 'Warning') &&
     css`
       border-color: var(--uix-canvas-warning-icon);
     `}
@@ -208,7 +208,7 @@ export const StageTask = styled.div<{
     `}
 
   ${({ status }) =>
-    status === 'Paused' &&
+    (status === 'Paused' || status === 'Warning') &&
     css`
       border-color: var(--uix-canvas-warning-icon);
     `}

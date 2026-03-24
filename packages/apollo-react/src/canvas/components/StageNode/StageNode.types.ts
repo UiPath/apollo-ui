@@ -12,6 +12,7 @@ enum ElementStatusValues {
   NotExecuted = 'NotExecuted',
   Paused = 'Paused',
   Terminated = 'Terminated',
+  Warning = 'Warning',
 }
 
 export type StageStatus = `${ElementStatusValues}`;

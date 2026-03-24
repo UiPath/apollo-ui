@@ -18,6 +18,7 @@ const meta = {
         'Failed',
         'NotExecuted',
         'Terminated',
+        'Warning',
       ],
       description: 'The execution status to display',
     },
@@ -56,6 +57,7 @@ export const Default: Story = {
           { status: 'Cancelled', label: 'Cancelled', description: 'Execution cancelled' },
           { status: 'Terminated', label: 'Terminated', description: 'Forcefully stopped' },
           { status: 'NotExecuted', label: 'Not Executed', description: 'Not yet started' },
+          { status: 'Warning', label: 'Warning', description: 'Needs attention' },
         ].map(({ status, label, description }) => (
           <div
             key={status}
