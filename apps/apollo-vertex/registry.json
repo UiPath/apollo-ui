@@ -492,6 +492,20 @@
       ]
     },
     {
+      "name": "combobox",
+      "type": "registry:ui",
+      "title": "Combobox",
+      "description": "An autocomplete input with a filterable list, supporting single and multi-select with badges.",
+      "registryDependencies": ["badge", "button", "command", "popover"],
+      "dependencies": ["react-i18next"],
+      "files": [
+        {
+          "path": "registry/combobox/combobox.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "command",
       "type": "registry:ui",
       "title": "Command",
