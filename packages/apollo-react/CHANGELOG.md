@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.60.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.60.0...@uipath/apollo-react@3.60.1) (2026-03-24)
+
+### Bug Fixes
+
+* **apollo-react:** update Remove task to Delete task ([73010e3](https://github.com/UiPath/apollo-ui/commit/73010e33d3c26f11d866706627ef775cd66f3fc2))
+
 ## [@uipath/apollo-react-v3.60.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.59.2...@uipath/apollo-react@3.60.0) (2026-03-23)
 
 ### Features
