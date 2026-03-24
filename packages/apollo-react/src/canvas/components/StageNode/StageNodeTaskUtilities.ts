@@ -34,7 +34,7 @@ export const getContextMenuItems = (
     REMOVE_GROUP: getMenuItem('remove-group', 'Remove group from stage', () =>
       reGroupTaskFunction(GroupModificationType.REMOVE_GROUP, groupIndex, taskIndex)
     ),
-    REMOVE_TASK: getMenuItem('remove-task', 'Remove task from stage', () =>
+    REMOVE_TASK: getMenuItem('remove-task', 'Delete task', () =>
       reGroupTaskFunction(GroupModificationType.REMOVE_TASK, groupIndex, taskIndex)
     ),
     CREATE_PARALLEL_GROUP_ABOVE: getMenuItem(
