@@ -35,6 +35,7 @@
       "@/components/ui/chart": ["./registry/chart/chart"],
       "@/components/ui/checkbox": ["./registry/checkbox/checkbox"],
       "@/components/ui/collapsible": ["./registry/collapsible/collapsible"],
+      "@/components/ui/combobox": ["./registry/combobox/combobox"],
       "@/components/ui/command": ["./registry/command/command"],
       "@/components/ui/context-menu": ["./registry/context-menu/context-menu"],
       "@/components/ui/data-table": ["./registry/data-table/index"],
