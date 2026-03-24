@@ -7,6 +7,7 @@ export const ElementStatusValues = {
   NotExecuted: 'NotExecuted',
   Paused: 'Paused',
   Terminated: 'Terminated',
+  Warning: 'Warning',
   None: 'None',
 } as const;
 export type ElementStatusValues = (typeof ElementStatusValues)[keyof typeof ElementStatusValues];

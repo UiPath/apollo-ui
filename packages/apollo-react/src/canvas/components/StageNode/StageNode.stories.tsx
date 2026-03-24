@@ -248,6 +248,34 @@ export const Default: Story = {
           },
         },
       },
+      {
+        id: '3',
+        type: 'stage',
+        position: { x: 1104, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Review - Warning',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Risk Assessment', icon: <VerificationIcon /> }],
+              [{ id: '2', label: 'Policy Review', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              label: 'Needs attention',
+              status: 'Warning',
+            },
+            taskStatus: {
+              '2': {
+                status: 'Warning',
+                message: 'Policy review requires manual intervention',
+              },
+            },
+          },
+        },
+      },
     ],
   },
   args: {},
