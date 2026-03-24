@@ -15,64 +15,52 @@ The `@uipath/vs-core` package provides everything you need to build data-driven 
 
 To create a new vertical solution, you have two options:
 
-**Option 1: Install the UI CLI + plugins (Recommended)**
+**Option 1: Use the UiPath CLI (Recommended)**
+
+Install the `uipcli` tool and its vertical solutions plugin:
 
 ```bash
-npm install @uipath/ui-cli @uipath/ui-cli-vss @uipath/ui-cli-deploy
+npm install @uipath/cli @uipath/vss
 ```
 
-After installing, you can run commands via `ui-cli`.
+After installing, you can run commands via `uip`.
 
-### `@uipath/ui-cli-vss` commands
+### `uip vss` commands
 
-VSS plugin for Vertical Solution Templates.
+Vertical Solutions plugin for managing UiPath Vertical Solutions.
 
-Also supports flags, for more info ui-cli vss --help or ui-cli vss [command] --help.
+Also supports flags, for more info `uip vss --help` or `uip vss [command] --help`.
 
-Plugin docs: https://github.com/UiPath/ui-cli/tree/master/packages/vss
+Plugin docs: https://github.com/UiPath/uipcli/tree/main/packages/vertical-solutions
 
-- **Initialize a new VSS project**
+- **Initialize a new vertical solution**
 
 ```bash
-ui-cli vss init [path]
+uip vss init
 ```
 
-- **Add an entity**
+- **Scaffold a new vertical solution**
 
 ```bash
-ui-cli vss add entity
+uip vss scaffold
 ```
 
-- **Add a process**
+- **Add an entity, process, or connection**
 
 ```bash
-ui-cli vss add process
+uip vss add <type> [path]
 ```
 
-- **Sync entities**
+- **Sync a vertical solution**
 
 ```bash
-ui-cli vss sync
+uip vss sync
 ```
 
-### `@uipath/ui-cli-deploy` commands
-
-Deployment automation plugin for building, packaging, and publishing UiPath apps.
-
-Also supports flags, for more info ui-cli deploy --help or ui-cli deploy [command] --help.
-
-Plugin docs: https://github.com/UiPath/ui-cli/tree/master/packages/deploy
-
-- **Initialize deployment configuration**
+- **Generate types for your vertical solution**
 
 ```bash
-ui-cli deploy init
-```
-
-- **Deploy your app**
-
-```bash
-ui-cli deploy run
+uip vss generate
 ```
 
 **Option 2: Fork the Template**
