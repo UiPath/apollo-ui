@@ -17,7 +17,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Input } from '@/components/ui/input';
+import { FlowInput, FlowInputGroup } from '@/components/UiPath/FlowInput';
 import {
   Select,
   SelectContent,
@@ -120,12 +120,7 @@ function FieldItem({
       {field.type === 'select' ? (
         <Select value={value || undefined} onValueChange={setValue}>
           <SelectTrigger
-            className={cn(
-              'h-10 rounded-xl border-0 shadow-sm',
-              value
-                ? 'bg-surface-hover text-foreground'
-                : 'bg-surface-overlay text-foreground-muted'
-            )}
+            className="h-10 rounded-xl border-0 bg-surface-overlay text-foreground shadow-sm placeholder:text-foreground-muted"
           >
             <SelectValue placeholder={field.placeholder ?? 'Select...'} />
           </SelectTrigger>
@@ -142,32 +137,26 @@ function FieldItem({
           </SelectContent>
         </Select>
       ) : field.type === 'url' ? (
-        <div className="flex h-10 items-center overflow-hidden rounded-xl bg-surface-overlay shadow-sm">
-          <Input
+        <FlowInputGroup className="gap-0 p-0">
+          <FlowInput
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder={field.placeholder}
-            className="h-full flex-1 rounded-none border-0 bg-transparent text-sm font-medium text-foreground-muted shadow-none placeholder:text-foreground-subtle focus-visible:ring-0"
+            className="flex-1 rounded-none border-0 bg-transparent px-3 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
           />
           <button
             type="button"
-            className="flex h-full w-[50px] items-center justify-center border-l border-border text-foreground-muted transition-colors hover:text-foreground"
+            className="flex h-full w-[50px] shrink-0 items-center justify-center border-l border-border text-foreground-muted transition-colors hover:text-foreground"
             aria-label="Browse files"
           >
             <Folder className="h-5 w-5" />
           </button>
-        </div>
+        </FlowInputGroup>
       ) : (
-        <Input
+        <FlowInput
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder={field.placeholder}
-          className={cn(
-            'h-10 rounded-xl border-0 text-sm font-medium shadow-sm',
-            value
-              ? 'bg-surface-hover text-foreground'
-              : 'bg-surface-overlay text-foreground-muted placeholder:text-foreground-subtle'
-          )}
         />
       )}
     </div>
