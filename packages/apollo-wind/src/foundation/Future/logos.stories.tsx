@@ -265,7 +265,17 @@ function LogosPage() {
         {/* Header */}
         <PageTitle>Logos</PageTitle>
         <SectionDescription>
-          This page contains our brand logos as well as product logos for easy access.
+          This page contains our brand logos as well as product logos for easy access. All logos in
+          full can be discovered at our brand center{' '}
+          <a
+            href="https://brandcenter.uipath.com/point/en/uipath/component/default/217184"
+            target="_blank"
+            rel="noreferrer"
+            className="text-foreground-accent underline hover:text-foreground-accent-muted"
+          >
+            here
+          </a>
+          .
         </SectionDescription>
 
         <Divider />
