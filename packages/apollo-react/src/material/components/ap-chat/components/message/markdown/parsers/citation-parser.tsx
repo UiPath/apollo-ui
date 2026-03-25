@@ -34,7 +34,11 @@ export function citationPlugin() {
         const token = match[0];
         if (token.startsWith('[[cite-start:')) {
           try {
-            const decoded = atob(match[1] as string);
+            // Decode base64, then reverse percent-encoding for Unicode support.
+            // Data encoded before the Unicode fix used plain btoa (ASCII-only titles),
+            // so atob alone is sufficient as a fallback.
+            const raw = atob(match[1] as string);
+            const decoded = raw.startsWith('%5B') ? decodeURIComponent(raw) : raw;
             const citationsData = JSON.parse(decoded);
             citationStack.push({ citationsData });
 
@@ -147,7 +151,7 @@ export function contentPartsToMarkdown(messageId: string, contentParts: ContentP
           messageId,
         }));
 
-        const encodedData = btoa(JSON.stringify(citationsData));
+        const encodedData = btoa(encodeURIComponent(JSON.stringify(citationsData)));
         // Add a space before [[cite-end]] when text ends with a URL to prevent
         // link parser from absorbing [[cite-end]] into the URL and rendering it as part of the link.
         const endsWithUrl = /https?:\/\/\S+$/.test(text);
