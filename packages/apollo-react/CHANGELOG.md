@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.60.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.60.3...@uipath/apollo-react@3.60.4) (2026-03-25)
+
+### Bug Fixes
+
+* **ap-chat:** use Unicode-safe base64 encoding for citation data ([5a5dd5e](https://github.com/UiPath/apollo-ui/commit/5a5dd5e901449fbeade3924a613df78b49190a6a))
+
 ## [@uipath/apollo-react-v3.60.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.60.2...@uipath/apollo-react@3.60.3) (2026-03-25)
 
 ### Bug Fixes
