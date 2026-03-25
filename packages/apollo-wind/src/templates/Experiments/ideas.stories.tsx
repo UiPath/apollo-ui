@@ -991,7 +991,112 @@ function IdeasPage({ globalTheme }: { globalTheme: string }) {
 // Story
 // ============================================================================
 
-export const Default: Story = {
-  name: 'Ideas',
+export const Visual: Story = {
   render: (_, { globals }) => <IdeasPage globalTheme={globals.theme || 'future-dark'} />,
+};
+
+export const Setup: Story = {
+  parameters: {
+    layout: 'padded',
+  },
+  render: () => (
+    <div className="mx-auto max-w-3xl space-y-10 py-10 text-foreground">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">Layout Generator</h1>
+        <p className="text-base text-foreground-muted">
+          An AI-powered layout prototyping tool — describe a UI in plain language and get a
+          live-rendered Apollo Wind layout instantly. Built from three layers.
+        </p>
+      </div>
+
+      {/* Layer 1 */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground-accent text-sm font-bold text-foreground-on-accent">1</span>
+          <h2 className="text-xl font-semibold">Apollo Wind — Component Scope</h2>
+        </div>
+        <p className="text-sm text-foreground-muted">
+          The full Apollo Wind component library is passed as the live scope, so every layout
+          the AI generates can use real design-system components directly.
+        </p>
+        <div className="rounded-2xl border border-border-subtle bg-surface-raised p-5 space-y-3">
+          {[
+            ['AdminTemplate / DelegateTemplate', 'Full page layout shells with sidebar and toolbar'],
+            ['Card, Button, Badge, Input, Table…', 'Core UI primitives from apollo-wind'],
+            ['MaestroPanel', 'Side panel component for workflow-style layouts'],
+            ['future-dark tokens', 'All generated layouts inherit the active Storybook theme'],
+          ].map(([name, desc]) => (
+            <div key={name} className="flex gap-3">
+              <code className="mt-0.5 shrink-0 rounded bg-surface-overlay px-2 py-0.5 text-xs text-foreground-accent">{name}</code>
+              <span className="text-sm text-foreground-muted">{desc}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Layer 2 */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground-accent text-sm font-bold text-foreground-on-accent">2</span>
+          <h2 className="text-xl font-semibold">Anthropic API — Code Generation</h2>
+        </div>
+        <p className="text-sm text-foreground-muted">
+          A system prompt instructs Claude to return a single JSX expression using only the
+          Apollo Wind scope. The response is streamed and rendered live as it arrives.
+        </p>
+        <div className="rounded-2xl border border-border-subtle bg-surface-raised p-5 space-y-3">
+          {[
+            ['claude-sonnet-4-20250514', 'Model used for layout generation'],
+            ['Direct browser access', 'Calls the Anthropic API directly — requires VITE_ANTHROPIC_API_KEY in packages/apollo-wind/.env'],
+            ['Streaming', 'Code streams token-by-token and re-renders as it builds up'],
+            ['Conversation history', 'Multi-turn — follow-up prompts refine the previous layout'],
+          ].map(([name, desc]) => (
+            <div key={name} className="flex gap-3">
+              <code className="mt-0.5 shrink-0 rounded bg-surface-overlay px-2 py-0.5 text-xs text-foreground-accent">{name}</code>
+              <span className="text-sm text-foreground-muted">{desc}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Layer 3 */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground-accent text-sm font-bold text-foreground-on-accent">3</span>
+          <h2 className="text-xl font-semibold">react-live — Live Preview</h2>
+        </div>
+        <p className="text-sm text-foreground-muted">
+          The generated JSX is evaluated and rendered in real time inside the Storybook canvas
+          using <code className="rounded bg-surface-overlay px-1.5 py-0.5 text-xs">react-live</code>.
+          No build step — changes appear immediately.
+        </p>
+        <div className="rounded-2xl border border-border-subtle bg-surface-raised p-5 space-y-3">
+          {[
+            ['LiveProvider', 'Wraps the generated code string with the Apollo Wind scope'],
+            ['LivePreview', 'Renders the evaluated JSX inside the canvas panel'],
+            ['LiveError', 'Displays parse or runtime errors inline if generation fails'],
+          ].map(([name, desc]) => (
+            <div key={name} className="flex gap-3">
+              <code className="mt-0.5 shrink-0 rounded bg-surface-overlay px-2 py-0.5 text-xs text-foreground-accent">{name}</code>
+              <span className="text-sm text-foreground-muted">{desc}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Env setup */}
+      <div className="rounded-2xl border border-border-subtle bg-surface-raised p-5 space-y-2">
+        <p className="text-sm font-medium text-foreground">API key setup</p>
+        <code className="block rounded bg-surface-overlay px-3 py-2 text-xs text-foreground-muted">
+          packages/apollo-wind/.env
+        </code>
+        <code className="block rounded bg-surface-overlay px-3 py-2 text-xs text-foreground-muted">
+          VITE_ANTHROPIC_API_KEY=sk-ant-...
+        </code>
+        <p className="text-xs text-foreground-subtle">
+          The key is read client-side via <code className="rounded bg-surface-overlay px-1 py-0.5">import.meta.env</code>. Never commit the <code className="rounded bg-surface-overlay px-1 py-0.5">.env</code> file.
+        </p>
+      </div>
+    </div>
+  ),
 };
