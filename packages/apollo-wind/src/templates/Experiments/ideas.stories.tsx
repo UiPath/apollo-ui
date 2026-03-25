@@ -68,7 +68,7 @@ import { AnimatedGradientIcon, AnimatedGradientText } from './ideas-AnimatedGrad
 // ============================================================================
 
 const meta = {
-  title: 'Experiments/Ideas',
+  title: 'Experiments/Layout Generator',
   parameters: {
     layout: 'fullscreen',
   },
