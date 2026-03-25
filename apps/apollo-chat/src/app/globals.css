@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+/* ─── Future Dark theme (matches Storybook future-dark) ─────────────────── */
+/* Applied via .future-dark class on <html>, identical to how Storybook does it */
+.future-dark {
+  /* Surfaces */
+  --surface: var(--color-zinc-950);
+  --surface-raised: var(--color-zinc-900);
+  --surface-overlay: var(--color-zinc-800);
+  --surface-hover: var(--color-zinc-700);
+  --surface-muted: var(--color-zinc-500);
+  --surface-inverse: var(--color-zinc-50);
+
+  /* Brand */
+  --brand: var(--color-cyan-600);
+  --brand-subtle: var(--color-cyan-950);
+
+  /* Foreground */
+  --foreground: var(--color-zinc-50);
+  --foreground-secondary: var(--color-zinc-100);
+  --foreground-hover: var(--color-zinc-300);
+  --foreground-muted: var(--color-zinc-400);
+  --foreground-subtle: var(--color-zinc-500);
+  --foreground-inverse: var(--color-zinc-950);
+  --foreground-on-accent: var(--color-zinc-50);
+  --foreground-accent: var(--color-cyan-600);
+  --foreground-accent-muted: var(--color-cyan-400);
+
+  /* Borders */
+  --ap-wind-border: var(--color-zinc-700);
+  --border-subtle: var(--color-zinc-800);
+  --border-muted: var(--color-zinc-900);
+  --border-deep: var(--color-zinc-950);
+  --border-inverse: var(--color-zinc-200);
+  --border-hover: var(--color-zinc-600);
+
+  /* Ring */
+  --ring: var(--color-zinc-600);
+
+  /* shadcn/ui aliases */
+  --background: var(--surface);
+  --card: var(--surface-raised);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--foreground-on-accent);
+  --secondary: var(--surface-overlay);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--surface-overlay);
+  --muted-foreground: var(--foreground-muted);
+  --accent: var(--surface-hover);
+  --accent-foreground: var(--foreground);
+  --destructive: var(--color-red-500);
+  --destructive-foreground: var(--color-zinc-50);
+  --border: var(--ap-wind-border);
+  --input: var(--ap-wind-border);
+
+  --radius: 0.75rem;
+  color-scheme: dark;
+}
+
+/* ─── Tailwind v4 theme mapping ──────────────────────────────────────────── */
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* shadcn/ui tokens (used by AI Elements) */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Apollo Wind surface tokens */
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-inverse: var(--surface-inverse);
+
+  /* Apollo Wind foreground tokens */
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-subtle: var(--foreground-subtle);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-hover: var(--foreground-hover);
+  --color-foreground-inverse: var(--foreground-inverse);
+  --color-foreground-accent: var(--foreground-accent);
+  --color-foreground-accent-muted: var(--foreground-accent-muted);
+  --color-foreground-on-accent: var(--foreground-on-accent);
+
+  /* Apollo Wind brand tokens */
+  --color-brand: var(--brand);
+  --color-brand-subtle: var(--brand-subtle);
+
+  /* Apollo Wind border tokens */
+  --color-border-hover: var(--border-hover);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-muted: var(--border-muted);
+}
+
+/* ─── Base styles ────────────────────────────────────────────────────────── */
+html, body {
+  height: 100%;
+  background-color: var(--surface);
+  color: var(--foreground);
+}
