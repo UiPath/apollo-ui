@@ -1,3 +1,9 @@
+## [@uipath/apollo-core-v5.8.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.8.0...@uipath/apollo-core@5.8.1) (2026-03-25)
+
+### Bug Fixes
+
+* **apollo-core:** update Logo Full Light to all-black monochrome ([e9f4fc6](https://github.com/UiPath/apollo-ui/commit/e9f4fc6776d9313785cb505aaf722f42d875e1cf)), closes [#FA4616](https://github.com/UiPath/apollo-ui/issues/FA4616)
+
 ## [@uipath/apollo-core-v5.8.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.7.4...@uipath/apollo-core@5.8.0) (2026-03-23)
 
 ### Features
