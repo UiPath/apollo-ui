@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.60.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.60.2...@uipath/apollo-react@3.60.3) (2026-03-25)
+
+### Bug Fixes
+
+* **apollo-react:** stage title input fills available header width[MST-7791] ([7c9446e](https://github.com/UiPath/apollo-ui/commit/7c9446ed5953589a8e2e4f0b9ebb50aebb4f35db))
+
 ## [@uipath/apollo-react-v3.60.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.60.1...@uipath/apollo-react@3.60.2) (2026-03-24)
 
 ### Bug Fixes
