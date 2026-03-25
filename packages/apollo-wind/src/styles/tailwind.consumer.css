@@ -1224,3 +1224,38 @@ body.canvas, .canvas {
   --animate-collapsible-down: collapsible-down 200ms ease-out;
   --animate-collapsible-up: collapsible-up 200ms ease-out;
 }
+
+/* ============================================================================
+ * Theme-aware scrollbars
+ *
+ * Dark themes: future-dark + dark-hc are applied to <html>;
+ * dark + dark-hc are applied to <body>. Both cases are covered by the
+ * class selectors below since * matches all descendants.
+ * ============================================================================ */
+
+.future-dark,
+.dark,
+.dark-hc {
+  /* Firefox — inherits down the tree */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+
+  /* WebKit — pseudo-elements don't inherit, must target descendants */
+  & *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  & *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  & *::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 9999px;
+  }
+
+  & *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-border-hover);
+  }
+}
