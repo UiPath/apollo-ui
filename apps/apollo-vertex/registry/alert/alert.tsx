@@ -1,4 +1,7 @@
+"use client";
+
 import { cva, type VariantProps } from "class-variance-authority";
+import { XIcon } from "lucide-react";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
@@ -69,24 +72,51 @@ const alertVariants = cva(
 
 interface AlertProps
   extends React.ComponentProps<"div">,
-    VariantProps<typeof alertVariants> {}
+    VariantProps<typeof alertVariants> {
+  dismissible?: boolean;
+  onDismiss?: () => void;
+}
 
 function Alert({
   className,
   variant,
   status,
   visual,
+  dismissible,
+  onDismiss,
   children,
   ...props
 }: AlertProps) {
+  const [visible, setVisible] = React.useState(true);
+
+  if (!visible) return null;
+
   return (
     <div
       data-slot="alert"
       role="alert"
-      className={cn(alertVariants({ variant, status, visual }), className)}
+      className={cn(
+        alertVariants({ variant, status, visual }),
+        dismissible && "pr-10",
+        className,
+      )}
       {...props}
     >
       {children}
+      {dismissible && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setVisible(false);
+            onDismiss?.();
+          }}
+          className="absolute top-3 right-3 rounded-sm opacity-70 transition-opacity hover:opacity-100"
+          aria-label="Dismiss"
+        >
+          <XIcon className="size-4" />
+        </button>
+      )}
     </div>
   );
 }

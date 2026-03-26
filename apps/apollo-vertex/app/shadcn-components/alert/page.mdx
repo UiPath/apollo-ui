@@ -61,6 +61,18 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 </Alert>
 ```
 
+### Dismissible
+
+```tsx
+<Alert status="warning" visual="outline" dismissible onDismiss={() => console.log("dismissed")}>
+  <TriangleAlertIcon className="h-4 w-4" />
+  <AlertTitle>API rate limit approaching</AlertTitle>
+  <AlertDescription>
+    You have used 90% of your monthly API quota. Consider upgrading your plan.
+  </AlertDescription>
+</Alert>
+```
+
 ### Props
 
 | Prop | Type | Default | Description |
@@ -68,6 +80,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 | `status` | `"default" \| "warning" \| "error"` | — | Sets the semantic status color |
 | `visual` | `"outline" \| "tinted"` | — | Sets the visual treatment |
 | `variant` | `"default" \| "destructive"` | `"default"` | Legacy shadcn variant (use `status` + `visual` instead) |
+| `dismissible` | `boolean` | `false` | Renders a close button and manages internal visibility |
+| `onDismiss` | `() => void` | — | Callback fired when the alert is dismissed |
 
 ## Complex alert patterns (edge cases)
 

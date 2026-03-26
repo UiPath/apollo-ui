@@ -5,9 +5,8 @@ import {
   InfoIcon,
   OctagonXIcon,
   TriangleAlertIcon,
-  XIcon,
 } from "lucide-react";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Alert, AlertDescription, AlertTitle } from "@/registry/alert/alert";
@@ -106,65 +105,37 @@ export function AlertExamples() {
   );
 }
 
-function DismissibleAlert({
-  children,
-  status,
-  visual = "outline",
-}: {
-  children: ReactNode;
-  status: "default" | "warning" | "error";
-  visual?: "outline" | "tinted";
-}) {
-  const [visible, setVisible] = useState(true);
-  if (!visible) return null;
-  return (
-    <div className="relative">
-      <Alert status={status} visual={visual}>
-        {children}
-      </Alert>
-      <button
-        type="button"
-        onClick={() => setVisible(false)}
-        className="absolute top-3 right-3 rounded-sm opacity-70 hover:opacity-100 transition-opacity"
-        aria-label="Dismiss"
-      >
-        <XIcon className="h-4 w-4" />
-      </button>
-    </div>
-  );
-}
-
 export function AlertOutlineExamples() {
   const [resetKey, setResetKey] = useState(0);
 
   return (
     <div className="space-y-3" key={resetKey}>
-      <DismissibleAlert status="default">
+      <Alert status="default" visual="outline" dismissible>
         <InfoIcon className="h-4 w-4" />
         <AlertTitle>New version available</AlertTitle>
         <AlertDescription>
           A new version of the platform is ready. Review the changelog for
           details.
         </AlertDescription>
-      </DismissibleAlert>
+      </Alert>
 
-      <DismissibleAlert status="warning">
+      <Alert status="warning" visual="outline" dismissible>
         <TriangleAlertIcon className="h-4 w-4" />
         <AlertTitle>API rate limit approaching</AlertTitle>
         <AlertDescription>
           You have used 90% of your monthly API quota. Consider upgrading your
           plan.
         </AlertDescription>
-      </DismissibleAlert>
+      </Alert>
 
-      <DismissibleAlert status="error">
+      <Alert status="error" visual="outline" dismissible>
         <OctagonXIcon className="h-4 w-4" />
         <AlertTitle>Connection failed</AlertTitle>
         <AlertDescription>
           Unable to reach the server. Check your network connection and try
           again.
         </AlertDescription>
-      </DismissibleAlert>
+      </Alert>
 
       <button
         type="button"
