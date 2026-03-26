@@ -76,20 +76,11 @@ export function SonnerExamples() {
 export function AlertExamples() {
   return (
     <div className="space-y-3">
-      <Alert status="info" visual="tinted">
+      <Alert status="default" visual="tinted">
         <InfoIcon className="h-4 w-4" />
         <AlertTitle>New version available</AlertTitle>
         <AlertDescription>
-          A new version of the platform is ready. Review the changelog for
-          details.
-        </AlertDescription>
-      </Alert>
-
-      <Alert status="success" visual="tinted">
-        <CircleCheckIcon className="h-4 w-4" />
-        <AlertTitle>Changes saved</AlertTitle>
-        <AlertDescription>
-          Your configuration has been updated successfully.
+          A new version of the platform is ready. Review the changelog for details.
         </AlertDescription>
       </Alert>
 
@@ -120,7 +111,7 @@ function DismissibleAlert({
   visual = "outline",
 }: {
   children: ReactNode;
-  status: "info" | "success" | "warning" | "error";
+  status: "default" | "warning" | "error";
   visual?: "outline" | "tinted" | "subtle";
 }) {
   const [visible, setVisible] = useState(true);
@@ -147,20 +138,12 @@ export function AlertOutlineExamples() {
 
   return (
     <div className="space-y-3" key={resetKey}>
-      <DismissibleAlert status="info">
+      <DismissibleAlert status="default">
         <InfoIcon className="h-4 w-4" />
         <AlertTitle>New version available</AlertTitle>
         <AlertDescription>
           A new version of the platform is ready. Review the changelog for
           details.
-        </AlertDescription>
-      </DismissibleAlert>
-
-      <DismissibleAlert status="success">
-        <CircleCheckIcon className="h-4 w-4" />
-        <AlertTitle>Changes saved</AlertTitle>
-        <AlertDescription>
-          Your configuration has been updated successfully.
         </AlertDescription>
       </DismissibleAlert>
 
@@ -189,55 +172,6 @@ export function AlertOutlineExamples() {
       >
         Reset dismissed alerts
       </button>
-    </div>
-  );
-}
-
-// Docs-only: subtle alerts use bg-secondary in light mode to distinguish from the page background
-const alertSubtleBgStyles = `
-  :root:not(.dark) .alert-subtle-bg [data-slot="alert"] {
-    background-color: var(--secondary) !important;
-  }
-`;
-
-export function AlertDefaultExamples() {
-  return (
-    <div className="alert-subtle-bg space-y-3">
-      <style>{alertSubtleBgStyles}</style>
-      <Alert status="info" visual="subtle">
-        <InfoIcon className="h-4 w-4" />
-        <AlertTitle>New version available</AlertTitle>
-        <AlertDescription>
-          A new version of the platform is ready. Review the changelog for
-          details.
-        </AlertDescription>
-      </Alert>
-
-      <Alert status="success" visual="subtle">
-        <CircleCheckIcon className="h-4 w-4" />
-        <AlertTitle>Changes saved</AlertTitle>
-        <AlertDescription>
-          Your configuration has been updated successfully.
-        </AlertDescription>
-      </Alert>
-
-      <Alert status="warning" visual="subtle">
-        <TriangleAlertIcon className="h-4 w-4" />
-        <AlertTitle>API rate limit approaching</AlertTitle>
-        <AlertDescription>
-          You have used 90% of your monthly API quota. Consider upgrading your
-          plan.
-        </AlertDescription>
-      </Alert>
-
-      <Alert status="error" visual="subtle">
-        <OctagonXIcon className="h-4 w-4" />
-        <AlertTitle>Connection failed</AlertTitle>
-        <AlertDescription>
-          Unable to reach the server. Check your network connection and try
-          again.
-        </AlertDescription>
-      </Alert>
     </div>
   );
 }
@@ -323,7 +257,7 @@ export function CollapsibleAlertExample() {
 
 export function ActionAlertExample() {
   return (
-    <Alert status="info" visual="outline">
+    <Alert status="default" visual="outline">
       <InfoIcon className="h-4 w-4" />
       <AlertTitle>12 documents unclassified</AlertTitle>
       <AlertDescription>

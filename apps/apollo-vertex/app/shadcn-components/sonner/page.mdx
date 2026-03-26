@@ -60,6 +60,35 @@ toast.error("Upload failed", {
 })
 ```
 
+## Toaster props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `position` | `ToasterProps["position"]` | `"top-center"` | Position of the toast stack on screen |
+| `duration` | `number` | `5000` | Auto-dismiss delay in milliseconds |
+| `closeButton` | `boolean` | `true` | Show a close button on each toast |
+| `theme` | `"light" \| "dark" \| "system"` | `"system"` | Color theme — defaults to the current app theme via `next-themes` |
+| `toastOptions` | `ToastOptions` | — | Global options applied to all toasts (classNames, style, etc.) |
+
+## Toast function options
+
+```tsx
+toast.info("Title", {
+  description: "Supporting message.",
+  action: {
+    label: "Undo",
+    onClick: () => {},
+  },
+})
+```
+
+| Option | Type | Description |
+|---|---|---|
+| `description` | `string` | Secondary text below the title |
+| `action` | `{ label: string; onClick: () => void }` | Action button rendered inside the toast |
+| `onDismiss` | `(toast) => void` | Callback when the toast is dismissed |
+| `onAutoClose` | `(toast) => void` | Callback when the toast auto-closes |
+
 ## Custom toast styles
 
 If you need to apply the Apollo status styles to your own `Toaster` instance, import `apolloToastClassNames`:

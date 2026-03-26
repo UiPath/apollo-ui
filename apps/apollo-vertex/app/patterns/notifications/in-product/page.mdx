@@ -1,4 +1,4 @@
-import { SonnerExamples, AlertExamples, AlertOutlineExamples, AlertDefaultExamples, CollapsibleAlertExample, ActionAlertExample } from './notification-examples'
+import { SonnerExamples, AlertExamples, AlertOutlineExamples, CollapsibleAlertExample, ActionAlertExample } from './notification-examples'
 import { LayoutDiagram } from './layout-diagram'
 
 # In-product notification
@@ -123,22 +123,21 @@ Inline notifications may be persistent or dismissible depending on priority.
 
 ### Choosing a visual style
 
-Inline alerts support three visual styles. Choose based on the urgency and importance of the message — not personal preference. Do not mix styles within the same context.
+Inline alerts support two visual styles. Choose based on the urgency and importance of the message — not personal preference. Do not mix styles within the same context.
 
 | Style | Variant | When to use | Dismissible |
 |---|---|---|---|
-| Default | Subtle | Routine info, background updates, non-disruptive confirmations | Optional |
+| Default | Tinted | Routine info, background updates, blocking errors, unresolved issues | No |
 | Accent | Outline | Contextual warnings, guidance, acknowledged states, unresolved requirements | Context-dependent |
-| Bold | Tinted | Critical issues, blocking errors, authentication failures | No |
 
-> When unsure, start with **default**. Escalate only when the message demands immediate attention or blocks progress.
+> When unsure, start with **default**. Use Accent only when the message needs a distinct visual call-out.
 
-#### Default (subtle)
+#### Default (tinted)
 
-Neutral background with status color on the title and icon. Description text uses the standard muted color. Use for routine information, background updates, and non-disruptive feedback.
+Low-opacity status background with neutral title text. Use for critical messages that demand immediate attention or block progress.
 
 <div className="p-4 border rounded-lg mt-4">
-  <AlertDefaultExamples />
+  <AlertExamples />
 </div>
 
 #### Accent (outline)
@@ -147,14 +146,6 @@ Status color on the border and icon, with default text colors. Use for contextua
 
 <div className="p-4 border rounded-lg mt-4">
   <AlertOutlineExamples />
-</div>
-
-#### Bold (tinted)
-
-Full status-colored background with white text in dark mode. Use for critical messages that demand immediate attention or block progress.
-
-<div className="p-4 border rounded-lg mt-4">
-  <AlertExamples />
 </div>
 
 ### Complex alert patterns (edge cases)
@@ -241,15 +232,15 @@ Each notification has a status that communicates tone and urgency through color 
 
 Notification statuses align with the [Badge](/shadcn-components/badge) status system for consistent semantic meaning across the design system.
 
-| Status | Usage | Token | Color | Inline notes |
-|---|---|---|---|---|
-| `info` | General updates, FYIs | `--info` | `oklch(0.60 0.125 210)` | Best for passive or contextual information |
-| `success` | Confirmation of completed tasks | `--success` | `oklch(0.57 0.105 152)` | Inline only when tied to direct user action |
-| `warning` | Potential issues or unintended consequences | `--warning` | `oklch(0.80 0.1401 80.82)` | Appropriate for both persistent and action-related messages |
-| `error` | Failures, blockers, critical issues | `--destructive` | `oklch(0.62 0.150 18)` | Inline only when tied to validation or error resolution |
+| Status | Usage | Token | Color | Sonner | Alert |
+|---|---|---|---|---|---|
+| `info` | General updates, FYIs | `--info` | `oklch(0.60 0.125 210)` | `toast.info()` | Use `status="default"` |
+| `success` | Confirmation of completed tasks | `--success` | `oklch(0.57 0.105 152)` | `toast.success()` | Not available — Sonner only |
+| `warning` | Potential issues or unintended consequences | `--warning` | `oklch(0.80 0.1401 80.82)` | `toast.warning()` | `status="warning"` |
+| `error` | Failures, blockers, critical issues | `--destructive` | `oklch(0.62 0.150 18)` | `toast.error()` | `status="error"` |
 
-> Inline notifications should use **success** or **error** only when tied to a user-initiated action.
-> For persistent system guidance or background alerts, use **info** or **warning**.
+> The Alert component supports `status="default"`, `status="warning"`, and `status="error"`. Use Sonner for success confirmations.
+> For persistent system guidance or background alerts, use `default` or `warning` in Alert.
 
 ---
 
@@ -341,8 +332,7 @@ Avoid driving users away from their workflow unless necessary.
 
 | Question | Answer | Style |
 |---|---|---|
-| Is the message routine, informational, or non-disruptive? | Yes | Default (subtle) |
+| Is the message routine, informational, or requires immediate attention? | Yes | Default (tinted) |
 | Is the message contextual, a warning, or an unresolved requirement? | Yes | Accent (outline) |
-| Does the message block progress or require immediate action? | Yes | Bold (tinted) |
 
-> When unsure, start with **default** and escalate only if the message demands it.
+> When unsure, use **default**. Use Accent only when the message needs a distinct visual call-out.
