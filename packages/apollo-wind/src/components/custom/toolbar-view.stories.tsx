@@ -3,7 +3,7 @@ import * as React from 'react';
 import { FlowViewToolbar } from './toolbar-view';
 
 const meta = {
-  title: 'Components/UiPath/View Toolbar',
+  title: 'Components/UiPath/Flow View Toolbar',
   component: FlowViewToolbar,
   parameters: {
     layout: 'centered',

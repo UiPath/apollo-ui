@@ -3,7 +3,7 @@ import * as React from 'react';
 import { FlowCanvasToolbar } from './toolbar-canvas';
 
 const meta = {
-  title: 'Components/UiPath/Canvas Toolbar',
+  title: 'Components/UiPath/Flow Canvas Toolbar',
   component: FlowCanvasToolbar,
   parameters: {
     layout: 'centered',
