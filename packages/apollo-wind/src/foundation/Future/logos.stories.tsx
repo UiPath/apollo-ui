@@ -271,7 +271,7 @@ function LogosPage() {
             href="https://brandcenter.uipath.com/point/en/uipath/component/default/217184"
             target="_blank"
             rel="noreferrer"
-            className="text-foreground-accent underline hover:text-foreground-accent-muted"
+            className="text-foreground-accent underline-offset-4 hover:underline"
           >
             here
           </a>
