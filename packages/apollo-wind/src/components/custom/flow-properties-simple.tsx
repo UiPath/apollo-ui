@@ -120,7 +120,7 @@ function FieldItem({
       {field.type === 'select' ? (
         <Select value={value || undefined} onValueChange={setValue}>
           <SelectTrigger
-            className="h-10 rounded-xl border-0 bg-surface-overlay text-foreground shadow-sm placeholder:text-foreground-muted"
+            className="h-10 rounded-xl border-0 bg-surface-overlay text-foreground placeholder:text-foreground-muted"
           >
             <SelectValue placeholder={field.placeholder ?? 'Select...'} />
           </SelectTrigger>
@@ -142,7 +142,7 @@ function FieldItem({
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder={field.placeholder}
-            className="flex-1 rounded-none border-0 bg-transparent px-3 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="flex-1 rounded-none border-0 bg-transparent px-3 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
           <button
             type="button"

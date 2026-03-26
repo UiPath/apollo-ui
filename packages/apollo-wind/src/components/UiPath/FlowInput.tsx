@@ -1,8 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/lib';
 
-const shadowSm = 'shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]';
-
 export interface FlowInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 
 const FlowInput = React.forwardRef<HTMLInputElement, FlowInputProps>(
@@ -12,7 +10,6 @@ const FlowInput = React.forwardRef<HTMLInputElement, FlowInputProps>(
       className={cn(
         'flex h-10 w-full rounded-xl bg-surface-overlay px-3 py-2',
         'text-sm text-foreground placeholder:text-foreground-muted placeholder:font-normal',
-        shadowSm,
         'transition-colors',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
         'disabled:cursor-not-allowed disabled:opacity-50',
@@ -34,7 +31,6 @@ const FlowInputGroup = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTM
       ref={ref}
       className={cn(
         'flex h-10 w-full items-center gap-2 overflow-hidden rounded-xl bg-surface-overlay px-3 py-2',
-        shadowSm,
         'transition-colors',
         'focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background',
         className
