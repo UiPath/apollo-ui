@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v1.5.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.4.0...@uipath/apollo-wind@1.5.0) (2026-03-26)
+
+### Features
+
+* **apollo-wind:** add brand center link to Logos page description ([b3ff085](https://github.com/uipath/apollo-ui/commit/b3ff085758e0d2813be16af1ef023624910a6926))
+
 ## [@uipath/apollo-wind-v1.4.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.3.0...@uipath/apollo-wind@1.4.0) (2026-03-23)
 
 ### Features

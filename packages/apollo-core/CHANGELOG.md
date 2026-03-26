@@ -1,3 +1,9 @@
+## [@uipath/apollo-core-v5.9.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.8.1...@uipath/apollo-core@5.9.0) (2026-03-26)
+
+### Features
+
+* **apollo-core:** update UiPath full logo SVGs with new artwork ([028326e](https://github.com/UiPath/apollo-ui/commit/028326eb8c53e4ef069be111713d82ed90413d70))
+
 ## [@uipath/apollo-core-v5.8.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.8.0...@uipath/apollo-core@5.8.1) (2026-03-25)
 
 ### Bug Fixes
