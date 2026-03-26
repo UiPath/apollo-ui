@@ -152,7 +152,8 @@
           "ease-in-out-circ": "cubic-bezier(0.785, 0.135, 0.15, 0.86)",
           "--info-fg": "oklch(0.49 0.12 210)",
           "--success-fg": "oklch(0.46 0.10 152)",
-          "--destructive-fg": "oklch(0.50 0.14 18)"
+          "--destructive-fg": "oklch(0.50 0.14 18)",
+          "ai-gradient": "linear-gradient(100.64deg, rgb(238, 224, 255) 8.29%, rgb(207, 217, 255) 88.73%)"
         },
         "dark": {
           "background": "oklch(0.2100 0.0300 258.5000)",
@@ -225,7 +226,8 @@
           "shadow-xl": "0 0px 12px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10)",
           "shadow-2xl": "0 0px 12px 0px hsl(0 0% 0% / 0.25)",
           "tracking-normal": "0em",
-          "spacing": "0.25rem"
+          "spacing": "0.25rem",
+          "ai-gradient": "linear-gradient(98.69deg, rgb(108, 90, 239) 8.79%, rgb(105, 199, 221) 91.48%)"
         }
       }
     },
@@ -415,7 +417,7 @@
       "name": "card",
       "type": "registry:ui",
       "title": "Card",
-      "description": "Displays a card with header, content, and footer.",
+      "description": "Displays a card with header, content, and footer. Supports solid, glass, and selectable variants.",
       "files": [{ "path": "registry/card/card.tsx", "type": "registry:ui" }]
     },
     {
