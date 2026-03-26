@@ -1,4 +1,4 @@
-import { ComboboxSingleSelectTemplate, ComboboxMultiSelectTemplate } from '@/templates/ComboboxTemplate'
+import { ComboboxSingleSelectTemplate, ComboboxMultiSelectTemplate, ComboboxInvalidTemplate } from '@/templates/ComboboxTemplate'
 
 # Combobox
 
@@ -14,6 +14,12 @@ An autocomplete input with a filterable list, supporting single and multi-select
 
 <div className="not-prose my-8 rounded-lg border overflow-hidden">
   <ComboboxMultiSelectTemplate />
+</div>
+
+### Invalid
+
+<div className="not-prose my-8 rounded-lg border overflow-hidden">
+  <ComboboxInvalidTemplate />
 </div>
 
 ## Installation
@@ -79,6 +85,27 @@ const [values, setValues] = useState<string[]>([])
         ))}
       </ComboboxBadgeList>
     )}
+  </ComboboxTrigger>
+  <ComboboxContent>
+    <ComboboxInput placeholder="Search frameworks..." />
+    <ComboboxList>
+      <ComboboxEmpty>No results found.</ComboboxEmpty>
+      <ComboboxGroup>
+        <ComboboxItem value="next">Next.js</ComboboxItem>
+        <ComboboxItem value="svelte">SvelteKit</ComboboxItem>
+        <ComboboxItem value="nuxt">Nuxt</ComboboxItem>
+      </ComboboxGroup>
+    </ComboboxList>
+  </ComboboxContent>
+</Combobox>
+```
+
+### Invalid
+
+```tsx
+<Combobox value={value} onValueChange={setValue}>
+  <ComboboxTrigger placeholder="Select a framework..." aria-invalid="true">
+    {selectedLabel}
   </ComboboxTrigger>
   <ComboboxContent>
     <ComboboxInput placeholder="Search frameworks..." />

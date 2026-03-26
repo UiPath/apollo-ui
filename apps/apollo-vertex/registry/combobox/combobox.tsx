@@ -1,6 +1,11 @@
 "use client";
 
-import { CheckIcon, ChevronsUpDownIcon, XIcon } from "lucide-react";
+import {
+  AlertTriangleIcon,
+  CheckIcon,
+  ChevronsUpDownIcon,
+  XIcon,
+} from "lucide-react";
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -98,9 +103,11 @@ function ComboboxTrigger({
   className,
   placeholder,
   children,
+  "aria-invalid": ariaInvalid,
   ...props
 }: ComboboxTriggerProps) {
   const { open } = useComboboxContext();
+  const isInvalid = ariaInvalid === "true" || ariaInvalid === true;
 
   return (
     <PopoverTrigger asChild>
@@ -110,6 +117,7 @@ function ComboboxTrigger({
         tabIndex={0}
         aria-expanded={open}
         aria-haspopup="listbox"
+        aria-invalid={ariaInvalid}
         className={cn(
           buttonVariants({ variant: "outline" }),
           "w-full justify-between font-normal",
@@ -119,7 +127,12 @@ function ComboboxTrigger({
         {...props}
       >
         {children ?? <span className="truncate">{placeholder}</span>}
-        <ChevronsUpDownIcon className="ml-auto size-4 shrink-0 opacity-50" />
+        <span className="ml-auto flex items-center gap-1">
+          {isInvalid && (
+            <AlertTriangleIcon className="size-4 shrink-0 text-destructive" />
+          )}
+          <ChevronsUpDownIcon className="size-4 shrink-0 opacity-50" />
+        </span>
       </div>
     </PopoverTrigger>
   );

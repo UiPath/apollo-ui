@@ -92,6 +92,38 @@ function MultiSelectContent() {
   );
 }
 
+function InvalidContent() {
+  const [value, setValue] = useState<string[]>([]);
+  const selectedLabel = frameworks.find((f) => f.value === value[0])?.label;
+
+  return (
+    <div className="p-4">
+      <Combobox value={value} onValueChange={setValue}>
+        <ComboboxTrigger
+          className="w-[240px]"
+          placeholder={"Select a framework"}
+          aria-invalid="true"
+        >
+          {selectedLabel}
+        </ComboboxTrigger>
+        <ComboboxContent>
+          <ComboboxInput placeholder="Search frameworks..." />
+          <ComboboxList>
+            <ComboboxEmpty>{"No frameworks found."}</ComboboxEmpty>
+            <ComboboxGroup>
+              {frameworks.map((f) => (
+                <ComboboxItem key={f.value} value={f.value}>
+                  {f.label}
+                </ComboboxItem>
+              ))}
+            </ComboboxGroup>
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+    </div>
+  );
+}
+
 export const ComboboxSingleSelectTemplate = dynamic(
   () => Promise.resolve(SingleSelectContent),
   { ssr: false },
@@ -99,5 +131,10 @@ export const ComboboxSingleSelectTemplate = dynamic(
 
 export const ComboboxMultiSelectTemplate = dynamic(
   () => Promise.resolve(MultiSelectContent),
+  { ssr: false },
+);
+
+export const ComboboxInvalidTemplate = dynamic(
+  () => Promise.resolve(InvalidContent),
   { ssr: false },
 );
