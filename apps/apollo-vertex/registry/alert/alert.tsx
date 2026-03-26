@@ -13,13 +13,12 @@ const alertVariants = cva(
           "text-destructive bg-card [&>svg]:text-current *:data-[slot=alert-description]:text-destructive/90",
       },
       status: {
-        info: "",
-        success: "",
+        default: "",
         warning: "",
         error: "",
       },
       visual: {
-        outline: "bg-transparent",
+        outline: "bg-card",
         tinted: "border-transparent",
         subtle: "",
       },
@@ -27,20 +26,14 @@ const alertVariants = cva(
     compoundVariants: [
       // outline — status-colored border + icon
       {
-        status: "info",
+        status: "default",
         visual: "outline",
-        className: "border-info [&>svg]:text-info",
-      },
-      {
-        status: "success",
-        visual: "outline",
-        className: "border-success [&>svg]:text-success",
+        className: "border-badge [&>svg]:text-foreground",
       },
       {
         status: "warning",
         visual: "outline",
-        className:
-          "border-warning [&>svg]:text-warning-foreground dark:[&>svg]:text-warning",
+        className: "border-warning [&>svg]:text-warning-foreground dark:[&>svg]:text-warning",
       },
       {
         status: "error",
@@ -48,42 +41,29 @@ const alertVariants = cva(
         className: "border-destructive [&>svg]:text-destructive",
       },
 
-      // tinted — colored background, text, icon; description inherits container color
+      // tinted — status-tinted background, foreground title, status-colored icon
       {
-        status: "info",
+        status: "default",
         visual: "tinted",
-        className:
-          "bg-info/15 dark:bg-info/25 text-[var(--info-fg)] dark:text-white [&>svg]:text-[var(--info-fg)] dark:[&>svg]:text-white *:data-[slot=alert-description]:text-inherit",
-      },
-      {
-        status: "success",
-        visual: "tinted",
-        className:
-          "bg-success/10 dark:bg-success/25 text-[var(--success-fg)] dark:text-white [&>svg]:text-[var(--success-fg)] dark:[&>svg]:text-white *:data-[slot=alert-description]:text-inherit",
+        className: "bg-badge/20 border-transparent text-foreground [&>svg]:text-foreground",
       },
       {
         status: "warning",
         visual: "tinted",
         className:
-          "bg-warning/15 dark:bg-warning/25 text-warning-foreground dark:text-white [&>svg]:text-warning-foreground dark:[&>svg]:text-warning *:data-[slot=alert-description]:text-inherit",
+          "bg-warning/15 dark:bg-warning/25 text-foreground [&>svg]:text-warning-foreground dark:[&>svg]:text-warning",
       },
       {
         status: "error",
         visual: "tinted",
-        className:
-          "bg-destructive/10 dark:bg-destructive/25 text-[var(--destructive-fg)] dark:text-white [&>svg]:text-[var(--destructive-fg)] dark:[&>svg]:text-white *:data-[slot=alert-description]:text-inherit",
+        className: "bg-destructive/10 dark:bg-destructive/25 text-foreground [&>svg]:text-destructive",
       },
 
-      // subtle — icon color via CVA; title color applied by AlertTitle via AlertContext
+      // subtle — status-colored icon + title (title color applied via AlertContext)
       {
-        status: "info",
+        status: "default",
         visual: "subtle",
-        className: "[&>svg]:text-[var(--info-fg)] dark:[&>svg]:text-info",
-      },
-      {
-        status: "success",
-        visual: "subtle",
-        className: "[&>svg]:text-[var(--success-fg)] dark:[&>svg]:text-success",
+        className: "[&>svg]:text-foreground",
       },
       {
         status: "warning",
@@ -93,8 +73,7 @@ const alertVariants = cva(
       {
         status: "error",
         visual: "subtle",
-        className:
-          "[&>svg]:text-[var(--destructive-fg)] dark:[&>svg]:text-destructive",
+        className: "[&>svg]:text-destructive",
       },
     ],
     defaultVariants: {
@@ -104,7 +83,7 @@ const alertVariants = cva(
 );
 
 interface AlertContextValue {
-  status?: "info" | "success" | "warning" | "error" | null;
+  status?: "default" | "warning" | "error" | null;
   visual?: "outline" | "tinted" | "subtle" | null;
 }
 
@@ -138,10 +117,9 @@ function Alert({
 
 // Title colors for the subtle visual variant, keyed by status
 const subtleTitleColors: Record<string, string> = {
-  info: "text-[var(--info-fg)] dark:text-info",
-  success: "text-[var(--success-fg)] dark:text-success",
+  default: "text-foreground",
   warning: "text-warning-foreground dark:text-warning",
-  error: "text-[var(--destructive-fg)] dark:text-destructive",
+  error: "text-destructive",
 };
 
 function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
