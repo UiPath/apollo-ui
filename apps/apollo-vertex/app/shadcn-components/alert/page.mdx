@@ -11,7 +11,7 @@ Displays a callout for user attention.
 
 ### Default (tinted)
 
-Low-opacity status background with neutral title text. Use for critical messages that demand immediate attention.
+Low-opacity status background with neutral title text. Use for persistent messages, from routine updates to blocking errors.
 
 <div className="p-4 border rounded-lg mt-4">
   <AlertExamples />
@@ -66,7 +66,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | `status` | `"default" \| "warning" \| "error"` | — | Sets the semantic status color |
-| `visual` | `"outline" \| "tinted" \| "subtle"` | — | Sets the visual treatment |
+| `visual` | `"outline" \| "tinted"` | — | Sets the visual treatment |
 | `variant` | `"default" \| "destructive"` | `"default"` | Legacy shadcn variant (use `status` + `visual` instead) |
 
 ## Complex alert patterns (edge cases)

@@ -20,7 +20,6 @@ const alertVariants = cva(
       visual: {
         outline: "bg-card",
         tinted: "border-transparent",
-        subtle: "",
       },
     },
     compoundVariants: [
@@ -33,7 +32,8 @@ const alertVariants = cva(
       {
         status: "warning",
         visual: "outline",
-        className: "border-warning [&>svg]:text-warning-foreground dark:[&>svg]:text-warning",
+        className:
+          "border-warning [&>svg]:text-warning-foreground dark:[&>svg]:text-warning",
       },
       {
         status: "error",
@@ -45,7 +45,8 @@ const alertVariants = cva(
       {
         status: "default",
         visual: "tinted",
-        className: "bg-badge/20 border-transparent text-foreground [&>svg]:text-foreground",
+        className:
+          "bg-badge/20 border-transparent text-foreground [&>svg]:text-foreground",
       },
       {
         status: "warning",
@@ -56,24 +57,8 @@ const alertVariants = cva(
       {
         status: "error",
         visual: "tinted",
-        className: "bg-destructive/10 dark:bg-destructive/25 text-foreground [&>svg]:text-destructive",
-      },
-
-      // subtle — status-colored icon + title (title color applied via AlertContext)
-      {
-        status: "default",
-        visual: "subtle",
-        className: "[&>svg]:text-foreground",
-      },
-      {
-        status: "warning",
-        visual: "subtle",
-        className: "[&>svg]:text-warning-foreground dark:[&>svg]:text-warning",
-      },
-      {
-        status: "error",
-        visual: "subtle",
-        className: "[&>svg]:text-destructive",
+        className:
+          "bg-destructive/10 dark:bg-destructive/25 text-foreground [&>svg]:text-destructive",
       },
     ],
     defaultVariants: {
@@ -81,13 +66,6 @@ const alertVariants = cva(
     },
   },
 );
-
-interface AlertContextValue {
-  status?: "default" | "warning" | "error" | null;
-  visual?: "outline" | "tinted" | "subtle" | null;
-}
-
-const AlertContext = React.createContext<AlertContextValue>({});
 
 interface AlertProps
   extends React.ComponentProps<"div">,
@@ -102,36 +80,23 @@ function Alert({
   ...props
 }: AlertProps) {
   return (
-    <AlertContext.Provider value={{ status, visual }}>
-      <div
-        data-slot="alert"
-        role="alert"
-        className={cn(alertVariants({ variant, status, visual }), className)}
-        {...props}
-      >
-        {children}
-      </div>
-    </AlertContext.Provider>
+    <div
+      data-slot="alert"
+      role="alert"
+      className={cn(alertVariants({ variant, status, visual }), className)}
+      {...props}
+    >
+      {children}
+    </div>
   );
 }
 
-// Title colors for the subtle visual variant, keyed by status
-const subtleTitleColors: Record<string, string> = {
-  default: "text-foreground",
-  warning: "text-warning-foreground dark:text-warning",
-  error: "text-destructive",
-};
-
 function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
-  const { status, visual } = React.useContext(AlertContext);
-  const colorClass =
-    visual === "subtle" && status ? (subtleTitleColors[status] ?? "") : "";
   return (
     <div
       data-slot="alert-title"
       className={cn(
         "col-start-2 line-clamp-1 min-h-4 font-medium tracking-tight",
-        colorClass,
         className,
       )}
       {...props}

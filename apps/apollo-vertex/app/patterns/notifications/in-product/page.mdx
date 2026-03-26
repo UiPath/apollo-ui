@@ -134,7 +134,7 @@ Inline alerts support two visual styles. Choose based on the urgency and importa
 
 #### Default (tinted)
 
-Low-opacity status background with neutral title text. Use for critical messages that demand immediate attention or block progress.
+Low-opacity status background with neutral title text. Use for persistent, non-dismissible messages, from routine updates and background info to blocking errors.
 
 <div className="p-4 border rounded-lg mt-4">
   <AlertExamples />
@@ -332,7 +332,7 @@ Avoid driving users away from their workflow unless necessary.
 
 | Question | Answer | Style |
 |---|---|---|
-| Is the message routine, informational, or requires immediate attention? | Yes | Default (tinted) |
+| Is the message routine, informational, or does it require immediate attention? | Yes | Default (tinted) |
 | Is the message contextual, a warning, or an unresolved requirement? | Yes | Accent (outline) |
 
 > When unsure, use **default**. Use Accent only when the message needs a distinct visual call-out.
