@@ -84,6 +84,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
     onStageTitleChange,
     onTaskReorder,
     onReplaceTaskFromToolbox,
+    onTaskPlay,
   } = props;
 
   const taskWidth = width ? width - STAGE_CONTENT_INSET : undefined;
@@ -636,6 +637,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                                     ? projected.depth
                                     : undefined
                                 }
+                                onTaskPlay={onTaskPlay}
                                 isDragDisabled={!onTaskReorder}
                                 zoom={zoom}
                                 {...((onTaskGroupModification || onReplaceTaskFromToolbox) && {

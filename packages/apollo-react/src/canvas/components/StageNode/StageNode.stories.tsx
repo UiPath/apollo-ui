@@ -1599,3 +1599,118 @@ export const AddTaskLoading: Story = {
   render: () => <AddTaskLoadingStory />,
   args: {},
 };
+
+export const AdhocTasks: Story = {
+  name: 'Adhoc Tasks',
+  parameters: {
+    nodes: [
+      {
+        id: '0',
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'With onTaskPlay',
+            tasks: [
+              [
+                {
+                  id: '1',
+                  label: 'Adhoc - KYC Check',
+                  icon: <VerificationIcon />,
+                  isAdhoc: true,
+                },
+              ],
+              [
+                {
+                  id: '2',
+                  label: 'Adhoc - Document Review',
+                  icon: <DocumentIcon />,
+                  isAdhoc: true,
+                },
+              ],
+              [{ id: '3', label: 'Regular Task', icon: <ProcessIcon /> }],
+            ],
+          },
+          onTaskPlay: (taskId: string) => {
+            return new Promise<void>((resolve) =>
+              setTimeout(() => {
+                resolve();
+                console.log(`Play task: ${taskId}`);
+              }, 5000)
+            );
+          },
+          onTaskClick: (taskId: string) => {
+            window.alert(`Task clicked: ${taskId}`);
+          },
+        },
+      },
+      {
+        id: '1',
+        type: 'stage',
+        position: { x: 400, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Without onTaskPlay',
+            tasks: [
+              [
+                {
+                  id: '1',
+                  label: 'Adhoc - Risk Assessment',
+                  icon: <VerificationIcon />,
+                  isAdhoc: true,
+                },
+              ],
+              [
+                {
+                  id: '2',
+                  label: 'Adhoc - Compliance Review',
+                  icon: <DocumentIcon />,
+                  isAdhoc: true,
+                },
+              ],
+              [{ id: '3', label: 'Regular Task', icon: <ProcessIcon /> }],
+            ],
+          },
+          onTaskClick: (taskId: string) => {
+            window.alert(`Task clicked: ${taskId}`);
+          },
+        },
+      },
+      {
+        id: '2',
+        type: 'stage',
+        position: { x: 752, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Mixed with Parallel',
+            isReadOnly: true,
+            tasks: [
+              [
+                {
+                  id: '1',
+                  label: 'Adhoc - Verify Address',
+                  icon: <VerificationIcon />,
+                  isAdhoc: true,
+                },
+                {
+                  id: '2',
+                  label: 'Adhoc - Verify Identity',
+                  icon: <VerificationIcon />,
+                  isAdhoc: true,
+                },
+              ],
+              [{ id: '3', label: 'Regular Processing', icon: <ProcessIcon /> }],
+            ],
+          },
+          onTaskPlay: (taskId: string) => {
+            console.log(`Play task: ${taskId}`);
+          },
+        },
+      },
+    ],
+  },
+  args: {},
+};
