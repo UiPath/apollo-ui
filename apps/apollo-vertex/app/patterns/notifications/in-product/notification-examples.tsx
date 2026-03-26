@@ -80,7 +80,8 @@ export function AlertExamples() {
         <InfoIcon className="h-4 w-4" />
         <AlertTitle>New version available</AlertTitle>
         <AlertDescription>
-          A new version of the platform is ready. Review the changelog for details.
+          A new version of the platform is ready. Review the changelog for
+          details.
         </AlertDescription>
       </Alert>
 
@@ -112,7 +113,7 @@ function DismissibleAlert({
 }: {
   children: ReactNode;
   status: "default" | "warning" | "error";
-  visual?: "outline" | "tinted" | "subtle";
+  visual?: "outline" | "tinted";
 }) {
   const [visible, setVisible] = useState(true);
   if (!visible) return null;

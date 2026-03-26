@@ -10,21 +10,29 @@ import {
 import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 
-// Shared icon alignment: top-align icons with the first line of toast text
+// Shared icon alignment: top-align icons with the first line of toast text.
 const iconAlign = "[&>[data-icon]]:!items-start [&>[data-icon]>svg]:!mt-0.5";
 
+// Text color for icon, title, description, and close button in status toasts.
+// Light: dark ink (oklch(0.166 0.0283 203.34)) on tinted background; Dark: foreground token.
+const statusTextClasses =
+  "[&>[data-icon]>svg]:!text-[oklch(0.166_0.0283_203.34)] dark:[&>[data-icon]>svg]:!text-foreground " +
+  "[&_[data-title]]:!text-[oklch(0.166_0.0283_203.34)] dark:[&_[data-title]]:!text-foreground " +
+  "[&_[data-description]]:!text-[oklch(0.166_0.0283_203.34)] dark:[&_[data-description]]:!text-foreground " +
+  "[&_[data-close-button]]:!text-[oklch(0.166_0.0283_203.34)] dark:[&_[data-close-button]]:!text-foreground";
+
 // Apollo status styles for Sonner toasts.
-// Light: inverted card surface (info) or status-tinted background; matching icon color.
-// Dark: inverted secondary surface (info) or status-tinted color-mix with popover.
+// Light: inverted card-foreground background (info) or status-tinted background; matching icon color.
+// Dark: inverted card-foreground background (info) or status-tinted color-mix with popover.
 export const apolloToastClassNames: NonNullable<
   NonNullable<ToasterProps["toastOptions"]>["classNames"]
 > = {
   info: `!border-info !bg-card-foreground dark:!bg-card-foreground [&>[data-icon]>svg]:!text-primary-foreground [&_[data-title]]:!text-primary-foreground [&_[data-description]]:!text-primary-foreground [&_[data-close-button]]:!text-primary-foreground ${iconAlign}`,
-  success: `!border-success !bg-[color-mix(in_srgb,var(--success)_25%,var(--card)_75%)] dark:!bg-[color-mix(in_srgb,var(--success)_25%,var(--popover)_75%)] [&>[data-icon]>svg]:!text-[oklch(0.166_0.0283_203.34)] dark:[&>[data-icon]>svg]:!text-foreground [&_[data-title]]:!text-[oklch(0.166_0.0283_203.34)] dark:[&_[data-title]]:!text-foreground [&_[data-description]]:!text-[oklch(0.166_0.0283_203.34)] dark:[&_[data-description]]:!text-foreground [&_[data-close-button]]:!text-[oklch(0.166_0.0283_203.34)] dark:[&_[data-close-button]]:!text-foreground ${iconAlign}`,
-  warning: `!border-warning !bg-[color-mix(in_srgb,var(--warning)_60%,var(--card)_40%)] dark:!bg-[color-mix(in_srgb,var(--warning)_60%,var(--popover)_40%)] [&>[data-icon]>svg]:!text-[oklch(0.166_0.0283_203.34)] dark:[&>[data-icon]>svg]:!text-foreground [&_[data-title]]:!text-[oklch(0.166_0.0283_203.34)] dark:[&_[data-title]]:!text-foreground [&_[data-description]]:!text-[oklch(0.166_0.0283_203.34)] dark:[&_[data-description]]:!text-foreground [&_[data-close-button]]:!text-[oklch(0.166_0.0283_203.34)] dark:[&_[data-close-button]]:!text-foreground ${iconAlign}`,
-  error: `!border-destructive !bg-[color-mix(in_srgb,var(--destructive)_50%,var(--card)_50%)] dark:!bg-[color-mix(in_srgb,var(--destructive)_50%,var(--popover)_50%)] [&>[data-icon]>svg]:!text-[oklch(0.166_0.0283_203.34)] dark:[&>[data-icon]>svg]:!text-foreground [&_[data-title]]:!text-[oklch(0.166_0.0283_203.34)] dark:[&_[data-title]]:!text-foreground [&_[data-description]]:!text-[oklch(0.166_0.0283_203.34)] dark:[&_[data-description]]:!text-foreground [&_[data-close-button]]:!text-[oklch(0.166_0.0283_203.34)] dark:[&_[data-close-button]]:!text-foreground ${iconAlign}`,
+  success: `!border-success !bg-[color-mix(in_srgb,var(--success)_25%,var(--card)_75%)] dark:!bg-[color-mix(in_srgb,var(--success)_25%,var(--popover)_75%)] ${statusTextClasses} ${iconAlign}`,
+  warning: `!border-warning !bg-[color-mix(in_srgb,var(--warning)_60%,var(--card)_40%)] dark:!bg-[color-mix(in_srgb,var(--warning)_60%,var(--popover)_40%)] ${statusTextClasses} ${iconAlign}`,
+  error: `!border-destructive !bg-[color-mix(in_srgb,var(--destructive)_50%,var(--card)_50%)] dark:!bg-[color-mix(in_srgb,var(--destructive)_50%,var(--popover)_50%)] ${statusTextClasses} ${iconAlign}`,
   closeButton:
-    '!left-auto !right-2 !top-2 !transform-none !border-none !bg-transparent !rounded-sm',
+    "!left-auto !right-2 !top-2 !transform-none !border-none !bg-transparent !rounded-sm",
 };
 
 const Toaster = ({ ...props }: ToasterProps) => {
