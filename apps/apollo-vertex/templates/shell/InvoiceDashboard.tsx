@@ -106,7 +106,7 @@ export function InvoiceDashboard() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
         {kpis.map((kpi) => (
-          <Card key={kpi.label} variant="glass">
+          <Card key={kpi.label} variant="glass" className="gap-6 py-6">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -127,7 +127,7 @@ export function InvoiceDashboard() {
       </div>
 
       {/* Invoices Table */}
-      <Card variant="glass">
+      <Card variant="glass" className="gap-6 py-6">
         <CardHeader>
           <CardTitle>Recent Invoices</CardTitle>
         </CardHeader>
@@ -166,7 +166,7 @@ export function InvoiceDashboard() {
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Processing Activity */}
-        <Card variant="glass">
+        <Card variant="glass" className="gap-6 py-6">
           <CardHeader>
             <CardTitle>Processing Activity</CardTitle>
           </CardHeader>
@@ -191,7 +191,7 @@ export function InvoiceDashboard() {
         </Card>
 
         {/* Recent Activity */}
-        <Card variant="glass">
+        <Card variant="glass" className="gap-6 py-6">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
           </CardHeader>
@@ -214,7 +214,7 @@ export function InvoiceDashboard() {
       </div>
 
       {/* Processing Pipeline */}
-      <Card variant="glass">
+      <Card variant="glass" className="gap-6 py-6">
         <CardHeader>
           <CardTitle>Processing Pipeline</CardTitle>
         </CardHeader>

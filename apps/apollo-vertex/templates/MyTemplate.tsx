@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/registry/card/card";
 
 export function MyTemplate() {
   return (
-    <Card>
+    <Card variant="solid" className="gap-6 py-6">
       <CardHeader>
         <CardTitle>My Template</CardTitle>
       </CardHeader>

@@ -152,7 +152,7 @@ export function LoanQcDashboard() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
         {kpis.map((kpi) => (
-          <Card key={kpi.label} variant="glass">
+          <Card key={kpi.label} variant="glass" className="gap-6 py-6">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -173,7 +173,7 @@ export function LoanQcDashboard() {
       </div>
 
       {/* Loans Table */}
-      <Card variant="glass">
+      <Card variant="glass" className="gap-6 py-6">
         <CardHeader>
           <CardTitle>Recent QC Reviews</CardTitle>
         </CardHeader>
@@ -223,7 +223,7 @@ export function LoanQcDashboard() {
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Compliance Checks */}
-        <Card variant="glass">
+        <Card variant="glass" className="gap-6 py-6">
           <CardHeader>
             <CardTitle>Compliance Pass Rates</CardTitle>
           </CardHeader>
@@ -243,7 +243,7 @@ export function LoanQcDashboard() {
         </Card>
 
         {/* Recent Findings */}
-        <Card variant="glass">
+        <Card variant="glass" className="gap-6 py-6">
           <CardHeader>
             <CardTitle>Recent Findings</CardTitle>
           </CardHeader>
