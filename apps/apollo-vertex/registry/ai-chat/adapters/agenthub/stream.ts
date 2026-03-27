@@ -1,6 +1,7 @@
 import type { StreamChunk } from "@tanstack/ai";
 import type { UIMessage } from "@tanstack/ai-client";
 import { EventSourceParserStream } from "eventsource-parser/stream";
+import { z } from "zod/v4";
 import { toNormalizedMessages } from "./messages";
 import { buildToolDefinitions } from "./tools";
 import type { AgentHubAdapterConfig } from "./types";
@@ -74,19 +75,32 @@ export async function* fetchAgentHubStream(
  *
  * @see https://platform.openai.com/docs/api-reference/chat/streaming
  */
-interface OpenAIChatStreamChunk {
-  choices: Array<{
-    finish_reason: string | null;
-    delta: {
-      content?: string;
-      tool_calls?: Array<{
-        index: number;
-        id?: string;
-        function?: { name?: string; arguments?: string };
-      }>;
-    };
-  }>;
-}
+const OpenAIChatStreamChunkSchema = z.object({
+  choices: z.array(
+    z.object({
+      finish_reason: z.string().nullable(),
+      delta: z.object({
+        content: z.string().optional(),
+        tool_calls: z
+          .array(
+            z.object({
+              index: z.number(),
+              id: z.string().optional(),
+              function: z
+                .object({
+                  name: z.string().optional(),
+                  arguments: z.string().optional(),
+                })
+                .optional(),
+            }),
+          )
+          .optional(),
+      }),
+    }),
+  ),
+});
+
+type OpenAIChatStreamChunk = z.infer<typeof OpenAIChatStreamChunkSchema>;
 
 type ToolCallDelta = NonNullable<
   OpenAIChatStreamChunk["choices"][number]["delta"]["tool_calls"]
@@ -155,18 +169,22 @@ async function* toStreamChunks(
   >();
 
   const eventStream = body
+    // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- TextDecoderStream is a TransformStream<Uint8Array, string> but TS lib types are wider
     .pipeThrough(new TextDecoderStream() as TransformStream<Uint8Array, string>)
     .pipeThrough(new EventSourceParserStream());
 
   for await (const event of eventStream) {
     if (event.data === "[DONE]") break;
 
-    let chunk: OpenAIChatStreamChunk;
+    let json: unknown;
     try {
-      chunk = JSON.parse(event.data) as OpenAIChatStreamChunk;
+      json = JSON.parse(event.data);
     } catch {
       continue;
     }
+    const chunkResult = OpenAIChatStreamChunkSchema.safeParse(json);
+    if (!chunkResult.success) continue;
+    const chunk = chunkResult.data;
 
     const choice = chunk.choices?.[0];
     if (!choice) continue;
