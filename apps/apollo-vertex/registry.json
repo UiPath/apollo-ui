@@ -567,6 +567,10 @@
         {
           "path": "registry/data-table/sortable-column-list.tsx",
           "type": "registry:ui"
+        },
+        {
+          "path": "registry/use-data-table/useReactTableCompat.ts",
+          "type": "registry:hook"
         }
       ]
     },
