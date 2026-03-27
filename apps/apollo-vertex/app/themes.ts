@@ -1,4 +1,5 @@
-import type { ThemeConfig } from "../registry/shell/shell-theme-provider";
+import { z } from "zod";
+import { type ThemeConfig, ThemeConfigSchema } from "@/lib/schemas/theme";
 
 export const themes = {
   default: {
@@ -202,7 +203,12 @@ export const themes = {
   },
 } as const;
 
-export type ThemeName = keyof typeof themes | "custom";
+const themeNames = [...Object.keys(themes), "custom"] as const;
+export const ThemeNameSchema = z.enum(
+  // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion)
+  themeNames as unknown as [string, ...string[]],
+);
+export type ThemeName = z.infer<typeof ThemeNameSchema>;
 
 const CUSTOM_THEME_STORAGE_KEY = "apollo-vertex-custom-theme";
 
@@ -213,7 +219,10 @@ export function getCustomTheme(): ThemeConfig | null {
   if (!savedTheme) return null;
 
   try {
-    return JSON.parse(savedTheme);
+    const { data, success } = ThemeConfigSchema.safeParse(
+      JSON.parse(savedTheme),
+    );
+    return success ? data : null;
   } catch {
     return null;
   }

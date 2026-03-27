@@ -32,6 +32,7 @@ function DataTableFacetedFilter<TData, TValue>({
   if (!column) return null;
 
   const filterValue = column.getFilterValue();
+  // oxlint-disable-next-line typescript-eslint(no-unsafe-assignment) -- tanstack getFilterValue() returns unknown; we know our faceted filters use string[]
   const selectedValues: string[] = Array.isArray(filterValue)
     ? filterValue
     : [];

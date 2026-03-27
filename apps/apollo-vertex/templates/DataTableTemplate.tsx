@@ -225,6 +225,7 @@ const columns: ColumnDef<Payment>[] = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
+      // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- tanstack row.getValue() returns unknown; column accessor guarantees the type
       const status = row.getValue("status") as Payment["status"];
       return <Badge variant={statusVariant[status]}>{status}</Badge>;
     },
@@ -273,6 +274,7 @@ const columns: ColumnDef<Payment>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
+              // oxlint-disable-next-line typescript-eslint(no-misused-promises) -- fire-and-forget clipboard write
               onClick={() => navigator.clipboard.writeText(payment.id)}
             >
               Copy payment ID

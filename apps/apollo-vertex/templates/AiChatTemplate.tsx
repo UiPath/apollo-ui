@@ -161,6 +161,7 @@ function AiChatDemo() {
       <AiChat
         messages={messages}
         isLoading={isMockLoading}
+        // oxlint-disable-next-line typescript-eslint(no-misused-promises) -- async handler is intentional, AiChat manages the promise lifecycle
         onSendMessage={handleSendMessage}
         onStop={() => {
           abortRef.current?.abort();
