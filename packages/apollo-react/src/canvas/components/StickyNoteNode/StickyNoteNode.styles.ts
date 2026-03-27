@@ -150,6 +150,14 @@ export const StickyNoteMarkdown = styled.div`
     padding-left: 20px;
   }
 
+  ul {
+    list-style: disc;
+  }
+
+  ol {
+    list-style: decimal;
+  }
+
   li {
     margin: 4px 0;
   }
@@ -185,6 +193,29 @@ export const StickyNoteMarkdown = styled.div`
 
   h3 {
     font-size: 1.1em;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 8px 0;
+    font-size: 0.9em;
+  }
+
+  th,
+  td {
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    padding: 6px 10px;
+    text-align: left;
+  }
+
+  th {
+    font-weight: 600;
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  tr:nth-of-type(even) {
+    background: rgba(0, 0, 0, 0.02);
   }
 
   blockquote {
