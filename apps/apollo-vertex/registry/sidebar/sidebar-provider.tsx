@@ -108,6 +108,7 @@ export function SidebarProvider({
       <TooltipProvider delayDuration={0}>
         <div
           data-slot="sidebar-wrapper"
+          /* oxlint-disable typescript-eslint(no-unsafe-type-assertion) -- CSS custom properties not in React.CSSProperties */
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH,
@@ -115,6 +116,7 @@ export function SidebarProvider({
               ...style,
             } as React.CSSProperties
           }
+          /* oxlint-enable typescript-eslint(no-unsafe-type-assertion) */
           className={cn(
             "group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full",
             className,

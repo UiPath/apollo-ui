@@ -21,12 +21,15 @@ const STORAGE_KEYS = {
   STATE: "uipath_state",
 } as const;
 
-const TokenDataSchema = z.object({
+const TokenResponseSchema = z.object({
   access_token: z.string(),
   id_token: z.string(),
   refresh_token: z.string(),
   expires_in: z.number(),
   token_type: z.string(),
+});
+
+const TokenDataSchema = TokenResponseSchema.extend({
   expiresAt: z.number(),
 });
 
@@ -74,19 +77,15 @@ const fetchTokenData = async (baseUrl: string, body?: URLSearchParams) => {
     throw new Error(`Token refresh failed: ${errorText}`);
   }
 
-  const data = await response.json();
+  const responseData = TokenResponseSchema.parse(await response.json());
 
   return TokenDataSchema.parse({
-    access_token: data.access_token,
-    id_token: data.id_token,
-    refresh_token: data.refresh_token,
-    expires_in: data.expires_in,
-    token_type: data.token_type,
-    expiresAt: Date.now() + data.expires_in * 1000,
+    ...responseData,
+    expiresAt: Date.now() + responseData.expires_in * 1000,
   });
 };
 
-const refreshAccessToken = async (
+const refreshAccessToken = (
   refreshToken: string,
   clientId: string,
   baseUrl: string,
@@ -97,7 +96,7 @@ const refreshAccessToken = async (
     client_id: clientId,
   });
 
-  return await fetchTokenData(baseUrl, body);
+  return fetchTokenData(baseUrl, body);
 };
 
 const refreshTokenIfNeeded = async (
@@ -123,7 +122,7 @@ const refreshTokenIfNeeded = async (
   }
 };
 
-const exchangeCodeForToken = async (
+const exchangeCodeForToken = (
   code: string,
   codeVerifier: string,
   clientId: string,
@@ -137,7 +136,7 @@ const exchangeCodeForToken = async (
     code_verifier: codeVerifier,
   });
 
-  return await fetchTokenData(baseUrl, body);
+  return fetchTokenData(baseUrl, body);
 };
 
 const handleOAuthCallback = async (
@@ -180,7 +179,9 @@ const handleOAuthCallback = async (
     window.history.replaceState({}, document.title, window.location.pathname);
   } catch (authError) {
     clearTokenData();
-    toast.error(`Authentication failed: ${authError}`);
+    const message =
+      authError instanceof Error ? authError.message : "Unknown error";
+    toast.error(`Authentication failed: ${message}`);
     throw authError;
   }
 };
@@ -196,7 +197,7 @@ export const ensureValidToken = async (
   if (isInOAuthCallback) {
     try {
       await handleOAuthCallback(clientId, baseUrl);
-      queryClient.invalidateQueries({ queryKey: TOKEN_QUERY_KEY });
+      await queryClient.invalidateQueries({ queryKey: TOKEN_QUERY_KEY });
     } catch {
       queryClient.setQueryData(TOKEN_QUERY_KEY, null);
     }
@@ -207,8 +208,9 @@ export const ensureValidToken = async (
     return null;
   }
 
-  const parsed = JSON.parse(tokenDataStr);
-  const { data: tokenData, success } = TokenDataSchema.safeParse(parsed);
+  const { data: tokenData, success } = TokenDataSchema.safeParse(
+    JSON.parse(tokenDataStr),
+  );
 
   if (!success) {
     clearTokenData();

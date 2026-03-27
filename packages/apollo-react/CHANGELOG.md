@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.61.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.60.4...@uipath/apollo-react@3.61.0) (2026-03-26)
+
+### Features
+
+* **apollo-react:** add adhoc play button and entry condition icon for tasks ([2857aba](https://github.com/UiPath/apollo-ui/commit/2857aba5ac5c2f56fa54d2eec3d1787665449904))
+
 ## [@uipath/apollo-react-v3.60.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.60.3...@uipath/apollo-react@3.60.4) (2026-03-25)
 
 ### Bug Fixes

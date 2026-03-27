@@ -63,7 +63,8 @@ const dataTableGlobalFilterFn = (
     const meta = cell.column.columnDef.meta;
     const displayValue = meta?.getFilterValue
       ? meta.getFilterValue(value, row)
-      : String(value ?? "");
+      : // oxlint-disable-next-line typescript-eslint(no-base-to-string) -- cell value may be a primitive; objects fall back to meta.getFilterValue above
+        String(value ?? "");
     return displayValue.toLowerCase().includes(searchStr);
   });
 };

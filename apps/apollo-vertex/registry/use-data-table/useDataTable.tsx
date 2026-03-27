@@ -14,7 +14,7 @@ import { usePersistedSorting } from "./usePersistedSorting";
 
 export interface UseDataTableOptions<TData> {
   data: TData[];
-  columns: ColumnDef<TData, unknown>[];
+  columns: ColumnDef<TData>[];
   isLoading?: boolean;
   storageKey: string;
   defaultColumnOrder?: string[];
@@ -30,6 +30,7 @@ export function useDataTable<TData>({
   defaultVisibleColumns: defaultVisibleColumnsProp,
 }: UseDataTableOptions<TData>) {
   const allColumnKeys = columns
+    // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- tanstack ColumnDef doesn't expose accessorKey in its type union
     .map((col) => ("accessorKey" in col ? (col.accessorKey as string) : col.id))
     .filter((key): key is string => key != null);
 

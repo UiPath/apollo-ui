@@ -2,7 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 
 export type EntityRecord = Record<string, unknown>;
 
-export type ColumnDefWithAccessorKey<T> = ColumnDef<T, unknown> & {
+export type ColumnDefWithAccessorKey<T> = ColumnDef<T> & {
   accessorKey: string;
 };
 

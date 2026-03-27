@@ -17,7 +17,6 @@
         "name": "next"
       }
     ],
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
       "@/components/ui/accordion": ["./registry/accordion/accordion"],

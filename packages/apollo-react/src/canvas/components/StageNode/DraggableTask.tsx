@@ -4,13 +4,16 @@ import { FontVariantToken, Padding, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import {
   ApBadge,
+  ApCircularProgress,
   ApIconButton,
   ApTooltip,
   ApTypography,
   BadgeSize,
   type StatusTypes,
 } from '@uipath/apollo-react/material';
+import debounce from 'debounce';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
+import { EntryConditionIcon, PlayIcon } from '../../icons';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import type { DraggableTaskProps, TaskContentProps } from './DraggableTask.types';
 import {
@@ -126,6 +129,7 @@ const DraggableTaskComponent = ({
   contextMenuItems,
   onTaskClick,
   onMenuOpen,
+  onTaskPlay,
   isDragDisabled,
   projectedDepth,
   zoom = 1,
@@ -133,6 +137,7 @@ const DraggableTaskComponent = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const taskRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<TaskMenuHandle>(null);
+  const [playLoading, setPlayLoading] = useState(false);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -148,6 +153,36 @@ const DraggableTaskComponent = ({
   const handleMenuOpenChange = useCallback((isOpen: boolean) => {
     setIsMenuOpen(isOpen);
   }, []);
+
+  const debouncedTaskPlay = useMemo(
+    () =>
+      onTaskPlay
+        ? debounce(
+            async (taskId) => {
+              setPlayLoading(true);
+              try {
+                await onTaskPlay(taskId);
+              } catch {
+                // Do nothing
+              } finally {
+                setPlayLoading(false);
+              }
+            },
+            500,
+            { immediate: true }
+          )
+        : undefined,
+    [onTaskPlay]
+  );
+
+  const handlePlayClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+      debouncedTaskPlay?.(task.id);
+    },
+    [debouncedTaskPlay, task.id]
+  );
 
   const handleContextMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     menuRef.current?.handleContextMenu(e);
@@ -202,6 +237,39 @@ const DraggableTaskComponent = ({
     >
       <TaskContent task={task} taskExecution={taskExecution} />
 
+      {task.isAdhoc && onTaskPlay && (
+        <ApTooltip content="Trigger task" placement="top">
+          <ApIconButton
+            data-testid={`stage-task-play-${task.id}`}
+            onClick={handlePlayClick}
+            onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
+            className="task-menu-icon-button"
+            sx={{
+              color: 'var(--uix-canvas-primary) !important',
+              minWidth: 'unset !important',
+              width: `${Spacing.SpacingXl} !important`,
+              height: `${Spacing.SpacingXl} !important`,
+              padding: '0 !important',
+            }}
+          >
+            {playLoading ? <ApCircularProgress size={20} /> : <PlayIcon w={20} h={20} />}
+          </ApIconButton>
+        </ApTooltip>
+      )}
+      {task.isAdhoc && !onTaskPlay && (
+        <ApTooltip content="Entry condition" placement="top">
+          <span
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              color: 'var(--color-icon-default)',
+              flexShrink: 0,
+            }}
+          >
+            <EntryConditionIcon w={20} h={20} />
+          </span>
+        </ApTooltip>
+      )}
       {contextMenuItems.length > 0 && (
         <TaskMenu
           ref={menuRef}

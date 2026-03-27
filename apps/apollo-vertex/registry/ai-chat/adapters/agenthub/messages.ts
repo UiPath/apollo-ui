@@ -26,15 +26,17 @@ function parseToolInput(
 ): Record<string, unknown> {
   // Prefer pre-parsed input if it's a plain object
   if (input != null && typeof input === "object" && !Array.isArray(input)) {
+    // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- `input` is narrowed to non-null, non-array object; Record is the only way to represent this
     return input as Record<string, unknown>;
   }
   try {
-    const parsed = JSON.parse(argumentsJson);
+    const parsed: unknown = JSON.parse(argumentsJson);
     if (
       typeof parsed === "object" &&
       parsed !== null &&
       !Array.isArray(parsed)
     ) {
+      // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- same narrowing as above; TS can't infer Record from typeof checks
       return parsed as Record<string, unknown>;
     }
   } catch {
