@@ -11,11 +11,12 @@ export type {
   VisibilityState,
 } from "@tanstack/react-table";
 export type { DataTableProps } from "./data-table";
+export { DataTable } from "./data-table";
 export {
-  DataTable,
   dataTableFacetedFilterFn,
   dataTableGlobalFilterFn,
-} from "./data-table";
+} from "./data-table-filters";
+export { DataTableCell, DataTableRow } from "./data-table-row";
 export { DataTableColumnHeader } from "./data-table-column-header";
 export {
   DataTableFacetedFilter,

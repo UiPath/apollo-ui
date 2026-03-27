@@ -153,14 +153,14 @@ const data: Payment[] = [
   },
 ];
 
-const statusVariant: Record<
+const statusBadgeStatus: Record<
   Payment["status"],
-  "default" | "secondary" | "destructive" | "outline"
+  "success" | "info" | "warning" | "error"
 > = {
-  success: "default",
-  processing: "secondary",
-  pending: "outline",
-  failed: "destructive",
+  success: "success",
+  processing: "info",
+  pending: "warning",
+  failed: "error",
 };
 
 const statusFilterOptions: DataTableFacetedFilterOption[] = [
@@ -221,13 +221,18 @@ const columns: ColumnDef<Payment>[] = [
   {
     accessorKey: "status",
     minSize: 100,
+    meta: { overflowVisible: true },
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
       // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- tanstack row.getValue() returns unknown; column accessor guarantees the type
       const status = row.getValue("status") as Payment["status"];
-      return <Badge variant={statusVariant[status]}>{status}</Badge>;
+      return (
+        <Badge variant="secondary" status={statusBadgeStatus[status]}>
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Badge>
+      );
     },
     filterFn: dataTableFacetedFilterFn,
   },
@@ -310,7 +315,6 @@ function DataTableTemplateContent() {
     <div className="p-4">
       <DataTable
         {...tableState}
-        enableColumnResizing
         expanded={expanded}
         onExpandedChange={setExpanded}
         renderExpandedRow={(row) => {
@@ -357,8 +361,12 @@ function DataTableTemplateContent() {
               <div>
                 <span className="text-muted-foreground">Status</span>
                 <p>
-                  <Badge variant={statusVariant[payment.status]}>
-                    {payment.status}
+                  <Badge
+                    variant="secondary"
+                    status={statusBadgeStatus[payment.status]}
+                  >
+                    {payment.status.charAt(0).toUpperCase() +
+                      payment.status.slice(1)}
                   </Badge>
                 </p>
               </div>
