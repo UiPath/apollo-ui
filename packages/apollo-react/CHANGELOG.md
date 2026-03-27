@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.61.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.61.0...@uipath/apollo-react@3.61.1) (2026-03-27)
+
+### Bug Fixes
+
+* **apollo-react:** adds tooltip to add node panel list item ([da71578](https://github.com/UiPath/apollo-ui/commit/da71578e802567d5319f8bff3e7a0729a26018d2))
+
 ## [@uipath/apollo-react-v3.61.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.60.4...@uipath/apollo-react@3.61.0) (2026-03-26)
 
 ### Features
