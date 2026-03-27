@@ -52,11 +52,11 @@ function Sidebar({
           data-slot="sidebar"
           data-mobile="true"
           className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
+          /* oxlint-disable typescript-eslint(no-unsafe-type-assertion) -- CSS custom property not in React.CSSProperties */
           style={
-            {
-              "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-            } as React.CSSProperties
+            { "--sidebar-width": SIDEBAR_WIDTH_MOBILE } as React.CSSProperties
           }
+          /* oxlint-enable typescript-eslint(no-unsafe-type-assertion) */
           side={side}
         >
           <SheetHeader className="sr-only">
@@ -116,28 +116,28 @@ function Sidebar({
 }
 
 export { Sidebar };
-export { SidebarProvider, useSidebar } from "./sidebar-provider";
-export { SidebarTrigger } from "./sidebar-trigger";
-export { SidebarRail } from "./sidebar-rail";
-export { SidebarInset } from "./sidebar-inset";
-export { SidebarInput } from "./sidebar-input";
-export { SidebarHeader } from "./sidebar-header";
-export { SidebarFooter } from "./sidebar-footer";
-export { SidebarSeparator } from "./sidebar-separator";
 export { SidebarContent } from "./sidebar-content";
+export { SidebarFooter } from "./sidebar-footer";
 export { SidebarGroup } from "./sidebar-group";
-export { SidebarGroupLabel } from "./sidebar-group-label";
 export { SidebarGroupAction } from "./sidebar-group-action";
 export { SidebarGroupContent } from "./sidebar-group-content";
+export { SidebarGroupLabel } from "./sidebar-group-label";
+export { SidebarHeader } from "./sidebar-header";
+export { SidebarInput } from "./sidebar-input";
+export { SidebarInset } from "./sidebar-inset";
 export { SidebarMenu } from "./sidebar-menu";
-export { SidebarMenuItem } from "./sidebar-menu-item";
+export { SidebarMenuAction } from "./sidebar-menu-action";
+export { SidebarMenuBadge } from "./sidebar-menu-badge";
 export {
   SidebarMenuButton,
   sidebarMenuButtonVariants,
 } from "./sidebar-menu-button";
-export { SidebarMenuAction } from "./sidebar-menu-action";
-export { SidebarMenuBadge } from "./sidebar-menu-badge";
+export { SidebarMenuItem } from "./sidebar-menu-item";
 export { SidebarMenuSkeleton } from "./sidebar-menu-skeleton";
 export { SidebarMenuSub } from "./sidebar-menu-sub";
-export { SidebarMenuSubItem } from "./sidebar-menu-sub-item";
 export { SidebarMenuSubButton } from "./sidebar-menu-sub-button";
+export { SidebarMenuSubItem } from "./sidebar-menu-sub-item";
+export { SidebarProvider, useSidebar } from "./sidebar-provider";
+export { SidebarRail } from "./sidebar-rail";
+export { SidebarSeparator } from "./sidebar-separator";
+export { SidebarTrigger } from "./sidebar-trigger";
