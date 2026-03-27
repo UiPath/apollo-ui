@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.61.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.61.1...@uipath/apollo-react@3.61.2) (2026-03-27)
+
+### Bug Fixes
+
+* **apollo-react:** add list and table styles to sticky note markdown preview [MST-7613] ([6d089be](https://github.com/UiPath/apollo-ui/commit/6d089beaba3e192f1efb18e3e60e6754920d098d))
+
 ## [@uipath/apollo-react-v3.61.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.61.0...@uipath/apollo-react@3.61.1) (2026-03-27)
 
 ### Bug Fixes
