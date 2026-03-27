@@ -28,6 +28,7 @@ declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
     displayName?: string;
     getFilterValue?: (value: unknown, row: Row<TData>) => string;
+    overflowVisible?: boolean;
   }
 }
 
@@ -42,47 +43,16 @@ import {
 import { useReactTableCompat } from "@/hooks/useReactTableCompat";
 import { cn } from "@/lib/utils";
 import { DataTablePagination } from "./data-table-pagination";
+import { DATA_TABLE_ROW_HEIGHT } from "./data-table-row";
+import {
+  DataTableScrollShadow,
+  useScrollShadow,
+} from "./data-table-scroll-shadow";
 import { DataTableSkeleton } from "./data-table-skeleton";
 import { DataTableToolbar } from "./data-table-toolbar";
 
-// ---------------------------------------------------------------------------
-// Filter functions
-// ---------------------------------------------------------------------------
-
-const dataTableGlobalFilterFn = (
-  row: Row<RowData>,
-  _columnId: string,
-  filterValue: string,
-): boolean => {
-  if (!filterValue) return true;
-
-  const searchStr = filterValue.toLowerCase();
-
-  return row.getVisibleCells().some((cell) => {
-    const value = cell.getValue();
-    const meta = cell.column.columnDef.meta;
-    const displayValue = meta?.getFilterValue
-      ? meta.getFilterValue(value, row)
-      : // oxlint-disable-next-line typescript-eslint(no-base-to-string) -- cell value may be a primitive; objects fall back to meta.getFilterValue above
-        String(value ?? "");
-    return displayValue.toLowerCase().includes(searchStr);
-  });
-};
-
-const dataTableFacetedFilterFn = (
-  row: Row<RowData>,
-  columnId: string,
-  filterValue: unknown,
-): boolean => {
-  if (!filterValue || !Array.isArray(filterValue) || filterValue.length === 0)
-    return true;
-  const cellValue = String(row.getValue(columnId) ?? "");
-  return filterValue.includes(cellValue);
-};
-
-// ---------------------------------------------------------------------------
-// DataTable
-// ---------------------------------------------------------------------------
+const GLASS_CLASSES =
+  "bg-white/55 border border-white/80 rounded-2xl backdrop-blur-sm shadow-[0_2px_16px_2px_rgba(0,0,0,0.05),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:bg-white/[0.055] dark:border-white/[0.03] dark:shadow-[0_2px_16px_2px_rgba(0,0,0,0.2),inset_0_1px_0_0_rgba(255,255,255,0.04)]";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -109,11 +79,13 @@ interface DataTableProps<TData, TValue> {
   enableViewOptions?: boolean;
   enableColumnResizing?: boolean;
   toolbarContent?: (table: TanstackTable<TData>) => React.ReactNode;
-  noResultsMessage?: string;
+  noResultsMessage?: React.ReactNode;
   stickyHeader?: boolean;
   expanded?: ExpandedState;
   onExpandedChange?: OnChangeFn<ExpandedState>;
   renderExpandedRow?: (row: Row<TData>) => React.ReactNode;
+  getRowClassName?: (row: TData) => string;
+  skeletonColumnWidths?: string[];
 }
 
 function DataTable<TData, TValue>({
@@ -146,20 +118,33 @@ function DataTable<TData, TValue>({
   expanded,
   onExpandedChange,
   renderExpandedRow,
+  getRowClassName,
+  skeletonColumnWidths,
 }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation();
 
   const isRowSelectionEnabled = !!(rowSelection && onRowSelectionChange);
 
+  const resetPageIndex = () =>
+    onPaginationChange((prev) =>
+      prev.pageIndex === 0 ? prev : { ...prev, pageIndex: 0 },
+    );
+
   const table = useReactTableCompat({
     data,
     columns,
     onSortingChange,
-    onColumnFiltersChange,
+    onColumnFiltersChange: (updater) => {
+      onColumnFiltersChange(updater);
+      resetPageIndex();
+    },
     onColumnVisibilityChange,
     onColumnOrderChange,
     ...(isRowSelectionEnabled && { onRowSelectionChange }),
-    onGlobalFilterChange,
+    onGlobalFilterChange: (updater) => {
+      onGlobalFilterChange(updater);
+      resetPageIndex();
+    },
     onPaginationChange,
     ...(onExpandedChange ? { onExpandedChange } : {}),
     getCoreRowModel: getCoreRowModel(),
@@ -200,9 +185,10 @@ function DataTable<TData, TValue>({
   };
 
   const rows = table.getRowModel().rows;
+  const { containerRef, canScrollLeft, canScrollRight } = useScrollShadow();
 
   return (
-    <div data-slot="data-table" className={cn("space-y-4", className)}>
+    <div data-slot="data-table" className={cn("space-y-4 min-w-0", className)}>
       <DataTableToolbar
         table={table}
         enableSearch={enableSearch}
@@ -211,13 +197,18 @@ function DataTable<TData, TValue>({
       />
 
       <div
+        ref={containerRef}
         className={cn(
-          "rounded-md border",
-          stickyHeader ? "overflow-auto" : "overflow-hidden",
+          GLASS_CLASSES,
+          "relative min-w-0 overflow-hidden",
+          stickyHeader && "overflow-auto",
         )}
       >
         <Table
-          className={cn(enableColumnResizing && "table-fixed")}
+          className={cn(
+            "w-full [&_tr>:first-child]:pl-4 [&_tr>:last-child]:pr-4",
+            enableColumnResizing && "table-fixed",
+          )}
           style={
             enableColumnResizing
               ? { ...columnSizeVars(), width: table.getTotalSize() }
@@ -235,13 +226,16 @@ function DataTable<TData, TValue>({
                     className={cn(
                       enableColumnResizing && "relative group pr-2",
                     )}
-                    style={
-                      enableColumnResizing
+                    style={{
+                      ...(header.column.columnDef.maxSize
+                        ? { maxWidth: header.column.columnDef.maxSize }
+                        : {}),
+                      ...(enableColumnResizing
                         ? {
                             width: `calc(var(--header-${header.id}-size) * 1px)`,
                           }
-                        : {}
-                    }
+                        : {}),
+                    }}
                   >
                     {header.isPlaceholder
                       ? null
@@ -274,17 +268,18 @@ function DataTable<TData, TValue>({
             {isLoading ? (
               <DataTableSkeleton
                 columnCount={table.getVisibleLeafColumns().length}
+                columnWidths={skeletonColumnWidths}
               />
             ) : rows.length > 0 ? (
               rows.map((row) => (
                 <React.Fragment key={row.id}>
                   <TableRow
                     data-state={row.getIsSelected() && "selected"}
-                    className={
-                      onRowClick
-                        ? "cursor-pointer hover:bg-gradient-to-r hover:from-primary/5 hover:to-secondary/5 transition-all border-l-2 border-transparent hover:border-l-primary"
-                        : ""
-                    }
+                    className={cn(
+                      `border-b last:border-b-0 ${DATA_TABLE_ROW_HEIGHT}`,
+                      onRowClick && "cursor-pointer hover:bg-muted/50",
+                      getRowClassName?.(row.original),
+                    )}
                     {...(onRowClick && {
                       onClick: () => onRowClick(row.original),
                     })}
@@ -292,23 +287,46 @@ function DataTable<TData, TValue>({
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
                         key={cell.id}
-                        style={
-                          enableColumnResizing
+                        style={{
+                          ...(cell.column.columnDef.maxSize
+                            ? { maxWidth: cell.column.columnDef.maxSize }
+                            : {}),
+                          ...(enableColumnResizing
                             ? {
                                 width: `calc(var(--col-${cell.column.id}-size) * 1px)`,
                               }
-                            : {}
-                        }
+                            : {}),
+                        }}
                       >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
+                        <div
+                          className={cn(
+                            "text-ellipsis whitespace-nowrap text-sm font-normal leading-5 text-foreground",
+                            !cell.column.columnDef.meta?.overflowVisible &&
+                              "overflow-hidden",
+                          )}
+                          onMouseEnter={(e) => {
+                            const el = e.currentTarget;
+                            if (el.scrollWidth > el.clientWidth + 1) {
+                              el.title = el.textContent || "";
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.title = "";
+                          }}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </div>
                       </TableCell>
                     ))}
                   </TableRow>
                   {renderExpandedRow && row.getIsExpanded() && (
-                    <TableRow data-state="expanded">
+                    <TableRow
+                      data-state="expanded"
+                      className="hover:bg-transparent"
+                    >
                       <TableCell colSpan={row.getVisibleCells().length}>
                         {renderExpandedRow(row)}
                       </TableCell>
@@ -322,17 +340,21 @@ function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="text-center py-8 text-muted-foreground"
                 >
-                  {noResultsMessage ?? t("no_results")}
+                  {noResultsMessage ??
+                    t("no_results", { defaultValue: "No results." })}
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
+        <DataTableScrollShadow
+          canScrollLeft={canScrollLeft}
+          canScrollRight={canScrollRight}
+        />
       </div>
       <DataTablePagination table={table} />
     </div>
   );
 }
-
-export { DataTable, dataTableFacetedFilterFn, dataTableGlobalFilterFn };
+export { DataTable };
 export type { DataTableProps };

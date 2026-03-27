@@ -519,6 +519,7 @@
         "@dnd-kit/sortable",
         "@dnd-kit/utilities",
         "@radix-ui/react-popover",
+        "framer-motion",
         "lucide-react",
         "react-i18next"
       ],
@@ -529,11 +530,24 @@
         "@uipath/dropdown-menu",
         "@uipath/select",
         "@uipath/input",
-        "@uipath/skeleton"
+        "@uipath/skeleton",
+        "@uipath/tooltip"
       ],
       "files": [
         { "path": "registry/data-table/index.ts", "type": "registry:ui" },
         { "path": "registry/data-table/data-table.tsx", "type": "registry:ui" },
+        {
+          "path": "registry/data-table/data-table-filters.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/data-table/data-table-row.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/data-table/data-table-scroll-shadow.tsx",
+          "type": "registry:ui"
+        },
         {
           "path": "registry/data-table/data-table-column-header.tsx",
           "type": "registry:ui"
