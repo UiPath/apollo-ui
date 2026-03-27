@@ -113,10 +113,7 @@ export function useEntityColumns<TRecord extends EntityRecord = EntityRecord>({
     : baseDefs;
 
   const extraDefs = extraColumns?.map((ec) => ec.definition) ?? [];
-  const columns: ColumnDef<TRecord, unknown>[] = [
-    ...overriddenDefs,
-    ...extraDefs,
-  ];
+  const columns: ColumnDef<TRecord>[] = [...overriddenDefs, ...extraDefs];
 
   return { allColumns, allColumnKeys, columns };
 }

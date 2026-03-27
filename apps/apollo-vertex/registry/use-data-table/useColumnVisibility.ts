@@ -21,6 +21,7 @@ const visibilityStateToVisibleColumns = (
   visibilityState: VisibilityState,
   allColumnKeys: string[],
 ): string[] => {
+  // oxlint-disable-next-line typescript-eslint(no-unnecessary-boolean-literal-compare) -- undefined means visible; !== false is intentional
   return allColumnKeys.filter((key) => visibilityState[key] !== false);
 };
 export interface UseColumnVisibilityOptions {

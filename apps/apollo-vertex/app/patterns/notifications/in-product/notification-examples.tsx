@@ -196,8 +196,8 @@ export function CollapsibleAlertExample() {
   useEffect(() => {
     const el = measureRef.current;
     if (!el) return;
-    const firstChild = el.firstElementChild as HTMLElement | null;
-    if (!firstChild) return;
+    const firstChild = el.firstElementChild;
+    if (!(firstChild instanceof HTMLElement)) return;
     const singleRow = firstChild.offsetHeight + 6;
     setRowHeight(singleRow);
     setOverflows(el.scrollHeight > singleRow);

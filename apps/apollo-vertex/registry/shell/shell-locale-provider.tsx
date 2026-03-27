@@ -8,14 +8,22 @@ import { useTranslation } from "react-i18next";
 import { Spinner } from "@/components/ui/spinner";
 import { configurei18n } from "@/lib/i18n";
 import { LANGUAGE_CHANGED_EVENT } from "./shell-constants";
-import type { LanguageChangedEvent } from "./shell-language-toggle";
 
 export const LocaleProviderComponent = ({ children }: PropsWithChildren) => {
   const { i18n } = useTranslation();
 
   const handleLanguageChanged = useEffectEvent((event: Event) => {
-    const { selectedLanguageId } = (event as CustomEvent<LanguageChangedEvent>)
-      .detail;
+    if (!(event instanceof CustomEvent)) return;
+    const detail: unknown = event.detail;
+    if (
+      typeof detail !== "object" ||
+      detail === null ||
+      !("selectedLanguageId" in detail) ||
+      typeof detail.selectedLanguageId !== "string"
+    ) {
+      return;
+    }
+    const { selectedLanguageId } = detail;
     i18n.changeLanguage(selectedLanguageId);
     document.documentElement.lang = selectedLanguageId;
   });
@@ -40,7 +48,7 @@ export const LocaleProvider = ({ children }: PropsWithChildren) => {
   };
 
   useEffect(() => {
-    configure();
+    void configure();
   }, []);
 
   if (!isConfigured)

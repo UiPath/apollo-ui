@@ -25,7 +25,7 @@ export interface UserInfo {
 }
 
 const JwtPayloadSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   first_name: z.string(),
   last_name: z.string(),
   sub: z.string(),
@@ -79,7 +79,7 @@ export const useAccessToken = ({ clientId, baseUrl }: UseAccessTokenProps) => {
 
   const { data: token } = useQuery({
     queryKey: TOKEN_QUERY_KEY,
-    queryFn: async () => await ensureValidToken(queryClient, clientId, baseUrl),
+    queryFn: () => ensureValidToken(queryClient, clientId, baseUrl),
     refetchInterval: 60 * 1000,
     enabled: typeof window !== "undefined",
   });

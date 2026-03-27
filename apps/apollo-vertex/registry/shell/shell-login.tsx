@@ -14,6 +14,7 @@ export const ShellLogin = ({ title, description }: ShellLoginProps) => {
     <div className="flex h-screen items-center justify-center bg-background">
       <div className="w-full max-w-md">
         <div className="bg-card rounded-lg shadow-lg p-8 border border-border">
+          {/* oxlint-disable-next-line typescript-eslint(prefer-nullish-coalescing) -- empty string should not render the header */}
           {(title || description) && (
             <div className="text-center mb-8">
               {title && (
@@ -29,7 +30,7 @@ export const ShellLogin = ({ title, description }: ShellLoginProps) => {
           <div className="space-y-6">
             <button
               type="button"
-              onClick={() => login()}
+              onClick={() => void login()}
               className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium text-base shadow-sm hover:shadow-md"
             >
               {t("sign_in_with_uipath")}
