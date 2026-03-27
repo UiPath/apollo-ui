@@ -68,21 +68,22 @@ const NODE_OPTIONS: ListItem<NodeItemData>[] = [
     name: 'AI Agent long long long long long long name',
     icon: { name: 'smart_toy' },
     data: { type: 'ai-agent', category: 'AI' },
-    description: 'Autonomous AI assistant',
+    description: 'Autonomous AI assistant that processes complex multi-step workflows end to end',
   },
   {
     id: '5',
     name: 'OpenAI',
     icon: { name: 'psychology' },
     data: { type: 'openai', category: 'AI' },
-    description: 'GPT models integration',
+    description: 'GPT models integration for natural language processing and text generation tasks',
   },
   {
     id: '6',
     name: 'Data extractor',
     icon: { name: 'file_copy' },
     data: { type: 'data-extractor', category: 'Data' },
-    description: 'Extract data from documents',
+    description:
+      'Extract structured data from documents, PDFs, images, and scanned files automatically',
   },
   {
     id: '7',

@@ -168,7 +168,7 @@ const ListViewRow = memo(
           {item.icon?.Component && <item.icon.Component />}
         </IconContainerMemoized>
         <Column flex={1} overflow="hidden">
-          <ApTooltip content={item.name} placement="top" smartTooltip>
+          <ApTooltip content={item.name} placement="right" smartTooltip>
             <ApTypography
               variant={FontVariantToken.fontSizeM}
               className="list-view-item-name"
@@ -178,13 +178,15 @@ const ListViewRow = memo(
             </ApTypography>
           </ApTooltip>
           {item.description && (
-            <ApTypography
-              variant={FontVariantToken.fontSizeXs}
-              className="list-view-item-name"
-              color="var(--uix-canvas-foreground-de-emp)"
-            >
-              {item.description}
-            </ApTypography>
+            <ApTooltip content={item.description} placement="right" smartTooltip>
+              <ApTypography
+                variant={FontVariantToken.fontSizeXs}
+                className="list-view-item-name"
+                color="var(--uix-canvas-foreground-de-emp)"
+              >
+                {item.description}
+              </ApTypography>
+            </ApTooltip>
           )}
         </Column>
         {!!item.children && (
