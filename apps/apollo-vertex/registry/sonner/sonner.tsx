@@ -40,7 +40,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
 
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme={
+        theme === "light" || theme === "dark" || theme === "system"
+          ? theme
+          : "system"
+      }
       className="toaster group"
       position="top-center"
       duration={5000}
@@ -52,6 +56,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         error: <OctagonXIcon className="size-4" />,
         loading: <Loader2Icon className="size-4 animate-spin" />,
       }}
+      /* oxlint-disable typescript-eslint(no-unsafe-type-assertion) -- CSS custom properties not in React.CSSProperties */
       style={
         {
           "--normal-bg": "var(--popover)",
@@ -60,6 +65,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--border-radius": "var(--radius)",
         } as React.CSSProperties
       }
+      /* oxlint-enable typescript-eslint(no-unsafe-type-assertion) */
       toastOptions={{ classNames: apolloToastClassNames }}
       {...props}
     />
