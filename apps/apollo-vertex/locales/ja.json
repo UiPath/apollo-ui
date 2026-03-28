@@ -99,5 +99,7 @@
   "view_payment_details": "支払いの詳細を表示",
   "warning": "警告",
   "business_user": "ビジネス ユーザー",
-  "user_email_placeholder": "user@company.com"
+  "user_email_placeholder": "user@company.com",
+  "enter_full_screen": "全画面表示",
+  "exit_full_screen": "全画面表示を終了"
 }

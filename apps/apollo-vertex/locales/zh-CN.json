@@ -99,5 +99,7 @@
   "view_payment_details": "查看付款详细信息",
   "warning": "警告",
   "business_user": "企业用户",
-  "user_email_placeholder": "user@company.com"
+  "user_email_placeholder": "user@company.com",
+  "enter_full_screen": "进入全屏",
+  "exit_full_screen": "退出全屏"
 }

@@ -99,5 +99,7 @@
   "view_payment_details": "결제 세부 정보 보기",
   "warning": "경고",
   "business_user": "비즈니스 사용자",
-  "user_email_placeholder": "user@company.com"
+  "user_email_placeholder": "user@company.com",
+  "enter_full_screen": "전체 화면으로 전환",
+  "exit_full_screen": "전체 화면 종료"
 }

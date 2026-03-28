@@ -99,5 +99,7 @@
   "view_payment_details": "Ver detalles de pago",
   "warning": "Advertencia",
   "business_user": "Usuario empresarial",
-  "user_email_placeholder": "usuario@empresa.com"
+  "user_email_placeholder": "usuario@empresa.com",
+  "enter_full_screen": "Abrir pantalla completa",
+  "exit_full_screen": "Salir de la pantalla completa"
 }

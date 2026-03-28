@@ -99,5 +99,7 @@
   "view_payment_details": "Vizualizați detaliile plății",
   "warning": "Atenție",
   "business_user": "Utilizator business",
-  "user_email_placeholder": "user@company.com"
+  "user_email_placeholder": "user@company.com",
+  "enter_full_screen": "Intră în modul ecran complet",
+  "exit_full_screen": "Ieșire din modul ecran complet"
 }
