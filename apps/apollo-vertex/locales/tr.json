@@ -99,5 +99,7 @@
   "view_payment_details": "Ödeme ayrıntılarını görüntüle",
   "warning": "Uyarı",
   "business_user": "İş kullanıcısı",
-  "user_email_placeholder": "kullanıcı@sirket.com"
+  "user_email_placeholder": "kullanıcı@sirket.com",
+  "enter_full_screen": "Tam ekrana geç",
+  "exit_full_screen": "Tam ekrandan çık"
 }

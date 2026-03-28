@@ -99,5 +99,7 @@
   "view_payment_details": "Zahlungsdetails anzeigen",
   "warning": "Warnung",
   "business_user": "Geschäftsanwender",
-  "user_email_placeholder": "benutzer@firma.de"
+  "user_email_placeholder": "benutzer@firma.de",
+  "enter_full_screen": "Vollbild aktivieren",
+  "exit_full_screen": "Vollbild beenden"
 }
