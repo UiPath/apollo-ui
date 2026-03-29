@@ -144,7 +144,7 @@ export function FloatingCanvasPanel({
         style={{
           position: 'fixed',
           ...screenPosition,
-          zIndex: 10000,
+          zIndex: 1100,
           pointerEvents: 'auto',
         }}
       >
@@ -179,7 +179,7 @@ export function FloatingCanvasPanel({
         position: isPinned ? 'fixed' : 'absolute',
         right: isPinned ? 0 : undefined,
         top: isPinned ? 0 : undefined,
-        zIndex: 10000,
+        zIndex: 1100,
         pointerEvents: 'auto',
       }}
     >
