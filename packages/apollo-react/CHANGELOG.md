@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.61.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.61.2...@uipath/apollo-react@3.61.3) (2026-03-29)
+
+### Bug Fixes
+
+* **apollo-react:** fix zIndex on FloatingCanvasPanel ([df73fc2](https://github.com/UiPath/apollo-ui/commit/df73fc27dc5ea9fe5b64fb0e7bb5c4a5448c88bd))
+
 ## [@uipath/apollo-react-v3.61.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.61.1...@uipath/apollo-react@3.61.2) (2026-03-27)
 
 ### Bug Fixes
