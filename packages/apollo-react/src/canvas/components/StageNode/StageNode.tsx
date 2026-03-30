@@ -553,9 +553,14 @@ const StageNodeComponent = (props: StageNodeProps) => {
               </ApTooltip>
             )}
             {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly && (
-              <ApTooltip content={addTaskLabel} placement="top">
+              <ApTooltip content={addTaskLabel} placement="top" hide={addTaskLoading}>
                 <span>
-                  <ApIconButton onClick={handleTaskAddClick} size="small" label={addTaskLabel}>
+                  <ApIconButton
+                    onClick={handleTaskAddClick}
+                    size="small"
+                    label={addTaskLabel}
+                    disabled={addTaskLoading}
+                  >
                     <ApIcon name="add" size="20px" />
                   </ApIconButton>
                 </span>
