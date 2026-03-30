@@ -9,6 +9,13 @@ import remarkGfm from 'remark-gfm';
 import { GRID_SPACING } from '../../constants';
 import type { ToolbarAction } from '../Toolbar';
 import { NodeToolbar } from '../Toolbar';
+import { FormattingToolbar } from './FormattingToolbar';
+import {
+  type ActiveFormats,
+  activeFormatsEqual,
+  continueListOnEnter,
+  detectActiveFormats,
+} from './markdown-formatting';
 import {
   BottomCornerIndicators,
   ColorOption,
@@ -22,9 +29,10 @@ import {
   stickyNoteGlobalStyles,
   TopCornerIndicators,
 } from './StickyNoteNode.styles';
-import type { StickyNoteColor, StickyNoteData } from './StickyNoteNode.types';
+import type { StickyNoteColor, StickyNoteData, TextSelection } from './StickyNoteNode.types';
 import { STICKY_NOTE_COLORS, withAlpha } from './StickyNoteNode.types';
 import { preserveNewlines } from './StickyNoteNode.utils';
+import { useMarkdownShortcuts } from './useMarkdownShortcuts';
 
 export interface StickyNoteNodeProps extends NodeProps {
   data: StickyNoteData;
@@ -50,6 +58,13 @@ const StickyNoteNodeComponent = ({
   const [localContent, setLocalContent] = useState(data.content || '');
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const colorButtonRef = useRef<HTMLDivElement>(null);
+  const [activeFormats, setActiveFormats] = useState<ActiveFormats>({
+    bold: false,
+    italic: false,
+    strikethrough: false,
+    bulletList: false,
+    numberedList: false,
+  });
 
   const colorKey = (data.color || 'yellow') as StickyNoteColor;
   const color = STICKY_NOTE_COLORS[colorKey] ?? STICKY_NOTE_COLORS.yellow;
@@ -78,6 +93,7 @@ const StickyNoteNodeComponent = ({
   }, [selected, isResizing]);
 
   const handleDoubleClick = useCallback(() => {
+    if (isEditing) return;
     setIsEditing(true);
     setTimeout(() => {
       if (textAreaRef.current) {
@@ -85,7 +101,7 @@ const StickyNoteNodeComponent = ({
         textAreaRef.current.select();
       }
     }, 0);
-  }, []);
+  }, [isEditing]);
 
   const handleBlur = useCallback(() => {
     setIsEditing(false);
@@ -98,6 +114,29 @@ const StickyNoteNodeComponent = ({
     setLocalContent(e.target.value);
   }, []);
 
+  const handleFormat = useCallback((result: TextSelection) => {
+    setLocalContent(result.value);
+    setActiveFormats(detectActiveFormats(result));
+    requestAnimationFrame(() => {
+      if (textAreaRef.current) {
+        textAreaRef.current.selectionStart = result.selectionStart;
+        textAreaRef.current.selectionEnd = result.selectionEnd;
+      }
+    });
+  }, []);
+
+  const updateActiveFormats = useCallback(() => {
+    if (!textAreaRef.current) return;
+    const next = detectActiveFormats({
+      value: textAreaRef.current.value,
+      selectionStart: textAreaRef.current.selectionStart,
+      selectionEnd: textAreaRef.current.selectionEnd,
+    });
+    setActiveFormats((prev) => (activeFormatsEqual(prev, next) ? prev : next));
+  }, []);
+
+  const shortcutKeyDown = useMarkdownShortcuts(textAreaRef, handleFormat);
+
   // Handle key down for saving on Enter (optional, depends on UX preference)
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -105,10 +144,26 @@ const StickyNoteNodeComponent = ({
         setIsEditing(false);
         setLocalContent(data.content || '');
         textAreaRef.current?.blur();
+        return;
       }
-      // Allow Enter for new lines, use Ctrl+Enter or blur to save
+      if (e.key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
+        const textarea = textAreaRef.current;
+        if (textarea) {
+          const result = continueListOnEnter({
+            value: textarea.value,
+            selectionStart: textarea.selectionStart,
+            selectionEnd: textarea.selectionEnd,
+          });
+          if (result) {
+            e.preventDefault();
+            handleFormat(result);
+          }
+        }
+        return;
+      }
+      shortcutKeyDown(e);
     },
-    [data.content]
+    [data.content, shortcutKeyDown, handleFormat]
   );
 
   // Resize handlers
@@ -277,17 +332,26 @@ const StickyNoteNodeComponent = ({
           <TopCornerIndicators selected={selected} />
           <BottomCornerIndicators selected={selected} />
           {isEditing ? (
-            <StickyNoteTextArea
-              ref={textAreaRef}
-              value={localContent}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              onKeyDown={handleKeyDown}
-              readOnly={!isEditing}
-              placeholder={placeholder}
-              isEditing={isEditing}
-              className="nodrag nowheel"
-            />
+            <>
+              <FormattingToolbar
+                textAreaRef={textAreaRef}
+                borderColor={color}
+                activeFormats={activeFormats}
+                onFormat={handleFormat}
+              />
+              <StickyNoteTextArea
+                ref={textAreaRef}
+                value={localContent}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
+                onSelect={updateActiveFormats}
+                onKeyUp={updateActiveFormats}
+                placeholder={placeholder}
+                isEditing={isEditing}
+                className="nodrag nowheel"
+              />
+            </>
           ) : (
             <StickyNoteMarkdown>
               {localContent ? (

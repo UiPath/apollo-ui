@@ -54,3 +54,13 @@ export function withAlpha(hex: string, alpha: number = STICKY_NOTE_BG_ALPHA): st
   const b = parseInt(normalized.slice(5, 7), 16);
   return `rgba(${r}, ${g}, ${b}, ${clampedAlpha})`;
 }
+
+/** Represents a textarea's value and cursor/selection positions */
+export type TextSelection = {
+  value: string;
+  selectionStart: number;
+  selectionEnd: number;
+};
+
+/** Available formatting actions for the toolbar and keyboard shortcuts */
+export type FormattingAction = 'bold' | 'italic' | 'strikethrough' | 'bulletList' | 'numberedList';
