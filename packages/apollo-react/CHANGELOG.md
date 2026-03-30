@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.62.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.61.3...@uipath/apollo-react@3.62.0) (2026-03-30)
+
+### Features
+
+* **apollo-react:** add flow project icon ([9f56c26](https://github.com/UiPath/apollo-ui/commit/9f56c26c8004c465c600522d725980095c4055aa))
+
 ## [@uipath/apollo-react-v3.61.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.61.2...@uipath/apollo-react@3.61.3) (2026-03-29)
 
 ### Bug Fixes
