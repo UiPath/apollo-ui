@@ -10,7 +10,7 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApButton, ApMenu } from '@uipath/apollo-react/material/components';
 import type { IMenuItem } from '@uipath/apollo-react/material/components/ap-menu/ApMenu.types';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DefaultCanvasTranslations } from '../../types';
 import {
   createGroupModificationHandlers,
@@ -1493,10 +1493,10 @@ const AddTaskLoadingStory = () => {
         width: 304,
         data: {
           stageDetails: {
-            label: 'Top-level loading (click +)',
+            label: 'Loading (+ disabled for 3s)',
             tasks: [],
           },
-          // Top-level loading: skeletons until API returns items
+          // Top-level loading: + button disabled until API returns items
           addTaskLoading: true,
           taskOptions: [] as ListItem[],
         },
@@ -1544,7 +1544,32 @@ const AddTaskLoadingStory = () => {
     return () => clearTimeout(timeout);
   }, [setNodes]);
 
-  // Inject per-node handlers
+  // Inject per-node handlers — simulates loading state on add-task:
+  // 1. Set addTaskLoading=true so the + button is disabled
+  // 2. After 2s, set addTaskLoading=false to re-enable it
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => {
+    return () => clearTimeout(timeoutRef.current);
+  }, []);
+
+  const handleAddTaskFromToolbox = useCallback(
+    (nodeId: string, _taskItem: ListItem) => {
+      clearTimeout(timeoutRef.current);
+      setNodes((nds) =>
+        nds.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, addTaskLoading: true } } : n))
+      );
+      timeoutRef.current = setTimeout(() => {
+        setNodes((nds) =>
+          nds.map((n) =>
+            n.id === nodeId ? { ...n, data: { ...n.data, addTaskLoading: false } } : n
+          )
+        );
+      }, 2000);
+    },
+    [setNodes]
+  );
+
   const nodesWithHandler = useMemo(
     () =>
       nodesState.map((node) => ({
@@ -1552,11 +1577,11 @@ const AddTaskLoadingStory = () => {
         data: {
           ...node.data,
           onAddTaskFromToolbox: (taskItem: ListItem) => {
-            window.alert(`Added task "${taskItem.name}" to ${node.id}`);
+            handleAddTaskFromToolbox(node.id, taskItem);
           },
         },
       })),
-    [nodesState]
+    [nodesState, handleAddTaskFromToolbox]
   );
 
   const onConnect = useCallback(
