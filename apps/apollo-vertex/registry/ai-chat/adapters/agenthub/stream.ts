@@ -78,7 +78,7 @@ export async function* fetchAgentHubStream(
 const OpenAIChatStreamChunkSchema = z.object({
   choices: z.array(
     z.object({
-      finish_reason: z.string().nullable(),
+      finish_reason: z.string().nullable().optional(),
       delta: z.object({
         content: z.string().optional(),
         tool_calls: z

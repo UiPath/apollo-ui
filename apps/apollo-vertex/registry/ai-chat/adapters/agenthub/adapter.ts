@@ -1,5 +1,5 @@
-import type { ModelMessage, StreamChunk } from "@tanstack/ai";
-import type { UIMessage } from "@tanstack/ai-client";
+import type { ModelMessage } from "@tanstack/ai";
+import type { ConnectConnectionAdapter, UIMessage } from "@tanstack/ai-client";
 import { fetchAgentHubStream } from "./stream";
 import type { AgentHubAdapterConfig } from "./types";
 
@@ -12,21 +12,20 @@ function isUIMessages(
   return first != null && "parts" in first;
 }
 
-export function createAgentHubStreamFactory(
+export function createAgentHubConnection(
   config: AgentHubAdapterConfig,
-  signal?: AbortSignal,
-) {
-  return (
-    messages: Array<UIMessage> | Array<ModelMessage>,
-  ): AsyncIterable<StreamChunk> => {
-    if (messages.length === 0) {
-      return fetchAgentHubStream(config, [], signal);
-    }
-    if (!isUIMessages(messages)) {
-      throw new Error(
-        "AgentHub adapter requires UIMessages, received ModelMessages",
-      );
-    }
-    return fetchAgentHubStream(config, messages, signal);
+): ConnectConnectionAdapter {
+  return {
+    connect(messages, _data, abortSignal) {
+      if (messages.length === 0) {
+        return fetchAgentHubStream(config, [], abortSignal);
+      }
+      if (!isUIMessages(messages)) {
+        throw new Error(
+          "AgentHub adapter requires UIMessages, received ModelMessages",
+        );
+      }
+      return fetchAgentHubStream(config, messages, abortSignal);
+    },
   };
 }

@@ -35,22 +35,18 @@ npm install @tanstack/ai @tanstack/ai-client @tanstack/ai-react eventsource-pars
 ## Quick Start
 
 ```tsx
-import { stream, useChat } from '@tanstack/ai-react';
+import { useChat } from '@tanstack/ai-react';
 import { AiChat } from '@/components/ui/ai-chat/components/ai-chat';
 import { AiChatMessage } from '@/components/ui/ai-chat/components/ai-chat-message';
-import { createAgentHubStreamFactory } from '@/components/ui/ai-chat/adapters/agenthub/adapter';
+import { createAgentHubConnection } from '@/components/ui/ai-chat/adapters/agenthub/adapter';
 
 function BasicChat() {
-  const config = {
+  const connection = createAgentHubConnection({
     baseUrl: 'https://cloud.uipath.com/{org}/{tenant}/agenthub_/llm/api',
     model: { vendor: 'openai' as const, name: 'gpt-4o' },
     accessToken: () => getAccessToken(),
     systemPrompt: 'You are a helpful assistant.',
-  };
-
-  const connection = stream((messages) =>
-    createAgentHubStreamFactory(config)(messages),
-  );
+  });
 
   const { messages, sendMessage, isLoading, stop, clear, error } = useChat({
     connection,
@@ -137,9 +133,9 @@ function ChatWithTools() {
 The built-in adapter for the **UiPath AgentHub** normalized LLM endpoint. It converts TanStack AI `UIMessage` arrays to the AgentHub wire format, calls the endpoint, and parses the SSE response back into AG-UI `StreamChunk` events.
 
 ```tsx
-import { createAgentHubStreamFactory, type AgentHubAdapterConfig } from '@/components/ui/ai-chat/adapters/agenthub/adapter';
+import { createAgentHubConnection, type AgentHubAdapterConfig } from '@/components/ui/ai-chat/adapters/agenthub/adapter';
 
-const config: AgentHubAdapterConfig = {
+const connection = createAgentHubConnection({
   baseUrl: 'https://cloud.uipath.com/{org}/{tenant}/agenthub_/llm/api',
   model: { vendor: 'openai', name: 'gpt-4o' },
   accessToken: () => getAccessToken(),
@@ -147,11 +143,7 @@ const config: AgentHubAdapterConfig = {
   maxTokens: 2048,
   temperature: 0.7,
   tools: toolDefs,
-};
-
-const connection = stream((messages) =>
-  createAgentHubStreamFactory(config)(messages),
-);
+});
 ```
 
 The `model.vendor` field controls wire-format differences:
@@ -276,7 +268,7 @@ import type { ChoiceOption, ToolResultChoices } from '@/components/ui/ai-chat/ty
 
 // AgentHub adapter
 import {
-  createAgentHubStreamFactory,
+  createAgentHubConnection,
   type AgentHubAdapterConfig,
   type AgentHubVendor,
 } from '@/components/ui/ai-chat/adapters/agenthub/adapter';

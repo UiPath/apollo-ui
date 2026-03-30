@@ -72,40 +72,51 @@ export const useAuth = (): AuthContextValue => {
 interface UseAccessTokenProps {
   clientId: string;
   baseUrl: string;
+  redirectPath?: string;
 }
 
-export const useAccessToken = ({ clientId, baseUrl }: UseAccessTokenProps) => {
+export const useAccessToken = ({
+  clientId,
+  baseUrl,
+  redirectPath,
+}: UseAccessTokenProps) => {
   const queryClient = useQueryClient();
 
-  const { data: token } = useQuery({
+  const { data: token, isLoading } = useQuery({
     queryKey: TOKEN_QUERY_KEY,
-    queryFn: () => ensureValidToken(queryClient, clientId, baseUrl),
+    queryFn: async () =>
+      await ensureValidToken(queryClient, clientId, baseUrl, redirectPath),
     refetchInterval: 60 * 1000,
     enabled: typeof window !== "undefined",
   });
 
-  return token ?? null;
+  return { accessToken: token ?? null, isLoading };
 };
 
 interface ShellAuthProviderProps {
   clientId: string;
   scope: string;
   baseUrl: string;
+  redirectPath?: string;
 }
 
 export const ShellAuthProvider: FC<
   PropsWithChildren<ShellAuthProviderProps>
-> = ({ children, clientId, scope, baseUrl }) => {
+> = ({ children, clientId, scope, baseUrl, redirectPath }) => {
   const queryClient = useQueryClient();
-  const accessToken = useAccessToken({ clientId, baseUrl });
+  const { accessToken, isLoading } = useAccessToken({
+    clientId,
+    baseUrl,
+    redirectPath,
+  });
   const user = accessToken ? decodeJWT(accessToken) : null;
   const isAuthenticated = accessToken != null;
 
-  const contextValue = {
+  const contextValue: AuthContextValue = {
     user,
     isAuthenticated,
-    isLoading: false,
-    login: () => login(clientId, scope, baseUrl),
+    isLoading,
+    login: () => login(clientId, scope, baseUrl, redirectPath),
     logout: () => logout(queryClient),
     accessToken,
   };

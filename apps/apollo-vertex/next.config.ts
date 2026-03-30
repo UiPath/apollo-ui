@@ -17,6 +17,10 @@ export default withNextra({
         source: "/identity_/:path*",
         destination: "https://alpha.uipath.com/identity_/:path*",
       },
+      {
+        source: "/_proxy/portal/:orgId/:path*",
+        destination: "https://alpha.uipath.com/:orgId/portal_/api/:path*",
+      },
     ];
   },
   headers() {
