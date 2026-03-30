@@ -21,6 +21,7 @@ export { DataTransformMapIcon } from './DataTransformMapIcon';
 export { DecisionIcon } from './DecisionIcon';
 export { EntryConditionIcon } from './EntryConditionIcon';
 export { FlaskRunIcon } from './FlaskRunIcon';
+export { FlowProject } from './FlowProject';
 export { GoogleIcon } from './GoogleIcon';
 export { HealthScoreIcon } from './HealthScoreIcon';
 export { HumanIcon } from './HumanIcon';
