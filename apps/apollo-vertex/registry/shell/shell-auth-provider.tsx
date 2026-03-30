@@ -84,8 +84,8 @@ export const useAccessToken = ({
 
   const { data: token, isLoading } = useQuery({
     queryKey: TOKEN_QUERY_KEY,
-    queryFn: async () =>
-      await ensureValidToken(queryClient, clientId, baseUrl, redirectPath),
+    queryFn: () =>
+      ensureValidToken(queryClient, clientId, baseUrl, redirectPath),
     refetchInterval: 60 * 1000,
     enabled: typeof window !== "undefined",
   });

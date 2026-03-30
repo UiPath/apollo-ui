@@ -78,6 +78,7 @@ function Card({
         />
 
         <button
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- div props spread to button; both are HTML elements with compatible props
           {...(props as React.ComponentProps<"button">)}
           type="button"
           aria-pressed={selected}

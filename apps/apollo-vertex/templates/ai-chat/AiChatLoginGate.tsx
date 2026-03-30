@@ -158,6 +158,7 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
     let idToken: string | null = null;
     if (tokenDataStr) {
       try {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown; shape validated by optional chaining below
         const parsed = JSON.parse(tokenDataStr) as { id_token?: unknown };
         if (typeof parsed.id_token === "string") {
           idToken = parsed.id_token;
@@ -201,7 +202,12 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
         <p className="text-muted-foreground">
           Sign in to UiPath to use the AI Chat demo
         </p>
-        <Button className="cursor-pointer" onClick={login}>
+        <Button
+          className="cursor-pointer"
+          onClick={() => {
+            void login();
+          }}
+        >
           <LogIn className="size-4 mr-2" />
           Sign in
         </Button>

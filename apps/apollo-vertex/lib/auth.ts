@@ -212,7 +212,7 @@ export const ensureValidToken = async (
     try {
       await handleOAuthCallback(clientId, baseUrl, redirectPath);
     } catch {
-      queryClient.resetQueries({ queryKey: TOKEN_QUERY_KEY });
+      void queryClient.resetQueries({ queryKey: TOKEN_QUERY_KEY });
     }
   }
 
@@ -276,5 +276,5 @@ export const logout = (
   sessionStorage.removeItem(STORAGE_KEYS.CODE_VERIFIER);
   sessionStorage.removeItem(STORAGE_KEYS.STATE);
   sessionStorage.removeItem(STORAGE_KEYS.AUTH_RETURN_TO);
-  queryClient.resetQueries({ queryKey: TOKEN_QUERY_KEY });
+  void queryClient.resetQueries({ queryKey: TOKEN_QUERY_KEY });
 };
