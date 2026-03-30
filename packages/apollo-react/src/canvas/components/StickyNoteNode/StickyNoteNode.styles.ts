@@ -62,7 +62,9 @@ export const StickyNoteContainer = styled.div<{
   background-color: ${(props) => props.backgroundColor};
   border-radius: 16px;
   border: 2px solid ${(props) => props.borderColor};
-  padding: 16px;
+  padding: ${(props) => (props.isEditing ? '8px' : '16px')} 16px 16px 16px;
+  display: flex;
+  flex-direction: column;
   cursor: ${(props) => (props.isEditing ? 'text' : 'move')};
   position: relative;
   /* Ensure resize handles are clickable */
@@ -79,6 +81,8 @@ export const StickyNoteContainer = styled.div<{
 `;
 
 export const StickyNoteTextArea = styled.textarea<{ isEditing: boolean }>`
+  flex: 1;
+  min-height: 0;
   ${stickyNoteContentStyles}
 
   background: transparent;
@@ -101,6 +105,8 @@ export const StickyNoteTextArea = styled.textarea<{ isEditing: boolean }>`
 `;
 
 export const StickyNoteMarkdown = styled.div`
+  flex: 1;
+  min-height: 0;
   ${stickyNoteContentStyles}
 
   word-wrap: break-word;
@@ -338,4 +344,45 @@ export const ColorOption = styled.button<{ color: string; isSelected: boolean }>
     outline: 2px solid var(--uix-canvas-primary);
     outline-offset: 1px;
   }
+`;
+
+export const FormattingToolbarContainer = styled.div<{ borderColor: string }>`
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid ${(props) => `color-mix(in srgb, ${props.borderColor} 30%, transparent)`};
+  flex-shrink: 0;
+`;
+
+export const FormattingButton = styled.button<{ isActive: boolean }>`
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0;
+  color: var(--uix-canvas-foreground);
+  background: ${(props) =>
+    props.isActive
+      ? 'color-mix(in srgb, var(--uix-canvas-primary) 30%, transparent)'
+      : 'transparent'};
+
+  &:hover {
+    background: ${(props) =>
+      props.isActive
+        ? 'color-mix(in srgb, var(--uix-canvas-primary) 40%, transparent)'
+        : 'color-mix(in srgb, var(--uix-canvas-foreground) 10%, transparent)'};
+  }
+`;
+
+export const ToolbarSeparator = styled.div`
+  width: 1px;
+  height: 16px;
+  background: color-mix(in srgb, var(--uix-canvas-foreground) 15%, transparent);
+  margin: 0 4px;
 `;
