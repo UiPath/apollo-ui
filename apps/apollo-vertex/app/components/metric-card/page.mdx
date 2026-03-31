@@ -1,0 +1,112 @@
+import { MetricCardTemplate, MetricCardSkeletonTemplate } from '@/templates/MetricCardTemplate';
+
+# Metric Card
+
+Displays a labeled metric with a value, optional trend direction, and percentage change badge. Includes a skeleton loading state for consistent UX during data fetches.
+
+<div className="not-prose my-8 rounded-lg border overflow-hidden bg-gradient-to-br from-muted/40 via-background to-muted/40 dark:from-muted/20 dark:via-background dark:to-muted/20">
+  <MetricCardTemplate />
+</div>
+
+## Features
+
+- **Trend indicator**: Shows an up/down badge colored by positive (green) or negative (red) trend
+- **Context-aware direction**: `isLowerBetter` flips what counts as a positive trend (e.g., response time going down is good)
+- **Loading skeleton**: `MetricCardSkeleton` matches the card dimensions for seamless loading states
+- **Card variants**: Supports the same `variant` prop as the base Card (`default`, `solid`)
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/metric-card
+```
+
+### Dependencies
+
+This component depends on the following registry components:
+
+- [Card](/shadcn-components/card)
+- [Badge](/shadcn-components/badge)
+- [Skeleton](/shadcn-components/skeleton)
+
+## Usage
+
+```tsx
+import { MetricCard, MetricCardSkeleton } from '@/components/ui/metric-card';
+```
+
+### Basic
+
+```tsx
+<MetricCard label="Total Revenue" value="$12,450" />
+```
+
+### With Trend
+
+```tsx
+<MetricCard
+  label="Total Revenue"
+  value="$12,450"
+  trend="up"
+  percentage={8.2}
+/>
+```
+
+### Lower is Better
+
+Use `isLowerBetter` for metrics where a downward trend is positive, such as response time or error rate.
+
+```tsx
+<MetricCard
+  label="Avg. Response Time"
+  value="1.2s"
+  trend="down"
+  percentage={15}
+  isLowerBetter
+/>
+```
+
+### Dashboard Grid
+
+```tsx
+<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <MetricCard label="Summaries" value={142} trend="up" percentage={12} />
+  <MetricCard label="Review Time" value="4.2m" trend="down" percentage={8} isLowerBetter />
+  <MetricCard label="Approved" value={98} trend="up" percentage={5} />
+  <MetricCard label="Rejected" value={3} trend="down" percentage={20} isLowerBetter />
+</div>
+```
+
+### Loading State
+
+<div className="not-prose my-8 rounded-lg border overflow-hidden bg-gradient-to-br from-muted/40 via-background to-muted/40 dark:from-muted/20 dark:via-background dark:to-muted/20">
+  <MetricCardSkeletonTemplate />
+</div>
+
+```tsx
+<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <MetricCardSkeleton />
+  <MetricCardSkeleton />
+  <MetricCardSkeleton />
+  <MetricCardSkeleton />
+</div>
+```
+
+## API Reference
+
+### MetricCard
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `label` | `string` | — | The metric label |
+| `value` | `string \| number` | — | The metric value to display |
+| `trend` | `'up' \| 'down' \| 'neutral'` | — | Direction of the trend |
+| `percentage` | `number` | — | Percentage change amount |
+| `isLowerBetter` | `boolean` | `false` | If true, a downward trend is positive (green) |
+| `variant` | `'default' \| 'solid'` | `'default'` | Card styling variant |
+
+### MetricCardSkeleton
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `'default' \| 'solid'` | `'default'` | Card styling variant |
