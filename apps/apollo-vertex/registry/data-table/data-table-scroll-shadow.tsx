@@ -11,15 +11,15 @@ const edgeFadeVariants = {
 const fastFadeTransition = { duration: 0.15 };
 
 function useScrollShadow() {
-  const containerRef = React.useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = React.useState(false);
   const [canScrollRight, setCanScrollRight] = React.useState(false);
 
-  React.useEffect(() => {
-    const el = containerRef.current?.querySelector<HTMLElement>(
-      '[data-slot="table-container"]',
-    );
+  const containerRef = React.useCallback((node: HTMLDivElement | null) => {
+    if (!node) return;
+
+    const el = node.querySelector<HTMLElement>('[data-slot="table-container"]');
     if (!el) return;
+
     let rafId = 0;
     const update = () => {
       cancelAnimationFrame(rafId);
@@ -28,10 +28,12 @@ function useScrollShadow() {
         setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
       });
     };
+
     update();
     el.addEventListener("scroll", update, { passive: true });
     const observer = new ResizeObserver(update);
     observer.observe(el);
+
     return () => {
       cancelAnimationFrame(rafId);
       el.removeEventListener("scroll", update);
