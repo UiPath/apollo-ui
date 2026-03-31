@@ -69,7 +69,9 @@ function FilterDropdownTemplateContent() {
           title="Status"
           options={statusOptions}
           value={statusFilter}
-          onChange={(v) => setStatusFilter(v as string[])}
+          onChange={(v) => {
+            if (Array.isArray(v)) setStatusFilter(v);
+          }}
         />
       </div>
 
@@ -83,7 +85,9 @@ function FilterDropdownTemplateContent() {
           options={regionOptions}
           multiSelect={false}
           value={regionFilter}
-          onChange={(v) => setRegionFilter(v as string)}
+          onChange={(v) => {
+            if (typeof v === "string") setRegionFilter(v);
+          }}
         />
       </div>
 
@@ -96,7 +100,9 @@ function FilterDropdownTemplateContent() {
           title="Country"
           options={countryOptions}
           value={countryFilter}
-          onChange={(v) => setCountryFilter(v as string[])}
+          onChange={(v) => {
+            if (Array.isArray(v)) setCountryFilter(v);
+          }}
         />
       </div>
     </div>

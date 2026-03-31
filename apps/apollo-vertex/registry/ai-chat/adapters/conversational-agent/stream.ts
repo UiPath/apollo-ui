@@ -27,6 +27,7 @@ function createStreamQueue(): StreamQueue {
     if (done) return;
     done = true;
     for (const waiter of waiters) {
+      // eslint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- iterator protocol: value is ignored when done
       waiter({ value: null as never, done: true });
     }
     waiters.length = 0;
@@ -40,6 +41,7 @@ function createStreamQueue(): StreamQueue {
           if (buffered)
             return Promise.resolve({ value: buffered, done: false });
           if (done)
+            // eslint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- iterator protocol: value is ignored when done
             return Promise.resolve({ value: null as never, done: true });
 
           return new Promise((resolve) => {

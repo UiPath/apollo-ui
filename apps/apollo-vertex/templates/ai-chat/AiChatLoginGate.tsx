@@ -158,9 +158,13 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
     let idToken: string | null = null;
     if (tokenDataStr) {
       try {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown; shape validated by optional chaining below
-        const parsed = JSON.parse(tokenDataStr) as { id_token?: unknown };
-        if (typeof parsed.id_token === "string") {
+        const parsed: unknown = JSON.parse(tokenDataStr);
+        if (
+          typeof parsed === "object" &&
+          parsed !== null &&
+          "id_token" in parsed &&
+          typeof parsed.id_token === "string"
+        ) {
           idToken = parsed.id_token;
         }
       } catch {

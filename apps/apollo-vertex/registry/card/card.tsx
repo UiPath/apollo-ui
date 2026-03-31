@@ -78,7 +78,7 @@ function Card({
         />
 
         <button
-          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- div props spread to button; both are HTML elements with compatible props
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- intentionally spreading div-typed props onto a button for API simplicity; div and button props are not fully equivalent (e.g. ref, disabled), but Card currently shares a single props type for both render modes
           {...(props as React.ComponentProps<"button">)}
           type="button"
           aria-pressed={selected}

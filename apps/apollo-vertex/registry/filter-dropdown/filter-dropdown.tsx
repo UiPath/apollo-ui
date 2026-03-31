@@ -95,9 +95,16 @@ function FilterDropdown<TData, TValue>({
     if (column) {
       const filterValue = column.getFilterValue();
       if (multiSelect) {
-        return Array.isArray(filterValue) ? filterValue : [];
+        return Array.isArray(filterValue)
+          ? filterValue.filter((v): v is string => typeof v === "string")
+          : [];
       }
-      return filterValue == null ? [] : [String(filterValue)];
+      if (Array.isArray(filterValue) && typeof filterValue[0] === "string") {
+        return [filterValue[0]];
+      }
+      if (typeof filterValue === "string") return [filterValue];
+      if (typeof filterValue === "number") return [String(filterValue)];
+      return [];
     }
     if (valueProp != null) {
       if (multiSelect) {

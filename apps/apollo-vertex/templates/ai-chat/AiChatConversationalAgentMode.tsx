@@ -47,7 +47,9 @@ function ConversationalAgentChatInner({
     <AiChat
       messages={messages}
       isLoading={isLoading}
-      onSendMessage={(text) => sendMessage(text)}
+      onSendMessage={(text) => {
+        void sendMessage(text);
+      }}
       onStop={stop}
       onClearChat={clear}
       title={title}
