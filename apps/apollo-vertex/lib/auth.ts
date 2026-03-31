@@ -221,9 +221,15 @@ export const ensureValidToken = async (
     return null;
   }
 
-  const { data: tokenData, success } = TokenDataSchema.safeParse(
-    JSON.parse(tokenDataStr),
-  );
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(tokenDataStr);
+  } catch {
+    clearTokenData();
+    return null;
+  }
+
+  const { data: tokenData, success } = TokenDataSchema.safeParse(parsed);
 
   if (!success) {
     clearTokenData();
