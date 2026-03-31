@@ -49,7 +49,7 @@ export function AiChatMessage({
           aria-hidden="true"
         />
       </div>
-      <div className="flex flex-col gap-1 w-[85%]">
+      <div className="flex flex-col gap-1 max-w-[85%]">
         <span className="text-xs text-muted-foreground font-medium">
           {displayName}
         </span>
