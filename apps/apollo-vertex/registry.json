@@ -250,6 +250,7 @@
       "title": "AI Chat",
       "description": "A composable AI chat UI component for TanStack AI with AgentHub adapter, markdown rendering, suggestion buttons, and error display",
       "dependencies": [
+        "@mantine/hooks@^9.0.0",
         "@tanstack/ai@^0.8.1",
         "@tanstack/ai-client@^0.7.2",
         "@tanstack/ai-react@^0.7.2",
@@ -296,6 +297,11 @@
           "path": "registry/ai-chat/adapters/agenthub/tools.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/adapters/agenthub/tools.ts"
+        },
+        {
+          "path": "registry/ai-chat/hooks/use-sticky-scroll.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/hooks/use-sticky-scroll.ts"
         },
         {
           "path": "registry/ai-chat/components/ai-chat.tsx",

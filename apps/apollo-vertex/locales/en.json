@@ -75,6 +75,7 @@
   "rows_per_page": "Rows per page",
   "rows_selected": "{{selected}} of {{total}} row(s) selected.",
   "russian": "Russian",
+  "scroll_to_bottom": "Scroll to bottom",
   "search": "Search...",
   "search_frameworks": "Search frameworks",
   "secondary": "Secondary",

@@ -1,9 +1,10 @@
 "use client";
 
 import type { UIMessage } from "@tanstack/ai-client";
-import { AlertCircle, Sparkles } from "lucide-react";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { AlertCircle, ArrowDown, Sparkles } from "lucide-react";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useStickyScroll } from "../hooks/use-sticky-scroll";
 import type { ChoiceOption } from "../types";
 import { findLatestChoices } from "../utils/ai-chat-utils";
 import { AiChatInput } from "./ai-chat-input";
@@ -43,28 +44,14 @@ export function AiChat({
 }: AiChatProps) {
   const { t } = useTranslation();
   const [input, setInput] = useState("");
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const { scrollRef, contentRef, isStuck, scrollToBottom } = useStickyScroll();
   const displayName = assistantName ?? t("ai_assistant");
-
-  const scrollToBottom = () => {
-    const el = scrollRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-    const last = contentRef.current?.lastElementChild;
-    if (!last) return;
-    const observer = new ResizeObserver(scrollToBottom);
-    observer.observe(last);
-    return () => observer.disconnect();
-  }, [messages]);
 
   const handleSubmit = () => {
     if (!input.trim() || isLoading) return;
     onSendMessage(input.trim());
     setInput("");
+    scrollToBottom();
   };
 
   const latestChoices = findLatestChoices(messages);
@@ -112,38 +99,51 @@ export function AiChat({
         </div>
       )}
 
-      <div
-        ref={scrollRef}
-        role="log"
-        aria-label={t("chat_messages")}
-        aria-live="polite"
-        aria-atomic="false"
-        className="flex-1 overflow-y-auto p-4"
-      >
-        {messages.length === 0 ? (
-          (emptyState ?? defaultEmptyState)
-        ) : (
-          <div ref={contentRef} className="space-y-4">
-            {children}
+      <div className="relative flex-1 min-h-0">
+        <div
+          ref={scrollRef}
+          role="log"
+          aria-label={t("chat_messages")}
+          aria-live="polite"
+          aria-atomic="false"
+          className="h-full overflow-y-auto p-4"
+        >
+          {messages.length === 0 ? (
+            (emptyState ?? defaultEmptyState)
+          ) : (
+            <div ref={contentRef} className="space-y-4">
+              {children}
 
-            {latestChoices && !isLoading && (
-              <AiChatSuggestions
-                prompt={latestChoices.prompt}
-                options={latestChoices.options}
-                onSelect={(option) => {
-                  if (onChoiceSelect) {
-                    onChoiceSelect(option);
-                  } else {
-                    onSendMessage(option.label);
-                  }
-                }}
-              />
-            )}
+              {latestChoices && !isLoading && (
+                <AiChatSuggestions
+                  prompt={latestChoices.prompt}
+                  options={latestChoices.options}
+                  onSelect={(option) => {
+                    if (onChoiceSelect) {
+                      onChoiceSelect(option);
+                    } else {
+                      onSendMessage(option.label);
+                    }
+                  }}
+                />
+              )}
 
-            {showLoadingIndicator && (
-              <AiChatLoading assistantName={displayName} />
-            )}
-          </div>
+              {showLoadingIndicator && (
+                <AiChatLoading assistantName={displayName} />
+              )}
+            </div>
+          )}
+        </div>
+
+        {!isStuck && (
+          <button
+            type="button"
+            onClick={scrollToBottom}
+            aria-label={t("scroll_to_bottom")}
+            className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center size-8 rounded-full border bg-background shadow-md hover:bg-accent"
+          >
+            <ArrowDown className="size-4" />
+          </button>
         )}
       </div>
 
