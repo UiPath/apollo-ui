@@ -5,6 +5,7 @@ import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyf
 import { AnimatePresence } from 'motion/react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import { GRID_SPACING } from '../../constants';
 import type { ToolbarAction } from '../Toolbar';
@@ -33,6 +34,7 @@ import type { StickyNoteColor, StickyNoteData, TextSelection } from './StickyNot
 import { STICKY_NOTE_COLORS, withAlpha } from './StickyNoteNode.types';
 import { preserveNewlines } from './StickyNoteNode.utils';
 import { useMarkdownShortcuts } from './useMarkdownShortcuts';
+import { useScrollCapture } from './useScrollCapture';
 
 export interface StickyNoteNodeProps extends NodeProps {
   data: StickyNoteData;
@@ -57,6 +59,7 @@ const StickyNoteNodeComponent = ({
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [localContent, setLocalContent] = useState(data.content || '');
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const { ref: markdownRef, scrollCaptureProps } = useScrollCapture();
   const colorButtonRef = useRef<HTMLDivElement>(null);
   const [activeFormats, setActiveFormats] = useState<ActiveFormats>({
     bold: false,
@@ -353,16 +356,22 @@ const StickyNoteNodeComponent = ({
               />
             </>
           ) : (
-            <StickyNoteMarkdown>
+            <StickyNoteMarkdown ref={markdownRef} {...scrollCaptureProps}>
               {localContent ? (
-                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm, remarkBreaks]}
+                  components={markdownComponents}
+                >
                   {preserveNewlines(localContent)}
                 </ReactMarkdown>
               ) : (
                 // Render placeholder if renderPlaceholderOnSelect is enabled, node is selected, and the content is empty
                 renderPlaceholderOnSelect &&
                 selected && (
-                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkBreaks]}
+                    components={markdownComponents}
+                  >
                     {placeholder}
                   </ReactMarkdown>
                 )
