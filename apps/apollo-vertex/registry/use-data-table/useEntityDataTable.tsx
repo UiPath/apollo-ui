@@ -10,7 +10,7 @@ import { useSolution } from "@uipath/vs-core";
 import { useState } from "react";
 
 import { ENTITY_TABLE_STORAGE_PREFIX } from "@/lib/constants";
-import { useLocalStorage } from "@uidotdev/usehooks";
+import { useLocalStorage } from "@mantine/hooks";
 
 import type {
   ColumnDefWithAccessorKey,
@@ -93,10 +93,10 @@ export function useEntityDataTable<
     [],
   );
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [globalFilter, setGlobalFilter] = useLocalStorage(
-    `${ENTITY_TABLE_STORAGE_PREFIX}global-filter-${storageKey}`,
-    "",
-  );
+  const [globalFilter, setGlobalFilter] = useLocalStorage({
+    key: `${ENTITY_TABLE_STORAGE_PREFIX}global-filter-${storageKey}`,
+    defaultValue: "",
+  });
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,

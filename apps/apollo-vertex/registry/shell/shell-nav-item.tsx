@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { useLocalStorage } from "@uidotdev/usehooks";
+import { useLocalStorage } from "@mantine/hooks";
 import { AnimatePresence, motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -25,7 +25,10 @@ interface NavItemProps {
 }
 
 export const NavItem = ({ to, icon: Icon, label }: NavItemProps) => {
-  const [isCollapsed] = useLocalStorage(SIDEBAR_COLLAPSED_KEY, false);
+  const [isCollapsed] = useLocalStorage<boolean>({
+    key: SIDEBAR_COLLAPSED_KEY,
+    defaultValue: false,
+  });
   const { pathname } = useLocation();
   const isActive = pathname === to || pathname.startsWith(`${to}/`);
 

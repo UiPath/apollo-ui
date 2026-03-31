@@ -874,7 +874,7 @@
         "@tanstack/react-router",
         "pkce-challenge",
         "sonner",
-        "@uidotdev/usehooks"
+        "@mantine/hooks@^9.0.0"
       ],
       "registryDependencies": [
         "button",
@@ -987,7 +987,7 @@
       "type": "registry:hook",
       "title": "useDataTable",
       "description": "A generic data table hook that manages sorting, filtering, pagination, column visibility, and column order with localStorage persistence.",
-      "dependencies": ["@tanstack/react-table", "@uidotdev/usehooks"],
+      "dependencies": ["@tanstack/react-table", "@mantine/hooks@^9.0.0"],
       "files": [
         {
           "path": "registry/use-data-table/types.ts",

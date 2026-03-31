@@ -1,4 +1,4 @@
-import { useLocalStorage } from "@uidotdev/usehooks";
+import { useLocalStorage } from "@mantine/hooks";
 import { AnimatePresence, motion } from "framer-motion";
 import { PanelLeft } from "lucide-react";
 import { useState } from "react";
@@ -86,10 +86,10 @@ export const Company = ({
   companyLogo,
 }: CompanyProps) => {
   const { t } = useTranslation();
-  const [isCollapsed, setIsCollapsed] = useLocalStorage(
-    SIDEBAR_COLLAPSED_KEY,
-    false,
-  );
+  const [isCollapsed, setIsCollapsed] = useLocalStorage<boolean>({
+    key: SIDEBAR_COLLAPSED_KEY,
+    defaultValue: false,
+  });
   const iconElement = (
     <motion.div
       className="w-8 h-8 rounded-[4px] bg-primary-700 dark:bg-primary-400 flex items-center justify-center shrink-0"

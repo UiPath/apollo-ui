@@ -1,4 +1,4 @@
-import { useLocalStorage } from "@uidotdev/usehooks";
+import { useLocalStorage } from "@mantine/hooks";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { CompanyLogo, ShellNavItem } from "./shell";
@@ -25,7 +25,10 @@ export const Sidebar = ({
   companyLogo,
   navItems,
 }: SidebarProps) => {
-  const [isCollapsed] = useLocalStorage(SIDEBAR_COLLAPSED_KEY, false);
+  const [isCollapsed] = useLocalStorage<boolean>({
+    key: SIDEBAR_COLLAPSED_KEY,
+    defaultValue: false,
+  });
 
   const sidebarWidth = isCollapsed ? "w-16" : "w-[280px]";
 

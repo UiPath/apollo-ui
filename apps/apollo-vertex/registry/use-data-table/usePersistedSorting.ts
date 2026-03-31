@@ -3,7 +3,7 @@
 import type { OnChangeFn, SortingState } from "@tanstack/react-table";
 
 import { ENTITY_TABLE_STORAGE_PREFIX } from "@/lib/constants";
-import { useLocalStorage } from "@uidotdev/usehooks";
+import { useLocalStorage } from "@mantine/hooks";
 
 export interface UsePersistedSortingOptions {
   storageKey: string;
@@ -12,10 +12,10 @@ export interface UsePersistedSortingOptions {
 export function usePersistedSorting({
   storageKey,
 }: UsePersistedSortingOptions) {
-  const [sorting, setSorting] = useLocalStorage<SortingState>(
-    `${ENTITY_TABLE_STORAGE_PREFIX}sorting-${storageKey}`,
-    [],
-  );
+  const [sorting, setSorting] = useLocalStorage<SortingState>({
+    key: `${ENTITY_TABLE_STORAGE_PREFIX}sorting-${storageKey}`,
+    defaultValue: [],
+  });
 
   const onSortingChange: OnChangeFn<SortingState> = (updaterOrValue) => {
     const newSorting =
