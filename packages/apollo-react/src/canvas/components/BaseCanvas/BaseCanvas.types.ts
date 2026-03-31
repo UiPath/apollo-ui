@@ -187,6 +187,17 @@ export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends 
    * @default undefined
    */
   isDarkMode?: boolean;
+
+  /**
+   * Node types to exclude from collision resolution across the canvas.
+   * Nodes matching these types will not be repositioned and will not affect the placement of other nodes.
+   *
+   * This is provided via context so child components (e.g. `AddNodeManager`) can
+   * consume it automatically without needing to pass it explicitly.
+   *
+   * @example ['stickyNote', 'comment']
+   */
+  ignoredNodeTypes?: string[];
 }
 
 /**

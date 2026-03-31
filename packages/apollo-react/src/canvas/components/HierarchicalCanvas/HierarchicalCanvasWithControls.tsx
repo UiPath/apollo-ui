@@ -24,6 +24,7 @@ import {
 import type { CanvasLevel } from '../../types/canvas.types';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
+import { useIgnoredNodeTypes } from '../BaseCanvas/IgnoredNodeTypesContext';
 import { HierarchicalCanvas } from './HierarchicalCanvas';
 
 // Demo canvas data for Storybook testing
@@ -303,6 +304,7 @@ const CanvasWithControlsContent: React.FC<CanvasWithControlsContentProps> = ({
   onPathChange,
 }) => {
   const reactFlowInstance = useReactFlow();
+  const ignoredNodeTypes = useIgnoredNodeTypes();
 
   // Use stable selectors to avoid "getSnapshot should be cached" errors
   const currentCanvas = useCanvasStore(selectCurrentCanvas);
@@ -316,7 +318,14 @@ const CanvasWithControlsContent: React.FC<CanvasWithControlsContentProps> = ({
   useEffect(() => {
     const handleAction = (event: { nodeId: string; handleId: string }) => {
       if (reactFlowInstance) {
-        createAddNodePreview(event.nodeId, event.handleId, reactFlowInstance);
+        createAddNodePreview(
+          event.nodeId,
+          event.handleId,
+          reactFlowInstance,
+          undefined,
+          undefined,
+          ignoredNodeTypes
+        );
       }
     };
 
@@ -324,7 +333,7 @@ const CanvasWithControlsContent: React.FC<CanvasWithControlsContentProps> = ({
     return () => {
       canvasEventBus.off('handle:action', handleAction);
     };
-  }, [reactFlowInstance]);
+  }, [reactFlowInstance, ignoredNodeTypes]);
 
   const handleAddNode = useCallback(
     (nodeType: string) => {

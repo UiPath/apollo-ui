@@ -6,6 +6,7 @@ import { PREVIEW_NODE_ID } from '../../constants';
 import { useOptionalNodeTypeRegistry } from '../../core';
 import { usePreviewNode } from '../../hooks/usePreviewNode';
 import { resolveCollisions } from '../../utils';
+import { useIgnoredNodeTypes } from '../BaseCanvas/IgnoredNodeTypesContext';
 import type { BaseNodeData } from '../BaseNode';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import type { ListItem } from '../Toolbox';
@@ -64,8 +65,10 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
   createNodeData,
   onBeforeNodeAdded,
   onNodeAdded,
-  ignoredNodeTypes,
+  ignoredNodeTypes: ignoredNodeTypesProp,
 }) => {
+  const canvasIgnoredNodeTypes = useIgnoredNodeTypes();
+  const ignoredNodeTypes = ignoredNodeTypesProp ?? canvasIgnoredNodeTypes;
   const reactFlowInstance = useReactFlow();
   const registry = useOptionalNodeTypeRegistry();
 

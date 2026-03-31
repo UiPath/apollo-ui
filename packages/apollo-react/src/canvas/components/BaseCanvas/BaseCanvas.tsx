@@ -93,6 +93,9 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     // Pan Shortcut Teaching UI
     panShortcutTeachingUIMessage = 'Hold Space and drag to pan around the canvas!',
 
+    // Collision resolution
+    ignoredNodeTypes,
+
     // Remaining ReactFlow props
     ...reactFlowProps
   } = canvasProps;
@@ -144,7 +147,13 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
   );
 
   return (
-    <CanvasProviders nodes={nodes} edges={edges} mode={mode} isDarkMode={isDarkMode}>
+    <CanvasProviders
+      nodes={nodes}
+      edges={edges}
+      mode={mode}
+      isDarkMode={isDarkMode}
+      ignoredNodeTypes={ignoredNodeTypes}
+    >
       <ReactFlow
         {...reactFlowProps}
         nodes={nodes}

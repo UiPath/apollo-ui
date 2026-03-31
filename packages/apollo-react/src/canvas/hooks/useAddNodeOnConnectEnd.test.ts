@@ -21,6 +21,11 @@ vi.mock('../utils', () => ({
   createPreviewNode: vi.fn(),
 }));
 
+const stableEmptyArray: string[] = [];
+vi.mock('../components/BaseCanvas/IgnoredNodeTypesContext', () => ({
+  useIgnoredNodeTypes: () => stableEmptyArray,
+}));
+
 import * as utils from '../utils';
 // Import after mocks are set up
 import { useAddNodeOnConnectEnd } from './useAddNodeOnConnectEnd';

@@ -3,6 +3,7 @@ import { useCallback, useMemo } from 'react';
 import { PREVIEW_NODE_ID } from '../../../constants';
 import { applyPreviewToReactFlow, createPreviewNode } from '../../../utils/createPreviewNode';
 import { useBaseCanvasMode } from '../../BaseCanvas/BaseCanvasModeProvider';
+import { useIgnoredNodeTypes } from '../../BaseCanvas/IgnoredNodeTypesContext';
 import type { EdgeToolbarConfig, EdgeToolbarPositionData } from './EdgeToolbar.types';
 import { useEdgeToolbarPositioning } from './useEdgeToolbarPositioning';
 
@@ -16,7 +17,6 @@ export interface UseEdgeToolbarStateProps {
   targetHandleId?: string | null;
   sourcePosition: Position;
   targetPosition: Position;
-  ignoredNodeTypes?: string[];
 }
 
 export interface EdgeToolbarState {
@@ -36,10 +36,10 @@ export function useEdgeToolbarState({
   targetHandleId,
   sourcePosition,
   targetPosition,
-  ignoredNodeTypes,
 }: UseEdgeToolbarStateProps): EdgeToolbarState {
   const reactFlow = useReactFlow();
   const { mode } = useBaseCanvasMode();
+  const canvasIgnoredNodeTypes = useIgnoredNodeTypes();
   const isDesignMode = mode === 'design';
 
   const isPreviewEdge = source === PREVIEW_NODE_ID || target === PREVIEW_NODE_ID;
@@ -74,7 +74,7 @@ export function useEdgeToolbarState({
         'source', // Source handle type
         undefined, // Use default node size
         sourcePosition,
-        ignoredNodeTypes
+        canvasIgnoredNodeTypes
       );
 
       if (!preview) return;
@@ -106,7 +106,7 @@ export function useEdgeToolbarState({
       target,
       targetHandleId,
       edgeId,
-      ignoredNodeTypes,
+      canvasIgnoredNodeTypes,
     ]
   );
 

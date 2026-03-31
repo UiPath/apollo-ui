@@ -1,15 +1,19 @@
 import { type OnConnectEnd, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback } from 'react';
+import { useIgnoredNodeTypes } from '../components/BaseCanvas/IgnoredNodeTypesContext';
 import { applyPreviewToReactFlow, createPreviewNode } from '../utils';
-
-const EMPTY_IGNORED_NODE_TYPES: string[] = [];
 
 /**
  * Use this hook to get a callback that adds a preview node when a connection ends on an empty space.
  * Uses React Flow context, so it is important that the component using this hook is a child of ReactFlowProvider.
+ *
+ * @param ignoredNodeTypes - Node types to exclude from overlap detection. Falls back to the
+ *   `ignoredNodeTypes` configured on the nearest `BaseCanvas` via context.
  * @returns A callback method that can be used to handle React Flow `onConnectEnd` event.
  */
-export function useAddNodeOnConnectEnd(ignoredNodeTypes: string[] = EMPTY_IGNORED_NODE_TYPES) {
+export function useAddNodeOnConnectEnd(ignoredNodeTypes?: string[]) {
+  const canvasIgnoredNodeTypes = useIgnoredNodeTypes();
+  const effectiveIgnoredNodeTypes = ignoredNodeTypes ?? canvasIgnoredNodeTypes;
   const reactFlowInstance = useReactFlow();
 
   return useCallback<OnConnectEnd>(
@@ -58,12 +62,12 @@ export function useAddNodeOnConnectEnd(ignoredNodeTypes: string[] = EMPTY_IGNORE
         connectionState.fromHandle.type,
         undefined, // Use default preview node size
         connectionState.fromHandle.position,
-        ignoredNodeTypes
+        effectiveIgnoredNodeTypes
       );
       if (preview) {
         applyPreviewToReactFlow(preview, reactFlowInstance);
       }
     },
-    [reactFlowInstance, ignoredNodeTypes]
+    [reactFlowInstance, effectiveIgnoredNodeTypes]
   );
 }

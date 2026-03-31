@@ -6,4 +6,5 @@ export * from './CanvasBackground';
 export * from './CanvasProviders';
 export * from './CanvasThemeContext';
 export * from './ConnectedHandlesContext';
+export * from './IgnoredNodeTypesContext';
 export * from './SelectionStateContext';

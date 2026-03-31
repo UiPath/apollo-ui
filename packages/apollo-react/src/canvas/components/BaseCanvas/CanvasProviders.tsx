@@ -4,6 +4,7 @@ import type { BaseCanvasProps } from './BaseCanvas.types';
 import { BaseCanvasModeProvider } from './BaseCanvasModeProvider';
 import { CanvasThemeProvider } from './CanvasThemeContext';
 import { ConnectedHandlesProvider } from './ConnectedHandlesContext';
+import { IgnoredNodeTypesProvider } from './IgnoredNodeTypesContext';
 import { SelectionStateProvider } from './SelectionStateContext';
 
 interface CanvasProvidersProps {
@@ -12,6 +13,7 @@ interface CanvasProvidersProps {
   edges: Edge[];
   mode: BaseCanvasProps['mode'];
   isDarkMode?: boolean;
+  ignoredNodeTypes?: string[];
 }
 
 /**
@@ -25,13 +27,16 @@ export function CanvasProviders({
   edges,
   mode,
   isDarkMode,
+  ignoredNodeTypes,
   children,
 }: CanvasProvidersProps) {
   return (
     <CanvasThemeProvider isDarkMode={isDarkMode}>
       <ConnectedHandlesProvider edges={edges}>
         <BaseCanvasModeProvider mode={mode}>
-          <SelectionStateProvider nodes={nodes}>{children}</SelectionStateProvider>
+          <IgnoredNodeTypesProvider ignoredNodeTypes={ignoredNodeTypes}>
+            <SelectionStateProvider nodes={nodes}>{children}</SelectionStateProvider>
+          </IgnoredNodeTypesProvider>
         </BaseCanvasModeProvider>
       </ConnectedHandlesProvider>
     </CanvasThemeProvider>
