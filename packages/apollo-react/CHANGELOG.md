@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.62.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.62.0...@uipath/apollo-react@3.62.1) (2026-03-31)
+
+### Bug Fixes
+
+* **apollo-react:** disable StageNode add-task button while loading [MST-8019] ([97b2f8c](https://github.com/UiPath/apollo-ui/commit/97b2f8c4ca5217621b76f047c7ad4540377404e6))
+
 ## [@uipath/apollo-react-v3.62.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.61.3...@uipath/apollo-react@3.62.0) (2026-03-30)
 
 ### Features
