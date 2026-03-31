@@ -550,7 +550,6 @@
         "@dnd-kit/core",
         "@dnd-kit/sortable",
         "@dnd-kit/utilities",
-        "@radix-ui/react-popover",
         "framer-motion",
         "lucide-react",
         "react-i18next"
@@ -563,7 +562,8 @@
         "@uipath/select",
         "@uipath/input",
         "@uipath/skeleton",
-        "@uipath/tooltip"
+        "@uipath/tooltip",
+        "@uipath/filter-dropdown"
       ],
       "files": [
         {
@@ -595,11 +595,6 @@
           "path": "registry/data-table/data-table-column-header.tsx",
           "type": "registry:ui",
           "target": "components/ui/data-table/data-table-column-header.tsx"
-        },
-        {
-          "path": "registry/data-table/data-table-faceted-filter.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/data-table/data-table-faceted-filter.tsx"
         },
         {
           "path": "registry/data-table/data-table-pagination.tsx",
@@ -685,6 +680,30 @@
       "description": "A form field component with label, input, and description.",
       "registryDependencies": ["label", "separator"],
       "files": [{ "path": "registry/field/field.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "filter-dropdown",
+      "type": "registry:ui",
+      "title": "Filter Dropdown",
+      "description": "A versatile filter dropdown with multi-select, single-select, search, and optional TanStack Table column integration.",
+      "dependencies": ["@tanstack/react-table", "lucide-react"],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/checkbox",
+        "@uipath/input",
+        "@uipath/popover",
+        "@uipath/separator"
+      ],
+      "files": [
+        {
+          "path": "registry/filter-dropdown/index.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/filter-dropdown/filter-dropdown.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "form",

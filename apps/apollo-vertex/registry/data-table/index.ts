@@ -14,9 +14,10 @@ export type { DataTableProps } from "./data-table";
 export { DataTable } from "./data-table";
 export { DataTableColumnHeader } from "./data-table-column-header";
 export {
-  DataTableFacetedFilter,
-  type DataTableFacetedFilterOption,
-} from "./data-table-faceted-filter";
+  FilterDropdown,
+  type FilterDropdownOption,
+  type FilterDropdownProps,
+} from "@/components/ui/filter-dropdown";
 export {
   dataTableFacetedFilterFn,
   dataTableGlobalFilterFn,
