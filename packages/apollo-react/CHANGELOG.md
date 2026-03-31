@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.63.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.62.1...@uipath/apollo-react@3.63.0) (2026-03-31)
+
+### Features
+
+* **apollo-react:** change icon for case management ([7593a85](https://github.com/UiPath/apollo-ui/commit/7593a857d758ab06db2b94df0685d8269a767bd4))
+
 ## [@uipath/apollo-react-v3.62.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.62.0...@uipath/apollo-react@3.62.1) (2026-03-31)
 
 ### Bug Fixes
