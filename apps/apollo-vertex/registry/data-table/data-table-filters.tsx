@@ -14,7 +14,11 @@ export const dataTableGlobalFilterFn = (
     const meta = cell.column.columnDef.meta;
     const displayValue = meta?.getFilterValue
       ? meta.getFilterValue(value, row)
-      : String(value ?? "");
+      : typeof value === "string"
+        ? value
+        : typeof value === "number" || typeof value === "boolean"
+          ? String(value)
+          : "";
     return displayValue.toLowerCase().includes(searchStr);
   });
 };

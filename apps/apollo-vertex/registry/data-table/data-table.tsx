@@ -18,6 +18,7 @@ import {
   type RowSelectionState,
   type SortingState,
   type Table as TanstackTable,
+  type Updater,
   type VisibilityState,
 } from "@tanstack/react-table";
 import * as React from "react";
@@ -141,7 +142,7 @@ function DataTable<TData, TValue>({
     onColumnVisibilityChange,
     onColumnOrderChange,
     ...(isRowSelectionEnabled && { onRowSelectionChange }),
-    onGlobalFilterChange: (updater) => {
+    onGlobalFilterChange: (updater: Updater<string>) => {
       onGlobalFilterChange(updater);
       resetPageIndex();
     },
