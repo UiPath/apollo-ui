@@ -298,6 +298,11 @@
           "target": "components/ui/ai-chat/adapters/agenthub/tools.ts"
         },
         {
+          "path": "registry/ai-chat/hooks/use-sticky-scroll.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/hooks/use-sticky-scroll.ts"
+        },
+        {
           "path": "registry/ai-chat/components/ai-chat.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat.tsx"

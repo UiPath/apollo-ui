@@ -70,6 +70,7 @@
   "reset_to_default": "Reset to Default",
   "rows_per_page": "Rows per page",
   "rows_selected": "{{selected}} of {{total}} row(s) selected.",
+  "scroll_to_bottom": "Scroll to bottom",
   "search": "Search...",
   "secondary": "Secondary",
   "send": "Send",
