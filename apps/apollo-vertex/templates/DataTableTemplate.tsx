@@ -1,14 +1,7 @@
 "use client";
 
 import type { ColumnDef, ExpandedState } from "@tanstack/react-table";
-import {
-  CheckCircleIcon,
-  ChevronRightIcon,
-  CircleDotIcon,
-  ClockIcon,
-  MoreHorizontalIcon,
-  XCircleIcon,
-} from "lucide-react";
+import { ChevronRightIcon, MoreHorizontalIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
@@ -18,10 +11,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   DataTable,
   DataTableColumnHeader,
-  DataTableFacetedFilter,
-  type DataTableFacetedFilterOption,
   dataTableFacetedFilterFn,
 } from "@/components/ui/data-table";
+import {
+  FilterDropdown,
+  type FilterDropdownOption,
+} from "@/components/ui/filter-dropdown";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -163,11 +158,11 @@ const statusBadgeStatus: Record<
   failed: "error",
 };
 
-const statusFilterOptions: DataTableFacetedFilterOption[] = [
-  { label: "Success", value: "success", icon: CheckCircleIcon },
-  { label: "Processing", value: "processing", icon: ClockIcon },
-  { label: "Pending", value: "pending", icon: CircleDotIcon },
-  { label: "Failed", value: "failed", icon: XCircleIcon },
+const statusFilterOptions: FilterDropdownOption[] = [
+  { label: "Success", value: "success" },
+  { label: "Processing", value: "processing" },
+  { label: "Pending", value: "pending" },
+  { label: "Failed", value: "failed" },
 ];
 
 const columns: ColumnDef<Payment>[] = [
@@ -374,7 +369,7 @@ function DataTableTemplateContent() {
           );
         }}
         toolbarContent={(table) => (
-          <DataTableFacetedFilter
+          <FilterDropdown
             column={table.getColumn("status")}
             title="Status"
             options={statusFilterOptions}
