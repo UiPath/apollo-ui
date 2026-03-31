@@ -16,6 +16,9 @@ import {
   type ChatMode,
 } from "./ai-chat/ai-chat-example-utils";
 
+const isChatMode = (v: string): v is ChatMode =>
+  v === "agenthub" || v === "conversational-agent";
+
 const queryClient = new QueryClient();
 
 function AiChatWithConnection({
@@ -35,7 +38,9 @@ function AiChatWithConnection({
       <div className="flex items-center justify-end gap-4 pt-2">
         <RadioGroup
           value={mode}
-          onValueChange={(v) => setMode(v as ChatMode)}
+          onValueChange={(v) => {
+            if (isChatMode(v)) setMode(v);
+          }}
           className="flex flex-row gap-4"
         >
           <div className="flex items-center gap-2">

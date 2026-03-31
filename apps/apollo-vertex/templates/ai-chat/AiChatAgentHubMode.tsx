@@ -40,7 +40,9 @@ export function AgentHubChat({ accessToken, orgTenant }: AgentHubChatProps) {
     <AiChat
       messages={messages}
       isLoading={isLoading}
-      onSendMessage={(text) => sendMessage(text)}
+      onSendMessage={(text) => {
+        void sendMessage(text);
+      }}
       onStop={stop}
       onClearChat={clear}
       title={t("ai_assistant")}
