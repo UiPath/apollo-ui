@@ -814,6 +814,19 @@
       ]
     },
     {
+      "name": "metric-card",
+      "type": "registry:ui",
+      "title": "Metric Card",
+      "description": "Displays a labeled metric with value, optional trend indicator, and percentage change badge.",
+      "registryDependencies": ["@uipath/card", "@uipath/badge", "skeleton"],
+      "files": [
+        {
+          "path": "registry/metric-card/metric-card.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "navigation-menu",
       "type": "registry:ui",
       "title": "Navigation Menu",

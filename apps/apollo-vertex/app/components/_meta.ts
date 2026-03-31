@@ -35,6 +35,7 @@ export default {
   kbd: "Kbd",
   label: "Label",
   menubar: "Menubar",
+  "metric-card": "Metric Card",
   "navigation-menu": "Navigation Menu",
   pagination: "Pagination",
   popover: "Popover",
