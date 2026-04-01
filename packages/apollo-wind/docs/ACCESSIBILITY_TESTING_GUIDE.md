@@ -380,7 +380,7 @@ Use browser DevTools or online tools:
 <TooltipProvider>
   <Tooltip>
     <TooltipTrigger asChild>
-      <Button variant="ghost" size="icon">
+      <Button variant="ghost" icon>
         <Info className="h-4 w-4" />
       </Button>
     </TooltipTrigger>

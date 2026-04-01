@@ -43,7 +43,7 @@ export function SchemaViewer({ schema, triggerLabel = 'View Schema' }: SchemaVie
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" size="sm">
           <Code2 className="h-4 w-4" />
           {triggerLabel}
         </Button>
@@ -52,7 +52,7 @@ export function SchemaViewer({ schema, triggerLabel = 'View Schema' }: SchemaVie
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <span>Schema JSON</span>
-            <Button variant="outline" size="sm" onClick={handleCopy} className="gap-2">
+            <Button variant="outline" size="sm" onClick={handleCopy}>
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               {copied ? 'Copied!' : 'Copy'}
             </Button>

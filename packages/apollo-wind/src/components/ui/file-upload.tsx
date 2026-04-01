@@ -287,8 +287,8 @@ export function FileUpload({
                   </div>
                   <Button
                     variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
+                    icon
+                    size="xs"
                     aria-label={`Remove ${file.name}`}
                     onClick={(e) => {
                       e.stopPropagation();

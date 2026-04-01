@@ -126,10 +126,22 @@ Use these values consistently. Never invent arbitrary spacing.
 
 | Size prop | Height | Use |
 |-----------|--------|-----|
+| `size="lg"` | `h-11` (44px) | Prominent CTAs |
 | `default` (no prop) | `h-10` (40px) | Standard actions |
 | `size="sm"` | `h-9` (36px) | Compact / toolbar contexts |
-| `size="lg"` | `h-11` (44px) | Prominent CTAs |
-| `size="icon"` | `h-10 w-10` (40px) | Icon-only buttons |
+| `size="xs"` | `h-8` (32px) | Compact UI elements |
+| `size="2xs"` | `h-7` (28px) | Very compact, small text |
+| `size="3xs"` | `h-6` (24px) | Smallest interactive elements |
+
+**Icon (square) buttons** — add the `icon` prop to any size to make it square:
+
+| Example | Result |
+|---------|--------|
+| `<Button icon>` | 40px square (default height) |
+| `<Button size="sm" icon>` | 36px square |
+| `<Button size="xs" icon>` | 32px square |
+
+The `icon` prop adds `aspect-square p-0` — the `size` prop controls the height, `icon` makes it square.
 
 **Common layout spacing:**
 
@@ -184,7 +196,10 @@ Use these values consistently. Never invent arbitrary spacing.
 <Button variant="link">Link</Button>
 <Button size="sm">Small</Button>
 <Button size="lg">Large</Button>
-<Button size="icon"><Plus /></Button>
+<Button size="xs">Extra Small</Button>
+<Button icon><Plus /></Button>           {/* 40px square */}
+<Button size="sm" icon><Plus /></Button> {/* 36px square */}
+<Button size="xs" icon><X /></Button>    {/* 32px square */}
 ```
 
 #### Card

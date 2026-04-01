@@ -41,8 +41,8 @@ const Search = React.forwardRef<HTMLInputElement, SearchProps>(
           <Button
             type="button"
             variant="ghost"
-            size="icon"
-            className="absolute right-0 top-0 h-full w-8 px-0 hover:bg-transparent"
+            icon
+            className="absolute right-0 top-0 h-full w-8 hover:bg-transparent"
             onClick={handleClear}
           >
             <X className="h-4 w-4" />

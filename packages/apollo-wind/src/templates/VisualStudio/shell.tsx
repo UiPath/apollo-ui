@@ -121,7 +121,7 @@ export function ShellSidebarHeader({
       {onCollapsedChange && (
         <Button
           variant="ghost"
-          size="icon"
+          icon
           className="h-5 w-5"
           onClick={() => onCollapsedChange(!collapsed)}
         >
@@ -280,7 +280,7 @@ export function ShellTabBar({ tabs, activeTab, onTabChange, onTabClose }: ShellT
           {onTabClose && (
             <Button
               variant="ghost"
-              size="icon"
+              icon
               className="h-4 w-4 opacity-0 group-hover:opacity-100"
               onClick={(e) => {
                 e.stopPropagation();
@@ -361,9 +361,9 @@ export function ShellActivityBarItem({
   return (
     <Button
       variant="ghost"
-      size="icon"
+      icon
       className={cn(
-        'h-10 w-10 rounded-none border-l-2 border-transparent',
+        'rounded-none border-l-2 border-transparent',
         active && 'border-primary bg-muted'
       )}
       onClick={onClick}

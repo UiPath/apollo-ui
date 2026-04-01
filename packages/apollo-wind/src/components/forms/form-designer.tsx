@@ -1408,8 +1408,9 @@ function FieldOptionsEditor({ options, onChange }: FieldOptionsEditorProps) {
           </div>
           <Button
             variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+            size="xs"
+            icon
+            className="text-muted-foreground hover:text-destructive"
             onClick={() => removeOption(index)}
           >
             <Trash2 className="h-4 w-4" />
@@ -1964,8 +1965,9 @@ function RulesEditor({
                       </Button>
                       <Button
                         variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                        size="2xs"
+                        icon
+                        className="text-destructive hover:text-destructive"
                         onClick={() => deleteRule(index)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />

@@ -420,7 +420,7 @@ function TreeItem({
                 <div className="flex items-center gap-2 flex-1 min-w-0 group">
                   <Collapsible open={isOpen} onOpenChange={(open) => onToggleExpand(item.id, open)}>
                     <CollapsibleTrigger asChild onClick={(e) => e.stopPropagation()}>
-                      <Button variant="ghost" size="icon" className="h-6 w-6">
+                      <Button variant="ghost" size="3xs" icon>
                         <motion.div
                           initial={false}
                           animate={{ rotate: isOpen ? 90 : 0 }}
@@ -486,7 +486,7 @@ function TreeItem({
                       <DropdownMenuTrigger asChild>
                         <Button
                           variant="ghost"
-                          size="icon"
+                          icon
                           className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -540,7 +540,7 @@ function TreeItem({
                       <HoverCardTrigger asChild>
                         <Button
                           variant="ghost"
-                          size="icon"
+                          icon
                           className="h-6 w-6 shrink-0 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -636,7 +636,7 @@ function TreeItem({
                       <DropdownMenuTrigger asChild>
                         <Button
                           variant="ghost"
-                          size="icon"
+                          icon
                           className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -686,7 +686,7 @@ function TreeItem({
                       <HoverCardTrigger asChild>
                         <Button
                           variant="ghost"
-                          size="icon"
+                          icon
                           className="h-6 w-6 shrink-0 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={(e) => e.stopPropagation()}
                         >

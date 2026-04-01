@@ -33,12 +33,58 @@ describe('Button', () => {
     expect(button).toHaveClass('border');
   });
 
-  it('applies different size classes', () => {
-    const { rerender } = render(<Button size="sm">Small</Button>);
+  it('applies text size classes', () => {
+    const { rerender } = render(<Button size="lg">Large</Button>);
+    expect(screen.getByRole('button')).toHaveClass('h-11');
+
+    rerender(<Button size="sm">Small</Button>);
     expect(screen.getByRole('button')).toHaveClass('h-9');
 
-    rerender(<Button size="lg">Large</Button>);
-    expect(screen.getByRole('button')).toHaveClass('h-11');
+    rerender(<Button size="xs">Extra Small</Button>);
+    expect(screen.getByRole('button')).toHaveClass('h-8');
+
+    rerender(<Button size="2xs">2XS</Button>);
+    expect(screen.getByRole('button')).toHaveClass('h-7');
+  });
+
+  it('applies icon prop for square buttons', () => {
+    const { rerender } = render(<Button icon>Icon</Button>);
+    expect(screen.getByRole('button')).toHaveClass('h-10', 'aspect-square', 'p-0');
+
+    rerender(
+      <Button size="lg" icon>
+        Icon LG
+      </Button>
+    );
+    expect(screen.getByRole('button')).toHaveClass('h-11', 'aspect-square', 'p-0');
+
+    rerender(
+      <Button size="sm" icon>
+        Icon SM
+      </Button>
+    );
+    expect(screen.getByRole('button')).toHaveClass('h-9', 'aspect-square', 'p-0');
+
+    rerender(
+      <Button size="xs" icon>
+        Icon XS
+      </Button>
+    );
+    expect(screen.getByRole('button')).toHaveClass('h-8', 'aspect-square', 'p-0');
+
+    rerender(
+      <Button size="2xs" icon>
+        Icon 2XS
+      </Button>
+    );
+    expect(screen.getByRole('button')).toHaveClass('h-7', 'aspect-square', 'p-0');
+
+    rerender(
+      <Button size="3xs" icon>
+        Icon 3XS
+      </Button>
+    );
+    expect(screen.getByRole('button')).toHaveClass('h-6', 'aspect-square', 'p-0');
   });
 
   it('handles disabled state', () => {

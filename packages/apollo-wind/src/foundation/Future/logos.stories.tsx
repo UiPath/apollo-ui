@@ -239,7 +239,7 @@ function LogoCard({
           </Button>
           <Button
             variant="outline"
-            size="icon"
+            icon
             className="border-border bg-surface text-foreground hover:bg-surface-hover size-9"
             onClick={handleDownload}
           >

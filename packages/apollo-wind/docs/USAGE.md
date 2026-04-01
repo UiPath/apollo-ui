@@ -213,7 +213,7 @@ import { Button } from '@uipath/apollo-wind'
 <Button size="sm">Small</Button>
 <Button size="default">Default</Button>
 <Button size="lg">Large</Button>
-<Button size="icon">📧</Button>
+<Button icon>📧</Button>
 
 // With custom classes (JIT only)
 <Button className="bg-purple-500 hover:bg-purple-600">

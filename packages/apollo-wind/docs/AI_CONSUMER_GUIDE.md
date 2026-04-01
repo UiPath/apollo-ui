@@ -179,7 +179,7 @@ Same props as Row.
 // Variants: default, secondary, outline, ghost, link, destructive
 // Sizes: default, sm, lg, icon
 <Button variant="outline" size="sm">Click</Button>
-<Button variant="ghost" size="icon"><Settings className="h-4 w-4" /></Button>
+<Button variant="ghost" icon><Settings className="h-4 w-4" /></Button>
 
 // Button as link
 <Button asChild><a href="/page">Go</a></Button>
@@ -369,7 +369,7 @@ toast.error("Failed", { description: "Try again" });
 
 // Tooltip
 <Tooltip>
-  <TooltipTrigger asChild><Button size="icon"><Info /></Button></TooltipTrigger>
+  <TooltipTrigger asChild><Button icon><Info /></Button></TooltipTrigger>
   <TooltipContent>Helpful info</TooltipContent>
 </Tooltip>
 ```
@@ -455,7 +455,7 @@ const columns: ColumnDef<Item>[] = [
     cell: ({ row }) => (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" icon>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
