@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.63.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.63.0...@uipath/apollo-react@3.63.1) (2026-04-01)
+
+### Bug Fixes
+
+* **apollo-react:** allow toolbox to take 100% of parent dimensions ([2923fcf](https://github.com/UiPath/apollo-ui/commit/2923fcfe00b4c8f688a98ab35eec53478aa6a877))
+
 ## [@uipath/apollo-react-v3.63.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.62.1...@uipath/apollo-react@3.63.0) (2026-03-31)
 
 ### Features
