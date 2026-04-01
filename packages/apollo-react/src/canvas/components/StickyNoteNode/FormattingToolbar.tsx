@@ -15,6 +15,7 @@ import {
   ToolbarSeparator,
 } from './StickyNoteNode.styles';
 import type { TextSelection } from './StickyNoteNode.types';
+import { getModifierKey, isMac } from './StickyNoteNode.utils';
 
 interface FormattingToolbarProps {
   textAreaRef: RefObject<HTMLTextAreaElement | null>;
@@ -52,23 +53,26 @@ const FormattingToolbarComponent = ({
   const handleBulletList = useCallback(() => applyFormat(toggleBulletList), [applyFormat]);
   const handleNumberedList = useCallback(() => applyFormat(toggleNumberedList), [applyFormat]);
 
+  const mod = getModifierKey();
+  const shift = isMac() ? '⇧' : '+Shift+';
+
   return (
     <FormattingToolbarContainer
       borderColor={borderColor}
       onMouseDown={(e) => e.preventDefault()}
       className="nodrag nowheel"
     >
-      <ApTooltip content="Bold (⌘B)" placement="top" delay>
+      <ApTooltip content={`Bold (${mod}+B)`} placement="top" delay>
         <FormattingButton isActive={activeFormats.bold} onClick={handleBold}>
           <NodeIcon icon="bold" size={14} />
         </FormattingButton>
       </ApTooltip>
-      <ApTooltip content="Italic (⌘I)" placement="top" delay>
+      <ApTooltip content={`Italic (${mod}+I)`} placement="top" delay>
         <FormattingButton isActive={activeFormats.italic} onClick={handleItalic}>
           <NodeIcon icon="italic" size={14} />
         </FormattingButton>
       </ApTooltip>
-      <ApTooltip content="Strikethrough (⌘⇧X)" placement="top" delay>
+      <ApTooltip content={`Strikethrough (${mod}${shift}X)`} placement="top" delay>
         <FormattingButton isActive={activeFormats.strikethrough} onClick={handleStrikethrough}>
           <NodeIcon icon="strikethrough" size={14} />
         </FormattingButton>
