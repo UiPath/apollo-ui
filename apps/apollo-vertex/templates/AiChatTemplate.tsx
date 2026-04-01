@@ -78,7 +78,7 @@ export function AiChatTemplate() {
         clientId="1119a927-10ab-4543-bd1a-ad6bfbbc27f4"
         scope="openid profile offline_access"
         baseUrl=""
-        redirectPath="/vertex-components/ai-chat"
+        redirectPath="/auth_callback"
       >
         <LocaleProvider>
           <AiChatLoginGate>
