@@ -62,6 +62,7 @@ interface InsightCardInnerProps {
   viewMode: "desktop" | "compact" | "stacked";
   onExpandClick: () => void;
   onAutopilotOpen?: () => void;
+  isAutopilotActive?: boolean;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -76,6 +77,7 @@ function InsightCardInner({
   viewMode,
   onExpandClick,
   onAutopilotOpen,
+  isAutopilotActive = false,
   className = "",
   style,
 }: InsightCardInnerProps) {
@@ -85,24 +87,48 @@ function InsightCardInner({
   return (
     <Card
       variant="glass"
-      className={`${isThis && isExpanding ? "!bg-white dark:!bg-card" : "!bg-white/70"} ${shared} ${classes.cardClassName} group/card relative transition-all duration-300 ease-in-out overflow-hidden ${className}`}
+      className={`${isThis && isExpanding || isAutopilotActive ? "!bg-white dark:!bg-card !shadow-[0_2px_24px_2px_rgba(0,0,0,0.08)] dark:!shadow-[0_2px_24px_2px_rgba(0,0,0,0.2)]" : "!bg-white/70"} ${shared} ${classes.cardClassName} group/card relative transition-all duration-300 ease-in-out overflow-hidden ${className}`}
       style={{
         ...cardBgStyle(cards.insightBg, cards.insightOpacity, cards.insightGradient),
         ...style,
       }}
     >
       {isInteractive && cfg.interaction === "expand" && (
-        <button
-          type="button"
-          onClick={onExpandClick}
-          className={`absolute top-5 right-5 z-20 size-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-75 ${
-            isThis
+        <div
+          className={`absolute top-5 right-5 z-20 flex items-center gap-1 transition-all duration-75 ${
+            isThis || isAutopilotActive
               ? "opacity-100 translate-x-0"
               : "opacity-0 translate-x-2 group-hover/card:opacity-100 group-hover/card:translate-x-0"
           }`}
         >
-          <DiagonalArrow collapsed={isThis && isExpanding} />
-        </button>
+          {onAutopilotOpen && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onAutopilotOpen(); }}
+              className={`size-7 rounded-md flex items-center justify-center transition-all ${
+                isAutopilotActive
+                  ? "bg-gradient-to-br from-insight-500 to-primary-400 text-white"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              }`}
+            >
+              {isAutopilotActive ? (
+                <img src="/Autopilot_light.svg" alt="Autopilot" className="size-4" />
+              ) : (
+                <>
+                  <img src="/Autopilot_dark.svg" alt="Autopilot" className="size-4 block dark:hidden" />
+                  <img src="/Autopilot_light.svg" alt="Autopilot" className="size-4 hidden dark:block" />
+                </>
+              )}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onExpandClick}
+            className="size-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+          >
+            <DiagonalArrow collapsed={isThis && isExpanding} />
+          </button>
+        </div>
       )}
       {isInteractive && cfg.interaction === "navigate" && !isThis && (
         <button
@@ -139,20 +165,6 @@ function InsightCardInner({
           )}
         </div>
       )}
-      {/* Autopilot trigger — visible when card is fully expanded */}
-      {isThis && isExpanding && phase === "full" && onAutopilotOpen && (
-        <button
-          type="button"
-          onClick={onAutopilotOpen}
-          className="absolute bottom-5 right-5 z-20 size-8 rounded-full bg-gradient-to-br from-insight-500 to-primary-400 flex items-center justify-center text-white hover:opacity-90 transition-all animate-in fade-in zoom-in-90 duration-300"
-        >
-          <img
-            src="/Autopilot_light.svg"
-            alt="Autopilot"
-            className="size-4"
-          />
-        </button>
-      )}
     </Card>
   );
 }
@@ -167,12 +179,14 @@ export function InsightGrid({
   cards,
   viewMode = "desktop",
   onAutopilotOpen,
+  autopilotActiveIdx,
 }: {
   layout: LayoutConfig;
   shared: string;
   cards: CardConfig;
   viewMode?: "desktop" | "compact" | "stacked";
-  onAutopilotOpen?: (sourceTitle: string) => void;
+  onAutopilotOpen?: (sourceTitle: string, idx: number) => void;
+  autopilotActiveIdx?: number | null;
 }) {
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [phase, setPhase] = useState<ExpandPhase>("idle");
@@ -260,7 +274,8 @@ export function InsightGrid({
                   {...sharedProps}
                   isThis={isThis}
                   onExpandClick={() => handleClick(cfg, idx)}
-                  onAutopilotOpen={onAutopilotOpen ? () => onAutopilotOpen(cfg.content.title) : undefined}
+                  onAutopilotOpen={onAutopilotOpen ? () => onAutopilotOpen(cfg.content.title, idx) : undefined}
+                  isAutopilotActive={autopilotActiveIdx === idx}
                   className="h-full"
                 />
               </div>
@@ -297,7 +312,8 @@ export function InsightGrid({
                       {...sharedProps}
                       isThis={isThis}
                       onExpandClick={() => handleClick(cfg, idx)}
-                      onAutopilotOpen={onAutopilotOpen ? () => onAutopilotOpen(cfg.content.title) : undefined}
+                      onAutopilotOpen={onAutopilotOpen ? () => onAutopilotOpen(cfg.content.title, idx) : undefined}
+                  isAutopilotActive={autopilotActiveIdx === idx}
                       style={{
                         opacity: isSibling && phase !== "idle" ? 0 : 1,
                         transform: isSibling && phase !== "idle" ? "scale(0.95)" : "scale(1)",

@@ -27,11 +27,13 @@ function ExecutiveLayout({
   layout,
   viewMode,
   onAutopilotOpen,
+  autopilotActiveIdx,
 }: {
   cards: CardConfig;
   layout: LayoutConfig;
   viewMode: ViewMode;
-  onAutopilotOpen?: (sourceTitle: string) => void;
+  onAutopilotOpen?: (sourceTitle: string, idx: number) => void;
+  autopilotActiveIdx?: number | null;
 }) {
   const borderClass = cards.borderVisible ? "" : "dark:!border-transparent";
   const blurClass = cards.backdropBlur ? "" : "dark:!backdrop-blur-none";
@@ -94,7 +96,7 @@ function ExecutiveLayout({
         {promptBarEl}
       </div>
       <div className="h-full overflow-hidden">
-        <InsightGrid layout={layout} shared={shared} cards={cards} viewMode={viewMode} onAutopilotOpen={onAutopilotOpen} />
+        <InsightGrid layout={layout} shared={shared} cards={cards} viewMode={viewMode} onAutopilotOpen={onAutopilotOpen} autopilotActiveIdx={autopilotActiveIdx} />
       </div>
     </div>
   );
@@ -153,12 +155,24 @@ export function DashboardContent() {
   const [replayCount, setReplayCount] = useState(0);
   const [autopilotOpen, setAutopilotOpen] = useState(false);
   const [autopilotSource, setAutopilotSource] = useState("");
+  const [autopilotActiveIdx, setAutopilotActiveIdx] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const viewMode = useViewMode(containerRef);
 
-  const handleAutopilotOpen = (sourceTitle: string) => {
-    setAutopilotSource(sourceTitle);
-    setAutopilotOpen(true);
+  const handleAutopilotOpen = (sourceTitle: string, idx: number) => {
+    if (autopilotOpen && autopilotActiveIdx === idx) {
+      setAutopilotOpen(false);
+      setAutopilotActiveIdx(null);
+    } else {
+      setAutopilotSource(sourceTitle);
+      setAutopilotActiveIdx(idx);
+      setAutopilotOpen(true);
+    }
+  };
+
+  const handleAutopilotClose = () => {
+    setAutopilotOpen(false);
+    setAutopilotActiveIdx(null);
   };
 
   return (
@@ -228,7 +242,7 @@ export function DashboardContent() {
               style={{ transform: autopilotOpen ? "translateX(-50%)" : "translateX(0)" }}
             >
               {layout === "executive" && (
-                <ExecutiveLayout cards={darkCards} layout={layoutCfg} viewMode={viewMode} onAutopilotOpen={handleAutopilotOpen} />
+                <ExecutiveLayout cards={darkCards} layout={layoutCfg} viewMode={viewMode} onAutopilotOpen={handleAutopilotOpen} autopilotActiveIdx={autopilotActiveIdx} />
               )}
               {layout === "operational" && <OperationalLayout />}
               {layout === "analytics" && <AnalyticsLayout />}
@@ -243,7 +257,7 @@ export function DashboardContent() {
             >
               <div className="h-full pl-1">
                 <AutopilotInsight
-                  onClose={() => setAutopilotOpen(false)}
+                  onClose={handleAutopilotClose}
                   sourceCardTitle={autopilotSource}
                 />
               </div>
