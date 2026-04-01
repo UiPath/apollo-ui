@@ -566,55 +566,75 @@
         "@uipath/tooltip"
       ],
       "files": [
-        { "path": "registry/data-table/index.ts", "type": "registry:ui" },
-        { "path": "registry/data-table/data-table.tsx", "type": "registry:ui" },
+        {
+          "path": "registry/data-table/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/index.ts"
+        },
+        {
+          "path": "registry/data-table/data-table.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table.tsx"
+        },
         {
           "path": "registry/data-table/data-table-filters.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-filters.tsx"
         },
         {
           "path": "registry/data-table/data-table-row.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-row.tsx"
         },
         {
           "path": "registry/data-table/data-table-scroll-shadow.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-scroll-shadow.tsx"
         },
         {
           "path": "registry/data-table/data-table-column-header.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-column-header.tsx"
         },
         {
           "path": "registry/data-table/data-table-faceted-filter.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-faceted-filter.tsx"
         },
         {
           "path": "registry/data-table/data-table-pagination.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-pagination.tsx"
         },
         {
           "path": "registry/data-table/data-table-search.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-search.tsx"
         },
         {
           "path": "registry/data-table/data-table-skeleton.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-skeleton.tsx"
         },
         {
           "path": "registry/data-table/data-table-toolbar.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-toolbar.tsx"
         },
         {
           "path": "registry/data-table/data-table-view-options.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-view-options.tsx"
         },
         {
           "path": "registry/data-table/sortable-column-item.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "components/ui/data-table/sortable-column-item.tsx"
         },
         {
           "path": "registry/data-table/sortable-column-list.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "components/ui/data-table/sortable-column-list.tsx"
         },
         {
           "path": "registry/use-data-table/useReactTableCompat.ts",

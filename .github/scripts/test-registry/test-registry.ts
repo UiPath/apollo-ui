@@ -27,20 +27,21 @@ function testComponent(component: string, baseAppPath: string): TestResult {
     });
 
     // Install the component from registry
-    const addOutput = execFileSync('pnpm', ['exec', 'shadcn', 'add', `@uipath/${component}`], {
+    const addOutput = execFileSync('pnpm', ['exec', 'shadcn', 'add', `@uipath/${component}`, '--overwrite'], {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd: testDir,
     });
 
-    // Run build to verify all imports resolve correctly
-    const buildOutput = execFileSync('pnpm', ['run', 'build'], {
+    // Type-check all files to verify all imports resolve correctly
+    // (next build only checks files in the build graph — components not imported by any page would be skipped)
+    const tscOutput = execFileSync('pnpm', ['exec', 'tsc', '--noEmit'], {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd: testDir,
     });
 
-    return { component, success: true, output: `${addOutput}\n${buildOutput}` };
+    return { component, success: true, output: `${addOutput}\n${tscOutput}` };
   } catch (error) {
     if (error instanceof Error && 'stdout' in error && 'stderr' in error) {
       return { component, success: false, output: `${error.stdout}\n${error.stderr}` };
