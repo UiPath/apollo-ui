@@ -98,7 +98,7 @@ export function InsightGrid({
 
   return (
     <div
-      className="relative flex flex-col h-full transition-all duration-300 ease-in-out"
+      className="@container/insight relative flex flex-col h-full transition-all duration-300 ease-in-out"
       style={{ gap: phase === "height" || phase === "full" ? 0 : layout.gap }}
     >
       {rows.map((row, rowIndex) => {
@@ -126,22 +126,26 @@ export function InsightGrid({
         return (
           <div
             key={row.map(({ idx }) => idx).join("-")}
-            className="grid transition-all duration-300 ease-in-out overflow-hidden"
-            style={{
-              gap: isRowWithExpanded && phase !== "idle" ? 0 : layout.gap,
-              gridTemplateColumns: cols,
-              flex:
-                isOtherRow && (phase === "height" || phase === "full")
-                  ? "0"
-                  : "1",
-              maxHeight: isOtherRow && phase === "full" ? 0 : 9999,
-              opacity:
-                isOtherRow && (phase === "height" || phase === "full") ? 0 : 1,
-              transform:
-                isOtherRow && (phase === "height" || phase === "full")
-                  ? "scale(0.95)"
-                  : "scale(1)",
-            }}
+            className="grid transition-all duration-300 ease-in-out overflow-hidden @[500px]/insight:![grid-template-columns:var(--cols)] [grid-template-columns:1fr]"
+            style={
+              {
+                "--cols": cols,
+                gap: isRowWithExpanded && phase !== "idle" ? 0 : layout.gap,
+                flex:
+                  isOtherRow && (phase === "height" || phase === "full")
+                    ? "0"
+                    : "1",
+                maxHeight: isOtherRow && phase === "full" ? 0 : 9999,
+                opacity:
+                  isOtherRow && (phase === "height" || phase === "full")
+                    ? 0
+                    : 1,
+                transform:
+                  isOtherRow && (phase === "height" || phase === "full")
+                    ? "scale(0.95)"
+                    : "scale(1)",
+              } as React.CSSProperties
+            }
           >
             {row.map(({ cfg, idx }) => {
               const classes = getInsightCardClasses(cfg.content);

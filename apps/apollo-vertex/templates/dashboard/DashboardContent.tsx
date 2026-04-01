@@ -34,7 +34,7 @@ function ExecutiveLayout({
   const gapStyle = { gap: `${layout.gap}px` };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 h-full" style={gapStyle}>
+    <div className="grid grid-cols-1 @[800px]:grid-cols-2 @[800px]:h-full" style={gapStyle}>
       {/* Left half */}
       <div className="flex flex-col" style={gapStyle}>
         <Card
@@ -249,7 +249,7 @@ export function DashboardContent() {
   return (
     <DashboardLoading triggerReplay={replayCount}>
       <div
-        className="relative h-full overflow-hidden"
+        className="relative h-full overflow-x-hidden"
         style={
           layoutCfg.containerBg === "none"
             ? {}
@@ -266,11 +266,11 @@ export function DashboardContent() {
           onLayoutChange={setLayoutCfg}
         />
         <div
-          className="flex flex-col gap-4 relative z-10 h-full"
+          className="@container flex flex-col gap-4 relative z-10 h-full"
           style={{ padding: layoutCfg.padding }}
         >
           {/* Header with layout toggle */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col @[500px]:flex-row @[500px]:items-center @[500px]:justify-between gap-4">
             <div>
               <h1 className="text-xs tracking-tight">
                 <span className="font-bold">UiPath</span> Vertical Solutions
