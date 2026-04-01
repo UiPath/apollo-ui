@@ -208,7 +208,7 @@ function ExecutiveLayout({
         <PromptBar shared={shared} cards={cards} />
       </div>
       {/* Right half — insight grid */}
-      <div className="overflow-hidden relative">
+      <div className="overflow-hidden overflow-y-auto relative">
         <InsightGrid layout={layout} shared={shared} cards={cards} />
       </div>
     </div>

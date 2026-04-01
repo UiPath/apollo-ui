@@ -98,7 +98,7 @@ export function InsightGrid({
 
   return (
     <div
-      className="@container/insight relative flex flex-col h-full transition-all duration-300 ease-in-out"
+      className="@container/insight relative flex flex-col @[500px]/insight:h-full transition-all duration-300 ease-in-out"
       style={{ gap: phase === "height" || phase === "full" ? 0 : layout.gap }}
     >
       {rows.map((row, rowIndex) => {
@@ -126,7 +126,7 @@ export function InsightGrid({
         return (
           <div
             key={row.map(({ idx }) => idx).join("-")}
-            className="grid transition-all duration-300 ease-in-out overflow-hidden @[500px]/insight:![grid-template-columns:var(--cols)] [grid-template-columns:1fr]"
+            className="grid transition-all duration-300 ease-in-out overflow-hidden @[500px]/insight:![grid-template-columns:var(--cols)] [grid-template-columns:1fr] @[500px]/insight:flex-1"
             style={
               {
                 "--cols": cols,
@@ -134,7 +134,7 @@ export function InsightGrid({
                 flex:
                   isOtherRow && (phase === "height" || phase === "full")
                     ? "0"
-                    : "1",
+                    : undefined,
                 maxHeight: isOtherRow && phase === "full" ? 0 : 9999,
                 opacity:
                   isOtherRow && (phase === "height" || phase === "full")
