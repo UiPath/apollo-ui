@@ -29,6 +29,11 @@ export function AiChatMessage({
   const displayName = assistantName ?? t("ai_assistant");
   const displayContent = getDisplayText(message);
 
+  // Don't render assistant messages if they have no text content and no children (e.g. calling tools)
+  if (!isUser && !displayContent && !children) {
+    return null;
+  }
+
   if (isUser) {
     return (
       <div className="flex w-full justify-end">
