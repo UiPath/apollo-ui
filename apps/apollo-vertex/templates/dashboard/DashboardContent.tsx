@@ -153,7 +153,7 @@ export function DashboardContent() {
   return (
     <DashboardLoading triggerReplay={replayCount}>
       <div
-        className="relative h-full overflow-x-hidden"
+        className={`relative h-full ${viewMode === "stacked" ? "overflow-x-hidden" : "overflow-hidden"}`}
         style={
           layoutCfg.containerBg === "none"
             ? {}
