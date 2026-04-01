@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
+import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ListItem } from '../Toolbox';
 import { StageNode } from './StageNode';
@@ -108,36 +109,54 @@ vi.mock('../Toolbox', () => ({
 vi.mock('./DraggableTask', () => ({
   DraggableTask: ({
     task,
-    onMenuOpen,
-    contextMenuItems,
+    groupIndex,
+    taskIndex,
+    getContextMenuItems,
   }: {
     task: StageTaskItem;
-    onMenuOpen?: () => void;
-    contextMenuItems?: Array<{ id: string; label: string; onClick: () => void }>;
-  }) => (
-    <div data-testid={`draggable-task-${task.id}`}>
-      <div data-testid={`task-label-${task.id}`}>{task.label}</div>
-      {onMenuOpen && (
-        <button type="button" data-testid={`task-menu-button-${task.id}`} onClick={onMenuOpen}>
-          Open Menu
-        </button>
-      )}
-      {contextMenuItems && (
-        <div data-testid={`task-menu-items-${task.id}`}>
-          {contextMenuItems.map((item, index) => (
-            <button
-              key={item.id || index}
-              type="button"
-              data-testid={`menu-item-${task.id}-${item.id || index}`}
-              onClick={item.onClick}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  ),
+    groupIndex?: number;
+    taskIndex?: number;
+    getContextMenuItems?: (
+      groupIndex: number,
+      taskIndex: number
+    ) => Array<{ id?: string; label?: string; onClick?: () => void }>;
+  }) => {
+    const [menuItems, setMenuItems] = React.useState<
+      Array<{ id?: string; label?: string; onClick?: () => void }>
+    >([]);
+    return (
+      <div data-testid={`draggable-task-${task.id}`}>
+        <div data-testid={`task-label-${task.id}`}>{task.label}</div>
+        {getContextMenuItems && (
+          <button
+            type="button"
+            data-testid={`task-menu-button-${task.id}`}
+            onClick={() => {
+              if (groupIndex !== undefined && taskIndex !== undefined) {
+                setMenuItems(getContextMenuItems(groupIndex, taskIndex));
+              }
+            }}
+          >
+            Open Menu
+          </button>
+        )}
+        {menuItems.length > 0 && (
+          <div data-testid={`task-menu-items-${task.id}`}>
+            {menuItems.map((item, index) => (
+              <button
+                key={item.id || index}
+                type="button"
+                data-testid={`menu-item-${task.id}-${item.id || index}`}
+                onClick={item.onClick}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  },
   TaskContent: ({ task }: { task: StageTaskItem }) => <div>{task.label}</div>,
 }));
 
@@ -157,20 +176,20 @@ vi.mock('../ButtonHandle/useButtonHandles', () => ({
   useButtonHandles: () => null,
 }));
 
-// Mock useNodeSelection
-vi.mock('../NodePropertiesPanel/hooks', () => ({
-  useNodeSelection: () => ({
-    setSelectedNodeId: vi.fn(),
-  }),
-}));
-
-// Mock useViewport
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', async () => {
   const actual = await vi.importActual('@uipath/apollo-react/canvas/xyflow/react');
   return {
     ...actual,
-    useViewport: () => ({ zoom: 1 }),
-    useStore: () => vi.fn(() => null),
+    useReactFlow: () => ({
+      setNodes: vi.fn(),
+    }),
+    useStore: (selector: (state: Record<string, unknown>) => unknown) => {
+      const mockState = {
+        transform: [0, 0, 1],
+        connectionClickStartHandle: null,
+      };
+      return selector(mockState);
+    },
   };
 });
 
@@ -475,15 +494,16 @@ describe('StageNode - Replace Task Functionality', () => {
     });
 
     it('should reset replace task state when node is deselected', async () => {
+      const user = userEvent.setup();
       const onReplaceTaskFromToolbox = vi.fn();
       const { rerender } = renderStageNode({ onReplaceTaskFromToolbox, selected: true });
 
       // Open replace task toolbox
       const taskMenuButton = screen.getByTestId('task-menu-button-task-1');
-      userEvent.click(taskMenuButton);
+      await user.click(taskMenuButton);
 
       const replaceMenuItem = screen.getByTestId('menu-item-task-1-replace-task');
-      userEvent.click(replaceMenuItem);
+      await user.click(replaceMenuItem);
 
       await waitFor(() => {
         expect(screen.getByTestId('toolbox')).toBeInTheDocument();
@@ -503,6 +523,7 @@ describe('StageNode - Replace Task Functionality', () => {
     });
 
     it('should reset both add task and replace task states when node is deselected', async () => {
+      const user = userEvent.setup();
       const onReplaceTaskFromToolbox = vi.fn();
       const onAddTaskFromToolbox = vi.fn();
       const { rerender } = renderStageNode({
@@ -513,10 +534,10 @@ describe('StageNode - Replace Task Functionality', () => {
 
       // Open replace task toolbox
       const taskMenuButton = screen.getByTestId('task-menu-button-task-1');
-      userEvent.click(taskMenuButton);
+      await user.click(taskMenuButton);
 
       const replaceMenuItem = screen.getByTestId('menu-item-task-1-replace-task');
-      userEvent.click(replaceMenuItem);
+      await user.click(replaceMenuItem);
 
       await waitFor(() => {
         expect(screen.getByTestId('toolbox')).toBeInTheDocument();

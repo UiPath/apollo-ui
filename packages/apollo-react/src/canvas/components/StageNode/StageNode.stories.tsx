@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import type { Connection, Edge } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Connection, Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   addEdge,
   ConnectionMode,
@@ -24,7 +24,55 @@ import type { ListItem } from '../Toolbox';
 import { StageConnectionEdge } from './StageConnectionEdge';
 import { StageEdge } from './StageEdge';
 import { StageNode } from './StageNode';
+import { StageNodeWrapper } from './StageNode.stories.utils';
 import { StageHeaderChipType, type StageNodeProps, type StageTaskItem } from './StageNode.types';
+
+const DefaultCanvasDecorator = ({
+  initialNodes,
+  initialEdges = [],
+}: {
+  initialNodes: Node[];
+  initialEdges?: Edge[];
+}) => {
+  const [nodes, _setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+  const onConnect = useCallback(
+    (connection: Connection) => {
+      setEdges((eds) => addEdge(connection, eds));
+    },
+    [setEdges]
+  );
+
+  const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
+  const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
+  const defaultEdgeOptions = useMemo(() => ({ type: 'stage' }), []);
+
+  return (
+    <div style={{ width: '100vw', height: '100vh' }}>
+      <ReactFlowProvider>
+        <BaseCanvas
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          mode="design"
+          connectionMode={ConnectionMode.Strict}
+          defaultEdgeOptions={defaultEdgeOptions}
+          connectionLineComponent={StageConnectionEdge}
+          elevateEdgesOnSelect
+        >
+          <Panel position="bottom-right">
+            <CanvasPositionControls translations={DefaultCanvasTranslations} />
+          </Panel>
+        </BaseCanvas>
+      </ReactFlowProvider>
+    </div>
+  );
+};
 
 const meta: Meta<typeof StageNode> = {
   title: 'Canvas/StageNode',
@@ -34,16 +82,9 @@ const meta: Meta<typeof StageNode> = {
   },
   decorators: [
     (Story, context) => {
-      // Allow stories to use custom render
       if (context.parameters?.useCustomRender) {
         return <Story />;
       }
-
-      // Create a wrapper component that passes props correctly
-      const StageNodeWrapper = (props: any) => {
-        // React Flow passes node data in props.data, so we need to spread it
-        return <StageNode {...props} {...props.data} />;
-      };
 
       const initialNodes = context.parameters?.nodes || [
         {
@@ -63,44 +104,7 @@ const meta: Meta<typeof StageNode> = {
 
       const initialEdges = context.parameters?.edges || [];
 
-      const [nodes, _setNodes, onNodesChange] = useNodesState(initialNodes);
-      const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
-      const onConnect = useCallback(
-        (connection: Connection) => {
-          setEdges((eds) => addEdge(connection, eds));
-        },
-        [setEdges]
-      );
-
-      const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), [StageNodeWrapper]);
-      const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
-      const defaultEdgeOptions = useMemo(() => ({ type: 'stage' }), []);
-
-      return (
-        <div style={{ width: '100vw', height: '100vh' }}>
-          <ReactFlowProvider>
-            <BaseCanvas
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              nodeTypes={nodeTypes}
-              edgeTypes={edgeTypes}
-              mode="design"
-              connectionMode={ConnectionMode.Strict}
-              defaultEdgeOptions={defaultEdgeOptions}
-              connectionLineComponent={StageConnectionEdge}
-              elevateEdgesOnSelect
-            >
-              <Panel position="bottom-right">
-                <CanvasPositionControls translations={DefaultCanvasTranslations} />
-              </Panel>
-            </BaseCanvas>
-          </ReactFlowProvider>
-        </div>
-      );
+      return <DefaultCanvasDecorator initialNodes={initialNodes} initialEdges={initialEdges} />;
     },
   ],
   args: {
@@ -140,7 +144,7 @@ const VerificationIcon = () => (
 
 const DocumentIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <path d="M14 2H6C4.9 2 4 2.9 4 4V20C20 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" />
+    <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" />
     <path d="M14 2V8H20" />
     <path d="M8 12H16" />
     <path d="M8 16H16" />
@@ -870,15 +874,7 @@ const initialTasks: StageTaskItem[][] = [
 ];
 
 const DraggableTaskReorderingStory = () => {
-  const StageNodeWrapper = useMemo(
-    () =>
-      function StageNodeWrapperComponent(props: any) {
-        return <StageNode {...props} {...props.data} />;
-      },
-    []
-  );
-
-  const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), [StageNodeWrapper]);
+  const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
   const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
 
   const [nodes, setNodes, onNodesChange] = useNodesState([
@@ -1013,15 +1009,7 @@ const availableTaskOptions: ListItem[] = [
 ];
 
 const AddAndReplaceTasksStory = () => {
-  const StageNodeWrapper = useMemo(
-    () =>
-      function StageNodeWrapperComponent(props: any) {
-        return <StageNode {...props} {...props.data} />;
-      },
-    []
-  );
-
-  const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), [StageNodeWrapper]);
+  const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
   const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
 
   const [pendingReplaceTask, setPendingReplaceTask] = useState(false);
@@ -1319,22 +1307,38 @@ export const AddAndReplaceTasks: Story = {
 };
 
 const InlineTitleEditStory = () => {
-  const StageNodeWrapper = useMemo(
-    () =>
-      function StageNodeWrapperComponent(props: any) {
-        return <StageNode {...props} {...props.data} />;
-      },
+  const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
+  const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
+
+  const setNodesRef = useRef<React.Dispatch<React.SetStateAction<Node[]>>>(null!);
+
+  const createTitleChangeHandler = useCallback(
+    (nodeId: string) => (newTitle: string) => {
+      setNodesRef.current((nds) =>
+        nds.map((node) =>
+          node.id === nodeId
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  stageDetails: {
+                    ...(node.data.stageDetails as Record<string, unknown>),
+                    label: newTitle,
+                  },
+                },
+              }
+            : node
+        )
+      );
+    },
     []
   );
 
-  const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), [StageNodeWrapper]);
-  const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
-
-  const initialNodes = useMemo(
+  const initialNodes: Node[] = useMemo(
     () => [
       {
         id: 'editable-stage',
-        type: 'stage' as const,
+        type: 'stage',
         position: { x: 48, y: 96 },
         width: 304,
         data: {
@@ -1348,11 +1352,12 @@ const InlineTitleEditStory = () => {
           onTaskAdd: () => {
             window.alert('Add task functionality - this would open a dialog to add a new task');
           },
+          onStageTitleChange: createTitleChangeHandler('editable-stage'),
         },
       },
       {
         id: 'long-title-stage',
-        type: 'stage' as const,
+        type: 'stage',
         position: { x: 400, y: 96 },
         width: 304,
         data: {
@@ -1363,49 +1368,17 @@ const InlineTitleEditStory = () => {
           onTaskAdd: () => {
             window.alert('Add task functionality - this would open a dialog to add a new task');
           },
+          onStageTitleChange: createTitleChangeHandler('long-title-stage'),
         },
       },
     ],
-    []
+    [createTitleChangeHandler]
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  setNodesRef.current = setNodes;
 
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-
-  const createTitleChangeHandler = useCallback(
-    (nodeId: string) => (newTitle: string) => {
-      setNodes((nds) =>
-        nds.map((node) =>
-          node.id === nodeId
-            ? {
-                ...node,
-                data: {
-                  ...node.data,
-                  stageDetails: {
-                    ...node.data.stageDetails,
-                    label: newTitle,
-                  },
-                },
-              }
-            : node
-        )
-      );
-    },
-    [setNodes]
-  );
-
-  const nodesWithHandlers = useMemo(
-    () =>
-      nodes.map((node) => ({
-        ...node,
-        data: {
-          ...node.data,
-          onStageTitleChange: createTitleChangeHandler(node.id),
-        },
-      })),
-    [nodes, createTitleChangeHandler]
-  );
 
   const onConnect = useCallback(
     (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
@@ -1416,7 +1389,7 @@ const InlineTitleEditStory = () => {
     <div style={{ width: '100vw', height: '100vh' }}>
       <ReactFlowProvider>
         <BaseCanvas
-          nodes={nodesWithHandlers}
+          nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
@@ -1473,18 +1446,28 @@ const loadedTaskOptionsWithChildren: ListItem[] = [
 ];
 
 const AddTaskLoadingStory = () => {
-  const StageNodeWrapper = useMemo(
-    () =>
-      function StageNodeWrapperComponent(props: any) {
-        return <StageNode {...props} {...props.data} />;
-      },
-    []
-  );
-
-  const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), [StageNodeWrapper]);
+  const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
   const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
+  const setNodesRef = useRef<React.Dispatch<React.SetStateAction<Node[]>>>(null!);
 
-  const initialNodes = useMemo(
+  // Inject per-node handlers — simulates loading state on add-task:
+  // 1. Set addTaskLoading=true so the + button is disabled
+  // 2. After 2s, set addTaskLoading=false to re-enable it
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const handleAddTaskFromToolbox = useCallback((nodeId: string, _taskItem: ListItem) => {
+    clearTimeout(timeoutRef.current);
+    setNodesRef.current((nds) =>
+      nds.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, addTaskLoading: true } } : n))
+    );
+    timeoutRef.current = setTimeout(() => {
+      setNodesRef.current((nds) =>
+        nds.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, addTaskLoading: false } } : n))
+      );
+    }, 2000);
+  }, []);
+
+  const initialNodes: Node[] = useMemo(
     () => [
       {
         id: 'loading-stage-empty',
@@ -1496,9 +1479,11 @@ const AddTaskLoadingStory = () => {
             label: 'Loading (+ disabled for 3s)',
             tasks: [],
           },
-          // Top-level loading: + button disabled until API returns items
           addTaskLoading: true,
           taskOptions: [] as ListItem[],
+          onAddTaskFromToolbox: (taskItem: ListItem) => {
+            handleAddTaskFromToolbox('loading-stage-empty', taskItem);
+          },
         },
       },
       {
@@ -1511,16 +1496,19 @@ const AddTaskLoadingStory = () => {
             label: 'Async children (click +)',
             tasks: [[{ id: 'task-1', label: 'Existing Task', icon: <VerificationIcon /> }]],
           },
-          // Children loading: items already available, level 2 loads on click
           addTaskLoading: false,
           taskOptions: loadedTaskOptionsWithChildren,
+          onAddTaskFromToolbox: (taskItem: ListItem) => {
+            handleAddTaskFromToolbox('loading-stage-children', taskItem);
+          },
         },
       },
     ],
-    []
+    [handleAddTaskFromToolbox]
   );
 
-  const [nodesState, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  setNodesRef.current = setNodes;
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   // Simulate top-level API loading — after 3 seconds, items become available
@@ -1544,45 +1532,9 @@ const AddTaskLoadingStory = () => {
     return () => clearTimeout(timeout);
   }, [setNodes]);
 
-  // Inject per-node handlers — simulates loading state on add-task:
-  // 1. Set addTaskLoading=true so the + button is disabled
-  // 2. After 2s, set addTaskLoading=false to re-enable it
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
   useEffect(() => {
     return () => clearTimeout(timeoutRef.current);
   }, []);
-
-  const handleAddTaskFromToolbox = useCallback(
-    (nodeId: string, _taskItem: ListItem) => {
-      clearTimeout(timeoutRef.current);
-      setNodes((nds) =>
-        nds.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, addTaskLoading: true } } : n))
-      );
-      timeoutRef.current = setTimeout(() => {
-        setNodes((nds) =>
-          nds.map((n) =>
-            n.id === nodeId ? { ...n, data: { ...n.data, addTaskLoading: false } } : n
-          )
-        );
-      }, 2000);
-    },
-    [setNodes]
-  );
-
-  const nodesWithHandler = useMemo(
-    () =>
-      nodesState.map((node) => ({
-        ...node,
-        data: {
-          ...node.data,
-          onAddTaskFromToolbox: (taskItem: ListItem) => {
-            handleAddTaskFromToolbox(node.id, taskItem);
-          },
-        },
-      })),
-    [nodesState, handleAddTaskFromToolbox]
-  );
 
   const onConnect = useCallback(
     (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
@@ -1593,7 +1545,7 @@ const AddTaskLoadingStory = () => {
     <div style={{ width: '100vw', height: '100vh' }}>
       <ReactFlowProvider>
         <BaseCanvas
-          nodes={nodesWithHandler}
+          nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
