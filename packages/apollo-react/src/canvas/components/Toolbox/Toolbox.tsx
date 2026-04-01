@@ -53,6 +53,8 @@ export interface ToolboxProps<T> {
   title: string;
   initialItems: ListItem<T>[];
   loading?: boolean;
+  fullWidth?: boolean; // If true, the toolbox will be full width of the container.
+  fullHeight?: boolean; // If true, the toolbox will be full height of the container.
   onClose: () => void;
   onItemSelect: (item: ListItem<T>) => Promise<void> | void;
   onItemHover?: (item: ListItem<T>) => void;
@@ -115,6 +117,8 @@ export function Toolbox<T>({
   title,
   initialItems,
   loading,
+  fullWidth = false,
+  fullHeight = false,
 }: ToolboxProps<T>) {
   const [items, setItems] = useState<ListItem<T>[]>(initialItems);
   const [search, setSearch] = useState('');
@@ -530,7 +534,7 @@ export function Toolbox<T>({
 
   return (
     <div ref={containerRef} data-testid="toolbox-container">
-      <Column px={20} py={12} gap={12} w={320} h={440}>
+      <Column px={20} py={12} gap={12} w={fullWidth ? '100%' : 320} h={fullHeight ? '100%' : 440}>
         <Header
           title={currentParentItem?.name || title}
           onBack={handleBackTransition}
