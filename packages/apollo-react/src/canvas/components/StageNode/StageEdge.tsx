@@ -1,10 +1,11 @@
 import styled from '@emotion/styled';
-import type { EdgeProps } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { EdgeProps, ReactFlowState } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   EdgeLabelRenderer,
   getSmoothStepPath,
-  useInternalNode,
+  useStore,
 } from '@uipath/apollo-react/canvas/xyflow/react';
+import { memo } from 'react';
 
 export const StageEdgeLabel = styled.div`
   position: absolute;
@@ -30,6 +31,26 @@ type Props = EdgeProps & {
   arrowSize?: number;
 };
 
+interface StageEdgeGeometry {
+  sourceX: number;
+  sourceY: number;
+  targetX: number;
+  targetY: number;
+}
+
+interface StageEdgeInnerProps extends Omit<Props, 'sourceX' | 'sourceY' | 'targetX' | 'targetY'> {
+  geometry: StageEdgeGeometry;
+}
+
+function stageEdgeGeometryEquality(previous: StageEdgeGeometry, next: StageEdgeGeometry): boolean {
+  return (
+    previous.sourceX === next.sourceX &&
+    previous.sourceY === next.sourceY &&
+    previous.targetX === next.targetX &&
+    previous.targetY === next.targetY
+  );
+}
+
 function getArrowFromBezier(path: string, arrowSize: number) {
   const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   pathEl.setAttribute('d', path);
@@ -46,11 +67,8 @@ function getArrowFromBezier(path: string, arrowSize: number) {
   };
 }
 
-export function StageEdge({
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
+function StageEdgeInner({
+  geometry,
   sourcePosition,
   targetPosition,
   selected,
@@ -59,22 +77,13 @@ export function StageEdge({
   strokeWidth = 2,
   arrowSize = 8,
   ...rest
-}: Props) {
-  const sourceNode = useInternalNode(rest.source);
-  const targetNode = useInternalNode(rest.target);
-
-  const sourceNodeX = sourceNode
-    ? sourceNode.position.x + (sourceNode.measured?.width ?? 0)
-    : sourceX;
-  const sourceNodeY = sourceNode?.position.y ? sourceNode.position.y + 32 : sourceY;
-  const targetNodeX = targetNode?.position.x ?? targetX;
-  const targetNodeY = targetNode?.position.y ? targetNode.position.y + 32 : targetY;
+}: StageEdgeInnerProps) {
   const [pathData, labelX, labelY, _ex, _ey] = getSmoothStepPath({
-    sourceX: sourceNodeX,
-    sourceY: sourceNodeY,
+    sourceX: geometry.sourceX,
+    sourceY: geometry.sourceY,
     sourcePosition,
-    targetX: targetNodeX - 1,
-    targetY: targetNodeY,
+    targetX: geometry.targetX - 1,
+    targetY: geometry.targetY,
     targetPosition,
     borderRadius: 40,
   });
@@ -141,3 +150,48 @@ export function StageEdge({
     </>
   );
 }
+
+const StageEdgeInnerMemo = memo(StageEdgeInner);
+
+function StageEdgeComponent({
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  selected,
+  style,
+  stroke,
+  strokeWidth,
+  arrowSize,
+  ...rest
+}: Props) {
+  const geometry = useStore((state: ReactFlowState): StageEdgeGeometry => {
+    const sourceNode = state.nodeLookup.get(rest.source);
+    const targetNode = state.nodeLookup.get(rest.target);
+
+    return {
+      sourceX: sourceNode ? sourceNode.position.x + (sourceNode.measured?.width ?? 0) : sourceX,
+      sourceY: sourceNode ? sourceNode.position.y + 32 : sourceY,
+      targetX: targetNode?.position.x ?? targetX,
+      targetY: targetNode ? targetNode.position.y + 32 : targetY,
+    };
+  }, stageEdgeGeometryEquality);
+
+  return (
+    <StageEdgeInnerMemo
+      geometry={geometry}
+      sourcePosition={sourcePosition}
+      targetPosition={targetPosition}
+      selected={selected}
+      style={style}
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+      arrowSize={arrowSize}
+      {...rest}
+    />
+  );
+}
+
+export const StageEdge = memo(StageEdgeComponent);

@@ -18,7 +18,12 @@ import {
 } from '@dnd-kit/sortable';
 import { FontVariantToken, Icon, Padding, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
-import { Position, useStore, useViewport } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  Position,
+  useStore,
+  useStoreApi,
+  useViewport,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   ApIcon,
   ApIconButton,
@@ -36,7 +41,7 @@ import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import { NodeContextMenu, type NodeMenuItem } from '../NodeContextMenu';
-import { useNodeSelection } from '../NodePropertiesPanel/hooks';
+import { useSetNodeSelection } from '../NodePropertiesPanel/hooks';
 import { type ListItem, Toolbox } from '../Toolbox';
 import { AdhocTaskItem } from './AdhocTask';
 import { DraggableTask, TaskContent } from './DraggableTask';
@@ -58,7 +63,11 @@ import {
   StageTitleContainer,
   StageTitleInput,
 } from './StageNode.styles';
-import type { StageNodeProps } from './StageNode.types';
+import type {
+  StageNodeInnerProps,
+  StageNodeProps,
+  StageTaskDragOverlayProps,
+} from './StageNode.types';
 import { StageHeaderChipType } from './StageNode.types';
 import { flattenTasks, getProjection, reorderTasks } from './StageNode.utils';
 import { getContextMenuItems, getDivider, getMenuItem } from './StageNodeTaskUtilities';
@@ -77,7 +86,39 @@ const CHIP_ICONS: Record<StageHeaderChipType, React.ReactElement> = {
   [StageHeaderChipType.CaseCompletion]: <ApIcon name="check-mark" size={Icon.IconXs} />,
 };
 
-const StageNodeComponent = (props: StageNodeProps) => {
+const StageTaskDragOverlay = memo(function StageTaskDragOverlay({
+  activeTask,
+  isActiveTaskParallel,
+  taskWidthStyle,
+}: StageTaskDragOverlayProps) {
+  const { zoom } = useViewport();
+  const dragOverlayStyle = useMemo<React.CSSProperties>(
+    () => ({
+      transform: `scale(${zoom})`,
+      transformOrigin: 'top left',
+    }),
+    [zoom]
+  );
+
+  return createPortal(
+    <DragOverlay>
+      {activeTask ? (
+        <div style={dragOverlayStyle}>
+          <StageTask
+            selected
+            isParallel={isActiveTaskParallel}
+            style={{ cursor: 'grabbing', ...taskWidthStyle }}
+          >
+            <TaskContent task={activeTask} isDragging />
+          </StageTask>
+        </div>
+      ) : null}
+    </DragOverlay>,
+    document.body
+  );
+});
+
+const StageNodeInner = (props: StageNodeInnerProps) => {
   const {
     dragging,
     selected,
@@ -136,10 +177,6 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const status = execution?.stageStatus?.status;
   const statusLabel = execution?.stageStatus?.label;
   const stageDuration = execution?.stageStatus?.duration;
-  const reGroupTaskFunction = useMemo(
-    () => onTaskGroupModification || (() => {}),
-    [onTaskGroupModification]
-  );
 
   const isStageTitleEditable = !!onStageTitleChange && !isReadOnly;
 
@@ -158,6 +195,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
     taskIndex: -1,
   });
   const isConnecting = useStore((state) => !!state.connectionClickStartHandle);
+  const storeApi = useStoreApi();
   const connectedHandleIds = useConnectedHandles(id);
 
   const [isAddingTask, setIsAddingTask] = useState(false);
@@ -194,8 +232,6 @@ const StageNodeComponent = (props: StageNodeProps) => {
     const group = tasks.find((g) => g.some((t) => t.id === activeDragId));
     return group ? group.length > 1 : false;
   }, [tasks, activeDragId]);
-
-  const { zoom } = useViewport();
 
   const projected = useMemo(() => {
     if (!activeDragId || !overId) return null;
@@ -276,22 +312,25 @@ const StageNodeComponent = (props: StageNodeProps) => {
     };
   }, [handleStageTitleClickToSave, isStageTitleEditing]);
 
-  const contextMenuItems = useCallback(
-    (
-      isParallel: boolean,
-      groupIndex: number,
-      taskIndex: number,
-      tasksLength: number,
-      taskGroupLength: number,
-      isAboveParallel: boolean,
-      isBelowParallel: boolean
-    ) => {
+  const hasContextMenu = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
+
+  /** Lazily builds context menu items for a task. Called only when the menu opens,
+   * avoiding object allocation on every render for every task. */
+  const buildContextMenuItems = useCallback(
+    (groupIndex: number, taskIndex: number) => {
+      const taskGroup = tasks[groupIndex] ?? [];
+      const isParallel = taskGroup.length > 1;
       const items: NodeMenuItem[] = [];
 
       if (onReplaceTaskFromToolbox) {
         items.push(
           getMenuItem('replace-task', 'Replace task', () => {
-            const taskId = tasks[groupIndex]?.[taskIndex]?.id;
+            taskStateReference.current = {
+              isParallel,
+              groupIndex,
+              taskIndex,
+            };
+            const taskId = taskGroup[taskIndex]?.id;
             if (taskId) onTaskClick?.(taskId);
             setIsReplacingTask(true);
           })
@@ -303,12 +342,12 @@ const StageNodeComponent = (props: StageNodeProps) => {
         const reGroupOptions = getContextMenuItems(
           isParallel,
           groupIndex,
-          tasksLength,
+          tasks.length,
           taskIndex,
-          taskGroupLength,
-          isAboveParallel,
-          isBelowParallel,
-          reGroupTaskFunction,
+          taskGroup.length,
+          (tasks[groupIndex - 1]?.length ?? 0) > 1,
+          (tasks[groupIndex + 1]?.length ?? 0) > 1,
+          onTaskGroupModification,
           hideParallelOptions
         );
         return [...items, ...reGroupOptions];
@@ -316,14 +355,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
       return items;
     },
-    [
-      onReplaceTaskFromToolbox,
-      onTaskClick,
-      onTaskGroupModification,
-      reGroupTaskFunction,
-      tasks,
-      hideParallelOptions,
-    ]
+    [onReplaceTaskFromToolbox, onTaskClick, onTaskGroupModification, tasks, hideParallelOptions]
   );
 
   const getAdhocContextMenuItems = useCallback(
@@ -348,17 +380,17 @@ const StageNodeComponent = (props: StageNodeProps) => {
         if (items.length > 0) items.push(getDivider());
         items.push(
           getMenuItem('remove-task', 'Delete task', () =>
-            reGroupTaskFunction(GroupModificationType.REMOVE_TASK, groupIndex, taskIndex)
+            onTaskGroupModification(GroupModificationType.REMOVE_TASK, groupIndex, taskIndex)
           )
         );
       }
 
       return items;
     },
-    [onReplaceTaskFromToolbox, onTaskClick, onTaskGroupModification, reGroupTaskFunction]
+    [onReplaceTaskFromToolbox, onTaskClick, onTaskGroupModification]
   );
 
-  const { setSelectedNodeId } = useNodeSelection();
+  const { setSelectedNodeId } = useSetNodeSelection();
   const handleStageClick = useCallback(() => {
     onStageClick?.();
   }, [onStageClick]);
@@ -495,9 +527,9 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
   const handleDragMove = useCallback(
     (event: DragMoveEvent) => {
-      setOffsetLeft(event.delta.x / zoom);
+      setOffsetLeft(event.delta.x / storeApi.getState().transform[2]);
     },
-    [zoom]
+    [storeApi]
   );
 
   const handleDragOver = useCallback((event: DragOverEvent) => {
@@ -557,14 +589,6 @@ const StageNodeComponent = (props: StageNodeProps) => {
           } as React.CSSProperties)
         : undefined,
     [taskWidth]
-  );
-
-  const dragOverlayStyle = useMemo<React.CSSProperties>(
-    () => ({
-      transform: `scale(${zoom})`,
-      transformOrigin: 'top left',
-    }),
-    [zoom]
   );
 
   return (
@@ -732,15 +756,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
                                     taskExecution={taskExecution}
                                     isSelected={selectedTaskId === task.id}
                                     isParallel={isParallel}
-                                    contextMenuItems={contextMenuItems(
-                                      isParallel,
-                                      groupIndex,
-                                      taskIndex,
-                                      tasks.length,
-                                      taskGroup.length,
-                                      (tasks[groupIndex - 1]?.length ?? 0) > 1,
-                                      (tasks[groupIndex + 1]?.length ?? 0) > 1
-                                    )}
+                                    groupIndex={groupIndex}
+                                    taskIndex={taskIndex}
                                     onTaskClick={handleTaskClick}
                                     projectedDepth={
                                       task.id === activeDragId && projected
@@ -748,15 +765,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
                                         : undefined
                                     }
                                     isDragDisabled={!onTaskReorder}
-                                    zoom={zoom}
-                                    {...((onTaskGroupModification || onReplaceTaskFromToolbox) && {
-                                      onMenuOpen: () => {
-                                        taskStateReference.current = {
-                                          isParallel,
-                                          groupIndex,
-                                          taskIndex,
-                                        };
-                                      },
+                                    {...(hasContextMenu && {
+                                      getContextMenuItems: buildContextMenuItems,
                                     })}
                                   />
                                 );
@@ -767,22 +777,11 @@ const StageNodeComponent = (props: StageNodeProps) => {
                       })}
                     </StageTaskList>
                   </SortableContext>
-                  {createPortal(
-                    <DragOverlay>
-                      {activeTask ? (
-                        <div style={dragOverlayStyle}>
-                          <StageTask
-                            selected
-                            isParallel={isActiveTaskParallel}
-                            style={{ cursor: 'grabbing', ...taskWidthStyle }}
-                          >
-                            <TaskContent task={activeTask} isDragging />
-                          </StageTask>
-                        </div>
-                      ) : null}
-                    </DragOverlay>,
-                    document.body
-                  )}
+                  <StageTaskDragOverlay
+                    activeTask={activeTask}
+                    isActiveTaskParallel={isActiveTaskParallel}
+                    taskWidthStyle={taskWidthStyle}
+                  />
                 </DndContext>
               )}
               {adhocTasks.length > 0 && (
@@ -861,6 +860,65 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
       {handleElements}
     </div>
+  );
+};
+
+const StageNodeInnerMemo = memo(StageNodeInner);
+
+/**
+ * Destructures to strip ReactFlow's internal NodeProps fields (e.g. positionAbsoluteX/Y,
+ * zIndex, isConnectable) that change on every store update causing rerenders. Passing only
+ * StageNodeBaseProps lets StageNodeInnerMemo's shallow comparison work effectively.
+ */
+const StageNodeComponent = ({
+  dragging,
+  selected,
+  id,
+  width,
+  execution,
+  stageDetails,
+  addTaskLabel,
+  addTaskLoading,
+  replaceTaskLabel,
+  taskOptions,
+  menuItems,
+  pendingReplaceTask,
+  onStageClick,
+  onTaskAdd,
+  onAddTaskFromToolbox,
+  onTaskToolboxSearch,
+  onTaskClick,
+  onTaskGroupModification,
+  onStageTitleChange,
+  onTaskReorder,
+  onReplaceTaskFromToolbox,
+  onTaskPlay,
+}: StageNodeProps) => {
+  return (
+    <StageNodeInnerMemo
+      dragging={dragging}
+      selected={selected}
+      id={id}
+      width={width}
+      execution={execution}
+      stageDetails={stageDetails}
+      addTaskLabel={addTaskLabel}
+      addTaskLoading={addTaskLoading}
+      replaceTaskLabel={replaceTaskLabel}
+      taskOptions={taskOptions}
+      menuItems={menuItems}
+      pendingReplaceTask={pendingReplaceTask}
+      onStageClick={onStageClick}
+      onTaskAdd={onTaskAdd}
+      onAddTaskFromToolbox={onAddTaskFromToolbox}
+      onTaskToolboxSearch={onTaskToolboxSearch}
+      onTaskClick={onTaskClick}
+      onTaskGroupModification={onTaskGroupModification}
+      onStageTitleChange={onStageTitleChange}
+      onTaskReorder={onTaskReorder}
+      onReplaceTaskFromToolbox={onReplaceTaskFromToolbox}
+      onTaskPlay={onTaskPlay}
+    />
   );
 };
 

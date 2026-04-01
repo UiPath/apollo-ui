@@ -41,7 +41,7 @@ export interface StageHeaderChip {
   onClick?: () => void;
 }
 
-export interface StageNodeProps extends NodeProps {
+export interface StageNodeBaseProps {
   dragging: boolean;
   selected: boolean;
   id: string;
@@ -90,6 +90,10 @@ export interface StageNodeProps extends NodeProps {
   hideParallelOptions?: boolean;
 }
 
+export interface StageNodeProps extends NodeProps, StageNodeBaseProps {}
+
+export type StageNodeInnerProps = StageNodeBaseProps & Pick<NodeProps, 'width'>;
+
 export interface StageTaskExecution {
   status?: StageTaskStatus;
   message?: string;
@@ -99,4 +103,10 @@ export interface StageTaskExecution {
   badge?: string;
   badgeStatus?: 'warning' | 'info' | 'error';
   retryCount?: number;
+}
+
+export interface StageTaskDragOverlayProps {
+  activeTask: StageTaskItem | undefined;
+  isActiveTaskParallel: boolean;
+  taskWidthStyle: React.CSSProperties | undefined;
 }

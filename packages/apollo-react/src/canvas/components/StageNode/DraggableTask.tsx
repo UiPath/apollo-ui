@@ -2,6 +2,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { FontVariantToken, Padding, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
+import { useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   ApBadge,
   ApIconButton,
@@ -124,14 +125,15 @@ const DraggableTaskComponent = ({
   taskExecution,
   isSelected,
   isParallel,
-  contextMenuItems,
+  groupIndex,
+  taskIndex,
+  getContextMenuItems,
   onTaskClick,
-  onMenuOpen,
   isDragDisabled,
   projectedDepth,
-  zoom = 1,
 }: DraggableTaskProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const zoom = useStore((s) => s.transform[2]);
   const taskRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<TaskMenuHandle>(null);
 
@@ -153,6 +155,13 @@ const DraggableTaskComponent = ({
   const handleContextMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     menuRef.current?.handleContextMenu(e);
   }, []);
+
+  const handleGetContextMenuItems = useCallback(() => {
+    if (!getContextMenuItems) {
+      return [];
+    }
+    return getContextMenuItems(groupIndex, taskIndex);
+  }, [getContextMenuItems, groupIndex, taskIndex]);
 
   const { attributes, listeners, setNodeRef, transition, transform, isDragging } = useSortable({
     id: task.id,
@@ -199,7 +208,7 @@ const DraggableTaskComponent = ({
       isParallel={isParallel}
       isDragEnabled={!isDragDisabled}
       onClick={handleClick}
-      {...(contextMenuItems.length > 0 && { onContextMenu: handleContextMenu })}
+      {...(getContextMenuItems && { onContextMenu: handleContextMenu })}
     >
       <TaskContent task={task} taskExecution={taskExecution} />
 
@@ -217,13 +226,12 @@ const DraggableTaskComponent = ({
           </span>
         </ApTooltip>
       )}
-      {contextMenuItems.length > 0 && (
+      {getContextMenuItems && (
         <TaskMenu
           ref={menuRef}
           taskId={task.id}
-          contextMenuItems={contextMenuItems}
+          getContextMenuItems={handleGetContextMenuItems}
           onMenuOpenChange={handleMenuOpenChange}
-          onMenuOpen={onMenuOpen}
           taskRef={taskRef}
         />
       )}
