@@ -1,99 +1,28 @@
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useState } from "react";
+import { THEME_STORAGE_KEY } from "./shell-constants";
 
+export type ThemeConfig = {
+  light?: Record<string, string>;
+  dark?: Record<string, string>;
+};
 export type Theme = "light" | "dark" | "system";
-
-export interface ThemeConfig {
-  light?: {
-    background?: string;
-    foreground?: string;
-    card?: string;
-    cardForeground?: string;
-    popover?: string;
-    popoverForeground?: string;
-    primary?: string;
-    primaryForeground?: string;
-    secondary?: string;
-    secondaryForeground?: string;
-    muted?: string;
-    mutedForeground?: string;
-    accent?: string;
-    accentForeground?: string;
-    destructive?: string;
-    success?: string;
-    info?: string;
-    warning?: string;
-    border?: string;
-    input?: string;
-    ring?: string;
-    chart1?: string;
-    chart2?: string;
-    chart3?: string;
-    chart4?: string;
-    chart5?: string;
-    sidebar?: string;
-    sidebarForeground?: string;
-    sidebarPrimary?: string;
-    sidebarPrimaryForeground?: string;
-    sidebarAccent?: string;
-    sidebarAccentForeground?: string;
-    sidebarBorder?: string;
-    sidebarRing?: string;
-  };
-
-  dark?: {
-    background?: string;
-    foreground?: string;
-    card?: string;
-    cardForeground?: string;
-    popover?: string;
-    popoverForeground?: string;
-    primary?: string;
-    primaryForeground?: string;
-    secondary?: string;
-    secondaryForeground?: string;
-    muted?: string;
-    mutedForeground?: string;
-    accent?: string;
-    accentForeground?: string;
-    destructive?: string;
-    success?: string;
-    info?: string;
-    warning?: string;
-    border?: string;
-    input?: string;
-    ring?: string;
-    chart1?: string;
-    chart2?: string;
-    chart3?: string;
-    chart4?: string;
-    chart5?: string;
-    sidebar?: string;
-    sidebarForeground?: string;
-    sidebarPrimary?: string;
-    sidebarPrimaryForeground?: string;
-    sidebarAccent?: string;
-    sidebarAccentForeground?: string;
-    sidebarBorder?: string;
-    sidebarRing?: string;
-  };
-}
 
 interface ThemeProviderProps {
   children: ReactNode;
+  defaultTheme?: Theme;
   themeConfig?: ThemeConfig;
   storageKey?: string;
+  disableTransitionOnChange?: boolean;
 }
 
 interface ThemeProviderState {
   theme: Theme;
+  resolvedTheme: "light" | "dark";
   setTheme: (theme: Theme) => void;
 }
 
-const ThemeProviderContext = createContext<ThemeProviderState>({
-  theme: "system",
-  setTheme: () => null,
-});
+const ThemeProviderContext = createContext<ThemeProviderState | null>(null);
 
 const cssVarMap: Record<string, string> = {
   background: "--background",
@@ -145,10 +74,26 @@ function getEffectiveTheme(theme: Theme): "light" | "dark" {
   return theme;
 }
 
-function applyThemeClass(theme: Theme) {
+function applyThemeClass(theme: Theme, disableTransitions?: boolean) {
   const root = window.document.documentElement;
+  const resolved = getEffectiveTheme(theme);
+
+  let styleEl: HTMLStyleElement | null = null;
+  if (disableTransitions) {
+    styleEl = document.createElement("style");
+    styleEl.textContent =
+      "*, *::before, *::after { transition: none !important }";
+    document.head.append(styleEl);
+  }
+
   root.classList.remove("light", "dark");
-  root.classList.add(getEffectiveTheme(theme));
+  root.classList.add(resolved);
+
+  if (styleEl) {
+    // Force reflow, then re-enable transitions
+    void root.offsetHeight;
+    styleEl.remove();
+  }
 }
 
 function applyThemeConfig(config: ThemeConfig, theme: Theme) {
@@ -179,14 +124,20 @@ function clearThemeConfig() {
 
 export function ThemeProvider({
   children,
+  defaultTheme = "system",
   themeConfig,
-  storageKey = "vss-ui-theme",
+  storageKey = THEME_STORAGE_KEY,
+  disableTransitionOnChange,
 }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window === "undefined") return "system";
+    if (typeof window === "undefined") return defaultTheme;
     const stored = localStorage.getItem(storageKey);
-    return isValidTheme(stored) ? stored : "system";
+    return isValidTheme(stored) ? stored : defaultTheme;
   });
+
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() =>
+    typeof window === "undefined" ? "light" : getEffectiveTheme(theme),
+  );
 
   const setTheme = (newTheme: Theme) => {
     localStorage.setItem(storageKey, newTheme);
@@ -195,19 +146,23 @@ export function ThemeProvider({
 
   // Apply light/dark class to document root
   useEffect(() => {
-    applyThemeClass(theme);
-  }, [theme]);
+    applyThemeClass(theme, disableTransitionOnChange);
+    setResolvedTheme(getEffectiveTheme(theme));
+  }, [theme, disableTransitionOnChange]);
 
   // Listen for system theme changes when in system mode
   useEffect(() => {
     if (theme !== "system") return;
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = () => applyThemeClass(theme);
+    const handleChange = () => {
+      applyThemeClass(theme, disableTransitionOnChange);
+      setResolvedTheme(getEffectiveTheme(theme));
+    };
 
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme]);
+  }, [theme, disableTransitionOnChange]);
 
   // Cross-tab sync: update React state when theme changes in another tab
   useEffect(() => {
@@ -230,7 +185,7 @@ export function ThemeProvider({
   }, [themeConfig, theme]);
 
   return (
-    <ThemeProviderContext.Provider value={{ theme, setTheme }}>
+    <ThemeProviderContext.Provider value={{ theme, resolvedTheme, setTheme }}>
       {children}
     </ThemeProviderContext.Provider>
   );
@@ -239,7 +194,7 @@ export function ThemeProvider({
 export const useTheme = () => {
   const context = useContext(ThemeProviderContext);
 
-  if (!context) {
+  if (context == null) {
     throw new Error("useTheme must be used within a ThemeProvider");
   }
 

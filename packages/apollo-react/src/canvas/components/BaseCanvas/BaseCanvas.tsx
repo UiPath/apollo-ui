@@ -17,7 +17,6 @@ import type { BaseCanvasProps, BaseCanvasRef } from './BaseCanvas.types';
 import { CanvasBackground } from './CanvasBackground';
 import { CanvasProviders } from './CanvasProviders';
 import { PanShortcutTeachingUI } from './PanShortcutTeachingUI';
-import { usePreventBackNavigation } from './usePreventBackNavigation';
 
 const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends Edge = Edge>(
   props: BaseCanvasProps<NodeType, EdgeType> & {
@@ -107,9 +106,6 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
 
   const { isReady } = useAutoLayout(nodes, initialAutoLayout, fitViewOptions);
   const { ensureNodesInView, ensureAllNodesInView, centerNode } = useEnsureNodesInView();
-
-  // Prevent browser back navigation on touch gestures
-  usePreventBackNavigation();
 
   // Maintain specified nodes in view when canvas resizes
   // This ensures important nodes remain visible in responsive layouts

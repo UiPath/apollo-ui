@@ -17,7 +17,6 @@
         "name": "next"
       }
     ],
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
       "@/components/ui/accordion": ["./registry/accordion/accordion"],
@@ -35,6 +34,7 @@
       "@/components/ui/chart": ["./registry/chart/chart"],
       "@/components/ui/checkbox": ["./registry/checkbox/checkbox"],
       "@/components/ui/collapsible": ["./registry/collapsible/collapsible"],
+      "@/components/ui/combobox": ["./registry/combobox/combobox"],
       "@/components/ui/command": ["./registry/command/command"],
       "@/components/ui/context-menu": ["./registry/context-menu/context-menu"],
       "@/components/ui/data-table": ["./registry/data-table/index"],
@@ -86,8 +86,8 @@
       "@/components/ui/toggle-group": ["./registry/toggle-group/toggle-group"],
       "@/components/ui/tooltip": ["./registry/tooltip/tooltip"],
       "@/hooks/use-mobile": ["./registry/use-mobile/use-mobile"],
-      "@/hooks/use-local-storage": [
-        "./registry/use-local-storage/use-local-storage"
+      "@/hooks/useReactTableCompat": [
+        "./registry/use-data-table/useReactTableCompat"
       ],
       "@/components/theme-provider/theme-provider": [
         "./registry/theme-provider/theme-provider"

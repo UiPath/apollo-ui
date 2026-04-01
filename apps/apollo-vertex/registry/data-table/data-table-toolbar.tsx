@@ -1,3 +1,5 @@
+"use client";
+
 import type { Table } from "@tanstack/react-table";
 import type * as React from "react";
 
@@ -26,13 +28,18 @@ function DataTableToolbar<TData>({
   return (
     <div
       data-slot="data-table-toolbar"
-      className={cn("flex items-center justify-between gap-2", className)}
+      className={cn(
+        "flex flex-wrap items-center justify-between gap-2",
+        className,
+      )}
     >
+      {enableSearch && (
+        <DataTableSearch table={table} className="w-full sm:w-auto" />
+      )}
       <div className="flex items-center gap-2">
-        {enableSearch && <DataTableSearch table={table} />}
         {customContent}
+        {enableViewOptions && <DataTableViewOptions table={table} />}
       </div>
-      {enableViewOptions && <DataTableViewOptions table={table} />}
     </div>
   );
 }

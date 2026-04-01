@@ -1,3 +1,178 @@
+## [@uipath/apollo-react-v3.63.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.62.1...@uipath/apollo-react@3.63.0) (2026-03-31)
+
+### Features
+
+* **apollo-react:** change icon for case management ([7593a85](https://github.com/UiPath/apollo-ui/commit/7593a857d758ab06db2b94df0685d8269a767bd4))
+
+## [@uipath/apollo-react-v3.62.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.62.0...@uipath/apollo-react@3.62.1) (2026-03-31)
+
+### Bug Fixes
+
+* **apollo-react:** disable StageNode add-task button while loading [MST-8019] ([97b2f8c](https://github.com/UiPath/apollo-ui/commit/97b2f8c4ca5217621b76f047c7ad4540377404e6))
+
+## [@uipath/apollo-react-v3.62.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.61.3...@uipath/apollo-react@3.62.0) (2026-03-30)
+
+### Features
+
+* **apollo-react:** add flow project icon ([9f56c26](https://github.com/UiPath/apollo-ui/commit/9f56c26c8004c465c600522d725980095c4055aa))
+
+## [@uipath/apollo-react-v3.61.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.61.2...@uipath/apollo-react@3.61.3) (2026-03-29)
+
+### Bug Fixes
+
+* **apollo-react:** fix zIndex on FloatingCanvasPanel ([df73fc2](https://github.com/UiPath/apollo-ui/commit/df73fc27dc5ea9fe5b64fb0e7bb5c4a5448c88bd))
+
+## [@uipath/apollo-react-v3.61.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.61.1...@uipath/apollo-react@3.61.2) (2026-03-27)
+
+### Bug Fixes
+
+* **apollo-react:** add list and table styles to sticky note markdown preview [MST-7613] ([6d089be](https://github.com/UiPath/apollo-ui/commit/6d089beaba3e192f1efb18e3e60e6754920d098d))
+
+## [@uipath/apollo-react-v3.61.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.61.0...@uipath/apollo-react@3.61.1) (2026-03-27)
+
+### Bug Fixes
+
+* **apollo-react:** adds tooltip to add node panel list item ([da71578](https://github.com/UiPath/apollo-ui/commit/da71578e802567d5319f8bff3e7a0729a26018d2))
+
+## [@uipath/apollo-react-v3.61.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.60.4...@uipath/apollo-react@3.61.0) (2026-03-26)
+
+### Features
+
+* **apollo-react:** add adhoc play button and entry condition icon for tasks ([2857aba](https://github.com/UiPath/apollo-ui/commit/2857aba5ac5c2f56fa54d2eec3d1787665449904))
+
+## [@uipath/apollo-react-v3.60.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.60.3...@uipath/apollo-react@3.60.4) (2026-03-25)
+
+### Bug Fixes
+
+* **ap-chat:** use Unicode-safe base64 encoding for citation data ([5a5dd5e](https://github.com/UiPath/apollo-ui/commit/5a5dd5e901449fbeade3924a613df78b49190a6a))
+
+## [@uipath/apollo-react-v3.60.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.60.2...@uipath/apollo-react@3.60.3) (2026-03-25)
+
+### Bug Fixes
+
+* **apollo-react:** stage title input fills available header width[MST-7791] ([7c9446e](https://github.com/UiPath/apollo-ui/commit/7c9446ed5953589a8e2e4f0b9ebb50aebb4f35db))
+
+## [@uipath/apollo-react-v3.60.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.60.1...@uipath/apollo-react@3.60.2) (2026-03-24)
+
+### Bug Fixes
+
+* **apollo-react:** add Warning state for stages and stage tasks ([3e2bd31](https://github.com/UiPath/apollo-ui/commit/3e2bd318a3c9198fd858f16e911952a2736d34ac))
+
+## [@uipath/apollo-react-v3.60.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.60.0...@uipath/apollo-react@3.60.1) (2026-03-24)
+
+### Bug Fixes
+
+* **apollo-react:** update Remove task to Delete task ([73010e3](https://github.com/UiPath/apollo-ui/commit/73010e33d3c26f11d866706627ef775cd66f3fc2))
+
+## [@uipath/apollo-react-v3.60.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.59.2...@uipath/apollo-react@3.60.0) (2026-03-23)
+
+### Features
+
+* **apollo-wind:** add Logos page with brand and product logo library ([2cda272](https://github.com/UiPath/apollo-ui/commit/2cda272c807356e6e13f0c0f20b3183485561b30))
+
+## [@uipath/apollo-react-v3.59.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.59.1...@uipath/apollo-react@3.59.2) (2026-03-23)
+
+### Bug Fixes
+
+* **apollo-react:** show 'No tasks' text in read-only empty stage nodes ([680669b](https://github.com/UiPath/apollo-ui/commit/680669b754f1295d5fac75b3df4f19a0505f4558))
+
+## [@uipath/apollo-react-v3.59.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.59.0...@uipath/apollo-react@3.59.1) (2026-03-23)
+
+### Bug Fixes
+
+* **apollo-react:** preserve task order when creating parallel group with task below ([c65fa2b](https://github.com/UiPath/apollo-ui/commit/c65fa2b91bb293ac3bf9cecc7c4c4aa4524688d6))
+
+## [@uipath/apollo-react-v3.59.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.58.2...@uipath/apollo-react@3.59.0) (2026-03-20)
+
+### Features
+
+* **apollo-react:** add adornments story and rename to SquareDashedIndicator [MST-7454] ([a1aae5a](https://github.com/UiPath/apollo-ui/commit/a1aae5adc67481a85fe81ce06ffe01dd2a7e41fc))
+
+## [@uipath/apollo-react-v3.58.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.58.1...@uipath/apollo-react@3.58.2) (2026-03-20)
+
+### Bug Fixes
+
+* **apollo-react:** task status icon tooltip [MST-7296] ([e578bf8](https://github.com/UiPath/apollo-ui/commit/e578bf82d33e898c1cc5adefb7886f405a49b12f))
+
+## [@uipath/apollo-react-v3.58.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.58.0...@uipath/apollo-react@3.58.1) (2026-03-19)
+
+### Bug Fixes
+
+* **apollo-react:** improve Toolbox keyboard nav with Space, Tab, and index restore ([5ea1057](https://github.com/UiPath/apollo-ui/commit/5ea105735d4634b079d88f707021cd1e3376736f))
+
+## [@uipath/apollo-react-v3.58.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.57.0...@uipath/apollo-react@3.58.0) (2026-03-19)
+
+### Features
+
+* **apollo-react:** add line break support to sticky notes ([456e35e](https://github.com/UiPath/apollo-ui/commit/456e35e7a1d01cfd54dde3f9bfa21fa5b1271b71))
+
+## [@uipath/apollo-react-v3.57.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.56.0...@uipath/apollo-react@3.57.0) (2026-03-18)
+
+### Features
+
+* **apollo-react:** keydown event for stage node ([ca42a3b](https://github.com/UiPath/apollo-ui/commit/ca42a3b64675fd11ebf75a11da185ce3ade02a82))
+
+## [@uipath/apollo-react-v3.56.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.55.1...@uipath/apollo-react@3.56.0) (2026-03-18)
+
+### Features
+
+* **apollo-react:** add keyboard navigation and focus lock to Toolbox ([fa63bfa](https://github.com/UiPath/apollo-ui/commit/fa63bfa21b70b732a192dc41b47ab43d47b4efb9))
+
+## [@uipath/apollo-react-v3.55.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.55.0...@uipath/apollo-react@3.55.1) (2026-03-18)
+
+### Bug Fixes
+
+* **repo:** run format ([2e7fea6](https://github.com/UiPath/apollo-ui/commit/2e7fea677d51458592a9db1044cb5febdfae08bb))
+* **repo:** security vulnerabilities ([1fa7647](https://github.com/UiPath/apollo-ui/commit/1fa7647ebfda6556d46d885e4a6ab9405f17ef1b))
+
+## [@uipath/apollo-react-v3.55.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.54.1...@uipath/apollo-react@3.55.0) (2026-03-17)
+
+### Features
+
+* **apollo-react:** add a2a resource type to Agent Canvas ([a3974e5](https://github.com/UiPath/apollo-ui/commit/a3974e572f9eb9e241688921809604440583708f))
+
+## [@uipath/apollo-react-v3.54.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.54.0...@uipath/apollo-react@3.54.1) (2026-03-17)
+
+### Bug Fixes
+
+* **ci:** vulnerabilities on packages ([9dc7752](https://github.com/UiPath/apollo-ui/commit/9dc7752ca1d9e253ec58e3c2c37c5d124ed73769))
+
+## [@uipath/apollo-react-v3.54.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.53.0...@uipath/apollo-react@3.54.0) (2026-03-16)
+
+### Features
+
+* **apollo-react:** update group node for group node support ([776283a](https://github.com/UiPath/apollo-ui/commit/776283a01ccb98d71cb531d86502125b64d916bb))
+
+## [@uipath/apollo-react-v3.53.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.52.1...@uipath/apollo-react@3.53.0) (2026-03-16)
+
+### Features
+
+* **apollo-react:** add data testid for e2es [MST-7066] ([0d97a39](https://github.com/UiPath/apollo-ui/commit/0d97a39e9b272ba65f71f3dc4c6336b65d0773d4))
+
+## [@uipath/apollo-react-v3.52.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.52.0...@uipath/apollo-react@3.52.1) (2026-03-14)
+
+### Bug Fixes
+
+* **apollo-react:** remove redundant shadow DOM style injection ([7063590](https://github.com/UiPath/apollo-ui/commit/7063590bbbc86ee5df912484b998d9ba1d8f6fdc))
+
+## [@uipath/apollo-react-v3.52.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.51.2...@uipath/apollo-react@3.52.0) (2026-03-13)
+
+### Features
+
+* **apollo-react:** support skeleton loader in BaseNode ([00f4e1a](https://github.com/UiPath/apollo-ui/commit/00f4e1a34e60b36b73ee62f8107c567f5c386dfc))
+
+## [@uipath/apollo-react-v3.51.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.51.1...@uipath/apollo-react@3.51.2) (2026-03-12)
+
+### Bug Fixes
+
+* **apollo-react:** remove back navigation event handler ([70891aa](https://github.com/UiPath/apollo-ui/commit/70891aa16b99185f205119d69ae66b02c456d009))
+
+## [@uipath/apollo-react-v3.51.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.51.0...@uipath/apollo-react@3.51.1) (2026-03-12)
+
+### Bug Fixes
+
+* **apollo-react:** fix tool call status text ([6476de5](https://github.com/UiPath/apollo-ui/commit/6476de5a4a5020b841b950db34fcb765f0d0b12a))
+
 ## [@uipath/apollo-react-v3.51.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.50.0...@uipath/apollo-react@3.51.0) (2026-03-11)
 
 ### Features

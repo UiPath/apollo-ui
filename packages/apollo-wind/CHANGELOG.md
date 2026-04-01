@@ -1,3 +1,119 @@
+## [@uipath/apollo-wind-v1.5.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.4.0...@uipath/apollo-wind@1.5.0) (2026-03-26)
+
+### Features
+
+* **apollo-wind:** add brand center link to Logos page description ([b3ff085](https://github.com/uipath/apollo-ui/commit/b3ff085758e0d2813be16af1ef023624910a6926))
+
+## [@uipath/apollo-wind-v1.4.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.3.0...@uipath/apollo-wind@1.4.0) (2026-03-23)
+
+### Features
+
+* **apollo-wind:** add Logos page with brand and product logo library ([2cda272](https://github.com/uipath/apollo-ui/commit/2cda272c807356e6e13f0c0f20b3183485561b30))
+
+## [@uipath/apollo-wind-v1.3.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.2.1...@uipath/apollo-wind@1.3.0) (2026-03-23)
+
+### Features
+
+* **apollo-wind:** add apollo-writing skill with UiPath UX writing guidelines ([5cdb224](https://github.com/uipath/apollo-ui/commit/5cdb224dd713b57fd58eb816769927334652a940))
+
+## [@uipath/apollo-wind-v1.2.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.2.0...@uipath/apollo-wind@1.2.1) (2026-03-19)
+
+### Bug Fixes
+
+* **apollo-wind:** format ([bb4787e](https://github.com/uipath/apollo-ui/commit/bb4787e68129f4576945c437970455de8027c471))
+
+## [@uipath/apollo-wind-v1.2.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.1.0...@uipath/apollo-wind@1.2.0) (2026-03-18)
+
+### Features
+
+* **apollo-wind:** linkable tabs and internal/external skills toggle ([1e6d7de](https://github.com/uipath/apollo-ui/commit/1e6d7de0646b1c0849537951388abceff9c28b86)), closes [#apollo](https://github.com/uipath/apollo-ui/issues/apollo)
+* **apollo-wind:** skills UX polish and CLI scope callout ([acf03bb](https://github.com/uipath/apollo-ui/commit/acf03bba29f9f9336fa6dba73322b793ed6df5ce))
+
+## [@uipath/apollo-wind-v1.1.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.0.2...@uipath/apollo-wind@1.1.0) (2026-03-18)
+
+### Features
+
+* **apollo-wind:** elevate Skills to top-level tab with marketplace UI ([ba12395](https://github.com/uipath/apollo-ui/commit/ba1239512c54a77cb40caa5f9fdb7950c11af033)), closes [#apollo](https://github.com/uipath/apollo-ui/issues/apollo)
+
+## [@uipath/apollo-wind-v1.0.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.0.1...@uipath/apollo-wind@1.0.2) (2026-03-18)
+
+### Bug Fixes
+
+* **apollo-wind:** have buttons be of type='button' by default ([36cebc6](https://github.com/uipath/apollo-ui/commit/36cebc6a68e14207e10e2179b3687355e6481ed8))
+
+## [@uipath/apollo-wind-v1.0.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.0.0...@uipath/apollo-wind@1.0.1) (2026-03-18)
+
+### Bug Fixes
+
+* **repo:** run format ([2e7fea6](https://github.com/uipath/apollo-ui/commit/2e7fea677d51458592a9db1044cb5febdfae08bb))
+* **repo:** security vulnerabilities ([1fa7647](https://github.com/uipath/apollo-ui/commit/1fa7647ebfda6556d46d885e4a6ab9405f17ef1b))
+
+## [@uipath/apollo-wind-v1.0.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.3...@uipath/apollo-wind@1.0.0) (2026-03-18)
+
+### ⚠ BREAKING CHANGES
+
+* **apollo-wind:** consumers must update direction→orientation, numeric sizes→string percentages
+
+### Bug Fixes
+
+* **apollo-wind:** upgrade react-resizable-panels to v4 ([32f18ad](https://github.com/uipath/apollo-ui/commit/32f18adda0faf89d07b68dc5e00152538b83beff))
+
+## [@uipath/apollo-wind-v0.15.3](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.2...@uipath/apollo-wind@0.15.3) (2026-03-17)
+
+### Bug Fixes
+
+* **apollo-wind:** more generic selectors ([dc921e5](https://github.com/uipath/apollo-ui/commit/dc921e572395d46989f942c3138616e8ef14ef58))
+
+## [@uipath/apollo-wind-v0.15.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.1...@uipath/apollo-wind@0.15.2) (2026-03-17)
+
+### Bug Fixes
+
+* **ci:** code scanning alerts ([f731813](https://github.com/uipath/apollo-ui/commit/f731813037e0c7d9d7dc876be83f1edbe047273d))
+* **ci:** vulnerabilities on packages ([9dc7752](https://github.com/uipath/apollo-ui/commit/9dc7752ca1d9e253ec58e3c2c37c5d124ed73769))
+
+## [@uipath/apollo-wind-v0.15.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.0...@uipath/apollo-wind@0.15.1) (2026-03-17)
+
+### Bug Fixes
+
+* **apollo-wind:** attempt to fix prism import issue ([bd5ba84](https://github.com/uipath/apollo-ui/commit/bd5ba8460c2c35e6312af58309f7e2552bcdd255))
+
+## [@uipath/apollo-wind-v0.15.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.14.0...@uipath/apollo-wind@0.15.0) (2026-03-16)
+
+### Features
+
+* **apollo-wind:** add Flow Node Expandable and Hover Menu components ([1f73dc3](https://github.com/uipath/apollo-ui/commit/1f73dc30f75cfa166c1c610d8ef261d73dc64159))
+
+### Bug Fixes
+
+* **apollo-wind:** apply code review fixes across canvas node components ([8ac1bef](https://github.com/uipath/apollo-ui/commit/8ac1befc5a799998858ff8aa337d64588c0254bb))
+
+## [@uipath/apollo-wind-v0.14.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.13.0...@uipath/apollo-wind@0.14.0) (2026-03-12)
+
+### Features
+
+* **apollo-wind:** add Apollo prototype skill file ([52f4b1d](https://github.com/uipath/apollo-ui/commit/52f4b1d036cb8643282e94ba4d54f130f67e9f4c))
+* **apollo-wind:** add Apollo prototype skill reference to Best Practices ([94cf191](https://github.com/uipath/apollo-ui/commit/94cf19107b36e57f30fbe8e4c4b52ea712b89325))
+* **apollo-wind:** add CLI tab to Getting Started, remove from Prototyping ([e4b6f34](https://github.com/uipath/apollo-ui/commit/e4b6f34235a6b05ee2d1772258c55ff5bf316c28))
+* **apollo-wind:** add Skills sub-tab to Resources, promote from Best Practices accordion ([3375317](https://github.com/uipath/apollo-ui/commit/3375317bf25f4cc1c880b79be180887493f10840))
+* **apollo-wind:** migrate Future themes to Tailwind v4 vars and add code syntax tokens ([ff0c626](https://github.com/uipath/apollo-ui/commit/ff0c62658e13261dbec66108fa58d2ea550f308a))
+* **apollo-wind:** refactor Best Practices into accordions, add Skills section ([0a8c148](https://github.com/uipath/apollo-ui/commit/0a8c148dd66c1996a045c09cfe9f04768d6a86d4))
+* **apollo-wind:** update FlowPanel and ChatComposer with Figma design system ([cef1fae](https://github.com/uipath/apollo-ui/commit/cef1fae5bd7dfa7a3ba11c6ee3b49f8dfb7dfc3b))
+
+### Bug Fixes
+
+* **apollo-wind:** left-align dark/light swatches, move Future last in sidebar ([b7442e6](https://github.com/uipath/apollo-ui/commit/b7442e63da31f78ec697ce63a96f9e29258a0ae9))
+* **apollo-wind:** Theme page — reorder sidebar, add consumer-apps note ([f36b637](https://github.com/uipath/apollo-ui/commit/f36b637b747328f789842800a684a97144c8e459))
+
+## [@uipath/apollo-wind-v0.13.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.12.2...@uipath/apollo-wind@0.13.0) (2026-03-12)
+
+### Features
+
+* **apollo-wind:** add horizontal scroll support to ScrollArea ([28f9d0f](https://github.com/uipath/apollo-ui/commit/28f9d0f443c44bf6d60c1e76924437a548fcb32f))
+
+### Bug Fixes
+
+* **apollo-wind:** add overscroll-x to ScrollArea component ([75cfe7e](https://github.com/uipath/apollo-ui/commit/75cfe7eda4af2ba1d41662856fae4cbf985e8edd))
+
 ## [@uipath/apollo-wind-v0.12.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.12.1...@uipath/apollo-wind@0.12.2) (2026-03-10)
 
 ### Bug Fixes

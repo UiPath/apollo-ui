@@ -7,7 +7,7 @@ packages/apollo-react @UiPath/Apollo
 packages/apollo-wind
 
 # apps
-apps/apollo-vertex
+apps/apollo-vertex @UiPath/team-frontendhoven
 apps/react-playground @UiPath/Apollo
 apps/storybook
 

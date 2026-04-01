@@ -3,8 +3,7 @@ import { useId } from 'react';
 import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib';
 
-export interface AnimatedGradientIconProps
-  extends ComponentPropsWithoutRef<'span'> {
+export interface AnimatedGradientIconProps extends ComponentPropsWithoutRef<'span'> {
   speed?: number;
   colorFrom?: string;
   colorTo?: string;
@@ -27,11 +26,7 @@ export function AnimatedGradientIcon({
   const duration = 8 / speed;
   const gradientId = `ideas-sparkles-${useId().replace(/:/g, '-')}`;
   return (
-    <span
-      className={cn('inline-block shrink-0', className)}
-      style={style}
-      {...props}
-    >
+    <span className={cn('inline-block shrink-0', className)} style={style} {...props}>
       {/* Hidden SVG holds gradient defs for url() reference */}
       <svg aria-hidden style={{ position: 'absolute', width: 0, height: 0 }}>
         <defs>
@@ -69,8 +64,7 @@ export function AnimatedGradientIcon({
   );
 }
 
-export interface AnimatedGradientTextProps
-  extends ComponentPropsWithoutRef<'div'> {
+export interface AnimatedGradientTextProps extends ComponentPropsWithoutRef<'div'> {
   speed?: number;
   colorFrom?: string;
   colorTo?: string;

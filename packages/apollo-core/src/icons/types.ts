@@ -1230,6 +1230,11 @@ export type IconName =
   | 'UITriggersManual'
   | 'UITriggersQueue'
   | 'UITriggersScheduled'
+  | 'UiPathAutopilotLogo'
+  | 'UiPathFavicon'
+  | 'UiPathFullDark'
+  | 'UiPathFullLight'
+  | 'UiPathIconDark'
   | 'Unarchive'
   | 'Undo'
   | 'Unlink'
@@ -2549,6 +2554,11 @@ export const iconNames: readonly IconName[] = [
   'UITriggersManual',
   'UITriggersQueue',
   'UITriggersScheduled',
+  'UiPathAutopilotLogo',
+  'UiPathFavicon',
+  'UiPathFullDark',
+  'UiPathFullLight',
+  'UiPathIconDark',
   'Unarchive',
   'Undo',
   'Unlink',

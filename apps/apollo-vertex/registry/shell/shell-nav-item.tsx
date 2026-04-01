@@ -1,37 +1,40 @@
-"use client";
-
+import { Link, useLocation } from "@tanstack/react-router";
+import { useLocalStorage } from "@mantine/hooks";
 import { AnimatePresence, motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useLocalStorage } from "@/hooks/use-local-storage";
 import { cn } from "@/lib/utils";
 import {
   fastFadeTransition,
   iconHoverScale,
   textFadeVariants,
 } from "./shell-animations";
+import { SIDEBAR_COLLAPSED_KEY } from "./shell-constants";
+import { Text } from "./shell-text";
+import type { TranslationKey } from "./shell-translation-key";
 
 interface NavItemProps {
   to: string;
   icon: LucideIcon;
-  text: string;
+  label: TranslationKey;
 }
 
-export const NavItem = ({ to, icon: Icon, text }: NavItemProps) => {
-  const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
-  const pathname = usePathname();
+export const NavItem = ({ to, icon: Icon, label }: NavItemProps) => {
+  const [isCollapsed] = useLocalStorage<boolean>({
+    key: SIDEBAR_COLLAPSED_KEY,
+    defaultValue: false,
+  });
+  const { pathname } = useLocation();
   const isActive = pathname === to || pathname.startsWith(`${to}/`);
 
   const linkContent = (
     <Link
-      href={to}
+      to={to}
       className={cn(
         "flex items-center rounded-md transition-colors duration-200",
         "h-8 text-sm font-medium",
@@ -47,7 +50,7 @@ export const NavItem = ({ to, icon: Icon, text }: NavItemProps) => {
       >
         <Icon className="w-4 h-4" />
       </motion.span>
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {!isCollapsed && (
           <motion.span
             key="nav-text"
@@ -62,7 +65,7 @@ export const NavItem = ({ to, icon: Icon, text }: NavItemProps) => {
             exit="exit"
             transition={fastFadeTransition}
           >
-            {text}
+            <Text value={label} />
           </motion.span>
         )}
       </AnimatePresence>
@@ -75,7 +78,7 @@ export const NavItem = ({ to, icon: Icon, text }: NavItemProps) => {
         <Tooltip>
           <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
           <TooltipContent side="right" sideOffset={8}>
-            {text}
+            <Text value={label} />
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

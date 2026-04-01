@@ -110,7 +110,9 @@ describe('Zoom and pan', () => {
     expect(gradient?.getAttribute('gradientUnits')).toBe('userSpaceOnUse');
     expect(gradient?.getAttribute('x1')).not.toContain('%');
     expect(gradient?.getAttribute('x2')).not.toContain('%');
-    expect(Number(gradient?.getAttribute('x2'))).toBeGreaterThan(Number(gradient?.getAttribute('x1')));
+    expect(Number(gradient?.getAttribute('x2'))).toBeGreaterThan(
+      Number(gradient?.getAttribute('x1'))
+    );
   });
 });
 
@@ -126,7 +128,7 @@ describe('computeSankeyDimensions', () => {
       margins.left,
       margins.right,
       margins.top,
-      margins.bottom,
+      margins.bottom
     );
     expect(result).toEqual({ minWidth: 0, minHeight: 0 });
   });
@@ -152,7 +154,7 @@ describe('computeSankeyDimensions', () => {
       margins.left,
       margins.right,
       margins.top,
-      margins.bottom,
+      margins.bottom
     );
 
     // 3 columns × 200 + 5 + 120 = 725
@@ -185,7 +187,7 @@ describe('computeSankeyDimensions', () => {
       margins.left,
       margins.right,
       margins.top,
-      margins.bottom,
+      margins.bottom
     );
 
     // 3 columns (a=0, b/c=1, d=2) × 200 + 5 + 120 = 725
@@ -222,7 +224,7 @@ describe('computeSankeyDimensions', () => {
       margins.left,
       margins.right,
       margins.top,
-      margins.bottom,
+      margins.bottom
     );
 
     // 2 columns × 200 + 5 + 120 = 525

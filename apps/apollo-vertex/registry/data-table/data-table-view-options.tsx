@@ -1,5 +1,7 @@
+"use client";
+
 import type { Table as TanstackTable } from "@tanstack/react-table";
-import { Settings2Icon } from "lucide-react";
+import { Columns3Icon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
@@ -10,6 +12,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import type { ColumnItem } from "./sortable-column-list";
 import { SortableColumnList } from "./sortable-column-list";
@@ -66,21 +73,32 @@ function DataTableViewOptions<TData>({
   return (
     <div data-slot="data-table-view-options" className={className}>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="ml-auto hidden h-9 lg:flex"
-          >
-            <Settings2Icon />
-            {t("view")}
-          </Button>
-        </DropdownMenuTrigger>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="ml-auto"
+                aria-label={t("toggle_columns", {
+                  defaultValue: "Toggle columns",
+                })}
+              >
+                <Columns3Icon />
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            {t("toggle_columns", { defaultValue: "Toggle columns" })}
+          </TooltipContent>
+        </Tooltip>
         <DropdownMenuContent
           align="end"
           className="min-w-[220px] overflow-hidden"
         >
-          <DropdownMenuLabel>{t("toggle_columns")}</DropdownMenuLabel>
+          <DropdownMenuLabel>
+            {t("toggle_columns", { defaultValue: "Toggle columns" })}
+          </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <SortableColumnList
             columns={columnItems}

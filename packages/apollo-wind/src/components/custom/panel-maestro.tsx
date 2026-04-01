@@ -53,15 +53,14 @@ export function MaestroPanel({
     <div
       className={cn(
         'relative flex h-full shrink-0 flex-col bg-surface transition-all duration-300',
-        isLeft
-          ? 'border-r border-border-subtle'
-          : 'border-l border-border-subtle',
+        isLeft ? 'border-r border-border-subtle' : 'border-l border-border-subtle',
         isExpanded ? 'w-[300px]' : 'w-8',
         className
       )}
     >
       {/* Expand/collapse toggle button */}
-      <button type="button"
+      <button
+        type="button"
         className="absolute z-10 flex h-7 w-7 items-center justify-center rounded-full border border-border bg-surface text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
         style={{
           top: 28,

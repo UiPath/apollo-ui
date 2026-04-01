@@ -45,17 +45,18 @@ const meta: Meta<typeof ContextMenu> = {
 export default meta;
 
 /** Reusable trigger area — forwards ref so Radix asChild can attach event handlers */
-const TriggerArea = forwardRef<HTMLDivElement, { label?: string } & React.HTMLAttributes<HTMLDivElement>>(
-  ({ label = 'Right click here', ...props }, ref) => (
-    <div
-      ref={ref}
-      className="flex h-[150px] w-[300px] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground"
-      {...props}
-    >
-      {label}
-    </div>
-  )
-);
+const TriggerArea = forwardRef<
+  HTMLDivElement,
+  { label?: string } & React.HTMLAttributes<HTMLDivElement>
+>(({ label = 'Right click here', ...props }, ref) => (
+  <div
+    ref={ref}
+    className="flex h-[150px] w-[300px] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground"
+    {...props}
+  >
+    {label}
+  </div>
+));
 TriggerArea.displayName = 'TriggerArea';
 
 // ============================================================================
@@ -355,10 +356,7 @@ export const Examples = {
                 </ContextMenuSubContent>
               </ContextMenuSub>
               <ContextMenuSeparator />
-              <ContextMenuCheckboxItem
-                checked={starred}
-                onCheckedChange={setStarred}
-              >
+              <ContextMenuCheckboxItem checked={starred} onCheckedChange={setStarred}>
                 <Star className="mr-2 h-4 w-4" />
                 Starred
               </ContextMenuCheckboxItem>

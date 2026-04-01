@@ -277,8 +277,6 @@ function AdminMenuNav() {
 // Sample data
 // ============================================================================
 
-
-
 /** Admin demo: varied tree structure for layout/scroll demo. */
 const adminTreeDataExpanded: TreeViewItem[] = [
   {

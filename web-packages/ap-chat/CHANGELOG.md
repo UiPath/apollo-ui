@@ -1,3 +1,28 @@
+## [@uipath/ap-chat-v1.5.5](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.5.4...@uipath/ap-chat@1.5.5) (2026-03-19)
+
+### Bug Fixes
+
+* **ap-chat:** export types ([57c4e82](https://github.com/UiPath/apollo-ui/commit/57c4e82ea966025662a5f27f20b5901be4cbe140))
+* **ap-chat:** regex for injecting styles ([1824cd4](https://github.com/UiPath/apollo-ui/commit/1824cd45fd4a87b29aecde537a6a3b16d6eddd7b))
+
+## [@uipath/ap-chat-v1.5.4](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.5.3...@uipath/ap-chat@1.5.4) (2026-03-18)
+
+### Bug Fixes
+
+* **repo:** run format ([2e7fea6](https://github.com/UiPath/apollo-ui/commit/2e7fea677d51458592a9db1044cb5febdfae08bb))
+
+## [@uipath/ap-chat-v1.5.3](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.5.2...@uipath/ap-chat@1.5.3) (2026-03-17)
+
+### Bug Fixes
+
+* **ap-chat:** adapt to changes ([836e261](https://github.com/UiPath/apollo-ui/commit/836e261dfc3825408d83953bb4fd7a85b39a9e48))
+
+## [@uipath/ap-chat-v1.5.2](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.5.1...@uipath/ap-chat@1.5.2) (2026-03-17)
+
+### Bug Fixes
+
+* **ci:** vulnerabilities on packages ([9dc7752](https://github.com/UiPath/apollo-ui/commit/9dc7752ca1d9e253ec58e3c2c37c5d124ed73769))
+
 ## [@uipath/ap-chat-v1.5.1](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.5.0...@uipath/ap-chat@1.5.1) (2026-03-05)
 
 ### Bug Fixes

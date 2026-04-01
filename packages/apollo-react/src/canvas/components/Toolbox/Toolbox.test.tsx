@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen, type UserEvent, userEvent } from '../../utils/testing';
+import { act, render, screen, type UserEvent, userEvent } from '../../utils/testing';
 import type { ListItem } from './ListView';
 import { Toolbox } from './Toolbox';
 
@@ -58,7 +58,7 @@ describe('Toolbox', () => {
       render(<Toolbox {...defaultProps} loading={true} />);
 
       // ListView items should be disabled when loading
-      const items = screen.getAllByRole('button');
+      const items = screen.getAllByRole('option');
 
       for (const item of items) {
         expect(item).toBeDisabled();
@@ -287,6 +287,340 @@ describe('Toolbox', () => {
     });
   });
 
+  describe('Keyboard navigation', () => {
+    let user: UserEvent;
+
+    beforeEach(() => {
+      user = userEvent.setup();
+    });
+
+    const getActiveItem = () => document.querySelector('[aria-selected="true"]');
+
+    it('should move focus from search to first item on ArrowDown', async () => {
+      render(<Toolbox {...defaultProps} />);
+
+      const searchInput = screen.getByPlaceholderText('Search');
+      expect(searchInput).toHaveFocus();
+
+      // ArrowDown from search should highlight first item
+      await user.keyboard('{ArrowDown}');
+
+      const activeItem = getActiveItem();
+      expect(activeItem).toBeInTheDocument();
+      expect(activeItem).toHaveTextContent('Item 1');
+    });
+
+    it('should move focus back to search on ArrowUp from first item', async () => {
+      render(<Toolbox {...defaultProps} />);
+
+      const searchInput = screen.getByPlaceholderText('Search');
+
+      // Navigate to first item
+      await user.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Item 1');
+
+      // ArrowUp should return to search
+      await user.keyboard('{ArrowUp}');
+      expect(getActiveItem()).not.toBeInTheDocument();
+      expect(searchInput).toHaveFocus();
+    });
+
+    it('should navigate between items with ArrowDown/ArrowUp', async () => {
+      render(<Toolbox {...defaultProps} />);
+
+      // Navigate to first item
+      await user.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Item 1');
+
+      // Navigate to second item
+      await user.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Item 2');
+
+      // Navigate back to first item
+      await user.keyboard('{ArrowUp}');
+      expect(getActiveItem()).toHaveTextContent('Item 1');
+    });
+
+    it('should select item with Enter', async () => {
+      const onItemSelect = vi.fn();
+      render(<Toolbox {...defaultProps} onItemSelect={onItemSelect} />);
+
+      // Navigate to first item and press Enter
+      await user.keyboard('{ArrowDown}');
+      await user.keyboard('{Enter}');
+
+      expect(onItemSelect).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'item-1', name: 'Item 1' })
+      );
+    });
+
+    it('should navigate into children with Enter on item with children', async () => {
+      render(<Toolbox {...defaultProps} />);
+
+      // Navigate to Item 2 (has children) and press Enter
+      await user.keyboard('{ArrowDown}');
+      await user.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Item 2');
+
+      await user.keyboard('{Enter}');
+
+      // Should now show children
+      expect(screen.getByText('Child 1')).toBeInTheDocument();
+      expect(screen.queryByText('Item 1')).not.toBeInTheDocument();
+      // Active index should reset
+      expect(getActiveItem()).not.toBeInTheDocument();
+    });
+
+    it('should jump to first item on Home', async () => {
+      render(<Toolbox {...defaultProps} />);
+
+      // Navigate to second item
+      await user.keyboard('{ArrowDown}');
+      await user.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Item 2');
+
+      // Home should jump to first item
+      await user.keyboard('{Home}');
+      expect(getActiveItem()).toHaveTextContent('Item 1');
+    });
+
+    it('should jump to last item on End', async () => {
+      render(<Toolbox {...defaultProps} />);
+
+      // Navigate to first item
+      await user.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Item 1');
+
+      // End should jump to last item
+      await user.keyboard('{End}');
+      expect(getActiveItem()).toHaveTextContent('Item 2');
+    });
+
+    it('should reset active index when search query changes', async () => {
+      render(<Toolbox {...defaultProps} />);
+
+      // Navigate to an item
+      await user.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Item 1');
+
+      // Type in search — focus returns to input, active index resets
+      const searchInput = screen.getByPlaceholderText('Search');
+      await user.click(searchInput);
+      await user.type(searchInput, 'a');
+
+      expect(getActiveItem()).not.toBeInTheDocument();
+    });
+
+    it('should reset active index when navigating into children', async () => {
+      render(<Toolbox {...defaultProps} />);
+
+      // Highlight Item 2 (has children)
+      await user.keyboard('{ArrowDown}');
+      await user.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Item 2');
+
+      // Click to navigate into children — active index should reset
+      await user.click(screen.getByText('Item 2'));
+      expect(screen.getByText('Child 1')).toBeInTheDocument();
+      expect(getActiveItem()).not.toBeInTheDocument();
+    });
+
+    it('should skip section headers during navigation', async () => {
+      const itemsWithSections: ListItem[] = [
+        {
+          id: 'unsectioned',
+          name: 'Unsectioned Item',
+          data: {},
+          icon: { name: 'star' },
+        },
+        {
+          id: 'sectioned-1',
+          name: 'Sectioned Item 1',
+          data: {},
+          icon: { name: 'star' },
+          section: 'Group A',
+        },
+        {
+          id: 'sectioned-2',
+          name: 'Sectioned Item 2',
+          data: {},
+          icon: { name: 'star' },
+          section: 'Group A',
+        },
+      ];
+
+      render(<Toolbox {...defaultProps} initialItems={itemsWithSections} />);
+
+      // First ArrowDown: Unsectioned Item
+      await user.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Unsectioned Item');
+
+      // Second ArrowDown: should skip "Group A" header and land on Sectioned Item 1
+      await user.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Sectioned Item 1');
+
+      // Third ArrowDown: Sectioned Item 2
+      await user.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Sectioned Item 2');
+    });
+
+    it('should work with ArrowDown after search filters results', async () => {
+      render(<Toolbox {...defaultProps} />);
+
+      const searchInput = screen.getByPlaceholderText('Search');
+      await user.type(searchInput, 'Child');
+
+      // Wait for search results
+      expect(screen.getByText('Child 1')).toBeInTheDocument();
+
+      // ArrowDown from search into filtered results
+      await user.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Child 1');
+    });
+
+    it('should navigate into children with ArrowRight on item with children', async () => {
+      render(<Toolbox {...defaultProps} />);
+
+      // Navigate to Item 2 (has children)
+      await user.keyboard('{ArrowDown}');
+      await user.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Item 2');
+
+      // ArrowRight should drill into children
+      await user.keyboard('{ArrowRight}');
+      expect(screen.getByText('Child 1')).toBeInTheDocument();
+      expect(screen.queryByText('Item 1')).not.toBeInTheDocument();
+    });
+
+    it('should not navigate with ArrowRight on leaf item', async () => {
+      render(<Toolbox {...defaultProps} />);
+
+      // Navigate to Item 1 (no children)
+      await user.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Item 1');
+
+      // ArrowRight should do nothing
+      await user.keyboard('{ArrowRight}');
+      expect(screen.getByText('Item 1')).toBeInTheDocument();
+      expect(screen.getByText('Item 2')).toBeInTheDocument();
+    });
+
+    it('should navigate back with ArrowLeft when in nested view', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      render(<Toolbox {...defaultProps} />);
+
+      // Navigate to Item 2 and drill in with ArrowRight
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowRight}');
+      expect(screen.getByText('Child 1')).toBeInTheDocument();
+
+      // Advance past transition duration (150ms)
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      // Highlight a child
+      await timedUser.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Child 1');
+
+      // ArrowLeft should go back to parent
+      await timedUser.keyboard('{ArrowLeft}');
+      expect(screen.getByText('Item 1')).toBeInTheDocument();
+      expect(screen.getByText('Item 2')).toBeInTheDocument();
+
+      vi.useRealTimers();
+    });
+
+    it('should wrap to first item when ArrowDown is pressed at last item', async () => {
+      render(<Toolbox {...defaultProps} />);
+
+      // Navigate to last item (Item 2)
+      await user.keyboard('{ArrowDown}');
+      await user.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Item 2');
+
+      // ArrowDown at last item should wrap to first
+      await user.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Item 1');
+    });
+
+    it('should move focus down with Tab and up with Shift+Tab', async () => {
+      render(<Toolbox {...defaultProps} />);
+
+      const searchInput = screen.getByPlaceholderText('Search');
+      expect(searchInput).toHaveFocus();
+
+      // Tab from search should highlight first item
+      await user.keyboard('{Tab}');
+      expect(getActiveItem()).toHaveTextContent('Item 1');
+
+      // Tab should move to next item
+      await user.keyboard('{Tab}');
+      expect(getActiveItem()).toHaveTextContent('Item 2');
+
+      // Shift+Tab should move back up
+      await user.keyboard('{Shift>}{Tab}{/Shift}');
+      expect(getActiveItem()).toHaveTextContent('Item 1');
+
+      // Shift+Tab from first item should return to search
+      await user.keyboard('{Shift>}{Tab}{/Shift}');
+      expect(getActiveItem()).not.toBeInTheDocument();
+      expect(searchInput).toHaveFocus();
+    });
+
+    it('should navigate back with ArrowLeft from empty search input in nested view', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      render(<Toolbox {...defaultProps} />);
+
+      // Navigate into children
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowRight}');
+      expect(screen.getByText('Child 1')).toBeInTheDocument();
+
+      // Advance past transition duration
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      // Focus is on search input (activeIndex === -1), search is empty
+      // ArrowLeft should navigate back
+      await timedUser.keyboard('{ArrowLeft}');
+      expect(screen.getByText('Item 1')).toBeInTheDocument();
+      expect(screen.getByText('Item 2')).toBeInTheDocument();
+
+      vi.useRealTimers();
+    });
+
+    it('should not navigate back with ArrowLeft when search has text', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      render(<Toolbox {...defaultProps} />);
+
+      // Navigate into children
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowRight}');
+      expect(screen.getByText('Child 1')).toBeInTheDocument();
+
+      // Advance past transition duration
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      // Type in search box
+      const searchInput = screen.getByPlaceholderText('Search');
+      await timedUser.type(searchInput, 'Child');
+
+      // ArrowLeft should not navigate back — allow cursor movement in search
+      await timedUser.keyboard('{ArrowLeft}');
+      expect(screen.queryByText('Item 1')).not.toBeInTheDocument();
+      expect(screen.getByText('Child 1')).toBeInTheDocument();
+
+      vi.useRealTimers();
+    });
+  });
+
   describe('Callbacks', () => {
     let user: UserEvent;
 
@@ -305,6 +639,210 @@ describe('Toolbox', () => {
       await user.click(screen.getByRole('button', { name: /back/i }));
 
       expect(onBack).toHaveBeenCalled();
+    });
+  });
+
+  describe('Active index restoration on back navigation', () => {
+    const nestedItems: ListItem[] = [
+      {
+        id: 'item-1',
+        name: 'Item 1',
+        data: {},
+        icon: { name: 'star' },
+      },
+      {
+        id: 'item-2',
+        name: 'Item 2',
+        data: {},
+        icon: { name: 'star' },
+      },
+      {
+        id: 'category',
+        name: 'Category',
+        data: {},
+        icon: { name: 'folder' },
+        children: [
+          {
+            id: 'child-1',
+            name: 'Child 1',
+            data: {},
+            icon: { name: 'file' },
+          },
+          {
+            id: 'subcategory',
+            name: 'Subcategory',
+            data: {},
+            icon: { name: 'folder' },
+            children: [
+              {
+                id: 'grandchild-1',
+                name: 'Grandchild 1',
+                data: {},
+                icon: { name: 'file' },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'item-3',
+        name: 'Item 3',
+        data: {},
+        icon: { name: 'star' },
+      },
+    ];
+
+    const getActiveItem = () => document.querySelector('[aria-selected="true"]');
+
+    it('should restore active index when navigating back via keyboard (ArrowLeft)', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      render(<Toolbox {...defaultProps} initialItems={nestedItems} />);
+
+      // Navigate to Category (3rd item)
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Category');
+
+      // Enter the category
+      await timedUser.keyboard('{ArrowRight}');
+      expect(screen.getByText('Child 1')).toBeInTheDocument();
+
+      // Wait for transition
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      // Navigate back
+      await timedUser.keyboard('{ArrowLeft}');
+
+      // Should restore to Category (the item we entered from)
+      expect(getActiveItem()).toHaveTextContent('Category');
+
+      vi.useRealTimers();
+    });
+
+    it('should restore active index when navigating back via mouse click', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      render(<Toolbox {...defaultProps} initialItems={nestedItems} />);
+
+      // Click Category to enter it (mouse click)
+      await timedUser.click(screen.getByText('Category'));
+      expect(screen.getByText('Child 1')).toBeInTheDocument();
+
+      // Wait for transition
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      // Click back button
+      await timedUser.click(screen.getByRole('button', { name: /back/i }));
+
+      // Should restore to Category
+      expect(getActiveItem()).toHaveTextContent('Category');
+
+      vi.useRealTimers();
+    });
+
+    it('should restore correct index through multiple levels of nesting', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      render(<Toolbox {...defaultProps} initialItems={nestedItems} />);
+
+      // Navigate to Category and enter it
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Category');
+      await timedUser.keyboard('{ArrowRight}');
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      // Navigate to Subcategory and enter it
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Subcategory');
+      await timedUser.keyboard('{ArrowRight}');
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      // Should be in Subcategory now
+      expect(screen.getByText('Grandchild 1')).toBeInTheDocument();
+
+      // Go back to Category level — should restore Subcategory
+      await timedUser.keyboard('{ArrowLeft}');
+      await act(() => vi.advanceTimersByTimeAsync(200));
+      expect(getActiveItem()).toHaveTextContent('Subcategory');
+
+      // Go back to root — should restore Category
+      await timedUser.keyboard('{ArrowLeft}');
+      expect(getActiveItem()).toHaveTextContent('Category');
+
+      vi.useRealTimers();
+    });
+
+    it('should reset to search bar on back if search was active when entering', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      // Use onSearch that returns the category item so we can enter it from search
+      const categoryItem = nestedItems.find((i) => i.id === 'category')!;
+      const onSearch = vi.fn().mockResolvedValue([categoryItem]);
+
+      render(<Toolbox {...defaultProps} initialItems={nestedItems} onSearch={onSearch} />);
+
+      // Search for "Category"
+      const searchInput = screen.getByPlaceholderText('Search');
+      await timedUser.type(searchInput, 'cat');
+
+      // Navigate to Category result and enter it
+      await timedUser.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Category');
+      await timedUser.keyboard('{Enter}');
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      expect(screen.getByText('Child 1')).toBeInTheDocument();
+
+      // Navigate back
+      await timedUser.keyboard('{ArrowLeft}');
+
+      // Should reset to search bar, not restore the search result index
+      expect(getActiveItem()).not.toBeInTheDocument();
+      expect(searchInput).toHaveFocus();
+
+      vi.useRealTimers();
+    });
+
+    it('should produce same restoration behavior for keyboard Enter and mouse click', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      // Test keyboard path
+      const { unmount } = render(<Toolbox {...defaultProps} initialItems={nestedItems} />);
+
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowDown}');
+      await timedUser.keyboard('{ArrowDown}');
+      expect(getActiveItem()).toHaveTextContent('Category');
+      await timedUser.keyboard('{Enter}');
+      await act(() => vi.advanceTimersByTimeAsync(200));
+      await timedUser.keyboard('{ArrowLeft}');
+      const keyboardRestoredItem = getActiveItem();
+
+      unmount();
+
+      // Test mouse path
+      render(<Toolbox {...defaultProps} initialItems={nestedItems} />);
+
+      await timedUser.click(screen.getByText('Category'));
+      await act(() => vi.advanceTimersByTimeAsync(200));
+      await timedUser.click(screen.getByRole('button', { name: /back/i }));
+      const mouseRestoredItem = getActiveItem();
+
+      // Both should restore to Category
+      expect(keyboardRestoredItem).toHaveTextContent('Category');
+      expect(mouseRestoredItem).toHaveTextContent('Category');
+
+      vi.useRealTimers();
     });
   });
 

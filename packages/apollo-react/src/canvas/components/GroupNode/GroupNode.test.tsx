@@ -43,7 +43,7 @@ describe('GroupNode', () => {
     expect(screen.getByText('Custom Group Title')).toBeInTheDocument();
   });
 
-  it('renders with default icon when no icon specified', () => {
+  it('renders without icon when no icon specified', () => {
     const props: GroupNodeProps = {
       ...defaultProps,
       data: {
@@ -52,7 +52,7 @@ describe('GroupNode', () => {
       },
     };
     renderWithProvider(<GroupNode {...props} />);
-    // Icon should still render (default folder icon)
+    // No icon should render when iconName is undefined
     const container = screen.getByText('Test Group').parentElement;
     expect(container).toBeInTheDocument();
   });

@@ -1,8 +1,11 @@
+import type { LucideIcon } from "lucide-react";
 import type { FC, PropsWithChildren } from "react";
-import { ShellAuthProvider, useAuth } from "./shell-auth-provider";
+import { useContext } from "react";
+import { AuthContext, useAuth } from "./shell-auth-provider";
 import { ShellLayout } from "./shell-layout";
 import { LocaleProvider } from "./shell-locale-provider";
 import { ShellLogin } from "./shell-login";
+import type { TranslationKey } from "./shell-translation-key";
 import { ShellUserProvider } from "./shell-user-provider";
 
 export interface CompanyLogo {
@@ -11,30 +14,35 @@ export interface CompanyLogo {
   alt: string;
 }
 
-export interface ApolloShellComponentProps extends PropsWithChildren {
+export interface ShellNavItem {
+  path: string;
+  label: TranslationKey;
+  icon: LucideIcon;
+}
+
+export interface ApolloShellProps extends PropsWithChildren {
   companyName: string;
   productName: string;
   variant?: "minimal";
   companyLogo?: CompanyLogo;
+  navItems: ShellNavItem[];
+  loginDescription?: string;
 }
 
-interface ApolloShellProps extends ApolloShellComponentProps {
-  clientId: string;
-  scope: string;
-  baseUrl: string;
-  variant?: "minimal";
-}
-
-const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
+const ApolloShellContent: FC<ApolloShellProps> = ({
   children,
   companyName,
   productName,
   companyLogo,
   variant,
+  navItems,
+  loginDescription,
 }) => {
+  const authContext = useContext(AuthContext);
   const { accessToken } = useAuth();
-  if (!accessToken) {
-    return <ShellLogin />;
+
+  if (authContext && !accessToken) {
+    return <ShellLogin title={productName} description={loginDescription} />;
   }
 
   return (
@@ -44,6 +52,7 @@ const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
         productName={productName}
         companyLogo={companyLogo}
         variant={variant}
+        navItems={navItems}
       >
         {children}
       </ShellLayout>
@@ -52,27 +61,26 @@ const ApolloShellComponent: FC<ApolloShellComponentProps> = ({
 };
 
 export const ApolloShell: FC<ApolloShellProps> = ({
-  clientId,
-  scope,
-  baseUrl,
   children,
   companyName,
   productName,
   companyLogo,
   variant,
+  navItems,
+  loginDescription,
 }) => {
   return (
-    <ShellAuthProvider clientId={clientId} scope={scope} baseUrl={baseUrl}>
-      <LocaleProvider>
-        <ApolloShellComponent
-          companyName={companyName}
-          productName={productName}
-          companyLogo={companyLogo}
-          variant={variant}
-        >
-          {children}
-        </ApolloShellComponent>
-      </LocaleProvider>
-    </ShellAuthProvider>
+    <LocaleProvider>
+      <ApolloShellContent
+        companyName={companyName}
+        productName={productName}
+        companyLogo={companyLogo}
+        variant={variant}
+        navItems={navItems}
+        loginDescription={loginDescription}
+      >
+        {children}
+      </ApolloShellContent>
+    </LocaleProvider>
   );
 };

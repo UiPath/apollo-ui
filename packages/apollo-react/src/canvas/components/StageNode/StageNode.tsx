@@ -84,6 +84,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
     onStageTitleChange,
     onTaskReorder,
     onReplaceTaskFromToolbox,
+    onTaskPlay,
   } = props;
 
   const taskWidth = width ? width - STAGE_CONTENT_INSET : undefined;
@@ -96,7 +97,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const isReadOnly = !!stageDetails?.isReadOnly;
   const icon = stageDetails?.icon;
   const selectedTaskId = stageDetails?.selectedTaskId;
-  const defaultContent = stageDetails?.defaultContent || 'Add first task';
+  const defaultContent =
+    stageDetails?.defaultContent || (isReadOnly ? 'No tasks' : 'Add first task');
 
   const status = execution?.stageStatus?.status;
   const statusLabel = execution?.stageStatus?.label;
@@ -222,6 +224,11 @@ const StageNodeComponent = (props: StageNodeProps) => {
         if (onStageTitleChange) {
           onStageTitleChange(label);
         }
+      }
+      // Prevent keyboard events from the title input from bubbling to xyflow
+      // and triggering canvas-level actions like node deletion or copy/paste.
+      if (e.key !== 'Escape') {
+        e.stopPropagation();
       }
     },
     [onStageTitleChange, label]
@@ -499,9 +506,9 @@ const StageNodeComponent = (props: StageNodeProps) => {
     >
       <StageContainer selected={selected} status={status} width={width} style={taskWidthStyle}>
         <StageHeader isException={isException}>
-          <Row gap={Spacing.SpacingMicro} align="center">
+          <Row gap={Spacing.SpacingMicro} align="center" flex={1} minW={0}>
             {icon}
-            <Column py={2}>
+            <Column py={2} flex={1} minW={0}>
               <ApTypography
                 variant={
                   isStageTitleEditing ? FontVariantToken.fontSizeM : FontVariantToken.fontSizeMBold
@@ -546,12 +553,13 @@ const StageNodeComponent = (props: StageNodeProps) => {
               </ApTooltip>
             )}
             {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly && (
-              <ApTooltip content={addTaskLabel} placement="top">
+              <ApTooltip content={addTaskLabel} placement="top" hide={addTaskLoading}>
                 <span>
                   <ApIconButton
                     onClick={handleTaskAddClick}
                     size="small"
                     label={addTaskLabel}
+                    disabled={addTaskLoading}
                   >
                     <ApIcon name="add" size="20px" />
                   </ApIconButton>
@@ -634,6 +642,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                                     ? projected.depth
                                     : undefined
                                 }
+                                onTaskPlay={onTaskPlay}
                                 isDragDisabled={!onTaskReorder}
                                 zoom={zoom}
                                 {...((onTaskGroupModification || onReplaceTaskFromToolbox) && {

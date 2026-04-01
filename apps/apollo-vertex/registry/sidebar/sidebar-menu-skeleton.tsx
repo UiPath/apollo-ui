@@ -31,11 +31,8 @@ function SidebarMenuSkeleton({
       <Skeleton
         className="h-4 max-w-(--skeleton-width) flex-1"
         data-sidebar="menu-skeleton-text"
-        style={
-          {
-            "--skeleton-width": width,
-          } as React.CSSProperties
-        }
+        // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- CSS custom property not in React.CSSProperties
+        style={{ "--skeleton-width": width } as React.CSSProperties}
       />
     </div>
   );

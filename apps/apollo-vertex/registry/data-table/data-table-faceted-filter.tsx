@@ -2,7 +2,8 @@ import * as PopoverPrimitive from "@radix-ui/react-popover";
 import type { Column } from "@tanstack/react-table";
 import { CheckIcon, ChevronDownIcon, XIcon } from "lucide-react";
 import * as React from "react";
-import { ReactNode, useState } from "react";
+import { type ReactNode, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +28,9 @@ function DataTableFacetedFilter<TData, TValue>({
   className,
   noOptionsMessage,
 }: DataTableFacetedFilterProps<TData, TValue>) {
+  // React Compiler compat: TanStack Table Column objects have stable references with mutable state.
+  "use no memo";
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
   if (!column) return null;
@@ -43,7 +47,7 @@ function DataTableFacetedFilter<TData, TValue>({
     column.setFilterValue(next.length > 0 ? next : []);
   };
 
-  const handleClear = (e: React.MouseEvent) => {
+  const handleClear = (e: React.SyntheticEvent) => {
     e.preventDefault();
     e.stopPropagation();
     column.setFilterValue([]);
@@ -54,29 +58,44 @@ function DataTableFacetedFilter<TData, TValue>({
       <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
         <PopoverPrimitive.Trigger asChild>
           <Button
+            asChild
             variant="outline"
             size="sm"
             className={cn(
               "h-9 justify-between gap-2 font-normal hover:bg-accent",
             )}
           >
-            <div className="flex min-w-0 flex-1 items-center gap-2">
-              <span className="shrink-0 text-sm font-medium">
-                {title}
-                {selectedValues.length > 0 && ` (${selectedValues.length})`}
-              </span>
-            </div>
-            <div className="flex shrink-0 items-center gap-1">
-              {selectedValues.length > 0 && (
-                <button
-                  type="button"
-                  onClick={handleClear}
-                  className="group flex items-center justify-center rounded-sm p-0.5 transition-colors hover:bg-muted"
-                >
-                  <XIcon className="h-4 w-4 opacity-50 transition-opacity group-hover:opacity-100" />
-                </button>
-              )}
-              <ChevronDownIcon className="h-4 w-4 opacity-50" />
+            <div
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  e.currentTarget.click();
+                }
+              }}
+            >
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <span className="shrink-0 text-sm font-medium">
+                  {title}
+                  {selectedValues.length > 0 && ` (${selectedValues.length})`}
+                </span>
+              </div>
+              <div className="flex shrink-0 items-center gap-1">
+                {selectedValues.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleClear}
+                    aria-label={t("clear_filter", {
+                      defaultValue: "Clear filter",
+                    })}
+                    className="group flex items-center justify-center rounded-sm p-0.5 transition-colors hover:bg-muted"
+                  >
+                    <XIcon className="h-4 w-4 opacity-50 transition-opacity group-hover:opacity-100" />
+                  </button>
+                )}
+                <ChevronDownIcon className="h-4 w-4 opacity-50" />
+              </div>
             </div>
           </Button>
         </PopoverPrimitive.Trigger>

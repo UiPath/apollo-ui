@@ -1,7 +1,7 @@
 import { Global } from '@emotion/react';
+import { NodeIcon } from '@uipath/apollo-react/canvas';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
-import { NodeIcon } from '@uipath/apollo-react/canvas';
 import { AnimatePresence } from 'motion/react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -24,6 +24,7 @@ import {
 } from './StickyNoteNode.styles';
 import type { StickyNoteColor, StickyNoteData } from './StickyNoteNode.types';
 import { STICKY_NOTE_COLORS, withAlpha } from './StickyNoteNode.types';
+import { preserveNewlines } from './StickyNoteNode.utils';
 
 export interface StickyNoteNodeProps extends NodeProps {
   data: StickyNoteData;
@@ -212,7 +213,7 @@ const StickyNoteNodeComponent = ({
       position: 'top' as const,
       align: 'center' as const,
     };
-  }, [handleEditClick, handleToggleColorPicker, color]);
+  }, [handleEditClick, handleToggleColorPicker, color, handleDelete]);
 
   return (
     <>
@@ -291,7 +292,7 @@ const StickyNoteNodeComponent = ({
             <StickyNoteMarkdown>
               {localContent ? (
                 <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                  {localContent}
+                  {preserveNewlines(localContent)}
                 </ReactMarkdown>
               ) : (
                 // Render placeholder if renderPlaceholderOnSelect is enabled, node is selected, and the content is empty

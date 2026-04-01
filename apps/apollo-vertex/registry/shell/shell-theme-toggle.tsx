@@ -1,5 +1,4 @@
-"use client";
-
+import { useLocalStorage } from "@mantine/hooks";
 import { Moon, Sun } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -9,12 +8,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useLocalStorage } from "@/hooks/use-local-storage";
+import { SIDEBAR_COLLAPSED_KEY } from "./shell-constants";
 import { useTheme } from "./shell-theme-provider";
 
 export function ThemeToggle() {
   const { t } = useTranslation();
-  const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
+  const [isCollapsed] = useLocalStorage<boolean>({
+    key: SIDEBAR_COLLAPSED_KEY,
+    defaultValue: false,
+  });
   const { setTheme } = useTheme();
 
   return (

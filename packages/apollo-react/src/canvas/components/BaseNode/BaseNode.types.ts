@@ -29,6 +29,13 @@ export interface BaseNodeData extends Record<string, unknown> {
    * @default false
    */
   isCollapsed?: boolean;
+
+  /**
+   * When true, the icon area displays a skeleton shimmer placeholder.
+   * Other node elements (labels, handles, adornments) render normally.
+   * @default false
+   */
+  loading?: boolean;
 }
 
 export interface NodeAdornments {

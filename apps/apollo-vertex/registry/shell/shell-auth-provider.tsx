@@ -25,7 +25,7 @@ export interface UserInfo {
 }
 
 const JwtPayloadSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   first_name: z.string(),
   last_name: z.string(),
   sub: z.string(),
@@ -53,51 +53,70 @@ const decodeJWT = (token: string): UserInfo | null => {
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
-export const useAuth = () => {
+const noAuthDefaults: AuthContextValue = {
+  user: null,
+  isAuthenticated: false,
+  isLoading: false,
+  // oxlint-disable-next-line no-empty-function
+  login: async () => {},
+  // oxlint-disable-next-line no-empty-function
+  logout: () => {},
+  accessToken: null,
+};
+
+export const useAuth = (): AuthContextValue => {
   const context = useContext(AuthContext);
-  if (context == null) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
+  return context ?? noAuthDefaults;
 };
 
 interface UseAccessTokenProps {
   clientId: string;
   baseUrl: string;
+  redirectPath?: string;
 }
 
-export const useAccessToken = ({ clientId, baseUrl }: UseAccessTokenProps) => {
+export const useAccessToken = ({
+  clientId,
+  baseUrl,
+  redirectPath,
+}: UseAccessTokenProps) => {
   const queryClient = useQueryClient();
 
-  const { data: token } = useQuery({
+  const { data: token, isLoading } = useQuery({
     queryKey: TOKEN_QUERY_KEY,
-    queryFn: async () => await ensureValidToken(queryClient, clientId, baseUrl),
+    queryFn: async () =>
+      await ensureValidToken(queryClient, clientId, baseUrl, redirectPath),
     refetchInterval: 60 * 1000,
     enabled: typeof window !== "undefined",
   });
 
-  return token ?? null;
+  return { accessToken: token ?? null, isLoading };
 };
 
 interface ShellAuthProviderProps {
   clientId: string;
   scope: string;
   baseUrl: string;
+  redirectPath?: string;
 }
 
 export const ShellAuthProvider: FC<
   PropsWithChildren<ShellAuthProviderProps>
-> = ({ children, clientId, scope, baseUrl }) => {
+> = ({ children, clientId, scope, baseUrl, redirectPath }) => {
   const queryClient = useQueryClient();
-  const accessToken = useAccessToken({ clientId, baseUrl });
+  const { accessToken, isLoading } = useAccessToken({
+    clientId,
+    baseUrl,
+    redirectPath,
+  });
   const user = accessToken ? decodeJWT(accessToken) : null;
   const isAuthenticated = accessToken != null;
 
-  const contextValue = {
+  const contextValue: AuthContextValue = {
     user,
     isAuthenticated,
-    isLoading: false,
-    login: () => login(clientId, scope, baseUrl),
+    isLoading,
+    login: () => login(clientId, scope, baseUrl, redirectPath),
     logout: () => logout(queryClient),
     accessToken,
   };

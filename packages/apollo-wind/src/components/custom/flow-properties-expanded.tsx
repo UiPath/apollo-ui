@@ -149,10 +149,7 @@ export function PropertiesExpanded({
 }: PropertiesExpandedProps) {
   return (
     <div
-      className={cn(
-        'flex w-[930px] shrink-0 flex-col rounded-2xl bg-surface-raised',
-        className
-      )}
+      className={cn('flex w-[930px] shrink-0 flex-col rounded-2xl bg-surface-raised', className)}
     >
       {/* ── Header ────────────────────────────────────────────── */}
       <div className="flex items-center justify-between border-b border-border p-4">

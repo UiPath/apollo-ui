@@ -37,7 +37,7 @@ export function AiChatInput({
     onSubmit();
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     submitMessage();
   };

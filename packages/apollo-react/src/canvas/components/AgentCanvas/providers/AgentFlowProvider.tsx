@@ -1,100 +1,9 @@
 import createCache from '@emotion/cache';
 import { CacheProvider } from '@emotion/react';
 import { ReactFlowProvider, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
-import {
-  createContext,
-  type PropsWithChildren,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-} from 'react';
+import { createContext, type PropsWithChildren, useCallback, useContext, useMemo } from 'react';
 import { BASE_CANVAS_DEFAULTS } from '../../BaseCanvas/BaseCanvas.constants';
 import type { BaseCanvasFitViewOptions } from '../../BaseCanvas/BaseCanvas.types';
-
-// Extract React Flow CSS from document stylesheets
-const getReactFlowCSS = (): string => {
-  const stylesheets = Array.from(document.styleSheets);
-  let reactFlowCSS = '';
-
-  for (const stylesheet of stylesheets) {
-    try {
-      if (stylesheet.cssRules) {
-        const rules = Array.from(stylesheet.cssRules);
-        const reactFlowRules = rules.filter((rule) => {
-          if (rule instanceof CSSStyleRule) {
-            return rule.selectorText && rule.selectorText.includes('react-flow');
-          }
-          return false;
-        });
-
-        if (reactFlowRules.length > 0) {
-          reactFlowCSS += reactFlowRules.map((rule) => rule.cssText).join('\n');
-        }
-      }
-    } catch {}
-  }
-
-  return reactFlowCSS;
-};
-
-// Utility to inject React Flow CSS into a specific container
-const injectReactFlowStyles = (container: HTMLElement | ShadowRoot) => {
-  // Check if styles are already injected
-  const existingStyle = container.querySelector('style[data-reactflow-style="true"]');
-  if (existingStyle) {
-    return;
-  }
-
-  // Create style element with React Flow CSS
-  const style = document.createElement('style');
-  style.dataset.reactflowStyle = 'true';
-  style.textContent = getReactFlowCSS();
-
-  // Insert at the beginning of the container
-  if (container.firstChild) {
-    container.insertBefore(style, container.firstChild);
-  } else {
-    container.append(style);
-  }
-};
-
-// Utility to inject CSS variables into shadow DOM
-const injectCSSVariables = (container: HTMLElement | ShadowRoot) => {
-  // Check if CSS variables are already injected
-  const existingVars = container.querySelector('style[data-css-variables="true"]');
-  if (existingVars) {
-    return;
-  }
-
-  // Get computed styles from the document root
-  const rootStyles = getComputedStyle(document.documentElement);
-  const cssVariables: string[] = [];
-
-  // Extract CSS variables that are likely needed
-  const varPrefixes = ['--color', '--spacing', '--font', '--shadow', '--border'];
-
-  for (const property of Array.from(rootStyles)) {
-    if (varPrefixes.some((prefix) => property.startsWith(prefix))) {
-      const value = rootStyles.getPropertyValue(property);
-      if (value) {
-        cssVariables.push(`${property}: ${value};`);
-      }
-    }
-  }
-
-  // Create style element with CSS variables
-  const style = document.createElement('style');
-  style.dataset.cssVariables = 'true';
-  style.textContent = `:host { ${cssVariables.join(' ')} }`;
-
-  // Insert at the beginning of the container
-  if (container.firstChild) {
-    container.insertBefore(style, container.firstChild);
-  } else {
-    container.append(style);
-  }
-};
 
 interface AgentFlowProviderContextType {
   resetViewport: () => void;
@@ -126,14 +35,6 @@ const AgentVisualizationFlowProviderInner = ({
     return undefined;
   }, [styleContainer]);
 
-  // Inject styles into the provided container (for Shadow DOM support)
-  useEffect(() => {
-    if (styleContainer) {
-      injectCSSVariables(styleContainer);
-      injectReactFlowStyles(styleContainer);
-    }
-  }, [styleContainer]);
-
   const resetViewport = useCallback(() => {
     reactFlow.fitView(fitViewOptions ?? BASE_CANVAS_DEFAULTS.fitViewOptions);
   }, [reactFlow, fitViewOptions]);
@@ -151,9 +52,8 @@ const AgentVisualizationFlowProviderInner = ({
 interface AgentVisualizationFlowProviderProps extends PropsWithChildren {
   /**
    * Optional container for styles when using Shadow DOM.
-   * When provided, all Emotion styles, CSS variables, and React Flow styles
-   * will be injected into this container instead of the document head.
-   * This enables the component to work correctly within Shadow DOM boundaries.
+   * When provided, Emotion styles will be injected into this container
+   * instead of the document head via a scoped Emotion cache.
    */
   styleContainer?: HTMLElement | ShadowRoot;
   fitViewOptions?: BaseCanvasFitViewOptions;

@@ -1,6 +1,6 @@
 "use client";
 
-import { format } from "date-fns";
+import { DateTime } from "luxon";
 import { ChevronDownIcon } from "lucide-react";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
@@ -28,7 +28,11 @@ export function DatePicker({ value, onValueChanged }: DatePickerProps) {
           data-empty={!value}
           className="data-[empty=true]:text-muted-foreground w-[212px] justify-between text-left font-normal"
         >
-          {value ? format(value, "PPP") : <span>{t("pick_a_date")}</span>}
+          {value ? (
+            DateTime.fromJSDate(value).toLocaleString(DateTime.DATE_FULL)
+          ) : (
+            <span>{t("pick_a_date")}</span>
+          )}
           <ChevronDownIcon />
         </Button>
       </PopoverTrigger>

@@ -14,6 +14,7 @@ export const edgeTargetStatusToEdgeColor: {
   NotExecuted: 'var(--color-canvas-element-border-color-default)',
   Paused: 'var(--color-warning-icon)',
   Terminated: 'var(--color-error-icon)',
+  Warning: 'var(--color-warning-icon)',
   UserCancelled: 'var(--color-info-icon)',
   WARNING: 'var(--color-warning-icon)',
   None: 'var(--color-canvas-element-border-color-default)',

@@ -8,7 +8,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/registry/select/select";
-import { hasCustomTheme, type ThemeName, themes } from "../themes";
+import {
+  hasCustomTheme,
+  type ThemeName,
+  ThemeNameSchema,
+  themes,
+} from "../themes";
 
 const THEME_STORAGE_KEY = "apollo-vertex-theme";
 
@@ -22,8 +27,9 @@ export function ThemeSwitcher() {
 
     // Load saved theme from localStorage
     const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-    if (savedTheme && (savedTheme in themes || savedTheme === "custom")) {
-      setSelectedTheme(savedTheme as ThemeName);
+    const { data, success } = ThemeNameSchema.safeParse(savedTheme);
+    if (success) {
+      setSelectedTheme(data);
     }
 
     // Listen for custom theme changes
@@ -42,7 +48,8 @@ export function ThemeSwitcher() {
   }, []);
 
   const handleThemeChange = (value: string) => {
-    const themeName = value as ThemeName;
+    const { data: themeName, success } = ThemeNameSchema.safeParse(value);
+    if (!success) return;
     setSelectedTheme(themeName);
     localStorage.setItem(THEME_STORAGE_KEY, themeName);
 

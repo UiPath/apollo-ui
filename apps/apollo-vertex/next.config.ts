@@ -5,6 +5,7 @@ const withNextra = nextra({
 });
 
 export default withNextra({
+  reactCompiler: true,
   turbopack: {
     resolveAlias: {
       "next-mdx-import-source-file": "./mdx-components.tsx",
@@ -15,6 +16,10 @@ export default withNextra({
       {
         source: "/identity_/:path*",
         destination: "https://alpha.uipath.com/identity_/:path*",
+      },
+      {
+        source: "/_proxy/portal/:orgId/:path*",
+        destination: "https://alpha.uipath.com/:orgId/portal_/api/:path*",
       },
     ];
   },

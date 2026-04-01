@@ -89,8 +89,8 @@ export function FormBuilderExample() {
 
   return (
     <Column h="screen" w="full" className="bg-background">
-      <ResizablePanelGroup direction="horizontal">
-        <ResizablePanel defaultSize={50} minSize={30}>
+      <ResizablePanelGroup orientation="horizontal">
+        <ResizablePanel defaultSize="50%" minSize="30%">
           <ScrollArea className="h-screen">
             <div className="p-6">
               <div className="mb-6">
@@ -374,7 +374,7 @@ export function FormBuilderExample() {
 
         <ResizableHandle withHandle />
 
-        <ResizablePanel defaultSize={50} minSize={30}>
+        <ResizablePanel defaultSize="50%" minSize="30%">
           <Column h="screen" className="border-l">
             <ScrollArea className="h-full">
               <div className="p-6">

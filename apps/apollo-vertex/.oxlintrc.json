@@ -2,7 +2,6 @@
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["unicorn", "typescript", "oxc", "react", "import"],
   "jsPlugins": [
-    "eslint-plugin-react",
     { "name": "shaggy-eslint-plugin-react", "specifier": "eslint-plugin-react" }
   ],
   "categories": {
@@ -21,6 +20,7 @@
     "typescript/explicit-module-boundary-types": "off",
     "react/jsx-filename-extension": ["error", { "extensions": [".tsx"] }],
     "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }],
+    "eslint/no-warning-comments": "off",
     "eslint/no-alert": "error",
     "eslint/no-console": "error",
     "eslint/no-empty": "error",
@@ -34,7 +34,7 @@
     "eslint/no-sequences": "error",
     "eslint/no-undefined": "error",
     "eslint/no-var": "error",
-    "eslint/no-void": "error",
+    "eslint/no-void": ["error", { "allowAsStatement": true }],
     "import/no-amd": "error",
     "import/no-commonjs": "error",
     "import/no-cycle": "error",
@@ -50,7 +50,9 @@
     "react/no-unknown-property": "error",
     "react/only-export-components": "error",
     "typescript/use-unknown-in-catch-callback-variable": "error",
-    "typescript/promise-function-async": "error",
+    "typescript/no-confusing-void-expression": "off",
+    "typescript/strict-boolean-expressions": "off",
+    "typescript/promise-function-async": "off",
     "typescript/prefer-literal-enum-member": "error",
     "typescript/no-var-requires": "error",
     "typescript/no-require-imports": "error",
@@ -75,7 +77,12 @@
     "builtin": true
   },
   "globals": {},
-  "ignorePatterns": [".dependency-cruiser.js", "scripts/**", "next-env.d.ts"],
+  "ignorePatterns": [
+    ".dependency-cruiser.js",
+    "scripts/**",
+    "next-env.d.ts",
+    "types/**/*.d.ts"
+  ],
   "overrides": [
     {
       "files": ["registry/**/*.tsx"],

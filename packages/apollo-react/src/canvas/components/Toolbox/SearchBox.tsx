@@ -8,6 +8,11 @@ interface SearchBoxProps {
   onChange: (value: string) => void;
   clear: () => void;
   placeholder?: string;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
+  clearButtonRef?: React.RefObject<HTMLButtonElement | null>;
+  onNavigationKeyDown?: (e: React.KeyboardEvent) => void;
+  navigateToFirstItem?: () => void;
+  activeDescendantId?: string;
 }
 
 export const SearchBox = memo(function SearchBox({
@@ -15,12 +20,29 @@ export const SearchBox = memo(function SearchBox({
   onChange,
   clear,
   placeholder = 'Search...',
+  inputRef: externalInputRef,
+  clearButtonRef,
+  onNavigationKeyDown,
+  navigateToFirstItem,
+  activeDescendantId,
 }: SearchBoxProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const internalRef = useRef<HTMLInputElement>(null);
+  const inputRef = externalInputRef ?? internalRef;
 
   useEffect(() => {
     inputRef.current?.focus();
-  }, []);
+  }, [inputRef]);
+
+  const handleClearButtonKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      inputRef.current?.focus();
+
+      if (!e.shiftKey) {
+        navigateToFirstItem?.();
+      }
+    }
+  };
 
   return (
     <StyledSearchForm
@@ -36,13 +58,24 @@ export const SearchBox = memo(function SearchBox({
           ref={inputRef}
           autoComplete="off"
           type="text"
+          role="combobox"
+          aria-controls="toolbox-listbox"
+          aria-expanded={true}
           className="searchbox-input"
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onKeyDown={onNavigationKeyDown}
+          aria-activedescendant={activeDescendantId}
         />
         {value && (
-          <button type="button" className="searchbox-clear" onClick={clear}>
+          <button
+            ref={clearButtonRef}
+            type="button"
+            className="searchbox-clear"
+            onClick={clear}
+            onKeyDown={handleClearButtonKeyDown}
+          >
             <ApIcon name="close" size="16px" />
           </button>
         )}

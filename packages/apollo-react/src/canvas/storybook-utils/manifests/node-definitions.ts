@@ -48,6 +48,8 @@ export const allNodeManifests: NodeManifest[] = [
     category: 'control-flow',
     tags: ['control', 'flow', 'logic', 'if', 'switch', 'loop'],
     sortOrder: 20,
+    description:
+      'Pause workflow execution for a specified duration before continuing to the next step',
     display: {
       label: 'Delay',
       icon: 'timer',
@@ -91,6 +93,7 @@ export const allNodeManifests: NodeManifest[] = [
     category: 'control-flow',
     tags: ['control-flow', 'if', 'loop', 'switch'],
     sortOrder: 1,
+    description: 'Evaluate a condition and branch the workflow into true or false paths',
     display: {
       label: 'Decision',
       icon: 'decision',
@@ -579,6 +582,8 @@ export const allNodeManifests: NodeManifest[] = [
     category: 'agent',
     tags: ['agentic', 'ai', 'agent'],
     sortOrder: 1,
+    description:
+      'Autonomous AI agent that orchestrates tools, memory, and escalations to complete complex tasks',
     display: {
       label: 'Agent',
       icon: 'agent',
@@ -798,6 +803,8 @@ export const allNodeManifests: NodeManifest[] = [
     category: 'rpa-workflow',
     tags: ['rpa', 'workflow', 'subprocess'],
     sortOrder: 1,
+    description:
+      'Invoke another workflow as a subprocess and pass input/output parameters between them',
     display: {
       label: 'Call Workflow',
       icon: 'rpa',

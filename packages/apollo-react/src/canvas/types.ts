@@ -146,12 +146,28 @@ export type AgentFlowMemorySpaceResource = {
   errorAction?: Omit<ToolbarActionItem, 'id' | 'onAction'>;
 };
 
+export type AgentFlowA2aResource = {
+  id: string;
+  type: 'a2a';
+  name: string;
+  originalName?: string;
+  description: string;
+  errors?: ErrorInfo[];
+  hasBreakpoint?: boolean;
+  isCurrentBreakpoint?: boolean;
+  hasGuardrails?: boolean;
+  projectId?: string;
+  isDisabled?: boolean;
+  errorAction?: Omit<ToolbarActionItem, 'id' | 'onAction'>;
+};
+
 export type AgentFlowResource =
   | AgentFlowContextResource
   | AgentFlowEscalationResource
   | AgentFlowMcpResource
   | AgentFlowToolResource
-  | AgentFlowMemorySpaceResource;
+  | AgentFlowMemorySpaceResource
+  | AgentFlowA2aResource;
 export type AgentFlowResourceType = AgentFlowResource['type'];
 
 /**
@@ -260,7 +276,7 @@ export type AgentFlowProps = {
   resources: AgentFlowResource[];
   allowDragging?: boolean;
   initialSelectedResource?: {
-    type: 'context' | 'escalation' | 'mcp' | 'pane' | 'run' | 'tool' | 'memorySpace';
+    type: 'context' | 'escalation' | 'mcp' | 'pane' | 'run' | 'tool' | 'memorySpace' | 'a2a';
     name: string;
   } | null;
   onSelectResource?: (resourceId: string | null) => void;
@@ -338,6 +354,7 @@ export type AgentFlowProps = {
   enableMcpTools?: boolean;
   /** TODO: Remove once memory feature is fully implemented */
   enableMemory?: boolean;
+  enableA2a?: boolean;
   enableStickyNotes?: boolean;
   enableInstructions?: boolean;
 
@@ -445,6 +462,9 @@ type McpResourceData = {
 export type MemorySpaceResourceData = {
   type: 'memorySpace';
 };
+export type A2aResourceData = {
+  type: 'a2a';
+};
 
 export type SharedResourceData = {
   name: string;
@@ -491,6 +511,7 @@ export type AgentFlowResourceNodeData = (
   | McpResourceData
   | ToolResourceData
   | MemorySpaceResourceData
+  | A2aResourceData
 ) &
   SharedResourceData;
 export type AgentFlowResourceNode = Node<AgentFlowResourceNodeData, 'resource'> & {

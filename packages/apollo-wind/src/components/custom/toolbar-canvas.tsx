@@ -1,13 +1,5 @@
 import * as React from 'react';
-import {
-  Workflow,
-  ListChecks,
-  Undo2,
-  Redo2,
-  Play,
-  Plus,
-  StickyNote,
-} from 'lucide-react';
+import { Workflow, ListChecks, Undo2, Redo2, Play, Plus, StickyNote } from 'lucide-react';
 import { cn } from '@/lib';
 
 // ============================================================================
@@ -27,7 +19,7 @@ export interface CanvasToolbarProps {
 // ============================================================================
 
 function ToolbarSeparator() {
-  return <div className="h-8 w-px bg-border-subtle" />;
+  return <div className="h-8 w-px bg-surface-overlay" />;
 }
 
 // ============================================================================
@@ -35,21 +27,24 @@ function ToolbarSeparator() {
 // ============================================================================
 
 function ToolbarButton({
-  icon,
+  icon: Icon,
   label,
   onClick,
 }: {
-  icon: React.ReactNode;
+  icon: React.ElementType;
   label: string;
   onClick?: () => void;
 }) {
   return (
-    <button type="button"
-      className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:text-foreground"
+    <button
+      type="button"
+      className="group flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted hover:bg-surface-hover hover:text-foreground"
       onClick={onClick}
       aria-label={label}
     >
-      {icon}
+      <div className="h-5 w-5 transition-transform group-hover:scale-[1.2]">
+        <Icon className="h-full w-full" />
+      </div>
     </button>
   );
 }
@@ -73,53 +68,59 @@ export function FlowCanvasToolbar({
   return (
     <div
       className={cn(
-        'flex h-[60px] items-center gap-2 rounded-3xl border border-border bg-surface-raised px-2.5',
+        'flex h-[60px] items-center gap-2 rounded-[24px] border border-surface-overlay bg-surface-raised px-2.5',
         className
       )}
     >
       {/* Build / Evaluate toggle */}
-      <div className="flex h-10 items-center rounded-xl border border-border-deep bg-surface-overlay p-1">
+      <div className="flex h-10 items-center gap-1 rounded-xl border border-surface-overlay p-1">
         {/* Build */}
-        <button type="button"
+        <button
+          type="button"
           className={cn(
-            'flex h-8 items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-medium leading-5 transition-colors',
+            'flex h-8 items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-medium leading-5',
             activeMode === 'build'
-              ? 'border border-border bg-surface text-foreground'
-              : 'text-foreground-subtle hover:text-foreground-hover'
+              ? 'border border-surface-hover bg-foreground-inverse text-foreground shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] hover:border-transparent hover:bg-surface-hover hover:shadow-none'
+              : 'text-foreground-muted hover:bg-surface-hover hover:text-foreground'
           )}
           onClick={() => onModeChange?.('build')}
         >
-          <Workflow className="h-5 w-5" />
+          <Workflow
+            className={cn('h-5 w-5', activeMode === 'build' ? 'text-foreground-accent' : '')}
+          />
           <span>Build</span>
         </button>
         {/* Evaluate */}
-        <button type="button"
+        <button
+          type="button"
           className={cn(
-            'flex h-8 items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-medium leading-5 transition-colors',
+            'flex h-8 items-center gap-2 rounded-[10px] px-3 py-2 text-sm font-medium leading-5',
             activeMode === 'evaluate'
-              ? 'border border-border bg-surface text-foreground'
-              : 'text-foreground-subtle hover:text-foreground-hover'
+              ? 'border border-surface-hover bg-foreground-inverse text-foreground shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] hover:border-transparent hover:bg-surface-hover hover:shadow-none'
+              : 'text-foreground-muted hover:bg-surface-hover hover:text-foreground'
           )}
           onClick={() => onModeChange?.('evaluate')}
         >
-          <ListChecks className="h-5 w-5" />
+          <ListChecks
+            className={cn('h-5 w-5', activeMode === 'evaluate' ? 'text-foreground-accent' : '')}
+          />
           <span>Evaluate</span>
         </button>
       </div>
 
       <ToolbarSeparator />
 
-      <ToolbarButton icon={<Undo2 className="h-5 w-5" />} label="Undo" />
-      <ToolbarButton icon={<Redo2 className="h-5 w-5" />} label="Redo" />
+      <ToolbarButton icon={Undo2} label="Undo" />
+      <ToolbarButton icon={Redo2} label="Redo" />
 
       <ToolbarSeparator />
 
-      <ToolbarButton icon={<Play className="h-5 w-5" />} label="Run" />
+      <ToolbarButton icon={Play} label="Run" />
 
       <ToolbarSeparator />
 
-      <ToolbarButton icon={<Plus className="h-5 w-5" />} label="Add node" />
-      <ToolbarButton icon={<StickyNote className="h-5 w-5" />} label="Add note" />
+      <ToolbarButton icon={Plus} label="Add node" />
+      <ToolbarButton icon={StickyNote} label="Add note" />
     </div>
   );
 }

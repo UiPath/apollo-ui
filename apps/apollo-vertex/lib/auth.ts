@@ -15,18 +15,23 @@ function generateRandomString(length: number): string {
     .join("");
 }
 
-const STORAGE_KEYS = {
+export const STORAGE_KEYS = {
   TOKEN: "uipath_token",
   CODE_VERIFIER: "uipath_code_verifier",
   STATE: "uipath_state",
+  AUTH_RETURN_TO: "auth_return_to",
+  LOGOUT_RETURN_TO: "logout_return_to",
 } as const;
 
-const TokenDataSchema = z.object({
+const TokenResponseSchema = z.object({
   access_token: z.string(),
   id_token: z.string(),
   refresh_token: z.string(),
   expires_in: z.number(),
   token_type: z.string(),
+});
+
+const TokenDataSchema = TokenResponseSchema.extend({
   expiresAt: z.number(),
 });
 
@@ -34,10 +39,14 @@ const getTokenEndpoint = (baseUrl: string) =>
   `${baseUrl}/identity_/connect/token`;
 const getAuthorizationEndpoint = (baseUrl: string) =>
   `${baseUrl}/identity_/connect/authorize`;
-const getRedirectUri = () =>
-  window.location.pathname === "/"
+const getRedirectUri = (redirectPath?: string) => {
+  if (redirectPath) {
+    return `${window.location.origin}${redirectPath}`;
+  }
+  return window.location.pathname === "/"
     ? window.location.origin
     : `${window.location.origin}${window.location.pathname}`;
+};
 
 export type TokenData = z.infer<typeof TokenDataSchema>;
 
@@ -74,19 +83,15 @@ const fetchTokenData = async (baseUrl: string, body?: URLSearchParams) => {
     throw new Error(`Token refresh failed: ${errorText}`);
   }
 
-  const data = await response.json();
+  const responseData = TokenResponseSchema.parse(await response.json());
 
   return TokenDataSchema.parse({
-    access_token: data.access_token,
-    id_token: data.id_token,
-    refresh_token: data.refresh_token,
-    expires_in: data.expires_in,
-    token_type: data.token_type,
-    expiresAt: Date.now() + data.expires_in * 1000,
+    ...responseData,
+    expiresAt: Date.now() + responseData.expires_in * 1000,
   });
 };
 
-const refreshAccessToken = async (
+const refreshAccessToken = (
   refreshToken: string,
   clientId: string,
   baseUrl: string,
@@ -97,7 +102,7 @@ const refreshAccessToken = async (
     client_id: clientId,
   });
 
-  return await fetchTokenData(baseUrl, body);
+  return fetchTokenData(baseUrl, body);
 };
 
 const refreshTokenIfNeeded = async (
@@ -123,26 +128,28 @@ const refreshTokenIfNeeded = async (
   }
 };
 
-const exchangeCodeForToken = async (
+const exchangeCodeForToken = (
   code: string,
   codeVerifier: string,
   clientId: string,
   baseUrl: string,
+  redirectPath?: string,
 ): Promise<TokenData> => {
   const body = new URLSearchParams({
     grant_type: "authorization_code",
     code,
-    redirect_uri: getRedirectUri(),
+    redirect_uri: getRedirectUri(redirectPath),
     client_id: clientId,
     code_verifier: codeVerifier,
   });
 
-  return await fetchTokenData(baseUrl, body);
+  return fetchTokenData(baseUrl, body);
 };
 
 const handleOAuthCallback = async (
   clientId: string,
   baseUrl: string,
+  redirectPath?: string,
 ): Promise<void> => {
   const params = new URLSearchParams(window.location.search);
   const code = params.get("code");
@@ -173,14 +180,21 @@ const handleOAuthCallback = async (
       codeVerifier,
       clientId,
       baseUrl,
+      redirectPath,
     );
     sessionStorage.removeItem(STORAGE_KEYS.CODE_VERIFIER);
     sessionStorage.removeItem(STORAGE_KEYS.STATE);
     saveTokenData(tokenData);
-    window.history.replaceState({}, document.title, window.location.pathname);
+    const returnTo = sessionStorage.getItem(STORAGE_KEYS.AUTH_RETURN_TO);
+    sessionStorage.removeItem(STORAGE_KEYS.AUTH_RETURN_TO);
+    const targetPath = returnTo ?? window.location.pathname;
+    window.history.replaceState({}, document.title, targetPath);
   } catch (authError) {
     clearTokenData();
-    toast.error(`Authentication failed: ${authError}`);
+    sessionStorage.removeItem(STORAGE_KEYS.AUTH_RETURN_TO);
+    const message =
+      authError instanceof Error ? authError.message : "Unknown error";
+    toast.error(`Authentication failed: ${message}`);
     throw authError;
   }
 };
@@ -189,16 +203,16 @@ export const ensureValidToken = async (
   queryClient: ReturnType<typeof useQueryClient>,
   clientId: string,
   baseUrl: string,
+  redirectPath?: string,
 ): Promise<string | null> => {
   const params = new URLSearchParams(window.location.search);
   const isInOAuthCallback = params.has("code") && params.has("state");
 
   if (isInOAuthCallback) {
     try {
-      await handleOAuthCallback(clientId, baseUrl);
-      queryClient.invalidateQueries({ queryKey: TOKEN_QUERY_KEY });
+      await handleOAuthCallback(clientId, baseUrl, redirectPath);
     } catch {
-      queryClient.setQueryData(TOKEN_QUERY_KEY, null);
+      queryClient.resetQueries({ queryKey: TOKEN_QUERY_KEY });
     }
   }
 
@@ -207,8 +221,9 @@ export const ensureValidToken = async (
     return null;
   }
 
-  const parsed = JSON.parse(tokenDataStr);
-  const { data: tokenData, success } = TokenDataSchema.safeParse(parsed);
+  const { data: tokenData, success } = TokenDataSchema.safeParse(
+    JSON.parse(tokenDataStr),
+  );
 
   if (!success) {
     clearTokenData();
@@ -226,6 +241,7 @@ export const login = async (
   clientId: string,
   scope: string,
   baseUrl: string,
+  redirectPath?: string,
 ): Promise<void> => {
   const pkce = await PKCEChallenge();
   const state = generateRandomString(32);
@@ -233,9 +249,16 @@ export const login = async (
   sessionStorage.setItem(STORAGE_KEYS.CODE_VERIFIER, pkce.code_verifier);
   sessionStorage.setItem(STORAGE_KEYS.STATE, state);
 
+  if (redirectPath && window.location.pathname !== redirectPath) {
+    sessionStorage.setItem(
+      STORAGE_KEYS.AUTH_RETURN_TO,
+      window.location.pathname,
+    );
+  }
+
   const params = new URLSearchParams({
     client_id: clientId,
-    redirect_uri: getRedirectUri(),
+    redirect_uri: getRedirectUri(redirectPath),
     response_type: "code",
     scope: scope,
     state,
@@ -252,5 +275,6 @@ export const logout = (
   clearTokenData();
   sessionStorage.removeItem(STORAGE_KEYS.CODE_VERIFIER);
   sessionStorage.removeItem(STORAGE_KEYS.STATE);
-  queryClient.setQueryData(TOKEN_QUERY_KEY, null);
+  sessionStorage.removeItem(STORAGE_KEYS.AUTH_RETURN_TO);
+  queryClient.resetQueries({ queryKey: TOKEN_QUERY_KEY });
 };

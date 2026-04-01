@@ -12,6 +12,7 @@ enum ElementStatusValues {
   NotExecuted = 'NotExecuted',
   Paused = 'Paused',
   Terminated = 'Terminated',
+  Warning = 'Warning',
 }
 
 export type StageStatus = `${ElementStatusValues}`;
@@ -21,6 +22,7 @@ export interface StageTaskItem {
   id: string;
   label: string;
   icon?: React.ReactElement;
+  isAdhoc?: boolean;
 }
 
 export interface StageNodeProps extends NodeProps {
@@ -67,6 +69,7 @@ export interface StageNodeProps extends NodeProps {
   onStageTitleChange?: (newTitle: string) => void;
   onTaskReorder?: (reorderedTasks: StageTaskItem[][]) => void;
   onReplaceTaskFromToolbox?: (newTask: ListItem, groupIndex: number, taskIndex: number) => void;
+  onTaskPlay?: (taskId: string) => Promise<void>;
 }
 
 export interface StageTaskExecution {

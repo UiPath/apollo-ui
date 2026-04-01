@@ -195,16 +195,10 @@ export const MultiStepProgress = {
                     : 'bg-secondary text-muted-foreground'
                 }`}
               >
-                {i < currentStep ? (
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                ) : (
-                  i + 1
-                )}
+                {i < currentStep ? <CheckCircle2 className="h-3.5 w-3.5" /> : i + 1}
               </div>
               <span
-                className={`text-xs ${
-                  i <= currentStep ? 'font-medium' : 'text-muted-foreground'
-                }`}
+                className={`text-xs ${i <= currentStep ? 'font-medium' : 'text-muted-foreground'}`}
               >
                 {step}
               </span>

@@ -47,7 +47,7 @@ function ChartContainer({
   >["children"];
 }) {
   const uniqueId = React.useId();
-  const chartId = `chart-${id || uniqueId.replaceAll(":", "")}`;
+  const chartId = `chart-${id ?? uniqueId.replaceAll(":", "")}`;
 
   return (
     <ChartContext.Provider value={{ config }}>
@@ -71,7 +71,7 @@ function ChartContainer({
 
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
-    ([, itemConfig]) => itemConfig.theme || itemConfig.color,
+    ([, itemConfig]) => itemConfig.theme ?? itemConfig.color,
   );
 
   if (colorConfig.length === 0) {
@@ -82,15 +82,14 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     <style
       // oxlint-disable-next-line react(no-danger) -- Safe: only generated CSS variables
       dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
+        // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- THEMES is a small closed object; Object.entries loses keyof
+        __html: (Object.entries(THEMES) as Array<[keyof typeof THEMES, string]>)
           .map(
             ([theme, prefix]) => `
 ${prefix} [data-chart=${id}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color;
+    const color = itemConfig.theme?.[theme] ?? itemConfig.color;
     return color ? `  --color-${key}: ${color};` : null;
   })
   .join("\n")}
@@ -135,11 +134,12 @@ function ChartTooltipContent({
     }
 
     const [item] = payload;
-    const key = `${labelKey || item?.dataKey || item?.name || "value"}`;
+    // oxlint-disable-next-line typescript-eslint(prefer-nullish-coalescing) -- empty string should fall through
+    const key = `${(labelKey ?? item?.dataKey) || (item?.name ?? "value")}`;
     const itemConfig = getPayloadConfigFromPayload(config, item, key);
     const value =
       !labelKey && typeof label === "string"
-        ? config[label as keyof typeof config]?.label || label
+        ? (config[label]?.label ?? label)
         : itemConfig?.label;
 
     if (labelFormatter) {
@@ -183,9 +183,13 @@ function ChartTooltipContent({
         {payload
           .filter((item) => item.type !== "none")
           .map((item, index) => {
-            const key = `${nameKey || item.name || item.dataKey || "value"}`;
+            // oxlint-disable-next-line typescript-eslint(prefer-nullish-coalescing) -- empty string should fall through
+            const key = `${(nameKey ?? item.name) || (item.dataKey ?? "value")}`;
             const itemConfig = getPayloadConfigFromPayload(config, item, key);
-            const indicatorColor = color || item.payload.fill || item.color;
+            /* oxlint-disable typescript-eslint(no-unsafe-assignment), typescript-eslint(no-unsafe-member-access) -- recharts payload is untyped */
+            const indicatorColor: string =
+              color ?? item.payload.fill ?? item.color;
+            /* oxlint-enable typescript-eslint(no-unsafe-assignment), typescript-eslint(no-unsafe-member-access) */
 
             return (
               <div
@@ -196,6 +200,7 @@ function ChartTooltipContent({
                 )}
               >
                 {formatter && item?.value != null && item.name ? (
+                  // oxlint-disable-next-line typescript-eslint(no-unsafe-argument) -- recharts payload is untyped
                   formatter(item.value, item.name, item, index, item.payload)
                 ) : (
                   <>
@@ -214,12 +219,14 @@ function ChartTooltipContent({
                               "my-0.5": nestLabel && indicator === "dashed",
                             },
                           )}
+                          /* oxlint-disable typescript-eslint(no-unsafe-type-assertion) -- CSS custom properties not in React.CSSProperties */
                           style={
                             {
                               "--color-bg": indicatorColor,
                               "--color-border": indicatorColor,
                             } as React.CSSProperties
                           }
+                          /* oxlint-enable typescript-eslint(no-unsafe-type-assertion) */
                         />
                       )
                     )}
@@ -232,7 +239,7 @@ function ChartTooltipContent({
                       <div className="grid gap-1.5">
                         {nestLabel ? tooltipLabel : null}
                         <span className="text-muted-foreground">
-                          {itemConfig?.label || item.name}
+                          {itemConfig?.label ?? item.name}
                         </span>
                       </div>
                       {item.value && (
@@ -281,11 +288,12 @@ function ChartLegendContent({
       {payload
         .filter((item) => item.type !== "none")
         .map((item) => {
-          const key = `${nameKey || item.dataKey || "value"}`;
+          const key = String(nameKey ?? item.dataKey ?? "value");
           const itemConfig = getPayloadConfigFromPayload(config, item, key);
 
           return (
             <div
+              // oxlint-disable-next-line typescript-eslint(no-unsafe-assignment) -- recharts payload is untyped
               key={item.value}
               className={cn(
                 "[&>svg]:text-muted-foreground flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3",
@@ -328,24 +336,22 @@ function getPayloadConfigFromPayload(
 
   let configLabelKey: string = key;
 
-  if (
-    key in payload &&
-    typeof payload[key as keyof typeof payload] === "string"
-  ) {
-    configLabelKey = payload[key as keyof typeof payload] as string;
+  // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- payload is narrowed to `object`; Record cast is the only way to index by string key
+  const payloadRecord = payload as Record<string, unknown>;
+  // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion)
+  const nestedRecord = payloadPayload as Record<string, unknown> | null;
+
+  if (key in payloadRecord && typeof payloadRecord[key] === "string") {
+    configLabelKey = payloadRecord[key];
   } else if (
-    payloadPayload &&
-    key in payloadPayload &&
-    typeof payloadPayload[key as keyof typeof payloadPayload] === "string"
+    nestedRecord &&
+    key in nestedRecord &&
+    typeof nestedRecord[key] === "string"
   ) {
-    configLabelKey = payloadPayload[
-      key as keyof typeof payloadPayload
-    ] as string;
+    configLabelKey = nestedRecord[key];
   }
 
-  return configLabelKey in config
-    ? config[configLabelKey]
-    : config[key as keyof typeof config];
+  return configLabelKey in config ? config[configLabelKey] : config[key];
 }
 
 export {

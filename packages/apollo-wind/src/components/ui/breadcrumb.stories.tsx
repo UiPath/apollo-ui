@@ -155,7 +155,8 @@ export const LinkComponent = {
           </BreadcrumbList>
         </Breadcrumb>
         <p className="text-xs text-muted-foreground mt-2">
-          Use the <code className="rounded bg-muted px-1 py-0.5 text-xs">asChild</code> prop to render your own link component (e.g. Next.js Link, React Router Link).
+          Use the <code className="rounded bg-muted px-1 py-0.5 text-xs">asChild</code> prop to
+          render your own link component (e.g. Next.js Link, React Router Link).
         </p>
       </div>
     </div>

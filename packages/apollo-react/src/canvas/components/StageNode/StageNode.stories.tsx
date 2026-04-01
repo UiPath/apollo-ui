@@ -10,7 +10,7 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApButton, ApMenu } from '@uipath/apollo-react/material/components';
 import type { IMenuItem } from '@uipath/apollo-react/material/components/ap-menu/ApMenu.types';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DefaultCanvasTranslations } from '../../types';
 import {
   createGroupModificationHandlers,
@@ -217,6 +217,63 @@ export const Default: Story = {
             icon: { Component: () => task.icon },
             data: { type: task.id },
           })),
+        },
+      },
+      {
+        id: '2',
+        type: 'stage',
+        position: { x: 752, y: 96 },
+        width: 304,
+        data: {
+          onReplaceTaskFromToolbox: () => {},
+          stageDetails: {
+            label: 'Validation - Failed',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Data Validation', icon: <VerificationIcon /> }],
+              [{ id: '2', label: 'Compliance Check', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              label: 'error message',
+              status: 'Failed',
+            },
+            taskStatus: {
+              '2': {
+                status: 'Failed',
+                message: 'Compliance requirements not met',
+              },
+            },
+          },
+        },
+      },
+      {
+        id: '3',
+        type: 'stage',
+        position: { x: 1104, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Review - Warning',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Risk Assessment', icon: <VerificationIcon /> }],
+              [{ id: '2', label: 'Policy Review', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              label: 'Needs attention',
+              status: 'Warning',
+            },
+            taskStatus: {
+              '2': {
+                status: 'Warning',
+                message: 'Policy review requires manual intervention',
+              },
+            },
+          },
         },
       },
     ],
@@ -1261,6 +1318,136 @@ export const AddAndReplaceTasks: Story = {
   args: {},
 };
 
+const InlineTitleEditStory = () => {
+  const StageNodeWrapper = useMemo(
+    () =>
+      function StageNodeWrapperComponent(props: any) {
+        return <StageNode {...props} {...props.data} />;
+      },
+    []
+  );
+
+  const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), [StageNodeWrapper]);
+  const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
+
+  const initialNodes = useMemo(
+    () => [
+      {
+        id: 'editable-stage',
+        type: 'stage' as const,
+        position: { x: 48, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Click to Edit Title',
+            tasks: [
+              [{ id: '1', label: 'KYC Verification', icon: <VerificationIcon /> }],
+              [{ id: '2', label: 'Document Review', icon: <DocumentIcon /> }],
+            ],
+          },
+          onTaskAdd: () => {
+            window.alert('Add task functionality - this would open a dialog to add a new task');
+          },
+        },
+      },
+      {
+        id: 'long-title-stage',
+        type: 'stage' as const,
+        position: { x: 400, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'A Very Long Stage Title That Should Truncate With Ellipsis',
+            tasks: [[{ id: '1', label: 'Processing Task', icon: <ProcessIcon /> }]],
+          },
+          onTaskAdd: () => {
+            window.alert('Add task functionality - this would open a dialog to add a new task');
+          },
+        },
+      },
+    ],
+    []
+  );
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
+  const createTitleChangeHandler = useCallback(
+    (nodeId: string) => (newTitle: string) => {
+      setNodes((nds) =>
+        nds.map((node) =>
+          node.id === nodeId
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  stageDetails: {
+                    ...node.data.stageDetails,
+                    label: newTitle,
+                  },
+                },
+              }
+            : node
+        )
+      );
+    },
+    [setNodes]
+  );
+
+  const nodesWithHandlers = useMemo(
+    () =>
+      nodes.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          onStageTitleChange: createTitleChangeHandler(node.id),
+        },
+      })),
+    [nodes, createTitleChangeHandler]
+  );
+
+  const onConnect = useCallback(
+    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
+    [setEdges]
+  );
+
+  return (
+    <div style={{ width: '100vw', height: '100vh' }}>
+      <ReactFlowProvider>
+        <BaseCanvas
+          nodes={nodesWithHandlers}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          mode="design"
+          connectionMode={ConnectionMode.Strict}
+          defaultEdgeOptions={{ type: 'stage' }}
+          connectionLineComponent={StageConnectionEdge}
+          elevateEdgesOnSelect
+          defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
+        >
+          <Panel position="bottom-right">
+            <CanvasPositionControls translations={DefaultCanvasTranslations} />
+          </Panel>
+        </BaseCanvas>
+      </ReactFlowProvider>
+    </div>
+  );
+};
+
+export const EditableStageTitle: Story = {
+  name: 'Editable Stage Title',
+  parameters: {
+    useCustomRender: true,
+  },
+  render: () => <InlineTitleEditStory />,
+  args: {},
+};
+
 // Simulate async children fetch (2s delay)
 const fetchChildren = (id: string): Promise<ListItem[]> =>
   new Promise((resolve) => {
@@ -1306,10 +1493,10 @@ const AddTaskLoadingStory = () => {
         width: 304,
         data: {
           stageDetails: {
-            label: 'Top-level loading (click +)',
+            label: 'Loading (+ disabled for 3s)',
             tasks: [],
           },
-          // Top-level loading: skeletons until API returns items
+          // Top-level loading: + button disabled until API returns items
           addTaskLoading: true,
           taskOptions: [] as ListItem[],
         },
@@ -1322,9 +1509,7 @@ const AddTaskLoadingStory = () => {
         data: {
           stageDetails: {
             label: 'Async children (click +)',
-            tasks: [
-              [{ id: 'task-1', label: 'Existing Task', icon: <VerificationIcon /> }],
-            ],
+            tasks: [[{ id: 'task-1', label: 'Existing Task', icon: <VerificationIcon /> }]],
           },
           // Children loading: items already available, level 2 loads on click
           addTaskLoading: false,
@@ -1359,7 +1544,32 @@ const AddTaskLoadingStory = () => {
     return () => clearTimeout(timeout);
   }, [setNodes]);
 
-  // Inject per-node handlers
+  // Inject per-node handlers — simulates loading state on add-task:
+  // 1. Set addTaskLoading=true so the + button is disabled
+  // 2. After 2s, set addTaskLoading=false to re-enable it
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => {
+    return () => clearTimeout(timeoutRef.current);
+  }, []);
+
+  const handleAddTaskFromToolbox = useCallback(
+    (nodeId: string, _taskItem: ListItem) => {
+      clearTimeout(timeoutRef.current);
+      setNodes((nds) =>
+        nds.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, addTaskLoading: true } } : n))
+      );
+      timeoutRef.current = setTimeout(() => {
+        setNodes((nds) =>
+          nds.map((n) =>
+            n.id === nodeId ? { ...n, data: { ...n.data, addTaskLoading: false } } : n
+          )
+        );
+      }, 2000);
+    },
+    [setNodes]
+  );
+
   const nodesWithHandler = useMemo(
     () =>
       nodesState.map((node) => ({
@@ -1367,11 +1577,11 @@ const AddTaskLoadingStory = () => {
         data: {
           ...node.data,
           onAddTaskFromToolbox: (taskItem: ListItem) => {
-            window.alert(`Added task "${taskItem.name}" to ${node.id}`);
+            handleAddTaskFromToolbox(node.id, taskItem);
           },
         },
       })),
-    [nodesState]
+    [nodesState, handleAddTaskFromToolbox]
   );
 
   const onConnect = useCallback(
@@ -1412,5 +1622,120 @@ export const AddTaskLoading: Story = {
     useCustomRender: true,
   },
   render: () => <AddTaskLoadingStory />,
+  args: {},
+};
+
+export const AdhocTasks: Story = {
+  name: 'Adhoc Tasks',
+  parameters: {
+    nodes: [
+      {
+        id: '0',
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'With onTaskPlay',
+            tasks: [
+              [
+                {
+                  id: '1',
+                  label: 'Adhoc - KYC Check',
+                  icon: <VerificationIcon />,
+                  isAdhoc: true,
+                },
+              ],
+              [
+                {
+                  id: '2',
+                  label: 'Adhoc - Document Review',
+                  icon: <DocumentIcon />,
+                  isAdhoc: true,
+                },
+              ],
+              [{ id: '3', label: 'Regular Task', icon: <ProcessIcon /> }],
+            ],
+          },
+          onTaskPlay: (taskId: string) => {
+            return new Promise<void>((resolve) =>
+              setTimeout(() => {
+                resolve();
+                console.log(`Play task: ${taskId}`);
+              }, 5000)
+            );
+          },
+          onTaskClick: (taskId: string) => {
+            window.alert(`Task clicked: ${taskId}`);
+          },
+        },
+      },
+      {
+        id: '1',
+        type: 'stage',
+        position: { x: 400, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Without onTaskPlay',
+            tasks: [
+              [
+                {
+                  id: '1',
+                  label: 'Adhoc - Risk Assessment',
+                  icon: <VerificationIcon />,
+                  isAdhoc: true,
+                },
+              ],
+              [
+                {
+                  id: '2',
+                  label: 'Adhoc - Compliance Review',
+                  icon: <DocumentIcon />,
+                  isAdhoc: true,
+                },
+              ],
+              [{ id: '3', label: 'Regular Task', icon: <ProcessIcon /> }],
+            ],
+          },
+          onTaskClick: (taskId: string) => {
+            window.alert(`Task clicked: ${taskId}`);
+          },
+        },
+      },
+      {
+        id: '2',
+        type: 'stage',
+        position: { x: 752, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Mixed with Parallel',
+            isReadOnly: true,
+            tasks: [
+              [
+                {
+                  id: '1',
+                  label: 'Adhoc - Verify Address',
+                  icon: <VerificationIcon />,
+                  isAdhoc: true,
+                },
+                {
+                  id: '2',
+                  label: 'Adhoc - Verify Identity',
+                  icon: <VerificationIcon />,
+                  isAdhoc: true,
+                },
+              ],
+              [{ id: '3', label: 'Regular Processing', icon: <ProcessIcon /> }],
+            ],
+          },
+          onTaskPlay: (taskId: string) => {
+            console.log(`Play task: ${taskId}`);
+          },
+        },
+      },
+    ],
+  },
   args: {},
 };

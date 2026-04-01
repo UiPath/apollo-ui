@@ -44,9 +44,8 @@ export function ApSankeyShowcase() {
 				<SectionHeader>Agent Trace Flow with Metadata</SectionHeader>
 				<SectionDescription>
 					Complex multi-stage trace flow showing agent job execution paths
-					through LLM calls, tool invocations, guardrails, and final
-					outcomes. Hover over links to see metadata. Use zoom controls to
-					navigate.
+					through LLM calls, tool invocations, guardrails, and final outcomes.
+					Hover over links to see metadata. Use zoom controls to navigate.
 				</SectionDescription>
 				<ApSankeyDiagram
 					data={{
@@ -100,45 +99,73 @@ export function ApSankeyShowcase() {
 								source: "all_traces",
 								target: "api_call",
 								value: 45,
-								metadata: { "Total jobs": 45, "P95 latency": "1.2s", "Agent units": "90" },
+								metadata: {
+									"Total jobs": 45,
+									"P95 latency": "1.2s",
+									"Agent units": "90",
+								},
 							},
 							{
 								source: "all_traces",
 								target: "context",
 								value: 30,
-								metadata: { "Total jobs": 30, "P95 latency": "0.8s", "Agent units": "60" },
+								metadata: {
+									"Total jobs": 30,
+									"P95 latency": "0.8s",
+									"Agent units": "60",
+								},
 							},
 							{
 								source: "all_traces",
 								target: "direct_tool",
 								value: 15,
-								metadata: { "Total jobs": 15, "P95 latency": "0.3s", "Agent units": "15" },
+								metadata: {
+									"Total jobs": 15,
+									"P95 latency": "0.3s",
+									"Agent units": "15",
+								},
 							},
 							// Stage 2: LLM API Call fan-out
 							{
 								source: "api_call",
 								target: "memory",
 								value: 18,
-								metadata: { "Total jobs": 18, "P95 latency": "2.1s", "Agent units": "36" },
+								metadata: {
+									"Total jobs": 18,
+									"P95 latency": "2.1s",
+									"Agent units": "36",
+								},
 							},
 							{
 								source: "api_call",
 								target: "guardrails",
 								value: 15,
-								metadata: { "Total jobs": 15, "P95 latency": "0.5s", "Agent units": "30" },
+								metadata: {
+									"Total jobs": 15,
+									"P95 latency": "0.5s",
+									"Agent units": "30",
+								},
 							},
 							{
 								source: "api_call",
 								target: "fn_call_parse",
 								value: 12,
-								metadata: { "Total jobs": 12, "P95 latency": "0.2s", "Agent units": "12" },
+								metadata: {
+									"Total jobs": 12,
+									"P95 latency": "0.2s",
+									"Agent units": "12",
+								},
 							},
 							// Stage 2: Context grounding fan-out
 							{
 								source: "context",
 								target: "rag_retrieval",
 								value: 20,
-								metadata: { "Total jobs": 20, "P95 latency": "1.5s", "Agent units": "40" },
+								metadata: {
+									"Total jobs": 20,
+									"P95 latency": "1.5s",
+									"Agent units": "40",
+								},
 							},
 							{ source: "context", target: "guardrails", value: 10 },
 							// Stage 2: Direct tool fan-out
@@ -150,7 +177,11 @@ export function ApSankeyShowcase() {
 								source: "guardrails",
 								target: "web_search",
 								value: 10,
-								metadata: { "Total jobs": 10, "P95 latency": "3.2s", "Agent units": "50" },
+								metadata: {
+									"Total jobs": 10,
+									"P95 latency": "3.2s",
+									"Agent units": "50",
+								},
 							},
 							{ source: "guardrails", target: "code_exec", value: 8 },
 							{ source: "guardrails", target: "escalation", value: 7 },
@@ -164,32 +195,64 @@ export function ApSankeyShowcase() {
 								source: "web_search",
 								target: "result_validation",
 								value: 18,
-								metadata: { "Total jobs": 18, "P95 latency": "0.3s", "Agent units": "18" },
+								metadata: {
+									"Total jobs": 18,
+									"P95 latency": "0.3s",
+									"Agent units": "18",
+								},
 							},
 							{ source: "web_search", target: "confidence_check", value: 9 },
 							{ source: "code_exec", target: "result_validation", value: 12 },
 							{ source: "code_exec", target: "confidence_check", value: 6 },
 							{ source: "db_query", target: "result_validation", value: 10 },
 							{ source: "db_query", target: "confidence_check", value: 8 },
-							{ source: "api_integration", target: "result_validation", value: 10 },
-							{ source: "api_integration", target: "confidence_check", value: 10 },
+							{
+								source: "api_integration",
+								target: "result_validation",
+								value: 10,
+							},
+							{
+								source: "api_integration",
+								target: "confidence_check",
+								value: 10,
+							},
 							// Stage 4: Validation → Retry or forward
 							{
 								source: "result_validation",
 								target: "output_guardrails",
 								value: 35,
-								metadata: { "Total jobs": 35, "P95 latency": "0.4s", "Agent units": "35" },
+								metadata: {
+									"Total jobs": 35,
+									"P95 latency": "0.4s",
+									"Agent units": "35",
+								},
 							},
-							{ source: "result_validation", target: "retry_orchestrator", value: 15 },
-							{ source: "confidence_check", target: "output_guardrails", value: 18 },
-							{ source: "confidence_check", target: "retry_orchestrator", value: 10 },
+							{
+								source: "result_validation",
+								target: "retry_orchestrator",
+								value: 15,
+							},
+							{
+								source: "confidence_check",
+								target: "output_guardrails",
+								value: 18,
+							},
+							{
+								source: "confidence_check",
+								target: "retry_orchestrator",
+								value: 10,
+							},
 							{ source: "confidence_check", target: "escalation", value: 5 },
 							// Retry loops back into post-processing (longer path)
 							{
 								source: "retry_orchestrator",
 								target: "response_format",
 								value: 16,
-								metadata: { "Total jobs": 16, "P95 latency": "4.8s", "Retry attempts": "2.3 avg" },
+								metadata: {
+									"Total jobs": 16,
+									"P95 latency": "4.8s",
+									"Retry attempts": "2.3 avg",
+								},
 							},
 							{ source: "retry_orchestrator", target: "escalation", value: 9 },
 							// Stage 5: Post-processing
@@ -197,7 +260,11 @@ export function ApSankeyShowcase() {
 								source: "output_guardrails",
 								target: "audit_log",
 								value: 32,
-								metadata: { "Total jobs": 32, "P95 latency": "0.1s", "Agent units": "32" },
+								metadata: {
+									"Total jobs": 32,
+									"P95 latency": "0.1s",
+									"Agent units": "32",
+								},
 							},
 							{ source: "output_guardrails", target: "telemetry", value: 15 },
 							{ source: "output_guardrails", target: "faulted", value: 6 },
@@ -208,7 +275,11 @@ export function ApSankeyShowcase() {
 								source: "audit_log",
 								target: "successful",
 								value: 36,
-								metadata: { "Total jobs": 36, "P95 latency": "0.05s", "Agent units": "36" },
+								metadata: {
+									"Total jobs": 36,
+									"P95 latency": "0.05s",
+									"Agent units": "36",
+								},
 							},
 							{ source: "audit_log", target: "faulted", value: 6 },
 							{ source: "telemetry", target: "successful", value: 16 },

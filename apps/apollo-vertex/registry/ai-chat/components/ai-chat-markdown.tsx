@@ -28,9 +28,8 @@ const components: ComponentProps<typeof ReactMarkdown>["components"] = {
   }: NodeProps & { className?: string }) => (
     <code
       className={
-        className
-          ? className
-          : "px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-xs"
+        className ??
+        "px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-xs"
       }
       {...props}
     >

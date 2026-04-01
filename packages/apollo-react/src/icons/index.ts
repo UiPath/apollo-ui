@@ -1228,6 +1228,11 @@ export { UISubmitAsTemplateEnabled, default as UISubmitAsTemplateEnabledIcon } f
 export { UITriggersManual, default as UITriggersManualIcon } from './UITriggersManual';
 export { UITriggersQueue, default as UITriggersQueueIcon } from './UITriggersQueue';
 export { UITriggersScheduled, default as UITriggersScheduledIcon } from './UITriggersScheduled';
+export { UiPathAutopilotLogo, default as UiPathAutopilotLogoIcon } from './UiPathAutopilotLogo';
+export { UiPathFavicon, default as UiPathFaviconIcon } from './UiPathFavicon';
+export { UiPathFullDark, default as UiPathFullDarkIcon } from './UiPathFullDark';
+export { UiPathFullLight, default as UiPathFullLightIcon } from './UiPathFullLight';
+export { UiPathIconDark, default as UiPathIconDarkIcon } from './UiPathIconDark';
 export { Unarchive, default as UnarchiveIcon } from './Unarchive';
 export { Undo, default as UndoIcon } from './Undo';
 export { Unlink, default as UnlinkIcon } from './Unlink';

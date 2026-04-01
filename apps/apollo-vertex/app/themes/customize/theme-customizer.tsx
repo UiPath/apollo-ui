@@ -1,10 +1,10 @@
 "use client";
 import { type ChangeEvent, startTransition, useEffect, useState } from "react";
+import { type ThemeConfig, ThemeConfigSchema } from "@/lib/schemas/theme";
 import { Button } from "@/registry/button/button";
 import { Card } from "@/registry/card/card";
 import { Input } from "@/registry/input/input";
 import { Label } from "@/registry/label/label";
-import type { ThemeConfig } from "@/registry/shell/shell-theme-provider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/registry/tabs/tabs";
 import { themes } from "../../themes";
 
@@ -116,8 +116,10 @@ export function ThemeCustomizer() {
     const savedTheme = localStorage.getItem(CUSTOM_THEME_STORAGE_KEY);
     if (savedTheme) {
       try {
-        const parsed = JSON.parse(savedTheme);
-        setCustomTheme(parsed);
+        const { data, success } = ThemeConfigSchema.safeParse(
+          JSON.parse(savedTheme),
+        );
+        if (success) setCustomTheme(data);
       } catch {
         // Ignore invalid saved theme
       }
@@ -179,24 +181,32 @@ export function ThemeCustomizer() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    file.text().then((content) => {
-      try {
-        const imported = JSON.parse(content);
-        setCustomTheme(imported);
+    void file
+      .text()
+      .then((content) => {
+        try {
+          const { data: imported, success } = ThemeConfigSchema.safeParse(
+            JSON.parse(content),
+          );
+          if (!success) return;
+          setCustomTheme(imported);
 
-        localStorage.setItem(
-          CUSTOM_THEME_STORAGE_KEY,
-          JSON.stringify(imported),
-        );
-        localStorage.setItem(THEME_STORAGE_KEY, "custom");
+          localStorage.setItem(
+            CUSTOM_THEME_STORAGE_KEY,
+            JSON.stringify(imported),
+          );
+          localStorage.setItem(THEME_STORAGE_KEY, "custom");
 
-        window.dispatchEvent(
-          new CustomEvent("theme-change", { detail: "custom" }),
-        );
-      } catch {
-        // Invalid theme file
-      }
-    });
+          window.dispatchEvent(
+            new CustomEvent("theme-change", { detail: "custom" }),
+          );
+        } catch {
+          // Invalid theme file
+        }
+      })
+      .catch(() => {
+        // File read failed
+      });
   };
 
   const handleLoadPreset = (presetName: keyof typeof themes) => {
@@ -215,7 +225,7 @@ export function ThemeCustomizer() {
 
   return (
     <div className="space-y-6">
-      <Card className="p-6">
+      <Card variant="solid" className="p-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
@@ -253,6 +263,7 @@ export function ThemeCustomizer() {
                   key={key}
                   variant="outline"
                   size="sm"
+                  // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- Object.entries loses keyof; themes is a closed object
                   onClick={() => handleLoadPreset(key as keyof typeof themes)}
                 >
                   {theme.name}
@@ -263,7 +274,9 @@ export function ThemeCustomizer() {
 
           <Tabs
             value={activeTab}
-            onValueChange={(v) => setActiveTab(v as "light" | "dark")}
+            onValueChange={(v) => {
+              if (v === "light" || v === "dark") setActiveTab(v);
+            }}
           >
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="light">Light Mode</TabsTrigger>
@@ -274,7 +287,7 @@ export function ThemeCustomizer() {
               <div className="grid grid-cols-2 gap-4">
                 {colorFields.map(({ key, label }) => {
                   const themeValue =
-                    currentModeTheme?.[key as keyof typeof currentModeTheme] ||
+                    currentModeTheme?.[key as keyof typeof currentModeTheme] ??
                     "";
                   const isOklch = themeValue.includes("oklch");
                   const hexValue = isOklch
@@ -316,7 +329,7 @@ export function ThemeCustomizer() {
               <div className="grid grid-cols-2 gap-4">
                 {colorFields.map(({ key, label }) => {
                   const themeValue =
-                    currentModeTheme?.[key as keyof typeof currentModeTheme] ||
+                    currentModeTheme?.[key as keyof typeof currentModeTheme] ??
                     "";
                   const isOklch = themeValue.includes("oklch");
                   const hexValue = isOklch
@@ -357,7 +370,7 @@ export function ThemeCustomizer() {
         </div>
       </Card>
 
-      <Card className="p-6">
+      <Card variant="solid" className="p-6">
         <h3 className="text-lg font-semibold mb-4">Preview</h3>
         <div className="space-y-4">
           <div className="flex gap-2">

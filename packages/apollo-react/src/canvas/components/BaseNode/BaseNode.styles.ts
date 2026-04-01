@@ -1,6 +1,8 @@
-import { css, keyframes } from '@emotion/react';
+import { css } from '@emotion/react';
 import styled from '@emotion/styled';
+import { ApSkeleton } from '../../../material/components/ap-skeleton';
 import type { NodeShape } from '../../schema';
+import { getExecutionStatusBorder, pulseAnimation } from '../../styles/execution-status';
 import type { FooterVariant } from './BaseNode.types';
 
 // Grid-aligned node heights (multiples of 16px)
@@ -10,58 +12,29 @@ const NODE_HEIGHT_FOOTER_BUTTON = GRID_UNIT * 9; // 144px
 const NODE_HEIGHT_FOOTER_SINGLE = GRID_UNIT * 10; // 160px
 const NODE_HEIGHT_FOOTER_DOUBLE = GRID_UNIT * 11; // 176px
 
-const pulseAnimation = (cssVar: string) => keyframes`
-  0% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(${cssVar}) 20%, transparent);
-  }
-  70% {
-    box-shadow: 0 0 0 10px color-mix(in srgb, var(${cssVar}) 0%, transparent);
-  }
-  100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(${cssVar}) 0%, transparent);
-  }
-`;
+/**
+ * Computes the icon wrapper dimensions for a given shape and node size.
+ * Shared between BaseIconWrapper and BaseSkeletonIcon for consistency.
+ */
+const getIconDimensions = (
+  shape: NodeShape | undefined,
+  nodeHeight: number | undefined,
+  nodeWidth: number | undefined
+) => {
+  const height = nodeHeight ?? 96;
+  const width = nodeWidth ?? 96;
 
-const getExecutionStatusBorder = (executionStatus?: string) => {
-  switch (executionStatus) {
-    case 'NotExecuted':
-    case 'INFO':
-      return css`
-        border-color: var(--uix-canvas-border-de-emp);
-      `;
-    case 'InProgress': {
-      return css`
-        border-color: var(--uix-canvas-info-icon);
-        animation: ${pulseAnimation('--uix-canvas-info-icon')} 2s infinite;
-      `;
-    }
-    case 'Completed':
-      return css`
-        border-color: var(--uix-canvas-success-icon);
-      `;
-    case 'Paused':
-    case 'WARNING': {
-      return css`
-        border-color: var(--uix-canvas-warning-icon);
-        animation: ${pulseAnimation('--uix-canvas-warning-icon')} 2s infinite;
-      `;
-    }
-    case 'Cancelled':
-    case 'Failed':
-    case 'Terminated':
-    case 'ERROR':
-    case 'CRITICAL': {
-      return css`
-        border-color: var(--uix-canvas-error-icon);
-        background: var(--uix-canvas-error-background);
-        animation: ${pulseAnimation('--uix-canvas-error-icon')} 2s infinite;
-      `;
-    }
-    default:
-      return css`
-        border-color: var(--uix-canvas-border-de-emp);
-      `;
-  }
+  // Width: Use default 3/4 scaling, derived from the height for rectangle, and use width for other shapes
+  const widthDimension = height !== width && shape === 'rectangle' ? height : width;
+  const widthScaleFactor = widthDimension / 96;
+  const iconWidth = 72 * widthScaleFactor;
+
+  // Height: Use 7/8 scaling for a vertical rectangle (expandable node), and use default 3/4 scaling for other shapes
+  const heightScaleFactor = height / 96;
+  const isExpandable = height !== width && shape !== 'rectangle';
+  const iconHeight = isExpandable ? 84 * heightScaleFactor : 72 * heightScaleFactor;
+
+  return { iconWidth, iconHeight };
 };
 
 const getValidationStatusBorder = (validationStatus?: string) => {
@@ -229,19 +202,13 @@ export const BaseIconWrapper = styled.div<{
   height?: number;
   width?: number;
 }>`
-  width: ${({ height, width, shape }) => {
-    // Use default 3/4 scaling, derived from the height for rectangle, and use width for other shapes
-    const dimension = height !== width && shape === 'rectangle' ? height : width;
-    const scaleFactor = dimension ? dimension / 96 : 1;
-    return `${72 * scaleFactor}px`;
-  }};
-  height: ${({ height, width, shape }) => {
-    // Use 7/8 scaling for a vertical rectangle, and use default 3/4 scaling for other shapes
-    const scaleFactor = height ? height / 96 : 1;
-    return height !== width && shape !== 'rectangle' // True for only a expandable node
-      ? `${84 * scaleFactor}px`
-      : `${72 * scaleFactor}px`;
-  }};
+  ${({ height, width, shape }) => {
+    const { iconWidth, iconHeight } = getIconDimensions(shape, height, width);
+    return css`
+      width: ${iconWidth}px;
+      height: ${iconHeight}px;
+    `;
+  }}
   display: flex;
   align-items: center;
   justify-content: center;
@@ -434,5 +401,29 @@ export const BaseBadgeSlot = styled.div<{
       case 'bottom-right':
         return `bottom: ${offset}; right: ${offset};`;
     }
+  }}
+`;
+
+/**
+ * Skeleton icon used in loading state. Uses the same dimension calculations as BaseIconWrapper.
+ */
+export const BaseSkeletonIcon = styled(ApSkeleton, {
+  shouldForwardProp: (prop) => prop !== 'shape' && prop !== 'nodeHeight' && prop !== 'nodeWidth',
+})<{
+  shape?: NodeShape;
+  nodeHeight?: number;
+  nodeWidth?: number;
+}>`
+  flex-grow: 0;
+  flex-shrink: 0;
+  ${({ shape, nodeHeight, nodeWidth }) => {
+    const { iconWidth, iconHeight } = getIconDimensions(shape, nodeHeight, nodeWidth);
+    const isCircle = shape === 'circle';
+
+    return css`
+      width: ${iconWidth}px;
+      height: ${iconHeight}px;
+      border-radius: ${isCircle ? '50%' : '8px'};
+    `;
   }}
 `;

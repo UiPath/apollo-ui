@@ -1,32 +1,29 @@
 "use client";
 
-import { AlertCircle, Sparkles } from "lucide-react";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import type { UIMessage } from "@tanstack/ai-client";
+import { AlertCircle, ArrowDown, Sparkles } from "lucide-react";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ChatMessage } from "../utils/ai-chat-message-types";
-import type { ChoiceOption, Tools } from "../utils/ai-chat-tool-types";
-import { findLatestChoices, groupMessages } from "../utils/ai-chat-utils";
+import { useStickyScroll } from "../hooks/use-sticky-scroll";
+import type { ChoiceOption } from "../types";
+import { findLatestChoices } from "../utils/ai-chat-utils";
 import { AiChatInput } from "./ai-chat-input";
 import { AiChatLoading } from "./ai-chat-loading";
-import { AiChatMessage } from "./ai-chat-message";
 import { AiChatSuggestions } from "./ai-chat-suggestions";
-import { AiChatToolGroupMessage } from "./ai-chat-tool-group-message";
 
-interface AiChatProps {
-  messages: ChatMessage[];
+export interface AiChatProps {
+  messages: UIMessage[];
   isLoading: boolean;
   onSendMessage: (content: string) => void;
   onStop: () => void;
   onClearChat?: () => void;
   onChoiceSelect?: (option: ChoiceOption) => void;
-  tools?: Tools;
+  children?: ReactNode;
   assistantName?: string;
   title?: string;
   emptyState?: ReactNode;
   placeholder?: string;
   showClearButton?: boolean;
-  toolDisplayNames?: Record<string, string>;
-  enableToolGrouping?: boolean;
   error?: Error | null;
 }
 
@@ -37,45 +34,33 @@ export function AiChat({
   onStop,
   onClearChat,
   onChoiceSelect,
-  tools,
+  children,
   assistantName,
   title,
   emptyState,
   placeholder,
   showClearButton = true,
-  toolDisplayNames,
-  enableToolGrouping = false,
   error,
 }: AiChatProps) {
   const { t } = useTranslation();
   const [input, setInput] = useState("");
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const { scrollRef, contentRef, isStuck, scrollToBottom } = useStickyScroll();
   const displayName = assistantName ?? t("ai_assistant");
-
-  const scrollToBottom = () => {
-    const el = scrollRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-    const last = contentRef.current?.lastElementChild;
-    if (!last) return;
-    const observer = new ResizeObserver(scrollToBottom);
-    observer.observe(last);
-    return () => observer.disconnect();
-  }, [messages]);
 
   const handleSubmit = () => {
     if (!input.trim() || isLoading) return;
     onSendMessage(input.trim());
     setInput("");
+    scrollToBottom();
   };
 
   const latestChoices = findLatestChoices(messages);
 
-  const groupedItems = groupMessages(messages, enableToolGrouping);
+  const lastMessage = messages.at(-1);
+  const lastAssistantHasText =
+    lastMessage?.role === "assistant" &&
+    lastMessage.parts.some((p) => p.type === "text" && p.content);
+  const showLoadingIndicator = isLoading && !lastAssistantHasText;
 
   const defaultEmptyState = (
     <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
@@ -107,7 +92,7 @@ export function AiChat({
         <div
           role="alert"
           aria-live="assertive"
-          className="mx-4 mb-2 flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+          className="mx-4 mb-2 flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive max-h-16 overflow-y-auto"
         >
           <AlertCircle
             className="h-4 w-4 flex-shrink-0 mt-0.5"
@@ -117,61 +102,51 @@ export function AiChat({
         </div>
       )}
 
-      <div
-        ref={scrollRef}
-        role="log"
-        aria-label={t("chat_messages")}
-        aria-live="polite"
-        aria-atomic="false"
-        className="flex-1 overflow-y-auto p-4"
-      >
-        {groupedItems.length === 0 ? (
-          (emptyState ?? defaultEmptyState)
-        ) : (
-          <div ref={contentRef} className="space-y-4">
-            {groupedItems.map((item, idx) => {
-              if (item.kind === "tool-group") {
-                const isLast = !groupedItems
-                  .slice(idx + 1)
-                  .some((g) => g.kind === "tool-group");
-                return (
-                  <AiChatToolGroupMessage
-                    key={item.id}
-                    toolCalls={item.toolCalls}
-                    isLatest={isLast}
-                    assistantName={displayName}
-                    toolDisplayNames={toolDisplayNames}
-                  />
-                );
-              }
+      <div className="relative flex-1 min-h-0">
+        <div
+          ref={scrollRef}
+          role="log"
+          aria-label={t("chat_messages")}
+          aria-live="polite"
+          aria-atomic="false"
+          className="h-full overflow-y-auto p-4"
+        >
+          {messages.length === 0 ? (
+            (emptyState ?? defaultEmptyState)
+          ) : (
+            <div ref={contentRef} className="space-y-4">
+              {children}
 
-              const message = item.message;
-              return (
-                <AiChatMessage
-                  key={message.id}
-                  message={message}
-                  tools={tools}
-                  assistantName={displayName}
+              {latestChoices && !isLoading && (
+                <AiChatSuggestions
+                  prompt={latestChoices.prompt}
+                  options={latestChoices.options}
+                  onSelect={(option) => {
+                    if (onChoiceSelect) {
+                      onChoiceSelect(option);
+                    } else {
+                      onSendMessage(option.label);
+                    }
+                  }}
                 />
-              );
-            })}
+              )}
 
-            {latestChoices && !isLoading && (
-              <AiChatSuggestions
-                prompt={latestChoices.prompt}
-                options={latestChoices.options}
-                onSelect={(option) => {
-                  if (onChoiceSelect) {
-                    onChoiceSelect(option);
-                  } else {
-                    onSendMessage(option.label);
-                  }
-                }}
-              />
-            )}
+              {showLoadingIndicator && (
+                <AiChatLoading assistantName={displayName} />
+              )}
+            </div>
+          )}
+        </div>
 
-            {isLoading && <AiChatLoading assistantName={displayName} />}
-          </div>
+        {!isStuck && (
+          <button
+            type="button"
+            onClick={scrollToBottom}
+            aria-label={t("scroll_to_bottom")}
+            className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center size-8 rounded-full border bg-background shadow-md hover:bg-accent"
+          >
+            <ArrowDown className="size-4" />
+          </button>
         )}
       </div>
 
@@ -189,20 +164,3 @@ export function AiChat({
     </div>
   );
 }
-
-export type {
-  ChoiceOption,
-  DisplayTool,
-  ExecuteTool,
-  Tool,
-  ToolResult,
-  ToolResultChoices,
-  Tools,
-} from "../utils/ai-chat-types";
-export { AiChatInput } from "./ai-chat-input";
-export { AiChatLoading } from "./ai-chat-loading";
-export { AiChatMarkdown } from "./ai-chat-markdown";
-export { AiChatMessage } from "./ai-chat-message";
-export { AiChatSuggestions } from "./ai-chat-suggestions";
-export { AiChatToolGroup } from "./ai-chat-tool-group";
-export { AiChatToolGroupMessage } from "./ai-chat-tool-group-message";

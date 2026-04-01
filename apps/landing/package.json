@@ -1,0 +1,23 @@
+{
+  "name": "apollo-landing",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Apollo Design System landing page",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "format": "biome format --write .",
+    "format:check": "biome format ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.6",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  }
+}

@@ -56,13 +56,13 @@ function PanelDemo({ side }: { side: 'left' | 'right' }) {
       side={side}
       onIconClick={handleIconClick}
       activeIndex={activeIndex}
-      className={side === 'left' ? 'border-r border-border-subtle' : 'border-l border-border-subtle'}
+      className={
+        side === 'left' ? 'border-r border-border-subtle' : 'border-l border-border-subtle'
+      }
     />
   );
 
-  const panel = showPanel && (
-    <StudioPanel side={side}>{content}</StudioPanel>
-  );
+  const panel = showPanel && <StudioPanel side={side}>{content}</StudioPanel>;
 
   return (
     <div className="future-dark flex h-[560px] bg-surface-raised">

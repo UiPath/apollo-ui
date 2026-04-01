@@ -236,7 +236,8 @@ describe('ListView', () => {
         expect.objectContaining({
           id: 'item-1',
           name: 'Item 1',
-        })
+        }),
+        0
       );
     });
 
@@ -245,8 +246,8 @@ describe('ListView', () => {
 
       render(<ListView {...defaultProps} items={items} isLoading={true} />);
 
-      const button = screen.getByRole('button');
-      expect(button).toBeDisabled();
+      const option = screen.getByRole('option');
+      expect(option).toBeDisabled();
     });
 
     it('should have loading class when isLoading is true', () => {
@@ -254,8 +255,8 @@ describe('ListView', () => {
 
       render(<ListView {...defaultProps} items={items} isLoading={true} />);
 
-      const button = screen.getByRole('button');
-      expect(button).toHaveClass('loading');
+      const option = screen.getByRole('option');
+      expect(option).toHaveClass('loading');
     });
   });
 

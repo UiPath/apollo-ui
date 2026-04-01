@@ -24,9 +24,11 @@ export const BasicToastTypes = {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => toast('Event has been created', {
-            description: 'Sunday, December 03, 2023 at 9:00 AM',
-          })}
+          onClick={() =>
+            toast('Event has been created', {
+              description: 'Sunday, December 03, 2023 at 9:00 AM',
+            })
+          }
         >
           Default
         </Button>
@@ -37,11 +39,7 @@ export const BasicToastTypes = {
         >
           Success
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => toast.error('Something went wrong')}
-        >
+        <Button variant="outline" size="sm" onClick={() => toast.error('Something went wrong')}>
           Error
         </Button>
         <Button
@@ -58,11 +56,7 @@ export const BasicToastTypes = {
         >
           Info
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => toast.loading('Loading data…')}
-        >
+        <Button variant="outline" size="sm" onClick={() => toast.loading('Loading data…')}>
           Loading
         </Button>
       </div>
@@ -202,9 +196,15 @@ export const RichContentToast = {
             toast('Deployment Complete', {
               description: (
                 <div className="mt-1 space-y-1 text-xs">
-                  <p>Environment: <span className="font-medium">Production</span></p>
-                  <p>Version: <span className="font-medium">v2.4.0</span></p>
-                  <p>Duration: <span className="font-medium">1m 23s</span></p>
+                  <p>
+                    Environment: <span className="font-medium">Production</span>
+                  </p>
+                  <p>
+                    Version: <span className="font-medium">v2.4.0</span>
+                  </p>
+                  <p>
+                    Duration: <span className="font-medium">1m 23s</span>
+                  </p>
                 </div>
               ),
             })
@@ -271,7 +271,15 @@ export const ToastPositioning = {
         <p className="text-xs text-muted-foreground">
           Used for background notifications, system events, and non-critical feedback.
         </p>
-        <SonnerToaster position="bottom-right" toastOptions={{ classNames: { toast: 'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg' } }} />
+        <SonnerToaster
+          position="bottom-right"
+          toastOptions={{
+            classNames: {
+              toast:
+                'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg',
+            },
+          }}
+        />
         <Button
           variant="outline"
           size="sm"
@@ -284,7 +292,8 @@ export const ToastPositioning = {
       <div className="space-y-2">
         <p className="text-sm font-medium">Top Center</p>
         <p className="text-xs text-muted-foreground">
-          Used for important confirmations, form submissions, and user-initiated actions that need prominent visibility.
+          Used for important confirmations, form submissions, and user-initiated actions that need
+          prominent visibility.
         </p>
         <Button
           variant="outline"
@@ -488,9 +497,7 @@ export const UserActions = {
         <Button
           variant="outline"
           size="sm"
-          onClick={() =>
-            toast('Link copied to clipboard', { duration: 2000 })
-          }
+          onClick={() => toast('Link copied to clipboard', { duration: 2000 })}
         >
           Copy Link
         </Button>

@@ -11,13 +11,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from './pagination';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 
 const meta: Meta<typeof Pagination> = {
   title: 'Components/Navigation/Pagination',
@@ -265,7 +259,13 @@ export const Examples = {
             <div className="flex items-center justify-between border-t px-4 py-3">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span>Rows per page</span>
-                <Select value={rowsPerPage} onValueChange={(v) => { setRowsPerPage(v); setGridPage(1); }}>
+                <Select
+                  value={rowsPerPage}
+                  onValueChange={(v) => {
+                    setRowsPerPage(v);
+                    setGridPage(1);
+                  }}
+                >
                   <SelectTrigger className="h-8 w-[70px]">
                     <SelectValue />
                   </SelectTrigger>

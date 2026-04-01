@@ -39,7 +39,8 @@ The tree uses a fixed vertical layout: **Title** → **Search bar** (full width)
     selectionMode: {
       control: 'select',
       options: ['single', 'multiple', 'none'],
-      description: 'Controls selection behavior. "multiple" allows shift/ctrl-click and drag-select.',
+      description:
+        'Controls selection behavior. "multiple" allows shift/ctrl-click and drag-select.',
     },
     showSelectionCheckboxes: {
       description: 'Shows checkboxes on leaf items only. Folders do not get checkboxes.',
@@ -103,13 +104,7 @@ export const Basic = {
   parameters: {
     docs: { description: { story: 'Default tree with expand/collapse and search.' } },
   },
-  render: () => (
-    <TreeView
-      data={sampleData}
-      title="File Explorer"
-      iconMap={iconMap}
-    />
-  ),
+  render: () => <TreeView data={sampleData} title="File Explorer" iconMap={iconMap} />,
 };
 
 // ============================================================================
@@ -119,7 +114,9 @@ export const Basic = {
 export const WithCheckboxes = {
   name: 'With Checkboxes',
   parameters: {
-    docs: { description: { story: 'Access-rights checkboxes with Check/Uncheck toolbar actions.' } },
+    docs: {
+      description: { story: 'Access-rights checkboxes with Check/Uncheck toolbar actions.' },
+    },
   },
   render: () => (
     <TreeView
@@ -153,7 +150,11 @@ const sampleDataWithFeatures: TreeViewItem[] = [
             id: '1.1.1',
             name: 'Active Item',
             type: 'item',
-            badge: <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-800">Live</span>,
+            badge: (
+              <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-800">
+                Live
+              </span>
+            ),
             meta: '2.4.1',
             actions: [
               {
@@ -250,12 +251,20 @@ export const WithContextMenu = {
       {
         id: 'open',
         label: 'Open',
-        action: (items) => console.log('Open:', items.map((i) => i.name)),
+        action: (items) =>
+          console.log(
+            'Open:',
+            items.map((i) => i.name)
+          ),
       },
       {
         id: 'download',
         label: 'Download',
-        action: (items) => console.log('Download:', items.map((i) => i.name)),
+        action: (items) =>
+          console.log(
+            'Download:',
+            items.map((i) => i.name)
+          ),
       },
     ];
 

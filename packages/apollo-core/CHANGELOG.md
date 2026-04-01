@@ -1,3 +1,39 @@
+## [@uipath/apollo-core-v5.9.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.8.1...@uipath/apollo-core@5.9.0) (2026-03-26)
+
+### Features
+
+* **apollo-core:** update UiPath full logo SVGs with new artwork ([028326e](https://github.com/UiPath/apollo-ui/commit/028326eb8c53e4ef069be111713d82ed90413d70))
+
+## [@uipath/apollo-core-v5.8.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.8.0...@uipath/apollo-core@5.8.1) (2026-03-25)
+
+### Bug Fixes
+
+* **apollo-core:** update Logo Full Light to all-black monochrome ([e9f4fc6](https://github.com/UiPath/apollo-ui/commit/e9f4fc6776d9313785cb505aaf722f42d875e1cf)), closes [#FA4616](https://github.com/UiPath/apollo-ui/issues/FA4616)
+
+## [@uipath/apollo-core-v5.8.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.7.4...@uipath/apollo-core@5.8.0) (2026-03-23)
+
+### Features
+
+* **apollo-wind:** add Logos page with brand and product logo library ([2cda272](https://github.com/UiPath/apollo-ui/commit/2cda272c807356e6e13f0c0f20b3183485561b30))
+
+## [@uipath/apollo-core-v5.7.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.7.3...@uipath/apollo-core@5.7.4) (2026-03-19)
+
+### Bug Fixes
+
+* **apollo-core:** too generic theme name ([339da18](https://github.com/UiPath/apollo-ui/commit/339da18026408386879ba6e2acebe18fa6f96651))
+
+## [@uipath/apollo-core-v5.7.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.7.2...@uipath/apollo-core@5.7.3) (2026-03-17)
+
+### Bug Fixes
+
+* **apollo-core:** generate for host as well ([f22bf38](https://github.com/UiPath/apollo-ui/commit/f22bf38de8db9c48f1be4b4d57fc7258e37c5deb))
+
+## [@uipath/apollo-core-v5.7.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.7.1...@uipath/apollo-core@5.7.2) (2026-03-17)
+
+### Bug Fixes
+
+* **ci:** vulnerabilities on packages ([9dc7752](https://github.com/UiPath/apollo-ui/commit/9dc7752ca1d9e253ec58e3c2c37c5d124ed73769))
+
 ## [@uipath/apollo-core-v5.7.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.7.0...@uipath/apollo-core@5.7.1) (2026-03-05)
 
 ### Bug Fixes

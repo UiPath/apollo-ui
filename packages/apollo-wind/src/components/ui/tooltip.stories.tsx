@@ -63,7 +63,9 @@ export const Position = {
       <div className="flex items-center justify-center gap-6 py-16">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="outline" size="sm">Top</Button>
+            <Button variant="outline" size="sm">
+              Top
+            </Button>
           </TooltipTrigger>
           <TooltipContent side="top">
             <p>Tooltip on top</p>
@@ -72,7 +74,9 @@ export const Position = {
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="outline" size="sm">Bottom</Button>
+            <Button variant="outline" size="sm">
+              Bottom
+            </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom">
             <p>Tooltip on bottom</p>
@@ -81,7 +85,9 @@ export const Position = {
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="outline" size="sm">Left</Button>
+            <Button variant="outline" size="sm">
+              Left
+            </Button>
           </TooltipTrigger>
           <TooltipContent side="left">
             <p>Tooltip on left</p>
@@ -90,7 +96,9 @@ export const Position = {
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="outline" size="sm">Right</Button>
+            <Button variant="outline" size="sm">
+              Right
+            </Button>
           </TooltipTrigger>
           <TooltipContent side="right">
             <p>Tooltip on right</p>
@@ -159,7 +167,8 @@ export const TooltipWithRichContent = {
             <div className="space-y-2">
               <p className="text-sm font-medium">Rate Limiting</p>
               <p className="text-xs text-muted-foreground">
-                Your current plan allows 1,000 requests per minute. Exceeding this limit will result in 429 errors.
+                Your current plan allows 1,000 requests per minute. Exceeding this limit will result
+                in 429 errors.
               </p>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Keyboard className="h-3 w-3" />
@@ -182,9 +191,7 @@ export const TooltipWithRichContent = {
               <div className="h-1.5 w-full rounded-full bg-secondary">
                 <div className="h-full w-3/4 rounded-full bg-primary" />
               </div>
-              <p className="text-xs text-muted-foreground">
-                7.5 GB of 10 GB used
-              </p>
+              <p className="text-xs text-muted-foreground">7.5 GB of 10 GB used</p>
             </div>
           </TooltipContent>
         </Tooltip>
@@ -205,7 +212,9 @@ export const TooltipWithDifferentContent = {
         {/* Short text */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="outline" size="sm">Short</Button>
+            <Button variant="outline" size="sm">
+              Short
+            </Button>
           </TooltipTrigger>
           <TooltipContent>
             <p>Save</p>
@@ -215,7 +224,9 @@ export const TooltipWithDifferentContent = {
         {/* With shortcut */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="outline" size="sm">With Shortcut</Button>
+            <Button variant="outline" size="sm">
+              With Shortcut
+            </Button>
           </TooltipTrigger>
           <TooltipContent>
             <div className="flex items-center gap-2">
@@ -228,7 +239,9 @@ export const TooltipWithDifferentContent = {
         {/* Multi-line */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="outline" size="sm">Multi-line</Button>
+            <Button variant="outline" size="sm">
+              Multi-line
+            </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-[200px]">
             <p>This tooltip has a longer description that wraps across multiple lines.</p>
@@ -239,7 +252,9 @@ export const TooltipWithDifferentContent = {
         <Tooltip>
           <TooltipTrigger asChild>
             <span>
-              <Button variant="outline" size="sm" disabled>Disabled</Button>
+              <Button variant="outline" size="sm" disabled>
+                Disabled
+              </Button>
             </span>
           </TooltipTrigger>
           <TooltipContent>
@@ -262,7 +277,9 @@ export const TooltipWithFormElements = {
       <div className="flex flex-col gap-4 max-w-sm">
         <div className="space-y-2">
           <div className="flex items-center gap-1.5">
-            <label htmlFor="api-key" className="text-sm font-medium">API Key</label>
+            <label htmlFor="api-key" className="text-sm font-medium">
+              API Key
+            </label>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
@@ -277,7 +294,9 @@ export const TooltipWithFormElements = {
 
         <div className="space-y-2">
           <div className="flex items-center gap-1.5">
-            <label htmlFor="webhook" className="text-sm font-medium">Webhook URL</label>
+            <label htmlFor="webhook" className="text-sm font-medium">
+              Webhook URL
+            </label>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
@@ -305,7 +324,9 @@ export const TooltipWithDelay = {
       <div className="flex items-center gap-4">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="outline" size="sm">Instant Tooltip</Button>
+            <Button variant="outline" size="sm">
+              Instant Tooltip
+            </Button>
           </TooltipTrigger>
           <TooltipContent>
             <p>This tooltip appears immediately with zero delay.</p>
@@ -355,7 +376,9 @@ export const Examples = {
                     <div className="flex items-center gap-2">
                       <span>{item.label}</span>
                       {item.shortcut && (
-                        <kbd className="rounded border bg-muted px-1.5 py-0.5 text-[10px] font-mono">{item.shortcut}</kbd>
+                        <kbd className="rounded border bg-muted px-1.5 py-0.5 text-[10px] font-mono">
+                          {item.shortcut}
+                        </kbd>
                       )}
                     </div>
                   </TooltipContent>

@@ -259,7 +259,9 @@ export const FileActions = {
               <FileText className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">{file.name}</p>
-                <p className="text-xs text-muted-foreground">{file.type} · {file.size}</p>
+                <p className="text-xs text-muted-foreground">
+                  {file.type} · {file.size}
+                </p>
               </div>
             </div>
             <DropdownMenu>
@@ -398,15 +400,22 @@ export const DataTable = {
         </div>
         {/* Rows */}
         {rows.map((row) => (
-          <div key={row.id} className="flex items-center gap-4 border-b last:border-0 px-4 py-2.5 text-sm">
+          <div
+            key={row.id}
+            className="flex items-center gap-4 border-b last:border-0 px-4 py-2.5 text-sm"
+          >
             <span className="w-[80px] tabular-nums text-muted-foreground">{row.id}</span>
             <span className="flex-1 font-medium">{row.name}</span>
             <span className="w-[80px]">
-              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                row.status === 'Active' ? 'bg-primary/10 text-primary' :
-                row.status === 'Paused' ? 'bg-muted text-muted-foreground' :
-                'bg-yellow-500/10 text-yellow-600'
-              }`}>
+              <span
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                  row.status === 'Active'
+                    ? 'bg-primary/10 text-primary'
+                    : row.status === 'Paused'
+                      ? 'bg-muted text-muted-foreground'
+                      : 'bg-yellow-500/10 text-yellow-600'
+                }`}
+              >
                 {row.status}
               </span>
             </span>

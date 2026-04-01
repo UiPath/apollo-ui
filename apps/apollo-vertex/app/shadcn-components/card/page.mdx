@@ -2,13 +2,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/registry/button/button'
 import { Input } from '@/registry/input/input'
 import { Label } from '@/registry/label/label'
+import { SelectableCardDemo } from './selectable-card-demo'
 
 # Card
 
-Displays a card with header, content, and footer.
+Displays a card with header, content, and footer. The default variant uses a frosted glass effect. Use `variant="solid"` for a flat card with a solid background.
 
-<div className="p-4 border rounded-lg mt-4">
-  <Card className="w-[350px]">
+<div className="flex justify-center p-8 rounded-lg mt-4 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-800">
+  <Card className="w-[350px] gap-6 py-6">
     <CardHeader>
       <CardTitle>Create project</CardTitle>
       <CardDescription>Deploy your new project in one-click.</CardDescription>
@@ -30,22 +31,22 @@ Displays a card with header, content, and footer.
   </Card>
 </div>
 
-## Glass Variant
+## Solid Variant
 
-Use `variant="glass"` for a frosted glass effect with semi-transparent backgrounds and layered shadows.
+Use `variant="solid"` for a flat card with a solid background and border.
 
-<div className="p-8 rounded-lg mt-4 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-800">
-  <Card variant="glass" className="w-[350px]">
+<div className="flex justify-center p-4 border rounded-lg mt-4">
+  <Card variant="solid" className="w-[350px] gap-6 py-6">
     <CardHeader>
-      <CardTitle>Glass Card</CardTitle>
-      <CardDescription>A frosted glass effect with backdrop blur and layered shadows.</CardDescription>
+      <CardTitle>Solid Card</CardTitle>
+      <CardDescription>A flat card with a solid background.</CardDescription>
     </CardHeader>
     <CardContent>
       <form>
         <div className="grid w-full items-center gap-4">
           <div className="flex flex-col space-y-1.5">
-            <Label htmlFor="glass-name">Name</Label>
-            <Input id="glass-name" placeholder="Name of your project" />
+            <Label htmlFor="solid-name">Name</Label>
+            <Input id="solid-name" placeholder="Name of your project" />
           </div>
         </div>
       </form>
@@ -58,10 +59,10 @@ Use `variant="glass"` for a frosted glass effect with semi-transparent backgroun
 </div>
 
 ```tsx
-<Card variant="glass">
+<Card variant="solid">
   <CardHeader>
-    <CardTitle>Glass Card</CardTitle>
-    <CardDescription>A frosted glass effect.</CardDescription>
+    <CardTitle>Solid Card</CardTitle>
+    <CardDescription>A flat card with a solid background.</CardDescription>
   </CardHeader>
   <CardContent>
     <p>Card Content</p>
@@ -69,6 +70,26 @@ Use `variant="glass"` for a frosted glass effect with semi-transparent backgroun
   <CardFooter>
     <p>Card Footer</p>
   </CardFooter>
+</Card>
+```
+
+## Selectable
+
+Cards can be made selectable with `selectable="standard"` or `selectable="ai"`. Selectable cards render as a `<button>` with `aria-pressed` for accessibility. They show a glow effect on hover and when selected.
+
+<div className="mt-4">
+  <SelectableCardDemo />
+</div>
+
+```tsx
+<Card selectable="standard" selected={selected} onClick={() => setSelected(!selected)}>
+  <CardTitle>Standard</CardTitle>
+  <CardDescription>Click to select this card.</CardDescription>
+</Card>
+
+<Card selectable="ai" selected={selected} onClick={() => setSelected(!selected)}>
+  <CardTitle>AI Mode</CardTitle>
+  <CardDescription>Uses an AI gradient glow when selected.</CardDescription>
 </Card>
 ```
 
@@ -88,6 +109,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  GLASS_CLASSES,
 } from "@/components/ui/card"
 ```
 
@@ -104,4 +126,16 @@ import {
     <p>Card Footer</p>
   </CardFooter>
 </Card>
+```
+
+### GLASS_CLASSES
+
+The `GLASS_CLASSES` constant is exported for reuse in other components that need the same frosted glass styling:
+
+```tsx
+import { GLASS_CLASSES } from "@/components/ui/card"
+
+<div className={cn(GLASS_CLASSES, "p-4")}>
+  Glass morphism container
+</div>
 ```

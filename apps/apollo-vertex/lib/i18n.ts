@@ -23,6 +23,7 @@ const localeLoaders = {
 } as const satisfies Record<string, LocaleLoader>;
 
 export type SupportedLocale = keyof typeof localeLoaders;
+// oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- Object.keys returns string[]; keyof narrowing is safe here since localeLoaders is a closed object
 export const SUPPORTED_LOCALES = Object.keys(
   localeLoaders,
 ) as SupportedLocale[];
@@ -33,16 +34,22 @@ export const configurei18n = async () => {
     .use({
       type: "backend",
       read(language: string, _namespace: Namespace, callback: ReadCallback) {
-        const loadLocale = localeLoaders[language as SupportedLocale];
-
-        if (!loadLocale) {
+        if (!(language in localeLoaders)) {
           callback(new Error(`Locale not found: ${language}`), null);
           return;
         }
 
+        // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- `in` guard above validates membership but TS can't narrow string to keyof
+        const loadLocale = localeLoaders[language as SupportedLocale];
+
         loadLocale()
           .then((module) => callback(null, module.default))
-          .catch((error) => callback(error, null));
+          .catch((error: unknown) =>
+            callback(
+              error instanceof Error ? error : new Error(String(error)),
+              null,
+            ),
+          );
       },
     })
     .use(initReactI18next)

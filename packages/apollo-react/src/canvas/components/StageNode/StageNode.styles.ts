@@ -48,7 +48,7 @@ export const StageContainer = styled.div<{
     `}
 
   ${({ status }) =>
-    status === 'Paused' &&
+    (status === 'Paused' || status === 'Warning') &&
     css`
       border-color: var(--uix-canvas-warning-icon);
     `}
@@ -78,9 +78,11 @@ export const StageHeader = styled.div<{ isException?: boolean }>`
 `;
 
 export const StageTitleContainer = styled.div<{ isEditing?: boolean }>`
-  display: inline-block;
+  display: block;
   border-radius: 4px;
   height: 100%;
+  width: 100%;
+  box-sizing: border-box;
   border: ${(props) => (props.isEditing ? '1px solid var(--uix-canvas-border-de-emp)' : 'none')};
 `;
 
@@ -97,9 +99,9 @@ export const StageTitleInput = styled.input<{
   background: transparent;
   text-overflow: ellipsis;
   border-radius: 2px;
+  width: 100%;
   min-width: 100px;
-  max-width: 220px;
-  padding: ${(props) => (props.isStageTitleEditable ? 'none' : `${Padding.PadS} 0px`)};
+  padding: ${(props) => (props.isStageTitleEditable ? '0' : `${Padding.PadS} 0px`)};
 
   &:focus {
     outline: none;
@@ -171,7 +173,6 @@ export const StageTask = styled.div<{
   selected?: boolean;
   isParallel?: boolean;
   isDragEnabled?: boolean;
-  isMenuOpen?: boolean;
 }>`
   position: relative;
   display: flex;
@@ -193,10 +194,6 @@ export const StageTask = styled.div<{
   height: ${({ isDragEnabled }) => (isDragEnabled ? '100%' : 'auto')};
 
   .task-menu-icon-button {
-    display: ${({ isMenuOpen }) => (isMenuOpen ? 'flex' : 'none')};
-  }
-
-  &:hover .task-menu-icon-button {
     display: flex;
   }
 
@@ -213,7 +210,7 @@ export const StageTask = styled.div<{
     `}
 
   ${({ status }) =>
-    status === 'Paused' &&
+    (status === 'Paused' || status === 'Warning') &&
     css`
       border-color: var(--uix-canvas-warning-icon);
     `}

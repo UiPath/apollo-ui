@@ -328,6 +328,7 @@ vi.mock('react-window', () => ({
         )
       )
     ),
+  useListRef: () => React.useRef(null),
 }));
 
 // Mock @mui/x-tree-view to avoid ESM directory import issues

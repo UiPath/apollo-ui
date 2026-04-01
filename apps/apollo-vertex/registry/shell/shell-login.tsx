@@ -1,9 +1,12 @@
-"use client";
-
 import { useTranslation } from "react-i18next";
 import { useAuth } from "./shell-auth-provider";
 
-export const ShellLogin = () => {
+export interface ShellLoginProps {
+  title?: string;
+  description?: string;
+}
+
+export const ShellLogin = ({ title, description }: ShellLoginProps) => {
   const { t } = useTranslation();
   const { login } = useAuth();
 
@@ -11,10 +14,23 @@ export const ShellLogin = () => {
     <div className="flex h-screen items-center justify-center bg-background">
       <div className="w-full max-w-md">
         <div className="bg-card rounded-lg shadow-lg p-8 border border-border">
+          {/* oxlint-disable-next-line typescript-eslint(prefer-nullish-coalescing) -- empty string should not render the header */}
+          {(title || description) && (
+            <div className="text-center mb-8">
+              {title && (
+                <h1 className="text-3xl font-bold text-foreground mb-2">
+                  {title}
+                </h1>
+              )}
+              {description && (
+                <p className="text-muted-foreground">{description}</p>
+              )}
+            </div>
+          )}
           <div className="space-y-6">
             <button
               type="button"
-              onClick={() => login()}
+              onClick={() => void login()}
               className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium text-base shadow-sm hover:shadow-md"
             >
               {t("sign_in_with_uipath")}

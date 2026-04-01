@@ -78,7 +78,7 @@ export const AddNodePanel = memo(function AddNodePanel({
 
   return (
     <Toolbox
-      title={title ?? 'Add Node'}
+      title={title ?? 'Add node'}
       initialItems={nodeListOptions}
       loading={loading}
       onItemSelect={handleNodeListItemSelect}

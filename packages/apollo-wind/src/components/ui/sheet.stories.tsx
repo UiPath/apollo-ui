@@ -53,7 +53,8 @@ export const Basic = {
         </SheetHeader>
         <div className="py-6">
           <p className="text-sm text-muted-foreground">
-            Sheet content goes here. Use sheets for supplementary content that doesn't require a full page.
+            Sheet content goes here. Use sheets for supplementary content that doesn't require a
+            full page.
           </p>
         </div>
         <SheetFooter>
@@ -82,7 +83,8 @@ export const RightSide = {
         <SheetHeader>
           <SheetTitle>Right Sheet</SheetTitle>
           <SheetDescription>
-            Slides in from the right edge of the screen. This is the standard position for detail panels, forms, and supplementary content.
+            Slides in from the right edge of the screen. This is the standard position for detail
+            panels, forms, and supplementary content.
           </SheetDescription>
         </SheetHeader>
       </SheetContent>
@@ -151,9 +153,7 @@ export const WithInformation = {
       <SheetContent className="flex flex-col">
         <SheetHeader>
           <SheetTitle>Order #ORD-2024-1847</SheetTitle>
-          <SheetDescription>
-            Placed on February 10, 2026
-          </SheetDescription>
+          <SheetDescription>Placed on February 10, 2026</SheetDescription>
         </SheetHeader>
         <div className="flex-1 py-6 space-y-6">
           {/* Status */}
@@ -213,8 +213,10 @@ export const WithInformation = {
           <div className="space-y-1">
             <h4 className="text-sm font-medium">Shipping Address</h4>
             <p className="text-sm text-muted-foreground">
-              John Doe<br />
-              123 Main Street, Apt 4B<br />
+              John Doe
+              <br />
+              123 Main Street, Apt 4B
+              <br />
               New York, NY 10001
             </p>
           </div>
@@ -247,19 +249,41 @@ export const SettingsPanel = {
       <SheetContent className="flex flex-col">
         <SheetHeader>
           <SheetTitle>Settings</SheetTitle>
-          <SheetDescription>
-            Manage your account preferences.
-          </SheetDescription>
+          <SheetDescription>Manage your account preferences.</SheetDescription>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto py-4 -mx-6 px-6">
           {[
             { icon: <User className="h-4 w-4" />, label: 'Profile', desc: 'Name, email, avatar' },
-            { icon: <Bell className="h-4 w-4" />, label: 'Notifications', desc: 'Email and push preferences' },
-            { icon: <Shield className="h-4 w-4" />, label: 'Security', desc: 'Password, 2FA, sessions' },
-            { icon: <CreditCard className="h-4 w-4" />, label: 'Billing', desc: 'Plans, invoices, payment' },
-            { icon: <Tag className="h-4 w-4" />, label: 'Tags & Labels', desc: 'Organize your content' },
-            { icon: <FileText className="h-4 w-4" />, label: 'API Keys', desc: 'Manage integrations' },
-            { icon: <Clock className="h-4 w-4" />, label: 'Activity Log', desc: 'Recent account activity' },
+            {
+              icon: <Bell className="h-4 w-4" />,
+              label: 'Notifications',
+              desc: 'Email and push preferences',
+            },
+            {
+              icon: <Shield className="h-4 w-4" />,
+              label: 'Security',
+              desc: 'Password, 2FA, sessions',
+            },
+            {
+              icon: <CreditCard className="h-4 w-4" />,
+              label: 'Billing',
+              desc: 'Plans, invoices, payment',
+            },
+            {
+              icon: <Tag className="h-4 w-4" />,
+              label: 'Tags & Labels',
+              desc: 'Organize your content',
+            },
+            {
+              icon: <FileText className="h-4 w-4" />,
+              label: 'API Keys',
+              desc: 'Manage integrations',
+            },
+            {
+              icon: <Clock className="h-4 w-4" />,
+              label: 'Activity Log',
+              desc: 'Recent account activity',
+            },
           ].map((item, i) => (
             <button
               type="button"
@@ -283,4 +307,3 @@ export const SettingsPanel = {
     </Sheet>
   ),
 };
-

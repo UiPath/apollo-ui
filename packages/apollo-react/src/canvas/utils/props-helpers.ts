@@ -36,6 +36,9 @@ const normalizeToolName = (resource: AgentFlowResource): string => {
   if (resource.type === 'mcp') {
     return `mcp_${resource.name.toLowerCase().replace(/\s/g, '_')}`;
   }
+  if (resource.type === 'a2a') {
+    return `a2a_${resource.name.toLowerCase().replace(/\s/g, '_')}`;
+  }
   return resource.name.replace(/\s+/g, '_');
 };
 
@@ -54,7 +57,8 @@ const hasResourceStatus = (
       resource.type === 'context' ||
       resource.type === 'escalation' ||
       resource.type === 'tool' ||
-      resource.type === 'mcp'
+      resource.type === 'mcp' ||
+      resource.type === 'a2a'
     ) {
       const normalizedToolName = normalizeToolName(resource);
 
@@ -244,6 +248,13 @@ const createResourceNode = (
         type: 'memorySpace',
         parentNodeId,
       });
+    case 'a2a':
+      return createBaseNode({
+        ...baseData,
+        type: 'a2a',
+        projectId: resource.projectId,
+        parentNodeId,
+      });
     case 'escalation':
     default:
       return createBaseNode({
@@ -283,6 +294,9 @@ const calculateOptimalHandles = (
       sourceHandle = ResourceNodeType.Tool;
       break;
     case 'mcp':
+      sourceHandle = ResourceNodeType.Tool;
+      break;
+    case 'a2a':
       sourceHandle = ResourceNodeType.Tool;
       break;
     case 'memorySpace':
@@ -340,11 +354,12 @@ export const computeNodesAndEdges = (
 ): { nodes: AgentFlowCustomNode[]; edges: AgentFlowCustomEdge[] } => {
   const agentNode = createAgentNode(props, parentNodeId);
 
-  // Filter out MCP resources if the feature flag is disabled
-  const filteredResources =
-    props.enableMcpTools === false
-      ? props.resources.filter((resource) => resource.type !== 'mcp')
-      : props.resources;
+  // Filter out resources based on feature flags
+  const filteredResources = props.resources.filter((resource) => {
+    if (resource.type === 'mcp' && props.enableMcpTools === false) return false;
+    if (resource.type === 'a2a' && props.enableA2a !== true) return false;
+    return true;
+  });
 
   // Build a map of existing orders by resource ID (for both full ID and base ID)
   const existingOrderMap = new Map<string, number>();
