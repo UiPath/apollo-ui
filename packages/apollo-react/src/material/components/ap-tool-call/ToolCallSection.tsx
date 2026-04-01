@@ -117,6 +117,18 @@ const TaskUrlLink = styled('a')({
   },
 });
 
+const StringContent = styled('div')({
+  backgroundColor: 'var(--color-background-secondary)',
+  padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingS}`,
+  margin: `${token.Spacing.SpacingXs} 0`,
+  borderRadius: token.Spacing.SpacingMicro,
+  fontSize: token.FontFamily.FontSSize,
+  whiteSpace: 'pre-wrap',
+  wordBreak: 'break-word',
+  maxHeight: '180px',
+  overflowY: 'auto',
+});
+
 export const ToolCallSection: React.FC<ToolCallSectionProps> = ({
   title,
   isExpanded,
@@ -124,7 +136,8 @@ export const ToolCallSection: React.FC<ToolCallSectionProps> = ({
   data,
   children,
 }) => {
-  const showKeyValuePairs = data && Object.keys(data).length > 0;
+  const isStringData = typeof data === 'string';
+  const showKeyValuePairs = !isStringData && data && Object.keys(data).length > 0;
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -146,6 +159,9 @@ export const ToolCallSection: React.FC<ToolCallSectionProps> = ({
         {title}
       </SectionHeader>
       <SectionContent expanded={isExpanded}>
+        {isStringData && data && (
+          <StringContent>{data}</StringContent>
+        )}
         {showKeyValuePairs && (
           <KeyValueContainer>
             {Object.entries(data).map(([key, value]) => (

@@ -78,10 +78,7 @@ export function ToolCallShowcase() {
 							subject: "Meeting Reminder",
 							body: "Don't forget about our meeting tomorrow at 2 PM",
 						}}
-						output={{
-							error: "Failed to connect to email server",
-							code: "SMTP_ERROR",
-						}}
+						output="Failed to connect to email server: SMTP connection timed out after 30s"
 						isError={true}
 						startTime={new Date(Date.now() - 1500).toISOString()}
 						endTime={new Date().toISOString()}

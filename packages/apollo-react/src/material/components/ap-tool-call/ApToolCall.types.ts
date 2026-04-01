@@ -25,7 +25,7 @@ export interface ApToolCallProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Input parameters for the tool call */
   input?: Record<string, any>;
   /** Output data from the tool call */
-  output?: Record<string, any>;
+  output?: Record<string, any> | string;
   /** Whether the tool call resulted in an error */
   isError?: boolean;
   /** Start time of the tool call */
@@ -41,7 +41,7 @@ export interface ToolCallSectionProps {
   title: string;
   isExpanded: boolean | undefined;
   onToggle: () => void;
-  data?: Record<string, unknown>;
+  data?: Record<string, unknown> | string;
   children?: React.ReactNode;
 }
 
