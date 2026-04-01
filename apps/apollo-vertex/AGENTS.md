@@ -188,6 +188,15 @@ Avoid near-duplicate components:
 - Extract common logic and styling into a base component or utility so multiple variants can reuse it.
 - Duplicate components make maintenance and accessibility fixes harder—reuse where possible.
 
+### Multi-file component gotchas
+
+shadcn has a known bug ([shadcn-ui/ui#7309](https://github.com/shadcn-ui/ui/issues/7309)) where barrel imports are rewritten to point at the main file instead of `index.ts`. For example, `@/components/ui/data-table` gets rewritten to `@/components/ui/data-table/data-table`, bypassing the barrel entirely.
+
+When working with multi-file registry components:
+- **Add `target` fields** to every file entry in `registry.json` to preserve subdirectory structure during installation.
+- **Re-export from the main file** anything that other registry components import via the barrel. The CI registry check (`tsc --noEmit`) will catch missed re-exports.
+- If a consumer registry component needs a symbol from a multi-file component, the safest import is from the specific subfile (e.g., `@/components/ui/data-table/data-table-column-header`), but be aware that shadcn may still rewrite this path.
+
 ## Git Workflow
 
 Follow conventional commits. Commit body lines must not be longer than 100 characters.

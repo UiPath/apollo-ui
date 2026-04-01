@@ -358,3 +358,4 @@ function DataTable<TData, TValue>({
 }
 export { DataTable };
 export type { DataTableProps };
+export { DataTableColumnHeader } from "./data-table-column-header";
