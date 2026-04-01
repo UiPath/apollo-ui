@@ -61,6 +61,7 @@ interface InsightCardInnerProps {
   phase: ExpandPhase;
   viewMode: "desktop" | "compact" | "stacked";
   onExpandClick: () => void;
+  onAutopilotOpen?: () => void;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -74,6 +75,7 @@ function InsightCardInner({
   phase,
   viewMode,
   onExpandClick,
+  onAutopilotOpen,
   className = "",
   style,
 }: InsightCardInnerProps) {
@@ -137,6 +139,20 @@ function InsightCardInner({
           )}
         </div>
       )}
+      {/* Autopilot trigger — visible when card is fully expanded */}
+      {isThis && isExpanding && phase === "full" && onAutopilotOpen && (
+        <button
+          type="button"
+          onClick={onAutopilotOpen}
+          className="absolute bottom-5 right-5 z-20 size-8 rounded-full bg-gradient-to-br from-insight-500 to-primary-400 flex items-center justify-center text-white hover:opacity-90 transition-all animate-in fade-in zoom-in-90 duration-300"
+        >
+          <img
+            src="/Autopilot_light.svg"
+            alt="Autopilot"
+            className="size-4"
+          />
+        </button>
+      )}
     </Card>
   );
 }
@@ -150,11 +166,13 @@ export function InsightGrid({
   shared,
   cards,
   viewMode = "desktop",
+  onAutopilotOpen,
 }: {
   layout: LayoutConfig;
   shared: string;
   cards: CardConfig;
   viewMode?: "desktop" | "compact" | "stacked";
+  onAutopilotOpen?: (sourceTitle: string) => void;
 }) {
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [phase, setPhase] = useState<ExpandPhase>("idle");
@@ -242,6 +260,7 @@ export function InsightGrid({
                   {...sharedProps}
                   isThis={isThis}
                   onExpandClick={() => handleClick(cfg, idx)}
+                  onAutopilotOpen={onAutopilotOpen ? () => onAutopilotOpen(cfg.content.title) : undefined}
                   className="h-full"
                 />
               </div>
@@ -278,6 +297,7 @@ export function InsightGrid({
                       {...sharedProps}
                       isThis={isThis}
                       onExpandClick={() => handleClick(cfg, idx)}
+                      onAutopilotOpen={onAutopilotOpen ? () => onAutopilotOpen(cfg.content.title) : undefined}
                       style={{
                         opacity: isSibling && phase !== "idle" ? 0 : 1,
                         transform: isSibling && phase !== "idle" ? "scale(0.95)" : "scale(1)",

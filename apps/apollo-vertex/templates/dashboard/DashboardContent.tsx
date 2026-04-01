@@ -18,16 +18,20 @@ import { GlowDevControls } from "./GlowDevControls";
 import { InsightGrid } from "./InsightGrid";
 import { DashboardLoading } from "./DashboardLoading";
 import { PromptBar } from "./PromptBar";
+import { AutopilotInsight } from "./AutopilotInsight";
+
 type LayoutType = "executive" | "operational" | "analytics";
 
 function ExecutiveLayout({
   cards,
   layout,
   viewMode,
+  onAutopilotOpen,
 }: {
   cards: CardConfig;
   layout: LayoutConfig;
   viewMode: ViewMode;
+  onAutopilotOpen?: (sourceTitle: string) => void;
 }) {
   const borderClass = cards.borderVisible ? "" : "dark:!border-transparent";
   const blurClass = cards.backdropBlur ? "" : "dark:!backdrop-blur-none";
@@ -90,7 +94,7 @@ function ExecutiveLayout({
         {promptBarEl}
       </div>
       <div className="h-full overflow-hidden">
-        <InsightGrid layout={layout} shared={shared} cards={cards} viewMode={viewMode} />
+        <InsightGrid layout={layout} shared={shared} cards={cards} viewMode={viewMode} onAutopilotOpen={onAutopilotOpen} />
       </div>
     </div>
   );
@@ -147,17 +151,24 @@ export function DashboardContent() {
   const [darkCards, setDarkCards] = useState<CardConfig>(defaultDarkCards);
   const [layoutCfg, setLayoutCfg] = useState<LayoutConfig>(defaultLayout);
   const [replayCount, setReplayCount] = useState(0);
+  const [autopilotOpen, setAutopilotOpen] = useState(false);
+  const [autopilotSource, setAutopilotSource] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const viewMode = useViewMode(containerRef);
+
+  const handleAutopilotOpen = (sourceTitle: string) => {
+    setAutopilotSource(sourceTitle);
+    setAutopilotOpen(true);
+  };
 
   return (
     <DashboardLoading triggerReplay={replayCount}>
       <div
         className={`relative h-full ${viewMode === "stacked" ? "overflow-x-hidden" : "overflow-hidden"}`}
         style={
-          layoutCfg.containerBg === "none"
-            ? {}
-            : { backgroundColor: `var(--${layoutCfg.containerBg})` }
+          layoutCfg.containerBg !== "none"
+            ? { backgroundColor: `var(--${layoutCfg.containerBg})` }
+            : {}
         }
       >
         <DashboardGlow darkConfig={darkGlow} />
@@ -174,7 +185,7 @@ export function DashboardContent() {
           className="@container flex flex-col gap-4 relative z-10 h-full"
           style={{ padding: layoutCfg.padding }}
         >
-          {/* Header with layout toggle */}
+          {/* Header — stays in place */}
           <div className="flex flex-col @[500px]:flex-row @[500px]:items-center @[500px]:justify-between gap-4">
             <div>
               <h1 className="text-xs tracking-tight">
@@ -210,12 +221,33 @@ export function DashboardContent() {
           </div>
 
           {/* Layout content */}
-          <div className="flex-1 min-h-0">
-            {layout === "executive" && (
-              <ExecutiveLayout cards={darkCards} layout={layoutCfg} viewMode={viewMode} />
-            )}
-            {layout === "operational" && <OperationalLayout />}
-            {layout === "analytics" && <AnalyticsLayout />}
+          <div className="flex-1 min-h-0 relative">
+            {/* Dashboard cards — shifts left for autopilot */}
+            <div
+              className="h-full transition-transform duration-500 ease-in-out"
+              style={{ transform: autopilotOpen ? "translateX(-50%)" : "translateX(0)" }}
+            >
+              {layout === "executive" && (
+                <ExecutiveLayout cards={darkCards} layout={layoutCfg} viewMode={viewMode} onAutopilotOpen={handleAutopilotOpen} />
+              )}
+              {layout === "operational" && <OperationalLayout />}
+              {layout === "analytics" && <AnalyticsLayout />}
+            </div>
+            {/* Autopilot panel — slides in from right */}
+            <div
+              className="absolute top-0 bottom-0 right-0 transition-all duration-500 ease-in-out z-20"
+              style={{
+                width: "50%",
+                transform: autopilotOpen ? "translateX(0)" : "translateX(105%)",
+              }}
+            >
+              <div className="h-full pl-1">
+                <AutopilotInsight
+                  onClose={() => setAutopilotOpen(false)}
+                  sourceCardTitle={autopilotSource}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
