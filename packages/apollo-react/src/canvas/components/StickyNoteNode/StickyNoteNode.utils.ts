@@ -22,3 +22,21 @@ export const preserveNewlines = (markdown: string): string => {
 
   return result;
 };
+
+// NOTE: refactor isMac and getModifierKey into shared util if using within components outside of StickyNoteNode.
+
+/**
+ * Returns true if the current platform is macOS.
+ */
+export const isMac = (): boolean => {
+  return typeof navigator !== 'undefined' && navigator.platform.includes('Mac');
+};
+
+/**
+ * Returns the platform-specific modifier key symbol
+ * - Mac: ⌘ (Command)
+ * - Windows/Linux: Ctrl
+ */
+export const getModifierKey = (): string => {
+  return isMac() ? '⌘' : 'Ctrl';
+};
