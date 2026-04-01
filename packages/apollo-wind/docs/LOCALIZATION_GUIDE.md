@@ -911,7 +911,7 @@ export default function UsersPage() {
       cell: ({ row }) => (
         <Button
           variant="ghost"
-          size="icon"
+          icon
           onClick={() => {
             setSelectedUser(row.original);
             setShowDeleteDialog(true);

@@ -266,7 +266,7 @@ function DraggableRow({ user, children }: { user: User; children: React.ReactNod
       <TableCell className="w-[40px]">
         <Button
           variant="ghost"
-          size="icon"
+          icon
           className="h-6 w-6 cursor-grab active:cursor-grabbing"
           {...attributes}
           {...listeners}
@@ -365,12 +365,7 @@ function ExpandableRowsExample() {
             <React.Fragment key={user.id}>
               <TableRow>
                 <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => toggle(user.id)}
-                  >
+                  <Button variant="ghost" size="3xs" icon onClick={() => toggle(user.id)}>
                     {expanded[user.id] ? (
                       <ChevronDown className="h-4 w-4" />
                     ) : (
@@ -971,7 +966,7 @@ function ModalDeleteExample() {
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button variant="ghost" size="xs" icon>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -1123,7 +1118,7 @@ function FullFeaturedExample() {
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button variant="ghost" size="xs" icon>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

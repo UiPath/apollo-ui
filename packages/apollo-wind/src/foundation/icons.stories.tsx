@@ -486,15 +486,15 @@ function IconsGallery() {
                   <ArrowRight className="h-4 w-4" />
                 </Button>
 
-                <Button size="icon">
+                <Button icon>
                   <Settings className="h-4 w-4" />
                 </Button>
 
-                <Button variant="secondary" size="icon" className="h-8 w-8">
+                <Button variant="secondary" size="xs" icon>
                   <Heart className="h-4 w-4" />
                 </Button>
 
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                <Button variant="ghost" size="xs" icon className="rounded-full">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </Row>

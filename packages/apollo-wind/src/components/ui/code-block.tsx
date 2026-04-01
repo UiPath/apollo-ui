@@ -287,9 +287,9 @@ export function CodeBlock({
 
           {showCopyButton && (
             <Button
-              size="icon"
+              icon
               variant="ghost"
-              className="h-7 w-7 [&_svg]:size-3.5 transition-colors"
+              size="2xs"
               style={{ color: config.iconColor }}
               onClick={handleCopy}
               aria-label={copied ? 'Copied!' : 'Copy code'}

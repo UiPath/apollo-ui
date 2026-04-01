@@ -199,7 +199,7 @@ export function PropertiesExpanded({
             </button>
           </div>
           <Button
-            size="icon"
+            icon
             variant="ghost"
             className="bg-surface-overlay text-foreground-muted hover:bg-surface-overlay hover:text-foreground [&_svg]:size-5"
             onClick={onClose}
@@ -215,7 +215,7 @@ export function PropertiesExpanded({
         <div className="flex items-center gap-2">
           {/* Dock button */}
           <Button
-            size="icon"
+            icon
             variant="ghost"
             className="bg-surface-overlay text-foreground-muted hover:bg-surface-overlay hover:text-foreground [&_svg]:size-5"
             aria-label="Toggle panel dock"

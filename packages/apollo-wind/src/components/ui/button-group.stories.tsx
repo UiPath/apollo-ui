@@ -82,13 +82,13 @@ export const WithIcons = {
   args: {},
   render: () => (
     <ButtonGroup>
-      <Button variant="outline" size="icon">
+      <Button variant="outline" icon>
         <Bold className="h-4 w-4" />
       </Button>
-      <Button variant="outline" size="icon">
+      <Button variant="outline" icon>
         <Italic className="h-4 w-4" />
       </Button>
-      <Button variant="outline" size="icon">
+      <Button variant="outline" icon>
         <Underline className="h-4 w-4" />
       </Button>
     </ButtonGroup>
@@ -99,13 +99,13 @@ export const TextAlignment = {
   args: {},
   render: () => (
     <ButtonGroup>
-      <Button variant="outline" size="icon">
+      <Button variant="outline" icon>
         <AlignLeft className="h-4 w-4" />
       </Button>
-      <Button variant="outline" size="icon">
+      <Button variant="outline" icon>
         <AlignCenter className="h-4 w-4" />
       </Button>
-      <Button variant="outline" size="icon">
+      <Button variant="outline" icon>
         <AlignRight className="h-4 w-4" />
       </Button>
     </ButtonGroup>
@@ -120,7 +120,7 @@ export const WithSeparator = {
       <ButtonGroupSeparator />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon">
+          <Button variant="outline" icon>
             <ChevronDown className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -143,7 +143,7 @@ export const SplitButton = {
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button size="icon">
+          <Button icon>
             <ChevronDown className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -275,16 +275,16 @@ export const CanvasModeToolbar = {
 
       <Separator orientation="vertical" className="mx-1 h-6" />
 
-      <Button variant="ghost" size="icon" className="h-8 w-8">
+      <Button variant="ghost" size="xs" icon>
         <Play className="h-4 w-4" />
       </Button>
 
       <Separator orientation="vertical" className="mx-1 h-6" />
 
-      <Button variant="ghost" size="icon" className="h-8 w-8">
+      <Button variant="ghost" size="xs" icon>
         <Plus className="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8">
+      <Button variant="ghost" size="xs" icon>
         <Copy className="h-4 w-4" />
       </Button>
     </div>
@@ -304,7 +304,7 @@ export const CanvasPublishToolbar = {
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Button variant="ghost" size="xs" icon>
             <MoreVertical className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>

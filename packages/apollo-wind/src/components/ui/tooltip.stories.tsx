@@ -132,7 +132,7 @@ export const TooltipWithIcons = {
           ) : (
             <Tooltip key={item.label}>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button variant="ghost" size="xs" icon>
                   {item.icon}
                 </Button>
               </TooltipTrigger>
@@ -368,7 +368,7 @@ export const Examples = {
               ) : (
                 <Tooltip key={item.label}>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Button variant="ghost" size="xs" icon>
                       {item.icon}
                     </Button>
                   </TooltipTrigger>
@@ -394,7 +394,7 @@ export const Examples = {
           <div className="flex items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon" variant="outline">
+                <Button icon variant="outline">
                   <Heart className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
@@ -405,7 +405,7 @@ export const Examples = {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon" variant="outline">
+                <Button icon variant="outline">
                   <Share2 className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
@@ -416,7 +416,7 @@ export const Examples = {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon" variant="outline">
+                <Button icon variant="outline">
                   <Settings className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
@@ -428,7 +428,7 @@ export const Examples = {
             <Tooltip>
               <TooltipTrigger asChild>
                 <span>
-                  <Button size="icon" variant="outline" disabled>
+                  <Button icon variant="outline" disabled>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </span>

@@ -138,7 +138,7 @@ function AdminPagination({
           <PaginationContent>
             <PaginationItem>
               <Button
-                size="icon"
+                icon
                 variant="ghost"
                 className="text-foreground-muted hover:bg-surface-hover hover:text-foreground"
                 disabled={page === 1}
@@ -195,7 +195,7 @@ function AdminPagination({
             </PaginationItem>
             <PaginationItem>
               <Button
-                size="icon"
+                icon
                 variant="ghost"
                 className="text-foreground-muted hover:bg-surface-hover hover:text-foreground"
                 disabled={page === totalPages}
@@ -680,7 +680,7 @@ function AdminPageDemo({ theme }: { theme: Theme }) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
-              size="icon"
+              icon
               variant="ghost"
               className="text-foreground-muted hover:bg-surface-hover hover:text-foreground"
             >
@@ -765,7 +765,7 @@ function AdminPageDemo({ theme }: { theme: Theme }) {
       <AdminToolbar
         actions={
           <Button
-            size="icon"
+            icon
             variant="ghost"
             className="text-foreground-muted hover:bg-surface-hover hover:text-foreground"
           >
@@ -1492,7 +1492,7 @@ function DataManagementDemo({ theme }: { theme: Theme }) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
-              size="icon"
+              icon
               variant="ghost"
               className="text-foreground-muted hover:bg-surface-hover hover:text-foreground"
             >
@@ -1666,7 +1666,7 @@ function DataManagementDemo({ theme }: { theme: Theme }) {
             </SelectContent>
           </Select>
           <Button
-            size="icon"
+            icon
             variant="outline"
             className="border-border text-foreground-muted hover:border-border-hover hover:bg-transparent hover:text-foreground"
           >

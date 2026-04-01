@@ -86,8 +86,8 @@ export const WithButtons = {
               <PaginationItem key={p}>
                 <Button
                   variant={p === page ? 'outline' : 'ghost'}
-                  size="icon"
-                  className="h-9 w-9"
+                  size="sm"
+                  icon
                   onClick={() => setPage(p)}
                 >
                   {p}
@@ -98,12 +98,7 @@ export const WithButtons = {
               <PaginationEllipsis />
             </PaginationItem>
             <PaginationItem>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9"
-                onClick={() => setPage(totalPages)}
-              >
+              <Button variant="ghost" size="sm" icon onClick={() => setPage(totalPages)}>
                 {totalPages}
               </Button>
             </PaginationItem>
@@ -144,7 +139,7 @@ export const WithIcons = {
             <PaginationItem>
               <Button
                 variant="outline"
-                size="icon"
+                icon
                 className="h-9 w-9"
                 onClick={() => setPage(1)}
                 disabled={page === 1}
@@ -155,7 +150,7 @@ export const WithIcons = {
             <PaginationItem>
               <Button
                 variant="outline"
-                size="icon"
+                icon
                 className="h-9 w-9"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
@@ -170,7 +165,7 @@ export const WithIcons = {
                 <PaginationItem key={p}>
                   <Button
                     variant={p === page ? 'outline' : 'ghost'}
-                    size="icon"
+                    icon
                     className="h-9 w-9"
                     onClick={() => setPage(p)}
                   >
@@ -182,7 +177,7 @@ export const WithIcons = {
             <PaginationItem>
               <Button
                 variant="outline"
-                size="icon"
+                icon
                 className="h-9 w-9"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
@@ -193,7 +188,7 @@ export const WithIcons = {
             <PaginationItem>
               <Button
                 variant="outline"
-                size="icon"
+                icon
                 className="h-9 w-9"
                 onClick={() => setPage(totalPages)}
                 disabled={page === totalPages}
@@ -284,7 +279,7 @@ export const Examples = {
                 <div className="flex items-center gap-1">
                   <Button
                     variant="outline"
-                    size="icon"
+                    icon
                     className="h-8 w-8"
                     onClick={() => setGridPage(1)}
                     disabled={gridPage === 1}
@@ -293,7 +288,7 @@ export const Examples = {
                   </Button>
                   <Button
                     variant="outline"
-                    size="icon"
+                    icon
                     className="h-8 w-8"
                     onClick={() => setGridPage((p) => Math.max(1, p - 1))}
                     disabled={gridPage === 1}
@@ -302,7 +297,7 @@ export const Examples = {
                   </Button>
                   <Button
                     variant="outline"
-                    size="icon"
+                    icon
                     className="h-8 w-8"
                     onClick={() => setGridPage((p) => Math.min(totalGridPages, p + 1))}
                     disabled={gridPage === totalGridPages}
@@ -311,7 +306,7 @@ export const Examples = {
                   </Button>
                   <Button
                     variant="outline"
-                    size="icon"
+                    icon
                     className="h-8 w-8"
                     onClick={() => setGridPage(totalGridPages)}
                     disabled={gridPage === totalGridPages}
@@ -358,7 +353,7 @@ export const Examples = {
                   <PaginationItem key={i + 1}>
                     <Button
                       variant={i + 1 === listPage ? 'outline' : 'ghost'}
-                      size="icon"
+                      icon
                       className="h-9 w-9"
                       onClick={() => setListPage(i + 1)}
                     >
