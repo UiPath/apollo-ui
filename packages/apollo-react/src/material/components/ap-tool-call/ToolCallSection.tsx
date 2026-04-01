@@ -159,9 +159,7 @@ export const ToolCallSection: React.FC<ToolCallSectionProps> = ({
         {title}
       </SectionHeader>
       <SectionContent expanded={isExpanded}>
-        {isStringData && data && (
-          <StringContent>{data}</StringContent>
-        )}
+        {isStringData && data && <StringContent>{data}</StringContent>}
         {showKeyValuePairs && (
           <KeyValueContainer>
             {Object.entries(data).map(([key, value]) => (
