@@ -3,6 +3,8 @@
 import { Badge } from "@/components/ui/badge";
 import type { InsightCardContent } from "./glow-config";
 
+type ViewMode = "desktop" | "compact" | "stacked";
+
 // --- Sample data per card type ---
 
 const kpiSamples = [
@@ -45,8 +47,26 @@ const areaPoints = [3, 5, 4, 8, 6, 9, 7, 11, 10, 14, 12, 16];
 
 // --- Renderers ---
 
-function KpiContent({ title }: { title: string }) {
+function KpiContent({ title, viewMode }: { title: string; viewMode: ViewMode }) {
   const sample = kpiSamples.find((s) => s.title === title) ?? kpiSamples[0];
+
+  if (viewMode === "compact") {
+    return (
+      <>
+        <div className="flex items-end gap-3">
+          <div className="text-5xl font-normal tracking-tight leading-none bg-gradient-to-r from-insight-800 to-primary-600 dark:from-insight-500 dark:to-primary-400 bg-clip-text text-transparent">
+            {sample.number}
+          </div>
+          <Badge variant="secondary" status="info" className="mb-1">
+            {sample.badge}
+          </Badge>
+        </div>
+        <p className="text-xs font-normal text-muted-foreground mt-auto">
+          {sample.description}
+        </p>
+      </>
+    );
+  }
 
   return (
     <>
@@ -103,7 +123,41 @@ function DonutContent() {
   );
 }
 
-function HorizontalBarsContent() {
+function HorizontalBarsContent({ viewMode, isExpanded = false }: { viewMode: ViewMode; isExpanded?: boolean }) {
+  if (viewMode === "compact" && !isExpanded) {
+    const total = barSamples.reduce((sum, s) => sum + s.value, 0);
+    return (
+      <div className="flex flex-col gap-3">
+        <div className="h-3 w-full rounded-full overflow-hidden flex">
+          {barSamples.map((issue) => (
+            <div
+              key={issue.label}
+              className={`${issue.color} relative`}
+              style={{ flex: issue.value }}
+            >
+              <div
+                className={`absolute inset-0 ${issue.color} opacity-35 dark:opacity-55 blur-[4px]`}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          {barSamples.map((issue) => {
+            const pct = Math.round((issue.value / total) * 100);
+            return (
+              <div key={issue.label} className="flex items-center gap-1.5">
+                <div className={`size-2 rounded-full ${issue.color}`} />
+                <span className="text-[10px] text-muted-foreground">
+                  {issue.label} {pct}%
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-5">
       {barSamples.map((issue) => (
@@ -223,14 +277,12 @@ const stackedBarData = [
   },
 ];
 
-function StackedBarContent() {
+function StackedBarContent({ viewMode, isExpanded = false }: { viewMode: ViewMode; isExpanded?: boolean }) {
   const maxTotal = Math.max(
     ...stackedBarData.map((d) =>
       d.segments.reduce((sum, s) => sum + s.value, 0),
     ),
   );
-
-  const barMaxHeight = 140;
 
   const legendItems = [
     { label: "Approved", color: "bg-chart-1" },
@@ -238,20 +290,67 @@ function StackedBarContent() {
     { label: "Rejected", color: "bg-chart-3" },
   ];
 
+  if (viewMode === "compact" && !isExpanded) {
+    // Summary: aggregate all days into one horizontal stacked bar
+    const totals = stackedBarData.reduce(
+      (acc, day) => {
+        for (const seg of day.segments) {
+          const key = seg.color;
+          acc[key] = (acc[key] ?? 0) + seg.value;
+        }
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+    const grandTotal = Object.values(totals).reduce((a, b) => a + b, 0);
+
+    return (
+      <div className="flex flex-col gap-3">
+        <div className="h-3 w-full rounded-full overflow-hidden flex">
+          {legendItems.map((item) => (
+            <div
+              key={item.color}
+              className={`${item.color} relative`}
+              style={{ flex: totals[item.color] ?? 0 }}
+            >
+              <div
+                className={`absolute inset-0 ${item.color} opacity-35 dark:opacity-55 blur-[4px]`}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center justify-between">
+          {legendItems.map((item) => {
+            const val = totals[item.color] ?? 0;
+            const pct = Math.round((val / grandTotal) * 100);
+            return (
+              <div key={item.label} className="flex items-center gap-1.5">
+                <div className={`size-2 rounded-full ${item.color}`} />
+                <span className="text-[10px] text-muted-foreground">
+                  {item.label} {pct}%
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-end justify-between flex-1">
+      <div className="flex items-end justify-between flex-1 min-h-0">
         {stackedBarData.map((bar) => {
           const total = bar.segments.reduce((sum, s) => sum + s.value, 0);
-          const barHeight = (total / maxTotal) * barMaxHeight;
+          const pct = (total / maxTotal) * 100;
           return (
             <div
               key={bar.label}
-              className="w-4 flex flex-col items-center gap-1"
+              className="w-4 flex flex-col items-center gap-1 h-full"
             >
               <div
-                className="w-full flex flex-col-reverse rounded-t-sm overflow-visible relative"
-                style={{ height: barHeight }}
+                className="w-full flex flex-col-reverse rounded-t-sm overflow-visible relative mt-auto"
+                style={{ height: `${pct}%` }}
               >
                 <div className="absolute inset-0 flex flex-col-reverse rounded-t-sm overflow-hidden">
                   {bar.segments.map((seg) => (
@@ -293,13 +392,22 @@ function StackedBarContent() {
   );
 }
 
-export function InsightCardBody({ content }: { content: InsightCardContent }) {
+export function InsightCardBody({
+  content,
+  viewMode = "desktop",
+  isExpanded = false,
+}: {
+  content: InsightCardContent;
+  viewMode?: ViewMode;
+  isExpanded?: boolean;
+}) {
   if (content.type === "kpi") {
-    return <KpiContent title={content.title} />;
+    return <KpiContent title={content.title} viewMode={viewMode} />;
   }
-  if (content.chartType === "horizontal-bars") return <HorizontalBarsContent />;
+  if (content.chartType === "horizontal-bars") return <HorizontalBarsContent viewMode={viewMode} isExpanded={isExpanded} />;
+
   if (content.chartType === "donut") return <DonutContent />;
   if (content.chartType === "sparkline") return <SparklineContent />;
-  if (content.chartType === "stacked-bar") return <StackedBarContent />;
+  if (content.chartType === "stacked-bar") return <StackedBarContent viewMode={viewMode} isExpanded={isExpanded} />;
   return <AreaContent />;
 }

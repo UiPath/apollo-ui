@@ -59,6 +59,7 @@ interface InsightCardInnerProps {
   isExpanding: boolean;
   isThis: boolean;
   phase: ExpandPhase;
+  viewMode: "desktop" | "compact" | "stacked";
   onExpandClick: () => void;
   className?: string;
   style?: React.CSSProperties;
@@ -71,6 +72,7 @@ function InsightCardInner({
   isExpanding,
   isThis,
   phase,
+  viewMode,
   onExpandClick,
   className = "",
   style,
@@ -114,7 +116,7 @@ function InsightCardInner({
         </CardTitle>
       </CardHeader>
       <CardContent className={classes.contentClassName}>
-        <InsightCardBody content={cfg.content} />
+        <InsightCardBody content={cfg.content} viewMode={viewMode} isExpanded={isThis && isExpanding} />
       </CardContent>
       {isThis && isExpanding && (phase === "height" || phase === "full") && (
         <div
@@ -207,7 +209,7 @@ export function InsightGrid({
     });
   }
 
-  const sharedProps = { shared, cards, isExpanding, phase };
+  const sharedProps = { shared, cards, isExpanding, phase, viewMode };
 
   return (
     <div
