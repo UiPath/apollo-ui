@@ -56,8 +56,11 @@ export function AiChat({
 
   const latestChoices = findLatestChoices(messages);
 
-  const lastMessageIsAssistant = messages.at(-1)?.role === "assistant";
-  const showLoadingIndicator = isLoading && !lastMessageIsAssistant;
+  const lastMessage = messages.at(-1);
+  const lastAssistantHasText =
+    lastMessage?.role === "assistant" &&
+    lastMessage.parts.some((p) => p.type === "text" && p.content);
+  const showLoadingIndicator = isLoading && !lastAssistantHasText;
 
   const defaultEmptyState = (
     <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
