@@ -92,7 +92,7 @@ export function AiChat({
         <div
           role="alert"
           aria-live="assertive"
-          className="mx-4 mb-2 flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+          className="mx-4 mb-2 flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive max-h-16 overflow-y-auto"
         >
           <AlertCircle
             className="h-4 w-4 flex-shrink-0 mt-0.5"
