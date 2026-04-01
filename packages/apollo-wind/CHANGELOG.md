@@ -1,3 +1,23 @@
+## [@uipath/apollo-wind-v2.0.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.5.0...@uipath/apollo-wind@2.0.0) (2026-04-01)
+
+### ⚠ BREAKING CHANGES
+
+* **apollo-wind:** `size="icon"` removed — use `icon` prop instead.
+
+- Replace separate icon-* size variants with unified size scale + boolean `icon` prop
+- Add new text sizes: xs (32px), 2xs (28px), 3xs (24px)
+- `icon` is a CVA boolean variant adding `aspect-square p-0`
+- Migrate all size="icon" usages across codebase to new API
+- Fix calendar: use var(--cell-size) for Tailwind v4 compat
+- Fix calendar: rounded-full circles for today and selected dates
+- Update docs and AI context with new button API
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+### Features
+
+* **apollo-wind:** consolidate button size scale and add icon prop ([2448db4](https://github.com/uipath/apollo-ui/commit/2448db447c52445a273a92e62493423d919eccaf))
+
 ## [@uipath/apollo-wind-v1.5.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.4.0...@uipath/apollo-wind@1.5.0) (2026-03-26)
 
 ### Features
