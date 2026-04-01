@@ -84,6 +84,7 @@ export function AiChatTemplate() {
           <AiChatLoginGate>
             {({ accessToken, orgTenant }) => (
               <AiChatWithConnection
+                key={orgTenant.tenantId}
                 accessToken={accessToken}
                 orgTenant={orgTenant}
               />

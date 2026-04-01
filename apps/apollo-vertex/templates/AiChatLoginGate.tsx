@@ -2,11 +2,18 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { jwtDecode } from "jwt-decode";
-import { LogIn, LogOut } from "lucide-react";
-import { type ReactNode, useCallback, useMemo } from "react";
+import { ChevronRight, LogIn, LogOut } from "lucide-react";
+import { type ReactNode, useCallback, useMemo, useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { STORAGE_KEYS } from "@/lib/auth";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/registry/select/select";
 import { useAuth } from "@/registry/shell/shell-auth-provider";
 
 export interface OrgTenantInfo {
@@ -16,6 +23,12 @@ export interface OrgTenantInfo {
   tenantName: string;
 }
 
+interface OrgInfo {
+  orgId: string;
+  orgName: string;
+  tenants: { id: string; name: string }[];
+}
+
 const TenantsAndOrgSchema = z.object({
   organization: z.object({ id: z.string(), name: z.string() }),
   tenants: z.array(z.object({ id: z.string(), name: z.string() })),
@@ -23,10 +36,10 @@ const TenantsAndOrgSchema = z.object({
 
 const PrtIdSchema = z.object({ prt_id: z.string() });
 
-async function fetchOrgTenant(
+async function fetchOrgInfo(
   orgId: string,
   accessToken: string,
-): Promise<OrgTenantInfo> {
+): Promise<OrgInfo> {
   const res = await fetch(
     `/_proxy/portal/${orgId}/filtering/leftnav/tenantsAndOrganizationInfo`,
     { headers: { Authorization: `Bearer ${accessToken}` } },
@@ -44,16 +57,14 @@ async function fetchOrgTenant(
   }
 
   const { organization, tenants } = data.data;
-  const firstTenant = tenants[0];
   return {
     orgId: organization.id,
     orgName: organization.name,
-    tenantId: firstTenant.id,
-    tenantName: firstTenant.name,
+    tenants,
   };
 }
 
-function useOrgTenant(accessToken: string | null) {
+function useOrgInfo(accessToken: string | null) {
   const orgId = useMemo(() => {
     if (!accessToken) return null;
     let decoded: unknown;
@@ -67,17 +78,17 @@ function useOrgTenant(accessToken: string | null) {
   }, [accessToken]);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["orgTenant", orgId],
+    queryKey: ["orgInfo", orgId],
     queryFn: () => {
       if (!orgId || !accessToken)
         throw new Error("Missing orgId or accessToken");
-      return fetchOrgTenant(orgId, accessToken);
+      return fetchOrgInfo(orgId, accessToken);
     },
     enabled: !!accessToken && !!orgId,
     staleTime: 5 * 60 * 1000,
   });
 
-  return { orgTenant: data ?? null, isLoading: isLoading && !!orgId, isError };
+  return { orgInfo: data ?? null, isLoading: isLoading && !!orgId, isError };
 }
 
 function SignOutButton(
@@ -110,10 +121,24 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
   const { isAuthenticated, isLoading, login, logout, user, accessToken } =
     useAuth();
   const {
-    orgTenant,
+    orgInfo,
     isLoading: isOrgLoading,
     isError: isOrgError,
-  } = useOrgTenant(accessToken);
+  } = useOrgInfo(accessToken);
+  const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
+
+  const orgTenant = useMemo<OrgTenantInfo | null>(() => {
+    if (!orgInfo) return null;
+    const tenant =
+      orgInfo.tenants.find((t) => t.id === selectedTenantId) ??
+      orgInfo.tenants[0];
+    return {
+      orgId: orgInfo.orgId,
+      orgName: orgInfo.orgName,
+      tenantId: tenant.id,
+      tenantName: tenant.name,
+    };
+  }, [orgInfo, selectedTenantId]);
 
   const handleLogout = useCallback(() => {
     const tokenDataStr = localStorage.getItem(STORAGE_KEYS.TOKEN);
@@ -191,7 +216,7 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
     );
   }
 
-  if (!orgTenant) {
+  if (!orgTenant || !orgInfo) {
     return (
       <div className="flex flex-col items-center justify-center h-[500px] gap-4 border rounded-lg bg-card">
         <p className="text-muted-foreground">
@@ -206,9 +231,36 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-end gap-2">
-        {user && (
+        <span className="flex items-center gap-1 text-sm text-muted-foreground">
+          {user && (
+            <>
+              {user.name}
+              <ChevronRight className="size-3" />
+            </>
+          )}
+          org: {orgTenant.orgName}
+          <ChevronRight className="size-3" />
+          tenant:{" "}
+        </span>
+        {orgInfo.tenants.length > 1 ? (
+          <Select
+            value={orgTenant.tenantId}
+            onValueChange={setSelectedTenantId}
+          >
+            <SelectTrigger size="sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {orgInfo.tenants.map((tenant) => (
+                <SelectItem key={tenant.id} value={tenant.id}>
+                  {tenant.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
           <span className="text-sm text-muted-foreground">
-            {user.name} \ {orgTenant.orgName} \ {orgTenant.tenantName}
+            {orgTenant.tenantName}
           </span>
         )}
         <SignOutButton onSignOut={handleLogout} size="sm" />
