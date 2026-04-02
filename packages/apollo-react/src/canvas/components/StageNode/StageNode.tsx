@@ -593,7 +593,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
       onMouseLeave={handleMouseLeave}
     >
       <StageContainer selected={selected} status={status} width={width} style={taskWidthStyle}>
-        <StageHeader isException={isException}>
+        <StageHeader isException={isException} data-testid={`stage-header-${id}`}>
           <Row gap={Spacing.SpacingMicro} align="center" flex={1} minW={0}>
             {icon}
             <Column py={2} flex={1} minW={0}>

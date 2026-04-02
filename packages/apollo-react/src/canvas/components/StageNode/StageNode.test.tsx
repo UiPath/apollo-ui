@@ -4,8 +4,8 @@ import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ListItem } from '../Toolbox';
 import { StageNode } from './StageNode';
-import { StageHeaderChipType } from './StageNode.types';
 import type { StageNodeProps, StageTaskItem } from './StageNode.types';
+import { StageHeaderChipType } from './StageNode.types';
 
 // Mock DndContext and related components
 vi.mock('@dnd-kit/core', () => ({
@@ -201,6 +201,14 @@ const renderStageNode = (props: Partial<StageNodeProps> = {}) => {
     </ReactFlowProvider>
   );
 };
+
+describe('StageNode - Test Hooks', () => {
+  it('renders a stable test id for the stage header', () => {
+    renderStageNode();
+
+    expect(screen.getByTestId('stage-header-stage-1')).toBeInTheDocument();
+  });
+});
 
 describe('StageNode - Replace Task Functionality', () => {
   beforeEach(() => {
