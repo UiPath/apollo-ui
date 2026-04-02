@@ -31,6 +31,7 @@ export function GlowDevControls({
   const { data, setDataset } = useDashboardData();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadError, setUploadError] = useState("");
+  const [uploadedDatasets, setUploadedDatasets] = useState<DashboardDataset[]>([]);
 
   const configMap: Record<Tab, unknown> = {
     glow: glowConfig,
@@ -41,6 +42,37 @@ export function GlowDevControls({
   const currentConfig = configMap[tab];
 
   return (
+    <>
+    <input
+      ref={fileInputRef}
+      type="file"
+      accept=".json"
+      className="hidden"
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setUploadError("");
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const parsed = JSON.parse(reader.result as string) as DashboardDataset;
+            if (!parsed.brandName || !parsed.insightCards) {
+              setUploadError("Invalid format");
+              return;
+            }
+            setUploadedDatasets((prev) => {
+              const exists = prev.some((d) => d.name === parsed.name);
+              return exists ? prev.map((d) => d.name === parsed.name ? parsed : d) : [...prev, parsed];
+            });
+            setDataset(parsed);
+          } catch {
+            setUploadError("Invalid JSON");
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = "";
+      }}
+    />
     <div className="fixed left-0 top-1/2 -translate-y-1/2 z-50 flex">
       {open && (
         <div className="w-56 bg-popover border rounded-r-lg shadow-lg max-h-[80vh] overflow-hidden flex flex-col">
@@ -92,15 +124,28 @@ export function GlowDevControls({
                 <div>
                   <div className="text-xs mb-1">Preset</div>
                   <select
-                    value={Object.entries(datasetPresets).find(([, v]) => v.name === data.name)?.[0] ?? "custom"}
+                    value={
+                      Object.entries(datasetPresets).find(([, v]) => v.name === data.name)?.[0]
+                      ?? `uploaded:${data.name}`
+                    }
                     onChange={(e) => {
-                      const preset = datasetPresets[e.target.value];
-                      if (preset) setDataset(preset);
+                      const val = e.target.value;
+                      if (val.startsWith("uploaded:")) {
+                        const name = val.slice("uploaded:".length);
+                        const uploaded = uploadedDatasets.find((d) => d.name === name);
+                        if (uploaded) setDataset(uploaded);
+                      } else {
+                        const preset = datasetPresets[val];
+                        if (preset) setDataset(preset);
+                      }
                     }}
                     className="w-full h-7 rounded border bg-background px-1 text-xs"
                   >
                     {Object.entries(datasetPresets).map(([key, val]) => (
                       <option key={key} value={key}>{val.name}</option>
+                    ))}
+                    {uploadedDatasets.map((d) => (
+                      <option key={`uploaded:${d.name}`} value={`uploaded:${d.name}`}>{d.name} (uploaded)</option>
                     ))}
                   </select>
                 </div>
@@ -127,32 +172,6 @@ export function GlowDevControls({
                   >
                     Upload
                   </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".json"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      setUploadError("");
-                      const reader = new FileReader();
-                      reader.onload = () => {
-                        try {
-                          const parsed = JSON.parse(reader.result as string) as DashboardDataset;
-                          if (!parsed.brandName || !parsed.insightCards) {
-                            setUploadError("Invalid format");
-                            return;
-                          }
-                          setDataset(parsed);
-                        } catch {
-                          setUploadError("Invalid JSON");
-                        }
-                      };
-                      reader.readAsText(file);
-                      e.target.value = "";
-                    }}
-                  />
                 </div>
                 {uploadError && (
                   <div className="text-[10px] text-destructive">{uploadError}</div>
@@ -180,5 +199,6 @@ export function GlowDevControls({
         )}
       </button>
     </div>
+    </>
   );
 }

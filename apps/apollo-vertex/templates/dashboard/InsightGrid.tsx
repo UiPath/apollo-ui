@@ -11,6 +11,12 @@ import {
 } from "./glow-config";
 import { InsightCardBody } from "./insight-card-renderers";
 import { useDashboardData } from "./DashboardDataProvider";
+import {
+  type DrilldownTab,
+  drilldownTabs,
+  DrilldownTabContent,
+  AutopilotPrompts,
+} from "./ExpandedInsightContent";
 
 const sizeToFr: Record<string, string> = { sm: "1fr", md: "2fr", lg: "1fr" };
 
@@ -86,6 +92,9 @@ function InsightCardInner({
 }: InsightCardInnerProps) {
   const { data } = useDashboardData();
   const cardTitle = data.insightCards[cardIndex]?.title ?? cfg.content.title;
+  const [drilldownTab, setDrilldownTab] = useState<DrilldownTab>("overview");
+  const hasDrilldown = cfg.content.chartType === "horizontal-bars";
+  const isExpandedWithDrilldown = isThis && isExpanding && hasDrilldown && phase === "full";
   const classes = getInsightCardClasses(cfg.content);
   const isInteractive = cfg.interaction !== "static";
 
@@ -143,15 +152,52 @@ function InsightCardInner({
           <NavigateIcon />
         </button>
       )}
-      <CardHeader>
-        <CardTitle className="text-sm font-bold tracking-tight">
-          {cardTitle}
-        </CardTitle>
+      <CardHeader className="shrink-0">
+        <div className="flex items-center gap-3">
+          <CardTitle className="text-sm font-bold tracking-tight">
+            {cardTitle}
+          </CardTitle>
+          {/* Drilldown tabs — show when expanded with drilldown */}
+          {isExpandedWithDrilldown && (
+            <div className="flex gap-0.5 ml-2">
+              {drilldownTabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setDrilldownTab(tab.key)}
+                  className={`px-2 py-1 text-[10px] rounded transition-colors ${
+                    drilldownTab === tab.key
+                      ? "bg-muted font-medium"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </CardHeader>
-      <CardContent className={classes.contentClassName}>
-        <InsightCardBody content={cfg.content} cardIndex={cardIndex} viewMode={viewMode} isExpanded={isThis && isExpanding} />
+      <CardContent className={`${classes.contentClassName} min-h-0`}>
+        {/* Show original chart on "overview" tab or when not expanded */}
+        {(!isExpandedWithDrilldown || drilldownTab === "overview") && (
+          <InsightCardBody content={cfg.content} cardIndex={cardIndex} viewMode={viewMode} isExpanded={isThis && isExpanding} />
+        )}
+        {/* Show drilldown module content */}
+        {isExpandedWithDrilldown && drilldownTab !== "overview" && (
+          <div className="flex-1 overflow-y-auto">
+            <DrilldownTabContent tab={drilldownTab} />
+          </div>
+        )}
       </CardContent>
-      {isThis && isExpanding && (phase === "height" || phase === "full") && (
+      {/* Autopilot prompts — persistent at bottom when expanded with drilldown */}
+      {isExpandedWithDrilldown && (
+        <div className="px-6 pb-4 shrink-0">
+          <AutopilotPrompts onPromptSelect={() => onAutopilotOpen?.()} />
+        </div>
+      )}
+      {/* Non-drilldown expanded content (other card types) */}
+      {isThis && isExpanding && !hasDrilldown && (phase === "height" || phase === "full") && (
         <div
           className={`flex-1 mx-6 mb-6 rounded-lg overflow-hidden transition-all duration-300 ${
             phase === "full" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
@@ -212,7 +258,16 @@ export function InsightGrid({
   }, [expandedIdx]);
 
   const visibleCards = layout.insightCards
-    .map((cfg, i) => ({ cfg, idx: i }))
+    .map((cfg, i) => {
+      const dataCard = data.insightCards[i];
+      const merged = dataCard ? {
+        ...cfg,
+        size: dataCard.size ?? cfg.size,
+        interaction: dataCard.interaction ?? cfg.interaction,
+        content: { ...cfg.content, title: dataCard.title ?? cfg.content.title },
+      } : cfg;
+      return { cfg: merged, idx: i };
+    })
     .filter(({ cfg }) => cfg.visible);
   const rows: (typeof visibleCards)[] = [];
   for (let i = 0; i < visibleCards.length; i += 2) {

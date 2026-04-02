@@ -2,15 +2,29 @@ export interface InsightCardData {
   title: string;
   type: "kpi" | "chart";
   chartType: "donut" | "horizontal-bars" | "sparkline" | "area" | "stacked-bar";
+  size?: "sm" | "md" | "lg";
+  interaction?: "static" | "expand" | "navigate";
+  // Navigate config
+  navigateTo?: string;
+  // Expand config — additional content shown when card is expanded
+  expandContent?: {
+    summary?: string;
+    details?: string[];
+  };
+  // KPI data
   kpiNumber?: string;
   kpiBadge?: string;
   kpiDescription?: string;
+  // Horizontal bars data
   bars?: { label: string; value: number }[];
+  // Stacked bar data
   stackedBars?: { label: string; segments: number[] }[];
   stackedLegend?: string[];
+  // Donut data
   donutPercent?: number;
   donutLabel?: string;
   donutDescription?: string;
+  // Sparkline / Area data
   points?: number[];
 }
 
@@ -46,6 +60,8 @@ export const defaultDataset: DashboardDataset = {
       title: "Upfront decision efficiency",
       type: "kpi",
       chartType: "donut",
+      size: "sm",
+      interaction: "static",
       kpiNumber: "94.2%",
       kpiBadge: "+6.8%",
       kpiDescription: "Loans finalized on first review without rework.",
@@ -54,6 +70,12 @@ export const defaultDataset: DashboardDataset = {
       title: "Top issues",
       type: "chart",
       chartType: "horizontal-bars",
+      size: "md",
+      interaction: "expand",
+      expandContent: {
+        summary: "Risk flags have increased 12% this quarter",
+        details: ["Review underwriting criteria", "Update risk scoring model"],
+      },
       bars: [
         { label: "Risk flag in notes", value: 34 },
         { label: "Credit report >120 days old", value: 29 },
@@ -66,6 +88,12 @@ export const defaultDataset: DashboardDataset = {
       title: "Pipeline",
       type: "chart",
       chartType: "stacked-bar",
+      size: "md",
+      interaction: "expand",
+      expandContent: {
+        summary: "Weekly volume trending up with stable rejection rates",
+        details: ["Monitor Thursday spike pattern", "Review rejected applications"],
+      },
       stackedBars: [
         { label: "Mon", segments: [30, 20, 10] },
         { label: "Tue", segments: [40, 15, 20] },
@@ -79,6 +107,8 @@ export const defaultDataset: DashboardDataset = {
       title: "SLA compliance",
       type: "kpi",
       chartType: "donut",
+      size: "sm",
+      interaction: "static",
       kpiNumber: "99.5%",
       kpiBadge: "+1.2%",
       kpiDescription: "Loans processed within defined SLA thresholds.",
@@ -103,6 +133,8 @@ export const ecommerceDataset: DashboardDataset = {
       title: "On-time delivery rate",
       type: "kpi",
       chartType: "donut",
+      size: "sm",
+      interaction: "static",
       kpiNumber: "96.8%",
       kpiBadge: "+3.2%",
       kpiDescription: "Orders delivered within promised window.",
@@ -111,6 +143,12 @@ export const ecommerceDataset: DashboardDataset = {
       title: "Top return reasons",
       type: "chart",
       chartType: "horizontal-bars",
+      size: "md",
+      interaction: "expand",
+      expandContent: {
+        summary: "Size/fit issues dominate returns across apparel categories",
+        details: ["Improve size guide accuracy", "Add AR try-on feature"],
+      },
       bars: [
         { label: "Wrong size/fit", value: 38 },
         { label: "Damaged in transit", value: 24 },
@@ -123,6 +161,12 @@ export const ecommerceDataset: DashboardDataset = {
       title: "Fulfillment volume",
       type: "chart",
       chartType: "stacked-bar",
+      size: "md",
+      interaction: "expand",
+      expandContent: {
+        summary: "Friday volumes peak — processing capacity near limit",
+        details: ["Scale Friday shift staffing", "Review returned item processing time"],
+      },
       stackedBars: [
         { label: "Mon", segments: [120, 45, 8] },
         { label: "Tue", segments: [145, 38, 12] },
@@ -134,6 +178,8 @@ export const ecommerceDataset: DashboardDataset = {
     },
     {
       title: "Customer satisfaction",
+      size: "sm",
+      interaction: "static",
       type: "kpi",
       chartType: "donut",
       kpiNumber: "4.7★",

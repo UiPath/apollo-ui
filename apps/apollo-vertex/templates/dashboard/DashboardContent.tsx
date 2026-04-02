@@ -55,7 +55,7 @@ function ExecutiveLayout({
         <img src="/Autopilot_light.svg" alt="Autopilot" className="size-5 hidden dark:block" />
         <CardTitle className="text-sm font-bold tracking-tight">{data.greeting}</CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col !p-0">
+      <CardContent className="flex-1 flex flex-col !p-0 min-h-0">
         <div>
           <p className="text-4xl font-bold tracking-tight pr-16">
             {data.headline}
@@ -64,28 +64,7 @@ function ExecutiveLayout({
             {data.subhead}
           </p>
         </div>
-        <div className="flex-1 min-h-0 mt-4 mb-6 relative pl-8 pr-1">
-          <svg viewBox="0 0 200 70" preserveAspectRatio="none" className="w-full h-full rounded-xl" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="overview-spark-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" style={{ stopColor: "var(--insight-500)", stopOpacity: 0.15 }} />
-                <stop offset="100%" style={{ stopColor: "var(--primary-400)", stopOpacity: 0 }} />
-              </linearGradient>
-              <filter id="overview-fill-blur"><feGaussianBlur stdDeviation="9" /></filter>
-            </defs>
-            <line x1="0" y1="15" x2="200" y2="15" className="stroke-foreground/5" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-            <line x1="0" y1="30" x2="200" y2="30" className="stroke-foreground/5" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-            <line x1="0" y1="45" x2="200" y2="45" className="stroke-foreground/5" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-            <line x1="0" y1="25" x2="200" y2="25" className="stroke-foreground/20" strokeWidth="1" vectorEffect="non-scaling-stroke" strokeDasharray="4 4" />
-            <path d="M0,42 C11,40 22,36 33,34 C44,32 55,38 67,35 C78,32 89,22 100,20 C111,18 122,26 133,24 C144,22 155,14 167,12 C178,10 189,15 200,8 L200,60 L0,60 Z" fill="url(#overview-spark-fill)" filter="url(#overview-fill-blur)" />
-            <path d="M0,42 C11,40 22,36 33,34 C44,32 55,38 67,35 C78,32 89,22 100,20 C111,18 122,26 133,24 C144,22 155,14 167,12 C178,10 189,15 200,8" className="stroke-foreground" strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinecap="round" fill="none" />
-          </svg>
-          {yLabels.map((label, i) => (
-            <span key={label} className="absolute left-0 text-[10px] text-muted-foreground/50 -translate-y-1/2" style={{ top: `calc(${yPositions[i]} / 70 * 100%)` }}>{label}</span>
-          ))}
-          <span className="absolute right-0 text-[10px] text-muted-foreground/50 -translate-y-full -mt-0.5" style={{ top: "calc(25 / 70 * 100%)" }}>{data.chartLabels.target}</span>
-          <div className="absolute size-2 rounded-full bg-foreground" style={{ top: "calc(8 / 70 * 100%)", right: "4px", transform: "translate(50%, -50%)" }} />
-        </div>
+        {/* Chart removed — evaluating layout without it */}
       </CardContent>
     </Card>
   );
@@ -210,7 +189,7 @@ function DashboardContentInner() {
                 <span className="font-bold">{data.brandName}</span> {data.brandLine}
               </h1>
               <p className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                {layoutLabels[layout]} Dashboard
+                {data.dashboardTitle} Dashboard
                 <Badge variant="secondary" status="info">
                   {data.badgeText}
                 </Badge>
