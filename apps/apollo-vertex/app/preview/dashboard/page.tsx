@@ -4,7 +4,7 @@ import { DashboardTemplate } from "@/templates/dashboard/DashboardTemplateDynami
 
 export default function DashboardPreviewPage() {
   return (
-    <div className="fixed inset-0 z-50 bg-background">
+    <div className="fixed inset-0 z-50 bg-background not-prose">
       <DashboardTemplate />
     </div>
   );
