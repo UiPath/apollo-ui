@@ -19,6 +19,7 @@ import { InsightGrid } from "./InsightGrid";
 import { DashboardLoading } from "./DashboardLoading";
 import { PromptBar } from "./PromptBar";
 import { AutopilotInsight } from "./AutopilotInsight";
+import { useDashboardData, DashboardDataProvider } from "./DashboardDataProvider";
 
 type LayoutType = "executive" | "operational" | "analytics";
 
@@ -35,10 +36,13 @@ function ExecutiveLayout({
   onAutopilotOpen?: (sourceTitle: string, idx: number) => void;
   autopilotActiveIdx?: number | null;
 }) {
+  const { data } = useDashboardData();
   const borderClass = cards.borderVisible ? "" : "dark:!border-transparent";
   const blurClass = cards.backdropBlur ? "" : "dark:!backdrop-blur-none";
   const shared = `!shadow-none dark:![background:var(--card-bg-override)] ${borderClass} ${blurClass}`;
   const gapStyle = { gap: `${layout.gap}px` };
+  const yLabels = data.chartLabels.y;
+  const yPositions = [15, 25, 30, 45];
 
   const overviewCardEl = (
     <Card
@@ -49,15 +53,15 @@ function ExecutiveLayout({
       <CardHeader className="!p-0 !gap-2">
         <img src="/Autopilot_dark.svg" alt="Autopilot" className="size-5 block dark:hidden" />
         <img src="/Autopilot_light.svg" alt="Autopilot" className="size-5 hidden dark:block" />
-        <CardTitle className="text-sm font-bold tracking-tight">Good morning, Peter</CardTitle>
+        <CardTitle className="text-sm font-bold tracking-tight">{data.greeting}</CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col !p-0">
         <div>
           <p className="text-4xl font-bold tracking-tight pr-16">
-            Loan volume scales as setup time drops by 3.5 days.
+            {data.headline}
           </p>
           <p className="text-sm font-normal text-muted-foreground pr-32 mt-8 leading-relaxed">
-            Setup time declined ↓21% month over month while volume increased ↑18%.
+            {data.subhead}
           </p>
         </div>
         <div className="flex-1 min-h-0 mt-4 mb-6 relative pl-8 pr-1">
@@ -76,11 +80,10 @@ function ExecutiveLayout({
             <path d="M0,42 C11,40 22,36 33,34 C44,32 55,38 67,35 C78,32 89,22 100,20 C111,18 122,26 133,24 C144,22 155,14 167,12 C178,10 189,15 200,8 L200,60 L0,60 Z" fill="url(#overview-spark-fill)" filter="url(#overview-fill-blur)" />
             <path d="M0,42 C11,40 22,36 33,34 C44,32 55,38 67,35 C78,32 89,22 100,20 C111,18 122,26 133,24 C144,22 155,14 167,12 C178,10 189,15 200,8" className="stroke-foreground" strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinecap="round" fill="none" />
           </svg>
-          <span className="absolute left-0 text-[10px] text-muted-foreground/50 -translate-y-1/2" style={{ top: "calc(15 / 70 * 100%)" }}>200</span>
-          <span className="absolute left-0 text-[10px] text-muted-foreground/50 -translate-y-1/2" style={{ top: "calc(25 / 70 * 100%)" }}>150</span>
-          <span className="absolute left-0 text-[10px] text-muted-foreground/50 -translate-y-1/2" style={{ top: "calc(30 / 70 * 100%)" }}>100</span>
-          <span className="absolute left-0 text-[10px] text-muted-foreground/50 -translate-y-1/2" style={{ top: "calc(45 / 70 * 100%)" }}>50</span>
-          <span className="absolute right-0 text-[10px] text-muted-foreground/50 -translate-y-full -mt-0.5" style={{ top: "calc(25 / 70 * 100%)" }}>Target</span>
+          {yLabels.map((label, i) => (
+            <span key={label} className="absolute left-0 text-[10px] text-muted-foreground/50 -translate-y-1/2" style={{ top: `calc(${yPositions[i]} / 70 * 100%)` }}>{label}</span>
+          ))}
+          <span className="absolute right-0 text-[10px] text-muted-foreground/50 -translate-y-full -mt-0.5" style={{ top: "calc(25 / 70 * 100%)" }}>{data.chartLabels.target}</span>
           <div className="absolute size-2 rounded-full bg-foreground" style={{ top: "calc(8 / 70 * 100%)", right: "4px", transform: "translate(50%, -50%)" }} />
         </div>
       </CardContent>
@@ -147,7 +150,8 @@ function useViewMode(ref: React.RefObject<HTMLDivElement | null>): ViewMode {
   return mode;
 }
 
-export function DashboardContent() {
+function DashboardContentInner() {
+  const { data } = useDashboardData();
   const [layout, setLayout] = useState<LayoutType>("executive");
   const [darkGlow, setDarkGlow] = useState<GlowConfig>(defaultDarkGlow);
   const [darkCards, setDarkCards] = useState<CardConfig>(defaultDarkCards);
@@ -203,12 +207,12 @@ export function DashboardContent() {
           <div className="flex flex-col @[500px]:flex-row @[500px]:items-center @[500px]:justify-between gap-4">
             <div>
               <h1 className="text-xs tracking-tight">
-                <span className="font-bold">UiPath</span> Vertical Solutions
+                <span className="font-bold">{data.brandName}</span> {data.brandLine}
               </h1>
               <p className="text-2xl font-bold tracking-tight flex items-center gap-2">
                 {layoutLabels[layout]} Dashboard
                 <Badge variant="secondary" status="info">
-                  Experimental
+                  {data.badgeText}
                 </Badge>
               </p>
             </div>
@@ -266,5 +270,13 @@ export function DashboardContent() {
         </div>
       </div>
     </DashboardLoading>
+  );
+}
+
+export function DashboardContent() {
+  return (
+    <DashboardDataProvider>
+      <DashboardContentInner />
+    </DashboardDataProvider>
   );
 }

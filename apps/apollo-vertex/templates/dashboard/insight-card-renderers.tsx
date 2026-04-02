@@ -2,6 +2,8 @@
 
 import { Badge } from "@/components/ui/badge";
 import type { InsightCardContent } from "./glow-config";
+import { useDashboardData } from "./DashboardDataProvider";
+import type { InsightCardData } from "./dashboard-data";
 
 type ViewMode = "desktop" | "compact" | "stacked";
 
@@ -34,7 +36,7 @@ const kpiSamples = [
   },
 ];
 
-const barSamples = [
+const barsWithColor = [
   { label: "Risk flag in notes", value: 34, color: "bg-chart-1" },
   { label: "Credit report >120 days old", value: 29, color: "bg-chart-2" },
   { label: "Owner name mismatch", value: 23, color: "bg-chart-3" },
@@ -47,22 +49,21 @@ const areaPoints = [3, 5, 4, 8, 6, 9, 7, 11, 10, 14, 12, 16];
 
 // --- Renderers ---
 
-function KpiContent({ title, viewMode }: { title: string; viewMode: ViewMode }) {
-  const sample = kpiSamples.find((s) => s.title === title) ?? kpiSamples[0];
+function KpiContent({ cardData, viewMode }: { cardData: InsightCardData; viewMode: ViewMode }) {
 
   if (viewMode === "compact") {
     return (
       <>
         <div className="flex items-end gap-3">
           <div className="text-5xl font-normal tracking-tight leading-none bg-gradient-to-r from-insight-800 to-primary-600 dark:from-insight-500 dark:to-primary-400 bg-clip-text text-transparent">
-            {sample.number}
+            {cardData.kpiNumber}
           </div>
           <Badge variant="secondary" status="info" className="mb-1">
-            {sample.badge}
+            {cardData.kpiBadge}
           </Badge>
         </div>
         <p className="text-xs font-normal text-muted-foreground mt-auto">
-          {sample.description}
+          {cardData.kpiDescription}
         </p>
       </>
     );
@@ -71,14 +72,14 @@ function KpiContent({ title, viewMode }: { title: string; viewMode: ViewMode }) 
   return (
     <>
       <div className="text-5xl font-normal tracking-tight leading-none bg-gradient-to-r from-insight-800 to-primary-600 dark:from-insight-500 dark:to-primary-400 bg-clip-text text-transparent">
-        {sample.number}
+        {cardData.kpiNumber}
       </div>
       <div className="mt-auto">
         <Badge variant="secondary" status="info" className="mb-2">
-          {sample.badge}
+          {cardData.kpiBadge}
         </Badge>
         <p className="text-xs font-normal text-muted-foreground">
-          {sample.description}
+          {cardData.kpiDescription}
         </p>
       </div>
     </>
@@ -123,13 +124,17 @@ function DonutContent() {
   );
 }
 
-function HorizontalBarsContent({ viewMode, isExpanded = false }: { viewMode: ViewMode; isExpanded?: boolean }) {
+function HorizontalBarsContent({ cardData, viewMode, isExpanded = false }: { cardData: InsightCardData; viewMode: ViewMode; isExpanded?: boolean }) {
+  const bars = cardData.bars ?? [];
+  const chartColors = ["bg-chart-1", "bg-chart-2", "bg-chart-3", "bg-chart-4", "bg-chart-5"];
+  const barsWithColor = bars.map((b, i) => ({ ...b, color: chartColors[i % chartColors.length] }));
+
   if (viewMode === "compact" && !isExpanded) {
-    const total = barSamples.reduce((sum, s) => sum + s.value, 0);
+    const total = barsWithColor.reduce((sum, s) => sum + s.value, 0);
     return (
       <div className="flex flex-col gap-3">
         <div className="h-3 w-full rounded-full overflow-hidden flex">
-          {barSamples.map((issue) => (
+          {barsWithColor.map((issue) => (
             <div
               key={issue.label}
               className={`${issue.color} relative`}
@@ -142,7 +147,7 @@ function HorizontalBarsContent({ viewMode, isExpanded = false }: { viewMode: Vie
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          {barSamples.map((issue) => {
+          {barsWithColor.map((issue) => {
             const pct = Math.round((issue.value / total) * 100);
             return (
               <div key={issue.label} className="flex items-center gap-1.5">
@@ -160,7 +165,7 @@ function HorizontalBarsContent({ viewMode, isExpanded = false }: { viewMode: Vie
 
   return (
     <div className="flex flex-col gap-5">
-      {barSamples.map((issue) => (
+      {barsWithColor.map((issue) => (
         <div key={issue.label}>
           <div className="flex items-center justify-between text-xs mb-1.5">
             <span className="font-medium">{issue.label}</span>
@@ -277,22 +282,29 @@ const stackedBarData = [
   },
 ];
 
-function StackedBarContent({ viewMode, isExpanded = false }: { viewMode: ViewMode; isExpanded?: boolean }) {
+function StackedBarContent({ cardData, viewMode, isExpanded = false }: { cardData: InsightCardData; viewMode: ViewMode; isExpanded?: boolean }) {
+  const chartColors = ["bg-chart-1", "bg-chart-2", "bg-chart-3", "bg-chart-4", "bg-chart-5"];
+  const rawBars = cardData.stackedBars ?? [];
+  const legend = (cardData.stackedLegend ?? []).map((label, i) => ({
+    label,
+    color: chartColors[i % chartColors.length],
+  }));
+  const barData = rawBars.map((bar) => ({
+    label: bar.label,
+    segments: bar.segments.map((value, i) => ({
+      value,
+      color: chartColors[i % chartColors.length],
+    })),
+  }));
   const maxTotal = Math.max(
-    ...stackedBarData.map((d) =>
+    ...barData.map((d) =>
       d.segments.reduce((sum, s) => sum + s.value, 0),
     ),
   );
 
-  const legendItems = [
-    { label: "Approved", color: "bg-chart-1" },
-    { label: "Pending", color: "bg-chart-2" },
-    { label: "Rejected", color: "bg-chart-3" },
-  ];
-
   if (viewMode === "compact" && !isExpanded) {
     // Summary: aggregate all days into one horizontal stacked bar
-    const totals = stackedBarData.reduce(
+    const totals = barData.reduce(
       (acc, day) => {
         for (const seg of day.segments) {
           const key = seg.color;
@@ -307,7 +319,7 @@ function StackedBarContent({ viewMode, isExpanded = false }: { viewMode: ViewMod
     return (
       <div className="flex flex-col gap-3">
         <div className="h-3 w-full rounded-full overflow-hidden flex">
-          {legendItems.map((item) => (
+          {legend.map((item) => (
             <div
               key={item.color}
               className={`${item.color} relative`}
@@ -320,7 +332,7 @@ function StackedBarContent({ viewMode, isExpanded = false }: { viewMode: ViewMod
           ))}
         </div>
         <div className="flex items-center justify-between">
-          {legendItems.map((item) => {
+          {legend.map((item) => {
             const val = totals[item.color] ?? 0;
             const pct = Math.round((val / grandTotal) * 100);
             return (
@@ -340,7 +352,7 @@ function StackedBarContent({ viewMode, isExpanded = false }: { viewMode: ViewMod
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-end justify-between flex-1 min-h-0">
-        {stackedBarData.map((bar) => {
+        {barData.map((bar) => {
           const total = bar.segments.reduce((sum, s) => sum + s.value, 0);
           const pct = (total / maxTotal) * 100;
           return (
@@ -379,7 +391,7 @@ function StackedBarContent({ viewMode, isExpanded = false }: { viewMode: ViewMod
         })}
       </div>
       <div className="flex items-center gap-4 mt-auto pt-4">
-        {legendItems.map((item) => (
+        {legend.map((item) => (
           <div key={item.label} className="flex items-center gap-1.5">
             <div className={`size-2 rounded-full ${item.color}`} />
             <span className="text-[10px] text-muted-foreground">
@@ -394,20 +406,24 @@ function StackedBarContent({ viewMode, isExpanded = false }: { viewMode: ViewMod
 
 export function InsightCardBody({
   content,
+  cardIndex,
   viewMode = "desktop",
   isExpanded = false,
 }: {
   content: InsightCardContent;
+  cardIndex: number;
   viewMode?: ViewMode;
   isExpanded?: boolean;
 }) {
-  if (content.type === "kpi") {
-    return <KpiContent title={content.title} viewMode={viewMode} />;
-  }
-  if (content.chartType === "horizontal-bars") return <HorizontalBarsContent viewMode={viewMode} isExpanded={isExpanded} />;
+  const { data } = useDashboardData();
+  const cardData = data.insightCards[cardIndex] ?? data.insightCards[0];
 
+  if (content.type === "kpi") {
+    return <KpiContent cardData={cardData} viewMode={viewMode} />;
+  }
+  if (content.chartType === "horizontal-bars") return <HorizontalBarsContent cardData={cardData} viewMode={viewMode} isExpanded={isExpanded} />;
   if (content.chartType === "donut") return <DonutContent />;
   if (content.chartType === "sparkline") return <SparklineContent />;
-  if (content.chartType === "stacked-bar") return <StackedBarContent viewMode={viewMode} isExpanded={isExpanded} />;
+  if (content.chartType === "stacked-bar") return <StackedBarContent cardData={cardData} viewMode={viewMode} isExpanded={isExpanded} />;
   return <AreaContent />;
 }

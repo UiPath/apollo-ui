@@ -1,9 +1,11 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { CardConfig, GlowConfig, LayoutConfig } from "./glow-config";
 import { CardsTab, GlowTab, LayoutTab } from "./dev-controls-tabs";
+import { useDashboardData } from "./DashboardDataProvider";
+import { datasetPresets, type DashboardDataset } from "./dashboard-data";
 
 interface DevControlsProps {
   glowConfig: GlowConfig;
@@ -14,7 +16,7 @@ interface DevControlsProps {
   onLayoutChange: (config: LayoutConfig) => void;
 }
 
-type Tab = "glow" | "cards" | "layout";
+type Tab = "glow" | "cards" | "layout" | "data";
 
 export function GlowDevControls({
   glowConfig,
@@ -26,11 +28,15 @@ export function GlowDevControls({
 }: DevControlsProps) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<Tab>("glow");
+  const { data, setDataset } = useDashboardData();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadError, setUploadError] = useState("");
 
-  const configMap = {
+  const configMap: Record<Tab, unknown> = {
     glow: glowConfig,
     cards: cardConfig,
     layout: layoutConfig,
+    data: data,
   };
   const currentConfig = configMap[tab];
 
@@ -60,6 +66,13 @@ export function GlowDevControls({
             >
               Layout
             </button>
+            <button
+              type="button"
+              onClick={() => setTab("data")}
+              className={`flex-1 px-2 py-2 text-xs font-medium ${tab === "data" ? "bg-muted" : ""}`}
+            >
+              Data
+            </button>
           </div>
           <div className="p-3 overflow-y-auto flex-1">
             {tab === "glow" && (
@@ -70,6 +83,81 @@ export function GlowDevControls({
             )}
             {tab === "layout" && (
               <LayoutTab config={layoutConfig} onChange={onLayoutChange} />
+            )}
+            {tab === "data" && (
+              <div className="space-y-3">
+                <div className="text-xs font-bold tracking-tight border-b pb-2">
+                  Dataset: {data.name}
+                </div>
+                <div>
+                  <div className="text-xs mb-1">Preset</div>
+                  <select
+                    value={Object.entries(datasetPresets).find(([, v]) => v.name === data.name)?.[0] ?? "custom"}
+                    onChange={(e) => {
+                      const preset = datasetPresets[e.target.value];
+                      if (preset) setDataset(preset);
+                    }}
+                    className="w-full h-7 rounded border bg-background px-1 text-xs"
+                  >
+                    {Object.entries(datasetPresets).map(([key, val]) => (
+                      <option key={key} value={key}>{val.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `dashboard-${data.name.toLowerCase().replace(/\s+/g, "-")}.json`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="flex-1 h-7 rounded border bg-background text-xs hover:bg-muted transition-colors"
+                  >
+                    Download
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex-1 h-7 rounded border bg-background text-xs hover:bg-muted transition-colors"
+                  >
+                    Upload
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".json"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploadError("");
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        try {
+                          const parsed = JSON.parse(reader.result as string) as DashboardDataset;
+                          if (!parsed.brandName || !parsed.insightCards) {
+                            setUploadError("Invalid format");
+                            return;
+                          }
+                          setDataset(parsed);
+                        } catch {
+                          setUploadError("Invalid JSON");
+                        }
+                      };
+                      reader.readAsText(file);
+                      e.target.value = "";
+                    }}
+                  />
+                </div>
+                {uploadError && (
+                  <div className="text-[10px] text-destructive">{uploadError}</div>
+                )}
+              </div>
             )}
             <div className="border-t pt-2 mt-3">
               <div className="text-xs text-muted-foreground">Config:</div>

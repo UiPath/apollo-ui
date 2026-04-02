@@ -10,6 +10,7 @@ import {
   type LayoutConfig,
 } from "./glow-config";
 import { InsightCardBody } from "./insight-card-renderers";
+import { useDashboardData } from "./DashboardDataProvider";
 
 const sizeToFr: Record<string, string> = { sm: "1fr", md: "2fr", lg: "1fr" };
 
@@ -54,6 +55,7 @@ function NavigateIcon() {
 
 interface InsightCardInnerProps {
   cfg: InsightCardConfig;
+  cardIndex: number;
   shared: string;
   cards: CardConfig;
   isExpanding: boolean;
@@ -69,6 +71,7 @@ interface InsightCardInnerProps {
 
 function InsightCardInner({
   cfg,
+  cardIndex,
   shared,
   cards,
   isExpanding,
@@ -81,6 +84,8 @@ function InsightCardInner({
   className = "",
   style,
 }: InsightCardInnerProps) {
+  const { data } = useDashboardData();
+  const cardTitle = data.insightCards[cardIndex]?.title ?? cfg.content.title;
   const classes = getInsightCardClasses(cfg.content);
   const isInteractive = cfg.interaction !== "static";
 
@@ -140,11 +145,11 @@ function InsightCardInner({
       )}
       <CardHeader>
         <CardTitle className="text-sm font-bold tracking-tight">
-          {cfg.content.title}
+          {cardTitle}
         </CardTitle>
       </CardHeader>
       <CardContent className={classes.contentClassName}>
-        <InsightCardBody content={cfg.content} viewMode={viewMode} isExpanded={isThis && isExpanding} />
+        <InsightCardBody content={cfg.content} cardIndex={cardIndex} viewMode={viewMode} isExpanded={isThis && isExpanding} />
       </CardContent>
       {isThis && isExpanding && (phase === "height" || phase === "full") && (
         <div
@@ -188,6 +193,7 @@ export function InsightGrid({
   onAutopilotOpen?: (sourceTitle: string, idx: number) => void;
   autopilotActiveIdx?: number | null;
 }) {
+  const { data } = useDashboardData();
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [phase, setPhase] = useState<ExpandPhase>("idle");
 
@@ -271,10 +277,11 @@ export function InsightGrid({
               >
                 <InsightCardInner
                   cfg={cfg}
+                  cardIndex={idx}
                   {...sharedProps}
                   isThis={isThis}
                   onExpandClick={() => handleClick(cfg, idx)}
-                  onAutopilotOpen={onAutopilotOpen ? () => onAutopilotOpen(cfg.content.title, idx) : undefined}
+                  onAutopilotOpen={onAutopilotOpen ? () => onAutopilotOpen(data.insightCards[idx]?.title ?? cfg.content.title, idx) : undefined}
                   isAutopilotActive={autopilotActiveIdx === idx}
                   className="h-full"
                 />
@@ -309,10 +316,11 @@ export function InsightGrid({
                     <InsightCardInner
                       key={idx}
                       cfg={cfg}
+                      cardIndex={idx}
                       {...sharedProps}
                       isThis={isThis}
                       onExpandClick={() => handleClick(cfg, idx)}
-                      onAutopilotOpen={onAutopilotOpen ? () => onAutopilotOpen(cfg.content.title, idx) : undefined}
+                      onAutopilotOpen={onAutopilotOpen ? () => onAutopilotOpen(data.insightCards[idx]?.title ?? cfg.content.title, idx) : undefined}
                   isAutopilotActive={autopilotActiveIdx === idx}
                       style={{
                         opacity: isSibling && phase !== "idle" ? 0 : 1,

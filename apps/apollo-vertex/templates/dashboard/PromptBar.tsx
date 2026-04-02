@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import type { CardConfig, CardGradient } from "./glow-config";
+import { useDashboardData } from "./DashboardDataProvider";
 
 function cardBgStyle(
   bg: string,
@@ -27,9 +28,11 @@ export function PromptBar({
   shared,
   cards,
 }: {
+
   shared: string;
   cards: CardConfig;
 }) {
+  const { data } = useDashboardData();
   const [value, setValue] = useState("");
   const hasInput = value.trim().length > 0;
 
@@ -43,14 +46,14 @@ export function PromptBar({
               status="info"
               className="!bg-white/35 !text-foreground opacity-0 translate-y-2 group-focus-within:opacity-100 group-focus-within:translate-y-0 transition-all duration-300 cursor-pointer"
             >
-              Show me top risk factors
+              {data.promptSuggestions[0] ?? "Show me top risk factors"}
             </Badge>
             <Badge
               variant="secondary"
               status="info"
               className="!bg-white/35 !text-foreground opacity-0 translate-y-2 group-focus-within:opacity-100 group-focus-within:translate-y-0 transition-all duration-300 delay-75 cursor-pointer"
             >
-              Compare Q1 vs Q2 performance
+              {data.promptSuggestions[1] ?? "Compare Q1 vs Q2 performance"}
             </Badge>
           </div>
         </div>
@@ -67,7 +70,7 @@ export function PromptBar({
           type="text"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder="What would you like to understand about loan performance?"
+          placeholder={data.promptPlaceholder}
           className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
         />
         <div className="flex items-center gap-2 ml-3">
