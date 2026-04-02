@@ -4,7 +4,6 @@ import {
   type DragEndEvent,
   type DragMoveEvent,
   type DragOverEvent,
-  DragOverlay,
   type DragStartEvent,
   KeyboardSensor,
   PointerSensor,
@@ -18,12 +17,7 @@ import {
 } from '@dnd-kit/sortable';
 import { FontVariantToken, Icon, Padding, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
-import {
-  Position,
-  useStore,
-  useStoreApi,
-  useViewport,
-} from '@uipath/apollo-react/canvas/xyflow/react';
+import { Position, useStore, useStoreApi } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   ApIcon,
   ApIconButton,
@@ -32,7 +26,6 @@ import {
   ApTypography,
 } from '@uipath/apollo-react/material';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { EntryConditionIcon, ExitConditionIcon, ReturnToOriginIcon } from '../../icons';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import { GroupModificationType } from '../../utils/GroupModificationUtils';
@@ -44,7 +37,7 @@ import { NodeContextMenu, type NodeMenuItem } from '../NodeContextMenu';
 import { useSetNodeSelection } from '../NodePropertiesPanel/hooks';
 import { type ListItem, Toolbox } from '../Toolbox';
 import { AdhocTaskItem } from './AdhocTask';
-import { DraggableTask, TaskContent } from './DraggableTask';
+import { DraggableTask } from './DraggableTask';
 import {
   INDENTATION_WIDTH,
   STAGE_CONTENT_INSET,
@@ -57,20 +50,16 @@ import {
   StageHeaderChipsRow,
   StageParallelBracket,
   StageParallelLabel,
-  StageTask,
   StageTaskGroup,
   StageTaskList,
   StageTitleContainer,
   StageTitleInput,
 } from './StageNode.styles';
-import type {
-  StageNodeInnerProps,
-  StageNodeProps,
-  StageTaskDragOverlayProps,
-} from './StageNode.types';
+import type { StageNodeInnerProps, StageNodeProps } from './StageNode.types';
 import { StageHeaderChipType } from './StageNode.types';
 import { flattenTasks, getProjection, reorderTasks } from './StageNode.utils';
 import { getContextMenuItems, getDivider, getMenuItem } from './StageNodeTaskUtilities';
+import { StageTaskDragOverlay } from './StageTaskDragOverlay';
 
 interface TaskStateReference {
   isParallel: boolean;
@@ -85,38 +74,6 @@ const CHIP_ICONS: Record<StageHeaderChipType, React.ReactElement> = {
   [StageHeaderChipType.CaseExit]: <ApIcon name="close" size={Icon.IconXs} />,
   [StageHeaderChipType.CaseCompletion]: <ApIcon name="check-mark" size={Icon.IconXs} />,
 };
-
-const StageTaskDragOverlay = memo(function StageTaskDragOverlay({
-  activeTask,
-  isActiveTaskParallel,
-  taskWidthStyle,
-}: StageTaskDragOverlayProps) {
-  const { zoom } = useViewport();
-  const dragOverlayStyle = useMemo<React.CSSProperties>(
-    () => ({
-      transform: `scale(${zoom})`,
-      transformOrigin: 'top left',
-    }),
-    [zoom]
-  );
-
-  return createPortal(
-    <DragOverlay>
-      {activeTask ? (
-        <div style={dragOverlayStyle}>
-          <StageTask
-            selected
-            isParallel={isActiveTaskParallel}
-            style={{ cursor: 'grabbing', ...taskWidthStyle }}
-          >
-            <TaskContent task={activeTask} isDragging />
-          </StageTask>
-        </div>
-      ) : null}
-    </DragOverlay>,
-    document.body
-  );
-});
 
 const StageNodeInner = (props: StageNodeInnerProps) => {
   const {
@@ -870,7 +827,7 @@ const StageNodeInnerMemo = memo(StageNodeInner);
  * zIndex, isConnectable) that change on every store update causing rerenders. Passing only
  * StageNodeBaseProps lets StageNodeInnerMemo's shallow comparison work effectively.
  */
-const StageNodeComponent = ({
+export const StageNode = ({
   dragging,
   selected,
   id,
@@ -921,5 +878,3 @@ const StageNodeComponent = ({
     />
   );
 };
-
-export const StageNode = memo(StageNodeComponent);
