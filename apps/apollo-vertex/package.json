@@ -15,7 +15,8 @@
     "format:check": "biome format",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
-    "lint:deps": "depcruise registry --config .dependency-cruiser.js"
+    "lint:deps": "depcruise registry --config .dependency-cruiser.js",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
