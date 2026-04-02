@@ -86,6 +86,7 @@ export interface StageNodeProps extends NodeProps {
   onTaskReorder?: (reorderedTasks: StageTaskItem[][]) => void;
   onReplaceTaskFromToolbox?: (newTask: ListItem, groupIndex: number, taskIndex: number) => void;
   onTaskPlay?: (taskId: string) => Promise<void>;
+  hideParallelOptions?: boolean;
 }
 
 export interface StageTaskExecution {

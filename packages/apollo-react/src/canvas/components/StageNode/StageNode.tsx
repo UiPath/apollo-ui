@@ -97,6 +97,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
     onTaskReorder,
     onReplaceTaskFromToolbox,
     onTaskPlay,
+    hideParallelOptions,
   } = props;
 
   const taskWidth = width ? width - STAGE_CONTENT_INSET : undefined;
@@ -287,14 +288,22 @@ const StageNodeComponent = (props: StageNodeProps) => {
           taskGroupLength,
           isAboveParallel,
           isBelowParallel,
-          reGroupTaskFunction
+          reGroupTaskFunction,
+          hideParallelOptions
         );
         return [...items, ...reGroupOptions];
       }
 
       return items;
     },
-    [onReplaceTaskFromToolbox, onTaskClick, onTaskGroupModification, reGroupTaskFunction, tasks]
+    [
+      onReplaceTaskFromToolbox,
+      onTaskClick,
+      onTaskGroupModification,
+      reGroupTaskFunction,
+      tasks,
+      hideParallelOptions,
+    ]
   );
 
   const { setSelectedNodeId } = useNodeSelection();

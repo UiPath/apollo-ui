@@ -16,7 +16,8 @@ export const getContextMenuItems = (
     groupModificationType: GroupModificationType,
     groupIndex: number,
     taskIndex: number
-  ) => void
+  ) => void,
+  hideParallelOptions = false
 ): NodeMenuItem[] => {
   const CONTEXT_MENU_ITEMS = {
     MOVE_UP: getMenuItem('move-up', 'Move up', () =>
@@ -67,7 +68,7 @@ export const getContextMenuItems = (
 
   if (items.length) items.push(CONTEXT_MENU_ITEMS.DIVIDER);
 
-  if (isParallelGroup) {
+  if (isParallelGroup && !hideParallelOptions) {
     items.push(
       CONTEXT_MENU_ITEMS.UNGROUP_ALL,
       CONTEXT_MENU_ITEMS.SPLIT_TASK,
@@ -75,7 +76,7 @@ export const getContextMenuItems = (
       CONTEXT_MENU_ITEMS.REMOVE_GROUP,
       CONTEXT_MENU_ITEMS.REMOVE_TASK
     );
-  } else {
+  } else if (!isParallelGroup && !hideParallelOptions) {
     if (groupIndex > 0) {
       items.push(
         isAboveParallel
@@ -94,6 +95,8 @@ export const getContextMenuItems = (
 
     if (items.length) items.push(CONTEXT_MENU_ITEMS.DIVIDER);
 
+    items.push(CONTEXT_MENU_ITEMS.REMOVE_TASK);
+  } else {
     items.push(CONTEXT_MENU_ITEMS.REMOVE_TASK);
   }
 
