@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.65.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.65.1...@uipath/apollo-react@3.65.2) (2026-04-02)
+
+### Bug Fixes
+
+* **apollo-react:** use camelCase JSX attributes in CaseManagementProject icon ([68f0936](https://github.com/UiPath/apollo-ui/commit/68f0936099db8bbcd999cd5159dc38be94010e44))
+
 ## [@uipath/apollo-react-v3.65.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.65.0...@uipath/apollo-react@3.65.1) (2026-04-02)
 
 ### Bug Fixes
