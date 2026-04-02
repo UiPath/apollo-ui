@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v3.65.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.65.2...@uipath/apollo-react@3.65.3) (2026-04-02)
+
+### Bug Fixes
+
+* **apollo-react:** fix format ([03c8295](https://github.com/UiPath/apollo-ui/commit/03c82955aab2fcb0c2ed69ca48779d33972812b4))
+* **apollo-react:** update tool call error string output ([1ae9298](https://github.com/UiPath/apollo-ui/commit/1ae9298ce1044df9e9400c1afe5e675ef0c16578))
+
 ## [@uipath/apollo-react-v3.65.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.65.1...@uipath/apollo-react@3.65.2) (2026-04-02)
 
 ### Bug Fixes
