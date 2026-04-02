@@ -161,7 +161,7 @@ function InsightCardInner({
       )}
       <CardHeader className="shrink-0">
         <div className="flex items-center gap-3 flex-nowrap min-w-0">
-          <CardTitle className="text-sm font-bold tracking-tight shrink-0">
+          <CardTitle className={`text-sm font-bold tracking-tight ${isExpandedWithDrilldown ? "shrink-0" : ""}`}>
             {cardTitle}
           </CardTitle>
           {/* Drilldown tabs — show when expanded with drilldown */}

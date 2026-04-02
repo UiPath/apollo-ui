@@ -43,7 +43,7 @@ export const defaultLightGlow: GlowConfig = {
 export const defaultDarkGlow: GlowConfig = {
   start: "var(--insight-700)",
   end: "var(--primary-600)",
-  containerOpacity: 45,
+  containerOpacity: 85,
   fillOpacity: 1,
   startStopOpacity: 1,
   endStopOpacity: 0.4,

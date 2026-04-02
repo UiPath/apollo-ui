@@ -181,7 +181,7 @@ function DashboardContentInner() {
                 <span className="font-bold">{data.brandName}</span> {data.brandLine}
               </h1>
               <p className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                {data.dashboardTitle} Dashboard
+                {data.dashboardTitle}
                 <Badge variant="secondary" status="info">
                   {data.badgeText}
                 </Badge>
