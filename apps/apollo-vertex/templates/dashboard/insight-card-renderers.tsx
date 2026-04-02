@@ -171,7 +171,7 @@ function HorizontalBarsContent({ cardData, viewMode, isExpanded = false }: { car
             <span className="font-medium">{issue.label}</span>
             <span className="font-bold">{issue.value}%</span>
           </div>
-          <div className="h-1 w-full rounded-full bg-muted relative">
+          <div className="h-1 w-full rounded-full bg-muted dark:bg-foreground/10 relative">
             <div
               className={`h-full rounded-full ${issue.color} relative`}
               style={{ width: `${issue.value}%` }}

@@ -171,10 +171,10 @@ function InsightCardInner({
                   key={tab.key}
                   type="button"
                   onClick={() => onDrilldownTabChange(tab.key)}
-                  className={`px-2 py-1 text-xs rounded transition-colors ${
+                  className={`px-2 py-1 text-xs rounded transition-colors font-medium ${
                     drilldownTab === tab.key
-                      ? "bg-muted font-medium"
-                      : "font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      ? "bg-muted dark:bg-foreground/15"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-foreground/15"
                   }`}
                 >
                   {tab.label}
