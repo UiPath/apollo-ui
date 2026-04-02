@@ -207,36 +207,30 @@ function InsightCardInner({
           );
         })()}
       </CardHeader>
-      {isExpandedWithDrilldown && drilldownTab !== "overview" ? (
-        /* When showing drilldown tabs — custom layout with scroll + fixed footer */
+      {isExpandedWithDrilldown ? (
+        /* Expanded with drilldown — unified layout for all tabs */
         <div className="flex-1 min-h-0 flex flex-col px-6 !-mt-2">
           <div className="flex-1 min-h-0 relative">
             <div
               className="absolute inset-0 overflow-y-auto pb-8"
               style={{ maskImage: "linear-gradient(to bottom, black 85%, transparent 100%)" }}
             >
-              <DrilldownTabContent tab={drilldownTab} />
+              {drilldownTab === "overview" ? (
+                <InsightCardBody content={cfg.content} cardIndex={cardIndex} viewMode={viewMode} isExpanded={isThis && isExpanding} />
+              ) : (
+                <DrilldownTabContent tab={drilldownTab} />
+              )}
             </div>
           </div>
-          <div className="shrink-0">
+          <div className="shrink-0 pb-2">
             <AutopilotPrompts onPromptSelect={() => onAutopilotOpen?.()} />
           </div>
         </div>
       ) : (
-        /* Default card content — overview or non-drilldown */
+        /* Default card content — not expanded or no drilldown */
         <CardContent className={`${classes.contentClassName} !flex-1 min-h-0`}>
           <InsightCardBody content={cfg.content} cardIndex={cardIndex} viewMode={viewMode} isExpanded={isThis && isExpanding} />
         </CardContent>
-      )}
-      {/* Autopilot prompts for overview tab when expanded */}
-      {isExpandedWithDrilldown && drilldownTab === "overview" && (
-        <div
-          className={`px-6 pb-4 shrink-0 transition-all duration-300 ${
-            phase === "full" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-          }`}
-        >
-          <AutopilotPrompts onPromptSelect={() => onAutopilotOpen?.()} />
-        </div>
       )}
       {/* Non-drilldown expanded content (other card types) */}
       {isThis && isExpanding && !hasDrilldown && (phase === "height" || phase === "full") && (
