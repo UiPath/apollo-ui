@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, type ReactNode } from "react";
-import { defaultDataset, type DashboardDataset } from "./dashboard-data";
+import { ecommerceDataset, type DashboardDataset } from "./dashboard-data";
 
 interface DashboardDataContextValue {
   data: DashboardDataset;
@@ -9,7 +9,7 @@ interface DashboardDataContextValue {
 }
 
 const DashboardDataContext = createContext<DashboardDataContextValue>({
-  data: defaultDataset,
+  data: ecommerceDataset,
   setDataset: () => {},
 });
 
@@ -18,7 +18,7 @@ export function useDashboardData() {
 }
 
 export function DashboardDataProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<DashboardDataset>(defaultDataset);
+  const [data, setData] = useState<DashboardDataset>(ecommerceDataset);
 
   return (
     <DashboardDataContext.Provider value={{ data, setDataset: setData }}>
