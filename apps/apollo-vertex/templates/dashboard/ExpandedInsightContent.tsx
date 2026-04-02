@@ -54,9 +54,12 @@ function TrendChart({ data }: { data: typeof trendData }) {
   const step = w / (data.weeks.length - 1);
 
   return (
-    <div>
-      <div className="text-xs font-bold tracking-tight mb-3">Trend over time</div>
-      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-24" fill="none">
+    <div className="space-y-5">
+      <div>
+        <div className="text-sm font-bold tracking-tight mb-1">Trend over time</div>
+        <p className="text-xs text-muted-foreground mb-4">8-week view of the top 3 return reasons</p>
+      </div>
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-36" fill="none">
         {data.series.map((series) => {
           const points = series.values
             .map((v, i) => `${i * step},${h - (v / max) * h * 0.85}`)
@@ -74,57 +77,71 @@ function TrendChart({ data }: { data: typeof trendData }) {
           );
         })}
       </svg>
-      <div className="flex gap-4 mt-2">
+      <div className="flex gap-5 mt-3">
         {data.series.map((s) => (
           <div key={s.label} className="flex items-center gap-1.5">
-            <div className={`size-2 rounded-full ${s.color}`} />
-            <span className="text-[10px] text-muted-foreground">{s.label}</span>
+            <div className={`size-2.5 rounded-full ${s.color}`} />
+            <span className="text-xs text-muted-foreground">{s.label}</span>
           </div>
         ))}
       </div>
-      <p className="text-xs text-muted-foreground mt-3 leading-relaxed">{data.takeaway}</p>
+      <div className="rounded-lg bg-muted/40 p-3 mt-4">
+        <p className="text-xs leading-relaxed">{data.takeaway}</p>
+      </div>
     </div>
   );
 }
 
 function CategoryBreakdown() {
   return (
-    <div>
-      <div className="text-xs font-bold tracking-tight mb-3">Category breakdown — Wrong size/fit</div>
-      <div className="space-y-2">
+    <div className="space-y-5">
+      <div>
+        <div className="text-sm font-bold tracking-tight mb-1">Category breakdown</div>
+        <p className="text-xs text-muted-foreground">Where "Wrong size/fit" returns are concentrated</p>
+      </div>
+      <div className="space-y-4">
         {categoryBreakdown.map((cat) => (
-          <div key={cat.category} className="flex items-center gap-3">
-            <span className="text-xs w-28 shrink-0 truncate">{cat.category}</span>
-            <div className="flex-1 h-1.5 rounded-full bg-muted relative">
-              <div
-                className={`h-full rounded-full ${cat.highlight ? "bg-chart-1" : "bg-chart-1/40"}`}
-                style={{ width: `${cat.pct}%` }}
-              />
+          <div key={cat.category}>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-medium">{cat.category}</span>
+              <span className="text-xs font-bold">{cat.pct}%</span>
             </div>
-            <span className="text-xs font-bold w-8 text-right">{cat.pct}%</span>
+            <div className="h-2 w-full rounded-full bg-muted relative">
+              <div
+                className={`h-full rounded-full ${cat.highlight ? "bg-chart-1" : "bg-chart-1/40"} relative`}
+                style={{ width: `${cat.pct}%` }}
+              >
+                <div className={`absolute inset-0 ${cat.highlight ? "bg-chart-1" : "bg-chart-1/40"} rounded-full opacity-35 dark:opacity-55 blur-[4px]`} />
+              </div>
+            </div>
           </div>
         ))}
       </div>
-      <p className="text-xs text-muted-foreground mt-3 leading-relaxed">{categoryInsight}</p>
+      <div className="rounded-lg bg-muted/40 p-3">
+        <p className="text-xs leading-relaxed">{categoryInsight}</p>
+      </div>
     </div>
   );
 }
 
 function TopProducts() {
   return (
-    <div>
-      <div className="text-xs font-bold tracking-tight mb-3">Top products driving issues</div>
-      <div className="space-y-2">
-        <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-4 text-[10px] text-muted-foreground pb-1 border-b border-muted-foreground/10">
+    <div className="space-y-5">
+      <div>
+        <div className="text-sm font-bold tracking-tight mb-1">Top products driving issues</div>
+        <p className="text-xs text-muted-foreground">Ranked by return rate with revenue impact</p>
+      </div>
+      <div className="space-y-0">
+        <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-6 text-[10px] text-muted-foreground pb-2 border-b border-muted-foreground/10">
           <span>Product</span>
           <span>Return %</span>
           <span>Issue</span>
           <span>Impact</span>
         </div>
         {topProducts.map((p) => (
-          <div key={p.name} className="grid grid-cols-[1fr_auto_auto_auto] gap-x-4 text-xs items-center">
+          <div key={p.name} className="grid grid-cols-[1fr_auto_auto_auto] gap-x-6 text-xs items-center py-3 border-b border-muted-foreground/5 last:border-0">
             <span className="truncate font-medium">{p.name}</span>
-            <span className="text-right tabular-nums">{p.returnRate}%</span>
+            <span className="text-right tabular-nums font-bold">{p.returnRate}%</span>
             <Badge variant="secondary" className="text-[10px] h-5">{p.issue}</Badge>
             <span className="text-right text-muted-foreground tabular-nums">{p.impact}</span>
           </div>
@@ -136,22 +153,26 @@ function TopProducts() {
 
 function Recommendations() {
   return (
-    <div>
-      <div className="text-xs font-bold tracking-tight mb-3">Recommended actions</div>
-      <div className="space-y-3">
-        {recommendations.map((rec) => (
-          <div key={rec.action} className="flex gap-3 items-start">
-            <Badge
-              variant="secondary"
-              status={rec.priority === "High" ? "warning" : "info"}
-              className="text-[10px] h-5 shrink-0 mt-0.5"
-            >
-              {rec.priority}
-            </Badge>
-            <div>
-              <p className="text-xs font-medium">{rec.action}</p>
-              <p className="text-[11px] text-muted-foreground">{rec.impact}</p>
+    <div className="space-y-5">
+      <div>
+        <div className="text-sm font-bold tracking-tight mb-1">Recommended actions</div>
+        <p className="text-xs text-muted-foreground">AI-assisted next steps based on current data</p>
+      </div>
+      <div className="space-y-4">
+        {recommendations.map((rec, i) => (
+          <div key={rec.action} className="rounded-lg border border-muted-foreground/10 p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-muted-foreground">{i + 1}</span>
+              <Badge
+                variant="secondary"
+                status={rec.priority === "High" ? "warning" : "info"}
+                className="text-[10px] h-5"
+              >
+                {rec.priority}
+              </Badge>
             </div>
+            <p className="text-sm font-medium leading-snug">{rec.action}</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">{rec.impact}</p>
           </div>
         ))}
       </div>
@@ -165,7 +186,6 @@ export type DrilldownTab = "overview" | "trend" | "categories" | "products" | "a
 
 export const drilldownTabs: { key: DrilldownTab; label: string }[] = [
   { key: "overview", label: "Overview" },
-  { key: "trend", label: "Trend" },
   { key: "categories", label: "Categories" },
   { key: "products", label: "Products" },
   { key: "actions", label: "Actions" },

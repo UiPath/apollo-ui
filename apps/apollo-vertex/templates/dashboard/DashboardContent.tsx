@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardGlow } from "./DashboardGlow";
 import {
   cardBgStyle,
@@ -41,8 +41,6 @@ function ExecutiveLayout({
   const blurClass = cards.backdropBlur ? "" : "dark:!backdrop-blur-none";
   const shared = `!shadow-none dark:![background:var(--card-bg-override)] ${borderClass} ${blurClass}`;
   const gapStyle = { gap: `${layout.gap}px` };
-  const yLabels = data.chartLabels.y;
-  const yPositions = [15, 25, 30, 45];
 
   const overviewCardEl = (
     <Card
@@ -102,12 +100,6 @@ function AnalyticsLayout() {
 
 // --- Main component ---
 
-const layoutLabels: Record<LayoutType, string> = {
-  executive: "Product",
-  operational: "Operational",
-  analytics: "Analytics",
-};
-
 type ViewMode = "desktop" | "compact" | "stacked";
 
 function useViewMode(ref: React.RefObject<HTMLDivElement | null>): ViewMode {
@@ -131,11 +123,11 @@ function useViewMode(ref: React.RefObject<HTMLDivElement | null>): ViewMode {
 
 function DashboardContentInner() {
   const { data } = useDashboardData();
-  const [layout, setLayout] = useState<LayoutType>("executive");
+  const [layout] = useState<LayoutType>("executive");
   const [darkGlow, setDarkGlow] = useState<GlowConfig>(defaultDarkGlow);
   const [darkCards, setDarkCards] = useState<CardConfig>(defaultDarkCards);
   const [layoutCfg, setLayoutCfg] = useState<LayoutConfig>(defaultLayout);
-  const [replayCount, setReplayCount] = useState(0);
+  const [replayCount] = useState(0);
   const [autopilotOpen, setAutopilotOpen] = useState(false);
   const [autopilotSource, setAutopilotSource] = useState("");
   const [autopilotActiveIdx, setAutopilotActiveIdx] = useState<number | null>(null);
@@ -195,26 +187,26 @@ function DashboardContentInner() {
                 </Badge>
               </p>
             </div>
-            <Tabs
-              value={layout}
-              onValueChange={(v) => setLayout(v as LayoutType)}
-              className="hidden"
-            >
-              <TabsList>
-                {(Object.keys(layoutLabels) as LayoutType[]).map((key) => (
-                  <TabsTrigger key={key} value={key}>
-                    {layoutLabels[key]}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-            <button
-              type="button"
-              onClick={() => setReplayCount((c) => c + 1)}
-              className="h-9 px-3 rounded-lg border bg-muted text-xs font-medium hover:bg-muted/80 transition-colors"
-            >
-              Replay Intro
-            </button>
+            <div className="flex items-center gap-2">
+              <Select defaultValue="30">
+                <SelectTrigger className="h-9 w-auto text-xs font-medium">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7">Last 7 days</SelectItem>
+                  <SelectItem value="14">Last 14 days</SelectItem>
+                  <SelectItem value="30">Last 30 days</SelectItem>
+                  <SelectItem value="90">Last 90 days</SelectItem>
+                  <SelectItem value="365">Last 12 months</SelectItem>
+                </SelectContent>
+              </Select>
+              <button
+                type="button"
+                className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
+              >
+                Primary action
+              </button>
+            </div>
           </div>
 
           {/* Layout content */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   cardBgStyle,
@@ -94,6 +94,13 @@ function InsightCardInner({
   const cardTitle = data.insightCards[cardIndex]?.title ?? cfg.content.title;
   const [drilldownTab, setDrilldownTab] = useState<DrilldownTab>("overview");
   const hasDrilldown = cfg.content.chartType === "horizontal-bars";
+  const wasExpanded = useRef(false);
+  if (isThis && isExpanding) {
+    wasExpanded.current = true;
+  } else if (wasExpanded.current) {
+    wasExpanded.current = false;
+    if (drilldownTab !== "overview") setDrilldownTab("overview");
+  }
   const isExpandedWithDrilldown = isThis && isExpanding && hasDrilldown && phase === "full";
   const classes = getInsightCardClasses(cfg.content);
   const isInteractive = cfg.interaction !== "static";
@@ -153,29 +160,57 @@ function InsightCardInner({
         </button>
       )}
       <CardHeader className="shrink-0">
-        <div className="flex items-center gap-3">
-          <CardTitle className="text-sm font-bold tracking-tight">
+        <div className="flex items-center gap-3 flex-nowrap min-w-0">
+          <CardTitle className="text-sm font-bold tracking-tight shrink-0">
             {cardTitle}
           </CardTitle>
           {/* Drilldown tabs — show when expanded with drilldown */}
-          {isExpandedWithDrilldown && (
-            <div className="flex gap-0.5 ml-2">
-              {drilldownTabs.map((tab) => (
+          {isThis && isExpanding && hasDrilldown && (phase === "height" || phase === "full") && (() => {
+            const visibleTabs = drilldownTabs.slice(0, 4);
+            const overflowTabs = drilldownTabs.slice(4);
+            const isOverflowActive = overflowTabs.some((t) => t.key === drilldownTab);
+            return (
+            <div className={`flex gap-0.5 ml-2 items-center transition-opacity duration-300 ${phase === "full" ? "opacity-100" : "opacity-0"}`}>
+              {visibleTabs.map((tab) => (
                 <button
                   key={tab.key}
                   type="button"
                   onClick={() => setDrilldownTab(tab.key)}
-                  className={`px-2 py-1 text-[10px] rounded transition-colors ${
+                  className={`px-2 py-1 text-xs rounded transition-colors ${
                     drilldownTab === tab.key
                       ? "bg-muted font-medium"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      : "font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   }`}
                 >
                   {tab.label}
                 </button>
               ))}
+              {overflowTabs.length > 0 && (
+                <div className="relative">
+                  <select
+                    value={isOverflowActive ? drilldownTab : ""}
+                    onChange={(e) => {
+                      if (e.target.value) setDrilldownTab(e.target.value as DrilldownTab);
+                    }}
+                    className={`appearance-none px-2 py-1 text-xs rounded transition-colors cursor-pointer bg-transparent pr-5 ${
+                      isOverflowActive
+                        ? "bg-muted font-medium"
+                        : "font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    }`}
+                  >
+                    {!isOverflowActive && <option value="">More…</option>}
+                    {overflowTabs.map((tab) => (
+                      <option key={tab.key} value={tab.key}>{tab.label}</option>
+                    ))}
+                  </select>
+                  <svg className="absolute right-1 top-1/2 -translate-y-1/2 size-3 text-muted-foreground pointer-events-none" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 5l3 3 3-3" />
+                  </svg>
+                </div>
+              )}
             </div>
-          )}
+            );
+          })()}
         </div>
       </CardHeader>
       <CardContent className={`${classes.contentClassName} min-h-0`}>
@@ -191,8 +226,12 @@ function InsightCardInner({
         )}
       </CardContent>
       {/* Autopilot prompts — persistent at bottom when expanded with drilldown */}
-      {isExpandedWithDrilldown && (
-        <div className="px-6 pb-4 shrink-0">
+      {isThis && isExpanding && hasDrilldown && (phase === "height" || phase === "full") && (
+        <div
+          className={`px-6 pb-4 shrink-0 transition-all duration-300 ${
+            phase === "full" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+          }`}
+        >
           <AutopilotPrompts onPromptSelect={() => onAutopilotOpen?.()} />
         </div>
       )}
