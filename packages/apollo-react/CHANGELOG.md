@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v3.65.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.64.0...@uipath/apollo-react@3.65.0) (2026-04-02)
+
+### Features
+
+* **apollo-react:** add hideParallelOptions prop to StageNode ([bbdbfb2](https://github.com/UiPath/apollo-ui/commit/bbdbfb2cc5e74da8f38e6e45e286825aae528f79))
+
+### Bug Fixes
+
+* **apollo-react:** move hideParallelOptions tests to own describe block ([da39f53](https://github.com/UiPath/apollo-ui/commit/da39f537364187f3eef8a7f62c018ed0b6cda489))
+
 ## [@uipath/apollo-react-v3.64.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.63.1...@uipath/apollo-react@3.64.0) (2026-04-02)
 
 ### Features
