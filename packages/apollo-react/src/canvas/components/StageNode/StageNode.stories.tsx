@@ -24,7 +24,7 @@ import type { ListItem } from '../Toolbox';
 import { StageConnectionEdge } from './StageConnectionEdge';
 import { StageEdge } from './StageEdge';
 import { StageNode } from './StageNode';
-import type { StageNodeProps, StageTaskItem } from './StageNode.types';
+import { StageHeaderChipType, type StageNodeProps, type StageTaskItem } from './StageNode.types';
 
 const meta: Meta<typeof StageNode> = {
   title: 'Canvas/StageNode',
@@ -1733,6 +1733,151 @@ export const AdhocTasks: Story = {
           onTaskPlay: (taskId: string) => {
             console.log(`Play task: ${taskId}`);
           },
+        },
+      },
+    ],
+  },
+  args: {},
+};
+
+export const WithRulesTags: Story = {
+  name: 'With Rules & Tags',
+  parameters: {
+    nodes: [
+      {
+        id: '1',
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Application',
+            tasks: [
+              [{ id: 't1', label: 'Verify applicant identity', icon: <VerificationIcon /> }],
+              [{ id: 't2', label: 'Pull credit report', icon: <DocumentIcon /> }],
+            ],
+            headerChips: [
+              {
+                type: StageHeaderChipType.Entry,
+                count: 1,
+                tooltip: 'Entry rules',
+                onClick: () => window.alert('Open entry rules panel'),
+              },
+              {
+                type: StageHeaderChipType.Exit,
+                count: 3,
+                tooltip: 'Exit rules',
+                onClick: () => window.alert('Open exit rules panel'),
+              },
+            ],
+          },
+          onTaskClick: (taskId: string) => window.alert(`Task clicked: ${taskId}`),
+          onTaskAdd: () => window.alert('Add task'),
+        },
+      },
+      {
+        id: '2',
+        type: 'stage',
+        position: { x: 400, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Pending with customer',
+            tasks: [
+              [{ id: 't3', label: 'Request documents', icon: <DocumentIcon /> }],
+              [{ id: 't4', label: 'Send reminder or request', icon: <ProcessIcon /> }],
+            ],
+            headerChips: [
+              {
+                type: StageHeaderChipType.Entry,
+                count: 2,
+                tooltip: 'Entry rules',
+                onClick: () => window.alert('Open entry rules panel'),
+              },
+              {
+                type: StageHeaderChipType.Exit,
+                count: 1,
+                tooltip: 'Exit rules',
+                onClick: () => window.alert('Open exit rules panel'),
+              },
+              {
+                type: StageHeaderChipType.ReturnToOrigin,
+                tooltip: 'Return to origin conditions',
+                onClick: () => window.alert('Open return to origin panel'),
+              },
+            ],
+          },
+          onTaskClick: (taskId: string) => window.alert(`Task clicked: ${taskId}`),
+          onTaskAdd: () => window.alert('Add task'),
+        },
+      },
+      {
+        id: '3',
+        type: 'stage',
+        position: { x: 752, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Withdrawn',
+            tasks: [[{ id: 't5', label: 'Process withdrawal', icon: <ProcessIcon /> }]],
+            headerChips: [
+              {
+                type: StageHeaderChipType.Entry,
+                count: 2,
+                tooltip: 'Entry rules',
+                onClick: () => window.alert('Open entry rules panel'),
+              },
+              {
+                type: StageHeaderChipType.Exit,
+                count: 1,
+                tooltip: 'Exit rules',
+                onClick: () => window.alert('Open exit rules panel'),
+              },
+              {
+                type: StageHeaderChipType.CaseExit,
+                tooltip: 'Case exit',
+                onClick: () => window.alert('Open case exit panel'),
+              },
+            ],
+          },
+          onTaskClick: (taskId: string) => window.alert(`Task clicked: ${taskId}`),
+          onTaskAdd: () => window.alert('Add task'),
+        },
+      },
+      {
+        id: '4',
+        type: 'stage',
+        position: { x: 1104, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Closing',
+            tasks: [
+              [{ id: 't6', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: 't7', label: 'eSign envelope', icon: <ProcessIcon /> }],
+            ],
+            headerChips: [
+              {
+                type: StageHeaderChipType.Entry,
+                count: 1,
+                tooltip: 'Entry rules',
+                onClick: () => window.alert('Open entry rules panel'),
+              },
+              {
+                type: StageHeaderChipType.Exit,
+                count: 3,
+                tooltip: 'Exit rules',
+                onClick: () => window.alert('Open exit rules panel'),
+              },
+              {
+                type: StageHeaderChipType.CaseCompletion,
+                tooltip: 'Case completion',
+                onClick: () => window.alert('Open case completion panel'),
+              },
+            ],
+          },
+          onTaskClick: (taskId: string) => window.alert(`Task clicked: ${taskId}`),
+          onTaskAdd: () => window.alert('Add task'),
         },
       },
     ],

@@ -25,6 +25,21 @@ export interface StageTaskItem {
   isAdhoc?: boolean;
 }
 
+export enum StageHeaderChipType {
+  Entry = 'entry',
+  Exit = 'exit',
+  ReturnToOrigin = 'returnToOrigin',
+  CaseExit = 'caseExit',
+  CaseCompletion = 'caseCompletion',
+}
+
+export interface StageHeaderChip {
+  type: StageHeaderChipType;
+  count?: number;
+  tooltip?: React.ReactNode;
+  onClick?: () => void;
+}
+
 export interface StageNodeProps extends NodeProps {
   dragging: boolean;
   selected: boolean;
@@ -42,6 +57,7 @@ export interface StageNodeProps extends NodeProps {
     isReadOnly?: boolean;
     tasks: StageTaskItem[][];
     selectedTaskId?: string;
+    headerChips?: StageHeaderChip[];
   };
   addTaskLabel?: string;
   addTaskLoading?: boolean;

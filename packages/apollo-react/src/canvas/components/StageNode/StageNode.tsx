@@ -16,7 +16,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { FontVariantToken, Padding, Spacing } from '@uipath/apollo-core';
+import { FontVariantToken, Icon, Padding, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { Position, useStore, useViewport } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
@@ -36,13 +36,16 @@ import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import { NodeContextMenu, type NodeMenuItem } from '../NodeContextMenu';
 import { useNodeSelection } from '../NodePropertiesPanel/hooks';
 import { type ListItem, Toolbox } from '../Toolbox';
+import { EntryConditionIcon, ExitConditionIcon, ReturnToOriginIcon } from '../../icons';
 import { DraggableTask, TaskContent } from './DraggableTask';
 import {
   INDENTATION_WIDTH,
   STAGE_CONTENT_INSET,
+  StageChip,
   StageContainer,
   StageContent,
   StageHeader,
+  StageHeaderChipsRow,
   StageParallelBracket,
   StageParallelLabel,
   StageTask,
@@ -51,6 +54,7 @@ import {
   StageTitleContainer,
   StageTitleInput,
 } from './StageNode.styles';
+import { StageHeaderChipType } from './StageNode.types';
 import type { StageNodeProps } from './StageNode.types';
 import { flattenTasks, getProjection, reorderTasks } from './StageNode.utils';
 import { getContextMenuItems, getDivider, getMenuItem } from './StageNodeTaskUtilities';
@@ -60,6 +64,14 @@ interface TaskStateReference {
   groupIndex: number;
   taskIndex: number;
 }
+
+const CHIP_ICONS: Record<StageHeaderChipType, React.ReactElement> = {
+  [StageHeaderChipType.Entry]: <EntryConditionIcon w={Icon.IconXs} h={Icon.IconXs} />,
+  [StageHeaderChipType.Exit]: <ExitConditionIcon w={Icon.IconXs} h={Icon.IconXs} />,
+  [StageHeaderChipType.ReturnToOrigin]: <ReturnToOriginIcon w={Icon.IconXs} h={Icon.IconXs} />,
+  [StageHeaderChipType.CaseExit]: <ApIcon name="close" size={Icon.IconXs} />,
+  [StageHeaderChipType.CaseCompletion]: <ApIcon name="check-mark" size={Icon.IconXs} />,
+};
 
 const StageNodeComponent = (props: StageNodeProps) => {
   const {
@@ -541,6 +553,38 @@ const StageNodeComponent = (props: StageNodeProps) => {
                 >
                   {stageDuration}
                 </ApTypography>
+              )}
+              {stageDetails.headerChips && stageDetails.headerChips.length > 0 && (
+                <StageHeaderChipsRow>
+                  {stageDetails.headerChips.map((chip) => {
+                    const button = (
+                      <StageChip
+                        key={chip.type}
+                        type="button"
+                        aria-label={typeof chip.tooltip === 'string' ? chip.tooltip : chip.type}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          chip.onClick?.();
+                        }}
+                      >
+                        {CHIP_ICONS[chip.type]}
+                        {chip.count !== undefined && (
+                          <ApTypography variant={FontVariantToken.fontSizeS}>
+                            {chip.count}
+                          </ApTypography>
+                        )}
+                      </StageChip>
+                    );
+                    if (chip.tooltip) {
+                      return (
+                        <ApTooltip key={chip.type} placement="bottom" content={chip.tooltip}>
+                          {button}
+                        </ApTooltip>
+                      );
+                    }
+                    return button;
+                  })}
+                </StageHeaderChipsRow>
               )}
             </Column>
           </Row>
