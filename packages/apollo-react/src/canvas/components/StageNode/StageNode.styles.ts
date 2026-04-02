@@ -276,6 +276,35 @@ export const StageTaskDragPlaceholderWrapper = styled.div`
   height: 36px;
 `;
 
+export const StageHeaderChipsRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${Padding.PadS};
+  margin-top: ${Spacing.SpacingXs};
+`;
+
+export const StageChip = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${Padding.PadS};
+  padding: ${Padding.PadXs} ${Spacing.SpacingXs};
+  border-radius: 10px;
+  border: 1px solid var(--uix-canvas-border-de-emp);
+  background: transparent;
+  color: var(--uix-canvas-foreground);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-background-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--uix-canvas-primary);
+    outline-offset: 2px;
+  }
+`;
+
 export const StageTaskDragPlaceholder = styled.div<{ isTargetParallel?: boolean }>`
   display: flex;
   align-items: center;

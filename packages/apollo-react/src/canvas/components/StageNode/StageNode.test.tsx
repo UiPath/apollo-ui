@@ -4,6 +4,7 @@ import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ListItem } from '../Toolbox';
 import { StageNode } from './StageNode';
+import { StageHeaderChipType } from './StageNode.types';
 import type { StageNodeProps, StageTaskItem } from './StageNode.types';
 
 // Mock DndContext and related components
@@ -697,5 +698,102 @@ describe('StageNode - Add Task Loading State', () => {
     );
 
     expect(screen.getByTestId('toolbox')).toHaveAttribute('data-loading', 'false');
+  });
+});
+
+describe('StageNode - Header Chips', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should not render chips when headerChips is undefined', () => {
+    renderStageNode();
+    expect(
+      screen.queryByRole('button', { name: StageHeaderChipType.Entry })
+    ).not.toBeInTheDocument();
+  });
+
+  it('should not render chips when headerChips is an empty array', () => {
+    renderStageNode({ stageDetails: { ...defaultProps.stageDetails, headerChips: [] } });
+    expect(
+      screen.queryByRole('button', { name: StageHeaderChipType.Entry })
+    ).not.toBeInTheDocument();
+  });
+
+  it('should render a chip for each entry in headerChips', () => {
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        headerChips: [{ type: StageHeaderChipType.Entry }, { type: StageHeaderChipType.Exit }],
+      },
+    });
+
+    expect(screen.getByRole('button', { name: StageHeaderChipType.Entry })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: StageHeaderChipType.Exit })).toBeInTheDocument();
+  });
+
+  it('should render chip count when count is provided', () => {
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        headerChips: [{ type: StageHeaderChipType.Entry, count: 3 }],
+      },
+    });
+
+    const chip = screen.getByRole('button', { name: StageHeaderChipType.Entry });
+    expect(chip).toHaveTextContent('3');
+  });
+
+  it('should not render count text when count is undefined', () => {
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        headerChips: [{ type: StageHeaderChipType.Exit }],
+      },
+    });
+
+    const chip = screen.getByRole('button', { name: StageHeaderChipType.Exit });
+    expect(chip).not.toHaveTextContent(/\d/);
+  });
+
+  it('should call chip onClick when chip is clicked', async () => {
+    const user = userEvent.setup();
+    const onClick = vi.fn();
+
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        headerChips: [{ type: StageHeaderChipType.ReturnToOrigin, onClick }],
+      },
+    });
+
+    await user.click(screen.getByRole('button', { name: StageHeaderChipType.ReturnToOrigin }));
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('should use string tooltip as aria-label', () => {
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        headerChips: [{ type: StageHeaderChipType.CaseExit, tooltip: 'Exit case condition' }],
+      },
+    });
+
+    expect(screen.getByRole('button', { name: 'Exit case condition' })).toBeInTheDocument();
+  });
+
+  it('should fall back to chip type as aria-label when tooltip is a ReactNode', () => {
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        headerChips: [
+          { type: StageHeaderChipType.CaseCompletion, tooltip: <span>Completion</span> },
+        ],
+      },
+    });
+
+    expect(
+      screen.getByRole('button', { name: StageHeaderChipType.CaseCompletion })
+    ).toBeInTheDocument();
   });
 });
