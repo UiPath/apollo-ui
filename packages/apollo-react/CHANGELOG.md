@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.65.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.65.0...@uipath/apollo-react@3.65.1) (2026-04-02)
+
+### Bug Fixes
+
+* **apollo-react:** added missing exports for stage header chips ([855995e](https://github.com/UiPath/apollo-ui/commit/855995e938525f696ab7f2ff341cf42116f16010))
+
 ## [@uipath/apollo-react-v3.65.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.64.0...@uipath/apollo-react@3.65.0) (2026-04-02)
 
 ### Features
