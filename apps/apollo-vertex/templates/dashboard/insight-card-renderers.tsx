@@ -9,48 +9,18 @@ type ViewMode = "desktop" | "compact" | "stacked";
 
 // --- Sample data per card type ---
 
-const kpiSamples = [
-  {
-    title: "Upfront decision efficiency",
-    number: "94.2%",
-    badge: "+6.8%",
-    description: "Loans finalized on first review without rework.",
-  },
-  {
-    title: "SLA compliance",
-    number: "99.5%",
-    badge: "+1.2%",
-    description: "Loans processed within defined SLA thresholds.",
-  },
-  {
-    title: "Automation rate",
-    number: "78.3%",
-    badge: "+4.1%",
-    description: "Processes completed without manual intervention.",
-  },
-  {
-    title: "First-pass yield",
-    number: "91.7%",
-    badge: "+2.3%",
-    description: "Documents accepted on initial submission.",
-  },
-];
-
-const barsWithColor = [
-  { label: "Risk flag in notes", value: 34, color: "bg-chart-1" },
-  { label: "Credit report >120 days old", value: 29, color: "bg-chart-2" },
-  { label: "Owner name mismatch", value: 23, color: "bg-chart-3" },
-  { label: "High DTI ratio", value: 14, color: "bg-chart-4" },
-  { label: "Missing appraisal docs", value: 11, color: "bg-chart-5" },
-];
-
 const sparklinePoints = [4, 7, 5, 9, 6, 8, 12, 10, 14, 11, 15, 13];
 const areaPoints = [3, 5, 4, 8, 6, 9, 7, 11, 10, 14, 12, 16];
 
 // --- Renderers ---
 
-function KpiContent({ cardData, viewMode }: { cardData: InsightCardData; viewMode: ViewMode }) {
-
+function KpiContent({
+  cardData,
+  viewMode,
+}: {
+  cardData: InsightCardData;
+  viewMode: ViewMode;
+}) {
   if (viewMode === "compact") {
     return (
       <>
@@ -124,10 +94,27 @@ function DonutContent() {
   );
 }
 
-function HorizontalBarsContent({ cardData, viewMode, isExpanded = false }: { cardData: InsightCardData; viewMode: ViewMode; isExpanded?: boolean }) {
+function HorizontalBarsContent({
+  cardData,
+  viewMode,
+  isExpanded = false,
+}: {
+  cardData: InsightCardData;
+  viewMode: ViewMode;
+  isExpanded?: boolean;
+}) {
   const bars = cardData.bars ?? [];
-  const chartColors = ["bg-chart-1", "bg-chart-2", "bg-chart-3", "bg-chart-4", "bg-chart-5"];
-  const barsWithColor = bars.map((b, i) => ({ ...b, color: chartColors[i % chartColors.length] }));
+  const chartColors = [
+    "bg-chart-1",
+    "bg-chart-2",
+    "bg-chart-3",
+    "bg-chart-4",
+    "bg-chart-5",
+  ];
+  const barsWithColor = bars.map((b, i) => ({
+    ...b,
+    color: chartColors[i % chartColors.length],
+  }));
 
   if (viewMode === "compact" && !isExpanded) {
     const total = barsWithColor.reduce((sum, s) => sum + s.value, 0);
@@ -239,51 +226,22 @@ function AreaContent() {
   );
 }
 
-const stackedBarData = [
-  {
-    label: "Mon",
-    segments: [
-      { value: 30, color: "bg-chart-1" },
-      { value: 20, color: "bg-chart-2" },
-      { value: 10, color: "bg-chart-3" },
-    ],
-  },
-  {
-    label: "Tue",
-    segments: [
-      { value: 40, color: "bg-chart-1" },
-      { value: 15, color: "bg-chart-2" },
-      { value: 20, color: "bg-chart-3" },
-    ],
-  },
-  {
-    label: "Wed",
-    segments: [
-      { value: 25, color: "bg-chart-1" },
-      { value: 30, color: "bg-chart-2" },
-      { value: 15, color: "bg-chart-3" },
-    ],
-  },
-  {
-    label: "Thu",
-    segments: [
-      { value: 45, color: "bg-chart-1" },
-      { value: 10, color: "bg-chart-2" },
-      { value: 25, color: "bg-chart-3" },
-    ],
-  },
-  {
-    label: "Fri",
-    segments: [
-      { value: 35, color: "bg-chart-1" },
-      { value: 25, color: "bg-chart-2" },
-      { value: 18, color: "bg-chart-3" },
-    ],
-  },
-];
-
-function StackedBarContent({ cardData, viewMode, isExpanded = false }: { cardData: InsightCardData; viewMode: ViewMode; isExpanded?: boolean }) {
-  const chartColors = ["bg-chart-1", "bg-chart-2", "bg-chart-3", "bg-chart-4", "bg-chart-5"];
+function StackedBarContent({
+  cardData,
+  viewMode,
+  isExpanded = false,
+}: {
+  cardData: InsightCardData;
+  viewMode: ViewMode;
+  isExpanded?: boolean;
+}) {
+  const chartColors = [
+    "bg-chart-1",
+    "bg-chart-2",
+    "bg-chart-3",
+    "bg-chart-4",
+    "bg-chart-5",
+  ];
   const rawBars = cardData.stackedBars ?? [];
   const legend = (cardData.stackedLegend ?? []).map((label, i) => ({
     label,
@@ -297,9 +255,7 @@ function StackedBarContent({ cardData, viewMode, isExpanded = false }: { cardDat
     })),
   }));
   const maxTotal = Math.max(
-    ...barData.map((d) =>
-      d.segments.reduce((sum, s) => sum + s.value, 0),
-    ),
+    ...barData.map((d) => d.segments.reduce((sum, s) => sum + s.value, 0)),
   );
 
   if (viewMode === "compact" && !isExpanded) {
@@ -421,9 +377,23 @@ export function InsightCardBody({
   if (content.type === "kpi") {
     return <KpiContent cardData={cardData} viewMode={viewMode} />;
   }
-  if (content.chartType === "horizontal-bars") return <HorizontalBarsContent cardData={cardData} viewMode={viewMode} isExpanded={isExpanded} />;
+  if (content.chartType === "horizontal-bars")
+    return (
+      <HorizontalBarsContent
+        cardData={cardData}
+        viewMode={viewMode}
+        isExpanded={isExpanded}
+      />
+    );
   if (content.chartType === "donut") return <DonutContent />;
   if (content.chartType === "sparkline") return <SparklineContent />;
-  if (content.chartType === "stacked-bar") return <StackedBarContent cardData={cardData} viewMode={viewMode} isExpanded={isExpanded} />;
+  if (content.chartType === "stacked-bar")
+    return (
+      <StackedBarContent
+        cardData={cardData}
+        viewMode={viewMode}
+        isExpanded={isExpanded}
+      />
+    );
   return <AreaContent />;
 }

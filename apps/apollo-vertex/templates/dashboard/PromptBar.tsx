@@ -28,7 +28,6 @@ export function PromptBar({
   shared,
   cards,
 }: {
-
   shared: string;
   cards: CardConfig;
 }) {

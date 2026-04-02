@@ -40,7 +40,12 @@ export interface DashboardDataset {
   chartLabels: { y: string[]; target: string };
   promptPlaceholder: string;
   promptSuggestions: string[];
-  insightCards: [InsightCardData, InsightCardData, InsightCardData, InsightCardData];
+  insightCards: [
+    InsightCardData,
+    InsightCardData,
+    InsightCardData,
+    InsightCardData,
+  ];
 }
 
 export const defaultDataset: DashboardDataset = {
@@ -51,10 +56,15 @@ export const defaultDataset: DashboardDataset = {
   badgeText: "Experimental",
   greeting: "Good morning, Peter",
   headline: "Loan volume scales as setup time drops by 3.5 days.",
-  subhead: "Setup time declined ↓21% month over month while volume increased ↑18%.",
+  subhead:
+    "Setup time declined ↓21% month over month while volume increased ↑18%.",
   chartLabels: { y: ["200", "150", "100", "50"], target: "Target" },
-  promptPlaceholder: "What would you like to understand about loan performance?",
-  promptSuggestions: ["Show me top risk factors", "Compare Q1 vs Q2 performance"],
+  promptPlaceholder:
+    "What would you like to understand about loan performance?",
+  promptSuggestions: [
+    "Show me top risk factors",
+    "Compare Q1 vs Q2 performance",
+  ],
   insightCards: [
     {
       title: "Upfront decision efficiency",
@@ -92,7 +102,10 @@ export const defaultDataset: DashboardDataset = {
       interaction: "expand",
       expandContent: {
         summary: "Weekly volume trending up with stable rejection rates",
-        details: ["Monitor Thursday spike pattern", "Review rejected applications"],
+        details: [
+          "Monitor Thursday spike pattern",
+          "Review rejected applications",
+        ],
       },
       stackedBars: [
         { label: "Mon", segments: [30, 20, 10] },
@@ -123,11 +136,19 @@ export const ecommerceDataset: DashboardDataset = {
   dashboardTitle: "Order fulfillment",
   badgeText: "Experimental",
   greeting: "Good morning, Peter",
-  headline: "Order volume climbs as delivery performance improves, but fit-related returns remain the biggest drag on margin.",
-  subhead: "Orders shipped increased ↑26% month over month while on-time delivery improved ↑2.4%, with size and fit issues now driving the largest share of returns.",
+  headline:
+    "Order volume climbs as delivery performance improves, but fit-related returns remain the biggest drag on margin.",
+  subhead:
+    "Orders shipped increased ↑26% month over month while on-time delivery improved ↑2.4%, with size and fit issues now driving the largest share of returns.",
   chartLabels: { y: ["600", "450", "300", "150"], target: "Target" },
-  promptPlaceholder: "What would you like to understand about order fulfillment?",
-  promptSuggestions: ["Why are fit-related returns increasing?", "Show me products driving return volume", "Compare warehouse performance", "Which orders are most at risk of delay?"],
+  promptPlaceholder:
+    "What would you like to understand about order fulfillment?",
+  promptSuggestions: [
+    "Why are fit-related returns increasing?",
+    "Show me products driving return volume",
+    "Compare warehouse performance",
+    "Which orders are most at risk of delay?",
+  ],
   insightCards: [
     {
       title: "On-time delivery rate",
@@ -137,7 +158,8 @@ export const ecommerceDataset: DashboardDataset = {
       interaction: "static",
       kpiNumber: "97.1%",
       kpiBadge: "+2.4%",
-      kpiDescription: "Orders delivered within promised windows, supported by lower carrier delays and faster pick-pack turnaround.",
+      kpiDescription:
+        "Orders delivered within promised windows, supported by lower carrier delays and faster pick-pack turnaround.",
     },
     {
       title: "Top issues",
@@ -146,7 +168,8 @@ export const ecommerceDataset: DashboardDataset = {
       size: "md",
       interaction: "expand",
       expandContent: {
-        summary: "Return-related friction is now concentrated in product fit, transit handling, and expectation gaps, with apparel and footwear accounting for the highest exception volume.",
+        summary:
+          "Return-related friction is now concentrated in product fit, transit handling, and expectation gaps, with apparel and footwear accounting for the highest exception volume.",
         details: [
           "Investigate top SKUs contributing to wrong size and fit returns",
           "Review packaging and carrier handoff for damage-related issues by warehouse",
@@ -168,7 +191,8 @@ export const ecommerceDataset: DashboardDataset = {
       size: "md",
       interaction: "expand",
       expandContent: {
-        summary: "Fulfillment volume builds steadily through the week, with the highest shipped volume on Thursday and Friday and a midweek rise in processing backlog.",
+        summary:
+          "Fulfillment volume builds steadily through the week, with the highest shipped volume on Thursday and Friday and a midweek rise in processing backlog.",
         details: [
           "Monitor Wednesday processing buildup for labor or inventory bottlenecks",
           "Review Thursday and Friday shipment spikes by warehouse and carrier",
@@ -192,7 +216,8 @@ export const ecommerceDataset: DashboardDataset = {
       interaction: "static",
       kpiNumber: "4.6",
       kpiBadge: "+0.2",
-      kpiDescription: "Average rating remains strong, though recent feedback highlights sizing inconsistency and occasional packaging damage.",
+      kpiDescription:
+        "Average rating remains strong, though recent feedback highlights sizing inconsistency and occasional packaging damage.",
     },
   ],
 };

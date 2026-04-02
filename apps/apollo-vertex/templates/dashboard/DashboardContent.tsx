@@ -2,7 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardGlow } from "./DashboardGlow";
 import {
@@ -19,7 +25,10 @@ import { InsightGrid } from "./InsightGrid";
 import { DashboardLoading } from "./DashboardLoading";
 import { PromptBar } from "./PromptBar";
 import { AutopilotInsight } from "./AutopilotInsight";
-import { useDashboardData, DashboardDataProvider } from "./DashboardDataProvider";
+import {
+  useDashboardData,
+  DashboardDataProvider,
+} from "./DashboardDataProvider";
 
 type LayoutType = "executive" | "operational" | "analytics";
 
@@ -46,12 +55,26 @@ function ExecutiveLayout({
     <Card
       variant="glass"
       className={`!bg-white/90 @[800px]:flex-1 !gap-4 !p-8 !pt-10 overflow-hidden ${shared}`}
-      style={cardBgStyle(cards.overviewBg, cards.overviewOpacity, cards.overviewGradient)}
+      style={cardBgStyle(
+        cards.overviewBg,
+        cards.overviewOpacity,
+        cards.overviewGradient,
+      )}
     >
       <CardHeader className="!p-0 !gap-2">
-        <img src="/Autopilot_dark.svg" alt="Autopilot" className="size-5 block dark:hidden" />
-        <img src="/Autopilot_light.svg" alt="Autopilot" className="size-5 hidden dark:block" />
-        <CardTitle className="text-sm font-bold tracking-tight">{data.greeting}</CardTitle>
+        <img
+          src="/Autopilot_dark.svg"
+          alt="Autopilot"
+          className="size-5 block dark:hidden"
+        />
+        <img
+          src="/Autopilot_light.svg"
+          alt="Autopilot"
+          className="size-5 hidden dark:block"
+        />
+        <CardTitle className="text-sm font-bold tracking-tight">
+          {data.greeting}
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col !p-0 min-h-0">
         <div>
@@ -70,13 +93,23 @@ function ExecutiveLayout({
   const promptBarEl = <PromptBar shared={shared} cards={cards} />;
 
   return (
-    <div className="grid grid-cols-1 @[800px]:grid-cols-2 @[800px]:h-full" style={gapStyle}>
+    <div
+      className="grid grid-cols-1 @[800px]:grid-cols-2 @[800px]:h-full"
+      style={gapStyle}
+    >
       <div className="flex flex-col" style={gapStyle}>
         {overviewCardEl}
         {promptBarEl}
       </div>
       <div className="h-full overflow-hidden">
-        <InsightGrid layout={layout} shared={shared} cards={cards} viewMode={viewMode} onAutopilotOpen={onAutopilotOpen} autopilotActiveIdx={autopilotActiveIdx} />
+        <InsightGrid
+          layout={layout}
+          shared={shared}
+          cards={cards}
+          viewMode={viewMode}
+          onAutopilotOpen={onAutopilotOpen}
+          autopilotActiveIdx={autopilotActiveIdx}
+        />
       </div>
     </div>
   );
@@ -130,7 +163,9 @@ function DashboardContentInner() {
   const [replayCount] = useState(0);
   const [autopilotOpen, setAutopilotOpen] = useState(false);
   const [autopilotSource, setAutopilotSource] = useState("");
-  const [autopilotActiveIdx, setAutopilotActiveIdx] = useState<number | null>(null);
+  const [autopilotActiveIdx, setAutopilotActiveIdx] = useState<number | null>(
+    null,
+  );
   const containerRef = useRef<HTMLDivElement>(null);
   const viewMode = useViewMode(containerRef);
 
@@ -178,7 +213,8 @@ function DashboardContentInner() {
           <div className="flex flex-col @[500px]:flex-row @[500px]:items-center @[500px]:justify-between gap-4">
             <div>
               <h1 className="text-xs tracking-tight">
-                <span className="font-bold">{data.brandName}</span> {data.brandLine}
+                <span className="font-bold">{data.brandName}</span>{" "}
+                {data.brandLine}
               </h1>
               <p className="text-2xl font-bold tracking-tight flex items-center gap-2">
                 {data.dashboardTitle}
@@ -214,10 +250,18 @@ function DashboardContentInner() {
             {/* Dashboard cards — shifts left for autopilot */}
             <div
               className="h-full transition-transform duration-500 ease-in-out"
-              style={{ transform: autopilotOpen ? "translateX(-50%)" : "translateX(0)" }}
+              style={{
+                transform: autopilotOpen ? "translateX(-50%)" : "translateX(0)",
+              }}
             >
               {layout === "executive" && (
-                <ExecutiveLayout cards={darkCards} layout={layoutCfg} viewMode={viewMode} onAutopilotOpen={handleAutopilotOpen} autopilotActiveIdx={autopilotActiveIdx} />
+                <ExecutiveLayout
+                  cards={darkCards}
+                  layout={layoutCfg}
+                  viewMode={viewMode}
+                  onAutopilotOpen={handleAutopilotOpen}
+                  autopilotActiveIdx={autopilotActiveIdx}
+                />
               )}
               {layout === "operational" && <OperationalLayout />}
               {layout === "analytics" && <AnalyticsLayout />}
