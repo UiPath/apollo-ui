@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.64.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.63.1...@uipath/apollo-react@3.64.0) (2026-04-02)
+
+### Features
+
+* **apollo-react:** Stage node rule exsistance chips MST-7949 ([2c4c308](https://github.com/UiPath/apollo-ui/commit/2c4c308f9d39742caa802881b9b39609a41cc6d5))
+
 ## [@uipath/apollo-react-v3.63.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.63.0...@uipath/apollo-react@3.63.1) (2026-04-01)
 
 ### Bug Fixes
