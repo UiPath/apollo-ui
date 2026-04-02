@@ -230,8 +230,6 @@ function StackedBarContent() {
     ),
   );
 
-  const barMaxHeight = 140;
-
   const legendItems = [
     { label: "Approved", color: "bg-chart-1" },
     { label: "Pending", color: "bg-chart-2" },
@@ -240,18 +238,18 @@ function StackedBarContent() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-end justify-between flex-1">
+      <div className="flex items-end flex-1 min-h-0 gap-6">
         {stackedBarData.map((bar) => {
           const total = bar.segments.reduce((sum, s) => sum + s.value, 0);
-          const barHeight = (total / maxTotal) * barMaxHeight;
+          const heightPct = (total / maxTotal) * 100;
           return (
             <div
               key={bar.label}
-              className="w-4 flex flex-col items-center gap-1"
+              className="flex-1 h-full flex flex-col items-center justify-end gap-1"
             >
               <div
                 className="w-full flex flex-col-reverse rounded-t-sm overflow-visible relative"
-                style={{ height: barHeight }}
+                style={{ height: `${heightPct}%` }}
               >
                 <div className="absolute inset-0 flex flex-col-reverse rounded-t-sm overflow-hidden">
                   {bar.segments.map((seg) => (

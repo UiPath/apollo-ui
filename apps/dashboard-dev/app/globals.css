@@ -1,0 +1,22 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Scan apollo-vertex source for Tailwind classes */
+@source "../../apollo-vertex/app/**/*.{ts,tsx}";
+@source "../../apollo-vertex/components/**/*.{ts,tsx}";
+@source "../../apollo-vertex/templates/**/*.{ts,tsx}";
+@source "../../apollo-vertex/registry/**/*.{ts,tsx}";
+
+/* Design tokens from apollo-vertex */
+@import "../../apollo-vertex/app/theme.generated.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

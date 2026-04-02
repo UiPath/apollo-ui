@@ -20,6 +20,7 @@
     "dev:react-playground": "turbo run dev --filter=react-playground",
     "dev:chat": "turbo run dev --filter=@uipath/ap-chat",
     "dev:apollo-vertex": "turbo run dev --filter=apollo-vertex",
+    "dev:dashboard": "turbo run dev --filter=dashboard-dev",
     "fix:dependencies": "check-dependency-version-consistency . --fix",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
