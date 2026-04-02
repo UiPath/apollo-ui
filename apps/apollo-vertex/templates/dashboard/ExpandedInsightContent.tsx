@@ -40,7 +40,6 @@ const recommendations = [
 const suggestedPrompts = [
   "Why are fit-related returns increasing?",
   "Which products are driving return volume?",
-  "Show warehouses contributing to damage issues",
   "What orders are at risk of return?",
 ];
 

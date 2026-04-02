@@ -68,6 +68,8 @@ interface InsightCardInnerProps {
   isThis: boolean;
   phase: ExpandPhase;
   viewMode: "desktop" | "compact" | "stacked";
+  drilldownTab: DrilldownTab;
+  onDrilldownTabChange: (tab: DrilldownTab) => void;
   onExpandClick: () => void;
   onAutopilotOpen?: () => void;
   isAutopilotActive?: boolean;
@@ -86,21 +88,15 @@ function InsightCardInner({
   viewMode,
   onExpandClick,
   onAutopilotOpen,
+  drilldownTab,
+  onDrilldownTabChange,
   isAutopilotActive = false,
   className = "",
   style,
 }: InsightCardInnerProps) {
   const { data } = useDashboardData();
   const cardTitle = data.insightCards[cardIndex]?.title ?? cfg.content.title;
-  const [drilldownTab, setDrilldownTab] = useState<DrilldownTab>("overview");
   const hasDrilldown = cfg.content.chartType === "horizontal-bars";
-  const wasExpanded = useRef(false);
-  if (isThis && isExpanding) {
-    wasExpanded.current = true;
-  } else if (wasExpanded.current) {
-    wasExpanded.current = false;
-    if (drilldownTab !== "overview") setDrilldownTab("overview");
-  }
   const isExpandedWithDrilldown = isThis && isExpanding && hasDrilldown && phase === "full";
   const classes = getInsightCardClasses(cfg.content);
   const isInteractive = cfg.interaction !== "static";
@@ -160,22 +156,21 @@ function InsightCardInner({
         </button>
       )}
       <CardHeader className="shrink-0">
-        <div className="flex items-center gap-3 flex-nowrap min-w-0">
-          <CardTitle className={`text-sm font-bold tracking-tight ${isExpandedWithDrilldown ? "shrink-0" : ""}`}>
-            {cardTitle}
-          </CardTitle>
-          {/* Drilldown tabs — show when expanded with drilldown */}
-          {isThis && isExpanding && hasDrilldown && (phase === "height" || phase === "full") && (() => {
-            const visibleTabs = drilldownTabs.slice(0, 4);
-            const overflowTabs = drilldownTabs.slice(4);
-            const isOverflowActive = overflowTabs.some((t) => t.key === drilldownTab);
-            return (
-            <div className={`flex gap-0.5 ml-2 items-center transition-opacity duration-300 ${phase === "full" ? "opacity-100" : "opacity-0"}`}>
+        <CardTitle className="text-sm font-bold tracking-tight">
+          {cardTitle}
+        </CardTitle>
+        {/* Drilldown tabs — below title when expanded */}
+        {isThis && isExpanding && hasDrilldown && (phase === "height" || phase === "full") && (() => {
+          const visibleTabs = drilldownTabs.slice(0, 4);
+          const overflowTabs = drilldownTabs.slice(4);
+          const isOverflowActive = overflowTabs.some((t) => t.key === drilldownTab);
+          return (
+            <div className={`flex gap-0.5 items-center transition-opacity duration-300 mt-3 mb-1 -ml-2 ${phase === "full" ? "opacity-100" : "opacity-0"}`}>
               {visibleTabs.map((tab) => (
                 <button
                   key={tab.key}
                   type="button"
-                  onClick={() => setDrilldownTab(tab.key)}
+                  onClick={() => onDrilldownTabChange(tab.key)}
                   className={`px-2 py-1 text-xs rounded transition-colors ${
                     drilldownTab === tab.key
                       ? "bg-muted font-medium"
@@ -190,7 +185,7 @@ function InsightCardInner({
                   <select
                     value={isOverflowActive ? drilldownTab : ""}
                     onChange={(e) => {
-                      if (e.target.value) setDrilldownTab(e.target.value as DrilldownTab);
+                      if (e.target.value) onDrilldownTabChange(e.target.value as DrilldownTab);
                     }}
                     className={`appearance-none px-2 py-1 text-xs rounded transition-colors cursor-pointer bg-transparent pr-5 ${
                       isOverflowActive
@@ -209,24 +204,32 @@ function InsightCardInner({
                 </div>
               )}
             </div>
-            );
-          })()}
-        </div>
+          );
+        })()}
       </CardHeader>
-      <CardContent className={`${classes.contentClassName} min-h-0`}>
-        {/* Show original chart on "overview" tab or when not expanded */}
-        {(!isExpandedWithDrilldown || drilldownTab === "overview") && (
-          <InsightCardBody content={cfg.content} cardIndex={cardIndex} viewMode={viewMode} isExpanded={isThis && isExpanding} />
-        )}
-        {/* Show drilldown module content */}
-        {isExpandedWithDrilldown && drilldownTab !== "overview" && (
-          <div className="flex-1 overflow-y-auto">
-            <DrilldownTabContent tab={drilldownTab} />
+      {isExpandedWithDrilldown && drilldownTab !== "overview" ? (
+        /* When showing drilldown tabs — custom layout with scroll + fixed footer */
+        <div className="flex-1 min-h-0 flex flex-col px-6 !-mt-2">
+          <div className="flex-1 min-h-0 relative">
+            <div
+              className="absolute inset-0 overflow-y-auto pb-8"
+              style={{ maskImage: "linear-gradient(to bottom, black 85%, transparent 100%)" }}
+            >
+              <DrilldownTabContent tab={drilldownTab} />
+            </div>
           </div>
-        )}
-      </CardContent>
-      {/* Autopilot prompts — persistent at bottom when expanded with drilldown */}
-      {isThis && isExpanding && hasDrilldown && (phase === "height" || phase === "full") && (
+          <div className="shrink-0">
+            <AutopilotPrompts onPromptSelect={() => onAutopilotOpen?.()} />
+          </div>
+        </div>
+      ) : (
+        /* Default card content — overview or non-drilldown */
+        <CardContent className={`${classes.contentClassName} !flex-1 min-h-0`}>
+          <InsightCardBody content={cfg.content} cardIndex={cardIndex} viewMode={viewMode} isExpanded={isThis && isExpanding} />
+        </CardContent>
+      )}
+      {/* Autopilot prompts for overview tab when expanded */}
+      {isExpandedWithDrilldown && drilldownTab === "overview" && (
         <div
           className={`px-6 pb-4 shrink-0 transition-all duration-300 ${
             phase === "full" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
@@ -281,10 +284,12 @@ export function InsightGrid({
   const { data } = useDashboardData();
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [phase, setPhase] = useState<ExpandPhase>("idle");
+  const [drilldownTab, setDrilldownTab] = useState<DrilldownTab>("overview");
 
   useEffect(() => {
     if (expandedIdx === null) {
       setPhase("idle");
+      setDrilldownTab("overview");
       return;
     }
     requestAnimationFrame(() => setPhase("width"));
@@ -341,7 +346,7 @@ export function InsightGrid({
     });
   }
 
-  const sharedProps = { shared, cards, isExpanding, phase, viewMode };
+  const sharedProps = { shared, cards, isExpanding, phase, viewMode, drilldownTab, onDrilldownTabChange: setDrilldownTab };
 
   return (
     <div
