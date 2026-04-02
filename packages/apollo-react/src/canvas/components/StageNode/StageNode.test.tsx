@@ -699,114 +699,110 @@ describe('StageNode - Add Task Loading State', () => {
 
     expect(screen.getByTestId('toolbox')).toHaveAttribute('data-loading', 'false');
   });
+});
 
-  describe('hideParallelOptions', () => {
-    it('should show parallel options when hideParallelOptions is not set', () => {
-      const onTaskGroupModification = vi.fn();
-      const tasks: StageTaskItem[][] = [
-        [createTask('task-1', 'Task 1')],
-        [createTask('task-2', 'Task 2')],
-        [createTask('task-3', 'Task 3')],
-      ];
+describe('StageNode - hideParallelOptions', () => {
+  it('should show parallel options when hideParallelOptions is not set', () => {
+    const onTaskGroupModification = vi.fn();
+    const tasks: StageTaskItem[][] = [
+      [createTask('task-1', 'Task 1')],
+      [createTask('task-2', 'Task 2')],
+      [createTask('task-3', 'Task 3')],
+    ];
 
-      renderStageNode({
-        onTaskGroupModification,
-        stageDetails: { ...defaultProps.stageDetails, tasks },
-      });
-
-      const menuItems = screen.getByTestId('task-menu-items-task-2');
-      expect(
-        menuItems.querySelector('[data-testid="menu-item-task-2-move-up"]')
-      ).toBeInTheDocument();
-      expect(
-        menuItems.querySelector('[data-testid="menu-item-task-2-move-down"]')
-      ).toBeInTheDocument();
-      expect(
-        menuItems.querySelector('[data-testid="menu-item-task-2-group-with-up"]')
-      ).toBeInTheDocument();
-      expect(
-        menuItems.querySelector('[data-testid="menu-item-task-2-group-with-down"]')
-      ).toBeInTheDocument();
-      expect(
-        menuItems.querySelector('[data-testid="menu-item-task-2-remove-task"]')
-      ).toBeInTheDocument();
+    renderStageNode({
+      onTaskGroupModification,
+      stageDetails: { ...defaultProps.stageDetails, tasks },
     });
 
-    it('should hide parallel options but keep move and delete when hideParallelOptions is true', () => {
-      const onTaskGroupModification = vi.fn();
-      const tasks: StageTaskItem[][] = [
-        [createTask('task-1', 'Task 1')],
-        [createTask('task-2', 'Task 2')],
-        [createTask('task-3', 'Task 3')],
-      ];
+    const menuItems = screen.getByTestId('task-menu-items-task-2');
+    expect(menuItems.querySelector('[data-testid="menu-item-task-2-move-up"]')).toBeInTheDocument();
+    expect(
+      menuItems.querySelector('[data-testid="menu-item-task-2-move-down"]')
+    ).toBeInTheDocument();
+    expect(
+      menuItems.querySelector('[data-testid="menu-item-task-2-group-with-up"]')
+    ).toBeInTheDocument();
+    expect(
+      menuItems.querySelector('[data-testid="menu-item-task-2-group-with-down"]')
+    ).toBeInTheDocument();
+    expect(
+      menuItems.querySelector('[data-testid="menu-item-task-2-remove-task"]')
+    ).toBeInTheDocument();
+  });
 
-      renderStageNode({
-        onTaskGroupModification,
-        hideParallelOptions: true,
-        stageDetails: { ...defaultProps.stageDetails, tasks },
-      });
+  it('should hide parallel options but keep move and delete when hideParallelOptions is true', () => {
+    const onTaskGroupModification = vi.fn();
+    const tasks: StageTaskItem[][] = [
+      [createTask('task-1', 'Task 1')],
+      [createTask('task-2', 'Task 2')],
+      [createTask('task-3', 'Task 3')],
+    ];
 
-      const menuItems = screen.getByTestId('task-menu-items-task-2');
-      expect(
-        menuItems.querySelector('[data-testid="menu-item-task-2-move-up"]')
-      ).toBeInTheDocument();
-      expect(
-        menuItems.querySelector('[data-testid="menu-item-task-2-move-down"]')
-      ).toBeInTheDocument();
-      expect(
-        menuItems.querySelector('[data-testid="menu-item-task-2-remove-task"]')
-      ).toBeInTheDocument();
-      expect(
-        menuItems.querySelector('[data-testid="menu-item-task-2-group-with-up"]')
-      ).not.toBeInTheDocument();
-      expect(
-        menuItems.querySelector('[data-testid="menu-item-task-2-group-with-down"]')
-      ).not.toBeInTheDocument();
+    renderStageNode({
+      onTaskGroupModification,
+      hideParallelOptions: true,
+      stageDetails: { ...defaultProps.stageDetails, tasks },
     });
 
-    it('should hide ungroup/split options for parallel groups when hideParallelOptions is true', () => {
-      const onTaskGroupModification = vi.fn();
-      const tasks: StageTaskItem[][] = [
-        [createTask('task-1', 'Task 1'), createTask('task-2', 'Task 2')], // parallel group
-        [createTask('task-3', 'Task 3')],
-      ];
+    const menuItems = screen.getByTestId('task-menu-items-task-2');
+    expect(menuItems.querySelector('[data-testid="menu-item-task-2-move-up"]')).toBeInTheDocument();
+    expect(
+      menuItems.querySelector('[data-testid="menu-item-task-2-move-down"]')
+    ).toBeInTheDocument();
+    expect(
+      menuItems.querySelector('[data-testid="menu-item-task-2-remove-task"]')
+    ).toBeInTheDocument();
+    expect(
+      menuItems.querySelector('[data-testid="menu-item-task-2-group-with-up"]')
+    ).not.toBeInTheDocument();
+    expect(
+      menuItems.querySelector('[data-testid="menu-item-task-2-group-with-down"]')
+    ).not.toBeInTheDocument();
+  });
 
-      renderStageNode({
-        onTaskGroupModification,
-        hideParallelOptions: true,
-        stageDetails: { ...defaultProps.stageDetails, tasks },
-      });
+  it('should hide ungroup/split options for parallel groups when hideParallelOptions is true', () => {
+    const onTaskGroupModification = vi.fn();
+    const tasks: StageTaskItem[][] = [
+      [createTask('task-1', 'Task 1'), createTask('task-2', 'Task 2')], // parallel group
+      [createTask('task-3', 'Task 3')],
+    ];
 
-      const menuItems = screen.getByTestId('task-menu-items-task-1');
-      expect(
-        menuItems.querySelector('[data-testid="menu-item-task-1-remove-task"]')
-      ).toBeInTheDocument();
-      expect(
-        menuItems.querySelector('[data-testid="menu-item-task-1-ungroup"]')
-      ).not.toBeInTheDocument();
-      expect(
-        menuItems.querySelector('[data-testid="menu-item-task-1-split"]')
-      ).not.toBeInTheDocument();
-      expect(
-        menuItems.querySelector('[data-testid="menu-item-task-1-remove-group"]')
-      ).not.toBeInTheDocument();
+    renderStageNode({
+      onTaskGroupModification,
+      hideParallelOptions: true,
+      stageDetails: { ...defaultProps.stageDetails, tasks },
     });
 
-    it('should show only delete for a single task when hideParallelOptions is true', () => {
-      const onTaskGroupModification = vi.fn();
-      const tasks: StageTaskItem[][] = [[createTask('task-1', 'Task 1')]];
+    const menuItems = screen.getByTestId('task-menu-items-task-1');
+    expect(
+      menuItems.querySelector('[data-testid="menu-item-task-1-remove-task"]')
+    ).toBeInTheDocument();
+    expect(
+      menuItems.querySelector('[data-testid="menu-item-task-1-ungroup"]')
+    ).not.toBeInTheDocument();
+    expect(
+      menuItems.querySelector('[data-testid="menu-item-task-1-split"]')
+    ).not.toBeInTheDocument();
+    expect(
+      menuItems.querySelector('[data-testid="menu-item-task-1-remove-group"]')
+    ).not.toBeInTheDocument();
+  });
 
-      renderStageNode({
-        onTaskGroupModification,
-        hideParallelOptions: true,
-        stageDetails: { ...defaultProps.stageDetails, tasks },
-      });
+  it('should show only delete for a single task when hideParallelOptions is true', () => {
+    const onTaskGroupModification = vi.fn();
+    const tasks: StageTaskItem[][] = [[createTask('task-1', 'Task 1')]];
 
-      const menuItems = screen.getByTestId('task-menu-items-task-1');
-      const buttons = menuItems.querySelectorAll('button');
-      expect(buttons).toHaveLength(1);
-      expect(buttons[0]).toHaveTextContent('Delete task');
+    renderStageNode({
+      onTaskGroupModification,
+      hideParallelOptions: true,
+      stageDetails: { ...defaultProps.stageDetails, tasks },
     });
+
+    const menuItems = screen.getByTestId('task-menu-items-task-1');
+    const buttons = menuItems.querySelectorAll('button');
+    expect(buttons).toHaveLength(1);
+    expect(buttons[0]).toHaveTextContent('Delete task');
   });
 });
 
