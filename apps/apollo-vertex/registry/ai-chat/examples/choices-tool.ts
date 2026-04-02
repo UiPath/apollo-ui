@@ -35,7 +35,7 @@ const presentChoicesDef = toolDefinition({
 });
 
 const presentChoices = presentChoicesDef.client((input) =>
-  Object.assign({ type: "choices" }, input),
+  Object.assign({ type: "choices" as const }, input),
 );
 
 export const choicesTools = clientTools(presentChoices);
