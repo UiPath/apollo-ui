@@ -99,7 +99,7 @@ function InsightCardInner({
   const hasDrilldown = cfg.content.chartType === "horizontal-bars";
   const isExpandedWithDrilldown =
     isThis && isExpanding && hasDrilldown && phase === "full";
-  const classes = getInsightCardClasses(cfg.content);
+  const classes = getInsightCardClasses(cfg.content, viewMode);
   const isInteractive = cfg.interaction !== "static";
 
   return (

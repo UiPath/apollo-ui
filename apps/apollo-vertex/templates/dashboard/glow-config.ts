@@ -229,14 +229,20 @@ export function cardBgStyle(
   return { "--card-bg-override": value } as React.CSSProperties;
 }
 
-export function getInsightCardClasses(content: InsightCardContent): {
+export function getInsightCardClasses(
+  content: InsightCardContent,
+  viewMode: "desktop" | "compact" | "stacked" = "desktop",
+): {
   cardClassName: string;
   contentClassName: string;
 } {
   if (content.type === "kpi") {
+    const isCompact = viewMode === "compact";
     return {
-      cardClassName: "!gap-4",
-      contentClassName: "flex-1 flex flex-col",
+      cardClassName: isCompact ? "!gap-0" : "!gap-4",
+      contentClassName: isCompact
+        ? "flex-1 flex flex-col overflow-hidden"
+        : "flex-1 flex flex-col",
     };
   }
   const isBarChart = content.chartType === "horizontal-bars";

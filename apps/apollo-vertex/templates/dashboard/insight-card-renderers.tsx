@@ -1,11 +1,57 @@
 "use client";
 
+import { useRef, useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/registry/tooltip/tooltip";
 import type { InsightCardContent } from "./glow-config";
 import { useDashboardData } from "./DashboardDataProvider";
 import type { InsightCardData } from "./dashboard-data";
 
 type ViewMode = "desktop" | "compact" | "stacked";
+
+// --- Truncated text with conditional tooltip ---
+
+function TruncatedText({
+  children,
+  className,
+}: {
+  children: string | undefined;
+  className?: string;
+}) {
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const [isTruncated, setIsTruncated] = useState(false);
+
+  useEffect(() => {
+    const el = textRef.current;
+    if (!el) return;
+    const check = () => setIsTruncated(el.scrollHeight > el.clientHeight);
+    check();
+    const observer = new ResizeObserver(check);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [children]);
+
+  const textEl = (
+    <p ref={textRef} className={`line-clamp-2 ${className ?? ""}`}>
+      {children}
+    </p>
+  );
+
+  if (!isTruncated) return textEl;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{textEl}</TooltipTrigger>
+      <TooltipContent side="bottom" className="max-w-64">
+        {children}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 // --- Sample data per card type ---
 
@@ -32,9 +78,9 @@ function KpiContent({
             {cardData.kpiBadge}
           </Badge>
         </div>
-        <p className="text-xs font-normal text-muted-foreground mt-auto">
+        <TruncatedText className="text-xs font-normal text-muted-foreground mt-auto">
           {cardData.kpiDescription}
-        </p>
+        </TruncatedText>
       </>
     );
   }
