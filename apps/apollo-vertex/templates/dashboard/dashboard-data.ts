@@ -155,7 +155,7 @@ export const ecommerceDataset: DashboardDataset = {
       type: "kpi",
       chartType: "donut",
       size: "sm",
-      interaction: "static",
+      interaction: "navigate",
       kpiNumber: "97.1%",
       kpiBadge: "+2.4%",
       kpiDescription:
@@ -213,7 +213,7 @@ export const ecommerceDataset: DashboardDataset = {
       type: "kpi",
       chartType: "donut",
       size: "sm",
-      interaction: "static",
+      interaction: "navigate",
       kpiNumber: "4.6",
       kpiBadge: "+0.2",
       kpiDescription:

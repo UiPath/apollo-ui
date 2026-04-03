@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowUpRight, Maximize2, Minimize2 } from "lucide-react";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   cardBgStyle,
   getInsightCardClasses,
@@ -19,43 +20,6 @@ import {
 } from "./ExpandedInsightContent";
 
 const sizeToFr: Record<string, string> = { sm: "1fr", md: "2fr", lg: "1fr" };
-
-function DiagonalArrow({ collapsed }: { collapsed: boolean }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={`size-4 transition-transform duration-300 ${collapsed ? "rotate-180" : ""}`}
-    >
-      <path d="M7 7h10v10" />
-      <path d="M7 17 17 7" />
-    </svg>
-  );
-}
-
-function NavigateIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="size-4"
-    >
-      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-      <polyline points="15 3 21 3 21 9" />
-      <line x1="10" x2="21" y1="14" y2="3" />
-    </svg>
-  );
-}
 
 // --- Shared card inner content ---
 
@@ -115,70 +79,78 @@ function InsightCardInner({
         ...style,
       }}
     >
-      {isInteractive && cfg.interaction === "expand" && (
-        <div
-          className={`absolute top-5 right-5 z-20 flex items-center gap-1 transition-all duration-75 ${
-            isThis || isAutopilotActive
-              ? "opacity-100 translate-x-0"
-              : "opacity-0 translate-x-2 group-hover/card:opacity-100 group-hover/card:translate-x-0"
-          }`}
-        >
-          {onAutopilotOpen && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onAutopilotOpen();
-              }}
-              className={`size-7 rounded-md flex items-center justify-center transition-all ${
-                isAutopilotActive
-                  ? "bg-gradient-to-br from-insight-500 to-primary-400 text-white"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              }`}
-            >
-              {isAutopilotActive ? (
-                <img
-                  src="/Autopilot_light.svg"
-                  alt="Autopilot"
-                  className="size-4"
-                />
-              ) : (
-                <>
-                  <img
-                    src="/Autopilot_dark.svg"
-                    alt="Autopilot"
-                    className="size-4 block dark:hidden"
-                  />
-                  <img
-                    src="/Autopilot_light.svg"
-                    alt="Autopilot"
-                    className="size-4 hidden dark:block"
-                  />
-                </>
-              )}
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={onExpandClick}
-            className="size-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
-          >
-            <DiagonalArrow collapsed={isThis && isExpanding} />
-          </button>
-        </div>
-      )}
-      {isInteractive && cfg.interaction === "navigate" && !isThis && (
-        <button
-          type="button"
-          className="absolute top-5 right-5 size-7 rounded-md flex items-center justify-center opacity-0 translate-x-2 group-hover/card:opacity-100 group-hover/card:translate-x-0 transition-all duration-75 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-        >
-          <NavigateIcon />
-        </button>
-      )}
       <CardHeader className="shrink-0">
         <CardTitle className="text-sm font-bold tracking-tight">
           {cardTitle}
         </CardTitle>
+        {isInteractive && cfg.interaction === "expand" && (
+          <CardAction>
+            <div
+              className={`flex items-center gap-1 transition-all duration-75 ${
+                isThis || isAutopilotActive
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 translate-x-2 group-hover/card:opacity-100 group-hover/card:translate-x-0"
+              }`}
+            >
+              {onAutopilotOpen && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAutopilotOpen();
+                  }}
+                  className={`size-7 rounded-md flex items-center justify-center transition-all ${
+                    isAutopilotActive
+                      ? "bg-gradient-to-br from-insight-500 to-primary-400 text-white"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  {isAutopilotActive ? (
+                    <img
+                      src="/Autopilot_light.svg"
+                      alt="Autopilot"
+                      className="size-4"
+                    />
+                  ) : (
+                    <>
+                      <img
+                        src="/Autopilot_dark.svg"
+                        alt="Autopilot"
+                        className="size-4 block dark:hidden"
+                      />
+                      <img
+                        src="/Autopilot_light.svg"
+                        alt="Autopilot"
+                        className="size-4 hidden dark:block"
+                      />
+                    </>
+                  )}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onExpandClick}
+                className="size-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+              >
+                {isThis && isExpanding ? (
+                  <Minimize2 className="size-4" />
+                ) : (
+                  <Maximize2 className="size-4" />
+                )}
+              </button>
+            </div>
+          </CardAction>
+        )}
+        {isInteractive && cfg.interaction === "navigate" && !isThis && (
+          <CardAction>
+            <button
+              type="button"
+              className="size-7 rounded-md flex items-center justify-center opacity-0 translate-x-2 group-hover/card:opacity-100 group-hover/card:translate-x-0 transition-all duration-75 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            >
+              <ArrowUpRight className="size-4" />
+            </button>
+          </CardAction>
+        )}
         {/* Drilldown tabs — below title when expanded */}
         {isThis &&
           isExpanding &&
