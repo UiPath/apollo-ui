@@ -46,60 +46,69 @@ function ExecutiveLayout({
   autopilotActiveIdx?: number | null;
 }) {
   const { data } = useDashboardData();
+  const [promptExpanded, setPromptExpanded] = useState(false);
   const borderClass = cards.borderVisible ? "" : "dark:!border-transparent";
   const blurClass = cards.backdropBlur ? "" : "dark:!backdrop-blur-none";
   const shared = `!shadow-none dark:![background:var(--card-bg-override)] ${borderClass} ${blurClass}`;
   const gapStyle = { gap: `${layout.gap}px` };
-
-  const overviewCardEl = (
-    <Card
-      variant="glass"
-      className={`!bg-white/90 @[800px]:flex-1 !gap-4 !p-8 !pt-10 overflow-hidden ${shared}`}
-      style={cardBgStyle(
-        cards.overviewBg,
-        cards.overviewOpacity,
-        cards.overviewGradient,
-      )}
-    >
-      <CardHeader className="!p-0 !gap-2">
-        <img
-          src="/Autopilot_dark.svg"
-          alt="Autopilot"
-          className="size-5 block dark:hidden"
-        />
-        <img
-          src="/Autopilot_light.svg"
-          alt="Autopilot"
-          className="size-5 hidden dark:block"
-        />
-        <CardTitle className="text-sm font-bold tracking-tight">
-          {data.greeting}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col !p-0 min-h-0">
-        <div>
-          <p className="text-4xl font-bold tracking-tight pr-16">
-            {data.headline}
-          </p>
-          <p className="text-sm font-normal text-muted-foreground pr-32 mt-8 leading-relaxed">
-            {data.subhead}
-          </p>
-        </div>
-        {/* Chart removed — evaluating layout without it */}
-      </CardContent>
-    </Card>
-  );
-
-  const promptBarEl = <PromptBar shared={shared} cards={cards} />;
 
   return (
     <div
       className="grid grid-cols-1 @[800px]:grid-cols-2 @[800px]:h-full"
       style={gapStyle}
     >
-      <div className="flex flex-col" style={gapStyle}>
-        {overviewCardEl}
-        {promptBarEl}
+      <div className="flex flex-col h-full" style={{ gap: promptExpanded ? 0 : layout.gap }}>
+        <div
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            promptExpanded
+              ? "flex-[0_0_0%] opacity-0"
+              : "flex-1 opacity-100"
+          }`}
+        >
+          <Card
+            variant="glass"
+            className={`!bg-white/90 h-full !gap-4 !p-8 !pt-10 overflow-hidden ${shared}`}
+            style={cardBgStyle(
+              cards.overviewBg,
+              cards.overviewOpacity,
+              cards.overviewGradient,
+            )}
+          >
+            <CardHeader className="!p-0 !gap-2">
+              <img
+                src="/Autopilot_dark.svg"
+                alt="Autopilot"
+                className="size-5 block dark:hidden"
+              />
+              <img
+                src="/Autopilot_light.svg"
+                alt="Autopilot"
+                className="size-5 hidden dark:block"
+              />
+              <CardTitle className="text-sm font-bold tracking-tight">
+                {data.greeting}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col !p-0 min-h-0">
+              <div>
+                <p className="text-4xl font-bold tracking-tight pr-16">
+                  {data.headline}
+                </p>
+                <p className="text-sm font-normal text-muted-foreground pr-32 mt-8 leading-relaxed">
+                  {data.subhead}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        <PromptBar
+          shared={shared}
+          cards={cards}
+          isExpanded={promptExpanded}
+          onSubmit={() => setPromptExpanded(true)}
+          onExpand={() => setPromptExpanded(true)}
+          onCollapse={() => setPromptExpanded(false)}
+        />
       </div>
       <div className="h-full overflow-hidden">
         <InsightGrid
