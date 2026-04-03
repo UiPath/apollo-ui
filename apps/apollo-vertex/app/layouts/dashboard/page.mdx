@@ -3,10 +3,11 @@ import { PreviewFullScreen } from '@/app/components/preview-full-screen';
 
 # Dashboard
 
-Dashboard layout patterns using Card tiles in configurable grid arrangements.
-Use the layout toggle inside the preview to switch between Executive, Operational, and Analytics configurations.
+A configurable dashboard template for building AI-assisted operational views. The dashboard is composed of named card regions with defined interaction patterns, designed to be data-driven and adaptable across verticals.
 
-## Sidebar Shell
+## Previews
+
+### Sidebar Shell
 
 <PreviewFullScreen title="Dashboard layout - sidebar shell">
     <DashboardTemplate />
@@ -14,10 +15,135 @@ Use the layout toggle inside the preview to switch between Executive, Operationa
 
 <a href="/preview/dashboard" target="_blank" className="text-sm text-primary hover:underline">Open standalone preview →</a>
 
-## Minimal Header Shell
+### Minimal Header Shell
 
 <PreviewFullScreen title="Dashboard layout - minimal shell">
     <DashboardTemplate shellVariant="minimal" />
 </PreviewFullScreen>
 
 <a href="/preview/dashboard-minimal" target="_blank" className="text-sm text-primary hover:underline">Open standalone preview →</a>
+
+---
+
+## Anatomy
+
+The dashboard is built from four semantic regions, each with a distinct role:
+
+| Region | Description |
+|---|---|
+| **Overview Card** | The primary narrative area. Displays a greeting, headline, and subhead that summarize the current state. Occupies the top-left of the layout. |
+| **Prompt Bar** | The AI input surface. Supports text entry, recommendation chips, and an expand interaction that opens an inline chat view. Anchored below the overview card. |
+| **Insight Cards** | A grid of data cards on the right side. Each card has a type, a chart visualization, and an interaction pattern. Cards are arranged in rows of two. |
+| **Autopilot Panel** | A slide-in panel that provides AI-generated analysis for a specific insight card. Triggered from the card's autopilot icon. |
+
+## Card Types
+
+Every insight card has a `type` that determines what it displays:
+
+| Type | Renders | Example |
+|---|---|---|
+| `kpi` | A large number, badge, and description | "97.1%" with "+2.4%" badge |
+| `chart` | A data visualization determined by `chartType` | Horizontal bars, stacked bars |
+
+## Chart Types
+
+Cards with `type: "chart"` use a `chartType` to select the visualization:
+
+| Chart Type | Description |
+|---|---|
+| `horizontal-bars` | Ranked list of items with proportional bars and percentages |
+| `stacked-bar` | Grouped bars with color-coded segments and a legend |
+| `donut` | Circular progress indicator with a center label |
+| `sparkline` | Compact line chart for trend indication |
+| `area` | Filled area chart for volume over time |
+
+## Card Sizes
+
+Each card has a `size` that controls its column weight in the grid:
+
+| Size | Grid Weight | Use Case |
+|---|---|---|
+| `sm` | `1fr` | KPI cards, compact metrics |
+| `md` | `2fr` | Chart cards, detailed visualizations |
+| `lg` | `1fr` | Full-width cards |
+
+## Interaction Patterns
+
+Cards support three interaction modes:
+
+### Static
+
+No interactive behavior. The card displays its content without any hover or click affordance. Used for simple KPIs that don't need drill-down.
+
+### Navigate
+
+On hover, an **arrow-up-right** icon appears in the card header. Clicking the card navigates to a detail page. Used for KPIs or summaries that link to a deeper view.
+
+### Expand
+
+On hover, a **maximize** icon appears in the card header. Clicking expands the card to fill the grid with a multi-phase animation:
+
+1. **Width phase** — Card expands horizontally, sibling card collapses
+2. **Height phase** — Card expands vertically, other rows collapse
+3. **Full phase** — Expanded content fades in (drilldown tabs, autopilot prompts)
+
+Clicking the **minimize** icon or another card collapses back to the grid.
+
+For `horizontal-bars` cards, the expanded state includes **drilldown tabs** below the title for switching between data views.
+
+## Prompt Bar
+
+The prompt bar supports three ways to expand into the inline chat view:
+
+| Trigger | Behavior |
+|---|---|
+| **Type + Enter / Submit** | Expands and passes the user's typed query |
+| **Click a recommendation chip** | Expands and passes the chip text as the query |
+| **Click the chat icon** | Expands and shows the current session conversation |
+
+When expanded, the overview card collapses and the prompt bar grows to fill the left column. A **minimize** icon in the header collapses back to the default layout.
+
+## Autopilot Panel
+
+Each expandable card includes an **autopilot** icon alongside the expand icon. Clicking it slides in a panel from the right that provides AI-generated context for that card. The dashboard content shifts left to make room. Clicking the autopilot icon again or the close button dismisses the panel.
+
+## Data Configuration
+
+The dashboard is driven by a `DashboardDataset` object that defines all text and card content:
+
+```ts
+interface DashboardDataset {
+  name: string;              // Dataset identifier
+  brandName: string;         // Company name in header
+  brandLine: string;         // Tagline in header
+  dashboardTitle: string;    // Page title
+  badgeText: string;         // Badge next to title
+  greeting: string;          // Overview card greeting
+  headline: string;          // Overview card headline
+  subhead: string;           // Overview card description
+  promptPlaceholder: string; // Prompt bar placeholder text
+  promptSuggestions: string[]; // Recommendation chips
+  insightCards: [             // Exactly 4 insight cards
+    InsightCardData,
+    InsightCardData,
+    InsightCardData,
+    InsightCardData,
+  ];
+}
+```
+
+Each `InsightCardData` specifies its title, type, chart type, size, interaction, and the data for its visualization (KPI values, bar data, stacked segments, etc.).
+
+## Layout Modes
+
+The dashboard responds to container width:
+
+| Mode | Breakpoint | Behavior |
+|---|---|---|
+| **Desktop** | ≥ 1100px | Two-column layout, full card grid |
+| **Compact** | 800–1099px | Two-column layout, condensed card content |
+| **Stacked** | < 800px | Single-column, vertically stacked |
+
+## Theming
+
+Card backgrounds, glow effects, and gradients are configurable through `CardConfig` and `GlowConfig` objects. The dashboard supports light and dark modes with independent styling for each. Color tokens and theme values should be updated in `registry.json`, not directly in CSS files.
