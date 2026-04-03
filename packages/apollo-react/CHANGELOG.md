@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.67.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.66.1...@uipath/apollo-react@3.67.0) (2026-04-03)
+
+### Features
+
+* **apollo-react:** add markdown formatting utilities for sticky notes ([28018d0](https://github.com/UiPath/apollo-ui/commit/28018d0e74ca1e04554dfd6a45dad7ce8a97b8d1))
+
 ## [@uipath/apollo-react-v3.66.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.66.0...@uipath/apollo-react@3.66.1) (2026-04-03)
 
 ### Bug Fixes
