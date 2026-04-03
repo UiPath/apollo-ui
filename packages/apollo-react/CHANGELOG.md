@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.66.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.65.4...@uipath/apollo-react@3.66.0) (2026-04-03)
+
+### Features
+
+* **apollo-react:** separate ad hoc tasks into dedicated section in stage node ([668632e](https://github.com/UiPath/apollo-ui/commit/668632e019537f4a9a881b196051bde20248b43d))
+
 ## [@uipath/apollo-react-v3.65.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.65.3...@uipath/apollo-react@3.65.4) (2026-04-03)
 
 ### Bug Fixes
