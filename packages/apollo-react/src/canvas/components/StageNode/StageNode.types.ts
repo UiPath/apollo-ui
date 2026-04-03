@@ -23,6 +23,7 @@ export interface StageTaskItem {
   label: string;
   icon?: React.ReactElement;
   isAdhoc?: boolean;
+  hasEntryCondition?: boolean;
 }
 
 export enum StageHeaderChipType {
