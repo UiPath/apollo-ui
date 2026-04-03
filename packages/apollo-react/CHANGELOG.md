@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v3.68.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.67.0...@uipath/apollo-react@3.68.0) (2026-04-03)
+
+### Features
+
+* **apollo-react:** add formatting toolbar to sticky notes ([93bcdc4](https://github.com/UiPath/apollo-ui/commit/93bcdc4968d3525245614faf27c697eddda0a30a))
+* **apollo-react:** added platform detection util to StickyNoteNode ([f2cb295](https://github.com/UiPath/apollo-ui/commit/f2cb2956e1b42739218c958fc96ba68450e71b2e))
+
 ## [@uipath/apollo-react-v3.67.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.66.1...@uipath/apollo-react@3.67.0) (2026-04-03)
 
 ### Features
