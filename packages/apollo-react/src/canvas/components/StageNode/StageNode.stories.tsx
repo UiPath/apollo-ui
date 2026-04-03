@@ -1695,7 +1695,14 @@ export const AdhocTasks: Story = {
                   isAdhoc: true,
                 },
               ],
-              [{ id: '3', label: 'Regular Task', icon: <ProcessIcon /> }],
+              [
+                {
+                  id: '3',
+                  label: 'Regular Task',
+                  icon: <ProcessIcon />,
+                  hasEntryCondition: true,
+                },
+              ],
             ],
           },
           onTaskClick: (taskId: string) => {

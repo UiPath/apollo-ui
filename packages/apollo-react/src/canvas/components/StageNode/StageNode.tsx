@@ -20,14 +20,17 @@ import { FontVariantToken, Icon, Padding, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { Position, useStore, useViewport } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
+  ApCircularProgress,
   ApIcon,
   ApIconButton,
   ApLink,
   ApTooltip,
   ApTypography,
 } from '@uipath/apollo-react/material';
+import debounce from 'debounce';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { EntryConditionIcon, ExitConditionIcon, PlayIcon, ReturnToOriginIcon } from '../../icons';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
@@ -36,11 +39,12 @@ import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import { NodeContextMenu, type NodeMenuItem } from '../NodeContextMenu';
 import { useNodeSelection } from '../NodePropertiesPanel/hooks';
 import { type ListItem, Toolbox } from '../Toolbox';
-import { EntryConditionIcon, ExitConditionIcon, ReturnToOriginIcon } from '../../icons';
 import { DraggableTask, TaskContent } from './DraggableTask';
 import {
   INDENTATION_WIDTH,
   STAGE_CONTENT_INSET,
+  StageAdhocHeaderSection,
+  StageAdhocSection,
   StageChip,
   StageContainer,
   StageContent,
@@ -54,8 +58,8 @@ import {
   StageTitleContainer,
   StageTitleInput,
 } from './StageNode.styles';
-import { StageHeaderChipType } from './StageNode.types';
 import type { StageNodeProps } from './StageNode.types';
+import { StageHeaderChipType } from './StageNode.types';
 import { flattenTasks, getProjection, reorderTasks } from './StageNode.utils';
 import { getContextMenuItems, getDivider, getMenuItem } from './StageNodeTaskUtilities';
 
@@ -72,6 +76,61 @@ const CHIP_ICONS: Record<StageHeaderChipType, React.ReactElement> = {
   [StageHeaderChipType.CaseExit]: <ApIcon name="close" size={Icon.IconXs} />,
   [StageHeaderChipType.CaseCompletion]: <ApIcon name="check-mark" size={Icon.IconXs} />,
 };
+
+const AdhocTaskPlayButton = memo(
+  ({ taskId, onTaskPlay }: { taskId: string; onTaskPlay: (taskId: string) => Promise<void> }) => {
+    const [playLoading, setPlayLoading] = useState(false);
+
+    const debouncedTaskPlay = useMemo(
+      () =>
+        debounce(
+          async (id: string) => {
+            setPlayLoading(true);
+            try {
+              await onTaskPlay(id);
+            } catch {
+              // Do nothing
+            } finally {
+              setPlayLoading(false);
+            }
+          },
+          500,
+          { immediate: true }
+        ),
+      [onTaskPlay]
+    );
+
+    const handlePlayClick = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        debouncedTaskPlay(taskId);
+      },
+      [debouncedTaskPlay, taskId]
+    );
+
+    return (
+      <ApTooltip content="Trigger task" placement="top">
+        <ApIconButton
+          data-testid={`stage-task-play-${taskId}`}
+          onClick={handlePlayClick}
+          onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
+          onKeyDown={(e: React.KeyboardEvent) => e.stopPropagation()}
+          className="task-menu-icon-button"
+          sx={{
+            color: 'var(--uix-canvas-primary) !important',
+            minWidth: 'unset !important',
+            width: `${Spacing.SpacingL} !important`,
+            height: `${Spacing.SpacingL} !important`,
+            padding: '0 !important',
+          }}
+        >
+          {playLoading ? <ApCircularProgress size={20} /> : <PlayIcon w={20} h={20} />}
+        </ApIconButton>
+      </ApTooltip>
+    );
+  }
+);
 
 const StageNodeComponent = (props: StageNodeProps) => {
   const {
@@ -102,7 +161,15 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
   const taskWidth = width ? width - STAGE_CONTENT_INSET : undefined;
 
-  const tasks = useMemo(() => stageDetails?.tasks || [], [stageDetails?.tasks]);
+  const allTasks = useMemo(() => stageDetails?.tasks || [], [stageDetails?.tasks]);
+
+  // Split tasks into regular (draggable) and ad hoc (separate section)
+  const tasks = useMemo(
+    () => allTasks.filter((group) => group.some((t) => !t.isAdhoc)),
+    [allTasks]
+  );
+  const adhocTasks = useMemo(() => allTasks.flat().filter((t) => t.isAdhoc), [allTasks]);
+
   const flatTasks = useMemo(() => tasks.flat(), [tasks]);
   const taskIds = useMemo(() => flatTasks.map((task) => task.id), [flatTasks]);
 
@@ -145,20 +212,20 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
   useEffect(() => {
     if (pendingReplaceTask) {
-      const match = tasks
+      const match = allTasks
         .flatMap((group, gi) => group.map((task, ti) => ({ task, groupIndex: gi, taskIndex: ti })))
         .find(({ task }) => task.id === selectedTaskId);
 
       if (match) {
         taskStateReference.current = {
-          isParallel: (tasks[match.groupIndex]?.length ?? 0) > 1,
+          isParallel: (allTasks[match.groupIndex]?.length ?? 0) > 1,
           groupIndex: match.groupIndex,
           taskIndex: match.taskIndex,
         };
         setIsReplacingTask(true);
       }
     }
-  }, [pendingReplaceTask, selectedTaskId, tasks]);
+  }, [pendingReplaceTask, selectedTaskId, allTasks]);
 
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
@@ -623,7 +690,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
         </StageHeader>
 
         <StageContent>
-          {!tasks || tasks.length === 0 ? (
+          {tasks.length === 0 && adhocTasks.length === 0 ? (
             <Column py={2}>
               {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly ? (
                 <ApLink
@@ -646,93 +713,127 @@ const StageNodeComponent = (props: StageNodeProps) => {
               )}
             </Column>
           ) : (
-            <DndContext
-              collisionDetection={closestCenter}
-              sensors={sensors}
-              onDragStart={handleDragStart}
-              onDragMove={handleDragMove}
-              onDragOver={handleDragOver}
-              onDragEnd={handleDragEnd}
-              onDragCancel={handleDragCancel}
-            >
-              <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
-                {/* Disable dragging and panning the canvas when dragging a task */}
-                <StageTaskList className="nodrag nopan">
-                  {tasks.map((taskGroup, groupIndex) => {
-                    const isParallel = taskGroup.length > 1;
-                    return (
-                      <Row key={`group-${groupIndex}`} gap={Spacing.SpacingS}>
-                        {isParallel && <StageParallelBracket />}
-                        <StageTaskGroup isParallel={isParallel}>
-                          {isParallel && (
-                            <StageParallelLabel>
-                              <ApTypography variant={FontVariantToken.fontSizeS}>
-                                Parallel
-                              </ApTypography>
-                            </StageParallelLabel>
-                          )}
-                          {taskGroup.map((task, taskIndex) => {
-                            const taskExecution = execution?.taskStatus?.[task.id];
-                            return (
-                              <DraggableTask
-                                key={task.id}
-                                task={task}
-                                taskExecution={taskExecution}
-                                isSelected={selectedTaskId === task.id}
-                                isParallel={isParallel}
-                                contextMenuItems={contextMenuItems(
-                                  isParallel,
-                                  groupIndex,
-                                  taskIndex,
-                                  tasks.length,
-                                  taskGroup.length,
-                                  (tasks[groupIndex - 1]?.length ?? 0) > 1,
-                                  (tasks[groupIndex + 1]?.length ?? 0) > 1
-                                )}
-                                onTaskClick={handleTaskClick}
-                                projectedDepth={
-                                  task.id === activeDragId && projected
-                                    ? projected.depth
-                                    : undefined
-                                }
-                                onTaskPlay={onTaskPlay}
-                                isDragDisabled={!onTaskReorder}
-                                zoom={zoom}
-                                {...((onTaskGroupModification || onReplaceTaskFromToolbox) && {
-                                  onMenuOpen: () => {
-                                    taskStateReference.current = {
+            <>
+              {tasks.length > 0 && (
+                <DndContext
+                  collisionDetection={closestCenter}
+                  sensors={sensors}
+                  onDragStart={handleDragStart}
+                  onDragMove={handleDragMove}
+                  onDragOver={handleDragOver}
+                  onDragEnd={handleDragEnd}
+                  onDragCancel={handleDragCancel}
+                >
+                  <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+                    {/* Disable dragging and panning the canvas when dragging a task */}
+                    <StageTaskList className="nodrag nopan">
+                      {tasks.map((taskGroup, groupIndex) => {
+                        const isParallel = taskGroup.length > 1;
+                        return (
+                          <Row key={`group-${groupIndex}`} gap={Spacing.SpacingS}>
+                            {isParallel && <StageParallelBracket />}
+                            <StageTaskGroup isParallel={isParallel}>
+                              {isParallel && (
+                                <StageParallelLabel>
+                                  <ApTypography variant={FontVariantToken.fontSizeS}>
+                                    Parallel
+                                  </ApTypography>
+                                </StageParallelLabel>
+                              )}
+                              {taskGroup.map((task, taskIndex) => {
+                                const taskExecution = execution?.taskStatus?.[task.id];
+                                return (
+                                  <DraggableTask
+                                    key={task.id}
+                                    task={task}
+                                    taskExecution={taskExecution}
+                                    isSelected={selectedTaskId === task.id}
+                                    isParallel={isParallel}
+                                    contextMenuItems={contextMenuItems(
                                       isParallel,
                                       groupIndex,
                                       taskIndex,
-                                    };
-                                  },
-                                })}
-                              />
-                            );
-                          })}
-                        </StageTaskGroup>
-                      </Row>
-                    );
-                  })}
-                </StageTaskList>
-              </SortableContext>
-              {createPortal(
-                <DragOverlay>
-                  {activeTask ? (
-                    <div style={dragOverlayStyle}>
-                      <StageTask
-                        selected
-                        isParallel={isActiveTaskParallel}
-                        style={{ cursor: 'grabbing', ...taskWidthStyle }}
-                      >
-                        <TaskContent task={activeTask} isDragging />
-                      </StageTask>
-                    </div>
-                  ) : null}
-                </DragOverlay>,
-                document.body
+                                      tasks.length,
+                                      taskGroup.length,
+                                      (tasks[groupIndex - 1]?.length ?? 0) > 1,
+                                      (tasks[groupIndex + 1]?.length ?? 0) > 1
+                                    )}
+                                    onTaskClick={handleTaskClick}
+                                    projectedDepth={
+                                      task.id === activeDragId && projected
+                                        ? projected.depth
+                                        : undefined
+                                    }
+                                    isDragDisabled={!onTaskReorder}
+                                    zoom={zoom}
+                                    {...((onTaskGroupModification || onReplaceTaskFromToolbox) && {
+                                      onMenuOpen: () => {
+                                        taskStateReference.current = {
+                                          isParallel,
+                                          groupIndex,
+                                          taskIndex,
+                                        };
+                                      },
+                                    })}
+                                  />
+                                );
+                              })}
+                            </StageTaskGroup>
+                          </Row>
+                        );
+                      })}
+                    </StageTaskList>
+                  </SortableContext>
+                  {createPortal(
+                    <DragOverlay>
+                      {activeTask ? (
+                        <div style={dragOverlayStyle}>
+                          <StageTask
+                            selected
+                            isParallel={isActiveTaskParallel}
+                            style={{ cursor: 'grabbing', ...taskWidthStyle }}
+                          >
+                            <TaskContent task={activeTask} isDragging />
+                          </StageTask>
+                        </div>
+                      ) : null}
+                    </DragOverlay>,
+                    document.body
+                  )}
+                </DndContext>
               )}
-            </DndContext>
+              {adhocTasks.length > 0 && (
+                <StageAdhocSection>
+                  <StageAdhocHeaderSection>
+                    <ApTypography
+                      variant={FontVariantToken.fontSizeSBold}
+                      color="var(--uix-canvas-foreground-de-emp)"
+                    >
+                      Adhoc tasks
+                    </ApTypography>
+                  </StageAdhocHeaderSection>
+                  <StageTaskList>
+                    {adhocTasks.map((task) => {
+                      const taskExecution = execution?.taskStatus?.[task.id];
+                      return (
+                        <StageTask
+                          key={task.id}
+                          data-testid={`stage-task-${task.id}`}
+                          selected={selectedTaskId === task.id}
+                          status={taskExecution?.status}
+                          onClick={(e: React.MouseEvent) => handleTaskClick(e, task.id)}
+                        >
+                          <TaskContent task={task} taskExecution={taskExecution} />
+                          {onTaskPlay && (
+                            <AdhocTaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} />
+                          )}
+                        </StageTask>
+                      );
+                    })}
+                  </StageTaskList>
+                </StageAdhocSection>
+              )}
+            </>
           )}
         </StageContent>
       </StageContainer>

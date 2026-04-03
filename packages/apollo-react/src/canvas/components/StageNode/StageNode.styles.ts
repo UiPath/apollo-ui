@@ -305,6 +305,19 @@ export const StageChip = styled.button`
   }
 `;
 
+export const StageAdhocSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Spacing.SpacingS};
+  margin-top: ${Spacing.SpacingS};
+`;
+
+export const StageAdhocHeaderSection = styled.div`
+  height: 36px;
+  display: flex;
+  align-items: center;
+`;
+
 export const StageTaskDragPlaceholder = styled.div<{ isTargetParallel?: boolean }>`
   display: flex;
   align-items: center;
