@@ -9,3 +9,5 @@ export type {
   StageTaskItem,
   StageTaskStatus,
 } from './StageNode.types';
+export { duplicateStageData, remapIds } from './StageNode.utils';
+export type { DuplicateStageDataResult, IdGenerator } from './StageNode.utils';

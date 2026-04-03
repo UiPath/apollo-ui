@@ -20,18 +20,21 @@ import {
 import { ApIcon, ApProgressSpinner } from '@uipath/apollo-react/material/components';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../../constants';
+import { GRID_SPACING, PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../../constants';
 import { Breadcrumb } from '../../controls';
 import { useNodeManifests } from '../../core';
 import { useAddNodeOnConnectEnd } from '../../hooks/useAddNodeOnConnectEnd';
 import type { ToolbarActionEvent } from '../../schema/toolbar';
+import { duplicateStageData } from '../StageNode/StageNode.utils';
 import { animatedViewportManager } from '../../stores/animatedViewportManager';
 import {
+  selectAddNodeToCanvas,
   selectBreadcrumbs,
   selectCanvasStack,
   selectCurrentCanvas,
   selectCurrentPath,
   selectDrillIntoNode,
+  selectGetNodeById,
   selectInitializeCanvas,
   selectInitializeWithData,
   selectNavigateToDepth,
@@ -78,6 +81,31 @@ interface HierarchicalCanvasProps {
    * Called when the user navigates to a different canvas (drill-in/out, breadcrumb click).
    */
   onPathChange?: (path: string[]) => void;
+}
+
+/**
+ * Recursively walks a data object and remaps any string values or
+ * array entries that match old task IDs to their new IDs.
+ * This ensures references like `selectedTasksIds` in exit/entry
+ * conditions are updated after stage duplication.
+ */
+function remapNodeDataIds(data: Record<string, unknown>, idMap: Record<string, string>): void {
+  for (const key of Object.keys(data)) {
+    const value = data[key];
+    if (Array.isArray(value)) {
+      data[key] = value.map((item) => {
+        if (typeof item === 'string' && idMap[item]) return idMap[item];
+        if (typeof item === 'object' && item !== null) {
+          remapNodeDataIds(item as Record<string, unknown>, idMap);
+        }
+        return item;
+      });
+    } else if (typeof value === 'string' && idMap[value]) {
+      data[key] = idMap[value];
+    } else if (typeof value === 'object' && value !== null) {
+      remapNodeDataIds(value as Record<string, unknown>, idMap);
+    }
+  }
 }
 
 // Default node type mapping
@@ -134,6 +162,8 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
   const updateSelection = useCanvasStore(selectUpdateSelection);
   const updateViewport = useCanvasStore(selectUpdateViewport);
   const drillIntoNode = useCanvasStore(selectDrillIntoNode);
+  const addNodeToCanvas = useCanvasStore(selectAddNodeToCanvas);
+  const getNodeById = useCanvasStore(selectGetNodeById);
 
   // Track currentPath in a ref for stable callback references
   const currentPathRef = useRef<string[]>(currentPath);
@@ -363,9 +393,53 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
     async (event: ToolbarActionEvent) => {
       if (event.actionId === 'drill-in') {
         await drillIntoNode(event.nodeId, true);
+      } else if (event.actionId === 'duplicate') {
+        const sourceNode = getNodeById(event.nodeId);
+        if (!sourceNode) return;
+
+        const newNodeId = `node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const offset = GRID_SPACING * 2;
+
+        // Deep clone the node data
+        const clonedData = structuredClone(sourceNode.data) ?? {};
+
+        // If this is a stage node with tasks, remap task IDs
+        const stageDetails = clonedData.stageDetails as
+          | { tasks?: { id: string }[][]; label?: string }
+          | undefined;
+        if (stageDetails?.tasks) {
+          const generateId = () => `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          const { tasks: newTasks, idMap } = duplicateStageData(
+            stageDetails.tasks as import('../StageNode/StageNode.types').StageTaskItem[][],
+            generateId
+          );
+          stageDetails.tasks = newTasks;
+
+          // Remap task ID references in conditions (headerChips don't contain IDs,
+          // but any selectedTasksIds or similar arrays in the data should be remapped)
+          remapNodeDataIds(clonedData, idMap);
+
+          // Append " - Copy" to the stage label
+          if (stageDetails.label) {
+            stageDetails.label = `${stageDetails.label} - Copy`;
+          }
+        }
+
+        const duplicatedNode: Node = {
+          ...sourceNode,
+          id: newNodeId,
+          position: {
+            x: sourceNode.position.x + offset,
+            y: sourceNode.position.y + offset,
+          },
+          data: clonedData,
+          selected: false,
+        };
+
+        addNodeToCanvas(duplicatedNode);
       }
     },
-    [drillIntoNode]
+    [drillIntoNode, getNodeById, addNodeToCanvas]
   );
 
   // Handle click on nodes in the previous canvas view

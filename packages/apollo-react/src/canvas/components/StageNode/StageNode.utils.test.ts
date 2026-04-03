@@ -4,9 +4,11 @@ import { INDENTATION_WIDTH } from './StageNode.styles';
 import type { StageTaskItem } from './StageNode.types';
 import {
   buildTaskGroups,
+  duplicateStageData,
   type FlattenedTask,
   flattenTasks,
   getProjection,
+  remapIds,
   reorderTasks,
 } from './StageNode.utils';
 import { transformMenuItems } from './StageNodeTaskUtilities';
@@ -565,6 +567,126 @@ describe('StageNode.utils', () => {
       expect(result[0]?.key).toBe('divider-0');
       expect(result[1]?.key).toBe('divider-1');
       expect(result[2]?.key).toBe('divider-2');
+    });
+  });
+
+  describe('duplicateStageData', () => {
+    it('returns empty tasks and idMap for empty input', () => {
+      const generateId = vi.fn();
+      const result = duplicateStageData([], generateId);
+
+      expect(result.tasks).toEqual([]);
+      expect(result.idMap).toEqual({});
+      expect(generateId).not.toHaveBeenCalled();
+    });
+
+    it('generates new IDs for all tasks and builds idMap', () => {
+      const tasks: StageTaskItem[][] = [[createTask('a', 'Task A')], [createTask('b', 'Task B')]];
+      const generateId = (originalId: string) => `new-${originalId}`;
+      const result = duplicateStageData(tasks, generateId);
+
+      expect(result.tasks).toHaveLength(2);
+      expect(result.tasks[0]?.[0]?.id).toBe('new-a');
+      expect(result.tasks[0]?.[0]?.label).toBe('Task A');
+      expect(result.tasks[1]?.[0]?.id).toBe('new-b');
+      expect(result.tasks[1]?.[0]?.label).toBe('Task B');
+      expect(result.idMap).toEqual({ a: 'new-a', b: 'new-b' });
+    });
+
+    it('preserves group structure (parallel tasks)', () => {
+      const tasks: StageTaskItem[][] = [[createTask('1'), createTask('2')], [createTask('3')]];
+      const generateId = (id: string) => `dup-${id}`;
+      const result = duplicateStageData(tasks, generateId);
+
+      expect(result.tasks).toHaveLength(2);
+      expect(result.tasks[0]).toHaveLength(2);
+      expect(result.tasks[1]).toHaveLength(1);
+      expect(result.tasks[0]?.[0]?.id).toBe('dup-1');
+      expect(result.tasks[0]?.[1]?.id).toBe('dup-2');
+      expect(result.tasks[1]?.[0]?.id).toBe('dup-3');
+    });
+
+    it('does not mutate original tasks', () => {
+      const original: StageTaskItem[][] = [[createTask('1', 'Original')]];
+      const generateId = () => 'new-id';
+      const result = duplicateStageData(original, generateId);
+
+      expect(original[0]?.[0]?.id).toBe('1');
+      expect(result.tasks[0]?.[0]?.id).toBe('new-id');
+    });
+
+    it('preserves all task properties except id', () => {
+      const icon = {} as React.ReactElement;
+      const tasks: StageTaskItem[][] = [[{ id: 'x', label: 'My Task', icon, isAdhoc: true }]];
+      const generateId = () => 'y';
+      const result = duplicateStageData(tasks, generateId);
+
+      expect(result.tasks[0]?.[0]).toEqual({
+        id: 'y',
+        label: 'My Task',
+        icon,
+        isAdhoc: true,
+      });
+    });
+
+    it('calls generateId with the original task id', () => {
+      const tasks: StageTaskItem[][] = [[createTask('abc')]];
+      const generateId = vi.fn(() => 'new');
+      duplicateStageData(tasks, generateId);
+
+      expect(generateId).toHaveBeenCalledWith('abc');
+    });
+
+    it('handles complex mixed groups correctly', () => {
+      const tasks: StageTaskItem[][] = [
+        [createTask('1')],
+        [createTask('2'), createTask('3'), createTask('4')],
+        [createTask('5')],
+      ];
+      let counter = 0;
+      const generateId = () => `new-${++counter}`;
+      const result = duplicateStageData(tasks, generateId);
+
+      expect(Object.keys(result.idMap)).toHaveLength(5);
+      expect(result.idMap['1']).toBe('new-1');
+      expect(result.idMap['2']).toBe('new-2');
+      expect(result.idMap['3']).toBe('new-3');
+      expect(result.idMap['4']).toBe('new-4');
+      expect(result.idMap['5']).toBe('new-5');
+    });
+  });
+
+  describe('remapIds', () => {
+    it('returns empty array for empty input', () => {
+      expect(remapIds([], {})).toEqual([]);
+    });
+
+    it('remaps all IDs when all are in the mapping', () => {
+      const idMap = { a: 'x', b: 'y', c: 'z' };
+      expect(remapIds(['a', 'b', 'c'], idMap)).toEqual(['x', 'y', 'z']);
+    });
+
+    it('preserves IDs not found in the mapping', () => {
+      const idMap = { a: 'x' };
+      expect(remapIds(['a', 'b'], idMap)).toEqual(['x', 'b']);
+    });
+
+    it('returns original IDs when mapping is empty', () => {
+      expect(remapIds(['a', 'b'], {})).toEqual(['a', 'b']);
+    });
+
+    it('handles duplicate IDs in the input', () => {
+      const idMap = { a: 'x' };
+      expect(remapIds(['a', 'a'], idMap)).toEqual(['x', 'x']);
+    });
+
+    it('does not mutate the original array', () => {
+      const ids = ['a', 'b'];
+      const idMap = { a: 'x' };
+      const result = remapIds(ids, idMap);
+
+      expect(ids).toEqual(['a', 'b']);
+      expect(result).toEqual(['x', 'b']);
     });
   });
 });

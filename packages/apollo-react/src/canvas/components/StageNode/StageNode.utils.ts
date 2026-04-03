@@ -2,6 +2,84 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { INDENTATION_WIDTH } from './StageNode.styles';
 import type { StageTaskItem } from './StageNode.types';
 
+/**
+ * ID generator function type used by duplicateStageData.
+ * Takes the original task ID and returns a new unique ID.
+ */
+export type IdGenerator = (originalId: string) => string;
+
+/**
+ * Result of duplicating stage data, containing the cloned tasks
+ * with new IDs and a mapping from old IDs to new IDs.
+ */
+export interface DuplicateStageDataResult {
+  /** Deep-cloned tasks with new IDs */
+  tasks: StageTaskItem[][];
+  /** Mapping from original task IDs to new task IDs */
+  idMap: Record<string, string>;
+}
+
+/**
+ * Duplicates stage task data with new unique IDs and returns a mapping
+ * from old IDs to new IDs. Consumers should use the returned `idMap`
+ * to remap any external references to task IDs (e.g., `selectedTasksIds`
+ * in exit/entry conditions).
+ *
+ * @param tasks - The original stage tasks (array of task groups)
+ * @param generateId - Function to generate a new unique ID for each task
+ * @returns Object containing the cloned tasks and the old-to-new ID mapping
+ *
+ * @example
+ * ```ts
+ * import { nanoid } from 'nanoid';
+ *
+ * const { tasks: newTasks, idMap } = duplicateStageData(
+ *   originalStage.tasks,
+ *   () => nanoid()
+ * );
+ *
+ * // Remap selectedTasksIds in exit conditions
+ * const remappedConditions = exitConditions.map(condition => ({
+ *   ...condition,
+ *   selectedTasksIds: remapIds(condition.selectedTasksIds, idMap),
+ * }));
+ * ```
+ */
+export function duplicateStageData(
+  tasks: StageTaskItem[][],
+  generateId: IdGenerator
+): DuplicateStageDataResult {
+  const idMap: Record<string, string> = {};
+
+  const clonedTasks = tasks.map((group) =>
+    group.map((task) => {
+      const newId = generateId(task.id);
+      idMap[task.id] = newId;
+      return { ...task, id: newId };
+    })
+  );
+
+  return { tasks: clonedTasks, idMap };
+}
+
+/**
+ * Remaps an array of IDs using the provided old-to-new ID mapping.
+ * IDs not found in the mapping are preserved as-is.
+ *
+ * @param ids - Array of IDs to remap
+ * @param idMap - Mapping from old IDs to new IDs
+ * @returns New array with remapped IDs
+ *
+ * @example
+ * ```ts
+ * const remapped = remapIds(['task-1', 'task-2'], { 'task-1': 'task-new-1' });
+ * // Result: ['task-new-1', 'task-2']
+ * ```
+ */
+export function remapIds(ids: string[], idMap: Record<string, string>): string[] {
+  return ids.map((id) => idMap[id] ?? id);
+}
+
 export interface FlattenedTask {
   id: string;
   task: StageTaskItem;
