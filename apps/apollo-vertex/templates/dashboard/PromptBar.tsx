@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MessageSquare, Minimize2 } from "lucide-react";
+import { MessagesSquare, Minimize2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { CardConfig, CardGradient } from "./glow-config";
 import { useDashboardData } from "./DashboardDataProvider";
@@ -65,11 +65,23 @@ export function PromptBar({
     >
       {/* Expanded response area */}
       {isExpanded && (
-        <div className="flex-1 flex flex-col rounded-t-[14px] !bg-white/80 backdrop-blur-sm overflow-hidden">
-          <div className="flex items-center justify-between px-4 pt-3 pb-2">
-            <span className="text-xs font-medium text-muted-foreground">
-              Autopilot
-            </span>
+        <div className="flex-1 flex flex-col rounded-t-[14px] !bg-white/90 dark:!bg-card/90 backdrop-blur-sm overflow-hidden">
+          <div className="flex items-center justify-between px-6 pt-5 pb-3">
+            <div className="flex items-center gap-2">
+              <img
+                src="/Autopilot_dark.svg"
+                alt="Autopilot"
+                className="size-4 block dark:hidden"
+              />
+              <img
+                src="/Autopilot_light.svg"
+                alt="Autopilot"
+                className="size-4 hidden dark:block"
+              />
+              <span className="text-sm font-bold tracking-tight">
+                Autopilot
+              </span>
+            </div>
             {onCollapse && (
               <button
                 type="button"
@@ -80,11 +92,12 @@ export function PromptBar({
               </button>
             )}
           </div>
-          <div className="flex-1 flex items-center justify-center px-4 pb-4">
+          <div className="flex-1 flex items-center justify-center px-6 pb-4">
             <p className="text-sm text-muted-foreground/50">
               Responses will appear here
             </p>
           </div>
+          <div className="border-t border-border" />
         </div>
       )}
       {/* Suggestion badges — hidden when expanded */}
@@ -150,7 +163,7 @@ export function PromptBar({
             className="size-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
             aria-label="Open chat"
           >
-            <MessageSquare className="size-4" />
+            <MessagesSquare className="size-4" />
           </button>
           <button
             type="button"
