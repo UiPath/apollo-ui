@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.66.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.66.0...@uipath/apollo-react@3.66.1) (2026-04-03)
+
+### Bug Fixes
+
+* **apollo-react:** separate warning styles from paused styles in stage components ([03037b0](https://github.com/UiPath/apollo-ui/commit/03037b0fec5493831c83c2353263a52013ae46ce))
+
 ## [@uipath/apollo-react-v3.66.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.65.4...@uipath/apollo-react@3.66.0) (2026-04-03)
 
 ### Features
