@@ -123,10 +123,10 @@ const colorGroups: ColorGroup[] = [
         name: 'brand',
         twClass: 'bg-brand',
         usage: 'Logo, primary buttons, active indicators',
-        dark: '#0891b2',
-        darkTw: 'cyan-600',
-        light: '#0891b2',
-        lightTw: 'cyan-600',
+        dark: '#06b6d4',
+        darkTw: 'cyan-500',
+        light: '#06b6d4',
+        lightTw: 'cyan-500',
       },
       {
         name: 'brand-subtle',
@@ -200,19 +200,19 @@ const colorGroups: ColorGroup[] = [
         name: 'foreground-on-accent',
         twClass: 'text-foreground-on-accent',
         usage: 'Text on accent bg',
-        dark: '#fafafa',
-        darkTw: 'zinc-50',
-        light: '#fafafa',
-        lightTw: 'zinc-50',
+        dark: '#09090b',
+        darkTw: 'zinc-950',
+        light: '#09090b',
+        lightTw: 'zinc-950',
       },
       {
         name: 'foreground-accent',
         twClass: 'text-foreground-accent',
         usage: 'Accent text, icons',
-        dark: '#0891b2',
-        darkTw: 'cyan-600',
-        light: '#0891b2',
-        lightTw: 'cyan-600',
+        dark: '#06b6d4',
+        darkTw: 'cyan-500',
+        light: '#06b6d4',
+        lightTw: 'cyan-500',
       },
       {
         name: 'foreground-accent-muted',
@@ -348,6 +348,142 @@ const gradientTokens: GradientToken[] = [
     darkTo: 'cyan-950',
     lightFrom: 'cyan-400',
     lightTo: 'cyan-100',
+  },
+];
+
+const statusTokens: CodeSyntaxToken[] = [
+  {
+    name: '--status-destructive',
+    usage: 'Destructive / error background',
+    darkVar: 'var(--color-red-950)',
+    darkTw: 'red-950',
+    darkHex: '#460809',
+    lightVar: 'var(--color-red-100)',
+    lightTw: 'red-100',
+    lightHex: '#ffe2e2',
+  },
+  {
+    name: '--status-destructive-fg',
+    usage: 'Destructive / error foreground (text, icons)',
+    darkVar: 'var(--color-red-400)',
+    darkTw: 'red-400',
+    darkHex: '#ff6467',
+    lightVar: 'var(--color-red-700)',
+    lightTw: 'red-700',
+    lightHex: '#c10007',
+  },
+  {
+    name: '--status-success',
+    usage: 'Success background',
+    darkVar: 'var(--color-emerald-950)',
+    darkTw: 'emerald-950',
+    darkHex: '#002c22',
+    lightVar: 'var(--color-emerald-100)',
+    lightTw: 'emerald-100',
+    lightHex: '#d0fae5',
+  },
+  {
+    name: '--status-success-fg',
+    usage: 'Success foreground (text, icons)',
+    darkVar: 'var(--color-emerald-400)',
+    darkTw: 'emerald-400',
+    darkHex: '#00d492',
+    lightVar: 'var(--color-emerald-700)',
+    lightTw: 'emerald-700',
+    lightHex: '#007a55',
+  },
+  {
+    name: '--status-warning',
+    usage: 'Warning background',
+    darkVar: 'var(--color-orange-950)',
+    darkTw: 'orange-950',
+    darkHex: '#441306',
+    lightVar: 'var(--color-amber-100)',
+    lightTw: 'amber-100',
+    lightHex: '#fef3c6',
+  },
+  {
+    name: '--status-warning-fg',
+    usage: 'Warning foreground (text, icons)',
+    darkVar: 'var(--color-amber-400)',
+    darkTw: 'amber-400',
+    darkHex: '#ffb900',
+    lightVar: 'var(--color-amber-700)',
+    lightTw: 'amber-700',
+    lightHex: '#bb4d00',
+  },
+  {
+    name: '--status-info',
+    usage: 'Informational background',
+    darkVar: 'var(--color-cyan-950)',
+    darkTw: 'cyan-950',
+    darkHex: '#053345',
+    lightVar: 'var(--color-cyan-100)',
+    lightTw: 'cyan-100',
+    lightHex: '#cefafe',
+  },
+  {
+    name: '--status-info-fg',
+    usage: 'Informational foreground (text, icons)',
+    darkVar: 'var(--color-cyan-400)',
+    darkTw: 'cyan-400',
+    darkHex: '#00d3f3',
+    lightVar: 'var(--color-cyan-700)',
+    lightTw: 'cyan-700',
+    lightHex: '#007595',
+  },
+];
+
+const chartTokens: CodeSyntaxToken[] = [
+  {
+    name: '--chart-1',
+    usage: 'Primary data series (brand-adjacent)',
+    darkVar: 'var(--color-cyan-400)',
+    darkTw: 'cyan-400',
+    darkHex: '#22d3ee',
+    lightVar: 'var(--color-cyan-600)',
+    lightTw: 'cyan-600',
+    lightHex: '#0891b2',
+  },
+  {
+    name: '--chart-2',
+    usage: 'Secondary data series',
+    darkVar: 'var(--color-violet-400)',
+    darkTw: 'violet-400',
+    darkHex: '#a78bfa',
+    lightVar: 'var(--color-violet-600)',
+    lightTw: 'violet-600',
+    lightHex: '#7c3aed',
+  },
+  {
+    name: '--chart-3',
+    usage: 'Tertiary data series',
+    darkVar: 'var(--color-emerald-400)',
+    darkTw: 'emerald-400',
+    darkHex: '#34d399',
+    lightVar: 'var(--color-emerald-600)',
+    lightTw: 'emerald-600',
+    lightHex: '#059669',
+  },
+  {
+    name: '--chart-4',
+    usage: 'Quaternary data series',
+    darkVar: 'var(--color-amber-400)',
+    darkTw: 'amber-400',
+    darkHex: '#fbbf24',
+    lightVar: 'var(--color-amber-600)',
+    lightTw: 'amber-600',
+    lightHex: '#d97706',
+  },
+  {
+    name: '--chart-5',
+    usage: 'Quinary data series',
+    darkVar: 'var(--color-rose-400)',
+    darkTw: 'rose-400',
+    darkHex: '#fb7185',
+    lightVar: 'var(--color-rose-600)',
+    lightTw: 'rose-600',
+    lightHex: '#e11d48',
   },
 ];
 
@@ -752,6 +888,22 @@ export const Default: Story = {
             Code Block
           </h3>
           <CodeSyntaxTable tokens={codeSyntaxTokens} />
+
+          <h3
+            className="mb-3 mt-8 text-sm font-semibold tracking-tight text-foreground"
+            style={{ fontFamily: fontFamily.base }}
+          >
+            Status
+          </h3>
+          <CodeSyntaxTable tokens={statusTokens} />
+
+          <h3
+            className="mb-3 mt-8 text-sm font-semibold tracking-tight text-foreground"
+            style={{ fontFamily: fontFamily.base }}
+          >
+            Chart
+          </h3>
+          <CodeSyntaxTable tokens={chartTokens} />
         </div>
 
         <div>
