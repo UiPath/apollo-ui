@@ -377,7 +377,7 @@ body.future-dark, .future-dark {
   /* buttons on dark bg */
 
   /* ── Brand ──────────────────────────────────────────────────────────── */
-  --brand: var(--color-cyan-600);
+  --brand: var(--color-cyan-500);
   /* logo, submit, run */
   --brand-subtle: var(--color-cyan-950);
   /* status badge, active nav */
@@ -395,9 +395,9 @@ body.future-dark, .future-dark {
   /* labels, muted */
   --foreground-inverse: var(--color-zinc-950);
   /* icons on light bg */
-  --foreground-on-accent: var(--color-zinc-50);
+  --foreground-on-accent: var(--color-zinc-950);
   /* text on accent bg */
-  --foreground-accent: var(--color-cyan-600);
+  --foreground-accent: var(--color-cyan-500);
   /* accent text */
   --foreground-accent-muted: var(--color-cyan-400);
   /* muted accent text */
@@ -457,6 +457,21 @@ body.future-dark, .future-dark {
   --warning-background: #000000;
   --info: #42a1ff;
   --info-background: #000000;
+  --status-destructive: var(--color-red-950);
+  --status-destructive-fg: var(--color-red-400);
+  --status-success: var(--color-emerald-950);
+  --status-success-fg: var(--color-emerald-400);
+  --status-warning: var(--color-amber-950);
+  --status-warning-fg: var(--color-amber-400);
+  --status-info: var(--color-cyan-950);
+  --status-info-fg: var(--color-cyan-400);
+
+  /* ── Chart ───────────────────────────────────────────────────────────── */
+  --chart-1: var(--color-cyan-400);
+  --chart-2: var(--color-violet-400);
+  --chart-3: var(--color-emerald-400);
+  --chart-4: var(--color-amber-400);
+  --chart-5: var(--color-rose-400);
 
   /* ── shadcn aliases — maps to standard names for shadcn component compat ── */
   --background: var(--surface);
@@ -509,7 +524,7 @@ body.future-light, .future-light {
   /* buttons on light bg */
 
   /* ── Brand ──────────────────────────────────────────────────────────── */
-  --brand: var(--color-cyan-600);
+  --brand: var(--color-cyan-500);
   /* logo, submit, run */
   --brand-subtle: var(--color-cyan-50);
   /* status badge, active nav */
@@ -527,9 +542,9 @@ body.future-light, .future-light {
   /* labels, muted */
   --foreground-inverse: var(--color-zinc-50);
   /* icons on dark bg */
-  --foreground-on-accent: var(--color-zinc-50);
+  --foreground-on-accent: var(--color-zinc-950);
   /* text on accent bg */
-  --foreground-accent: var(--color-cyan-600);
+  --foreground-accent: var(--color-cyan-500);
   /* accent text */
   --foreground-accent-muted: var(--color-cyan-600);
   /* muted accent text */
@@ -589,6 +604,21 @@ body.future-light, .future-light {
   --warning-background: #fff3db;
   --info: #1665b3;
   --info-background: #e9f1fa;
+  --status-destructive: var(--color-red-100);
+  --status-destructive-fg: var(--color-red-700);
+  --status-success: var(--color-emerald-100);
+  --status-success-fg: var(--color-emerald-700);
+  --status-warning: var(--color-amber-100);
+  --status-warning-fg: var(--color-amber-700);
+  --status-info: var(--color-cyan-100);
+  --status-info-fg: var(--color-cyan-700);
+
+  /* ── Chart ───────────────────────────────────────────────────────────── */
+  --chart-1: var(--color-cyan-600);
+  --chart-2: var(--color-violet-600);
+  --chart-3: var(--color-emerald-600);
+  --chart-4: var(--color-amber-600);
+  --chart-5: var(--color-rose-600);
 
   /* ── shadcn aliases ──────────────────────────────────────────────────── */
   --background: var(--surface);
