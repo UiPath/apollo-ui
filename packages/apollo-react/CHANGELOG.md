@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.65.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.65.3...@uipath/apollo-react@3.65.4) (2026-04-03)
+
+### Bug Fixes
+
+* **apollo-react:** fixed add button alignment and added more story examples ([1739658](https://github.com/UiPath/apollo-ui/commit/1739658c69ebe58e35b1bb35e546adc96fe62cb4))
+
 ## [@uipath/apollo-react-v3.65.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.65.2...@uipath/apollo-react@3.65.3) (2026-04-02)
 
 ### Bug Fixes
