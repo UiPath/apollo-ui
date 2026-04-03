@@ -1880,6 +1880,89 @@ export const WithRulesTags: Story = {
           onTaskAdd: () => window.alert('Add task'),
         },
       },
+      {
+        id: '5',
+        type: 'stage',
+        position: { x: 48, y: 400 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'No chips (comparison)',
+            tasks: [
+              [{ id: 't8', label: 'Verify applicant identity', icon: <VerificationIcon /> }],
+              [{ id: 't9', label: 'Pull credit report', icon: <DocumentIcon /> }],
+            ],
+          },
+          onTaskClick: (taskId: string) => window.alert(`Task clicked: ${taskId}`),
+          onTaskAdd: () => window.alert('Add task'),
+        },
+      },
+      {
+        id: '6',
+        type: 'stage',
+        position: { x: 400, y: 400 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'ReadOnly + completed + chips',
+            isReadOnly: true,
+            tasks: [
+              [{ id: 't10', label: 'Verify applicant identity', icon: <VerificationIcon /> }],
+              [{ id: 't11', label: 'Pull credit report', icon: <DocumentIcon /> }],
+            ],
+            headerChips: [
+              {
+                type: StageHeaderChipType.Entry,
+                count: 1,
+                tooltip: 'Entry rules',
+                onClick: () => window.alert('Open entry rules panel'),
+              },
+              {
+                type: StageHeaderChipType.Exit,
+                count: 3,
+                tooltip: 'Exit rules',
+                onClick: () => window.alert('Open exit rules panel'),
+              },
+            ],
+          },
+          execution: {
+            stageStatus: { status: 'Completed', label: 'Completed', duration: 'SLA: 4h' },
+          },
+        },
+      },
+      {
+        id: '7',
+        type: 'stage',
+        position: { x: 752, y: 400 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'ReadOnly + in progress + chips',
+            isReadOnly: true,
+            tasks: [
+              [{ id: 't12', label: 'Verify applicant identity', icon: <VerificationIcon /> }],
+              [{ id: 't13', label: 'Pull credit report', icon: <DocumentIcon /> }],
+            ],
+            headerChips: [
+              {
+                type: StageHeaderChipType.Entry,
+                count: 2,
+                tooltip: 'Entry rules',
+                onClick: () => window.alert('Open entry rules panel'),
+              },
+              {
+                type: StageHeaderChipType.Exit,
+                count: 1,
+                tooltip: 'Exit rules',
+                onClick: () => window.alert('Open exit rules panel'),
+              },
+            ],
+          },
+          execution: {
+            stageStatus: { status: 'InProgress', label: 'In progress', duration: 'SLA: 2h' },
+          },
+        },
+      },
     ],
   },
   args: {},

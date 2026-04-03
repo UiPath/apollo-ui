@@ -597,7 +597,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
               )}
             </Column>
           </Row>
-          <Row gap={Spacing.SpacingMicro} align={isReadOnly ? 'start' : 'center'} py={Padding.PadS}>
+          <Row gap={Spacing.SpacingMicro} align="start" py={Padding.PadS}>
             {status && (
               <ApTooltip content={statusLabel} placement="top">
                 <ApIconButton size="small">
