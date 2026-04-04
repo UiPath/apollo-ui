@@ -1676,7 +1676,7 @@ export const AdhocTasks: Story = {
         width: 304,
         data: {
           stageDetails: {
-            label: 'Without onTaskPlay',
+            label: 'Without onTaskPlay and Menu',
             tasks: [
               [
                 {
@@ -1706,6 +1706,14 @@ export const AdhocTasks: Story = {
           },
           onTaskClick: (taskId: string) => {
             window.alert(`Task clicked: ${taskId}`);
+          },
+          onTaskGroupModification: (type: string, groupIndex: number, taskIndex: number) => {
+            console.log(
+              `Task group modification: ${type}, group: ${groupIndex}, task: ${taskIndex}`
+            );
+          },
+          onReplaceTaskFromToolbox: (task: unknown, groupIndex: number, taskIndex: number) => {
+            console.log(`Replace task at group: ${groupIndex}, task: ${taskIndex}`, task);
           },
         },
       },

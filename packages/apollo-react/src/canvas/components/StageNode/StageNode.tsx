@@ -20,18 +20,17 @@ import { FontVariantToken, Icon, Padding, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { Position, useStore, useViewport } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
-  ApCircularProgress,
   ApIcon,
   ApIconButton,
   ApLink,
   ApTooltip,
   ApTypography,
 } from '@uipath/apollo-react/material';
-import debounce from 'debounce';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { EntryConditionIcon, ExitConditionIcon, PlayIcon, ReturnToOriginIcon } from '../../icons';
+import { EntryConditionIcon, ExitConditionIcon, ReturnToOriginIcon } from '../../icons';
 import type { HandleGroupManifest } from '../../schema/node-definition';
+import { GroupModificationType } from '../../utils/GroupModificationUtils';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
@@ -39,6 +38,7 @@ import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import { NodeContextMenu, type NodeMenuItem } from '../NodeContextMenu';
 import { useNodeSelection } from '../NodePropertiesPanel/hooks';
 import { type ListItem, Toolbox } from '../Toolbox';
+import { AdhocTaskItem } from './AdhocTask';
 import { DraggableTask, TaskContent } from './DraggableTask';
 import {
   INDENTATION_WIDTH,
@@ -77,61 +77,6 @@ const CHIP_ICONS: Record<StageHeaderChipType, React.ReactElement> = {
   [StageHeaderChipType.CaseCompletion]: <ApIcon name="check-mark" size={Icon.IconXs} />,
 };
 
-const AdhocTaskPlayButton = memo(
-  ({ taskId, onTaskPlay }: { taskId: string; onTaskPlay: (taskId: string) => Promise<void> }) => {
-    const [playLoading, setPlayLoading] = useState(false);
-
-    const debouncedTaskPlay = useMemo(
-      () =>
-        debounce(
-          async (id: string) => {
-            setPlayLoading(true);
-            try {
-              await onTaskPlay(id);
-            } catch {
-              // Do nothing
-            } finally {
-              setPlayLoading(false);
-            }
-          },
-          500,
-          { immediate: true }
-        ),
-      [onTaskPlay]
-    );
-
-    const handlePlayClick = useCallback(
-      (e: React.MouseEvent) => {
-        e.stopPropagation();
-        e.preventDefault();
-        debouncedTaskPlay(taskId);
-      },
-      [debouncedTaskPlay, taskId]
-    );
-
-    return (
-      <ApTooltip content="Trigger task" placement="top">
-        <ApIconButton
-          data-testid={`stage-task-play-${taskId}`}
-          onClick={handlePlayClick}
-          onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
-          onKeyDown={(e: React.KeyboardEvent) => e.stopPropagation()}
-          className="task-menu-icon-button"
-          sx={{
-            color: 'var(--uix-canvas-primary) !important',
-            minWidth: 'unset !important',
-            width: `${Spacing.SpacingL} !important`,
-            height: `${Spacing.SpacingL} !important`,
-            padding: '0 !important',
-          }}
-        >
-          {playLoading ? <ApCircularProgress size={20} /> : <PlayIcon w={20} h={20} />}
-        </ApIconButton>
-      </ApTooltip>
-    );
-  }
-);
-
 const StageNodeComponent = (props: StageNodeProps) => {
   const {
     dragging,
@@ -168,7 +113,15 @@ const StageNodeComponent = (props: StageNodeProps) => {
     () => allTasks.filter((group) => group.some((t) => !t.isAdhoc)),
     [allTasks]
   );
-  const adhocTasks = useMemo(() => allTasks.flat().filter((t) => t.isAdhoc), [allTasks]);
+  const adhocTasks = useMemo(
+    () =>
+      allTasks.flatMap((group, groupIndex) =>
+        group
+          .map((task, taskIndex) => ({ task, groupIndex, taskIndex }))
+          .filter(({ task }) => task.isAdhoc)
+      ),
+    [allTasks]
+  );
 
   const flatTasks = useMemo(() => tasks.flat(), [tasks]);
   const taskIds = useMemo(() => flatTasks.map((task) => task.id), [flatTasks]);
@@ -371,6 +324,38 @@ const StageNodeComponent = (props: StageNodeProps) => {
       tasks,
       hideParallelOptions,
     ]
+  );
+
+  const getAdhocContextMenuItems = useCallback(
+    (groupIndex: number, taskIndex: number, taskId: string): NodeMenuItem[] => {
+      const items: NodeMenuItem[] = [];
+
+      if (onReplaceTaskFromToolbox) {
+        items.push(
+          getMenuItem('replace-task', 'Replace task', () => {
+            taskStateReference.current = {
+              isParallel: false,
+              groupIndex,
+              taskIndex,
+            };
+            onTaskClick?.(taskId);
+            setIsReplacingTask(true);
+          })
+        );
+      }
+
+      if (onTaskGroupModification) {
+        if (items.length > 0) items.push(getDivider());
+        items.push(
+          getMenuItem('remove-task', 'Delete task', () =>
+            reGroupTaskFunction(GroupModificationType.REMOVE_TASK, groupIndex, taskIndex)
+          )
+        );
+      }
+
+      return items;
+    },
+    [onReplaceTaskFromToolbox, onTaskClick, onTaskGroupModification, reGroupTaskFunction]
   );
 
   const { setSelectedNodeId } = useNodeSelection();
@@ -583,8 +568,6 @@ const StageNodeComponent = (props: StageNodeProps) => {
   );
 
   return (
-    // biome-ignore lint/a11y/useKeyWithClickEvents: moved over
-    // biome-ignore lint/a11y/noStaticElementInteractions: moved over
     <div
       data-testid={`stage-${id}`}
       style={{ position: 'relative' }}
@@ -815,21 +798,28 @@ const StageNodeComponent = (props: StageNodeProps) => {
                     </ApTypography>
                   </StageAdhocHeaderSection>
                   <StageTaskList>
-                    {adhocTasks.map((task) => {
+                    {adhocTasks.map(({ task, groupIndex, taskIndex }) => {
                       const taskExecution = execution?.taskStatus?.[task.id];
+                      const menuItems = getAdhocContextMenuItems(groupIndex, taskIndex, task.id);
                       return (
-                        <StageTask
+                        <AdhocTaskItem
                           key={task.id}
-                          data-testid={`stage-task-${task.id}`}
-                          selected={selectedTaskId === task.id}
-                          status={taskExecution?.status}
-                          onClick={(e: React.MouseEvent) => handleTaskClick(e, task.id)}
-                        >
-                          <TaskContent task={task} taskExecution={taskExecution} />
-                          {onTaskPlay && (
-                            <AdhocTaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} />
-                          )}
-                        </StageTask>
+                          task={task}
+                          taskExecution={taskExecution}
+                          isSelected={selectedTaskId === task.id}
+                          contextMenuItems={menuItems}
+                          onTaskClick={handleTaskClick}
+                          onTaskPlay={onTaskPlay}
+                          {...((onTaskGroupModification || onReplaceTaskFromToolbox) && {
+                            onMenuOpen: () => {
+                              taskStateReference.current = {
+                                isParallel: false,
+                                groupIndex,
+                                taskIndex,
+                              };
+                            },
+                          })}
+                        />
                       );
                     })}
                   </StageTaskList>
