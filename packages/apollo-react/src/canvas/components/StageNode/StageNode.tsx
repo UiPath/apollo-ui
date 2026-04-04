@@ -803,7 +803,9 @@ const StageNodeComponent = (props: StageNodeProps) => {
                 </DndContext>
               )}
               {adhocTasks.length > 0 && (
-                <StageAdhocSection>
+                <StageAdhocSection
+                  style={{ marginTop: tasks.length > 0 ? Spacing.SpacingS : '0px' }}
+                >
                   <StageAdhocHeaderSection>
                     <ApTypography
                       variant={FontVariantToken.fontSizeSBold}
