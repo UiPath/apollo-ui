@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.68.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.68.0...@uipath/apollo-react@3.68.1) (2026-04-04)
+
+### Bug Fixes
+
+* **apollo-react:** no margin top when only adhoc tasks ([042e0dd](https://github.com/UiPath/apollo-ui/commit/042e0dd25b25991f89b41b7a8b64595e2256670e))
+
 ## [@uipath/apollo-react-v3.68.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.67.0...@uipath/apollo-react@3.68.0) (2026-04-03)
 
 ### Features
