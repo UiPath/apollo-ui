@@ -309,7 +309,6 @@ export const StageAdhocSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${Spacing.SpacingS};
-  margin-top: ${Spacing.SpacingS};
 `;
 
 export const StageAdhocHeaderSection = styled.div`
