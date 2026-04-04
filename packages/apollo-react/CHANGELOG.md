@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.68.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.68.1...@uipath/apollo-react@3.68.2) (2026-04-04)
+
+### Bug Fixes
+
+* **apollo-react:** add data-test id for case E2E ([c0e8efd](https://github.com/UiPath/apollo-ui/commit/c0e8efd0cdfcb5d03b9a3cb8271efd0355cbc4aa))
+
 ## [@uipath/apollo-react-v3.68.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.68.0...@uipath/apollo-react@3.68.1) (2026-04-04)
 
 ### Bug Fixes
