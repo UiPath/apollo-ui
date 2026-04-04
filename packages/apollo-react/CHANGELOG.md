@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.68.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.68.2...@uipath/apollo-react@3.68.3) (2026-04-04)
+
+### Bug Fixes
+
+* **apollo-react:** refactor adhoc tasks ([943194c](https://github.com/UiPath/apollo-ui/commit/943194ca827542920f672500d21b64e2382b12bc))
+
 ## [@uipath/apollo-react-v3.68.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.68.1...@uipath/apollo-react@3.68.2) (2026-04-04)
 
 ### Bug Fixes
