@@ -101,7 +101,7 @@ export const StageTitleInput = styled.input<{
   border-radius: 2px;
   width: 100%;
   min-width: 100px;
-  padding: ${(props) => (props.isStageTitleEditable ? '0' : `${Padding.PadS} 0px`)};
+  padding: ${Padding.PadS} 0px;
 
   &:focus {
     outline: none;
