@@ -29,7 +29,8 @@ function DataTableFacetedFilter<TData, TValue>({
   noOptionsMessage,
 }: DataTableFacetedFilterProps<TData, TValue>) {
   // React Compiler compat: TanStack Table Column objects have stable references with mutable state.
-  "use no memo"; // CodeQL[js/unknown-directive] - valid React Compiler directive
+  // codeql[js/unknown-directive] - valid React Compiler directive
+  "use no memo";
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 

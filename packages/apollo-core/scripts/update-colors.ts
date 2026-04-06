@@ -54,36 +54,26 @@ interface Stats {
 }
 
 /**
- * Sanitize SVG content to remove potentially malicious elements
- * Removes: <script>, <foreignObject>, event handlers (onclick, onload, etc.)
+ * Validate SVG content by rejecting files that contain potentially malicious elements.
+ * Design system icons must never contain scripts, event handlers, or dangerous URLs.
+ * Throws an error if any dangerous content is detected.
  */
-function sanitizeSvg(content: string): string {
-  // Reject SVGs with dangerous elements entirely — design system icons must never contain these
+function validateSvg(content: string): void {
   if (/<script\b/i.test(content)) {
     throw new Error('SVG contains <script> element — rejected for safety');
   }
   if (/<foreignObject\b/i.test(content)) {
     throw new Error('SVG contains <foreignObject> element — rejected for safety');
   }
-
-  let sanitized = content;
-
-  // Remove event handler attributes (onclick, onload, onmouseover, etc.)
-  // Loop until stable to handle reconstructed patterns
-  let prev: string;
-  do {
-    prev = sanitized;
-    sanitized = sanitized.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
-    sanitized = sanitized.replace(/\s+on\w+\s*=\s*[^\s>]+/gi, '');
-  } while (sanitized !== prev);
-
-  // Remove javascript: protocol in href/xlink:href
-  sanitized = sanitized.replace(/(xlink:)?href\s*=\s*["']javascript:[^"']*["']/gi, '');
-
-  // Remove data: URLs that could contain scripts (except safe image types)
-  sanitized = sanitized.replace(/(xlink:)?href\s*=\s*["']data:(?!image\/(png|jpg|jpeg|gif|svg\+xml|webp))[^"']*["']/gi, '');
-
-  return sanitized;
+  if (/\s+on\w+\s*=/i.test(content)) {
+    throw new Error('SVG contains event handler attribute — rejected for safety');
+  }
+  if (/(xlink:)?href\s*=\s*["']javascript:/i.test(content)) {
+    throw new Error('SVG contains javascript: URL — rejected for safety');
+  }
+  if (/(xlink:)?href\s*=\s*["']data:(?!image\/(png|jpg|jpeg|gif|svg\+xml|webp))/i.test(content)) {
+    throw new Error('SVG contains unsafe data: URL — rejected for safety');
+  }
 }
 
 async function getAllSvgFiles(dir: string): Promise<string[]> {
@@ -246,17 +236,12 @@ async function main() {
         try {
           const content = await readFile(filePath, 'utf-8');
 
-          // Sanitize SVG to remove potentially malicious content
-          const sanitizedContent = sanitizeSvg(content);
+          // Validate SVG — rejects files with dangerous content
+          validateSvg(content);
 
-          // Check if sanitization removed anything
-          if (sanitizedContent !== content) {
-            console.log(`🛡️  Sanitized: ${filePath.replace(svgDir + '/', '')}`);
-          }
+          const { content: newContent, replacements } = replaceColorsInSvg(content, filePath);
 
-          const { content: newContent, replacements } = replaceColorsInSvg(sanitizedContent, filePath);
-
-          if (replacements > 0 || sanitizedContent !== content) {
+          if (replacements > 0) {
             stats.filesChanged++;
             stats.replacements += replacements;
 

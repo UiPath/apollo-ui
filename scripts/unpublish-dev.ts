@@ -205,7 +205,6 @@ async function unpublishFromRegistry(
           console.log('✓ Deprecated successfully');
           return true;
         } catch (deprecateError: unknown) {
-          // Show deprecate error output
           if (deprecateError && typeof deprecateError === 'object') {
             if ('stderr' in deprecateError && typeof deprecateError.stderr === 'string') {
               console.error(deprecateError.stderr);
@@ -214,25 +213,8 @@ async function unpublishFromRegistry(
               console.log(deprecateError.stdout);
             }
           }
-
-          // GitHub Package Registry doesn't support npm deprecate the same way
-          let deprecateErrorOutput = '';
-          if (deprecateError && typeof deprecateError === 'object' && 'stderr' in deprecateError) {
-            deprecateErrorOutput = String(deprecateError.stderr || '');
-          }
-
-          // GitHub Package Registry returns 400 "version.ID cannot be empty" for deprecate
-          const isGitHubDeprecateError =
-            deprecateErrorOutput.includes('//npm.pkg.github.com') &&
-            (deprecateErrorOutput.includes('400') || deprecateErrorOutput.includes('version.ID cannot be empty'));
-
-          if (isGitHubDeprecateError) {
-            console.log('⚠️  Deprecation not supported on GitHub Package Registry (package remains published)');
-            return true;
-          } else {
-            console.error('✗ Failed to deprecate');
-            return false;
-          }
+          console.error('✗ Failed to deprecate');
+          return false;
         }
       }
 
