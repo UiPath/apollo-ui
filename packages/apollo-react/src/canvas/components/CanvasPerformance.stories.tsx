@@ -148,19 +148,6 @@ function createPerformanceStageEdges(stageCount: number): Edge[] {
         targetHandle: `${targetId}____target____left`,
       });
     }
-
-    const downIndex = index + columns;
-    if (downIndex < stageCount) {
-      const targetId = `performance-stage-${downIndex}`;
-      edges.push({
-        id: `performance-edge-down-${index}`,
-        type: 'stage',
-        source: sourceId,
-        sourceHandle: `${sourceId}____source____bottom`,
-        target: targetId,
-        targetHandle: `${targetId}____target____top`,
-      });
-    }
   }
 
   return edges;

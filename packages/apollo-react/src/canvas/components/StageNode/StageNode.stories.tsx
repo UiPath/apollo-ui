@@ -74,9 +74,9 @@ const DefaultCanvasDecorator = ({
   );
 };
 
-const meta: Meta<typeof StageNode> = {
+const meta: Meta<StageNodeProps> = {
   title: 'Canvas/StageNode',
-  component: StageNode as any,
+  component: StageNode,
   parameters: {
     layout: 'fullscreen',
   },
@@ -120,7 +120,7 @@ const meta: Meta<typeof StageNode> = {
       defaultValue: 'Add process',
     },
   },
-} satisfies Meta<StageNodeProps>;
+};
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -282,7 +282,6 @@ export const Default: Story = {
       },
     ],
   },
-  args: {},
 };
 
 export const WithTaskIcons: Story = {
@@ -354,7 +353,6 @@ export const WithTaskIcons: Story = {
       },
     ],
   },
-  args: {},
 };
 
 export const ExecutionStatus: Story = {
@@ -562,7 +560,6 @@ export const ExecutionStatus: Story = {
       },
     ] as Edge[],
   },
-  args: {},
 };
 
 export const InteractiveTaskManagement: Story = {
@@ -691,7 +688,6 @@ export const InteractiveTaskManagement: Story = {
       },
     ],
   },
-  args: {},
 };
 
 export const LoanProcessingWorkflow: Story = {
@@ -857,7 +853,6 @@ export const LoanProcessingWorkflow: Story = {
       },
     ] as Edge[],
   },
-  args: {} as any, // No args needed as we're using parameters
 };
 
 const initialTasks: StageTaskItem[][] = [
@@ -966,7 +961,6 @@ export const DraggableTaskReordering: Story = {
     useCustomRender: true,
   },
   render: () => <DraggableTaskReorderingStory />,
-  args: {},
 };
 
 const initialTasksForAddReplace: StageTaskItem[][] = [
@@ -1303,7 +1297,6 @@ export const AddAndReplaceTasks: Story = {
     useCustomRender: true,
   },
   render: () => <AddAndReplaceTasksStory />,
-  args: {},
 };
 
 const InlineTitleEditStory = () => {
@@ -1418,7 +1411,6 @@ export const EditableStageTitle: Story = {
     useCustomRender: true,
   },
   render: () => <InlineTitleEditStory />,
-  args: {},
 };
 
 // Simulate async children fetch (2s delay)
@@ -1574,7 +1566,6 @@ export const AddTaskLoading: Story = {
     useCustomRender: true,
   },
   render: () => <AddTaskLoadingStory />,
-  args: {},
 };
 
 export const AdhocTasks: Story = {
@@ -1703,7 +1694,6 @@ export const AdhocTasks: Story = {
       },
     ],
   },
-  args: {},
 };
 
 export const WithRulesTags: Story = {
@@ -1931,5 +1921,4 @@ export const WithRulesTags: Story = {
       },
     ],
   },
-  args: {},
 };
