@@ -1,0 +1,60 @@
+import { TypeSpecimen } from '@/app/_components/foundation/type-specimen';
+import { fontTokens } from '@/lib/foundation-tokens';
+
+# Typography
+
+Apollo Vertex uses three font families, each mapped to a CSS custom property and a Tailwind font utility.
+
+## Font Families
+
+<div className="not-prose my-6 flex flex-col gap-4">
+  {fontTokens.map((f) => (
+    <div key={f.variable} className="rounded-lg border border-border bg-card p-5">
+      <div className="flex flex-col gap-1 mb-4">
+        <span className="text-sm font-semibold text-foreground">{f.label}</span>
+        <code className="text-xs font-mono text-muted-foreground">{f.variable}</code>
+        <code className="text-xs font-mono text-muted-foreground">{f.stack}</code>
+      </div>
+      <p
+        className="text-2xl text-foreground"
+        style={{ fontFamily: `var(${f.variable})` }}
+      >
+        {f.specimen}
+      </p>
+    </div>
+  ))}
+</div>
+
+---
+
+## Heading Scale
+
+<TypeSpecimen tag="h1" label="Heading 1" className="text-5xl font-bold tracking-tight" size="3rem / 48px" />
+<TypeSpecimen tag="h2" label="Heading 2" className="text-4xl font-bold tracking-tight" size="2.25rem / 36px" />
+<TypeSpecimen tag="h3" label="Heading 3" className="text-3xl font-semibold tracking-tight" size="1.875rem / 30px" />
+<TypeSpecimen tag="h4" label="Heading 4" className="text-2xl font-semibold" size="1.5rem / 24px" />
+<TypeSpecimen tag="h5" label="Heading 5" className="text-xl font-semibold" size="1.25rem / 20px" />
+<TypeSpecimen tag="h6" label="Heading 6" className="text-base font-semibold" size="1rem / 16px" />
+
+---
+
+## Body Scale
+
+<TypeSpecimen tag="p" label="Body XL" className="text-xl" size="1.25rem / 20px" specimen="Use for lead paragraphs and feature callouts where text needs more visual weight." />
+<TypeSpecimen tag="p" label="Body LG" className="text-lg" size="1.125rem / 18px" specimen="Use for introductory text or longer-form reading contexts." />
+<TypeSpecimen tag="p" label="Body Base" className="text-base" size="1rem / 16px" specimen="The default body size. Used for most paragraph and UI copy." />
+<TypeSpecimen tag="p" label="Body SM" className="text-sm" size="0.875rem / 14px" specimen="Labels, captions, helper text, and secondary information." />
+<TypeSpecimen tag="p" label="Body XS" className="text-xs" size="0.75rem / 12px" specimen="Timestamps, metadata, and legal/fine-print text." />
+
+---
+
+## Mono / Code
+
+<TypeSpecimen
+  tag="p"
+  label="Code"
+  className="text-sm"
+  fontFamily="mono"
+  size="0.875rem / 14px"
+  specimen={`const theme = { primary: 'oklch(0.64 0.115 208)', radius: '0.625rem' };`}
+/>

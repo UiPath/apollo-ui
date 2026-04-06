@@ -449,3 +449,9 @@ Each package must include:
 - Turborepo Docs: https://turbo.build/repo/docs
 - Storybook Docs: https://storybook.js.org/
 - Material UI: https://mui.com/
+
+
+## Design context
+
+See DESIGN-CONTEXT.md for UX principles, personas, and Apollo Vertex
+design system constraints used by the Vertical Solutions design team.

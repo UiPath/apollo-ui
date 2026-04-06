@@ -1,0 +1,75 @@
+import { ColorSwatch } from '@/app/_components/foundation/color-swatch';
+import { colorGroups, shadowTokens } from '@/lib/foundation-tokens';
+
+# Colors
+
+All color tokens are defined in `registry.json` as CSS custom properties in [OKLCH color space](https://oklch.com/), which provides perceptually uniform transitions between light and dark mode. Tokens are consumed as CSS variables and mapped to Tailwind utility classes via `theme.generated.css`.
+
+> **Source of truth:** `apps/apollo-vertex/registry.json` → auto-generates `app/theme.generated.css`. Do not edit `theme.generated.css` directly.
+
+## Usage
+
+```css
+/* CSS */
+background: var(--primary);
+color: var(--primary-foreground);
+```
+
+```tsx
+/* Tailwind */
+<div className="bg-primary text-primary-foreground" />
+```
+
+---
+
+{colorGroups.map((group) => (
+  <div key={group.heading}>
+    <h2>{group.heading}</h2>
+    <div className="not-prose grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 my-6">
+      {group.tokens.map((t) => (
+        <ColorSwatch key={t.token} {...t} />
+      ))}
+    </div>
+  </div>
+))}
+
+## Shadows
+
+Shadow tokens use a consistent structure: a diffuse ambient layer plus an offset layer. Shadow color adapts between modes automatically via `--shadow-color`.
+
+<div className="not-prose flex flex-col gap-4 my-6">
+  {shadowTokens.map((s) => (
+    <div key={s.token} className="flex items-center gap-6 rounded-lg border border-border bg-card p-4">
+      <div
+        className="shrink-0 h-14 w-14 rounded-lg bg-background"
+        style={{ boxShadow: `var(--${s.token})` }}
+        aria-label={s.label}
+      />
+      <div className="flex flex-col gap-0.5 min-w-0">
+        <span className="text-sm font-medium text-foreground">{s.label}</span>
+        <code className="text-xs font-mono text-muted-foreground">{`--${s.token}`}</code>
+      </div>
+    </div>
+  ))}
+</div>
+
+## AI Gradient
+
+A special two-stop gradient used for AI-adjacent UI surfaces.
+
+<div className="not-prose my-6 grid grid-cols-2 gap-3">
+  <div className="rounded-lg border border-border overflow-hidden">
+    <div className="h-20" style={{ background: 'linear-gradient(100.64deg, rgb(238, 224, 255) 8.29%, rgb(207, 217, 255) 88.73%)' }} />
+    <div className="p-3">
+      <span className="text-sm font-medium text-foreground">Light</span>
+      <code className="block text-xs font-mono text-muted-foreground mt-1">--ai-gradient</code>
+    </div>
+  </div>
+  <div className="rounded-lg border border-border overflow-hidden">
+    <div className="h-20" style={{ background: 'linear-gradient(98.69deg, rgb(108, 90, 239) 8.79%, rgb(105, 199, 221) 91.48%)' }} />
+    <div className="p-3">
+      <span className="text-sm font-medium text-foreground">Dark</span>
+      <code className="block text-xs font-mono text-muted-foreground mt-1">--ai-gradient (dark)</code>
+    </div>
+  </div>
+</div>
