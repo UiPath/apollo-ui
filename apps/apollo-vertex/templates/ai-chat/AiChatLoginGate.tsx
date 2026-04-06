@@ -3,7 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { jwtDecode } from "jwt-decode";
 import { ChevronRight, LogIn, LogOut } from "lucide-react";
-import { type ReactNode, useCallback, useMemo, useState } from "react";
+import { useLocalStorage } from "@mantine/hooks";
+import { type ReactNode, useCallback, useMemo } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { STORAGE_KEYS } from "@/lib/auth";
@@ -15,6 +16,7 @@ import {
   SelectValue,
 } from "@/registry/select/select";
 import { useAuth } from "@/registry/shell/shell-auth-provider";
+import { AICHAT_STORAGE_KEYS } from "./ai-chat-example-utils";
 
 export interface OrgTenantInfo {
   orgId: string;
@@ -125,7 +127,12 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
     isLoading: isOrgLoading,
     isError: isOrgError,
   } = useOrgInfo(accessToken);
-  const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
+  const [selectedTenantId, setSelectedTenantId] = useLocalStorage<
+    string | null
+  >({
+    key: AICHAT_STORAGE_KEYS.TENANT_ID,
+    defaultValue: null,
+  });
 
   const orgTenant = useMemo<OrgTenantInfo | null>(() => {
     if (!orgInfo) return null;

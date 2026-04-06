@@ -1,25 +1,22 @@
 "use client";
 
-import { useChat } from "@tanstack/ai-react";
+import { useLocalStorage } from "@mantine/hooks";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useMemo } from "react";
-import { useTranslation } from "react-i18next";
-import { createAgentHubConnection } from "@/registry/ai-chat/adapters/agenthub/adapter";
-import { AiChat } from "@/registry/ai-chat/components/ai-chat";
-import { AiChatMessage } from "@/registry/ai-chat/components/ai-chat-message";
-import {
-  CHOICES_TOOL_PROMPT,
-  choicesTools,
-} from "@/registry/ai-chat/examples/choices-tool";
+import { Label } from "@/registry/label/label";
+import { RadioGroup, RadioGroupItem } from "@/registry/radio-group/radio-group";
 import { ShellAuthProvider } from "@/registry/shell/shell-auth-provider";
 import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
-import { AiChatLoginGate, type OrgTenantInfo } from "./AiChatLoginGate";
+import { AgentHubChat } from "./ai-chat/AiChatAgentHubMode";
+import { ConversationalAgentChat } from "./ai-chat/AiChatConversationalAgentMode";
+import { AiChatLoginGate, type OrgTenantInfo } from "./ai-chat/AiChatLoginGate";
+import {
+  AICHAT_CLIENT_ID,
+  AICHAT_SCOPE,
+  AICHAT_STORAGE_KEYS,
+  type ChatMode,
+} from "./ai-chat/ai-chat-example-utils";
 
 const queryClient = new QueryClient();
-
-const systemPrompt = `You are a helpful assistant. Always respond using markdown format.
-
-${CHOICES_TOOL_PROMPT}`;
 
 function AiChatWithConnection({
   accessToken,
@@ -28,70 +25,77 @@ function AiChatWithConnection({
   accessToken: string;
   orgTenant: OrgTenantInfo;
 }) {
-  const { t } = useTranslation();
-
-  const connection = useMemo(
-    () =>
-      createAgentHubConnection({
-        baseUrl: `/api/agenthub/${orgTenant.orgName}/${orgTenant.tenantName}/agenthub_/llm/api`,
-        model: { vendor: "openai", name: "gpt-4.1-mini-2025-04-14" },
-        accessToken: () => accessToken,
-        systemPrompt,
-        tools: choicesTools,
-      }),
-    [accessToken, orgTenant],
-  );
-
-  const { messages, sendMessage, isLoading, stop, clear, error } = useChat({
-    connection,
-    tools: choicesTools,
+  const [mode, setMode] = useLocalStorage<ChatMode>({
+    key: AICHAT_STORAGE_KEYS.MODE,
+    defaultValue: "agenthub",
   });
 
   return (
-    <div className="h-[500px]">
-      <AiChat
-        messages={messages}
-        isLoading={isLoading}
-        onSendMessage={(text) => sendMessage(text)}
-        onStop={stop}
-        onClearChat={clear}
-        title={t("ai_assistant")}
-        assistantName={t("assistant")}
-        error={error ?? null}
-      >
-        {messages.map((message) => (
-          <AiChatMessage
-            key={message.id}
-            message={message}
-            assistantName={t("assistant")}
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-end gap-4 pt-2">
+        <RadioGroup
+          value={mode}
+          onValueChange={(v) => setMode(v as ChatMode)}
+          className="flex flex-row gap-4"
+        >
+          <div className="flex items-center gap-2">
+            <RadioGroupItem value="agenthub" id="mode-agenthub" />
+            <Label htmlFor="mode-agenthub" className="cursor-pointer">
+              AgentHub
+            </Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <RadioGroupItem
+              value="conversational-agent"
+              id="mode-conversational-agent"
+            />
+            <Label
+              htmlFor="mode-conversational-agent"
+              className="cursor-pointer"
+            >
+              Conversational Agent
+            </Label>
+          </div>
+        </RadioGroup>
+      </div>
+
+      <div className="h-[500px]">
+        {mode === "agenthub" ? (
+          <AgentHubChat accessToken={accessToken} orgTenant={orgTenant} />
+        ) : (
+          <ConversationalAgentChat
+            accessToken={accessToken}
+            orgTenant={orgTenant}
           />
-        ))}
-      </AiChat>
+        )}
+      </div>
     </div>
   );
 }
 
 export function AiChatTemplate() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ShellAuthProvider
-        clientId="1119a927-10ab-4543-bd1a-ad6bfbbc27f4"
-        scope="openid profile offline_access"
-        baseUrl=""
-        redirectPath="/auth_callback"
-      >
-        <LocaleProvider>
-          <AiChatLoginGate>
-            {({ accessToken, orgTenant }) => (
-              <AiChatWithConnection
-                key={orgTenant.tenantId}
-                accessToken={accessToken}
-                orgTenant={orgTenant}
-              />
-            )}
-          </AiChatLoginGate>
-        </LocaleProvider>
-      </ShellAuthProvider>
-    </QueryClientProvider>
+    <div className="min-h-[600px] flex w-full flex-col justify-center">
+      <QueryClientProvider client={queryClient}>
+        <ShellAuthProvider
+          clientId={AICHAT_CLIENT_ID}
+          scope={AICHAT_SCOPE}
+          baseUrl=""
+          redirectPath="/auth_callback"
+        >
+          <LocaleProvider>
+            <AiChatLoginGate>
+              {({ accessToken, orgTenant }) => (
+                <AiChatWithConnection
+                  key={orgTenant.tenantId}
+                  accessToken={accessToken}
+                  orgTenant={orgTenant}
+                />
+              )}
+            </AiChatLoginGate>
+          </LocaleProvider>
+        </ShellAuthProvider>
+      </QueryClientProvider>
+    </div>
   );
 }
