@@ -3,7 +3,7 @@
  * Create or update the dev packages PR comment with initial "Publishing..." status
  */
 
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { findPackageInfo } from './package-utils.js';
 
 const IDENTIFIER = '<!-- dev-packages-comment -->';
@@ -59,8 +59,9 @@ function main() {
 
   let commentId: string | null = null;
   try {
-    const result = execSync(
-      `gh api repos/${owner}/${repoName}/issues/${prNumber}/comments --jq '([.[] | select(.body | contains("${IDENTIFIER}")) | .id][0] // empty)'`,
+    const result = execFileSync(
+      'gh',
+      ['api', `repos/${owner}/${repoName}/issues/${prNumber}/comments`, '--jq', `([.[] | select(.body | contains("${IDENTIFIER}")) | .id][0] // empty)`],
       { encoding: 'utf8', env: { ...process.env, GH_TOKEN: token } }
     );
     commentId = result.trim() || null;
@@ -76,8 +77,9 @@ function main() {
   try {
     if (commentId) {
       // Update existing
-      execSync(
-        `gh api repos/${owner}/${repoName}/issues/comments/${commentId} -X PATCH --input -`,
+      execFileSync(
+        'gh',
+        ['api', `repos/${owner}/${repoName}/issues/comments/${commentId}`, '-X', 'PATCH', '--input', '-'],
         {
           input: payload,
           encoding: 'utf8',
@@ -87,8 +89,9 @@ function main() {
       console.log(`Updated comment ${commentId}`);
     } else {
       // Create new
-      execSync(
-        `gh api repos/${owner}/${repoName}/issues/${prNumber}/comments --input -`,
+      execFileSync(
+        'gh',
+        ['api', `repos/${owner}/${repoName}/issues/${prNumber}/comments`, '--input', '-'],
         {
           input: payload,
           encoding: 'utf8',

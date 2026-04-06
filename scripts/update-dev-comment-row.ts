@@ -4,7 +4,7 @@
  * Uses retry logic with exponential backoff to handle concurrent updates
  */
 
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 
 const IDENTIFIER = '<!-- dev-packages-comment -->';
 
@@ -51,8 +51,9 @@ async function main() {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       // Get current comment (using GH_TOKEN from env)
-      const commentJson = execSync(
-        `gh api repos/${owner}/${repoName}/issues/${prNumber}/comments --jq '.[] | select(.body | contains("${IDENTIFIER}"))'`,
+      const commentJson = execFileSync(
+        'gh',
+        ['api', `repos/${owner}/${repoName}/issues/${prNumber}/comments`, '--jq', `.[] | select(.body | contains("${IDENTIFIER}"))`],
         { encoding: 'utf8', env: { ...process.env, GH_TOKEN: token } }
       ).trim();
 
@@ -82,8 +83,9 @@ async function main() {
       const payload = JSON.stringify({ body: updatedBody });
 
       // Update comment (using GH_TOKEN from env, JSON via stdin)
-      execSync(
-        `gh api repos/${owner}/${repoName}/issues/comments/${comment.id} -X PATCH --input -`,
+      execFileSync(
+        'gh',
+        ['api', `repos/${owner}/${repoName}/issues/comments/${comment.id}`, '-X', 'PATCH', '--input', '-'],
         {
           input: payload,
           encoding: 'utf8',

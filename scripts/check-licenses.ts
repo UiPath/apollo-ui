@@ -10,6 +10,7 @@
 
 import { execSync } from 'node:child_process';
 import { appendFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const approvedLicenses = new Set([
   'AFL-1.1', 'AFL-1.2', 'AFL-2.0', 'AFL-2.1', 'AMPAS', 'APAFML', 'Adobe-2006',
@@ -90,8 +91,8 @@ function writeReport(markdown: string) {
   if (process.env.GITHUB_STEP_SUMMARY) {
     appendFileSync(process.env.GITHUB_STEP_SUMMARY, markdown);
   }
-  if (process.env.GITHUB_ACTIONS) {
-    writeFileSync('/tmp/license-report.md', markdown);
+  if (process.env.GITHUB_ACTIONS && process.env.RUNNER_TEMP) {
+    writeFileSync(join(process.env.RUNNER_TEMP, 'license-report.md'), markdown);
   }
 }
 
