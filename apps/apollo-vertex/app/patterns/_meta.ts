@@ -1,3 +1,4 @@
 export default {
-  notifications: "Notifications",
+  "ai-chat": "AI Chat",
+  shell: "Shell",
 };

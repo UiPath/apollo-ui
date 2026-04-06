@@ -6,8 +6,8 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
-import { ThemeSwitcher } from "./components/theme-switcher";
-import { ThemeWrapper } from "./components/theme-wrapper";
+import { ThemeSwitcher } from "./_components/theme-switcher";
+import { ThemeWrapper } from "./_components/theme-wrapper";
 
 export const metadata = {
   title: {

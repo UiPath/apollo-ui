@@ -1,0 +1,130 @@
+import Image from 'next/image';
+
+# Logos
+
+Official UiPath brand logos for use across marketing and product surfaces. For the full logo library visit the [UiPath Brand Center](https://brandcenter.uipath.com/point/en/uipath/component/default/217184).
+
+## Using These Assets
+
+These logos are served as static SVG files from the Apollo Vertex docs site. To use them in your product:
+
+**In a Next.js app**, import via `next/image` or directly as a URL:
+
+```tsx
+import Image from 'next/image';
+
+<Image src="/uipath-full-light.svg" alt="UiPath" width={180} height={56} />
+```
+
+**In any HTML or React app**, reference the file path relative to your public directory. Copy the SVG files you need into your project's `public/` folder and reference them by filename.
+
+**In CSS**, use as a background image:
+
+```css
+.logo {
+  background-image: url('/uipath-full-light.svg');
+}
+```
+
+**Download**: Right-click any logo preview above and select **Save image as…** to download the SVG directly. For the full brand asset library including print-ready formats, visit the [UiPath Brand Center](https://brandcenter.uipath.com/point/en/uipath/component/default/217184).
+
+---
+
+## UiPath Wordmark
+
+<div className="not-prose my-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+  <div className="flex flex-col overflow-hidden rounded-xl border border-border">
+    <div className="flex items-center justify-center p-8 bg-white" style={{ minHeight: '140px' }}>
+      <Image src="/uipath-full-light.svg" alt="UiPath Logo Full Light" width={180} height={56} className="h-14 w-auto object-contain" />
+    </div>
+    <div className="flex flex-col gap-1 p-4 bg-card border-t border-border">
+      <span className="text-sm font-medium text-foreground">Logo Full — Light</span>
+      <code className="text-xs font-mono text-muted-foreground">uipath-full-light.svg</code>
+      <span className="text-xs text-muted-foreground">Use on light backgrounds</span>
+    </div>
+  </div>
+
+  <div className="flex flex-col overflow-hidden rounded-xl border border-border">
+    <div className="flex items-center justify-center p-8 bg-zinc-900" style={{ minHeight: '140px' }}>
+      <Image src="/uipath-full-dark.svg" alt="UiPath Logo Full Dark" width={180} height={56} className="h-14 w-auto object-contain" />
+    </div>
+    <div className="flex flex-col gap-1 p-4 bg-card border-t border-border">
+      <span className="text-sm font-medium text-foreground">Logo Full — Dark</span>
+      <code className="text-xs font-mono text-muted-foreground">uipath-full-dark.svg</code>
+      <span className="text-xs text-muted-foreground">Use on dark backgrounds</span>
+    </div>
+  </div>
+
+</div>
+
+---
+
+## UiPath Mark
+
+<div className="not-prose my-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+  <div className="flex flex-col overflow-hidden rounded-xl border border-border">
+    <div className="flex items-center justify-center p-8 bg-white" style={{ minHeight: '140px' }}>
+      <Image src="/uipath-app-icon.svg" alt="UiPath App Icon Light" width={80} height={80} className="h-16 w-auto object-contain" />
+    </div>
+    <div className="flex flex-col gap-1 p-4 bg-card border-t border-border">
+      <span className="text-sm font-medium text-foreground">App Icon — Light</span>
+      <code className="text-xs font-mono text-muted-foreground">uipath-app-icon.svg</code>
+      <span className="text-xs text-muted-foreground">Mark only, light backgrounds</span>
+    </div>
+  </div>
+
+  <div className="flex flex-col overflow-hidden rounded-xl border border-border">
+    <div className="flex items-center justify-center p-8 bg-zinc-900" style={{ minHeight: '140px' }}>
+      <Image src="/uipath-app-icon.svg" alt="UiPath App Icon Dark" width={80} height={80} className="h-16 w-auto object-contain invert" />
+    </div>
+    <div className="flex flex-col gap-1 p-4 bg-card border-t border-border">
+      <span className="text-sm font-medium text-foreground">App Icon — Dark</span>
+      <code className="text-xs font-mono text-muted-foreground">uipath-app-icon.svg</code>
+      <span className="text-xs text-muted-foreground">Mark only, dark backgrounds</span>
+    </div>
+  </div>
+
+  <div className="flex flex-col overflow-hidden rounded-xl border border-border">
+    <div className="flex items-center justify-center p-8 bg-white" style={{ minHeight: '140px' }}>
+      <Image src="/uipath-favicon-brand.svg" alt="UiPath Favicon" width={48} height={48} className="h-12 w-auto object-contain" />
+    </div>
+    <div className="flex flex-col gap-1 p-4 bg-card border-t border-border">
+      <span className="text-sm font-medium text-foreground">Favicon</span>
+      <code className="text-xs font-mono text-muted-foreground">uipath-favicon-brand.svg</code>
+      <span className="text-xs text-muted-foreground">Browser tab & app icon, orange background</span>
+    </div>
+  </div>
+
+</div>
+
+---
+
+## Autopilot
+
+<div className="not-prose my-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+  <div className="flex flex-col overflow-hidden rounded-xl border border-border">
+    <div className="flex items-center justify-center p-8 bg-white" style={{ minHeight: '140px' }}>
+      <Image src="/uipath-autopilot-logo.svg" alt="Autopilot Logo Light" width={80} height={80} className="h-16 w-auto object-contain" />
+    </div>
+    <div className="flex flex-col gap-1 p-4 bg-card border-t border-border">
+      <span className="text-sm font-medium text-foreground">Autopilot — Light</span>
+      <code className="text-xs font-mono text-muted-foreground">uipath-autopilot-logo.svg</code>
+      <span className="text-xs text-muted-foreground">Light background variant</span>
+    </div>
+  </div>
+
+  <div className="flex flex-col overflow-hidden rounded-xl border border-border">
+    <div className="flex items-center justify-center p-8 bg-zinc-900" style={{ minHeight: '140px' }}>
+      <Image src="/uipath-autopilot-dark.svg" alt="Autopilot Logo Dark" width={80} height={80} className="h-16 w-auto object-contain" />
+    </div>
+    <div className="flex flex-col gap-1 p-4 bg-card border-t border-border">
+      <span className="text-sm font-medium text-foreground">Autopilot — Dark</span>
+      <code className="text-xs font-mono text-muted-foreground">uipath-autopilot-dark.svg</code>
+      <span className="text-xs text-muted-foreground">Dark background variant</span>
+    </div>
+  </div>
+
+</div>
