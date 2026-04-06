@@ -1,12 +1,6 @@
 import type { NodeMenuItem } from '../NodeContextMenu';
 import type { StageTaskExecution, StageTaskItem } from './StageNode.types';
 
-export interface TaskContentProps {
-  task: StageTaskItem;
-  taskExecution?: StageTaskExecution;
-  isDragging?: boolean;
-}
-
 export interface DraggableTaskProps {
   task: StageTaskItem;
   taskExecution?: StageTaskExecution;

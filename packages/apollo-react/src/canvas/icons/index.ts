@@ -31,7 +31,6 @@ export { McpIcon } from './McpIcon';
 export { MemoryIcon } from './MemoryIcon';
 export { OpenAIIcon } from './OpenAIIcon';
 export { OrganizeIcon } from './OrganizeIcon';
-export { PlayIcon } from './PlayIcon';
 export { ReturnToOriginIcon } from './ReturnToOriginIcon';
 export { RpaProject } from './RpaProject';
 export { ScriptTaskIcon } from './ScriptTaskIcon';
