@@ -68,20 +68,18 @@ interface AdhocTaskItemProps {
   task: StageTaskItem;
   taskExecution?: StageTaskExecution;
   isSelected: boolean;
-  contextMenuItems: NodeMenuItem[];
+  getContextMenuItems?: () => NodeMenuItem[];
   onTaskClick: (e: React.MouseEvent, taskId: string) => void;
   onTaskPlay?: (taskId: string) => Promise<void>;
-  onMenuOpen?: () => void;
 }
 
 const AdhocTaskItemComponent = ({
   task,
   taskExecution,
   isSelected,
-  contextMenuItems,
+  getContextMenuItems,
   onTaskClick,
   onTaskPlay,
-  onMenuOpen,
 }: AdhocTaskItemProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const taskRef = useRef<HTMLDivElement>(null);
@@ -110,17 +108,16 @@ const AdhocTaskItemComponent = ({
       selected={isSelected}
       status={taskExecution?.status}
       onClick={handleClick}
-      {...(contextMenuItems.length > 0 && { onContextMenu: handleContextMenu })}
+      {...(getContextMenuItems && { onContextMenu: handleContextMenu })}
     >
       <TaskContent task={task} taskExecution={taskExecution} />
       {onTaskPlay && <AdhocTaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} />}
-      {contextMenuItems.length > 0 && (
+      {getContextMenuItems && (
         <TaskMenu
           ref={menuRef}
           taskId={task.id}
-          contextMenuItems={contextMenuItems}
+          getContextMenuItems={getContextMenuItems}
           onMenuOpenChange={handleMenuOpenChange}
-          onMenuOpen={onMenuOpen}
           taskRef={taskRef}
         />
       )}

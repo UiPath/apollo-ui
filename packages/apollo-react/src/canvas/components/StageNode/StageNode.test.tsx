@@ -731,7 +731,8 @@ describe('StageNode - Add Task Loading State', () => {
 });
 
 describe('StageNode - hideParallelOptions', () => {
-  it('should show parallel options when hideParallelOptions is not set', () => {
+  it('should show parallel options when hideParallelOptions is not set', async () => {
+    const user = userEvent.setup();
     const onTaskGroupModification = vi.fn();
     const tasks: StageTaskItem[][] = [
       [createTask('task-1', 'Task 1')],
@@ -743,6 +744,8 @@ describe('StageNode - hideParallelOptions', () => {
       onTaskGroupModification,
       stageDetails: { ...defaultProps.stageDetails, tasks },
     });
+
+    await user.click(screen.getByTestId('task-menu-button-task-2'));
 
     const menuItems = screen.getByTestId('task-menu-items-task-2');
     expect(menuItems.querySelector('[data-testid="menu-item-task-2-move-up"]')).toBeInTheDocument();
@@ -760,7 +763,8 @@ describe('StageNode - hideParallelOptions', () => {
     ).toBeInTheDocument();
   });
 
-  it('should hide parallel options but keep move and delete when hideParallelOptions is true', () => {
+  it('should hide parallel options but keep move and delete when hideParallelOptions is true', async () => {
+    const user = userEvent.setup();
     const onTaskGroupModification = vi.fn();
     const tasks: StageTaskItem[][] = [
       [createTask('task-1', 'Task 1')],
@@ -774,6 +778,8 @@ describe('StageNode - hideParallelOptions', () => {
       stageDetails: { ...defaultProps.stageDetails, tasks },
     });
 
+    await user.click(screen.getByTestId('task-menu-button-task-2'));
+
     const menuItems = screen.getByTestId('task-menu-items-task-2');
     expect(menuItems.querySelector('[data-testid="menu-item-task-2-move-up"]')).toBeInTheDocument();
     expect(
@@ -790,7 +796,8 @@ describe('StageNode - hideParallelOptions', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('should hide ungroup/split options for parallel groups when hideParallelOptions is true', () => {
+  it('should hide ungroup/split options for parallel groups when hideParallelOptions is true', async () => {
+    const user = userEvent.setup();
     const onTaskGroupModification = vi.fn();
     const tasks: StageTaskItem[][] = [
       [createTask('task-1', 'Task 1'), createTask('task-2', 'Task 2')], // parallel group
@@ -802,6 +809,8 @@ describe('StageNode - hideParallelOptions', () => {
       hideParallelOptions: true,
       stageDetails: { ...defaultProps.stageDetails, tasks },
     });
+
+    await user.click(screen.getByTestId('task-menu-button-task-1'));
 
     const menuItems = screen.getByTestId('task-menu-items-task-1');
     expect(
@@ -818,7 +827,8 @@ describe('StageNode - hideParallelOptions', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('should show only delete for a single task when hideParallelOptions is true', () => {
+  it('should show only delete for a single task when hideParallelOptions is true', async () => {
+    const user = userEvent.setup();
     const onTaskGroupModification = vi.fn();
     const tasks: StageTaskItem[][] = [[createTask('task-1', 'Task 1')]];
 
@@ -827,6 +837,8 @@ describe('StageNode - hideParallelOptions', () => {
       hideParallelOptions: true,
       stageDetails: { ...defaultProps.stageDetails, tasks },
     });
+
+    await user.click(screen.getByTestId('task-menu-button-task-1'));
 
     const menuItems = screen.getByTestId('task-menu-items-task-1');
     const buttons = menuItems.querySelectorAll('button');
