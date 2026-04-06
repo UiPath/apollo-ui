@@ -5,11 +5,8 @@ import { AlertCircle, ArrowDown, Sparkles } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStickyScroll } from "../hooks/use-sticky-scroll";
-import type { ChoiceOption } from "../types";
-import { findLatestChoices } from "../utils/ai-chat-utils";
 import { AiChatInput } from "./ai-chat-input";
 import { AiChatLoading } from "./ai-chat-loading";
-import { AiChatSuggestions } from "./ai-chat-suggestions";
 
 export interface AiChatProps {
   messages: UIMessage[];
@@ -17,7 +14,6 @@ export interface AiChatProps {
   onSendMessage: (content: string) => void;
   onStop: () => void;
   onClearChat?: () => void;
-  onChoiceSelect?: (option: ChoiceOption) => void;
   children?: ReactNode;
   assistantName?: string;
   title?: string;
@@ -33,7 +29,6 @@ export function AiChat({
   onSendMessage,
   onStop,
   onClearChat,
-  onChoiceSelect,
   children,
   assistantName,
   title,
@@ -53,8 +48,6 @@ export function AiChat({
     setInput("");
     scrollToBottom();
   };
-
-  const latestChoices = findLatestChoices(messages);
 
   const lastMessage = messages.at(-1);
   const lastAssistantHasText =
@@ -116,20 +109,6 @@ export function AiChat({
           ) : (
             <div ref={contentRef} className="space-y-4">
               {children}
-
-              {latestChoices && !isLoading && (
-                <AiChatSuggestions
-                  prompt={latestChoices.prompt}
-                  options={latestChoices.options}
-                  onSelect={(option) => {
-                    if (onChoiceSelect) {
-                      onChoiceSelect(option);
-                    } else {
-                      onSendMessage(option.label);
-                    }
-                  }}
-                />
-              )}
 
               {showLoadingIndicator && (
                 <AiChatLoading assistantName={displayName} />

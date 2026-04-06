@@ -7,19 +7,27 @@ import { useTranslation } from "react-i18next";
 import { createAgentHubConnection } from "@/registry/ai-chat/adapters/agenthub/adapter";
 import { AiChat } from "@/registry/ai-chat/components/ai-chat";
 import { AiChatMessage } from "@/registry/ai-chat/components/ai-chat-message";
+import { choicesTool } from "@/registry/ai-chat/tools/choices";
+import { tableTool } from "@/registry/ai-chat/tools/table";
+import { barchartTool } from "@/registry/ai-chat/tools/barchart";
 import {
-  CHOICES_TOOL_PROMPT,
-  choicesTools,
-} from "@/registry/ai-chat/examples/choices-tool";
+  extractClientTools,
+  extractDisplayTools,
+  extractPrompts,
+} from "@/registry/ai-chat/tools/tool-utils";
 import { ShellAuthProvider } from "@/registry/shell/shell-auth-provider";
 import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
 import { AiChatLoginGate, type OrgTenantInfo } from "./AiChatLoginGate";
 
 const queryClient = new QueryClient();
 
+const allTools = [choicesTool, tableTool, barchartTool];
+const clientTools = extractClientTools(allTools);
+const displayTools = extractDisplayTools(allTools);
+
 const systemPrompt = `You are a helpful assistant. Always respond using markdown format.
 
-${CHOICES_TOOL_PROMPT}`;
+${extractPrompts(allTools)}`;
 
 function AiChatWithConnection({
   accessToken,
@@ -37,14 +45,14 @@ function AiChatWithConnection({
         model: { vendor: "openai", name: "gpt-4.1-mini-2025-04-14" },
         accessToken: () => accessToken,
         systemPrompt,
-        tools: choicesTools,
+        tools: clientTools,
       }),
     [accessToken, orgTenant],
   );
 
   const { messages, sendMessage, isLoading, stop, clear, error } = useChat({
     connection,
-    tools: choicesTools,
+    tools: clientTools,
   });
 
   return (
@@ -64,6 +72,8 @@ function AiChatWithConnection({
             key={message.id}
             message={message}
             assistantName={t("assistant")}
+            displayTools={displayTools}
+            onAction={(text) => sendMessage(text)}
           />
         ))}
       </AiChat>

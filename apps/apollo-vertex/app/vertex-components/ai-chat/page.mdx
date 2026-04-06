@@ -12,10 +12,10 @@ A composable AI chat UI component for the Apollo Design System. Built with React
 
 - **TanStack AI Integration** — Works with `useChat` from `@tanstack/ai-react` and `UIMessage` types
 - **Composable** — `AiChat` is the shell, `AiChatMessage` renders messages, you iterate parts and render tools inline
-- **Type-Safe Tool Rendering** — Check `part.name` in the parts loop and TypeScript narrows `part.output` automatically
+- **Display Tool System** — Register tools with `createDisplayTool()`, rendering happens automatically via `displayTools` prop
+- **Built-in Tools** — Choices (interactive buttons), Table (data table), Bar Chart (visualization)
 - **AgentHub Adapter** — Built-in adapter for the UiPath AgentHub normalized LLM endpoint (OpenAI + Anthropic models)
 - **Markdown Rendering** — Renders assistant responses with GitHub Flavored Markdown
-- **Suggestion Buttons** — Interactive choice buttons rendered from tool results
 - **Error Display** — Inline error banner for API and network errors
 - **i18n Support** — Built-in internationalization via react-i18next
 - **Accessible** — WCAG 2.1 compliant with keyboard navigation and ARIA live regions
@@ -29,29 +29,47 @@ npx shadcn@latest add @uipath/ai-chat
 Install peer dependencies:
 
 ```bash
-npm install @tanstack/ai @tanstack/ai-client @tanstack/ai-react eventsource-parser zod lucide-react react-i18next react-markdown remark-gfm
+npm install @tanstack/ai @tanstack/ai-client @tanstack/ai-react eventsource-parser zod lucide-react react-i18next react-markdown remark-gfm @uipath/apollo-dashboarding @tanstack/react-query
 ```
 
 ## Quick Start
 
 ```tsx
 import { useChat } from '@tanstack/ai-react';
-import { AiChat } from '@/components/ui/ai-chat/components/ai-chat';
-import { AiChatMessage } from '@/components/ui/ai-chat/components/ai-chat-message';
-import { createAgentHubConnection } from '@/components/ui/ai-chat/adapters/agenthub/adapter';
+import { AiChat } from '@/registry/ai-chat/components/ai-chat';
+import { AiChatMessage } from '@/registry/ai-chat/components/ai-chat-message';
+import { createAgentHubConnection } from '@/registry/ai-chat/adapters/agenthub/adapter';
+import { choicesTool } from '@/registry/ai-chat/tools/choices';
+import { tableTool } from '@/registry/ai-chat/tools/table';
+import { barchartTool } from '@/registry/ai-chat/tools/barchart';
+import {
+  extractClientTools,
+  extractDisplayTools,
+  extractPrompts,
+} from '@/registry/ai-chat/tools/tool-utils';
 
-function BasicChat() {
+// 1. Compose tools
+const allTools = [choicesTool, tableTool, barchartTool];
+const clientTools = extractClientTools(allTools);
+const displayTools = extractDisplayTools(allTools);
+const systemPrompt = `You are a helpful assistant.\n\n${extractPrompts(allTools)}`;
+
+function MyChat() {
+  // 2. Create connection with tools
   const connection = createAgentHubConnection({
     baseUrl: 'https://cloud.uipath.com/{org}/{tenant}/agenthub_/llm/api',
     model: { vendor: 'openai' as const, name: 'gpt-4o' },
     accessToken: () => getAccessToken(),
-    systemPrompt: 'You are a helpful assistant.',
+    systemPrompt,
+    tools: clientTools,
   });
 
   const { messages, sendMessage, isLoading, stop, clear, error } = useChat({
     connection,
+    tools: clientTools,
   });
 
+  // 3. Render — display tools render automatically via displayTools prop
   return (
     <AiChat
       messages={messages}
@@ -63,24 +81,190 @@ function BasicChat() {
       title="AI Assistant"
     >
       {messages.map((message) => (
-        <AiChatMessage key={message.id} message={message} />
+        <AiChatMessage
+          key={message.id}
+          message={message}
+          displayTools={displayTools}
+          onAction={(text) => sendMessage(text)}
+        />
       ))}
     </AiChat>
   );
 }
 ```
 
-## Tool Rendering
+---
 
-Render tool output inline in the chat — just like TanStack AI's own examples. Define tools with `toolDefinition`, pass the input through as output in your client tool, then check `part.name` in the parts loop. TypeScript narrows `part.output` automatically.
+## Display Tool System
+
+Display tools are client-side tools that render UI inline within chat messages. When the backend agent calls a display tool, TanStack AI executes the client handler and `AiChatMessage` renders the result automatically.
+
+### How it works
+
+1. **Define** — `createDisplayTool()` wraps a TanStack AI `toolDefinition().client()` with a `render` function and system prompt
+2. **Extract** — `extractClientTools()` gives you `AnyClientTool[]` for the connection, `extractDisplayTools()` gives you a `DisplayTools` record for rendering
+3. **Render** — `AiChatMessage` iterates `tool-call` parts, looks up the tool by name, calls `render(output)` inline
+
+### `createDisplayTool()`
+
+Factory for creating display tools with type-safe Zod schemas:
+
+```tsx
+import { z } from 'zod';
+import { createDisplayTool } from '@/registry/ai-chat/tools/tool-utils';
+
+const myTool = createDisplayTool({
+  name: 'my_tool',
+  description: 'What this tool does — sent to the LLM.',
+  inputSchema: z.object({
+    data: z.string().describe('The data to display'),
+  }),
+  prompt: 'System prompt snippet explaining when to use this tool.',
+  render: (args, { onAction }) => (
+    <div className="rounded-lg border p-4">
+      <p>{args.data}</p>
+      <button onClick={() => onAction('User clicked')}>Click me</button>
+    </div>
+  ),
+});
+```
+
+### Extraction helpers
+
+```tsx
+import {
+  extractClientTools,
+  extractDisplayTools,
+  extractPrompts,
+} from '@/registry/ai-chat/tools/tool-utils';
+
+const allTools = [choicesTool, tableTool, barchartTool];
+
+// For useChat() and createAgentHubConnection()
+const clientTools = extractClientTools(allTools);
+
+// For <AiChatMessage displayTools={...} />
+const displayTools = extractDisplayTools(allTools);
+
+// For systemPrompt — combines all tool prompt snippets
+const toolPrompts = extractPrompts(allTools);
+```
+
+---
+
+## Built-in Tools
+
+### Choices Tool
+
+Presents 2-4 interactive choice buttons. When the user clicks a button, `onAction` sends the label as a message.
+
+> **Try it out** — type *"give me some choices"* in the demo above.
+
+```tsx
+import { choicesTool } from '@/registry/ai-chat/tools/choices';
+```
+
+**Tool name:** `presentChoices`
+
+**Input schema:**
+```json
+{
+  "prompt": "How would you like to proceed?",
+  "options": [
+    { "id": "approve", "label": "Approve Document", "recommended": true },
+    { "id": "reject", "label": "Reject Document" }
+  ]
+}
+```
+
+The `recommended` option gets highlighted with a primary border. Options are rendered as clickable buttons that disappear after selection.
+
+### Table Tool
+
+Displays structured data as a table using `@uipath/apollo-dashboarding`. The backend agent provides column definitions and row data inline.
+
+```tsx
+import { tableTool } from '@/registry/ai-chat/tools/table';
+```
+
+**Tool name:** `show_table`
+
+**Input schema:**
+```json
+{
+  "title": "Recent Invoices",
+  "columns": [
+    { "name": "Invoice ID", "type": "string" },
+    { "name": "Vendor", "type": "string" },
+    { "name": "Amount", "type": "numeric" },
+    { "name": "Status", "type": "string" }
+  ],
+  "rows": [
+    { "Invoice ID": "INV-001", "Vendor": "Acme Corp", "Amount": 1500, "Status": "Paid" },
+    { "Invoice ID": "INV-002", "Vendor": "Globex", "Amount": 3200, "Status": "Pending" },
+    { "Invoice ID": "INV-003", "Vendor": "Initech", "Amount": 750, "Status": "Overdue" }
+  ]
+}
+```
+
+Column types: `"string"` (default), `"numeric"`, `"boolean"`, `"datetime"`. The table renders inside a Card with sorting support.
+
+### Bar Chart Tool
+
+Displays data as a bar chart visualization. Specify which columns are dimensions (X-axis categories) and metrics (Y-axis values).
+
+```tsx
+import { barchartTool } from '@/registry/ai-chat/tools/barchart';
+```
+
+**Tool name:** `show_barchart`
+
+**Input schema:**
+```json
+{
+  "title": "Revenue by Quarter",
+  "columns": [
+    { "name": "Quarter", "type": "string" },
+    { "name": "Revenue", "type": "numeric" }
+  ],
+  "rows": [
+    { "Quarter": "Q1", "Revenue": 45000 },
+    { "Quarter": "Q2", "Revenue": 62000 },
+    { "Quarter": "Q3", "Revenue": 58000 },
+    { "Quarter": "Q4", "Revenue": 71000 }
+  ],
+  "dimensions": ["Quarter"],
+  "metrics": ["Revenue"]
+}
+```
+
+The chart auto-renders inside a Card using `@uipath/apollo-dashboarding`'s `BarChart` component.
+
+### Using tools selectively
+
+You don't have to include all built-in tools. Pick only what you need:
+
+```tsx
+// Only choices — no charts
+const allTools = [choicesTool];
+
+// Only charts — no choices
+const allTools = [tableTool, barchartTool];
+
+// All built-in tools
+const allTools = [choicesTool, tableTool, barchartTool];
+```
+
+---
+
+## Custom Tool Rendering
+
+For full control, you can also render tool calls manually via the `children` prop — just like TanStack AI's own examples. This works alongside or instead of the `displayTools` system.
 
 ```tsx
 import { z } from 'zod';
 import { toolDefinition } from '@tanstack/ai';
 import { clientTools } from '@tanstack/ai-client';
-import { stream, useChat } from '@tanstack/ai-react';
-import { AiChat } from '@/components/ui/ai-chat/components/ai-chat';
-import { AiChatMessage } from '@/components/ui/ai-chat/components/ai-chat-message';
 
 // 1. Define tools — output passes input through for rendering
 const showResultsInput = z.object({
@@ -98,8 +282,8 @@ const showResultsDef = toolDefinition({
 const showResults = showResultsDef.client((input) => input);
 const toolDefs = clientTools(showResults);
 
-// 2. Wire it up — iterate parts, render tools inline
-function ChatWithTools() {
+// 2. Wire it up — iterate parts, render tools inline via children
+function ChatWithCustomTools() {
   const { messages, sendMessage, isLoading, stop } = useChat({
     connection,
     tools: toolDefs,
@@ -128,12 +312,14 @@ function ChatWithTools() {
 }
 ```
 
+---
+
 ## AgentHub Adapter
 
 The built-in adapter for the **UiPath AgentHub** normalized LLM endpoint. It converts TanStack AI `UIMessage` arrays to the AgentHub wire format, calls the endpoint, and parses the SSE response back into AG-UI `StreamChunk` events.
 
 ```tsx
-import { createAgentHubConnection, type AgentHubAdapterConfig } from '@/components/ui/ai-chat/adapters/agenthub/adapter';
+import { createAgentHubConnection, type AgentHubAdapterConfig } from '@/registry/ai-chat/adapters/agenthub/adapter';
 
 const connection = createAgentHubConnection({
   baseUrl: 'https://cloud.uipath.com/{org}/{tenant}/agenthub_/llm/api',
@@ -142,7 +328,7 @@ const connection = createAgentHubConnection({
   systemPrompt: 'You are a helpful assistant.',
   maxTokens: 2048,
   temperature: 0.7,
-  tools: toolDefs,
+  tools: clientTools,
 });
 ```
 
@@ -151,44 +337,6 @@ The `model.vendor` field controls wire-format differences:
 - **`"anthropic"`** — Anthropic tool format (`{ type: "custom", input_schema }`), non-empty assistant content on tool-call messages
 - The `X-UiPath-LlmGateway-NormalizedApi-ModelName` header is always sent for routing
 - Responses are always OpenAI-compatible SSE regardless of the underlying model
-
----
-
-## Suggestion Buttons
-
-Return a choices object as a tool result content to render interactive suggestion buttons. Buttons disappear after the user sends another message.
-
-> **Try it out** — type *"give me some choices"* in the demo above to see suggestion buttons in action. The demo uses the `presentChoices` example tool defined in `examples/choices-tool.ts`.
-
-The choices format:
-```json
-{
-  "type": "choices",
-  "prompt": "How would you like to proceed?",
-  "options": [
-    { "id": "approve", "label": "Approve Document", "recommended": true },
-    { "id": "reject", "label": "Reject Document" }
-  ]
-}
-```
-
-Handle selection explicitly or let the default behavior send `option.label` as a message:
-
-```tsx
-<AiChat
-  messages={messages}
-  isLoading={isLoading}
-  onSendMessage={(text) => sendMessage(text)}
-  onStop={stop}
-  onChoiceSelect={(option) => {
-    sendMessage(option.value ?? option.label);
-  }}
->
-  {messages.map((message) => (
-    <AiChatMessage key={message.id} message={message} />
-  ))}
-</AiChat>
-```
 
 ## Error Display
 
@@ -214,7 +362,7 @@ Pass an `Error` object to show an inline error banner:
 
 ### `<AiChat>`
 
-Chat shell component. Handles layout, scroll, input, loading indicator, suggestions, and errors. Render messages as children.
+Chat shell component. Handles layout, scroll, input, loading indicator, and errors. Render messages as children.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
@@ -224,7 +372,6 @@ Chat shell component. Handles layout, scroll, input, loading indicator, suggesti
 | `onStop` | `() => void` | required | Stop/abort handler |
 | `children` | `ReactNode` | — | Message list (typically `messages.map(...)`) |
 | `onClearChat` | `() => void` | — | Clear handler |
-| `onChoiceSelect` | `(option: ChoiceOption) => void` | — | Suggestion button handler (default: sends `option.label`) |
 | `assistantName` | `string` | `"AI Assistant"` | Assistant display name |
 | `title` | `string` | — | Chat title in the header |
 | `emptyState` | `ReactNode` | — | Custom empty state |
@@ -234,13 +381,35 @@ Chat shell component. Handles layout, scroll, input, loading indicator, suggesti
 
 ### `<AiChatMessage>`
 
-Renders a single message with avatar, name, markdown text, and children for custom content (tool output).
+Renders a single message with avatar, name, markdown text, and display tool output.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `message` | `UIMessage` | required | The message to render |
 | `assistantName` | `string` | `"AI Assistant"` | Assistant display name |
-| `children` | `ReactNode` | — | Custom content rendered below the message text (tool output, etc.) |
+| `children` | `ReactNode` | — | Custom content below the message text (manual tool rendering) |
+| `displayTools` | `DisplayTools` | — | Display tools record from `extractDisplayTools()` — tool calls are rendered automatically |
+| `onAction` | `(message: string) => void` | — | Callback when a display tool triggers an action (e.g. choice selected) |
+
+### `AiChatTool`
+
+The interface for registering a display tool.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `tool` | `AnyClientTool` | TanStack AI client tool (created internally by `createDisplayTool`) |
+| `prompt` | `string` | System prompt snippet appended via `extractPrompts()` |
+| `render` | `(args, context) => ReactNode` | Render function called with tool output and `{ onAction }` context |
+
+### `createDisplayTool(options)`
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `name` | `string` | Tool name (used by LLM to call it) |
+| `description` | `string` | Tool description (sent to LLM) |
+| `inputSchema` | `ZodType` | Zod schema for tool input validation |
+| `prompt` | `string` | System prompt snippet for this tool |
+| `render` | `(args: z.infer<TInput>, context: { onAction }) => ReactNode` | Render function |
 
 ### `AgentHubAdapterConfig`
 
@@ -265,16 +434,30 @@ Configuration for the AgentHub adapter.
 import type { UIMessage } from '@tanstack/ai-client';
 import type { ToolCallPart, TextPart, ToolResultPart } from '@tanstack/ai-client';
 
-// Choice types (app-specific, not from TanStack AI)
-import type { ChoiceOption, ToolResultChoices } from '@/components/ui/ai-chat/types';
+// Display tool types
+import type { AiChatTool, DisplayTools } from '@/registry/ai-chat/tools/tool-types';
+import type { ChoiceOption } from '@/registry/ai-chat/tools/choices';
+
+// Tool utilities
+import {
+  createDisplayTool,
+  extractClientTools,
+  extractDisplayTools,
+  extractPrompts,
+} from '@/registry/ai-chat/tools/tool-utils';
+
+// Built-in tools
+import { choicesTool } from '@/registry/ai-chat/tools/choices';
+import { tableTool } from '@/registry/ai-chat/tools/table';
+import { barchartTool } from '@/registry/ai-chat/tools/barchart';
 
 // AgentHub adapter
 import {
   createAgentHubConnection,
   type AgentHubAdapterConfig,
   type AgentHubVendor,
-} from '@/components/ui/ai-chat/adapters/agenthub/adapter';
+} from '@/registry/ai-chat/adapters/agenthub/adapter';
 
 // Standalone markdown renderer
-import { AiChatMarkdown } from '@/components/ui/ai-chat/components/ai-chat-markdown';
+import { AiChatMarkdown } from '@/registry/ai-chat/components/ai-chat-markdown';
 ```

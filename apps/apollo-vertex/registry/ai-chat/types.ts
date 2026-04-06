@@ -1,1 +1,2 @@
-export type { ChoiceOption, ToolResultChoices } from "./utils/ai-chat-utils";
+export type { ChoiceOption } from "./tools/choices";
+export type { AiChatTool, DisplayTools } from "./tools/tool-types";
