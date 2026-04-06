@@ -1,3 +1,12 @@
+## [@uipath/apollo-react-v3.68.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.68.3...@uipath/apollo-react@3.68.4) (2026-04-06)
+
+### Bug Fixes
+
+* **apollo-react:** address latest stage node perf review comments ([1c327ef](https://github.com/UiPath/apollo-ui/commit/1c327effeb410c77ba15e6fed8f10ef169be64be))
+* **apollo-react:** address review comments ([0c038b6](https://github.com/UiPath/apollo-ui/commit/0c038b6d56a482e797c4415a3fb0153836f2ecc1))
+* **apollo-react:** improve stage node performance [MST-8122] ([0a3a3eb](https://github.com/UiPath/apollo-ui/commit/0a3a3eb719f1a562962a058e89bac8db97c3ee58))
+* **apollo-react:** rebase & resolve conflicts ([b81f506](https://github.com/UiPath/apollo-ui/commit/b81f506256ce0d8097f2d450e8b39ef1bff140e7))
+
 ## [@uipath/apollo-react-v3.68.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.68.2...@uipath/apollo-react@3.68.3) (2026-04-04)
 
 ### Bug Fixes
