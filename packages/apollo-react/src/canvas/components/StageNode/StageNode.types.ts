@@ -42,9 +42,6 @@ export interface StageHeaderChip {
 }
 
 export interface StageNodeBaseProps {
-  dragging: boolean;
-  selected: boolean;
-  id: string;
   pendingReplaceTask?: boolean;
   stageDetails: {
     label: string;
@@ -90,9 +87,9 @@ export interface StageNodeBaseProps {
   hideParallelOptions?: boolean;
 }
 
-export interface StageNodeProps extends NodeProps, StageNodeBaseProps {}
-
-export type StageNodeInnerProps = StageNodeBaseProps & Pick<NodeProps, 'width'>;
+export interface StageNodeCanvasProps extends NodeProps, StageNodeBaseProps {}
+export type StageNodeProps = StageNodeBaseProps &
+  Pick<NodeProps, 'id' | 'selected' | 'dragging' | 'width'>;
 
 export interface StageTaskExecution {
   status?: StageTaskStatus;

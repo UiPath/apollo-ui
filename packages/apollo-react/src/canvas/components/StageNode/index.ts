@@ -3,6 +3,7 @@ export { StageEdge } from './StageEdge';
 export { StageNode } from './StageNode';
 export type {
   StageHeaderChip,
+  StageNodeCanvasProps,
   StageNodeProps,
   StageStatus,
   StageTaskItem,

@@ -40,6 +40,10 @@ const TaskMenuComponent = (
 
   const openMenu = useCallback(
     (anchor: HTMLElement | null) => {
+      if (!anchor) {
+        return;
+      }
+
       setAnchorElement(anchor);
       setMenuItems(transformMenuItems(getContextMenuItems(), handleMenuItemClick));
       onMenuOpenChange?.(true);

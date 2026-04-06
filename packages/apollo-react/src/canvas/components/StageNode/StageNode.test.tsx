@@ -211,7 +211,7 @@ const defaultProps = {
     { id: 'option-1', name: 'Option 1', data: {} },
     { id: 'option-2', name: 'Option 2', data: {} },
   ],
-} as StageNodeProps & { width?: number };
+} as StageNodeProps;
 
 const renderStageNode = (props: Partial<StageNodeProps> = {}) => {
   return render(

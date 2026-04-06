@@ -55,7 +55,7 @@ import {
   StageTitleContainer,
   StageTitleInput,
 } from './StageNode.styles';
-import type { StageNodeInnerProps, StageNodeProps } from './StageNode.types';
+import type { StageNodeProps } from './StageNode.types';
 import { StageHeaderChipType } from './StageNode.types';
 import { flattenTasks, getProjection, reorderTasks } from './StageNode.utils';
 import { getContextMenuItems, getDivider, getMenuItem } from './StageNodeTaskUtilities';
@@ -75,7 +75,7 @@ const CHIP_ICONS: Record<StageHeaderChipType, React.ReactElement> = {
   [StageHeaderChipType.CaseCompletion]: <ApIcon name="check-mark" size={Icon.IconXs} />,
 };
 
-const StageNodeInner = (props: StageNodeInnerProps) => {
+const StageNodeInner = (props: StageNodeProps) => {
   const {
     dragging,
     selected,
@@ -813,63 +813,4 @@ const StageNodeInner = (props: StageNodeInnerProps) => {
   );
 };
 
-const StageNodeInnerMemo = memo(StageNodeInner);
-
-/**
- * Destructures to strip ReactFlow's internal NodeProps fields (e.g. positionAbsoluteX/Y,
- * zIndex, isConnectable) that change on every store update causing rerenders. Passing only
- * StageNodeBaseProps lets StageNodeInnerMemo's shallow comparison work effectively.
- */
-export const StageNode = ({
-  dragging,
-  selected,
-  id,
-  width,
-  execution,
-  stageDetails,
-  addTaskLabel,
-  addTaskLoading,
-  replaceTaskLabel,
-  taskOptions,
-  menuItems,
-  pendingReplaceTask,
-  onStageClick,
-  onTaskAdd,
-  onAddTaskFromToolbox,
-  onTaskToolboxSearch,
-  onTaskClick,
-  onTaskGroupModification,
-  onStageTitleChange,
-  onTaskReorder,
-  onReplaceTaskFromToolbox,
-  onTaskPlay,
-  hideParallelOptions,
-}: StageNodeProps) => {
-  return (
-    <StageNodeInnerMemo
-      dragging={dragging}
-      selected={selected}
-      id={id}
-      width={width}
-      execution={execution}
-      stageDetails={stageDetails}
-      addTaskLabel={addTaskLabel}
-      addTaskLoading={addTaskLoading}
-      replaceTaskLabel={replaceTaskLabel}
-      taskOptions={taskOptions}
-      menuItems={menuItems}
-      pendingReplaceTask={pendingReplaceTask}
-      onStageClick={onStageClick}
-      onTaskAdd={onTaskAdd}
-      onAddTaskFromToolbox={onAddTaskFromToolbox}
-      onTaskToolboxSearch={onTaskToolboxSearch}
-      onTaskClick={onTaskClick}
-      onTaskGroupModification={onTaskGroupModification}
-      onStageTitleChange={onStageTitleChange}
-      onTaskReorder={onTaskReorder}
-      onReplaceTaskFromToolbox={onReplaceTaskFromToolbox}
-      onTaskPlay={onTaskPlay}
-      hideParallelOptions={hideParallelOptions}
-    />
-  );
-};
+export const StageNode = memo(StageNodeInner);
