@@ -31,7 +31,7 @@ function DataTablePagination<TData>({
   className,
 }: DataTablePaginationProps<TData>) {
   // React Compiler compat: TanStack Table objects have stable references with mutable state.
-  "use no memo";
+  "use no memo"; // CodeQL[js/unknown-directive] - valid React Compiler directive
   const { t } = useTranslation();
   const { pageIndex, pageSize } = table.getState().pagination;
   const totalRows = table.getFilteredRowModel().rows.length;
