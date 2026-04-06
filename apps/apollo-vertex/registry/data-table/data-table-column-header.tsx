@@ -27,7 +27,7 @@ function DataTableColumnHeader<TData, TValue>({
   className,
 }: DataTableColumnHeaderProps<TData, TValue>) {
   // React Compiler compat: TanStack Table Column objects have stable references with mutable state.
-  "use no memo";
+  "use no memo"; // CodeQL[js/unknown-directive] - valid React Compiler directive
   if (!column.getCanSort()) {
     return <div className={cn(className)}>{title}</div>;
   }

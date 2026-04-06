@@ -18,6 +18,6 @@ export function useReactTableCompat<TData>(
 ): Table<TData> {
   // eslint-disable-next-line no-warning-comments
   // TODO: Remove after upgrading to @tanstack/react-table v9 (React Compiler compatible)
-  "use no memo";
+  "use no memo"; // CodeQL[js/unknown-directive] - valid React Compiler directive
   return { ...useReactTable(options) } as Table<TData>;
 }
