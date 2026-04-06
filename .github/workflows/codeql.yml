@@ -51,10 +51,19 @@ jobs:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
           config-file: .github/codeql/codeql-config.yml
-          # Enable alert suppression support for lgtm/codeql comments (JavaScript only)
-          packs: ${{ matrix.language == 'javascript-typescript' && '+codeql/javascript-queries:AlertSuppression.ql' || '' }}
 
       - name: Perform CodeQL Analysis
+        id: analyze
         uses: github/codeql-action/analyze@45cbd0c69e560cd9e7cd7f8c32362050c9b7ded2 # v4.32.2
         with:
           category: /language:${{ matrix.language }}
+          output: sarif-results
+
+      - name: Dismiss suppressed alerts
+        if: github.ref == 'refs/heads/main'
+        uses: advanced-security/dismiss-alerts@3478381bd53e9f9a9ea1c23bd25ef0ec236e0d06 # v2
+        with:
+          sarif-id: ${{ steps.analyze.outputs['sarif-id'] }}
+          sarif-file: sarif-results/${{ matrix.language }}.sarif
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
