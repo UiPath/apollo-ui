@@ -118,7 +118,7 @@ async function unpublishFromRegistry(
     const fullPackage = `${packageName}@${version}`;
 
     // First, check if package version exists on the registry
-    const encodedPackageName = packageName.replace('@', '%40').replace('/', '%2F');
+    const encodedPackageName = encodeURIComponent(packageName);
     const checkResponse = await fetch(
       `${registry}/${encodedPackageName}/${version}`,
       {
@@ -223,7 +223,7 @@ async function unpublishFromRegistry(
 
           // GitHub Package Registry returns 400 "version.ID cannot be empty" for deprecate
           const isGitHubDeprecateError =
-            deprecateErrorOutput.includes('npm.pkg.github.com') &&
+            deprecateErrorOutput.includes('//npm.pkg.github.com') &&
             (deprecateErrorOutput.includes('400') || deprecateErrorOutput.includes('version.ID cannot be empty'));
 
           if (isGitHubDeprecateError) {
