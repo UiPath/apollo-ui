@@ -1741,11 +1741,75 @@ export const AdhocTasks: Story = {
                   isAdhoc: true,
                 },
               ],
-              [{ id: '3', label: 'Regular Processing', icon: <ProcessIcon /> }],
+              [
+                {
+                  id: '3',
+                  label: 'Adhoc - Bkgd Check',
+                  icon: <VerificationIcon />,
+                  isAdhoc: true,
+                },
+              ],
+              [
+                {
+                  id: '4',
+                  label: 'Adhoc - Review Docs',
+                  icon: <DocumentIcon />,
+                  isAdhoc: true,
+                },
+              ],
+              [{ id: '5', label: 'Regular Processing', icon: <ProcessIcon /> }],
             ],
           },
+          execution: {
+            stageStatus: {
+              status: 'InProgress',
+              label: 'In progress',
+              duration: 'SLA: 3h 45m',
+            },
+            taskStatus: {
+              '1': {
+                status: 'Completed',
+                label: 'Verify Address',
+                duration: '1h 20m',
+                retryDuration: '35m',
+                badge: 'Reworked',
+                badgeStatus: 'warning',
+                retryCount: 2,
+              },
+              '2': {
+                status: 'Failed',
+                label: 'Verify Identity',
+                duration: '45m',
+                message: 'Identity verification failed - document expired',
+                badge: 'Action needed',
+                badgeStatus: 'error',
+              },
+              '3': {
+                status: 'InProgress',
+                label: 'Background Check',
+              },
+              '4': {
+                status: 'InProgress',
+                label: 'Review Docs',
+                duration: '30m',
+                retryDuration: '10m',
+                badge: 'Reworked',
+                badgeStatus: 'info',
+                retryCount: 1,
+              },
+              '5': {
+                status: 'InProgress',
+                label: 'Regular Processing',
+              },
+            },
+          },
           onTaskPlay: (taskId: string) => {
-            console.log(`Play task: ${taskId}`);
+            return new Promise<void>((resolve) =>
+              setTimeout(() => {
+                resolve();
+                console.log(`Play task: ${taskId}`);
+              }, 5000)
+            );
           },
         },
       },

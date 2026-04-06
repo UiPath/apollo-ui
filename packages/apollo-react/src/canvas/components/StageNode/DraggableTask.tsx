@@ -1,123 +1,18 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { FontVariantToken, Padding, Spacing } from '@uipath/apollo-core';
-import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
-import {
-  ApBadge,
-  ApIconButton,
-  ApTooltip,
-  ApTypography,
-  BadgeSize,
-  type StatusTypes,
-} from '@uipath/apollo-react/material';
+import { ApTooltip } from '@uipath/apollo-react/material';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { EntryConditionIcon } from '../../icons';
-import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
-import type { DraggableTaskProps, TaskContentProps } from './DraggableTask.types';
+import type { DraggableTaskProps } from './DraggableTask.types';
 import {
   INDENTATION_WIDTH,
   StageTask,
   StageTaskDragPlaceholder,
   StageTaskDragPlaceholderWrapper,
-  StageTaskIcon,
-  StageTaskRetryDuration,
   StageTaskWrapper,
 } from './StageNode.styles';
-import type { StageTaskExecution } from './StageNode.types';
+import { TaskContent } from './TaskContent';
 import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
-
-const ProcessNodeIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <rect x="3" y="3" width="7" height="7" rx="1" />
-    <rect x="14" y="3" width="7" height="7" rx="1" />
-    <rect x="3" y="14" width="7" height="7" rx="1" />
-    <rect x="14" y="14" width="7" height="7" rx="1" />
-  </svg>
-);
-
-const generateBadgeText = (taskExecution: StageTaskExecution) => {
-  if (!taskExecution.badge) {
-    return undefined;
-  }
-  if (taskExecution.retryCount && taskExecution.retryCount > 1) {
-    return `${taskExecution.badge} x${taskExecution.retryCount}`;
-  }
-  return taskExecution.badge;
-};
-
-export const TaskContent = memo(({ task, taskExecution, isDragging }: TaskContentProps) => (
-  <>
-    <Column
-      flex={1}
-      style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-      gap={Padding.PadXs}
-    >
-      <Row align="center" justify="space-between">
-        {/* disable tooltip when dragging to avoid tooltip flickering */}
-        <Row
-          gap={Spacing.SpacingXs}
-          align="center"
-          style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-        >
-          <StageTaskIcon>{task.icon ?? <ProcessNodeIcon />}</StageTaskIcon>
-          <ApTooltip
-            content={task.label}
-            placement="top"
-            smartTooltip
-            {...(isDragging && { isOpen: false })}
-          >
-            <ApTypography
-              variant={FontVariantToken.fontSizeM}
-              color="var(--uix-canvas-foreground)"
-              style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-            >
-              {task.label}
-            </ApTypography>
-          </ApTooltip>
-        </Row>
-        {taskExecution?.status &&
-          (taskExecution.message ? (
-            <ApTooltip content={taskExecution.message} placement="top">
-              <ApIconButton size="small">
-                <ExecutionStatusIcon status={taskExecution.status} />
-              </ApIconButton>
-            </ApTooltip>
-          ) : (
-            <ExecutionStatusIcon status={taskExecution.status} />
-          ))}
-      </Row>
-      {taskExecution &&
-        (taskExecution.duration || taskExecution.retryDuration || taskExecution.badge) && (
-          <Row align="center" justify="space-between">
-            <Row gap={'2px'}>
-              {taskExecution?.duration && (
-                <ApTypography
-                  variant={FontVariantToken.fontSizeS}
-                  color="var(--uix-canvas-foreground-de-emp)"
-                >
-                  {taskExecution.duration}
-                </ApTypography>
-              )}
-              {taskExecution?.retryDuration && (
-                <StageTaskRetryDuration status={taskExecution.badgeStatus ?? 'warning'}>
-                  <ApTypography variant={FontVariantToken.fontSizeS} color="inherit">
-                    {`(+${taskExecution.retryDuration})`}
-                  </ApTypography>
-                </StageTaskRetryDuration>
-              )}
-            </Row>
-            {taskExecution?.badge && (
-              <ApBadge
-                size={BadgeSize.SMALL}
-                status={taskExecution.badgeStatus as StatusTypes}
-                label={generateBadgeText(taskExecution) ?? ''}
-              />
-            )}
-          </Row>
-        )}
-    </Column>
-  </>
-));
 
 const DraggableTaskComponent = ({
   task,

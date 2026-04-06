@@ -39,7 +39,7 @@ import { NodeContextMenu, type NodeMenuItem } from '../NodeContextMenu';
 import { useNodeSelection } from '../NodePropertiesPanel/hooks';
 import { type ListItem, Toolbox } from '../Toolbox';
 import { AdhocTaskItem } from './AdhocTask';
-import { DraggableTask, TaskContent } from './DraggableTask';
+import { DraggableTask } from './DraggableTask';
 import {
   INDENTATION_WIDTH,
   STAGE_CONTENT_INSET,
@@ -62,6 +62,7 @@ import type { StageNodeProps } from './StageNode.types';
 import { StageHeaderChipType } from './StageNode.types';
 import { flattenTasks, getProjection, reorderTasks } from './StageNode.utils';
 import { getContextMenuItems, getDivider, getMenuItem } from './StageNodeTaskUtilities';
+import { TaskContent } from './TaskContent';
 
 interface TaskStateReference {
   isParallel: boolean;
