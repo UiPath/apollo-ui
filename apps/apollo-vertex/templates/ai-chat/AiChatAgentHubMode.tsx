@@ -1,0 +1,64 @@
+"use client";
+
+import { useChat } from "@tanstack/ai-react";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { createAgentHubConnection } from "@/registry/ai-chat/adapters/agenthub/adapter";
+import { AiChat } from "@/registry/ai-chat/components/ai-chat";
+import { AiChatMessage } from "@/registry/ai-chat/components/ai-chat-message";
+import {
+  CHOICES_TOOL_PROMPT,
+  choicesTools,
+} from "@/registry/ai-chat/examples/choices-tool";
+import type { OrgTenantInfo } from "./AiChatLoginGate";
+
+const systemPrompt = `You are a helpful assistant. Always respond using markdown format.
+
+${CHOICES_TOOL_PROMPT}`;
+
+interface AgentHubChatProps {
+  accessToken: string;
+  orgTenant: OrgTenantInfo;
+}
+
+export function AgentHubChat({ accessToken, orgTenant }: AgentHubChatProps) {
+  const { t } = useTranslation();
+
+  const connection = useMemo(
+    () =>
+      createAgentHubConnection({
+        baseUrl: `/api/agenthub/${orgTenant.orgName}/${orgTenant.tenantName}/agenthub_/llm/api`,
+        model: { vendor: "openai", name: "gpt-4.1-mini-2025-04-14" },
+        accessToken: () => accessToken,
+        systemPrompt,
+        tools: choicesTools,
+      }),
+    [accessToken, orgTenant],
+  );
+
+  const { messages, sendMessage, isLoading, stop, clear, error } = useChat({
+    connection,
+    tools: choicesTools,
+  });
+
+  return (
+    <AiChat
+      messages={messages}
+      isLoading={isLoading}
+      onSendMessage={(text) => sendMessage(text)}
+      onStop={stop}
+      onClearChat={clear}
+      title={t("ai_assistant")}
+      assistantName={t("assistant")}
+      error={error ?? null}
+    >
+      {messages.map((message) => (
+        <AiChatMessage
+          key={message.id}
+          message={message}
+          assistantName={t("assistant")}
+        />
+      ))}
+    </AiChat>
+  );
+}
