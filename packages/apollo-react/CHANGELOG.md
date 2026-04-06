@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.69.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.68.4...@uipath/apollo-react@3.69.0) (2026-04-06)
+
+### Features
+
+* **apollo-react:** add remark-breaks to sticky note markdown rendering ([09e6b5b](https://github.com/UiPath/apollo-ui/commit/09e6b5becb23df19c2cea5fab1bef3bd117edc4d))
+
 ## [@uipath/apollo-react-v3.68.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.68.3...@uipath/apollo-react@3.68.4) (2026-04-06)
 
 ### Bug Fixes
