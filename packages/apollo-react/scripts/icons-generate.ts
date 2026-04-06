@@ -197,11 +197,14 @@ async function generateIconComponents(): Promise<void> {
     const svgPath = path.join(ICONS_SVG_DIR, file.relativePath);
     let svgContent = fs.readFileSync(svgPath, 'utf8');
 
-    // Remove XML declaration and comments
-    svgContent = svgContent
-      .replace(/<\?xml[^>]*\?>/g, '')
-      .replace(/<!--[\s\S]*?-->/g, '')
-      .trim();
+    // Remove XML declaration and comments (loop until stable for nested/reconstructed patterns)
+    svgContent = svgContent.replace(/<\?xml[^>]*\?>/g, '');
+    let prev: string;
+    do {
+      prev = svgContent;
+      svgContent = svgContent.replace(/<!--[\s\S]*?-->/g, '');
+    } while (svgContent !== prev);
+    svgContent = svgContent.trim();
 
     // Transform SVG to React-compatible format
     svgContent = transformSvgToReact(svgContent);
