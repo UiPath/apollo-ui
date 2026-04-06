@@ -60,10 +60,10 @@ jobs:
           output: sarif-results
 
       - name: Dismiss suppressed alerts
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && matrix.language == 'javascript-typescript'
         uses: advanced-security/dismiss-alerts@3478381bd53e9f9a9ea1c23bd25ef0ec236e0d06 # v2
         with:
           sarif-id: ${{ steps.analyze.outputs['sarif-id'] }}
-          sarif-file: sarif-results
+          sarif-file: sarif-results/javascript.sarif
         env:
           GITHUB_TOKEN: ${{ github.token }}
