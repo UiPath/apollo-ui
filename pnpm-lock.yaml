@@ -10,14 +10,9 @@ overrides:
   lodash-es: ^4.18.1
   tmp: ^0.2.4
   undici: ^6.24.0
-  caniuse-lite: 1.0.30001756
-  hono: '>=4.12.7'
   picomatch: '>=4.0.4'
   yaml: '>=2.8.3'
-  brace-expansion: '>=5.0.5'
   flatted: '>=3.4.2'
-  happy-dom: '>=20.8.8'
-  handlebars: '>=4.7.9'
 
 importers:
 
@@ -799,7 +794,7 @@ importers:
         specifier: ^13.0.0
         version: 13.0.0
       happy-dom:
-        specifier: '>=20.8.8'
+        specifier: ^20.0.0
         version: 20.8.9
       react:
         specifier: 19.2.3
@@ -1140,7 +1135,7 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0(vitest@4.1.0)
       happy-dom:
-        specifier: '>=20.8.8'
+        specifier: ^20.0.0
         version: 20.8.9
       source-map-explorer:
         specifier: ^2.5.3
@@ -2819,7 +2814,7 @@ packages:
     resolution: {integrity: sha512-hZ7nOssGqRgyV3FVVQdfi+U4q02uB23bpnYpdvNXkYTRRyWx84b7yf1ans+dnJ/7h41sGL3CeQTfO+ZGxuO+Iw==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
-      hono: '>=4.12.7'
+      hono: ^4
 
   '@hookform/resolvers@5.2.2':
     resolution: {integrity: sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA==}
@@ -6564,6 +6559,9 @@ packages:
 
   caniuse-lite@1.0.30001756:
     resolution: {integrity: sha512-4HnCNKbMLkLdhJz3TToeVWHSnfJvPaq6vu/eRP0Ahub/07n484XHhBF5AJoSGHdVrS8tKFauUQz8Bp9P7LVx7A==}
+
+  caniuse-lite@1.0.30001786:
+    resolution: {integrity: sha512-4oxTZEvqmLLrERwxO76yfKM7acZo310U+v4kqexI2TL1DkkUEMT8UijrxxcnVdxR3qkVf5awGRX+4Z6aPHVKrA==}
 
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
@@ -12382,7 +12380,7 @@ packages:
       '@vitest/browser-preview': 4.1.0
       '@vitest/browser-webdriverio': 4.1.0
       '@vitest/ui': 4.1.0
-      happy-dom: '>=20.8.8'
+      happy-dom: '*'
       jsdom: '*'
       vite: ^6.0.0 || ^7.0.0 || ^8.0.0-0
     peerDependenciesMeta:
@@ -18397,7 +18395,7 @@ snapshots:
   browserslist@4.28.1:
     dependencies:
       baseline-browser-mapping: 2.10.0
-      caniuse-lite: 1.0.30001756
+      caniuse-lite: 1.0.30001786
       electron-to-chromium: 1.5.307
       node-releases: 2.0.36
       update-browserslist-db: 1.2.3(browserslist@4.28.1)
@@ -18458,6 +18456,8 @@ snapshots:
       lodash.uniq: 4.5.0
 
   caniuse-lite@1.0.30001756: {}
+
+  caniuse-lite@1.0.30001786: {}
 
   ccount@2.0.1: {}
 
