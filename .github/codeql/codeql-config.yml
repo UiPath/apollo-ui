@@ -6,7 +6,7 @@ queries:
 
 # Enable inline suppression comments (// codeql[query-id])
 packs:
-  javascript-typescript:
+  javascript:
     - codeql/javascript-queries:AlertSuppression.ql
 
 paths-ignore:
