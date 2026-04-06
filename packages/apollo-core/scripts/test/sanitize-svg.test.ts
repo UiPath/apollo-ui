@@ -1,27 +1,29 @@
 import { describe, expect, it } from 'vitest';
 
 /**
- * Sanitize SVG content to remove potentially malicious elements
- * Removes: <script>, <foreignObject>, event handlers (onclick, onload, etc.)
+ * Sanitize SVG content to remove potentially malicious elements.
+ * Rejects SVGs with <script> or <foreignObject> entirely.
+ * Removes: event handlers (onclick, onload, etc.), javascript: and dangerous data: URLs.
  */
 function sanitizeSvg(content: string): string {
+  // Reject SVGs with dangerous elements entirely — design system icons must never contain these
+  if (/<script\b/i.test(content)) {
+    throw new Error('SVG contains <script> element — rejected for safety');
+  }
+  if (/<foreignObject\b/i.test(content)) {
+    throw new Error('SVG contains <foreignObject> element — rejected for safety');
+  }
+
   let sanitized = content;
 
-  // Remove <script> tags and their content
-  // Test-only SVG sanitization logic - demonstrates sanitization patterns for educational purposes
-  // This is NOT production-grade filtering; real implementations should use DOMPurify or similar
-  // codeql[js/incomplete-multi-character-sanitization,js/bad-tag-filter] - Test-only pattern demonstrating regex sanitization; not for production use
-  sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-
-  // Remove <foreignObject> tags (can contain HTML/scripts)
-  sanitized = sanitized.replace(/<foreignObject\b[^<]*(?:(?!<\/foreignObject>)<[^<]*)*<\/foreignObject>/gi, '');
-
   // Remove event handler attributes (onclick, onload, onmouseover, etc.)
-  // Test-only pattern matching - intentionally simple for demonstration, not production use
-  // codeql[js/incomplete-multi-character-sanitization] - Test-only demonstration of event handler removal
-  sanitized = sanitized.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
-  // codeql[js/incomplete-multi-character-sanitization] - Test-only demonstration of unquoted event handler removal
-  sanitized = sanitized.replace(/\s+on\w+\s*=\s*[^\s>]+/gi, '');
+  // Loop until stable to handle reconstructed patterns
+  let prev: string;
+  do {
+    prev = sanitized;
+    sanitized = sanitized.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
+    sanitized = sanitized.replace(/\s+on\w+\s*=\s*[^\s>]+/gi, '');
+  } while (sanitized !== prev);
 
   // Remove javascript: protocol in href/xlink:href
   sanitized = sanitized.replace(/(xlink:)?href\s*=\s*["']javascript:[^"']*["']/gi, '');
@@ -33,48 +35,37 @@ function sanitizeSvg(content: string): string {
 }
 
 describe('SVG Sanitization', () => {
-  describe('Script Tag Removal', () => {
-    it('should remove simple script tags', () => {
+  describe('Script Tag Rejection', () => {
+    it('should throw on simple script tags', () => {
       const malicious = '<svg><script>alert("xss")</script></svg>';
-      const sanitized = sanitizeSvg(malicious);
-      expect(sanitized).toBe('<svg></svg>');
-      expect(sanitized).not.toContain('<script');
+      expect(() => sanitizeSvg(malicious)).toThrow('SVG contains <script> element');
     });
 
-    it('should remove script tags with attributes', () => {
+    it('should throw on script tags with attributes', () => {
       const malicious = '<svg><script type="text/javascript">alert("xss")</script></svg>';
-      const sanitized = sanitizeSvg(malicious);
-      expect(sanitized).not.toContain('<script');
-      expect(sanitized).not.toContain('alert');
+      expect(() => sanitizeSvg(malicious)).toThrow('SVG contains <script> element');
     });
 
-    it('should remove multiple script tags', () => {
+    it('should throw on multiple script tags', () => {
       const malicious = '<svg><script>alert(1)</script><circle/><script>alert(2)</script></svg>';
-      const sanitized = sanitizeSvg(malicious);
-      expect(sanitized).toBe('<svg><circle/></svg>');
+      expect(() => sanitizeSvg(malicious)).toThrow('SVG contains <script> element');
     });
 
     it('should handle case-insensitive script tags', () => {
       const malicious = '<svg><SCRIPT>alert("xss")</SCRIPT></svg>';
-      const sanitized = sanitizeSvg(malicious);
-      expect(sanitized).not.toContain('SCRIPT');
-      expect(sanitized).not.toContain('alert');
+      expect(() => sanitizeSvg(malicious)).toThrow('SVG contains <script> element');
     });
   });
 
-  describe('ForeignObject Removal', () => {
-    it('should remove foreignObject tags', () => {
+  describe('ForeignObject Rejection', () => {
+    it('should throw on foreignObject tags', () => {
       const malicious = '<svg><foreignObject><body><script>alert("xss")</script></body></foreignObject></svg>';
-      const sanitized = sanitizeSvg(malicious);
-      expect(sanitized).toBe('<svg></svg>');
-      expect(sanitized).not.toContain('foreignObject');
+      expect(() => sanitizeSvg(malicious)).toThrow('SVG contains <script> element');
     });
 
-    it('should remove foreignObject with HTML content', () => {
+    it('should throw on foreignObject with HTML content', () => {
       const malicious = '<svg><foreignObject><div onclick="alert()">Click</div></foreignObject></svg>';
-      const sanitized = sanitizeSvg(malicious);
-      expect(sanitized).not.toContain('foreignObject');
-      expect(sanitized).not.toContain('onclick');
+      expect(() => sanitizeSvg(malicious)).toThrow('SVG contains <foreignObject> element');
     });
   });
 
@@ -138,7 +129,7 @@ describe('SVG Sanitization', () => {
 
   describe('Data URL Filtering', () => {
     it('should remove dangerous data URLs', () => {
-      const malicious = '<image href="data:text/html,<script>alert(1)</script>"/>';
+      const malicious = '<image href="data:text/html,<b>evil</b>"/>';
       const sanitized = sanitizeSvg(malicious);
       expect(sanitized).not.toContain('data:text/html');
     });
@@ -189,12 +180,9 @@ describe('SVG Sanitization', () => {
   });
 
   describe('Complex Attack Vectors', () => {
-    it('should handle nested malicious content', () => {
+    it('should throw on nested malicious content with script', () => {
       const malicious = '<svg><g onclick="alert(1)"><foreignObject><script>alert(2)</script></foreignObject></g></svg>';
-      const sanitized = sanitizeSvg(malicious);
-      expect(sanitized).not.toContain('onclick');
-      expect(sanitized).not.toContain('foreignObject');
-      expect(sanitized).not.toContain('script');
+      expect(() => sanitizeSvg(malicious)).toThrow('SVG contains <script> element');
     });
 
     it('should handle obfuscated javascript:', () => {
@@ -206,7 +194,7 @@ describe('SVG Sanitization', () => {
       expect(sanitized).not.toContain('javascript:alert');
     });
 
-    it('should handle multiple attack vectors in one SVG', () => {
+    it('should throw on multiple attack vectors with script', () => {
       const malicious = `
         <svg onload="alert(1)">
           <script>alert(2)</script>
@@ -215,10 +203,18 @@ describe('SVG Sanitization', () => {
           <image href="data:text/html,<script>alert(4)</script>"/>
         </svg>
       `;
+      expect(() => sanitizeSvg(malicious)).toThrow('SVG contains <script> element');
+    });
+
+    it('should sanitize event handlers and dangerous URLs without script/foreignObject', () => {
+      const malicious = `
+        <svg onload="alert(1)">
+          <a href="javascript:alert(3)">Click</a>
+          <image href="data:text/html,evil"/>
+        </svg>
+      `;
       const sanitized = sanitizeSvg(malicious);
       expect(sanitized).not.toContain('onload');
-      expect(sanitized).not.toContain('<script');
-      expect(sanitized).not.toContain('foreignObject');
       expect(sanitized).not.toContain('javascript:');
       expect(sanitized).not.toContain('data:text/html');
     });

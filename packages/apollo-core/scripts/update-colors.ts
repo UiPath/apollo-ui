@@ -58,17 +58,24 @@ interface Stats {
  * Removes: <script>, <foreignObject>, event handlers (onclick, onload, etc.)
  */
 function sanitizeSvg(content: string): string {
+  // Reject SVGs with dangerous elements entirely — design system icons must never contain these
+  if (/<script\b/i.test(content)) {
+    throw new Error('SVG contains <script> element — rejected for safety');
+  }
+  if (/<foreignObject\b/i.test(content)) {
+    throw new Error('SVG contains <foreignObject> element — rejected for safety');
+  }
+
   let sanitized = content;
 
-  // Remove <script> tags and their content
-  sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-
-  // Remove <foreignObject> tags (can contain HTML/scripts)
-  sanitized = sanitized.replace(/<foreignObject\b[^<]*(?:(?!<\/foreignObject>)<[^<]*)*<\/foreignObject>/gi, '');
-
   // Remove event handler attributes (onclick, onload, onmouseover, etc.)
-  sanitized = sanitized.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
-  sanitized = sanitized.replace(/\s+on\w+\s*=\s*[^\s>]+/gi, '');
+  // Loop until stable to handle reconstructed patterns
+  let prev: string;
+  do {
+    prev = sanitized;
+    sanitized = sanitized.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
+    sanitized = sanitized.replace(/\s+on\w+\s*=\s*[^\s>]+/gi, '');
+  } while (sanitized !== prev);
 
   // Remove javascript: protocol in href/xlink:href
   sanitized = sanitized.replace(/(xlink:)?href\s*=\s*["']javascript:[^"']*["']/gi, '');
