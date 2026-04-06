@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.69.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.69.0...@uipath/apollo-react@3.69.1) (2026-04-06)
+
+### Bug Fixes
+
+* **apollo-react:** add stage execution states with adhoc play button ([15b76b8](https://github.com/UiPath/apollo-ui/commit/15b76b8e2b57a39cffb238dd564d8ac7c19777b8))
+
 ## [@uipath/apollo-react-v3.69.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.68.4...@uipath/apollo-react@3.69.0) (2026-04-06)
 
 ### Features
