@@ -756,24 +756,17 @@ const StageNodeInner = (props: StageNodeInnerProps) => {
                   <StageTaskList>
                     {adhocTasks.map(({ task, groupIndex, taskIndex }) => {
                       const taskExecution = execution?.taskStatus?.[task.id];
-                      const menuItems = getAdhocContextMenuItems(groupIndex, taskIndex, task.id);
                       return (
                         <AdhocTaskItem
                           key={task.id}
                           task={task}
                           taskExecution={taskExecution}
                           isSelected={selectedTaskId === task.id}
-                          contextMenuItems={menuItems}
                           onTaskClick={handleTaskClick}
                           onTaskPlay={onTaskPlay}
                           {...((onTaskGroupModification || onReplaceTaskFromToolbox) && {
-                            onMenuOpen: () => {
-                              taskStateReference.current = {
-                                isParallel: false,
-                                groupIndex,
-                                taskIndex,
-                              };
-                            },
+                            getContextMenuItems: () =>
+                              getAdhocContextMenuItems(groupIndex, taskIndex, task.id),
                           })}
                         />
                       );
@@ -850,6 +843,7 @@ export const StageNode = ({
   onTaskReorder,
   onReplaceTaskFromToolbox,
   onTaskPlay,
+  hideParallelOptions,
 }: StageNodeProps) => {
   return (
     <StageNodeInnerMemo
@@ -875,6 +869,7 @@ export const StageNode = ({
       onTaskReorder={onTaskReorder}
       onReplaceTaskFromToolbox={onReplaceTaskFromToolbox}
       onTaskPlay={onTaskPlay}
+      hideParallelOptions={hideParallelOptions}
     />
   );
 };

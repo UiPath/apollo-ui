@@ -32,7 +32,6 @@ describe('AdhocTaskItem', () => {
     task: createTask('adhoc-1', 'Adhoc Task'),
     taskExecution: undefined,
     isSelected: false,
-    contextMenuItems: [] as NodeMenuItem[],
     onTaskClick: vi.fn(),
   };
 
@@ -77,7 +76,11 @@ describe('AdhocTaskItem', () => {
       const menuItems = createMenuItems(onRemove);
 
       render(
-        <AdhocTaskItem {...defaultProps} onTaskClick={onTaskClick} contextMenuItems={menuItems} />
+        <AdhocTaskItem
+          {...defaultProps}
+          onTaskClick={onTaskClick}
+          getContextMenuItems={() => menuItems}
+        />
       );
 
       // Open menu
@@ -102,7 +105,11 @@ describe('AdhocTaskItem', () => {
       const menuItems = createMenuItems(onRemove);
 
       render(
-        <AdhocTaskItem {...defaultProps} onTaskClick={onTaskClick} contextMenuItems={menuItems} />
+        <AdhocTaskItem
+          {...defaultProps}
+          onTaskClick={onTaskClick}
+          getContextMenuItems={() => menuItems}
+        />
       );
 
       // Open menu
@@ -219,13 +226,13 @@ describe('AdhocTaskItem', () => {
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
-      render(<AdhocTaskItem {...defaultProps} contextMenuItems={menuItems} />);
+      render(<AdhocTaskItem {...defaultProps} getContextMenuItems={() => menuItems} />);
 
       expect(screen.getByTestId('stage-task-menu-adhoc-1')).toBeInTheDocument();
     });
 
-    it('does not render menu button when contextMenuItems is empty', () => {
-      render(<AdhocTaskItem {...defaultProps} contextMenuItems={[]} />);
+    it('does not render menu button when getContextMenuItems is not provided', () => {
+      render(<AdhocTaskItem {...defaultProps} />);
 
       expect(screen.queryByTestId('stage-task-menu-adhoc-1')).not.toBeInTheDocument();
     });
@@ -235,7 +242,7 @@ describe('AdhocTaskItem', () => {
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
-      render(<AdhocTaskItem {...defaultProps} contextMenuItems={menuItems} />);
+      render(<AdhocTaskItem {...defaultProps} getContextMenuItems={() => menuItems} />);
 
       const menuButton = screen.getByTestId('stage-task-menu-adhoc-1');
       await user.click(menuButton);
@@ -251,7 +258,7 @@ describe('AdhocTaskItem', () => {
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
-      render(<AdhocTaskItem {...defaultProps} contextMenuItems={menuItems} />);
+      render(<AdhocTaskItem {...defaultProps} getContextMenuItems={() => menuItems} />);
 
       const menuButton = screen.getByTestId('stage-task-menu-adhoc-1');
       await user.click(menuButton);
@@ -270,7 +277,7 @@ describe('AdhocTaskItem', () => {
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
-      render(<AdhocTaskItem {...defaultProps} contextMenuItems={menuItems} />);
+      render(<AdhocTaskItem {...defaultProps} getContextMenuItems={() => menuItems} />);
 
       const menuButton = screen.getByTestId('stage-task-menu-adhoc-1');
       await user.click(menuButton);
@@ -284,24 +291,6 @@ describe('AdhocTaskItem', () => {
       await waitFor(() => {
         expect(screen.queryByText('Delete task')).not.toBeInTheDocument();
       });
-    });
-  });
-
-  describe('onMenuOpen callback', () => {
-    it('calls onMenuOpen when menu is opened', async () => {
-      const user = userEvent.setup();
-      const onMenuOpen = vi.fn();
-      const onRemove = vi.fn();
-      const menuItems = createMenuItems(onRemove);
-
-      render(
-        <AdhocTaskItem {...defaultProps} contextMenuItems={menuItems} onMenuOpen={onMenuOpen} />
-      );
-
-      const menuButton = screen.getByTestId('stage-task-menu-adhoc-1');
-      await user.click(menuButton);
-
-      expect(onMenuOpen).toHaveBeenCalled();
     });
   });
 });
