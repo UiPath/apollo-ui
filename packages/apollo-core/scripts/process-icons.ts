@@ -259,7 +259,7 @@ function normalizeFilename(filename: string): string {
     .trim()
     .replace(/\s+/g, '-')
     .replace(/_/g, '-')
-    .replace(/[⚠️‼️]/g, '') // eslint-disable-line no-control-regex, no-misleading-character-class
+    .replace(/⚠️|‼️/g, '') // eslint-disable-line no-control-regex
     .replace(/[^\x00-\x7F]/g, '') // eslint-disable-line no-control-regex
     .replace(/=/g, '-')
     .replace(/,/g, '')
