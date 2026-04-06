@@ -1,7 +1,7 @@
 export const TimelinePlayIcon = ({
   w = 24,
   h = 25,
-  color = '#526069',
+  color = 'currentColor',
 }: {
   w?: number | string;
   h?: number | string;
