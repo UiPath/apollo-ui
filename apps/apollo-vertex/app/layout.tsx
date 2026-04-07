@@ -1,13 +1,20 @@
+import { Inter } from "next/font/google";
+import Image from "next/image";
 import { Head } from "nextra/components";
 import { getPageMap } from "nextra/page-map";
 import { Footer, Layout, Navbar } from "nextra-theme-docs";
 import "nextra-theme-docs/style.css";
-import Image from "next/image";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeSwitcher } from "./_components/theme-switcher";
 import { ThemeWrapper } from "./_components/theme-wrapper";
+
+const fontSans = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 export const metadata = {
   title: {
@@ -73,6 +80,7 @@ export default async function RootLayout({
     <html
       lang="en"
       dir="ltr"
+      className={fontSans.variable}
       // Suggested by `next-themes` package https://github.com/pacocoursey/next-themes#with-app
       suppressHydrationWarning
     >

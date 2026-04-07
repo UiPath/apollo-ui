@@ -9,6 +9,7 @@
       "title": "Apollo Vertex Theme",
       "description": "Apollo Vertex design system tokens — colors, typography, spacing, shadows, and easing functions with light and dark mode support.",
       "dependencies": ["tw-animate-css"],
+      "registryDependencies": ["font-inter"],
       "cssVars": {
         "theme": {
           "radius-sm": "calc(var(--radius) - 4px)",
@@ -64,7 +65,8 @@
           "color-sidebar-accent": "var(--sidebar-accent)",
           "color-sidebar-accent-foreground": "var(--sidebar-accent-foreground)",
           "color-sidebar-border": "var(--sidebar-border)",
-          "color-sidebar-ring": "var(--sidebar-ring)"
+          "color-sidebar-ring": "var(--sidebar-ring)",
+          "font-sans": "var(--font-sans)"
         },
         "light": {
           "background": "oklch(1 0 89.8800)",
@@ -118,9 +120,6 @@
           "sidebar-accent-foreground": "oklch(0.1660 0.0283 203.3380)",
           "sidebar-border": "oklch(0.9237 0.0133 262.3780)",
           "sidebar-ring": "oklch(0.64 0.115 208)",
-          "font-sans": "Inter, ui-sans-serif, sans-serif, system-ui",
-          "font-serif": "IBM Plex Serif, ui-serif, serif",
-          "font-mono": "IBM Plex Mono, ui-monospace, monospace",
           "radius": "0.625rem",
           "shadow-x": "0",
           "shadow-y": "0px",
@@ -207,9 +206,6 @@
           "sidebar-accent-foreground": "oklch(0.9525 0.0110 225.9830)",
           "sidebar-border": "oklch(0.9525 0.0110 225.9830)",
           "sidebar-ring": "oklch(0.69 0.112 207)",
-          "font-sans": "Inter, ui-sans-serif, sans-serif, system-ui",
-          "font-serif": "IBM Plex Serif, ui-serif, serif",
-          "font-mono": "IBM Plex Mono, ui-monospace, monospace",
           "radius": "0.625rem",
           "shadow-x": "0",
           "shadow-y": "0px",
@@ -229,6 +225,20 @@
           "spacing": "0.25rem",
           "ai-gradient": "linear-gradient(98.69deg, rgb(108, 90, 239) 8.79%, rgb(105, 199, 221) 91.48%)"
         }
+      }
+    },
+    {
+      "name": "font-inter",
+      "type": "registry:font",
+      "title": "Inter Font",
+      "description": "Inter font configuration for Apollo Vertex. Sets --font-sans CSS variable.",
+      "font": {
+        "family": "Inter",
+        "provider": "google",
+        "import": "Inter",
+        "variable": "--font-sans",
+        "subsets": ["latin"],
+        "dependency": "@fontsource-variable/inter"
       }
     },
     {
