@@ -2,7 +2,7 @@ import { AiChatTemplate } from '@/templates/AiChatTemplate';
 
 # AI Chat
 
-A composable AI chat UI component for the Apollo Design System. Built with React, TypeScript, and Tailwind CSS. Designed to work with [TanStack AI](https://tanstack.com/ai) — you bring `useChat` and a connection adapter, the component handles the chrome (scroll, input, loading, suggestions, errors) while you control how messages and tool calls render.
+A composable AI chat UI component for Apollo Vertex. Built with React, TypeScript, and Tailwind CSS. Designed to work with [TanStack AI](https://tanstack.com/ai) — you bring `useChat` and a connection adapter, the component handles the chrome (scroll, input, loading, suggestions, errors) while you control how messages and tool calls render.
 
 <div className="not-prose my-8">
   <AiChatTemplate />
@@ -24,12 +24,6 @@ A composable AI chat UI component for the Apollo Design System. Built with React
 
 ```bash
 npx shadcn@latest add @uipath/ai-chat
-```
-
-Install peer dependencies:
-
-```bash
-npm install @tanstack/ai @tanstack/ai-client @tanstack/ai-react eventsource-parser zod lucide-react react-i18next react-markdown remark-gfm
 ```
 
 ## Quick Start
@@ -255,26 +249,3 @@ Configuration for the AgentHub adapter.
 | `maxTokens` | `number` | `2048` | Max response tokens |
 | `temperature` | `number` | `0.7` | Sampling temperature |
 | `tools` | `ReadonlyArray<AnyClientTool>` | — | Client tools — wire-format definitions are derived automatically |
-
----
-
-## TypeScript
-
-```tsx
-// TanStack AI types (messages, parts)
-import type { UIMessage } from '@tanstack/ai-client';
-import type { ToolCallPart, TextPart, ToolResultPart } from '@tanstack/ai-client';
-
-// Choice types (app-specific, not from TanStack AI)
-import type { ChoiceOption, ToolResultChoices } from '@/components/ui/ai-chat/types';
-
-// AgentHub adapter
-import {
-  createAgentHubConnection,
-  type AgentHubAdapterConfig,
-  type AgentHubVendor,
-} from '@/components/ui/ai-chat/adapters/agenthub/adapter';
-
-// Standalone markdown renderer
-import { AiChatMarkdown } from '@/components/ui/ai-chat/components/ai-chat-markdown';
-```
