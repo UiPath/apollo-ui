@@ -1,0 +1,211 @@
+import { WelcomeModalPreview, PopoverStepPreview } from './onboarding-tour-static-previews';
+import { OnboardingTourDemoTrigger, ShellWithTourTargets } from './onboarding-tour-demo';
+import { PreviewFullScreen } from '@/app/_components/preview-full-screen';
+
+# Onboarding Tour
+
+A guided onboarding tour system powered by [Driver.js](https://driverjs.com/) with custom popover cards, welcome modals, and step-by-step navigation. Consumers define their own tour steps and point them at app-specific elements via CSS selectors.
+
+## Welcome Modal
+
+Use the `type: 'modal'` step to show a full-screen centered modal — ideal for welcome screens, success states, or intro steps.
+
+<div className="not-prose my-8">
+  <WelcomeModalPreview />
+</div>
+
+## Step Popover
+
+The default step type renders a card-style popover with progress bars, navigation, and an optional tip section.
+
+<div className="not-prose my-8">
+  <PopoverStepPreview />
+</div>
+
+## Interactive Demo
+
+<div className="not-prose my-6">
+  <OnboardingTourDemoTrigger />
+</div>
+
+<PreviewFullScreen title="Onboarding Tour Demo" height={800}>
+  <ShellWithTourTargets />
+</PreviewFullScreen>
+
+## Features
+
+- **Spotlight overlay**: Highlights target elements with a cutout in a dimmed overlay (via Driver.js)
+- **Popover cards**: Step-by-step cards with progress bars, title, body, tips, and navigation
+- **Welcome modal**: Full-screen modal variant for intro/success steps with optional images
+- **CSS selector targeting**: Target elements by CSS selector — no wrapper components needed
+- **Conditional steps**: Gate steps on conditions with type-safe generics
+- **Keyboard navigation**: Escape to skip the tour
+- **Persistence**: Tracks completed tours in localStorage so they don't repeat
+- **Dark mode**: Automatically adapts overlay color to the current theme
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/onboarding-tour
+```
+
+## Usage
+
+### 1. Define your tour
+
+```tsx
+import type { TourDefinition } from "@/components/ui/onboarding-tour";
+
+const myTour: TourDefinition = {
+  id: "my-onboarding-tour",
+  steps: [
+    {
+      id: "welcome",
+      type: "modal",
+      title: "Welcome!",
+      body: "Let us show you around your new workspace.",
+      tip: "This tour will only show once.",
+      nextLabel: "Let's go",
+      image: "/assets/welcome.png", // optional
+    },
+    {
+      id: "sidebar",
+      selector: "[data-sidebar]",
+      title: "Navigation",
+      body: "Use the sidebar to move between sections.",
+      placement: "right",
+    },
+    {
+      id: "search",
+      selector: "#search-bar",
+      title: "Quick search",
+      body: "Find anything across your workspace.",
+      placement: "bottom",
+      tip: "Try pressing Cmd+K for a shortcut.",
+    },
+  ],
+};
+```
+
+### 2. Set up the provider
+
+Wrap your app (or a section of it) with `OnboardingTourProvider`:
+
+```tsx
+import {
+  OnboardingTourProvider,
+} from "@/components/ui/onboarding-tour";
+
+function App() {
+  return (
+    <OnboardingTourProvider tours={[myTour]}>
+      <YourApp />
+    </OnboardingTourProvider>
+  );
+}
+```
+
+### 3. Start the tour
+
+```tsx
+import { useOnboardingTour, useTourPersistence } from "@/components/ui/onboarding-tour";
+
+function WelcomeBanner() {
+  const { startTour } = useOnboardingTour();
+  const { isTourCompleted } = useTourPersistence();
+
+  if (isTourCompleted("my-onboarding-tour")) return null;
+
+  return (
+    <button onClick={() => startTour("my-onboarding-tour")}>
+      Take a tour
+    </button>
+  );
+}
+```
+
+## Type-Safe Conditional Steps
+
+Use generics to make condition keys type-safe. The `waitFor` property gates steps on conditions set via `setCondition`:
+
+```tsx
+type MyConditions = "profile-saved" | "data-loaded";
+
+const tour: TourDefinition<MyConditions> = {
+  id: "conditional-tour",
+  steps: [
+    {
+      id: "intro",
+      selector: "#intro-section",
+      title: "Getting started",
+      body: "First, let's set up your profile.",
+      placement: "right",
+    },
+    {
+      id: "results",
+      selector: "#results-panel",
+      title: "Your results",
+      body: "Here's what we found.",
+      placement: "left",
+      waitFor: "profile-saved", // type-safe — must be a MyConditions key
+    },
+  ],
+};
+
+// In your component:
+const { setCondition } = useOnboardingTour<MyConditions>();
+
+async function handleSaveProfile(formData: FormData) {
+  await saveProfile(formData);
+  setCondition("profile-saved", true); // type-safe
+}
+```
+
+## Resetting a Tour
+
+Use `useTourPersistence` to reset completion state so a tour can be shown again:
+
+```tsx
+import { useTourPersistence } from "@/components/ui/onboarding-tour";
+
+function SettingsPage() {
+  const { resetTourState } = useTourPersistence();
+
+  return (
+    <button onClick={() => resetTourState("my-onboarding-tour")}>
+      Replay onboarding tour
+    </button>
+  );
+}
+```
+
+## Step Types
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | Unique step identifier |
+| `selector` | `string` | CSS selector for the target element. Omit for centered/modal steps. |
+| `title` | `string` | Step title |
+| `body` | `ReactNode` | Step body content |
+| `tip` | `string` | Optional tip shown with a lightbulb icon |
+| `placement` | `'top' \| 'bottom' \| 'left' \| 'right'` | Popover position relative to target |
+| `type` | `'popover' \| 'modal'` | Render as popover card (default) or welcome modal |
+| `image` | `string` | Image URL for modal-type steps |
+| `waitFor` | `TCondition` | Type-safe condition key that must be true before step can be reached |
+| `nextLabel` | `string` | Custom label for the Next button |
+| `onEnter` | `() => void` | Callback when step becomes active |
+
+## Components
+
+| Component | Description |
+|-----------|-------------|
+| `OnboardingTourProvider` | Context provider — wrap your app with this. Accepts `tours` and optional `initialConditions`. |
+| `OnboardingTourPopover` | The step card (used internally, also composable standalone for previews). |
+| `OnboardingTourWelcomeModal` | The welcome/success modal (used internally, also composable standalone). |
+
+## Hooks
+
+| Hook | Description |
+|------|-------------|
+| `useOnboardingTour<TCondition>()` | Access tour actions: `startTour`, `setCondition`. Must be inside `OnboardingTourProvider`. |
+| `useTourPersistence()` | Manage localStorage completion state — `isTourCompleted`, `markTourCompleted`, `resetTourState`. |

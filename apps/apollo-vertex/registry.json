@@ -1451,6 +1451,51 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "onboarding-tour",
+      "type": "registry:ui",
+      "title": "Onboarding Tour",
+      "description": "A guided onboarding tour system powered by Driver.js with custom popover cards, welcome modals, and step-by-step navigation. Target elements via CSS selectors with type-safe conditional steps.",
+      "dependencies": ["driver.js", "lucide-react"],
+      "registryDependencies": ["button"],
+      "files": [
+        {
+          "path": "registry/onboarding-tour/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour/index.ts"
+        },
+        {
+          "path": "registry/onboarding-tour/onboarding-tour-types.ts",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour/onboarding-tour-types.ts"
+        },
+        {
+          "path": "registry/onboarding-tour/onboarding-tour-provider.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour/onboarding-tour-provider.tsx"
+        },
+        {
+          "path": "registry/onboarding-tour/onboarding-tour-popover.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour/onboarding-tour-popover.tsx"
+        },
+        {
+          "path": "registry/onboarding-tour/onboarding-tour-welcome-modal.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour/onboarding-tour-welcome-modal.tsx"
+        },
+        {
+          "path": "registry/onboarding-tour/onboarding-tour.css",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour/onboarding-tour.css"
+        },
+        {
+          "path": "registry/onboarding-tour/use-tour-persistence.ts",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour/use-tour-persistence.ts"
+        }
+      ]
     }
   ]
 }

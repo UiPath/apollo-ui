@@ -65,6 +65,7 @@
     "@vercel/analytics": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "driver.js": "^1.4.0",
     "cmdk": "^1.1.1",
     "embla-carousel-react": "^8.6.0",
     "eventsource-parser": "^3.0.6",
