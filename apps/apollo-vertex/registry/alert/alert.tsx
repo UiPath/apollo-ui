@@ -4,6 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { XIcon } from "lucide-react";
 import * as React from "react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const alertVariants = cva(
@@ -104,18 +105,20 @@ function Alert({
     >
       {children}
       {dismissible && (
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           onClick={(e) => {
             e.stopPropagation();
             setVisible(false);
             onDismiss?.();
           }}
-          className="absolute top-3 right-3 rounded-sm opacity-70 transition-opacity hover:opacity-100"
+          className="absolute top-3 right-3 size-auto rounded-sm p-0 opacity-70 hover:bg-transparent dark:hover:bg-transparent hover:opacity-100"
           aria-label="Dismiss"
         >
           <XIcon className="size-4" />
-        </button>
+        </Button>
       )}
     </div>
   );

@@ -137,13 +137,13 @@ export function AlertOutlineExamples() {
         </AlertDescription>
       </Alert>
 
-      <button
-        type="button"
+      <Button
+        variant="link"
         onClick={() => setResetKey((k) => k + 1)}
-        className="text-xs text-muted-foreground hover:text-foreground underline transition-colors"
+        className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
       >
         Reset dismissed alerts
-      </button>
+      </Button>
     </div>
   );
 }
@@ -214,13 +214,13 @@ export function CollapsibleAlertExample() {
           ))}
         </div>
         {overflows && (
-          <button
-            type="button"
+          <Button
+            variant="link"
             onClick={() => setExpanded(!expanded)}
-            className="mt-1.5 text-xs font-medium text-[oklch(0.60_0.125_210)] hover:underline transition-colors"
+            className="mt-1.5 h-auto p-0 text-xs font-medium text-[oklch(0.60_0.125_210)] no-underline hover:underline"
           >
             {expanded ? "Show less" : "Show all"}
-          </button>
+          </Button>
         )}
       </AlertDescription>
     </Alert>

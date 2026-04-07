@@ -3,6 +3,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVerticalIcon } from "lucide-react";
 import type * as React from "react";
 
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
@@ -43,14 +44,16 @@ function SortableColumnItem({
         isDragging && "bg-accent opacity-50",
       )}
     >
-      <button
+      <Button
         type="button"
-        className="cursor-grab touch-none text-muted-foreground hover:text-foreground"
+        variant="ghost"
+        size="icon"
+        className="size-auto cursor-grab touch-none p-0 text-muted-foreground hover:bg-transparent dark:hover:bg-transparent hover:text-foreground"
         {...attributes}
         {...listeners}
       >
         <GripVerticalIcon className="size-4" />
-      </button>
+      </Button>
       <label className="flex flex-1 cursor-pointer items-center gap-2">
         <Checkbox
           checked={isVisible}
