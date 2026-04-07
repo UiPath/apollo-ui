@@ -2,6 +2,7 @@ import { Global } from '@emotion/react';
 import { NodeIcon } from '@uipath/apollo-react/canvas';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { ResizeDragEvent, ResizeParams } from '@uipath/apollo-react/canvas/xyflow/system';
 import { AnimatePresence } from 'motion/react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -40,6 +41,9 @@ export interface StickyNoteNodeProps extends NodeProps {
   data: StickyNoteData;
   placeholder?: string;
   renderPlaceholderOnSelect?: boolean;
+  onContentChange?: (content: string) => void;
+  onColorChange?: (color: StickyNoteColor) => void;
+  onResize?: (width: number, height: number) => void;
 }
 
 const minWidth = GRID_SPACING * 8;
@@ -52,6 +56,9 @@ const StickyNoteNodeComponent = ({
   dragging,
   placeholder = 'Add text',
   renderPlaceholderOnSelect = false,
+  onContentChange,
+  onColorChange,
+  onResize,
 }: StickyNoteNodeProps) => {
   const { updateNodeData, deleteElements } = useReactFlow();
   const [isEditing, setIsEditing] = useState(data.autoFocus ?? false);
@@ -109,9 +116,10 @@ const StickyNoteNodeComponent = ({
   const handleBlur = useCallback(() => {
     setIsEditing(false);
     if (localContent !== data.content) {
+      onContentChange?.(localContent);
       updateNodeData(id, { content: localContent });
     }
-  }, [id, localContent, data.content, updateNodeData]);
+  }, [id, localContent, data.content, updateNodeData, onContentChange]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setLocalContent(e.target.value);
@@ -174,17 +182,22 @@ const StickyNoteNodeComponent = ({
     setIsResizing(true);
   }, []);
 
-  const handleResizeEnd = useCallback(() => {
-    setIsResizing(false);
-  }, []);
+  const handleResizeEnd = useCallback(
+    (_event: ResizeDragEvent, params: ResizeParams) => {
+      setIsResizing(false);
+      onResize?.(params.width, params.height);
+    },
+    [onResize]
+  );
 
   // Color change handler
   const handleColorChange = useCallback(
     (newColor: StickyNoteColor) => {
+      onColorChange?.(newColor);
       updateNodeData(id, { color: newColor });
       setIsColorPickerOpen(false);
     },
-    [id, updateNodeData]
+    [id, updateNodeData, onColorChange]
   );
 
   // Toggle color picker
