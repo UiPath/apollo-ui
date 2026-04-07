@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { jwtDecode } from "jwt-decode";
 import { ChevronRight, LogIn, LogOut } from "lucide-react";
 import { useLocalStorage } from "@mantine/hooks";
-import { type ReactNode, useCallback, useMemo } from "react";
+import type { ReactNode } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { STORAGE_KEYS } from "@/lib/auth";
@@ -66,18 +66,19 @@ async function fetchOrgInfo(
   };
 }
 
-function useOrgInfo(accessToken: string | null) {
-  const orgId = useMemo(() => {
-    if (!accessToken) return null;
-    let decoded: unknown;
-    try {
-      decoded = jwtDecode(accessToken);
-    } catch {
-      return null;
-    }
+function getOrgIdFromToken(accessToken: string | null): string | null {
+  if (!accessToken) return null;
+  try {
+    const decoded = jwtDecode(accessToken);
     const parsed = PrtIdSchema.safeParse(decoded);
     return parsed.success ? parsed.data.prt_id : null;
-  }, [accessToken]);
+  } catch {
+    return null;
+  }
+}
+
+function useOrgInfo(accessToken: string | null) {
+  const orgId = getOrgIdFromToken(accessToken);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["orgInfo", orgId],
@@ -119,6 +120,22 @@ interface AiChatLoginGateProps {
   }) => ReactNode;
 }
 
+function resolveOrgTenant(
+  orgInfo: OrgInfo | null,
+  selectedTenantId: string | null,
+): OrgTenantInfo | null {
+  if (!orgInfo) return null;
+  const tenant =
+    orgInfo.tenants.find((t) => t.id === selectedTenantId) ??
+    orgInfo.tenants[0];
+  return {
+    orgId: orgInfo.orgId,
+    orgName: orgInfo.orgName,
+    tenantId: tenant.id,
+    tenantName: tenant.name,
+  };
+}
+
 export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
   const { isAuthenticated, isLoading, login, logout, user, accessToken } =
     useAuth();
@@ -134,20 +151,9 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
     defaultValue: null,
   });
 
-  const orgTenant = useMemo<OrgTenantInfo | null>(() => {
-    if (!orgInfo) return null;
-    const tenant =
-      orgInfo.tenants.find((t) => t.id === selectedTenantId) ??
-      orgInfo.tenants[0];
-    return {
-      orgId: orgInfo.orgId,
-      orgName: orgInfo.orgName,
-      tenantId: tenant.id,
-      tenantName: tenant.name,
-    };
-  }, [orgInfo, selectedTenantId]);
+  const orgTenant = resolveOrgTenant(orgInfo, selectedTenantId);
 
-  const handleLogout = useCallback(() => {
+  function handleLogout() {
     const tokenDataStr = localStorage.getItem(STORAGE_KEYS.TOKEN);
     let idToken: string | null = null;
     if (tokenDataStr) {
@@ -179,7 +185,7 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
       `${window.location.origin}/portal_/cloudrpa`,
     );
     window.location.href = endSessionUrl.toString();
-  }, [logout]);
+  }
 
   if (isLoading) {
     return (

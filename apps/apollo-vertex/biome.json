@@ -42,6 +42,27 @@
           }
         }
       }
+    },
+    {
+      "includes": ["**/*.tsx", "**/*.ts"],
+      "linter": {
+        "enabled": true,
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "react": {
+                    "importNames": ["useMemo", "useCallback"],
+                    "message": "Manual memoization is unnecessary — the React Compiler handles this automatically."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }

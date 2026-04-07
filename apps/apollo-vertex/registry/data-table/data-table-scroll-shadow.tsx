@@ -14,7 +14,7 @@ function useScrollShadow() {
   const [canScrollLeft, setCanScrollLeft] = React.useState(false);
   const [canScrollRight, setCanScrollRight] = React.useState(false);
 
-  const containerRef = React.useCallback((node: HTMLDivElement | null) => {
+  function containerRef(node: HTMLDivElement | null) {
     if (!node) return;
 
     const el = node.querySelector<HTMLElement>('[data-slot="table-container"]');
@@ -39,7 +39,7 @@ function useScrollShadow() {
       el.removeEventListener("scroll", update);
       observer.disconnect();
     };
-  }, []);
+  }
 
   return { containerRef, canScrollLeft, canScrollRight };
 }

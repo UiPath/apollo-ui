@@ -61,32 +61,29 @@ function Carousel({
   const [canScrollPrev, setCanScrollPrev] = React.useState(false);
   const [canScrollNext, setCanScrollNext] = React.useState(false);
 
-  const onSelect = React.useCallback((carouselApi: CarouselApi) => {
+  function onSelect(carouselApi: CarouselApi) {
     if (!carouselApi) return;
     setCanScrollPrev(carouselApi.canScrollPrev());
     setCanScrollNext(carouselApi.canScrollNext());
-  }, []);
+  }
 
-  const scrollPrev = React.useCallback(() => {
+  function scrollPrev() {
     api?.scrollPrev();
-  }, [api]);
+  }
 
-  const scrollNext = React.useCallback(() => {
+  function scrollNext() {
     api?.scrollNext();
-  }, [api]);
+  }
 
-  const handleKeyDown = React.useCallback(
-    (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        scrollPrev();
-      } else if (event.key === "ArrowRight") {
-        event.preventDefault();
-        scrollNext();
-      }
-    },
-    [scrollPrev, scrollNext],
-  );
+  function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      scrollPrev();
+    } else if (event.key === "ArrowRight") {
+      event.preventDefault();
+      scrollNext();
+    }
+  }
 
   React.useEffect(() => {
     if (!api || !setApi) return;
@@ -102,6 +99,7 @@ function Carousel({
     return () => {
       api?.off("select", onSelect);
     };
+    // oxlint-disable-next-line react-hooks(exhaustive-deps) -- React Compiler handles function memoization
   }, [api, onSelect]);
 
   return (

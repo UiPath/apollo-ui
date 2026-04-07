@@ -3,43 +3,40 @@ import {
   useMergedRef,
   useResizeObserver,
 } from "@mantine/hooks";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function useStickyScroll() {
   const [isStuck, setIsStuck] = useState(true);
   const isStuckRef = useRef(true);
   const scrollElRef = useRef<HTMLDivElement | null>(null);
 
-  const setStuck = useCallback((stuck: boolean) => {
+  function setStuck(stuck: boolean) {
     isStuckRef.current = stuck;
     setIsStuck(stuck);
-  }, []);
+  }
 
-  const scrollToBottom = useCallback(() => {
+  function scrollToBottom() {
     const el = scrollElRef.current;
     if (!el) return;
     el.scrollTop = el.scrollHeight;
     setStuck(true);
-  }, [setStuck]);
+  }
 
-  const handleWheel = useCallback(
-    (e: WheelEvent) => {
-      if (e.deltaY < 0) setStuck(false);
-    },
-    [setStuck],
-  );
+  function handleWheel(e: WheelEvent) {
+    if (e.deltaY < 0) setStuck(false);
+  }
 
-  const handleScroll = useCallback(() => {
+  function handleScroll() {
     if (isStuckRef.current) return;
     const el = scrollElRef.current;
     if (!el) return;
     const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 1;
     if (atBottom) setStuck(true);
-  }, [setStuck]);
+  }
 
-  const storeRef = useCallback((node: HTMLDivElement | null) => {
+  function storeRef(node: HTMLDivElement | null) {
     scrollElRef.current = node;
-  }, []);
+  }
 
   const wheelRef = useEventListener("wheel", handleWheel, { passive: true });
   const scrollListenerRef = useEventListener("scroll", handleScroll, {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useChat } from "@tanstack/ai-react";
-import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { createAgentHubConnection } from "@/registry/ai-chat/adapters/agenthub/adapter";
 import { AiChat } from "@/registry/ai-chat/components/ai-chat";
@@ -24,17 +23,13 @@ interface AgentHubChatProps {
 export function AgentHubChat({ accessToken, orgTenant }: AgentHubChatProps) {
   const { t } = useTranslation();
 
-  const connection = useMemo(
-    () =>
-      createAgentHubConnection({
-        baseUrl: `/api/agenthub/${orgTenant.orgName}/${orgTenant.tenantName}/agenthub_/llm/api`,
-        model: { vendor: "openai", name: "gpt-4.1-mini-2025-04-14" },
-        accessToken: () => accessToken,
-        systemPrompt,
-        tools: choicesTools,
-      }),
-    [accessToken, orgTenant],
-  );
+  const connection = createAgentHubConnection({
+    baseUrl: `/api/agenthub/${orgTenant.orgName}/${orgTenant.tenantName}/agenthub_/llm/api`,
+    model: { vendor: "openai", name: "gpt-4.1-mini-2025-04-14" },
+    accessToken: () => accessToken,
+    systemPrompt,
+    tools: choicesTools,
+  });
 
   const { messages, sendMessage, isLoading, stop, clear, error } = useChat({
     connection,

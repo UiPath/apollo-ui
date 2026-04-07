@@ -1,5 +1,4 @@
 import { Globe } from "lucide-react";
-import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,13 +20,13 @@ export function LanguageToggle() {
   const { i18n } = useTranslation();
   const language = i18n.language;
 
-  const setLanguage = useCallback((code: SupportedLocale) => {
+  function setLanguage(code: SupportedLocale) {
     document.dispatchEvent(
       new CustomEvent<LanguageChangedEvent>(LANGUAGE_CHANGED_EVENT, {
         detail: { selectedLanguageId: code },
       }),
     );
-  }, []);
+  }
 
   return (
     <DropdownMenu>
