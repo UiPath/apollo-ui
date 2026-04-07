@@ -5,7 +5,7 @@ import { useChat } from "@tanstack/ai-react";
 import { useQuery } from "@tanstack/react-query";
 import { ConversationalAgent } from "@uipath/uipath-typescript/conversational-agent";
 import type { UiPath } from "@uipath/uipath-typescript/core";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createConversationalAgentConnection } from "@/registry/ai-chat/adapters/conversational-agent/adapter";
 import { AiChat } from "@/registry/ai-chat/components/ai-chat";
@@ -70,6 +70,17 @@ interface ConversationalAgentChatProps {
   orgTenant: OrgTenantInfo;
 }
 
+function parseAgentConfig(
+  effectiveAgent: string | null,
+): { agentId: number; folderId: number } | null {
+  if (!effectiveAgent) return null;
+  const [rawAgentId, rawFolderId] = effectiveAgent.split(":");
+  const agentId = Number(rawAgentId);
+  const folderId = Number(rawFolderId);
+  if (Number.isNaN(agentId) || Number.isNaN(folderId)) return null;
+  return { agentId, folderId };
+}
+
 export function ConversationalAgentChat({
   accessToken,
   orgTenant,
@@ -82,10 +93,7 @@ export function ConversationalAgentChat({
     defaultValue: null,
   });
 
-  const sdk = useMemo(
-    () => createUiPathSdk(accessToken, orgTenant),
-    [accessToken, orgTenant],
-  );
+  const sdk = createUiPathSdk(accessToken, orgTenant);
 
   const {
     data: agents = [],
@@ -100,22 +108,15 @@ export function ConversationalAgentChat({
     queryFn: () => new ConversationalAgent(sdk).getAll(),
   });
 
-  const effectiveAgent = useMemo(() => {
-    if (agents.length === 0) return null;
-    const exists =
-      selectedAgent &&
-      agents.some((a) => `${a.id}:${a.folderId}` === selectedAgent);
-    return exists ? selectedAgent : `${agents[0].id}:${agents[0].folderId}`;
-  }, [agents, selectedAgent]);
+  const effectiveAgent =
+    agents.length === 0
+      ? null
+      : selectedAgent &&
+          agents.some((a) => `${a.id}:${a.folderId}` === selectedAgent)
+        ? selectedAgent
+        : `${agents[0].id}:${agents[0].folderId}`;
 
-  const selectedAgentConfig = useMemo(() => {
-    if (!effectiveAgent) return null;
-    const [rawAgentId, rawFolderId] = effectiveAgent.split(":");
-    const agentId = Number(rawAgentId);
-    const folderId = Number(rawFolderId);
-    if (Number.isNaN(agentId) || Number.isNaN(folderId)) return null;
-    return { agentId, folderId };
-  }, [effectiveAgent]);
+  const selectedAgentConfig = parseAgentConfig(effectiveAgent);
 
   if (!selectedAgentConfig) {
     return (

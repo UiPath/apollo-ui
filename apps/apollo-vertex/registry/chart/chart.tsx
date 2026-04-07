@@ -128,10 +128,8 @@ function ChartTooltipContent({
   }) {
   const { config } = useChart();
 
-  const tooltipLabel = React.useMemo(() => {
-    if (hideLabel || !payload?.length) {
-      return null;
-    }
+  function getTooltipLabel(): React.ReactNode {
+    if (hideLabel || !payload?.length) return null;
 
     const [item] = payload;
     // oxlint-disable-next-line typescript-eslint(prefer-nullish-coalescing) -- empty string should fall through
@@ -150,20 +148,11 @@ function ChartTooltipContent({
       );
     }
 
-    if (!value) {
-      return null;
-    }
-
+    if (!value) return null;
     return <div className={cn("font-medium", labelClassName)}>{value}</div>;
-  }, [
-    label,
-    labelFormatter,
-    payload,
-    hideLabel,
-    labelClassName,
-    config,
-    labelKey,
-  ]);
+  }
+
+  const tooltipLabel = getTooltipLabel();
 
   if (!active || !payload?.length) {
     return null;
