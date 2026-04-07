@@ -506,6 +506,10 @@
         {
           "path": "registry/collapsible/collapsible.tsx",
           "type": "registry:ui"
+        },
+        {
+          "path": "registry/collapsible/collapsible.css",
+          "type": "registry:ui"
         }
       ]
     },
@@ -960,14 +964,15 @@
         "@tanstack/react-query",
         "@tanstack/react-router",
         "pkce-challenge",
-        "sonner"
+        "sonner",
+        "framer-motion"
       ],
       "registryDependencies": [
         "button",
         "tooltip",
         "avatar",
         "dropdown-menu",
-        "spinner",
+        "skeleton",
         "sidebar",
         "collapsible"
       ],
@@ -1017,10 +1022,6 @@
           "type": "registry:ui"
         },
         {
-          "path": "registry/shell/shell-theme-toggle.tsx",
-          "type": "registry:ui"
-        },
-        {
           "path": "registry/shell/shell-theme-provider.tsx",
           "type": "registry:ui"
         },
@@ -1046,6 +1047,10 @@
         },
         {
           "path": "registry/shell/shell-user-profile-menu-items.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-animations.ts",
           "type": "registry:ui"
         }
       ]
@@ -1131,6 +1136,7 @@
       "dependencies": [
         "@radix-ui/react-slot",
         "class-variance-authority",
+        "framer-motion",
         "lucide-react",
         "react-i18next"
       ],

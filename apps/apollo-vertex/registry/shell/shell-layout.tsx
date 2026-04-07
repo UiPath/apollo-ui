@@ -1,4 +1,5 @@
-import { type PropsWithChildren, useId } from "react";
+import type { PropsWithChildren } from "react";
+import { useId } from "react";
 import {
   SidebarInset,
   SidebarProvider,
@@ -20,6 +21,7 @@ interface ShellLayoutProps {
 
 function DarkGradientBackground() {
   const filterId = useId();
+
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {/* Base directional wash */}
@@ -182,9 +184,7 @@ export function ShellLayout({
             companyLogo={companyLogo}
             navItems={navItems}
           />
-          <div className="flex-1 overflow-y-auto">
-            {children}
-          </div>
+          <div className="flex-1 overflow-y-auto">{children}</div>
         </main>
       </div>
     );
@@ -193,15 +193,14 @@ export function ShellLayout({
   return (
     <SidebarProvider
       defaultOpen
-      className="h-screen overflow-hidden bg-background dark:bg-sidebar"
-      /* oxlint-disable typescript-eslint(no-unsafe-type-assertion) -- CSS custom properties not in React.CSSProperties */
+      className="relative isolate h-screen overflow-hidden bg-background dark:bg-sidebar"
       style={
+        /* oxlint-disable typescript-eslint(no-unsafe-type-assertion) -- CSS custom properties not in React.CSSProperties */
         {
-          "--sidebar-width": "264px",
+          "--sidebar-width": "280px",
           "--sidebar-width-icon": "64px",
         } as React.CSSProperties
       }
-      /* oxlint-enable typescript-eslint(no-unsafe-type-assertion) */
     >
       <GradientBackground />
       <ShellSidebar
@@ -210,11 +209,11 @@ export function ShellLayout({
         companyLogo={companyLogo}
         navItems={navItems}
       />
-      <SidebarInset className="relative flex-1 flex flex-col overflow-hidden rounded-none m-0 ml-0 shadow-none bg-transparent before:absolute before:inset-y-0 before:left-0 before:w-px before:[background:linear-gradient(to_bottom,transparent_0%,var(--color-border)_100%)] before:pointer-events-none">
+      <SidebarInset className="relative flex-1 flex flex-col overflow-hidden rounded-none m-0 ml-0 shadow-none bg-transparent">
         <header className="flex items-center h-12 px-4 md:hidden">
           <SidebarTrigger />
         </header>
-        <div className="relative z-10 flex-1 flex flex-col overflow-y-auto">
+        <div className="relative flex-1 flex flex-col overflow-y-auto">
           {children}
         </div>
       </SidebarInset>

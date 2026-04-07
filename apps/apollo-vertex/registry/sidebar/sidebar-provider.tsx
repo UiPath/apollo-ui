@@ -9,6 +9,22 @@ const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 
+/** Parse a CSS length value (e.g. "280px", "16rem") to pixels */
+function parseCssLengthToPx(value: string): number {
+  const num = Number.parseFloat(value);
+  if (Number.isNaN(num)) return 0;
+  if (value.includes("rem")) {
+    const rootFontSize =
+      typeof document === "undefined"
+        ? 16
+        : Number.parseFloat(
+            getComputedStyle(document.documentElement).fontSize,
+          );
+    return num * rootFontSize;
+  }
+  return num;
+}
+
 type SidebarContextProps = {
   state: "expanded" | "collapsed";
   open: boolean;
@@ -17,6 +33,10 @@ type SidebarContextProps = {
   setOpenMobile: (open: boolean) => void;
   isMobile: boolean;
   toggleSidebar: () => void;
+  /** Resolved expanded width in pixels (for framer-motion animations) */
+  sidebarWidthPx: number;
+  /** Resolved collapsed icon width in pixels (for framer-motion animations) */
+  sidebarWidthIconPx: number;
 };
 
 const SidebarContext = React.createContext<SidebarContextProps | null>(null);
@@ -62,6 +82,22 @@ export function SidebarProvider({
     document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
   }
 
+  // Resolve CSS width values to pixels, accounting for style overrides from consumers
+  /* oxlint-disable typescript-eslint(no-unsafe-type-assertion) -- CSS custom property access */
+  const mergedStyle = {
+    "--sidebar-width": SIDEBAR_WIDTH,
+    "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
+    ...style,
+  } as Record<string, string> & React.CSSProperties;
+  /* oxlint-enable typescript-eslint(no-unsafe-type-assertion) */
+
+  const sidebarWidthPx = parseCssLengthToPx(
+    mergedStyle["--sidebar-width"] ?? SIDEBAR_WIDTH,
+  );
+  const sidebarWidthIconPx = parseCssLengthToPx(
+    mergedStyle["--sidebar-width-icon"] ?? SIDEBAR_WIDTH_ICON,
+  );
+
   // Helper to toggle the sidebar.
   function toggleSidebar() {
     return isMobile ? setOpenMobile((prev) => !prev) : setOpen((prev) => !prev);
@@ -96,6 +132,8 @@ export function SidebarProvider({
     openMobile,
     setOpenMobile,
     toggleSidebar,
+    sidebarWidthPx,
+    sidebarWidthIconPx,
   };
 
   return (

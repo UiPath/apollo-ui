@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -11,6 +12,15 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "./sidebar-provider";
+
+// Intentionally duplicated from shell-animations.ts — sidebar is a standalone
+// registry item that ships independently from the shell.
+const sidebarSpring = {
+  type: "spring",
+  stiffness: 400,
+  damping: 30,
+  mass: 0.5,
+} as const;
 
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 
@@ -27,7 +37,14 @@ function Sidebar({
   collapsible?: "offcanvas" | "icon" | "none";
 }) {
   const { t } = useTranslation();
-  const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+  const {
+    isMobile,
+    state,
+    openMobile,
+    setOpenMobile,
+    sidebarWidthPx,
+    sidebarWidthIconPx,
+  } = useSidebar();
 
   if (collapsible === "none") {
     return (
@@ -69,37 +86,54 @@ function Sidebar({
     );
   }
 
+  const isCollapsed = state === "collapsed";
+
+  // Compute target width for framer-motion (matching MRS spring animation)
+  const gapWidth = (() => {
+    if (collapsible === "offcanvas" && isCollapsed) return 0;
+    if (collapsible === "icon" && isCollapsed) return sidebarWidthIconPx;
+    return sidebarWidthPx;
+  })();
+
+  const containerWidth =
+    collapsible === "icon" && isCollapsed ? sidebarWidthIconPx : sidebarWidthPx;
+
   return (
     <div
-      className="group peer text-sidebar-foreground hidden md:block relative"
+      className={cn(
+        "group peer text-sidebar-foreground hidden md:block relative z-10",
+        className,
+      )}
       data-state={state}
       data-collapsible={state === "collapsed" ? collapsible : ""}
       data-variant={variant}
       data-side={side}
       data-slot="sidebar"
+      {...props}
     >
-      <div
+      <motion.div
+        initial={false}
+        animate={{ width: gapWidth }}
+        transition={sidebarSpring}
         data-slot="sidebar-gap"
         className={cn(
-          "relative w-(--sidebar-width) bg-transparent transition-[width] duration-300 ease-in-out",
-          "group-data-[collapsible=offcanvas]:w-0",
+          "relative bg-transparent",
           "group-data-[side=right]:rotate-180",
-          "group-data-[collapsible=icon]:w-(--sidebar-width-icon)",
         )}
       />
-      <div
+      <motion.div
+        initial={false}
+        animate={{ width: containerWidth }}
+        transition={sidebarSpring}
         data-slot="sidebar-container"
         className={cn(
-          "absolute inset-y-0 z-10 hidden h-full w-(--sidebar-width) transition-[left,right,width] duration-300 ease-in-out md:flex",
+          "absolute inset-y-0 z-10 hidden h-full transition-[left,right] duration-200 ease-linear md:flex",
           side === "left"
             ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
             : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
-          "group-data-[collapsible=icon]:w-(--sidebar-width-icon)",
           variant === "sidebar" &&
             "group-data-[side=left]:border-r group-data-[side=right]:border-l",
-          className,
         )}
-        {...props}
       >
         <div
           data-sidebar="sidebar"
@@ -108,7 +142,7 @@ function Sidebar({
         >
           {children}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

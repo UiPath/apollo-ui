@@ -12,6 +12,7 @@ export interface CompanyLogo {
   url: string;
   darkUrl?: string;
   alt: string;
+  isCustom?: boolean;
 }
 
 export interface ShellSubNavItem {

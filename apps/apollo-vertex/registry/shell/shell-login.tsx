@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "./shell-auth-provider";
 
 export interface ShellLoginProps {
@@ -28,13 +29,9 @@ export const ShellLogin = ({ title, description }: ShellLoginProps) => {
             </div>
           )}
           <div className="space-y-6">
-            <button
-              type="button"
-              onClick={() => void login()}
-              className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium text-base shadow-sm hover:shadow-md"
-            >
+            <Button size="lg" onClick={() => void login()} className="w-full">
               {t("sign_in_with_uipath")}
-            </button>
+            </Button>
           </div>
         </div>
 

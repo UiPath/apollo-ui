@@ -1,4 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -24,11 +25,17 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import type { CompanyLogo, ShellNavItem } from "./shell";
+import { fastFadeTransition, textFadeVariants } from "./shell-animations";
 import { Company } from "./shell-company";
 import { MinimalCompany } from "./shell-minimal-company";
 import { MinimalNavItem } from "./shell-minimal-nav-item";
 import { Text } from "./shell-text";
 import { UserProfile } from "./shell-user-profile";
+
+const activeNavClass =
+  "text-sidebar-foreground/85 hover:text-sidebar-foreground data-[active=true]:text-primary-700 dark:data-[active=true]:text-primary-400 data-[active=true]:font-semibold data-[active=true]:bg-primary-100/40 dark:data-[active=true]:bg-primary-900/30";
+const navButtonClass = `font-medium ${activeNavClass}`;
+const subButtonClass = activeNavClass;
 
 interface ShellSidebarProps {
   companyName: string;
@@ -54,17 +61,11 @@ export const ShellSidebar = ({
           companyLogo={companyLogo}
         />
 
-        {navItems.length > 0 && (
-          <nav className="absolute left-1/2 -translate-x-1/2 flex items-center bg-muted dark:bg-[oklch(0.24_0.033_254)] rounded-full p-1.5 overflow-x-auto">
-            {navItems.map((item) => (
-              <MinimalNavItem
-                key={item.path}
-                to={item.path}
-                label={item.label}
-              />
-            ))}
-          </nav>
-        )}
+        <nav className="absolute left-1/2 -translate-x-1/2 flex items-center bg-muted dark:bg-[oklch(0.24_0.033_254)] rounded-full p-1.5 overflow-x-auto">
+          {navItems.map((item) => (
+            <MinimalNavItem key={item.path} to={item.path} label={item.label} />
+          ))}
+        </nav>
 
         <div className="flex items-center gap-2">
           <UserProfile isMinimal />
@@ -100,8 +101,17 @@ function SidebarNav({
   const { state, toggleSidebar } = useSidebar();
   const { pathname } = useLocation();
   const isCollapsed = state === "collapsed";
+  const [sidebarHovered, setSidebarHovered] = useState(false);
 
-  const getInitialExpandedItems = () => {
+  const handleMouseEnter = () => {
+    if (isCollapsed) setSidebarHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setSidebarHovered(false);
+  };
+
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(() => {
     const expanded = new Set<string>();
     for (const item of navItems) {
       if (item.subItems?.some((sub) => pathname.startsWith(sub.path))) {
@@ -109,11 +119,7 @@ function SidebarNav({
       }
     }
     return expanded;
-  };
-
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(
-    getInitialExpandedItems,
-  );
+  });
 
   useEffect(() => {
     const expanded = new Set<string>();
@@ -161,18 +167,21 @@ function SidebarNav({
   return (
     <Sidebar
       collapsible="icon"
-      variant="floating"
-      className="border-0 bg-transparent [&_[data-slot=sidebar-inner]]:border-0 [&_[data-slot=sidebar-inner]]:shadow-none [&_[data-slot=sidebar-inner]]:bg-transparent"
+      variant="sidebar"
+      className="border-0 bg-transparent [&_[data-slot=sidebar-container]]:border-0 [&_[data-slot=sidebar-inner]]:bg-[oklch(0.99_0_0)]/70 [&_[data-slot=sidebar-inner]]:backdrop-blur-xl dark:[&_[data-slot=sidebar-inner]]:bg-sidebar/75 [&_[data-slot=sidebar-inner]]:overflow-hidden"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <SidebarHeader className="pt-6 px-4 pb-0">
         <Company
           companyName={companyName}
           productName={productName}
           companyLogo={companyLogo}
+          sidebarHovered={sidebarHovered}
         />
       </SidebarHeader>
 
-      <SidebarContent className="px-4 mt-8">
+      <SidebarContent className="px-4 pt-0 pb-3 mt-10">
         <SidebarGroup className="p-0">
           <SidebarGroupContent>
             <SidebarMenu>
@@ -197,21 +206,48 @@ function SidebarNav({
                           <SidebarMenuButton
                             tooltip={getTooltipText(item.label)}
                             isActive={showParentActive}
+                            className={navButtonClass}
                           >
                             <Icon />
-                            <span>
-                              <Text value={item.label} />
-                            </span>
-                            <ChevronDown
-                              className={cn(
-                                "ml-auto size-5 transition-transform duration-200",
-                                isExpanded && !isCollapsed && "rotate-180",
+                            <AnimatePresence initial={false}>
+                              {!isCollapsed && (
+                                <motion.span
+                                  key="text"
+                                  variants={textFadeVariants}
+                                  initial="initial"
+                                  animate="animate"
+                                  exit="exit"
+                                  transition={fastFadeTransition}
+                                  className="whitespace-nowrap truncate"
+                                >
+                                  <Text value={item.label} />
+                                </motion.span>
                               )}
-                            />
+                            </AnimatePresence>
+                            <AnimatePresence initial={false}>
+                              {!isCollapsed && (
+                                <motion.div
+                                  key="chevron"
+                                  variants={textFadeVariants}
+                                  initial="initial"
+                                  animate="animate"
+                                  exit="exit"
+                                  transition={fastFadeTransition}
+                                  className="ml-auto"
+                                >
+                                  <ChevronDown
+                                    className={cn(
+                                      "size-4 transition-transform duration-200",
+                                      isExpanded && "rotate-180",
+                                    )}
+                                  />
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           </SidebarMenuButton>
                         </CollapsibleTrigger>
                         <CollapsibleContent>
-                          <SidebarMenuSub>
+                          <SidebarMenuSub className="ml-4 mr-0 mt-1 gap-0.5 pl-3 pr-0">
                             {item.subItems.map((subItem) => {
                               const subActive = isActive(subItem.path);
                               return (
@@ -219,7 +255,10 @@ function SidebarNav({
                                   <SidebarMenuSubButton
                                     asChild
                                     isActive={subActive}
-                                    className="cursor-pointer whitespace-nowrap"
+                                    className={cn(
+                                      "cursor-pointer whitespace-nowrap",
+                                      subButtonClass,
+                                    )}
                                   >
                                     <Link to={subItem.path}>
                                       <Text value={subItem.label} />
@@ -241,12 +280,25 @@ function SidebarNav({
                       tooltip={getTooltipText(item.label)}
                       isActive={active}
                       asChild
+                      className={navButtonClass}
                     >
                       <Link to={item.path}>
                         <Icon />
-                        <span>
-                          <Text value={item.label} />
-                        </span>
+                        <AnimatePresence initial={false}>
+                          {!isCollapsed && (
+                            <motion.span
+                              key="text"
+                              variants={textFadeVariants}
+                              initial="initial"
+                              animate="animate"
+                              exit="exit"
+                              transition={fastFadeTransition}
+                              className="whitespace-nowrap truncate"
+                            >
+                              <Text value={item.label} />
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
