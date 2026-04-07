@@ -26,8 +26,49 @@ type Story = StoryObj<typeof meta>;
 // Helper Functions
 // ============================================================================
 
+// StickyNote wrapper with console logging for callbacks
+const StickyNoteWithCallbacks = (props: any) => {
+  const handleContentChange = (content: string) => {
+    console.log('📝 Content changed:', {
+      nodeId: props.id,
+      content,
+      timestamp: new Date().toISOString(),
+    });
+  };
+
+  const handleColorChange = (color: StickyNoteColor) => {
+    console.log('🎨 Color changed:', {
+      nodeId: props.id,
+      color,
+      timestamp: new Date().toISOString(),
+    });
+  };
+
+  const handleResize = (width: number, height: number) => {
+    console.log('📏 Resized:', {
+      nodeId: props.id,
+      width,
+      height,
+      timestamp: new Date().toISOString(),
+    });
+  };
+
+  return (
+    <StickyNoteNode
+      {...props}
+      onContentChange={handleContentChange}
+      onColorChange={handleColorChange}
+      onResize={handleResize}
+    />
+  );
+};
+
 const nodeTypes = {
   stickyNote: StickyNoteNode,
+};
+
+const nodeTypesWithCallbacks = {
+  stickyNote: StickyNoteWithCallbacks,
 };
 
 function createStickyNote(
@@ -376,6 +417,34 @@ function WithBaseNodesStory() {
   );
 }
 
+function WithCallbacksStory() {
+  const initialNodes = useMemo<Node<StickyNoteData>[]>(
+    () => [
+      createStickyNote(
+        'sticky-test-1',
+        'yellow',
+        '**Test Callbacks!**\n\n1. Double-click to edit content\n2. Click the color button to change color\n3. Drag corners to resize\n\nOpen the browser console to see logs! 🔍',
+        { x: 480, y: 480 },
+        { width: 320, height: 320 }
+      ),
+    ],
+    []
+  );
+
+  const { canvasProps } = useCanvasStory({
+    initialNodes,
+    additionalNodeTypes: nodeTypesWithCallbacks,
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
 // ============================================================================
 // Exported Stories
 // ============================================================================
@@ -386,4 +455,8 @@ export const Default: Story = {
 
 export const WithBaseNodes: Story = {
   render: () => <WithBaseNodesStory />,
+};
+
+export const WithCallbacks: Story = {
+  render: () => <WithCallbacksStory />,
 };
