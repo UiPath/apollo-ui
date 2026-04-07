@@ -1,1 +1,1 @@
-export { tableTool, TABLE_TOOL_PROMPT } from "./table-tool";
+export { createTableTool, tableTool, TABLE_TOOL_PROMPT } from "./table-tool";

@@ -254,6 +254,8 @@
         "@tanstack/ai@^0.8.1",
         "@tanstack/ai-client@^0.7.2",
         "@tanstack/ai-react@^0.7.2",
+        "@tanstack/react-query",
+        "@uipath/apollo-dashboarding@^0.0.57",
         "eventsource-parser@^3.0.6",
         "zod",
         "lucide-react",
@@ -267,11 +269,6 @@
           "path": "registry/ai-chat/types.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/types.ts"
-        },
-        {
-          "path": "registry/ai-chat/utils/ai-chat-utils.ts",
-          "type": "registry:lib",
-          "target": "components/ui/ai-chat/utils/ai-chat-utils.ts"
         },
         {
           "path": "registry/ai-chat/adapters/agenthub/types.ts",
@@ -302,6 +299,91 @@
           "path": "registry/ai-chat/hooks/use-sticky-scroll.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/hooks/use-sticky-scroll.ts"
+        },
+        {
+          "path": "registry/ai-chat/charts/chart-shared-types.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/charts/chart-shared-types.ts"
+        },
+        {
+          "path": "registry/ai-chat/charts/table-chart-types.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/charts/table-chart-types.ts"
+        },
+        {
+          "path": "registry/ai-chat/charts/bar-chart-types.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/charts/bar-chart-types.ts"
+        },
+        {
+          "path": "registry/ai-chat/charts/table-data-model.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/charts/table-data-model.ts"
+        },
+        {
+          "path": "registry/ai-chat/charts/bar-data-model.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/charts/bar-data-model.ts"
+        },
+        {
+          "path": "registry/ai-chat/charts/table-chart-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/table-chart-card.tsx"
+        },
+        {
+          "path": "registry/ai-chat/charts/bar-chart-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/bar-chart-card.tsx"
+        },
+        {
+          "path": "registry/ai-chat/charts/static-data-adapter.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/charts/static-data-adapter.ts"
+        },
+        {
+          "path": "registry/ai-chat/charts/no-data-message.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/no-data-message.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/tool-types.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/tool-types.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/tool-utils.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/tool-utils.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/choices/choices-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/choices/choices-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/choices/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/choices/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/table/table-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/table/table-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/table/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/table/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/barchart/barchart-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/barchart/barchart-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/barchart/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/barchart/index.ts"
         },
         {
           "path": "registry/ai-chat/components/ai-chat.tsx",
