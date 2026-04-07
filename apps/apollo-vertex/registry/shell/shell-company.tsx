@@ -1,24 +1,14 @@
-import { Link } from "@tanstack/react-router";
-import { useLocalStorage } from "@mantine/hooks";
-import { AnimatePresence, motion } from "framer-motion";
 import { PanelLeft } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSidebar } from "@/components/ui/sidebar";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { CompanyLogo } from "./shell";
-import {
-  fastFadeTransition,
-  iconHoverScale,
-  scaleVariants,
-  textFadeVariants,
-} from "./shell-animations";
 import { CompanyLogoIcon } from "./shell-company-logo";
-import { SIDEBAR_COLLAPSED_KEY } from "./shell-constants";
 
 interface CompanyProps {
   companyName: string;
@@ -26,152 +16,67 @@ interface CompanyProps {
   companyLogo?: CompanyLogo;
 }
 
-interface CollapsedLogoProps {
-  companyLogo?: CompanyLogo;
-  onExpand: () => void;
-}
-function CollapsedLogo({ companyLogo, onExpand }: CollapsedLogoProps) {
+export const Company = ({ productName, companyLogo }: CompanyProps) => {
   const { t } = useTranslation();
-  const [hovered, setHovered] = useState(false);
+  const { state, toggleSidebar } = useSidebar();
+  const isCollapsed = state === "collapsed";
+  const [hoverEnabled, setHoverEnabled] = useState(false);
+
+  // Delay enabling hover until collapse animation completes (200ms)
+  useEffect(() => {
+    if (isCollapsed) {
+      const timer = setTimeout(() => setHoverEnabled(true), 200);
+      return () => clearTimeout(timer);
+    }
+    setHoverEnabled(false);
+  }, [isCollapsed]);
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={onExpand}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            className="flex items-center justify-center cursor-pointer"
-            type="button"
-          >
-            <motion.div
-              className="w-8 h-8 rounded-[4px] bg-primary-700 dark:bg-primary-400 flex items-center justify-center shrink-0"
-              whileHover={iconHoverScale}
+    <div className="flex items-center justify-between h-8 gap-2">
+      {!isCollapsed && (
+        <div className="flex items-center gap-2 flex-1 overflow-hidden">
+          <div className="w-8 h-8 flex items-center justify-center shrink-0 rounded-md overflow-hidden">
+            <CompanyLogoIcon companyLogo={companyLogo} />
+          </div>
+          <span className="text-sm text-foreground font-bold line-clamp-2 leading-tight min-w-0 flex-1">
+            {productName}
+          </span>
+        </div>
+      )}
+
+      {isCollapsed && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              className={`flex items-center justify-center cursor-pointer w-8 h-8 rounded-md overflow-hidden ${hoverEnabled ? "group-hover:bg-transparent group-hover:hover:bg-sidebar-accent" : ""}`}
             >
-              <AnimatePresence mode="wait" initial={false}>
-                {hovered ? (
-                  <motion.div
-                    key="panel"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    <PanelLeft className="w-4 h-4 text-background" />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="logo"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    <CompanyLogoIcon companyLogo={companyLogo} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="right">{t("open_sidebar")}</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-}
+              <div className="w-8 h-8 flex items-center justify-center">
+                <span className={hoverEnabled ? "group-hover:hidden" : ""}>
+                  <CompanyLogoIcon companyLogo={companyLogo} />
+                </span>
+                <PanelLeft
+                  className={`size-5 hidden text-sidebar-foreground ${hoverEnabled ? "group-hover:block group-hover:hover:text-sidebar-accent-foreground" : ""}`}
+                />
+              </div>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right" align="center">
+            {t("open_sidebar")}
+          </TooltipContent>
+        </Tooltip>
+      )}
 
-export const Company = ({
-  companyName,
-  productName,
-  companyLogo,
-}: CompanyProps) => {
-  const { t } = useTranslation();
-  const [isCollapsed, setIsCollapsed] = useLocalStorage<boolean>({
-    key: SIDEBAR_COLLAPSED_KEY,
-    defaultValue: false,
-  });
-  const iconElement = (
-    <Link to="/">
-      <motion.div
-        className="w-8 h-8 rounded-[4px] bg-primary-700 dark:bg-primary-400 flex items-center justify-center shrink-0"
-        {...(isCollapsed ? { whileHover: iconHoverScale } : {})}
-      >
-        <CompanyLogoIcon companyLogo={companyLogo} />
-      </motion.div>
-    </Link>
-  );
-
-  return (
-    <div className="flex items-center justify-between h-7 pt-4">
-      <div className="flex items-center gap-2">
-        {isCollapsed ? (
-          <CollapsedLogo
-            companyLogo={companyLogo}
-            onExpand={() => setIsCollapsed(false)}
-          />
-        ) : (
-          iconElement
-        )}
-
-        <AnimatePresence initial={false}>
-          {!isCollapsed && (
-            <motion.div
-              key="company-text"
-              className="flex flex-col min-w-0 whitespace-nowrap"
-              variants={{
-                initial: textFadeVariants.initial,
-                animate: textFadeVariants.animate,
-                exit: textFadeVariants.exit,
-              }}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={fastFadeTransition}
-            >
-              <span className="text-sm font-semibold text-sidebar-foreground truncate">
-                {companyName}
-              </span>
-              <span className="text-xs text-sidebar-foreground/70 truncate">
-                {productName}
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      <AnimatePresence initial={false}>
-        {!isCollapsed && (
-          <motion.div
-            variants={{
-              initial: scaleVariants.initial,
-              animate: scaleVariants.animate,
-              exit: scaleVariants.exit,
-            }}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            transition={fastFadeTransition}
-          >
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="h-8 w-8 ml-auto shrink-0 flex items-center justify-center rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors cursor-pointer"
-                  >
-                    <PanelLeft className="w-4 h-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  {t("close_sidebar")}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {!isCollapsed && (
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          className="h-8 w-8 ml-auto shrink-0 flex items-center justify-center rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground dark:hover:bg-sidebar-accent dark:hover:text-sidebar-accent-foreground cursor-pointer"
+        >
+          <PanelLeft className="size-5" />
+        </button>
+      )}
     </div>
   );
 };

@@ -8,7 +8,7 @@ interface CompanyLogoIconProps {
 
 export const CompanyLogoIcon = ({ companyLogo }: CompanyLogoIconProps) => {
   if (!companyLogo) {
-    return <Box className="w-4 h-4 text-background" />;
+    return <Box className="w-5 h-5 text-sidebar-foreground" />;
   }
 
   return (
@@ -16,13 +16,16 @@ export const CompanyLogoIcon = ({ companyLogo }: CompanyLogoIconProps) => {
       <img
         src={companyLogo.url}
         alt={companyLogo.alt}
-        className={cn("w-4 h-auto", companyLogo.darkUrl ? "dark:hidden" : "")}
+        className={cn(
+          "h-8 w-8 object-contain",
+          companyLogo.darkUrl ? "dark:hidden" : "",
+        )}
       />
       {companyLogo.darkUrl && (
         <img
           src={companyLogo.darkUrl}
           alt={companyLogo.alt}
-          className="w-4 h-auto hidden dark:block"
+          className="h-8 w-8 object-contain hidden dark:block"
         />
       )}
     </>

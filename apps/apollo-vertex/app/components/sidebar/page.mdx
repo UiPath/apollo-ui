@@ -1,12 +1,13 @@
+import { SidebarExampleTemplate } from '@/templates/SidebarTemplateDynamic';
+import { PreviewFullScreen } from '@/app/_components/preview-full-screen';
+
 # Sidebar
 
 A composable, themeable and customizable sidebar component.
 
-<div className="p-4 border rounded-lg mt-4">
-  <p className="text-sm text-muted-foreground">
-    The Sidebar component is a complex layout component. See the usage example below for implementation details.
-  </p>
-</div>
+<PreviewFullScreen title="Sidebar preview" height={500}>
+    <SidebarExampleTemplate />
+</PreviewFullScreen>
 
 ## Installation
 
@@ -42,19 +43,28 @@ import {
 
 ## Features
 
-- **Collapsible** - Can collapse to icons only
-- **Composable** - Build your own sidebar structure
-- **Themeable** - Supports dark mode and custom themes
-- **Responsive** - Works well on mobile and desktop
-- **Keyboard accessible** - Full keyboard navigation support
+- **Collapsible** - Can collapse to icons only with `collapsible="icon"`
+- **Composable** - Build your own sidebar structure with provided primitives
+- **Themeable** - Supports dark mode and custom themes via CSS variables
+- **Responsive** - Renders as a sheet on mobile, fixed sidebar on desktop
+- **Keyboard accessible** - Toggle with `⌘B`, full keyboard navigation support
 
 ## Components
 
 - `SidebarProvider` - Provides context for sidebar state
 - `Sidebar` - The main sidebar container
 - `SidebarHeader` - Header section of the sidebar
-- `SidebarContent` - Main content area
+- `SidebarContent` - Main scrollable content area
 - `SidebarFooter` - Footer section
 - `SidebarGroup` - Groups related items
+- `SidebarGroupLabel` - Label for a group
+- `SidebarGroupContent` - Content wrapper for a group
 - `SidebarMenu` - Navigation menu
+- `SidebarMenuButton` - Clickable menu button with tooltip support
 - `SidebarMenuItem` - Individual menu items
+- `SidebarMenuSub` - Sub-menu container for nested navigation
+- `SidebarMenuSubButton` - Sub-menu item button
+- `SidebarMenuSubItem` - Sub-menu item wrapper
+- `SidebarInset` - Main content area adjacent to the sidebar
+- `SidebarTrigger` - Button to toggle sidebar open/closed
+- `SidebarRail` - Narrow rail for hover-to-expand interaction

@@ -19,6 +19,10 @@ Use the `variant="minimal"` prop to render a horizontal header layout instead of
 
 ## Features
 
+- **Collapsible Sidebar**: Icon-only collapsed mode with smooth CSS transitions, built on the shadcn sidebar primitives
+- **Sub-Navigation**: Collapsible menu items with nested sub-items that auto-expand when active
+- **Collapsed Menu Handling**: Clicking a collapsible item while collapsed expands the sidebar and opens the submenu
+- **Custom Logo**: Support for company logos with separate light/dark mode variants
 - **Optional OAuth2 Authentication**: Plug-and-play authorization code flow with PKCE
 - **Theme Toggle**: Built-in light/dark mode support
 - **Language Toggle**: Built-in language switcher for internationalization
@@ -40,7 +44,15 @@ import { ApolloShell } from '@/components/ui/shell';
 
 const navItems = [
   { path: '/dashboard', label: 'dashboard', icon: Home },
-  { path: '/settings', label: 'settings', icon: Settings },
+  {
+    path: '/settings',
+    label: 'settings',
+    icon: Settings,
+    subItems: [
+      { path: '/settings', label: 'settings' },
+      { path: '/settings/appearance', label: 'appearance' },
+    ],
+  },
 ];
 
 function App() {
