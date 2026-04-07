@@ -26,7 +26,10 @@ const barchartInput = z.object({
   columns: z.array(columnSchema).min(1).describe("Column definitions"),
   rows: z
     .array(z.record(z.string(), z.unknown()))
-    .describe("Data rows as objects keyed by column name"),
+    .min(1)
+    .describe(
+      "REQUIRED. The actual data rows as objects keyed by column name. Must include values for dimension and metric columns.",
+    ),
   dimensions: z
     .array(z.string())
     .min(1)
@@ -40,13 +43,15 @@ const barchartInput = z.object({
 type BarchartInput = z.infer<typeof barchartInput>;
 
 export const BARCHART_TOOL_PROMPT = `You have a "show_barchart" tool.
-When the user wants to visualize data as a bar chart, call it with column definitions, row data, dimensions (categorical X-axis), and metrics (numeric Y-axis).
+When the user wants to visualize data as a bar chart, call it with columns, rows, dimensions, and metrics.
+IMPORTANT: You MUST include the "rows" array with the actual data objects. The chart cannot render without rows.
+Each row is an object keyed by column name (same format as show_table).
 After calling the tool, keep text reply short — the UI renders the chart.`;
 
 const showBarchartDef = toolDefinition({
   name: "show_barchart",
   description:
-    "Display data as a bar chart. Provide column definitions, row data, and specify which columns are dimensions (X-axis categories) vs metrics (Y-axis values).",
+    "Display data as a bar chart. All parameters are required: columns (column definitions), rows (the actual data array — same format as show_table), dimensions (categorical X-axis column names), metrics (numeric Y-axis column names).",
   inputSchema: barchartInput,
 });
 
