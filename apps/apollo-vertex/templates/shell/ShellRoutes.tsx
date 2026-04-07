@@ -1,5 +1,6 @@
 import { createRoute, Outlet } from "@tanstack/react-router";
 import { InvoiceDashboard } from "./InvoiceDashboard";
+import { InvoiceDetail } from "./InvoiceDetail";
 import { NotFoundPage, PlaceholderPage, SelectPage } from "./ShellPages";
 import { ShellWrapper } from "./ShellRoot";
 import { rootRoute } from "./ShellRouteTree";
@@ -24,6 +25,12 @@ export const shellDashboardRoute = createRoute({
   getParentRoute: () => shellRoute,
   path: "/dashboard",
   component: InvoiceDashboard,
+});
+
+export const shellInvoiceDetailRoute = createRoute({
+  getParentRoute: () => shellRoute,
+  path: "/dashboard/$invoiceId",
+  component: InvoiceDetail,
 });
 
 export const shellProjectsRoute = createRoute({
