@@ -21,6 +21,7 @@ import {
   shellCatchAllRoute,
   shellDashboardRoute,
   shellIndexRoute,
+  shellInvoiceDetailRoute,
   shellProjectsRoute,
   shellRoute,
   shellSettingsRoute,
@@ -51,6 +52,7 @@ const routeTree = rootRoute.addChildren([
   shellRoute.addChildren([
     shellIndexRoute,
     shellDashboardRoute,
+    shellInvoiceDetailRoute,
     shellProjectsRoute,
     shellAnalyticsRoute,
     shellTeamRoute,

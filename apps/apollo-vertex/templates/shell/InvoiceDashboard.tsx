@@ -1,7 +1,15 @@
 "use client";
 
-import { CheckCircle, Clock, FileText, TrendingUp } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import {
+  CheckCircle,
+  Clock,
+  Download,
+  FileText,
+  TrendingUp,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -12,6 +20,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  PageHeader,
+  PageHeaderActions,
+  PageHeaderNav,
+  PageHeaderTitle,
+} from "@/components/ui/page-header";
 
 const kpis = [
   { label: "Total Invoices", value: "1,247", icon: FileText, change: "+12%" },
@@ -93,151 +107,167 @@ const recentActivity = [
 ];
 
 export function InvoiceDashboard() {
+  const navigate = useNavigate();
   return (
-    <div className="p-6 space-y-4 relative z-10">
-      {/* Header */}
-      <div>
-        <h1 className="text-base font-bold">Invoice Processing</h1>
-        <p className="text-sm text-muted-foreground">
-          Monitor and manage invoice automation workflows
-        </p>
-      </div>
+    <div className="space-y-4 relative z-10">
+      <PageHeader>
+        <PageHeaderNav>
+          <PageHeaderTitle>Invoice Processing</PageHeaderTitle>
+        </PageHeaderNav>
+        <PageHeaderActions>
+          <Button variant="outline" size="sm">
+            <Download className="size-4" />
+            Export
+          </Button>
+        </PageHeaderActions>
+      </PageHeader>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-        {kpis.map((kpi) => (
-          <Card key={kpi.label} variant="glass" className="gap-6 py-6">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {kpi.label}
-                </CardTitle>
-                <kpi.icon className="w-4 h-4 text-muted-foreground" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{kpi.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                <span className="text-emerald-500">{kpi.change}</span> from last
-                week
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <div className="px-6 pb-6 space-y-4">
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+          {kpis.map((kpi) => (
+            <Card key={kpi.label} variant="glass" className="gap-6 py-6">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {kpi.label}
+                  </CardTitle>
+                  <kpi.icon className="w-4 h-4 text-muted-foreground" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpi.value}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  <span className="text-emerald-500">{kpi.change}</span> from
+                  last week
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-      {/* Invoices Table */}
-      <Card variant="glass" className="gap-6 py-6">
-        <CardHeader>
-          <CardTitle>Recent Invoices</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Invoice</TableHead>
-                <TableHead>Vendor</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {invoices.map((inv) => (
-                <TableRow key={inv.id}>
-                  <TableCell className="font-medium">{inv.id}</TableCell>
-                  <TableCell>{inv.vendor}</TableCell>
-                  <TableCell>{inv.amount}</TableCell>
-                  <TableCell>
-                    <Badge variant={statusVariant[inv.status]}>
-                      {inv.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {inv.date}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {/* Bottom Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Processing Activity */}
+        {/* Invoices Table */}
         <Card variant="glass" className="gap-6 py-6">
           <CardHeader>
-            <CardTitle>Processing Activity</CardTitle>
+            <CardTitle>Recent Invoices</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-end gap-3 h-32">
-              {activityBars.map((bar) => (
-                <div
-                  key={bar.label}
-                  className="flex-1 flex flex-col items-center gap-1"
-                >
-                  <div
-                    className="w-full bg-primary/80 rounded-t-sm"
-                    style={{ height: `${bar.height}%` }}
-                  />
-                  <span className="text-xs text-muted-foreground">
-                    {bar.label}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Invoice</TableHead>
+                  <TableHead>Vendor</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {invoices.map((inv) => (
+                  <TableRow
+                    key={inv.id}
+                    className="cursor-pointer"
+                    onClick={() =>
+                      void navigate({
+                        to: "/preview/shell/dashboard/$invoiceId",
+                        params: { invoiceId: inv.id },
+                      })
+                    }
+                  >
+                    <TableCell className="font-medium">{inv.id}</TableCell>
+                    <TableCell>{inv.vendor}</TableCell>
+                    <TableCell>{inv.amount}</TableCell>
+                    <TableCell>
+                      <Badge variant={statusVariant[inv.status]}>
+                        {inv.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {inv.date}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
 
-        {/* Recent Activity */}
+        {/* Bottom Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Processing Activity */}
+          <Card variant="glass" className="gap-6 py-6">
+            <CardHeader>
+              <CardTitle>Processing Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-end gap-3 h-32">
+                {activityBars.map((bar) => (
+                  <div
+                    key={bar.label}
+                    className="flex-1 flex flex-col items-center gap-1"
+                  >
+                    <div
+                      className="w-full bg-primary/80 rounded-t-sm"
+                      style={{ height: `${bar.height}%` }}
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      {bar.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Activity */}
+          <Card variant="glass" className="gap-6 py-6">
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentActivity.map((event) => (
+                  <div key={event.text} className="flex items-start gap-3">
+                    <div className="mt-1.5 w-2 h-2 rounded-full bg-primary shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm">{event.text}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {event.time}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Processing Pipeline */}
         <Card variant="glass" className="gap-6 py-6">
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle>Processing Pipeline</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentActivity.map((event) => (
-                <div key={event.text} className="flex items-start gap-3">
-                  <div className="mt-1.5 w-2 h-2 rounded-full bg-primary shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm">{event.text}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {event.time}
-                    </p>
-                  </div>
-                </div>
-              ))}
+              <div className="flex items-center justify-between text-sm">
+                <span>OCR Extraction</span>
+                <span className="text-muted-foreground">96%</span>
+              </div>
+              <Progress value={96} />
+              <div className="flex items-center justify-between text-sm">
+                <span>Field Validation</span>
+                <span className="text-muted-foreground">88%</span>
+              </div>
+              <Progress value={88} />
+              <div className="flex items-center justify-between text-sm">
+                <span>Approval Routing</span>
+                <span className="text-muted-foreground">72%</span>
+              </div>
+              <Progress value={72} />
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Processing Pipeline */}
-      <Card variant="glass" className="gap-6 py-6">
-        <CardHeader>
-          <CardTitle>Processing Pipeline</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between text-sm">
-              <span>OCR Extraction</span>
-              <span className="text-muted-foreground">96%</span>
-            </div>
-            <Progress value={96} />
-            <div className="flex items-center justify-between text-sm">
-              <span>Field Validation</span>
-              <span className="text-muted-foreground">88%</span>
-            </div>
-            <Progress value={88} />
-            <div className="flex items-center justify-between text-sm">
-              <span>Approval Routing</span>
-              <span className="text-muted-foreground">72%</span>
-            </div>
-            <Progress value={72} />
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

@@ -62,6 +62,7 @@
       "@/components/ui/navigation-menu": [
         "./registry/navigation-menu/navigation-menu"
       ],
+      "@/components/ui/page-header": ["./registry/page-header/page-header"],
       "@/components/ui/pagination": ["./registry/pagination/pagination"],
       "@/components/ui/popover": ["./registry/popover/popover"],
       "@/components/ui/progress": ["./registry/progress/progress"],

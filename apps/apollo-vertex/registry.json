@@ -853,6 +853,20 @@
       ]
     },
     {
+      "name": "page-header",
+      "type": "registry:ui",
+      "title": "Page Header",
+      "description": "A compound page header with back button, title, metadata fields, and collapsible action buttons that overflow into a dropdown.",
+      "dependencies": ["class-variance-authority", "lucide-react"],
+      "registryDependencies": ["@uipath/button", "@uipath/dropdown-menu"],
+      "files": [
+        {
+          "path": "registry/page-header/page-header.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "popover",
       "type": "registry:ui",
       "title": "Popover",
