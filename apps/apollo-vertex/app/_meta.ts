@@ -7,4 +7,10 @@ export default {
   "vertex-components": "Vertex Components",
   themes: "Themes",
   localization: "Localization",
+  auth_callback: {
+    display: "hidden",
+  },
+  portal_: {
+    display: "hidden",
+  },
 };
