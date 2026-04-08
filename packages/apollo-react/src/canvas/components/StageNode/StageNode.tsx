@@ -28,7 +28,11 @@ import {
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { EntryConditionIcon, ExitConditionIcon, ReturnToOriginIcon } from '../../icons';
 import type { HandleGroupManifest } from '../../schema/node-definition';
-import { GroupModificationType } from '../../utils/GroupModificationUtils';
+import {
+  GroupModificationType,
+  moveGroupDown,
+  moveGroupUp,
+} from '../../utils/GroupModificationUtils';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
@@ -109,6 +113,10 @@ const StageNodeInner = (props: StageNodeProps) => {
   // Split tasks into regular (draggable) and ad hoc (separate section)
   const tasks = useMemo(
     () => allTasks.filter((group) => group.some((t) => !t.isAdhoc)),
+    [allTasks]
+  );
+  const adhocGroups = useMemo(
+    () => allTasks.filter((group) => group.every((t) => t.isAdhoc)),
     [allTasks]
   );
   const adhocTasks = useMemo(
@@ -271,6 +279,27 @@ const StageNodeInner = (props: StageNodeProps) => {
 
   const hasContextMenu = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
 
+  const handleTaskRegroup = useCallback(
+    (groupModificationType: GroupModificationType, groupIndex: number, taskIndex: number) => {
+      if (
+        onTaskReorder &&
+        (groupModificationType === GroupModificationType.TASK_GROUP_UP ||
+          groupModificationType === GroupModificationType.TASK_GROUP_DOWN)
+      ) {
+        const mover =
+          groupModificationType === GroupModificationType.TASK_GROUP_UP
+            ? moveGroupUp
+            : moveGroupDown;
+        const reordered = mover(tasks, groupIndex, taskIndex);
+        onTaskReorder([...reordered, ...adhocGroups]);
+        return;
+      }
+
+      onTaskGroupModification?.(groupModificationType, groupIndex, taskIndex);
+    },
+    [onTaskReorder, onTaskGroupModification, tasks, adhocGroups]
+  );
+
   /** Lazily builds context menu items for a task. Called only when the menu opens,
    * avoiding object allocation on every render for every task. */
   const buildContextMenuItems = useCallback(
@@ -304,7 +333,7 @@ const StageNodeInner = (props: StageNodeProps) => {
           taskGroup.length,
           (tasks[groupIndex - 1]?.length ?? 0) > 1,
           (tasks[groupIndex + 1]?.length ?? 0) > 1,
-          onTaskGroupModification,
+          handleTaskRegroup,
           hideParallelOptions
         );
         return [...items, ...reGroupOptions];
@@ -312,7 +341,14 @@ const StageNodeInner = (props: StageNodeProps) => {
 
       return items;
     },
-    [onReplaceTaskFromToolbox, onTaskClick, onTaskGroupModification, tasks, hideParallelOptions]
+    [
+      onReplaceTaskFromToolbox,
+      onTaskClick,
+      onTaskGroupModification,
+      tasks,
+      hideParallelOptions,
+      handleTaskRegroup,
+    ]
   );
 
   const getAdhocContextMenuItems = useCallback(
@@ -528,9 +564,9 @@ const StageNodeInner = (props: StageNodeProps) => {
         over.id as string,
         projection.depth
       );
-      onTaskReorder(newTasks);
+      onTaskReorder([...newTasks, ...adhocGroups]);
     },
-    [tasks, onTaskReorder, offsetLeft, resetState]
+    [tasks, onTaskReorder, offsetLeft, resetState, adhocGroups]
   );
 
   const handleDragCancel = useCallback(() => {
@@ -750,7 +786,7 @@ const StageNodeInner = (props: StageNodeProps) => {
                       variant={FontVariantToken.fontSizeSBold}
                       color="var(--uix-canvas-foreground-de-emp)"
                     >
-                      Adhoc tasks
+                      Ad hoc tasks
                     </ApTypography>
                   </StageAdhocHeaderSection>
                   <StageTaskList>

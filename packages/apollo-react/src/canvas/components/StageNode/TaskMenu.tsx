@@ -2,7 +2,7 @@ import token, { Spacing } from '@uipath/apollo-core';
 import { ApIcon, ApIconButton, ApMenu } from '@uipath/apollo-react/material';
 import { forwardRef, memo, useCallback, useImperativeHandle, useRef, useState } from 'react';
 import type { NodeMenuAction, NodeMenuItem } from '../NodeContextMenu';
-import { TransformedMenuItem, transformMenuItems } from './StageNodeTaskUtilities';
+import { type TransformedMenuItem, transformMenuItems } from './StageNodeTaskUtilities';
 
 export interface TaskMenuHandle {
   handleContextMenu: (e: React.MouseEvent<HTMLElement>) => void;

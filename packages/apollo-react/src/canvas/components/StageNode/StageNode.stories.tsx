@@ -861,10 +861,12 @@ const initialTasks: StageTaskItem[][] = [
     { id: 'task-2', label: 'Document Review', icon: <DocumentIcon /> },
     { id: 'task-6', label: 'Credit Check', icon: <VerificationIcon /> },
   ],
+  [{ id: 'task-7', label: 'Ad hoc - Manual Review', icon: <DocumentIcon />, isAdhoc: true }],
   [
     { id: 'task-3', label: 'Address Check', icon: <VerificationIcon /> },
     { id: 'task-4', label: 'Property Check', icon: <VerificationIcon /> },
   ],
+  [{ id: 'task-8', label: 'Ad hoc - Exception Handling', icon: <ProcessIcon />, isAdhoc: true }],
   [{ id: 'task-5', label: 'Final Approval', icon: <ProcessIcon /> }],
 ];
 
@@ -911,6 +913,38 @@ const DraggableTaskReorderingStory = () => {
     [setNodes]
   );
 
+  const groupModificationHandlers = useMemo(
+    () => createGroupModificationHandlers<StageTaskItem>(),
+    []
+  );
+
+  const handleTaskGroupModification = useCallback(
+    (groupModificationType: GroupModificationType, groupIndex: number, taskIndex: number) => {
+      const handler = getHandlerForModificationType(
+        groupModificationHandlers,
+        groupModificationType
+      );
+
+      setNodes((nds) =>
+        nds.map((node) =>
+          node.id === 'reorder-stage'
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  stageDetails: {
+                    ...node.data.stageDetails,
+                    tasks: handler(node.data.stageDetails.tasks, groupIndex, taskIndex),
+                  },
+                },
+              }
+            : node
+        )
+      );
+    },
+    [groupModificationHandlers, setNodes]
+  );
+
   const nodesWithHandler = useMemo(
     () =>
       nodes.map((node) => ({
@@ -918,9 +952,10 @@ const DraggableTaskReorderingStory = () => {
         data: {
           ...node.data,
           onTaskReorder: handleTaskReorder,
+          onTaskGroupModification: handleTaskGroupModification,
         },
       })),
-    [nodes, handleTaskReorder]
+    [nodes, handleTaskReorder, handleTaskGroupModification]
   );
 
   const onConnect = useCallback(
@@ -965,6 +1000,14 @@ export const DraggableTaskReordering: Story = {
 
 const initialTasksForAddReplace: StageTaskItem[][] = [
   [{ id: 'task-1', label: 'Initial Verification', icon: <VerificationIcon /> }],
+  [
+    {
+      id: 'task-adhoc-1',
+      label: 'Ad hoc - Manual Check',
+      icon: <VerificationIcon />,
+      isAdhoc: true,
+    },
+  ],
   [{ id: 'task-2', label: 'Document Review', icon: <DocumentIcon /> }],
   [{ id: 'task-3', label: 'Process Validation', icon: <ProcessIcon /> }],
 ];
@@ -1152,6 +1195,28 @@ const AddAndReplaceTasksStory = () => {
     [groupModificationHandlers, setNodes]
   );
 
+  const handleTaskReorder = useCallback(
+    (reorderedTasks: StageTaskItem[][]) => {
+      setNodes((prevNodes) =>
+        prevNodes.map((node) =>
+          node.id === 'add-replace-stage'
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  stageDetails: {
+                    ...node.data.stageDetails,
+                    tasks: reorderedTasks,
+                  },
+                },
+              }
+            : node
+        )
+      );
+    },
+    [setNodes]
+  );
+
   // Handle task click in canvas (for selection)
   const handleTaskClick = useCallback((taskId: string) => {
     setSelectedTaskId(taskId);
@@ -1215,6 +1280,7 @@ const AddAndReplaceTasksStory = () => {
                 onAddTaskFromToolbox: handleAddTask,
                 onReplaceTaskFromToolbox: handleReplaceTask,
                 onTaskGroupModification: handleTaskGroupModification,
+                onTaskReorder: handleTaskReorder,
                 onTaskClick: handleTaskClick,
               },
             }
@@ -1227,6 +1293,7 @@ const AddAndReplaceTasksStory = () => {
       handleAddTask,
       handleReplaceTask,
       handleTaskGroupModification,
+      handleTaskReorder,
       handleTaskClick,
     ]
   );
@@ -1569,7 +1636,7 @@ export const AddTaskLoading: Story = {
 };
 
 export const AdhocTasks: Story = {
-  name: 'Adhoc Tasks',
+  name: 'Ad hoc Tasks',
   parameters: {
     nodes: [
       {
@@ -1584,7 +1651,7 @@ export const AdhocTasks: Story = {
               [
                 {
                   id: '1',
-                  label: 'Adhoc - KYC Check',
+                  label: 'Ad hoc - KYC Check',
                   icon: <VerificationIcon />,
                   isAdhoc: true,
                 },
@@ -1592,7 +1659,7 @@ export const AdhocTasks: Story = {
               [
                 {
                   id: '2',
-                  label: 'Adhoc - Document Review',
+                  label: 'Ad hoc - Document Review',
                   icon: <DocumentIcon />,
                   isAdhoc: true,
                 },
@@ -1624,7 +1691,7 @@ export const AdhocTasks: Story = {
               [
                 {
                   id: '1',
-                  label: 'Adhoc - Risk Assessment',
+                  label: 'Ad hoc - Risk Assessment',
                   icon: <VerificationIcon />,
                   isAdhoc: true,
                 },
@@ -1632,7 +1699,7 @@ export const AdhocTasks: Story = {
               [
                 {
                   id: '2',
-                  label: 'Adhoc - Compliance Review',
+                  label: 'Ad hoc - Compliance Review',
                   icon: <DocumentIcon />,
                   isAdhoc: true,
                 },
@@ -1673,13 +1740,13 @@ export const AdhocTasks: Story = {
               [
                 {
                   id: '1',
-                  label: 'Adhoc - Verify Address',
+                  label: 'Ad hoc - Verify Address',
                   icon: <VerificationIcon />,
                   isAdhoc: true,
                 },
                 {
                   id: '2',
-                  label: 'Adhoc - Verify Identity',
+                  label: 'Ad hoc - Verify Identity',
                   icon: <VerificationIcon />,
                   isAdhoc: true,
                 },
@@ -1687,7 +1754,7 @@ export const AdhocTasks: Story = {
               [
                 {
                   id: '3',
-                  label: 'Adhoc - Bkgd Check',
+                  label: 'Ad hoc - Bkgd Check',
                   icon: <VerificationIcon />,
                   isAdhoc: true,
                 },
@@ -1695,7 +1762,7 @@ export const AdhocTasks: Story = {
               [
                 {
                   id: '4',
-                  label: 'Adhoc - Review Docs',
+                  label: 'Ad hoc - Review Docs',
                   icon: <DocumentIcon />,
                   isAdhoc: true,
                 },
