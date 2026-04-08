@@ -65,6 +65,9 @@ const excludedPackages: Record<string, string> = {
   // Missing license field in package.json. Actual license is MIT per GitHub repo
   // (https://github.com/fabiospampinato/khroma). Transitive dep of mermaid.
   'khroma': 'MIT per GitHub repo, missing license field in package.json',
+  // UiPath internal package with "Proprietary" license. Used as a devDependency
+  // in apollo-vertex for type-checking the feature flag registry items.
+  '@uipath/proteus-client': 'UiPath internal package, Proprietary license',
 };
 
 /**
