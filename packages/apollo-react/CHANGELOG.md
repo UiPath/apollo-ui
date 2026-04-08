@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.70.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.69.1...@uipath/apollo-react@3.70.0) (2026-04-08)
+
+### Features
+
+* **apollo-react:** add necessary callbacks in sticky note node [MST-7963] ([de16054](https://github.com/UiPath/apollo-ui/commit/de160547c57ccc7cdabab7c2759d61383c90cd97))
+
 ## [@uipath/apollo-react-v3.69.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.69.0...@uipath/apollo-react@3.69.1) (2026-04-06)
 
 ### Bug Fixes
