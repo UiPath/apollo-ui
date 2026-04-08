@@ -1,8 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Badge } from "@/registry/badge/badge";
-import { Button } from "@/registry/button/button";
 import type { ChoiceOption } from "../types";
 
 interface AiChatSuggestionsProps {
@@ -17,31 +15,26 @@ export function AiChatSuggestions({
   onSelect,
 }: AiChatSuggestionsProps) {
   return (
-    <div className="space-y-2">
+    <div className="mt-4 space-y-2">
       {prompt && (
-        <p className="text-sm text-ai-chat-muted-foreground">{prompt}</p>
+        <p className="text-xs text-muted-foreground">{prompt}</p>
       )}
       <div className="flex flex-wrap gap-2">
         {options.map((option) => (
-          <Button
+          <button
             key={option.id}
             type="button"
-            variant={option.recommended ? "default" : "outline"}
-            size="sm"
             className={cn(
-              "h-auto py-2 px-3 text-left max-w-full transition-all hover:scale-[1.02]",
-              option.recommended &&
-                "bg-ai-chat-accent text-ai-chat-accent-foreground hover:bg-ai-chat-accent/90",
+              "h-auto py-2 px-4 text-left max-w-full rounded-full text-xs font-semibold transition-all hover:scale-[1.02]",
+              option.recommended
+                ? "text-white border-0"
+                : "border border-input bg-background text-foreground hover:bg-muted",
             )}
+            style={option.recommended ? { background: "var(--ai-gradient-strong)" } : {}}
             onClick={() => onSelect(option)}
           >
-            <span className="font-medium truncate">{option.label}</span>
-            {option.recommended && (
-              <Badge variant="secondary" className="ml-1.5 text-[10px] px-1.5">
-                {"\u2605"}
-              </Badge>
-            )}
-          </Button>
+            <span className="truncate">{option.label}</span>
+          </button>
         ))}
       </div>
     </div>
