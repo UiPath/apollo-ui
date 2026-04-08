@@ -5,7 +5,7 @@ import {
   ChevronRightIcon,
   MoreHorizontalIcon,
 } from "lucide-react";
-import * as React from "react";
+import type * as React from "react";
 import { useTranslation } from "react-i18next";
 import { type Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

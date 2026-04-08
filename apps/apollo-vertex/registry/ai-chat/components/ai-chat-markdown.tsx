@@ -3,9 +3,18 @@
 import type { ComponentProps, ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { AiChatCodeBlock } from "./ai-chat-code-block";
 
 type NodeProps = { children?: ReactNode };
 type AnchorProps = { children?: ReactNode; href?: string };
+
+function extractCodeProps(props: NodeProps & { className?: string }) {
+  const { className, children } = props;
+  const match = /language-(\w+)/.exec(className ?? "");
+  const language = match ? match[1] : "";
+  const code = String(children).replace(/\n$/, "");
+  return { language, code };
+}
 
 const components: ComponentProps<typeof ReactMarkdown>["components"] = {
   p: ({ children }: NodeProps) => <p className="mb-2 last:mb-0">{children}</p>,
@@ -16,26 +25,31 @@ const components: ComponentProps<typeof ReactMarkdown>["components"] = {
     <ol className="mb-2 last:mb-0 ml-4 list-decimal">{children}</ol>
   ),
   li: ({ children }: NodeProps) => <li className="mb-1">{children}</li>,
-  pre: ({ children }: NodeProps) => (
-    <pre className="mb-2 last:mb-0 p-3 rounded bg-muted text-foreground font-mono text-xs overflow-x-auto">
-      {children}
-    </pre>
-  ),
+  pre: ({ children }: NodeProps) => <div>{children}</div>,
   code: ({
     children,
     className,
     ...props
-  }: NodeProps & { className?: string }) => (
-    <code
-      className={
-        className ??
-        "px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-xs"
-      }
-      {...props}
-    >
-      {children}
-    </code>
-  ),
+  }: NodeProps & { className?: string }) => {
+    const isBlock =
+      className?.startsWith("language-") ||
+      (typeof children === "string" && children.includes("\n"));
+
+    if (isBlock) {
+      const { language, code } = extractCodeProps({
+        className,
+        children,
+        ...props,
+      });
+      return <AiChatCodeBlock language={language}>{code}</AiChatCodeBlock>;
+    }
+
+    return (
+      <code className="px-1.5 py-0.5 rounded bg-ai-chat-muted text-ai-chat-foreground font-mono text-xs">
+        {children}
+      </code>
+    );
+  },
   a: ({ children, ...props }: AnchorProps) => (
     <a className="text-primary hover:underline" {...props}>
       {children}
@@ -46,7 +60,7 @@ const components: ComponentProps<typeof ReactMarkdown>["components"] = {
   ),
   em: ({ children }: NodeProps) => <em className="italic">{children}</em>,
   blockquote: ({ children }: NodeProps) => (
-    <blockquote className="border-l-2 border-muted-foreground/30 pl-3 italic my-2">
+    <blockquote className="border-l-2 border-ai-chat-accent pl-3 bg-ai-chat-accent/5 rounded-r italic my-2 py-1">
       {children}
     </blockquote>
   ),
@@ -59,17 +73,19 @@ const components: ComponentProps<typeof ReactMarkdown>["components"] = {
   h3: ({ children }: NodeProps) => (
     <h3 className="text-sm font-bold mb-2 mt-2 first:mt-0">{children}</h3>
   ),
-  hr: () => <hr className="my-3 border-border" />,
+  hr: () => <hr className="my-3 border-ai-chat-border" />,
   table: ({ children }: NodeProps) => (
     <div className="overflow-x-auto my-2">
-      <table className="min-w-full divide-y divide-border">{children}</table>
+      <table className="min-w-full divide-y divide-ai-chat-border">
+        {children}
+      </table>
     </div>
   ),
   thead: ({ children }: NodeProps) => (
-    <thead className="bg-muted">{children}</thead>
+    <thead className="bg-ai-chat-muted">{children}</thead>
   ),
   tbody: ({ children }: NodeProps) => (
-    <tbody className="divide-y divide-border">{children}</tbody>
+    <tbody className="divide-y divide-ai-chat-border">{children}</tbody>
   ),
   tr: ({ children }: NodeProps) => <tr>{children}</tr>,
   th: ({ children }: NodeProps) => (
@@ -86,7 +102,7 @@ interface AiChatMarkdownProps {
 
 export function AiChatMarkdown({ children }: AiChatMarkdownProps) {
   return (
-    <div className="px-4 py-3 text-sm rounded-lg bg-primary/10 prose prose-sm dark:prose-invert max-w-none">
+    <div className="px-4 py-3 text-sm rounded-lg bg-ai-chat-bubble-assistant text-ai-chat-bubble-assistant-foreground prose prose-sm dark:prose-invert max-w-none">
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
         {children}
       </ReactMarkdown>

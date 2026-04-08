@@ -1,6 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { Badge } from "@/registry/badge/badge";
+import { Button } from "@/registry/button/button";
 import type { ChoiceOption } from "../types";
 
 interface AiChatSuggestionsProps {
@@ -16,20 +18,30 @@ export function AiChatSuggestions({
 }: AiChatSuggestionsProps) {
   return (
     <div className="space-y-2">
-      {prompt && <p className="text-sm text-muted-foreground">{prompt}</p>}
+      {prompt && (
+        <p className="text-sm text-ai-chat-muted-foreground">{prompt}</p>
+      )}
       <div className="flex flex-wrap gap-2">
         {options.map((option) => (
-          <button
+          <Button
             key={option.id}
             type="button"
+            variant={option.recommended ? "default" : "outline"}
+            size="sm"
             className={cn(
-              "h-auto py-2 px-3 text-left max-w-full text-sm rounded-lg border transition-colors hover:opacity-80",
-              option.recommended && "border-2 border-primary",
+              "h-auto py-2 px-3 text-left max-w-full transition-all hover:scale-[1.02]",
+              option.recommended &&
+                "bg-ai-chat-accent text-ai-chat-accent-foreground hover:bg-ai-chat-accent/90",
             )}
             onClick={() => onSelect(option)}
           >
             <span className="font-medium truncate">{option.label}</span>
-          </button>
+            {option.recommended && (
+              <Badge variant="secondary" className="ml-1.5 text-[10px] px-1.5">
+                {"\u2605"}
+              </Badge>
+            )}
+          </Button>
         ))}
       </div>
     </div>
