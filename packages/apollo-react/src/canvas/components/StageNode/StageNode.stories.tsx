@@ -1061,6 +1061,20 @@ const AddAndReplaceTasksStory = () => {
       data: {
         stageDetails: {
           label: 'Add, Replace, and Group Tasks',
+          isReadOnly: false,
+          tasks: initialTasksForAddReplace,
+        },
+        taskOptions: availableTaskOptions,
+      },
+    },
+    {
+      id: 'readonly-stage',
+      type: 'stage',
+      position: { x: 720, y: 96 },
+      data: {
+        stageDetails: {
+          label: 'ReadOnly Stage',
+          isReadOnly: true,
           tasks: initialTasksForAddReplace,
         },
         taskOptions: availableTaskOptions,

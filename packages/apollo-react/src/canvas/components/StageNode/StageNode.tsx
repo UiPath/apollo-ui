@@ -758,9 +758,10 @@ const StageNodeInner = (props: StageNodeProps) => {
                                         : undefined
                                     }
                                     isDragDisabled={!onTaskReorder}
-                                    {...(hasContextMenu && {
-                                      getContextMenuItems: buildContextMenuItems,
-                                    })}
+                                    {...(hasContextMenu &&
+                                      !isReadOnly && {
+                                        getContextMenuItems: buildContextMenuItems,
+                                      })}
                                   />
                                 );
                               })}
@@ -800,10 +801,11 @@ const StageNodeInner = (props: StageNodeProps) => {
                           isSelected={selectedTaskId === task.id}
                           onTaskClick={handleTaskClick}
                           onTaskPlay={onTaskPlay}
-                          {...((onTaskGroupModification || onReplaceTaskFromToolbox) && {
-                            getContextMenuItems: () =>
-                              getAdhocContextMenuItems(groupIndex, taskIndex, task.id),
-                          })}
+                          {...((onTaskGroupModification || onReplaceTaskFromToolbox) &&
+                            !isReadOnly && {
+                              getContextMenuItems: () =>
+                                getAdhocContextMenuItems(groupIndex, taskIndex, task.id),
+                            })}
                         />
                       );
                     })}

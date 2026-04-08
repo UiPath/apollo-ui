@@ -847,6 +847,42 @@ describe('StageNode - hideParallelOptions', () => {
   });
 });
 
+describe('StageNode - ReadOnly Mode', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should not render task kebab menu when isReadOnly is true', () => {
+    const onTaskGroupModification = vi.fn();
+    const tasks: StageTaskItem[][] = [
+      [createTask('task-1', 'Task 1')],
+      [createTask('task-2', 'Task 2')],
+    ];
+
+    renderStageNode({
+      onTaskGroupModification,
+      stageDetails: { ...defaultProps.stageDetails, tasks, isReadOnly: true },
+    });
+
+    expect(screen.queryByTestId('task-menu-button-task-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('task-menu-button-task-2')).not.toBeInTheDocument();
+  });
+
+  it('should not render adhoc task kebab menu when isReadOnly is true', () => {
+    const onTaskGroupModification = vi.fn();
+    const adhocTask = createTask('adhoc-1', 'Adhoc Task 1');
+    adhocTask.isAdhoc = true;
+    const tasks: StageTaskItem[][] = [[adhocTask]];
+
+    renderStageNode({
+      onTaskGroupModification,
+      stageDetails: { ...defaultProps.stageDetails, tasks, isReadOnly: true },
+    });
+
+    expect(screen.queryByTestId('task-menu-button-adhoc-1')).not.toBeInTheDocument();
+  });
+});
+
 describe('StageNode - Header Chips', () => {
   beforeEach(() => {
     vi.clearAllMocks();
