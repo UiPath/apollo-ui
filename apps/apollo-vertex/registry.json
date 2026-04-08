@@ -183,7 +183,8 @@
           "--info-fg": "oklch(0.49 0.12 210)",
           "--success-fg": "oklch(0.46 0.10 152)",
           "--destructive-fg": "oklch(0.50 0.14 18)",
-          "ai-gradient": "linear-gradient(100.64deg, rgb(238, 224, 255) 8.29%, rgb(207, 217, 255) 88.73%)"
+          "ai-gradient": "linear-gradient(100.64deg, rgb(238, 224, 255) 8.29%, rgb(207, 217, 255) 88.73%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)"
         },
         "dark": {
           "background": "oklch(0.2100 0.0300 258.5000)",
@@ -271,7 +272,8 @@
           "shadow-2xl": "0 0px 12px 0px hsl(0 0% 0% / 0.25)",
           "tracking-normal": "0em",
           "spacing": "0.25rem",
-          "ai-gradient": "linear-gradient(98.69deg, rgb(108, 90, 239) 8.79%, rgb(105, 199, 221) 91.48%)"
+          "ai-gradient": "linear-gradient(98.69deg, rgb(108, 90, 239) 8.79%, rgb(105, 199, 221) 91.48%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)"
         }
       }
     },

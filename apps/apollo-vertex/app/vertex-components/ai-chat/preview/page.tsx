@@ -75,7 +75,7 @@ export default function AiChatPreviewPage() {
             isLoading={false}
             onSendMessage={noop}
             onStop={noop}
-            title="Apollo Assistant"
+            title="Autopilot"
           />
         </PreviewCard>
       </section>
@@ -120,7 +120,7 @@ export default function AiChatPreviewPage() {
             isLoading={false}
             onSendMessage={noop}
             onStop={noop}
-            title="Apollo Assistant"
+            title="Autopilot"
             showTimestamps
             showMessageActions
           >
@@ -219,7 +219,7 @@ export default function AiChatPreviewPage() {
             onSendMessage={noop}
             onStop={noop}
             onRetry={noop}
-            title="Apollo Assistant"
+            title="Autopilot"
             error={
               new Error(
                 "Failed to connect to the AI service. Please check your network connection.",

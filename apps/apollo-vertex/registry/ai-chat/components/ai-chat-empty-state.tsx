@@ -32,9 +32,9 @@ export function AiChatEmptyState({
           />
         )}
       </div>
-      <div className="space-y-1">
-        <p className="text-lg font-medium text-ai-chat-foreground">{title}</p>
-        {description && <p className="text-sm max-w-sm">{description}</p>}
+      <div className="flex flex-col items-center gap-1">
+        <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground">{title}</h2>
+        {description && <p className="text-sm text-muted-foreground max-w-sm">{description}</p>}
       </div>
       {suggestions && suggestions.length > 0 && onSuggestionClick && (
         <div className="flex flex-wrap justify-center gap-2 max-w-md">

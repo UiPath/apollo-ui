@@ -2,7 +2,7 @@
 
 import {
   Check,
-  ClipboardCopy,
+  Copy,
   Pencil,
   RefreshCw,
   ThumbsDown,
@@ -19,9 +19,9 @@ import type { MessageFeedbackType } from "../types";
 const LABELS = {
   copy: "Copy",
   copied: "Copied!",
-  helpful: "Helpful",
-  notHelpful: "Not helpful",
-  regenerate: "Regenerate",
+  helpful: "Good response",
+  notHelpful: "Bad response",
+  regenerate: "Try again",
   edit: "Edit",
 } as const;
 
@@ -53,7 +53,7 @@ export function AiChatMessageActions({
   const copyLabel = copied ? LABELS.copied : LABELS.copy;
 
   return (
-    <div className="flex items-center gap-0.5 opacity-0 group-hover/message:opacity-100 transition-opacity">
+    <div className={`flex items-center gap-0.5 -ml-[7px] transition-opacity ${messageRole === "assistant" ? "opacity-100" : "opacity-0 group-hover/message:opacity-100"}`}>
       {showCopy && (
         <Tooltip>
           <TooltipTrigger asChild>
@@ -66,7 +66,7 @@ export function AiChatMessageActions({
               {copied ? (
                 <Check className="size-3.5 text-success" aria-hidden="true" />
               ) : (
-                <ClipboardCopy
+                <Copy
                   className="size-3.5 text-ai-chat-muted-foreground"
                   aria-hidden="true"
                 />
@@ -77,13 +77,13 @@ export function AiChatMessageActions({
         </Tooltip>
       )}
 
-      {messageRole === "assistant" && onFeedback && (
+      {messageRole === "assistant" && (
         <>
           <Tooltip>
             <TooltipTrigger asChild>
               <button
                 type="button"
-                onClick={() => onFeedback("up")}
+                onClick={() => onFeedback?.("up")}
                 className="size-7 inline-flex items-center justify-center rounded-md hover:bg-ai-chat-muted transition-colors"
                 aria-label={LABELS.helpful}
               >
@@ -100,7 +100,7 @@ export function AiChatMessageActions({
             <TooltipTrigger asChild>
               <button
                 type="button"
-                onClick={() => onFeedback("down")}
+                onClick={() => onFeedback?.("down")}
                 className="size-7 inline-flex items-center justify-center rounded-md hover:bg-ai-chat-muted transition-colors"
                 aria-label={LABELS.notHelpful}
               >
@@ -115,12 +115,12 @@ export function AiChatMessageActions({
         </>
       )}
 
-      {messageRole === "assistant" && onRegenerate && (
+      {messageRole === "assistant" && (
         <Tooltip>
           <TooltipTrigger asChild>
             <button
               type="button"
-              onClick={onRegenerate}
+              onClick={() => onRegenerate?.()}
               className="size-7 inline-flex items-center justify-center rounded-md hover:bg-ai-chat-muted transition-colors"
               aria-label={LABELS.regenerate}
             >

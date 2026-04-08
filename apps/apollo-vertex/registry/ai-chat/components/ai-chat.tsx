@@ -97,19 +97,20 @@ export function AiChat({
   const showLoadingIndicator = isLoading && !lastAssistantHasText;
 
   const defaultEmptyState = (
-    <div className="flex flex-col items-center justify-center h-full text-center text-ai-chat-muted-foreground">
-      <div className="size-16 flex items-center justify-center mb-4 rounded-full bg-ai-chat-accent">
-        <Sparkles
-          className="size-8 text-ai-chat-accent-foreground"
-          aria-hidden="true"
-        />
+    <div className="flex flex-col items-center justify-center h-full text-center">
+      <div className="flex flex-col items-center gap-1">
+        <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground">
+          {"What would you like to do?"}
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          {"I can help you review, fix, or complete your work."}
+        </p>
       </div>
-      <p>{t("start_conversation_with", { name: displayName })}</p>
     </div>
   );
 
-  const padding = isCompact ? "p-2" : "p-4";
-  const messageGap = isCompact ? "space-y-2" : "space-y-4";
+  const padding = isCompact ? "p-2" : "py-4 pl-10 pr-4";
+  const messageGap = isCompact ? "space-y-2" : "space-y-1";
 
   return (
     <AiChatProvider
@@ -125,18 +126,21 @@ export function AiChat({
       <div
         className={
           isEmbedded
-            ? "flex flex-col h-full bg-transparent text-ai-chat-foreground"
-            : "flex flex-col h-full border border-ai-chat-border rounded-lg bg-ai-chat text-ai-chat-foreground"
+            ? "flex flex-col h-full max-w-[765px] mx-auto bg-transparent text-ai-chat-foreground"
+            : "flex flex-col h-full max-w-[765px] mx-auto border border-ai-chat-border rounded-lg bg-transparent text-ai-chat-foreground"
         }
         data-slot="ai-chat"
       >
         {renderHeader ??
           (title && !isCompact && !isEmbedded && (
-            <div className="py-3 px-4">
-              <h3 className="flex items-center gap-2 text-base font-semibold">
-                <Sparkles className="size-4" aria-hidden="true" />
+            <div className="py-3 px-4 flex items-center gap-2">
+              <Sparkles className="size-4 text-[#6C5AEF]" aria-hidden="true" />
+              <span
+                className="text-sm font-bold tracking-tight bg-clip-text text-transparent"
+                style={{ backgroundImage: "var(--ai-gradient-strong)" }}
+              >
                 {title}
-              </h3>
+              </span>
             </div>
           ))}
 

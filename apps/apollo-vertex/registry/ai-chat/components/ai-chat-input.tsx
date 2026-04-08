@@ -1,6 +1,6 @@
 "use client";
 
-import { Paperclip, Send, Square, Trash2 } from "lucide-react";
+import { ArrowUp, Paperclip, Square, Trash2 } from "lucide-react";
 import { type FormEvent, type KeyboardEvent, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/registry/button/button";
@@ -9,10 +9,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/registry/tooltip/tooltip";
-import { useAiChat } from "./ai-chat-provider";
 
 const UPLOAD_LABEL = "Attach files";
-const ENTER_HINT = "Enter to send, Shift+Enter for new line";
+const DISCLAIMER = "Responses may be inaccurate. Please verify important information.";
 
 interface AiChatInputProps {
   value: string;
@@ -44,10 +43,8 @@ export function AiChatInput({
   maxLength,
 }: AiChatInputProps) {
   const { t } = useTranslation();
-  const { variant } = useAiChat();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const isCompact = variant === "compact";
-  const displayPlaceholder = placeholder ?? t("type_a_message");
+  const displayPlaceholder = placeholder ?? "Describe what you want to do\u2026";
 
   const adjustHeight = () => {
     const el = textareaRef.current;
@@ -85,14 +82,41 @@ export function AiChatInput({
     }
   };
 
-  const showCharCount = maxLength && value.length > maxLength * 0.8;
 
   return (
-    <div className="p-3">
+    <div className="mt-auto py-3 px-4">
       <div className="flex items-end gap-2">
         <form
           onSubmit={handleSubmit}
-          className={`flex-1 flex items-end gap-2 px-4 py-2 border-2 transition-colors bg-ai-chat-input border-transparent focus-within:border-ai-chat-ring focus-within:shadow-sm ${isCompact ? "rounded-lg" : "rounded-full"}`}
+          className="flex-1 flex items-end gap-2 pl-[23px] pr-1.5 py-1 rounded-lg border border-input transition-all bg-background"
+          onFocusCapture={(e) => {
+            const el = e.currentTarget;
+            el.style.borderWidth = "2px";
+            el.style.borderColor = "transparent";
+            el.style.backgroundImage = `linear-gradient(var(--background), var(--background)), var(--ai-gradient-strong)`;
+            el.style.backgroundOrigin = "border-box";
+            el.style.backgroundClip = "padding-box, border-box";
+            el.style.boxShadow = "0 0 0 3px color-mix(in oklch, var(--muted-foreground) 10%, transparent)";
+            el.style.paddingLeft = "22px";
+            el.style.paddingTop = "3px";
+            el.style.paddingRight = "5px";
+            el.style.paddingBottom = "3px";
+          }}
+          onBlurCapture={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget)) {
+              const el = e.currentTarget;
+              el.style.borderWidth = "";
+              el.style.borderColor = "";
+              el.style.backgroundImage = "";
+              el.style.backgroundOrigin = "";
+              el.style.backgroundClip = "";
+              el.style.boxShadow = "";
+              el.style.paddingLeft = "";
+              el.style.paddingTop = "";
+              el.style.paddingRight = "";
+              el.style.paddingBottom = "";
+            }
+          }}
         >
           {onFileSelect && (
             <Tooltip>
@@ -101,7 +125,7 @@ export function AiChatInput({
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  className="flex-shrink-0 mb-0.5 text-ai-chat-muted-foreground hover:text-ai-chat-foreground"
+                  className="flex-shrink-0 text-muted-foreground hover:text-foreground"
                   onClick={() => {
                     const fileInput = document.createElement("input");
                     fileInput.type = "file";
@@ -125,7 +149,7 @@ export function AiChatInput({
             onKeyDown={handleKeyDown}
             placeholder={displayPlaceholder}
             aria-label={displayPlaceholder}
-            className="flex-1 resize-none bg-transparent text-sm text-ai-chat-input-foreground placeholder:text-ai-chat-muted-foreground focus-visible:outline-none min-h-[40px] max-h-[200px] py-1.5 overflow-y-auto"
+            className="flex-1 resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none h-[40px] max-h-[200px] py-[10px] overflow-y-auto leading-[20px]"
             rows={1}
             disabled={disabled}
           />
@@ -136,7 +160,7 @@ export function AiChatInput({
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  className="flex-shrink-0 mb-0.5"
+                  className="flex-shrink-0"
                   onClick={onStop}
                 >
                   <Square className="size-4" aria-hidden="true" />
@@ -147,15 +171,15 @@ export function AiChatInput({
           ) : (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
+                <button
                   type="submit"
-                  variant="default"
-                  size="icon-sm"
-                  className="flex-shrink-0 mb-0.5 bg-ai-chat-accent text-ai-chat-accent-foreground hover:bg-ai-chat-accent/90"
                   disabled={!value.trim() || disabled}
+                  className="flex-shrink-0 size-9 mb-0.5 rounded-lg flex items-center justify-center text-white disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+                  style={{ background: "var(--ai-gradient-strong)" }}
+                  aria-label={t("send")}
                 >
-                  <Send className="size-4" aria-hidden="true" />
-                </Button>
+                  <ArrowUp className="size-5" aria-hidden="true" />
+                </button>
               </TooltipTrigger>
               <TooltipContent>{t("send")}</TooltipContent>
             </Tooltip>
@@ -168,7 +192,7 @@ export function AiChatInput({
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                className="flex-shrink-0 text-ai-chat-muted-foreground hover:text-ai-chat-foreground"
+                className="flex-shrink-0 text-muted-foreground hover:text-foreground"
                 onClick={onClear}
               >
                 <Trash2 className="size-4" aria-hidden="true" />
@@ -178,17 +202,8 @@ export function AiChatInput({
           </Tooltip>
         )}
       </div>
-      <div className="flex items-center justify-between px-2 mt-1">
-        {!isCompact && (
-          <span className="text-xs text-ai-chat-muted-foreground">
-            {ENTER_HINT}
-          </span>
-        )}
-        {showCharCount && (
-          <span className="text-xs text-ai-chat-muted-foreground ml-auto">
-            {`${value.length}/${maxLength}`}
-          </span>
-        )}
+      <div className="mt-1 pl-[24px]">
+        <span className="text-xs text-muted-foreground">{DISCLAIMER}</span>
       </div>
     </div>
   );

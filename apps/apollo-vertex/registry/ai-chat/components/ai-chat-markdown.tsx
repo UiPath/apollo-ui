@@ -102,7 +102,7 @@ interface AiChatMarkdownProps {
 
 export function AiChatMarkdown({ children }: AiChatMarkdownProps) {
   return (
-    <div className="px-4 py-3 text-sm rounded-lg bg-ai-chat-bubble-assistant text-ai-chat-bubble-assistant-foreground prose prose-sm dark:prose-invert max-w-none">
+    <div className="py-3 text-sm bg-transparent text-foreground prose prose-sm dark:prose-invert max-w-none">
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
         {children}
       </ReactMarkdown>
