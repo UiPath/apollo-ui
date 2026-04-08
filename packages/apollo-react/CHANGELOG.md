@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.70.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.70.0...@uipath/apollo-react@3.70.1) (2026-04-08)
+
+### Bug Fixes
+
+* **apollo-react:** adhoc tasks should be appended on reorder ([070fe6d](https://github.com/UiPath/apollo-ui/commit/070fe6df0869a4652987e35e636aba81b7f482dd))
+
 ## [@uipath/apollo-react-v3.70.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.69.1...@uipath/apollo-react@3.70.0) (2026-04-08)
 
 ### Features
