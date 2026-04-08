@@ -144,31 +144,6 @@ export function AiChat({
             </div>
           ))}
 
-        {error && (
-          <div
-            role="alert"
-            aria-live="assertive"
-            className="mx-4 mb-2 flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive max-h-16 overflow-y-auto"
-          >
-            <AlertCircle
-              className="h-4 w-4 flex-shrink-0 mt-0.5"
-              aria-hidden="true"
-            />
-            <span className="flex-1">{error.message}</span>
-            {onRetry && (
-              <button
-                type="button"
-                onClick={onRetry}
-                className="flex-shrink-0 inline-flex items-center gap-1 text-xs font-medium hover:underline"
-                aria-label={RETRY_LABEL}
-              >
-                <RefreshCw className="size-3" aria-hidden="true" />
-                {RETRY_LABEL}
-              </button>
-            )}
-          </div>
-        )}
-
         <div className="relative flex-1 min-h-0">
           <div
             ref={scrollRef}
@@ -216,6 +191,31 @@ export function AiChat({
             </button>
           )}
         </div>
+
+        {error && (
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="relative z-0 mx-4 -mb-6 flex items-center gap-2 rounded-t-lg bg-destructive/10 px-[23px] pt-3 pb-6 text-sm text-destructive"
+          >
+            <AlertCircle
+              className="h-4 w-4 flex-shrink-0"
+              aria-hidden="true"
+            />
+            <span className="flex-1">{error.message}</span>
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="flex-shrink-0 inline-flex items-center gap-1 text-xs font-medium hover:underline"
+                aria-label={RETRY_LABEL}
+              >
+                <RefreshCw className="size-3" aria-hidden="true" />
+                {RETRY_LABEL}
+              </button>
+            )}
+          </div>
+        )}
 
         <AiChatInput
           value={input}

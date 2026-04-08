@@ -84,7 +84,7 @@ export function AiChatInput({
 
 
   return (
-    <div className="mt-auto py-3 px-4">
+    <div className="relative z-10 mt-auto py-3 px-4">
       <div className="flex items-end gap-2">
         <form
           onSubmit={handleSubmit}
