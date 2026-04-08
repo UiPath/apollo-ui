@@ -311,29 +311,14 @@
           "target": "components/ui/ai-chat/charts/table-chart-types.ts"
         },
         {
-          "path": "registry/ai-chat/charts/bar-chart-types.ts",
-          "type": "registry:lib",
-          "target": "components/ui/ai-chat/charts/bar-chart-types.ts"
-        },
-        {
           "path": "registry/ai-chat/charts/table-data-model.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/charts/table-data-model.ts"
         },
         {
-          "path": "registry/ai-chat/charts/bar-data-model.ts",
-          "type": "registry:lib",
-          "target": "components/ui/ai-chat/charts/bar-data-model.ts"
-        },
-        {
           "path": "registry/ai-chat/charts/table-chart-card.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/charts/table-chart-card.tsx"
-        },
-        {
-          "path": "registry/ai-chat/charts/bar-chart-card.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/ai-chat/charts/bar-chart-card.tsx"
         },
         {
           "path": "registry/ai-chat/charts/static-data-adapter.ts",
@@ -344,16 +329,6 @@
           "path": "registry/ai-chat/charts/no-data-message.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/charts/no-data-message.tsx"
-        },
-        {
-          "path": "registry/ai-chat/tools/tool-types.ts",
-          "type": "registry:lib",
-          "target": "components/ui/ai-chat/tools/tool-types.ts"
-        },
-        {
-          "path": "registry/ai-chat/tools/tool-utils.ts",
-          "type": "registry:lib",
-          "target": "components/ui/ai-chat/tools/tool-utils.ts"
         },
         {
           "path": "registry/ai-chat/tools/choices/choices-tool.tsx",
@@ -376,14 +351,14 @@
           "target": "components/ui/ai-chat/tools/table/index.ts"
         },
         {
-          "path": "registry/ai-chat/tools/barchart/barchart-tool.tsx",
+          "path": "registry/ai-chat/tools/data-fabric-table/data-fabric-table-tool.tsx",
           "type": "registry:ui",
-          "target": "components/ui/ai-chat/tools/barchart/barchart-tool.tsx"
+          "target": "components/ui/ai-chat/tools/data-fabric-table/data-fabric-table-tool.tsx"
         },
         {
-          "path": "registry/ai-chat/tools/barchart/index.ts",
+          "path": "registry/ai-chat/tools/data-fabric-table/index.ts",
           "type": "registry:lib",
-          "target": "components/ui/ai-chat/tools/barchart/index.ts"
+          "target": "components/ui/ai-chat/tools/data-fabric-table/index.ts"
         },
         {
           "path": "registry/ai-chat/components/ai-chat.tsx",

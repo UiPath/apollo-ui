@@ -1,1 +1,7 @@
-export { createTableTool, tableTool, TABLE_TOOL_PROMPT } from "./table-tool";
+export {
+  columnSchema,
+  tableInput,
+  type TableInput,
+  type TableToolRenderOptions,
+  renderTable,
+} from "./table-tool";

@@ -2,7 +2,6 @@
 
 import { toolDefinition } from "@tanstack/ai";
 import { z } from "zod";
-import type { AiChatTool } from "../tool-types";
 import { AiChatSuggestions } from "../../components/ai-chat-suggestions";
 
 const choiceOptionSchema = z.object({
@@ -33,14 +32,16 @@ const presentChoicesDef = toolDefinition({
 
 export const presentChoicesClient = presentChoicesDef.client((input) => input);
 
-export const choicesTool: AiChatTool = {
-  tool: presentChoicesClient,
-  prompt: CHOICES_TOOL_PROMPT,
-  render: (args, { onAction }) => (
+export function renderChoices(
+  output: unknown,
+  context: { onAction: (message: string) => void },
+) {
+  const { prompt, options } = output as z.infer<typeof presentChoicesInput>;
+  return (
     <AiChatSuggestions
-      prompt={(args as z.infer<typeof presentChoicesInput>).prompt}
-      options={(args as z.infer<typeof presentChoicesInput>).options}
-      onSelect={(option: ChoiceOption) => onAction(option.label)}
+      prompt={prompt}
+      options={options}
+      onSelect={(option: ChoiceOption) => context.onAction(option.label)}
     />
-  ),
-};
+  );
+}

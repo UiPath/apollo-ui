@@ -4,15 +4,24 @@ import type { TextPart, ToolCallPart, UIMessage } from "@tanstack/ai-client";
 import { Loader2, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import type { DisplayTools } from "../tools/tool-types";
 import { AiChatMarkdown } from "./ai-chat-markdown";
+
+interface ToolCallRenderProps {
+  id: string;
+  name: string;
+  output: unknown;
+}
+
+export type ToolsRenderer = Record<
+  string,
+  (props: ToolCallRenderProps) => ReactNode
+>;
 
 interface AiChatMessageProps {
   message: UIMessage;
   assistantName?: string;
   children?: ReactNode;
-  displayTools?: DisplayTools;
-  onAction?: (message: string) => void;
+  toolsRenderer?: ToolsRenderer;
 }
 
 function getDisplayText(message: UIMessage): string {
@@ -26,7 +35,7 @@ function AiChatToolLoading() {
   return (
     <div className="flex items-center gap-2 text-sm text-muted-foreground py-1">
       <Loader2 className="size-3 animate-spin" aria-hidden="true" />
-      <span>Loading...</span>
+      <span>{"Loading..."}</span>
     </div>
   );
 }
@@ -35,20 +44,20 @@ export function AiChatMessage({
   message,
   assistantName,
   children,
-  displayTools,
-  onAction,
+  toolsRenderer,
 }: AiChatMessageProps) {
   const { t } = useTranslation();
   const isUser = message.role === "user";
   const displayName = assistantName ?? t("ai_assistant");
   const displayContent = getDisplayText(message);
 
-  const toolRenders = !isUser
-    ? message.parts
+  const toolRenders = isUser
+    ? []
+    : message.parts
         .filter((p): p is ToolCallPart => p.type === "tool-call")
         .flatMap((tc) => {
-          const tool = displayTools?.[tc.name];
-          if (!tool?.render) return [];
+          const renderer = toolsRenderer?.[tc.name];
+          if (!renderer) return [];
 
           if (tc.output == null) {
             return [<AiChatToolLoading key={tc.id} />];
@@ -56,13 +65,10 @@ export function AiChatMessage({
 
           return [
             <div key={tc.id}>
-              {tool.render(tc.output, {
-                onAction: onAction ?? (() => {}),
-              })}
+              {renderer({ id: tc.id, name: tc.name, output: tc.output })}
             </div>,
           ];
-        })
-    : [];
+        });
 
   const hasToolContent = toolRenders.length > 0;
 

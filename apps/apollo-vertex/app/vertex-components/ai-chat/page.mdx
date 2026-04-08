@@ -12,8 +12,9 @@ A composable AI chat UI component for the Apollo Design System. Built with React
 
 - **TanStack AI Integration** — Works with `useChat` from `@tanstack/ai-react` and `UIMessage` types
 - **Composable** — `AiChat` is the shell, `AiChatMessage` renders messages, you iterate parts and render tools inline
-- **Display Tool System** — Register tools with `createDisplayTool()`, rendering happens automatically via `displayTools` prop
-- **Built-in Tools** — Choices (interactive buttons), Table (data table), Bar Chart (visualization)
+- **Tool Renderer System** — Pass a `toolsRenderer` record to `AiChatMessage` — tool calls are rendered automatically by name
+- **Built-in Tools** — Choices (interactive buttons), Data Fabric Table (data table via `@uipath/apollo-dashboarding`)
+- **Reusable Table Infrastructure** — `table-tool` exports schema and render function, used by `data-fabric-table` and extensible for custom table tools with different adapters
 - **AgentHub Adapter** — Built-in adapter for the UiPath AgentHub normalized LLM endpoint (OpenAI + Anthropic models)
 - **Markdown Rendering** — Renders assistant responses with GitHub Flavored Markdown
 - **Error Display** — Inline error banner for API and network errors
@@ -35,24 +36,26 @@ npm install @tanstack/ai @tanstack/ai-client @tanstack/ai-react eventsource-pars
 ## Quick Start
 
 ```tsx
+import { useMemo } from 'react';
 import { useChat } from '@tanstack/ai-react';
 import { AiChat } from '@/registry/ai-chat/components/ai-chat';
 import { AiChatMessage } from '@/registry/ai-chat/components/ai-chat-message';
 import { createAgentHubConnection } from '@/registry/ai-chat/adapters/agenthub/adapter';
-import { choicesTool } from '@/registry/ai-chat/tools/choices';
-import { tableTool } from '@/registry/ai-chat/tools/table';
-import { barchartTool } from '@/registry/ai-chat/tools/barchart';
 import {
-  extractClientTools,
-  extractDisplayTools,
-  extractPrompts,
-} from '@/registry/ai-chat/tools/tool-utils';
+  presentChoicesClient,
+  CHOICES_TOOL_PROMPT,
+  renderChoices,
+} from '@/registry/ai-chat/tools/choices';
+import {
+  dataFabricTableClient,
+  DATA_FABRIC_TABLE_PROMPT,
+  renderDataFabricTable,
+} from '@/registry/ai-chat/tools/data-fabric-table';
 
-// 1. Compose tools
-const allTools = [choicesTool, tableTool, barchartTool];
-const clientTools = extractClientTools(allTools);
-const displayTools = extractDisplayTools(allTools);
-const systemPrompt = `You are a helpful assistant.\n\n${extractPrompts(allTools)}`;
+// 1. Compose tools — plain arrays, no wrappers
+const clientTools = [presentChoicesClient, dataFabricTableClient];
+
+const systemPrompt = `You are a helpful assistant.\n\n${CHOICES_TOOL_PROMPT}\n\n${DATA_FABRIC_TABLE_PROMPT}`;
 
 function MyChat() {
   // 2. Create connection with tools
@@ -69,7 +72,17 @@ function MyChat() {
     tools: clientTools,
   });
 
-  // 3. Render — display tools render automatically via displayTools prop
+  // 3. Build toolsRenderer — a plain Record<string, renderer>
+  const toolsRenderer = useMemo(
+    () => ({
+      data_fabric_table: ({ output }) => renderDataFabricTable(output),
+      presentChoices: ({ output }) =>
+        renderChoices(output, { onAction: (text) => sendMessage(text) }),
+    }),
+    [sendMessage],
+  );
+
+  // 4. Render — toolsRenderer handles tool call display
   return (
     <AiChat
       messages={messages}
@@ -84,8 +97,7 @@ function MyChat() {
         <AiChatMessage
           key={message.id}
           message={message}
-          displayTools={displayTools}
-          onAction={(text) => sendMessage(text)}
+          toolsRenderer={toolsRenderer}
         />
       ))}
     </AiChat>
@@ -95,59 +107,59 @@ function MyChat() {
 
 ---
 
-## Display Tool System
+## Tool Renderer System
 
-Display tools are client-side tools that render UI inline within chat messages. When the backend agent calls a display tool, TanStack AI executes the client handler and `AiChatMessage` renders the result automatically.
+Tools follow the TanStack AI pattern: each tool exports three separate things — a **client tool** (for the AI model), a **prompt** (for the system message), and a **render function** (for the UI). No bundling, no wrapper types.
 
 ### How it works
 
-1. **Define** — `createDisplayTool()` wraps a TanStack AI `toolDefinition().client()` with a `render` function and system prompt
-2. **Extract** — `extractClientTools()` gives you `AnyClientTool[]` for the connection, `extractDisplayTools()` gives you a `DisplayTools` record for rendering
-3. **Render** — `AiChatMessage` iterates `tool-call` parts, looks up the tool by name, calls `render(output)` inline
+1. **Define** — Use `toolDefinition().client()` from `@tanstack/ai` to create the client tool
+2. **Export separately** — Export the client tool, prompt string, and render function as independent values
+3. **Wire up** — Build a `toolsRenderer` record (keyed by tool name) and pass to `<AiChatMessage>`
+4. **Render** — `AiChatMessage` iterates `tool-call` parts, looks up the renderer by name, calls it with the output
 
-### `createDisplayTool()`
-
-Factory for creating display tools with type-safe Zod schemas:
+### Creating a custom tool
 
 ```tsx
+import { toolDefinition } from '@tanstack/ai';
 import { z } from 'zod';
-import { createDisplayTool } from '@/registry/ai-chat/tools/tool-utils';
 
-const myTool = createDisplayTool({
+// 1. Define the tool
+const myToolInput = z.object({
+  data: z.string().describe('The data to display'),
+});
+
+const myToolDef = toolDefinition({
   name: 'my_tool',
   description: 'What this tool does — sent to the LLM.',
-  inputSchema: z.object({
-    data: z.string().describe('The data to display'),
-  }),
-  prompt: 'System prompt snippet explaining when to use this tool.',
-  render: (args, { onAction }) => (
-    <div className="rounded-lg border p-4">
-      <p>{args.data}</p>
-      <button onClick={() => onAction('User clicked')}>Click me</button>
-    </div>
-  ),
+  inputSchema: myToolInput,
 });
+
+export const myToolClient = myToolDef.client((input) => input);
+
+// 2. Export prompt
+export const MY_TOOL_PROMPT = 'You have a "my_tool" tool. Use it when...';
+
+// 3. Export render function
+export function renderMyTool(output: unknown) {
+  const { data } = output as z.infer<typeof myToolInput>;
+  return (
+    <div className="rounded-lg border p-4">
+      <p>{data}</p>
+    </div>
+  );
+}
 ```
 
-### Extraction helpers
+Then wire it up:
 
 ```tsx
-import {
-  extractClientTools,
-  extractDisplayTools,
-  extractPrompts,
-} from '@/registry/ai-chat/tools/tool-utils';
+const clientTools = [myToolClient, ...otherTools];
+const systemPrompt = `...\n\n${MY_TOOL_PROMPT}`;
 
-const allTools = [choicesTool, tableTool, barchartTool];
-
-// For useChat() and createAgentHubConnection()
-const clientTools = extractClientTools(allTools);
-
-// For <AiChatMessage displayTools={...} />
-const displayTools = extractDisplayTools(allTools);
-
-// For systemPrompt — combines all tool prompt snippets
-const toolPrompts = extractPrompts(allTools);
+const toolsRenderer = {
+  my_tool: ({ output }) => renderMyTool(output),
+};
 ```
 
 ---
@@ -156,12 +168,16 @@ const toolPrompts = extractPrompts(allTools);
 
 ### Choices Tool
 
-Presents 2-4 interactive choice buttons. When the user clicks a button, `onAction` sends the label as a message.
+Presents 2-4 interactive choice buttons. When the user clicks a button, the label is sent as a message.
 
 > **Try it out** — type *"give me some choices"* in the demo above.
 
 ```tsx
-import { choicesTool } from '@/registry/ai-chat/tools/choices';
+import {
+  presentChoicesClient,
+  CHOICES_TOOL_PROMPT,
+  renderChoices,
+} from '@/registry/ai-chat/tools/choices';
 ```
 
 **Tool name:** `presentChoices`
@@ -179,15 +195,19 @@ import { choicesTool } from '@/registry/ai-chat/tools/choices';
 
 The `recommended` option gets highlighted with a primary border. Options are rendered as clickable buttons that disappear after selection.
 
-### Table Tool
+### Data Fabric Table Tool
 
 Displays structured data as a table using `@uipath/apollo-dashboarding`. The backend agent provides column definitions and row data inline.
 
 ```tsx
-import { tableTool } from '@/registry/ai-chat/tools/table';
+import {
+  dataFabricTableClient,
+  DATA_FABRIC_TABLE_PROMPT,
+  renderDataFabricTable,
+} from '@/registry/ai-chat/tools/data-fabric-table';
 ```
 
-**Tool name:** `show_table`
+**Tool name:** `data_fabric_table`
 
 **Input schema:**
 ```json
@@ -209,57 +229,50 @@ import { tableTool } from '@/registry/ai-chat/tools/table';
 
 Column types: `"string"` (default), `"numeric"`, `"boolean"`, `"datetime"`. The table renders inside a Card with sorting support.
 
-### Bar Chart Tool
+### Creating a custom table tool with a different adapter
 
-Displays data as a bar chart visualization. Specify which columns are dimensions (X-axis categories) and metrics (Y-axis values).
+The `table-tool` module exports reusable schema and rendering infrastructure. You can create a new table tool with a custom data adapter:
 
 ```tsx
-import { barchartTool } from '@/registry/ai-chat/tools/barchart';
-```
+import { toolDefinition } from '@tanstack/ai';
+import { tableInput, renderTable } from '@/registry/ai-chat/tools/table';
 
-**Tool name:** `show_barchart`
+const myTableDef = toolDefinition({
+  name: 'my_custom_table',
+  description: 'Display data from my custom source.',
+  inputSchema: tableInput,
+});
 
-**Input schema:**
-```json
-{
-  "title": "Revenue by Quarter",
-  "columns": [
-    { "name": "Quarter", "type": "string" },
-    { "name": "Revenue", "type": "numeric" }
-  ],
-  "rows": [
-    { "Quarter": "Q1", "Revenue": 45000 },
-    { "Quarter": "Q2", "Revenue": 62000 },
-    { "Quarter": "Q3", "Revenue": 58000 },
-    { "Quarter": "Q4", "Revenue": 71000 }
-  ],
-  "dimensions": ["Quarter"],
-  "metrics": ["Revenue"]
+export const myCustomTableClient = myTableDef.client((input) => input);
+export const MY_CUSTOM_TABLE_PROMPT = 'You have a "my_custom_table" tool...';
+
+export function renderMyCustomTable(output: unknown) {
+  return renderTable(output, {
+    buildAdapter: (rows, cacheKey) => myCustomAdapter(rows, cacheKey),
+  });
 }
 ```
-
-The chart auto-renders inside a Card using `@uipath/apollo-dashboarding`'s `BarChart` component.
 
 ### Using tools selectively
 
 You don't have to include all built-in tools. Pick only what you need:
 
 ```tsx
-// Only choices — no charts
-const allTools = [choicesTool];
+// Only choices — no tables
+const clientTools = [presentChoicesClient];
 
-// Only charts — no choices
-const allTools = [tableTool, barchartTool];
+// Only table
+const clientTools = [dataFabricTableClient];
 
 // All built-in tools
-const allTools = [choicesTool, tableTool, barchartTool];
+const clientTools = [presentChoicesClient, dataFabricTableClient];
 ```
 
 ---
 
 ## Custom Tool Rendering
 
-For full control, you can also render tool calls manually via the `children` prop — just like TanStack AI's own examples. This works alongside or instead of the `displayTools` system.
+For full control, you can also render tool calls manually via the `children` prop — just like TanStack AI's own examples. This works alongside or instead of the `toolsRenderer` system.
 
 ```tsx
 import { z } from 'zod';
@@ -381,35 +394,25 @@ Chat shell component. Handles layout, scroll, input, loading indicator, and erro
 
 ### `<AiChatMessage>`
 
-Renders a single message with avatar, name, markdown text, and display tool output.
+Renders a single message with avatar, name, markdown text, and tool output.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `message` | `UIMessage` | required | The message to render |
 | `assistantName` | `string` | `"AI Assistant"` | Assistant display name |
 | `children` | `ReactNode` | — | Custom content below the message text (manual tool rendering) |
-| `displayTools` | `DisplayTools` | — | Display tools record from `extractDisplayTools()` — tool calls are rendered automatically |
-| `onAction` | `(message: string) => void` | — | Callback when a display tool triggers an action (e.g. choice selected) |
+| `toolsRenderer` | `ToolsRenderer` | — | Record of tool renderers keyed by tool name — tool calls are rendered automatically |
 
-### `AiChatTool`
+### `ToolsRenderer`
 
-The interface for registering a display tool.
+A plain record mapping tool names to render functions:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `tool` | `AnyClientTool` | TanStack AI client tool (created internally by `createDisplayTool`) |
-| `prompt` | `string` | System prompt snippet appended via `extractPrompts()` |
-| `render` | `(args, context) => ReactNode` | Render function called with tool output and `{ onAction }` context |
-
-### `createDisplayTool(options)`
-
-| Option | Type | Description |
-|--------|------|-------------|
-| `name` | `string` | Tool name (used by LLM to call it) |
-| `description` | `string` | Tool description (sent to LLM) |
-| `inputSchema` | `ZodType` | Zod schema for tool input validation |
-| `prompt` | `string` | System prompt snippet for this tool |
-| `render` | `(args: z.infer<TInput>, context: { onAction }) => ReactNode` | Render function |
+```typescript
+type ToolsRenderer = Record<
+  string,
+  (props: { id: string; name: string; output: unknown }) => ReactNode
+>;
+```
 
 ### `AgentHubAdapterConfig`
 
@@ -434,22 +437,24 @@ Configuration for the AgentHub adapter.
 import type { UIMessage } from '@tanstack/ai-client';
 import type { ToolCallPart, TextPart, ToolResultPart } from '@tanstack/ai-client';
 
-// Display tool types
-import type { AiChatTool, DisplayTools } from '@/registry/ai-chat/tools/tool-types';
+// Tool renderer type
+import type { ToolsRenderer } from '@/registry/ai-chat/components/ai-chat-message';
 import type { ChoiceOption } from '@/registry/ai-chat/tools/choices';
 
-// Tool utilities
-import {
-  createDisplayTool,
-  extractClientTools,
-  extractDisplayTools,
-  extractPrompts,
-} from '@/registry/ai-chat/tools/tool-utils';
-
 // Built-in tools
-import { choicesTool } from '@/registry/ai-chat/tools/choices';
-import { tableTool } from '@/registry/ai-chat/tools/table';
-import { barchartTool } from '@/registry/ai-chat/tools/barchart';
+import {
+  presentChoicesClient,
+  CHOICES_TOOL_PROMPT,
+  renderChoices,
+} from '@/registry/ai-chat/tools/choices';
+import {
+  dataFabricTableClient,
+  DATA_FABRIC_TABLE_PROMPT,
+  renderDataFabricTable,
+} from '@/registry/ai-chat/tools/data-fabric-table';
+
+// Reusable table infrastructure
+import { tableInput, renderTable } from '@/registry/ai-chat/tools/table';
 
 // AgentHub adapter
 import {
