@@ -292,16 +292,19 @@ export const BaseHeader = styled.div<{ shape?: NodeShape; backgroundColor?: stri
     `}
   line-height: 1.4;
   margin-bottom: 2px;
+  overflow: hidden;
   ${({ shape }) =>
     shape === 'rectangle'
       ? css`
           width: 100%;
           white-space: nowrap;
-          overflow: hidden;
           text-overflow: ellipsis;
         `
       : css`
           word-break: break-word;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 3;
         `}
 `;
 
@@ -310,16 +313,18 @@ export const BaseSubHeader = styled.div<{ shape?: NodeShape }>`
   color: var(--uix-canvas-foreground-de-emp);
   line-height: 1.3;
   word-break: break-word;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
   ${({ shape }) =>
     shape === 'rectangle'
       ? css`
           width: 100%;
-          display: -webkit-box;
-          -webkit-box-orient: vertical;
           -webkit-line-clamp: 2;
-          overflow: hidden;
         `
-      : ''}
+      : css`
+          -webkit-line-clamp: 5;
+`}
 `;
 
 export const EditableLabel = styled.textarea<{
