@@ -1344,6 +1344,69 @@
       "files": [
         { "path": "registry/calendar/calendar.tsx", "type": "registry:ui" }
       ]
+    },
+    {
+      "name": "feature-flag-provider",
+      "type": "registry:lib",
+      "title": "Feature Flag Provider",
+      "description": "Generic feature flag provider with Proteus SDK integration, reactive listeners, and environment-based switching.",
+      "dependencies": ["@uipath/proteus-client"],
+      "files": [
+        {
+          "path": "registry/feature-flag-provider/types.ts",
+          "type": "registry:lib",
+          "target": "lib/feature-flag-provider/types.ts"
+        },
+        {
+          "path": "registry/feature-flag-provider/proteus-adapter.ts",
+          "type": "registry:lib",
+          "target": "lib/feature-flag-provider/proteus-adapter.ts"
+        },
+        {
+          "path": "registry/feature-flag-provider/feature-flag-provider.tsx",
+          "type": "registry:lib",
+          "target": "lib/feature-flag-provider/feature-flag-provider.tsx"
+        }
+      ]
+    },
+    {
+      "name": "use-feature-flag",
+      "type": "registry:hook",
+      "title": "useFeatureFlag",
+      "description": "React hook that reads a feature flag value and reactively updates when the flag changes.",
+      "registryDependencies": ["@uipath/feature-flag-provider"],
+      "files": [
+        {
+          "path": "registry/use-feature-flag/use-feature-flag.ts",
+          "type": "registry:hook"
+        }
+      ]
+    },
+    {
+      "name": "feature-flag-guard",
+      "type": "registry:ui",
+      "title": "FeatureFlagGuard",
+      "description": "Wrapper component that conditionally renders children based on a feature flag value.",
+      "registryDependencies": ["@uipath/use-feature-flag"],
+      "files": [
+        {
+          "path": "registry/feature-flag-guard/feature-flag-guard.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "protected-feature-route",
+      "type": "registry:ui",
+      "title": "ProtectedFeatureRoute",
+      "description": "Route-level guard that throws an error when a feature flag is disabled.",
+      "registryDependencies": ["@uipath/use-feature-flag"],
+      "files": [
+        {
+          "path": "registry/protected-feature-route/protected-feature-route.tsx",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }

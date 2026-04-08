@@ -92,6 +92,24 @@
       ],
       "@/components/theme-provider/theme-provider": [
         "./registry/theme-provider/theme-provider"
+      ],
+      "@/lib/feature-flag-provider": [
+        "./registry/feature-flag-provider/feature-flag-provider"
+      ],
+      "@/lib/feature-flag-provider/types": [
+        "./registry/feature-flag-provider/types"
+      ],
+      "@/lib/feature-flag-provider/proteus-adapter": [
+        "./registry/feature-flag-provider/proteus-adapter"
+      ],
+      "@/hooks/use-feature-flag": [
+        "./registry/use-feature-flag/use-feature-flag"
+      ],
+      "@/components/ui/feature-flag-guard": [
+        "./registry/feature-flag-guard/feature-flag-guard"
+      ],
+      "@/components/ui/protected-feature-route": [
+        "./registry/protected-feature-route/protected-feature-route"
       ]
     },
     "allowJs": true
