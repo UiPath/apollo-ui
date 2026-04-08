@@ -1,5 +1,11 @@
 import type { ReactNode } from "react";
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { THEME_STORAGE_KEY } from "./shell-constants";
 
 export type ThemeConfig = {
@@ -65,22 +71,14 @@ function isValidTheme(value: string | null): value is Theme {
   return value === "light" || value === "dark" || value === "system";
 }
 
-function getEffectiveTheme(theme: Theme): "light" | "dark" {
-  if (theme === "system") {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-  }
-  return theme;
-}
-
-function applyThemeClass(theme: Theme, disableTransitions?: boolean) {
+function applyThemeClass(
+  resolved: "light" | "dark",
+  disableTransitions?: boolean,
+) {
   const root = window.document.documentElement;
-  const resolved = getEffectiveTheme(theme);
 
-  let styleEl: HTMLStyleElement | null = null;
-  if (disableTransitions) {
-    styleEl = document.createElement("style");
+  const styleEl = disableTransitions ? document.createElement("style") : null;
+  if (styleEl) {
     styleEl.textContent =
       "*, *::before, *::after { transition: none !important }";
     document.head.append(styleEl);
@@ -96,9 +94,9 @@ function applyThemeClass(theme: Theme, disableTransitions?: boolean) {
   }
 }
 
-function applyThemeConfig(config: ThemeConfig, theme: Theme) {
+function applyThemeConfig(config: ThemeConfig, resolved: "light" | "dark") {
   const root = document.documentElement;
-  const isDark = getEffectiveTheme(theme) === "dark";
+  const isDark = resolved === "dark";
 
   for (const cssVar of Object.values(cssVarMap)) {
     root.style.removeProperty(cssVar);
@@ -135,9 +133,18 @@ export function ThemeProvider({
     return isValidTheme(stored) ? stored : defaultTheme;
   });
 
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() =>
-    typeof window === "undefined" ? "light" : getEffectiveTheme(theme),
+  const systemDark = useSyncExternalStore(
+    (cb) => {
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      mq.addEventListener("change", cb);
+      return () => mq.removeEventListener("change", cb);
+    },
+    () => window.matchMedia("(prefers-color-scheme: dark)").matches,
+    () => false,
   );
+
+  const resolvedTheme =
+    theme === "system" ? (systemDark ? "dark" : "light") : theme;
 
   const setTheme = (newTheme: Theme) => {
     localStorage.setItem(storageKey, newTheme);
@@ -146,23 +153,8 @@ export function ThemeProvider({
 
   // Apply light/dark class to document root
   useEffect(() => {
-    applyThemeClass(theme, disableTransitionOnChange);
-    setResolvedTheme(getEffectiveTheme(theme));
-  }, [theme, disableTransitionOnChange]);
-
-  // Listen for system theme changes when in system mode
-  useEffect(() => {
-    if (theme !== "system") return;
-
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = () => {
-      applyThemeClass(theme, disableTransitionOnChange);
-      setResolvedTheme(getEffectiveTheme(theme));
-    };
-
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme, disableTransitionOnChange]);
+    applyThemeClass(resolvedTheme, disableTransitionOnChange);
+  }, [resolvedTheme, disableTransitionOnChange]);
 
   // Cross-tab sync: update React state when theme changes in another tab
   useEffect(() => {
@@ -180,9 +172,9 @@ export function ThemeProvider({
   useEffect(() => {
     if (!themeConfig) return;
 
-    applyThemeConfig(themeConfig, theme);
+    applyThemeConfig(themeConfig, resolvedTheme);
     return () => clearThemeConfig();
-  }, [themeConfig, theme]);
+  }, [themeConfig, resolvedTheme]);
 
   return (
     <ThemeProviderContext.Provider value={{ theme, resolvedTheme, setTheme }}>
