@@ -29,7 +29,7 @@ const createMenuItems = (onRemoveClick: () => void): NodeMenuItem[] => [
 
 describe('AdhocTaskItem', () => {
   const defaultProps = {
-    task: createTask('adhoc-1', 'Adhoc Task'),
+    task: createTask('adhoc-1', 'Ad hoc Task'),
     taskExecution: undefined,
     isSelected: false,
     onTaskClick: vi.fn(),
@@ -45,7 +45,7 @@ describe('AdhocTaskItem', () => {
     it('renders task label', () => {
       render(<AdhocTaskItem {...defaultProps} />);
 
-      expect(screen.getByText('Adhoc Task')).toBeInTheDocument();
+      expect(screen.getByText('Ad hoc Task')).toBeInTheDocument();
     });
 
     it('renders with selected state', () => {
