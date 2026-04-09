@@ -60,7 +60,6 @@ function ConversationalAgentChatInner({
         <AiChatMessage
           key={message.id}
           message={message}
-          assistantName={assistantName}
         />
       ))}
     </AiChat>

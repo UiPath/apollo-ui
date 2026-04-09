@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUp, Paperclip, Square, Trash2 } from "lucide-react";
+import { ArrowUp, CircleStop, Paperclip, Trash2 } from "lucide-react";
 import { type FormEvent, type KeyboardEvent, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/registry/button/button";
@@ -44,6 +44,7 @@ export function AiChatInput({
 }: AiChatInputProps) {
   const { t } = useTranslation();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
   const displayPlaceholder = placeholder ?? "Describe what you want to do\u2026";
 
   const adjustHeight = () => {
@@ -85,10 +86,16 @@ export function AiChatInput({
 
   return (
     <div className="relative z-10 mt-auto py-3 px-4">
-      <div className="flex items-end gap-2">
+      <div className="relative flex items-end gap-2">
+        <div
+          ref={glowRef}
+          className={`absolute -inset-1 rounded-xl blur-sm transition-opacity duration-300 pointer-events-none ${hasMessages ? "opacity-0" : "opacity-10"}`}
+          style={{ background: "var(--ai-gradient-strong)" }}
+          aria-hidden="true"
+        />
         <form
           onSubmit={handleSubmit}
-          className="flex-1 flex items-end gap-2 pl-[23px] pr-1.5 py-1 rounded-lg border border-input transition-all bg-background"
+          className="relative flex-1 flex items-end gap-2 pl-[23px] pr-1.5 py-1 rounded-lg border border-input transition-all bg-background"
           onFocusCapture={(e) => {
             const el = e.currentTarget;
             el.style.borderWidth = "2px";
@@ -101,6 +108,7 @@ export function AiChatInput({
             el.style.paddingTop = "3px";
             el.style.paddingRight = "5px";
             el.style.paddingBottom = "3px";
+            if (glowRef.current) glowRef.current.style.opacity = "0";
           }}
           onBlurCapture={(e) => {
             if (!e.currentTarget.contains(e.relatedTarget)) {
@@ -115,6 +123,7 @@ export function AiChatInput({
               el.style.paddingTop = "";
               el.style.paddingRight = "";
               el.style.paddingBottom = "";
+              if (glowRef.current) glowRef.current.style.opacity = "";
             }
           }}
         >
@@ -156,15 +165,13 @@ export function AiChatInput({
           {isLoading ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  className="flex-shrink-0"
+                  className="flex-shrink-0 size-9 mb-0.5 rounded-lg flex items-center justify-center bg-secondary transition-opacity"
                   onClick={onStop}
                 >
-                  <Square className="size-4" aria-hidden="true" />
-                </Button>
+                  <CircleStop className="size-5 text-muted-foreground" aria-hidden="true" />
+                </button>
               </TooltipTrigger>
               <TooltipContent>{t("stop")}</TooltipContent>
             </Tooltip>

@@ -144,6 +144,26 @@ export function AiChat({
             </div>
           ))}
 
+        {messages.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center px-4" style={{ justifyContent: "center", paddingBottom: "10%" }}>
+            <div className="w-full max-w-[765px]">
+              <div className="text-center mb-10">
+                {emptyState ?? defaultEmptyState}
+              </div>
+              <AiChatInput
+                value={input}
+                onChange={setInput}
+                onSubmit={handleSubmit}
+                onStop={onStop}
+                onClear={onClearChat}
+                isLoading={isLoading}
+                placeholder={placeholder}
+                showClearButton={showClearButton}
+                hasMessages={false}
+              />
+            </div>
+          </div>
+        ) : (
         <div className="relative flex-1 min-h-0">
           <div
             ref={scrollRef}
@@ -153,9 +173,6 @@ export function AiChat({
             aria-atomic="false"
             className={`h-full overflow-y-auto ${padding}`}
           >
-            {messages.length === 0 ? (
-              (emptyState ?? defaultEmptyState)
-            ) : (
               <div ref={contentRef} className={messageGap}>
                 {children}
 
@@ -177,7 +194,6 @@ export function AiChat({
                   <AiChatLoading assistantName={displayName} />
                 )}
               </div>
-            )}
           </div>
 
           {!isStuck && (
@@ -191,6 +207,7 @@ export function AiChat({
             </button>
           )}
         </div>
+        )}
 
         {error && (
           <div
@@ -217,17 +234,19 @@ export function AiChat({
           </div>
         )}
 
-        <AiChatInput
-          value={input}
-          onChange={setInput}
-          onSubmit={handleSubmit}
-          onStop={onStop}
-          onClear={onClearChat}
-          isLoading={isLoading}
-          placeholder={placeholder}
-          showClearButton={showClearButton}
-          hasMessages={messages.length > 0}
-        />
+        {messages.length > 0 && (
+          <AiChatInput
+            value={input}
+            onChange={setInput}
+            onSubmit={handleSubmit}
+            onStop={onStop}
+            onClear={onClearChat}
+            isLoading={isLoading}
+            placeholder={placeholder}
+            showClearButton={showClearButton}
+            hasMessages
+          />
+        )}
       </div>
     </AiChatProvider>
   );

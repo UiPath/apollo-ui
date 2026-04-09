@@ -94,8 +94,8 @@ export default function AiChatPreviewPage() {
             onStop={noop}
             emptyState={
               <AiChatEmptyState
-                title="Project Helper"
-                description="I can help you scaffold projects, debug code, and write docs."
+                title="What would you like to do?"
+                description="I can help you review, fix, or complete your work."
                 suggestions={[
                   "Create a React app",
                   "Debug my code",
@@ -144,14 +144,14 @@ export default function AiChatPreviewPage() {
             onSendMessage={noop}
             onStop={noop}
             title="Project Setup Wizard"
-            assistantName="Setup Bot"
+
             showTimestamps
           >
             {MOCK_MESSAGES_CONVERSATION.map((msg) => (
               <AiChatMessage
                 key={msg.id}
                 message={msg}
-                assistantName="Setup Bot"
+
               />
             ))}
           </AiChat>

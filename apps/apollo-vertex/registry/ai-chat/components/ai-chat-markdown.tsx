@@ -51,7 +51,7 @@ const components: ComponentProps<typeof ReactMarkdown>["components"] = {
     );
   },
   a: ({ children, ...props }: AnchorProps) => (
-    <a className="text-primary hover:underline" {...props}>
+    <a className="text-primary-700 dark:text-primary-400 hover:underline" {...props}>
       {children}
     </a>
   ),

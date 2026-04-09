@@ -53,7 +53,6 @@ export function AgentHubChat({ accessToken, orgTenant }: AgentHubChatProps) {
         <AiChatMessage
           key={message.id}
           message={message}
-          assistantName={t("assistant")}
         />
       ))}
     </AiChat>
