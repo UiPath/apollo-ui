@@ -1,0 +1,117 @@
+import { Callout } from 'nextra/components'
+
+# What is Apollo?
+
+Apollo v.4 is UiPath's open-source design system for building consistent user experiences across all UiPath products.
+
+**Repository:** [UiPath/apollo-ui](https://github.com/UiPath/apollo-ui)
+
+## Live Demos
+
+Explore components in interactive environments:
+
+| Demo | Description |
+|---|---|
+| [Apollo Core](https://apollo-ui-react.vercel.app/) | Design system built with Material UI |
+| [Apollo Wind](https://apollo-wind.vercel.app/) | Design system built with shadcn/Tailwind |
+| [Apollo React](https://apollo-canvas.vercel.app/) | Workflow and canvas-specific component demos |
+| [Apollo Vertex](https://apollo-vertex.vercel.app/) | Complete design system showcase and component registry |
+
+---
+
+## Features
+
+- **Design Tokens** — 1300+ icons, comprehensive color system, typography, spacing
+- **React Components** — Built on Material UI with Apollo theming
+- **Tailwind CSS** — Modern utility-first styling with shadcn/ui
+- **Web Components** — Cross-framework components for maximum flexibility
+- **TypeScript** — Full type safety across all packages
+- **Storybook** — Interactive component documentation
+- **Monorepo** — Efficient development with Turborepo and pnpm
+
+---
+
+## Package Dependency Graph
+
+```
+apollo-core  (Design Tokens, Icons, Fonts)
+     ↑
+     ├── apollo-react  (React + Material UI)
+     │        ↑
+     │    ap-chat  (Chat Web Component)
+     │
+     └── apollo-wind  (Tailwind + shadcn/ui)
+```
+
+- **apollo-core** is the foundation — all other packages depend on it
+- **apollo-react** and **apollo-wind** each build on core independently
+- **ap-chat** is built on top of apollo-react
+
+---
+
+## Repository Structure
+
+```
+apollo-ui/
+├── packages/                  # Core + framework packages
+│   ├── apollo-core/           # Design tokens, icons, fonts
+│   ├── apollo-react/          # Canvas components, chat, icons, MUI theme
+│   └── apollo-wind/           # Tailwind + shadcn/ui components
+│
+├── web-packages/              # Cross-framework web components
+│   └── ap-chat/               # Chat web component
+│
+└── apps/                      # Demo & development applications
+    ├── apollo-docs/           # Central documentation site (this site)
+    ├── apollo-vertex/         # Component registry & reference app
+    ├── storybook/             # Component documentation
+    └── react-playground/      # React testing environment
+```
+
+---
+
+## Packages
+
+### `@uipath/apollo-core`
+
+Design tokens, 1300+ icons, and fonts. The framework-agnostic foundation for the entire design system. Both `apollo-react` and `apollo-wind` depend on this package.
+
+### `@uipath/apollo-react`
+
+Canvas and workflow components, the `ApChat` component, icons, and Material UI themes. Built for workflow interfaces and automation products.
+
+<Callout type="warning">
+  Material UI support in apollo-react is in maintenance mode. For new projects, apollo-wind is recommended.
+</Callout>
+
+### `@uipath/apollo-wind`
+
+Modern Tailwind CSS + shadcn/ui component library with 60+ components, page templates, and full theming support. Recommended for all new development.
+
+### `@uipath/ap-chat`
+
+Framework-agnostic AI chat interface as a web component. Works with vanilla JS, Vue, Angular, or any framework.
+
+<Callout type="info">
+  React users should import `ApChat` directly from `@uipath/apollo-react` instead of this package.
+</Callout>
+
+---
+
+## Tooling
+
+| Tool | Purpose |
+|---|---|
+| [Turborepo](https://turbo.build/) | Monorepo task orchestration and caching |
+| [pnpm](https://pnpm.io/) | Package manager with workspace support |
+| [TypeScript](https://www.typescriptlang.org/) | Type safety across all packages |
+| [Biome](https://biomejs.dev/) | Unified linter and formatter |
+| [Storybook](https://storybook.js.org/) | Component documentation and visual testing |
+| [Vitest](https://vitest.dev/) | Unit testing |
+| [Playwright](https://playwright.dev/) | Visual regression testing |
+
+---
+
+## License
+
+MIT © UiPath

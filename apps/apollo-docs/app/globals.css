@@ -1,0 +1,100 @@
+/* Apollo Wind complete styles — tailwindcss + apollo-core tokens + all themes */
+@import '@uipath/apollo-wind/styles.css';
+
+/* Nextra docs theme */
+@import 'nextra-theme-docs/style.css';
+
+/*
+ * Map future-dark tokens onto .dark (Nextra's dark mode class)
+ * and future-light tokens onto .light (Nextra's light mode class)
+ * so Nextra's built-in theme toggle drives the apollo future theme.
+ */
+.dark {
+  --surface: var(--color-zinc-950);
+  --surface-raised: var(--color-zinc-900);
+  --surface-overlay: var(--color-zinc-800);
+  --surface-hover: var(--color-zinc-700);
+  --surface-muted: var(--color-zinc-500);
+  --surface-inverse: var(--color-zinc-50);
+  --brand: var(--color-cyan-600);
+  --brand-subtle: var(--color-cyan-950);
+  --foreground: var(--color-zinc-50);
+  --foreground-secondary: var(--color-zinc-100);
+  --foreground-hover: var(--color-zinc-300);
+  --foreground-muted: var(--color-zinc-400);
+  --foreground-subtle: var(--color-zinc-500);
+  --foreground-inverse: var(--color-zinc-950);
+  --foreground-on-accent: var(--color-zinc-50);
+  --foreground-accent: var(--color-cyan-600);
+  --foreground-accent-muted: var(--color-cyan-400);
+  --ap-wind-border: var(--color-zinc-700);
+  --border-subtle: var(--color-zinc-800);
+  --border-muted: var(--color-zinc-900);
+  --border-deep: var(--color-zinc-950);
+  --border-inverse: var(--color-zinc-200);
+  --border-hover: var(--color-zinc-600);
+  --ring: var(--color-zinc-600);
+  --background: var(--surface);
+  --card: var(--surface-raised);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--foreground-on-accent);
+  --secondary: var(--surface-overlay);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--surface-overlay);
+  --muted-foreground: var(--foreground-muted);
+  --accent: var(--surface-hover);
+  --accent-foreground: var(--foreground);
+  --destructive: var(--color-red-500);
+  --destructive-foreground: var(--color-zinc-50);
+  --border-de-emp: var(--border-subtle);
+  --input: var(--ap-wind-border);
+  --x-color-nextra-bg: var(--background);
+}
+
+.light {
+  --surface: var(--color-zinc-50);
+  --surface-raised: var(--color-zinc-100);
+  --surface-overlay: var(--color-zinc-200);
+  --surface-hover: var(--color-zinc-300);
+  --surface-muted: var(--color-zinc-400);
+  --surface-inverse: var(--color-zinc-950);
+  --brand: var(--color-cyan-600);
+  --brand-subtle: var(--color-cyan-50);
+  --foreground: var(--color-zinc-950);
+  --foreground-secondary: var(--color-zinc-900);
+  --foreground-hover: var(--color-zinc-600);
+  --foreground-muted: var(--color-zinc-500);
+  --foreground-subtle: var(--color-zinc-400);
+  --foreground-inverse: var(--color-zinc-50);
+  --foreground-on-accent: var(--color-zinc-50);
+  --foreground-accent: var(--color-cyan-600);
+  --foreground-accent-muted: var(--color-cyan-600);
+  --ap-wind-border: var(--color-zinc-300);
+  --border-subtle: var(--color-zinc-200);
+  --border-muted: var(--color-zinc-100);
+  --border-deep: var(--color-zinc-50);
+  --border-inverse: var(--color-zinc-700);
+  --border-hover: var(--color-zinc-400);
+  --ring: var(--color-zinc-400);
+  --background: var(--surface);
+  --card: var(--surface-raised);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--foreground-on-accent);
+  --secondary: var(--surface-overlay);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--surface-overlay);
+  --muted-foreground: var(--foreground-muted);
+  --accent: var(--surface-hover);
+  --accent-foreground: var(--foreground);
+  --destructive: var(--color-red-500);
+  --destructive-foreground: var(--color-zinc-50);
+  --border-de-emp: var(--border-subtle);
+  --input: var(--ap-wind-border);
+  --x-color-nextra-bg: var(--background);
+}
