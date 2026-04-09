@@ -229,30 +229,6 @@ import {
 
 Column types: `"string"` (default), `"numeric"`, `"boolean"`, `"datetime"`. The table renders inside a Card with sorting support.
 
-### Creating a custom table tool with a different adapter
-
-The `table-tool` module exports reusable schema and rendering infrastructure. You can create a new table tool with a custom data adapter:
-
-```tsx
-import { toolDefinition } from '@tanstack/ai';
-import { tableInput, renderTable } from '@/registry/ai-chat/tools/table';
-
-const myTableDef = toolDefinition({
-  name: 'my_custom_table',
-  description: 'Display data from my custom source.',
-  inputSchema: tableInput,
-});
-
-export const myCustomTableClient = myTableDef.client((input) => input);
-export const MY_CUSTOM_TABLE_PROMPT = 'You have a "my_custom_table" tool...';
-
-export function renderMyCustomTable(output: unknown) {
-  return renderTable(output, {
-    buildAdapter: (rows, cacheKey) => myCustomAdapter(rows, cacheKey),
-  });
-}
-```
-
 ### Using tools selectively
 
 You don't have to include all built-in tools. Pick only what you need:
@@ -452,9 +428,6 @@ import {
   DATA_FABRIC_TABLE_PROMPT,
   renderDataFabricTable,
 } from '@/registry/ai-chat/tools/data-fabric-table';
-
-// Reusable table infrastructure
-import { tableInput, renderTable } from '@/registry/ai-chat/tools/table';
 
 // AgentHub adapter
 import {

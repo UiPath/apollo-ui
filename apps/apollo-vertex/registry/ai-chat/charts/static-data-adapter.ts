@@ -16,7 +16,7 @@ export function buildStaticDataAdapter(
   return {
     charts: {
       table: queryDef,
-      bar: queryDef,
+      bar: notSupported,
       distribution: notSupported,
       line: notSupported,
       multiLine: notSupported,

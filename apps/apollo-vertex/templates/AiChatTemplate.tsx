@@ -59,20 +59,9 @@ function AiChatWithConnection({
 
   const toolsRenderer = useMemo(
     () => ({
-      data_fabric_table: ({
-        output,
-      }: {
-        id: string;
-        name: string;
-        output: unknown;
-      }) => renderDataFabricTable(output),
-      presentChoices: ({
-        output,
-      }: {
-        id: string;
-        name: string;
-        output: unknown;
-      }) => renderChoices(output, { onAction: (text) => sendMessage(text) }),
+      data_fabric_table: ({ output }) => renderDataFabricTable(output),
+      presentChoices: ({ output }) =>
+        renderChoices(output, { onAction: (text) => sendMessage(text) }),
     }),
     [sendMessage],
   );

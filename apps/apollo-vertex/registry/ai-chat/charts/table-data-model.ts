@@ -1,4 +1,9 @@
-import type { Column } from "./chart-shared-types";
+export type ColumnType = "numeric" | "string" | "boolean" | "datetime";
+
+export interface Column {
+  name: string;
+  type: ColumnType;
+}
 
 export function buildTableDataModel(columns: Column[]) {
   return {

@@ -3,7 +3,13 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { type DataAdapter, TableChart } from "@uipath/apollo-dashboarding";
 import { Card, CardContent } from "@/registry/card/card";
-import type { TableChartConfig } from "./table-chart-types";
+
+interface TableChartConfig {
+  id: string;
+  name: string;
+  type: "table";
+  dimensions: string[];
+}
 
 const DEFAULT_TABLE_STATE = { sortBy: null } as const;
 
