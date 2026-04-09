@@ -26,7 +26,4 @@
   body {
     @apply bg-background text-foreground;
   }
-  a {
-    @apply text-primary-700 dark:text-primary-400;
-  }
 }
