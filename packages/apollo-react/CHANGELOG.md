@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.70.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.70.2...@uipath/apollo-react@3.70.3) (2026-04-09)
+
+### Bug Fixes
+
+* **apollo-react:** clamp node header and subheader text to prevent overflow ([374b758](https://github.com/UiPath/apollo-ui/commit/374b75872a7a514674ea81a5d2e1b73ad39b5b03))
+
 ## [@uipath/apollo-react-v3.70.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.70.0...@uipath/apollo-react@3.70.1) (2026-04-08)
 
 ### Bug Fixes
