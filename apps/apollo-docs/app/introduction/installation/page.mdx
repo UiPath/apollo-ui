@@ -1,0 +1,76 @@
+import { Tabs } from 'nextra/components'
+
+# Installation
+
+Apollo v.4 is UiPath's open-source design system for building consistent user experiences across all UiPath products.
+
+**GitHub:** [UiPath/apollo-ui](https://github.com/UiPath/apollo-ui)
+
+---
+
+## Choose Your Package
+
+Apollo is split into focused packages. Pick the one that matches what you're building.
+
+<Tabs items={['apollo-core', 'apollo-wind', 'apollo-react']}>
+  <Tabs.Tab>
+    ### `@uipath/apollo-core`
+
+    The shared foundation — design tokens, icons, fonts, and CSS variables. Both Apollo Wind and Apollo React depend on this package. Install it directly only if you need tokens without a component library.
+
+    **Best for:** Custom builds that need design tokens, icons, or fonts without a full component library.
+
+    **Install**
+
+    ```bash
+    npm install @uipath/apollo-core
+    ```
+
+    **Run locally**
+
+    ```bash
+    pnpm build
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ### `@uipath/apollo-wind`
+
+    The modern UI component library for rapid prototyping and new product interfaces. Built with Tailwind CSS and shadcn/ui — includes 60+ components, page templates, and full theming support.
+
+    **Best for:** Prototyping, new product UIs, and any project using Tailwind CSS.
+
+    **Install**
+
+    ```bash
+    npm install @uipath/apollo-wind
+    ```
+
+    **Run locally** (after cloning the monorepo and running `pnpm install`)
+
+    ```bash
+    pnpm build
+    pnpm storybook:wind
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ### `@uipath/apollo-react`
+
+    The component library for UiPath workflows and automation products. Built on Material UI with Apollo theming — provides the components and patterns used across workflow-based experiences.
+
+    **Best for:** Workflow interfaces, automation products, and existing Material UI projects.
+
+    **Install**
+
+    ```bash
+    npm install @uipath/apollo-react
+    ```
+
+    **Run locally**
+
+    ```bash
+    pnpm build
+    pnpm storybook:all
+    ```
+  </Tabs.Tab>
+</Tabs>
+

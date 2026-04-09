@@ -1,0 +1,355 @@
+import { Tabs } from 'nextra/components'
+import { Callout } from 'nextra/components'
+
+# Prototyping with Apollo
+
+Rapid prototyping is central to our approach, enabling high-quality UX, consistency, and efficiency. This section explores how Design and AI work together to help teams align and deliver consistent outcomes.
+
+<Tabs items={['Overview', 'Skills', 'Prototype', 'w/ Figma', 'w/ Claude', 'w/ Cursor']}>
+  <Tabs.Tab>
+    ## Overview
+
+    Prototyping with AI works best when everyone builds on the same foundation. This stack powers the Apollo Wind design system — the same components, tokens, and patterns used in production. Starting here means your prototypes aren't throwaway mockups; they're a step toward real, shippable code.
+
+    ```
+    UI Framework
+      React 19
+      Tailwind CSS 4
+      TypeScript
+
+    Component Library
+      shadcn/ui — pre-built components (Button, Input, Select, Accordion, Dialog, Sheet, Tabs, DataTable, and more)
+      Radix UI — underlying accessibility primitives
+      Lucide React — icon system
+
+    Theming
+      CSS Custom Properties — semantic design tokens
+      Two theme families: Future (Dark / Light) and Core (Dark / Light)
+      Themes are applied via CSS class scoping — no runtime theme provider needed
+
+    Documentation
+      Storybook 10 — browse all components, templates, and token references live
+    ```
+
+    ### Quick Start
+
+    The fastest path to a working prototype. Choose your tool:
+
+    **Cursor** — Type `@apollo-ai-context.md` in chat and describe what you want to build. That's it.
+
+    **Claude Code** — Reference the context file and describe what you want:
+
+    ```
+    Read packages/apollo-wind/apollo-ai-context.md then build a settings page
+    with a sidebar navigation and form section. Use the future-dark theme.
+    ```
+
+    ### The AI Context File
+
+    A portable markdown file at `packages/apollo-wind/apollo-ai-context.md` containing the full Apollo design system reference — stack, components, tokens, patterns, and rules. Both the Claude and Cursor tabs reference this file.
+
+    ```
+    # Apollo Wind — AI Context
+
+    ## Stack
+    - React 19, TypeScript, Tailwind CSS 4
+    - shadcn/ui components (Radix UI primitives)
+    - Lucide React icons, Storybook 10
+
+    ## Import Paths
+    import { Button } from '@/components/ui/button';
+    import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+    import { cn } from '@/lib';
+
+    ## Theming
+    Apply theme class to root: future-dark | future-light | dark | light | dark-hc | light-hc
+    Semantic tokens: bg-surface, text-foreground, border-border
+    Bridge tokens (cross-theme): bg-background, bg-card, text-foreground, text-muted-foreground
+
+    ## Components
+    Button, Card, Table, DataTable, Badge, Input, Select, Tabs, Dialog, Sheet...
+    60+ shadcn components + 16 custom Apollo components + forms system
+
+    ## Page Templates
+    MaestroTemplate — dashboard with panels & grid
+    AdminTemplate — sidebar, header, toolbar & data tables
+    FlowTemplate — workflow editor with canvas
+    DelegateTemplate — agent chat with nav panel
+    ```
+
+    ### What's not in scope
+
+    The following are separate systems and not part of this prototyping workflow:
+
+    - `apollo-react` — Material UI component library
+    - `apollo-angular` — Angular Material component library
+    - Web Components (ap-chat, ap-data-grid)
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ## Skills
+
+    Skills encode design system rules so the AI applies them automatically. Install an existing skill for instant context, or contribute your own to the library.
+
+    ### Available Skills
+
+    | Skill | Category | Surfaces | Description |
+    |---|---|---|---|
+    | `apollo-install` | Setup | Cursor, Claude Code | Sets up and launches the Apollo Wind Storybook from scratch — clones the repo, installs dependencies, builds, and starts the dev server. |
+    | `apollo-repo-sync` | Setup | Cursor, Claude Code | Keeps apollo-wind up to date in a prototype repo — installs on first use and syncs to the latest version each session. |
+    | `apollo-prototype` | Prototype | Cursor, Claude Code | Encodes Apollo Wind design system rules so the AI applies tokens, components, and patterns automatically when prototyping. |
+    | `apollo-writing` | Writing | Cursor, Claude Code | Applies UiPath UX writing guidelines to UI copy — labels, buttons, errors, modals, empty states, and all microcopy. |
+
+    ### Install a Skill
+
+    Copy the skill folder from `packages/apollo-wind/skills/` into your tool's skills directory:
+
+    **Cursor**
+    - Project: `.cursor/skills/<skill-name>/`
+    - Personal: `~/.cursor/skills/<skill-name>/`
+
+    **Claude Code**
+    - Project: `.claude/skills/<skill-name>/`
+    - Personal: `~/.claude/skills/<skill-name>/`
+
+    ### Create Your Own Skill
+
+    If you need custom rules or workflows, create a skill that encodes Apollo conventions:
+
+    - **What to include** — Apollo semantic tokens, theme classes (`future-dark`, `future-light`), component import paths, and rules from `apollo-ai-context.md`.
+    - **References** — Use Cursor's create-skill or Codex's skill-creator for the mechanics. Focus your skill description on Apollo-specific triggers.
+
+    ### Common Mistakes to Avoid
+
+    - **Don't use raw Tailwind colors.** Avoid `bg-zinc-900`, `text-gray-400`, etc. Always use semantic tokens (`bg-surface`, `text-foreground-muted`).
+    - **Don't install extra UI libraries.** Everything you need is already in apollo-wind. Adding Material UI or other libraries will conflict with the design system.
+    - **Don't skip the theme wrapper.** Components using `future-*` tokens won't render correctly without a theme class on a parent element.
+    - **Don't hardcode light/dark values.** The theme system handles this automatically. If you're writing `bg-white` or `bg-black`, you're bypassing the design system.
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ## Prototype Playground
+
+    This playground enables UiPath team members to quickly set up a prototype app in just a few clicks. Its purpose is to help less technical users launch a functional prototype using our design system's default styles and templates.
+
+    <Callout type="info">
+      Repository: [github.com/UiPath/apollo-prototype-playground](https://github.com/UiPath/apollo-prototype-playground)
+    </Callout>
+
+    ### How to use
+
+    Get the playground running locally in three commands, then create prototypes from the UI.
+
+    **1. Clone the repository**
+
+    ```bash
+    git clone https://github.com/UiPath/apollo-prototype-playground.git
+    cd apollo-prototype-playground
+    ```
+
+    **2. Install dependencies**
+
+    ```bash
+    npm install
+    ```
+
+    **3. Start the dev server**
+
+    ```bash
+    npm run dev
+    ```
+
+    **4. Create a prototype**
+
+    - Click the **Create Prototype** button
+    - Enter a name for your prototype
+    - Choose a starter template — **Blank**, **Admin**, **Delegate**, **Flow**, or **Maestro**
+    - Select your folder from the team member list
+    - Optionally toggle **Shareable URL** to generate a link
+    - Click **Create** — your prototype opens automatically
+
+    **5. Customize your prototype**
+
+    Your prototype is scaffolded at `src/prototypes/{your-folder}/{prototype-name}/index.tsx`. From here you can:
+
+    - **Modify the layout** — rearrange or replace sections from the starter template
+    - **Add components** — import any component from `@uipath/apollo-wind`
+    - **Use AI tools** — open the file in your editor and use Claude, Copilot, or any AI assistant to iterate
+    - **Hot reload** — changes appear instantly in the browser via Vite's dev server
+
+    <Callout>
+      The starter templates give you a working foundation with proper theming, responsive layout, and UiPath design system components already wired up. No configuration needed — just pick a template and start building.
+    </Callout>
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ## Use Figma
+
+    Designers own the Figma source files — AI tools turn those designs into functional code prototypes. Connect the Figma MCP server so the AI can read your designs directly.
+
+    **1. Start from the Apollo Figma library**
+
+    Use the shared design system file as your starting point:
+    - **Core products:** [Apollo Components Figma](https://www.figma.com/design/l1I5dUQFDxqPYo322wEpXx/Apollo--Components-?node-id=504-2)
+    - **Future products:** [Style Template Figma](https://www.figma.com/design/b6UcBsDS2GUEk5Xdxk4OEl/Style-template?node-id=847-5153)
+
+    **2. Connect the Figma MCP server**
+
+    This lets the AI read your Figma files directly — no screenshots or exports needed.
+
+    **Cursor** — Add to `.cursor/mcp.json`:
+
+    ```json
+    {
+      "mcpServers": {
+        "figma": {
+          "command": "npx",
+          "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR_KEY"]
+        }
+      }
+    }
+    ```
+
+    **Claude Code** — Run:
+
+    ```bash
+    claude mcp add figma -- npx -y figma-developer-mcp --figma-api-key=YOUR_KEY
+    ```
+
+    **3. Copy the Figma URL and prompt**
+
+    Copy the URL for the specific frame you want to prototype. Include context the AI can't see — interactions, states, theme, and which Apollo components map to the design:
+
+    ```
+    Here is my Figma frame for a workflow editor: [paste Figma URL]
+
+    Build a functional prototype using the Apollo design system in future-dark theme.
+    The layout should have a left navigation rail, a canvas area with workflow
+    nodes, and a properties panel on the right.
+
+    Interactions:
+    - Clicking a node expands the properties panel
+    - The navigation rail has icons for different tool modes
+    - Bottom toolbar includes zoom controls
+
+    Use the Apollo AI context file for component and token references.
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ## Use Claude Code
+
+    Complete setup for prototyping with Claude Code. Three things to connect: the AI context file, the Storybook MCP server, and optionally the Figma MCP server.
+
+    **1. Reference the AI context file**
+
+    Claude Code can read project files directly. Reference the context file in your prompt:
+
+    ```
+    Read packages/apollo-wind/apollo-ai-context.md then create a dashboard page
+    with a sidebar, header, and a DataTable showing process status.
+    Use the future-dark theme.
+    ```
+
+    For repeated use, add a note to your project's `CLAUDE.md`:
+
+    ```md
+    ## Prototyping
+    For UI prototyping, read packages/apollo-wind/apollo-ai-context.md
+    for the full component library, tokens, and theming reference.
+    ```
+
+    **2. Connect the Storybook MCP server**
+
+    Gives Claude live access to component metadata, props, and usage examples.
+
+    Start Storybook first:
+
+    ```bash
+    cd packages/apollo-wind && pnpm storybook
+    ```
+
+    Then add the MCP server:
+
+    ```bash
+    claude mcp add apollo-storybook --transport http http://localhost:6006/mcp --scope project
+    ```
+
+    Verify with `/mcp list` — you should see `apollo-storybook` in the output.
+
+    **3. Connect Figma** (optional)
+
+    ```bash
+    claude mcp add figma -- npx -y figma-developer-mcp --figma-api-key=YOUR_KEY
+    ```
+
+    ### Tips for Claude Code
+
+    - **Use the slash command.** Run `/mcp list` to verify all MCP servers are connected before prompting.
+    - **Let Claude read the file.** Say "read apollo-ai-context.md" rather than pasting it — Claude Code can access files directly.
+    - **Iterate in conversation.** Claude Code keeps full context, so you can refine incrementally: "now add a filter bar to the table" or "switch the theme to future-light."
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ## Use Cursor
+
+    Complete setup for prototyping with Cursor. Three things to connect: the AI context file, the Storybook MCP server, and optionally the Figma MCP server.
+
+    **1. Reference the AI context file**
+
+    Type `@apollo-ai-context.md` in any Cursor chat to attach the design system reference. The AI immediately knows all components, tokens, and rules.
+
+    For automatic inclusion on every chat, add a Cursor rule:
+
+    ```md
+    ---
+    description: Apollo design system context for prototyping
+    globs: ["packages/apollo-wind/**"]
+    ---
+    @packages/apollo-wind/apollo-ai-context.md
+    ```
+
+    Save to `.cursor/rules/apollo-prototyping.md`.
+
+    **2. Connect the Storybook MCP server**
+
+    Start Storybook first:
+
+    ```bash
+    cd packages/apollo-wind && pnpm storybook
+    ```
+
+    Then add to `.cursor/mcp.json`:
+
+    ```json
+    {
+      "mcpServers": {
+        "apollo-storybook": {
+          "url": "http://localhost:6006/mcp"
+        }
+      }
+    }
+    ```
+
+    Verify in Cursor Settings → MCP — you should see `apollo-storybook` with a green status.
+
+    **3. Connect Figma** (optional)
+
+    Add to `.cursor/mcp.json`:
+
+    ```json
+    {
+      "mcpServers": {
+        "apollo-storybook": {
+          "url": "http://localhost:6006/mcp"
+        },
+        "figma": {
+          "command": "npx",
+          "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR_KEY"]
+        }
+      }
+    }
+    ```
+
+    ### Tips for Cursor
+
+    - **Use @ referencing.** Type `@` to attach files, folders, or docs directly in chat.
+    - **Agent mode for multi-step work.** Use Agent mode when building a full page — it can create files, run commands, and iterate autonomously.
+    - **Reference existing templates.** Say "look at the Admin Landing story for reference" and the agent will read the existing code to match patterns and conventions.
+  </Tabs.Tab>
+</Tabs>
