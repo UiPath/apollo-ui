@@ -1,0 +1,57 @@
+import { Callout } from 'nextra/components'
+
+# CLI
+
+<Callout type="info">
+  This is the **Apollo Wind CLI** — a frontend-specific tool for Tailwind-based projects using `@uipath/apollo-wind`. The registry is not yet published; commands on this page reflect the target experience and will work once it is.
+</Callout>
+
+Apollo's CLI follows the **shadcn ownership model** — components are copied directly into your project rather than installed as a locked package dependency. You own the code, can customize it freely, and updates are an explicit choice, not a forced upgrade.
+
+## Quick Start
+
+**Prerequisites:** Node 18+, Tailwind CSS v4, React project (Vite, Next.js, or any React setup)
+
+**Step 1 — Initialize shadcn**
+
+```bash
+npx shadcn@latest init
+```
+
+Creates a `components.json` config in your project root.
+
+**Step 2 — Add the Apollo theme preset**
+
+```bash
+npx shadcn@latest add https://ui.uipath.com/r/theme.json
+```
+
+Installs the Apollo CSS theme file and adds the `future-dark` and `future-light` classes to your project.
+
+**Step 3 — Add your first component**
+
+```bash
+npx shadcn@latest add https://ui.uipath.com/r/button.json
+```
+
+Copies the component source into `src/components/ui/button.tsx`. It's yours to use, read, and modify.
+
+## Activating the Theme
+
+After installing the theme preset, apply the theme class to your root element:
+
+```jsx
+<div className="future-dark min-h-screen bg-background text-foreground">
+  {/* your app */}
+</div>
+```
+
+Switch to light theme by replacing `future-dark` with `future-light`. All tokens adapt automatically.
+
+## Updating Components
+
+Because components live in your project, updates are opt-in. Re-run the add command to pull the latest version and review the diff before committing.
+
+```bash
+npx shadcn@latest add https://ui.uipath.com/r/button.json
+```

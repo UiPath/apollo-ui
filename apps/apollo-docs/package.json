@@ -1,0 +1,35 @@
+{
+  "name": "apollo-docs",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Apollo UI central documentation site",
+  "scripts": {
+    "dev": "next --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@uipath/apollo-core": "workspace:*",
+    "@uipath/apollo-react": "workspace:*",
+    "@uipath/apollo-wind": "workspace:*",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^5.18.0",
+    "next": "16.1.7",
+    "next-themes": "^0.4.6",
+    "nextra": "^4.6.1",
+    "nextra-theme-docs": "^4.6.1",
+    "postcss": "^8.5.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "tailwindcss": "^4.1.17",
+    "@tailwindcss/postcss": "^4.1.17"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.6",
+    "@types/react-dom": "^19.2.2",
+    "typescript": "^5.8.0"
+  }
+}

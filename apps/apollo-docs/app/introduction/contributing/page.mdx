@@ -1,0 +1,32 @@
+# Contributing
+
+Clone the monorepo and run locally.
+
+## Setup
+
+```bash
+# Install pnpm if you haven't already
+npm install -g pnpm
+
+# Clone the repository
+git clone https://github.com/UiPath/apollo-ui.git
+cd apollo-ui
+
+# Install dependencies
+pnpm install
+
+# Build all packages
+pnpm build
+
+# Start the Apollo Wind Storybook
+pnpm storybook:wind
+```
+
+## Development Commands
+
+```bash
+pnpm dev           # Run all packages in development mode
+pnpm storybook     # Run Storybook
+pnpm lint          # Lint all packages
+pnpm test          # Run tests
+```
