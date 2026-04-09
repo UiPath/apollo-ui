@@ -19,7 +19,6 @@ interface ThemeProviderProps {
   defaultTheme?: Theme;
   themeConfig?: ThemeConfig;
   storageKey?: string;
-  disableTransitionOnChange?: boolean;
 }
 
 interface ThemeProviderState {
@@ -71,27 +70,10 @@ function isValidTheme(value: string | null): value is Theme {
   return value === "light" || value === "dark" || value === "system";
 }
 
-function applyThemeClass(
-  resolved: "light" | "dark",
-  disableTransitions?: boolean,
-) {
+function applyThemeClass(resolved: "light" | "dark") {
   const root = window.document.documentElement;
-
-  const styleEl = disableTransitions ? document.createElement("style") : null;
-  if (styleEl) {
-    styleEl.textContent =
-      "*, *::before, *::after { transition: none !important }";
-    document.head.append(styleEl);
-  }
-
   root.classList.remove("light", "dark");
   root.classList.add(resolved);
-
-  if (styleEl) {
-    // Force reflow, then re-enable transitions
-    void root.offsetHeight;
-    styleEl.remove();
-  }
 }
 
 function applyThemeConfig(config: ThemeConfig, resolved: "light" | "dark") {
@@ -125,7 +107,6 @@ export function ThemeProvider({
   defaultTheme = "system",
   themeConfig,
   storageKey = THEME_STORAGE_KEY,
-  disableTransitionOnChange,
 }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window === "undefined") return defaultTheme;
@@ -153,8 +134,8 @@ export function ThemeProvider({
 
   // Apply light/dark class to document root
   useEffect(() => {
-    applyThemeClass(resolvedTheme, disableTransitionOnChange);
-  }, [resolvedTheme, disableTransitionOnChange]);
+    applyThemeClass(resolvedTheme);
+  }, [resolvedTheme]);
 
   // Cross-tab sync: update React state when theme changes in another tab
   useEffect(() => {
