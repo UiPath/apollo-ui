@@ -1,0 +1,35 @@
+"pkg:apollo-core":
+  - changed-files:
+      - any-glob-to-any-file: "packages/apollo-core/**"
+
+"pkg:apollo-react":
+  - changed-files:
+      - any-glob-to-any-file: "packages/apollo-react/**"
+
+"pkg:apollo-wind":
+  - changed-files:
+      - any-glob-to-any-file: "packages/apollo-wind/**"
+
+"pkg:ap-chat":
+  - changed-files:
+      - any-glob-to-any-file: "web-packages/ap-chat/**"
+
+"app:apollo-vertex":
+  - changed-files:
+      - any-glob-to-any-file: "apps/apollo-vertex/**"
+
+"app:storybook":
+  - changed-files:
+      - any-glob-to-any-file: "apps/storybook/**"
+
+"app:landing":
+  - changed-files:
+      - any-glob-to-any-file: "apps/landing/**"
+
+"app:react-playground":
+  - changed-files:
+      - any-glob-to-any-file: "apps/react-playground/**"
+
+"ci":
+  - changed-files:
+      - any-glob-to-any-file: ".github/**"
