@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.71.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.70.3...@uipath/apollo-react@3.71.0) (2026-04-10)
+
+### Features
+
+* **apollo-react:** add Queues and Tools variants to TaskIcon [MST-8108] ([bd7513c](https://github.com/UiPath/apollo-ui/commit/bd7513c2fd704cb9fc3c5c367af5e43ea72507c9))
+
 ## [@uipath/apollo-react-v3.70.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.70.2...@uipath/apollo-react@3.70.3) (2026-04-09)
 
 ### Bug Fixes
