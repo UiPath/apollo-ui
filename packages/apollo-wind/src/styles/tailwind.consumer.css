@@ -57,9 +57,13 @@ body.dark, .dark {
 
   /* ── Status ──────────────────────────────────────────────────────────── */
   --error: var(--color-error-text, #ff8484);
+  --error-background: var(--color-error-background, #000000);
   --success: var(--color-success-icon, #74c94b);
+  --success-background: var(--color-success-background, #000000);
   --warning: var(--color-warning-icon, #ffbb27);
+  --warning-background: var(--color-warning-background, #000000);
   --info: var(--color-info-foreground, #42a1ff);
+  --info-background: var(--color-info-background, #000000);
 
   /* ── Ring / Focus ────────────────────────────────────────────────────── */
   --ring: var(--color-primary, #66adff);
@@ -134,9 +138,13 @@ body.dark-hc, .dark-hc {
 
   /* ── Status ──────────────────────────────────────────────────────────── */
   --error: var(--color-error-text, #ffadad);
+  --error-background: var(--color-error-background, #000000);
   --success: var(--color-success-icon, #74c94b);
+  --success-background: var(--color-success-background, #000000);
   --warning: var(--color-warning-icon, #ffbb27);
+  --warning-background: var(--color-warning-background, #000000);
   --info: var(--color-info-foreground, #42a1ff);
+  --info-background: var(--color-info-background, #000000);
 
   /* ── Ring / Focus ────────────────────────────────────────────────────── */
   --ring: var(--color-primary, #badaff);
@@ -211,9 +219,13 @@ body.light, .light {
 
   /* ── Status ──────────────────────────────────────────────────────────── */
   --error: var(--color-error-text, #a6040a);
+  --error-background: var(--color-error-background, #fff0f1);
   --success: var(--color-success-icon, #038108);
+  --success-background: var(--color-success-background, #eeffe5);
   --warning: var(--color-warning-text, #9e6100);
+  --warning-background: var(--color-warning-background, #fff3db);
   --info: var(--color-info-foreground, #1665b3);
+  --info-background: var(--color-info-background, #e9f1fa);
 
   /* ── Ring / Focus ────────────────────────────────────────────────────── */
   --ring: var(--color-primary, #0067df);
@@ -288,9 +300,13 @@ body.light-hc, .light-hc {
 
   /* ── Status ──────────────────────────────────────────────────────────── */
   --error: var(--color-error-text, #a6040a);
+  --error-background: var(--color-error-background, #fff0f1);
   --success: var(--color-success-icon, #005603);
+  --success-background: var(--color-success-background, #eeffe5);
   --warning: var(--color-warning-text, #273139);
+  --warning-background: var(--color-warning-background, #fff3db);
   --info: var(--color-info-foreground, #11508d);
+  --info-background: var(--color-info-background, #e9f1fa);
 
   /* ── Ring / Focus ────────────────────────────────────────────────────── */
   --ring: var(--color-primary, #00489d);
@@ -422,6 +438,16 @@ body.future-dark, .future-dark {
   --code-literal: var(--color-violet-400);
   /* booleans, null, undefined */
 
+  /* ── Status ──────────────────────────────────────────────────────────── */
+  --error: #ff8484;
+  --error-background:  #000000;
+  --success: #74c94b;
+  --success-background: #000000;
+  --warning: #ffbb27;
+  --warning-background: #000000;
+  --info: #42a1ff;
+  --info-background: #000000;
+
   /* ── shadcn aliases — maps to standard names for shadcn component compat ── */
   --background: var(--surface);
   --card: var(--surface-raised);
@@ -534,6 +560,16 @@ body.future-light, .future-light {
   --code-literal: var(--color-violet-600);
   /* booleans, null, undefined */
 
+  /* ── Status ──────────────────────────────────────────────────────────── */
+  --error:#a6040a;
+  --error-background: #fff0f1;
+  --success: #038108;
+  --success-background: #eeffe5;
+  --warning: #9e6100;
+  --warning-background: #fff3db;
+  --info: #1665b3;
+  --info-background: #e9f1fa;
+
   /* ── shadcn aliases ──────────────────────────────────────────────────── */
   --background: var(--surface);
   --card: var(--surface-raised);
@@ -605,6 +641,16 @@ body.wireframe, .wireframe {
   --gradient-4: none;
   --gradient-5: none;
   --gradient-6: none;
+
+  /* ── Status ──────────────────────────────────────────────────────────── */
+  --error: var(--foreground);
+  --error-background: var(--surface-overlay);
+  --success: var(--foreground);
+  --success-background:  var(--surface-overlay);
+  --warning: var(--foreground);
+  --warning-background:  var(--surface-overlay);
+  --info: var(--foreground);
+  --info-background:  var(--surface-overlay);
 
   /* ── shadcn aliases ──────────────────────────────────────────────────── */
   --background: var(--surface);
@@ -712,6 +758,16 @@ body.vertex, .vertex {
   --gradient-5: linear-gradient(180deg, oklch(0.21 0.03 258.5) 0%, oklch(0.233 0.036 254.7) 100%);
   --gradient-6: linear-gradient(106deg, oklch(0.692 0.1119 207.06) 28.08%, oklch(0.166 0.0283 203.34) 71.92%);
 
+  /* ── Status ──────────────────────────────────────────────────────────── */
+  --error: #ff8484;
+  --error-background:  #000000;
+  --success: #74c94b;
+  --success-background: #000000;
+  --warning: #ffbb27;
+  --warning-background: #000000;
+  --info: #42a1ff;
+  --info-background: #000000;
+
   /* ── shadcn aliases ──────────────────────────────────────────────────── */
   --background: var(--surface);
   --card: var(--surface-raised);
@@ -806,6 +862,16 @@ body.canvas, .canvas {
   --gradient-4: linear-gradient(180deg, #273139 0%, #334049 100%);
   --gradient-5: linear-gradient(180deg, #182027 0%, #273139 100%);
   --gradient-6: linear-gradient(106deg, #fa4616 28.08%, #3c2a1e 71.92%);
+
+  /* ── Status ──────────────────────────────────────────────────────────── */
+  --error: #ff8484;
+  --error-background:  #000000;
+  --success: #74c94b;
+  --success-background: #000000;
+  --warning: #ffbb27;
+  --warning-background: #000000;
+  --info: #42a1ff;
+  --info-background: #000000;
 
   /* ── shadcn aliases ──────────────────────────────────────────────────── */
   --background: var(--surface);
@@ -943,24 +1009,24 @@ body.canvas, .canvas {
   --color-chip-success-background: var(--color-chip-success-background);
   --color-error-icon: var(--color-error-icon);
   --color-error-icon-inverse: var(--color-error-icon-inverse);
-  --color-error-text: var(--color-error-text);
-  --color-error-background: var(--color-error-background);
+  --color-error-text: var(--error);
+  --color-error-background: var(--error-background);
   --color-error-foreground-inverse: var(--color-error-foreground-inverse);
   --color-info-foreground: var(--color-info-foreground);
   --color-info-icon: var(--color-info-icon);
   --color-info-icon-inverse: var(--color-info-icon-inverse);
-  --color-info-text: var(--color-info-text);
+  --color-info-text: var(--info);
   --color-info-foreground-inverse: var(--color-info-foreground-inverse);
-  --color-info-background: var(--color-info-background);
+  --color-info-background: var(--info-background);
   --color-success-icon: var(--color-success-icon);
   --color-success-icon-inverse: var(--color-success-icon-inverse);
-  --color-success-text: var(--color-success-text);
-  --color-success-background: var(--color-success-background);
+  --color-success-text: var(--success);
+  --color-success-background: var(--success-background);
   --color-success-foreground-inverse: var(--color-success-foreground-inverse);
   --color-warning-icon: var(--color-warning-icon);
   --color-warning-icon-inverse: var(--color-warning-icon-inverse);
-  --color-warning-text: var(--color-warning-text);
-  --color-warning-background: var(--color-warning-background);
+  --color-warning-text: var(--warning);
+  --color-warning-background: var(--warning-background);
   --color-warning-foreground-inverse: var(--color-warning-foreground-inverse);
   --color-icon-default: var(--color-icon-default);
   --color-icon-inverted-default: var(--color-icon-inverted-default);

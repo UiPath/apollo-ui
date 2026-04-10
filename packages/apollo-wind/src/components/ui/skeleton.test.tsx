@@ -20,10 +20,10 @@ describe('Skeleton', () => {
     expect(skeleton).toHaveClass('rounded-md');
   });
 
-  it('applies bg-muted class', () => {
+  it('applies bg-surface-overlay class', () => {
     const { container } = render(<Skeleton />);
     const skeleton = container.firstChild;
-    expect(skeleton).toHaveClass('bg-muted');
+    expect(skeleton).toHaveClass('bg-surface-overlay');
   });
 
   it('applies custom className', () => {
