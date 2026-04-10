@@ -7,6 +7,7 @@ import { AiChatCodeBlock } from "./ai-chat-code-block";
 
 type NodeProps = { children?: ReactNode };
 type AnchorProps = { children?: ReactNode; href?: string };
+type ImageProps = { src?: string; alt?: string; title?: string };
 
 function extractCodeProps(props: NodeProps & { className?: string }) {
   const { className, children } = props;
@@ -63,6 +64,16 @@ const components: ComponentProps<typeof ReactMarkdown>["components"] = {
     >
       {children}
     </a>
+  ),
+  img: ({ src, alt, title }: ImageProps) => (
+    <img
+      src={src}
+      alt={alt ?? ""}
+      title={title}
+      loading="lazy"
+      decoding="async"
+      className="block max-w-full max-h-[400px] object-contain rounded-lg border border-ai-chat-border"
+    />
   ),
   strong: ({ children }: NodeProps) => (
     <strong className="font-semibold">{children}</strong>
