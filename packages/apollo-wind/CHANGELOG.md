@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.0.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.0.0...@uipath/apollo-wind@2.0.1) (2026-04-10)
+
+### Bug Fixes
+
+* **apollo-wind:** address theming gaps for apollo-react/canvas ([b5903c4](https://github.com/uipath/apollo-ui/commit/b5903c42dc10be3cbf8110077610e6975738c88b))
+
 ## [@uipath/apollo-wind-v2.0.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.5.0...@uipath/apollo-wind@2.0.0) (2026-04-01)
 
 ### ⚠ BREAKING CHANGES
