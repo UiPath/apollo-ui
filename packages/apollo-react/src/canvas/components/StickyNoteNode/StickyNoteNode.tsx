@@ -1,5 +1,5 @@
 import { Global } from '@emotion/react';
-import { NodeIcon } from '@uipath/apollo-react/canvas';
+import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { ResizeDragEvent, ResizeParams } from '@uipath/apollo-react/canvas/xyflow/system';
@@ -248,13 +248,13 @@ const StickyNoteNodeComponent = ({
     const actions: ToolbarAction[] = [
       {
         id: 'delete',
-        icon: <NodeIcon icon="trash" size={14} />,
+        icon: <CanvasIcon icon="trash" size={14} />,
         label: 'Delete',
         onAction: handleDelete,
       },
       {
         id: 'edit',
-        icon: <NodeIcon icon="pencil" size={14} />,
+        icon: <CanvasIcon icon="pencil" size={14} />,
         label: 'Edit',
         onAction: handleEditClick,
       },

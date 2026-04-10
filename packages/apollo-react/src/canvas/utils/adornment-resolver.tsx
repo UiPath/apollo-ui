@@ -1,8 +1,7 @@
-import { ExecutionStatusIcon, NodeIcon } from '@uipath/apollo-react/canvas';
-import { ApTooltip } from '@uipath/apollo-react/material';
-import { ApIcon } from '@uipath/apollo-react/material/components';
+import { CanvasIcon, ExecutionStatusIcon } from '@uipath/apollo-react/canvas';
 import { memo } from 'react';
 import type { NodeAdornments, NodeStatusContext } from '../components';
+import { CanvasTooltip } from '../components/CanvasTooltip';
 import { getExecutionStatusColor } from '../components/ExecutionStatusIcon/ExecutionStatusIcon';
 import { ValidationErrorSeverity } from '../types/validation';
 
@@ -60,11 +59,11 @@ function ExecutionStatusIndicatorInternal({ status, count }: { status?: string; 
 
 function SquareDashedIndicator() {
   return (
-    <ApTooltip content="Node output is mocked" placement="bottom">
+    <CanvasTooltip content="Node output is mocked" placement="bottom">
       <span style={{ display: 'inline-flex' }}>
-        <NodeIcon icon="square-dashed" size={16} color="var(--color-foreground-emp)" />
+        <CanvasIcon icon="square-dashed" size={16} color="var(--color-foreground-emp)" />
       </span>
-    </ApTooltip>
+    </CanvasTooltip>
   );
 }
 
@@ -72,21 +71,21 @@ export const ExecutionStatusIndicator = memo(ExecutionStatusIndicatorInternal);
 
 export function ValidationErrorIndicator({ message }: { message?: string }) {
   return (
-    <ApTooltip content={message || 'Validation error'} placement="bottom">
+    <CanvasTooltip content={message || 'Validation error'} placement="bottom">
       <span style={{ display: 'inline-flex' }}>
-        <ApIcon name="error" size="16px" color="var(--uix-canvas-error-icon)" />
+        <CanvasIcon icon="circle-alert" size={16} color="var(--uix-canvas-error-icon)" />
       </span>
-    </ApTooltip>
+    </CanvasTooltip>
   );
 }
 
 export function ValidationWarningIndicator({ message }: { message?: string }) {
   return (
-    <ApTooltip content={message || 'Validation warning'} placement="bottom">
+    <CanvasTooltip content={message || 'Validation warning'} placement="bottom">
       <span style={{ display: 'inline-flex' }}>
-        <ApIcon name="warning" size="16px" color="var(--uix-canvas-warning-icon)" />
+        <CanvasIcon icon="triangle-alert" size={16} color="var(--uix-canvas-warning-icon)" />
       </span>
-    </ApTooltip>
+    </CanvasTooltip>
   );
 }
 

@@ -1,15 +1,16 @@
-import token from '@uipath/apollo-core';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import {
   type ViewportHelperFunctionOptions as BaseCanvasZoomOptions,
   useReactFlow,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon, ApIconButton, ApTooltip } from '@uipath/apollo-react/material';
+import { Button } from '@uipath/apollo-wind';
 import { memo, useCallback } from 'react';
 import type { CanvasTranslations } from '../types';
+import { CanvasIcon } from '../utils/icon-registry';
 import { BASE_CANVAS_DEFAULTS } from './BaseCanvas/BaseCanvas.constants';
 import type { BaseCanvasFitViewOptions } from './BaseCanvas/BaseCanvas.types';
+import { CanvasTooltip } from './CanvasTooltip';
 export type { BaseCanvasZoomOptions };
 
 export interface CanvasPositionControlsProps {
@@ -52,39 +53,51 @@ export const CanvasPositionControls = memo(
     return (
       <RootComponent data-testid="canvas-controls">
         {showOrganize && (
-          <ApTooltip
-            content={translations.organize}
-            placement={placement}
-            data-testid="organize-button"
-          >
-            <ApIconButton color="secondary" onClick={handleOrganize}>
+          <CanvasTooltip content={translations.organize} placement={placement}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              aria-label={translations.organize}
+              onClick={handleOrganize}
+            >
               <Icons.OrganizeIcon />
-            </ApIconButton>
-          </ApTooltip>
+            </Button>
+          </CanvasTooltip>
         )}
-        <ApTooltip content={translations.zoomIn} placement={placement} data-testid="zoom-in-button">
-          <ApIconButton color="secondary" onClick={handleZoomIn}>
-            <ApIcon name="add" size={token.Icon.IconXs} />
-          </ApIconButton>
-        </ApTooltip>
-        <ApTooltip
-          content={translations.zoomOut}
-          placement={placement}
-          data-testid="zoom-out-button"
-        >
-          <ApIconButton color="secondary" onClick={handleZoomOut}>
-            <ApIcon name="remove" size={token.Icon.IconXs} />
-          </ApIconButton>
-        </ApTooltip>
-        <ApTooltip
-          content={translations.zoomToFit}
-          placement={placement}
-          data-testid="fit-to-view-button"
-        >
-          <ApIconButton color="secondary" onClick={handleFitToView}>
+        <CanvasTooltip content={translations.zoomIn} placement={placement}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            aria-label={translations.zoomIn}
+            onClick={handleZoomIn}
+          >
+            <CanvasIcon icon="plus" size={16} />
+          </Button>
+        </CanvasTooltip>
+        <CanvasTooltip content={translations.zoomOut} placement={placement}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            aria-label={translations.zoomOut}
+            onClick={handleZoomOut}
+          >
+            <CanvasIcon icon="minus" size={16} />
+          </Button>
+        </CanvasTooltip>
+        <CanvasTooltip content={translations.zoomToFit} placement={placement}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            aria-label={translations.zoomToFit}
+            onClick={handleFitToView}
+          >
             <Icons.ZoomToFitIcon />
-          </ApIconButton>
-        </ApTooltip>
+          </Button>
+        </CanvasTooltip>
       </RootComponent>
     );
   }

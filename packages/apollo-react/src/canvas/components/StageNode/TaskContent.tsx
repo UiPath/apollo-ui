@@ -1,22 +1,15 @@
-import { FontVariantToken, Padding, Spacing } from '@uipath/apollo-core';
+import { Padding, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
-import {
-  ApBadge,
-  ApCircularProgress,
-  ApIconButton,
-  ApTooltip,
-  ApTypography,
-  BadgeSize,
-  type StatusTypes,
-} from '@uipath/apollo-react/material';
+import { Badge, Button, Spinner } from '@uipath/apollo-wind';
 import debounce from 'debounce';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { TimelinePlayIcon } from '../../icons';
+import { CanvasTooltip } from '../CanvasTooltip';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import { StageTaskIcon, StageTaskRetryDuration } from './StageNode.styles';
 import type { StageTaskExecution, StageTaskItem } from './StageNode.types';
 
-const ProcessNodeIcon = () => (
+const ProcessCanvasIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
     <rect x="3" y="3" width="7" height="7" rx="1" />
     <rect x="14" y="3" width="7" height="7" rx="1" />
@@ -79,29 +72,31 @@ const TaskPlayButton = memo(
     const buttonSize = small ? '20px' : Spacing.SpacingL;
 
     return (
-      <ApTooltip content="Trigger task" placement="top">
-        <ApIconButton
+      <CanvasTooltip content="Trigger task" placement="top">
+        <Button
+          variant="ghost"
+          size="icon"
           data-testid={`stage-task-play-${taskId}`}
           onClick={handlePlayClick}
           onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
           onKeyDown={(e: React.KeyboardEvent) => e.stopPropagation()}
           className="task-menu-icon-button"
-          sx={{
-            color: 'var(--uix-canvas-icon-default) !important',
-            minWidth: 'unset !important',
-            width: `${buttonSize} !important`,
-            height: `${buttonSize} !important`,
-            padding: '0 !important',
+          style={{
+            color: 'var(--uix-canvas-icon-default)',
+            minWidth: 'unset',
+            width: buttonSize,
+            height: buttonSize,
+            padding: 0,
             ...(small && { marginRight: '-2px' }),
           }}
         >
           {playLoading ? (
-            <ApCircularProgress size={iconSize - 2} />
+            <Spinner size="sm" style={{ width: iconSize - 2, height: iconSize - 2 }} />
           ) : (
             <TimelinePlayIcon w={iconSize} h={iconSize} />
           )}
-        </ApIconButton>
-      </ApTooltip>
+        </Button>
+      </CanvasTooltip>
     );
   }
 );
@@ -135,30 +130,29 @@ export const TaskContent = memo(
               align="center"
               style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
             >
-              <StageTaskIcon>{task.icon ?? <ProcessNodeIcon />}</StageTaskIcon>
-              <ApTooltip
+              <StageTaskIcon>{task.icon ?? <ProcessCanvasIcon />}</StageTaskIcon>
+              <CanvasTooltip
                 content={task.label}
                 placement="top"
                 smartTooltip
                 {...(isDragging && { isOpen: false })}
               >
-                <ApTypography
-                  variant={FontVariantToken.fontSizeM}
-                  color="var(--uix-canvas-foreground)"
-                  style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                >
-                  {task.label}
-                </ApTypography>
-              </ApTooltip>
+                <span className="text-sm truncate">{task.label}</span>
+              </CanvasTooltip>
             </Row>
             <Row align="center" gap={Spacing.SpacingXs} style={{ flexShrink: 0 }}>
               {hasExecutionStatus &&
                 (taskExecution.message ? (
-                  <ApTooltip content={taskExecution.message} placement="top">
-                    <ApIconButton size="small">
+                  <CanvasTooltip content={taskExecution.message} placement="top">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      aria-label={taskExecution.message}
+                    >
                       <ExecutionStatusIcon status={taskExecution.status} />
-                    </ApIconButton>
-                  </ApTooltip>
+                    </Button>
+                  </CanvasTooltip>
                 ) : (
                   <ExecutionStatusIcon status={taskExecution.status} />
                 ))}
@@ -174,28 +168,19 @@ export const TaskContent = memo(
             <Row align="center" justify="space-between">
               <Row gap={'2px'}>
                 {taskExecution?.duration && (
-                  <ApTypography
-                    variant={FontVariantToken.fontSizeS}
-                    color="var(--uix-canvas-foreground-de-emp)"
-                  >
-                    {taskExecution.duration}
-                  </ApTypography>
+                  <span className="text-xs text-foreground-muted">{taskExecution.duration}</span>
                 )}
                 {taskExecution?.retryDuration && (
                   <StageTaskRetryDuration status={taskExecution.badgeStatus ?? 'warning'}>
-                    <ApTypography variant={FontVariantToken.fontSizeS} color="inherit">
-                      {`(+${taskExecution.retryDuration})`}
-                    </ApTypography>
+                    <span className="text-xs">{`(+${taskExecution.retryDuration})`}</span>
                   </StageTaskRetryDuration>
                 )}
               </Row>
               <Row align="center" gap={Spacing.SpacingXs}>
                 {taskExecution?.badge && (
-                  <ApBadge
-                    size={BadgeSize.SMALL}
-                    status={taskExecution.badgeStatus as StatusTypes}
-                    label={generateBadgeText(taskExecution) ?? ''}
-                  />
+                  <Badge variant={taskExecution.badgeStatus}>
+                    {generateBadgeText(taskExecution) ?? ''}
+                  </Badge>
                 )}
                 {showPlayButtonSmall && (
                   <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} small />

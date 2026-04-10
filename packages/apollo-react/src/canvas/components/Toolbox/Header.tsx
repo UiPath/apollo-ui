@@ -1,7 +1,7 @@
-import { FontVariantToken } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
-import { ApIcon, ApIconButton, ApTypography } from '@uipath/apollo-react/material';
+import { Button } from '@uipath/apollo-wind';
 import { memo } from 'react';
+import { CanvasIcon } from '../../utils/icon-registry';
 
 interface HeaderProps {
   title: string;
@@ -26,28 +26,29 @@ export const Header = memo(function Header({ title, onBack, showBackButton }: He
         }}
       >
         {isBackButtonVisible && (
-          <ApIconButton
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
             aria-label="Back"
-            color="secondary"
             onClick={onBack}
             style={{
               transition: 'transform 0.3s ease-in-out',
             }}
           >
-            <ApIcon name="chevron_left" size="20px" />
-          </ApIconButton>
+            <CanvasIcon icon="chevron-left" size={20} />
+          </Button>
         )}
       </div>
-      <ApTypography
-        variant={FontVariantToken.fontSizeLBold}
-        color="var(--uix-canvas-foreground-emp)"
+      <span
+        className="text-base font-bold"
         style={{
           transition: 'transform 0.3s ease-in-out, margin 0.3s ease-in-out',
           margin: 0,
         }}
       >
         {title}
-      </ApTypography>
+      </span>
     </Row>
   );
 });

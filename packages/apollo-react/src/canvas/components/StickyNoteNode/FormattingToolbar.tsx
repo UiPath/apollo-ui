@@ -1,6 +1,6 @@
-import { NodeIcon } from '@uipath/apollo-react/canvas';
-import { ApTooltip } from '@uipath/apollo-react/material/components';
+import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import { memo, type RefObject, useCallback } from 'react';
+import { CanvasTooltip } from '../CanvasTooltip';
 import type { ActiveFormats } from './markdown-formatting';
 import {
   toggleBold,
@@ -62,34 +62,34 @@ const FormattingToolbarComponent = ({
       onMouseDown={(e) => e.preventDefault()}
       className="nodrag nowheel"
     >
-      <ApTooltip content={`Bold (${mod}+B)`} placement="top" delay>
+      <CanvasTooltip content={`Bold (${mod}+B)`} placement="top" delay>
         <FormattingButton isActive={activeFormats.bold} onClick={handleBold}>
-          <NodeIcon icon="bold" size={14} />
+          <CanvasIcon icon="bold" size={14} />
         </FormattingButton>
-      </ApTooltip>
-      <ApTooltip content={`Italic (${mod}+I)`} placement="top" delay>
+      </CanvasTooltip>
+      <CanvasTooltip content={`Italic (${mod}+I)`} placement="top" delay>
         <FormattingButton isActive={activeFormats.italic} onClick={handleItalic}>
-          <NodeIcon icon="italic" size={14} />
+          <CanvasIcon icon="italic" size={14} />
         </FormattingButton>
-      </ApTooltip>
-      <ApTooltip content={`Strikethrough (${mod}${shift}X)`} placement="top" delay>
+      </CanvasTooltip>
+      <CanvasTooltip content={`Strikethrough (${mod}${shift}X)`} placement="top" delay>
         <FormattingButton isActive={activeFormats.strikethrough} onClick={handleStrikethrough}>
-          <NodeIcon icon="strikethrough" size={14} />
+          <CanvasIcon icon="strikethrough" size={14} />
         </FormattingButton>
-      </ApTooltip>
+      </CanvasTooltip>
 
       <ToolbarSeparator />
 
-      <ApTooltip content="Bullet list" placement="top" delay>
+      <CanvasTooltip content="Bullet list" placement="top" delay>
         <FormattingButton isActive={activeFormats.bulletList} onClick={handleBulletList}>
-          <NodeIcon icon="list" size={14} />
+          <CanvasIcon icon="list" size={14} />
         </FormattingButton>
-      </ApTooltip>
-      <ApTooltip content="Numbered list" placement="top" delay>
+      </CanvasTooltip>
+      <CanvasTooltip content="Numbered list" placement="top" delay>
         <FormattingButton isActive={activeFormats.numberedList} onClick={handleNumberedList}>
-          <NodeIcon icon="list-ordered" size={14} />
+          <CanvasIcon icon="list-ordered" size={14} />
         </FormattingButton>
-      </ApTooltip>
+      </CanvasTooltip>
     </FormattingToolbarContainer>
   );
 };

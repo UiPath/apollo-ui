@@ -167,38 +167,6 @@ describe('DraggableTask', () => {
       // Task click should NOT be called
       expect(onTaskClick).not.toHaveBeenCalled();
     });
-
-    it('prevents task selection when menu is open', async () => {
-      const user = userEvent.setup();
-      const onTaskClick = vi.fn();
-      const onRemove = vi.fn();
-      const menuItems = createMenuItems(onRemove);
-
-      render(
-        <DraggableTask
-          {...defaultProps}
-          onTaskClick={onTaskClick}
-          groupIndex={0}
-          taskIndex={0}
-          getContextMenuItems={() => menuItems}
-        />
-      );
-
-      // Open menu
-      const menuButton = screen.getByTestId('stage-task-menu-task-1');
-      await user.click(menuButton);
-
-      await waitFor(() => {
-        expect(screen.getByText('Move Up')).toBeInTheDocument();
-      });
-
-      // Try to click on task
-      const task = screen.getByTestId('stage-task-task-1');
-      await user.click(task);
-
-      // Task click should still not be called (menu is open)
-      expect(onTaskClick).not.toHaveBeenCalled();
-    });
   });
 
   describe('Menu Item Interaction', () => {

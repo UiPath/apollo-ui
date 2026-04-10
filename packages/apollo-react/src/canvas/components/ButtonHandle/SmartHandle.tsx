@@ -1,7 +1,4 @@
-import { FontVariantToken } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
-import { ApTypography } from '@uipath/apollo-react/material';
-import { ApIcon } from '@uipath/apollo-react/material/components';
 import {
   type Edge,
   Handle,
@@ -24,8 +21,8 @@ import {
   useRef,
   useState,
 } from 'react';
-
 import { canvasEventBus } from '../../utils/CanvasEventBus';
+import { CanvasIcon } from '../../utils/icon-registry';
 import type { HandleActionEvent } from './ButtonHandle';
 import {
   StyledAddButton,
@@ -165,7 +162,7 @@ const AddButton = memo(({ onAction }: AddButtonProps) => {
         whileHover={{ scale: 1.05 }}
         onClick={handleClick}
       >
-        <ApIcon name="add" size="14px" />
+        <CanvasIcon icon="plus" size={14} />
       </StyledAddButton>
     </AnimatePresence>
   );
@@ -775,12 +772,7 @@ export function SmartHandle({
             <StyledLabel $position={computedPosition} $backgroundColor={labelBackgroundColor}>
               <Row align="center" gap={4}>
                 {labelIcon}
-                <ApTypography
-                  color="var(--uix-canvas-foreground-de-emp)"
-                  variant={FontVariantToken.fontSizeSBold}
-                >
-                  {label}
-                </ApTypography>
+                <span className="text-xs font-bold text-foreground-muted">{label}</span>
               </Row>
             </StyledLabel>
           )}

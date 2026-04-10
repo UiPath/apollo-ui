@@ -1,9 +1,9 @@
 import * as Icons from '@uipath/apollo-react/canvas/icons';
-import { NodeIcon } from '@uipath/apollo-react/canvas/utils';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
+import { CanvasIcon } from '@uipath/apollo-react/canvas/utils';
 import { type NodeProps, Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useMemo } from 'react';
+import type { HandleGroupManifest } from '../../../schema/node-definition';
 import {
   type AgentFlowResourceNode,
   type AgentFlowResourceNodeData,
@@ -13,11 +13,10 @@ import {
 } from '../../../types';
 import { BaseNode } from '../../BaseNode/BaseNode';
 import {
-  BaseNodeOverrideConfigProvider,
   type BaseNodeOverrideConfig,
+  BaseNodeOverrideConfigProvider,
 } from '../../BaseNode/BaseNodeConfigContext';
 import type { ButtonHandleConfig } from '../../ButtonHandle';
-import type { HandleGroupManifest } from '../../../schema/node-definition';
 import { ExecutionStatusIcon } from '../../ExecutionStatusIcon/ExecutionStatusIcon';
 import type { NodeToolbarConfig, ToolbarAction } from '../../Toolbar';
 import { ToolResourceIcon } from '../components/ToolResourceIcon';
@@ -138,10 +137,10 @@ export const ResourceNode = memo(
       let icon: React.ReactNode | undefined;
       switch (data.type) {
         case 'context':
-          icon = <ApIcon name="description" size="40px" />;
+          icon = <CanvasIcon icon="file-text" size={40} />;
           break;
         case 'escalation':
-          icon = <ApIcon name="person" size="40px" />;
+          icon = <CanvasIcon icon="user" size={40} />;
           break;
         case 'memorySpace':
           icon = <Icons.MemoryIcon w={40} h={40} />;
@@ -175,7 +174,7 @@ export const ResourceNode = memo(
         if (suggestionGroupVersion === '0.0.1') return null;
         const rejectAction: ToolbarAction = {
           id: 'reject-suggestion',
-          icon: <NodeIcon icon="X" size={14} />,
+          icon: <CanvasIcon icon="X" size={14} />,
           label: suggestTranslations.reject,
           disabled: false,
           onAction: () => handleActOnSuggestion(suggestionId, 'reject'),
@@ -183,7 +182,7 @@ export const ResourceNode = memo(
 
         const acceptAction: ToolbarAction = {
           id: 'accept-suggestion',
-          icon: <NodeIcon icon="check" size={14} />,
+          icon: <CanvasIcon icon="check" size={14} />,
           label: suggestTranslations.accept,
           disabled: false,
           onAction: () => handleActOnSuggestion(suggestionId, 'accept'),
@@ -224,7 +223,7 @@ export const ResourceNode = memo(
 
       const removeAction: ToolbarAction = {
         id: 'remove',
-        icon: <NodeIcon icon="trash" size={14} />,
+        icon: <CanvasIcon icon="trash" size={14} />,
         label: translations?.remove ?? '',
         disabled: false,
         onAction: handleClickRemove,
@@ -363,7 +362,7 @@ export const ResourceNode = memo(
 
     const breakpointAdornment = useMemo((): React.ReactNode => {
       if (!hasBreakpoint) return undefined;
-      return <ApIcon variant="normal" name="circle" size="14px" color="#cc3d45" />;
+      return <CanvasIcon icon="circle" size={14} color="#cc3d45" />;
     }, [hasBreakpoint]);
 
     const statusAdornment = useMemo((): React.ReactNode => {
@@ -372,30 +371,23 @@ export const ResourceNode = memo(
 
     const guardrailsAdornment = useMemo((): React.ReactNode => {
       if (!hasGuardrails) return undefined;
-      return (
-        <ApIcon
-          variant="outlined"
-          name="gpp_good"
-          size="18px"
-          color="var(--uix-canvas-icon-default)"
-        />
-      );
+      return <CanvasIcon icon="shield-check" size={18} color="var(--uix-canvas-icon-default)" />;
     }, [hasGuardrails]);
 
     const suggestionAdornment = useMemo((): React.ReactNode => {
       if (!isSuggestion) return undefined;
-      let iconName = 'swap_horizontal_circle';
+      let iconName = 'arrow-left-right';
       let color = 'var(--uix-canvas-warning-icon)';
 
       if (suggestionType === 'add') {
-        iconName = 'add_circle';
+        iconName = 'circle-plus';
         color = 'var(--uix-canvas-success-icon)';
       } else if (suggestionType === 'delete') {
-        iconName = 'remove_circle';
+        iconName = 'circle-minus';
         color = 'var(--uix-canvas-error-icon)';
       }
 
-      return <ApIcon variant="normal" name={iconName} size="18px" color={color} />;
+      return <CanvasIcon icon={iconName} size={18} color={color} />;
     }, [isSuggestion, suggestionType]);
 
     const handleConfigurations = useMemo(

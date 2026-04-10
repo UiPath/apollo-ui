@@ -6,14 +6,14 @@ import {
   useStore,
   useUpdateNodeInternals,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DEFAULT_NODE_SIZE } from '../../constants';
 import { useNodeTypeRegistry } from '../../core';
 import { useElementValidationStatus, useNodeExecutionState } from '../../hooks';
 import type { HandleGroupManifest } from '../../schema/node-definition';
+import type { ExecutionState } from '../../types/execution';
 import { resolveAdornments } from '../../utils/adornment-resolver';
-import { getIcon } from '../../utils/icon-registry';
+import { CanvasIcon, getIcon } from '../../utils/icon-registry';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
 import { resolveToolbar } from '../../utils/toolbar-resolver';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
@@ -33,7 +33,6 @@ import {
   BaseSubHeader,
   BaseTextContainer,
 } from './BaseNode.styles';
-import type { ExecutionState } from '../../types/execution';
 import type {
   BaseNodeData,
   FooterVariant,
@@ -461,7 +460,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
             height={height}
             width={width ?? height}
           >
-            <ApIcon color="var(--uix-canvas-error-icon)" name="error" size="32px" />
+            <CanvasIcon icon="circle-alert" size={32} color="var(--uix-canvas-error-icon)" />
           </BaseIconWrapper>
 
           {/* TODO: localize */}
@@ -499,10 +498,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         aria-busy={data.loading || undefined}
       >
         {data.loading ? (
-          // Always use rectangle variant; border-radius is controlled via shape prop
-          // to avoid ApSkeleton's circle variant overriding dimensions with !important.
+          // border-radius is controlled via shape prop
           <BaseSkeletonIcon
-            variant="rectangle"
+            data-testid="skeleton-icon"
             shape={displayShape}
             nodeHeight={displayFooter ? undefined : height}
             nodeWidth={displayFooter ? undefined : (width ?? height)}

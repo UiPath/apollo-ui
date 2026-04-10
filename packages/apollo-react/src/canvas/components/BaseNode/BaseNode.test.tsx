@@ -43,7 +43,9 @@ vi.mock('../ButtonHandle/SmartHandle', () => ({
 vi.mock('./BaseNodeConfigContext', () => ({ useBaseNodeOverrideConfig: () => ({}) }));
 vi.mock('../../utils/adornment-resolver', () => ({ resolveAdornments: () => ({}) }));
 vi.mock('../../utils/toolbar-resolver', () => ({ resolveToolbar: () => undefined }));
-vi.mock('@uipath/apollo-react/material/components', () => ({ ApIcon: () => null }));
+vi.mock('@uipath/apollo-wind', () => ({
+  Skeleton: (props: Record<string, unknown>) => <div {...props} />,
+}));
 vi.mock('@uipath/apollo-react/canvas/utils', () => ({
   cx: (...args: unknown[]) => args.filter(Boolean).join(' '),
 }));
@@ -93,10 +95,10 @@ describe('BaseNode', () => {
       render(<BaseNode {...defaultProps} data={data} />);
 
       if (expectSkeleton) {
-        expect(screen.getByTestId('ap-skeleton')).toBeInTheDocument();
+        expect(screen.getByTestId('skeleton-icon')).toBeInTheDocument();
         expect(screen.queryByTestId('node-icon')).not.toBeInTheDocument();
       } else {
-        expect(screen.queryByTestId('ap-skeleton')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('skeleton-icon')).not.toBeInTheDocument();
         expect(screen.getByTestId('node-icon')).toBeInTheDocument();
       }
     });
@@ -104,7 +106,7 @@ describe('BaseNode', () => {
     it('still renders label when loading', () => {
       render(<BaseNode {...defaultProps} data={{ loading: true }} />);
 
-      expect(screen.getByTestId('ap-skeleton')).toBeInTheDocument();
+      expect(screen.getByTestId('skeleton-icon')).toBeInTheDocument();
       expect(screen.getByText('Test Node')).toBeInTheDocument();
     });
   });

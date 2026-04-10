@@ -6,12 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": [
-      "**",
-      "!**/node_modules",
-      "!**/dist",
-      "!**/src/icons/**"
-    ]
+    "includes": ["**", "!**/node_modules", "!**/dist", "!**/src/icons/**"]
   },
   "formatter": {
     "enabled": true,
@@ -25,6 +20,11 @@
       "semicolons": "always",
       "trailingCommas": "es5",
       "arrowParentheses": "always"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
     }
   },
   "linter": {

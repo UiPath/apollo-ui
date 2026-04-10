@@ -1,7 +1,8 @@
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon, ApIconButton } from '@uipath/apollo-react/material/components';
+import { Button } from '@uipath/apollo-wind';
 import { memo, useCallback, useEffect, useState } from 'react';
+import { CanvasIcon } from '../../utils/icon-registry';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import { CheckboxField, NumberField, SelectField, TextField } from './fields';
 import { useNodeConfiguration, useNodeSelection } from './hooks';
@@ -118,13 +119,15 @@ export const NodePropertiesPanel = memo(function NodePropertiesPanel({
   }
 
   const headerActions = (
-    <ApIconButton
-      color="secondary"
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-6 w-6"
       onClick={handleTogglePin}
       title={isPinned ? 'Unpin panel' : 'Pin panel'}
     >
-      <ApIcon name={isPinned ? 'unfold_less' : 'unfold_more'} />
-    </ApIconButton>
+      <CanvasIcon icon={isPinned ? 'shrink' : 'expand'} size={16} />
+    </Button>
   );
 
   return (

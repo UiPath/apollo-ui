@@ -1,4 +1,4 @@
-import { memo, useCallback, useRef, useState } from 'react';
+import { memo, useCallback, useRef } from 'react';
 import type { NodeMenuItem } from '../NodeContextMenu';
 import { StageTask } from './StageNode.styles';
 import type { StageTaskExecution, StageTaskItem } from './StageNode.types';
@@ -22,21 +22,15 @@ const AdhocTaskItemComponent = ({
   onTaskClick,
   onTaskPlay,
 }: AdhocTaskItemProps) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const taskRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<TaskMenuHandle>(null);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
-      if (isMenuOpen) return;
       onTaskClick(e, task.id);
     },
-    [isMenuOpen, onTaskClick, task.id]
+    [onTaskClick, task.id]
   );
-
-  const handleMenuOpenChange = useCallback((isOpen: boolean) => {
-    setIsMenuOpen(isOpen);
-  }, []);
 
   const handleContextMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     menuRef.current?.handleContextMenu(e);
@@ -53,13 +47,7 @@ const AdhocTaskItemComponent = ({
     >
       <TaskContent task={task} taskExecution={taskExecution} onTaskPlay={onTaskPlay} />
       {getContextMenuItems && (
-        <TaskMenu
-          ref={menuRef}
-          taskId={task.id}
-          getContextMenuItems={getContextMenuItems}
-          onMenuOpenChange={handleMenuOpenChange}
-          taskRef={taskRef}
-        />
+        <TaskMenu ref={menuRef} taskId={task.id} getContextMenuItems={getContextMenuItems} />
       )}
     </StageTask>
   );

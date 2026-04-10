@@ -1,15 +1,15 @@
 import * as Icons from '@uipath/apollo-react/canvas/icons';
 import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { FloatingCanvasPanel } from '../../FloatingCanvasPanel';
+import type { HandleGroupManifest } from '../../../schema/node-definition';
 import {
   type AgentNodeTranslations,
   DefaultSuggestionTranslations,
   type SuggestionTranslations,
   type SuggestionType,
 } from '../../../types';
+import { CanvasIcon } from '../../../utils/icon-registry';
 import { BaseNode } from '../../BaseNode/BaseNode';
 import type { BaseNodeData } from '../../BaseNode/BaseNode.types';
 import {
@@ -17,7 +17,7 @@ import {
   type BaseNodeOverrideConfig,
 } from '../../BaseNode/BaseNodeConfigContext';
 import type { ButtonHandleConfig, HandleActionEvent } from '../../ButtonHandle/ButtonHandle';
-import type { HandleGroupManifest } from '../../../schema/node-definition';
+import { FloatingCanvasPanel } from '../../FloatingCanvasPanel';
 import type { NodeToolbarConfig, ToolbarAction } from '../../Toolbar';
 import { ResourceNodeType } from '../AgentFlow.constants';
 import { useAgentFlowStore } from '../store/agent-flow-store';
@@ -413,7 +413,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
             onAddInstructions();
           }}
         >
-          <ApIcon name="add" size="14px" />
+          <CanvasIcon icon="plus" size={14} />
           {translations.addInstructions}
         </AddInstructionsButton>
       ),

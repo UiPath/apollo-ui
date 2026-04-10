@@ -28,7 +28,7 @@ describe('ListView', () => {
     it('should show loading spinner when loading with no items', () => {
       render(<ListView {...defaultProps} items={[]} isLoading={true} />);
 
-      expect(screen.getAllByTestId('ap-skeleton').length).toBeGreaterThan(0);
+      expect(document.querySelectorAll('.animate-pulse').length).toBeGreaterThan(0);
       expect(screen.queryByText('No items found')).not.toBeInTheDocument();
     });
 
@@ -43,7 +43,7 @@ describe('ListView', () => {
 
       render(<ListView {...defaultProps} items={items} isLoading={true} />);
 
-      expect(screen.queryByTestId('ap-skeleton')).not.toBeInTheDocument();
+      expect(document.querySelector('.animate-pulse')).not.toBeInTheDocument();
       expect(screen.getByText('Item 1')).toBeInTheDocument();
     });
   });
@@ -99,10 +99,9 @@ describe('ListView', () => {
 
       render(<ListView {...defaultProps} items={items} />);
 
-      // Check for chevron_right icon
-      const icons = screen.getAllByTestId('ap-icon');
-      const chevronIcon = icons.find((icon) => icon.getAttribute('data-name') === 'chevron_right');
-      expect(chevronIcon).toBeDefined();
+      // Check for chevron-right icon
+      const chevronIcon = document.querySelector('.lucide-chevron-right');
+      expect(chevronIcon).toBeInTheDocument();
     });
 
     it('should render item with URL icon', () => {

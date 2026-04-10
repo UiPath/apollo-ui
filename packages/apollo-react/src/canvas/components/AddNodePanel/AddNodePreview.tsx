@@ -1,9 +1,10 @@
 import styled from '@emotion/styled';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Handle, Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon } from '@uipath/apollo-react/material/components';
 import type React from 'react';
+
 import { DEFAULT_NODE_SIZE } from '../../constants';
+import { CanvasIcon } from '../../utils/icon-registry';
 
 const PreviewContainer = styled.div<{ selected?: boolean; width?: number; height?: number }>`
   width: ${(props) => props.width ?? DEFAULT_NODE_SIZE}px;
@@ -29,10 +30,10 @@ export interface AddNodePreviewData {
 
 const getIcon = (iconName?: string): React.ReactElement => {
   if (iconName) {
-    return <ApIcon color="var(--uix-canvas-foreground-de-emp)" name={iconName} size="40px" />;
+    return <CanvasIcon icon={iconName} size={40} color="var(--uix-canvas-foreground-de-emp)" />;
   }
 
-  return <ApIcon color="var(--uix-canvas-foreground-de-emp)" name="more_horiz" size="40px" />;
+  return <CanvasIcon icon="ellipsis" size={40} color="var(--uix-canvas-foreground-de-emp)" />;
 };
 
 export const AddNodePreview: React.FC<NodeProps> = ({ selected, data, width, height }) => {

@@ -1,6 +1,7 @@
 import { getLighterColor } from '@uipath/apollo-react/canvas/utils';
-import { ApIcon, ApTooltip } from '@uipath/apollo-react/material/components';
 import { memo } from 'react';
+import { CanvasIcon } from '../../../utils/icon-registry';
+import { CanvasTooltip } from '../../CanvasTooltip';
 import { StyledToolbarButton } from './ToolbarButton.styles';
 import type { ToolbarActionItem } from './toolbar.types';
 
@@ -30,7 +31,7 @@ export const ToolbarButton = memo(({ action, layoutId }: ToolbarButtonProps) => 
   };
 
   return (
-    <ApTooltip content={action.label} placement="top">
+    <CanvasTooltip content={action.label} placement="top">
       <StyledToolbarButton
         layout={layoutId ? true : undefined}
         layoutId={layoutId}
@@ -47,12 +48,12 @@ export const ToolbarButton = memo(({ action, layoutId }: ToolbarButtonProps) => 
         $hoverColor={hoverColor}
       >
         {action.icon && typeof action.icon === 'string' ? (
-          <ApIcon variant="outlined" name={action.icon} size="16px" color={action.color} />
+          <CanvasIcon icon={action.icon} size={16} color={action.color} />
         ) : (
           action.icon
         )}
       </StyledToolbarButton>
-    </ApTooltip>
+    </CanvasTooltip>
   );
 });
 

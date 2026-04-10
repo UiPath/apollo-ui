@@ -129,7 +129,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run build:icons && pnpm run i18n:compile && rslib build",
+    "build": "pnpm run build:icons && pnpm run i18n:compile && rslib build && pnpm run build:css:canvas",
+    "build:css:canvas": "tailwindcss -i ./src/canvas/styles/tailwind.canvas.css -o ./dist/canvas/styles/tailwind.canvas.css --minify",
     "build:analyze": "ANALYZE=true pnpm run build",
     "build:icons": "tsx scripts/icons-build.ts",
     "dev": "rslib build --watch",
@@ -223,6 +224,7 @@
     "zustand": "^5.0.9"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.1.17",
     "@lingui/cli": "^5.6.1",
     "@lingui/conf": "^5.6.1",
     "@lingui/format-json": "^5.6.1",

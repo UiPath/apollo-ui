@@ -1,8 +1,8 @@
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon } from '@uipath/apollo-react/material/components';
 import { memo, useCallback } from 'react';
 import { GRID_SPACING } from '../../constants';
+import { CanvasIcon } from '../../utils/icon-registry';
 import {
   BottomCornerIndicators,
   GroupContainer,
@@ -162,7 +162,7 @@ const GroupNodeComponent = ({ id, data, selected }: GroupNodeProps) => {
         <GroupHeader>
           {iconName && (
             <GroupIconWrapper>
-              <ApIcon name={iconName} size="16px" />
+              <CanvasIcon icon={iconName} size={16} />
             </GroupIconWrapper>
           )}
           <GroupTitle>{title}</GroupTitle>
@@ -183,11 +183,7 @@ const GroupNodeComponent = ({ id, data, selected }: GroupNodeProps) => {
                   aria-label={collapsed ? 'Expand group' : 'Collapse group'}
                   title={collapsed ? 'Expand group' : 'Collapse group'}
                 >
-                  <ApIcon
-                    variant="outlined"
-                    name={collapsed ? 'expand_more' : 'expand_less'}
-                    size="16px"
-                  />
+                  <CanvasIcon icon={collapsed ? 'chevron-down' : 'chevron-up'} size={16} />
                 </GroupHeaderButton>
               </>
             )}
@@ -199,7 +195,7 @@ const GroupNodeComponent = ({ id, data, selected }: GroupNodeProps) => {
                 aria-label="More options"
                 title="More options"
               >
-                <ApIcon variant="outlined" name="more_vert" size="16px" />
+                <CanvasIcon icon="ellipsis-vertical" size={16} />
               </GroupHeaderButton>
             )}
           </GroupControls>
