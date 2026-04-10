@@ -4,20 +4,20 @@ import type { ValidationErrorSeverity } from '../../types/validation';
 export const edgeTargetStatusToEdgeColor: {
   [key in ElementStatus | ValidationErrorSeverity]: string;
 } = {
-  Cancelled: 'var(--color-error-icon)',
-  Completed: 'var(--color-success-icon)',
-  CRITICAL: 'var(--color-error-icon)',
-  ERROR: 'var(--color-error-icon)',
-  Failed: 'var(--color-error-icon)',
-  INFO: 'var(--color-info-icon)',
-  InProgress: 'var(--color-info-icon)',
-  NotExecuted: 'var(--color-canvas-element-border-color-default)',
-  Paused: 'var(--color-warning-icon)',
-  Terminated: 'var(--color-error-icon)',
-  Warning: 'var(--color-warning-icon)',
-  UserCancelled: 'var(--color-info-icon)',
-  WARNING: 'var(--color-warning-icon)',
-  None: 'var(--color-canvas-element-border-color-default)',
+  Cancelled: 'var(--uix-canvas-error-icon)',
+  Completed: 'var(--uix-canvas-success-icon)',
+  CRITICAL: 'var(--uix-canvas-error-icon)',
+  ERROR: 'var(--uix-canvas-error-icon)',
+  Failed: 'var(--uix-canvas-error-icon)',
+  INFO: 'var(--uix-canvas-info-icon)',
+  InProgress: 'var(--uix-canvas-info-icon)',
+  NotExecuted: 'var(--uix-canvas-border)',
+  Paused: 'var(--uix-canvas-warning-icon)',
+  Terminated: 'var(--uix-canvas-error-icon)',
+  Warning: 'var(--uix-canvas-warning-icon)',
+  UserCancelled: 'var(--uix-canvas-info-icon)',
+  WARNING: 'var(--uix-canvas-warning-icon)',
+  None: 'var(--uix-canvas-border)',
 };
 
 export const getStatusAnimation = (

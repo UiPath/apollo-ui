@@ -21,12 +21,16 @@
     "react-dom": "19.2.3"
   },
   "devDependencies": {
+    "@types/react": "^19.2.6",
+    "@types/react-dom": "^19.1.6",
     "@storybook/addon-a11y": "^10.2.15",
     "@storybook/addon-docs": "^10.2.15",
     "@storybook/addon-links": "^10.2.15",
+    "@storybook/addon-mcp": "^0.2.2",
     "@storybook/react": "^10.2.15",
     "@storybook/react-vite": "^10.2.15",
-    "@tailwindcss/vite": "^4.1.17",
+    "@tailwindcss/postcss": "^4.1.17",
+    "autoprefixer": "^10.4.22",
     "prettier": "^3.8.1",
     "react-scan": "^0.5.3",
     "storybook": "^10.2.15",

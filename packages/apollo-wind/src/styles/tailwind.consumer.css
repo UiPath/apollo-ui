@@ -23,7 +23,14 @@
   * Each theme uses semantic tokens from apollo-core with hardcoded fallbacks
   */
 
-body.dark, .dark {
+/*
+ * Exclude .react-flow from bare .light / .dark selectors.
+ * ReactFlow adds a .light or .dark class to its wrapper (via the colorMode
+ * prop, which defaults to "light"). Without :not(.react-flow), the wrapper
+ * matches these selectors and redefines every semantic token, overriding
+ * the body-level theme for all canvas descendants.
+ */
+body.dark, .dark:not(.react-flow) {
   /* ── Surfaces ─────────────────────────────────────────────────────────── */
   --surface: var(--color-background, #182027);
   --surface-raised: var(--color-background-raised, #273139);
@@ -185,7 +192,7 @@ body.dark-hc, .dark-hc {
   color-scheme: dark;
 }
 
-body.light, .light {
+body.light, .light:not(.react-flow) {
   /* ── Surfaces ─────────────────────────────────────────────────────────── */
   --surface: var(--color-background, #ffffff);
   --surface-raised: var(--color-background-raised, #ffffff);
@@ -467,6 +474,16 @@ body.future-dark, .future-dark {
   /* text on destructive bg */
   --border-de-emp: var(--border-subtle);
   --input: var(--ap-wind-border);
+
+  /* FIXME: apollo-core should add new themes support for all semantic tokens */
+  --color-gradient-general-start: var(--color-gradient-general-start-dark);
+  --color-gradient-general-end: var(--color-gradient-general-end-dark);
+  --color-gradient-agent-start: var(--color-gradient-agent-start-dark);
+  --color-gradient-agent-end: var(--color-gradient-agent-end-dark);
+  --color-gradient-invoked-start: var(--color-gradient-invoked-start-dark);
+  --color-gradient-invoked-end: var(--color-gradient-invoked-end-dark);
+  --color-gradient-human-start: var(--color-gradient-human-start-dark);
+  --color-gradient-human-end: var(--color-gradient-human-end-dark);
 }
 
 /* ============================================================================
@@ -589,6 +606,16 @@ body.future-light, .future-light {
   /* text on destructive bg */
   --border-de-emp: var(--border-subtle);
   --input: var(--ap-wind-border);
+
+  /* FIXME: apollo-core should add new themes support for all semantic tokens */
+  --color-gradient-general-start: var(--color-gradient-general-start-light);
+  --color-gradient-general-end: var(--color-gradient-general-end-light);
+  --color-gradient-agent-start: var(--color-gradient-agent-start-light);
+  --color-gradient-agent-end: var(--color-gradient-agent-end-light);
+  --color-gradient-invoked-start: var(--color-gradient-invoked-start-light);
+  --color-gradient-invoked-end: var(--color-gradient-invoked-end-light);
+  --color-gradient-human-start: var(--color-gradient-human-start-light);
+  --color-gradient-human-end: var(--color-gradient-human-end-light);
 }
 
 
@@ -670,6 +697,16 @@ body.wireframe, .wireframe {
   --destructive-foreground: #ffffff;
   --border-de-emp: var(--border-subtle);
   --input: var(--ap-wind-border);
+
+  /* FIXME: apollo-core should add new themes support for all semantic tokens */
+  --color-gradient-general-start: var(--color-gradient-general-start-light);
+  --color-gradient-general-end: var(--color-gradient-general-end-light);
+  --color-gradient-agent-start: var(--color-gradient-agent-start-light);
+  --color-gradient-agent-end: var(--color-gradient-agent-end-light);
+  --color-gradient-invoked-start: var(--color-gradient-invoked-start-light);
+  --color-gradient-invoked-end: var(--color-gradient-invoked-end-light);
+  --color-gradient-human-start: var(--color-gradient-human-start-light);
+  --color-gradient-human-end: var(--color-gradient-human-end-light);
 }
 
 /* Wireframe overrides: dashed borders everywhere, reduced rounding */
@@ -786,6 +823,16 @@ body.vertex, .vertex {
   --destructive-foreground: oklch(1 0 89.88);
   --border-de-emp: var(--border-subtle);
   --input: var(--ap-wind-border);
+
+  /* FIXME: apollo-core should add new themes support for all semantic tokens */
+  --color-gradient-general-start: var(--color-gradient-general-start-dark);
+  --color-gradient-general-end: var(--color-gradient-general-end-dark);
+  --color-gradient-agent-start: var(--color-gradient-agent-start-dark);
+  --color-gradient-agent-end: var(--color-gradient-agent-end-dark);
+  --color-gradient-invoked-start: var(--color-gradient-invoked-start-dark);
+  --color-gradient-invoked-end: var(--color-gradient-invoked-end-dark);
+  --color-gradient-human-start: var(--color-gradient-human-start-dark);
+  --color-gradient-human-end: var(--color-gradient-human-end-dark);
 }
 
 /* ============================================================================
@@ -891,6 +938,44 @@ body.canvas, .canvas {
   --destructive-foreground: #ffffff;
   --border-de-emp: var(--border-subtle);
   --input: var(--ap-wind-border);
+
+  /* FIXME: apollo-core should add new themes support for all semantic tokens */
+  --color-gradient-general-start: var(--color-gradient-general-start-dark);
+  --color-gradient-general-end: var(--color-gradient-general-end-dark);
+  --color-gradient-agent-start: var(--color-gradient-agent-start-dark);
+  --color-gradient-agent-end: var(--color-gradient-agent-end-dark);
+  --color-gradient-invoked-start: var(--color-gradient-invoked-start-dark);
+  --color-gradient-invoked-end: var(--color-gradient-invoked-end-dark);
+  --color-gradient-human-start: var(--color-gradient-human-start-dark);
+  --color-gradient-human-end: var(--color-gradient-human-end-dark);
+}
+
+/**
+ * FIXME: apollo-core should add new themes support for all semantic tokens.
+ *
+ * Element themes don't have body.dark / body.light selectors, so the semantic
+ * --color-* tokens from theme-variables.css don't apply. Bridge the gap by
+ * mapping them to Wind semantic tokens here.
+ */
+
+.future-light,
+.future-dark,
+.wireframe,
+.vertex,
+.canvas {
+  --color-foreground: var(--foreground);
+  --color-foreground-emp: var(--foreground-secondary);
+  --color-foreground-de-emp: var(--foreground-muted);
+  --color-background: var(--background);
+  --color-background-secondary: var(--surface-raised);
+  --color-background-hover: var(--surface-hover);
+  --color-border: var(--ap-wind-border);
+  --color-primary: var(--primary);
+  --color-icon-default: var(--foreground-muted);
+  --color-error-icon: var(--destructive);
+  --color-success-icon: var(--success, var(--color-emerald-500));
+  --color-warning-icon: var(--warning, var(--color-amber-500));
+  --color-info-icon: var(--info, var(--color-sky-500));
 }
 
 /**
