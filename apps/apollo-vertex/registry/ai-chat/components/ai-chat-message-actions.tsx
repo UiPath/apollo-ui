@@ -28,6 +28,8 @@ const LABELS = {
 interface AiChatMessageActionsProps {
   content: string;
   messageRole: "user" | "assistant";
+  /** When true, actions are always visible (used for the latest assistant message). Defaults to false (hover/focus reveal). */
+  isLatest?: boolean;
   showCopy?: boolean;
   onFeedback?: (type: MessageFeedbackType) => void;
   onRegenerate?: () => void;
@@ -37,6 +39,7 @@ interface AiChatMessageActionsProps {
 export function AiChatMessageActions({
   content,
   messageRole,
+  isLatest = false,
   showCopy = true,
   onFeedback,
   onRegenerate,
@@ -52,8 +55,18 @@ export function AiChatMessageActions({
 
   const copyLabel = copied ? LABELS.copied : LABELS.copy;
 
+  // Latest assistant message keeps actions always visible. Everything else
+  // (older assistant messages, all user messages) reveals on hover/focus
+  // for keyboard a11y.
+  const visibilityClass =
+    messageRole === "assistant" && isLatest
+      ? "opacity-100"
+      : "opacity-0 group-hover/message:opacity-100 group-focus-within/message:opacity-100";
+
   return (
-    <div className={`flex items-center gap-0.5 -ml-[7px] transition-opacity ${messageRole === "assistant" ? "opacity-100" : "opacity-0 group-hover/message:opacity-100"}`}>
+    <div
+      className={`flex items-center gap-0.5 -ml-[7px] transition-opacity ${visibilityClass}`}
+    >
       {showCopy && (
         <Tooltip>
           <TooltipTrigger asChild>

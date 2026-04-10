@@ -17,14 +17,20 @@ function extractCodeProps(props: NodeProps & { className?: string }) {
 }
 
 const components: ComponentProps<typeof ReactMarkdown>["components"] = {
-  p: ({ children }: NodeProps) => <p className="mb-2 last:mb-0">{children}</p>,
+  p: ({ children }: NodeProps) => (
+    <p className="mt-5 mb-5 first:mt-0 last:mb-0">{children}</p>
+  ),
   ul: ({ children }: NodeProps) => (
-    <ul className="mb-2 last:mb-0 ml-4 list-disc">{children}</ul>
+    <ul className="mt-5 mb-5 first:mt-0 last:mb-0 ml-4 list-disc">
+      {children}
+    </ul>
   ),
   ol: ({ children }: NodeProps) => (
-    <ol className="mb-2 last:mb-0 ml-4 list-decimal">{children}</ol>
+    <ol className="mt-5 mb-5 first:mt-0 last:mb-0 ml-4 list-decimal">
+      {children}
+    </ol>
   ),
-  li: ({ children }: NodeProps) => <li className="mb-1">{children}</li>,
+  li: ({ children }: NodeProps) => <li className="mb-3">{children}</li>,
   pre: ({ children }: NodeProps) => <div>{children}</div>,
   code: ({
     children,
@@ -51,7 +57,10 @@ const components: ComponentProps<typeof ReactMarkdown>["components"] = {
     );
   },
   a: ({ children, ...props }: AnchorProps) => (
-    <a className="text-primary-700 dark:text-primary-400 hover:underline" {...props}>
+    <a
+      className="text-primary-700 dark:text-primary-400 hover:underline"
+      {...props}
+    >
       {children}
     </a>
   ),
@@ -65,13 +74,13 @@ const components: ComponentProps<typeof ReactMarkdown>["components"] = {
     </blockquote>
   ),
   h1: ({ children }: NodeProps) => (
-    <h1 className="text-lg font-bold mb-2 mt-3 first:mt-0">{children}</h1>
+    <h1 className="text-2xl font-bold mb-3 mt-6 first:mt-0">{children}</h1>
   ),
   h2: ({ children }: NodeProps) => (
-    <h2 className="text-base font-bold mb-2 mt-3 first:mt-0">{children}</h2>
+    <h2 className="text-xl font-bold mb-2 mt-5 first:mt-0">{children}</h2>
   ),
   h3: ({ children }: NodeProps) => (
-    <h3 className="text-sm font-bold mb-2 mt-2 first:mt-0">{children}</h3>
+    <h3 className="text-lg font-bold mb-2 mt-4 first:mt-0">{children}</h3>
   ),
   hr: () => <hr className="my-3 border-ai-chat-border" />,
   table: ({ children }: NodeProps) => (

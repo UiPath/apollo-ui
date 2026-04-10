@@ -1,7 +1,14 @@
 "use client";
 
 import type { UIMessage } from "@tanstack/ai-client";
-import { AlertCircle, ArrowDown, RefreshCw, Sparkles } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowDown,
+  MoreHorizontal,
+  RefreshCw,
+} from "lucide-react";
+import { AutopilotIcon } from "./icons/autopilot";
+import { AutopilotGradientIcon } from "./icons/autopilot-gradient";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStickyScroll } from "../hooks/use-sticky-scroll";
@@ -9,7 +16,27 @@ import type { AiChatVariant, ChoiceOption } from "../types";
 
 const RETRY_LABEL = "Retry";
 
-import { findLatestChoices } from "../utils/ai-chat-utils";
+import {
+  findActiveChoicesMessageIds,
+  findLatestChoices,
+} from "../utils/ai-chat-utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/registry/alert-dialog/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/registry/dropdown-menu/dropdown-menu";
 import { AiChatInput } from "./ai-chat-input";
 import { AiChatLoading } from "./ai-chat-loading";
 import { AiChatProvider } from "./ai-chat-provider";
@@ -41,6 +68,8 @@ export interface AiChatProps {
   value?: string;
   /** Controlled input onChange */
   onValueChange?: (value: string) => void;
+  /** Characters per second for the typewriter reveal on assistant messages. Set to 0 to disable (text appears instantly). Default: 40 */
+  typewriterCps?: number;
 }
 
 export function AiChat({
@@ -67,9 +96,12 @@ export function AiChat({
   variant = "default",
   value: controlledValue,
   onValueChange,
+  typewriterCps = 75,
 }: AiChatProps) {
   const { t } = useTranslation();
   const [internalInput, setInternalInput] = useState("");
+  const [isLatestResponseAnimating, setIsLatestResponseAnimating] =
+    useState(false);
   const { scrollRef, contentRef, isStuck, scrollToBottom } = useStickyScroll();
 
   const isControlled = controlledValue != null;
@@ -89,6 +121,9 @@ export function AiChat({
   };
 
   const latestChoices = findLatestChoices(messages);
+  const activeChoicesMessageIds = findActiveChoicesMessageIds(messages);
+  const latestAssistantMessageId =
+    messages.findLast((m) => m.role === "assistant")?.id ?? null;
 
   const lastMessage = messages.at(-1);
   const lastAssistantHasText =
@@ -98,6 +133,7 @@ export function AiChat({
 
   const defaultEmptyState = (
     <div className="flex flex-col items-center justify-center h-full text-center">
+      <AutopilotGradientIcon size={32} className="mb-4" aria-hidden="true" />
       <div className="flex flex-col items-center gap-1">
         <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground">
           {"What would you like to do?"}
@@ -122,30 +158,84 @@ export function AiChat({
       showMessageActions={showMessageActions}
       showCopyButton={showCopyButton}
       isLoading={isLoading}
+      activeChoicesMessageIds={activeChoicesMessageIds}
+      latestAssistantMessageId={latestAssistantMessageId}
+      typewriterCps={typewriterCps}
+      isLatestResponseAnimating={isLatestResponseAnimating}
+      setIsLatestResponseAnimating={setIsLatestResponseAnimating}
     >
       <div
         className={
           isEmbedded
             ? "flex flex-col h-full max-w-[765px] mx-auto bg-transparent text-ai-chat-foreground"
-            : "flex flex-col h-full max-w-[765px] mx-auto border border-ai-chat-border rounded-lg bg-transparent text-ai-chat-foreground"
+            : "flex flex-col h-full max-w-[765px] mx-auto border border-ai-chat-border rounded-lg bg-transparent text-ai-chat-foreground overflow-hidden"
         }
         data-slot="ai-chat"
       >
         {renderHeader ??
           (title && !isCompact && !isEmbedded && (
-            <div className="py-3 px-4 flex items-center gap-2">
-              <Sparkles className="size-4 text-[#6C5AEF]" aria-hidden="true" />
-              <span
-                className="text-sm font-bold tracking-tight bg-clip-text text-transparent"
-                style={{ backgroundImage: "var(--ai-gradient-strong)" }}
-              >
-                {title}
-              </span>
+            <div className="py-3 px-4 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <AutopilotIcon
+                  className="size-4 text-[#6C5AEF] flex-shrink-0"
+                  aria-hidden="true"
+                />
+                <span
+                  className="text-sm font-bold tracking-tight bg-clip-text text-transparent truncate"
+                  style={{ backgroundImage: "var(--ai-gradient-strong)" }}
+                >
+                  {title}
+                </span>
+              </div>
+              {onClearChat && showClearButton && messages.length > 0 && (
+                <AlertDialog>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="size-7 inline-flex items-center justify-center rounded-md hover:bg-ai-chat-muted transition-colors flex-shrink-0"
+                        aria-label={t("more_options")}
+                      >
+                        <MoreHorizontal
+                          className="size-4 text-ai-chat-muted-foreground"
+                          aria-hidden="true"
+                        />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem>
+                          {"New conversation"}
+                        </DropdownMenuItem>
+                      </AlertDialogTrigger>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        {"Start a new conversation?"}
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {"This will clear all messages and cannot be undone."}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{"Cancel"}</AlertDialogCancel>
+                      <AlertDialogAction onClick={onClearChat}>
+                        {"New conversation"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </div>
           ))}
 
         {messages.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center px-4" style={{ justifyContent: "center", paddingBottom: "10%" }}>
+          <div
+            className="flex-1 flex flex-col items-center px-4"
+            style={{ justifyContent: "center", paddingBottom: "10%" }}
+          >
             <div className="w-full max-w-[765px]">
               <div className="text-center mb-10">
                 {emptyState ?? defaultEmptyState}
@@ -155,28 +245,26 @@ export function AiChat({
                 onChange={setInput}
                 onSubmit={handleSubmit}
                 onStop={onStop}
-                onClear={onClearChat}
                 isLoading={isLoading}
                 placeholder={placeholder}
-                showClearButton={showClearButton}
                 hasMessages={false}
               />
             </div>
           </div>
         ) : (
-        <div className="relative flex-1 min-h-0">
-          <div
-            ref={scrollRef}
-            role="log"
-            aria-label={t("chat_messages")}
-            aria-live="polite"
-            aria-atomic="false"
-            className={`h-full overflow-y-auto ${padding}`}
-          >
+          <div className="relative flex-1 min-h-0">
+            <div
+              ref={scrollRef}
+              role="log"
+              aria-label={t("chat_messages")}
+              aria-live="polite"
+              aria-atomic="false"
+              className={`h-full overflow-y-auto ${padding}`}
+            >
               <div ref={contentRef} className={messageGap}>
                 {children}
 
-                {latestChoices && !isLoading && (
+                {latestChoices && !isLoading && !isLatestResponseAnimating && (
                   <AiChatSuggestions
                     prompt={latestChoices.prompt}
                     options={latestChoices.options}
@@ -190,23 +278,21 @@ export function AiChat({
                   />
                 )}
 
-                {showLoadingIndicator && (
-                  <AiChatLoading assistantName={displayName} />
-                )}
+                {showLoadingIndicator && <AiChatLoading />}
               </div>
-          </div>
+            </div>
 
-          {!isStuck && (
-            <button
-              type="button"
-              onClick={scrollToBottom}
-              aria-label={t("scroll_to_bottom")}
-              className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center size-8 rounded-full border border-ai-chat-border bg-ai-chat shadow-md hover:bg-ai-chat-muted"
-            >
-              <ArrowDown className="size-4" />
-            </button>
-          )}
-        </div>
+            {!isStuck && (
+              <button
+                type="button"
+                onClick={scrollToBottom}
+                aria-label={t("scroll_to_bottom")}
+                className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center size-8 rounded-full border border-ai-chat-border bg-ai-chat shadow-md hover:bg-ai-chat-muted"
+              >
+                <ArrowDown className="size-4" />
+              </button>
+            )}
+          </div>
         )}
 
         {error && (
@@ -215,10 +301,7 @@ export function AiChat({
             aria-live="assertive"
             className="relative z-0 mx-4 -mb-6 flex items-center gap-2 rounded-t-lg bg-destructive/10 px-[23px] pt-3 pb-6 text-sm text-destructive"
           >
-            <AlertCircle
-              className="h-4 w-4 flex-shrink-0"
-              aria-hidden="true"
-            />
+            <AlertCircle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
             <span className="flex-1">{error.message}</span>
             {onRetry && (
               <button
@@ -240,10 +323,8 @@ export function AiChat({
             onChange={setInput}
             onSubmit={handleSubmit}
             onStop={onStop}
-            onClear={onClearChat}
             isLoading={isLoading}
             placeholder={placeholder}
-            showClearButton={showClearButton}
             hasMessages
           />
         )}

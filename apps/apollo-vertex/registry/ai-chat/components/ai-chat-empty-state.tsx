@@ -1,8 +1,8 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/registry/button/button";
+import { AutopilotIcon } from "./icons/autopilot";
 
 interface AiChatEmptyStateProps {
   title?: string;
@@ -26,15 +26,21 @@ export function AiChatEmptyState({
         style={{ background: "var(--ai-gradient)" }}
       >
         {icon ?? (
-          <Sparkles
+          <AutopilotIcon
             className="size-8 text-ai-chat-accent-foreground"
             aria-hidden="true"
           />
         )}
       </div>
       <div className="flex flex-col items-center gap-1">
-        <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground">{title}</h2>
-        {description && <p className="text-sm text-muted-foreground max-w-sm">{description}</p>}
+        <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground">
+          {title}
+        </h2>
+        {description && (
+          <p className="text-sm text-muted-foreground max-w-sm">
+            {description}
+          </p>
+        )}
       </div>
       {suggestions && suggestions.length > 0 && onSuggestionClick && (
         <div className="flex flex-wrap justify-center gap-2 max-w-md">

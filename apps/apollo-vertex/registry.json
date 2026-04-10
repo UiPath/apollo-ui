@@ -399,6 +399,11 @@
           "target": "components/ui/ai-chat/hooks/use-sticky-scroll.ts"
         },
         {
+          "path": "registry/ai-chat/hooks/use-typewriter.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/hooks/use-typewriter.ts"
+        },
+        {
           "path": "registry/ai-chat/components/ai-chat-provider.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-provider.tsx"
@@ -424,6 +429,11 @@
           "target": "components/ui/ai-chat/components/ai-chat-loading.tsx"
         },
         {
+          "path": "registry/ai-chat/components/ai-chat-thinking.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-thinking.tsx"
+        },
+        {
           "path": "registry/ai-chat/components/ai-chat-input.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-input.tsx"
@@ -447,6 +457,16 @@
           "path": "registry/ai-chat/components/ai-chat-empty-state.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-empty-state.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/icons/autopilot.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/icons/autopilot.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/icons/autopilot-gradient.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/icons/autopilot-gradient.tsx"
         }
       ]
     },

@@ -10,6 +10,13 @@ const defaultConfig: AiChatConfig = {
   showMessageActions: true,
   showCopyButton: true,
   isLoading: false,
+  activeChoicesMessageIds: new Set(),
+  latestAssistantMessageId: null,
+  typewriterCps: 75,
+  isLatestResponseAnimating: false,
+  setIsLatestResponseAnimating: () => {
+    // no-op default — replaced by AiChat with the real setter via context override
+  },
 };
 
 const AiChatContext = createContext<AiChatConfig>(defaultConfig);
@@ -27,7 +34,15 @@ export function AiChatProvider({
 
   return (
     <AiChatContext.Provider value={config}>
-      <div data-slot="ai-chat-root" data-variant={variant}>
+      {/*
+        display: contents — wrapper carries data attributes for styling/test
+        hooks but disappears from the box tree, so the AiChat outer div is a
+        direct child of whatever the consumer's parent is. Without this, h-full
+        on the AiChat outer would read this wrapper's auto height and collapse,
+        and the chat would grow to fit its content instead of scrolling within
+        a fixed-height parent like h-[500px].
+      */}
+      <div className="contents" data-slot="ai-chat-root" data-variant={variant}>
         {children}
       </div>
     </AiChatContext.Provider>

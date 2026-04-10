@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUp, CircleStop, Paperclip, Trash2 } from "lucide-react";
+import { ArrowUp, CircleStop, Paperclip } from "lucide-react";
 import { type FormEvent, type KeyboardEvent, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/registry/button/button";
@@ -11,19 +11,18 @@ import {
 } from "@/registry/tooltip/tooltip";
 
 const UPLOAD_LABEL = "Attach files";
-const DISCLAIMER = "Responses may be inaccurate. Please verify important information.";
+const DISCLAIMER =
+  "Responses may be inaccurate. Please verify important information.";
 
 interface AiChatInputProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
   onStop: () => void;
-  onClear?: () => void;
   onFileSelect?: (files: FileList) => void;
   isLoading: boolean;
   disabled?: boolean;
   placeholder?: string;
-  showClearButton?: boolean;
   hasMessages?: boolean;
   maxLength?: number;
 }
@@ -33,19 +32,18 @@ export function AiChatInput({
   onChange,
   onSubmit,
   onStop,
-  onClear,
   onFileSelect,
   isLoading,
   disabled = false,
   placeholder,
-  showClearButton = true,
   hasMessages = false,
   maxLength,
 }: AiChatInputProps) {
   const { t } = useTranslation();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
-  const displayPlaceholder = placeholder ?? "Describe what you want to do\u2026";
+  const displayPlaceholder =
+    placeholder ?? "Describe what you want to do\u2026";
 
   const adjustHeight = () => {
     const el = textareaRef.current;
@@ -83,7 +81,6 @@ export function AiChatInput({
     }
   };
 
-
   return (
     <div className="relative z-10 mt-auto py-3 px-4">
       <div className="relative flex items-end gap-2">
@@ -95,34 +92,25 @@ export function AiChatInput({
         />
         <form
           onSubmit={handleSubmit}
-          className="relative flex-1 flex items-end gap-2 pl-[23px] pr-1.5 py-1 rounded-lg border border-input transition-all bg-background"
+          className="relative flex-1 flex items-end gap-2 pl-[22px] pr-[5px] py-[3px] rounded-lg border-2 border-input transition-colors bg-background"
           onFocusCapture={(e) => {
             const el = e.currentTarget;
-            el.style.borderWidth = "2px";
             el.style.borderColor = "transparent";
             el.style.backgroundImage = `linear-gradient(var(--background), var(--background)), var(--ai-gradient-strong)`;
             el.style.backgroundOrigin = "border-box";
             el.style.backgroundClip = "padding-box, border-box";
-            el.style.boxShadow = "0 0 0 3px color-mix(in oklch, var(--muted-foreground) 10%, transparent)";
-            el.style.paddingLeft = "22px";
-            el.style.paddingTop = "3px";
-            el.style.paddingRight = "5px";
-            el.style.paddingBottom = "3px";
+            el.style.boxShadow =
+              "0 0 0 3px color-mix(in oklch, var(--muted-foreground) 10%, transparent)";
             if (glowRef.current) glowRef.current.style.opacity = "0";
           }}
           onBlurCapture={(e) => {
             if (!e.currentTarget.contains(e.relatedTarget)) {
               const el = e.currentTarget;
-              el.style.borderWidth = "";
               el.style.borderColor = "";
               el.style.backgroundImage = "";
               el.style.backgroundOrigin = "";
               el.style.backgroundClip = "";
               el.style.boxShadow = "";
-              el.style.paddingLeft = "";
-              el.style.paddingTop = "";
-              el.style.paddingRight = "";
-              el.style.paddingBottom = "";
               if (glowRef.current) glowRef.current.style.opacity = "";
             }
           }}
@@ -170,7 +158,10 @@ export function AiChatInput({
                   className="flex-shrink-0 size-9 mb-0.5 rounded-lg flex items-center justify-center bg-secondary transition-opacity"
                   onClick={onStop}
                 >
-                  <CircleStop className="size-5 text-muted-foreground" aria-hidden="true" />
+                  <CircleStop
+                    className="size-5 text-muted-foreground"
+                    aria-hidden="true"
+                  />
                 </button>
               </TooltipTrigger>
               <TooltipContent>{t("stop")}</TooltipContent>
@@ -192,22 +183,6 @@ export function AiChatInput({
             </Tooltip>
           )}
         </form>
-        {showClearButton && hasMessages && onClear && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                className="flex-shrink-0 text-muted-foreground hover:text-foreground"
-                onClick={onClear}
-              >
-                <Trash2 className="size-4" aria-hidden="true" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{t("clear_conversation")}</TooltipContent>
-          </Tooltip>
-        )}
       </div>
       <div className="mt-1 pl-[24px]">
         <span className="text-xs text-muted-foreground">{DISCLAIMER}</span>

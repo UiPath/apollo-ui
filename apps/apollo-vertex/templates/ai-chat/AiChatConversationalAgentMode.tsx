@@ -57,10 +57,7 @@ function ConversationalAgentChatInner({
       error={error ?? null}
     >
       {messages.map((message) => (
-        <AiChatMessage
-          key={message.id}
-          message={message}
-        />
+        <AiChatMessage key={message.id} message={message} />
       ))}
     </AiChat>
   );

@@ -4,7 +4,6 @@ import { AiChat } from "@/registry/ai-chat/components/ai-chat";
 import { AiChatCodeBlock } from "@/registry/ai-chat/components/ai-chat-code-block";
 import { AiChatEmptyState } from "@/registry/ai-chat/components/ai-chat-empty-state";
 import { AiChatInput } from "@/registry/ai-chat/components/ai-chat-input";
-import { AiChatLoading } from "@/registry/ai-chat/components/ai-chat-loading";
 import { AiChatMarkdown } from "@/registry/ai-chat/components/ai-chat-markdown";
 import { AiChatMessage } from "@/registry/ai-chat/components/ai-chat-message";
 import { AiChatSuggestions } from "@/registry/ai-chat/components/ai-chat-suggestions";
@@ -15,6 +14,7 @@ import {
   MOCK_MESSAGES_MARKDOWN,
   MOCK_MESSAGES_WITH_CHOICES,
 } from "./mock-data";
+import { ThinkingDemo } from "./thinking-demo";
 
 function noop() {
   // no-op for preview
@@ -144,15 +144,10 @@ export default function AiChatPreviewPage() {
             onSendMessage={noop}
             onStop={noop}
             title="Project Setup Wizard"
-
             showTimestamps
           >
             {MOCK_MESSAGES_CONVERSATION.map((msg) => (
-              <AiChatMessage
-                key={msg.id}
-                message={msg}
-
-              />
+              <AiChatMessage key={msg.id} message={msg} />
             ))}
           </AiChat>
         </PreviewCard>
@@ -179,11 +174,11 @@ export default function AiChatPreviewPage() {
         </PreviewCard>
       </section>
 
-      {/* ── 6. Loading States ──────────────────────────────── */}
+      {/* ── 6. Loading State ───────────────────────────────── */}
       <section>
         <SectionHeader
-          title="Loading States"
-          description="Skeleton (default) and dots loading variants."
+          title="Loading State"
+          description="Thinking indicator that appears while the assistant generates a response."
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <PreviewCard className="h-[300px]">
@@ -192,16 +187,16 @@ export default function AiChatPreviewPage() {
               isLoading
               onSendMessage={noop}
               onStop={noop}
-              title="Skeleton Loading"
+              title="Loading in chat"
             >
               <AiChatMessage message={MOCK_MESSAGES_BASIC[0]} />
             </AiChat>
           </PreviewCard>
           <PreviewCard className="p-6">
             <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wide">
-              {"Dots variant (standalone)"}
+              {"Thinking indicator (interactive)"}
             </h3>
-            <AiChatLoading loadingVariant="dots" />
+            <ThinkingDemo />
           </PreviewCard>
         </div>
       </section>
