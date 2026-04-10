@@ -121,6 +121,9 @@ importers:
       '@uipath/apollo-wind':
         specifier: workspace:*
         version: link:../../packages/apollo-wind
+      lucide-react:
+        specifier: ^0.555.0
+        version: 0.555.0(react@19.2.3)
       next:
         specifier: 16.1.7
         version: 16.1.7(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(sass@1.94.2)

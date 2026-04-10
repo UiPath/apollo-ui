@@ -1,0 +1,205 @@
+import { Tabs } from 'nextra/components'
+import { Callout } from 'nextra/components'
+import { WindButtonDemo } from './button-wind'
+import { ReactButtonDemo } from './button-react'
+
+# Button
+
+Triggers an action or event — such as submitting a form, opening a dialog, canceling an operation, or navigating to a new page.
+
+<Tabs items={['apollo-react', 'apollo-wind', 'Information']}>
+  <Tabs.Tab>
+    ## apollo-react
+
+    `ApButton` is the Material UI–based button from `@uipath/apollo-react`. Wraps MUI's `Button` with Apollo theming, loading states, and a consistent variant set.
+
+    <Callout type="warning">
+      Requires a `ThemeProvider` from `@mui/material/styles` with the Apollo MUI theme. Without it styles won't render.
+    </Callout>
+
+    ```ts
+    import { ApButton } from '@uipath/apollo-react/material/components';
+    import { ThemeProvider } from '@mui/material/styles';
+    import { apolloMaterialUiThemeDark } from '@uipath/apollo-react/material/theme';
+    ```
+
+    <ReactButtonDemo />
+
+    ### Variants
+
+    ```tsx
+    <ApButton variant="primary" label="Primary" />
+    <ApButton variant="secondary" label="Secondary" />
+    <ApButton variant="tertiary" label="Tertiary" />
+    <ApButton variant="destructive" label="Destructive" />
+    <ApButton variant="text" label="Text" />
+    <ApButton variant="text-foreground" label="Text Foreground" />
+    ```
+
+    ### Sizes
+
+    ```tsx
+    <ApButton variant="primary" label="Tall" size="tall" />
+    <ApButton variant="primary" label="Small" size="small" />
+    ```
+
+    ### Width Modes
+
+    ```tsx
+    <ApButton variant="primary" label="Default (min 120px)" widthMode="default" />
+    <ApButton variant="secondary" label="Fit Content" widthMode="fit-content" />
+    ```
+
+    ### Loading
+
+    ```tsx
+    <ApButton variant="primary" label="Saving…" loading />
+    <ApButton variant="secondary" label="Loading" loading />
+    ```
+
+    ### Disabled
+
+    ```tsx
+    <ApButton variant="primary" label="Primary" disabled />
+    <ApButton variant="secondary" label="Secondary" disabled />
+    ```
+
+    ### With icons
+
+    ```tsx
+    import SaveIcon from '@uipath/apollo-react/icons/Save';
+
+    <ApButton label="Save" variant="primary" startIcon={<SaveIcon />} />
+    <ApButton label="Export" variant="secondary" endIcon={<SaveIcon />} />
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ## apollo-wind
+
+    `Button` is the Tailwind/shadcn-based button from `@uipath/apollo-wind`. Uses `class-variance-authority` for variants and `@radix-ui/react-slot` for polymorphic rendering via `asChild`.
+
+    ```ts
+    import { Button } from '@uipath/apollo-wind';
+    ```
+
+    <WindButtonDemo />
+
+    ### Variants
+
+    ```tsx
+    <Button variant="default">Default</Button>
+    <Button variant="secondary">Secondary</Button>
+    <Button variant="outline">Outline</Button>
+    <Button variant="ghost">Ghost</Button>
+    <Button variant="destructive">Destructive</Button>
+    <Button variant="link">Link</Button>
+    ```
+
+    ### Sizes
+
+    ```tsx
+    <Button size="lg">Large</Button>
+    <Button size="default">Default</Button>
+    <Button size="sm">Small</Button>
+    <Button size="xs">X-Small</Button>
+    <Button size="2xs">2X-Small</Button>
+    <Button size="3xs">3X-Small</Button>
+    ```
+
+    ### With Icon
+
+    ```tsx
+    import { Download, Plus, Trash2 } from 'lucide-react';
+
+    <Button><Download /> Download</Button>
+    <Button variant="secondary"><Plus /> Add Item</Button>
+    <Button variant="destructive"><Trash2 /> Delete</Button>
+    ```
+
+    ### Icon Only
+
+    Use the `icon` prop to make the button square for icon-only use.
+
+    ```tsx
+    <Button icon><Settings /></Button>
+    <Button icon size="sm"><Settings /></Button>
+    <Button icon variant="outline"><Plus /></Button>
+    <Button icon variant="ghost"><Trash2 /></Button>
+    ```
+
+    ### Disabled
+
+    ```tsx
+    <Button disabled>Default</Button>
+    <Button variant="secondary" disabled>Secondary</Button>
+    <Button variant="destructive" disabled>Destructive</Button>
+    ```
+
+    ### As link
+
+    Use `asChild` to render button styles on a different element such as a Next.js `Link`.
+
+    ```tsx
+    import Link from 'next/link';
+
+    <Button asChild>
+      <Link href="/dashboard">Go to dashboard</Link>
+    </Button>
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ## Information
+
+    ### apollo-react — ApButton props
+
+    | Prop | Type | Default | Description |
+    |---|---|---|---|
+    | `label` | `string` | — | Button text label (required) |
+    | `variant` | `'primary' \| 'secondary' \| 'tertiary' \| 'destructive' \| 'text' \| 'text-foreground'` | `'primary'` | Visual style variant |
+    | `size` | `'tall' \| 'small'` | `'tall'` | Height of the button |
+    | `widthMode` | `'default' \| 'fit-content'` | `'default'` | `default` enforces a minimum width of 120px |
+    | `disabled` | `boolean` | `false` | Disables interaction |
+    | `loading` | `boolean` | `false` | Shows a spinner and blocks interaction |
+    | `startIcon` | `ReactNode` | — | Icon placed before the label |
+    | `endIcon` | `ReactNode` | — | Icon placed after the label |
+    | `customContent` | `ReactNode` | — | Replaces the label with custom content |
+    | `type` | `'button' \| 'submit' \| 'reset'` | `'button'` | HTML button type |
+    | `href` | `string` | — | Renders as an anchor when set |
+    | `onClick` | `MouseEventHandler` | — | Click handler (blocked during loading) |
+
+    ### apollo-wind — Button props
+
+    | Prop | Type | Default | Description |
+    |---|---|---|---|
+    | `variant` | `'default' \| 'destructive' \| 'outline' \| 'secondary' \| 'ghost' \| 'link'` | `'default'` | Visual style variant |
+    | `size` | `'lg' \| 'default' \| 'sm' \| 'xs' \| '2xs' \| '3xs' \| 'icon'` | `'default'` | Button size |
+    | `icon` | `boolean` | `false` | Makes the button square for icon-only use |
+    | `asChild` | `boolean` | `false` | Renders as child element via Radix Slot |
+    | `disabled` | `boolean` | `false` | Disables the button |
+
+    All standard `HTMLButtonElement` attributes are also accepted.
+
+    ### Variant comparison
+
+    | Intent | apollo-react | apollo-wind |
+    |---|---|---|
+    | Primary action | `primary` | `default` |
+    | Secondary action | `secondary` | `secondary` |
+    | Low-emphasis | `tertiary` | `ghost` |
+    | Bordered | — | `outline` |
+    | Text only | `text` | `link` |
+    | Destructive | `destructive` | `destructive` |
+
+    ### When to use
+
+    - Use **primary / default** for the single most important action on a page or in a section.
+    - Use **secondary** for supporting actions alongside a primary.
+    - Use **ghost / tertiary** for low-emphasis actions in toolbars or dense layouts.
+    - Use **destructive** for irreversible or dangerous actions — always pair with a confirmation dialog.
+    - Use **disabled** only when the reason is visible to the user; avoid disabling without explanation.
+
+    <Callout type="info">
+      `apollo-react` (`ApButton`) is in maintenance mode. For new projects, use `apollo-wind` (`Button`).
+    </Callout>
+  </Tabs.Tab>
+</Tabs>
