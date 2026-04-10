@@ -212,6 +212,7 @@ export {
 export {
   Tooltip,
   TooltipContent,
+  TooltipPortal,
   TooltipProvider,
   TooltipTrigger,
 } from './components/ui/tooltip';
