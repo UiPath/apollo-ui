@@ -94,3 +94,69 @@ body.dark-hc {
 
   --uix-canvas-icon-default: var(--color-icon-default);
 }
+
+/**
+ * Element themes (future-light, future-dark, wireframe, vertex, canvas)
+ * use Wind semantic tokens instead of apollo-core --color-* tokens.
+ * These are defined on <html> and cascade down to all descendants.
+ */
+
+.future-light,
+.future-dark,
+.wireframe,
+.vertex,
+.canvas {
+  /* Foreground (text) colors */
+  --uix-canvas-foreground: var(--foreground);
+  --uix-canvas-foreground-emp: var(--foreground-secondary);
+  --uix-canvas-foreground-de-emp: var(--foreground-muted);
+  --uix-canvas-foreground-inverse: var(--foreground-inverse);
+
+  /* Background colors */
+  --uix-canvas-background: var(--surface);
+  --uix-canvas-background-secondary: var(--background);
+  --uix-canvas-background-raised: var(--surface-raised);
+  --uix-canvas-background-hover: var(--surface-hover);
+  --uix-canvas-background-inverse: var(--surface-inverse);
+
+  /* Border colors */
+  --uix-canvas-border: var(--ap-wind-border);
+  --uix-canvas-border-de-emp: var(--border-subtle);
+  --uix-canvas-border-hover: var(--border-hover);
+  --uix-canvas-border-subtle: var(--border-subtle);
+  --uix-canvas-border-grid: var(--border-muted);
+
+  /* Primary */
+  --uix-canvas-primary: var(--primary);
+  --uix-canvas-primary-hover: var(--foreground-accent-muted);
+  --uix-canvas-primary-alpha-20: var(--brand-subtle);
+
+  /* Secondary */
+  --uix-canvas-secondary-pressed: var(--surface-overlay);
+  --uix-canvas-secondary-focused: var(--accent);
+
+  /* Selection */
+  --uix-canvas-selection-indicator: var(--primary);
+
+  /* Error */
+  --uix-canvas-error: var(--destructive);
+  --uix-canvas-error-icon: var(--destructive);
+  --uix-canvas-error-text: var(--destructive);
+  --uix-canvas-error-background: var(--error-background, var(--surface-raised));
+
+  /* Warning */
+  --uix-canvas-warning-icon: var(--warning, var(--color-amber-500));
+  --uix-canvas-warning-text: var(--warning, var(--color-amber-500));
+  --uix-canvas-warning-background: var(--warning-background, var(--surface-raised));
+
+  /* Success */
+  --uix-canvas-success-icon: var(--success, var(--color-emerald-500));
+  --uix-canvas-success-background: var(--success-background, var(--surface-raised));
+
+  /* Info */
+  --uix-canvas-info-icon: var(--info, var(--color-sky-500));
+  --uix-canvas-info-text: var(--info, var(--color-sky-500));
+
+  /* Misc */
+  --uix-canvas-icon-default: var(--foreground-muted);
+}

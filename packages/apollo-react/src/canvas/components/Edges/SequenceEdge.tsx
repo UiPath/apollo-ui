@@ -127,7 +127,7 @@ export const SequenceEdge = memo(function SequenceEdge({
     if (isPreviewEdge) return 'var(--uix-canvas-primary)';
     if (selected) return 'var(--uix-canvas-primary)';
     if (isHovered) return 'var(--uix-canvas-primary-hover)';
-    if (status) return edgeTargetStatusToEdgeColor[status] ?? 'var(--color-border)';
+    if (status) return edgeTargetStatusToEdgeColor[status] ?? 'var(--uix-canvas-border)';
     return 'var(--uix-canvas-border)';
   };
 
