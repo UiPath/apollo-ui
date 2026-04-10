@@ -70,7 +70,19 @@
     "unicorn/no-useless-error-capture-stack-trace": "error",
     "unicorn/prefer-modern-math-apis": "error",
     "unicorn/prefer-node-protocol": "error",
-    "unicorn/prefer-number-properties": "error"
+    "unicorn/prefer-number-properties": "error",
+    "eslint/no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["react"],
+            "importNamePattern": "^(useMemo|useCallback|memo)$",
+            "message": "Manual memoization is unnecessary — the React Compiler handles this automatically."
+          }
+        ]
+      }
+    ]
   },
   "settings": {},
   "env": {
@@ -89,6 +101,12 @@
       "rules": {
         "react/only-export-components": "off",
         "shaggy-eslint-plugin-react/jsx-no-literals": ["error"]
+      }
+    },
+    {
+      "files": ["registry/**/*.{ts,tsx}"],
+      "rules": {
+        "eslint/no-restricted-imports": "off"
       }
     },
     {

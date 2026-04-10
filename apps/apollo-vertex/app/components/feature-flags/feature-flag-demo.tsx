@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { FeatureFlagProviderConfig } from "@/lib/feature-flag-provider/types";
 import { FeatureFlagProvider } from "@/lib/feature-flag-provider";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
@@ -146,15 +146,15 @@ export function FeatureFlagDemo() {
   const providerRef = useRef(createDemoProvider(INITIAL_FLAGS));
   const [flags, setFlags] = useState(INITIAL_FLAGS);
 
-  const toggle = useCallback((key: string) => {
+  function toggle(key: string) {
     setFlags((prev) => {
       const next = !prev[key];
       providerRef.current.setFlag(key, next);
       return { ...prev, [key]: next };
     });
-  }, []);
+  }
 
-  const provider = useMemo(() => providerRef.current, []);
+  const provider = providerRef.current;
 
   return (
     <FeatureFlagProvider provider={provider}>

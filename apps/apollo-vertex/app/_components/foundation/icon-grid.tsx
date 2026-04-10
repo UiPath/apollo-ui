@@ -1,7 +1,7 @@
 "use client";
 
 import { icons } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 type IconName = keyof typeof icons;
 
@@ -134,17 +134,17 @@ export function IconGrid() {
   const [copiedName, setCopiedName] = useState<string | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Object.keys(icons) is guaranteed to be IconName[]
-  const allNames = useMemo(() => Object.keys(icons) as IconName[], []);
+  const allNames = Object.keys(icons) as IconName[];
 
   const isFiltering = query.trim().length > 0;
 
-  const filtered = useMemo(() => {
-    if (!isFiltering) return allNames;
-    const q = query.toLowerCase().trim();
-    return allNames.filter((name) => name.toLowerCase().includes(q));
-  }, [query, allNames, isFiltering]);
+  const filtered = isFiltering
+    ? allNames.filter((name) =>
+        name.toLowerCase().includes(query.toLowerCase().trim()),
+      )
+    : allNames;
 
-  const groups = useMemo(() => categorize(allNames), [allNames]);
+  const groups = categorize(allNames);
 
   function handleCopy(name: string) {
     void navigator.clipboard
