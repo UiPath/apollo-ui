@@ -33,7 +33,11 @@ export const configurei18n = async () => {
   await i18n
     .use({
       type: "backend",
-      read(language: string, _namespace: Namespace, callback: ReadCallback) {
+      async read(
+        language: string,
+        _namespace: Namespace,
+        callback: ReadCallback,
+      ) {
         if (!(language in localeLoaders)) {
           callback(new Error(`Locale not found: ${language}`), null);
           return;
@@ -42,14 +46,15 @@ export const configurei18n = async () => {
         // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- `in` guard above validates membership but TS can't narrow string to keyof
         const loadLocale = localeLoaders[language as SupportedLocale];
 
-        loadLocale()
-          .then((module) => callback(null, module.default))
-          .catch((error: unknown) =>
-            callback(
-              error instanceof Error ? error : new Error(String(error)),
-              null,
-            ),
+        try {
+          const module = await loadLocale();
+          callback(null, module.default);
+        } catch (error: unknown) {
+          callback(
+            error instanceof Error ? error : new Error(String(error)),
+            null,
           );
+        }
       },
     })
     .use(initReactI18next)
