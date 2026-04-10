@@ -101,18 +101,21 @@ export function getIcon(iconId: string): IconComponent {
   return ({ w, h, color }) => <BoxIcon width={w ?? 24} height={h ?? 24} color={color} />;
 }
 
-export interface NodeIconProps {
+export interface CanvasIconProps {
   icon?: string;
   size?: number;
   color?: string;
 }
 
 /**
- * Memoized component for rendering icons from the registry
- * Use this instead of getIcon() to avoid creating components during render
+ * Memoized component for rendering icons from the registry.
+ * Use this instead of getIcon() to avoid creating components during render.
  */
-export const NodeIcon = memo(function NodeIcon({ icon, size = 16, color }: NodeIconProps) {
+export const CanvasIcon = memo(function CanvasIcon({ icon, size = 16, color }: CanvasIconProps) {
   const Icon = useMemo(() => (icon ? getIcon(icon) : null), [icon]);
   if (!Icon) return null;
   return <Icon w={size} h={size} color={color} />;
 });
+
+/** @deprecated Use `CanvasIcon` instead. */
+export const NodeIcon = CanvasIcon;

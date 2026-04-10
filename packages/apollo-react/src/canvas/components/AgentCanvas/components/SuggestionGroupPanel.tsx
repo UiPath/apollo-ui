@@ -1,11 +1,11 @@
-import { useTheme } from '@mui/material';
-import { FontVariantToken, Spacing } from '@uipath/apollo-core';
+import { Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { useStore } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApButton, ApIcon, ApIconButton, ApTypography } from '@uipath/apollo-react/material';
+import { Button, cn } from '@uipath/apollo-wind';
 import { useState } from 'react';
-
+import { CANVAS_COMPACT_BREAKPOINT } from '../../../constants';
 import type { AgentFlowSuggestionGroup } from '../../../types';
+import { CanvasIcon } from '../../../utils/icon-registry';
 
 interface SuggestionGroupPanelProps {
   suggestionGroup?: AgentFlowSuggestionGroup | null;
@@ -23,25 +23,26 @@ interface AcceptRejectAllButtonProps {
 }
 
 const RejectAllButton = ({ suggestionGroup, onClick, compact }: AcceptRejectAllButtonProps) => (
-  <ApButton
-    variant="tertiary"
-    size="small"
-    label="Reject all"
-    startIcon={<ApIcon variant="outlined" name="close" />}
+  <Button
+    variant="ghost"
+    size="sm"
     onClick={() => onClick(suggestionGroup.id)}
-    sx={compact ? { fontSize: '0.75rem', minWidth: 'auto' } : undefined}
-  />
+    className={compact ? 'text-xs min-w-0' : undefined}
+  >
+    <CanvasIcon icon="x" size={16} />
+    Reject all
+  </Button>
 );
 
 const AcceptAllButton = ({ suggestionGroup, onClick, compact }: AcceptRejectAllButtonProps) => (
-  <ApButton
-    variant="primary"
-    size="small"
-    label="Accept all"
-    startIcon={<ApIcon variant="outlined" name="check" />}
+  <Button
+    size="sm"
     onClick={() => onClick(suggestionGroup.id)}
-    sx={compact ? { fontSize: '0.75rem', minWidth: 'auto' } : undefined}
-  />
+    className={compact ? 'text-xs min-w-0' : undefined}
+  >
+    <CanvasIcon icon="check" size={16} />
+    Accept all
+  </Button>
 );
 
 const Divider = () => (
@@ -72,7 +73,7 @@ const SuggestionGroupNavigator = ({
   const [isHoveringUp, setIsHoveringUp] = useState(false);
   const [isHoveringDown, setIsHoveringDown] = useState(false);
 
-  const iconSize = compact ? '16px' : '20px';
+  const iconSize = compact ? 16 : 20;
 
   return (
     <div
@@ -83,36 +84,39 @@ const SuggestionGroupNavigator = ({
         minWidth: compact ? '80px' : '100px',
       }}
     >
-      <ApIconButton
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
         onMouseEnter={() => setIsHoveringUp(true)}
         onMouseLeave={() => setIsHoveringUp(false)}
         onClick={onNavigatePrevious}
       >
-        <ApIcon
-          name="keyboard_arrow_up"
+        <CanvasIcon
+          icon="chevron-up"
           color={isHoveringUp ? 'var(--uix-canvas-primary)' : 'var(--uix-canvas-foreground-de-emp)'}
           size={iconSize}
         />
-      </ApIconButton>
-      <ApTypography
-        variant={compact ? FontVariantToken.fontSizeSBold : FontVariantToken.fontSizeMBold}
-        color="var(--uix-canvas-foreground-de-emp)"
-      >
+      </Button>
+      <span className={cn('font-bold text-foreground-muted', compact ? 'text-xs' : 'text-sm')}>
         {currentIndex + 1} of {total}
-      </ApTypography>
-      <ApIconButton
+      </span>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
         onMouseEnter={() => setIsHoveringDown(true)}
         onMouseLeave={() => setIsHoveringDown(false)}
         onClick={onNavigateNext}
       >
-        <ApIcon
-          name="keyboard_arrow_down"
+        <CanvasIcon
+          icon="chevron-down"
           color={
             isHoveringDown ? 'var(--uix-canvas-primary)' : 'var(--uix-canvas-foreground-de-emp)'
           }
           size={iconSize}
         />
-      </ApIconButton>
+      </Button>
     </div>
   );
 };
@@ -125,10 +129,8 @@ export const SuggestionGroupPanel = ({
   onNavigateNext,
   onNavigatePrevious,
 }: SuggestionGroupPanelProps) => {
-  const theme = useTheme();
   const canvasWidth = useStore((state) => state.width);
-  const smBreakpoint = theme.breakpoints.values.sm;
-  const isCompact = canvasWidth < smBreakpoint;
+  const isCompact = canvasWidth < CANVAS_COMPACT_BREAKPOINT;
 
   // Filter out standalone suggestions - they are interactive placeholders that shouldn't appear in the panel
   const nonStandaloneSuggestions =

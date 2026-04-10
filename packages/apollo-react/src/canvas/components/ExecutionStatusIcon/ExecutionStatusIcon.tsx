@@ -1,5 +1,6 @@
-import { ApCircularProgress, ApIcon } from '@uipath/apollo-react/material/components';
+import { Spinner } from '@uipath/apollo-wind';
 import { useMemo } from 'react';
+import { CanvasIcon } from '../../utils/icon-registry';
 
 export function getExecutionStatusColor(status: string | undefined): string {
   switch (status) {
@@ -62,21 +63,26 @@ export function ExecutionStatusIcon({
 
     switch (status) {
       case 'InProgress':
-        return <ApCircularProgress size={size} style={{ backgroundColor: 'transparent' }} />;
+        return (
+          <Spinner
+            size="sm"
+            style={{ backgroundColor: 'transparent', width: size, height: size }}
+          />
+        );
       case 'Completed':
-        return <ApIcon color={color} name="check_circle" size={`${size}px`} />;
+        return <CanvasIcon icon="circle-check" size={size} color={color} />;
       case 'Paused':
-        return <ApIcon color={color} name="pause" size={`${size}px`} />;
+        return <CanvasIcon icon="circle-pause" size={size} color={color} />;
       case 'Warning':
-        return <ApIcon color={color} name="warning" size={`${size}px`} />;
+        return <CanvasIcon icon="triangle-alert" size={size} color={color} />;
       case 'Failed':
-        return <ApIcon color={color} name="error" size={`${size}px`} />;
+        return <CanvasIcon icon="circle-alert" size={size} color={color} />;
       case 'Terminated':
-        return <ApIcon color={color} name="close" size={`${size}px`} />;
+        return <CanvasIcon icon="circle-x" size={size} color={color} />;
       case 'Cancelled':
-        return <ApIcon color={color} name="block" size={`${size}px`} />;
+        return <CanvasIcon icon="circle-stop" size={size} color={color} />;
       case 'NotExecuted':
-        return <ApIcon color={color} name="hourglass_empty" size={`${size}px`} />;
+        return <CanvasIcon icon="circle-dashed" size={size} color={color} />;
       default:
         return null;
     }

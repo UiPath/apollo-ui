@@ -1,4 +1,3 @@
-import { FontVariantToken } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import {
   type Edge,
@@ -8,7 +7,6 @@ import {
   useReactFlow,
   type XYPosition,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApTypography } from '@uipath/apollo-react/material';
 
 import { FloatingCanvasPanel } from './FloatingCanvasPanel';
 
@@ -77,46 +75,39 @@ function NodeInfoContent({
   return (
     <Column gap={4} pt={4} px={16}>
       <Row gap={4}>
-        <ApTypography variant={FontVariantToken.fontMonoM}>ID:</ApTypography>
-        <ApTypography variant={FontVariantToken.fontMonoMBold}>{id}</ApTypography>
+        <span className="text-sm font-mono">ID:</span>
+        <span className="text-sm font-mono font-bold">{id}</span>
       </Row>
 
       <Row gap={4}>
-        <ApTypography variant={FontVariantToken.fontMonoM}>Type:</ApTypography>
-        <ApTypography variant={FontVariantToken.fontMonoMBold}>{type || 'default'}</ApTypography>
+        <span className="text-sm font-mono">Type:</span>
+        <span className="text-sm font-mono font-bold">{type || 'default'}</span>
       </Row>
 
       <Row gap={4}>
-        <ApTypography variant={FontVariantToken.fontMonoM}>Selected:</ApTypography>
-        <ApTypography variant={FontVariantToken.fontMonoMBold}>
-          {selected ? 'Yes' : 'No'}
-        </ApTypography>
+        <span className="text-sm font-mono">Selected:</span>
+        <span className="text-sm font-mono font-bold">{selected ? 'Yes' : 'No'}</span>
       </Row>
 
       <Row gap={4}>
-        <ApTypography variant={FontVariantToken.fontMonoM}>Position:</ApTypography>
-        <ApTypography variant={FontVariantToken.fontMonoMBold}>
+        <span className="text-sm font-mono">Position:</span>
+        <span className="text-sm font-mono font-bold">
           ({position.x.toFixed(0)}, {position.y.toFixed(0)})
-        </ApTypography>
+        </span>
       </Row>
 
       {width !== undefined && height !== undefined && (
         <Row gap={4}>
-          <ApTypography variant={FontVariantToken.fontMonoM}>Size:</ApTypography>
-          <ApTypography variant={FontVariantToken.fontMonoMBold}>
+          <span className="text-sm font-mono">Size:</span>
+          <span className="text-sm font-mono font-bold">
             {width.toFixed(0)} × {height.toFixed(0)}
-          </ApTypography>
+          </span>
         </Row>
       )}
 
       {data && Object.keys(data).length > 0 && (
         <Column gap={4}>
-          <ApTypography
-            variant={FontVariantToken.fontMonoM}
-            color="var(--uix-canvas-foreground-de-emp)"
-          >
-            Data:
-          </ApTypography>
+          <span className="text-sm font-mono text-foreground-muted">Data:</span>
           <pre
             style={{
               fontFamily: 'monospace',
@@ -157,81 +148,72 @@ function EdgeInfoContent({ edge }: EdgeInfoContentProps) {
   return (
     <Column gap={4} pt={4} px={16}>
       <Row gap={4}>
-        <ApTypography variant={FontVariantToken.fontMonoM}>ID:</ApTypography>
-        <ApTypography variant={FontVariantToken.fontMonoMBold}>{id}</ApTypography>
+        <span className="text-sm font-mono">ID:</span>
+        <span className="text-sm font-mono font-bold">{id}</span>
       </Row>
 
       <Row gap={4}>
-        <ApTypography variant={FontVariantToken.fontMonoM}>Type:</ApTypography>
-        <ApTypography variant={FontVariantToken.fontMonoMBold}>{type || 'default'}</ApTypography>
+        <span className="text-sm font-mono">Type:</span>
+        <span className="text-sm font-mono font-bold">{type || 'default'}</span>
       </Row>
 
       <Row gap={4}>
-        <ApTypography variant={FontVariantToken.fontMonoM}>Selected:</ApTypography>
-        <ApTypography variant={FontVariantToken.fontMonoMBold}>
-          {selected ? 'Yes' : 'No'}
-        </ApTypography>
+        <span className="text-sm font-mono">Selected:</span>
+        <span className="text-sm font-mono font-bold">{selected ? 'Yes' : 'No'}</span>
       </Row>
 
       <Row gap={4}>
-        <ApTypography variant={FontVariantToken.fontMonoM}>Source:</ApTypography>
-        <ApTypography variant={FontVariantToken.fontMonoMBold}>{source}</ApTypography>
+        <span className="text-sm font-mono">Source:</span>
+        <span className="text-sm font-mono font-bold">{source}</span>
       </Row>
 
       <Row gap={4}>
-        <ApTypography variant={FontVariantToken.fontMonoM}>Target:</ApTypography>
-        <ApTypography variant={FontVariantToken.fontMonoMBold}>{target}</ApTypography>
+        <span className="text-sm font-mono">Target:</span>
+        <span className="text-sm font-mono font-bold">{target}</span>
       </Row>
 
       {sourceHandle && (
         <Row gap={4}>
-          <ApTypography variant={FontVariantToken.fontMonoM}>Source Handle:</ApTypography>
-          <ApTypography variant={FontVariantToken.fontMonoMBold}>{sourceHandle}</ApTypography>
+          <span className="text-sm font-mono">Source Handle:</span>
+          <span className="text-sm font-mono font-bold">{sourceHandle}</span>
         </Row>
       )}
 
       {targetHandle && (
         <Row gap={4}>
-          <ApTypography variant={FontVariantToken.fontMonoM}>Target Handle:</ApTypography>
-          <ApTypography variant={FontVariantToken.fontMonoMBold}>{targetHandle}</ApTypography>
+          <span className="text-sm font-mono">Target Handle:</span>
+          <span className="text-sm font-mono font-bold">{targetHandle}</span>
         </Row>
       )}
 
       {animated !== undefined && (
         <Row gap={4}>
-          <ApTypography variant={FontVariantToken.fontMonoM}>Animated:</ApTypography>
-          <ApTypography variant={FontVariantToken.fontMonoMBold}>
-            {animated ? 'Yes' : 'No'}
-          </ApTypography>
+          <span className="text-sm font-mono">Animated:</span>
+          <span className="text-sm font-mono font-bold">{animated ? 'Yes' : 'No'}</span>
         </Row>
       )}
 
       {label && (
         <Row gap={4}>
-          <ApTypography variant={FontVariantToken.fontMonoM}>Label:</ApTypography>
-          <ApTypography variant={FontVariantToken.fontMonoMBold}>
+          <span className="text-sm font-mono">Label:</span>
+          <span className="text-sm font-mono font-bold">
             {typeof label === 'string' ? label : '[React Element]'}
-          </ApTypography>
+          </span>
         </Row>
       )}
 
       {(markerStart || markerEnd) && (
         <Row gap={4}>
-          <ApTypography variant={FontVariantToken.fontMonoM}>Markers:</ApTypography>
-          <ApTypography variant={FontVariantToken.fontMonoMBold}>
+          <span className="text-sm font-mono">Markers:</span>
+          <span className="text-sm font-mono font-bold">
             {markerStart && markerEnd ? 'Both ends' : markerStart ? 'Start only' : 'End only'}
-          </ApTypography>
+          </span>
         </Row>
       )}
 
       {data && Object.keys(data).length > 0 && (
         <Column gap={4}>
-          <ApTypography
-            variant={FontVariantToken.fontMonoM}
-            color="var(--uix-canvas-foreground-de-emp)"
-          >
-            Data:
-          </ApTypography>
+          <span className="text-sm font-mono text-foreground-muted">Data:</span>
           <pre
             style={{
               fontFamily: 'monospace',

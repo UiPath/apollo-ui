@@ -1,6 +1,6 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { ApSkeleton } from '../../../material/components/ap-skeleton';
+import { Skeleton } from '@uipath/apollo-wind';
 import type { NodeShape } from '../../schema';
 import { getExecutionStatusBorder, pulseAnimation } from '../../styles/execution-status';
 import type { FooterVariant } from './BaseNode.types';
@@ -412,7 +412,7 @@ export const BaseBadgeSlot = styled.div<{
 /**
  * Skeleton icon used in loading state. Uses the same dimension calculations as BaseIconWrapper.
  */
-export const BaseSkeletonIcon = styled(ApSkeleton, {
+export const BaseSkeletonIcon = styled(Skeleton, {
   shouldForwardProp: (prop) => prop !== 'shape' && prop !== 'nodeHeight' && prop !== 'nodeWidth',
 })<{
   shape?: NodeShape;

@@ -1,4 +1,3 @@
-import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
 import type { Preview } from "@storybook/react";
 import {
@@ -9,7 +8,6 @@ import {
 } from "@uipath/apollo-react/material/theme";
 // biome-ignore lint/correctness/noUnusedImports: needed
 import React, { useEffect } from "react";
-import { GlobalStyles } from "./GlobalStyles";
 
 const isDev = import.meta.env.MODE !== "production";
 
@@ -28,10 +26,8 @@ import "@uipath/apollo-react/core/tokens/css/theme-variables.css";
 import "@uipath/apollo-react/core/fonts/font.css";
 
 import "@uipath/apollo-react/canvas/styles/variables.css";
+import "@uipath/apollo-react/canvas/styles/tailwind.canvas.css";
 import "@uipath/apollo-react/canvas/xyflow/style.css";
-
-// Import Apollo Wind pre-compiled styles for apollo-wind components used in stories
-import "@uipath/apollo-wind/styles.css";
 
 // Theme type definition
 type ThemeMode = "light" | "dark" | "light-hc" | "dark-hc";
@@ -153,8 +149,6 @@ const preview: Preview = {
 
       return (
         <ThemeProvider theme={muiTheme}>
-          <CssBaseline />
-          <GlobalStyles />
           <div
             style={{
               height: "100%",

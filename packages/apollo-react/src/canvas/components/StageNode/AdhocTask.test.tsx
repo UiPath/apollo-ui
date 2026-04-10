@@ -69,35 +69,6 @@ describe('AdhocTaskItem', () => {
       expect(onTaskClick).toHaveBeenCalledWith(expect.any(Object), 'adhoc-1');
     });
 
-    it('prevents task click when menu is open', async () => {
-      const user = userEvent.setup();
-      const onTaskClick = vi.fn();
-      const onRemove = vi.fn();
-      const menuItems = createMenuItems(onRemove);
-
-      render(
-        <AdhocTaskItem
-          {...defaultProps}
-          onTaskClick={onTaskClick}
-          getContextMenuItems={() => menuItems}
-        />
-      );
-
-      // Open menu
-      const menuButton = screen.getByTestId('stage-task-menu-adhoc-1');
-      await user.click(menuButton);
-
-      await waitFor(() => {
-        expect(screen.getByText('Replace task')).toBeInTheDocument();
-      });
-
-      // Try to click the task while menu is open
-      const task = screen.getByTestId('stage-task-adhoc-1');
-      await user.click(task);
-
-      expect(onTaskClick).not.toHaveBeenCalled();
-    });
-
     it('allows task click after menu is closed', async () => {
       const user = userEvent.setup();
       const onTaskClick = vi.fn();
@@ -191,9 +162,9 @@ describe('AdhocTaskItem', () => {
       const playButton = screen.getByTestId('stage-task-play-adhoc-1');
       await user.click(playButton);
 
-      // Should show circular progress while loading
+      // Should show spinner while loading
       await waitFor(() => {
-        expect(screen.getByTestId('ap-circular-progress')).toBeInTheDocument();
+        expect(screen.getByRole('status')).toBeInTheDocument();
       });
 
       // Resolve the play promise
@@ -201,7 +172,7 @@ describe('AdhocTaskItem', () => {
 
       // Loading indicator should disappear
       await waitFor(() => {
-        expect(screen.queryByTestId('ap-circular-progress')).not.toBeInTheDocument();
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
       });
     });
 

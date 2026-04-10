@@ -165,6 +165,8 @@ import { Breadcrumb } from '@uipath/apollo-react/canvas/controls';
 import { ReactFlow, Panel } from '@uipath/apollo-react/canvas/xyflow/react';
 ```
 
+> Canvas components are styled with [apollo-wind](../apollo-wind) (Tailwind CSS v4). See the [Canvas Tailwind Integration Guide](./src/canvas/README.md) for how to wire up the required CSS in standard and Shadow DOM apps.
+
 ### ApChat Component
 
 ```typescript

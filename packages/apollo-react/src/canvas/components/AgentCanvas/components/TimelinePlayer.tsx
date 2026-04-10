@@ -1,7 +1,7 @@
-import { FontVariantToken, Spacing } from '@uipath/apollo-core';
+import { Spacing } from '@uipath/apollo-core';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
-import { ApIconButton, ApTypography } from '@uipath/apollo-react/material';
+import { Button } from '@uipath/apollo-wind';
 import { DateTime } from 'luxon';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -480,25 +480,25 @@ export const TimelinePlayer: React.FC<{
       }}
     >
       <Row align="center" gap={Spacing.SpacingXs}>
-        <ApIconButton size="large" onClick={handlePlayPause}>
+        <Button variant="ghost" size="icon" className="h-10 w-10" onClick={handlePlayPause}>
           {playing ? (
             <Icons.TimelinePauseIcon w={24} h={24} color="var(--uix-canvas-icon-default)" />
           ) : (
             <Icons.TimelinePlayIcon w={24} h={24} color="var(--uix-canvas-icon-default)" />
           )}
-        </ApIconButton>
+        </Button>
 
-        <ApTypography>
+        <span>
           {currentTimeFormatted} / {totalTimeFormatted}
-        </ApTypography>
+        </span>
 
-        <ApTypography>{mostActiveSpan?.Name}</ApTypography>
+        <span>{mostActiveSpan?.Name}</span>
 
         <div style={{ flex: 1 }} />
 
-        <ApIconButton size="large" onClick={handleSpeedChange}>
-          <ApTypography variant={FontVariantToken.fontSizeSBold}>{speedLevel}x</ApTypography>
-        </ApIconButton>
+        <Button variant="ghost" size="icon" className="h-10 w-10" onClick={handleSpeedChange}>
+          <span className="text-xs font-bold">{speedLevel}x</span>
+        </Button>
       </Row>
 
       <Row align="center" style={{ marginLeft: '15px' }}>

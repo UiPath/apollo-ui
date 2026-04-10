@@ -1,5 +1,7 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import { TooltipProvider } from '@uipath/apollo-wind/components/ui/tooltip';
 import type { ReactNode } from 'react';
+import { CanvasTooltipProviderMarker } from '../CanvasTooltip';
 import type { BaseCanvasProps } from './BaseCanvas.types';
 import { BaseCanvasModeProvider } from './BaseCanvasModeProvider';
 import { CanvasThemeProvider } from './CanvasThemeContext';
@@ -29,11 +31,15 @@ export function CanvasProviders({
 }: CanvasProvidersProps) {
   return (
     <CanvasThemeProvider isDarkMode={isDarkMode}>
-      <ConnectedHandlesProvider edges={edges}>
-        <BaseCanvasModeProvider mode={mode}>
-          <SelectionStateProvider nodes={nodes}>{children}</SelectionStateProvider>
-        </BaseCanvasModeProvider>
-      </ConnectedHandlesProvider>
+      <TooltipProvider delayDuration={200} skipDelayDuration={100}>
+        <CanvasTooltipProviderMarker>
+          <ConnectedHandlesProvider edges={edges}>
+            <BaseCanvasModeProvider mode={mode}>
+              <SelectionStateProvider nodes={nodes}>{children}</SelectionStateProvider>
+            </BaseCanvasModeProvider>
+          </ConnectedHandlesProvider>
+        </CanvasTooltipProviderMarker>
+      </TooltipProvider>
     </CanvasThemeProvider>
   );
 }

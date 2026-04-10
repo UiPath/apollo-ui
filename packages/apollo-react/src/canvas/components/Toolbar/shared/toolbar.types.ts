@@ -1,7 +1,7 @@
 export interface ToolbarActionItem {
   /** Unique action identifier */
   id: string;
-  /** Can be passed as a string (ApIcon icon name) or a custom rendered React node */
+  /** Can be passed as a string (icon identifier resolved via the canvas icon registry) or a custom rendered React node */
   icon: React.ReactNode;
   label?: string;
   disabled?: boolean;

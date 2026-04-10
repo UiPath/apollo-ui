@@ -17,7 +17,7 @@ import {
   type ReactFlowInstance,
   type Viewport,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon, ApProgressSpinner } from '@uipath/apollo-react/material/components';
+import { Spinner } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../../constants';
@@ -47,6 +47,7 @@ import {
 import { viewportManager } from '../../stores/viewportManager';
 import { DefaultCanvasTranslations } from '../../types';
 import type { CanvasLevel } from '../../types/canvas.types';
+import { CanvasIcon } from '../../utils/icon-registry';
 import { prefersReducedMotion } from '../../utils/transitions';
 import { AddNodeManager } from '../AddNodePanel/AddNodeManager';
 import { AddNodePreview } from '../AddNodePanel/AddNodePreview';
@@ -397,7 +398,7 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
           justifyContent: 'center',
         }}
       >
-        <ApProgressSpinner />
+        <Spinner />
       </div>
     );
   }
@@ -430,9 +431,9 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
               label: crumb.name,
               onClick:
                 index < breadcrumbs.length - 1 ? () => handleNavigateToDepth(index) : undefined,
-              startAdornment: index === 0 ? <ApIcon name="home" /> : undefined,
+              startAdornment: index === 0 ? <CanvasIcon icon="house" size={16} /> : undefined,
             }))}
-            delimiter={<ApIcon name="chevron_right" />}
+            delimiter={<CanvasIcon icon="chevron-right" size={16} />}
           />
         </div>
       )}

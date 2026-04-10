@@ -1,9 +1,10 @@
 import { Position, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon, ApTooltip } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useMemo, useState } from 'react';
 import type { HandleGroupManifest } from '../../schema/node-definition';
+import { CanvasIcon } from '../../utils/icon-registry';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
+import { CanvasTooltip } from '../CanvasTooltip';
 import { TriggerContainer, TriggerIconWrapper } from './TriggerNode.styles';
 import type { TriggerNodeProps } from './TriggerNode.types';
 
@@ -46,9 +47,7 @@ const TriggerNodeComponent = (props: TriggerNodeProps) => {
 
   const triggerContent = (
     <TriggerContainer selected={!!selected} status={status}>
-      <TriggerIconWrapper status={status}>
-        {icon || <ApIcon name="bolt" variant="outlined" size="30px" />}
-      </TriggerIconWrapper>
+      <TriggerIconWrapper status={status}>{icon || <CanvasIcon icon="zap" />}</TriggerIconWrapper>
     </TriggerContainer>
   );
 
@@ -59,9 +58,9 @@ const TriggerNodeComponent = (props: TriggerNodeProps) => {
       onMouseLeave={handleMouseLeave}
     >
       {tooltip ? (
-        <ApTooltip content={tooltip} placement="top" style={{ width: '100%', height: '100%' }}>
+        <CanvasTooltip content={tooltip} placement="top">
           {triggerContent}
-        </ApTooltip>
+        </CanvasTooltip>
       ) : (
         triggerContent
       )}

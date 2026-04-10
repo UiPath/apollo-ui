@@ -1,9 +1,10 @@
 import styled from '@emotion/styled';
-import { FontVariantToken } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
-import { ApIcon, ApIconButton, ApTypography } from '@uipath/apollo-react/material';
+import { Button } from '@uipath/apollo-wind';
 import type { ReactNode } from 'react';
 import { useEffect, useRef } from 'react';
+
+import { CanvasIcon } from '../../utils/icon-registry';
 
 const PanelHeader = styled.div`
   border-bottom: 1px solid var(--uix-canvas-border-de-emp);
@@ -68,18 +69,19 @@ export function PanelChrome({
         <PanelHeader>
           {header ?? (
             <Row gap={8} justify="between" align="center">
-              <ApTypography
-                color="var(--uix-canvas-foreground)"
-                variant={FontVariantToken.fontSizeLBold}
-              >
-                {title}
-              </ApTypography>
+              <span className="text-base font-bold">{title}</span>
               <Row gap={8} align="center">
                 {headerActions}
                 {onClose && (
-                  <ApIconButton color="secondary" onClick={onClose}>
-                    <ApIcon name="close" />
-                  </ApIconButton>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    aria-label="Close"
+                    onClick={onClose}
+                  >
+                    <CanvasIcon icon="x" size={16} />
+                  </Button>
                 )}
               </Row>
             </Row>

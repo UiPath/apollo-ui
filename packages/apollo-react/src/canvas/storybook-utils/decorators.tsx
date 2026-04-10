@@ -6,8 +6,10 @@
 
 import type { Decorator } from '@storybook/react';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
+import { TooltipProvider } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useMemo } from 'react';
+import { CanvasTooltipProviderMarker } from '../components/CanvasTooltip';
 import { NodeRegistryProvider } from '../core';
 import {
   type ExecutionStateContextValue,
@@ -136,7 +138,11 @@ export function withCanvasProviders(options: CanvasProvidersOptions = {}): Decor
         <ExecutionStatusContext.Provider value={executions}>
           <ValidationStatusContext.Provider value={validations}>
             <ReactFlowProvider>
-              <Story />
+              <TooltipProvider>
+                <CanvasTooltipProviderMarker>
+                  <Story />
+                </CanvasTooltipProviderMarker>
+              </TooltipProvider>
             </ReactFlowProvider>
           </ValidationStatusContext.Provider>
         </ExecutionStatusContext.Provider>

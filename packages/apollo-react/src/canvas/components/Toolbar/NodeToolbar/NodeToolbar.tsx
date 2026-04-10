@@ -1,6 +1,7 @@
-import { ApIcon, ApTooltip } from '@uipath/apollo-react/material/components';
 import { AnimatePresence } from 'motion/react';
 import { memo, useMemo } from 'react';
+import { CanvasIcon } from '../../../utils/icon-registry';
+import { CanvasTooltip } from '../../CanvasTooltip';
 import { StyledToolbarButton, ToolbarButton } from '../shared';
 import {
   StyledDropdownItem,
@@ -87,9 +88,9 @@ const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarP
                   aria-expanded={isDropdownOpen}
                   aria-haspopup="menu"
                 >
-                  <ApTooltip content={config.overflowLabel} placement="top">
-                    <ApIcon variant="outlined" name="more_vert" size="16px" />
-                  </ApTooltip>
+                  <CanvasTooltip content={config.overflowLabel} placement="top">
+                    <CanvasIcon icon="ellipsis-vertical" size={16} />
+                  </CanvasTooltip>
                 </StyledToolbarButton>
                 <AnimatePresence>
                   {isDropdownOpen && (
@@ -130,12 +131,9 @@ const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarP
                             $disabled={item.disabled}
                           >
                             {item.icon && typeof item.icon === 'string' && (
-                              <ApIcon
-                                style={{ flex: 'unset' }}
-                                variant="outlined"
-                                name={item.icon}
-                                size="16px"
-                              />
+                              <span style={{ flex: 'unset', display: 'inline-flex' }}>
+                                <CanvasIcon icon={item.icon} size={16} />
+                              </span>
                             )}
                             {item.icon && typeof item.icon !== 'string' && item.icon}
                             <span>{item.label}</span>

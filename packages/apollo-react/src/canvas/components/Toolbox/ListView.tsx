@@ -1,16 +1,15 @@
-import { FontVariantToken } from '@uipath/apollo-core';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
-import { NodeIcon, partition } from '@uipath/apollo-react/canvas/utils';
-import { ApSkeleton, ApTypography } from '@uipath/apollo-react/material';
-import { ApIcon, ApTooltip } from '@uipath/apollo-react/material/components';
+import { CanvasIcon, partition } from '@uipath/apollo-react/canvas/utils';
+import { Skeleton } from '@uipath/apollo-wind';
 import { forwardRef, memo, useCallback, useImperativeHandle, useMemo } from 'react';
 import type { ListImperativeAPI, RowComponentProps } from 'react-window';
 import { useCanvasTheme } from '../BaseCanvas/CanvasThemeContext';
+import { CanvasTooltip } from '../CanvasTooltip';
 import { IconContainer, ListItemButton, SectionHeader, StyledList } from './ListView.styles';
 
 export interface ListItemIcon {
   /**
-   * icon name from ApIcon (Material Icons)
+   * Icon identifier resolved via the canvas icon registry (lucide kebab-case names or registered custom icons)
    */
   name?: string;
   /**
@@ -128,12 +127,7 @@ const ListViewRow = memo(
     if (renderItem.type === 'section') {
       return (
         <SectionHeader {...ariaAttributes} style={style}>
-          <ApTypography
-            variant={FontVariantToken.fontSizeS}
-            color="var(--uix-canvas-foreground-emp)"
-          >
-            {renderItem.sectionName}
-          </ApTypography>
+          <span className="text-xs">{renderItem.sectionName}</span>
         </SectionHeader>
       );
     }
@@ -164,38 +158,23 @@ const ListViewRow = memo(
           {item.icon?.url && (
             <img src={item.icon?.url} alt={item.name} style={{ width: 24, height: 24 }} />
           )}
-          {item.icon?.name && <NodeIcon icon={item.icon.name} size={24} />}
+          {item.icon?.name && <CanvasIcon icon={item.icon.name} size={24} />}
           {item.icon?.Component && <item.icon.Component />}
         </IconContainerMemoized>
         <Column flex={1} overflow="hidden">
-          <ApTooltip content={item.name} placement="right" smartTooltip>
-            <ApTypography
-              variant={FontVariantToken.fontSizeM}
-              className="list-view-item-name"
-              color="var(--uix-canvas-foreground-emp)"
-            >
-              {item.name}
-            </ApTypography>
-          </ApTooltip>
+          <CanvasTooltip content={item.name} placement="right" smartTooltip>
+            <span className="text-sm list-view-item-name">{item.name}</span>
+          </CanvasTooltip>
           {item.description && (
-            <ApTooltip content={item.description} placement="right" smartTooltip>
-              <ApTypography
-                variant={FontVariantToken.fontSizeXs}
-                className="list-view-item-name"
-                color="var(--uix-canvas-foreground-de-emp)"
-              >
+            <CanvasTooltip content={item.description} placement="right" smartTooltip>
+              <span className="text-xs list-view-item-name text-foreground-muted">
                 {item.description}
-              </ApTypography>
-            </ApTooltip>
+              </span>
+            </CanvasTooltip>
           )}
         </Column>
         {!!item.children && (
-          <ApIcon
-            name="chevron_right"
-            variant="outlined"
-            size="20px"
-            color="var(--uix-canvas-foreground-de-emp)"
-          />
+          <CanvasIcon icon="chevron-right" size={20} color="var(--uix-canvas-foreground-de-emp)" />
         )}
       </ListItemButton>
     );
@@ -226,7 +205,7 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
     onItemClick,
     onItemHover,
     emptyStateMessage = 'No items found',
-    emptyStateIcon = 'search_off',
+    emptyStateIcon = 'search-x',
     isLoading = false,
     enableSections = true,
   }: ListViewProps<T>,
@@ -251,7 +230,7 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
     return (
       <Column gap={8}>
         {[...Array(3)].map((_, index) => (
-          <ApSkeleton variant="rectangle" style={{ height: '32px', width: '100%' }} key={index} />
+          <Skeleton className="h-8 w-full" key={index} />
         ))}
       </Column>
     );
@@ -261,13 +240,8 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
   if (items.length === 0) {
     return (
       <Column align="center" justify="center" flex={1} gap={10} style={{ minHeight: '250px' }}>
-        <ApIcon name={emptyStateIcon} size="48px" color="var(--uix-canvas-foreground-de-emp)" />
-        <ApTypography
-          variant={FontVariantToken.fontSizeS}
-          color="var(--uix-canvas-foreground-de-emp)"
-        >
-          {emptyStateMessage}
-        </ApTypography>
+        <CanvasIcon icon={emptyStateIcon} size={48} color="var(--uix-canvas-foreground-de-emp)" />
+        <span className="text-xs text-foreground-muted">{emptyStateMessage}</span>
       </Column>
     );
   }

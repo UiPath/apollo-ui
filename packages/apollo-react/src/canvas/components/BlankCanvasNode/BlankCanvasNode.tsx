@@ -1,7 +1,7 @@
 import { type NodeProps, useStoreApi } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon } from '@uipath/apollo-react/material/components';
 import { useCallback, useRef } from 'react';
 import { selectAddNode, selectRemoveNode, useCanvasStore } from '../../stores/canvasStore';
+import { CanvasIcon } from '../../utils/icon-registry';
 import { AddNodePanel, type NodeItemData } from '../AddNodePanel';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import { Header, IconWrapper, NodeContainer, TextContainer } from './BlankCanvasNode.styles';
@@ -35,7 +35,7 @@ export const BlankCanvasNode = (props: BlankCanvasNodeProps) => {
     <>
       <NodeContainer selected={selected} ref={nodeRef}>
         <IconWrapper>
-          <ApIcon name="add" size="48px" color="var(--uix-canvas-foreground-de-emp)" />
+          <CanvasIcon icon="plus" size={48} color="var(--uix-canvas-foreground-de-emp)" />
         </IconWrapper>
       </NodeContainer>
       {typeof label === 'string' && (

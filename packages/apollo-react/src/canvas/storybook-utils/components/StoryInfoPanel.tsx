@@ -1,8 +1,8 @@
-import { FontVariantToken } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon, ApIconButton, ApTypography } from '@uipath/apollo-react/material';
+import { Button } from '@uipath/apollo-wind';
 import { useState } from 'react';
+import { CanvasIcon } from '../../utils/icon-registry';
 
 export interface StoryInfoPanelProps {
   /** Panel title */
@@ -46,15 +46,17 @@ export function StoryInfoPanel({
         }}
       >
         <Row justify="space-between" align="center" gap={12}>
-          <ApTypography variant={FontVariantToken.fontSizeH4Bold}>{title}</ApTypography>
+          <span className="text-lg font-bold">{title}</span>
           {collapsible && hasContent && (
-            <ApIconButton
-              size="small"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
               onClick={() => setIsCollapsed(!isCollapsed)}
               aria-label={isCollapsed ? 'Expand panel' : 'Collapse panel'}
             >
-              <ApIcon name={isCollapsed ? 'expand_more' : 'expand_less'} />
-            </ApIconButton>
+              <CanvasIcon icon={isCollapsed ? 'chevron-down' : 'chevron-up'} size={16} />
+            </Button>
           )}
         </Row>
 
@@ -68,14 +70,7 @@ export function StoryInfoPanel({
               marginTop: isCollapsed && collapsible ? 0 : undefined,
             }}
           >
-            {description && (
-              <ApTypography
-                variant={FontVariantToken.fontSizeS}
-                color="var(--uix-canvas-foreground-de-emp)"
-              >
-                {description}
-              </ApTypography>
-            )}
+            {description && <span className="text-xs text-foreground-muted">{description}</span>}
             {children}
           </div>
         )}

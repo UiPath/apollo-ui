@@ -1,6 +1,7 @@
 import { cx } from '@uipath/apollo-react/canvas/utils';
-import { ApIcon } from '@uipath/apollo-react/material/components';
 import { memo, useEffect, useRef } from 'react';
+
+import { CanvasIcon } from '../../utils/icon-registry';
 import { StyledSearchForm } from './SearchBox.styles';
 
 interface SearchBoxProps {
@@ -52,7 +53,7 @@ export const SearchBox = memo(function SearchBox({
     >
       <div className={cx(`searchbox-container`, { 'has-value': !!value })}>
         <span className="searchbox-icon">
-          <ApIcon name="search" size="16px" />
+          <CanvasIcon icon="search" size={16} />
         </span>
         <input
           ref={inputRef}
@@ -76,7 +77,7 @@ export const SearchBox = memo(function SearchBox({
             onClick={clear}
             onKeyDown={handleClearButtonKeyDown}
           >
-            <ApIcon name="close" size="16px" />
+            <CanvasIcon icon="x" size={16} />
           </button>
         )}
       </div>

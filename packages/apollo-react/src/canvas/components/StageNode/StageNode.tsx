@@ -15,16 +15,10 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { FontVariantToken, Icon, Padding, Spacing } from '@uipath/apollo-core';
+import { Icon, Padding, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { Position, useStore, useStoreApi } from '@uipath/apollo-react/canvas/xyflow/react';
-import {
-  ApIcon,
-  ApIconButton,
-  ApLink,
-  ApTooltip,
-  ApTypography,
-} from '@uipath/apollo-react/material';
+import { Button, cn } from '@uipath/apollo-wind';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { EntryConditionIcon, ExitConditionIcon, ReturnToOriginIcon } from '../../icons';
 import type { HandleGroupManifest } from '../../schema/node-definition';
@@ -33,8 +27,10 @@ import {
   moveGroupDown,
   moveGroupUp,
 } from '../../utils/GroupModificationUtils';
+import { CanvasIcon } from '../../utils/icon-registry';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
+import { CanvasTooltip } from '../CanvasTooltip';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import { NodeContextMenu, type NodeMenuItem } from '../NodeContextMenu';
@@ -75,8 +71,8 @@ const CHIP_ICONS: Record<StageHeaderChipType, React.ReactElement> = {
   [StageHeaderChipType.Entry]: <EntryConditionIcon w={Icon.IconXs} h={Icon.IconXs} />,
   [StageHeaderChipType.Exit]: <ExitConditionIcon w={Icon.IconXs} h={Icon.IconXs} />,
   [StageHeaderChipType.ReturnToOrigin]: <ReturnToOriginIcon w={Icon.IconXs} h={Icon.IconXs} />,
-  [StageHeaderChipType.CaseExit]: <ApIcon name="close" size={Icon.IconXs} />,
-  [StageHeaderChipType.CaseCompletion]: <ApIcon name="check-mark" size={Icon.IconXs} />,
+  [StageHeaderChipType.CaseExit]: <CanvasIcon icon="x" size={16} />,
+  [StageHeaderChipType.CaseCompletion]: <CanvasIcon icon="check" size={16} />,
 };
 
 const StageNodeInner = (props: StageNodeProps) => {
@@ -597,13 +593,8 @@ const StageNodeInner = (props: StageNodeProps) => {
           <Row gap={Spacing.SpacingMicro} align="center" flex={1} minW={0}>
             {icon}
             <Column py={2} flex={1} minW={0}>
-              <ApTypography
-                variant={
-                  isStageTitleEditing ? FontVariantToken.fontSizeM : FontVariantToken.fontSizeMBold
-                }
-                color="var(--uix-canvas-foreground)"
-              >
-                <ApTooltip content={label} placement="top" delay>
+              <span className={cn('text-sm', !isStageTitleEditing && 'font-bold')}>
+                <CanvasTooltip content={label} placement="top" delay>
                   <StageTitleContainer isEditing={isStageTitleEditing}>
                     <StageTitleInput
                       name="Stage Title"
@@ -620,15 +611,10 @@ const StageNodeInner = (props: StageNodeProps) => {
                       readOnly={!isStageTitleEditable}
                     />
                   </StageTitleContainer>
-                </ApTooltip>
-              </ApTypography>
+                </CanvasTooltip>
+              </span>
               {stageDuration && (
-                <ApTypography
-                  variant={FontVariantToken.fontSizeS}
-                  color="var(--uix-canvas-foreground-de-emp)"
-                >
-                  {stageDuration}
-                </ApTypography>
+                <span className="text-xs text-foreground-muted">{stageDuration}</span>
               )}
               {stageDetails.headerChips && stageDetails.headerChips.length > 0 && (
                 <StageHeaderChipsRow>
@@ -644,18 +630,14 @@ const StageNodeInner = (props: StageNodeProps) => {
                         }}
                       >
                         {CHIP_ICONS[chip.type]}
-                        {chip.count !== undefined && (
-                          <ApTypography variant={FontVariantToken.fontSizeS}>
-                            {chip.count}
-                          </ApTypography>
-                        )}
+                        {chip.count !== undefined && <span className="text-xs">{chip.count}</span>}
                       </StageChip>
                     );
                     if (chip.tooltip) {
                       return (
-                        <ApTooltip key={chip.type} placement="bottom" content={chip.tooltip}>
+                        <CanvasTooltip key={chip.type} placement="bottom" content={chip.tooltip}>
                           {button}
-                        </ApTooltip>
+                        </CanvasTooltip>
                       );
                     }
                     return button;
@@ -666,25 +648,25 @@ const StageNodeInner = (props: StageNodeProps) => {
           </Row>
           <Row gap={Spacing.SpacingMicro} align="start" py={Padding.PadS}>
             {status && (
-              <ApTooltip content={statusLabel} placement="top">
-                <ApIconButton size="small">
+              <CanvasTooltip content={statusLabel} placement="top">
+                <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={statusLabel}>
                   <ExecutionStatusIcon status={status} size={20} />
-                </ApIconButton>
-              </ApTooltip>
+                </Button>
+              </CanvasTooltip>
             )}
             {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly && (
-              <ApTooltip content={addTaskLabel} placement="top" hide={addTaskLoading}>
-                <span>
-                  <ApIconButton
-                    onClick={handleTaskAddClick}
-                    size="small"
-                    label={addTaskLabel}
-                    disabled={addTaskLoading}
-                  >
-                    <ApIcon name="add" size="20px" />
-                  </ApIconButton>
-                </span>
-              </ApTooltip>
+              <CanvasTooltip content={addTaskLabel} placement="top" hide={addTaskLoading}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={handleTaskAddClick}
+                  aria-label={addTaskLabel}
+                  disabled={addTaskLoading}
+                >
+                  <CanvasIcon icon="plus" size={20} />
+                </Button>
+              </CanvasTooltip>
             )}
           </Row>
         </StageHeader>
@@ -693,23 +675,18 @@ const StageNodeInner = (props: StageNodeProps) => {
           {tasks.length === 0 && adhocTasks.length === 0 ? (
             <Column py={2}>
               {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly ? (
-                <ApLink
+                <Button
+                  variant="link"
                   onClick={addTaskLoading ? undefined : handleTaskAddClick}
-                  variant={FontVariantToken.fontSizeS}
                   style={{
                     maxWidth: 'fit-content',
                     pointerEvents: addTaskLoading ? 'none' : undefined,
                   }}
                 >
                   {defaultContent}
-                </ApLink>
+                </Button>
               ) : (
-                <ApTypography
-                  variant={FontVariantToken.fontSizeS}
-                  color="var(--uix-canvas-foreground-de-emp)"
-                >
-                  {defaultContent}
-                </ApTypography>
+                <span className="text-xs text-foreground-muted">{defaultContent}</span>
               )}
             </Column>
           ) : (
@@ -735,9 +712,7 @@ const StageNodeInner = (props: StageNodeProps) => {
                             <StageTaskGroup isParallel={isParallel}>
                               {isParallel && (
                                 <StageParallelLabel>
-                                  <ApTypography variant={FontVariantToken.fontSizeS}>
-                                    Parallel
-                                  </ApTypography>
+                                  <span className="text-xs">Parallel</span>
                                 </StageParallelLabel>
                               )}
                               {taskGroup.map((task, taskIndex) => {
@@ -783,12 +758,7 @@ const StageNodeInner = (props: StageNodeProps) => {
                   style={{ marginTop: tasks.length > 0 ? Spacing.SpacingS : '0px' }}
                 >
                   <StageAdhocHeaderSection>
-                    <ApTypography
-                      variant={FontVariantToken.fontSizeSBold}
-                      color="var(--uix-canvas-foreground-de-emp)"
-                    >
-                      Ad hoc tasks
-                    </ApTypography>
+                    <span className="text-xs font-bold text-foreground-muted">Ad hoc tasks</span>
                   </StageAdhocHeaderSection>
                   <StageTaskList>
                     {adhocTasks.map(({ task, groupIndex, taskIndex }) => {

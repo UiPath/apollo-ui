@@ -9,6 +9,27 @@ type StageNodeWrapperProps = Omit<NodeProps, 'data'> & {
 
 export const StageNodeWrapper = memo(
   ({ id, selected, dragging, width, data }: StageNodeWrapperProps) => {
-    return <StageNode id={id} selected={selected} dragging={dragging} width={width} {...data} />;
+    return (
+      <StageNode
+        id={id}
+        selected={selected}
+        dragging={dragging}
+        width={width}
+        {...data}
+        menuItems={[
+          {
+            id: 'menu-item-1',
+            label: 'Menu Item 1',
+            onClick: () => alert('Menu Item 1 clicked'),
+          },
+          {
+            id: 'menu-item-2',
+
+            label: 'Menu Item 2',
+            onClick: () => alert('Menu Item 2 clicked'),
+          },
+        ]}
+      />
+    );
   }
 );

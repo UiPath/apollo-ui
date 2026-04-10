@@ -294,6 +294,18 @@ vi.mock('@uipath/apollo-core', async (importOriginal) => {
   };
 });
 
+// Mock Radix tooltip (from apollo-wind) — removes TooltipProvider requirement
+vi.mock('@uipath/apollo-wind/components/ui/tooltip', () => ({
+  TooltipProvider: ({ children }: { children?: React.ReactNode }) => children,
+  Tooltip: ({ children }: { children?: React.ReactNode }) =>
+    React.createElement(React.Fragment, null, children),
+  TooltipTrigger: ({ children }: { children?: React.ReactNode; asChild?: boolean }) =>
+    React.createElement(React.Fragment, null, children),
+  TooltipContent: () => null,
+  TooltipPortal: ({ children }: { children?: React.ReactNode }) =>
+    React.createElement(React.Fragment, null, children),
+}));
+
 // Mock sanitize-html
 // Test mock only - simplified HTML stripping for test environment, not actual sanitization
 // Production code uses the real sanitize-html library with proper configuration

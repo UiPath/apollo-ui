@@ -1,9 +1,9 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useStore } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApTooltip } from '@uipath/apollo-react/material';
-import { memo, useCallback, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useMemo, useRef } from 'react';
 import { EntryConditionIcon } from '../../icons';
+import { CanvasTooltip } from '../CanvasTooltip';
 import type { DraggableTaskProps } from './DraggableTask.types';
 import {
   INDENTATION_WIDTH,
@@ -27,25 +27,16 @@ const DraggableTaskComponent = ({
   isDragDisabled,
   projectedDepth,
 }: DraggableTaskProps) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const zoom = useStore((s) => s.transform[2]);
   const taskRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<TaskMenuHandle>(null);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
-      // If any menu is open, prevent task selection
-      if (isMenuOpen) {
-        return;
-      }
       onTaskClick(e, task.id);
     },
-    [isMenuOpen, onTaskClick, task.id]
+    [onTaskClick, task.id]
   );
-
-  const handleMenuOpenChange = useCallback((isOpen: boolean) => {
-    setIsMenuOpen(isOpen);
-  }, []);
 
   const handleContextMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     menuRef.current?.handleContextMenu(e);
@@ -108,7 +99,7 @@ const DraggableTaskComponent = ({
       <TaskContent task={task} taskExecution={taskExecution} />
 
       {task.hasEntryCondition && (
-        <ApTooltip content="Entry condition" placement="top">
+        <CanvasTooltip content="Entry condition" placement="top">
           <span
             style={{
               display: 'flex',
@@ -119,16 +110,10 @@ const DraggableTaskComponent = ({
           >
             <EntryConditionIcon w={20} h={20} />
           </span>
-        </ApTooltip>
+        </CanvasTooltip>
       )}
       {getContextMenuItems && (
-        <TaskMenu
-          ref={menuRef}
-          taskId={task.id}
-          getContextMenuItems={handleGetContextMenuItems}
-          onMenuOpenChange={handleMenuOpenChange}
-          taskRef={taskRef}
-        />
+        <TaskMenu ref={menuRef} taskId={task.id} getContextMenuItems={handleGetContextMenuItems} />
       )}
     </StageTask>
   );

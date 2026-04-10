@@ -1,7 +1,8 @@
-import type { StorybookConfig } from "@storybook/react-vite";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { StorybookConfig } from "@storybook/react-vite";
+import tailwindcss from "@tailwindcss/vite";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -30,6 +31,8 @@ const reactScanHook = isDev
     )
   : "";
 
+const apolloWindSrc = resolve(__dirname, "../../../packages/apollo-wind/src");
+
 const config: StorybookConfig = {
   stories: [
     // For now only include canvas stories
@@ -43,6 +46,42 @@ const config: StorybookConfig = {
   framework: {
     name: "@storybook/react-vite",
     options: {},
+  },
+
+  viteFinal: async (config) => {
+    config.plugins = config.plugins || [];
+    config.plugins.push(tailwindcss());
+
+    // Resolve apollo-wind to source for HMR in dev.
+    config.resolve = config.resolve || {};
+    config.resolve.alias = [
+      ...(Array.isArray(config.resolve.alias)
+        ? config.resolve.alias
+        : Object.entries(config.resolve.alias || {}).map(
+            ([find, replacement]) => ({
+              find,
+              replacement,
+            }),
+          )),
+      {
+        find: /^@uipath\/apollo-wind\/tailwind\.css$/,
+        replacement: resolve(apolloWindSrc, "styles/tailwind.consumer.css"),
+      },
+      {
+        find: /^@uipath\/apollo-wind$/,
+        replacement: resolve(apolloWindSrc, "index.ts"),
+      },
+      {
+        find: /^@uipath\/apollo-wind\/(?!.*\.css$)(.*)/,
+        replacement: `${apolloWindSrc}/$1`,
+      },
+      {
+        find: /^@\/(.*)/,
+        replacement: `${apolloWindSrc}/$1`,
+      },
+    ];
+
+    return config;
   },
 
   previewBody: isDev

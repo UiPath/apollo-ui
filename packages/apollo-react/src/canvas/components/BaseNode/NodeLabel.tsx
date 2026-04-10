@@ -1,6 +1,6 @@
-import { ApTooltip } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { NodeShape } from '../../schema';
+import { CanvasTooltip } from '../CanvasTooltip';
 import {
   BaseHeader,
   BaseSubHeader,
@@ -34,9 +34,9 @@ const ConditionalTooltip = ({ content, children }: ConditionalTooltipProps) => {
   }
 
   return (
-    <ApTooltip delay placement="top" content={content} smartTooltip>
+    <CanvasTooltip delay placement="top" content={content} smartTooltip>
       {children}
-    </ApTooltip>
+    </CanvasTooltip>
   );
 };
 

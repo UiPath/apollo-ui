@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { FontVariantToken, Spacing } from '@uipath/apollo-core';
+import { Spacing } from '@uipath/apollo-core';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
 import type { Edge, EdgeProps, Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
@@ -13,7 +13,7 @@ import {
   useNodesState,
   useReactFlow,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApCircularProgress, ApIcon, ApTypography } from '@uipath/apollo-react/material';
+import { Spinner } from '@uipath/apollo-wind';
 import React, {
   memo,
   type ReactElement,
@@ -24,21 +24,22 @@ import React, {
   useState,
 } from 'react';
 
+import { NodeRegistryProvider } from '../../core/NodeRegistryProvider';
+import type { HandleGroupManifest } from '../../schema/node-definition';
 import type { CanvasTranslations, CodedAgentNodeTranslations } from '../../types';
 import { DefaultCanvasTranslations, DefaultCodedAgentNodeTranslations } from '../../types';
 import { d3HierarchyLayout, type LayoutDirection } from '../../utils/coded-agents/d3-layout';
 import { mermaidToReactFlow } from '../../utils/coded-agents/mermaid-parser';
+import { CanvasIcon } from '../../utils/icon-registry';
 import type { BaseCanvasRef } from '../BaseCanvas';
 import { BaseCanvas } from '../BaseCanvas';
 import { BaseNode } from '../BaseNode/BaseNode';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import {
-  BaseNodeOverrideConfigProvider,
   type BaseNodeOverrideConfig,
+  BaseNodeOverrideConfigProvider,
 } from '../BaseNode/BaseNodeConfigContext';
 import { CanvasPositionControls } from '../CanvasPositionControls';
-import type { HandleGroupManifest } from '../../schema/node-definition';
-import { NodeRegistryProvider } from '../../core/NodeRegistryProvider';
 import { codedAgentManifest } from './coded-agent.manifest';
 
 const LAYOUT_SPACING = [110, 80] as [number, number]; // Horizontal and vertical spacing for layout
@@ -161,11 +162,11 @@ const createCodedAgentNodeWrapper = (
 
     const statusAdornment = useMemo((): React.ReactNode => {
       if (nodeData.hasError)
-        return <ApIcon name="error" size="16px" color="var(--uix-canvas-error-icon)" />;
+        return <CanvasIcon icon="circle-alert" size={16} color="var(--uix-canvas-error-icon)" />;
       if (nodeData.hasSuccess && !nodeData.hasError)
-        return <ApIcon name="check_circle" size="16px" color="var(--uix-canvas-success-icon)" />;
+        return <CanvasIcon icon="circle-check" size={16} color="var(--uix-canvas-success-icon)" />;
       if (nodeData.hasRunning && !nodeData.hasError && !nodeData.hasSuccess)
-        return <ApCircularProgress size={20} />;
+        return <Spinner size="sm" />;
       return undefined;
     }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
 
@@ -224,24 +225,24 @@ const CodedResourceNodeElement = memo(({ data, selected, id, ...nodeProps }: Nod
     const resourceType = nodeData.type || '';
 
     if (resourceType === 'tool' || label.includes('tool') || label.includes('function')) {
-      return <ApIcon name="build" size="40px" />;
+      return <CanvasIcon icon="wrench" size={40} />;
     }
     if (resourceType === 'context' || label.includes('context') || label.includes('knowledge')) {
-      return <ApIcon name="account_tree" size="40px" />;
+      return <CanvasIcon icon="network" size={40} />;
     }
     if (resourceType === 'escalation' || label.includes('escalation') || label.includes('human')) {
-      return <ApIcon name="person" size="40px" />;
+      return <CanvasIcon icon="user" size={40} />;
     }
-    return <ApIcon name="chat" size="40px" />;
+    return <CanvasIcon icon="message-circle" size={40} />;
   }, [label, nodeData.type]);
 
   const statusAdornment = useMemo((): React.ReactNode => {
     if (nodeData.hasError)
-      return <ApIcon name="error" size="16px" color="var(--uix-canvas-error-icon)" />;
+      return <CanvasIcon icon="circle-alert" size={16} color="var(--uix-canvas-error-icon)" />;
     if (nodeData.hasSuccess && !nodeData.hasError)
-      return <ApIcon name="check_circle" size="16px" color="var(--uix-canvas-success-icon)" />;
+      return <CanvasIcon icon="circle-check" size={16} color="var(--uix-canvas-success-icon)" />;
     if (nodeData.hasRunning && !nodeData.hasError && !nodeData.hasSuccess)
-      return <ApCircularProgress size={13} />;
+      return <Spinner size="sm" />;
     return undefined;
   }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
 
@@ -281,7 +282,7 @@ const CodedResourceNodeElement = memo(({ data, selected, id, ...nodeProps }: Nod
         />
       </BaseNodeOverrideConfigProvider>
       <TextContainer>
-        <ApTypography color="var(--uix-canvas-foreground-de-emp)">{nodeData.label}</ApTypography>
+        <span className="text-foreground-muted">{nodeData.label}</span>
       </TextContainer>
     </div>
   );
@@ -319,12 +320,7 @@ const CodedFlowNodeElement = memo(({ data, selected, id, ...nodeProps }: NodePro
           />
         </BaseNodeOverrideConfigProvider>
         <TextContainer>
-          <ApTypography
-            variant={FontVariantToken.fontSizeS}
-            color="var(--uix-canvas-foreground-de-emp)"
-          >
-            {nodeData.label}
-          </ApTypography>
+          <span className="text-xs text-foreground-muted">{nodeData.label}</span>
         </TextContainer>
       </div>
     );
@@ -474,27 +470,17 @@ const CodedAgentFlowInner = (props: CodedAgentFlowProps): ReactElement => {
   if (parseError) {
     return (
       <CenteredDiv>
-        <ApTypography color="var(--uix-canvas-error)">Error: {parseError}</ApTypography>
+        <span className="text-error">Error: {parseError}</span>
       </CenteredDiv>
     );
   }
 
   if (isLoading) {
-    return (
-      <CenteredDiv>
-        <ApTypography color="var(--uix-canvas-foreground)">Loading...</ApTypography>
-      </CenteredDiv>
-    );
+    return <CenteredDiv>Loading...</CenteredDiv>;
   }
 
   if (nodes.length === 0) {
-    return (
-      <CenteredDiv>
-        <ApTypography color="var(--uix-canvas-foreground)">
-          {agentNodeTranslations.noDataToDisplay}
-        </ApTypography>
-      </CenteredDiv>
-    );
+    return <CenteredDiv>{agentNodeTranslations.noDataToDisplay}</CenteredDiv>;
   }
 
   return (
@@ -513,12 +499,7 @@ const CodedAgentFlowInner = (props: CodedAgentFlowProps): ReactElement => {
         <Panel position="top-left">
           <Row align="center" gap={Spacing.SpacingXs}>
             <Icons.AgentIcon w={20} h={20} />
-            <ApTypography
-              variant={FontVariantToken.fontSizeSBold}
-              color="var(--uix-canvas-foreground)"
-            >
-              Coded Agent
-            </ApTypography>
+            <span className="text-xs font-bold">Coded Agent</span>
           </Row>
         </Panel>
         <Panel position="bottom-right">

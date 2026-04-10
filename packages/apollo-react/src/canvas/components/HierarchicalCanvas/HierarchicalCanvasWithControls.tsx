@@ -1,12 +1,10 @@
-import { FontVariantToken } from '@uipath/apollo-core';
 import {
   type Node,
   Panel,
   ReactFlowProvider,
   useReactFlow,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApButton, ApTypography } from '@uipath/apollo-react/material';
-import { ApIcon } from '@uipath/apollo-react/material/components';
+import { Button } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { NodeRegistryProvider } from '../../core';
@@ -23,6 +21,7 @@ import {
 } from '../../stores/canvasStore';
 import type { CanvasLevel } from '../../types/canvas.types';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
+import { CanvasIcon } from '../../utils/icon-registry';
 import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
 import { HierarchicalCanvas } from './HierarchicalCanvas';
 
@@ -271,7 +270,7 @@ const workflowManifests: NodeManifest[] = [
     ],
     toolbarExtensions: {
       design: {
-        actions: [{ id: 'drill-in', icon: 'open_in_new', label: 'Open Sub-Process' }],
+        actions: [{ id: 'drill-in', icon: 'external-link', label: 'Open Sub-Process' }],
       },
     },
   },
@@ -418,55 +417,27 @@ const CanvasWithControlsContent: React.FC<CanvasWithControlsContentProps> = ({
             minWidth: '180px',
           }}
         >
-          <ApButton
-            variant="secondary"
-            label="Start"
-            size="small"
-            startIcon={<ApIcon variant="outlined" name="play_circle" />}
-            onClick={() => handleAddNode('start')}
-          />
-          <ApButton
-            variant="secondary"
-            size="small"
-            label="Process"
-            startIcon={<ApIcon variant="outlined" name="settings" />}
-            onClick={() => handleAddNode('process')}
-          />
-          <ApButton
-            variant="secondary"
-            size="small"
-            label="Decision"
-            startIcon={<ApIcon variant="outlined" name="help" />}
-            onClick={() => handleAddNode('decision')}
-          />
-          <ApButton
-            variant="secondary"
-            size="small"
-            label="Sub-Process"
-            startIcon={<ApIcon variant="outlined" name="folder" />}
-            onClick={() => handleAddNode('subprocess')}
-          />
-          <ApButton
-            variant="secondary"
-            size="small"
-            label="End"
-            startIcon={<ApIcon variant="outlined" name="stop_circle" />}
-            onClick={() => handleAddNode('end')}
-          />
-          <ApButton
-            variant="primary"
-            size="small"
-            label="Sample Workflow"
-            startIcon={<ApIcon variant="outlined" name="auto_awesome" />}
-            onClick={handleAddSampleWorkflow}
-          />
-          <ApButton
-            variant="secondary"
-            size="small"
-            label="Clear Canvas"
-            startIcon={<ApIcon name="clear" />}
-            onClick={handleClearCanvas}
-          />
+          <Button variant="secondary" size="sm" onClick={() => handleAddNode('start')}>
+            <CanvasIcon icon="circle-play" size={16} /> Start
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => handleAddNode('process')}>
+            <CanvasIcon icon="settings" size={16} /> Process
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => handleAddNode('decision')}>
+            <CanvasIcon icon="circle-question-mark" size={16} /> Decision
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => handleAddNode('subprocess')}>
+            <CanvasIcon icon="folder" size={16} /> Sub-Process
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => handleAddNode('end')}>
+            <CanvasIcon icon="circle-stop" size={16} /> End
+          </Button>
+          <Button size="sm" onClick={handleAddSampleWorkflow}>
+            <CanvasIcon icon="sparkles" size={16} /> Sample Workflow
+          </Button>
+          <Button variant="secondary" size="sm" onClick={handleClearCanvas}>
+            <CanvasIcon icon="x" size={16} /> Clear Canvas
+          </Button>
         </div>
       </Panel>
 
@@ -482,11 +453,11 @@ const CanvasWithControlsContent: React.FC<CanvasWithControlsContentProps> = ({
             fontSize: '12px',
           }}
         >
-          <ApTypography variant={FontVariantToken.fontSizeMBold}>Canvas Info</ApTypography>
+          <span className="text-sm font-bold">Canvas Info</span>
           <div>Nodes: {currentCanvas?.nodes?.length || 0}</div>
           <div>Edges: {currentCanvas?.edges?.length || 0}</div>
           <div>Level: {currentPathLength}</div>
-          <ApTypography variant={FontVariantToken.fontSizeMBold}>Instructions</ApTypography>
+          <span className="text-sm font-bold">Instructions</span>
           <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
             1. Add nodes or drag to create
             <br />

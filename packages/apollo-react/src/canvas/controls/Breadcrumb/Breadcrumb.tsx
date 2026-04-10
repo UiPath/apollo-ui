@@ -1,8 +1,8 @@
 import styled from '@emotion/styled';
-import { FontVariantToken, Spacing } from '@uipath/apollo-core';
-import { ApTooltip, ApTypography } from '@uipath/apollo-react/material';
+import { Spacing } from '@uipath/apollo-core';
 import type React from 'react';
 import { memo } from 'react';
+import { CanvasTooltip } from '../../components/CanvasTooltip';
 
 import { Row } from '../../layouts';
 
@@ -35,13 +35,7 @@ const LiStyled = styled.li`
 
 export const Breadcrumb: React.FC<BreadcrumbProps> = memo(({ items, delimiter = '>' }) => {
   const delimiterNode =
-    typeof delimiter === 'string' ? (
-      <ApTypography aria-hidden="true" color="var(--color-foreground-de-emp)">
-        {delimiter}
-      </ApTypography>
-    ) : (
-      delimiter
-    );
+    typeof delimiter === 'string' ? <span aria-hidden="true">{delimiter}</span> : delimiter;
 
   return (
     <Row
@@ -73,19 +67,14 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = memo(({ items, delimiter = 
                   aria-current={index === items.length - 1 ? 'page' : undefined}
                 >
                   {item.startAdornment}
-                  <ApTooltip smartTooltip content={item.label}>
-                    <ApTypography
-                      variant={
-                        index === items.length - 1
-                          ? FontVariantToken.fontSizeMBold
-                          : FontVariantToken.fontSizeM
-                      }
-                      style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}
+                  <CanvasTooltip smartTooltip content={item.label}>
+                    <span
+                      className={`${index === items.length - 1 ? 'text-sm font-bold' : 'text-sm'} truncate`}
                       data-testid={`breadcrumb-item-${item.label}`}
                     >
                       {item.label}
-                    </ApTypography>
-                  </ApTooltip>
+                    </span>
+                  </CanvasTooltip>
                   {item.endAdornment}
                 </Row>
               </button>
@@ -97,19 +86,14 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = memo(({ items, delimiter = 
                 aria-current={index === items.length - 1 ? 'page' : undefined}
               >
                 {item.startAdornment}
-                <ApTooltip smartTooltip content={item.label}>
-                  <ApTypography
-                    variant={
-                      index === items.length - 1
-                        ? FontVariantToken.fontSizeMBold
-                        : FontVariantToken.fontSizeM
-                    }
-                    style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}
+                <CanvasTooltip smartTooltip content={item.label}>
+                  <span
+                    className={`${index === items.length - 1 ? 'text-sm font-bold' : 'text-sm'} truncate`}
                     data-testid={`breadcrumb-item-${item.label}`}
                   >
                     {item.label}
-                  </ApTypography>
-                </ApTooltip>
+                  </span>
+                </CanvasTooltip>
                 {item.endAdornment}
               </Row>
             )}
