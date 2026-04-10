@@ -7,7 +7,12 @@ import {
   HumanIcon,
   RpaProject,
 } from '@uipath/apollo-react/canvas/icons';
-import { AutopilotIcon, ConfigurationIcon, DurationIcon, QueueIcon } from '@uipath/apollo-react/icons';
+import {
+  AutopilotIcon,
+  ConfigurationIcon,
+  DurationIcon,
+  QueueIcon,
+} from '@uipath/apollo-react/icons';
 import { TaskIconContainer } from './TaskIcon.styles';
 import { type TaskIconProps, type TaskIconSize, TaskItemTypeValues } from './TaskIcon.types';
 
