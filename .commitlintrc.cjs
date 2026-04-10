@@ -1,5 +1,21 @@
 module.exports = {
   extends: ['@commitlint/config-conventional', '@commitlint/config-pnpm-scopes'],
+
+  // Disable default ignores so merge, fixup, and squash commits are not silently skipped
+  defaultIgnores: false,
+
+  // Keep only the ignores we still want (reverts, reapplies, semver version bumps)
+  ignores: [
+    (commit) => /^(R|r)evert (.*)/.test(commit),
+    (commit) => /^(R|r)eapply (.*)/.test(commit),
+    (commit) => {
+      const firstLine = commit.split('\n').shift();
+      if (typeof firstLine !== 'string') return false;
+      const stripped = firstLine.replace(/^chore(\([^)]+\))?:/, '').trim();
+      return require('semver').valid(stripped) !== null;
+    },
+  ],
+
   rules: {
     // Require scope to be present
     'scope-empty': [2, 'never'],
