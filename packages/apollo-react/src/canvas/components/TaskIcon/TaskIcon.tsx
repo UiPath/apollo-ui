@@ -7,7 +7,7 @@ import {
   HumanIcon,
   RpaProject,
 } from '@uipath/apollo-react/canvas/icons';
-import { AutopilotIcon, DurationIcon } from '@uipath/apollo-react/icons';
+import { AutopilotIcon, ConfigurationIcon, DurationIcon, QueueIcon } from '@uipath/apollo-react/icons';
 import { TaskIconContainer } from './TaskIcon.styles';
 import { type TaskIconProps, type TaskIconSize, TaskItemTypeValues } from './TaskIcon.types';
 
@@ -38,6 +38,10 @@ const getIconForType = (type: TaskItemTypeValues, iconSize: number): React.React
       return <DurationIcon size={iconSize} />;
     case TaskItemTypeValues.CaseManagement:
       return <CaseManagementProject w={iconSize} h={iconSize} />;
+    case TaskItemTypeValues.Queues:
+      return <QueueIcon size={iconSize} />;
+    case TaskItemTypeValues.Tools:
+      return <ConfigurationIcon size={iconSize} />;
   }
 };
 

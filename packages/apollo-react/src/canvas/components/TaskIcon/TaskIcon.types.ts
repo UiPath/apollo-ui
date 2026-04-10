@@ -8,6 +8,8 @@ export enum TaskItemTypeValues {
   Connector = 'connector',
   Timer = 'timer',
   CaseManagement = 'case_management',
+  Queues = 'queues',
+  Tools = 'tools',
 }
 
 export type TaskIconSize = 'sm' | 'md' | 'lg';
