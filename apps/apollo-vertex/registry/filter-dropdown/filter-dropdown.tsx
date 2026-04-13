@@ -76,6 +76,7 @@ function FilterDropdown<TData, TValue>({
   popoverWidth = "w-[220px]",
 }: FilterDropdownProps<TData, TValue>) {
   // React Compiler compat: TanStack Table Column objects have stable references with mutable state.
+  // codeql[js/unknown-directive] - valid React Compiler directive
   "use no memo";
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
