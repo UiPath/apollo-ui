@@ -1,3 +1,23 @@
+## [@uipath/apollo-react-v4.0.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.71.0...@uipath/apollo-react@4.0.0) (2026-04-13)
+
+### ⚠ BREAKING CHANGES
+
+* **apollo-react:** Canvas components now require Tailwind CSS styling
+to render correctly. Consumers must integrate one of the supported
+patterns documented in `packages/apollo-react/src/canvas/README.md`:
+
+- Standard apps: configure PostCSS with `@uipath/apollo-wind/postcss`
+  and `@import "@uipath/apollo-wind/tailwind.css"`.
+- Shadow DOM apps: import
+  `@uipath/apollo-react/canvas/styles/tailwind.canvas.css?inline` and
+  inject into the shadow root with an `apollo-design <theme>` wrapper.
+
+Without this integration, canvas components will render unstyled.
+
+### Features
+
+* **apollo-react:** full canvas wind integration ([f1a0c39](https://github.com/UiPath/apollo-ui/commit/f1a0c399b9fb0308e6f51186e40df4bb674c6c2a))
+
 ## [@uipath/apollo-react-v3.71.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.70.3...@uipath/apollo-react@3.71.0) (2026-04-10)
 
 ### Features
