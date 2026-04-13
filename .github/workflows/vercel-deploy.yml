@@ -36,11 +36,10 @@ jobs:
             });
 
             const projects = [
-              'apollo-canvas',
+              'apollo-design',
               'apollo-landing',
               'apollo-ui-react',
-              'apollo-vertex',
-              'apollo-wind'
+              'apollo-vertex'
             ];
 
             const tableRows = projects.map(projectName => {
@@ -95,7 +94,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - project_name: apollo-canvas
+          - project_name: apollo-design
             vercel_project_id_secret: VERCEL_PROJECT_ID_CANVAS
           - project_name: apollo-landing
             vercel_project_id_secret: VERCEL_PROJECT_ID_LANDING
@@ -103,8 +102,6 @@ jobs:
             vercel_project_id_secret: VERCEL_PROJECT_ID_UI_REACT
           - project_name: apollo-vertex
             vercel_project_id_secret: VERCEL_PROJECT_ID_VERTEX
-          - project_name: apollo-wind
-            vercel_project_id_secret: VERCEL_PROJECT_ID_WIND
 
     steps:
       - name: Checkout
@@ -169,9 +166,6 @@ jobs:
               ;;
             VERCEL_PROJECT_ID_VERTEX)
               echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_VERTEX }}" >> $GITHUB_ENV
-              ;;
-            VERCEL_PROJECT_ID_WIND)
-              echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_WIND }}" >> $GITHUB_ENV
               ;;
             *)
               echo "Error: Unknown vercel_project_id_secret value '${{ matrix.vercel_project_id_secret }}'. Please update the case statement in .github/workflows/vercel-deploy.yml." >&2
