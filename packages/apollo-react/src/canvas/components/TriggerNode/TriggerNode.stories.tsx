@@ -134,11 +134,7 @@ const TriggerNodeStory = () => {
         details: {
           tooltip: 'Time Trigger',
           icon: (
-            <CanvasIcon
-              icon="lucide-clock"
-              color="var(--uix-canvas-foreground-emp)"
-              size={24}
-            />
+            <CanvasIcon icon="lucide-clock" color="var(--uix-canvas-foreground-emp)" size={24} />
           ),
         },
       },
@@ -153,11 +149,7 @@ const TriggerNodeStory = () => {
         details: {
           tooltip: 'Email Trigger',
           icon: (
-            <CanvasIcon
-              icon="lucide-mail"
-              color="var(--uix-canvas-foreground-emp)"
-              size={24}
-            />
+            <CanvasIcon icon="lucide-mail" color="var(--uix-canvas-foreground-emp)" size={24} />
           ),
         },
       },
@@ -172,11 +164,7 @@ const TriggerNodeStory = () => {
         details: {
           tooltip: 'Webhook Trigger',
           icon: (
-            <CanvasIcon
-              icon="lucide-webhook"
-              color="var(--uix-canvas-foreground-emp)"
-              size={24}
-            />
+            <CanvasIcon icon="lucide-webhook" color="var(--uix-canvas-foreground-emp)" size={24} />
           ),
         },
       },

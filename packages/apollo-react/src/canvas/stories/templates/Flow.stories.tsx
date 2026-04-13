@@ -4,15 +4,14 @@ import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 // @ts-expect-error -- Vite alias: @uipath/apollo-wind/* → packages/apollo-wind/src/*
 import type { FlowPanelChatMessage } from '@uipath/apollo-wind/components/custom/panel-flow';
 // @ts-expect-error -- Vite alias
-import type { PropertiesSimpleField, PropertiesSimpleSection } from '@uipath/apollo-wind/templates/Flow/template-flow';
+import type {
+  PropertiesSimpleField,
+  PropertiesSimpleSection,
+} from '@uipath/apollo-wind/templates/Flow/template-flow';
 // @ts-expect-error -- Vite alias
 import { FlowTemplate } from '@uipath/apollo-wind/templates/Flow/template-flow';
 import { useMemo } from 'react';
-import {
-  createNode,
-  useCanvasStory,
-  withCanvasProviders,
-} from '../../storybook-utils';
+import { createNode, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
 import type { BaseNodeData } from '../../components/BaseNode/BaseNode.types';
 import { BaseCanvas } from '../../components/BaseCanvas';
 

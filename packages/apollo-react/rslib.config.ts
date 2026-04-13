@@ -55,6 +55,8 @@ export default defineConfig({
       index: [
         './src/**',
         '!./src/**/*.test.{ts,tsx}',
+        '!./src/**/*.stories.{ts,tsx}',
+        '!./src/**/storybook-utils/**',
         '!./src/test/**',
         '!./src/icons/.cache',
         '!./src/**/*.md',

@@ -208,9 +208,7 @@ function DefaultStory() {
           </label>
 
           <Column gap={8}>
-            <span className="text-base">
-              Stroke Width: {strokeWidth}px
-            </span>
+            <span className="text-base">Stroke Width: {strokeWidth}px</span>
             <input
               type="range"
               min="1"
@@ -313,13 +311,10 @@ function EmptyCanvasStory() {
     <BaseCanvas {...canvasProps} mode="design">
       <StoryInfoPanel title="Canvas actions">
         <Column gap={8} style={{ marginTop: 8 }}>
-          <Button onClick={addNode} size="sm">Add Node</Button>
-          <Button
-            onClick={clearCanvas}
-            size="sm"
-            variant="secondary"
-            disabled={nodes.length === 0}
-          >
+          <Button onClick={addNode} size="sm">
+            Add Node
+          </Button>
+          <Button onClick={clearCanvas} size="sm" variant="secondary" disabled={nodes.length === 0}>
             Clear Canvas
           </Button>
           <span className="text-sm">
@@ -402,28 +397,16 @@ function WithNodeFocusControlsStory() {
     <BaseCanvas ref={canvasRef} {...canvasProps} mode="view">
       <StoryInfoPanel title="Focus controls">
         <Column gap={8} style={{ marginTop: 8 }}>
-          <Button
-            size="sm"
-            onClick={() => canvasRef.current?.ensureNodesInView(['1'])}
-          >
+          <Button size="sm" onClick={() => canvasRef.current?.ensureNodesInView(['1'])}>
             Focus Node 1
           </Button>
-          <Button
-            size="sm"
-            onClick={() => canvasRef.current?.ensureNodesInView(['2'])}
-          >
+          <Button size="sm" onClick={() => canvasRef.current?.ensureNodesInView(['2'])}>
             Focus Node 2
           </Button>
-          <Button
-            size="sm"
-            onClick={() => canvasRef.current?.ensureNodesInView(['3', '4'])}
-          >
+          <Button size="sm" onClick={() => canvasRef.current?.ensureNodesInView(['3', '4'])}>
             Focus Nodes 3 & 4
           </Button>
-          <Button
-            size="sm"
-            onClick={() => canvasRef.current?.centerNode('5')}
-          >
+          <Button size="sm" onClick={() => canvasRef.current?.centerNode('5')}>
             Center on Node 5
           </Button>
           <Button
@@ -535,29 +518,18 @@ function WithMaintainNodesInViewStory() {
           backgroundColor: 'var(--uix-canvas-background-secondary)',
         }}
       >
-        <span className="text-lg font-bold">
-          Maintain Nodes in View Demo
-        </span>
+        <span className="text-lg font-bold">Maintain Nodes in View Demo</span>
         <span className="text-base">
           Resize the container to see how important nodes stay in view
         </span>
         <Row gap={8} align="center">
-          <Button
-            onClick={() => setContainerSize({ width: '400px', height: '300px' })}
-            size="sm"
-          >
+          <Button onClick={() => setContainerSize({ width: '400px', height: '300px' })} size="sm">
             Small
           </Button>
-          <Button
-            onClick={() => setContainerSize({ width: '600px', height: '400px' })}
-            size="sm"
-          >
+          <Button onClick={() => setContainerSize({ width: '600px', height: '400px' })} size="sm">
             Medium
           </Button>
-          <Button
-            onClick={() => setContainerSize({ width: '100%', height: '100%' })}
-            size="sm"
-          >
+          <Button onClick={() => setContainerSize({ width: '100%', height: '100%' })} size="sm">
             Large
           </Button>
           <Button
