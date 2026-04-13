@@ -46,4 +46,6 @@ export interface AiChatConfig {
   setIsLatestResponseAnimating: (animating: boolean) => void;
   /** Callback to regenerate the last assistant response. When provided, the "Try again" button appears in assistant message actions. */
   onRegenerate?: () => void;
+  /** Callback when the user saves an edited user message. Receives the message ID and new content. */
+  onEditMessage?: (messageId: string, content: string) => void;
 }

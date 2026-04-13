@@ -1,12 +1,15 @@
 "use client";
 
-import { ArrowUp, CircleStop, Plus } from "lucide-react";
-import React, {
+import { ArrowUp, CircleStop, FileText, Plus, X } from "lucide-react";
+import {
+  type FocusEvent,
   type FormEvent,
   type KeyboardEvent,
+  type Ref,
   forwardRef,
   useImperativeHandle,
   useRef,
+  useState,
 } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/registry/button/button";
@@ -22,12 +25,18 @@ import {
   TooltipTrigger,
 } from "@/registry/tooltip/tooltip";
 
+interface PendingFile {
+  name: string;
+  size: number;
+  type: string;
+  file: File;
+}
+
 interface AiChatInputProps {
   value: string;
   onChange: (value: string) => void;
-  onSubmit: () => void;
+  onSubmit: (files?: File[]) => void;
   onStop: () => void;
-  onFileSelect?: (files: FileList) => void;
   isLoading: boolean;
   disabled?: boolean;
   placeholder?: string;
@@ -46,18 +55,18 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
       onChange,
       onSubmit,
       onStop,
-      onFileSelect,
       isLoading,
       disabled = false,
       placeholder,
       hasMessages = false,
       maxLength,
     }: AiChatInputProps,
-    ref: React.Ref<AiChatInputHandle>,
+    ref: Ref<AiChatInputHandle>,
   ) {
     const { t } = useTranslation();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const glowRef = useRef<HTMLDivElement>(null);
+    const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
 
     useImperativeHandle(ref, () => ({
       focus: () => textareaRef.current?.focus(),
@@ -79,13 +88,13 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
     };
 
     const submitMessage = () => {
-      if (!value.trim() || isLoading) return;
-      onSubmit();
+      if (!value.trim()) return;
+      const files = pendingFiles.map((f) => f.file);
+      onSubmit(files.length > 0 ? files : undefined);
+      setPendingFiles([]);
       requestAnimationFrame(() => {
         const el = textareaRef.current;
-        if (el) {
-          el.style.height = "auto";
-        }
+        if (el) el.style.height = "auto";
       });
     };
 
@@ -106,13 +115,21 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
       fileInput.type = "file";
       fileInput.multiple = true;
       fileInput.addEventListener("change", () => {
-        if (fileInput.files && onFileSelect) onFileSelect(fileInput.files);
+        if (!fileInput.files) return;
+        const newFiles: PendingFile[] = Array.from(fileInput.files).map(
+          (file) => ({ name: file.name, size: file.size, type: file.type, file }),
+        );
+        setPendingFiles((prev) => [...prev, ...newFiles]);
       });
       fileInput.click();
     };
 
+    const removeFile = (index: number) => {
+      setPendingFiles((prev) => prev.filter((_, i) => i !== index));
+    };
+
     const focusStyles = {
-      onFocusCapture: (e: React.FocusEvent<HTMLFormElement>) => {
+      onFocusCapture: (e: FocusEvent<HTMLFormElement>) => {
         const el = e.currentTarget;
         el.style.borderColor = "transparent";
         el.style.backgroundImage = `linear-gradient(var(--background), var(--background)), var(--ai-gradient-strong)`;
@@ -122,7 +139,7 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
           "0 0 0 3px color-mix(in oklch, var(--muted-foreground) 10%, transparent)";
         if (glowRef.current) glowRef.current.style.opacity = "0";
       },
-      onBlurCapture: (e: React.FocusEvent<HTMLFormElement>) => {
+      onBlurCapture: (e: FocusEvent<HTMLFormElement>) => {
         if (!e.currentTarget.contains(e.relatedTarget)) {
           const el = e.currentTarget;
           el.style.borderColor = "";
@@ -135,13 +152,35 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
       },
     };
 
+    const fileChips = pendingFiles.length > 0 && (
+      <div className="flex flex-wrap gap-1.5 px-[10px] pt-2">
+        {pendingFiles.map((f, i) => (
+          <div
+            key={`${f.name}-${i}`}
+            className="flex items-center gap-1 pl-2 pr-1 py-1 rounded-md bg-muted text-xs text-foreground max-w-[180px]"
+          >
+            <FileText className="size-3 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
+            <span className="truncate">{f.name}</span>
+            <button
+              type="button"
+              onClick={() => removeFile(i)}
+              className="flex-shrink-0 size-4 rounded-sm flex items-center justify-center hover:bg-muted-foreground/20 ml-0.5"
+              aria-label={`Remove ${f.name}`}
+            >
+              <X className="size-2.5" aria-hidden="true" />
+            </button>
+          </div>
+        ))}
+      </div>
+    );
+
     const plusMenu = (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             type="button"
             variant="ghost"
-            size="icon-sm"
+            size="icon"
             className="flex-shrink-0 text-muted-foreground hover:text-foreground"
           >
             <Plus className="size-4" aria-hidden="true" />
@@ -239,22 +278,25 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
           {hasMessages ? (
             <form
               onSubmit={handleSubmit}
-              className="relative flex items-center gap-2 pl-[8px] pr-[8px] py-[6px] rounded-lg border-2 border-input transition-colors bg-background"
+              className="relative flex flex-col rounded-lg border-2 border-input transition-colors bg-background"
               {...focusStyles}
             >
-              {plusMenu}
-              <textarea
-                ref={textareaRef}
-                value={value}
-                onChange={(e) => handleChange(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={displayPlaceholder}
-                aria-label={displayPlaceholder}
-                className="flex-1 resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none max-h-[200px] overflow-y-auto h-[40px] py-[10px] leading-[20px]"
-                rows={1}
-                disabled={disabled}
-              />
-              {sendStopButton}
+              {fileChips}
+              <div className="flex items-end gap-2 pl-[8px] pr-[8px] pt-[4px] pb-[8px]">
+                {plusMenu}
+                <textarea
+                  ref={textareaRef}
+                  value={value}
+                  onChange={(e) => handleChange(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={displayPlaceholder}
+                  aria-label={displayPlaceholder}
+                  className="flex-1 resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none max-h-[200px] overflow-y-auto h-[40px] pt-[12px] pb-[8px] leading-[20px]"
+                  rows={1}
+                  disabled={disabled}
+                />
+                {sendStopButton}
+              </div>
             </form>
           ) : (
             <form
@@ -262,6 +304,7 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
               className="relative flex flex-col rounded-lg border-2 border-input transition-colors bg-background"
               {...focusStyles}
             >
+              {fileChips}
               <textarea
                 ref={textareaRef}
                 value={value}

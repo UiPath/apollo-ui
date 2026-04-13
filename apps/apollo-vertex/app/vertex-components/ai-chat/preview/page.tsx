@@ -8,15 +8,18 @@ import { AiChatMarkdown } from "@/registry/ai-chat/components/ai-chat-markdown";
 import { AiChatMessage } from "@/registry/ai-chat/components/ai-chat-message";
 import { AiChatSuggestions } from "@/registry/ai-chat/components/ai-chat-suggestions";
 import {
+  MOCK_ATTACHMENTS_BASIC,
   MOCK_CHOICE_OPTIONS,
   MOCK_MESSAGES_BASIC,
   MOCK_MESSAGES_CONVERSATION,
   MOCK_MESSAGES_MARKDOWN,
   MOCK_MESSAGES_WITH_CHOICES,
+  MOCK_SOURCES_BASIC,
 } from "./mock-data";
 import { ThinkingDemo } from "./thinking-demo";
 
-function noop() {
+// biome-ignore lint/suspicious/noExplicitAny: preview no-op accepts any args
+function noop(..._args: any[]) {
   // no-op for preview
 }
 
@@ -48,6 +51,17 @@ function PreviewCard({
     >
       {children}
     </div>
+  );
+}
+
+function renderBasicMsg(msg: (typeof MOCK_MESSAGES_BASIC)[number]) {
+  return (
+    <AiChatMessage
+      key={msg.id}
+      message={msg}
+      sources={MOCK_SOURCES_BASIC[msg.id as keyof typeof MOCK_SOURCES_BASIC]}
+      attachments={MOCK_ATTACHMENTS_BASIC[msg.id as keyof typeof MOCK_ATTACHMENTS_BASIC]}
+    />
   );
 }
 
@@ -119,10 +133,9 @@ export default function AiChatPreviewPage() {
             title="Autopilot"
             showTimestamps
             showMessageActions
+            onEditMessage={noop}
           >
-            {MOCK_MESSAGES_BASIC.map((msg) => (
-              <AiChatMessage key={msg.id} message={msg} />
-            ))}
+            {MOCK_MESSAGES_BASIC.map(renderBasicMsg)}
           </AiChat>
         </PreviewCard>
       </section>
@@ -141,6 +154,7 @@ export default function AiChatPreviewPage() {
             onStop={noop}
             title="Autopilot"
             showTimestamps
+            onEditMessage={noop}
           >
             {MOCK_MESSAGES_CONVERSATION.map((msg) => (
               <AiChatMessage key={msg.id} message={msg} />
@@ -162,6 +176,7 @@ export default function AiChatPreviewPage() {
             onSendMessage={noop}
             onStop={noop}
             title="Autopilot"
+            onEditMessage={noop}
           >
             {MOCK_MESSAGES_MARKDOWN.map((msg) => (
               <AiChatMessage key={msg.id} message={msg} />
@@ -184,8 +199,9 @@ export default function AiChatPreviewPage() {
               onSendMessage={noop}
               onStop={noop}
               title="Autopilot"
+              onEditMessage={noop}
             >
-              <AiChatMessage message={MOCK_MESSAGES_BASIC[0]} />
+              {renderBasicMsg(MOCK_MESSAGES_BASIC[0])}
             </AiChat>
           </PreviewCard>
           <PreviewCard className="p-6">
@@ -210,6 +226,7 @@ export default function AiChatPreviewPage() {
             onSendMessage={noop}
             onStop={noop}
             onRetry={noop}
+            onEditMessage={noop}
             title="Autopilot"
             error={
               new Error(
@@ -217,9 +234,7 @@ export default function AiChatPreviewPage() {
               )
             }
           >
-            {MOCK_MESSAGES_BASIC.map((msg) => (
-              <AiChatMessage key={msg.id} message={msg} />
-            ))}
+            {MOCK_MESSAGES_BASIC.map(renderBasicMsg)}
           </AiChat>
         </PreviewCard>
       </section>
@@ -236,6 +251,7 @@ export default function AiChatPreviewPage() {
             isLoading={false}
             onSendMessage={noop}
             onStop={noop}
+            onEditMessage={noop}
             title="Autopilot"
           >
             {MOCK_MESSAGES_WITH_CHOICES.map((msg) => (
@@ -260,10 +276,9 @@ export default function AiChatPreviewPage() {
               onStop={noop}
               variant="default"
               title="Autopilot"
+              onEditMessage={noop}
             >
-              {MOCK_MESSAGES_BASIC.map((msg) => (
-                <AiChatMessage key={msg.id} message={msg} />
-              ))}
+              {MOCK_MESSAGES_BASIC.map(renderBasicMsg)}
             </AiChat>
           </PreviewCard>
           <PreviewCard className="h-[350px]">
@@ -274,10 +289,9 @@ export default function AiChatPreviewPage() {
               onStop={noop}
               variant="compact"
               title="Autopilot"
+              onEditMessage={noop}
             >
-              {MOCK_MESSAGES_BASIC.map((msg) => (
-                <AiChatMessage key={msg.id} message={msg} />
-              ))}
+              {MOCK_MESSAGES_BASIC.map(renderBasicMsg)}
             </AiChat>
           </PreviewCard>
           <PreviewCard className="h-[350px] p-4">
@@ -287,10 +301,9 @@ export default function AiChatPreviewPage() {
               onSendMessage={noop}
               onStop={noop}
               variant="embedded"
+              onEditMessage={noop}
             >
-              {MOCK_MESSAGES_BASIC.map((msg) => (
-                <AiChatMessage key={msg.id} message={msg} />
-              ))}
+              {MOCK_MESSAGES_BASIC.map(renderBasicMsg)}
             </AiChat>
           </PreviewCard>
         </div>

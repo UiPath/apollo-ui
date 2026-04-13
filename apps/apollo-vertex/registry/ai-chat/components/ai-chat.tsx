@@ -1,6 +1,6 @@
 "use client";
 
-import type { UIMessage } from "@tanstack/ai-client";
+import type { TextPart, UIMessage } from "@tanstack/ai-client";
 import {
   AlertCircle,
   ArrowDown,
@@ -43,13 +43,15 @@ const RETRY_LABEL = "Retry";
 export interface AiChatProps {
   messages: UIMessage[];
   isLoading: boolean;
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string, attachments?: File[]) => void;
   onStop: () => void;
   onClearChat?: () => void;
   onChoiceSelect?: (option: ChoiceOption) => void;
   onRetry?: () => void;
   /** Callback to regenerate the last assistant response. When provided, the "Try again" button appears in assistant message actions. */
   onRegenerate?: () => void;
+  /** Callback when the user saves an edited user message. Receives the message ID and new content. */
+  onEditMessage?: (messageId: string, content: string) => void;
   children?: ReactNode;
   assistantName?: string;
   assistantAvatar?: ReactNode;
@@ -85,6 +87,7 @@ export function AiChat({
   onChoiceSelect,
   onRetry,
   onRegenerate,
+  onEditMessage,
   children,
   assistantName,
   assistantAvatar,
@@ -121,9 +124,35 @@ export function AiChat({
   const isCompact = variant === "compact";
   const isEmbedded = variant === "embedded";
 
-  const handleSubmit = () => {
-    if (!input.trim() || isLoading) return;
-    onSendMessage(input.trim());
+  const queuedMessageRef = useRef<{ content: string; attachments?: File[] } | null>(null);
+  const [conversationCopied, setConversationCopied] = useState(false);
+
+  const handleCopyConversation = async () => {
+    const text = messages
+      .map((m) => {
+        const content = m.parts
+          .filter((p): p is TextPart => p.type === "text")
+          .map((p) => p.content)
+          .join("");
+        if (!content) return null;
+        const label = m.role === "user" ? "You" : displayName;
+        return `${label}: ${content}`;
+      })
+      .filter(Boolean)
+      .join("\n\n");
+    await navigator.clipboard.writeText(text);
+    setConversationCopied(true);
+    setTimeout(() => setConversationCopied(false), 2000);
+  };
+
+  const handleSubmit = (attachments?: File[]) => {
+    if (!input.trim()) return;
+    if (isLoading) {
+      queuedMessageRef.current = { content: input.trim(), attachments };
+      setInput("");
+      return;
+    }
+    onSendMessage(input.trim(), attachments);
     setInput("");
     scrollToBottom();
   };
@@ -131,7 +160,14 @@ export function AiChat({
   const wasLoadingRef = useRef(false);
   useEffect(() => {
     if (wasLoadingRef.current && !isLoading) {
-      inputRef.current?.focus();
+      if (queuedMessageRef.current) {
+        const queued = queuedMessageRef.current;
+        queuedMessageRef.current = null;
+        onSendMessage(queued.content, queued.attachments);
+        scrollToBottom();
+      } else {
+        inputRef.current?.focus();
+      }
     }
     wasLoadingRef.current = isLoading;
   }, [isLoading]);
@@ -179,6 +215,7 @@ export function AiChat({
       isLatestResponseAnimating={isLatestResponseAnimating}
       setIsLatestResponseAnimating={setIsLatestResponseAnimating}
       onRegenerate={onRegenerate}
+      onEditMessage={onEditMessage}
     >
       <div
         className={
@@ -200,7 +237,7 @@ export function AiChat({
                   {title}
                 </span>
               </div>
-              {onClearChat && showClearButton && messages.length > 0 && (
+              {messages.length > 0 && (
                 <AlertDialog>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -216,11 +253,16 @@ export function AiChat({
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <AlertDialogTrigger asChild>
-                        <DropdownMenuItem>
-                          {"New conversation"}
-                        </DropdownMenuItem>
-                      </AlertDialogTrigger>
+                      <DropdownMenuItem onClick={handleCopyConversation}>
+                        {conversationCopied ? "Copied!" : "Copy conversation"}
+                      </DropdownMenuItem>
+                      {onClearChat && showClearButton && (
+                        <AlertDialogTrigger asChild>
+                          <DropdownMenuItem>
+                            {"New conversation"}
+                          </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                   <AlertDialogContent>
@@ -258,7 +300,7 @@ export function AiChat({
                   ref={inputRef}
                   value={input}
                   onChange={setInput}
-                  onSubmit={handleSubmit}
+                  onSubmit={(files) => handleSubmit(files)}
                   onStop={onStop}
                   isLoading={isLoading}
                   placeholder={placeholder}
@@ -306,6 +348,7 @@ export function AiChat({
               aria-label={t("chat_messages")}
               aria-live="polite"
               aria-atomic="false"
+              aria-busy={isLoading || isLatestResponseAnimating}
               className={`h-full overflow-y-auto ${padding}`}
             >
               <div ref={contentRef} className={messageGap}>

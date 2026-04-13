@@ -192,6 +192,18 @@ export const MOCK_MESSAGES_WITH_CHOICES: UIMessage[] = [
   },
 ];
 
+export const MOCK_SOURCES_BASIC = {
+  "2": [
+    { label: "Apollo UI GitHub", url: "https://github.com/UiPath/apollo-ui" },
+    { label: "Tailwind CSS", url: "https://tailwindcss.com" },
+    { label: "shadcn/ui", url: "https://ui.shadcn.com" },
+  ],
+};
+
+export const MOCK_ATTACHMENTS_BASIC = {
+  "1": [{ name: "Q4_Report.pdf", type: "application/pdf", size: 245000 }],
+};
+
 export const MOCK_CHOICE_OPTIONS = [
   { id: "1", label: "Option A — Recommended", recommended: true },
   { id: "2", label: "Option B — Alternative" },

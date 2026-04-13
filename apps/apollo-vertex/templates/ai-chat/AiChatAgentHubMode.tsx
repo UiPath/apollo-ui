@@ -48,6 +48,7 @@ export function AgentHubChat({ accessToken, orgTenant }: AgentHubChatProps) {
       onStop={stop}
       onClearChat={clear}
       onRegenerate={reload}
+      onEditMessage={(_id, content) => { void sendMessage(content); }}
       title="Autopilot"
       assistantName={t("assistant")}
       error={error ?? null}

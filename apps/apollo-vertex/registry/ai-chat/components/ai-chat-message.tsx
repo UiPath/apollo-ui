@@ -2,9 +2,12 @@
 
 import type { TextPart, UIMessage } from "@tanstack/ai-client";
 import { motion } from "framer-motion";
-import { type ReactNode, useEffect } from "react";
+import { ExternalLink, FileText } from "lucide-react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
+import { Badge } from "@/registry/badge/badge";
 import { useTypewriter } from "../hooks/use-typewriter";
 import type { MessageFeedbackType } from "../types";
+import { messageHasChoices } from "../utils/ai-chat-utils";
 import { AiChatMarkdown } from "./ai-chat-markdown";
 import { AiChatMessageActions } from "./ai-chat-message-actions";
 import { useAiChat } from "./ai-chat-provider";
@@ -17,6 +20,17 @@ const ENTRANCE_TRANSITION = {
   ease: [0.22, 1, 0.36, 1] as const,
 };
 
+export interface MessageSource {
+  label: string;
+  url?: string;
+}
+
+export interface MessageAttachment {
+  name: string;
+  type?: string;
+  size?: number;
+}
+
 interface AiChatMessageProps {
   message: UIMessage;
   children?: ReactNode;
@@ -25,7 +39,10 @@ interface AiChatMessageProps {
   /** Callbacks for message actions */
   onFeedback?: (type: MessageFeedbackType) => void;
   onRegenerate?: () => void;
-  onEdit?: () => void;
+  /** Source citations shown below an assistant message */
+  sources?: MessageSource[];
+  /** File attachments shown in a user message bubble */
+  attachments?: MessageAttachment[];
 }
 
 function getDisplayText(message: UIMessage): string {
@@ -35,17 +52,54 @@ function getDisplayText(message: UIMessage): string {
     .join("");
 }
 
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export function AiChatMessage({
   message,
   children,
   isStreaming: isStreamingProp,
   onFeedback,
   onRegenerate,
-  onEdit,
+  sources,
+  attachments,
 }: AiChatMessageProps) {
   const config = useAiChat();
   const isUser = message.role === "user";
   const displayContent = getDisplayText(message);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(displayContent);
+  const editTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Keep editValue in sync if message content changes externally (e.g. regenerate)
+  useEffect(() => {
+    if (!isEditing) setEditValue(displayContent);
+  }, [displayContent, isEditing]);
+
+  // Auto-focus, select all, and scroll into view when entering edit mode.
+  // rAF defers the scroll until after React has committed the new layout
+  // (bubble → textarea expansion), so scrollIntoView sees the final dimensions.
+  useEffect(() => {
+    if (isEditing && editTextareaRef.current) {
+      editTextareaRef.current.focus();
+      editTextareaRef.current.select();
+      const el = editTextareaRef.current;
+      requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    }
+  }, [isEditing]);
+
+  const handleSave = () => {
+    if (editValue.trim() && editValue.trim() !== displayContent) {
+      config.onEditMessage?.(message.id, editValue.trim());
+    }
+    setIsEditing(false);
+  };
 
   // Streaming state — explicit prop wins, otherwise derive from chat-level isLoading
   // and the latest assistant message ID. The latest assistant message is the one
@@ -88,6 +142,52 @@ export function AiChatMessage({
   }
 
   if (isUser) {
+    // Edit mode — swap bubble for inline textarea
+    if (isEditing) {
+      return (
+        <motion.div
+          className="flex w-full justify-end"
+          initial={ENTRANCE_INITIAL}
+          animate={ENTRANCE_ANIMATE}
+          transition={ENTRANCE_TRANSITION}
+        >
+          <div className="flex flex-col items-end gap-2 w-[80%]">
+            <textarea
+              ref={editTextareaRef}
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSave();
+                }
+                if (e.key === "Escape") setIsEditing(false);
+              }}
+              className="w-full px-4 py-2 text-sm leading-6 rounded-2xl rounded-br-md bg-ai-chat-bubble-user text-ai-chat-bubble-user-foreground resize-none focus:outline-none border-2 border-primary/40 min-h-[60px]"
+              rows={3}
+            />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                className="px-3 py-1 text-xs rounded-md hover:bg-muted text-muted-foreground transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={!editValue.trim()}
+                className="px-3 py-1 text-xs rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-colors"
+              >
+                Save &amp; re-run
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      );
+    }
+
     return (
       <motion.div
         className="flex w-full justify-end"
@@ -97,6 +197,24 @@ export function AiChatMessage({
       >
         <div className="group/message flex flex-col items-end gap-1 max-w-[80%]">
           <div className="px-4 py-2 text-sm leading-6 rounded-2xl rounded-br-md bg-ai-chat-bubble-user text-ai-chat-bubble-user-foreground">
+            {attachments && attachments.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {attachments.map((att, i) => (
+                  <div
+                    key={`${att.name}-${i}`}
+                    className="flex items-center gap-1 pl-2 pr-2 py-1 rounded-md bg-white/10 text-xs"
+                  >
+                    <FileText className="size-3 flex-shrink-0 opacity-70" aria-hidden="true" />
+                    <span className="truncate max-w-[120px]">{att.name}</span>
+                    {att.size !== undefined && (
+                      <span className="opacity-60 flex-shrink-0">
+                        {formatFileSize(att.size)}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
             {displayContent && (
               <p className="whitespace-pre-wrap">{displayContent}</p>
             )}
@@ -106,7 +224,7 @@ export function AiChatMessage({
               content={displayContent}
               messageRole="user"
               showCopy={config.showCopyButton}
-              onEdit={onEdit}
+              onEdit={config.onEditMessage ? () => setIsEditing(true) : undefined}
             />
           )}
         </div>
@@ -129,8 +247,46 @@ export function AiChatMessage({
       transition={ENTRANCE_TRANSITION}
     >
       <div className="group/message flex flex-col gap-3 max-w-[85%]">
-        {displayContent && <AiChatMarkdown>{displayedText}</AiChatMarkdown>}
+        {displayContent && !messageHasChoices(message) && (
+          isResponseFullyRevealed ? (
+            <AiChatMarkdown>{displayedText}</AiChatMarkdown>
+          ) : (
+            <p className="py-1 text-base leading-relaxed text-foreground whitespace-pre-wrap">{displayedText}</p>
+          )
+        )}
         {children && <div className="mt-2 flex flex-col gap-2">{children}</div>}
+
+        {sources && sources.length > 0 && isResponseFullyRevealed && (
+          <motion.div
+            className="flex flex-wrap gap-1.5"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {sources.map((source, i) =>
+              source.url ? (
+                <a
+                  key={i}
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="no-underline"
+                >
+                  <Badge variant="outline" className="gap-1 cursor-pointer hover:bg-muted transition-colors">
+                    <ExternalLink className="size-3" aria-hidden="true" />
+                    {source.label}
+                  </Badge>
+                </a>
+              ) : (
+                <Badge key={i} variant="outline" className="gap-1">
+                  <ExternalLink className="size-3" aria-hidden="true" />
+                  {source.label}
+                </Badge>
+              ),
+            )}
+          </motion.div>
+        )}
+
         {config.showMessageActions &&
           !isInActiveChoicesTurn &&
           isResponseFullyRevealed && (
