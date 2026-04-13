@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 'release/**'
 
 env:
   GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
@@ -12,11 +13,12 @@ env:
   DO_NOT_TRACK: 1
 
 concurrency:
-  group: ${{ github.workflow }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   release:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     name: Release and Publish
     runs-on: ubuntu-latest
     permissions:

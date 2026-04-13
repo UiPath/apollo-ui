@@ -9,9 +9,13 @@ name: CodeQL Analysis
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - 'release/**'
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - 'release/**'
   schedule:
     - cron: '17 4 * * 5' # Weekly on Friday at 4:17 AM UTC
 
