@@ -344,6 +344,75 @@ feat(apollo-react): add ApButton variant
 feat(apollo-core): add new color token for button variant
 ```
 
+## Maintenance Releases
+
+Maintenance branches allow backporting fixes to older major versions after a new major version has been released. For example, releasing `@uipath/apollo-react@3.70.4` after `4.0.0` ships.
+
+### Branch Naming
+
+Maintenance branches are package-scoped: `release/<package-name>@<major>.x`
+
+Examples: `release/apollo-react@3.x`, `release/apollo-core@5.x`
+
+### When to Create a Maintenance Branch
+
+Create one when you ship a new major version and need to continue supporting the previous major for existing consumers.
+
+### Creating a Maintenance Branch
+
+Use the helper script:
+
+```bash
+scripts/create-maintenance-branch.sh apollo-react 3
+```
+
+This will:
+1. Find the latest `@uipath/apollo-react@3.*` tag
+2. Create `release/apollo-react@3.x` from that tag
+3. Configure semantic-release on the new branch
+4. Print next steps
+
+After running the script:
+1. Push the maintenance branch: `git push -u origin 'release/apollo-react@3.x'`
+2. On `main`, update `packages/apollo-react/.releaserc.json` to add the maintenance branch entry **before** `"main"` in the `branches` array:
+   ```json
+   "branches": [
+     { "name": "release/apollo-react@3.x", "range": "3.x", "channel": "release-3.x" },
+     "main"
+   ]
+   ```
+
+### Backporting Fixes
+
+Cherry-pick from `main` or create a PR targeting the maintenance branch directly:
+
+```bash
+git checkout release/apollo-react@3.x
+git cherry-pick <sha>
+git push
+# → CI releases apollo-react@3.70.4 with dist-tag `release-3.x`
+```
+
+### Installing Maintenance Releases
+
+Maintenance releases publish under a dedicated npm dist-tag (not `latest`):
+
+```bash
+# Install latest maintenance release for 3.x
+npm install @uipath/apollo-react@release-3.x
+
+# Install a specific version
+npm install @uipath/apollo-react@3.70.4
+```
+
+### Cross-Package Fixes
+
+If a fix touches multiple packages (e.g., `apollo-core` and `apollo-react`), add the maintenance branch entry to each package's `.releaserc.json`. Both packages will be released from the same push.
+
+### How Other Packages Behave
+
+When CI runs `pnpm release` on a maintenance branch, semantic-release executes for all packages. Packages whose `.releaserc.json` doesn't list the branch simply skip with exit code 0 — no special handling needed.
+
 ## Package Structure
 
 ```
