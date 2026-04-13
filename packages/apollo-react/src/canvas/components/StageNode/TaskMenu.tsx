@@ -9,10 +9,11 @@ export interface TaskMenuHandle {
 interface TaskMenuProps {
   taskId: string;
   getContextMenuItems: () => NodeMenuItem[];
+  disabled?: boolean;
 }
 
 const TaskMenuComponent = (
-  { taskId, getContextMenuItems }: TaskMenuProps,
+  { taskId, getContextMenuItems, disabled }: TaskMenuProps,
   ref: React.Ref<TaskMenuHandle>
 ) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,12 +21,13 @@ const TaskMenuComponent = (
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
+      if (disabled && open) return;
       if (open) {
         setMenuItems(getContextMenuItems());
       }
       setIsOpen(open);
     },
-    [getContextMenuItems]
+    [getContextMenuItems, disabled]
   );
 
   const handleMenuItemClick = useCallback((item: NodeMenuAction) => {
@@ -37,9 +39,10 @@ const TaskMenuComponent = (
     (e: React.MouseEvent<HTMLElement>) => {
       e.stopPropagation();
       e.preventDefault();
+      if (disabled) return;
       handleOpenChange(true);
     },
-    [handleOpenChange]
+    [handleOpenChange, disabled]
   );
 
   useImperativeHandle(ref, () => ({
@@ -55,6 +58,7 @@ const TaskMenuComponent = (
       triggerTestId={`stage-task-menu-${taskId}`}
       triggerAriaLabel="Task actions"
       contentClassName="w-[300px]"
+      disabled={disabled}
     />
   );
 };

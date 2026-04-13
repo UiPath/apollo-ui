@@ -18,6 +18,7 @@ interface CanvasDropdownMenuProps {
   triggerTestId?: string;
   triggerAriaLabel?: string;
   contentClassName?: string;
+  disabled?: boolean;
 }
 
 /**
@@ -38,6 +39,7 @@ export function CanvasDropdownMenu({
   triggerTestId,
   triggerAriaLabel = 'Dropdown menu',
   contentClassName,
+  disabled,
 }: CanvasDropdownMenuProps) {
   return (
     <DropdownMenu open={open} onOpenChange={onOpenChange} modal={false}>
@@ -48,6 +50,7 @@ export function CanvasDropdownMenu({
           className="h-6 w-6"
           data-testid={triggerTestId}
           aria-label={triggerAriaLabel}
+          disabled={disabled}
           onClick={(e: React.MouseEvent) => e.stopPropagation()}
           onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
         >

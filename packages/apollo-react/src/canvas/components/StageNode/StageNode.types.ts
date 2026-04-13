@@ -58,7 +58,6 @@ export interface StageNodeBaseProps {
     headerChips?: StageHeaderChip[];
   };
   addTaskLabel?: string;
-  addTaskLoading?: boolean;
   replaceTaskLabel?: string;
   taskOptions?: ListItem[];
   execution?: {
@@ -85,6 +84,7 @@ export interface StageNodeBaseProps {
   onReplaceTaskFromToolbox?: (newTask: ListItem, groupIndex: number, taskIndex: number) => void;
   onTaskPlay?: (taskId: string) => Promise<void>;
   hideParallelOptions?: boolean;
+  loadingTaskIds?: ReadonlySet<string>;
 }
 
 export interface StageNodeCanvasProps extends NodeProps, StageNodeBaseProps {}

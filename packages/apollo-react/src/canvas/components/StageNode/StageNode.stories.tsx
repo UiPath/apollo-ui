@@ -1528,18 +1528,57 @@ const AddTaskLoadingStory = () => {
   const setNodesRef = useRef<React.Dispatch<React.SetStateAction<Node[]>>>(null!);
 
   // Inject per-node handlers — simulates loading state on add-task:
-  // 1. Set addTaskLoading=true so the + button is disabled
-  // 2. After 2s, set addTaskLoading=false to re-enable it
+  // 1. Set loadingTaskIds with a placeholder ID so the + button is disabled
+  // 2. After 2s, clear loadingTaskIds to re-enable it
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  const handleAddTaskFromToolbox = useCallback((nodeId: string, _taskItem: ListItem) => {
+  const handleAddTaskFromToolbox = useCallback((nodeId: string, taskItem: ListItem) => {
     clearTimeout(timeoutRef.current);
+    const newTaskId = `task-${Date.now()}`;
+    // Add the task to the stage and mark it as loading
     setNodesRef.current((nds) =>
-      nds.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, addTaskLoading: true } } : n))
+      nds.map((n) => {
+        if (n.id !== nodeId) return n;
+        const data = n.data as Record<string, any>;
+        const currentTasks: StageTaskItem[][] = data.stageDetails?.tasks ?? [];
+        const newTask: StageTaskItem = { id: newTaskId, label: taskItem.name };
+        const currentExecution = data.execution ?? {
+          stageStatus: { status: undefined },
+          taskStatus: {},
+        };
+        return {
+          ...n,
+          data: {
+            ...data,
+            stageDetails: { ...data.stageDetails, tasks: [...currentTasks, [newTask]] },
+            loadingTaskIds: new Set([...((data.loadingTaskIds as Set<string>) ?? []), newTaskId]),
+            execution: {
+              ...currentExecution,
+              taskStatus: { ...currentExecution.taskStatus, [newTaskId]: { status: 'InProgress' } },
+            },
+          },
+        };
+      })
     );
+    // After 2s, clear loading state and execution status
     timeoutRef.current = setTimeout(() => {
       setNodesRef.current((nds) =>
-        nds.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, addTaskLoading: false } } : n))
+        nds.map((n) => {
+          if (n.id !== nodeId) return n;
+          const data = n.data as Record<string, any>;
+          const { [newTaskId]: _, ...remainingTaskStatus } = data.execution?.taskStatus ?? {};
+          return {
+            ...n,
+            data: {
+              ...data,
+              loadingTaskIds: new Set(),
+              execution: {
+                ...data.execution,
+                taskStatus: remainingTaskStatus,
+              },
+            },
+          };
+        })
       );
     }, 2000);
   }, []);
@@ -1556,11 +1595,12 @@ const AddTaskLoadingStory = () => {
             label: 'Loading (+ disabled for 3s)',
             tasks: [],
           },
-          addTaskLoading: true,
+          loadingTaskIds: new Set(['loading-task']),
           taskOptions: [] as ListItem[],
           onAddTaskFromToolbox: (taskItem: ListItem) => {
             handleAddTaskFromToolbox('loading-stage-empty', taskItem);
           },
+          onTaskGroupModification: () => {},
         },
       },
       {
@@ -1573,11 +1613,45 @@ const AddTaskLoadingStory = () => {
             label: 'Async children (click +)',
             tasks: [[{ id: 'task-1', label: 'Existing Task', icon: <VerificationIcon /> }]],
           },
-          addTaskLoading: false,
+          loadingTaskIds: new Set(),
           taskOptions: loadedTaskOptionsWithChildren,
           onAddTaskFromToolbox: (taskItem: ListItem) => {
             handleAddTaskFromToolbox('loading-stage-children', taskItem);
           },
+          onTaskGroupModification: () => {},
+        },
+      },
+      {
+        id: 'loading-stage-tasks',
+        type: 'stage',
+        position: { x: 752, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Task loading (3-dot disabled)',
+            tasks: [
+              [{ id: 'loading-task-1', label: 'Loading Task (3-dot disabled)' }],
+              [
+                {
+                  id: 'ready-task-1',
+                  label: 'Ready Task (3-dot enabled)',
+                  icon: <VerificationIcon />,
+                },
+              ],
+            ],
+          },
+          loadingTaskIds: new Set(['loading-task-1']),
+          execution: {
+            stageStatus: { status: undefined },
+            taskStatus: {
+              'loading-task-1': { status: 'InProgress' },
+            },
+          },
+          taskOptions: loadedTaskOptionsWithChildren,
+          onAddTaskFromToolbox: (taskItem: ListItem) => {
+            handleAddTaskFromToolbox('loading-stage-tasks', taskItem);
+          },
+          onTaskGroupModification: () => {},
         },
       },
     ],
@@ -1598,7 +1672,7 @@ const AddTaskLoadingStory = () => {
                 ...node,
                 data: {
                   ...node.data,
-                  addTaskLoading: false,
+                  loadingTaskIds: new Set(),
                   taskOptions: loadedTaskOptionsWithChildren,
                 },
               }
@@ -1606,6 +1680,30 @@ const AddTaskLoadingStory = () => {
         )
       );
     }, 3000);
+    return () => clearTimeout(timeout);
+  }, [setNodes]);
+
+  // Simulate per-task loading — after 5 seconds, task finishes loading and 3-dot becomes enabled
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setNodes((nds) =>
+        nds.map((node) =>
+          node.id === 'loading-stage-tasks'
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  loadingTaskIds: new Set(),
+                  execution: {
+                    stageStatus: { status: undefined },
+                    taskStatus: {},
+                  },
+                },
+              }
+            : node
+        )
+      );
+    }, 5000);
     return () => clearTimeout(timeout);
   }, [setNodes]);
 

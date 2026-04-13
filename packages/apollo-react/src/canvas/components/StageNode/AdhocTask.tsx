@@ -12,6 +12,7 @@ interface AdhocTaskItemProps {
   getContextMenuItems?: () => NodeMenuItem[];
   onTaskClick: (e: React.MouseEvent, taskId: string) => void;
   onTaskPlay?: (taskId: string) => Promise<void>;
+  isTaskLoading?: boolean;
 }
 
 const AdhocTaskItemComponent = ({
@@ -21,6 +22,7 @@ const AdhocTaskItemComponent = ({
   getContextMenuItems,
   onTaskClick,
   onTaskPlay,
+  isTaskLoading,
 }: AdhocTaskItemProps) => {
   const taskRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<TaskMenuHandle>(null);
@@ -43,11 +45,16 @@ const AdhocTaskItemComponent = ({
       selected={isSelected}
       status={taskExecution?.status}
       onClick={handleClick}
-      {...(getContextMenuItems && { onContextMenu: handleContextMenu })}
+      {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
     >
       <TaskContent task={task} taskExecution={taskExecution} onTaskPlay={onTaskPlay} />
       {getContextMenuItems && (
-        <TaskMenu ref={menuRef} taskId={task.id} getContextMenuItems={getContextMenuItems} />
+        <TaskMenu
+          ref={menuRef}
+          taskId={task.id}
+          getContextMenuItems={getContextMenuItems}
+          disabled={isTaskLoading}
+        />
       )}
     </StageTask>
   );

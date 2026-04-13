@@ -13,4 +13,5 @@ export interface DraggableTaskProps {
   onTaskPlay?: (taskId: string) => Promise<void>;
   isDragDisabled?: boolean;
   projectedDepth?: number;
+  isTaskLoading?: boolean;
 }

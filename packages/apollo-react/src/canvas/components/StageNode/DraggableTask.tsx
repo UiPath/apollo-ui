@@ -26,6 +26,7 @@ const DraggableTaskComponent = ({
   onTaskClick,
   isDragDisabled,
   projectedDepth,
+  isTaskLoading,
 }: DraggableTaskProps) => {
   const zoom = useStore((s) => s.transform[2]);
   const taskRef = useRef<HTMLDivElement>(null);
@@ -94,7 +95,7 @@ const DraggableTaskComponent = ({
       isParallel={isParallel}
       isDragEnabled={!isDragDisabled}
       onClick={handleClick}
-      {...(getContextMenuItems && { onContextMenu: handleContextMenu })}
+      {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
     >
       <TaskContent task={task} taskExecution={taskExecution} />
 
@@ -113,7 +114,12 @@ const DraggableTaskComponent = ({
         </CanvasTooltip>
       )}
       {getContextMenuItems && (
-        <TaskMenu ref={menuRef} taskId={task.id} getContextMenuItems={handleGetContextMenuItems} />
+        <TaskMenu
+          ref={menuRef}
+          taskId={task.id}
+          getContextMenuItems={handleGetContextMenuItems}
+          disabled={isTaskLoading}
+        />
       )}
     </StageTask>
   );
