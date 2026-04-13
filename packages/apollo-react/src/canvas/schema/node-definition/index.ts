@@ -19,5 +19,15 @@ export {
   handleTypeDisplaySchema,
   handleTypeSchema,
 } from './handle';
-export type { NodeDisplayManifest, NodeManifest, NodeShape } from './node-manifest';
-export { nodeDisplayManifestSchema, nodeManifestSchema, nodeShapeSchema } from './node-manifest';
+export type {
+  NodeDisplayManifest,
+  NodeManifest,
+  NodeShape,
+  RuntimeConstraints,
+} from './node-manifest';
+export {
+  nodeDisplayManifestSchema,
+  nodeManifestSchema,
+  nodeShapeSchema,
+  nodeRuntimeConstraintsManifestSchema,
+} from './node-manifest';
