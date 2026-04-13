@@ -163,10 +163,7 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
             className="flex-shrink-0 size-9 rounded-lg flex items-center justify-center bg-secondary transition-opacity"
             onClick={onStop}
           >
-            <CircleStop
-              className="size-5 text-muted-foreground"
-              aria-hidden="true"
-            />
+            <CircleStop className="size-5 text-foreground" aria-hidden="true" />
           </button>
         </TooltipTrigger>
         <TooltipContent>{t("stop")}</TooltipContent>

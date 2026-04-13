@@ -12,6 +12,7 @@ const LABEL_SLIDE = 6;
 const shimmerStyle = {
   display: "inline-block",
   whiteSpace: "nowrap",
+  lineHeight: 1,
   fontSize: "14px",
   fontWeight: 500,
   backgroundImage:
@@ -48,7 +49,7 @@ export function ThinkingDemo() {
             delay: isThinking ? 0.9 : 0,
             ease: ENTRANCE_EASE,
           }}
-          style={{ marginLeft: "-7px" }}
+          style={{ marginLeft: "-7px", display: "flex", alignItems: "center" }}
         >
           <AnimatePresence mode="wait">
             <motion.span
