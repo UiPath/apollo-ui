@@ -10,7 +10,7 @@ on:
       - converted_to_draft
     branches:
       - main
-      - 'release/**'
+      - 'support/**'
 
 permissions:
   contents: read

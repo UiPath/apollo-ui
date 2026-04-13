@@ -6,7 +6,7 @@
 #
 # This script:
 #   1. Finds the latest git tag for @uipath/<package>@<major>.*
-#   2. Creates release/<package>@<major>.x branch from that tag
+#   2. Creates support/<package>@<major>.x branch from that tag
 #   3. Updates the package's .releaserc.json with maintenance branch config
 #   4. Commits the config change
 #   5. Prints next steps (push, update main's .releaserc.json)
@@ -22,8 +22,8 @@ if ! [[ "$MAJOR" =~ ^[0-9]+$ ]]; then
 fi
 
 TAG_PATTERN="@uipath/${PACKAGE}@${MAJOR}.*"
-BRANCH="release/${PACKAGE}@${MAJOR}.x"
-CHANNEL="release-${MAJOR}.x"
+BRANCH="support/${PACKAGE}@${MAJOR}.x"
+CHANNEL="latest-v${MAJOR}"
 
 # Find package directory
 if [ -d "packages/${PACKAGE}" ]; then

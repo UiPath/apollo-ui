@@ -5,7 +5,7 @@ on:
     types: [closed]
     branches:
       - main
-      - 'release/**'
+      - 'support/**'
 
 env:
   GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
