@@ -11,11 +11,11 @@ on:
   push:
     branches:
       - main
-      - 'release/**'
+      - 'support/**'
   pull_request:
     branches:
       - main
-      - 'release/**'
+      - 'support/**'
   schedule:
     - cron: '17 4 * * 5' # Weekly on Friday at 4:17 AM UTC
 
