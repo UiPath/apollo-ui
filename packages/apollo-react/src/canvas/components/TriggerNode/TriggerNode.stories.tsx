@@ -12,7 +12,7 @@ import {
   applyNodeChanges,
   ReactFlowProvider,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon } from '@uipath/apollo-react/material/components';
+import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import { useCallback, useState } from 'react';
 import { BaseCanvas } from '../BaseCanvas';
 import { TriggerNode } from './TriggerNode';
@@ -134,11 +134,10 @@ const TriggerNodeStory = () => {
         details: {
           tooltip: 'Time Trigger',
           icon: (
-            <ApIcon
-              name="schedule"
-              variant="outlined"
+            <CanvasIcon
+              icon="lucide-clock"
               color="var(--uix-canvas-foreground-emp)"
-              size="24px"
+              size={24}
             />
           ),
         },
@@ -154,11 +153,10 @@ const TriggerNodeStory = () => {
         details: {
           tooltip: 'Email Trigger',
           icon: (
-            <ApIcon
-              name="email"
-              variant="outlined"
+            <CanvasIcon
+              icon="lucide-mail"
               color="var(--uix-canvas-foreground-emp)"
-              size="24px"
+              size={24}
             />
           ),
         },
@@ -174,11 +172,10 @@ const TriggerNodeStory = () => {
         details: {
           tooltip: 'Webhook Trigger',
           icon: (
-            <ApIcon
-              name="webhook"
-              variant="outlined"
+            <CanvasIcon
+              icon="lucide-webhook"
               color="var(--uix-canvas-foreground-emp)"
-              size="24px"
+              size={24}
             />
           ),
         },

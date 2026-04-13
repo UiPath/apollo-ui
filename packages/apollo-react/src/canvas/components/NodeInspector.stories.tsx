@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { FontVariantToken } from '@uipath/apollo-core';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import type { Edge, EdgeChange, Node, NodeChange } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
@@ -8,7 +7,6 @@ import {
   Panel,
   ReactFlowProvider,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApTypography } from '@uipath/apollo-react/material';
 import { useCallback, useState } from 'react';
 
 import { BaseCanvas } from './BaseCanvas/BaseCanvas';
@@ -159,10 +157,10 @@ const CanvasWithNodeInspector = () => {
             color: 'var(--uix-canvas-foreground)',
           }}
         >
-          <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Node Inspector Demo</ApTypography>
-          <ApTypography variant={FontVariantToken.fontSizeS}>
+          <span className="text-lg font-bold">Node Inspector Demo</span>
+          <span className="text-sm">
             Click on nodes to see their details
-          </ApTypography>
+          </span>
         </Column>
       </Panel>
     </BaseCanvas>

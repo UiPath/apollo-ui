@@ -6,7 +6,7 @@ import {
   ReactFlowProvider,
   useReactFlow,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon } from '@uipath/apollo-react/material/components';
+import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import { useCallback, useMemo } from 'react';
 import { NodeRegistryProvider } from '../../core/NodeRegistryProvider';
 import type { HandleGroupManifest, NodeManifest } from '../../schema/node-definition';
@@ -157,7 +157,7 @@ function CollapsibleAgentNode(props: NodeProps<Node<CollapsibleAgentNodeData>>) 
       actions: [
         {
           id: 'collapse-toggle',
-          icon: <ApIcon name={collapsed ? 'unfold_more' : 'unfold_less'} size="16px" />,
+          icon: <CanvasIcon icon={collapsed ? 'unfold-vertical' : 'fold-vertical'} size={16} />,
           label: collapsed ? 'Expand' : 'Collapse',
           onAction: handleToggleCollapse,
         },

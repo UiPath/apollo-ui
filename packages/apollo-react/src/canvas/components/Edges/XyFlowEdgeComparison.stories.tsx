@@ -4,17 +4,7 @@
  * Demonstrates different React Flow edge types and styling options.
  */
 
-import {
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Select,
-} from '@mui/material';
-
 import type { Meta, StoryObj } from '@storybook/react';
-import { FontVariantToken } from '@uipath/apollo-core';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import type { Connection, Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
@@ -23,7 +13,15 @@ import {
   Position,
   useEdgesState,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApTypography } from '@uipath/apollo-react/material';
+import {
+  Checkbox,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@uipath/apollo-wind';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { StoryInfoPanel, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
@@ -335,7 +333,7 @@ function AllEdgeTypesStory() {
     <BaseCanvas {...canvasProps} mode="design" defaultEdgeOptions={{ style: { strokeWidth: 2 } }}>
       <StoryInfoPanel title="React Flow Edge Types">
         <Column gap={8} style={{ marginTop: 8 }}>
-          <ApTypography variant={FontVariantToken.fontSizeSBold}>Built-in Types</ApTypography>
+          <span className="text-sm font-semibold">Built-in Types</span>
           <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13 }}>
             <li>
               <code>default</code> - Bezier curve
@@ -353,7 +351,7 @@ function AllEdgeTypesStory() {
               <code>bezier</code> - Curved path
             </li>
           </ul>
-          <ApTypography variant={FontVariantToken.fontSizeSBold}>Properties</ApTypography>
+          <span className="text-sm font-semibold">Properties</span>
           <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13 }}>
             <li>
               <code>animated</code> - Animated flow
@@ -467,32 +465,31 @@ function InteractiveEdgeSelectionStory() {
     >
       <StoryInfoPanel title="Edge Configuration">
         <Column gap={12} style={{ marginTop: 12 }}>
-          <FormControl size="small" fullWidth>
-            <InputLabel>Edge type</InputLabel>
-            <Select
-              value={selectedEdgeType}
-              onChange={(e) => setSelectedEdgeType(e.target.value)}
-              label="Edge type"
-            >
-              <MenuItem value="default">Default (Bezier)</MenuItem>
-              <MenuItem value="straight">Straight</MenuItem>
-              <MenuItem value="step">Step</MenuItem>
-              <MenuItem value="smoothstep">Smooth Step</MenuItem>
-              <MenuItem value="bezier">Bezier</MenuItem>
-            </Select>
-          </FormControl>
+          <Select value={selectedEdgeType} onValueChange={setSelectedEdgeType}>
+            <SelectTrigger>
+              <SelectValue placeholder="Edge type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="default">Default (Bezier)</SelectItem>
+              <SelectItem value="straight">Straight</SelectItem>
+              <SelectItem value="step">Step</SelectItem>
+              <SelectItem value="smoothstep">Smooth Step</SelectItem>
+              <SelectItem value="bezier">Bezier</SelectItem>
+            </SelectContent>
+          </Select>
 
-          <FormControlLabel
-            control={
-              <Checkbox checked={isAnimated} onChange={(e) => setIsAnimated(e.target.checked)} />
-            }
-            label="Animated"
-          />
+          <Label className="flex items-center gap-2">
+            <Checkbox
+              checked={isAnimated}
+              onCheckedChange={(checked) => setIsAnimated(checked === true)}
+            />
+            Animated
+          </Label>
 
           <Column gap={4}>
-            <ApTypography variant={FontVariantToken.fontSizeS}>
+            <span className="text-sm">
               Stroke Width: {strokeWidth}px
-            </ApTypography>
+            </span>
             <input
               type="range"
               min="1"
@@ -504,7 +501,7 @@ function InteractiveEdgeSelectionStory() {
           </Column>
 
           <Column gap={4}>
-            <ApTypography variant={FontVariantToken.fontSizeS}>Stroke Color</ApTypography>
+            <span className="text-sm">Stroke Color</span>
             <input
               type="color"
               value={strokeColor}
@@ -519,12 +516,9 @@ function InteractiveEdgeSelectionStory() {
             />
           </Column>
 
-          <ApTypography
-            color="var(--uix-canvas-foreground-de-emp)"
-            variant={FontVariantToken.fontSizeXs}
-          >
+          <span className="text-xs" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
             Drag the nodes to see how the edge adapts.
-          </ApTypography>
+          </span>
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">

@@ -1,10 +1,15 @@
-import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { FontVariantToken } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { BackgroundVariant, Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApButton, ApTypography } from '@uipath/apollo-react/material';
+import {
+  Button,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@uipath/apollo-wind';
 import { useMemo, useRef, useState } from 'react';
 import {
   createNode,
@@ -160,39 +165,38 @@ function DefaultStory() {
       <StoryInfoPanel title="Canvas configuration" collapsible defaultCollapsed>
         <Column gap={12} style={{ marginTop: 12, minWidth: 240 }}>
           <Column gap={8}>
-            <ApTypography variant={FontVariantToken.fontSizeM}>Mode:</ApTypography>
+            <span className="text-base">Mode:</span>
             <Row gap={8}>
               {(['design', 'view', 'readonly'] as const).map((m) => (
-                <ApButton
+                <Button
                   key={m}
-                  size="small"
-                  variant={mode === m ? 'primary' : 'secondary'}
-                  label={m}
+                  size="sm"
+                  variant={mode === m ? 'default' : 'secondary'}
                   onClick={() => setMode(m)}
-                />
+                >
+                  {m}
+                </Button>
               ))}
             </Row>
-            <ApTypography variant={FontVariantToken.fontSizeXs} style={{ fontStyle: 'italic' }}>
+            <span className="text-xs" style={{ fontStyle: 'italic' }}>
               {mode === 'design' && 'Full editing capabilities'}
               {mode === 'view' && 'Interactive viewing (pan, zoom, select, click)'}
               {mode === 'readonly' && 'No interactions allowed'}
-            </ApTypography>
+            </span>
           </Column>
 
-          <FormControl size="small" fullWidth>
-            <InputLabel>Edge type</InputLabel>
-            <Select
-              value={defaultEdgeType}
-              onChange={(e) => setDefaultEdgeType(e.target.value)}
-              label="Edge type"
-            >
-              <MenuItem value="default">Default (Bezier)</MenuItem>
-              <MenuItem value="straight">Straight</MenuItem>
-              <MenuItem value="step">Step</MenuItem>
-              <MenuItem value="smoothstep">Smooth Step</MenuItem>
-              <MenuItem value="bezier">Bezier</MenuItem>
-            </Select>
-          </FormControl>
+          <Select value={defaultEdgeType} onValueChange={setDefaultEdgeType}>
+            <SelectTrigger>
+              <SelectValue placeholder="Edge type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="default">Default (Bezier)</SelectItem>
+              <SelectItem value="straight">Straight</SelectItem>
+              <SelectItem value="step">Step</SelectItem>
+              <SelectItem value="smoothstep">Smooth Step</SelectItem>
+              <SelectItem value="bezier">Bezier</SelectItem>
+            </SelectContent>
+          </Select>
 
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
             <input
@@ -204,9 +208,9 @@ function DefaultStory() {
           </label>
 
           <Column gap={8}>
-            <ApTypography variant={FontVariantToken.fontSizeM}>
+            <span className="text-base">
               Stroke Width: {strokeWidth}px
-            </ApTypography>
+            </span>
             <input
               type="range"
               min="1"
@@ -249,13 +253,14 @@ function DifferentBackgroundsStory() {
         <Row gap={8} style={{ marginTop: 8 }}>
           {[BackgroundVariant.Dots, BackgroundVariant.Lines, BackgroundVariant.Cross].map(
             (variant) => (
-              <ApButton
+              <Button
                 key={variant}
-                size="small"
-                variant={backgroundType === variant ? 'primary' : 'secondary'}
-                label={variant}
+                size="sm"
+                variant={backgroundType === variant ? 'default' : 'secondary'}
                 onClick={() => setBackgroundType(variant)}
-              />
+              >
+                {variant}
+              </Button>
             )
           )}
         </Row>
@@ -308,17 +313,18 @@ function EmptyCanvasStory() {
     <BaseCanvas {...canvasProps} mode="design">
       <StoryInfoPanel title="Canvas actions">
         <Column gap={8} style={{ marginTop: 8 }}>
-          <ApButton label="Add Node" onClick={addNode} size="small" />
-          <ApButton
-            label="Clear Canvas"
+          <Button onClick={addNode} size="sm">Add Node</Button>
+          <Button
             onClick={clearCanvas}
-            size="small"
+            size="sm"
             variant="secondary"
             disabled={nodes.length === 0}
-          />
-          <ApTypography variant={FontVariantToken.fontSizeS}>
+          >
+            Clear Canvas
+          </Button>
+          <span className="text-sm">
             Nodes: {nodes.length}, Edges: {edges.length}
-          </ApTypography>
+          </span>
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">
@@ -396,38 +402,44 @@ function WithNodeFocusControlsStory() {
     <BaseCanvas ref={canvasRef} {...canvasProps} mode="view">
       <StoryInfoPanel title="Focus controls">
         <Column gap={8} style={{ marginTop: 8 }}>
-          <ApButton
-            size="small"
-            label="Focus Node 1"
+          <Button
+            size="sm"
             onClick={() => canvasRef.current?.ensureNodesInView(['1'])}
-          />
-          <ApButton
-            size="small"
-            label="Focus Node 2"
+          >
+            Focus Node 1
+          </Button>
+          <Button
+            size="sm"
             onClick={() => canvasRef.current?.ensureNodesInView(['2'])}
-          />
-          <ApButton
-            size="small"
-            label="Focus Nodes 3 & 4"
+          >
+            Focus Node 2
+          </Button>
+          <Button
+            size="sm"
             onClick={() => canvasRef.current?.ensureNodesInView(['3', '4'])}
-          />
-          <ApButton
-            size="small"
-            label="Center on Node 5"
+          >
+            Focus Nodes 3 & 4
+          </Button>
+          <Button
+            size="sm"
             onClick={() => canvasRef.current?.centerNode('5')}
-          />
-          <ApButton
-            size="small"
+          >
+            Center on Node 5
+          </Button>
+          <Button
+            size="sm"
             variant="secondary"
-            label="Show All Nodes"
             onClick={() => canvasRef.current?.ensureAllNodesInView()}
-          />
-          <ApButton
-            size="small"
+          >
+            Show All Nodes
+          </Button>
+          <Button
+            size="sm"
             variant="secondary"
-            label="Focus 1 & 2 (Keep Zoom)"
             onClick={() => canvasRef.current?.ensureNodesInView(['1', '2'], { maintainZoom: true })}
-          />
+          >
+            Focus 1 & 2 (Keep Zoom)
+          </Button>
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">
@@ -523,41 +535,45 @@ function WithMaintainNodesInViewStory() {
           backgroundColor: 'var(--uix-canvas-background-secondary)',
         }}
       >
-        <ApTypography variant={FontVariantToken.fontSizeH3Bold}>
+        <span className="text-lg font-bold">
           Maintain Nodes in View Demo
-        </ApTypography>
-        <ApTypography variant={FontVariantToken.fontSizeM}>
+        </span>
+        <span className="text-base">
           Resize the container to see how important nodes stay in view
-        </ApTypography>
+        </span>
         <Row gap={8} align="center">
-          <ApButton
-            label="Small"
+          <Button
             onClick={() => setContainerSize({ width: '400px', height: '300px' })}
-            size="small"
-          />
-          <ApButton
-            label="Medium"
+            size="sm"
+          >
+            Small
+          </Button>
+          <Button
             onClick={() => setContainerSize({ width: '600px', height: '400px' })}
-            size="small"
-          />
-          <ApButton
-            label="Large"
+            size="sm"
+          >
+            Medium
+          </Button>
+          <Button
             onClick={() => setContainerSize({ width: '100%', height: '100%' })}
-            size="small"
-          />
-          <ApButton
-            label={getMaintainModeLabel()}
+            size="sm"
+          >
+            Large
+          </Button>
+          <Button
             onClick={cycleMaintainMode}
-            size="small"
-            variant={maintainNodes !== undefined ? 'primary' : 'secondary'}
-          />
+            size="sm"
+            variant={maintainNodes !== undefined ? 'default' : 'secondary'}
+          >
+            {getMaintainModeLabel()}
+          </Button>
         </Row>
         {maintainNodes !== undefined && (
-          <ApTypography variant={FontVariantToken.fontSizeS}>
+          <span className="text-sm">
             {maintainNodes.length > 0
               ? `Maintaining nodes: ${maintainNodes.join(', ')}`
               : 'Maintaining all nodes in view'}
-          </ApTypography>
+          </span>
         )}
       </Column>
       <div

@@ -57,7 +57,13 @@ const config: StorybookConfig = {
   features: {
     experimentalComponentsManifest: true,
   },
-  staticDirs: ["../../../packages/apollo-wind/public"],
+  staticDirs: [
+    "../../../packages/apollo-wind/public",
+    {
+      from: "../../../packages/apollo-core/src/icons/svg/third-party",
+      to: "/brand",
+    },
+  ],
   framework: {
     name: "@storybook/react-vite",
     options: {},
@@ -85,11 +91,22 @@ const config: StorybookConfig = {
       }
     </style>
   `,
+  managerHead: (head) => `
+    ${head}
+    <style>
+      .sidebar-header img {
+        max-height: 28px;
+        width: auto;
+      }
+    </style>
+  `,
   previewBody: isDev
     ? (body) =>
         `<script>delete window.__REACT_DEVTOOLS_GLOBAL_HOOK__;${reactScanHook}</script>\n${body}`
     : undefined,
   async viteFinal(config) {
+    const tailwindcss = (await import("@tailwindcss/vite")).default;
+
     const apolloWindSrc = resolve(
       __dirname,
       "../../../packages/apollo-wind/src",
@@ -101,6 +118,7 @@ const config: StorybookConfig = {
 
     return {
       ...config,
+      plugins: [...(config.plugins || []), tailwindcss()],
       resolve: {
         ...config.resolve,
         alias: [
@@ -125,22 +143,27 @@ const config: StorybookConfig = {
             find: /^@uipath\/apollo-wind\/(?!.*\.css$)(.*)/,
             replacement: `${apolloWindSrc}/$1`,
           },
-          // ── Apollo React Canvas → source for HMR ──
-          // Exclude xyflow CSS (vendored, only in dist)
+          // ── Apollo React → source for HMR ──
+          // Canvas barrel (exact match, no trailing path)
+          {
+            find: /^@uipath\/apollo-react\/canvas$/,
+            replacement: resolve(apolloReactSrc, "canvas/index.ts"),
+          },
+          // Canvas subpaths (exclude xyflow CSS — vendored, only in dist)
           {
             find: /^@uipath\/apollo-react\/canvas\/(?!xyflow\/.*\.css)(.*)/,
             replacement: `${apolloReactSrc}/canvas/$1`,
           },
+          // Material barrel + subpaths
+          {
+            find: /^@uipath\/apollo-react\/material$/,
+            replacement: resolve(apolloReactSrc, "material/index.ts"),
+          },
+          {
+            find: /^@uipath\/apollo-react\/material\/(.*)/,
+            replacement: `${apolloReactSrc}/material/$1`,
+          },
         ],
-      },
-      css: {
-        ...config.css,
-        postcss: {
-          plugins: [
-            (await import("@tailwindcss/postcss")).default,
-            (await import("autoprefixer")).default,
-          ],
-        },
       },
     };
   },

@@ -5,6 +5,17 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "inputs": [
+        "src/**",
+        "!src/**/*.stories.*",
+        "!src/**/*.test.*",
+        "!src/**/*.spec.*",
+        "package.json",
+        "tsconfig.json",
+        "tsconfig.build.json",
+        "rslib.config.*",
+        "rsbuild.config.*"
+      ],
       "outputs": ["dist/**", ".next/**", "build/**", "storybook-static/**"]
     },
     "dev": {
