@@ -395,9 +395,9 @@ const statusTokens: CodeSyntaxToken[] = [
   {
     name: '--status-warning',
     usage: 'Warning background',
-    darkVar: 'var(--color-orange-950)',
-    darkTw: 'orange-950',
-    darkHex: '#441306',
+    darkVar: 'var(--color-amber-950)',
+    darkTw: 'amber-950',
+    darkHex: '#451a03',
     lightVar: 'var(--color-amber-100)',
     lightTw: 'amber-100',
     lightHex: '#fef3c6',
