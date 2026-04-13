@@ -4,6 +4,7 @@ import { useChat } from "@tanstack/ai-react";
 import { useTranslation } from "react-i18next";
 import { createAgentHubConnection } from "@/registry/ai-chat/adapters/agenthub/adapter";
 import { AiChat } from "@/registry/ai-chat/components/ai-chat";
+import { AiChatEmptyState } from "@/registry/ai-chat/components/ai-chat-empty-state";
 import { AiChatMessage } from "@/registry/ai-chat/components/ai-chat-message";
 import {
   CHOICES_TOOL_PROMPT,
@@ -50,6 +51,12 @@ export function AgentHubChat({ accessToken, orgTenant }: AgentHubChatProps) {
       title="Autopilot"
       assistantName={t("assistant")}
       error={error ?? null}
+      emptyState={<AiChatEmptyState title="What can I help you get done?" />}
+      suggestions={[
+        "Summarize a report",
+        "Create an executive brief",
+        "Find automation opportunities",
+      ]}
     >
       {messages.map((message) => (
         <AiChatMessage key={message.id} message={message} />

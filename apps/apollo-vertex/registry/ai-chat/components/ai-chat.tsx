@@ -7,18 +7,8 @@ import {
   MoreHorizontal,
   RefreshCw,
 } from "lucide-react";
-import { AutopilotIcon } from "./icons/autopilot";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useStickyScroll } from "../hooks/use-sticky-scroll";
-import type { AiChatVariant, ChoiceOption } from "../types";
-
-const RETRY_LABEL = "Retry";
-
-import {
-  findActiveChoicesMessageIds,
-  findLatestChoices,
-} from "../utils/ai-chat-utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,10 +26,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/registry/dropdown-menu/dropdown-menu";
-import { AiChatInput } from "./ai-chat-input";
+import { useStickyScroll } from "../hooks/use-sticky-scroll";
+import type { AiChatVariant, ChoiceOption } from "../types";
+import {
+  findActiveChoicesMessageIds,
+  findLatestChoices,
+} from "../utils/ai-chat-utils";
+import { AiChatInput, type AiChatInputHandle } from "./ai-chat-input";
 import { AiChatLoading } from "./ai-chat-loading";
 import { AiChatProvider } from "./ai-chat-provider";
 import { AiChatSuggestions } from "./ai-chat-suggestions";
+import { AutopilotIcon } from "./icons/autopilot";
+
+const RETRY_LABEL = "Retry";
 
 export interface AiChatProps {
   messages: UIMessage[];
@@ -58,6 +57,10 @@ export interface AiChatProps {
   title?: string;
   renderHeader?: ReactNode;
   emptyState?: ReactNode;
+  /** Quick-start suggestions shown below the input in the empty state */
+  suggestions?: string[];
+  /** Called when the user clicks a suggestion in the empty state */
+  onSuggestionClick?: (suggestion: string) => void;
   placeholder?: string;
   showClearButton?: boolean;
   showTimestamps?: boolean;
@@ -89,6 +92,8 @@ export function AiChat({
   title,
   renderHeader,
   emptyState,
+  suggestions,
+  onSuggestionClick,
   placeholder,
   showClearButton = true,
   showTimestamps = false,
@@ -105,6 +110,7 @@ export function AiChat({
   const [isLatestResponseAnimating, setIsLatestResponseAnimating] =
     useState(false);
   const { scrollRef, contentRef, isStuck, scrollToBottom } = useStickyScroll();
+  const inputRef = useRef<AiChatInputHandle>(null);
 
   const isControlled = controlledValue != null;
   const input = isControlled ? controlledValue : internalInput;
@@ -122,6 +128,14 @@ export function AiChat({
     scrollToBottom();
   };
 
+  const wasLoadingRef = useRef(false);
+  useEffect(() => {
+    if (wasLoadingRef.current && !isLoading) {
+      inputRef.current?.focus();
+    }
+    wasLoadingRef.current = isLoading;
+  }, [isLoading]);
+
   const latestChoices = findLatestChoices(messages);
   const activeChoicesMessageIds = findActiveChoicesMessageIds(messages);
   const latestAssistantMessageId =
@@ -135,11 +149,6 @@ export function AiChat({
 
   const defaultEmptyState = (
     <div className="flex flex-col items-center justify-center h-full text-center">
-      <AutopilotIcon
-        size={32}
-        className="mb-4 text-foreground"
-        aria-hidden="true"
-      />
       <div className="flex flex-col items-center gap-1">
         <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground">
           {"What would you like to do?"}
@@ -174,8 +183,8 @@ export function AiChat({
       <div
         className={
           isEmbedded
-            ? "flex flex-col h-full max-w-[765px] mx-auto bg-transparent text-ai-chat-foreground"
-            : "flex flex-col h-full max-w-[765px] mx-auto border border-ai-chat-border rounded-lg bg-transparent text-ai-chat-foreground overflow-hidden"
+            ? "flex flex-col h-full max-w-[680px] mx-auto bg-transparent text-ai-chat-foreground"
+            : "flex flex-col h-full max-w-[680px] mx-auto border border-ai-chat-border rounded-lg bg-transparent text-ai-chat-foreground overflow-hidden"
         }
         data-slot="ai-chat"
       >
@@ -187,10 +196,7 @@ export function AiChat({
                   className="size-[21px] text-[#6C5AEF] flex-shrink-0"
                   aria-hidden="true"
                 />
-                <span
-                  className="text-sm font-bold tracking-tight bg-clip-text text-transparent truncate pt-[2px]"
-                  style={{ backgroundImage: "var(--ai-gradient-strong)" }}
-                >
+                <span className="text-sm font-bold tracking-tight bg-clip-text text-transparent truncate pt-[2px] [background-image:linear-gradient(97.73deg,#5D4ED0_8.79%,#1076A0_91.48%)] dark:[background-image:linear-gradient(97.73deg,#9485F5_8.79%,#69C7DD_91.48%)]">
                   {title}
                 </span>
               </div>
@@ -244,11 +250,12 @@ export function AiChat({
               className="flex-1 flex flex-col items-center px-4"
               style={{ justifyContent: "center", paddingBottom: "10%" }}
             >
-              <div className="w-full max-w-[765px]">
-                <div className="text-center mb-10">
+              <div className="w-full max-w-[680px]">
+                <div className="text-center mb-6">
                   {emptyState ?? defaultEmptyState}
                 </div>
                 <AiChatInput
+                  ref={inputRef}
                   value={input}
                   onChange={setInput}
                   onSubmit={handleSubmit}
@@ -257,12 +264,30 @@ export function AiChat({
                   placeholder={placeholder}
                   hasMessages={false}
                 />
+                {suggestions && suggestions.length > 0 && (
+                  <div className="mt-4 flex flex-wrap justify-center gap-2">
+                    {suggestions.map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        className="py-2 px-4 text-xs font-semibold rounded-full border border-input bg-background text-foreground hover:bg-muted transition-colors"
+                        onClick={() => {
+                          if (onSuggestionClick) {
+                            onSuggestionClick(suggestion);
+                          } else {
+                            onSendMessage(suggestion);
+                          }
+                        }}
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <div className="pt-2 pb-3 px-4 text-xs leading-normal text-muted-foreground text-center">
-              {
-                "Responses may be inaccurate. Please verify important information."
-              }
+              {"AI-generated responses should be reviewed for accuracy."}
             </div>
           </div>
         ) : (
@@ -342,6 +367,7 @@ export function AiChat({
         {messages.length > 0 && (
           <>
             <AiChatInput
+              ref={inputRef}
               value={input}
               onChange={setInput}
               onSubmit={handleSubmit}
@@ -351,9 +377,7 @@ export function AiChat({
               hasMessages
             />
             <div className="pt-2 pb-3 px-4 text-xs leading-normal text-muted-foreground text-center">
-              {
-                "Responses may be inaccurate. Please verify important information."
-              }
+              {"AI-generated responses should be reviewed for accuracy."}
             </div>
           </>
         )}

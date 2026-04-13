@@ -92,18 +92,14 @@ export default function AiChatPreviewPage() {
             isLoading={false}
             onSendMessage={noop}
             onStop={noop}
+            title="Autopilot"
             emptyState={
               <AiChatEmptyState
                 title="What would you like to do?"
                 description="I can help you review, fix, or complete your work."
-                suggestions={[
-                  "Create a React app",
-                  "Debug my code",
-                  "Write tests",
-                ]}
-                onSuggestionClick={noop}
               />
             }
+            suggestions={["Create a React app", "Debug my code", "Write tests"]}
           />
         </PreviewCard>
       </section>
