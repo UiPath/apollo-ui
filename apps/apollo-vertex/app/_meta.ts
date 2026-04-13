@@ -1,7 +1,13 @@
 export default {
   index: "Introduction",
   foundation: "Foundation",
-  components: "Components",
+  components: {
+    display: "hidden",
+  },
+  "browse-components": {
+    title: "Components",
+    href: "/components",
+  },
   patterns: "Patterns",
   templates: "Templates",
   guidelines: "Guidelines",
