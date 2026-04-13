@@ -55,6 +55,17 @@ export const nodeDisplayManifestSchema = z.object({
 });
 
 /**
+ * Runtime constraints for the node.
+ *
+ * - `{ include: [...] }` — available exclusively in the listed runtimes
+ * - `{ exclude: [...] }` — available in all runtimes except the listed ones
+ */
+export const nodeRuntimeConstraintsManifestSchema = z.union([
+  z.object({ include: z.array(z.string()) }),
+  z.object({ exclude: z.array(z.string()) }),
+]);
+
+/**
  * Complete node manifest from server
  */
 export const nodeManifestSchema = z.object({
@@ -116,9 +127,15 @@ export const nodeManifestSchema = z.object({
   // Optional metadata
   /** Whether the node is deprecated */
   deprecated: z.boolean().optional(),
+
+  /**
+   * Runtime constraints for the node. If omitted, the node is available in all runtimes.
+   */
+  runtimeConstraints: nodeRuntimeConstraintsManifestSchema.optional(),
 });
 
 // Export inferred types
 export type NodeShape = z.infer<typeof nodeShapeSchema>;
 export type NodeDisplayManifest = z.infer<typeof nodeDisplayManifestSchema>;
 export type NodeManifest = z.infer<typeof nodeManifestSchema>;
+export type RuntimeConstraints = z.infer<typeof nodeRuntimeConstraintsManifestSchema>;
