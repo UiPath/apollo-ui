@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { NodeMenuItem } from '../NodeContextMenu';
@@ -262,6 +262,78 @@ describe('AdhocTaskItem', () => {
       await waitFor(() => {
         expect(screen.queryByText('Delete task')).not.toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Task Loading State', () => {
+    it('disables menu button when isTaskLoading is true', () => {
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(
+        <AdhocTaskItem
+          {...defaultProps}
+          getContextMenuItems={() => menuItems}
+          isTaskLoading={true}
+        />
+      );
+
+      const menuButton = screen.getByTestId('stage-task-menu-adhoc-1');
+      expect(menuButton).toBeDisabled();
+    });
+
+    it('does not disable menu button when isTaskLoading is false', () => {
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(
+        <AdhocTaskItem
+          {...defaultProps}
+          getContextMenuItems={() => menuItems}
+          isTaskLoading={false}
+        />
+      );
+
+      const menuButton = screen.getByTestId('stage-task-menu-adhoc-1');
+      expect(menuButton).not.toBeDisabled();
+    });
+
+    it('does not open menu when clicking a disabled menu button', () => {
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(
+        <AdhocTaskItem
+          {...defaultProps}
+          getContextMenuItems={() => menuItems}
+          isTaskLoading={true}
+        />
+      );
+
+      const menuButton = screen.getByTestId('stage-task-menu-adhoc-1');
+      expect(menuButton).toBeDisabled();
+
+      fireEvent.click(menuButton);
+      expect(screen.queryByText('Replace task')).not.toBeInTheDocument();
+    });
+
+    it('does not open menu on right-click when isTaskLoading is true', async () => {
+      const user = userEvent.setup();
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(
+        <AdhocTaskItem
+          {...defaultProps}
+          getContextMenuItems={() => menuItems}
+          isTaskLoading={true}
+        />
+      );
+
+      const task = screen.getByTestId('stage-task-adhoc-1');
+      await user.pointer({ keys: '[MouseRight]', target: task });
+
+      expect(screen.queryByText('Replace task')).not.toBeInTheDocument();
     });
   });
 });

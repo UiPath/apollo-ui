@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { NodeMenuItem } from '../NodeContextMenu';
@@ -311,6 +311,78 @@ describe('DraggableTask', () => {
       await user.click(task);
 
       expect(onTaskClick).toHaveBeenCalledWith(expect.any(Object), 'task-1');
+    });
+  });
+
+  describe('Task Loading State', () => {
+    it('disables menu button when isTaskLoading is true', () => {
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(
+        <DraggableTask
+          {...defaultProps}
+          getContextMenuItems={() => menuItems}
+          isTaskLoading={true}
+        />
+      );
+
+      const menuButton = screen.getByTestId('stage-task-menu-task-1');
+      expect(menuButton).toBeDisabled();
+    });
+
+    it('does not disable menu button when isTaskLoading is false', () => {
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(
+        <DraggableTask
+          {...defaultProps}
+          getContextMenuItems={() => menuItems}
+          isTaskLoading={false}
+        />
+      );
+
+      const menuButton = screen.getByTestId('stage-task-menu-task-1');
+      expect(menuButton).not.toBeDisabled();
+    });
+
+    it('does not open menu when clicking a disabled menu button', () => {
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(
+        <DraggableTask
+          {...defaultProps}
+          getContextMenuItems={() => menuItems}
+          isTaskLoading={true}
+        />
+      );
+
+      const menuButton = screen.getByTestId('stage-task-menu-task-1');
+      expect(menuButton).toBeDisabled();
+
+      fireEvent.click(menuButton);
+      expect(screen.queryByText('Move Up')).not.toBeInTheDocument();
+    });
+
+    it('does not open menu on right-click when isTaskLoading is true', async () => {
+      const user = userEvent.setup();
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(
+        <DraggableTask
+          {...defaultProps}
+          getContextMenuItems={() => menuItems}
+          isTaskLoading={true}
+        />
+      );
+
+      const task = screen.getByTestId('stage-task-task-1');
+      await user.pointer({ keys: '[MouseRight]', target: task });
+
+      expect(screen.queryByText('Move Up')).not.toBeInTheDocument();
     });
   });
 

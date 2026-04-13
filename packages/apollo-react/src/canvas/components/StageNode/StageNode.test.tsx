@@ -646,10 +646,10 @@ describe('StageNode - Add Task Loading State', () => {
     vi.clearAllMocks();
   });
 
-  it('should pass addTaskLoading to Toolbox when toolbox is open', async () => {
+  it('should set Toolbox loading to true when loadingTaskIds is non-empty', async () => {
     const user = userEvent.setup();
     const onAddTaskFromToolbox = vi.fn();
-    const { rerender } = renderStageNode({ onAddTaskFromToolbox, addTaskLoading: false });
+    const { rerender } = renderStageNode({ onAddTaskFromToolbox, loadingTaskIds: new Set() });
 
     const addButton = screen.getByRole('button', { name: 'Add task' });
     await user.click(addButton);
@@ -659,7 +659,7 @@ describe('StageNode - Add Task Loading State', () => {
         <StageNode
           {...defaultProps}
           onAddTaskFromToolbox={onAddTaskFromToolbox}
-          addTaskLoading={true}
+          loadingTaskIds={new Set(['task-1'])}
         />
       </ReactFlowProvider>
     );
@@ -668,10 +668,10 @@ describe('StageNode - Add Task Loading State', () => {
     expect(toolbox).toHaveAttribute('data-loading', 'true');
   });
 
-  it('should not pass loading to Toolbox when addTaskLoading is false', async () => {
+  it('should not pass loading to Toolbox when loadingTaskIds is empty', async () => {
     const user = userEvent.setup();
     const onAddTaskFromToolbox = vi.fn();
-    renderStageNode({ onAddTaskFromToolbox, addTaskLoading: false });
+    renderStageNode({ onAddTaskFromToolbox, loadingTaskIds: new Set() });
 
     const addButton = screen.getByRole('button', { name: 'Add task' });
     await user.click(addButton);
@@ -680,26 +680,26 @@ describe('StageNode - Add Task Loading State', () => {
     expect(toolbox).toHaveAttribute('data-loading', 'false');
   });
 
-  it('should disable the add button when addTaskLoading is true', () => {
+  it('should disable the add button when loadingTaskIds is non-empty', () => {
     const onAddTaskFromToolbox = vi.fn();
-    renderStageNode({ onAddTaskFromToolbox, addTaskLoading: true });
+    renderStageNode({ onAddTaskFromToolbox, loadingTaskIds: new Set(['task-1']) });
 
     const addButton = screen.getByRole('button', { name: 'Add task' });
     expect(addButton).toBeDisabled();
   });
 
-  it('should not disable the add button when addTaskLoading is false', () => {
+  it('should not disable the add button when loadingTaskIds is empty', () => {
     const onAddTaskFromToolbox = vi.fn();
-    renderStageNode({ onAddTaskFromToolbox, addTaskLoading: false });
+    renderStageNode({ onAddTaskFromToolbox, loadingTaskIds: new Set() });
 
     const addButton = screen.getByRole('button', { name: 'Add task' });
     expect(addButton).not.toBeDisabled();
   });
 
-  it('should update Toolbox loading when addTaskLoading changes to false', async () => {
+  it('should update Toolbox loading when loadingTaskIds changes to empty', async () => {
     const user = userEvent.setup();
     const onAddTaskFromToolbox = vi.fn();
-    const { rerender } = renderStageNode({ onAddTaskFromToolbox, addTaskLoading: false });
+    const { rerender } = renderStageNode({ onAddTaskFromToolbox, loadingTaskIds: new Set() });
 
     const addButton = screen.getByRole('button', { name: 'Add task' });
     await user.click(addButton);
@@ -709,7 +709,7 @@ describe('StageNode - Add Task Loading State', () => {
         <StageNode
           {...defaultProps}
           onAddTaskFromToolbox={onAddTaskFromToolbox}
-          addTaskLoading={true}
+          loadingTaskIds={new Set(['task-1'])}
         />
       </ReactFlowProvider>
     );
@@ -721,7 +721,7 @@ describe('StageNode - Add Task Loading State', () => {
         <StageNode
           {...defaultProps}
           onAddTaskFromToolbox={onAddTaskFromToolbox}
-          addTaskLoading={false}
+          loadingTaskIds={new Set()}
         />
       </ReactFlowProvider>
     );
