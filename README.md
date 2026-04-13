@@ -142,9 +142,8 @@ Framework-agnostic AI chat interface web component for vanilla JS, Vue, Angular,
 Explore our components in interactive Storybook environments:
 
 - **[Apollo Vertex](https://apollo-vertex.vercel.app/)** - Complete design system showcase
-- **[Canvas Components](https://apollo-canvas.vercel.app/)** - Workflow and canvas demos
+- **[Canvas Components](https://apollo-design.vercel.app/)** - Tailwind CSS components & Workflow and canvas demos
 - **[React Playground](https://apollo-ui-react.vercel.app/)** - Material UI components, design tokens, CSS vars, icons, and chat component
-- **[Wind Components](https://apollo-wind.vercel.app/)** - Tailwind CSS components
 
 ## 📚 Documentation
 
