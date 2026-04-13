@@ -11,8 +11,6 @@ import {
 } from "@/registry/tooltip/tooltip";
 
 const UPLOAD_LABEL = "Attach files";
-const DISCLAIMER =
-  "Responses may be inaccurate. Please verify important information.";
 
 interface AiChatInputProps {
   value: string;
@@ -82,7 +80,7 @@ export function AiChatInput({
   };
 
   return (
-    <div className="relative z-10 mt-auto py-3 px-4">
+    <div className="relative z-10 mt-auto pt-3 px-4">
       <div className="relative flex items-end gap-2">
         <div
           ref={glowRef}
@@ -183,9 +181,6 @@ export function AiChatInput({
             </Tooltip>
           )}
         </form>
-      </div>
-      <div className="mt-2 px-4 text-xs leading-normal text-muted-foreground text-center">
-        {DISCLAIMER}
       </div>
     </div>
   );

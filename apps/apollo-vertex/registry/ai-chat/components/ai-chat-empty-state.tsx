@@ -21,17 +21,13 @@ export function AiChatEmptyState({
 }: AiChatEmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center h-full text-center text-ai-chat-muted-foreground gap-4">
-      <div
-        className="size-16 flex items-center justify-center rounded-full"
-        style={{ background: "var(--ai-gradient)" }}
-      >
-        {icon ?? (
-          <AutopilotIcon
-            className="size-8 text-ai-chat-accent-foreground"
-            aria-hidden="true"
-          />
-        )}
-      </div>
+      {icon ?? (
+        <AutopilotIcon
+          size={32}
+          className="text-foreground"
+          aria-hidden="true"
+        />
+      )}
       <div className="flex flex-col items-center gap-1">
         <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground">
           {title}

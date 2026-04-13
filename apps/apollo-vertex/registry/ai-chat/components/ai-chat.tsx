@@ -8,7 +8,6 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { AutopilotIcon } from "./icons/autopilot";
-import { AutopilotGradientIcon } from "./icons/autopilot-gradient";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStickyScroll } from "../hooks/use-sticky-scroll";
@@ -136,7 +135,11 @@ export function AiChat({
 
   const defaultEmptyState = (
     <div className="flex flex-col items-center justify-center h-full text-center">
-      <AutopilotGradientIcon size={32} className="mb-4" aria-hidden="true" />
+      <AutopilotIcon
+        size={32}
+        className="mb-4 text-foreground"
+        aria-hidden="true"
+      />
       <div className="flex flex-col items-center gap-1">
         <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground">
           {"What would you like to do?"}
@@ -236,23 +239,30 @@ export function AiChat({
           ))}
 
         {messages.length === 0 ? (
-          <div
-            className="flex-1 flex flex-col items-center px-4"
-            style={{ justifyContent: "center", paddingBottom: "10%" }}
-          >
-            <div className="w-full max-w-[765px]">
-              <div className="text-center mb-10">
-                {emptyState ?? defaultEmptyState}
+          <div className="flex-1 flex flex-col min-h-0">
+            <div
+              className="flex-1 flex flex-col items-center px-4"
+              style={{ justifyContent: "center", paddingBottom: "10%" }}
+            >
+              <div className="w-full max-w-[765px]">
+                <div className="text-center mb-10">
+                  {emptyState ?? defaultEmptyState}
+                </div>
+                <AiChatInput
+                  value={input}
+                  onChange={setInput}
+                  onSubmit={handleSubmit}
+                  onStop={onStop}
+                  isLoading={isLoading}
+                  placeholder={placeholder}
+                  hasMessages={false}
+                />
               </div>
-              <AiChatInput
-                value={input}
-                onChange={setInput}
-                onSubmit={handleSubmit}
-                onStop={onStop}
-                isLoading={isLoading}
-                placeholder={placeholder}
-                hasMessages={false}
-              />
+            </div>
+            <div className="pt-2 pb-3 px-4 text-xs leading-normal text-muted-foreground text-center">
+              {
+                "Responses may be inaccurate. Please verify important information."
+              }
             </div>
           </div>
         ) : (
@@ -330,15 +340,22 @@ export function AiChat({
         )}
 
         {messages.length > 0 && (
-          <AiChatInput
-            value={input}
-            onChange={setInput}
-            onSubmit={handleSubmit}
-            onStop={onStop}
-            isLoading={isLoading}
-            placeholder={placeholder}
-            hasMessages
-          />
+          <>
+            <AiChatInput
+              value={input}
+              onChange={setInput}
+              onSubmit={handleSubmit}
+              onStop={onStop}
+              isLoading={isLoading}
+              placeholder={placeholder}
+              hasMessages
+            />
+            <div className="pt-2 pb-3 px-4 text-xs leading-normal text-muted-foreground text-center">
+              {
+                "Responses may be inaccurate. Please verify important information."
+              }
+            </div>
+          </>
         )}
       </div>
     </AiChatProvider>
