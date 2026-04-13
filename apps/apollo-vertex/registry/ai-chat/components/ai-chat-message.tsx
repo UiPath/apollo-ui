@@ -145,7 +145,7 @@ export function AiChatMessage({
                 isLatest={isLatestAssistant}
                 showCopy={config.showCopyButton}
                 onFeedback={onFeedback}
-                onRegenerate={onRegenerate}
+                onRegenerate={onRegenerate ?? config.onRegenerate}
               />
             </motion.div>
           )}

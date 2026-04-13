@@ -143,7 +143,7 @@ export default function AiChatPreviewPage() {
             isLoading={false}
             onSendMessage={noop}
             onStop={noop}
-            title="Project Setup Wizard"
+            title="Autopilot"
             showTimestamps
           >
             {MOCK_MESSAGES_CONVERSATION.map((msg) => (
@@ -165,7 +165,7 @@ export default function AiChatPreviewPage() {
             isLoading={false}
             onSendMessage={noop}
             onStop={noop}
-            title="Markdown Demo"
+            title="Autopilot"
           >
             {MOCK_MESSAGES_MARKDOWN.map((msg) => (
               <AiChatMessage key={msg.id} message={msg} />
@@ -187,7 +187,7 @@ export default function AiChatPreviewPage() {
               isLoading
               onSendMessage={noop}
               onStop={noop}
-              title="Loading in chat"
+              title="Autopilot"
             >
               <AiChatMessage message={MOCK_MESSAGES_BASIC[0]} />
             </AiChat>
@@ -240,7 +240,7 @@ export default function AiChatPreviewPage() {
             isLoading={false}
             onSendMessage={noop}
             onStop={noop}
-            title="Presentation Advisor"
+            title="Autopilot"
           >
             {MOCK_MESSAGES_WITH_CHOICES.map((msg) => (
               <AiChatMessage key={msg.id} message={msg} />
@@ -263,7 +263,7 @@ export default function AiChatPreviewPage() {
               onSendMessage={noop}
               onStop={noop}
               variant="default"
-              title="Default"
+              title="Autopilot"
             >
               {MOCK_MESSAGES_BASIC.map((msg) => (
                 <AiChatMessage key={msg.id} message={msg} />
@@ -277,7 +277,7 @@ export default function AiChatPreviewPage() {
               onSendMessage={noop}
               onStop={noop}
               variant="compact"
-              title="Compact"
+              title="Autopilot"
             >
               {MOCK_MESSAGES_BASIC.map((msg) => (
                 <AiChatMessage key={msg.id} message={msg} />
@@ -327,7 +327,6 @@ export default function AiChatPreviewPage() {
               onChange={noop}
               onSubmit={noop}
               onStop={noop}
-              onClear={noop}
               isLoading={false}
               hasMessages
             />

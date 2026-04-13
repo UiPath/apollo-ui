@@ -44,4 +44,6 @@ export interface AiChatConfig {
   isLatestResponseAnimating: boolean;
   /** Setter for `isLatestResponseAnimating` — called by the latest assistant message component as its typewriter state changes. */
   setIsLatestResponseAnimating: (animating: boolean) => void;
+  /** Callback to regenerate the last assistant response. When provided, the "Try again" button appears in assistant message actions. */
+  onRegenerate?: () => void;
 }

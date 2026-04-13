@@ -50,6 +50,8 @@ export interface AiChatProps {
   onClearChat?: () => void;
   onChoiceSelect?: (option: ChoiceOption) => void;
   onRetry?: () => void;
+  /** Callback to regenerate the last assistant response. When provided, the "Try again" button appears in assistant message actions. */
+  onRegenerate?: () => void;
   children?: ReactNode;
   assistantName?: string;
   assistantAvatar?: ReactNode;
@@ -80,6 +82,7 @@ export function AiChat({
   onClearChat,
   onChoiceSelect,
   onRetry,
+  onRegenerate,
   children,
   assistantName,
   assistantAvatar,
@@ -163,6 +166,7 @@ export function AiChat({
       typewriterCps={typewriterCps}
       isLatestResponseAnimating={isLatestResponseAnimating}
       setIsLatestResponseAnimating={setIsLatestResponseAnimating}
+      onRegenerate={onRegenerate}
     >
       <div
         className={
@@ -174,14 +178,14 @@ export function AiChat({
       >
         {renderHeader ??
           (title && !isCompact && !isEmbedded && (
-            <div className="py-3 px-4 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0">
+            <div className="relative z-10 py-3 px-4 flex items-center justify-between gap-2 bg-background">
+              <div className="flex items-center gap-1.5 min-w-0">
                 <AutopilotIcon
-                  className="size-4 text-[#6C5AEF] flex-shrink-0"
+                  className="size-[21px] text-[#6C5AEF] flex-shrink-0"
                   aria-hidden="true"
                 />
                 <span
-                  className="text-sm font-bold tracking-tight bg-clip-text text-transparent truncate"
+                  className="text-sm font-bold tracking-tight bg-clip-text text-transparent truncate pt-[2px]"
                   style={{ backgroundImage: "var(--ai-gradient-strong)" }}
                 >
                   {title}
@@ -253,6 +257,14 @@ export function AiChat({
           </div>
         ) : (
           <div className="relative flex-1 min-h-0">
+            <div
+              className="absolute top-0 left-0 right-0 h-6 z-10 pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(to bottom, var(--background) 0%, transparent 100%)",
+              }}
+              aria-hidden="true"
+            />
             <div
               ref={scrollRef}
               role="log"

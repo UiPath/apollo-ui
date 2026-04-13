@@ -128,12 +128,12 @@ export function AiChatMessageActions({
         </>
       )}
 
-      {messageRole === "assistant" && (
+      {messageRole === "assistant" && onRegenerate && (
         <Tooltip>
           <TooltipTrigger asChild>
             <button
               type="button"
-              onClick={() => onRegenerate?.()}
+              onClick={() => onRegenerate()}
               className="size-7 inline-flex items-center justify-center rounded-md hover:bg-ai-chat-muted transition-colors"
               aria-label={LABELS.regenerate}
             >

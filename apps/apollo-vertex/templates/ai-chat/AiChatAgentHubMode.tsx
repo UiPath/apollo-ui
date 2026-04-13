@@ -31,10 +31,11 @@ export function AgentHubChat({ accessToken, orgTenant }: AgentHubChatProps) {
     tools: choicesTools,
   });
 
-  const { messages, sendMessage, isLoading, stop, clear, error } = useChat({
-    connection,
-    tools: choicesTools,
-  });
+  const { messages, sendMessage, isLoading, stop, clear, reload, error } =
+    useChat({
+      connection,
+      tools: choicesTools,
+    });
 
   return (
     <AiChat
@@ -45,7 +46,8 @@ export function AgentHubChat({ accessToken, orgTenant }: AgentHubChatProps) {
       }}
       onStop={stop}
       onClearChat={clear}
-      title={t("ai_assistant")}
+      onRegenerate={reload}
+      title="Autopilot"
       assistantName={t("assistant")}
       error={error ?? null}
     >

@@ -39,9 +39,10 @@ function ConversationalAgentChatInner({
     };
   }, [connection]);
 
-  const { messages, sendMessage, isLoading, stop, clear, error } = useChat({
-    connection,
-  });
+  const { messages, sendMessage, isLoading, stop, clear, reload, error } =
+    useChat({
+      connection,
+    });
 
   return (
     <AiChat
@@ -52,6 +53,7 @@ function ConversationalAgentChatInner({
       }}
       onStop={stop}
       onClearChat={clear}
+      onRegenerate={reload}
       title={title}
       assistantName={assistantName}
       error={error ?? null}
@@ -147,7 +149,7 @@ export function ConversationalAgentChat({
           sdk={sdk}
           agentId={selectedAgentConfig.agentId}
           folderId={selectedAgentConfig.folderId}
-          title={t("ai_assistant")}
+          title="Autopilot"
           assistantName={t("assistant")}
         />
       </div>
