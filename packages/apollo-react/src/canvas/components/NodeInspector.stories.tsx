@@ -158,9 +158,7 @@ const CanvasWithNodeInspector = () => {
           }}
         >
           <span className="text-lg font-bold">Node Inspector Demo</span>
-          <span className="text-sm">
-            Click on nodes to see their details
-          </span>
+          <span className="text-sm">Click on nodes to see their details</span>
         </Column>
       </Panel>
     </BaseCanvas>

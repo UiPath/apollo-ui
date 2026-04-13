@@ -487,9 +487,7 @@ function InteractiveEdgeSelectionStory() {
           </Label>
 
           <Column gap={4}>
-            <span className="text-sm">
-              Stroke Width: {strokeWidth}px
-            </span>
+            <span className="text-sm">Stroke Width: {strokeWidth}px</span>
             <input
               type="range"
               min="1"

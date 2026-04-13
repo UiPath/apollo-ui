@@ -1259,12 +1259,16 @@ const DesignModePlayground = () => {
               size="sm"
               variant={hasResources ? 'default' : 'secondary'}
               onClick={() => handleToggleResources(true)}
-            >With</Button>
+            >
+              With
+            </Button>
             <Button
               size="sm"
               variant={!hasResources ? 'default' : 'secondary'}
               onClick={() => handleToggleResources(false)}
-            >Empty</Button>
+            >
+              Empty
+            </Button>
           </Row>
         </Column>
 
@@ -1278,17 +1282,23 @@ const DesignModePlayground = () => {
               size="sm"
               variant={suggestionMode === 'off' ? 'default' : 'secondary'}
               onClick={() => handleToggleSuggestionMode('off')}
-            >Off</Button>
+            >
+              Off
+            </Button>
             <Button
               size="sm"
               variant={suggestionMode === 'placeholders' ? 'default' : 'secondary'}
               onClick={() => handleToggleSuggestionMode('placeholders')}
-            >Placeholders</Button>
+            >
+              Placeholders
+            </Button>
             <Button
               size="sm"
               variant={suggestionMode === 'autopilot' ? 'default' : 'secondary'}
               onClick={() => handleToggleSuggestionMode('autopilot')}
-            >Autopilot</Button>
+            >
+              Autopilot
+            </Button>
           </Row>
         </Column>
 
@@ -1299,26 +1309,18 @@ const DesignModePlayground = () => {
               Create suggestions:
             </span>
             <Row gap={4} style={{ flexWrap: 'wrap' }}>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={createInsertSuggestions}
-              >Inserts</Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={createDeleteSuggestions}
-              >Deletes</Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={createUpdateSuggestions}
-              >Updates</Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={createMixedSuggestions}
-              >Mixed</Button>
+              <Button size="sm" variant="secondary" onClick={createInsertSuggestions}>
+                Inserts
+              </Button>
+              <Button size="sm" variant="secondary" onClick={createDeleteSuggestions}>
+                Deletes
+              </Button>
+              <Button size="sm" variant="secondary" onClick={createUpdateSuggestions}>
+                Updates
+              </Button>
+              <Button size="sm" variant="secondary" onClick={createMixedSuggestions}>
+                Mixed
+              </Button>
             </Row>
           </Column>
         )}
@@ -1333,12 +1335,16 @@ const DesignModePlayground = () => {
               size="sm"
               variant={enableStickyNotes ? 'default' : 'secondary'}
               onClick={() => setEnableStickyNotes(true)}
-            >On</Button>
+            >
+              On
+            </Button>
             <Button
               size="sm"
               variant={!enableStickyNotes ? 'default' : 'secondary'}
               onClick={() => setEnableStickyNotes(false)}
-            >Off</Button>
+            >
+              Off
+            </Button>
           </Row>
           {enableStickyNotes && (
             <Row gap={4}>
@@ -1346,12 +1352,12 @@ const DesignModePlayground = () => {
                 size="sm"
                 variant="secondary"
                 onClick={() => setStickyNotes(sampleStickyNotes)}
-              >Load Samples</Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => setStickyNotes([])}
-              >Clear</Button>
+              >
+                Load Samples
+              </Button>
+              <Button size="sm" variant="secondary" onClick={() => setStickyNotes([])}>
+                Clear
+              </Button>
             </Row>
           )}
         </Column>
@@ -1366,12 +1372,16 @@ const DesignModePlayground = () => {
               size="sm"
               variant={enableDragging ? 'default' : 'secondary'}
               onClick={() => setEnableDragging(true)}
-            >On</Button>
+            >
+              On
+            </Button>
             <Button
               size="sm"
               variant={!enableDragging ? 'default' : 'secondary'}
               onClick={() => setEnableDragging(false)}
-            >Off</Button>
+            >
+              Off
+            </Button>
           </Row>
         </Column>
 
@@ -1385,12 +1395,16 @@ const DesignModePlayground = () => {
               size="sm"
               variant={hasInstructions ? 'default' : 'secondary'}
               onClick={() => setHasInstructions(true)}
-            >With</Button>
+            >
+              With
+            </Button>
             <Button
               size="sm"
               variant={!hasInstructions ? 'default' : 'secondary'}
               onClick={() => setHasInstructions(false)}
-            >Without</Button>
+            >
+              Without
+            </Button>
           </Row>
           {hasInstructions && (
             <Column gap={8} style={{ marginTop: 8 }}>
@@ -1555,15 +1569,12 @@ const DesignModePlayground = () => {
                   )}
                 </p>
                 <Row gap={8} style={{ justifyContent: 'flex-end' }}>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={handleCancelModal}
-                  >Cancel</Button>
-                  <Button
-                    size="sm"
-                    onClick={handleConfirmModal}
-                  >Confirm</Button>
+                  <Button size="sm" variant="secondary" onClick={handleCancelModal}>
+                    Cancel
+                  </Button>
+                  <Button size="sm" onClick={handleConfirmModal}>
+                    Confirm
+                  </Button>
                 </Row>
               </div>
             </>
@@ -1622,12 +1633,16 @@ const ViewModeWrapper = () => {
                 size="sm"
                 variant={!hasTimelinePlayer ? 'default' : 'secondary'}
                 onClick={() => setHasTimelinePlayer(false)}
-              >Off</Button>
+              >
+                Off
+              </Button>
               <Button
                 size="sm"
                 variant={hasTimelinePlayer ? 'default' : 'secondary'}
                 onClick={() => setHasTimelinePlayer(true)}
-              >With Spans</Button>
+              >
+                With Spans
+              </Button>
             </Row>
           </Column>
           <Column gap={4}>
@@ -1639,12 +1654,16 @@ const ViewModeWrapper = () => {
                 size="sm"
                 variant={hasInstructions ? 'default' : 'secondary'}
                 onClick={() => setHasInstructions(true)}
-              >With</Button>
+              >
+                With
+              </Button>
               <Button
                 size="sm"
                 variant={!hasInstructions ? 'default' : 'secondary'}
                 onClick={() => setHasInstructions(false)}
-              >Without</Button>
+              >
+                Without
+              </Button>
             </Row>
           </Column>
         </Column>
@@ -1712,27 +1731,37 @@ const HealthScoreWrapper = ({
               size="sm"
               variant={healthScore === undefined ? 'default' : 'secondary'}
               onClick={() => setHealthScore(undefined)}
-            >None</Button>
+            >
+              None
+            </Button>
             <Button
               size="sm"
               variant={healthScore === 0 ? 'default' : 'secondary'}
               onClick={() => setHealthScore(0)}
-            >0</Button>
+            >
+              0
+            </Button>
             <Button
               size="sm"
               variant={healthScore === 50 ? 'default' : 'secondary'}
               onClick={() => setHealthScore(50)}
-            >50</Button>
+            >
+              50
+            </Button>
             <Button
               size="sm"
               variant={healthScore === 95 ? 'default' : 'secondary'}
               onClick={() => setHealthScore(95)}
-            >95</Button>
+            >
+              95
+            </Button>
             <Button
               size="sm"
               variant={healthScore === 100 ? 'default' : 'secondary'}
               onClick={() => setHealthScore(100)}
-            >100</Button>
+            >
+              100
+            </Button>
           </Row>
           <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
             Current: {healthScore === undefined ? 'Not set' : healthScore}

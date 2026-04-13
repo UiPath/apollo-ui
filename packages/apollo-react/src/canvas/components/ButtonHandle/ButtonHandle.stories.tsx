@@ -133,7 +133,10 @@ function SimpleNode({
       <Row w="100%" gap={12} align="center">
         <CanvasIcon icon="bot" size={32} color="var(--uix-canvas-foreground-de-emp)" />
         <Column>
-          <span className="text-sm font-semibold" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
+          <span
+            className="text-sm font-semibold"
+            style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
+          >
             {data.label}
           </span>
           <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
@@ -471,7 +474,9 @@ function HandleConfigurationStory() {
           </Label>
 
           {/* Reset */}
-          <Button variant="secondary" size="sm" onClick={resetConfig}>Reset</Button>
+          <Button variant="secondary" size="sm" onClick={resetConfig}>
+            Reset
+          </Button>
         </Column>
       </StoryInfoPanel>
     </BaseCanvas>
