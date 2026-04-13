@@ -184,8 +184,8 @@ export function AiChatInput({
           )}
         </form>
       </div>
-      <div className="mt-1 pl-[24px]">
-        <span className="text-xs text-muted-foreground">{DISCLAIMER}</span>
+      <div className="mt-2 px-4 text-xs leading-normal text-muted-foreground text-center">
+        {DISCLAIMER}
       </div>
     </div>
   );

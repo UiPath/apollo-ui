@@ -404,6 +404,11 @@
           "target": "components/ui/ai-chat/hooks/use-typewriter.ts"
         },
         {
+          "path": "registry/ai-chat/hooks/use-thinking-label.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/hooks/use-thinking-label.ts"
+        },
+        {
           "path": "registry/ai-chat/components/ai-chat-provider.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-provider.tsx"
