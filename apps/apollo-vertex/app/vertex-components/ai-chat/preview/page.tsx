@@ -1,5 +1,7 @@
 "use client";
 
+import { Maximize2, Minimize2 } from "lucide-react";
+import { type ReactNode, useState } from "react";
 import { AiChat } from "@/registry/ai-chat/components/ai-chat";
 import { AiChatCodeBlock } from "@/registry/ai-chat/components/ai-chat-code-block";
 import { AiChatEmptyState } from "@/registry/ai-chat/components/ai-chat-empty-state";
@@ -7,6 +9,14 @@ import { AiChatInput } from "@/registry/ai-chat/components/ai-chat-input";
 import { AiChatMarkdown } from "@/registry/ai-chat/components/ai-chat-markdown";
 import { AiChatMessage } from "@/registry/ai-chat/components/ai-chat-message";
 import { AiChatSuggestions } from "@/registry/ai-chat/components/ai-chat-suggestions";
+import { Button } from "@/registry/button/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/registry/dialog/dialog";
 import {
   MOCK_ATTACHMENTS_BASIC,
   MOCK_CHOICE_OPTIONS,
@@ -41,16 +51,51 @@ function SectionHeader({
 function PreviewCard({
   children,
   className,
+  title,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
+  title?: string;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const baseClass = `border rounded-lg bg-background overflow-hidden ${className ?? ""}`;
+
+  if (!title) {
+    return <div className={baseClass}>{children}</div>;
+  }
+
   return (
-    <div
-      className={`border rounded-lg bg-background overflow-hidden ${className ?? ""}`}
-    >
-      {children}
-    </div>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <div className={`relative group ${baseClass}`}>
+        {!isOpen && children}
+        <DialogTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon-sm"
+            className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-300 bg-background/80 backdrop-blur-sm"
+            aria-label="Enter full screen"
+            title="Enter full screen"
+          >
+            <Maximize2 className="size-4" />
+          </Button>
+        </DialogTrigger>
+      </div>
+      <DialogContent fullscreen showCloseButton={false}>
+        <DialogTitle className="sr-only">{title}</DialogTitle>
+        <DialogClose asChild>
+          <Button
+            variant="outline"
+            size="icon-sm"
+            className="absolute top-4 right-4 z-20"
+            aria-label="Exit full screen"
+            title="Exit full screen"
+          >
+            <Minimize2 className="size-4" />
+          </Button>
+        </DialogClose>
+        <div className="h-full">{children}</div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -83,7 +128,7 @@ export default function AiChatPreviewPage() {
           title="Empty State (Default)"
           description="Default empty state with AI gradient icon."
         />
-        <PreviewCard className="h-[400px]">
+        <PreviewCard className="h-[400px]" title="Empty State (Default)">
           <AiChat
             messages={[]}
             isLoading={false}
@@ -100,7 +145,7 @@ export default function AiChatPreviewPage() {
           title="Empty State (Custom with Suggestions)"
           description="AiChatEmptyState component with quick-start prompts."
         />
-        <PreviewCard className="h-[400px]">
+        <PreviewCard className="h-[400px]" title="Empty State (Custom with Suggestions)">
           <AiChat
             messages={[]}
             isLoading={false}
@@ -124,7 +169,7 @@ export default function AiChatPreviewPage() {
           title="Basic Conversation"
           description="User/assistant exchange with avatars, timestamps, and hover actions."
         />
-        <PreviewCard className="h-[400px]">
+        <PreviewCard className="h-[400px]" title="Basic Conversation">
           <AiChat
             messages={MOCK_MESSAGES_BASIC}
             isLoading={false}
@@ -146,7 +191,7 @@ export default function AiChatPreviewPage() {
           title="Multi-turn Conversation"
           description="Longer back-and-forth with scrollable content and custom assistant name."
         />
-        <PreviewCard className="h-[500px]">
+        <PreviewCard className="h-[500px]" title="Multi-turn Conversation">
           <AiChat
             messages={MOCK_MESSAGES_CONVERSATION}
             isLoading={false}
@@ -169,7 +214,7 @@ export default function AiChatPreviewPage() {
           title="Markdown Rendering"
           description="All markdown elements including code blocks with copy button."
         />
-        <PreviewCard className="h-[600px]">
+        <PreviewCard className="h-[600px]" title="Markdown Rendering">
           <AiChat
             messages={MOCK_MESSAGES_MARKDOWN}
             isLoading={false}
@@ -192,7 +237,7 @@ export default function AiChatPreviewPage() {
           description="Thinking indicator that appears while the assistant generates a response."
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <PreviewCard className="h-[300px]">
+          <PreviewCard className="h-[300px]" title="Loading State">
             <AiChat
               messages={[MOCK_MESSAGES_BASIC[0]]}
               isLoading
@@ -219,7 +264,7 @@ export default function AiChatPreviewPage() {
           title="Error State with Retry"
           description="Inline error banner with retry button."
         />
-        <PreviewCard className="h-[400px]">
+        <PreviewCard className="h-[400px]" title="Error State with Retry">
           <AiChat
             messages={MOCK_MESSAGES_BASIC}
             isLoading={false}
@@ -245,7 +290,7 @@ export default function AiChatPreviewPage() {
           title="Suggestion Buttons"
           description="Choice buttons with recommended badge and hover animation."
         />
-        <PreviewCard className="h-[400px]">
+        <PreviewCard className="h-[400px]" title="Suggestion Buttons">
           <AiChat
             messages={MOCK_MESSAGES_WITH_CHOICES}
             isLoading={false}
@@ -268,7 +313,7 @@ export default function AiChatPreviewPage() {
           description="Default, compact, and embedded layout variants side by side."
         />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <PreviewCard className="h-[350px]">
+          <PreviewCard className="h-[350px]" title="Default Variant">
             <AiChat
               messages={MOCK_MESSAGES_BASIC}
               isLoading={false}
@@ -281,7 +326,7 @@ export default function AiChatPreviewPage() {
               {MOCK_MESSAGES_BASIC.map(renderBasicMsg)}
             </AiChat>
           </PreviewCard>
-          <PreviewCard className="h-[350px]">
+          <PreviewCard className="h-[350px]" title="Compact Variant">
             <AiChat
               messages={MOCK_MESSAGES_BASIC}
               isLoading={false}
@@ -294,7 +339,7 @@ export default function AiChatPreviewPage() {
               {MOCK_MESSAGES_BASIC.map(renderBasicMsg)}
             </AiChat>
           </PreviewCard>
-          <PreviewCard className="h-[350px] p-4">
+          <PreviewCard className="h-[350px] p-4" title="Embedded Variant">
             <AiChat
               messages={MOCK_MESSAGES_BASIC}
               isLoading={false}

@@ -117,7 +117,7 @@ export function AiChatCodeBlock({ children, language }: AiChatCodeBlockProps) {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: DARK_HLJS_STYLE }} />
+      <style>{DARK_HLJS_STYLE}</style>
       <div className="relative group/codeblock mb-2 last:mb-0 rounded-lg bg-ai-chat-muted/50 overflow-hidden">
         <div className="flex items-center justify-between px-3 py-1.5 border-b border-ai-chat-border">
           {language && (
