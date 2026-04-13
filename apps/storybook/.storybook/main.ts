@@ -1,4 +1,5 @@
 import type { StorybookConfig } from "@storybook/react-vite";
+import { mergeAlias } from "vite";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -121,14 +122,7 @@ const config: StorybookConfig = {
       plugins: [...(config.plugins || []), tailwindcss()],
       resolve: {
         ...config.resolve,
-        alias: [
-          // Spread existing aliases (object → array form)
-          ...Object.entries(config.resolve?.alias ?? {}).map(
-            ([find, replacement]) => ({
-              find,
-              replacement: replacement as string,
-            }),
-          ),
+        alias: mergeAlias(config.resolve?.alias, [
           // ── Apollo Wind → source for HMR ──
           { find: "@", replacement: apolloWindSrc },
           {
@@ -163,7 +157,7 @@ const config: StorybookConfig = {
             find: /^@uipath\/apollo-react\/material\/(.*)/,
             replacement: `${apolloReactSrc}/material/$1`,
           },
-        ],
+        ]),
       },
     };
   },

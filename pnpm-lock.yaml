@@ -331,7 +331,7 @@ importers:
         version: 19.2.3(@types/react@19.2.8)
       '@uipath/proteus-client':
         specifier: ^0.1.10
-        version: 0.1.10(axios@1.14.0)
+        version: 0.1.10(axios@1.15.0)
       babel-plugin-react-compiler:
         specifier: ^1.0.0
         version: 1.0.0
@@ -6598,8 +6598,8 @@ packages:
     resolution: {integrity: sha512-ilYanEU8vxxBexpJd8cWM4ElSQq4QctCLKih0TSfjIfCQTeyH/6zVrmIJfLPrKTKJRbiG+cfnZbQIjAlJmF1jQ==}
     engines: {node: '>=4'}
 
-  axios@1.14.0:
-    resolution: {integrity: sha512-3Y8yrqLSwjuzpXuZ0oIYZ/XGgLwUIBU3uLvbcpb0pidD9ctpShJd43KSlEEkVQg6DS0G9NKyzOvBfUtDKEyHvQ==}
+  axios@1.15.0:
+    resolution: {integrity: sha512-wWyJDlAatxk30ZJer+GeCWS209sA42X+N5jU2jy6oHTp7ufw8uzUTVFBX9+wTfAlhiJXGS0Bq7X6efruWjuK9Q==}
 
   babel-plugin-macros@3.1.0:
     resolution: {integrity: sha512-Cg7TFGpIr01vOQNODXOOaGz2NpCU5gl8x1qJFbb6hbZxR7XrcE2vtbAsTAbJ7/xwJtUuJEw8K8Zr/AE0LHlesg==}
@@ -18233,9 +18233,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@uipath/proteus-client@0.1.10(axios@1.14.0)':
+  '@uipath/proteus-client@0.1.10(axios@1.15.0)':
     dependencies:
-      axios: 1.14.0
+      axios: 1.15.0
       zod: 3.25.76
 
   '@uipath/uipath-typescript@1.2.2(@opentelemetry/api@1.9.0)(zod@4.3.5)':
@@ -18712,7 +18712,7 @@ snapshots:
 
   axe-core@4.11.0: {}
 
-  axios@1.14.0:
+  axios@1.15.0:
     dependencies:
       follow-redirects: 1.15.11
       form-data: 4.0.5

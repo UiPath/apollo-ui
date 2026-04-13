@@ -220,7 +220,7 @@ const preview: Preview = {
         return () => {
           body.classList.remove(...allThemes);
         };
-      }, [theme]);
+      }, [theme, context.id]);
 
       // Toggle react-scan
       useEffect(() => {

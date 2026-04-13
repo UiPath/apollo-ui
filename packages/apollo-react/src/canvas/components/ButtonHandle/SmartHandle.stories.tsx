@@ -91,7 +91,7 @@ function HubNode({ data, selected }: { id: string; data: { label: string }; sele
         }}
       >
         <Column align="center" gap={4}>
-          <CanvasIcon icon="lucide-network" color="var(--uix-canvas-foreground-de-emp)" size={24} />
+          <CanvasIcon icon="network" color="var(--uix-canvas-foreground-de-emp)" size={24} />
           <span className="text-xs font-bold" style={{ color: 'var(--uix-canvas-foreground)' }}>
             {data.label}
           </span>

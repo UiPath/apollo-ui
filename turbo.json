@@ -6,15 +6,10 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": [
-        "src/**",
+        "$TURBO_DEFAULT$",
         "!src/**/*.stories.*",
         "!src/**/*.test.*",
-        "!src/**/*.spec.*",
-        "package.json",
-        "tsconfig.json",
-        "tsconfig.build.json",
-        "rslib.config.*",
-        "rsbuild.config.*"
+        "!src/**/*.spec.*"
       ],
       "outputs": ["dist/**", ".next/**", "build/**", "storybook-static/**"]
     },
