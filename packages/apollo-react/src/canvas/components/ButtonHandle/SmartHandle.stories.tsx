@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { FontVariantToken } from '@uipath/apollo-core';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import type {
   Connection,
@@ -10,8 +9,7 @@ import type {
   OnEdgesChange,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApTypography } from '@uipath/apollo-react/material';
-import { ApIcon } from '@uipath/apollo-react/material/components';
+import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import { useCallback, useMemo } from 'react';
 
 import { StoryInfoPanel, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
@@ -63,9 +61,9 @@ function SmartNode({ data, selected }: { id: string; data: { label: string }; se
         position: 'relative',
       }}
     >
-      <ApTypography variant={FontVariantToken.fontSizeSBold} color="var(--uix-canvas-foreground)">
+      <span className="text-sm font-semibold" style={{ color: 'var(--uix-canvas-foreground)' }}>
         {data.label}
-      </ApTypography>
+      </span>
       <SmartTargetHandle id="input" />
       <SmartSourceHandle id="output" />
     </div>
@@ -93,13 +91,10 @@ function HubNode({ data, selected }: { id: string; data: { label: string }; sele
         }}
       >
         <Column align="center" gap={4}>
-          <ApIcon name="hub" size="24px" color="var(--uix-canvas-foreground-de-emp)" />
-          <ApTypography
-            variant={FontVariantToken.fontSizeXsBold}
-            color="var(--uix-canvas-foreground)"
-          >
+          <CanvasIcon icon="lucide-network" color="var(--uix-canvas-foreground-de-emp)" size={24} />
+          <span className="text-xs font-bold" style={{ color: 'var(--uix-canvas-foreground)' }}>
             {data.label}
-          </ApTypography>
+          </span>
         </Column>
         {/* Multiple smart handles for hub connections - with node dimensions for grid alignment */}
         <SmartHandle
@@ -226,30 +221,18 @@ function DefaultStory() {
     >
       <StoryInfoPanel title="SmartHandle" collapsible defaultCollapsed={false}>
         <Column gap={8} style={{ marginTop: 8 }}>
-          <ApTypography
-            variant={FontVariantToken.fontSizeS}
-            color="var(--uix-canvas-foreground-de-emp)"
-          >
+          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
             • <strong>Drag nodes</strong> to see handles reposition
-          </ApTypography>
-          <ApTypography
-            variant={FontVariantToken.fontSizeS}
-            color="var(--uix-canvas-foreground-de-emp)"
-          >
+          </span>
+          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
             • <strong>Select edge + Backspace</strong> to delete
-          </ApTypography>
-          <ApTypography
-            variant={FontVariantToken.fontSizeS}
-            color="var(--uix-canvas-foreground-de-emp)"
-          >
+          </span>
+          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
             • <strong>Drag from handle</strong> to create new connection
-          </ApTypography>
-          <ApTypography
-            variant={FontVariantToken.fontSizeS}
-            color="var(--uix-canvas-foreground-de-emp)"
-          >
+          </span>
+          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
             • Handles return to default position when disconnected
-          </ApTypography>
+          </span>
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">
@@ -291,9 +274,9 @@ function MultiHandleNode({
           position: 'relative',
         }}
       >
-        <ApTypography variant={FontVariantToken.fontSizeSBold} color="var(--uix-canvas-foreground)">
+        <span className="text-sm font-semibold" style={{ color: 'var(--uix-canvas-foreground)' }}>
           {data.label}
-        </ApTypography>
+        </span>
         {/* Multiple handles that will auto-space when on same side */}
         <SmartHandle
           type="target"
@@ -466,24 +449,15 @@ function MultiHandleStory() {
     >
       <StoryInfoPanel title="Multi-Handle SmartHandle" collapsible defaultCollapsed={false}>
         <Column gap={8} style={{ marginTop: 8 }}>
-          <ApTypography
-            variant={FontVariantToken.fontSizeS}
-            color="var(--uix-canvas-foreground-de-emp)"
-          >
+          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
             • Multiple handles on same side <strong>auto-space</strong> with grid alignment
-          </ApTypography>
-          <ApTypography
-            variant={FontVariantToken.fontSizeS}
-            color="var(--uix-canvas-foreground-de-emp)"
-          >
+          </span>
+          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
             • <strong>Drag nodes</strong> to see handles reposition dynamically
-          </ApTypography>
-          <ApTypography
-            variant={FontVariantToken.fontSizeS}
-            color="var(--uix-canvas-foreground-de-emp)"
-          >
+          </span>
+          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
             • Center node has 3 inputs + 2 outputs
-          </ApTypography>
+          </span>
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">

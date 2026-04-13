@@ -73,5 +73,28 @@
         "noAccumulatingSpread": "off"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["src/canvas/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@uipath/apollo-react/material": "Use wind components instead of material in canvas",
+                  "@uipath/apollo-react/material/components": "Use wind components instead of material in canvas",
+                  "@uipath/apollo-react/material/theme": "Use wind components instead of material in canvas",
+                  "@mui/material": "Use wind components instead of MUI in canvas",
+                  "@mui/material/styles": "Use wind components instead of MUI in canvas"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

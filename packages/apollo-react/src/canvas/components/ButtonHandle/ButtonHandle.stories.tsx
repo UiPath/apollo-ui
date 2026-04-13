@@ -1,11 +1,18 @@
-import { Checkbox, FormControl, FormControlLabel, MenuItem, Select } from '@mui/material';
-
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { FontVariantToken } from '@uipath/apollo-core';
+import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApButton, ApIcon, ApIconButton, ApTypography } from '@uipath/apollo-react/material';
+import {
+  Button,
+  Checkbox,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@uipath/apollo-wind';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
@@ -124,20 +131,14 @@ function SimpleNode({
       }}
     >
       <Row w="100%" gap={12} align="center">
-        <ApIcon name="smart_toy" size="32px" color="var(--uix-canvas-foreground-de-emp)" />
+        <CanvasIcon icon="bot" size={32} color="var(--uix-canvas-foreground-de-emp)" />
         <Column>
-          <ApTypography
-            variant={FontVariantToken.fontSizeSBold}
-            color="var(--uix-canvas-foreground-de-emp)"
-          >
+          <span className="text-sm font-semibold" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
             {data.label}
-          </ApTypography>
-          <ApTypography
-            variant={FontVariantToken.fontSizeS}
-            color="var(--uix-canvas-foreground-de-emp)"
-          >
+          </span>
+          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
             {data.subLabel}
-          </ApTypography>
+          </span>
         </Column>
       </Row>
       <ButtonHandles nodeId={id} handles={topHandles} position={Position.Top} selected={selected} />
@@ -399,10 +400,10 @@ function HandleConfigurationStory() {
   }, [handleConfig, setNodes]);
 
   const positions: Array<{ key: keyof HandleConfigState; label: string; icon: string }> = [
-    { key: 'top', label: 'Top', icon: 'arrow_upward' },
-    { key: 'right', label: 'Right', icon: 'arrow_forward' },
-    { key: 'bottom', label: 'Bottom', icon: 'arrow_downward' },
-    { key: 'left', label: 'Left', icon: 'arrow_back' },
+    { key: 'top', label: 'Top', icon: 'arrow-up' },
+    { key: 'right', label: 'Right', icon: 'arrow-right' },
+    { key: 'bottom', label: 'Bottom', icon: 'arrow-down' },
+    { key: 'left', label: 'Left', icon: 'arrow-left' },
   ];
 
   return (
@@ -410,45 +411,50 @@ function HandleConfigurationStory() {
       <StoryInfoPanel title="Handle configuration" collapsible defaultCollapsed>
         <Column align="start" gap={16} style={{ marginTop: 12 }}>
           <Column gap={8}>
-            <ApTypography variant={FontVariantToken.fontSizeSBold}>Handles</ApTypography>
+            <span className="text-sm font-semibold">Handles</span>
             <Row gap={16} style={{ flexWrap: 'wrap' }}>
               {positions.map(({ key, label, icon }) => (
                 <Column key={key} gap={6} align="center">
                   <Row gap={4} align="center">
-                    <ApIcon name={icon} size="14px" />
-                    <ApTypography variant={FontVariantToken.fontSizeXs}>{label}</ApTypography>
+                    <CanvasIcon icon={icon} size={14} />
+                    <span className="text-xs">{label}</span>
                   </Row>
-                  <FormControl size="small">
-                    <Select
-                      value={handleTypes[key]}
-                      onChange={(e) =>
-                        setHandleTypes((prev) => ({
-                          ...prev,
-                          [key]: e.target.value as HandleTypeOption,
-                        }))
-                      }
-                    >
-                      <MenuItem value="input">Input</MenuItem>
-                      <MenuItem value="output">Output</MenuItem>
-                      <MenuItem value="artifact">Artifact</MenuItem>
-                    </Select>
-                  </FormControl>
+                  <Select
+                    value={handleTypes[key]}
+                    onValueChange={(value) =>
+                      setHandleTypes((prev) => ({
+                        ...prev,
+                        [key]: value as HandleTypeOption,
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="w-[120px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="input">Input</SelectItem>
+                      <SelectItem value="output">Output</SelectItem>
+                      <SelectItem value="artifact">Artifact</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Row gap={2} align="center">
-                    <ApIconButton
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => updateHandleCount(key, -1)}
                       disabled={handleConfig[key].length === 0}
                     >
-                      <ApIcon name="remove" />
-                    </ApIconButton>
-                    <ApTypography
-                      variant={FontVariantToken.fontSizeMBold}
+                      <CanvasIcon icon="minus" />
+                    </Button>
+                    <span
+                      className="text-base font-bold"
                       style={{ minWidth: 24, textAlign: 'center' }}
                     >
                       {handleConfig[key].length}
-                    </ApTypography>
-                    <ApIconButton onClick={() => updateHandleCount(key, 1)}>
-                      <ApIcon name="add" />
-                    </ApIconButton>
+                    </span>
+                    <Button variant="ghost" size="icon" onClick={() => updateHandleCount(key, 1)}>
+                      <CanvasIcon icon="plus" />
+                    </Button>
                   </Row>
                 </Column>
               ))}
@@ -456,15 +462,16 @@ function HandleConfigurationStory() {
           </Column>
 
           {/* Show buttons toggle */}
-          <FormControlLabel
-            control={
-              <Checkbox checked={showButtons} onChange={(e) => setShowButtons(e.target.checked)} />
-            }
-            label="Show + buttons on outputs"
-          />
+          <Label className="flex items-center gap-2">
+            <Checkbox
+              checked={showButtons}
+              onCheckedChange={(checked) => setShowButtons(checked === true)}
+            />
+            Show + buttons on outputs
+          </Label>
 
           {/* Reset */}
-          <ApButton size="small" variant="secondary" label="Reset" onClick={resetConfig} />
+          <Button variant="secondary" size="sm" onClick={resetConfig}>Reset</Button>
         </Column>
       </StoryInfoPanel>
     </BaseCanvas>

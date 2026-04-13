@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { ApIcon } from '@uipath/apollo-react/material/components';
+import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import { Breadcrumb } from './Breadcrumb';
 
 const meta: Meta<typeof Breadcrumb> = {
@@ -15,16 +15,16 @@ export const Default: Story = {
     items: [
       {
         label: 'Home',
-        startAdornment: <ApIcon name="home" />,
+        startAdornment: <CanvasIcon icon="home" />,
         onClick: () => alert('Home clicked'),
       },
       {
         label: 'Library',
-        endAdornment: <ApIcon name="error" color="var(--color-error-icon)" />,
+        endAdornment: <CanvasIcon icon="alert-circle" color="var(--color-error-icon)" />,
         onClick: () => alert('Library clicked'),
       },
-      { label: 'Settings', endAdornment: <ApIcon name="settings" /> },
+      { label: 'Settings', endAdornment: <CanvasIcon icon="settings" /> },
     ],
-    delimiter: <ApIcon name="chevron_right" />,
+    delimiter: <CanvasIcon icon="chevron-right" />,
   },
 };

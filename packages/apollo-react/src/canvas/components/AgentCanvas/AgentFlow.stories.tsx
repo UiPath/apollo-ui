@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
-import { FontVariantToken } from '@uipath/apollo-react/core';
-import { ApButton, ApTypography } from '@uipath/apollo-react/material';
+import { Button } from '@uipath/apollo-wind';
 import { useCallback, useState } from 'react';
 import type { IRawSpan } from '../../../types/TraceModels';
 import { StoryInfoPanel } from '../../storybook-utils';
@@ -1252,176 +1251,153 @@ const DesignModePlayground = () => {
       <Column mt={12} gap={12}>
         {/* Resources toggle */}
         <Column gap={4}>
-          <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+          <span className="text-sm" style={{ fontWeight: 600 }}>
             Resources:
-          </ApTypography>
+          </span>
           <Row gap={4}>
-            <ApButton
-              size="small"
-              variant={hasResources ? 'primary' : 'secondary'}
-              label="With"
+            <Button
+              size="sm"
+              variant={hasResources ? 'default' : 'secondary'}
               onClick={() => handleToggleResources(true)}
-            />
-            <ApButton
-              size="small"
-              variant={!hasResources ? 'primary' : 'secondary'}
-              label="Empty"
+            >With</Button>
+            <Button
+              size="sm"
+              variant={!hasResources ? 'default' : 'secondary'}
               onClick={() => handleToggleResources(false)}
-            />
+            >Empty</Button>
           </Row>
         </Column>
 
         {/* Suggestions toggle */}
         <Column gap={4}>
-          <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+          <span className="text-sm" style={{ fontWeight: 600 }}>
             Suggestions:
-          </ApTypography>
+          </span>
           <Row gap={4} style={{ flexWrap: 'wrap' }}>
-            <ApButton
-              size="small"
-              variant={suggestionMode === 'off' ? 'primary' : 'secondary'}
-              label="Off"
+            <Button
+              size="sm"
+              variant={suggestionMode === 'off' ? 'default' : 'secondary'}
               onClick={() => handleToggleSuggestionMode('off')}
-            />
-            <ApButton
-              size="small"
-              variant={suggestionMode === 'placeholders' ? 'primary' : 'secondary'}
-              label="Placeholders"
+            >Off</Button>
+            <Button
+              size="sm"
+              variant={suggestionMode === 'placeholders' ? 'default' : 'secondary'}
               onClick={() => handleToggleSuggestionMode('placeholders')}
-            />
-            <ApButton
-              size="small"
-              variant={suggestionMode === 'autopilot' ? 'primary' : 'secondary'}
-              label="Autopilot"
+            >Placeholders</Button>
+            <Button
+              size="sm"
+              variant={suggestionMode === 'autopilot' ? 'default' : 'secondary'}
               onClick={() => handleToggleSuggestionMode('autopilot')}
-            />
+            >Autopilot</Button>
           </Row>
         </Column>
 
         {/* Autopilot actions */}
         {suggestionMode === 'autopilot' && (
           <Column gap={4}>
-            <ApTypography
-              variant={FontVariantToken.fontSizeS}
-              style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
-            >
+            <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
               Create suggestions:
-            </ApTypography>
+            </span>
             <Row gap={4} style={{ flexWrap: 'wrap' }}>
-              <ApButton
-                size="small"
+              <Button
+                size="sm"
                 variant="secondary"
-                label="Inserts"
                 onClick={createInsertSuggestions}
-              />
-              <ApButton
-                size="small"
+              >Inserts</Button>
+              <Button
+                size="sm"
                 variant="secondary"
-                label="Deletes"
                 onClick={createDeleteSuggestions}
-              />
-              <ApButton
-                size="small"
+              >Deletes</Button>
+              <Button
+                size="sm"
                 variant="secondary"
-                label="Updates"
                 onClick={createUpdateSuggestions}
-              />
-              <ApButton
-                size="small"
+              >Updates</Button>
+              <Button
+                size="sm"
                 variant="secondary"
-                label="Mixed"
                 onClick={createMixedSuggestions}
-              />
+              >Mixed</Button>
             </Row>
           </Column>
         )}
 
         {/* Sticky Notes toggle */}
         <Column gap={4}>
-          <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+          <span className="text-sm" style={{ fontWeight: 600 }}>
             Sticky Notes:
-          </ApTypography>
+          </span>
           <Row gap={4}>
-            <ApButton
-              size="small"
-              variant={enableStickyNotes ? 'primary' : 'secondary'}
-              label="On"
+            <Button
+              size="sm"
+              variant={enableStickyNotes ? 'default' : 'secondary'}
               onClick={() => setEnableStickyNotes(true)}
-            />
-            <ApButton
-              size="small"
-              variant={!enableStickyNotes ? 'primary' : 'secondary'}
-              label="Off"
+            >On</Button>
+            <Button
+              size="sm"
+              variant={!enableStickyNotes ? 'default' : 'secondary'}
               onClick={() => setEnableStickyNotes(false)}
-            />
+            >Off</Button>
           </Row>
           {enableStickyNotes && (
             <Row gap={4}>
-              <ApButton
-                size="small"
+              <Button
+                size="sm"
                 variant="secondary"
-                label="Load Samples"
                 onClick={() => setStickyNotes(sampleStickyNotes)}
-              />
-              <ApButton
-                size="small"
+              >Load Samples</Button>
+              <Button
+                size="sm"
                 variant="secondary"
-                label="Clear"
                 onClick={() => setStickyNotes([])}
-              />
+              >Clear</Button>
             </Row>
           )}
         </Column>
 
         {/* Dragging toggle */}
         <Column gap={4}>
-          <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+          <span className="text-sm" style={{ fontWeight: 600 }}>
             Dragging:
-          </ApTypography>
+          </span>
           <Row gap={4}>
-            <ApButton
-              size="small"
-              variant={enableDragging ? 'primary' : 'secondary'}
-              label="On"
+            <Button
+              size="sm"
+              variant={enableDragging ? 'default' : 'secondary'}
               onClick={() => setEnableDragging(true)}
-            />
-            <ApButton
-              size="small"
-              variant={!enableDragging ? 'primary' : 'secondary'}
-              label="Off"
+            >On</Button>
+            <Button
+              size="sm"
+              variant={!enableDragging ? 'default' : 'secondary'}
               onClick={() => setEnableDragging(false)}
-            />
+            >Off</Button>
           </Row>
         </Column>
 
         {/* Instructions toggle */}
         <Column gap={4}>
-          <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+          <span className="text-sm" style={{ fontWeight: 600 }}>
             Instructions:
-          </ApTypography>
+          </span>
           <Row gap={4}>
-            <ApButton
-              size="small"
-              variant={hasInstructions ? 'primary' : 'secondary'}
-              label="With"
+            <Button
+              size="sm"
+              variant={hasInstructions ? 'default' : 'secondary'}
               onClick={() => setHasInstructions(true)}
-            />
-            <ApButton
-              size="small"
-              variant={!hasInstructions ? 'primary' : 'secondary'}
-              label="Without"
+            >With</Button>
+            <Button
+              size="sm"
+              variant={!hasInstructions ? 'default' : 'secondary'}
               onClick={() => setHasInstructions(false)}
-            />
+            >Without</Button>
           </Row>
           {hasInstructions && (
             <Column gap={8} style={{ marginTop: 8 }}>
               <Column gap={2}>
-                <ApTypography
-                  variant={FontVariantToken.fontSizeXs}
-                  style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
-                >
+                <span className="text-xs" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
                   System prompt:
-                </ApTypography>
+                </span>
                 <textarea
                   value={systemPrompt}
                   onChange={(e) => setSystemPrompt(e.target.value)}
@@ -1441,12 +1417,9 @@ const DesignModePlayground = () => {
                 />
               </Column>
               <Column gap={2}>
-                <ApTypography
-                  variant={FontVariantToken.fontSizeXs}
-                  style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
-                >
+                <span className="text-xs" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
                   User prompt:
-                </ApTypography>
+                </span>
                 <textarea
                   value={userPrompt}
                   onChange={(e) => setUserPrompt(e.target.value)}
@@ -1474,13 +1447,10 @@ const DesignModePlayground = () => {
           gap={2}
           style={{ borderTop: '1px solid var(--uix-canvas-border-de-emp)', paddingTop: 8 }}
         >
-          <ApTypography
-            variant={FontVariantToken.fontSizeS}
-            style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
-          >
+          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
             Resources: {resources.length} | Notes: {stickyNotes.length} | Zoom:{' '}
             {(zoomLevel * 100).toFixed(0)}%
-          </ApTypography>
+          </span>
         </Column>
       </Column>
     </StoryInfoPanel>
@@ -1585,18 +1555,15 @@ const DesignModePlayground = () => {
                   )}
                 </p>
                 <Row gap={8} style={{ justifyContent: 'flex-end' }}>
-                  <ApButton
-                    size="small"
+                  <Button
+                    size="sm"
                     variant="secondary"
-                    label="Cancel"
                     onClick={handleCancelModal}
-                  />
-                  <ApButton
-                    size="small"
-                    variant="primary"
-                    label="Confirm"
+                  >Cancel</Button>
+                  <Button
+                    size="sm"
                     onClick={handleConfirmModal}
-                  />
+                  >Confirm</Button>
                 </Row>
               </div>
             </>
@@ -1647,41 +1614,37 @@ const ViewModeWrapper = () => {
       <StoryInfoPanel title="View Mode Controls">
         <Column mt={12} gap={12}>
           <Column gap={4}>
-            <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+            <span className="text-sm" style={{ fontWeight: 600 }}>
               Timeline player:
-            </ApTypography>
+            </span>
             <Row gap={8}>
-              <ApButton
-                size="small"
-                variant={!hasTimelinePlayer ? 'primary' : 'secondary'}
-                label="Off"
+              <Button
+                size="sm"
+                variant={!hasTimelinePlayer ? 'default' : 'secondary'}
                 onClick={() => setHasTimelinePlayer(false)}
-              />
-              <ApButton
-                size="small"
-                variant={hasTimelinePlayer ? 'primary' : 'secondary'}
-                label="With Spans"
+              >Off</Button>
+              <Button
+                size="sm"
+                variant={hasTimelinePlayer ? 'default' : 'secondary'}
                 onClick={() => setHasTimelinePlayer(true)}
-              />
+              >With Spans</Button>
             </Row>
           </Column>
           <Column gap={4}>
-            <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+            <span className="text-sm" style={{ fontWeight: 600 }}>
               Instructions:
-            </ApTypography>
+            </span>
             <Row gap={8}>
-              <ApButton
-                size="small"
-                variant={hasInstructions ? 'primary' : 'secondary'}
-                label="With"
+              <Button
+                size="sm"
+                variant={hasInstructions ? 'default' : 'secondary'}
                 onClick={() => setHasInstructions(true)}
-              />
-              <ApButton
-                size="small"
-                variant={!hasInstructions ? 'primary' : 'secondary'}
-                label="Without"
+              >With</Button>
+              <Button
+                size="sm"
+                variant={!hasInstructions ? 'default' : 'secondary'}
                 onClick={() => setHasInstructions(false)}
-              />
+              >Without</Button>
             </Row>
           </Column>
         </Column>
@@ -1743,45 +1706,37 @@ const HealthScoreWrapper = ({
     return (
       <StoryInfoPanel title="Health Score Controls">
         <Column mt={12} gap={8}>
-          <ApTypography variant={FontVariantToken.fontSizeM}>Set health score:</ApTypography>
+          <span className="text-base">Set health score:</span>
           <Row gap={8} style={{ flexWrap: 'wrap' }}>
-            <ApButton
-              size="small"
-              variant={healthScore === undefined ? 'primary' : 'secondary'}
-              label="None"
+            <Button
+              size="sm"
+              variant={healthScore === undefined ? 'default' : 'secondary'}
               onClick={() => setHealthScore(undefined)}
-            />
-            <ApButton
-              size="small"
-              variant={healthScore === 0 ? 'primary' : 'secondary'}
-              label="0"
+            >None</Button>
+            <Button
+              size="sm"
+              variant={healthScore === 0 ? 'default' : 'secondary'}
               onClick={() => setHealthScore(0)}
-            />
-            <ApButton
-              size="small"
-              variant={healthScore === 50 ? 'primary' : 'secondary'}
-              label="50"
+            >0</Button>
+            <Button
+              size="sm"
+              variant={healthScore === 50 ? 'default' : 'secondary'}
               onClick={() => setHealthScore(50)}
-            />
-            <ApButton
-              size="small"
-              variant={healthScore === 95 ? 'primary' : 'secondary'}
-              label="95"
+            >50</Button>
+            <Button
+              size="sm"
+              variant={healthScore === 95 ? 'default' : 'secondary'}
               onClick={() => setHealthScore(95)}
-            />
-            <ApButton
-              size="small"
-              variant={healthScore === 100 ? 'primary' : 'secondary'}
-              label="100"
+            >95</Button>
+            <Button
+              size="sm"
+              variant={healthScore === 100 ? 'default' : 'secondary'}
               onClick={() => setHealthScore(100)}
-            />
+            >100</Button>
           </Row>
-          <ApTypography
-            variant={FontVariantToken.fontSizeS}
-            style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
-          >
+          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
             Current: {healthScore === undefined ? 'Not set' : healthScore}
-          </ApTypography>
+          </span>
         </Column>
       </StoryInfoPanel>
     );
@@ -1859,16 +1814,13 @@ const ConversationalAgentWrapper = () => {
       />
       <StoryInfoPanel title="Conversational Agent" position="top-right">
         <Column mt={12} gap={8}>
-          <ApTypography variant={FontVariantToken.fontSizeS}>
+          <span className="text-sm">
             This agent has <strong>isConversational: true</strong> in its metadata.
-          </ApTypography>
-          <ApTypography
-            variant={FontVariantToken.fontSizeS}
-            style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
-          >
+          </span>
+          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
             Hover over the agent node to see the settings preview. Notice that the{' '}
             <strong>User Prompt</strong> section is hidden for conversational agents.
-          </ApTypography>
+          </span>
         </Column>
       </StoryInfoPanel>
     </ReactFlowProvider>
@@ -1992,23 +1944,17 @@ const ResourceWithErrorCTAWrapper = () => {
       />
       <StoryInfoPanel title="Error CTA Demo" position="top-right">
         <Column mt={12} gap={8}>
-          <ApTypography variant={FontVariantToken.fontSizeS}>
+          <span className="text-sm">
             Resources with <strong>errorAction</strong> defined will show an error action button in
             their toolbar.
-          </ApTypography>
-          <ApTypography
-            variant={FontVariantToken.fontSizeS}
-            style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
-          >
+          </span>
+          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
             Click the error action buttons (Retry, Fix Configuration, Review Issues) to trigger the
             custom actions.
-          </ApTypography>
-          <ApTypography
-            variant={FontVariantToken.fontSizeS}
-            style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
-          >
+          </span>
+          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
             The "Working Tool" has no error action and shows the normal toolbar.
-          </ApTypography>
+          </span>
         </Column>
       </StoryInfoPanel>
     </ReactFlowProvider>

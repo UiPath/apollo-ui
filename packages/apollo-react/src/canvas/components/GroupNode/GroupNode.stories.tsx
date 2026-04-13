@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApTooltip } from '@uipath/apollo-react/material/components';
+import { CanvasTooltip } from '../CanvasTooltip';
 import { useMemo } from 'react';
 import { StoryInfoPanel, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
@@ -266,7 +266,7 @@ function GroupNodeWithStatus({ status, message }: { status: string; message?: st
           executionStatus: status,
           executionMessage: message,
           headerActions: (
-            <ApTooltip content={tooltipContent} placement="top">
+            <CanvasTooltip content={tooltipContent} placement="top">
               <span
                 style={{
                   display: 'inline-flex',
@@ -278,7 +278,7 @@ function GroupNodeWithStatus({ status, message }: { status: string; message?: st
               >
                 <ExecutionStatusIcon status={status} size={16} />
               </span>
-            </ApTooltip>
+            </CanvasTooltip>
           ),
         }}
       >
@@ -487,7 +487,7 @@ function GroupNodeMinimalWithStatus({ status, message }: { status: string; messa
           hideCollapseButton: true,
           hideMoreOptions: true,
           headerActions: (
-            <ApTooltip content={tooltipContent} placement="top">
+            <CanvasTooltip content={tooltipContent} placement="top">
               <span
                 style={{
                   display: 'inline-flex',
@@ -499,7 +499,7 @@ function GroupNodeMinimalWithStatus({ status, message }: { status: string; messa
               >
                 <ExecutionStatusIcon status={status} size={16} />
               </span>
-            </ApTooltip>
+            </CanvasTooltip>
           ),
         }}
       >

@@ -8,8 +8,13 @@ import {
   useEdgesState,
   useNodesState,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApButton, ApMenu } from '@uipath/apollo-react/material/components';
-import type { IMenuItem } from '@uipath/apollo-react/material/components/ap-menu/ApMenu.types';
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@uipath/apollo-wind';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DefaultCanvasTranslations } from '../../types';
 import {
@@ -1051,7 +1056,7 @@ const AddAndReplaceTasksStory = () => {
 
   const [pendingReplaceTask, setPendingReplaceTask] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>();
-  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const [nodesState, setNodes, onNodesChange] = useNodesState([
     {
@@ -1262,16 +1267,16 @@ const AddAndReplaceTasksStory = () => {
     nodesState.find((n) => n.id === 'add-replace-stage')?.data.stageDetails.tasks || [];
 
   // Create menu items for task selection
-  const taskMenuItems = useMemo<IMenuItem[]>(() => {
+  const taskMenuItems = useMemo(() => {
     return currentTasks.flatMap((group) =>
       group.map((task) => ({
-        title: task.label,
-        variant: 'item' as const,
-        startIcon: task.icon,
-        onClick: () => {
+        id: task.id,
+        label: task.label,
+        icon: task.icon,
+        onSelect: () => {
           setSelectedTaskId(task.id);
           setPendingReplaceTask(true);
-          setMenuAnchorEl(null);
+          setMenuOpen(false);
         },
       }))
     );
@@ -1348,20 +1353,19 @@ const AddAndReplaceTasksStory = () => {
           defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
         >
           <Panel position="top-right">
-            <ApButton
-              variant="primary"
-              label={replaceButtonLabel}
-              onClick={(e) => {
-                setMenuAnchorEl(e.currentTarget as HTMLElement);
-              }}
-            />
-            <ApMenu
-              isOpen={Boolean(menuAnchorEl)}
-              anchorEl={menuAnchorEl}
-              menuItems={taskMenuItems}
-              onClose={() => setMenuAnchorEl(null)}
-              width={300}
-            />
+            <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm">{replaceButtonLabel}</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[300px]">
+                {taskMenuItems.map((item) => (
+                  <DropdownMenuItem key={item.id} onSelect={item.onSelect}>
+                    {item.icon}
+                    {item.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </Panel>
           <Panel position="bottom-right">
             <CanvasPositionControls translations={DefaultCanvasTranslations} />
