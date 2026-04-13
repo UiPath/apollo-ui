@@ -150,8 +150,8 @@ export function AiChat({
   const defaultEmptyState = (
     <div className="flex flex-col items-center justify-center h-full text-center">
       <div className="flex flex-col items-center gap-1">
-        <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground">
-          {"What would you like to do?"}
+        <h2 className="text-2xl font-semibold leading-tight tracking-tight text-foreground">
+          {"What are we tackling today?"}
         </h2>
         <p className="text-sm text-muted-foreground">
           {"I can help you review, fix, or complete your work."}
@@ -160,7 +160,7 @@ export function AiChat({
     </div>
   );
 
-  const padding = isCompact ? "p-2" : "py-4 pl-10 pr-4";
+  const padding = isCompact ? "p-2" : "py-4 pl-10 pr-10";
   const messageGap = isCompact ? "space-y-2" : "space-y-1";
 
   return (
@@ -184,7 +184,7 @@ export function AiChat({
         className={
           isEmbedded
             ? "flex flex-col h-full max-w-[680px] mx-auto bg-transparent text-ai-chat-foreground"
-            : "flex flex-col h-full max-w-[680px] mx-auto border border-ai-chat-border rounded-lg bg-transparent text-ai-chat-foreground overflow-hidden"
+            : "flex flex-col h-full max-w-[680px] mx-auto bg-transparent text-ai-chat-foreground overflow-hidden"
         }
         data-slot="ai-chat"
       >

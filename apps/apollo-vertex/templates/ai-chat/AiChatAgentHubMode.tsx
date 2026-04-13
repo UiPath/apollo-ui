@@ -51,11 +51,11 @@ export function AgentHubChat({ accessToken, orgTenant }: AgentHubChatProps) {
       title="Autopilot"
       assistantName={t("assistant")}
       error={error ?? null}
-      emptyState={<AiChatEmptyState title="What can I help you get done?" />}
+      emptyState={<AiChatEmptyState title="What are we tackling today?" />}
       suggestions={[
-        "Summarize a report",
+        "Summarize a PDF",
         "Create an executive brief",
-        "Find automation opportunities",
+        "Draft a follow-up for my last meeting",
       ]}
     >
       {messages.map((message) => (

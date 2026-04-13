@@ -17,7 +17,7 @@ export function AiChatEmptyState({
     <div className="flex flex-col items-center justify-center h-full text-center text-ai-chat-muted-foreground gap-4">
       {icon && icon}
       <div className="flex flex-col items-center gap-1">
-        <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground">
+        <h2 className="text-2xl font-semibold leading-tight tracking-tight text-foreground">
           {title}
         </h2>
         {description && (
