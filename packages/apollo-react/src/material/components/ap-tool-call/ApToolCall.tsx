@@ -162,7 +162,9 @@ const TraceItem: React.FC<TraceItemProps> = ({ child, depth = 0 }) => {
     <>
       <TraceItemContainer
         clickable={hasChildren}
-        style={{ paddingLeft: depth > 0 ? `calc(${depth} * ${token.Spacing.SpacingM})` : undefined }}
+        style={{
+          paddingLeft: depth > 0 ? `calc(${depth} * ${token.Spacing.SpacingM})` : undefined,
+        }}
         onClick={hasChildren ? () => setItemExpanded((prev) => !prev) : undefined}
         role={hasChildren ? 'button' : undefined}
         tabIndex={hasChildren ? 0 : undefined}
@@ -174,9 +176,7 @@ const TraceItem: React.FC<TraceItemProps> = ({ child, depth = 0 }) => {
         ) : (
           <ArrowPlaceholder />
         )}
-        {iconSvg && (
-          <TraceIcon dangerouslySetInnerHTML={{ __html: iconSvg }} />
-        )}
+        {iconSvg && <TraceIcon dangerouslySetInnerHTML={{ __html: iconSvg }} />}
         <TraceName>{child.name.replace('_', ' ')}</TraceName>
       </TraceItemContainer>
       {hasChildren &&

@@ -1,4 +1,7 @@
-import { ApToolCall, ConversationalDisplayModeTypes } from "@uipath/apollo-react/material/components";
+import {
+	ApToolCall,
+	ConversationalDisplayModeTypes,
+} from "@uipath/apollo-react/material/components";
 import styled from "styled-components";
 import {
 	PageContainer,
@@ -164,7 +167,9 @@ export function ToolCallShowcase() {
 									toolName: "Multi_Web_Search",
 									toolType: "Agent",
 									arguments: { query: "what are trending right now" },
-									result: { result: "Multi web search completed successfully." },
+									result: {
+										result: "Multi web search completed successfully.",
+									},
 								},
 							},
 							children: [
@@ -200,7 +205,9 @@ export function ToolCallShowcase() {
 														name: "Tool call - Web_Search",
 														type: "toolCall",
 														status: "ok",
-														startTime: new Date(Date.now() - 21000).toISOString(),
+														startTime: new Date(
+															Date.now() - 21000,
+														).toISOString(),
 														endTime: new Date(Date.now() - 17000).toISOString(),
 													},
 													children: [
@@ -212,8 +219,12 @@ export function ToolCallShowcase() {
 																name: "Web Search",
 																type: "integrationTool",
 																status: "ok",
-																startTime: new Date(Date.now() - 21000).toISOString(),
-																endTime: new Date(Date.now() - 17000).toISOString(),
+																startTime: new Date(
+																	Date.now() - 21000,
+																).toISOString(),
+																endTime: new Date(
+																	Date.now() - 17000,
+																).toISOString(),
 															},
 															children: [],
 														},
@@ -227,7 +238,9 @@ export function ToolCallShowcase() {
 														name: "Tool call - Web_Search",
 														type: "toolCall",
 														status: "ok",
-														startTime: new Date(Date.now() - 16000).toISOString(),
+														startTime: new Date(
+															Date.now() - 16000,
+														).toISOString(),
 														endTime: new Date(Date.now() - 10000).toISOString(),
 													},
 													children: [
@@ -239,8 +252,12 @@ export function ToolCallShowcase() {
 																name: "Web Search",
 																type: "integrationTool",
 																status: "ok",
-																startTime: new Date(Date.now() - 16000).toISOString(),
-																endTime: new Date(Date.now() - 10000).toISOString(),
+																startTime: new Date(
+																	Date.now() - 16000,
+																).toISOString(),
+																endTime: new Date(
+																	Date.now() - 10000,
+																).toISOString(),
 															},
 															children: [],
 														},
@@ -254,7 +271,9 @@ export function ToolCallShowcase() {
 														name: "Tool call - Web_Search",
 														type: "toolCall",
 														status: "ok",
-														startTime: new Date(Date.now() - 9000).toISOString(),
+														startTime: new Date(
+															Date.now() - 9000,
+														).toISOString(),
 														endTime: new Date(Date.now() - 2000).toISOString(),
 													},
 													children: [
@@ -266,8 +285,12 @@ export function ToolCallShowcase() {
 																name: "Web Search",
 																type: "integrationTool",
 																status: "ok",
-																startTime: new Date(Date.now() - 9000).toISOString(),
-																endTime: new Date(Date.now() - 2000).toISOString(),
+																startTime: new Date(
+																	Date.now() - 9000,
+																).toISOString(),
+																endTime: new Date(
+																	Date.now() - 2000,
+																).toISOString(),
 															},
 															children: [],
 														},
