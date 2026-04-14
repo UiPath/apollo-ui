@@ -96,7 +96,7 @@ export function resolveDisplay(
 ): ResolvedDisplay {
   if (!manifestDisplay) {
     return {
-      icon: 'help-circle',
+      icon: 'circle-question-mark',
       shape: 'square' as const,
       label: context?.display?.label || 'Unknown Node',
     } as ResolvedDisplay;

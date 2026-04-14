@@ -116,7 +116,7 @@ export function useEdgeToolbarState({
       actions: [
         {
           id: 'add-node',
-          icon: 'add',
+          icon: 'plus',
           label: 'Add node',
           disabled: false,
           onAction: (_edgeId: string, position: { x: number; y: number }) => {

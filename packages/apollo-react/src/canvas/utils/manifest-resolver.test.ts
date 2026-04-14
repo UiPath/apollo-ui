@@ -15,7 +15,7 @@ import {
 describe('resolveDisplay', () => {
   it('returns fallback when no manifest display is provided', () => {
     const result = resolveDisplay(undefined);
-    expect(result.icon).toBe('help-circle');
+    expect(result.icon).toBe('circle-question-mark');
     expect(result.shape).toBe('square');
     expect(result.label).toBe('Unknown Node');
   });

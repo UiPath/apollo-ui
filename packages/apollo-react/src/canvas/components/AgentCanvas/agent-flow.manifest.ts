@@ -18,7 +18,7 @@ export const agentFlowCategories: CategoryManifest[] = [
     sortOrder: 1,
     color: 'linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%)',
     colorDark: 'linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)',
-    icon: 'smart_toy',
+    icon: 'bot',
     tags: ['agent', 'ai', 'automation'],
   },
   {
@@ -45,7 +45,7 @@ export const conversationalAgentManifest: NodeManifest = {
   display: {
     label: 'Conversational Agent',
     description: 'An agent that can engage in conversations',
-    icon: 'chat',
+    icon: 'bot-message-square',
     shape: 'rectangle',
   },
   handleConfiguration: [
@@ -101,7 +101,7 @@ export const autonomousAgentManifest: NodeManifest = {
   display: {
     label: 'Autonomous Agent',
     description: 'An agent that can work independently',
-    icon: 'precision_manufacturing',
+    icon: 'bot',
     shape: 'rectangle',
   },
   handleConfiguration: [
@@ -160,7 +160,7 @@ export const contextResourceManifest: NodeManifest = {
   display: {
     label: 'Context',
     description: 'Context information for agents',
-    icon: 'description',
+    icon: 'file-text',
     shape: 'circle',
   },
   handleConfiguration: [
@@ -186,7 +186,7 @@ export const toolResourceManifest: NodeManifest = {
   display: {
     label: 'Tool',
     description: 'A tool or function for agents to use',
-    icon: 'build',
+    icon: 'wrench',
     shape: 'circle',
   },
   handleConfiguration: [
@@ -212,7 +212,7 @@ export const mcpResourceManifest: NodeManifest = {
   display: {
     label: 'MCP Resource',
     description: 'Model Context Protocol resource',
-    icon: 'hub',
+    icon: 'network',
     shape: 'circle',
   },
   handleConfiguration: [
@@ -238,7 +238,7 @@ export const escalationResourceManifest: NodeManifest = {
   display: {
     label: 'Escalation',
     description: 'Escalation point for human intervention',
-    icon: 'person',
+    icon: 'user',
     shape: 'circle',
   },
   handleConfiguration: [
@@ -264,7 +264,7 @@ export const memoryResourceManifest: NodeManifest = {
   display: {
     label: 'Memory Space',
     description: 'Memory storage for agent state',
-    icon: 'memory',
+    icon: 'memory-stick',
     shape: 'circle',
   },
   handleConfiguration: [
@@ -290,7 +290,7 @@ export const a2aResourceManifest: NodeManifest = {
   display: {
     label: 'A2A Resource',
     description: 'Agent-to-Agent Protocol resource',
-    icon: 'hub',
+    icon: 'network',
     shape: 'circle',
   },
   handleConfiguration: [

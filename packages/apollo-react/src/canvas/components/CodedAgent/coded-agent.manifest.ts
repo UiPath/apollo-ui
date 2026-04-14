@@ -59,7 +59,7 @@ export const codedAgentManifest: { categories: CategoryManifest[]; nodes: NodeMa
       sortOrder: 2,
       display: {
         label: '',
-        icon: 'chat',
+        icon: 'bot-message-square',
         shape: 'circle',
       },
       handleConfiguration: [
