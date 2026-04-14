@@ -12,14 +12,14 @@ export const GroupContainer = styled.div<{
   width: 100%;
   height: 100%;
   background-color: ${({ backgroundColor }) =>
-    backgroundColor || 'var(--uix-canvas-background-raised)'} !important;
+    backgroundColor || 'var(--canvas-background-raised)'} !important;
   border: 2px solid
     ${({ borderColor, selected }) =>
-      selected ? 'var(--uix-canvas-primary)' : borderColor || 'var(--uix-canvas-border)'};
+      selected ? 'var(--canvas-primary)' : borderColor || 'var(--canvas-border)'};
   border-radius: 16px !important;
   transition: border-color 0.2s ease;
   overflow: visible;
-  box-shadow: ${({ selected }) => (selected ? '0 0 0 1px var(--uix-canvas-primary)' : 'none')};
+  box-shadow: ${({ selected }) => (selected ? '0 0 0 1px var(--canvas-primary)' : 'none')};
   padding: 0 !important;
 
   ${({ executionStatus }) => getExecutionStatusBorder(executionStatus)}
@@ -28,7 +28,7 @@ export const GroupContainer = styled.div<{
     ${({ selected, executionStatus }) =>
       executionStatus
         ? ''
-        : `border-color: ${selected ? 'var(--uix-canvas-primary)' : 'var(--uix-canvas-border-hover)'};`}
+        : `border-color: ${selected ? 'var(--canvas-primary)' : 'var(--canvas-border-hover)'};`}
   }
 `;
 
@@ -40,8 +40,8 @@ export const GroupHeader = styled.div`
   align-items: center;
   gap: 4px;
   padding: 2px;
-  background: var(--uix-canvas-background);
-  border: 1px solid var(--uix-canvas-border-grid);
+  background: var(--canvas-background);
+  border: 1px solid var(--canvas-border-grid);
   border-radius: 8px;
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.08),
@@ -63,14 +63,14 @@ export const GroupIconWrapper = styled.div`
   cursor: default;
 
   svg {
-    color: var(--uix-canvas-foreground);
+    color: var(--canvas-foreground);
   }
 `;
 
 export const GroupTitle = styled.div`
   font-size: 14px;
   font-weight: 500;
-  color: var(--uix-canvas-foreground);
+  color: var(--canvas-foreground);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -101,7 +101,7 @@ export const GroupHeaderButton = styled.button<{ $disabled?: boolean }>`
   pointer-events: ${({ $disabled }) => ($disabled ? 'none' : 'auto')};
 
   &:hover:not(:disabled) {
-    background: var(--uix-canvas-background-secondary);
+    background: var(--canvas-background-secondary);
   }
 
   &:active:not(:disabled) {
@@ -109,7 +109,7 @@ export const GroupHeaderButton = styled.button<{ $disabled?: boolean }>`
   }
 
   svg {
-    color: var(--uix-canvas-foreground);
+    color: var(--canvas-foreground);
   }
 `;
 
@@ -117,7 +117,7 @@ export const GroupHeaderSeparator = styled.div`
   width: 1px;
   height: 20px;
   margin: 0 4px;
-  background: var(--uix-canvas-border-grid);
+  background: var(--canvas-border-grid);
   align-self: center;
 `;
 
@@ -156,8 +156,8 @@ export const TopCornerIndicators = styled.div<{ selected?: boolean }>`
     left: -5px;
     width: 6px;
     height: 6px;
-    background: var(--uix-canvas-background);
-    border: 1px solid var(--uix-canvas-primary);
+    background: var(--canvas-background);
+    border: 1px solid var(--canvas-primary);
     border-radius: 1px;
   }
 
@@ -169,8 +169,8 @@ export const TopCornerIndicators = styled.div<{ selected?: boolean }>`
     right: -5px;
     width: 6px;
     height: 6px;
-    background: var(--uix-canvas-background);
-    border: 1px solid var(--uix-canvas-primary);
+    background: var(--canvas-background);
+    border: 1px solid var(--canvas-primary);
     border-radius: 1px;
   }
 `;
@@ -190,8 +190,8 @@ export const BottomCornerIndicators = styled.div<{ selected?: boolean }>`
     left: -5px;
     width: 6px;
     height: 6px;
-    background: var(--uix-canvas-background);
-    border: 1px solid var(--uix-canvas-primary);
+    background: var(--canvas-background);
+    border: 1px solid var(--canvas-primary);
     border-radius: 1px;
   }
 
@@ -203,8 +203,8 @@ export const BottomCornerIndicators = styled.div<{ selected?: boolean }>`
     right: -5px;
     width: 6px;
     height: 6px;
-    background: var(--uix-canvas-background);
-    border: 1px solid var(--uix-canvas-primary);
+    background: var(--canvas-background);
+    border: 1px solid var(--canvas-primary);
     border-radius: 1px;
   }
 `;

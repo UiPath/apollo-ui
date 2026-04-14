@@ -21,8 +21,8 @@ export const BASE_CANVAS_DEFAULTS = {
   background: {
     gap: BASE_CANVAS_GRID_SPACING,
     size: 2,
-    color: 'color-mix(in srgb, var(--uix-canvas-border-de-emp), transparent 50%)',
-    bgColor: 'var(--uix-canvas-background-secondary)',
+    color: 'color-mix(in srgb, var(--canvas-border-de-emp), transparent 50%)',
+    bgColor: 'var(--canvas-background-secondary)',
     variant: BackgroundVariant.Dots,
   },
   transitions: {

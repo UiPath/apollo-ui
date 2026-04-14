@@ -7,9 +7,9 @@ import { useEffect, useRef } from 'react';
 import { CanvasIcon } from '../../utils/icon-registry';
 
 const PanelHeader = styled.div`
-  border-bottom: 1px solid var(--uix-canvas-border-de-emp);
+  border-bottom: 1px solid var(--canvas-border-de-emp);
   padding: 8px 16px;
-  background-color: var(--uix-canvas-background);
+  background-color: var(--canvas-background);
   border-radius: 8px 8px 0 0;
   flex-shrink: 0;
 `;
@@ -24,16 +24,16 @@ const PanelContent = styled.div`
   }
 
   &::-webkit-scrollbar-track {
-    background: var(--uix-canvas-background-secondary);
+    background: var(--canvas-background-secondary);
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--uix-canvas-border);
+    background: var(--canvas-border);
     border-radius: 3px;
 
     &:hover {
-      background: var(--uix-canvas-border-de-emp);
+      background: var(--canvas-border-de-emp);
     }
   }
 `;

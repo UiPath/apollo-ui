@@ -12,7 +12,7 @@ const stickyNoteContentStyles = `
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  color: var(--uix-canvas-foreground);
+  color: var(--canvas-foreground);
 
   overflow-y: auto;
 
@@ -25,7 +25,7 @@ const stickyNoteContentStyles = `
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--uix-canvas-border);
+    background: var(--canvas-border);
     border-radius: 4px;
   }
 `;
@@ -94,7 +94,7 @@ export const StickyNoteTextArea = styled.textarea<{ isEditing: boolean }>`
   pointer-events: ${(props) => (props.isEditing ? 'auto' : 'none')};
 
   &::placeholder {
-    color: var(--uix-canvas-foreground-de-emp);
+    color: var(--canvas-foreground-de-emp);
     opacity: ${(props) => (props.isEditing ? 1 : 0.6)};
   }
 
@@ -169,7 +169,7 @@ export const StickyNoteMarkdown = styled.div`
   }
 
   a {
-    color: var(--uix-canvas-primary);
+    color: var(--canvas-primary);
     text-decoration: underline;
     cursor: pointer;
     pointer-events: auto;
@@ -228,7 +228,7 @@ export const StickyNoteMarkdown = styled.div`
     border-left: 3px solid rgba(0, 0, 0, 0.2);
     padding-left: 12px;
     margin: 8px 0;
-    color: var(--uix-canvas-foreground-de-emp);
+    color: var(--canvas-foreground-de-emp);
   }
 `;
 
@@ -259,8 +259,8 @@ export const TopCornerIndicators = styled.div<{ selected?: boolean }>`
     left: -5px;
     width: 6px;
     height: 6px;
-    background: var(--uix-canvas-background);
-    border: 1px solid var(--uix-canvas-primary);
+    background: var(--canvas-background);
+    border: 1px solid var(--canvas-primary);
     border-radius: 1px;
   }
 
@@ -272,8 +272,8 @@ export const TopCornerIndicators = styled.div<{ selected?: boolean }>`
     right: -5px;
     width: 6px;
     height: 6px;
-    background: var(--uix-canvas-background);
-    border: 1px solid var(--uix-canvas-primary);
+    background: var(--canvas-background);
+    border: 1px solid var(--canvas-primary);
     border-radius: 1px;
   }
 `;
@@ -292,8 +292,8 @@ export const BottomCornerIndicators = styled.div<{ selected?: boolean }>`
     left: -5px;
     width: 6px;
     height: 6px;
-    background: var(--uix-canvas-background);
-    border: 1px solid var(--uix-canvas-primary);
+    background: var(--canvas-background);
+    border: 1px solid var(--canvas-primary);
     border-radius: 1px;
   }
 
@@ -305,8 +305,8 @@ export const BottomCornerIndicators = styled.div<{ selected?: boolean }>`
     right: -5px;
     width: 6px;
     height: 6px;
-    background: var(--uix-canvas-background);
-    border: 1px solid var(--uix-canvas-primary);
+    background: var(--canvas-background);
+    border: 1px solid var(--canvas-primary);
     border-radius: 1px;
   }
 `;
@@ -317,8 +317,8 @@ export const ColorPickerPanel = styled(motion.div)`
   align-items: center;
   gap: 4px;
   padding: 4px;
-  background: var(--uix-canvas-background);
-  border: 1px solid var(--uix-canvas-border-grid);
+  background: var(--canvas-background);
+  border: 1px solid var(--canvas-border-grid);
   border-radius: 8px;
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.08),
@@ -341,7 +341,7 @@ export const ColorOption = styled.button<{ color: string; isSelected: boolean }>
   }
 
   &:focus {
-    outline: 2px solid var(--uix-canvas-primary);
+    outline: 2px solid var(--canvas-primary);
     outline-offset: 1px;
   }
 `;
@@ -366,23 +366,21 @@ export const FormattingButton = styled.button<{ isActive: boolean }>`
   border-radius: 4px;
   cursor: pointer;
   padding: 0;
-  color: var(--uix-canvas-foreground);
+  color: var(--canvas-foreground);
   background: ${(props) =>
-    props.isActive
-      ? 'color-mix(in srgb, var(--uix-canvas-primary) 30%, transparent)'
-      : 'transparent'};
+    props.isActive ? 'color-mix(in srgb, var(--canvas-primary) 30%, transparent)' : 'transparent'};
 
   &:hover {
     background: ${(props) =>
       props.isActive
-        ? 'color-mix(in srgb, var(--uix-canvas-primary) 40%, transparent)'
-        : 'color-mix(in srgb, var(--uix-canvas-foreground) 10%, transparent)'};
+        ? 'color-mix(in srgb, var(--canvas-primary) 40%, transparent)'
+        : 'color-mix(in srgb, var(--canvas-foreground) 10%, transparent)'};
   }
 `;
 
 export const ToolbarSeparator = styled.div`
   width: 1px;
   height: 16px;
-  background: color-mix(in srgb, var(--uix-canvas-foreground) 15%, transparent);
+  background: color-mix(in srgb, var(--canvas-foreground) 15%, transparent);
   margin: 0 4px;
 `;

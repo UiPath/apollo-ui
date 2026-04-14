@@ -119,10 +119,10 @@ function SimpleNode({
         width: 240,
         height: 70,
         borderRadius: 8,
-        backgroundColor: 'var(--uix-canvas-background)',
+        backgroundColor: 'var(--canvas-background)',
         border: selected
-          ? '1px solid var(--uix-canvas-selection-indicator)'
-          : '1px solid var(--uix-canvas-border)',
+          ? '1px solid var(--canvas-selection-indicator)'
+          : '1px solid var(--canvas-border)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -131,15 +131,15 @@ function SimpleNode({
       }}
     >
       <Row w="100%" gap={12} align="center">
-        <CanvasIcon icon="bot" size={32} color="var(--uix-canvas-foreground-de-emp)" />
+        <CanvasIcon icon="bot" size={32} color="var(--canvas-foreground-de-emp)" />
         <Column>
           <span
             className="text-sm font-semibold"
-            style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
+            style={{ color: 'var(--canvas-foreground-de-emp)' }}
           >
             {data.label}
           </span>
-          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
+          <span className="text-sm" style={{ color: 'var(--canvas-foreground-de-emp)' }}>
             {data.subLabel}
           </span>
         </Column>
@@ -197,17 +197,17 @@ function ConfigurableNode({
         width: 300,
         height: 150,
         borderRadius: 8,
-        backgroundColor: 'var(--uix-canvas-background)',
+        backgroundColor: 'var(--canvas-background)',
         border: selected
-          ? '1px solid var(--uix-canvas-selection-indicator)'
-          : '1px solid var(--uix-canvas-foreground-de-emp)',
+          ? '1px solid var(--canvas-selection-indicator)'
+          : '1px solid var(--canvas-foreground-de-emp)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
       }}
     >
-      <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--uix-canvas-foreground)' }}>
+      <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--canvas-foreground)' }}>
         {data.label}
       </div>
       <ButtonHandles
@@ -301,7 +301,7 @@ const DEFAULT_HANDLE_CONFIG: HandleConfigState = {
       type: 'source',
       handleType: 'output',
       label: 'Success',
-      color: 'var(--uix-canvas-success-icon)',
+      color: 'var(--canvas-success-icon)',
       showButton: true,
       onAction: handleAction,
     },
@@ -310,7 +310,7 @@ const DEFAULT_HANDLE_CONFIG: HandleConfigState = {
       type: 'source',
       handleType: 'output',
       label: 'Error',
-      color: 'var(--uix-canvas-error-icon)',
+      color: 'var(--canvas-error-icon)',
       showButton: true,
       onAction: handleAction,
     },

@@ -142,7 +142,7 @@ This package is part of a pnpm workspace. All commands should be run using `pnpm
 ```bash
 pnpm install                                    # Install all dependencies
 pnpm build                                      # Build apollo packages
-pnpm storybook:wind                             # Run Storybook on http://localhost:6006
+pnpm storybook:design                           # Run Storybook on http://localhost:6006
 pnpm test --filter=@uipath/apollo-wind          # Run tests
 pnpm lint --filter=@uipath/apollo-wind          # Run lint
 pnpm format --filter=@uipath/apollo-wind        # Run biome format

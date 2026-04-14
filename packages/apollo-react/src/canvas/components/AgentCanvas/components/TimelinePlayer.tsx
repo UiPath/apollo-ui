@@ -69,10 +69,10 @@ const SpanBlock: React.FC<{
   const [isHovered, setIsHovered] = useState(false);
 
   const getStatusColor = () => {
-    if (status === 1) return 'var(--uix-canvas-success-icon)'; // Green for success
-    if (status === 2) return 'var(--uix-canvas-error-icon)'; // Red for error
-    if (status === 3) return 'var(--uix-canvas-info-icon)'; // Blue for running
-    return 'var(--uix-canvas-border-de-emp)'; // Default gray
+    if (status === 1) return 'var(--canvas-success-icon)'; // Green for success
+    if (status === 2) return 'var(--canvas-error-icon)'; // Red for error
+    if (status === 3) return 'var(--canvas-info-icon)'; // Blue for running
+    return 'var(--canvas-border-de-emp)'; // Default gray
   };
 
   const getBackgroundStyle = () => {
@@ -81,7 +81,7 @@ const SpanBlock: React.FC<{
       return { backgroundColor: getStatusColor() };
     }
 
-    return { backgroundColor: 'var(--uix-canvas-border-de-emp)' };
+    return { backgroundColor: 'var(--canvas-border-de-emp)' };
   };
 
   const getBaseBackgroundStyle = () => {
@@ -126,7 +126,7 @@ const SpanBlock: React.FC<{
               left: 0,
               width: `${progressWithinSpan}%`,
               height: '100%',
-              backgroundColor: 'var(--uix-canvas-info-icon)',
+              backgroundColor: 'var(--canvas-info-icon)',
               borderRadius: 'var(--Small, 2px)',
               borderTopRightRadius: progressWithinSpan === 100 ? 'var(--Small, 2px)' : 0,
               borderBottomRightRadius: progressWithinSpan === 100 ? 'var(--Small, 2px)' : 0,
@@ -140,7 +140,7 @@ const SpanBlock: React.FC<{
               left: `${progressWithinSpan}%`,
               width: `${100 - progressWithinSpan}%`,
               height: '100%',
-              backgroundColor: 'var(--uix-canvas-border-de-emp)',
+              backgroundColor: 'var(--canvas-border-de-emp)',
               borderRadius: 'var(--Small, 2px)',
               borderTopLeftRadius: progressWithinSpan === 0 ? 'var(--Small, 2px)' : 0,
               borderBottomLeftRadius: progressWithinSpan === 0 ? 'var(--Small, 2px)' : 0,
@@ -182,7 +182,7 @@ const TrackBar: React.FC = () => (
     style={{
       position: 'absolute',
       top: `${TIMELINE_BAR_HEIGHT / 2 - TIMELINE_TRACK_BAR_HEIGHT / 2}px`,
-      backgroundColor: 'var(--uix-canvas-background)',
+      backgroundColor: 'var(--canvas-background)',
       height: `${TIMELINE_TRACK_BAR_HEIGHT}px`,
       borderRadius: '2px',
       width: '100%',
@@ -205,7 +205,7 @@ const Scrubber: React.FC<{ left: number }> = ({ left }) => (
     <Icons.TimelineProgressIcon
       w={10}
       h={10}
-      color="color-mix(in srgb, var(--uix-canvas-info-icon) 85%, black)"
+      color="color-mix(in srgb, var(--canvas-info-icon) 85%, black)"
     />
   </div>
 );
@@ -473,18 +473,18 @@ export const TimelinePlayer: React.FC<{
       gap={Spacing.SpacingXs}
       minW={640}
       style={{
-        backgroundColor: 'var(--uix-canvas-background-secondary)',
-        color: 'var(--uix-canvas-foreground)',
+        backgroundColor: 'var(--canvas-background-secondary)',
+        color: 'var(--canvas-foreground)',
         borderRadius: '8px',
-        border: '1px solid var(--uix-canvas-border-de-emp)',
+        border: '1px solid var(--canvas-border-de-emp)',
       }}
     >
       <Row align="center" gap={Spacing.SpacingXs}>
         <Button variant="ghost" size="icon" className="h-10 w-10" onClick={handlePlayPause}>
           {playing ? (
-            <Icons.TimelinePauseIcon w={24} h={24} color="var(--uix-canvas-icon-default)" />
+            <Icons.TimelinePauseIcon w={24} h={24} color="var(--canvas-icon-default)" />
           ) : (
-            <Icons.TimelinePlayIcon w={24} h={24} color="var(--uix-canvas-icon-default)" />
+            <Icons.TimelinePlayIcon w={24} h={24} color="var(--canvas-icon-default)" />
           )}
         </Button>
 

@@ -152,7 +152,7 @@ const ListViewRow = memo(
       >
         <IconContainerMemoized
           bgColor={bgColor}
-          color="var(--uix-canvas-foreground-emp)"
+          color="var(--canvas-foreground-emp)"
           data-testid="list-item-icon"
         >
           {item.icon?.url && (
@@ -174,7 +174,7 @@ const ListViewRow = memo(
           )}
         </Column>
         {!!item.children && (
-          <CanvasIcon icon="chevron-right" size={20} color="var(--uix-canvas-foreground-de-emp)" />
+          <CanvasIcon icon="chevron-right" size={20} color="var(--canvas-foreground-de-emp)" />
         )}
       </ListItemButton>
     );
@@ -240,7 +240,7 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
   if (items.length === 0) {
     return (
       <Column align="center" justify="center" flex={1} gap={10} style={{ minHeight: '250px' }}>
-        <CanvasIcon icon={emptyStateIcon} size={48} color="var(--uix-canvas-foreground-de-emp)" />
+        <CanvasIcon icon={emptyStateIcon} size={48} color="var(--canvas-foreground-de-emp)" />
         <span className="text-xs text-foreground-muted">{emptyStateMessage}</span>
       </Column>
     );

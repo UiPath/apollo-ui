@@ -73,7 +73,7 @@ export function ValidationErrorIndicator({ message }: { message?: string }) {
   return (
     <CanvasTooltip content={message || 'Validation error'} placement="bottom">
       <span style={{ display: 'inline-flex' }}>
-        <CanvasIcon icon="circle-alert" size={16} color="var(--uix-canvas-error-icon)" />
+        <CanvasIcon icon="circle-alert" size={16} color="var(--canvas-error-icon)" />
       </span>
     </CanvasTooltip>
   );
@@ -83,7 +83,7 @@ export function ValidationWarningIndicator({ message }: { message?: string }) {
   return (
     <CanvasTooltip content={message || 'Validation warning'} placement="bottom">
       <span style={{ display: 'inline-flex' }}>
-        <CanvasIcon icon="triangle-alert" size={16} color="var(--uix-canvas-warning-icon)" />
+        <CanvasIcon icon="triangle-alert" size={16} color="var(--canvas-warning-icon)" />
       </span>
     </CanvasTooltip>
   );

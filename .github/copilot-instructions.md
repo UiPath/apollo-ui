@@ -187,7 +187,7 @@ When creating new components, verify:
 - `pnpm dev` - Run all packages in dev mode
 - `pnpm test` - Run all tests
 - `pnpm lint` - Lint all packages
-- `pnpm storybook` - Run Storybook
+- `pnpm storybook:dev` - Run Storybook
 - `pnpm format` - Format with Biome
 
 **Package-specific:**

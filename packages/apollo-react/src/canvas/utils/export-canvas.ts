@@ -130,9 +130,7 @@ export interface ExportCanvasResult {
 function getCanvasBackgroundColor(): string {
   const reactFlowElement = document.querySelector('.react-flow');
   if (reactFlowElement) {
-    const color = getComputedStyle(reactFlowElement)
-      .getPropertyValue('--uix-canvas-background')
-      .trim();
+    const color = getComputedStyle(reactFlowElement).getPropertyValue('--canvas-background').trim();
     if (color) return color;
   }
   return '#ffffff';

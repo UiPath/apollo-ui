@@ -156,7 +156,7 @@ Shadow root:    <div class="apollo-design light">
 
 #### Existing canvas variables
 
-If you already use `@uipath/apollo-react/canvas/styles/variables.css` with shadow DOM re-scoping (as in `canvas-styles.utils.ts`), that pattern continues to work alongside the Tailwind CSS. The canvas variables (`--uix-canvas-*`) and the bridge variables (`--surface`, `--brand`, etc.) are independent — both reference the same underlying `--color-*` tokens.
+If you already use `@uipath/apollo-react/canvas/styles/variables.css` with shadow DOM re-scoping (as in `canvas-styles.utils.ts`), that pattern continues to work alongside the Tailwind CSS. The canvas variables (`--canvas-*`) and the bridge variables (`--surface`, `--brand`, etc.) are independent — both reference the same underlying `--color-*` tokens.
 
 ---
 
@@ -165,7 +165,7 @@ If you already use `@uipath/apollo-react/canvas/styles/variables.css` with shado
 | Export path | Contents | Use case |
 |---|---|---|
 | `@uipath/apollo-react/canvas/styles/tailwind.canvas.css` | Pre-compiled Tailwind utilities + theme variables (~160KB) | Shadow DOM consumers (inline import) |
-| `@uipath/apollo-react/canvas/styles/variables.css` | Canvas-specific CSS variable mappings (`--uix-canvas-*`) | All consumers (canvas component theming) |
+| `@uipath/apollo-react/canvas/styles/variables.css` | Canvas-specific CSS variable mappings (`--canvas-*`) | All consumers (canvas component theming) |
 | `@uipath/apollo-react/canvas/xyflow/style.css` | React Flow base styles | All consumers (canvas rendering) |
 | `@uipath/apollo-wind/tailwind.css` | Tailwind CSS v4 entry point with Apollo theme | Standard apps via PostCSS processing |
 | `@uipath/apollo-wind/postcss` | PostCSS plugin config export | Standard apps (postcss.config.js) |

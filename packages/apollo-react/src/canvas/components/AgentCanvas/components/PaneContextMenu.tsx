@@ -7,7 +7,7 @@ const MenuContainer = styled(motion.div)<{ $x: number; $y: number }>`
   left: ${(props) => props.$x}px;
   top: ${(props) => props.$y}px;
   min-width: 180px;
-  background: var(--uix-canvas-background);
+  background: var(--canvas-background);
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.08),
     0 2px 8px rgba(0, 0, 0, 0.04);
@@ -27,11 +27,11 @@ const MenuItem = styled.button`
   transition: background 0.15s ease;
   font-size: 12px;
   font-weight: 400;
-  color: var(--uix-canvas-foreground-de-emp);
+  color: var(--canvas-foreground-de-emp);
   text-align: left;
 
   &:hover {
-    background: var(--uix-canvas-background-secondary);
+    background: var(--canvas-background-secondary);
   }
 `;
 

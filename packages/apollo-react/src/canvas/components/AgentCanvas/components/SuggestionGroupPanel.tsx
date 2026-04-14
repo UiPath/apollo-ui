@@ -50,7 +50,7 @@ const Divider = () => (
     style={{
       width: 1,
       height: '24px',
-      backgroundColor: 'var(--uix-canvas-border)',
+      backgroundColor: 'var(--canvas-border)',
     }}
   />
 );
@@ -94,7 +94,7 @@ const SuggestionGroupNavigator = ({
       >
         <CanvasIcon
           icon="chevron-up"
-          color={isHoveringUp ? 'var(--uix-canvas-primary)' : 'var(--uix-canvas-foreground-de-emp)'}
+          color={isHoveringUp ? 'var(--canvas-primary)' : 'var(--canvas-foreground-de-emp)'}
           size={iconSize}
         />
       </Button>
@@ -111,9 +111,7 @@ const SuggestionGroupNavigator = ({
       >
         <CanvasIcon
           icon="chevron-down"
-          color={
-            isHoveringDown ? 'var(--uix-canvas-primary)' : 'var(--uix-canvas-foreground-de-emp)'
-          }
+          color={isHoveringDown ? 'var(--canvas-primary)' : 'var(--canvas-foreground-de-emp)'}
           size={iconSize}
         />
       </Button>
@@ -145,10 +143,10 @@ export const SuggestionGroupPanel = ({
           px={Spacing.SpacingXs}
           gap={Spacing.SpacingXs}
           style={{
-            backgroundColor: 'var(--uix-canvas-background-secondary)',
-            color: 'var(--uix-canvas-foreground)',
+            backgroundColor: 'var(--canvas-background-secondary)',
+            color: 'var(--canvas-foreground)',
             borderRadius: '8px',
-            border: '1px solid var(--uix-canvas-border-de-emp)',
+            border: '1px solid var(--canvas-border-de-emp)',
             boxShadow: '0px 6px 10px rgba(0, 0, 0, 0.3)',
           }}
         >

@@ -82,7 +82,7 @@ const TaskPlayButton = memo(
           onKeyDown={(e: React.KeyboardEvent) => e.stopPropagation()}
           className="task-menu-icon-button"
           style={{
-            color: 'var(--uix-canvas-icon-default)',
+            color: 'var(--canvas-icon-default)',
             minWidth: 'unset',
             width: buttonSize,
             height: buttonSize,

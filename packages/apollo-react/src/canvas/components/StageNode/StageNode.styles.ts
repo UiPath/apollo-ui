@@ -16,8 +16,8 @@ export const StageContainer = styled.div<{
   position: relative;
   min-width: 288px;
   width: ${({ width }) => (width ? `${width}px` : 'auto')};
-  background: var(--uix-canvas-background);
-  border: ${STAGE_BORDER_WIDTH}px solid var(--uix-canvas-border-de-emp);
+  background: var(--canvas-background);
+  border: ${STAGE_BORDER_WIDTH}px solid var(--canvas-border-de-emp);
   border-radius: ${Spacing.SpacingBase};
   display: flex;
   flex-direction: column;
@@ -26,37 +26,37 @@ export const StageContainer = styled.div<{
   ${({ selected }) =>
     selected
       ? css`
-          border-color: var(--uix-canvas-primary);
-          outline: 4px solid var(--uix-canvas-secondary-pressed);
+          border-color: var(--canvas-primary);
+          outline: 4px solid var(--canvas-secondary-pressed);
         `
       : css`
           &:hover {
-            outline: 4px solid var(--uix-canvas-secondary-pressed);
+            outline: 4px solid var(--canvas-secondary-pressed);
           }
         `}
 
   ${({ status }) =>
     status === 'Completed' &&
     css`
-      border-color: var(--uix-canvas-success-icon);
+      border-color: var(--canvas-success-icon);
     `}
 
   ${({ status }) =>
     status === 'InProgress' &&
     css`
-      border-color: var(--uix-canvas-info-icon);
+      border-color: var(--canvas-info-icon);
     `}
 
   ${({ status }) =>
     status === 'Paused' &&
     css`
-      border-color: var(--uix-canvas-warning-icon);
+      border-color: var(--canvas-warning-icon);
     `}
 
   ${({ status }) =>
     status === 'Failed' &&
     css`
-      border-color: var(--uix-canvas-error-icon);
+      border-color: var(--canvas-error-icon);
     `}
 
   ${({ status }) =>
@@ -71,8 +71,8 @@ export const StageHeader = styled.div<{ isException?: boolean }>`
   display: flex;
   justify-content: space-between;
   padding: ${Spacing.SpacingS} ${Spacing.SpacingBase};
-  border-bottom: solid 1px var(--uix-canvas-border-de-emp);
-  background: ${(props) => (props.isException ? 'var(--color-background-secondary)' : 'var(--uix-canvas-background)')};
+  border-bottom: solid 1px var(--canvas-border-de-emp);
+  background: ${(props) => (props.isException ? 'var(--color-background-secondary)' : 'var(--canvas-background)')};
   border-radius: ${Spacing.SpacingBase} ${Spacing.SpacingBase} 0 0;
   overflow: hidden;
 `;
@@ -83,7 +83,7 @@ export const StageTitleContainer = styled.div<{ isEditing?: boolean }>`
   height: 100%;
   width: 100%;
   box-sizing: border-box;
-  border: ${(props) => (props.isEditing ? '1px solid var(--uix-canvas-border-de-emp)' : 'none')};
+  border: ${(props) => (props.isEditing ? '1px solid var(--canvas-border-de-emp)' : 'none')};
 `;
 
 export const StageTitleInput = styled.input<{
@@ -109,7 +109,7 @@ export const StageTitleInput = styled.input<{
 
   &:hover {
     cursor: ${(props) => (props.isStageTitleEditable ? 'text' : 'pointer')};
-    background: ${(props) => (props.isEditing || props.isStageTitleEditable ? 'var(--uix-canvas-background-secondary)' : 'transparent')};
+    background: ${(props) => (props.isEditing || props.isStageTitleEditable ? 'var(--canvas-background-secondary)' : 'transparent')};
   }
 `;
 
@@ -145,9 +145,9 @@ export const StageParallelLabel = styled.div`
   padding: 0px ${Padding.PadM};
   display: flex;
   justify-content: center;
-  background: var(--uix-canvas-background);
+  background: var(--canvas-background);
   transform: translateY(-50%) rotate(-90deg);
-  color: var(--uix-canvas-foreground-de-emp);
+  color: var(--canvas-foreground-de-emp);
   text-transform: capitalize;
   letter-spacing: 0.3px;
   white-space: nowrap;
@@ -157,7 +157,7 @@ export const StageParallelBracket = styled.div`
   margin-left: ${Padding.PadM};
   width: ${Spacing.SpacingXs};
   flex: 1;
-  border: 1.5px solid var(--uix-canvas-border-de-emp);
+  border: 1.5px solid var(--canvas-border-de-emp);
   border-right: none;
 `;
 
@@ -179,10 +179,10 @@ export const StageTask = styled.div<{
   align-items: center;
   gap: ${Spacing.SpacingXs};
   padding: ${Padding.PadS} ${Padding.PadM};
-  background: var(--uix-canvas-background);
-  border: 1px solid var(--uix-canvas-border-de-emp);
+  background: var(--canvas-background);
+  border: 1px solid var(--canvas-border-de-emp);
   border-radius: ${Spacing.SpacingXs};
-  color: var(--uix-canvas-foreground);
+  color: var(--canvas-foreground);
   transition: all 0.2s ease;
   min-height: 36px;
   width: ${({ isParallel, isDragEnabled }) =>
@@ -200,37 +200,37 @@ export const StageTask = styled.div<{
   ${({ status }) =>
     status === 'InProgress' &&
     css`
-      border-color: var(--uix-canvas-info-icon);
+      border-color: var(--canvas-info-icon);
     `}
 
   ${({ status }) =>
     status === 'Completed' &&
     css`
-      border-color: var(--uix-canvas-success-icon);
+      border-color: var(--canvas-success-icon);
     `}
 
   ${({ status }) =>
     status === 'Paused' &&
     css`
-      border-color: var(--uix-canvas-warning-icon);
+      border-color: var(--canvas-warning-icon);
     `}
 
   ${({ status }) =>
     status === 'Failed' &&
     css`
-      border-color: var(--uix-canvas-error-icon);
+      border-color: var(--canvas-error-icon);
     `}
 
   ${({ selected }) =>
     selected
       ? css`
-          border-color: var(--uix-canvas-primary);
-          outline: 4px solid var(--uix-canvas-secondary-pressed);
+          border-color: var(--canvas-primary);
+          outline: 4px solid var(--canvas-secondary-pressed);
         `
       : css`
           &:hover {
-            border-color: var(--uix-canvas-primary);
-            outline: 4px solid var(--uix-canvas-secondary-pressed);
+            border-color: var(--canvas-primary);
+            outline: 4px solid var(--canvas-secondary-pressed);
           }
         `}
 `;
@@ -255,19 +255,19 @@ export const StageTaskRetryDuration = styled.div<{ status?: 'warning' | 'info' |
   ${({ status }) =>
     status === 'info' &&
     css`
-      color: var(--uix-canvas-info-text);
+      color: var(--canvas-info-text);
     `}
 
   ${({ status }) =>
     status === 'warning' &&
     css`
-      color: var(--uix-canvas-warning-text);
+      color: var(--canvas-warning-text);
     `}
 
   ${({ status }) =>
     status === 'error' &&
     css`
-      color: var(--uix-canvas-error-text);
+      color: var(--canvas-error-text);
     `}
 `;
 
@@ -290,9 +290,9 @@ export const StageChip = styled.button`
   gap: ${Padding.PadS};
   padding: ${Padding.PadXs} ${Spacing.SpacingXs};
   border-radius: 10px;
-  border: 1px solid var(--uix-canvas-border-de-emp);
+  border: 1px solid var(--canvas-border-de-emp);
   background: transparent;
-  color: var(--uix-canvas-foreground);
+  color: var(--canvas-foreground);
   cursor: pointer;
 
   &:hover {
@@ -300,7 +300,7 @@ export const StageChip = styled.button`
   }
 
   &:focus-visible {
-    outline: 2px solid var(--uix-canvas-primary);
+    outline: 2px solid var(--canvas-primary);
     outline-offset: 2px;
   }
 `;
@@ -323,7 +323,7 @@ export const StageTaskDragPlaceholder = styled.div<{ isTargetParallel?: boolean 
   gap: ${Spacing.SpacingXs};
   padding: ${Padding.PadL} ${Padding.PadXxl};
   background: transparent;
-  border: 2px dashed var(--uix-canvas-selection-indicator);
+  border: 2px dashed var(--canvas-selection-indicator);
   border-radius: 6px;
 
   height: 100%;

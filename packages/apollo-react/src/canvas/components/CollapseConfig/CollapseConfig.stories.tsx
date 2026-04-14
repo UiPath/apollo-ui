@@ -42,7 +42,7 @@ const collapsibleAgentManifest: NodeManifest = {
     label: 'Collapsible Agent',
     icon: 'uipath.agent',
     shape: 'rectangle',
-    iconBackground: 'var(--uix-canvas-background-secondary)',
+    iconBackground: 'var(--canvas-background-secondary)',
   },
   handleConfiguration: [],
 };

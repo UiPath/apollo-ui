@@ -35,7 +35,7 @@ export const BlankCanvasNode = (props: BlankCanvasNodeProps) => {
     <>
       <NodeContainer selected={selected} ref={nodeRef}>
         <IconWrapper>
-          <CanvasIcon icon="plus" size={48} color="var(--uix-canvas-foreground-de-emp)" />
+          <CanvasIcon icon="plus" size={48} color="var(--canvas-foreground-de-emp)" />
         </IconWrapper>
       </NodeContainer>
       {typeof label === 'string' && (

@@ -137,10 +137,10 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   const agentIcon = useMemo(() => {
     if (isConversational) {
       return (
-        <Icons.ConversationalAgentIcon color="var(--uix-canvas-foreground-de-emp)" w={32} h={32} />
+        <Icons.ConversationalAgentIcon color="var(--canvas-foreground-de-emp)" w={32} h={32} />
       );
     }
-    return <Icons.AutonomousAgentIcon color="var(--uix-canvas-foreground-de-emp)" w={32} h={32} />;
+    return <Icons.AutonomousAgentIcon color="var(--canvas-foreground-de-emp)" w={32} h={32} />;
   }, [isConversational]);
 
   // Extract settings from definition
@@ -233,8 +233,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         handleType: 'artifact',
         label: translations.memory,
         showButton: mode === 'design' && !hasMemory,
-        color: 'var(--uix-canvas-foreground-de-emp)',
-        labelBackgroundColor: 'var(--uix-canvas-background-secondary)',
+        color: 'var(--canvas-foreground-de-emp)',
+        labelBackgroundColor: 'var(--canvas-background-secondary)',
         visible: displayMemory,
         onAction: (_e: HandleActionEvent) => {
           onAddResource?.('memorySpace');
@@ -249,8 +249,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         handleType: 'artifact',
         label: translations.escalations,
         showButton: mode === 'design',
-        color: 'var(--uix-canvas-foreground-de-emp)',
-        labelBackgroundColor: 'var(--uix-canvas-background-secondary)',
+        color: 'var(--canvas-foreground-de-emp)',
+        labelBackgroundColor: 'var(--canvas-background-secondary)',
         visible: displayEscalation,
         onAction: (_e: HandleActionEvent) => {
           onAddResource?.('escalation');
@@ -274,8 +274,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           handleType: 'artifact',
           label: translations.context,
           showButton: mode === 'design',
-          color: 'var(--uix-canvas-foreground-de-emp)',
-          labelBackgroundColor: 'var(--uix-canvas-background-secondary)',
+          color: 'var(--canvas-foreground-de-emp)',
+          labelBackgroundColor: 'var(--canvas-background-secondary)',
           visible: displayContext,
           onAction: (_e: HandleActionEvent) => {
             onAddResource?.('context');
@@ -287,8 +287,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           handleType: 'artifact',
           label: translations.tools,
           showButton: mode === 'design',
-          color: 'var(--uix-canvas-foreground-de-emp)',
-          labelBackgroundColor: 'var(--uix-canvas-background-secondary)',
+          color: 'var(--canvas-foreground-de-emp)',
+          labelBackgroundColor: 'var(--canvas-background-secondary)',
           visible: displayTool || displayMcp || displayA2a,
           onAction: (_e: HandleActionEvent) => {
             // Default to tool when both are available, or show the available option
@@ -574,8 +574,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
                 ? translations.conversationalAgent
                 : translations.autonomousAgent,
               shape: 'rectangle',
-              background: 'var(--uix-canvas-background)',
-              iconBackground: 'var(--uix-canvas-background-secondary)',
+              background: 'var(--canvas-background)',
+              iconBackground: 'var(--canvas-background-secondary)',
             },
           }}
           selected={selected}

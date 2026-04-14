@@ -153,8 +153,8 @@ const CanvasWithNodeInspector = () => {
           p={20}
           gap={8}
           style={{
-            backgroundColor: 'var(--uix-canvas-background-secondary)',
-            color: 'var(--uix-canvas-foreground)',
+            backgroundColor: 'var(--canvas-background-secondary)',
+            color: 'var(--canvas-foreground)',
           }}
         >
           <span className="text-lg font-bold">Node Inspector Demo</span>

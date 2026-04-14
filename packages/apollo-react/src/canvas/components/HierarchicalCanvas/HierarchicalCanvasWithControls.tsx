@@ -411,7 +411,7 @@ const CanvasWithControlsContent: React.FC<CanvasWithControlsContentProps> = ({
             flexDirection: 'column',
             gap: '8px',
             padding: '8px',
-            backgroundColor: 'var(--uix-canvas-background)',
+            backgroundColor: 'var(--canvas-background)',
             borderRadius: '8px',
             boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
             minWidth: '180px',
@@ -446,8 +446,8 @@ const CanvasWithControlsContent: React.FC<CanvasWithControlsContentProps> = ({
         <div
           style={{
             padding: '12px',
-            color: 'var(--uix-canvas-foreground)',
-            backgroundColor: 'var(--uix-canvas-background)',
+            color: 'var(--canvas-foreground)',
+            backgroundColor: 'var(--canvas-background)',
             borderRadius: '8px',
             boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
             fontSize: '12px',

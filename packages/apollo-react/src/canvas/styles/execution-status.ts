@@ -17,24 +17,24 @@ export const getExecutionStatusBorder = (executionStatus?: string) => {
     case 'NotExecuted':
     case 'INFO':
       return css`
-        border-color: var(--uix-canvas-border-de-emp);
+        border-color: var(--canvas-border-de-emp);
       `;
     case 'InProgress': {
       return css`
-        border-color: var(--uix-canvas-info-icon);
-        animation: ${pulseAnimation('--uix-canvas-info-icon')} 2s infinite;
+        border-color: var(--canvas-info-icon);
+        animation: ${pulseAnimation('--canvas-info-icon')} 2s infinite;
       `;
     }
     case 'Completed':
       return css`
-        border-color: var(--uix-canvas-success-icon);
+        border-color: var(--canvas-success-icon);
       `;
     case 'Paused':
     case 'Warning':
     case 'WARNING': {
       return css`
-        border-color: var(--uix-canvas-warning-icon);
-        animation: ${pulseAnimation('--uix-canvas-warning-icon')} 2s infinite;
+        border-color: var(--canvas-warning-icon);
+        animation: ${pulseAnimation('--canvas-warning-icon')} 2s infinite;
       `;
     }
     case 'Cancelled':
@@ -43,14 +43,14 @@ export const getExecutionStatusBorder = (executionStatus?: string) => {
     case 'ERROR':
     case 'CRITICAL': {
       return css`
-        border-color: var(--uix-canvas-error-icon);
-        background: var(--uix-canvas-error-background);
-        animation: ${pulseAnimation('--uix-canvas-error-icon')} 2s infinite;
+        border-color: var(--canvas-error-icon);
+        background: var(--canvas-error-background);
+        animation: ${pulseAnimation('--canvas-error-icon')} 2s infinite;
       `;
     }
     default:
       return css`
-        border-color: var(--uix-canvas-border-de-emp);
+        border-color: var(--canvas-border-de-emp);
       `;
   }
 };

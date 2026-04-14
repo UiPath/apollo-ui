@@ -514,8 +514,8 @@ function WithMaintainNodesInViewStory() {
         gap={8}
         p={20}
         style={{
-          color: 'var(--uix-canvas-foreground)',
-          backgroundColor: 'var(--uix-canvas-background-secondary)',
+          color: 'var(--canvas-foreground)',
+          backgroundColor: 'var(--canvas-background-secondary)',
         }}
       >
         <span className="text-lg font-bold">Maintain Nodes in View Demo</span>
@@ -551,7 +551,7 @@ function WithMaintainNodesInViewStory() {
       <div
         style={{
           flex: 1,
-          border: '1px solid var(--uix-canvas-border)',
+          border: '1px solid var(--canvas-border)',
           transition: 'all 0.3s ease',
           ...containerSize,
         }}

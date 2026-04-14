@@ -15,8 +15,8 @@ export const StyledEdgeToolbarContent = styled.div`
   align-items: center;
   gap: 4px;
   padding: 2px;
-  background: var(--uix-canvas-background);
-  border: 1px solid var(--uix-canvas-border-grid);
+  background: var(--canvas-background);
+  border: 1px solid var(--canvas-border-grid);
   border-radius: 8px;
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.08),

@@ -2,7 +2,7 @@ import styled from '@emotion/styled';
 
 export const ConfigSection = styled.div`
   padding: 16px;
-  border-bottom: 1px solid var(--uix-canvas-border-de-emp);
+  border-bottom: 1px solid var(--canvas-border-de-emp);
 
   &:last-child {
     border-bottom: none;
@@ -12,7 +12,7 @@ export const ConfigSection = styled.div`
 export const SectionTitle = styled.div`
   font-weight: 500;
   font-size: 14px;
-  color: var(--uix-canvas-foreground);
+  color: var(--canvas-foreground);
   margin-bottom: 8px;
 `;
 
@@ -26,21 +26,21 @@ export const FieldContainer = styled.div`
 
 export const FieldLabel = styled.label`
   font-size: 14px;
-  color: var(--uix-canvas-foreground-de-emp);
+  color: var(--canvas-foreground-de-emp);
   display: block;
   margin-bottom: 4px;
 `;
 
 export const FieldHelpText = styled.span`
   font-size: 12px;
-  color: var(--uix-canvas-foreground-de-emp);
+  color: var(--canvas-foreground-de-emp);
   display: block;
   margin-top: 4px;
 `;
 
 export const FieldError = styled.span`
   font-size: 12px;
-  color: var(--uix-canvas-error);
+  color: var(--canvas-error);
   display: block;
   margin-top: 4px;
 `;
@@ -55,18 +55,18 @@ export const TextInput = styled.input<InputProps>`
   font-size: 14px;
   font-family: inherit;
   border: 1px solid
-    ${(props) => (props.hasError ? 'var(--uix-canvas-error)' : 'var(--uix-canvas-border)')};
+    ${(props) => (props.hasError ? 'var(--canvas-error)' : 'var(--canvas-border)')};
   border-radius: 4px;
-  background-color: var(--uix-canvas-background);
-  color: var(--uix-canvas-foreground);
+  background-color: var(--canvas-background);
+  color: var(--canvas-foreground);
   outline: none;
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
 
   &:focus {
-    border-color: var(--uix-canvas-primary);
-    box-shadow: 0 0 0 2px var(--uix-canvas-primary-alpha-20);
+    border-color: var(--canvas-primary);
+    box-shadow: 0 0 0 2px var(--canvas-primary-alpha-20);
   }
 
   &:disabled {
@@ -81,10 +81,10 @@ export const TextArea = styled.textarea<InputProps>`
   font-size: 14px;
   font-family: inherit;
   border: 1px solid
-    ${(props) => (props.hasError ? 'var(--uix-canvas-error)' : 'var(--uix-canvas-border)')};
+    ${(props) => (props.hasError ? 'var(--canvas-error)' : 'var(--canvas-border)')};
   border-radius: 4px;
-  background-color: var(--uix-canvas-background);
-  color: var(--uix-canvas-foreground);
+  background-color: var(--canvas-background);
+  color: var(--canvas-foreground);
   outline: none;
   transition:
     border-color 0.2s,
@@ -92,8 +92,8 @@ export const TextArea = styled.textarea<InputProps>`
   resize: vertical;
 
   &:focus {
-    border-color: var(--uix-canvas-primary);
-    box-shadow: 0 0 0 2px var(--uix-canvas-primary-alpha-20);
+    border-color: var(--canvas-primary);
+    box-shadow: 0 0 0 2px var(--canvas-primary-alpha-20);
   }
 
   &:disabled {
@@ -108,10 +108,10 @@ export const SelectInput = styled.select<InputProps>`
   font-size: 14px;
   font-family: inherit;
   border: 1px solid
-    ${(props) => (props.hasError ? 'var(--uix-canvas-error)' : 'var(--uix-canvas-border)')};
+    ${(props) => (props.hasError ? 'var(--canvas-error)' : 'var(--canvas-border)')};
   border-radius: 4px;
-  background-color: var(--uix-canvas-background);
-  color: var(--uix-canvas-foreground);
+  background-color: var(--canvas-background);
+  color: var(--canvas-foreground);
   outline: none;
   cursor: pointer;
   transition:
@@ -124,8 +124,8 @@ export const SelectInput = styled.select<InputProps>`
   background-size: 20px;
 
   &:focus {
-    border-color: var(--uix-canvas-primary);
-    box-shadow: 0 0 0 2px var(--uix-canvas-primary-alpha-20);
+    border-color: var(--canvas-primary);
+    box-shadow: 0 0 0 2px var(--canvas-primary-alpha-20);
   }
 
   &:disabled {
@@ -140,18 +140,18 @@ export const NumberInput = styled.input<InputProps>`
   font-size: 14px;
   font-family: inherit;
   border: 1px solid
-    ${(props) => (props.hasError ? 'var(--uix-canvas-error)' : 'var(--uix-canvas-border)')};
+    ${(props) => (props.hasError ? 'var(--canvas-error)' : 'var(--canvas-border)')};
   border-radius: 4px;
-  background-color: var(--uix-canvas-background);
-  color: var(--uix-canvas-foreground);
+  background-color: var(--canvas-background);
+  color: var(--canvas-foreground);
   outline: none;
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
 
   &:focus {
-    border-color: var(--uix-canvas-primary);
-    box-shadow: 0 0 0 2px var(--uix-canvas-primary-alpha-20);
+    border-color: var(--canvas-primary);
+    box-shadow: 0 0 0 2px var(--canvas-primary-alpha-20);
   }
 
   &:disabled {
@@ -173,13 +173,13 @@ export const CheckboxContainer = styled.div`
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: var(--uix-canvas-background-hover);
+    background-color: var(--canvas-background-hover);
   }
 `;
 
 export const CheckboxLabel = styled.label`
   font-size: 14px;
-  color: var(--uix-canvas-foreground);
+  color: var(--canvas-foreground);
   cursor: pointer;
   user-select: none;
   display: flex;
@@ -191,12 +191,12 @@ export const CheckboxInput = styled.input`
   height: 18px;
   margin-right: 8px;
   cursor: pointer;
-  accent-color: var(--uix-canvas-primary);
+  accent-color: var(--canvas-primary);
 `;
 
 export const CheckboxHelpText = styled.span`
   font-size: 12px;
-  color: var(--uix-canvas-foreground-de-emp);
+  color: var(--canvas-foreground-de-emp);
   margin-left: 26px;
   display: block;
 `;
@@ -208,7 +208,7 @@ export const InputWrapper = styled.div`
 `;
 
 export const InputSuffix = styled.span`
-  color: var(--uix-canvas-foreground-de-emp);
+  color: var(--canvas-foreground-de-emp);
   font-size: 14px;
   white-space: nowrap;
 `;

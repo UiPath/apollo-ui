@@ -35,8 +35,8 @@ export const MiniCanvasNavigator = memo(
         style={{
           width: 300,
           height: 200,
-          background: 'var(--uix-canvas-background)',
-          border: '1px solid var(--uix-canvas-border-grid)',
+          background: 'var(--canvas-background)',
+          border: '1px solid var(--canvas-border-grid)',
           borderRadius: 8,
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
         }}

@@ -10,10 +10,10 @@ const PreviewContainer = styled.div<{ selected?: boolean; width?: number; height
   width: ${(props) => props.width ?? DEFAULT_NODE_SIZE}px;
   height: ${(props) => props.height ?? DEFAULT_NODE_SIZE}px;
   border-radius: 16px;
-  background: var(--uix-canvas-background-secondary);
+  background: var(--canvas-background-secondary);
   border: 2px dashed
     ${(props) =>
-      props.selected ? 'var(--uix-canvas-selection-indicator)' : 'var(--uix-canvas-border-de-emp)'};
+      props.selected ? 'var(--canvas-selection-indicator)' : 'var(--canvas-border-de-emp)'};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -30,10 +30,10 @@ export interface AddNodePreviewData {
 
 const getIcon = (iconName?: string): React.ReactElement => {
   if (iconName) {
-    return <CanvasIcon icon={iconName} size={40} color="var(--uix-canvas-foreground-de-emp)" />;
+    return <CanvasIcon icon={iconName} size={40} color="var(--canvas-foreground-de-emp)" />;
   }
 
-  return <CanvasIcon icon="ellipsis" size={40} color="var(--uix-canvas-foreground-de-emp)" />;
+  return <CanvasIcon icon="ellipsis" size={40} color="var(--canvas-foreground-de-emp)" />;
 };
 
 export const AddNodePreview: React.FC<NodeProps> = ({ selected, data, width, height }) => {

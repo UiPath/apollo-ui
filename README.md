@@ -172,7 +172,7 @@ pnpm install
 pnpm build
 
 # Run Storybook
-pnpm storybook
+pnpm storybook:dev
 ```
 
 ### Development Commands

@@ -455,12 +455,12 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           interactionState={interactionState}
         >
           <BaseIconWrapper
-            backgroundColor="var(--uix-canvas-error-background)"
+            backgroundColor="var(--canvas-error-background)"
             shape="square"
             height={height}
             width={width ?? height}
           >
-            <CanvasIcon icon="circle-alert" size={32} color="var(--uix-canvas-error-icon)" />
+            <CanvasIcon icon="circle-alert" size={32} color="var(--canvas-error-icon)" />
           </BaseIconWrapper>
 
           {/* TODO: localize */}

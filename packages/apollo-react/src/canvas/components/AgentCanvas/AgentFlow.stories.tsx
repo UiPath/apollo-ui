@@ -536,10 +536,10 @@ const AgentFlowWrapper = ({
         p={16}
         gap={16}
         style={{
-          backgroundColor: 'var(--uix-canvas-background-secondary)',
-          borderLeft: '1px solid var(--uix-canvas-border-de-emp)',
+          backgroundColor: 'var(--canvas-background-secondary)',
+          borderLeft: '1px solid var(--canvas-border-de-emp)',
           overflowY: 'auto',
-          color: 'var(--uix-canvas-foreground)',
+          color: 'var(--canvas-foreground)',
         }}
       >
         <h3 style={{ margin: 0 }}>Design Mode</h3>
@@ -560,9 +560,9 @@ const AgentFlowWrapper = ({
           <div
             style={{
               padding: '12px',
-              backgroundColor: 'var(--uix-canvas-background)',
+              backgroundColor: 'var(--canvas-background)',
               borderRadius: '4px',
-              border: '1px solid var(--uix-canvas-border-de-emp)',
+              border: '1px solid var(--canvas-border-de-emp)',
             }}
           >
             <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Agent Node Position</div>
@@ -576,7 +576,7 @@ const AgentFlowWrapper = ({
             </div>
           </div>
         )}
-        <div style={{ fontSize: '0.875rem', color: 'var(--uix-canvas-foreground-de-emp)' }}>
+        <div style={{ fontSize: '0.875rem', color: 'var(--canvas-foreground-de-emp)' }}>
           <p>Click the + buttons on the agent node to add:</p>
           <ul>
             <li>Memory (top)</li>
@@ -1118,10 +1118,10 @@ const DesignModePlayground = () => {
       p={16}
       gap={12}
       style={{
-        backgroundColor: 'var(--uix-canvas-background-secondary)',
-        borderLeft: '1px solid var(--uix-canvas-border-de-emp)',
+        backgroundColor: 'var(--canvas-background-secondary)',
+        borderLeft: '1px solid var(--canvas-border-de-emp)',
         overflowY: 'auto',
-        color: 'var(--uix-canvas-foreground)',
+        color: 'var(--canvas-foreground)',
       }}
     >
       <h3 style={{ margin: 0 }}>Current State</h3>
@@ -1148,9 +1148,9 @@ const DesignModePlayground = () => {
         <div
           style={{
             padding: '12px',
-            backgroundColor: 'var(--uix-canvas-background)',
+            backgroundColor: 'var(--canvas-background)',
             borderRadius: '4px',
-            border: '1px solid var(--uix-canvas-border-de-emp)',
+            border: '1px solid var(--canvas-border-de-emp)',
           }}
         >
           <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Active Suggestions</div>
@@ -1170,9 +1170,9 @@ const DesignModePlayground = () => {
         <div
           style={{
             padding: '12px',
-            backgroundColor: 'var(--uix-canvas-background)',
+            backgroundColor: 'var(--canvas-background)',
             borderRadius: '4px',
-            border: '1px solid var(--uix-canvas-border-de-emp)',
+            border: '1px solid var(--canvas-border-de-emp)',
           }}
         >
           <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Position Tracking</div>
@@ -1205,7 +1205,7 @@ const DesignModePlayground = () => {
       <div
         style={{
           fontSize: '0.875rem',
-          color: 'var(--uix-canvas-foreground-de-emp)',
+          color: 'var(--canvas-foreground-de-emp)',
           marginTop: '8px',
         }}
       >
@@ -1305,7 +1305,7 @@ const DesignModePlayground = () => {
         {/* Autopilot actions */}
         {suggestionMode === 'autopilot' && (
           <Column gap={4}>
-            <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
+            <span className="text-sm" style={{ color: 'var(--canvas-foreground-de-emp)' }}>
               Create suggestions:
             </span>
             <Row gap={4} style={{ flexWrap: 'wrap' }}>
@@ -1409,7 +1409,7 @@ const DesignModePlayground = () => {
           {hasInstructions && (
             <Column gap={8} style={{ marginTop: 8 }}>
               <Column gap={2}>
-                <span className="text-xs" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
+                <span className="text-xs" style={{ color: 'var(--canvas-foreground-de-emp)' }}>
                   System prompt:
                 </span>
                 <textarea
@@ -1422,16 +1422,16 @@ const DesignModePlayground = () => {
                     padding: 8,
                     fontSize: 12,
                     borderRadius: 4,
-                    border: '1px solid var(--uix-canvas-border-de-emp)',
-                    backgroundColor: 'var(--uix-canvas-background)',
-                    color: 'var(--uix-canvas-foreground)',
+                    border: '1px solid var(--canvas-border-de-emp)',
+                    backgroundColor: 'var(--canvas-background)',
+                    color: 'var(--canvas-foreground)',
                     resize: 'vertical',
                     fontFamily: 'inherit',
                   }}
                 />
               </Column>
               <Column gap={2}>
-                <span className="text-xs" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
+                <span className="text-xs" style={{ color: 'var(--canvas-foreground-de-emp)' }}>
                   User prompt:
                 </span>
                 <textarea
@@ -1444,9 +1444,9 @@ const DesignModePlayground = () => {
                     padding: 8,
                     fontSize: 12,
                     borderRadius: 4,
-                    border: '1px solid var(--uix-canvas-border-de-emp)',
-                    backgroundColor: 'var(--uix-canvas-background)',
-                    color: 'var(--uix-canvas-foreground)',
+                    border: '1px solid var(--canvas-border-de-emp)',
+                    backgroundColor: 'var(--canvas-background)',
+                    color: 'var(--canvas-foreground)',
                     resize: 'vertical',
                     fontFamily: 'inherit',
                   }}
@@ -1459,9 +1459,9 @@ const DesignModePlayground = () => {
         {/* Status info */}
         <Column
           gap={2}
-          style={{ borderTop: '1px solid var(--uix-canvas-border-de-emp)', paddingTop: 8 }}
+          style={{ borderTop: '1px solid var(--canvas-border-de-emp)', paddingTop: 8 }}
         >
-          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
+          <span className="text-sm" style={{ color: 'var(--canvas-foreground-de-emp)' }}>
             Resources: {resources.length} | Notes: {stickyNotes.length} | Zoom:{' '}
             {(zoomLevel * 100).toFixed(0)}%
           </span>
@@ -1540,8 +1540,8 @@ const DesignModePlayground = () => {
                   top: '50%',
                   left: '50%',
                   transform: 'translate(-50%, -50%)',
-                  backgroundColor: 'var(--uix-canvas-background-raised)',
-                  border: '1px solid var(--uix-canvas-border)',
+                  backgroundColor: 'var(--canvas-background-raised)',
+                  border: '1px solid var(--canvas-border)',
                   borderRadius: 8,
                   padding: 24,
                   minWidth: 400,
@@ -1549,13 +1549,13 @@ const DesignModePlayground = () => {
                   zIndex: 1000,
                 }}
               >
-                <h3 style={{ margin: '0 0 16px 0', color: 'var(--uix-canvas-foreground)' }}>
+                <h3 style={{ margin: '0 0 16px 0', color: 'var(--canvas-foreground)' }}>
                   Configure {openModalType.charAt(0).toUpperCase() + openModalType.slice(1)}
                 </h3>
                 <p
                   style={{
                     margin: '0 0 24px 0',
-                    color: 'var(--uix-canvas-foreground-de-emp)',
+                    color: 'var(--canvas-foreground-de-emp)',
                     fontSize: '0.875rem',
                   }}
                 >
@@ -1763,7 +1763,7 @@ const HealthScoreWrapper = ({
               100
             </Button>
           </Row>
-          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
+          <span className="text-sm" style={{ color: 'var(--canvas-foreground-de-emp)' }}>
             Current: {healthScore === undefined ? 'Not set' : healthScore}
           </span>
         </Column>
@@ -1846,7 +1846,7 @@ const ConversationalAgentWrapper = () => {
           <span className="text-sm">
             This agent has <strong>isConversational: true</strong> in its metadata.
           </span>
-          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
+          <span className="text-sm" style={{ color: 'var(--canvas-foreground-de-emp)' }}>
             Hover over the agent node to see the settings preview. Notice that the{' '}
             <strong>User Prompt</strong> section is hidden for conversational agents.
           </span>
@@ -1977,11 +1977,11 @@ const ResourceWithErrorCTAWrapper = () => {
             Resources with <strong>errorAction</strong> defined will show an error action button in
             their toolbar.
           </span>
-          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
+          <span className="text-sm" style={{ color: 'var(--canvas-foreground-de-emp)' }}>
             Click the error action buttons (Retry, Fix Configuration, Review Issues) to trigger the
             custom actions.
           </span>
-          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
+          <span className="text-sm" style={{ color: 'var(--canvas-foreground-de-emp)' }}>
             The "Working Tool" has no error action and shows the normal toolbar.
           </span>
         </Column>

@@ -55,15 +55,15 @@ export const StaticEdge = ({
 
   const strokeColor = useMemo(() => {
     if (isSuggestion) {
-      if (suggestionType === 'add') return 'var(--uix-canvas-success-icon)';
-      if (suggestionType === 'update') return 'var(--uix-canvas-warning-icon)';
-      if (suggestionType === 'delete') return 'var(--uix-canvas-error-icon)';
+      if (suggestionType === 'add') return 'var(--canvas-success-icon)';
+      if (suggestionType === 'update') return 'var(--canvas-warning-icon)';
+      if (suggestionType === 'delete') return 'var(--canvas-error-icon)';
     }
-    if (hasError) return 'var(--uix-canvas-error-icon)';
-    if (isCurrentBreakpoint) return 'var(--uix-canvas-warning-icon)';
-    if (hasSuccess) return 'var(--uix-canvas-success-icon)';
-    if (hasRunning) return 'var(--uix-canvas-primary)';
-    return isConnectedToSelectedResource ? 'var(--uix-canvas-primary)' : 'var(--uix-canvas-border)';
+    if (hasError) return 'var(--canvas-error-icon)';
+    if (isCurrentBreakpoint) return 'var(--canvas-warning-icon)';
+    if (hasSuccess) return 'var(--canvas-success-icon)';
+    if (hasRunning) return 'var(--canvas-primary)';
+    return isConnectedToSelectedResource ? 'var(--canvas-primary)' : 'var(--canvas-border)';
   }, [
     hasError,
     isCurrentBreakpoint,

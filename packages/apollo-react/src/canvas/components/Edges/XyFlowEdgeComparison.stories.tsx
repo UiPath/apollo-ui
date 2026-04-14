@@ -508,13 +508,13 @@ function InteractiveEdgeSelectionStory() {
                 width: '100%',
                 height: 32,
                 borderRadius: 4,
-                border: '1px solid var(--uix-canvas-border)',
+                border: '1px solid var(--canvas-border)',
                 cursor: 'pointer',
               }}
             />
           </Column>
 
-          <span className="text-xs" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
+          <span className="text-xs" style={{ color: 'var(--canvas-foreground-de-emp)' }}>
             Drag the nodes to see how the edge adapts.
           </span>
         </Column>

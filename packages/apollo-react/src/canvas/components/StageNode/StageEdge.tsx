@@ -9,19 +9,19 @@ import { memo } from 'react';
 
 export const StageEdgeLabel = styled.div`
   position: absolute;
-  color: var(--uix-canvas-foreground);
-  background: var(--uix-canvas-background);
+  color: var(--canvas-foreground);
+  background: var(--canvas-background);
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
-  border: 1px solid var(--uix-canvas-border);
+  border: 1px solid var(--canvas-border);
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   pointer-events: all;
 
   &:hover {
-    background: var(--uix-canvas-background-hover);
-    border-color: var(--uix-canvas-border-hover);
+    background: var(--canvas-background-hover);
+    border-color: var(--canvas-border-hover);
   }
 `;
 
@@ -73,7 +73,7 @@ function StageEdgeInner({
   targetPosition,
   selected,
   style,
-  stroke = 'var(--uix-canvas-foreground-emp)',
+  stroke = 'var(--canvas-foreground-emp)',
   strokeWidth = 2,
   arrowSize = 8,
   ...rest
@@ -92,7 +92,7 @@ function StageEdgeInner({
 
   const arrowLineLength = arrowSize;
 
-  const strokeColor = selected ? 'var(--uix-canvas-selection-indicator)' : stroke;
+  const strokeColor = selected ? 'var(--canvas-selection-indicator)' : stroke;
   const strokeWidthValue = selected ? strokeWidth + 1 : strokeWidth;
 
   return (

@@ -16,7 +16,7 @@ export const StyledToolbarButton = styled(motion.button, {
   height: 24px;
   padding: 0;
   background: ${({ $isToggled, $hoverColor }) =>
-    ($isToggled && ($hoverColor || 'var(--uix-canvas-background-secondary)')) || 'transparent'};
+    ($isToggled && ($hoverColor || 'var(--canvas-background-secondary)')) || 'transparent'};
   border: none;
   border-radius: 8px;
   cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
@@ -27,7 +27,7 @@ export const StyledToolbarButton = styled(motion.button, {
   pointer-events: ${({ $disabled }) => ($disabled ? 'none' : 'auto')};
 
   &:hover:not(:disabled) {
-    background: ${({ $hoverColor }) => $hoverColor || 'var(--uix-canvas-background-secondary)'};
+    background: ${({ $hoverColor }) => $hoverColor || 'var(--canvas-background-secondary)'};
   }
 
   &:active:not(:disabled) {
@@ -35,6 +35,6 @@ export const StyledToolbarButton = styled(motion.button, {
   }
 
   svg {
-    color: ${({ $color }) => $color || 'var(--uix-canvas-foreground)'};
+    color: ${({ $color }) => $color || 'var(--canvas-foreground)'};
   }
 `;
