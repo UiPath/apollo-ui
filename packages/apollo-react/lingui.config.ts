@@ -13,8 +13,13 @@ const config: LinguiConfig = {
       path: 'src/material/components/ap-tool-call/locales/{locale}',
       include: ['src/material/components/ap-tool-call'],
     },
+    {
+      path: 'src/canvas/locales/{locale}',
+      include: ['src/canvas'],
+    },
   ],
   format: formatter({ style: 'minimal' }),
+  compileNamespace: 'ts',
 };
 
 export default config;

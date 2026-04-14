@@ -5,6 +5,7 @@ import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyf
 import type { ResizeDragEvent, ResizeParams } from '@uipath/apollo-react/canvas/xyflow/system';
 import { AnimatePresence } from 'motion/react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ApI18nProvider } from '../../../i18n';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
@@ -348,7 +349,7 @@ const StickyNoteNodeComponent = ({
           <TopCornerIndicators selected={selected} />
           <BottomCornerIndicators selected={selected} />
           {isEditing ? (
-            <>
+            <ApI18nProvider component="canvas">
               <FormattingToolbar
                 textAreaRef={textAreaRef}
                 borderColor={color}
@@ -367,7 +368,7 @@ const StickyNoteNodeComponent = ({
                 isEditing={isEditing}
                 className="nodrag nowheel"
               />
-            </>
+            </ApI18nProvider>
           ) : (
             <StickyNoteMarkdown ref={markdownRef} {...scrollCaptureProps}>
               {localContent ? (

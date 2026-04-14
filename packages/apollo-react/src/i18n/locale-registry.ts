@@ -3,110 +3,99 @@
  * All locales are statically imported at build time for better performance
  */
 
-// @ts-expect-error - CommonJS modules without type definitions
-import apChatDe from '../material/components/ap-chat/locales/de.js';
+// Pre-import all locales for canvas component
+import { messages as canvasDe } from '../canvas/locales/de';
+import { messages as canvasEn } from '../canvas/locales/en';
+import { messages as canvasEs } from '../canvas/locales/es';
+import { messages as canvasEsMX } from '../canvas/locales/es-MX';
+import { messages as canvasFr } from '../canvas/locales/fr';
+import { messages as canvasJa } from '../canvas/locales/ja';
+import { messages as canvasKo } from '../canvas/locales/ko';
+import { messages as canvasPt } from '../canvas/locales/pt';
+import { messages as canvasPtBR } from '../canvas/locales/pt-BR';
+import { messages as canvasRu } from '../canvas/locales/ru';
+import { messages as canvasTr } from '../canvas/locales/tr';
+import { messages as canvasZhCN } from '../canvas/locales/zh-CN';
+import { messages as canvasZhTW } from '../canvas/locales/zh-TW';
 // Pre-import all locales for ap-chat component
-// @ts-expect-error - CommonJS modules without type definitions
-import apChatEn from '../material/components/ap-chat/locales/en.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apChatEs from '../material/components/ap-chat/locales/es.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apChatEsMX from '../material/components/ap-chat/locales/es-MX.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apChatFr from '../material/components/ap-chat/locales/fr.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apChatJa from '../material/components/ap-chat/locales/ja.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apChatKo from '../material/components/ap-chat/locales/ko.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apChatPt from '../material/components/ap-chat/locales/pt.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apChatPtBR from '../material/components/ap-chat/locales/pt-BR.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apChatRu from '../material/components/ap-chat/locales/ru.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apChatTr from '../material/components/ap-chat/locales/tr.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apChatZhCN from '../material/components/ap-chat/locales/zh-CN.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apChatZhTW from '../material/components/ap-chat/locales/zh-TW.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apToolCallDe from '../material/components/ap-tool-call/locales/de.js';
+import { messages as apChatDe } from '../material/components/ap-chat/locales/de';
+import { messages as apChatEn } from '../material/components/ap-chat/locales/en';
+import { messages as apChatEs } from '../material/components/ap-chat/locales/es';
+import { messages as apChatEsMX } from '../material/components/ap-chat/locales/es-MX';
+import { messages as apChatFr } from '../material/components/ap-chat/locales/fr';
+import { messages as apChatJa } from '../material/components/ap-chat/locales/ja';
+import { messages as apChatKo } from '../material/components/ap-chat/locales/ko';
+import { messages as apChatPt } from '../material/components/ap-chat/locales/pt';
+import { messages as apChatPtBR } from '../material/components/ap-chat/locales/pt-BR';
+import { messages as apChatRu } from '../material/components/ap-chat/locales/ru';
+import { messages as apChatTr } from '../material/components/ap-chat/locales/tr';
+import { messages as apChatZhCN } from '../material/components/ap-chat/locales/zh-CN';
+import { messages as apChatZhTW } from '../material/components/ap-chat/locales/zh-TW';
 // Pre-import all locales for ap-tool-call component
-// @ts-expect-error - CommonJS modules without type definitions
-import apToolCallEn from '../material/components/ap-tool-call/locales/en.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apToolCallEs from '../material/components/ap-tool-call/locales/es.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apToolCallEsMX from '../material/components/ap-tool-call/locales/es-MX.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apToolCallFr from '../material/components/ap-tool-call/locales/fr.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apToolCallJa from '../material/components/ap-tool-call/locales/ja.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apToolCallKo from '../material/components/ap-tool-call/locales/ko.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apToolCallPt from '../material/components/ap-tool-call/locales/pt.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apToolCallPtBR from '../material/components/ap-tool-call/locales/pt-BR.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apToolCallRu from '../material/components/ap-tool-call/locales/ru.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apToolCallTr from '../material/components/ap-tool-call/locales/tr.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apToolCallZhCN from '../material/components/ap-tool-call/locales/zh-CN.js';
-// @ts-expect-error - CommonJS modules without type definitions
-import apToolCallZhTW from '../material/components/ap-tool-call/locales/zh-TW.js';
+import { messages as apToolCallDe } from '../material/components/ap-tool-call/locales/de';
+import { messages as apToolCallEn } from '../material/components/ap-tool-call/locales/en';
+import { messages as apToolCallEs } from '../material/components/ap-tool-call/locales/es';
+import { messages as apToolCallEsMX } from '../material/components/ap-tool-call/locales/es-MX';
+import { messages as apToolCallFr } from '../material/components/ap-tool-call/locales/fr';
+import { messages as apToolCallJa } from '../material/components/ap-tool-call/locales/ja';
+import { messages as apToolCallKo } from '../material/components/ap-tool-call/locales/ko';
+import { messages as apToolCallPt } from '../material/components/ap-tool-call/locales/pt';
+import { messages as apToolCallPtBR } from '../material/components/ap-tool-call/locales/pt-BR';
+import { messages as apToolCallRu } from '../material/components/ap-tool-call/locales/ru';
+import { messages as apToolCallTr } from '../material/components/ap-tool-call/locales/tr';
+import { messages as apToolCallZhCN } from '../material/components/ap-tool-call/locales/zh-CN';
+import { messages as apToolCallZhTW } from '../material/components/ap-tool-call/locales/zh-TW';
+import type { Messages } from '@lingui/core';
 import type { SupportedLocale } from './ApI18nProvider';
-
-type LocaleMessages = Record<string, string>;
-
-/**
- * Extract messages from compiled Lingui locale module
- * Lingui compiles to: module.exports={messages:JSON.parse("{...}")};
- */
-function extractMessages(localeModule: unknown): LocaleMessages {
-  if (typeof localeModule === 'object' && localeModule !== null && 'messages' in localeModule) {
-    return (localeModule as { messages: LocaleMessages }).messages;
-  }
-  // Fallback for unexpected format
-  console.warn('Unexpected locale module format:', localeModule);
-  return {};
-}
 
 /**
  * Registry mapping component paths to their pre-imported locale messages
  */
-const localeRegistry: Record<string, Record<SupportedLocale, LocaleMessages>> = {
+const localeRegistry: Record<string, Record<SupportedLocale, Messages>> = {
   'material/components/ap-chat': {
-    en: extractMessages(apChatEn),
-    es: extractMessages(apChatEs),
-    pt: extractMessages(apChatPt),
-    de: extractMessages(apChatDe),
-    fr: extractMessages(apChatFr),
-    ja: extractMessages(apChatJa),
-    ko: extractMessages(apChatKo),
-    ru: extractMessages(apChatRu),
-    tr: extractMessages(apChatTr),
-    'zh-CN': extractMessages(apChatZhCN),
-    'zh-TW': extractMessages(apChatZhTW),
-    'pt-BR': extractMessages(apChatPtBR),
-    'es-MX': extractMessages(apChatEsMX),
+    en: apChatEn,
+    es: apChatEs,
+    pt: apChatPt,
+    de: apChatDe,
+    fr: apChatFr,
+    ja: apChatJa,
+    ko: apChatKo,
+    ru: apChatRu,
+    tr: apChatTr,
+    'zh-CN': apChatZhCN,
+    'zh-TW': apChatZhTW,
+    'pt-BR': apChatPtBR,
+    'es-MX': apChatEsMX,
   },
   'material/components/ap-tool-call': {
-    en: extractMessages(apToolCallEn),
-    es: extractMessages(apToolCallEs),
-    pt: extractMessages(apToolCallPt),
-    de: extractMessages(apToolCallDe),
-    fr: extractMessages(apToolCallFr),
-    ja: extractMessages(apToolCallJa),
-    ko: extractMessages(apToolCallKo),
-    ru: extractMessages(apToolCallRu),
-    tr: extractMessages(apToolCallTr),
-    'zh-CN': extractMessages(apToolCallZhCN),
-    'zh-TW': extractMessages(apToolCallZhTW),
-    'pt-BR': extractMessages(apToolCallPtBR),
-    'es-MX': extractMessages(apToolCallEsMX),
+    en: apToolCallEn,
+    es: apToolCallEs,
+    pt: apToolCallPt,
+    de: apToolCallDe,
+    fr: apToolCallFr,
+    ja: apToolCallJa,
+    ko: apToolCallKo,
+    ru: apToolCallRu,
+    tr: apToolCallTr,
+    'zh-CN': apToolCallZhCN,
+    'zh-TW': apToolCallZhTW,
+    'pt-BR': apToolCallPtBR,
+    'es-MX': apToolCallEsMX,
+  },
+  canvas: {
+    en: canvasEn,
+    es: canvasEs,
+    pt: canvasPt,
+    de: canvasDe,
+    fr: canvasFr,
+    ja: canvasJa,
+    ko: canvasKo,
+    ru: canvasRu,
+    tr: canvasTr,
+    'zh-CN': canvasZhCN,
+    'zh-TW': canvasZhTW,
+    'pt-BR': canvasPtBR,
+    'es-MX': canvasEsMX,
   },
 };
 
@@ -117,7 +106,7 @@ const localeRegistry: Record<string, Record<SupportedLocale, LocaleMessages>> = 
 export function getPreImportedMessages(
   component: string,
   locale: SupportedLocale
-): LocaleMessages | undefined {
+): Messages | undefined {
   const componentLocales = localeRegistry[component];
   if (!componentLocales) {
     return undefined;
@@ -130,6 +119,6 @@ export function getPreImportedMessages(
  */
 export function getAllPreImportedLocales(
   component: string
-): Record<SupportedLocale, LocaleMessages> | undefined {
+): Record<SupportedLocale, Messages> | undefined {
   return localeRegistry[component];
 }
