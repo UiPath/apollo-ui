@@ -1,4 +1,4 @@
-export const CasePlanIcon = ({ w = 22, h = 22 }: { w?: number | string; h?: number | string }) => (
+export const CasePlanIcon = ({ w = 16, h = 16 }: { w?: number | string; h?: number | string }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     id="case-plan-icon"
