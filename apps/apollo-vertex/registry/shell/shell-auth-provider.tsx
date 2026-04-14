@@ -80,12 +80,9 @@ export const useAccessToken = ({
   baseUrl,
   redirectPath,
 }: UseAccessTokenProps) => {
-  const queryClient = useQueryClient();
-
   const { data: token, isLoading } = useQuery({
     queryKey: TOKEN_QUERY_KEY,
-    queryFn: () =>
-      ensureValidToken(queryClient, clientId, baseUrl, redirectPath),
+    queryFn: () => ensureValidToken(clientId, baseUrl, redirectPath),
     refetchInterval: 60 * 1000,
     enabled: typeof window !== "undefined",
   });

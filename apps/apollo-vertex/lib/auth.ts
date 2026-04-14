@@ -146,6 +146,17 @@ const exchangeCodeForToken = (
   return fetchTokenData(baseUrl, body);
 };
 
+const cleanupOAuthState = (targetPath?: string) => {
+  sessionStorage.removeItem(STORAGE_KEYS.CODE_VERIFIER);
+  sessionStorage.removeItem(STORAGE_KEYS.STATE);
+  sessionStorage.removeItem(STORAGE_KEYS.AUTH_RETURN_TO);
+  window.history.replaceState(
+    {},
+    document.title,
+    targetPath ?? window.location.pathname,
+  );
+};
+
 const handleOAuthCallback = async (
   clientId: string,
   baseUrl: string,
@@ -166,12 +177,16 @@ const handleOAuthCallback = async (
 
   const storedState = sessionStorage.getItem(STORAGE_KEYS.STATE);
   if (state !== storedState) {
-    throw new Error("State mismatch");
+    cleanupOAuthState();
+    toast.error("Authentication failed: State mismatch");
+    return;
   }
 
   const codeVerifier = sessionStorage.getItem(STORAGE_KEYS.CODE_VERIFIER);
   if (!codeVerifier) {
-    throw new Error("Code verifier not found");
+    cleanupOAuthState();
+    toast.error("Authentication failed: Code verifier not found");
+    return;
   }
 
   try {
@@ -182,25 +197,19 @@ const handleOAuthCallback = async (
       baseUrl,
       redirectPath,
     );
-    sessionStorage.removeItem(STORAGE_KEYS.CODE_VERIFIER);
-    sessionStorage.removeItem(STORAGE_KEYS.STATE);
     saveTokenData(tokenData);
     const returnTo = sessionStorage.getItem(STORAGE_KEYS.AUTH_RETURN_TO);
-    sessionStorage.removeItem(STORAGE_KEYS.AUTH_RETURN_TO);
-    const targetPath = returnTo ?? window.location.pathname;
-    window.history.replaceState({}, document.title, targetPath);
+    cleanupOAuthState(returnTo ?? window.location.pathname);
   } catch (authError) {
     clearTokenData();
-    sessionStorage.removeItem(STORAGE_KEYS.AUTH_RETURN_TO);
+    cleanupOAuthState();
     const message =
       authError instanceof Error ? authError.message : "Unknown error";
     toast.error(`Authentication failed: ${message}`);
-    throw authError;
   }
 };
 
 export const ensureValidToken = async (
-  queryClient: ReturnType<typeof useQueryClient>,
   clientId: string,
   baseUrl: string,
   redirectPath?: string,
@@ -209,11 +218,7 @@ export const ensureValidToken = async (
   const isInOAuthCallback = params.has("code") && params.has("state");
 
   if (isInOAuthCallback) {
-    try {
-      await handleOAuthCallback(clientId, baseUrl, redirectPath);
-    } catch {
-      void queryClient.resetQueries({ queryKey: TOKEN_QUERY_KEY });
-    }
+    await handleOAuthCallback(clientId, baseUrl, redirectPath);
   }
 
   const tokenDataStr = localStorage.getItem(STORAGE_KEYS.TOKEN);
