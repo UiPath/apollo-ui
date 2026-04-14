@@ -281,50 +281,44 @@ export function AiChat({
           ))}
 
         {messages.length === 0 ? (
-          <div className="flex-1 flex flex-col min-h-0">
-            {/* Greeting — centered in the available space above the input */}
-            <div
-              className="flex-1 flex flex-col items-center justify-center px-4"
-              style={{ paddingBottom: "10%" }}
-            >
-              <div className="w-full max-w-[680px] text-center">
+          <div className="flex-1 flex flex-col items-center justify-center min-h-0">
+            <div className="w-full">
+              <div className="px-4 text-center mb-7">
                 {emptyState ?? defaultEmptyState}
               </div>
-            </div>
-            {/* Input + suggestions sit outside the px-4 wrapper so AiChatInput's
-                own px-4 gives it the same indent as the header */}
-            <AiChatInput
-              ref={inputRef}
-              value={input}
-              onChange={setInput}
-              onSubmit={(files) => handleSubmit(files)}
-              onStop={onStop}
-              isLoading={isLoading}
-              placeholder={placeholder}
-              hasMessages={false}
-            />
-            {suggestions && suggestions.length > 0 && (
-              <div className="mt-2 px-4 flex flex-wrap justify-center gap-2">
-                {suggestions.map((suggestion) => (
-                  <button
-                    key={suggestion}
-                    type="button"
-                    className="py-2 px-4 text-xs font-semibold rounded-full border border-input bg-background text-foreground hover:bg-muted transition-colors"
-                    onClick={() => {
-                      if (onSuggestionClick) {
-                        onSuggestionClick(suggestion);
-                      } else {
-                        onSendMessage(suggestion);
-                      }
-                    }}
-                  >
-                    {suggestion}
-                  </button>
-                ))}
+              <AiChatInput
+                ref={inputRef}
+                value={input}
+                onChange={setInput}
+                onSubmit={(files) => handleSubmit(files)}
+                onStop={onStop}
+                isLoading={isLoading}
+                placeholder={placeholder}
+                hasMessages={false}
+              />
+              {suggestions && suggestions.length > 0 && (
+                <div className="mt-2 px-4 flex flex-wrap justify-center gap-2">
+                  {suggestions.map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      className="py-2 px-4 text-xs font-semibold rounded-full border border-input bg-background text-foreground hover:bg-muted transition-colors"
+                      onClick={() => {
+                        if (onSuggestionClick) {
+                          onSuggestionClick(suggestion);
+                        } else {
+                          onSendMessage(suggestion);
+                        }
+                      }}
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className="pt-2 pb-3 px-4 text-xs leading-normal text-muted-foreground text-center">
+                {"AI-generated responses should be reviewed for accuracy."}
               </div>
-            )}
-            <div className="pt-2 pb-3 px-4 text-xs leading-normal text-muted-foreground text-center">
-              {"AI-generated responses should be reviewed for accuracy."}
             </div>
           </div>
         ) : (
