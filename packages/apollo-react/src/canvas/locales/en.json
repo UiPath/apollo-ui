@@ -1,0 +1,8 @@
+{
+  "sticky-note.formatting.bold": "Bold ({boldShortcut})",
+  "sticky-note.formatting.italic": "Italic ({italicShortcut})",
+  "sticky-note.formatting.strikethrough": "Strikethrough ({strikethroughShortcut})",
+  "sticky-note.formatting.bullet-list": "Bullet list",
+  "sticky-note.formatting.numbered-list": "Numbered list",
+  "sticky-note.formatting.toolbar": "Text formatting"
+}

@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react';
 import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import { memo, type RefObject, useCallback } from 'react';
 import { CanvasTooltip } from '../CanvasTooltip';
@@ -30,6 +31,10 @@ const FormattingToolbarComponent = ({
   activeFormats,
   onFormat,
 }: FormattingToolbarProps) => {
+  const { _ } = useLingui();
+  const mod = getModifierKey();
+  const shift = isMac() ? '⇧' : '+Shift+';
+
   const applyFormat = useCallback(
     (formatFn: (input: TextSelection) => TextSelection) => {
       const textarea = textAreaRef.current;
@@ -53,40 +58,84 @@ const FormattingToolbarComponent = ({
   const handleBulletList = useCallback(() => applyFormat(toggleBulletList), [applyFormat]);
   const handleNumberedList = useCallback(() => applyFormat(toggleNumberedList), [applyFormat]);
 
-  const mod = getModifierKey();
-  const shift = isMac() ? '⇧' : '+Shift+';
+  // Hoisted so each label is used for both the tooltip text AND the button's
+  // aria-label — icon-only buttons otherwise have no accessible name.
+  // Values go inside the descriptor (Lingui v5 `_(descriptor)` overload does not
+  // take a separate values arg).
+  const boldLabel = _({
+    id: 'sticky-note.formatting.bold',
+    message: 'Bold ({boldShortcut})',
+    values: { boldShortcut: `${mod}+B` },
+  });
+  const italicLabel = _({
+    id: 'sticky-note.formatting.italic',
+    message: 'Italic ({italicShortcut})',
+    values: { italicShortcut: `${mod}+I` },
+  });
+  const strikethroughLabel = _({
+    id: 'sticky-note.formatting.strikethrough',
+    message: 'Strikethrough ({strikethroughShortcut})',
+    values: { strikethroughShortcut: `${mod}${shift}X` },
+  });
+  const bulletListLabel = _({
+    id: 'sticky-note.formatting.bullet-list',
+    message: 'Bullet list',
+  });
+  const numberedListLabel = _({
+    id: 'sticky-note.formatting.numbered-list',
+    message: 'Numbered list',
+  });
+  const toolbarLabel = _({ id: 'sticky-note.formatting.toolbar', message: 'Text formatting' });
 
   return (
     <FormattingToolbarContainer
+      role="toolbar"
+      aria-label={toolbarLabel}
       borderColor={borderColor}
       onMouseDown={(e) => e.preventDefault()}
       className="nodrag nowheel"
     >
-      <CanvasTooltip content={`Bold (${mod}+B)`} placement="top" delay>
-        <FormattingButton isActive={activeFormats.bold} onClick={handleBold}>
+      <CanvasTooltip content={boldLabel} placement="top" delay>
+        <FormattingButton isActive={activeFormats.bold} onClick={handleBold} aria-label={boldLabel}>
           <CanvasIcon icon="bold" size={14} />
         </FormattingButton>
       </CanvasTooltip>
-      <CanvasTooltip content={`Italic (${mod}+I)`} placement="top" delay>
-        <FormattingButton isActive={activeFormats.italic} onClick={handleItalic}>
+      <CanvasTooltip content={italicLabel} placement="top" delay>
+        <FormattingButton
+          isActive={activeFormats.italic}
+          onClick={handleItalic}
+          aria-label={italicLabel}
+        >
           <CanvasIcon icon="italic" size={14} />
         </FormattingButton>
       </CanvasTooltip>
-      <CanvasTooltip content={`Strikethrough (${mod}${shift}X)`} placement="top" delay>
-        <FormattingButton isActive={activeFormats.strikethrough} onClick={handleStrikethrough}>
+      <CanvasTooltip content={strikethroughLabel} placement="top" delay>
+        <FormattingButton
+          isActive={activeFormats.strikethrough}
+          onClick={handleStrikethrough}
+          aria-label={strikethroughLabel}
+        >
           <CanvasIcon icon="strikethrough" size={14} />
         </FormattingButton>
       </CanvasTooltip>
 
       <ToolbarSeparator />
 
-      <CanvasTooltip content="Bullet list" placement="top" delay>
-        <FormattingButton isActive={activeFormats.bulletList} onClick={handleBulletList}>
+      <CanvasTooltip content={bulletListLabel} placement="top" delay>
+        <FormattingButton
+          isActive={activeFormats.bulletList}
+          onClick={handleBulletList}
+          aria-label={bulletListLabel}
+        >
           <CanvasIcon icon="list" size={14} />
         </FormattingButton>
       </CanvasTooltip>
-      <CanvasTooltip content="Numbered list" placement="top" delay>
-        <FormattingButton isActive={activeFormats.numberedList} onClick={handleNumberedList}>
+      <CanvasTooltip content={numberedListLabel} placement="top" delay>
+        <FormattingButton
+          isActive={activeFormats.numberedList}
+          onClick={handleNumberedList}
+          aria-label={numberedListLabel}
+        >
           <CanvasIcon icon="list-ordered" size={14} />
         </FormattingButton>
       </CanvasTooltip>

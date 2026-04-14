@@ -3,8 +3,6 @@ import { pluginReact } from '@rsbuild/plugin-react';
 import type { RslibConfig } from '@rslib/core';
 import { defineConfig } from '@rslib/core';
 
-import { pluginCopyLocales } from './scripts/plugin-copy-locales';
-
 // Shared externals list to avoid duplication
 const externals = [
   'react',
@@ -60,7 +58,6 @@ export default defineConfig({
         '!./src/test/**',
         '!./src/icons/.cache',
         '!./src/**/*.md',
-        '!./src/**/locales/*.js',
         '!./src/**/locales/*.json',
         '!./src/**/.DS_Store',
       ],
@@ -79,7 +76,6 @@ export default defineConfig({
         return opts;
       },
     }),
-    pluginCopyLocales(),
   ],
   output: {
     target: 'web',
