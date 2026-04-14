@@ -4,7 +4,7 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 import type React from 'react';
-import type { ToolCallSectionProps } from './ApToolCall.types';
+import type { ToolCallSectionProps } from '../ApToolCall.types';
 import { NestedValue } from './NestedValue';
 
 const SectionArrowIcon = styled(KeyboardArrowRightIcon, {
@@ -37,7 +37,7 @@ const SectionContent = styled('div', {
   marginLeft: token.Spacing.SpacingXl,
   overflow: 'hidden',
   transition: 'max-height 0.2s ease',
-  maxHeight: expanded ? '220px' : '0',
+  maxHeight: expanded ? 'fit-content' : '0',
 }));
 
 const KeyValueContainer = styled('div')({
@@ -158,7 +158,11 @@ export const ToolCallSection: React.FC<ToolCallSectionProps> = ({
         <SectionArrowIcon fontSize="small" expanded={isExpanded} />
         {title}
       </SectionHeader>
-      <SectionContent expanded={isExpanded}>
+      <SectionContent
+        expanded={isExpanded}
+        aria-hidden={!isExpanded}
+        {...(!isExpanded && { inert: true })}
+      >
         {isStringData && data && <StringContent>{data}</StringContent>}
         {showKeyValuePairs && (
           <KeyValueContainer>

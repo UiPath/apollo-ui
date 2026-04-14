@@ -4,6 +4,7 @@ import type React from 'react';
 export interface TSpan {
   id?: string;
   name?: string;
+  type?: string;
   status?: 'unset' | 'ok' | 'error';
   startTime?: string;
   endTime?: string;
@@ -16,6 +17,14 @@ export interface ITreeNode<T = any> {
   data: T;
   children?: ITreeNode<T>[];
 }
+
+export const ConversationalDisplayModeTypes = {
+  FullTrace: 'FullTrace',
+  InputsAndOutputs: 'InputsAndOutputs',
+  ToolNameOnly: 'ToolNameOnly',
+} as const;
+
+export type ConversationalDisplayMode = 'FullTrace' | 'InputsAndOutputs' | 'ToolNameOnly';
 
 export interface ApToolCallProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Span data containing tool call execution information */
@@ -32,9 +41,11 @@ export interface ApToolCallProps extends React.HTMLAttributes<HTMLDivElement> {
   startTime?: string;
   /** End time of the tool call */
   endTime?: string;
+  /** Controls what sections are visible */
+  displayMode?: ConversationalDisplayMode;
 }
 
-export type ToolCallSectionType = 'input' | 'output' | 'execution' | 'errors' | 'escalation';
+export type ToolCallSectionType = 'input' | 'output' | 'traces' | 'errors' | 'escalation';
 
 export interface ToolCallSectionProps {
   type: ToolCallSectionType;
