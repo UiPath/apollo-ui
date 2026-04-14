@@ -10,7 +10,9 @@ import {
 import {
   AutopilotIcon,
   ConfigurationIcon,
+  CreateIcon,
   DurationIcon,
+  MoreIcon,
   QueueIcon,
 } from '@uipath/apollo-react/icons';
 import { TaskIconContainer } from './TaskIcon.styles';
@@ -47,6 +49,10 @@ const getIconForType = (type: TaskItemTypeValues, iconSize: number): React.React
       return <QueueIcon size={iconSize} />;
     case TaskItemTypeValues.Tools:
       return <ConfigurationIcon size={iconSize} />;
+    case TaskItemTypeValues.MoreElements:
+      return <MoreIcon size={iconSize} />;
+    case TaskItemTypeValues.CreateNew:
+      return <CreateIcon size={iconSize} />;
   }
 };
 
