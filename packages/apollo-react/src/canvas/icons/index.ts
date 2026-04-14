@@ -7,6 +7,7 @@ export { ApiProject } from './ApiProject';
 export { AutonomousAgentIcon } from './AutonomousAgentIcon';
 export { BusinessProcessProject } from './BusinessProcessProject';
 export { CaseManagementProject } from './CaseManagementProject';
+export { CasePlanIcon } from './CasePlanIcon';
 export { CodedAgentIcon } from './CodedAgentIcon';
 export { ConnectorBuilderProject } from './ConnectorBuilderProject';
 export { ControlFlowIcon } from './ControlFlowIcon';
