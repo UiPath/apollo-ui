@@ -1,3 +1,4 @@
+export type { MessageAttachment, MessageSource } from "./components/ai-chat-message";
 export type { ChoiceOption, ToolResultChoices } from "./utils/ai-chat-utils";
 
 export type MessageFeedbackType = "up" | "down";
@@ -40,6 +41,8 @@ export interface AiChatConfig {
   isLatestResponseAnimating: boolean;
   /** Setter for `isLatestResponseAnimating` — called by the latest assistant message component as its typewriter state changes. */
   setIsLatestResponseAnimating: (animating: boolean) => void;
+  /** Callback when the user gives thumbs up/down on an assistant message. */
+  onFeedback?: (messageId: string, type: MessageFeedbackType) => void;
   /** Callback to regenerate the last assistant response. When provided, the "Try again" button appears in assistant message actions. */
   onRegenerate?: () => void;
   /** Callback when the user saves an edited user message. Receives the message ID and new content. */

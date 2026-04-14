@@ -224,7 +224,7 @@ export function AiChatMessage({
               content={displayContent}
               messageRole="user"
               showCopy={config.showCopyButton}
-              onEdit={config.onEditMessage ? () => setIsEditing(true) : undefined}
+              {...(config.onEditMessage ? { onEdit: () => setIsEditing(true) } : {})}
             />
           )}
         </div>
@@ -300,7 +300,12 @@ export function AiChatMessage({
                 messageRole="assistant"
                 isLatest={isLatestAssistant}
                 showCopy={config.showCopyButton}
-                onFeedback={onFeedback}
+                {...(onFeedback ?? config.onFeedback
+                  ? {
+                      onFeedback:
+                        onFeedback ?? ((type) => config.onFeedback?.(message.id, type)),
+                    }
+                  : {})}
                 onRegenerate={onRegenerate ?? config.onRegenerate}
               />
             </motion.div>

@@ -1,3 +1,4 @@
+// oxlint-disable eslint/max-lines -- preview page documents many visual states
 "use client";
 
 import { Maximize2, Minimize2 } from "lucide-react";
@@ -8,6 +9,7 @@ import { AiChatEmptyState } from "@/registry/ai-chat/components/ai-chat-empty-st
 import { AiChatInput } from "@/registry/ai-chat/components/ai-chat-input";
 import { AiChatMarkdown } from "@/registry/ai-chat/components/ai-chat-markdown";
 import { AiChatMessage } from "@/registry/ai-chat/components/ai-chat-message";
+import { AiChatMessageActions } from "@/registry/ai-chat/components/ai-chat-message-actions";
 import { AiChatSuggestions } from "@/registry/ai-chat/components/ai-chat-suggestions";
 import { Button } from "@/registry/button/button";
 import {
@@ -179,8 +181,10 @@ export default function AiChatPreviewPage() {
             showTimestamps
             showMessageActions
             onEditMessage={noop}
+            onFeedback={noop}
+            onRegenerate={noop}
           >
-            {MOCK_MESSAGES_BASIC.map(renderBasicMsg)}
+            {MOCK_MESSAGES_BASIC.map((msg) => renderBasicMsg(msg))}
           </AiChat>
         </PreviewCard>
       </section>
@@ -279,7 +283,7 @@ export default function AiChatPreviewPage() {
               )
             }
           >
-            {MOCK_MESSAGES_BASIC.map(renderBasicMsg)}
+            {MOCK_MESSAGES_BASIC.map((msg) => renderBasicMsg(msg))}
           </AiChat>
         </PreviewCard>
       </section>
@@ -306,7 +310,65 @@ export default function AiChatPreviewPage() {
         </PreviewCard>
       </section>
 
-      {/* ── 9. Isolated Sub-Components ────────────────────── */}
+      {/* ── 9. Message Actions ─────────────────────────────── */}
+      <section>
+        <SectionHeader
+          title="Message Actions"
+          description="Hover action toolbar — copy, thumbs up/down, regenerate (assistant) and edit (user)."
+        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <PreviewCard className="p-6">
+            <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wide">
+              {"Assistant actions (always visible)"}
+            </h3>
+            <AiChatMessageActions
+              content="This is an assistant response."
+              messageRole="assistant"
+              isLatest
+              showCopy
+              onFeedback={noop}
+              onRegenerate={noop}
+            />
+          </PreviewCard>
+          <PreviewCard className="p-6">
+            <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wide">
+              {"User actions (always visible)"}
+            </h3>
+            <AiChatMessageActions
+              content="This is a user message."
+              messageRole="user"
+              isLatest
+              showCopy
+              onEdit={noop}
+            />
+          </PreviewCard>
+        </div>
+      </section>
+
+      {/* ── 10. Edit Mode ──────────────────────────────────── */}
+      <section>
+        <SectionHeader
+          title="Edit Mode"
+          description="Inline edit flow — click the edit icon on a user message to revise and re-run."
+        />
+        <PreviewCard className="h-[400px]" title="Edit Mode">
+          <AiChat
+            messages={MOCK_MESSAGES_BASIC}
+            isLoading={false}
+            onSendMessage={noop}
+            onStop={noop}
+            title="Autopilot"
+            showMessageActions
+            onEditMessage={noop}
+            onRegenerate={noop}
+            onFeedback={noop}
+          >
+            {MOCK_MESSAGES_BASIC.map((msg) => renderBasicMsg(msg))}
+          </AiChat>
+        </PreviewCard>
+      </section>
+
+      {/* ── 11. Isolated Sub-Components ────────────────────── */}
       <section>
         <SectionHeader
           title="Isolated Sub-Components"

@@ -59,7 +59,7 @@ export function AiChatMessageActions({
   // (older assistant messages, all user messages) reveals on hover/focus
   // for keyboard a11y.
   const visibilityClass =
-    messageRole === "assistant" && isLatest
+    isLatest
       ? "opacity-100"
       : "opacity-0 group-hover/message:opacity-100 group-focus-within/message:opacity-100";
 

@@ -7,7 +7,7 @@ import { AiChatCodeBlock } from "./ai-chat-code-block";
 
 type NodeProps = { children?: ReactNode };
 type AnchorProps = { children?: ReactNode; href?: string };
-type ImageProps = { src?: string; alt?: string; title?: string };
+type ImageProps = { src?: string | Blob; alt?: string; title?: string };
 
 function extractCodeProps(props: NodeProps & { className?: string }) {
   const { className, children } = props;
@@ -67,7 +67,7 @@ const components: ComponentProps<typeof ReactMarkdown>["components"] = {
   ),
   img: ({ src, alt, title }: ImageProps) => (
     <img
-      src={src}
+      src={typeof src === "string" ? src : undefined}
       alt={alt ?? ""}
       title={title}
       loading="lazy"
