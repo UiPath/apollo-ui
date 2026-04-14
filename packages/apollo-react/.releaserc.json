@@ -1,6 +1,13 @@
 {
   "extends": "semantic-release-monorepo",
-  "branches": ["main"],
+  "branches": [
+    {
+      "name": "support/apollo-react@3.x",
+      "range": "3.x",
+      "channel": "latest-v3"
+    },
+    "main"
+  ],
   "tagFormat": "@uipath/apollo-react@${version}",
   "plugins": [
     [
