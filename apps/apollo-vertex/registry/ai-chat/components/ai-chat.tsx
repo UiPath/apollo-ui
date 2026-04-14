@@ -297,7 +297,7 @@ export function AiChat({
                 hasMessages={false}
               />
               {suggestions && suggestions.length > 0 && (
-                <div className="mt-2 px-4 flex flex-wrap justify-center gap-2">
+                <div className="mt-4 px-4 flex flex-wrap justify-center gap-2">
                   {suggestions.map((suggestion) => (
                     <button
                       key={suggestion}
@@ -316,9 +316,6 @@ export function AiChat({
                   ))}
                 </div>
               )}
-              <div className="pt-2 pb-3 px-4 text-xs leading-normal text-muted-foreground text-center">
-                {"AI-generated responses should be reviewed for accuracy."}
-              </div>
             </div>
           </div>
         ) : (
