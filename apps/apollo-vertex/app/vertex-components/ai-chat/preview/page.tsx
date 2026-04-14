@@ -326,7 +326,7 @@ export default function AiChatPreviewPage() {
 
           <PreviewCard className="p-0">
             <h3 className="text-sm font-semibold text-muted-foreground px-6 pt-6 uppercase tracking-wide">
-              {"AiChatInput (with text + clear)"}
+              {"AiChatInput (with text + attachment)"}
             </h3>
             <AiChatInput
               value="How do I install Apollo components?"
