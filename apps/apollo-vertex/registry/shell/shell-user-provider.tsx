@@ -39,13 +39,13 @@ export const ShellUserProvider: FC<PropsWithChildren> = ({ children }) => {
   useEffect(() => {
     if (authUser) {
       // Map auth user to UserProvider's User interface
-      const nameParts = authUser.name.split(" ");
+      const nameParts = authUser.name.trim().split(" ");
       setUser({
         id: authUser.sub,
         name: authUser.name,
         email: authUser.email,
-        first_name: nameParts[0] || authUser.name,
-        last_name: nameParts.slice(1).join(" ") || "",
+        first_name: nameParts[0],
+        last_name: nameParts.slice(1).join(" "),
       });
     } else {
       setUser(null);
