@@ -1,6 +1,7 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { TaskIcon } from './TaskIcon';
+import { TASK_ICON_GRADIENTS } from './TaskIcon.styles';
 import { TaskItemTypeValues } from './TaskIcon.types';
 
 describe('TaskIcon', () => {
@@ -27,6 +28,42 @@ describe('TaskIcon', () => {
       const { container } = render(<TaskIcon type={TaskItemTypeValues.Agent} size="lg" />);
       const iconContainer = container.firstChild as HTMLElement;
       expect(iconContainer).toHaveStyle({ width: '72px', height: '72px', borderRadius: '8px' });
+    });
+  });
+
+  it('has a gradient mapping for every TaskItemTypeValues entry', () => {
+    for (const type of Object.values(TaskItemTypeValues)) {
+      expect(TASK_ICON_GRADIENTS[type]).toBeDefined();
+    }
+  });
+
+  describe('MoreElements type', () => {
+    it('renders with SVG icon', () => {
+      const { container } = render(<TaskIcon type={TaskItemTypeValues.MoreElements} />);
+      expect(container.querySelector('svg')).toBeInTheDocument();
+    });
+
+    it('renders at all sizes', () => {
+      for (const size of ['sm', 'md', 'lg'] as const) {
+        const { container } = render(
+          <TaskIcon type={TaskItemTypeValues.MoreElements} size={size} />
+        );
+        expect(container.firstChild).toBeInTheDocument();
+      }
+    });
+  });
+
+  describe('CreateNew type', () => {
+    it('renders with SVG icon', () => {
+      const { container } = render(<TaskIcon type={TaskItemTypeValues.CreateNew} />);
+      expect(container.querySelector('svg')).toBeInTheDocument();
+    });
+
+    it('renders at all sizes', () => {
+      for (const size of ['sm', 'md', 'lg'] as const) {
+        const { container } = render(<TaskIcon type={TaskItemTypeValues.CreateNew} size={size} />);
+        expect(container.firstChild).toBeInTheDocument();
+      }
     });
   });
 });

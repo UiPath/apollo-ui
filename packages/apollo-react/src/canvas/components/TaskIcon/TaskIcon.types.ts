@@ -10,6 +10,8 @@ export enum TaskItemTypeValues {
   CaseManagement = 'case_management',
   Queues = 'queues',
   Tools = 'tools',
+  MoreElements = 'more_elements',
+  CreateNew = 'create_new',
 }
 
 export type TaskIconSize = 'sm' | 'md' | 'lg';
