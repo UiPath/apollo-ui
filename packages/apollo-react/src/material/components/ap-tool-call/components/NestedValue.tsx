@@ -4,7 +4,7 @@ import token from '@uipath/apollo-core';
 import type React from 'react';
 import { useState } from 'react';
 
-import type { NestedValueProps } from './ApToolCall.types';
+import type { NestedValueProps } from '../ApToolCall.types';
 
 const SectionArrowIcon = styled(KeyboardArrowRightIcon, {
   shouldForwardProp: (prop) => prop !== 'expanded',

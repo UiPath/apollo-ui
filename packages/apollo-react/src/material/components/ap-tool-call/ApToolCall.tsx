@@ -3,11 +3,14 @@ import { useLingui } from '@lingui/react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import { CircularProgress, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ApToolCallProps, ITreeNode, TSpan } from './ApToolCall.types';
-import { ToolCallSection } from './ToolCallSection';
+import { ConversationalDisplayModeTypes } from './ApToolCall.types';
+import { ToolCallSection } from './components/ToolCallSection';
+import { getSpanIconSvg } from './utils/traceIconUtils';
 
 const Container = styled('div')({
   fontSize: token.FontFamily.FontMSize,
@@ -60,13 +63,21 @@ const ArrowIcon = styled(KeyboardArrowDownIcon, {
   transform: expanded ? 'rotate(180deg)' : 'none',
 }));
 
+const TraceArrowIcon = styled(KeyboardArrowRightIcon, {
+  shouldForwardProp: (prop) => prop !== 'expanded',
+})<{ expanded?: boolean }>(({ expanded }) => ({
+  transition: 'transform 0.2s ease',
+  transform: expanded ? 'rotate(90deg)' : 'none',
+  flexShrink: 0,
+}));
+
 const SectionsContainer = styled('div', {
   shouldForwardProp: (prop) => prop !== 'expanded',
 })<{ expanded?: boolean }>(({ expanded }) => ({
   marginLeft: token.Spacing.SpacingS,
   paddingLeft: token.Spacing.SpacingS,
   borderLeft: `${token.Border.BorderThickS} solid var(--color-border)`,
-  maxHeight: expanded ? '500px' : '0',
+  maxHeight: expanded ? 'fit-content' : '0',
   overflow: 'hidden',
   transition: 'max-height 0.2s ease',
   maxWidth: `calc(100% - ${token.Spacing.SpacingBase})`,
@@ -77,61 +88,117 @@ const SectionsContainer = styled('div', {
   },
 }));
 
-const ExecutionItemsContainer = styled('div')({
+const TraceItemsContainer = styled('div')({
   marginTop: token.Spacing.SpacingMicro,
   paddingLeft: token.Spacing.SpacingMicro,
 });
 
-const ExecutionItemContainer = styled('div')({
+const TraceItemContainer = styled('div', {
+  shouldForwardProp: (prop) => prop !== 'clickable',
+})<{ clickable?: boolean }>(({ clickable }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: token.Spacing.SpacingS,
+  gap: token.Spacing.SpacingXs,
   marginBottom: token.Spacing.SpacingS,
-});
+  ...(clickable && {
+    cursor: 'pointer',
+    borderRadius: token.Spacing.SpacingMicro,
+    '&:hover': { backgroundColor: 'var(--color-background-hover)' },
+  }),
+}));
 
-const ExecutionIcon = styled('span')({
-  display: 'inline-flex',
-  alignItems: 'center',
-  width: token.Spacing.SpacingM,
-  height: token.Spacing.SpacingM,
-});
-
-const ExecutionName = styled('span')({
+const TraceName = styled('span')({
   display: 'inline-block',
   flex: 1,
 });
 
-interface ExecutionItemContentProps {
-  child: ITreeNode<TSpan>;
+const ArrowPlaceholder = styled('span')({
+  width: '20px',
+  flexShrink: 0,
+  display: 'inline-block',
+});
+
+const TraceIcon = styled('span')({
+  display: 'inline-flex',
+  alignItems: 'center',
+  flexShrink: 0,
+  width: '16px',
+  height: '16px',
+  '& svg': {
+    width: '100%',
+    height: '100%',
+  },
+});
+
+function getVisibleChildren(node: ITreeNode<TSpan>): Array<ITreeNode<TSpan>> {
+  const result: Array<ITreeNode<TSpan>> = [];
+  for (const child of node.children ?? []) {
+    if (child.data.type !== 'llmCall' && child.data.type !== 'agentOutput') {
+      result.push(child);
+    }
+  }
+  return result;
 }
 
-const ExecutionItem: React.FC<ExecutionItemContentProps> = ({ child }) => {
-  // Placeholder for icon - in real implementation, would use getSpanIconSvg
-  const icon = useMemo(() => {
-    return <ExecutionIcon>{/* Icon placeholder */}</ExecutionIcon>;
-  }, [child.data]);
+interface TraceItemProps {
+  child: ITreeNode<TSpan>;
+  depth?: number;
+}
+
+const TraceItem: React.FC<TraceItemProps> = ({ child, depth = 0 }) => {
+  const visibleChildren = useMemo(() => getVisibleChildren(child), [child]);
+  const hasChildren = visibleChildren.length > 0;
+  const [itemExpanded, setItemExpanded] = useState(false);
+  const iconSvg = useMemo(() => getSpanIconSvg(child.data), [child.data]);
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      setItemExpanded((prev) => !prev);
+    }
+  };
 
   return (
-    <ExecutionItemContainer>
-      {icon}
-      <ExecutionName>{child.name}</ExecutionName>
-    </ExecutionItemContainer>
+    <>
+      <TraceItemContainer
+        clickable={hasChildren}
+        style={{ paddingLeft: depth > 0 ? `calc(${depth} * ${token.Spacing.SpacingM})` : undefined }}
+        onClick={hasChildren ? () => setItemExpanded((prev) => !prev) : undefined}
+        role={hasChildren ? 'button' : undefined}
+        tabIndex={hasChildren ? 0 : undefined}
+        onKeyDown={hasChildren ? handleKeyDown : undefined}
+        aria-expanded={hasChildren ? itemExpanded : undefined}
+      >
+        {hasChildren ? (
+          <TraceArrowIcon fontSize="small" expanded={itemExpanded} />
+        ) : (
+          <ArrowPlaceholder />
+        )}
+        {iconSvg && (
+          <TraceIcon dangerouslySetInnerHTML={{ __html: iconSvg }} />
+        )}
+        <TraceName>{child.name.replace('_', ' ')}</TraceName>
+      </TraceItemContainer>
+      {hasChildren &&
+        itemExpanded &&
+        visibleChildren.map((c) => <TraceItemContent key={c.key} child={c} depth={depth + 1} />)}
+    </>
   );
 };
 
-const ExecutionItemContent = React.memo(ExecutionItem);
+const TraceItemContent = React.memo(TraceItem);
 
 /**
  * ApToolCall displays tool call execution information with expandable sections
- * showing input, output, execution steps, and errors.
+ * showing input, output, traces, and errors.
  */
 export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>((props, ref) => {
-  const { span, toolName, input, output, isError, startTime, endTime } = props;
+  const { span, toolName, input, output, isError, startTime, endTime, displayMode } = props;
   const { _ } = useLingui();
   const [toolCallExpanded, setToolCallExpanded] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     input: false,
-    execution: false,
+    traces: false,
     escalation: true,
     output: false,
     errors: false,
@@ -316,6 +383,16 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>((pro
     [toolCallExpanded]
   );
 
+  if (displayMode === ConversationalDisplayModeTypes.ToolNameOnly) {
+    return (
+      <Container ref={ref}>
+        <Header>
+          {renderStatusIcon} {getStatusText}
+        </Header>
+      </Container>
+    );
+  }
+
   return (
     <Container ref={ref}>
       <Header
@@ -329,7 +406,11 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>((pro
         <ArrowIcon fontSize="small" expanded={toolCallExpanded} />
       </Header>
 
-      <SectionsContainer expanded={toolCallExpanded}>
+      <SectionsContainer
+        expanded={toolCallExpanded}
+        aria-hidden={!toolCallExpanded}
+        {...(!toolCallExpanded && { inert: true })}
+      >
         {(input || (span && getAttributes(span.data).arguments)) && (
           <ToolCallSection
             type="input"
@@ -338,29 +419,29 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>((pro
             onToggle={() =>
               setExpandedSections((prev) => ({
                 ...prev,
-                ['input']: !prev['input'],
+                input: !prev['input'],
               }))
             }
             data={input || (span ? getAttributes(span.data).arguments : undefined)}
           />
         )}
-        {span?.children?.length ? (
+        {displayMode === ConversationalDisplayModeTypes.FullTrace && span?.children?.length ? (
           <ToolCallSection
-            type="execution"
-            title={_(msg({ id: 'tool-call.execution', message: 'Execution' }))}
-            isExpanded={expandedSections['execution']}
+            type="traces"
+            title={_(msg({ id: 'tool-call.traces', message: 'Traces' }))}
+            isExpanded={expandedSections['traces']}
             onToggle={() =>
               setExpandedSections((prev) => ({
                 ...prev,
-                ['execution']: !prev['execution'],
+                traces: !prev['traces'],
               }))
             }
           >
-            <ExecutionItemsContainer>
-              {span.children?.map((child) => (
-                <ExecutionItemContent key={child.key} child={child} />
+            <TraceItemsContainer>
+              {getVisibleChildren(span).map((child) => (
+                <TraceItemContent key={child.key} child={child} depth={0} />
               ))}
-            </ExecutionItemsContainer>
+            </TraceItemsContainer>
           </ToolCallSection>
         ) : null}
         {taskUrls.length > 0 ? (
@@ -371,7 +452,7 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>((pro
             onToggle={() =>
               setExpandedSections((prev) => ({
                 ...prev,
-                ['escalation']: !prev['escalation'],
+                escalation: !prev['escalation'],
               }))
             }
             data={{ taskUrls }}
@@ -385,7 +466,7 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>((pro
             onToggle={() =>
               setExpandedSections((prev) => ({
                 ...prev,
-                ['errors']: !prev['errors'],
+                errors: !prev['errors'],
               }))
             }
             data={isError && output ? output : span ? getAttributes(span.data).error : {}}
@@ -399,7 +480,7 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>((pro
             onToggle={() =>
               setExpandedSections((prev) => ({
                 ...prev,
-                ['output']: !prev['output'],
+                output: !prev['output'],
               }))
             }
             data={output || (span ? getAttributes(span.data).result : {}) || {}}
