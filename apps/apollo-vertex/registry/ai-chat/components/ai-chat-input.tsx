@@ -71,7 +71,7 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
     useImperativeHandle(ref, () => ({
       focus: () => textareaRef.current?.focus(),
     }));
-    const displayPlaceholder = placeholder ?? "Start with a task or goal\u2026";
+    const displayPlaceholder = placeholder ?? "Start with a task or goal";
 
     const adjustHeight = () => {
       if (!hasMessages) return;
