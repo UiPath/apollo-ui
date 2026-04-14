@@ -25,7 +25,7 @@ const toolbarDemoManifest: NodeManifest = {
   sortOrder: 0,
   display: {
     label: 'Toolbar Demo',
-    icon: 'home',
+    icon: 'house',
   },
   handleConfiguration: [],
 };

@@ -1887,7 +1887,7 @@ const resourcesWithErrorCta: AgentFlowResource[] = [
     hasGuardrails: false,
     projectType: ProjectType.Internal,
     errorAction: {
-      icon: 'refresh',
+      icon: 'rotate-cw',
       label: 'Retry Connection',
     },
   },

@@ -70,7 +70,7 @@ const workflowCategories: CategoryManifest[] = [
     sortOrder: 0,
     color: 'linear-gradient(135deg, #FAFAFB 0%, #ECEDEF 100%)',
     colorDark: 'linear-gradient(135deg, #526069 0%, rgba(50, 60, 66, 0.6) 100%)',
-    icon: 'widgets',
+    icon: 'boxes',
     tags: ['basic', 'fundamental'],
   },
   {
@@ -115,7 +115,7 @@ const workflowManifests: NodeManifest[] = [
     sortOrder: 1,
     display: {
       label: 'Start',
-      icon: 'play_circle',
+      icon: 'circle-play',
       shape: 'circle',
     },
     handleConfiguration: [
@@ -140,7 +140,7 @@ const workflowManifests: NodeManifest[] = [
     sortOrder: 2,
     display: {
       label: 'End',
-      icon: 'stop_circle',
+      icon: 'circle-stop',
       shape: 'circle',
     },
     handleConfiguration: [
@@ -199,7 +199,7 @@ const workflowManifests: NodeManifest[] = [
     sortOrder: 20,
     display: {
       label: 'Decision',
-      icon: 'help',
+      icon: 'split',
       shape: 'square',
     },
     handleConfiguration: [

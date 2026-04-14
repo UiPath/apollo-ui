@@ -71,7 +71,7 @@ function createPipelineNodes(): Node<BaseNodeData>[] {
       id: 'processor2',
       type: 'uipath.blank-node',
       position: { x: 300, y: 300 },
-      display: { label: 'Filter', subLabel: 'Validation Rules', icon: 'filter' },
+      display: { label: 'Filter', subLabel: 'Validation Rules', icon: 'list-filter' },
     }),
     createNode({
       id: 'merger',
@@ -89,7 +89,7 @@ function createPipelineNodes(): Node<BaseNodeData>[] {
       id: 'monitor',
       type: 'uipath.blank-node',
       position: { x: 1050, y: 200 },
-      display: { label: 'Monitor', subLabel: 'Analytics', icon: 'bar-chart' },
+      display: { label: 'Monitor', subLabel: 'Analytics', icon: 'chart-bar-big' },
     }),
   ];
 }

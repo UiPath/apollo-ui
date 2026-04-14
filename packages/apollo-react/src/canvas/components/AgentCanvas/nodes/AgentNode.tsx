@@ -442,7 +442,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       if (suggestionGroupVersion === '0.0.1') return null;
       const rejectAction: ToolbarAction = {
         id: 'reject-suggestion',
-        icon: 'close',
+        icon: 'x',
         label: suggestTranslations.reject,
         disabled: false,
         onAction: () => handleActOnSuggestion(suggestionId, 'reject'),
