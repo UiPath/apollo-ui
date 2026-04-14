@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.4.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.3.0...@uipath/apollo-react@4.4.0) (2026-04-14)
+
+### Features
+
+* **apollo-react:** add node runtime constraints ([2960e25](https://github.com/UiPath/apollo-ui/commit/2960e2572bbb74a7378f04b2193a97a12019379b))
+
 ## [@uipath/apollo-react-v4.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.2.0...@uipath/apollo-react@4.3.0) (2026-04-14)
 
 ### Features
