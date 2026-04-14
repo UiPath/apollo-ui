@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.1.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.1.1...@uipath/apollo-react@4.1.2) (2026-04-14)
+
+### Bug Fixes
+
+* **apollo-react:** use lucide icons ([760346a](https://github.com/UiPath/apollo-ui/commit/760346a7f2cd31780d7b5237f7df88cf020a39c9))
+
 ## [@uipath/apollo-react-v4.1.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.1.0...@uipath/apollo-react@4.1.1) (2026-04-14)
 
 ### Bug Fixes
