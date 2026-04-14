@@ -12,7 +12,7 @@ const LABEL_SLIDE = 6;
 const shimmerStyle = {
   display: "inline-block",
   whiteSpace: "nowrap",
-  lineHeight: 1,
+  lineHeight: 1.3,
   fontSize: "14px",
   fontWeight: 500,
   backgroundImage:
