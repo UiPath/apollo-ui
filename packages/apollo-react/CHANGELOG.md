@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.1.2...@uipath/apollo-react@4.2.0) (2026-04-14)
+
+### Features
+
+* **apollo-react:** add i18n support for canvas components [MST-8210] ([87af4e8](https://github.com/UiPath/apollo-ui/commit/87af4e856bdb612650abe6e77b4c5bae50ea8424))
+
 ## [@uipath/apollo-react-v4.1.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.1.1...@uipath/apollo-react@4.1.2) (2026-04-14)
 
 ### Bug Fixes
