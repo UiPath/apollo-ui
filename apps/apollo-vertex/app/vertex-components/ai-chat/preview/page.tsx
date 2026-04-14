@@ -306,55 +306,7 @@ export default function AiChatPreviewPage() {
         </PreviewCard>
       </section>
 
-      {/* ── 9. Variant Comparison ──────────────────────────── */}
-      <section>
-        <SectionHeader
-          title="Variant Comparison"
-          description="Default, compact, and embedded layout variants side by side."
-        />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <PreviewCard className="h-[350px]" title="Default Variant">
-            <AiChat
-              messages={MOCK_MESSAGES_BASIC}
-              isLoading={false}
-              onSendMessage={noop}
-              onStop={noop}
-              variant="default"
-              title="Autopilot"
-              onEditMessage={noop}
-            >
-              {MOCK_MESSAGES_BASIC.map(renderBasicMsg)}
-            </AiChat>
-          </PreviewCard>
-          <PreviewCard className="h-[350px]" title="Compact Variant">
-            <AiChat
-              messages={MOCK_MESSAGES_BASIC}
-              isLoading={false}
-              onSendMessage={noop}
-              onStop={noop}
-              variant="compact"
-              title="Autopilot"
-              onEditMessage={noop}
-            >
-              {MOCK_MESSAGES_BASIC.map(renderBasicMsg)}
-            </AiChat>
-          </PreviewCard>
-          <PreviewCard className="h-[350px] p-4" title="Embedded Variant">
-            <AiChat
-              messages={MOCK_MESSAGES_BASIC}
-              isLoading={false}
-              onSendMessage={noop}
-              onStop={noop}
-              variant="embedded"
-              onEditMessage={noop}
-            >
-              {MOCK_MESSAGES_BASIC.map(renderBasicMsg)}
-            </AiChat>
-          </PreviewCard>
-        </div>
-      </section>
-
-      {/* ── 10. Isolated Sub-Components ────────────────────── */}
+      {/* ── 9. Isolated Sub-Components ────────────────────── */}
       <section>
         <SectionHeader
           title="Isolated Sub-Components"

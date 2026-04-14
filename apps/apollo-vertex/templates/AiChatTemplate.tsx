@@ -34,7 +34,7 @@ function AiChatWithConnection({
   });
 
   return (
-    <div className="flex flex-col gap-4 h-full">
+    <div className="flex flex-col gap-4 h-full min-h-0">
       <div className="flex items-center justify-end gap-4 pt-2 flex-shrink-0">
         <RadioGroup
           value={mode}
@@ -64,7 +64,7 @@ function AiChatWithConnection({
         </RadioGroup>
       </div>
 
-      <div className="flex-1 min-h-[400px]">
+      <div className="flex-1 min-h-0 overflow-hidden">
         {mode === "agenthub" ? (
           <AgentHubChat accessToken={accessToken} orgTenant={orgTenant} />
         ) : (
@@ -78,9 +78,9 @@ function AiChatWithConnection({
   );
 }
 
-export function AiChatTemplate() {
+export function AiChatTemplate({ className }: { className?: string }) {
   return (
-    <div className="h-full min-h-[600px] flex w-full flex-col justify-center">
+    <div className={className ?? "h-[600px] flex w-full flex-col"}>
       <QueryClientProvider client={queryClient}>
         <ShellAuthProvider
           clientId={AICHAT_CLIENT_ID}

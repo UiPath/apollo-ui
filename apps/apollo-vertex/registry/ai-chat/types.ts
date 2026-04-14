@@ -1,7 +1,5 @@
 export type { ChoiceOption, ToolResultChoices } from "./utils/ai-chat-utils";
 
-export type AiChatVariant = "default" | "compact" | "embedded";
-
 export type MessageFeedbackType = "up" | "down";
 
 export interface MessageAction {
@@ -18,8 +16,6 @@ export interface MessageAction {
 }
 
 export interface AiChatConfig {
-  /** Layout variant — controls spacing, chrome, and borders */
-  variant: AiChatVariant;
   /** Display name for the assistant */
   assistantName: string;
   /** Custom avatar for the assistant (ReactNode) */

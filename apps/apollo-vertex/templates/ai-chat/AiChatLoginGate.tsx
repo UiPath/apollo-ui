@@ -252,8 +252,8 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-end gap-2">
+    <div className="flex flex-col gap-2 h-full">
+      <div className="flex-shrink-0 flex items-center justify-end gap-2">
         <span className="flex items-center gap-1 text-sm text-muted-foreground">
           {user && (
             <>

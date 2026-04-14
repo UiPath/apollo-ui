@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/registry/dropdown-menu/dropdown-menu";
 import { useStickyScroll } from "../hooks/use-sticky-scroll";
-import type { AiChatVariant, ChoiceOption } from "../types";
+import type { ChoiceOption } from "../types";
 import {
   findActiveChoicesMessageIds,
   findLatestChoices,
@@ -69,7 +69,6 @@ export interface AiChatProps {
   showMessageActions?: boolean;
   showCopyButton?: boolean;
   error?: Error | null;
-  variant?: AiChatVariant;
   /** Controlled input value */
   value?: string;
   /** Controlled input onChange */
@@ -103,7 +102,6 @@ export function AiChat({
   showMessageActions = true,
   showCopyButton = true,
   error,
-  variant = "default",
   value: controlledValue,
   onValueChange,
   typewriterCps = 75,
@@ -121,8 +119,6 @@ export function AiChat({
     isControlled && onValueChange ? onValueChange : setInternalInput;
 
   const displayName = assistantName ?? t("ai_assistant");
-  const isCompact = variant === "compact";
-  const isEmbedded = variant === "embedded";
 
   const queuedMessageRef = useRef<{ content: string; attachments?: File[] } | null>(null);
   const [conversationCopied, setConversationCopied] = useState(false);
@@ -196,12 +192,8 @@ export function AiChat({
     </div>
   );
 
-  const padding = isCompact ? "p-2" : "py-4 pl-10 pr-10";
-  const messageGap = isCompact ? "space-y-2" : "space-y-1";
-
   return (
     <AiChatProvider
-      variant={variant}
       assistantName={displayName}
       assistantAvatar={assistantAvatar}
       userAvatar={userAvatar}
@@ -218,15 +210,11 @@ export function AiChat({
       onEditMessage={onEditMessage}
     >
       <div
-        className={
-          isEmbedded
-            ? "flex flex-col h-full max-w-[680px] mx-auto bg-transparent text-ai-chat-foreground"
-            : "flex flex-col h-full max-w-[680px] mx-auto bg-transparent text-ai-chat-foreground overflow-hidden"
-        }
+        className="flex flex-col h-full max-w-[680px] mx-auto bg-transparent text-ai-chat-foreground overflow-hidden"
         data-slot="ai-chat"
       >
         {renderHeader ??
-          (title && !isCompact && !isEmbedded && (
+          (title && (
             <div className="relative z-10 py-3 px-4 flex items-center justify-between gap-2 bg-background">
               <div className="flex items-center gap-1.5 min-w-0">
                 <AutopilotIcon
@@ -349,9 +337,9 @@ export function AiChat({
               aria-live="polite"
               aria-atomic="false"
               aria-busy={isLoading || isLatestResponseAnimating}
-              className={`h-full overflow-y-auto ${padding}`}
+              className="h-full overflow-y-auto py-4 pl-10 pr-10"
             >
-              <div ref={contentRef} className={messageGap}>
+              <div ref={contentRef} className="space-y-1">
                 {children}
 
                 {latestChoices && !isLoading && !isLatestResponseAnimating && (
