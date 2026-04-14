@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.5.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.4.0...@uipath/apollo-react@4.5.0) (2026-04-14)
+
+### Features
+
+* **apollo-react:** add MoreElements and CreateNew TaskIcon types ([6c774ef](https://github.com/UiPath/apollo-ui/commit/6c774ef3d91af55f9aa2e574bdb39114e61b29a5))
+
 ## [@uipath/apollo-react-v4.4.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.3.0...@uipath/apollo-react@4.4.0) (2026-04-14)
 
 ### Features
