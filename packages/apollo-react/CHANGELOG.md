@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.2.0...@uipath/apollo-react@4.3.0) (2026-04-14)
+
+### Features
+
+* **apollo-react:** add CasePlanIcon canvas icon ([ebfc957](https://github.com/UiPath/apollo-ui/commit/ebfc9579fe44f95ed96d17119c649abdab65d850))
+
 ## [@uipath/apollo-react-v4.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.1.2...@uipath/apollo-react@4.2.0) (2026-04-14)
 
 ### Features
