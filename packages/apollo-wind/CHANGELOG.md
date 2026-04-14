@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.1.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.1.0...@uipath/apollo-wind@2.1.1) (2026-04-14)
+
+### Bug Fixes
+
+* **apollo-react:** rename uix to canvas-uix + other small improvements ([102f077](https://github.com/uipath/apollo-ui/commit/102f07734e835ef4f47be611c4df5809e1ca77a4))
+
 ## [@uipath/apollo-wind-v2.1.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.0.1...@uipath/apollo-wind@2.1.0) (2026-04-14)
 
 ### Features
