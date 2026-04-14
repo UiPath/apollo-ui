@@ -1,3 +1,10 @@
+## [@uipath/apollo-wind-v2.1.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.0.1...@uipath/apollo-wind@2.1.0) (2026-04-14)
+
+### Features
+
+* **storybook:** remove wind, change name ([e2bedfe](https://github.com/uipath/apollo-ui/commit/e2bedfe23087122cd84a9fd0fb0d92e583a59c12))
+* **storybook:** unify canvas and wind stories ([07aee51](https://github.com/uipath/apollo-ui/commit/07aee51674b17925d4bc0738a85cc6a2ff9f34f0))
+
 ## [@uipath/apollo-wind-v2.0.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.0.0...@uipath/apollo-wind@2.0.1) (2026-04-10)
 
 ### Bug Fixes

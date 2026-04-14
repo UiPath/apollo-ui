@@ -1,3 +1,14 @@
+## [@uipath/apollo-react-v4.1.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.0.0...@uipath/apollo-react@4.1.0) (2026-04-14)
+
+### Features
+
+* **storybook:** unify canvas and wind stories ([07aee51](https://github.com/UiPath/apollo-ui/commit/07aee51674b17925d4bc0738a85cc6a2ff9f34f0))
+
+### Bug Fixes
+
+* **apollo-react:** address comments ([71228ef](https://github.com/UiPath/apollo-ui/commit/71228efc80f66f58d37f8e9436af87e889e292d8))
+* **apollo-react:** format ([3ec0ec6](https://github.com/UiPath/apollo-ui/commit/3ec0ec607821cce27f66aca24a8d9ab38082fa46))
+
 ## [@uipath/apollo-react-v4.0.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.71.0...@uipath/apollo-react@4.0.0) (2026-04-13)
 
 ### ⚠ BREAKING CHANGES
