@@ -41,11 +41,17 @@ export const Sidebar = ({
           companyLogo={companyLogo}
         />
 
-        <nav className="absolute left-1/2 -translate-x-1/2 flex items-center bg-muted dark:bg-[oklch(0.24_0.033_254)] rounded-full p-1.5 overflow-x-auto scrollbar-thin">
-          {navItems.map((item) => (
-            <MinimalNavItem key={item.path} to={item.path} label={item.label} />
-          ))}
-        </nav>
+        {navItems.length > 0 && (
+          <nav className="absolute left-1/2 -translate-x-1/2 flex items-center bg-muted dark:bg-[oklch(0.24_0.033_254)] rounded-full p-1.5 overflow-x-auto scrollbar-thin">
+            {navItems.map((item) => (
+              <MinimalNavItem
+                key={item.path}
+                to={item.path}
+                label={item.label}
+              />
+            ))}
+          </nav>
+        )}
 
         <div className="flex items-center gap-2">
           <UserProfile isCollapsed />
