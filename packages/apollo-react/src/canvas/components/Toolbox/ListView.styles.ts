@@ -5,7 +5,7 @@ import { List } from 'react-window';
 export const SectionHeader = styled.div`
   display: flex;
   align-items: center;
-  border-top: 1px solid var(--uix-canvas-border-de-emp);
+  border-top: 1px solid var(--canvas-border-de-emp);
 
   &:first-of-type {
     border-top: none;
@@ -31,11 +31,11 @@ export const ListItemButton = styled(motion.button)`
 
   &:hover,
   &.active {
-    background: var(--uix-canvas-background-hover);
+    background: var(--canvas-background-hover);
   }
 
   &.active {
-    outline: 1px solid var(--uix-canvas-primary);
+    outline: 1px solid var(--canvas-primary);
     outline-offset: -1px;
   }
 `;
@@ -46,9 +46,9 @@ export const IconContainer = styled.div<{ bgColor?: string }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: ${(props) => props.bgColor || 'var(--uix-canvas-background)'};
+  background: ${(props) => props.bgColor || 'var(--canvas-background)'};
   border-radius: 8px;
-  color: var(--uix-canvas-foreground-emp);
+  color: var(--canvas-foreground-emp);
   opacity: 0.9;
   flex-shrink: 0;
   // Icons should show below the inset outline
@@ -65,12 +65,12 @@ export const StyledList = styled(List)`
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--uix-canvas-border-de-emp);
+    background: var(--canvas-border-de-emp);
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background: var(--uix-canvas-border);
+    background: var(--canvas-border);
   }
 
   .list-view-item-name {

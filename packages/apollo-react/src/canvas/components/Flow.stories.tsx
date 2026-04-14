@@ -96,8 +96,8 @@ function createInitialEdges(): Edge[] {
 const ToolbarContainer = styled.div`
   display: flex;
   align-items: center;
-  background: var(--uix-canvas-background);
-  border: 1px solid var(--uix-canvas-border-de-emp);
+  background: var(--canvas-background);
+  border: 1px solid var(--canvas-border-de-emp);
   border-radius: 16px;
   padding: 4px;
   gap: 4px;
@@ -115,17 +115,17 @@ const ToolbarButton = styled.button`
   cursor: pointer;
   border-radius: 16px;
   transition: background-color 0.15s ease;
-  color: var(--uix-canvas-foreground);
+  color: var(--canvas-foreground);
 
   &:hover {
-    background: var(--uix-canvas-background-hover);
+    background: var(--canvas-background-hover);
   }
 `;
 
 const ToolbarDivider = styled.div`
   width: 1px;
   height: 24px;
-  background: var(--uix-canvas-border-de-emp);
+  background: var(--canvas-border-de-emp);
 `;
 
 const ExportOverlay = styled.div`

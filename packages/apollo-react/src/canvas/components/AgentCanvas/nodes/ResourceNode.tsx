@@ -158,9 +158,7 @@ export const ResourceNode = memo(
           icon = undefined;
           break;
       }
-      return icon ? (
-        <Row style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>{icon}</Row>
-      ) : null;
+      return icon ? <Row style={{ color: 'var(--canvas-foreground-de-emp)' }}>{icon}</Row> : null;
     }, [data]);
 
     const toolbarConfig = useMemo((): NodeToolbarConfig | null | undefined => {
@@ -302,7 +300,7 @@ export const ResourceNode = memo(
           type: 'target' as const,
           handleType: 'artifact' as const,
           showButton: false,
-          color: 'var(--uix-canvas-foreground-de-emp)',
+          color: 'var(--canvas-foreground-de-emp)',
         },
       ],
       []
@@ -315,7 +313,7 @@ export const ResourceNode = memo(
           type: 'source' as const,
           handleType: 'artifact' as const,
           showButton: false,
-          color: 'var(--uix-canvas-foreground-de-emp)',
+          color: 'var(--canvas-foreground-de-emp)',
         },
       ],
       []
@@ -328,7 +326,7 @@ export const ResourceNode = memo(
           type: 'source' as const,
           handleType: 'artifact' as const,
           showButton: false,
-          color: 'var(--uix-canvas-foreground-de-emp)',
+          color: 'var(--canvas-foreground-de-emp)',
         },
       ],
       []
@@ -341,7 +339,7 @@ export const ResourceNode = memo(
           type: 'target' as const,
           handleType: 'artifact' as const,
           showButton: false,
-          color: 'var(--uix-canvas-foreground-de-emp)',
+          color: 'var(--canvas-foreground-de-emp)',
         },
       ],
       []
@@ -354,7 +352,7 @@ export const ResourceNode = memo(
           type: 'target' as const,
           handleType: 'artifact' as const,
           showButton: false,
-          color: 'var(--uix-canvas-foreground-de-emp)',
+          color: 'var(--canvas-foreground-de-emp)',
         },
       ],
       []
@@ -371,20 +369,20 @@ export const ResourceNode = memo(
 
     const guardrailsAdornment = useMemo((): React.ReactNode => {
       if (!hasGuardrails) return undefined;
-      return <CanvasIcon icon="shield-check" size={18} color="var(--uix-canvas-icon-default)" />;
+      return <CanvasIcon icon="shield-check" size={18} color="var(--canvas-icon-default)" />;
     }, [hasGuardrails]);
 
     const suggestionAdornment = useMemo((): React.ReactNode => {
       if (!isSuggestion) return undefined;
       let iconName = 'arrow-left-right';
-      let color = 'var(--uix-canvas-warning-icon)';
+      let color = 'var(--canvas-warning-icon)';
 
       if (suggestionType === 'add') {
         iconName = 'circle-plus';
-        color = 'var(--uix-canvas-success-icon)';
+        color = 'var(--canvas-success-icon)';
       } else if (suggestionType === 'delete') {
         iconName = 'circle-minus';
-        color = 'var(--uix-canvas-error-icon)';
+        color = 'var(--canvas-error-icon)';
       }
 
       return <CanvasIcon icon={iconName} size={18} color={color} />;
@@ -461,7 +459,7 @@ export const ResourceNode = memo(
     const baseNodeConfig = useMemo<BaseNodeOverrideConfig>(
       () => ({
         labelTooltip: displayTooltips ? data.description : undefined,
-        labelBackgroundColor: 'var(--uix-canvas-background-secondary)',
+        labelBackgroundColor: 'var(--canvas-background-secondary)',
         disabled: isDisabled,
         executionStatusOverride: executionStatus,
         suggestionType,
@@ -500,7 +498,7 @@ export const ResourceNode = memo(
           data={{
             ...data,
             display: {
-              iconBackground: 'var(--uix-canvas-background-secondary)',
+              iconBackground: 'var(--canvas-background-secondary)',
               label: data.name,
               subLabel: data.originalName,
               shape: 'circle',

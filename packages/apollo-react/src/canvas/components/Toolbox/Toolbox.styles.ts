@@ -18,12 +18,12 @@ export const ScrollableList = styled.div`
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--uix-canvas-border-de-emp);
+    background: var(--canvas-border-de-emp);
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background: var(--uix-canvas-border);
+    background: var(--canvas-border);
   }
 `;
 

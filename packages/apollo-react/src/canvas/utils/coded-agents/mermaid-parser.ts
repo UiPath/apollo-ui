@@ -78,7 +78,7 @@ export async function mermaidToReactFlow(mermaidText: string): Promise<MermaidPa
           animated: false,
           markerEnd: 'arrow',
           style: {
-            stroke: 'var(--uix-canvas-foreground-de-emp)',
+            stroke: 'var(--canvas-foreground-de-emp)',
             strokeWidth: 1,
           },
           data: {

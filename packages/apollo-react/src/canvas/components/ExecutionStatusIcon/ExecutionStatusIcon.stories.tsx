@@ -67,9 +67,9 @@ export const Default: Story = {
               alignItems: 'center',
               gap: '12px',
               padding: '20px',
-              border: '1px solid var(--uix-canvas-border-de-emp)',
+              border: '1px solid var(--canvas-border-de-emp)',
               borderRadius: '8px',
-              background: 'var(--uix-canvas-background)',
+              background: 'var(--canvas-background)',
               minHeight: '120px',
             }}
           >
@@ -80,7 +80,7 @@ export const Default: Story = {
               <div
                 style={{
                   fontSize: '14px',
-                  color: 'var(--uix-canvas-foreground)',
+                  color: 'var(--canvas-foreground)',
                   fontWeight: 600,
                   marginBottom: '4px',
                 }}
@@ -90,7 +90,7 @@ export const Default: Story = {
               <div
                 style={{
                   fontSize: '11px',
-                  color: 'var(--uix-canvas-foreground-de-emp)',
+                  color: 'var(--canvas-foreground-de-emp)',
                 }}
               >
                 {description}
@@ -101,10 +101,8 @@ export const Default: Story = {
       </div>
 
       {/* Size variations */}
-      <div style={{ borderTop: '1px solid var(--uix-canvas-border-de-emp)', paddingTop: '32px' }}>
-        <h3 style={{ marginBottom: '20px', color: 'var(--uix-canvas-foreground)' }}>
-          Size Variations
-        </h3>
+      <div style={{ borderTop: '1px solid var(--canvas-border-de-emp)', paddingTop: '32px' }}>
+        <h3 style={{ marginBottom: '20px', color: 'var(--canvas-foreground)' }}>Size Variations</h3>
         <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
           {[12, 16, 24, 32, 48, 64, 80].map((size) => (
             <div key={size} style={{ textAlign: 'center' }}>
@@ -119,7 +117,7 @@ export const Default: Story = {
               >
                 <ExecutionStatusIcon status="Completed" size={size} />
               </div>
-              <span style={{ fontSize: '11px', color: 'var(--uix-canvas-foreground-de-emp)' }}>
+              <span style={{ fontSize: '11px', color: 'var(--canvas-foreground-de-emp)' }}>
                 {size}px
               </span>
             </div>

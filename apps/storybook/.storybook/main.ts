@@ -1,8 +1,8 @@
-import type { StorybookConfig } from "@storybook/react-vite";
-import { mergeAlias } from "vite";
-import { readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import type { StorybookConfig } from '@storybook/react-vite';
+import { mergeAlias } from 'vite';
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -10,7 +10,7 @@ const __dirname = dirname(__filename);
 // react-scan is a dev-only tool — skip it in production Storybook builds.
 // main.ts runs in Node (Storybook CLI) so we use process.env.
 // preview.tsx runs in the browser (Vite) so it uses import.meta.env.MODE instead.
-const isDev = process.env.NODE_ENV !== "production";
+const isDev = process.env.NODE_ENV !== 'production';
 
 // react-scan must install its devtools hook before React initializes.
 // Two Storybook behaviors interfere with this:
@@ -21,15 +21,12 @@ const isDev = process.env.NODE_ENV !== "production";
 // Fix: inject a <body> script that deletes the stale property before bippy runs,
 // forcing bippy to install a fresh hook. This all executes before React loads
 // (React is loaded via type="module" scripts, which are deferred).
-let reactScanHook = "";
+let reactScanHook = '';
 if (isDev) {
   try {
     reactScanHook = readFileSync(
-      resolve(
-        __dirname,
-        "../node_modules/react-scan/dist/install-hook.global.js",
-      ),
-      "utf-8",
+      resolve(__dirname, '../node_modules/react-scan/dist/install-hook.global.js'),
+      'utf-8'
     );
   } catch {
     // react-scan optional; Storybook works without it
@@ -39,34 +36,34 @@ if (isDev) {
 const config: StorybookConfig = {
   stories: [
     {
-      directory: "../../../packages/apollo-wind/src",
-      files: "**/*.stories.@(tsx|ts|jsx|js|mdx)",
-      titlePrefix: "Wind",
+      directory: '../../../packages/apollo-wind/src',
+      files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
+      titlePrefix: 'Wind',
     },
     {
-      directory: "../../../packages/apollo-react/src/canvas",
-      files: "**/*.stories.@(tsx|ts|jsx|js|mdx)",
-      titlePrefix: "Canvas",
+      directory: '../../../packages/apollo-react/src/canvas',
+      files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
+      titlePrefix: 'Canvas',
     },
   ],
   addons: [
-    "@storybook/addon-links",
-    "@storybook/addon-docs",
-    "@storybook/addon-a11y",
-    "@storybook/addon-mcp",
+    '@storybook/addon-links',
+    '@storybook/addon-docs',
+    '@storybook/addon-a11y',
+    '@storybook/addon-mcp',
   ],
   features: {
     experimentalComponentsManifest: true,
   },
   staticDirs: [
-    "../../../packages/apollo-wind/public",
+    '../../../packages/apollo-wind/public',
     {
-      from: "../../../packages/apollo-core/src/icons/svg/third-party",
-      to: "/brand",
+      from: '../../../packages/apollo-core/src/icons/svg/third-party',
+      to: '/brand',
     },
   ],
   framework: {
-    name: "@storybook/react-vite",
+    name: '@storybook/react-vite',
     options: {},
   },
   previewHead: (head) => `
@@ -106,16 +103,10 @@ const config: StorybookConfig = {
         `<script>delete window.__REACT_DEVTOOLS_GLOBAL_HOOK__;${reactScanHook}</script>\n${body}`
     : undefined,
   async viteFinal(config) {
-    const tailwindcss = (await import("@tailwindcss/vite")).default;
+    const tailwindcss = (await import('@tailwindcss/vite')).default;
 
-    const apolloWindSrc = resolve(
-      __dirname,
-      "../../../packages/apollo-wind/src",
-    );
-    const apolloReactSrc = resolve(
-      __dirname,
-      "../../../packages/apollo-react/src",
-    );
+    const apolloWindSrc = resolve(__dirname, '../../../packages/apollo-wind/src');
+    const apolloReactSrc = resolve(__dirname, '../../../packages/apollo-react/src');
 
     return {
       ...config,
@@ -124,14 +115,14 @@ const config: StorybookConfig = {
         ...config.resolve,
         alias: mergeAlias(config.resolve?.alias, [
           // ── Apollo Wind → source for HMR ──
-          { find: "@", replacement: apolloWindSrc },
+          { find: '@', replacement: apolloWindSrc },
           {
             find: /^@uipath\/apollo-wind\/tailwind\.css$/,
-            replacement: resolve(apolloWindSrc, "styles/tailwind.consumer.css"),
+            replacement: resolve(apolloWindSrc, 'styles/tailwind.consumer.css'),
           },
           {
             find: /^@uipath\/apollo-wind$/,
-            replacement: resolve(apolloWindSrc, "index.ts"),
+            replacement: resolve(apolloWindSrc, 'index.ts'),
           },
           {
             find: /^@uipath\/apollo-wind\/(?!.*\.css$)(.*)/,
@@ -141,7 +132,7 @@ const config: StorybookConfig = {
           // Canvas barrel (exact match, no trailing path)
           {
             find: /^@uipath\/apollo-react\/canvas$/,
-            replacement: resolve(apolloReactSrc, "canvas/index.ts"),
+            replacement: resolve(apolloReactSrc, 'canvas/index.ts'),
           },
           // Canvas subpaths (exclude xyflow CSS — vendored, only in dist)
           {
@@ -151,7 +142,7 @@ const config: StorybookConfig = {
           // Material barrel + subpaths
           {
             find: /^@uipath\/apollo-react\/material$/,
-            replacement: resolve(apolloReactSrc, "material/index.ts"),
+            replacement: resolve(apolloReactSrc, 'material/index.ts'),
           },
           {
             find: /^@uipath\/apollo-react\/material\/(.*)/,

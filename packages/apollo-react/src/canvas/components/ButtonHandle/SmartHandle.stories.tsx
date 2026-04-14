@@ -51,17 +51,17 @@ function SmartNode({ data, selected }: { id: string; data: { label: string }; se
         width: 160,
         height: 60,
         borderRadius: 8,
-        backgroundColor: 'var(--uix-canvas-background)',
+        backgroundColor: 'var(--canvas-background)',
         border: selected
-          ? '2px solid var(--uix-canvas-selection-indicator)'
-          : '1px solid var(--uix-canvas-border)',
+          ? '2px solid var(--canvas-selection-indicator)'
+          : '1px solid var(--canvas-border)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
       }}
     >
-      <span className="text-sm font-semibold" style={{ color: 'var(--uix-canvas-foreground)' }}>
+      <span className="text-sm font-semibold" style={{ color: 'var(--canvas-foreground)' }}>
         {data.label}
       </span>
       <SmartTargetHandle id="input" />
@@ -80,10 +80,10 @@ function HubNode({ data, selected }: { id: string; data: { label: string }; sele
           width: HUB_NODE_SIZE,
           height: HUB_NODE_SIZE,
           borderRadius: '50%',
-          backgroundColor: 'var(--uix-canvas-background)',
+          backgroundColor: 'var(--canvas-background)',
           border: selected
-            ? '2px solid var(--uix-canvas-selection-indicator)'
-            : '2px solid var(--uix-canvas-border)',
+            ? '2px solid var(--canvas-selection-indicator)'
+            : '2px solid var(--canvas-border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -91,8 +91,8 @@ function HubNode({ data, selected }: { id: string; data: { label: string }; sele
         }}
       >
         <Column align="center" gap={4}>
-          <CanvasIcon icon="network" color="var(--uix-canvas-foreground-de-emp)" size={24} />
-          <span className="text-xs font-bold" style={{ color: 'var(--uix-canvas-foreground)' }}>
+          <CanvasIcon icon="network" color="var(--canvas-foreground-de-emp)" size={24} />
+          <span className="text-xs font-bold" style={{ color: 'var(--canvas-foreground)' }}>
             {data.label}
           </span>
         </Column>
@@ -221,16 +221,16 @@ function DefaultStory() {
     >
       <StoryInfoPanel title="SmartHandle" collapsible defaultCollapsed={false}>
         <Column gap={8} style={{ marginTop: 8 }}>
-          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
+          <span className="text-sm" style={{ color: 'var(--canvas-foreground-de-emp)' }}>
             • <strong>Drag nodes</strong> to see handles reposition
           </span>
-          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
+          <span className="text-sm" style={{ color: 'var(--canvas-foreground-de-emp)' }}>
             • <strong>Select edge + Backspace</strong> to delete
           </span>
-          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
+          <span className="text-sm" style={{ color: 'var(--canvas-foreground-de-emp)' }}>
             • <strong>Drag from handle</strong> to create new connection
           </span>
-          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
+          <span className="text-sm" style={{ color: 'var(--canvas-foreground-de-emp)' }}>
             • Handles return to default position when disconnected
           </span>
         </Column>
@@ -264,17 +264,17 @@ function MultiHandleNode({
           width: MULTI_NODE_WIDTH,
           height: MULTI_NODE_HEIGHT,
           borderRadius: 8,
-          backgroundColor: 'var(--uix-canvas-background)',
+          backgroundColor: 'var(--canvas-background)',
           border: selected
-            ? '2px solid var(--uix-canvas-selection-indicator)'
-            : '1px solid var(--uix-canvas-border)',
+            ? '2px solid var(--canvas-selection-indicator)'
+            : '1px solid var(--canvas-border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
         }}
       >
-        <span className="text-sm font-semibold" style={{ color: 'var(--uix-canvas-foreground)' }}>
+        <span className="text-sm font-semibold" style={{ color: 'var(--canvas-foreground)' }}>
           {data.label}
         </span>
         {/* Multiple handles that will auto-space when on same side */}
@@ -449,13 +449,13 @@ function MultiHandleStory() {
     >
       <StoryInfoPanel title="Multi-Handle SmartHandle" collapsible defaultCollapsed={false}>
         <Column gap={8} style={{ marginTop: 8 }}>
-          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
+          <span className="text-sm" style={{ color: 'var(--canvas-foreground-de-emp)' }}>
             • Multiple handles on same side <strong>auto-space</strong> with grid alignment
           </span>
-          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
+          <span className="text-sm" style={{ color: 'var(--canvas-foreground-de-emp)' }}>
             • <strong>Drag nodes</strong> to see handles reposition dynamically
           </span>
-          <span className="text-sm" style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>
+          <span className="text-sm" style={{ color: 'var(--canvas-foreground-de-emp)' }}>
             • Center node has 3 inputs + 2 outputs
           </span>
         </Column>

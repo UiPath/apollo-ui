@@ -202,8 +202,8 @@ const CanvasPerformanceStory = () => {
               className="nodrag nopan nowheel"
               style={{
                 width: 240,
-                background: 'var(--uix-canvas-background)',
-                border: '1px solid var(--uix-canvas-border-de-emp)',
+                background: 'var(--canvas-background)',
+                border: '1px solid var(--canvas-border-de-emp)',
                 borderRadius: 16,
                 padding: 16,
                 boxShadow: '0 8px 32px rgba(15, 23, 42, 0.08)',
@@ -213,7 +213,7 @@ const CanvasPerformanceStory = () => {
               <div
                 style={{
                   marginTop: 6,
-                  color: 'var(--uix-canvas-foreground-de-emp)',
+                  color: 'var(--canvas-foreground-de-emp)',
                   fontSize: 12,
                   lineHeight: 1.4,
                 }}

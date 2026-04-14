@@ -35,6 +35,6 @@ export const TaskIconContainer = styled.div<TaskIconContainerProps>`
   width: ${({ $size }) => $size}px;
   height: ${({ $size }) => $size}px;
   border-radius: ${({ $borderRadius }) => $borderRadius}px;
-  color: var(--uix-canvas-foreground-emp);
+  color: var(--canvas-foreground-emp);
   background: ${({ $taskType }) => TASK_ICON_GRADIENTS[$taskType]};
 `;

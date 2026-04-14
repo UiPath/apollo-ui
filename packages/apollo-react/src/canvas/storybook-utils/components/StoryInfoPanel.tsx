@@ -36,9 +36,9 @@ export function StoryInfoPanel({
       <Column
         p={16}
         style={{
-          color: 'var(--uix-canvas-foreground)',
-          backgroundColor: 'var(--uix-canvas-background)',
-          border: '1px solid var(--uix-canvas-border-de-emp)',
+          color: 'var(--canvas-foreground)',
+          backgroundColor: 'var(--canvas-background)',
+          border: '1px solid var(--canvas-border-de-emp)',
           minWidth: 200,
           borderRadius: 12,
           boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',

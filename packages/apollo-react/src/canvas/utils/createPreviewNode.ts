@@ -294,7 +294,7 @@ export function createPreviewNode(
     style: {
       strokeDasharray: '5,5',
       opacity: 0.8,
-      stroke: 'var(--uix-canvas-selection-indicator)',
+      stroke: 'var(--canvas-selection-indicator)',
       strokeWidth: 2,
     },
   };

@@ -11,10 +11,10 @@ export const StyledAddButton = styled(motion.div)`
   justify-content: center;
   width: 24px;
   height: 24px;
-  background: var(--uix-canvas-background);
-  color: var(--uix-canvas-foreground-emp);
+  background: var(--canvas-background);
+  color: var(--canvas-foreground-emp);
   border-radius: 50%;
-  border: 1px solid var(--uix-canvas-border-de-emp);
+  border: 1px solid var(--canvas-border-de-emp);
   cursor: pointer;
   transition:
     background-color 0.2s ease,
@@ -22,9 +22,9 @@ export const StyledAddButton = styled(motion.div)`
     border-color 0.2s ease;
 
   &:hover {
-    background-color: var(--uix-canvas-selection-indicator);
-    color: var(--uix-canvas-background);
-    border-color: var(--uix-canvas-selection-indicator);
+    background-color: var(--canvas-selection-indicator);
+    color: var(--canvas-background);
+    border-color: var(--canvas-selection-indicator);
   }
 `;
 
@@ -74,7 +74,7 @@ export const StyledLine = styled.div<{ $isVertical: boolean; $selected: boolean;
   border-style: solid;
   border-width: 1px;
   border-color: ${(p) =>
-    p.$selected ? 'var(--uix-canvas-selection-indicator)' : 'var(--uix-canvas-border-de-emp)'};
+    p.$selected ? 'var(--canvas-selection-indicator)' : 'var(--canvas-border-de-emp)'};
   height: ${(p) => (p.$isVertical ? p.$size : '1px')};
   width: ${(p) => (p.$isVertical ? '1px' : p.$size)};
   transition: border-color 0.2s ease-in-out;
@@ -151,14 +151,14 @@ export const StyledNotch = styled.div<{
   border-width: 2px;
   border-style: solid;
   border-color: ${(p) => {
-    if (p.$selected || p.$hovered) return 'var(--uix-canvas-primary)';
-    return 'var(--uix-canvas-border)';
+    if (p.$selected || p.$hovered) return 'var(--canvas-primary)';
+    return 'var(--canvas-border)';
   }};
   border-radius: ${(p) => (p.$handleType === 'artifact' || p.$handleType === 'input' ? 0 : '50%')};
   transform: ${(p) => (p.$handleType === 'artifact' ? 'rotate(45deg)' : 'none')};
   background-color: ${(p) => {
-    if (p.$selected || p.$hovered) return 'var(--uix-canvas-primary)';
-    return 'var(--uix-canvas-background, white)';
+    if (p.$selected || p.$hovered) return 'var(--canvas-primary)';
+    return 'var(--canvas-background, white)';
   }};
   opacity: ${(p) => (p.$showNotch ? 1 : 0)};
   pointer-events: none;

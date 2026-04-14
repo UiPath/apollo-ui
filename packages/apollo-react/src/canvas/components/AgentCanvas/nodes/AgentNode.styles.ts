@@ -8,27 +8,27 @@ export const AddInstructionsButton = styled.button`
   width: 100%;
   padding: 6px 12px;
   background: transparent;
-  border: 1px dashed var(--uix-canvas-border-de-emp);
+  border: 1px dashed var(--canvas-border-de-emp);
   border-radius: 8px;
   cursor: pointer;
   font-size: 11px;
   font-weight: 600;
-  color: var(--uix-canvas-foreground-de-emp);
+  color: var(--canvas-foreground-de-emp);
   line-height: 16px;
   transition:
     border-color 0.15s ease,
     color 0.15s ease;
 
   &:hover {
-    border-color: var(--uix-canvas-selection-indicator);
-    color: var(--uix-canvas-selection-indicator);
+    border-color: var(--canvas-selection-indicator);
+    color: var(--canvas-selection-indicator);
   }
 `;
 
 export const InstructionsLabel = styled.div`
   font-size: 11px;
   font-weight: 600;
-  color: var(--uix-canvas-foreground);
+  color: var(--canvas-foreground);
   line-height: 16px;
 `;
 
@@ -39,7 +39,7 @@ export const InstructionsPreview = styled.div`
   width: 100%;
   font-size: 9px;
   line-height: 13px;
-  color: var(--uix-canvas-foreground-de-emp);
+  color: var(--canvas-foreground-de-emp);
   cursor: pointer;
 `;
 
@@ -67,18 +67,18 @@ export const SettingsPreviewHeader = styled.div`
   flex-direction: column;
   gap: 2px;
   padding-bottom: 12px;
-  border-bottom: 1px solid var(--uix-canvas-border-de-emp);
+  border-bottom: 1px solid var(--canvas-border-de-emp);
 `;
 
 export const SettingsPreviewTitle = styled.div`
   font-size: 14px;
   font-weight: 600;
-  color: var(--uix-canvas-foreground-emp);
+  color: var(--canvas-foreground-emp);
 `;
 
 export const SettingsPreviewSubtitle = styled.div`
   font-size: 12px;
-  color: var(--uix-canvas-foreground-de-emp);
+  color: var(--canvas-foreground-de-emp);
 `;
 
 export const SettingsSection = styled.div`
@@ -90,20 +90,20 @@ export const SettingsSection = styled.div`
 export const SettingsSectionLabel = styled.div`
   font-size: 12px;
   font-weight: 500;
-  color: var(--uix-canvas-foreground-de-emp);
+  color: var(--canvas-foreground-de-emp);
 `;
 
 export const SettingsSectionValue = styled.div`
   font-size: 14px;
-  color: var(--uix-canvas-foreground-emp);
+  color: var(--canvas-foreground-emp);
 `;
 
 export const SettingsPromptBox = styled.div<{ isEmpty?: boolean }>`
   font-size: 13px;
   color: ${({ isEmpty }) =>
-    isEmpty ? 'var(--uix-canvas-foreground-de-emp)' : 'var(--uix-canvas-foreground)'};
+    isEmpty ? 'var(--canvas-foreground-de-emp)' : 'var(--canvas-foreground)'};
   font-style: ${({ isEmpty }) => (isEmpty ? 'italic' : 'normal')};
-  background: var(--uix-canvas-background-secondary);
+  background: var(--canvas-background-secondary);
   border-radius: 6px;
   padding: 8px 10px;
   max-height: 80px;
@@ -120,7 +120,7 @@ export const SettingsPromptBox = styled.div<{ isEmpty?: boolean }>`
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--uix-canvas-border-de-emp);
+    background: var(--canvas-border-de-emp);
     border-radius: 2px;
   }
 `;
@@ -133,11 +133,11 @@ export const SettingsRow = styled.div`
 `;
 
 export const SettingsRowLabel = styled.span`
-  color: var(--uix-canvas-foreground-de-emp);
+  color: var(--canvas-foreground-de-emp);
 `;
 
 export const SettingsRowValue = styled.span`
-  color: var(--uix-canvas-foreground-emp);
+  color: var(--canvas-foreground-emp);
   font-weight: 500;
 `;
 
@@ -152,11 +152,11 @@ export const HealthScoreBadge = styled.span`
   align-items: center;
   gap: 4px;
   padding: 2px 6px;
-  background-color: var(--uix-canvas-background-secondary);
+  background-color: var(--canvas-background-secondary);
   border-radius: 16px;
   font-size: 10px;
   font-weight: 700;
   line-height: 16px;
-  color: var(--uix-canvas-foreground-de-emp);
+  color: var(--canvas-foreground-de-emp);
   cursor: pointer;
 `;

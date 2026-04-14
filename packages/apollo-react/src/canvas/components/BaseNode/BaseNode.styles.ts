@@ -42,9 +42,9 @@ const getValidationStatusBorder = (validationStatus?: string) => {
     case 'ERROR':
     case 'CRITICAL':
       return css`
-        border-color: var(--uix-canvas-error-icon);
-        background: var(--uix-canvas-error-background);
-        animation: ${pulseAnimation('--uix-canvas-error-icon')} 2s infinite;
+        border-color: var(--canvas-error-icon);
+        background: var(--canvas-error-background);
+        animation: ${pulseAnimation('--canvas-error-icon')} 2s infinite;
       `;
     default:
       return null;
@@ -55,7 +55,7 @@ const getInteractionStateBorder = (interactionState?: string) => {
   switch (interactionState) {
     case 'hover':
       return css`
-        outline: 4px solid var(--uix-canvas-secondary-focused);
+        outline: 4px solid var(--canvas-secondary-focused);
       `;
     case 'disabled':
       return css`
@@ -88,11 +88,11 @@ const getSuggestionTypeBorder = (suggestionType?: string) => {
 const getSuggestionTypeBorderColorVar = (suggestionType?: string) => {
   switch (suggestionType) {
     case 'add':
-      return '--uix-canvas-success-icon';
+      return '--canvas-success-icon';
     case 'update':
-      return '--uix-canvas-warning-icon';
+      return '--canvas-warning-icon';
     case 'delete':
-      return '--uix-canvas-error-icon';
+      return '--canvas-error-icon';
     default:
       return null;
   }
@@ -101,11 +101,11 @@ const getSuggestionTypeBorderColorVar = (suggestionType?: string) => {
 const getSuggestionTypeBackgroundColorVar = (suggestionType?: string) => {
   switch (suggestionType) {
     case 'add':
-      return '--uix-canvas-success-background';
+      return '--canvas-success-background';
     case 'update':
-      return '--uix-canvas-warning-background';
+      return '--canvas-warning-background';
     case 'delete':
-      return '--uix-canvas-error-background';
+      return '--canvas-error-background';
     default:
       return null;
   }
@@ -147,8 +147,8 @@ export const BaseContainer = styled.div<{
     }
     return height ? `${height}px` : `${NODE_HEIGHT_DEFAULT}px`;
   }};
-  background: ${({ backgroundColor }) => backgroundColor || 'var(--uix-canvas-background)'};
-  border: 1.5px solid var(--uix-canvas-border-de-emp);
+  background: ${({ backgroundColor }) => backgroundColor || 'var(--canvas-background)'};
+  border: 1.5px solid var(--canvas-border-de-emp);
   border-radius: ${({ shape }) => {
     if (shape === 'circle') return '50%';
     return '16px';
@@ -186,8 +186,8 @@ export const BaseContainer = styled.div<{
 
     if (selected) {
       return css`
-        border-color: var(--uix-canvas-primary);
-        outline: 4px solid var(--uix-canvas-secondary-pressed);
+        border-color: var(--canvas-primary);
+        outline: 4px solid var(--canvas-secondary-pressed);
       `;
     }
 
@@ -212,9 +212,8 @@ export const BaseIconWrapper = styled.div<{
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${({ color }) => color || 'var(--uix-canvas-foreground)'};
-  background: ${({ backgroundColor }) =>
-    backgroundColor || 'var(--uix-canvas-background-secondary)'};
+  color: ${({ color }) => color || 'var(--canvas-foreground)'};
+  background: ${({ backgroundColor }) => backgroundColor || 'var(--canvas-background-secondary)'};
   border-radius: ${({ shape }) => {
     if (shape === 'circle') return '50%';
     return '8px';
@@ -282,7 +281,7 @@ export const BaseTextContainer = styled.div<{ hasBottomHandles?: boolean; shape?
 export const BaseHeader = styled.div<{ shape?: NodeShape; backgroundColor?: string }>`
   font-weight: 600;
   font-size: 13px;
-  color: var(--uix-canvas-foreground);
+  color: var(--canvas-foreground);
   ${({ backgroundColor }) =>
     backgroundColor &&
     css`
@@ -310,7 +309,7 @@ export const BaseHeader = styled.div<{ shape?: NodeShape; backgroundColor?: stri
 
 export const BaseSubHeader = styled.div<{ shape?: NodeShape }>`
   font-size: 11px;
-  color: var(--uix-canvas-foreground-de-emp);
+  color: var(--canvas-foreground-de-emp);
   line-height: 1.3;
   word-break: break-word;
   overflow: hidden;
@@ -338,10 +337,10 @@ export const EditableLabel = styled.textarea<{
   font-size: ${({ variant }) => (variant === 'subtext' ? '11px' : '13px')};
   line-height: ${({ variant }) => (variant === 'subtext' ? '1.3' : '1.4')};
   font-family: inherit;
-  color: var(--uix-canvas-foreground);
+  color: var(--canvas-foreground);
   border: none;
   border-radius: 4px;
-  outline: 1px dashed var(--uix-canvas-border-de-emp);
+  outline: 1px dashed var(--canvas-border-de-emp);
   margin-bottom: ${({ variant }) => (variant === 'subtext' ? 0 : '2px')};
   max-width: 100%;
 
@@ -351,7 +350,7 @@ export const EditableLabel = styled.textarea<{
           background-color: ${backgroundColor};
           padding: 2px 6px;
         `
-      : 'background-color: color-mix(in srgb, var(--uix-canvas-background) 10%, transparent);'}
+      : 'background-color: color-mix(in srgb, var(--canvas-background) 10%, transparent);'}
 
   ${({ shape }) =>
     shape === 'rectangle'
@@ -367,9 +366,9 @@ export const EmptyLabelPlaceholder = styled.div`
   font-weight: 600;
   font-size: 13px;
   line-height: 1.4;
-  color: var(--uix-canvas-foreground-de-emp);
+  color: var(--canvas-foreground-de-emp);
   background: transparent;
-  border: 1px dashed var(--uix-canvas-border-de-emp);
+  border: 1px dashed var(--canvas-border-de-emp);
   border-radius: 4px;
   cursor: pointer;
   opacity: 0;
@@ -379,7 +378,7 @@ export const EmptyLabelPlaceholder = styled.div`
 
   &:hover {
     opacity: 1;
-    background-color: color-mix(in srgb, var(--uix-canvas-background) 10%, transparent);
+    background-color: color-mix(in srgb, var(--canvas-background) 10%, transparent);
   }
 `;
 

@@ -97,7 +97,7 @@ function createDefaultNodes(): Node<GroupNodeData | BaseNodeData>[] {
       undefined,
       { x: 750, y: 100 },
       { width: 500, height: 350 },
-      'var(--uix-canvas-background-raised)'
+      'var(--canvas-background-raised)'
     ),
     createChildNode('node-2-1', 'Classification agent', { x: 180, y: 60 }, 'group-2'),
     createChildNode('node-2-2', 'Category A', { x: 30, y: 200 }, 'group-2'),
@@ -194,8 +194,8 @@ function GroupNodeWithActions(props: React.ComponentProps<typeof GroupNode>) {
               fontSize: '10px',
               padding: '2px 6px',
               borderRadius: '4px',
-              backgroundColor: 'var(--uix-canvas-success-background)',
-              color: 'var(--uix-canvas-success-icon)',
+              backgroundColor: 'var(--canvas-success-background)',
+              color: 'var(--canvas-success-icon)',
               whiteSpace: 'nowrap',
             }}
           >

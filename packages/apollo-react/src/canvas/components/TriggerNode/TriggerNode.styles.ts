@@ -6,8 +6,8 @@ export const TriggerContainer = styled.div<{ selected?: boolean; status?: Trigge
   position: relative;
   width: 100%;
   height: 100%;
-  background: var(--uix-canvas-background);
-  border: 1.5px solid var(--uix-canvas-border-de-emp);
+  background: var(--canvas-background);
+  border: 1.5px solid var(--canvas-border-de-emp);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -17,37 +17,37 @@ export const TriggerContainer = styled.div<{ selected?: boolean; status?: Trigge
   ${({ selected }) =>
     selected
       ? css`
-          border-color: var(--uix-canvas-primary);
-          outline: 4px solid var(--uix-canvas-secondary-pressed);
+          border-color: var(--canvas-primary);
+          outline: 4px solid var(--canvas-secondary-pressed);
         `
       : css`
           &:hover {
-            outline: 4px solid var(--uix-canvas-secondary-pressed);
+            outline: 4px solid var(--canvas-secondary-pressed);
           }
         `}
 
   ${({ status }) =>
     status === 'Completed' &&
     css`
-      border-color: var(--uix-canvas-success-icon);
+      border-color: var(--canvas-success-icon);
     `}
 
   ${({ status }) =>
     status === 'InProgress' &&
     css`
-      border-color: var(--uix-canvas-info-icon);
+      border-color: var(--canvas-info-icon);
     `}
 
   ${({ status }) =>
     status === 'Paused' &&
     css`
-      border-color: var(--uix-canvas-warning-icon);
+      border-color: var(--canvas-warning-icon);
     `}
 
   ${({ status }) =>
     status === 'Failed' &&
     css`
-      border-color: var(--uix-canvas-error-icon);
+      border-color: var(--canvas-error-icon);
     `}
 
   ${({ status }) =>
@@ -61,8 +61,8 @@ export const TriggerIconWrapper = styled.div<{ status?: TriggerStatus; nodeHeigh
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--uix-canvas-foreground);
-  background: var(--uix-canvas-background-secondary);
+  color: var(--canvas-foreground);
+  background: var(--canvas-background-secondary);
   border-radius: 50%;
 
   width: ${({ nodeHeight }) => {
@@ -77,25 +77,25 @@ export const TriggerIconWrapper = styled.div<{ status?: TriggerStatus; nodeHeigh
   ${({ status }) =>
     status === 'Completed' &&
     css`
-      color: var(--uix-canvas-success-icon);
+      color: var(--canvas-success-icon);
     `}
 
   ${({ status }) =>
     status === 'InProgress' &&
     css`
-      color: var(--uix-canvas-info-icon);
+      color: var(--canvas-info-icon);
     `}
 
   ${({ status }) =>
     status === 'Paused' &&
     css`
-      color: var(--uix-canvas-warning-icon);
+      color: var(--canvas-warning-icon);
     `}
 
   ${({ status }) =>
     status === 'Failed' &&
     css`
-      color: var(--uix-canvas-error-icon);
+      color: var(--canvas-error-icon);
     `}
 
   svg {

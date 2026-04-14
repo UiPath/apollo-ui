@@ -19,7 +19,7 @@ export const Default: StoryFn = () => {
       p={40}
       gap={24}
       minH="100vh"
-      style={{ background: 'var(--uix-canvas-background)', color: 'var(--uix-canvas-foreground)' }}
+      style={{ background: 'var(--canvas-background)', color: 'var(--canvas-foreground)' }}
     >
       <Column gap={36}>
         <Row gap={36}>

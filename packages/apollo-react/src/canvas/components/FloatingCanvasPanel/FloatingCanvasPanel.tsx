@@ -8,9 +8,9 @@ import { PanelChrome } from './PanelChrome';
 import { type AnchorRect, useFloatingPosition } from './useFloatingPosition';
 
 const PanelContainer = styled.div<{ isPinned?: boolean }>`
-  color: var(--uix-canvas-foreground);
-  background-color: var(--uix-canvas-background);
-  border: 1px solid var(--uix-canvas-border-de-emp);
+  color: var(--canvas-foreground);
+  background-color: var(--canvas-background);
+  border: 1px solid var(--canvas-border-de-emp);
   border-radius: ${(props) => (props.isPinned ? '0' : '8px')};
   box-shadow: ${(props) => (props.isPinned ? 'none' : '0 4px 16px rgba(0, 0, 0, 0.12)')};
   font-size: 14px;
@@ -22,8 +22,7 @@ const PanelContainer = styled.div<{ isPinned?: boolean }>`
   display: flex;
   flex-direction: column;
   transition: opacity 0.2s ease-in-out;
-  border-left: ${(props) =>
-    props.isPinned ? '1px solid var(--uix-canvas-border-de-emp)' : 'none'};
+  border-left: ${(props) => (props.isPinned ? '1px solid var(--canvas-border-de-emp)' : 'none')};
 `;
 
 export type FloatingCanvasPanelProps = {

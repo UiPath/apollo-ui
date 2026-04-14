@@ -66,9 +66,7 @@ const CodedAgentEdge = memo(
       targetPosition,
     });
 
-    const strokeColor = animated
-      ? 'var(--uix-canvas-primary)'
-      : 'var(--uix-canvas-foreground-de-emp)';
+    const strokeColor = animated ? 'var(--canvas-primary)' : 'var(--canvas-foreground-de-emp)';
 
     return (
       <BaseEdge
@@ -87,7 +85,7 @@ const CodedAgentEdge = memo(
 );
 
 const CenteredDiv = styled.div`
-  background-color: var(--uix-canvas-background-secondary);
+  background-color: var(--canvas-background-secondary);
   width: 100%;
   height: 100%;
   display: flex;
@@ -162,9 +160,9 @@ const createCodedAgentNodeWrapper = (
 
     const statusAdornment = useMemo((): React.ReactNode => {
       if (nodeData.hasError)
-        return <CanvasIcon icon="circle-alert" size={16} color="var(--uix-canvas-error-icon)" />;
+        return <CanvasIcon icon="circle-alert" size={16} color="var(--canvas-error-icon)" />;
       if (nodeData.hasSuccess && !nodeData.hasError)
-        return <CanvasIcon icon="circle-check" size={16} color="var(--uix-canvas-success-icon)" />;
+        return <CanvasIcon icon="circle-check" size={16} color="var(--canvas-success-icon)" />;
       if (nodeData.hasRunning && !nodeData.hasError && !nodeData.hasSuccess)
         return <Spinner size="sm" />;
       return undefined;
@@ -238,9 +236,9 @@ const CodedResourceNodeElement = memo(({ data, selected, id, ...nodeProps }: Nod
 
   const statusAdornment = useMemo((): React.ReactNode => {
     if (nodeData.hasError)
-      return <CanvasIcon icon="circle-alert" size={16} color="var(--uix-canvas-error-icon)" />;
+      return <CanvasIcon icon="circle-alert" size={16} color="var(--canvas-error-icon)" />;
     if (nodeData.hasSuccess && !nodeData.hasError)
-      return <CanvasIcon icon="circle-check" size={16} color="var(--uix-canvas-success-icon)" />;
+      return <CanvasIcon icon="circle-check" size={16} color="var(--canvas-success-icon)" />;
     if (nodeData.hasRunning && !nodeData.hasError && !nodeData.hasSuccess)
       return <Spinner size="sm" />;
     return undefined;

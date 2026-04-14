@@ -7,7 +7,7 @@ export const STICKY_NOTE_COLORS = {
   green: '#6EB84A',
   yellow: '#FFB40E',
   pink: '#ED145B',
-  white: 'var(--uix-canvas-border)',
+  white: 'var(--canvas-border)',
 } as const;
 
 export type StickyNoteColor = keyof typeof STICKY_NOTE_COLORS;

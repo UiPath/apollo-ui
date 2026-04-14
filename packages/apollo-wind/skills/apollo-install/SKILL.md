@@ -69,7 +69,7 @@ Turborepo builds `apollo-core`, `apollo-react`, and `apollo-wind` in dependency 
 ## Step 6 — Start Apollo Wind Storybook
 
 ```bash
-pnpm storybook:wind
+pnpm storybook:design
 ```
 
 Storybook opens automatically at `http://localhost:6006`. If it does not open, tell the user to navigate there manually.

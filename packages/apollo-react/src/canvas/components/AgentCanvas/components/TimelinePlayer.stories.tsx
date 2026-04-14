@@ -28,8 +28,8 @@ const meta: Meta<typeof TimelinePlayer> = {
           left: 0,
           width: '100%',
           height: '100%',
-          backgroundColor: 'var(--uix-canvas-background)',
-          color: 'var(--uix-canvas-foreground)',
+          backgroundColor: 'var(--canvas-background)',
+          color: 'var(--canvas-foreground)',
         }}
       >
         <Story />

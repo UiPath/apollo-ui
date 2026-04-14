@@ -114,10 +114,10 @@ function NodeInfoContent({
               whiteSpace: 'pre-wrap',
               wordWrap: 'break-word',
               padding: 8,
-              background: 'var(--uix-canvas-background-secondary)',
+              background: 'var(--canvas-background-secondary)',
               overflow: 'auto',
               height: 300,
-              color: 'var(--uix-canvas-foreground-de-emp)',
+              color: 'var(--canvas-foreground-de-emp)',
               userSelect: 'text',
             }}
           >
@@ -220,10 +220,10 @@ function EdgeInfoContent({ edge }: EdgeInfoContentProps) {
               whiteSpace: 'pre-wrap',
               wordWrap: 'break-word',
               padding: 8,
-              background: 'var(--uix-canvas-background-secondary)',
+              background: 'var(--canvas-background-secondary)',
               overflow: 'auto',
               height: 300,
-              color: 'var(--uix-canvas-foreground-de-emp)',
+              color: 'var(--canvas-foreground-de-emp)',
               userSelect: 'text',
             }}
           >

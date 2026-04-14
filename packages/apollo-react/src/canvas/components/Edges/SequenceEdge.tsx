@@ -121,14 +121,14 @@ export const SequenceEdge = memo(function SequenceEdge({
 
   const getEdgeColor = () => {
     // Diff styling takes priority
-    if (isDiffAdded) return 'var(--uix-canvas-success-icon)';
-    if (isDiffRemoved) return 'var(--uix-canvas-error-icon)';
+    if (isDiffAdded) return 'var(--canvas-success-icon)';
+    if (isDiffRemoved) return 'var(--canvas-error-icon)';
 
-    if (isPreviewEdge) return 'var(--uix-canvas-primary)';
-    if (selected) return 'var(--uix-canvas-primary)';
-    if (isHovered) return 'var(--uix-canvas-primary-hover)';
-    if (status) return edgeTargetStatusToEdgeColor[status] ?? 'var(--uix-canvas-border)';
-    return 'var(--uix-canvas-border)';
+    if (isPreviewEdge) return 'var(--canvas-primary)';
+    if (selected) return 'var(--canvas-primary)';
+    if (isHovered) return 'var(--canvas-primary-hover)';
+    if (status) return edgeTargetStatusToEdgeColor[status] ?? 'var(--canvas-border)';
+    return 'var(--canvas-border)';
   };
 
   const edgeColor = getEdgeColor();
@@ -156,7 +156,7 @@ export const SequenceEdge = memo(function SequenceEdge({
             className="react-flow__edge-outline"
             d={edgePath}
             fill="none"
-            stroke="var(--uix-canvas-primary)"
+            stroke="var(--canvas-primary)"
             strokeWidth={10}
             opacity={0.3}
             style={{
@@ -220,13 +220,13 @@ export const SequenceEdge = memo(function SequenceEdge({
                 transform: 'translate(-50%, -50%)',
                 whiteSpace: 'nowrap',
                 pointerEvents: 'none',
-                color: 'var(--uix-canvas-foreground)',
-                background: 'var(--uix-canvas-background)',
+                color: 'var(--canvas-foreground)',
+                background: 'var(--canvas-background)',
                 padding: '4px 8px',
                 borderRadius: '4px',
                 fontSize: '12px',
                 fontWeight: 500,
-                border: `1px solid ${selected ? 'var(--uix-canvas-primary)' : 'var(--uix-canvas-border)'}`,
+                border: `1px solid ${selected ? 'var(--canvas-primary)' : 'var(--canvas-border)'}`,
                 boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
               }}
             >
