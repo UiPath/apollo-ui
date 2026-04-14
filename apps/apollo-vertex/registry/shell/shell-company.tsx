@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useLocalStorage } from "@mantine/hooks";
 import { AnimatePresence, motion } from "framer-motion";
 import { PanelLeft } from "lucide-react";
@@ -91,12 +92,14 @@ export const Company = ({
     defaultValue: false,
   });
   const iconElement = (
-    <motion.div
-      className="w-8 h-8 rounded-[4px] bg-primary-700 dark:bg-primary-400 flex items-center justify-center shrink-0"
-      {...(isCollapsed ? { whileHover: iconHoverScale } : {})}
-    >
-      <CompanyLogoIcon companyLogo={companyLogo} />
-    </motion.div>
+    <Link to="/">
+      <motion.div
+        className="w-8 h-8 rounded-[4px] bg-primary-700 dark:bg-primary-400 flex items-center justify-center shrink-0"
+        {...(isCollapsed ? { whileHover: iconHoverScale } : {})}
+      >
+        <CompanyLogoIcon companyLogo={companyLogo} />
+      </motion.div>
+    </Link>
   );
 
   return (
