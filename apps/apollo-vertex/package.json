@@ -101,7 +101,6 @@
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.2",
-    "@uipath/proteus-client": "^0.1.10",
     "babel-plugin-react-compiler": "^1.0.0",
     "dependency-cruiser": "^17.3.6",
     "eslint-plugin-react": "^7.37.5",
