@@ -215,8 +215,8 @@ importers:
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@uipath/uipath-typescript':
-        specifier: ^1.2.1
-        version: 1.2.2(@opentelemetry/api@1.9.0)(zod@4.3.5)
+        specifier: ^1.3.1
+        version: 1.3.1(@opentelemetry/api@1.9.0)(zod@4.3.5)
       '@vercel/analytics':
         specifier: ^1.5.0
         version: 1.5.0(next@16.2.3(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(sass@1.94.2))(react@19.2.3)
@@ -6100,8 +6100,8 @@ packages:
     peerDependencies:
       typescript: '*'
 
-  '@uipath/uipath-typescript@1.2.2':
-    resolution: {integrity: sha512-wLi5P7m3k07C+JB3VXhRJlNslxCQ5R7N3SQ+Yoh6fw11s9kZOc8m4d9qteHwVL9eP3VW7T7Wd39DuJr40HnS/Q==, tarball: https://npm.pkg.github.com/download/@uipath/uipath-typescript/1.2.2/1042de9c613ce2bba6108b0498cfa040252dd004}
+  '@uipath/uipath-typescript@1.3.1':
+    resolution: {integrity: sha512-fahNaE63XE4yP+pIkwqThSApgU+0AeLw/UvUPDqrHp9xfVSDNCeoGcKaSeUZirNV7TXOkWiLbBRV0MJvSwQAXA==}
     peerDependencies:
       zod: ^4.2.1
 
@@ -18067,7 +18067,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@uipath/uipath-typescript@1.2.2(@opentelemetry/api@1.9.0)(zod@4.3.5)':
+  '@uipath/uipath-typescript@1.3.1(@opentelemetry/api@1.9.0)(zod@4.3.5)':
     dependencies:
       '@opentelemetry/sdk-logs': 0.204.0(@opentelemetry/api@1.9.0)
       socket.io-client: 4.8.3
