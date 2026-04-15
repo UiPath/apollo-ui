@@ -56,17 +56,7 @@ export function AiChatSuggestions({
             type="button"
             variants={buttonVariants}
             whileHover={{ scale: 1.02 }}
-            className={cn(
-              "h-auto py-2 px-4 text-left max-w-full rounded-full text-xs font-semibold transition-colors",
-              option.recommended
-                ? "text-white border-0"
-                : "border border-input bg-background text-foreground hover:bg-muted",
-            )}
-            style={
-              option.recommended
-                ? { background: "var(--ai-gradient-strong)" }
-                : {}
-            }
+            className="h-auto py-2 px-4 text-left max-w-full rounded-full text-xs font-semibold transition-colors border border-input bg-background text-foreground hover:bg-muted"
             onClick={() => onSelect(option)}
           >
             <span className="truncate">{option.label}</span>
