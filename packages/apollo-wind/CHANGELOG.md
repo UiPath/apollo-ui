@@ -1,3 +1,10 @@
+## [@uipath/apollo-wind-v2.2.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.1.1...@uipath/apollo-wind@2.2.0) (2026-04-15)
+
+### Features
+
+* **apollo-wind:** add FlowInput, FlowRadioGroup, and FlowCheckbox components ([4950552](https://github.com/uipath/apollo-ui/commit/4950552ee53f6ed25ce71e495b0dc154bc252826))
+* **apollo-wind:** apply Future theme styles to Input, Checkbox, and RadioGroup ([07764d1](https://github.com/uipath/apollo-ui/commit/07764d184abad0bc85456f4e8a8f8ff11690cbdd))
+
 ## [@uipath/apollo-wind-v2.1.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.1.0...@uipath/apollo-wind@2.1.1) (2026-04-14)
 
 ### Bug Fixes
