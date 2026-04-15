@@ -2,6 +2,7 @@
 
 import { ArrowUp, CircleStop, FileText, Plus, X } from "lucide-react";
 import {
+  type ClipboardEvent,
   type FocusEvent,
   type FormEvent,
   type KeyboardEvent,
@@ -126,6 +127,21 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
 
     const removeFile = (index: number) => {
       setPendingFiles((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const handlePaste = (e: ClipboardEvent<HTMLTextAreaElement>) => {
+      const imageFiles: PendingFile[] = Array.from(e.clipboardData.items)
+        .filter((item) => item.kind === "file" && item.type.startsWith("image/"))
+        .flatMap((item) => {
+          const file = item.getAsFile();
+          if (!file) return [];
+          const name = file.name !== "" ? file.name : `pasted-image.${file.type.split("/")[1]}`;
+          return [{ name, size: file.size, type: file.type, file }];
+        });
+      if (imageFiles.length > 0) {
+        e.preventDefault();
+        setPendingFiles((prev) => [...prev, ...imageFiles]);
+      }
     };
 
     const focusStyles = {
@@ -289,6 +305,7 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
                   value={value}
                   onChange={(e) => handleChange(e.target.value)}
                   onKeyDown={handleKeyDown}
+                  onPaste={handlePaste}
                   placeholder={displayPlaceholder}
                   aria-label={displayPlaceholder}
                   className="flex-1 resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none max-h-[200px] overflow-y-auto h-[40px] pt-[12px] pb-[8px] leading-[20px]"
@@ -310,6 +327,7 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
                 value={value}
                 onChange={(e) => handleChange(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
                 placeholder={displayPlaceholder}
                 aria-label={displayPlaceholder}
                 className="w-full resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none h-[80px] px-[22px] pt-5 pb-2 leading-relaxed"
