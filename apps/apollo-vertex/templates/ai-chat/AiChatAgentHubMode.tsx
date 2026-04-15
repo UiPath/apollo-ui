@@ -51,6 +51,7 @@ export function AgentHubChat({ accessToken, orgTenant }: AgentHubChatProps) {
       onEditMessage={(_id, content) => { void sendMessage(content); }}
       title="Autopilot"
       assistantName={t("assistant")}
+      enableTextSelection
       error={error ?? null}
       emptyState={<AiChatEmptyState title="What are we tackling today?" />}
       suggestions={[

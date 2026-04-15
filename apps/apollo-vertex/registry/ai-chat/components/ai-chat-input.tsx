@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUp, CircleStop, FileText, Plus, X } from "lucide-react";
+import { ArrowUp, CircleStop, FileText, MessageSquareText, Plus, X } from "lucide-react";
 import {
   type ClipboardEvent,
   type FocusEvent,
@@ -43,6 +43,9 @@ interface AiChatInputProps {
   placeholder?: string;
   hasMessages?: boolean;
   maxLength?: number;
+  initialFiles?: PendingFile[];
+  quotedText?: string | null;
+  onClearQuote?: () => void;
 }
 
 export interface AiChatInputHandle {
@@ -61,13 +64,16 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
       placeholder,
       hasMessages = false,
       maxLength,
+      initialFiles = [],
+      quotedText,
+      onClearQuote,
     }: AiChatInputProps,
     ref: Ref<AiChatInputHandle>,
   ) {
     const { t } = useTranslation();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const glowRef = useRef<HTMLDivElement>(null);
-    const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+    const [pendingFiles, setPendingFiles] = useState<PendingFile[]>(initialFiles);
 
     useImperativeHandle(ref, () => ({
       focus: () => textareaRef.current?.focus(),
@@ -167,6 +173,21 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
         }
       },
     };
+
+    const quoteChip = quotedText && (
+      <div className="flex items-start gap-2 mx-[10px] mt-2 px-2 py-1.5 rounded-md bg-muted/50 text-xs text-muted-foreground">
+        <MessageSquareText className="size-3 flex-shrink-0 mt-0.5 opacity-60" aria-hidden="true" />
+        <span className="flex-1 line-clamp-2 leading-relaxed">{quotedText}</span>
+        <button
+          type="button"
+          onClick={onClearQuote}
+          className="flex-shrink-0 size-4 rounded-sm flex items-center justify-center hover:bg-muted-foreground/20 mt-0.5"
+          aria-label="Remove quote"
+        >
+          <X className="size-2.5" aria-hidden="true" />
+        </button>
+      </div>
+    );
 
     const fileChips = pendingFiles.length > 0 && (
       <div className="flex flex-wrap gap-1.5 px-[10px] pt-2">
@@ -297,6 +318,7 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
               className="relative flex flex-col rounded-lg border-2 border-input transition-colors bg-background"
               {...focusStyles}
             >
+              {quoteChip}
               {fileChips}
               <div className="flex items-end gap-2 pl-[8px] pr-[8px] pt-[4px] pb-[8px]">
                 {plusMenu}
@@ -321,6 +343,7 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
               className="relative flex flex-col rounded-lg border-2 border-input transition-colors bg-background"
               {...focusStyles}
             >
+              {quoteChip}
               {fileChips}
               <textarea
                 ref={textareaRef}

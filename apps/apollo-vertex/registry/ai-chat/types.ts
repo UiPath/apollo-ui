@@ -47,4 +47,6 @@ export interface AiChatConfig {
   onRegenerate?: () => void;
   /** Callback when the user saves an edited user message. Receives the message ID and new content. */
   onEditMessage?: (messageId: string, content: string) => void;
+  /** Callback when the user selects text in an assistant message and clicks "Ask Autopilot". */
+  onQuoteSelect?: (text: string) => void;
 }

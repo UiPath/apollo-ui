@@ -180,6 +180,7 @@ export default function AiChatPreviewPage() {
             title="Autopilot"
             showTimestamps
             showMessageActions
+            enableTextSelection
             onEditMessage={noop}
             onFeedback={noop}
             onRegenerate={noop}
@@ -292,7 +293,7 @@ export default function AiChatPreviewPage() {
       <section>
         <SectionHeader
           title="Suggestion Buttons"
-          description="Choice buttons with recommended badge and hover animation."
+          description="Label and buttons"
         />
         <PreviewCard className="h-[400px]" title="Suggestion Buttons">
           <AiChat
@@ -314,12 +315,12 @@ export default function AiChatPreviewPage() {
       <section>
         <SectionHeader
           title="Message Actions"
-          description="Hover action toolbar — copy, thumbs up/down, regenerate (assistant) and edit (user)."
+          description="Copy, thumbs up/down, regenerate (assistant) and edit (user)."
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <PreviewCard className="p-6">
             <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wide">
-              {"Assistant actions (always visible)"}
+              {"Assistant actions"}
             </h3>
             <AiChatMessageActions
               content="This is an assistant response."
@@ -332,7 +333,7 @@ export default function AiChatPreviewPage() {
           </PreviewCard>
           <PreviewCard className="p-6">
             <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wide">
-              {"User actions (always visible)"}
+              {"User actions"}
             </h3>
             <AiChatMessageActions
               content="This is a user message."
@@ -397,6 +398,7 @@ export default function AiChatPreviewPage() {
               onStop={noop}
               isLoading={false}
               hasMessages
+              initialFiles={[{ name: "design-spec.png", size: 84320, type: "image/png", file: new File([], "design-spec.png", { type: "image/png" }) }]}
             />
           </PreviewCard>
 

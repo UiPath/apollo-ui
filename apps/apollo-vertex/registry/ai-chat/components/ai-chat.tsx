@@ -78,6 +78,8 @@ export interface AiChatProps {
   onValueChange?: (value: string) => void;
   /** Characters per second for the typewriter reveal on assistant messages. Set to 0 to disable (text appears instantly). Default: 40 */
   typewriterCps?: number;
+  /** When true, selecting text in an assistant message shows an "Ask Autopilot" button that quotes the selection into the input. */
+  enableTextSelection?: boolean;
 }
 
 export function AiChat({
@@ -109,11 +111,13 @@ export function AiChat({
   value: controlledValue,
   onValueChange,
   typewriterCps = 75,
+  enableTextSelection = false,
 }: AiChatProps) {
   const { t } = useTranslation();
   const [internalInput, setInternalInput] = useState("");
   const [isLatestResponseAnimating, setIsLatestResponseAnimating] =
     useState(false);
+  const [quotedText, setQuotedText] = useState<string | null>(null);
   const { scrollRef, contentRef, isStuck, scrollToBottom } = useStickyScroll();
   const inputRef = useRef<AiChatInputHandle>(null);
 
@@ -147,13 +151,18 @@ export function AiChat({
 
   const handleSubmit = (attachments?: File[]) => {
     if (!input.trim()) return;
+    const content = quotedText
+      ? `> ${quotedText}\n\n${input.trim()}`
+      : input.trim();
     if (isLoading) {
-      queuedMessageRef.current = { content: input.trim(), attachments };
+      queuedMessageRef.current = { content, attachments };
       setInput("");
+      setQuotedText(null);
       return;
     }
-    onSendMessage(input.trim(), attachments);
+    onSendMessage(content, attachments);
     setInput("");
+    setQuotedText(null);
     scrollToBottom();
   };
 
@@ -213,6 +222,7 @@ export function AiChat({
       onFeedback={onFeedback}
       onRegenerate={onRegenerate}
       onEditMessage={onEditMessage}
+      {...(enableTextSelection ? { onQuoteSelect: (text) => setQuotedText(text) } : {})}
     >
       <div
         className="flex flex-col h-full max-w-[680px] mx-auto bg-transparent text-ai-chat-foreground overflow-hidden"
@@ -404,6 +414,8 @@ export function AiChat({
               isLoading={isLoading}
               placeholder={placeholder}
               hasMessages
+              quotedText={quotedText}
+              onClearQuote={() => setQuotedText(null)}
             />
             <div className="pt-2 pb-3 px-4 text-xs leading-normal text-muted-foreground text-center">
               {"AI-generated responses should be reviewed for accuracy."}

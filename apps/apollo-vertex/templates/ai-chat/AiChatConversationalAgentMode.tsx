@@ -56,6 +56,7 @@ function ConversationalAgentChatInner({
       onRegenerate={reload}
       title={title}
       assistantName={assistantName}
+      enableTextSelection
       error={error ?? null}
     >
       {messages.map((message) => (

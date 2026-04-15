@@ -10,6 +10,7 @@ import type { MessageFeedbackType } from "../types";
 import { messageHasChoices } from "../utils/ai-chat-utils";
 import { AiChatMarkdown } from "./ai-chat-markdown";
 import { AiChatMessageActions } from "./ai-chat-message-actions";
+import { AiChatSelectionMenu } from "./ai-chat-selection-menu";
 import { useAiChat } from "./ai-chat-provider";
 
 // Quick, subtle entrance — fade + 8px slide up. Quartic ease-out for a soft settle.
@@ -74,6 +75,26 @@ export function AiChatMessage({
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(displayContent);
   const editTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const [selectionMenu, setSelectionMenu] = useState<{ x: number; y: number; text: string } | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseUp = () => {
+    if (isUser || !config.onQuoteSelect) return;
+    const selection = window.getSelection();
+    const text = selection?.toString().trim();
+    if (!text || !selection || selection.rangeCount === 0) {
+      setSelectionMenu(null);
+      return;
+    }
+    const range = selection.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    setSelectionMenu({
+      x: rect.left + rect.width / 2,
+      y: rect.top,
+      text,
+    });
+  };
 
   // Keep editValue in sync if message content changes externally (e.g. regenerate)
   useEffect(() => {
@@ -240,13 +261,27 @@ export function AiChatMessage({
   const isInActiveChoicesTurn = config.activeChoicesMessageIds.has(message.id);
 
   return (
+    <>
+      {selectionMenu && (
+        <AiChatSelectionMenu
+          x={selectionMenu.x}
+          y={selectionMenu.y}
+          onAsk={() => {
+            config.onQuoteSelect?.(selectionMenu.text);
+            setSelectionMenu(null);
+            window.getSelection()?.removeAllRanges();
+          }}
+          onDismiss={() => setSelectionMenu(null)}
+        />
+      )}
     <motion.div
       className="flex w-full justify-start"
       initial={ENTRANCE_INITIAL}
       animate={ENTRANCE_ANIMATE}
       transition={ENTRANCE_TRANSITION}
+      onMouseUp={handleMouseUp}
     >
-      <div className="group/message flex flex-col gap-3 max-w-[85%]">
+      <div ref={contentRef} className="group/message flex flex-col gap-3 max-w-[85%]">
         {displayContent && !messageHasChoices(message) && (
           isResponseFullyRevealed ? (
             <AiChatMarkdown>{displayedText}</AiChatMarkdown>
@@ -312,5 +347,6 @@ export function AiChatMessage({
           )}
       </div>
     </motion.div>
+    </>
   );
 }
