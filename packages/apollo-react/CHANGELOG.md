@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.5.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.5.0...@uipath/apollo-react@4.5.1) (2026-04-15)
+
+### Bug Fixes
+
+* **apollo-react:** CasePlanIcon default size to 16 like other canvas icons ([75ff5b6](https://github.com/UiPath/apollo-ui/commit/75ff5b68d85d0882a2163ec8bf942c8207836404))
+
 ## [@uipath/apollo-react-v4.5.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.4.0...@uipath/apollo-react@4.5.0) (2026-04-14)
 
 ### Features
