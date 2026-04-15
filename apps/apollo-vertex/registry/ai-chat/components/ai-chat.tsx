@@ -187,7 +187,16 @@ export function AiChat({
   const latestChoices = findLatestChoices(messages);
   const isMultiStep = latestChoices?.step !== undefined;
   const latestFlow = findLatestFlow(messages);
-  const isFlowActive = latestFlow !== null;
+  const [flowDismissed, setFlowDismissed] = useState(false);
+  const prevFlowIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const id = latestFlow?.steps[0]?.id ?? null;
+    if (id !== null && id !== prevFlowIdRef.current) {
+      prevFlowIdRef.current = id;
+      setFlowDismissed(false);
+    }
+  }, [latestFlow]);
+  const isFlowActive = latestFlow !== null && !flowDismissed;
   const activeChoicesMessageIds = findActiveChoicesMessageIds(messages);
   const latestAssistantMessageId =
     messages.findLast((m) => m.role === "assistant")?.id ?? null;
@@ -420,24 +429,6 @@ export function AiChat({
               </div>
             )}
 
-            {/* Flow HUD overlay */}
-            {isFlowActive && latestFlow && (
-              <div className="absolute inset-0 z-20 flex items-center justify-center px-6">
-                <AiChatFlow
-                  flow={latestFlow}
-                  onComplete={(answers) => {
-                    const summary = answers
-                      .map((a, i) => `Step ${i + 1} (${a.prompt}): ${a.answer}`)
-                      .join(", ");
-                    onSendMessage(summary);
-                  }}
-                  onDismiss={() => {
-                    onSendMessage("Never mind, let's stop here");
-                  }}
-                />
-              </div>
-            )}
-
             {!isStuck && !isMultiStep && !isFlowActive && (
               <button
                 type="button"
@@ -474,7 +465,25 @@ export function AiChat({
         )}
 
         {messages.length > 0 && (
-          <>
+          <div className="relative">
+            {isFlowActive && latestFlow && (
+              <div className="absolute bottom-full left-0 right-0 z-20 px-3 pb-1">
+                <AiChatFlow
+                  flow={latestFlow}
+                  onComplete={(answers) => {
+                    setFlowDismissed(true);
+                    const summary = answers
+                      .map((a, i) => `Step ${i + 1} (${a.prompt}): ${a.answer}`)
+                      .join(", ");
+                    onSendMessage(summary);
+                  }}
+                  onDismiss={() => {
+                    setFlowDismissed(true);
+                    onSendMessage("Never mind, let's stop here");
+                  }}
+                />
+              </div>
+            )}
             <AiChatInput
               ref={inputRef}
               value={input}
@@ -490,7 +499,7 @@ export function AiChat({
             <div className="pt-2 pb-3 px-4 text-xs leading-normal text-muted-foreground text-center">
               {"AI-generated responses should be reviewed for accuracy."}
             </div>
-          </>
+          </div>
         )}
       </div>
     </AiChatProvider>

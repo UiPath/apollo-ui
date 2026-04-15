@@ -1,7 +1,7 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import type { FlowOption, FlowStep, ToolResultFlow } from "../utils/ai-chat-utils";
 
@@ -57,7 +57,7 @@ export function AiChatFlow({ flow, onComplete, onDismiss }: AiChatFlowProps) {
 
   return (
     <motion.div
-      className="w-full max-w-sm rounded-xl border border-border bg-background shadow-lg overflow-hidden"
+      className="w-full rounded-xl border border-border bg-background shadow-lg overflow-hidden"
       initial={{ opacity: 0, y: 12, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 8, scale: 0.97 }}

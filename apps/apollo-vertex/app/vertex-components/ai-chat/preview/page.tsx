@@ -6,11 +6,13 @@ import { type ReactNode, useState } from "react";
 import { AiChat } from "@/registry/ai-chat/components/ai-chat";
 import { AiChatCodeBlock } from "@/registry/ai-chat/components/ai-chat-code-block";
 import { AiChatEmptyState } from "@/registry/ai-chat/components/ai-chat-empty-state";
+import { AiChatFlow } from "@/registry/ai-chat/components/ai-chat-flow";
 import { AiChatInput } from "@/registry/ai-chat/components/ai-chat-input";
 import { AiChatMarkdown } from "@/registry/ai-chat/components/ai-chat-markdown";
 import { AiChatMessage } from "@/registry/ai-chat/components/ai-chat-message";
 import { AiChatMessageActions } from "@/registry/ai-chat/components/ai-chat-message-actions";
 import { AiChatSuggestions } from "@/registry/ai-chat/components/ai-chat-suggestions";
+import type { ToolResultFlow } from "@/registry/ai-chat/utils/ai-chat-utils";
 import { Button } from "@/registry/button/button";
 import {
   Dialog,
@@ -33,6 +35,76 @@ import { ThinkingDemo } from "./thinking-demo";
 // biome-ignore lint/suspicious/noExplicitAny: preview no-op accepts any args
 function noop(..._args: any[]) {
   // no-op for preview
+}
+
+const MOCK_FLOW: ToolResultFlow = {
+  type: "flow",
+  steps: [
+    {
+      id: "step-1",
+      prompt: "What type of content are you creating?",
+      options: [
+        { id: "blog", label: "Blog post" },
+        { id: "email", label: "Email campaign" },
+        { id: "social", label: "Social media posts" },
+        { id: "other", label: "Something else" },
+      ],
+    },
+    {
+      id: "step-2",
+      prompt: "Who is your target audience?",
+      options: [
+        { id: "developers", label: "Developers" },
+        { id: "business", label: "Business leaders" },
+        { id: "general", label: "General audience" },
+        { id: "other", label: "Something else" },
+      ],
+      canSkip: true,
+    },
+    {
+      id: "step-3",
+      prompt: "What tone would you like?",
+      options: [
+        { id: "professional", label: "Professional" },
+        { id: "casual", label: "Casual & friendly" },
+        { id: "technical", label: "Technical & precise" },
+        { id: "other", label: "Something else" },
+      ],
+    },
+  ],
+};
+
+function FlowDemo() {
+  const [flowKey, setFlowKey] = useState(0);
+  const [result, setResult] = useState<string | null>(null);
+
+  if (result !== null) {
+    return (
+      <div className="flex flex-col gap-3">
+        <p className="text-xs text-muted-foreground font-mono break-all">{result}</p>
+        <button
+          type="button"
+          className="self-start text-xs px-3 py-1.5 rounded-md border border-input bg-background hover:bg-muted transition-colors"
+          onClick={() => { setResult(null); setFlowKey((k) => k + 1); }}
+        >
+          Reset
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <AiChatFlow
+      key={flowKey}
+      flow={MOCK_FLOW}
+      onComplete={(answers) => {
+        setResult(answers.map((a, i) => `Step ${i + 1}: ${a.answer}`).join(" · "));
+      }}
+      onDismiss={() => {
+        setResult("(dismissed)");
+      }}
+    />
+  );
 }
 
 function SectionHeader({
@@ -385,6 +457,13 @@ export default function AiChatPreviewPage() {
               options={MOCK_CHOICE_OPTIONS}
               onSelect={noop}
             />
+          </PreviewCard>
+
+          <PreviewCard className="p-6">
+            <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wide">
+              {"AiChatFlow (multi-step)"}
+            </h3>
+            <FlowDemo />
           </PreviewCard>
 
           <PreviewCard className="p-0">
