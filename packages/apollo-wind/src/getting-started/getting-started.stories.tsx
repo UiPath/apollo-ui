@@ -360,7 +360,7 @@ function ChooseYourPackageTab() {
         description="The modern UI component library for rapid prototyping and new product interfaces. Built with Tailwind CSS and shadcn/ui — includes 60+ components, page templates, and full theming support."
         bestFor="Prototyping, new product UIs, and any project using Tailwind CSS."
         consumerInstall="npm install @uipath/apollo-wind"
-        localDevCommands={`pnpm build\npnpm storybook:wind`}
+        localDevCommands={`pnpm build\npnpm storybook:dev`}
       />
 
       <PackageCard
@@ -369,7 +369,7 @@ function ChooseYourPackageTab() {
         description="The component library for UiPath workflows and automation products. Built on Material UI with Apollo theming — provides the components and patterns used across workflow-based experiences."
         bestFor="Workflow interfaces, automation products, and existing Material UI projects."
         consumerInstall="npm install @uipath/apollo-react"
-        localDevCommands={`pnpm build\npnpm storybook:all`}
+        localDevCommands={`pnpm build\npnpm storybook:dev`}
       />
 
       <PackageCard
@@ -602,7 +602,7 @@ pnpm install
 pnpm build
 
 # Start the Apollo Wind Storybook
-pnpm storybook:wind`}
+pnpm storybook:dev`}
       </CodeBlock>
 
       <CodeBlock label="Development">
@@ -610,7 +610,7 @@ pnpm storybook:wind`}
 pnpm dev
 
 # Run Storybook
-pnpm storybook
+pnpm storybook:dev
 
 # Lint all packages
 pnpm lint
