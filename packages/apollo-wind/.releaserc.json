@@ -1,6 +1,13 @@
 {
   "extends": "semantic-release-monorepo",
-  "branches": ["main"],
+  "branches": [
+    {
+      "name": "support/apollo-wind@1.x",
+      "range": "1.x",
+      "channel": "latest-v1"
+    },
+    "main"
+  ],
   "tagFormat": "@uipath/apollo-wind@${version}",
   "plugins": [
     [
