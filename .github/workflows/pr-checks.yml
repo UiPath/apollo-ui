@@ -80,7 +80,13 @@ jobs:
 
       - name: Run Check Dependency Consistency
         if: matrix.check == 'Check Dependency Consistency'
-        run: pnpm check:dependencies
+        run: |
+          if [[ "$BASE_REF" == support/* ]]; then
+            echo "Support branch detected - ignoring locked workspace deps"
+            pnpm exec check-dependency-version-consistency . --ignore-dep-pattern "^@uipath/"
+          else
+            pnpm check:dependencies
+          fi
 
       - name: Run Typecheck
         if: matrix.check == 'Typecheck'
