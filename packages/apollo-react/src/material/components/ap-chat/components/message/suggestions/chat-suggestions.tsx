@@ -35,6 +35,7 @@ const Suggestion = styled('button')<{ padding: string }>(({ padding }) => ({
   outlineColor: 'var(--color-focus-indicator)',
   display: 'flex',
   alignItems: 'center',
+  textAlign: 'left',
   width: 'fit-content',
   gap: token.Spacing.SpacingXs,
   padding,
