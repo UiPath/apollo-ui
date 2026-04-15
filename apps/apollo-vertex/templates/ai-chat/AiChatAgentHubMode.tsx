@@ -10,11 +10,19 @@ import {
   CHOICES_TOOL_PROMPT,
   choicesTools,
 } from "@/registry/ai-chat/examples/choices-tool";
+import {
+  FLOW_TOOL_PROMPT,
+  flowTool,
+} from "@/registry/ai-chat/examples/flow-tool";
 import type { OrgTenantInfo } from "./AiChatLoginGate";
+
+const allTools = [...choicesTools, ...flowTool];
 
 const systemPrompt = `You are a helpful assistant. Always respond using markdown format.
 
-${CHOICES_TOOL_PROMPT}`;
+${CHOICES_TOOL_PROMPT}
+
+${FLOW_TOOL_PROMPT}`;
 
 interface AgentHubChatProps {
   accessToken: string;
@@ -29,13 +37,13 @@ export function AgentHubChat({ accessToken, orgTenant }: AgentHubChatProps) {
     model: { vendor: "openai", name: "gpt-4.1-mini-2025-04-14" },
     accessToken: () => accessToken,
     systemPrompt,
-    tools: choicesTools,
+    tools: allTools,
   });
 
   const { messages, sendMessage, isLoading, stop, clear, reload, error } =
     useChat({
       connection,
-      tools: choicesTools,
+      tools: allTools,
     });
 
   return (

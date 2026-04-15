@@ -32,7 +32,9 @@ import type { ChoiceOption, MessageFeedbackType } from "../types";
 import {
   findActiveChoicesMessageIds,
   findLatestChoices,
+  findLatestFlow,
 } from "../utils/ai-chat-utils";
+import { AiChatFlow } from "./ai-chat-flow";
 import { AiChatInput, type AiChatInputHandle } from "./ai-chat-input";
 import { AiChatLoading } from "./ai-chat-loading";
 import { AiChatProvider } from "./ai-chat-provider";
@@ -118,6 +120,7 @@ export function AiChat({
   const [isLatestResponseAnimating, setIsLatestResponseAnimating] =
     useState(false);
   const [quotedText, setQuotedText] = useState<string | null>(null);
+  const [choiceHistory, setChoiceHistory] = useState<string[]>([]);
   const { scrollRef, contentRef, isStuck, scrollToBottom } = useStickyScroll();
   const inputRef = useRef<AiChatInputHandle>(null);
 
@@ -182,6 +185,9 @@ export function AiChat({
   }, [isLoading]);
 
   const latestChoices = findLatestChoices(messages);
+  const isMultiStep = latestChoices?.step !== undefined;
+  const latestFlow = findLatestFlow(messages);
+  const isFlowActive = latestFlow !== null;
   const activeChoicesMessageIds = findActiveChoicesMessageIds(messages);
   const latestAssistantMessageId =
     messages.findLast((m) => m.role === "assistant")?.id ?? null;
@@ -280,7 +286,7 @@ export function AiChat({
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>{"Cancel"}</AlertDialogCancel>
-                      <AlertDialogAction onClick={onClearChat}>
+                      <AlertDialogAction onClick={() => { onClearChat?.(); setChoiceHistory([]); }}>
                         {"New conversation"}
                       </AlertDialogAction>
                     </AlertDialogFooter>
@@ -338,6 +344,7 @@ export function AiChat({
               }}
               aria-hidden="true"
             />
+            {/* Chat messages — blurred when a multi-step flow is active */}
             <div
               ref={scrollRef}
               role="log"
@@ -345,12 +352,13 @@ export function AiChat({
               aria-live="polite"
               aria-atomic="false"
               aria-busy={isLoading || isLatestResponseAnimating}
-              className="h-full overflow-y-auto py-4 pl-10 pr-10"
+              className={`h-full overflow-y-auto py-4 pl-10 pr-10 transition-[filter] duration-300 ${isMultiStep || isFlowActive ? "blur-[2px] pointer-events-none select-none" : ""}`}
             >
               <div ref={contentRef} className="space-y-1">
                 {children}
 
-                {latestChoices && !isLoading && !isLatestResponseAnimating && (
+                {/* Single-step choices render inline */}
+                {latestChoices && !latestChoices.step && !isLoading && !isLatestResponseAnimating && (
                   <AiChatSuggestions
                     prompt={latestChoices.prompt}
                     options={latestChoices.options}
@@ -364,11 +372,73 @@ export function AiChat({
                   />
                 )}
 
-                {showLoadingIndicator && <AiChatLoading />}
+                {showLoadingIndicator && !isMultiStep && !isFlowActive && <AiChatLoading />}
               </div>
             </div>
 
-            {!isStuck && (
+            {/* Multi-step HUD overlay */}
+            {isMultiStep && latestChoices && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center px-6">
+                <AiChatSuggestions
+                  prompt={latestChoices.prompt}
+                  options={latestChoices.options}
+                  step={latestChoices.step}
+                  totalSteps={latestChoices.totalSteps}
+                  canSkip={latestChoices.canSkip}
+                  canGoBack={latestChoices.canGoBack}
+                  isLoading={isLoading}
+                  onSelect={(option) => {
+                    setChoiceHistory((h) => [...h, option.label]);
+                    if (onChoiceSelect) {
+                      onChoiceSelect(option);
+                    } else {
+                      onSendMessage(option.label);
+                    }
+                  }}
+                  onBack={
+                    latestChoices.canGoBack && choiceHistory.length > 0
+                      ? () => {
+                          const prev = choiceHistory.at(-1);
+                          setChoiceHistory((h) => h.slice(0, -1));
+                          onSendMessage(`Actually, let me revise my previous answer: ${prev}`);
+                        }
+                      : undefined
+                  }
+                  onSkip={
+                    latestChoices.canSkip
+                      ? () => {
+                          setChoiceHistory((h) => [...h, "(skipped)"]);
+                          onSendMessage("Skip this step");
+                        }
+                      : undefined
+                  }
+                  onDismiss={() => {
+                    setChoiceHistory([]);
+                    onSendMessage("Never mind, let's stop here");
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Flow HUD overlay */}
+            {isFlowActive && latestFlow && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center px-6">
+                <AiChatFlow
+                  flow={latestFlow}
+                  onComplete={(answers) => {
+                    const summary = answers
+                      .map((a, i) => `Step ${i + 1} (${a.prompt}): ${a.answer}`)
+                      .join(", ");
+                    onSendMessage(summary);
+                  }}
+                  onDismiss={() => {
+                    onSendMessage("Never mind, let's stop here");
+                  }}
+                />
+              </div>
+            )}
+
+            {!isStuck && !isMultiStep && !isFlowActive && (
               <button
                 type="button"
                 onClick={scrollToBottom}

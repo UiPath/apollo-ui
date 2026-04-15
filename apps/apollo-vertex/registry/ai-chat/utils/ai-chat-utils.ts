@@ -1,6 +1,54 @@
 import type { UIMessage } from "@tanstack/ai-client";
 import { z } from "zod";
 
+// ─── Flow (client-side multi-step) ───────────────────────────────────────────
+
+const flowOptionSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  value: z.string().optional(),
+  recommended: z.boolean().optional(),
+});
+
+const flowStepSchema = z.object({
+  id: z.string(),
+  prompt: z.string(),
+  options: z.array(flowOptionSchema),
+  canSkip: z.boolean().optional(),
+});
+
+const toolResultFlowSchema = z.object({
+  type: z.literal("flow"),
+  steps: z.array(flowStepSchema),
+});
+
+export type FlowOption = z.infer<typeof flowOptionSchema>;
+export type FlowStep = z.infer<typeof flowStepSchema>;
+export type ToolResultFlow = z.infer<typeof toolResultFlowSchema>;
+
+export function findLatestFlow(messages: UIMessage[]): ToolResultFlow | null {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i];
+    if (!msg || msg.role !== "assistant") continue;
+    const hasUserAfter = messages.slice(i + 1).some((m) => m.role === "user");
+    if (hasUserAfter) continue;
+
+    for (const part of msg.parts) {
+      if (part.type === "tool-result" && "content" in part) {
+        try {
+          const result = toolResultFlowSchema.safeParse(JSON.parse(part.content));
+          if (result.success) return result.data;
+        } catch { /* skip */ }
+      }
+      if (part.type === "tool-call" && "output" in part) {
+        const result = toolResultFlowSchema.safeParse((part as { output?: unknown }).output);
+        if (result.success) return result.data;
+      }
+    }
+  }
+  return null;
+}
+
 const choiceOptionSchema = z.object({
   id: z.string(),
   label: z.string(),
@@ -12,6 +60,10 @@ const toolResultChoicesSchema = z.object({
   type: z.literal("choices"),
   prompt: z.string(),
   options: z.array(choiceOptionSchema),
+  step: z.number().optional(),
+  totalSteps: z.number().optional(),
+  canSkip: z.boolean().optional(),
+  canGoBack: z.boolean().optional(),
 });
 
 export type ChoiceOption = z.infer<typeof choiceOptionSchema>;
