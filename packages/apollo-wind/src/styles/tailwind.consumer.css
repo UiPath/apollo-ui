@@ -18,6 +18,9 @@
   /* 12px — base border-radius for buttons and UI elements */
 }
 
+/* Variant active when the component is inside a Future Dark or Light theme */
+@custom-variant future (:is(.future-dark, .future-light) &);
+
 /**
   * Individual theme definitions with fallback HEX values
   * Each theme uses semantic tokens from apollo-core with hardcoded fallbacks
