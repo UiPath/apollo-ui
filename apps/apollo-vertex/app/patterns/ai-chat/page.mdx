@@ -152,7 +152,7 @@ The `model.vendor` field controls wire-format differences:
 
 Return a choices object as a tool result content to render interactive suggestion buttons. Buttons disappear after the user sends another message.
 
-> **Try it out** — type *"give me some choices"* in the demo above to see suggestion buttons in action. The demo uses the `presentChoices` example tool defined in `examples/choices-tool.ts`.
+> **Try it out** — type *"give me some choices"* in the demo above to see suggestion buttons in action. The demo uses the `presentChoices` tool defined in `tools/choices/choices-tool.tsx`.
 
 The choices format:
 ```json
@@ -166,20 +166,17 @@ The choices format:
 }
 ```
 
-Handle selection explicitly or let the default behavior send `option.label` as a message:
+Choices are rendered via `toolsRenderer` on `AiChatMessage`. The render function receives the tool output and calls `sendMessage` when a choice is selected:
 
 ```tsx
-<AiChat
-  messages={messages}
-  isLoading={isLoading}
-  onSendMessage={(text) => sendMessage(text)}
-  onStop={stop}
-  onChoiceSelect={(option) => {
-    sendMessage(option.value ?? option.label);
-  }}
->
+const toolsRenderer = {
+  presentChoices: ({ output }) =>
+    renderChoices(output, { onAction: (text) => sendMessage(text) }),
+};
+
+<AiChat messages={messages} isLoading={isLoading} onSendMessage={sendMessage} onStop={stop}>
   {messages.map((message) => (
-    <AiChatMessage key={message.id} message={message} />
+    <AiChatMessage key={message.id} message={message} toolsRenderer={toolsRenderer} />
   ))}
 </AiChat>
 ```
@@ -218,7 +215,6 @@ Chat shell component. Handles layout, scroll, input, loading indicator, suggesti
 | `onStop` | `() => void` | required | Stop/abort handler |
 | `children` | `ReactNode` | — | Message list (typically `messages.map(...)`) |
 | `onClearChat` | `() => void` | — | Clear handler |
-| `onChoiceSelect` | `(option: ChoiceOption) => void` | — | Suggestion button handler (default: sends `option.label`) |
 | `assistantName` | `string` | `"AI Assistant"` | Assistant display name |
 | `title` | `string` | — | Chat title in the header |
 | `emptyState` | `ReactNode` | — | Custom empty state |
