@@ -17,7 +17,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { FlowInput, FlowInputGroup } from '@/components/UiPath/FlowInput';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -119,9 +119,7 @@ function FieldItem({
       {/* Field control */}
       {field.type === 'select' ? (
         <Select value={value || undefined} onValueChange={setValue}>
-          <SelectTrigger
-            className="h-10 rounded-xl border-0 bg-surface-overlay text-foreground shadow-sm placeholder:text-foreground-muted"
-          >
+          <SelectTrigger className="h-10 rounded-xl border-0 bg-surface-overlay text-foreground shadow-sm placeholder:text-foreground-muted">
             <SelectValue placeholder={field.placeholder ?? 'Select...'} />
           </SelectTrigger>
           <SelectContent className="border-border bg-surface-overlay text-foreground">
@@ -137,12 +135,12 @@ function FieldItem({
           </SelectContent>
         </Select>
       ) : field.type === 'url' ? (
-        <FlowInputGroup className="gap-0 p-0">
-          <FlowInput
+        <div className="flex h-10 w-full items-center overflow-hidden rounded-xl bg-surface-overlay shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] transition-colors focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
+          <Input
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder={field.placeholder}
-            className="flex-1 rounded-none border-0 bg-transparent px-3 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="h-full flex-1 rounded-none border-0 bg-transparent px-3 py-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 future:h-full future:rounded-none future:border-0 future:bg-transparent future:py-0 future:shadow-none future:focus-visible:ring-0 future:focus-visible:ring-offset-0"
           />
           <button
             type="button"
@@ -151,9 +149,9 @@ function FieldItem({
           >
             <Folder className="h-5 w-5" />
           </button>
-        </FlowInputGroup>
+        </div>
       ) : (
-        <FlowInput
+        <Input
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder={field.placeholder}
