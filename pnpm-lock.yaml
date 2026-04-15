@@ -603,10 +603,10 @@ importers:
         version: 3.19.0(@tiptap/core@3.19.0(@tiptap/pm@3.19.0))(@tiptap/pm@3.19.0)
       '@uipath/apollo-core':
         specifier: ^5.9.0
-        version: 5.9.0
+        version: link:../apollo-core
       '@uipath/apollo-wind':
         specifier: ^2.0.1
-        version: 2.1.0(@emotion/is-prop-valid@1.4.0)(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(postcss@8.5.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        version: link:../apollo-wind
       '@xyflow/react':
         specifier: 12.8.2
         version: 12.8.2(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)

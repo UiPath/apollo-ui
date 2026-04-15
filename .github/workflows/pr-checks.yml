@@ -4,10 +4,12 @@ on:
   pull_request:
     branches:
       - main
+      - 'support/**'
 
 env:
   GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
   NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+  BASE_REF: ${{ github.event.pull_request.base.ref }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -99,7 +101,7 @@ jobs:
       - name: Run Build
         if: matrix.check == 'Build'
         run: |
-          if git diff --name-only origin/main...HEAD | grep -qE '^(pnpm-lock\.yaml|package\.json)$'; then
+          if git diff --name-only origin/${BASE_REF}...HEAD | grep -qE '^(pnpm-lock\.yaml|package\.json)$'; then
             echo "📦 Root dependency files changed - building all packages"
             pnpm build
           else
@@ -133,7 +135,7 @@ jobs:
       - name: Check for lockfile changes
         id: lockfile_check
         run: |
-          if git diff --name-only origin/main...HEAD | grep -q '^pnpm-lock\.yaml$'; then
+          if git diff --name-only origin/${BASE_REF}...HEAD | grep -q '^pnpm-lock\.yaml$'; then
             echo "changed=true" >> $GITHUB_OUTPUT
           else
             echo "changed=false" >> $GITHUB_OUTPUT

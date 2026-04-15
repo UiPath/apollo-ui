@@ -9,12 +9,14 @@ on:
     types: [labeled, synchronize]
     branches:
       - main
+      - 'support/**'
 
 env:
   GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
   NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
   TURBO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: 1
+  BASE_REF: ${{ github.event.pull_request.base.ref }}
 
 concurrency:
   group: dev-publish-pr-${{ github.event.pull_request.number }}
@@ -96,7 +98,7 @@ jobs:
       - name: Get changed packages
         id: changed
         run: |
-          CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
+          CHANGED_FILES=$(git diff --name-only origin/${BASE_REF}...HEAD)
           PACKAGES=""
 
           for pkg_dir in packages/* web-packages/*; do
