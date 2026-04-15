@@ -2,7 +2,6 @@ name: Vercel Deployments
 
 on:
   pull_request:
-    branches: [main]
   push:
     branches: [main]
 
@@ -37,6 +36,7 @@ jobs:
 
             const projects = [
               'apollo-design',
+              'apollo-docs',
               'apollo-landing',
               'apollo-ui-react',
               'apollo-vertex'
@@ -96,6 +96,8 @@ jobs:
         include:
           - project_name: apollo-design
             vercel_project_id_secret: VERCEL_PROJECT_ID_CANVAS
+          - project_name: apollo-docs
+            vercel_project_id_secret: VERCEL_PROJECT_ID_DOCS
           - project_name: apollo-landing
             vercel_project_id_secret: VERCEL_PROJECT_ID_LANDING
           - project_name: apollo-ui-react
@@ -157,6 +159,9 @@ jobs:
           case "${{ matrix.vercel_project_id_secret }}" in
             VERCEL_PROJECT_ID_CANVAS)
               echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_CANVAS }}" >> $GITHUB_ENV
+              ;;
+            VERCEL_PROJECT_ID_DOCS)
+              echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_DOCS }}" >> $GITHUB_ENV
               ;;
             VERCEL_PROJECT_ID_LANDING)
               echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_LANDING }}" >> $GITHUB_ENV
