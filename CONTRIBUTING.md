@@ -356,42 +356,37 @@ Examples: `support/apollo-react@3.x`, `support/apollo-core@5.x`
 
 ### When to Create a Maintenance Branch
 
-Create one when you ship a new major version and need to continue supporting the previous major for existing consumers.
+Create one when main has moved to a newer major and you need to continue shipping fixes for the previous major.
 
 ### Creating a Maintenance Branch
 
-Use the helper script:
+Use the Claude Code skill:
 
-```bash
-scripts/create-maintenance-branch.sh apollo-react 3
+```
+"Create a support branch for apollo-react v3"
 ```
 
-This will:
-1. Find the latest `@uipath/apollo-react@3.*` tag
-2. Create `support/apollo-react@3.x` from that tag
-3. Configure semantic-release on the new branch
-4. Print next steps
+The skill (`.claude/skills/cut-maintenance-branch/SKILL.md`) handles the full workflow:
+1. Finds the latest `@uipath/apollo-react@3.*` tag
+2. Creates and pushes `support/apollo-react@3.x` bare from that tag
+3. Opens a PR to the support branch that locks `workspace:*` deps to concrete versions, replaces `"main"` in `.releaserc.json` with the support branch entry, and regenerates the lockfile
 
-After running the script:
-1. Push the maintenance branch: `git push -u origin 'support/apollo-react@3.x'`
-2. On `main`, update `packages/apollo-react/.releaserc.json` to add the maintenance branch entry **before** `"main"` in the `branches` array:
-   ```json
-   "branches": [
-     { "name": "support/apollo-react@3.x", "range": "3.x", "channel": "latest-v3" },
-     "main"
-   ]
-   ```
+Each support branch owns its own `.releaserc.json` — main's `.releaserc.json` is never modified. The support branch's `branches` array contains only its own entry (not `"main"`).
 
 ### Backporting Fixes
 
-Cherry-pick from `main` or create a PR targeting the maintenance branch directly:
+Create a PR targeting the maintenance branch directly:
 
 ```bash
 git checkout support/apollo-react@3.x
-git cherry-pick <sha>
-git push
-# → CI releases apollo-react@3.70.4 with dist-tag `latest-v3`
+git checkout -b fix/my-fix
+# make changes
+git push -u origin fix/my-fix
+# open PR targeting support/apollo-react@3.x
+# → after merge, CI releases apollo-react@3.70.4 with dist-tag `latest-v3`
 ```
+
+A scope check workflow enforces that PRs to support branches only modify files within the target package's directory.
 
 ### Installing Maintenance Releases
 
@@ -405,9 +400,12 @@ npm install @uipath/apollo-react@latest-v3
 npm install @uipath/apollo-react@3.70.4
 ```
 
-### Cross-Package Fixes
+### Cross-Package Dependency Updates
 
-If a fix touches multiple packages (e.g., `apollo-core` and `apollo-react`), add the maintenance branch entry to each package's `.releaserc.json`. Both packages will be released from the same push.
+Support branches lock workspace deps to exact versions (e.g., `5.9.0` instead of `workspace:*`). If a fix requires a newer version of a sibling package:
+
+1. **If the dependency is still on the same major on `main`** — land the fix on `main`, let it publish, then bump the version in the support branch's `package.json` and run `pnpm install`.
+2. **If the dependency needs its own support branch** — cut one (e.g., `support/apollo-core@5.x`), publish the fix from there, then update the version here.
 
 ### How Other Packages Behave
 

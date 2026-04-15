@@ -1,6 +1,6 @@
 #!/bin/bash
-# Add (or replace) a maintenance-branch entry in a single .releaserc.json's
-# "branches" array, immediately before "main".
+# Replace "main" with a maintenance-branch entry in a single .releaserc.json's
+# "branches" array.
 #
 # Usage:
 #   scripts/maintenance-branch/update-releaserc.sh <releaserc-path> <branch-name> <major>
@@ -9,8 +9,9 @@
 #   scripts/maintenance-branch/update-releaserc.sh \
 #     packages/apollo-react/.releaserc.json support/apollo-react@3.x 3
 #
-# - Inserts {"name": <branch>, "range": "<major>.x", "channel": "latest-v<major>"}
-#   immediately before the "main" entry. Preserves order of all other entries.
+# - Replaces the "main" entry with {"name": <branch>, "range": "<major>.x",
+#   "channel": "latest-v<major>"}. Each support branch owns its own release
+#   config — main's .releaserc.json is never modified.
 # - Idempotent: if an entry with the same name already exists, it is replaced
 #   in place.
 # - If no "main" entry exists, the new entry is appended.
@@ -48,10 +49,11 @@ jq --arg name "$BRANCH" --arg range "${MAJOR}.x" --arg channel "$CHANNEL" '
   | { name: $name, range: $range, channel: $channel } as $entry
   | ($existing | map((type == "object" and .name == $name) or . == $name) | index(true)) as $existing_idx
   | ($existing | map((type == "object" and .name == "main") or . == "main") | index(true)) as $main_idx
-  | if $existing_idx != null then
-      .branches = ($existing | .[0:$existing_idx] + [$entry] + .[$existing_idx+1:])
+  | def remove_main: map(select(((type == "object" and .name == "main") or . == "main") | not));
+    if $existing_idx != null then
+      .branches = ($existing | .[0:$existing_idx] + [$entry] + .[$existing_idx+1:] | remove_main)
     elif $main_idx != null then
-      .branches = ($existing | .[0:$main_idx] + [$entry] + .[$main_idx:])
+      .branches = ($existing | .[0:$main_idx] + [$entry] + .[$main_idx+1:] | remove_main)
     else
       .branches = ($existing + [$entry])
     end

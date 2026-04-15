@@ -1,1 +1,5 @@
+# Allow fixup/squash commits locally (pre-push and CI reject them before merge)
+if head -1 "$1" | grep -qE '^(fixup|squash)! '; then
+  exit 0
+fi
 pnpm exec commitlint --edit "$1"

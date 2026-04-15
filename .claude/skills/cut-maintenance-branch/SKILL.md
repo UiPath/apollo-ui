@@ -1,6 +1,6 @@
 ---
 name: cut-maintenance-branch
-description: Use when cutting a maintenance/support branch for an older major version of an apollo-ui package (e.g. apollo-react@3.x) so that fixes can keep shipping after main has moved to the next major. Orchestrates branch creation, workspace dep locking, lockfile regeneration, push, and the companion main-side .releaserc.json PR. Confirms commit messages and git actions with the user before executing them.
+description: Use when cutting a maintenance/support branch for an older major version of an apollo-ui package (e.g. apollo-react v3, v4, v5). Orchestrates branch creation, pushes it bare, then opens a PR with workspace dep locking, release config, and lockfile regeneration. Confirms commit messages and git actions with the user before executing them.
 ---
 
 # Cut Maintenance Branch
@@ -10,23 +10,26 @@ description: Use when cutting a maintenance/support branch for an older major ve
 Use when the user asks to:
 
 - "Cut a maintenance branch for `<package>@<major>`"
+- "Create a support branch for apollo-react v3" / "...v4" / "...v5"
 - "Set up a support branch for an older major version"
-- "Maintain `<package>@<old-major>` after the major bump"
+- "Maintain `<package>@<old-major>` independently"
 - Any phrasing equivalent to creating a `support/<package>@<major>.x` branch
+
+The user only needs to specify the package and major version. The skill finds the latest tag for that major. Main must already be on a newer major version.
 
 Do **not** use this skill for:
 - General release questions (covered by the package's `.releaserc.json`)
 - Backporting individual fixes to an existing maintenance branch (normal git workflow)
-- Cutting a branch for a major version that hasn't been published yet (no tags to branch from)
+- Cutting a branch for a major version that has no published tags (nothing to branch from)
 
 ## Architecture
 
 The skill owns all orchestration, user interaction, and git/network actions. It calls two small deterministic file-transform scripts:
 
-- [scripts/maintenance-branch/lock-workspace-deps.sh](../../../scripts/maintenance-branch/lock-workspace-deps.sh) — rewrites `workspace:*` deps in one `package.json` to concrete versioned ranges. Idempotent. No git, no network.
-- [scripts/maintenance-branch/update-releaserc.sh](../../../scripts/maintenance-branch/update-releaserc.sh) — adds a maintenance entry (or replaces an existing one with the same name) in one `.releaserc.json`'s `branches` array, before `"main"`. Idempotent.
+- [scripts/maintenance-branch/lock-workspace-deps.sh](../../../scripts/maintenance-branch/lock-workspace-deps.sh) — rewrites workspace deps in one `package.json` to exact pinned versions by default (e.g. `workspace:*` → `5.9.0`). Supports `--operator=^|~|=` to override. Idempotent. No git, no network.
+- [scripts/maintenance-branch/update-releaserc.sh](../../../scripts/maintenance-branch/update-releaserc.sh) — replaces `"main"` with a maintenance entry in one `.releaserc.json`'s `branches` array (the `"main"` entry is removed, not kept alongside). Each support branch owns its own release config; main's `.releaserc.json` is never modified. Idempotent.
 
-Everything else — finding the tag, creating the branch, committing, running `pnpm install`, pushing, opening the PR — is the skill's responsibility. **Confirm every commit message and every git/network action with the user before executing.**
+Everything else — finding the tag, creating the branch, pushing it bare, opening the configuration PR, running `pnpm install` — is the skill's responsibility. **Confirm every commit message and every git/network action with the user before executing.**
 
 ## Required inputs
 
@@ -34,7 +37,7 @@ Confirm with the user:
 
 - **Package name** — must exist in `packages/<name>/` or `web-packages/<name>/`. If ambiguous, list candidates from `ls packages/ web-packages/`.
 - **Major version** — must have at least one published tag matching `@uipath/<package>@<major>.*`.
-- **Lock operator** (only if the user wants something other than the default `^`) — options: `^`, `~`, `=`.
+- **Lock operator** — defaults to `=` (exact pin, e.g. `5.9.0`). Ask the user if they want exact pinning or a range (`^`, `~`). Mention that exact pinning is the default and recommended.
 
 Do not ask about anything else upfront — the rest is handled phase by phase with confirmations.
 
@@ -63,14 +66,20 @@ git fetch --tags
 ```
 
 ```bash
-# 4. gh CLI authenticated (only matters for the main-side PR)
+# 4. gh CLI authenticated (needed for PR creation)
 gh auth status
 ```
-If 401: surface the saved memory hint — `unset GITHUB_TOKEN && gh auth status`. The token may hold an SSH fingerprint in this environment.
-If unavailable, the skill can still cut the support branch — but the main-side PR step will fall back to printing instructions for manual creation. Tell the user this trade-off before proceeding.
+If 401: suggest `unset GITHUB_TOKEN && gh auth status` — the env var may hold an SSH fingerprint in this environment.
+If unavailable: **stop**. The skill requires `gh` to create the configuration PR.
 
 ```bash
-# 5. Find the latest matching tag
+# 5. Check remote branch does not already exist
+git ls-remote --heads origin "support/<package>@<major>.x"
+```
+If non-empty: **stop**. The support branch already exists on the remote. Tell the user — don't delete it.
+
+```bash
+# 6. Find the latest matching tag
 git tag --list "@uipath/<package>@<major>.*" --sort=-version:refname | head -1
 ```
 If empty: **stop**. Show the user the available tags for that package: `git tag --list "@uipath/<package>@*" --sort=-version:refname | head -10`.
@@ -82,28 +91,43 @@ Show the user a concrete preview before any mutation:
 - Tag the support branch will be cut from
 - Support branch name: `support/<package>@<major>.x`
 - Channel: `latest-v<major>`
-- Lock operator
 - Workspace deps that will be locked, with the version each will be locked to. Read sibling versions at the tag (not from main):
   ```bash
   git show "<tag>:packages/<sibling>/package.json" | jq -r .version
   ```
   For each `workspace:*` dep in the package's `package.json`, look up the sibling's version at the tag.
-- Companion main-side branch name: `ci/release-config-<package>@<major>.x`
-- Where the entry will be inserted in `<package>/.releaserc.json` on main
+- How `"main"` in `.releaserc.json` will be replaced with the support branch entry
+- PR branch name: `ci/configure-support-<package>@<major>.x`
 
 Get explicit user confirmation (e.g., "proceed?") before Phase 3.
 
-## Phase 3 — Create branch + apply transforms + commit (support branch)
+## Phase 3 — Create and push bare support branch
+
+Create the support branch at the tag and push it with no modifications. This establishes the branch on the remote so it can be targeted by a PR.
+
+**Confirm with the user** before creating and pushing.
 
 ```bash
 git checkout -b "support/<package>@<major>.x" "<tag>"
+git push -u origin "support/<package>@<major>.x"
 ```
 
-Run the two transforms:
+If the user declines the push: stop here. Print recovery instructions (the branch exists locally; they can push later).
+
+## Phase 4 — Create PR branch + apply transforms + commit
+
+Create a PR branch off the support branch:
 
 ```bash
-scripts/maintenance-branch/lock-workspace-deps.sh "<pkg-dir>/package.json" [--operator=...]
-scripts/maintenance-branch/update-releaserc.sh "<pkg-dir>/.releaserc.json" "support/<package>@<major>.x" <major>
+git checkout -b "ci/configure-support-<package>@<major>.x"
+```
+
+Run the two transforms from the repo root. **Important:** the scripts live on `main` and may not exist at the tag. Use `origin/main` (not local `main`) to ensure the latest version:
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+git show origin/main:scripts/maintenance-branch/lock-workspace-deps.sh | bash -s -- "<pkg-dir>/package.json" [--operator=<operator>]
+git show origin/main:scripts/maintenance-branch/update-releaserc.sh | bash -s -- "<pkg-dir>/.releaserc.json" "support/<package>@<major>.x" <major>
 ```
 
 Show the diff:
@@ -123,7 +147,7 @@ git add "<pkg-dir>/package.json" "<pkg-dir>/.releaserc.json"
 git commit -m "<approved message>"
 ```
 
-## Phase 4 — Regenerate lockfile
+## Phase 5 — Regenerate lockfile
 
 `pnpm install` is run automatically (no prompt) since the lockfile *must* match the locked `package.json` for the support branch to install cleanly. Stream output to the user.
 
@@ -149,102 +173,51 @@ git diff --quiet -- pnpm-lock.yaml || echo "changed"
   git commit -m "<approved message>"
   ```
 
-## Phase 5 — Push support branch
+## Phase 6 — Push PR branch and open PR
 
-**Confirm with the user** before pushing.
-
-```bash
-git push -u origin "support/<package>@<major>.x"
-```
-
-If the user declines: stop here. Print recovery instructions (the branch exists locally; they can push later). Skip Phase 6 (main-side PR is meaningless without a pushed support branch).
-
-## Phase 6 — Companion main-side PR (via worktree)
-
-This phase runs in a temporary git worktree so the user's working directory stays on the support branch undisturbed.
+**Confirm with the user** before pushing and opening the PR.
 
 ```bash
-git fetch origin main
-WORKTREE_DIR=$(mktemp -d -t apollo-maintenance-XXXXXX)
-git worktree add -b "ci/release-config-<package>@<major>.x" "$WORKTREE_DIR" origin/main
+git push -u origin "ci/configure-support-<package>@<major>.x"
 ```
-
-Set up cleanup: regardless of how the rest of the phase ends, the worktree must be removed:
-
-```bash
-git worktree remove --force "$WORKTREE_DIR" 2>/dev/null || true
-```
-
-Apply the transform inside the worktree:
-
-```bash
-scripts/maintenance-branch/update-releaserc.sh \
-  "$WORKTREE_DIR/<pkg-dir>/.releaserc.json" \
-  "support/<package>@<major>.x" \
-  <major>
-```
-
-Check whether anything changed:
-
-```bash
-git -C "$WORKTREE_DIR" diff --quiet -- "<pkg-dir>/.releaserc.json" || echo "changed"
-```
-
-- If unchanged: main's `.releaserc.json` already has the entry. Tell the user, clean up the worktree, skip to Phase 7.
-- If changed: propose commit message and **confirm**:
-
-  > `ci(<package>): add support/<package>@<major>.x to release branches`
-
-  Then:
-
-  ```bash
-  git -C "$WORKTREE_DIR" add "<pkg-dir>/.releaserc.json"
-  git -C "$WORKTREE_DIR" commit -m "<approved message>"
-  git -C "$WORKTREE_DIR" push -u origin "ci/release-config-<package>@<major>.x"
-  ```
 
 Propose PR title and body and **confirm with the user**. Suggested defaults:
 
-- **Title:** `ci(<package>): add support/<package>@<major>.x to release branches`
+- **Title:** `ci(<package>): configure support/<package>@<major>.x maintenance branch`
 - **Body** (write to a tempfile and pass via `--body-file`):
 
   ```markdown
-  Adds the `support/<package>@<major>.x` maintenance branch to `<pkg-dir>/.releaserc.json` so semantic-release on `main` is aware of the full release topology.
+  Configures the `support/<package>@<major>.x` maintenance branch for independent releases.
 
-  ## Why this matters
+  ## Changes
 
-  semantic-release reads the `branches` array from whichever branch it is running on, and uses the full topology to enforce release constraints. Without this entry on `main`:
+  - **Locked workspace deps** — workspace dependencies pinned to exact versions (e.g. `5.9.0`) so the branch installs independently of main's workspace
+  - **Release config** — `.releaserc.json` updated: `"main"` replaced with the support branch entry (`range: <major>.x`, `channel: latest-v<major>`)
+  - **Lockfile regenerated** — `pnpm-lock.yaml` updated to match locked dependencies (if applicable)
 
-  - **Range enforcement breaks.** With this entry declared *before* `"main"`, semantic-release infers the release range for main is `>=<NEXT_MAJOR>.0.0`. Without it, a stray patch/minor commit on main could in theory produce a `<major>.x.y` release, colliding with the maintenance branch.
-  - **Channel routing breaks.** main publishes to `latest`; the support branch publishes to `latest-v<major>`. Backports and merges between the two need both branch configs to agree on the topology to route to the right dist-tag.
-  - **Validation breaks.** semantic-release validates the branches config on every run. This entry is what lets it catch overlapping ranges or misconfigured backport branches.
+  ## Context
 
-  ## Companion change
-
-  Cut from tag `<tag>` on branch `support/<package>@<major>.x` (already pushed). That branch contains the same `.releaserc.json` entry plus locked `workspace:*` dependencies and a regenerated lockfile.
+  Branch cut from tag `<tag>`. After this PR is merged, the branch is ready to receive fix PRs and publish `<major>.x.y` releases to the `latest-v<major>` npm dist-tag.
   ```
 
 Open the PR:
 
 ```bash
 gh pr create \
-  --base main \
-  --head "ci/release-config-<package>@<major>.x" \
+  --base "support/<package>@<major>.x" \
+  --head "ci/configure-support-<package>@<major>.x" \
   --title "<approved title>" \
   --body-file "<tempfile>"
 ```
 
 Capture the PR URL.
 
-Clean up the worktree.
-
 ## Phase 7 — Report
 
 Surface to the user:
 
-- Support branch: `support/<package>@<major>.x` at SHA `<git rev-parse>` (pushed)
-- Lockfile: committed at SHA `<sha>` (or "no changes — skipped")
-- Main-side PR: `<url>` (or "skipped — already present on main", or "skipped — gh unavailable; manual instructions printed")
+- Support branch: `support/<package>@<major>.x` (pushed bare from `<tag>`)
+- Configuration PR: `<url>`
 
 Ask whether to switch back to `main`:
 
@@ -259,15 +232,14 @@ git checkout main
 | `Error: no tags found matching '...'` | Wrong major, or tags not fetched | `git fetch --tags`, re-confirm with user |
 | `Error: branch 'support/...' already exists` | Already cut | **Stop**. Don't delete — could destroy work. Tell user. |
 | Working tree not clean | Uncommitted changes | Tell user to commit/stash. Don't act on their behalf. |
-| `gh` 401 | `GITHUB_TOKEN` env var holds an SSH fingerprint | Suggest `unset GITHUB_TOKEN && gh auth status` (saved memory) |
+| `gh` 401 | `GITHUB_TOKEN` env var holds an SSH fingerprint | Suggest `unset GITHUB_TOKEN && gh auth status` |
 | `lock-workspace-deps.sh` errors with "no resolvable version" | `workspace:*` dep references a package not in `packages/*` or `web-packages/*` | Investigate manually — typo in `package.json`, removed package, or package in `apps/*` (which is excluded — apps are not published) |
-| `ci/release-config-...` branch already exists | Previous run partially completed | **Stop**. Tell user to clean up the stale branch before retrying. |
-| `pnpm install` fails | Locked sibling version not actually published, or registry issue | **Stop**. The support branch's `package.json` is committed but lockfile commit didn't happen. Tell user; they can investigate and either fix the lock manually or amend the dep-locking commit. |
-| Worktree creation fails | Disk space, permissions, or stale worktree from prior run | Try `git worktree prune`, then retry |
+| `ci/configure-support-...` branch already exists | Previous run partially completed | **Stop**. Tell user to clean up the stale branch before retrying. |
+| `pnpm install` fails | Locked sibling version not actually published, or registry issue | **Stop**. The PR branch has the `package.json` commit but lockfile commit didn't happen. Tell user; they can investigate and either fix the lock manually or amend the commit. |
 
 ## Things this skill explicitly does NOT do
 
 - **Does not delete sibling package source from the support branch.** The locked deps make publish output correct regardless. Source is left in place so local builds still work.
-- **Does not auto-merge the main-side PR.** Human review required.
+- **Does not modify main's `.releaserc.json`.** Each support branch owns its own release config. Main only has `"main"` in its branches array.
 - **Does not handle `peerDependencies` differently from `dependencies`** — they're rewritten the same way. If a package needs special peer-range strategy, handle manually.
 - **Does not amend or force-push commits** at any point. If something goes wrong mid-flow, leave artifacts in place and surface the state to the user.

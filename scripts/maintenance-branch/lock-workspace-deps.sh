@@ -1,15 +1,15 @@
 #!/bin/bash
-# Lock workspace:* dependencies in a single package.json to concrete versioned
-# ranges, sourced from sibling packages' version field.
+# Lock workspace dependencies in a single package.json to concrete versions,
+# sourced from sibling packages' version field.
 #
 # Usage:
 #   scripts/maintenance-branch/lock-workspace-deps.sh <package-json-path> [--operator=^|~|=]
 #
-# Behavior:
-#   workspace:*      → <operator><version>   (default operator: ^)
-#   workspace:^      → ^<version>
-#   workspace:~      → ~<version>
-#   workspace:X.Y.Z  → X.Y.Z                 (workspace: prefix dropped)
+# Behavior (default operator: = → exact pin):
+#   workspace:*      → <version>          (or <operator><version> with --operator)
+#   workspace:^      → <version>          (or <operator><version> with --operator)
+#   workspace:~      → <version>          (or <operator><version> with --operator)
+#   workspace:X.Y.Z  → X.Y.Z             (explicit version, workspace: prefix dropped)
 #
 # - Reads sibling versions from packages/*/package.json and web-packages/*/package.json.
 #   (apps/* are intentionally excluded — they are not published.)
@@ -22,7 +22,7 @@
 set -euo pipefail
 
 PACKAGE_JSON=""
-OPERATOR="^"
+OPERATOR="="
 
 for arg in "$@"; do
   case "$arg" in
@@ -86,9 +86,8 @@ jq --argjson siblings "$SIBLING_VERSIONS" --arg defaultOp "$OPERATOR" '
               error("workspace dep \($name) has no resolvable version in workspace")
             else
               .value = (
-                if $spec == "*" then "\($defaultOp)\($version)"
-                elif $spec == "^" then "^\($version)"
-                elif $spec == "~" then "~\($version)"
+                if $spec == "*" or $spec == "^" or $spec == "~" then
+                  (if $defaultOp == "=" then $version else "\($defaultOp)\($version)" end)
                 else $spec
                 end
               )
