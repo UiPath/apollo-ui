@@ -1,0 +1,188 @@
+name: Support Branch Scope Check
+
+on:
+  pull_request:
+    branches:
+      - 'support/**'
+
+concurrency:
+  group: support-scope-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  check-scope:
+    name: Check package scope
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract package from branch name
+        id: parse
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          # support/apollo-react@3.x → apollo-react
+          PACKAGE=$(echo "$BASE_REF" | sed -E 's|^support/(.+)@[0-9]+\.x$|\1|')
+          if [ "$PACKAGE" = "$BASE_REF" ]; then
+            echo "::error::Could not parse package name from branch '$BASE_REF'"
+            exit 1
+          fi
+          echo "package=$PACKAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Sparse checkout base branch
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          sparse-checkout: |
+            packages
+            web-packages
+          sparse-checkout-cone-mode: true
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Resolve package directory
+        id: resolve
+        env:
+          PACKAGE: ${{ steps.parse.outputs.package }}
+        run: |
+          if [ -d "packages/${PACKAGE}" ]; then
+            echo "pkg_dir=packages/${PACKAGE}" >> "$GITHUB_OUTPUT"
+          elif [ -d "web-packages/${PACKAGE}" ]; then
+            echo "pkg_dir=web-packages/${PACKAGE}" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Package '${PACKAGE}' not found in packages/ or web-packages/"
+            exit 1
+          fi
+
+      - name: Get changed files
+        id: changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          CHANGED=$(gh pr diff "$PR_URL" --name-only)
+          echo "files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$CHANGED" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Check scope
+        id: scope
+        env:
+          PKG_DIR: ${{ steps.resolve.outputs.pkg_dir }}
+          CHANGED_FILES: ${{ steps.changes.outputs.files }}
+        run: |
+          OUT_OF_SCOPE=""
+
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+
+            case "$file" in
+              pnpm-lock.yaml) continue ;;
+              .npmrc) continue ;;
+              .github/*) continue ;;
+              ${PKG_DIR}/*) continue ;;
+            esac
+
+            OUT_OF_SCOPE="${OUT_OF_SCOPE}${file}\n"
+          done <<< "$CHANGED_FILES"
+
+          if [ -n "$OUT_OF_SCOPE" ]; then
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            echo "files<<EOF" >> "$GITHUB_OUTPUT"
+            echo -e "$OUT_OF_SCOPE" >> "$GITHUB_OUTPUT"
+            echo "EOF" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=pass" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post or update PR comment
+        if: steps.scope.outputs.status == 'fail'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        env:
+          PACKAGE: ${{ steps.parse.outputs.package }}
+          PKG_DIR: ${{ steps.resolve.outputs.pkg_dir }}
+          SCOPE_STATUS: ${{ steps.scope.outputs.status }}
+          OUT_OF_SCOPE_FILES: ${{ steps.scope.outputs.files }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        with:
+          script: |
+            const marker = '<!-- support-branch-scope-check -->';
+            const pkg = process.env.PACKAGE;
+            const pkgDir = process.env.PKG_DIR;
+            const status = process.env.SCOPE_STATUS;
+            const outOfScope = (process.env.OUT_OF_SCOPE_FILES || '').trim();
+            const baseRef = process.env.BASE_REF;
+
+            let body = `${marker}\n`;
+            body += `## Support Branch Scope — \`${baseRef}\`\n\n`;
+            body += `> [!CAUTION]\n`;
+            body += `> This PR modifies files outside \`${pkgDir}/\`. Support branches should only contain changes scoped to their package.\n\n`;
+            body += `**Out-of-scope files:**\n`;
+            for (const f of outOfScope.split('\n').filter(Boolean)) {
+              body += `- \`${f}\`\n`;
+            }
+            body += `\n---\n\n`;
+
+            body += `### Need to update a workspace dependency (e.g. \`apollo-core\`)?\n\n`;
+            body += `This branch locks workspace deps to exact versions (e.g. \`5.9.0\` instead of \`workspace:*\`) `;
+            body += `and resolves them from the registry. `;
+            body += `Bumping the version in \`${pkgDir}/package.json\` and running \`pnpm install\` will fetch the new version.\n\n`;
+            body += `If your fix requires changes in a sibling package (e.g. \`apollo-core\`):\n\n`;
+            body += `1. **If the dependency is still on the same major on \`main\`** — land the fix on \`main\`, `;
+            body += `let it publish a new version, then bump the version in this branch's `;
+            body += `\`${pkgDir}/package.json\` and run \`pnpm install\` to update the lockfile.\n`;
+            body += `2. **If the dependency needs a support branch too** — cut a support branch for that package `;
+            body += `(e.g. \`support/apollo-core@5.x\`), publish the fix from there, then update the dependency version here.\n`;
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c => c.body?.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Remove comment if scope is clean
+        if: steps.scope.outputs.status != 'fail'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        with:
+          script: |
+            const marker = '<!-- support-branch-scope-check -->';
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c => c.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+              });
+            }
+
+      - name: Fail if out of scope
+        if: steps.scope.outputs.status == 'fail'
+        run: |
+          echo "::error::PR contains changes outside the allowed package scope. See the PR comment for details."
+          exit 1

@@ -603,10 +603,10 @@ importers:
         version: 3.19.0(@tiptap/core@3.19.0(@tiptap/pm@3.19.0))(@tiptap/pm@3.19.0)
       '@uipath/apollo-core':
         specifier: ^5.9.0
-        version: link:../apollo-core
+        version: 5.9.0
       '@uipath/apollo-wind':
         specifier: ^2.0.1
-        version: link:../apollo-wind
+        version: 2.1.0(@emotion/is-prop-valid@1.4.0)(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(postcss@8.5.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@xyflow/react':
         specifier: 12.8.2
         version: 12.8.2(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -6075,10 +6075,10 @@ packages:
       typescript: '*'
 
   '@uipath/apollo-core@5.9.0':
-    resolution: {integrity: sha512-bNUk8azTZ0T3Kug+zfaQRKf+iT8xG5vDCxvPvFWR6zrxd1AS+Ze8DdviW1ERPkHkiI+4P7CUgWovrtNgeYHsdw==}
+    resolution: {integrity: sha512-bNUk8azTZ0T3Kug+zfaQRKf+iT8xG5vDCxvPvFWR6zrxd1AS+Ze8DdviW1ERPkHkiI+4P7CUgWovrtNgeYHsdw==, tarball: https://npm.pkg.github.com/download/@uipath/apollo-core/5.9.0/9549f9aa114612c66b76c2e273730576315ac966}
 
   '@uipath/apollo-wind@2.1.0':
-    resolution: {integrity: sha512-b1FxON3WiuUN1BqbYYCzPXX2iGOHmw0wnOCfxWrKFy28YkJfpX/1yYMNspsbBfsDb7wGVZxbjGtXz2hc3dRN0Q==}
+    resolution: {integrity: sha512-b1FxON3WiuUN1BqbYYCzPXX2iGOHmw0wnOCfxWrKFy28YkJfpX/1yYMNspsbBfsDb7wGVZxbjGtXz2hc3dRN0Q==, tarball: https://npm.pkg.github.com/download/@uipath/apollo-wind/2.1.0/b13c26499b96f8a3cee370251ccb42134a3eb35e}
     peerDependencies:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
