@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v4.5.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.5.1...@uipath/apollo-react@4.5.2) (2026-04-15)
+
+### Bug Fixes
+
+* **apollo-react:** update format ([0c5fb43](https://github.com/UiPath/apollo-ui/commit/0c5fb43ab19f02be2b05f9f5f05e6b809bed7629))
+* **apollo-react:** update tool call for different display mode ([6d7de38](https://github.com/UiPath/apollo-ui/commit/6d7de38346f1233429fd7d3f6df62486b9b62b49))
+
 ## [@uipath/apollo-react-v4.5.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.5.0...@uipath/apollo-react@4.5.1) (2026-04-15)
 
 ### Bug Fixes
