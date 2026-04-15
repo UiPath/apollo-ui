@@ -44,7 +44,7 @@ export const ShellUserProvider: FC<PropsWithChildren> = ({ children }) => {
         id: authUser.sub,
         name: authUser.name,
         email: authUser.email,
-        first_name: nameParts[0],
+        first_name: nameParts[0] ?? authUser.name,
         last_name: nameParts.slice(1).join(" "),
       });
     } else {
