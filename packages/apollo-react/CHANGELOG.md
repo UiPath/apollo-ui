@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.71.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.71.0...@uipath/apollo-react@3.71.1) (2026-04-15)
+
+### Bug Fixes
+
+* **repo:** add missing code for support branch ([9b4f168](https://github.com/UiPath/apollo-ui/commit/9b4f16819a6b8a8636f7619c9e6b29df788345a4))
+
 ## [@uipath/apollo-react-v3.70.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.70.2...@uipath/apollo-react@3.70.3) (2026-04-09)
 
 ### Bug Fixes
