@@ -93,7 +93,7 @@
           "muted-foreground": "oklch(0.4594 0.0280 264.2500)",
           "accent": "oklch(0.9593 0.0069 247.9000 / 0.75)",
           "accent-foreground": "oklch(0.2394 0.0455 252.4500)",
-          "destructive": "oklch(0.62 0.150 18)",
+          "destructive": "oklch(0.50 0.15 18)",
           "destructive-foreground": "oklch(1 0 89.8800)",
           "brand-orange": "#fa4616",
           "success": "oklch(0.57 0.105 152)",
