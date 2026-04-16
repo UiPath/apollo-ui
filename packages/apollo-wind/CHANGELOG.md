@@ -1,3 +1,13 @@
+## [@uipath/apollo-wind-v2.3.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.2.1...@uipath/apollo-wind@2.3.0) (2026-04-16)
+
+### Features
+
+* **apollo-wind:** add status and chart tokens to Future dark/light themes ([434447b](https://github.com/uipath/apollo-ui/commit/434447b4cb6f9195601417a40869dc8b553c2bdc))
+
+### Bug Fixes
+
+* **apollo-wind:** normalize status-warning bg to amber-950 in Future dark theme ([87bc964](https://github.com/uipath/apollo-ui/commit/87bc96431d3cfa9bc6f05278f1741b82a1eeffb3))
+
 ## [@uipath/apollo-wind-v2.2.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.2.0...@uipath/apollo-wind@2.2.1) (2026-04-16)
 
 ### Bug Fixes
