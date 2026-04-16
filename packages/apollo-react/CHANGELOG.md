@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.6.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.6.0...@uipath/apollo-react@4.6.1) (2026-04-16)
+
+### Bug Fixes
+
+* **apollo-react:** remove react flow theme class ([1a8179e](https://github.com/UiPath/apollo-ui/commit/1a8179e5c5cc3f7fae6070451effc7ba0e1ced2c))
+
 ## [@uipath/apollo-react-v4.6.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.5.4...@uipath/apollo-react@4.6.0) (2026-04-16)
 
 ### Features
