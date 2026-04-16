@@ -1,5 +1,6 @@
 export default {
   overview: 'What is Apollo?',
+  'whats-new': "What's New",
   installation: 'Installation',
   prototyping: 'Prototyping',
   cli: 'CLI',

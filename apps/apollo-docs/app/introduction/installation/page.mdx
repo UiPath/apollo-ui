@@ -1,4 +1,4 @@
-import { Tabs } from 'nextra/components'
+import { LinkedTabs } from '../../../components/LinkedTabs';
 
 # Installation
 
@@ -12,65 +12,70 @@ Apollo v.4 is UiPath's open-source design system for building consistent user ex
 
 Apollo is split into focused packages. Pick the one that matches what you're building.
 
-<Tabs items={['apollo-core', 'apollo-wind', 'apollo-react']}>
-  <Tabs.Tab>
-    ### `@uipath/apollo-core`
+<LinkedTabs items={['apollo-core', 'apollo-wind', 'apollo-react']}>
+<div>
 
-    The shared foundation — design tokens, icons, fonts, and CSS variables. Both Apollo Wind and Apollo React depend on this package. Install it directly only if you need tokens without a component library.
+### `@uipath/apollo-core`
 
-    **Best for:** Custom builds that need design tokens, icons, or fonts without a full component library.
+The shared foundation — design tokens, icons, fonts, and CSS variables. Both Apollo Wind and Apollo React depend on this package. Install it directly only if you need tokens without a component library.
 
-    **Install**
+**Best for:** Custom builds that need design tokens, icons, or fonts without a full component library.
 
-    ```bash
-    npm install @uipath/apollo-core
-    ```
+**Install**
 
-    **Run locally**
+```bash
+npm install @uipath/apollo-core
+```
 
-    ```bash
-    pnpm build
-    ```
-  </Tabs.Tab>
-  <Tabs.Tab>
-    ### `@uipath/apollo-wind`
+**Run locally**
 
-    The modern UI component library for rapid prototyping and new product interfaces. Built with Tailwind CSS and shadcn/ui — includes 60+ components, page templates, and full theming support.
+```bash
+pnpm build
+```
 
-    **Best for:** Prototyping, new product UIs, and any project using Tailwind CSS.
+</div>
+<div>
 
-    **Install**
+### `@uipath/apollo-wind`
 
-    ```bash
-    npm install @uipath/apollo-wind
-    ```
+The modern UI component library for rapid prototyping and new product interfaces. Built with Tailwind CSS and shadcn/ui — includes 60+ components, page templates, and full theming support.
 
-    **Run locally** (after cloning the monorepo and running `pnpm install`)
+**Best for:** Prototyping, new product UIs, and any project using Tailwind CSS.
 
-    ```bash
-    pnpm build
-    pnpm storybook:wind
-    ```
-  </Tabs.Tab>
-  <Tabs.Tab>
-    ### `@uipath/apollo-react`
+**Install**
 
-    The component library for UiPath workflows and automation products. Built on Material UI with Apollo theming — provides the components and patterns used across workflow-based experiences.
+```bash
+npm install @uipath/apollo-wind
+```
 
-    **Best for:** Workflow interfaces, automation products, and existing Material UI projects.
+**Run locally** (after cloning the monorepo and running `pnpm install`)
 
-    **Install**
+```bash
+pnpm build
+pnpm storybook:dev
+```
 
-    ```bash
-    npm install @uipath/apollo-react
-    ```
+</div>
+<div>
 
-    **Run locally**
+### `@uipath/apollo-react`
 
-    ```bash
-    pnpm build
-    pnpm storybook:all
-    ```
-  </Tabs.Tab>
-</Tabs>
+The component library for UiPath workflows and automation products. Built on Material UI with Apollo theming — provides the components and patterns used across workflow-based experiences.
 
+**Best for:** Workflow interfaces, automation products, and existing Material UI projects.
+
+**Install**
+
+```bash
+npm install @uipath/apollo-react
+```
+
+**Run locally**
+
+```bash
+pnpm build
+pnpm storybook:dev
+```
+
+</div>
+</LinkedTabs>

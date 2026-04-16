@@ -16,10 +16,26 @@ export const metadata = {
 
 const navbar = (
   <Navbar
-    logo={
-      <b style={{ fontWeight: 700, fontSize: '1.1rem' }}>Apollo UI</b>
-    }
-  />
+    logo={<b style={{ fontWeight: 700, fontSize: '1.1rem' }}>Apollo UI</b>}
+    align="left"
+  >
+    <a
+      href="https://github.com/UiPath/apollo-ui"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="nav-link"
+    >
+      GitHub
+    </a>
+    <a
+      href="https://apollo-design.vercel.app"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="nav-link"
+    >
+      Storybook
+    </a>
+  </Navbar>
 );
 
 const footer = (
@@ -27,6 +43,7 @@ const footer = (
 );
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
+
   return (
     <html
       lang="en"
