@@ -837,7 +837,7 @@ const SKILLS: Skill[] = [
   {
     name: 'apollo-writing',
     description:
-      'Applies UiPath UX writing guidelines to UI copy — labels, buttons, errors, modals, empty states, and all microcopy.',
+      'Applies UiPath UX writing guidelines to UI copy — labels, buttons, errors, modals, empty states, and all microcopy. Includes 16 content patterns for buttons, errors, forms, navigation, tooltips, tables, and more.',
     category: 'Writing',
     surfaces: ['Cursor', 'Claude Code'],
     sourcePath: 'packages/apollo-wind/skills/apollo-writing/',
