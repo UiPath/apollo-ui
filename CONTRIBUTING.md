@@ -191,6 +191,18 @@ If your commit message doesn't follow the format, the commit will be blocked.
 8. Wait for CI checks to pass
 9. Request review from maintainers
 
+### Stale PR Policy
+
+Open PRs with no new commits for more than **2 weeks** are automatically closed each week by the [Close Stale PRs](.github/workflows/close-stale-prs.yml) workflow. A comment is posted on close, and you can reopen the PR at any time if you'd like to resume the work.
+
+Staleness is measured from the PR's **last commit** — comments, label changes, and other activity don't reset the clock.
+
+**Opting out:** add the `do-not-close` label to a PR to exempt it from this automation (useful for long-lived WIPs or PRs blocked on external dependencies).
+
+**Reopening a closed PR:** standard PR checks re-run on reopen. If your PR previously had the `dev-packages` label, dev package versions were unpublished when the PR closed — re-add the label after reopening to publish a fresh set.
+
+**Maintainers:** the workflow supports a dry-run via `workflow_dispatch` (defaults to dry-run when triggered manually, real run when triggered on schedule).
+
 ### Code Style
 
 - We use Biome for linting and code formatting
