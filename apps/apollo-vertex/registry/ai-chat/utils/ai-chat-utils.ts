@@ -8,6 +8,7 @@ const flowOptionSchema = z.object({
   label: z.string(),
   value: z.string().optional(),
   recommended: z.boolean().optional(),
+  freeText: z.boolean().optional(),
 });
 
 const flowStepSchema = z.object({

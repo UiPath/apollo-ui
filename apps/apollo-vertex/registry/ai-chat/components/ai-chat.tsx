@@ -133,6 +133,7 @@ export function AiChat({
 
   const queuedMessageRef = useRef<{ content: string; attachments?: File[] } | null>(null);
   const [conversationCopied, setConversationCopied] = useState(false);
+  const flowFreeTextResolveRef = useRef<((text: string) => void) | null>(null);
 
   const handleCopyConversation = async () => {
     const text = messages
@@ -154,6 +155,14 @@ export function AiChat({
 
   const handleSubmit = (attachments?: File[]) => {
     if (!input.trim()) return;
+    // Flow is active: route free-text answer into the flow instead of sending a message
+    if (flowFreeTextResolveRef.current) {
+      const resolve = flowFreeTextResolveRef.current;
+      flowFreeTextResolveRef.current = null;
+      resolve(input.trim());
+      setInput("");
+      return;
+    }
     const content = quotedText
       ? `> ${quotedText}\n\n${input.trim()}`
       : input.trim();
@@ -465,13 +474,14 @@ export function AiChat({
         )}
 
         {messages.length > 0 && (
-          <div className="relative">
+          <div>
             {isFlowActive && latestFlow && (
-              <div className="absolute bottom-full left-0 right-0 z-20 px-3 pb-1">
+              <div className="mx-2">
                 <AiChatFlow
                   flow={latestFlow}
                   onComplete={(answers) => {
                     setFlowDismissed(true);
+                    flowFreeTextResolveRef.current = null;
                     const summary = answers
                       .map((a, i) => `Step ${i + 1} (${a.prompt}): ${a.answer}`)
                       .join(", ");
@@ -479,23 +489,29 @@ export function AiChat({
                   }}
                   onDismiss={() => {
                     setFlowDismissed(true);
+                    flowFreeTextResolveRef.current = null;
                     onSendMessage("Never mind, let's stop here");
+                  }}
+                  onFreeTextReady={(resolve) => {
+                    flowFreeTextResolveRef.current = resolve;
                   }}
                 />
               </div>
             )}
-            <AiChatInput
-              ref={inputRef}
-              value={input}
-              onChange={setInput}
-              onSubmit={handleSubmit}
-              onStop={onStop}
-              isLoading={isLoading}
-              placeholder={placeholder}
-              hasMessages
-              quotedText={quotedText}
-              onClearQuote={() => setQuotedText(null)}
-            />
+            <div className={isFlowActive ? "relative z-10 -mt-[76px]" : undefined}>
+              <AiChatInput
+                ref={inputRef}
+                value={input}
+                onChange={setInput}
+                onSubmit={handleSubmit}
+                onStop={onStop}
+                isLoading={isLoading}
+                placeholder={isFlowActive ? "Or type your own answer..." : placeholder}
+                hasMessages
+                quotedText={quotedText}
+                onClearQuote={() => setQuotedText(null)}
+              />
+            </div>
             <div className="pt-2 pb-3 px-4 text-xs leading-normal text-muted-foreground text-center">
               {"AI-generated responses should be reviewed for accuracy."}
             </div>

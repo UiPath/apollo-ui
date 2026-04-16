@@ -47,7 +47,6 @@ const MOCK_FLOW: ToolResultFlow = {
         { id: "blog", label: "Blog post" },
         { id: "email", label: "Email campaign" },
         { id: "social", label: "Social media posts" },
-        { id: "other", label: "Something else" },
       ],
     },
     {
@@ -57,7 +56,6 @@ const MOCK_FLOW: ToolResultFlow = {
         { id: "developers", label: "Developers" },
         { id: "business", label: "Business leaders" },
         { id: "general", label: "General audience" },
-        { id: "other", label: "Something else" },
       ],
       canSkip: true,
     },
@@ -68,7 +66,6 @@ const MOCK_FLOW: ToolResultFlow = {
         { id: "professional", label: "Professional" },
         { id: "casual", label: "Casual & friendly" },
         { id: "technical", label: "Technical & precise" },
-        { id: "other", label: "Something else" },
       ],
     },
   ],
