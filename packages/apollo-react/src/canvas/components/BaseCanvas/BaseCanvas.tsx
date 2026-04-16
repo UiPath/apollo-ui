@@ -1,4 +1,9 @@
-import type { Edge, Node, ReactFlowInstance } from '@uipath/apollo-react/canvas/xyflow/react';
+import type {
+  ColorMode,
+  Edge,
+  Node,
+  ReactFlowInstance,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { ConnectionMode, ReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   type CSSProperties,
@@ -147,6 +152,8 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     <CanvasProviders nodes={nodes} edges={edges} mode={mode} isDarkMode={isDarkMode}>
       <ReactFlow
         {...reactFlowProps}
+        // Purposely removing the reactFlow colorMode to prevent conflicts with custom theming implementation.
+        colorMode={'' as unknown as ColorMode}
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
