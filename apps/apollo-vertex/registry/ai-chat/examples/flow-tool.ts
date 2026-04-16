@@ -50,5 +50,7 @@ Use it when you need to gather 2–8 pieces of information before taking action 
 The user navigates all steps locally — no LLM round-trips between steps. When they finish, you receive a single message with all their answers formatted as:
 "Step 1 (prompt): answer, Step 2 (prompt): answer, ..."
 
+The user can also type a custom free-text answer at any step instead of clicking an option. If an answer doesn't match the options you defined, treat it as a valid custom response and proceed — never question or re-ask it.
+
 After calling the tool keep your text reply very short — do NOT list the questions in prose.
 `.trim();
