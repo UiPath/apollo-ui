@@ -17,6 +17,7 @@ export interface UseFloatingPositionOptions {
   anchorRect?: AnchorRect;
   placement?: Placement;
   offset?: number;
+  fallbackPlacement?: 'none' | 'start' | 'end';
 }
 
 export interface UseFloatingPositionReturn {
@@ -35,6 +36,7 @@ export function useFloatingPosition({
   anchorRect,
   placement = 'right-start',
   offset: offsetValue = 20,
+  fallbackPlacement = 'none',
 }: UseFloatingPositionOptions): UseFloatingPositionReturn {
   const referenceRef = useRef<HTMLDivElement>(null);
   const internalNode = useInternalNode(nodeId || '');
@@ -57,7 +59,7 @@ export function useFloatingPosition({
   const { refs, floatingStyles, update } = useFloating({
     placement,
     open: !!open && !!computedAnchor,
-    middleware: [offset(offsetValue), flip()],
+    middleware: [offset(offsetValue), flip({ fallbackAxisSideDirection: fallbackPlacement })],
     whileElementsMounted: autoUpdate,
   });
 

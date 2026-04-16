@@ -32,6 +32,15 @@ export type FloatingCanvasPanelProps = {
   anchorRect?: AnchorRect;
   placement?: Placement;
   offset?: number;
+  /**
+   * Controls whether the panel should try fallback placements when the primary
+   * axis overflows in both directions (e.g. both top and bottom are out of bounds).
+   * - `'none'` (default): only flip on the main axis (e.g. bottom↔top)
+   * - `'start'`: fall back to the start of the cross axis (e.g. left in LTR)
+   * - `'end'`: fall back to the end of the cross axis (e.g. right in LTR)
+   * @see https://floating-ui.com/docs/flip#fallbackaxissidedirection
+   */
+  fallbackPlacement?: 'none' | 'start' | 'end';
   isPinned?: boolean;
   /**
    * When true, the panel uses fixed positioning and anchorRect is treated as screen-space
@@ -66,6 +75,7 @@ export function FloatingCanvasPanel({
   anchorRect,
   placement = 'right-start',
   offset = 20,
+  fallbackPlacement,
   isPinned = false,
   useFixedPosition = false,
   portalToBody = false,
@@ -84,6 +94,7 @@ export function FloatingCanvasPanel({
     anchorRect,
     placement,
     offset,
+    fallbackPlacement,
   });
 
   if (!open || !computedAnchor) return null;
