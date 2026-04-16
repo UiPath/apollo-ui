@@ -98,3 +98,220 @@
   --input: var(--ap-wind-border);
   --x-color-nextra-bg: var(--background);
 }
+
+/* ─── Navbar layout ────────────────────────────────────────────────────────── */
+
+/*
+ * Nextra renders inside <nav>: [logo] [sidebar-nav-items-div.nextra-scrollbar.me-auto]
+ * [search-div.x:max-md:hidden] [our children: GitHub, Storybook] [hamburger]
+ *
+ * The search-div is the only <div> without "nextra-scrollbar" in its class.
+ * We use CSS order to push search after our nav links, giving the standard
+ * docs layout: [Logo] [Sections…] → [GitHub] [Storybook] [Search] [☰]
+ */
+.nextra-navbar nav > div:not([class*="nextra-scrollbar"]) {
+  order: 1;
+}
+.nextra-navbar .nextra-hamburger {
+  order: 2;
+}
+
+/* ─── Navbar links ─────────────────────────────────────────────────────────── */
+.nav-link {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground-muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.nav-link:hover { color: var(--foreground); }
+
+/* ─── What's New page ──────────────────────────────────────────────────────── */
+.whats-new-page { max-width: 52rem; }
+
+.whats-new-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--foreground);
+}
+
+.whats-new-subtitle {
+  color: var(--foreground-muted);
+  margin-bottom: 2rem;
+  font-size: 1rem;
+}
+
+/* Tabs */
+.wn-tab-bar {
+  display: flex;
+  border-bottom: 1px solid var(--ap-wind-border);
+  margin-bottom: 2rem;
+}
+
+.wn-tab-btn {
+  padding: 0 1rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--foreground-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.wn-tab-btn:hover { color: var(--foreground); }
+.wn-tab-btn--active {
+  color: var(--foreground);
+  border-bottom-color: var(--primary);
+}
+
+/* Release Notes */
+.releases-list { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.releases-empty { color: var(--foreground-muted); font-size: 0.875rem; }
+.releases-empty a { color: var(--primary); }
+
+.release-card {
+  border: 1px solid var(--ap-wind-border);
+  border-radius: 0.625rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.release-card__header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin-bottom: 0.875rem;
+}
+
+.release-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.625rem;
+  border-radius: 9999px;
+  border: 1px solid;
+  letter-spacing: 0.02em;
+}
+.badge-wind  { background: color-mix(in srgb, #8b5cf6 12%, transparent); color: #a78bfa; border-color: color-mix(in srgb, #8b5cf6 25%, transparent); }
+.badge-react { background: color-mix(in srgb, #3b82f6 12%, transparent); color: #60a5fa; border-color: color-mix(in srgb, #3b82f6 25%, transparent); }
+.badge-core  { background: color-mix(in srgb, #10b981 12%, transparent); color: #34d399; border-color: color-mix(in srgb, #10b981 25%, transparent); }
+
+.release-date { font-size: 0.75rem; color: var(--foreground-muted); }
+
+.release-gh-link {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--primary);
+  text-decoration: none;
+}
+.release-gh-link:hover { text-decoration: underline; }
+
+/* Package selector */
+.pkg-selector {
+  display: flex;
+  gap: 0.25rem;
+  background: color-mix(in srgb, var(--ap-wind-border) 35%, transparent);
+  border-radius: 0.5rem;
+  padding: 0.25rem;
+  width: fit-content;
+  margin-bottom: 1.5rem;
+}
+
+.pkg-btn {
+  padding: 0.375rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  color: var(--foreground-muted);
+  background: none;
+  border: none;
+  transition: color 0.15s;
+}
+.pkg-btn:hover { color: var(--foreground); }
+.pkg-btn--active {
+  background: var(--surface-raised);
+  color: var(--foreground);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* Markdown rendering */
+.markdown-body {
+  font-size: 0.875rem;
+  line-height: 1.75;
+  color: var(--foreground-muted);
+}
+.markdown-body h1,
+.markdown-body h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 1.5rem 0 0.5rem;
+}
+.markdown-body h3 {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--foreground-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 1rem 0 0.375rem;
+}
+.markdown-body ul { list-style: disc; padding-left: 1.5rem; margin: 0.375rem 0; }
+.markdown-body li { margin: 0.2rem 0; }
+.markdown-body a { color: var(--primary); text-decoration: none; }
+.markdown-body a:hover { text-decoration: underline; }
+.markdown-body strong { color: var(--foreground); font-weight: 600; }
+.markdown-body code {
+  background: var(--surface-overlay);
+  padding: 0.1rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.8em;
+  font-family: ui-monospace, monospace;
+}
+
+/* Changelog-specific: version headers get a divider */
+.changelog-body h2 {
+  border-bottom: 1px solid var(--ap-wind-border);
+  padding-bottom: 0.5rem;
+  margin-top: 2rem;
+}
+
+/* ─── LinkedTabs (URL-synced tabs for installation page) ───────────────────── */
+.linked-tabs__bar {
+  display: flex;
+  border-bottom: 1px solid var(--ap-wind-border);
+  margin-bottom: 1.5rem;
+}
+
+.linked-tabs__btn {
+  padding: 0 1rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--foreground-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.linked-tabs__btn:hover { color: var(--foreground); }
+.linked-tabs__btn--active {
+  color: var(--foreground);
+  border-bottom-color: var(--primary);
+}
+
+/* ─── Navbar version badge ─────────────────────────────────────────────────── */
+.nav-version {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid var(--ap-wind-border);
+  color: var(--foreground-muted);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}

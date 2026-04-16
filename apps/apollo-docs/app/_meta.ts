@@ -1,6 +1,6 @@
 export default {
   index: { display: 'hidden' },
-  introduction: 'Introduction',
+  introduction: 'Overview',
   theme: 'Theme',
   components: 'Components',
   templates: 'Templates',
