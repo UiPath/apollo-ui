@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.5.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.5.3...@uipath/apollo-react@4.5.4) (2026-04-16)
+
+### Bug Fixes
+
+* **apollo-react:** disable task three-dot menu while task is loading [MST-8171] ([3d7c637](https://github.com/UiPath/apollo-ui/commit/3d7c637207aab2e2ab279a97c1825ea5caebe5c3))
+
 ## [@uipath/apollo-react-v4.5.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.5.1...@uipath/apollo-react@4.5.2) (2026-04-15)
 
 ### Bug Fixes
