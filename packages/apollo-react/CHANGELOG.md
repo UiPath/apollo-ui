@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.6.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.5.4...@uipath/apollo-react@4.6.0) (2026-04-16)
+
+### Features
+
+* **apollo-react:** expose fallbackAxisSideDirection prop on FloatingCanvasPanel ([8943068](https://github.com/UiPath/apollo-ui/commit/89430688fd0a03116476288296f2ddc650019bf2))
+
 ## [@uipath/apollo-react-v4.5.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.5.3...@uipath/apollo-react@4.5.4) (2026-04-16)
 
 ### Bug Fixes
