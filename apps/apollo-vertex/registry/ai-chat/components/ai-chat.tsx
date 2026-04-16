@@ -156,7 +156,7 @@ export function AiChat({
   const handleSubmit = (attachments?: File[]) => {
     if (!input.trim()) return;
     // Flow is active: route free-text answer into the flow instead of sending a message
-    if (flowFreeTextResolveRef.current) {
+    if (isFlowActive && flowFreeTextResolveRef.current) {
       const resolve = flowFreeTextResolveRef.current;
       flowFreeTextResolveRef.current = null;
       resolve(input.trim());
@@ -206,6 +206,15 @@ export function AiChat({
     }
   }, [latestFlow]);
   const isFlowActive = latestFlow !== null && !flowDismissed;
+
+  // Clear the free-text resolver whenever the flow becomes inactive so stale
+  // refs never intercept normal messages or "Ask Autopilot" submissions.
+  useEffect(() => {
+    if (!isFlowActive) {
+      flowFreeTextResolveRef.current = null;
+    }
+  }, [isFlowActive]);
+
   const activeChoicesMessageIds = findActiveChoicesMessageIds(messages);
   const latestAssistantMessageId =
     messages.findLast((m) => m.role === "assistant")?.id ?? null;
