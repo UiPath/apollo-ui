@@ -1,17 +1,26 @@
 "use client";
 
-import { ArrowUp, CircleStop, FileText, MessageSquareText, Plus, X } from "lucide-react";
+import {
+  ArrowUp,
+  CircleStop,
+  FileText,
+  MessageSquareText,
+  Plus,
+  X,
+} from "lucide-react";
 import {
   type ClipboardEvent,
   type FocusEvent,
   type FormEvent,
+  forwardRef,
   type KeyboardEvent,
   type Ref,
-  forwardRef,
+  useEffect,
   useImperativeHandle,
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/registry/button/button";
 import {
@@ -31,6 +40,7 @@ interface PendingFile {
   size: number;
   type: string;
   file: File;
+  thumbnailUrl?: string;
 }
 
 interface AiChatInputProps {
@@ -73,7 +83,16 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
     const { t } = useTranslation();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const glowRef = useRef<HTMLDivElement>(null);
-    const [pendingFiles, setPendingFiles] = useState<PendingFile[]>(initialFiles);
+    const [pendingFiles, setPendingFiles] =
+      useState<PendingFile[]>(initialFiles);
+    const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+      if (!lightboxUrl) return;
+      const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setLightboxUrl(null); };
+      document.addEventListener("keydown", handler as EventListener);
+      return () => document.removeEventListener("keydown", handler as EventListener);
+    }, [lightboxUrl]);
 
     useImperativeHandle(ref, () => ({
       focus: () => textareaRef.current?.focus(),
@@ -98,6 +117,9 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
       if (!value.trim()) return;
       const files = pendingFiles.map((f) => f.file);
       onSubmit(files.length > 0 ? files : undefined);
+      pendingFiles.forEach((f) => {
+        if (f.thumbnailUrl) URL.revokeObjectURL(f.thumbnailUrl);
+      });
       setPendingFiles([]);
       requestAnimationFrame(() => {
         const el = textareaRef.current;
@@ -117,14 +139,25 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
       }
     };
 
+    const makePendingFile = (
+      file: File,
+      nameOverride?: string,
+    ): PendingFile => {
+      const name = nameOverride ?? file.name;
+      const thumbnailUrl = file.type.startsWith("image/")
+        ? URL.createObjectURL(file)
+        : undefined;
+      return { name, size: file.size, type: file.type, file, thumbnailUrl };
+    };
+
     const handleFileClick = () => {
       const fileInput = document.createElement("input");
       fileInput.type = "file";
       fileInput.multiple = true;
       fileInput.addEventListener("change", () => {
         if (!fileInput.files) return;
-        const newFiles: PendingFile[] = Array.from(fileInput.files).map(
-          (file) => ({ name: file.name, size: file.size, type: file.type, file }),
+        const newFiles = Array.from(fileInput.files).map((file) =>
+          makePendingFile(file),
         );
         setPendingFiles((prev) => [...prev, ...newFiles]);
       });
@@ -132,17 +165,26 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
     };
 
     const removeFile = (index: number) => {
-      setPendingFiles((prev) => prev.filter((_, i) => i !== index));
+      setPendingFiles((prev) => {
+        const removed = prev[index];
+        if (removed?.thumbnailUrl) URL.revokeObjectURL(removed.thumbnailUrl);
+        return prev.filter((_, i) => i !== index);
+      });
     };
 
     const handlePaste = (e: ClipboardEvent<HTMLTextAreaElement>) => {
       const imageFiles: PendingFile[] = Array.from(e.clipboardData.items)
-        .filter((item) => item.kind === "file" && item.type.startsWith("image/"))
+        .filter(
+          (item) => item.kind === "file" && item.type.startsWith("image/"),
+        )
         .flatMap((item) => {
           const file = item.getAsFile();
           if (!file) return [];
-          const name = file.name !== "" ? file.name : `pasted-image.${file.type.split("/")[1]}`;
-          return [{ name, size: file.size, type: file.type, file }];
+          const name =
+            file.name !== ""
+              ? file.name
+              : `pasted-image.${file.type.split("/")[1]}`;
+          return [makePendingFile(file, name)];
         });
       if (imageFiles.length > 0) {
         e.preventDefault();
@@ -176,8 +218,13 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
 
     const quoteChip = quotedText && (
       <div className="flex items-start gap-2 mx-[10px] mt-2 px-2 py-1.5 rounded-md bg-muted/50 text-xs text-muted-foreground">
-        <MessageSquareText className="size-3 flex-shrink-0 mt-0.5 opacity-60" aria-hidden="true" />
-        <span className="flex-1 line-clamp-2 leading-relaxed">{quotedText}</span>
+        <MessageSquareText
+          className="size-3 flex-shrink-0 mt-0.5 opacity-60"
+          aria-hidden="true"
+        />
+        <span className="flex-1 line-clamp-2 leading-relaxed">
+          {quotedText}
+        </span>
         <button
           type="button"
           onClick={onClearQuote}
@@ -194,18 +241,50 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
         {pendingFiles.map((f, i) => (
           <div
             key={`${f.name}-${i}`}
-            className="flex items-center gap-1 pl-2 pr-1 py-1 rounded-md bg-muted text-xs text-foreground max-w-[180px]"
+            className="relative flex items-center gap-1 rounded-md bg-muted text-xs text-foreground overflow-hidden"
           >
-            <FileText className="size-3 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
-            <span className="truncate">{f.name}</span>
-            <button
-              type="button"
-              onClick={() => removeFile(i)}
-              className="flex-shrink-0 size-4 rounded-sm flex items-center justify-center hover:bg-muted-foreground/20 ml-0.5"
-              aria-label={`Remove ${f.name}`}
-            >
-              <X className="size-2.5" aria-hidden="true" />
-            </button>
+            {f.thumbnailUrl ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setLightboxUrl(f.thumbnailUrl!)}
+                  className="flex-shrink-0 focus:outline-none"
+                  aria-label={`Preview ${f.name}`}
+                >
+                  <img
+                    src={f.thumbnailUrl}
+                    alt={f.name}
+                    className="size-10 object-cover border border-border hover:opacity-90 transition-opacity"
+                  />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeFile(i)}
+                  className="absolute top-0.5 right-0.5 size-4 rounded-sm flex items-center justify-center bg-black/50 hover:bg-black/70 text-white"
+                  aria-label={`Remove ${f.name}`}
+                >
+                  <X className="size-2.5" aria-hidden="true" />
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="pl-2 flex items-center gap-1 max-w-[180px] py-1">
+                  <FileText
+                    className="size-3 flex-shrink-0 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                  <span className="truncate">{f.name}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeFile(i)}
+                  className="flex-shrink-0 size-4 rounded-sm flex items-center justify-center hover:bg-muted-foreground/20 mr-1"
+                  aria-label={`Remove ${f.name}`}
+                >
+                  <X className="size-2.5" aria-hidden="true" />
+                </button>
+              </>
+            )}
           </div>
         ))}
       </div>
@@ -262,6 +341,7 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
     );
 
     return (
+      <>
       <div className="relative z-10 mt-auto pt-3 px-4">
         <div className="relative">
           <div
@@ -365,6 +445,32 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
           )}
         </div>
       </div>
+      {lightboxUrl && createPortal(
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          onClick={() => setLightboxUrl(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Image preview"
+        >
+          <button
+            type="button"
+            className="absolute top-4 right-4 size-8 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 text-white transition-colors"
+            onClick={() => setLightboxUrl(null)}
+            aria-label="Close preview"
+          >
+            <X className="size-4" aria-hidden="true" />
+          </button>
+          <img
+            src={lightboxUrl}
+            alt="Preview"
+            className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>,
+        document.body,
+      )}
+      </>
     );
   },
 );
