@@ -15,7 +15,7 @@ export function AiChatEmptyState({
 }: AiChatEmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center h-full text-center text-ai-chat-muted-foreground gap-4">
-      {icon && icon}
+      {icon}
       <div className="flex flex-col items-center gap-1">
         <h2 className="text-2xl font-semibold leading-tight tracking-tight text-foreground">
           {title}
