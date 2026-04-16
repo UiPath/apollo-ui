@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.2.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.2.0...@uipath/apollo-wind@2.2.1) (2026-04-16)
+
+### Bug Fixes
+
+* **apollo-wind:** update storybook commands in Getting Started docs ([cb6e125](https://github.com/uipath/apollo-ui/commit/cb6e125d21f566eb9e05d53e2e2365784d60a89c))
+
 ## [@uipath/apollo-wind-v2.2.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.1.1...@uipath/apollo-wind@2.2.0) (2026-04-15)
 
 ### Features
