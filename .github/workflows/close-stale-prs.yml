@@ -1,0 +1,142 @@
+name: Close Stale PRs
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Log which PRs would be closed without actually closing them'
+        type: boolean
+        default: true
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  close-stale:
+    name: Close stale PRs
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+      STALE_DAYS: '14'
+      SKIP_LABEL: do-not-close
+      DRY_RUN: ${{ inputs.dry_run }}
+    steps:
+      - name: Close PRs with no commits in 14+ days
+        run: |
+          # We roll our own instead of actions/stale because staleness must be
+          # measured from the PR's last commit (committer.date). actions/stale
+          # only keys off updated_at, which is reset by comments, label changes,
+          # and bot activity — not what we want.
+
+          set -euo pipefail
+
+          cutoff=$(date -u -d "-${STALE_DAYS} days" +%Y-%m-%dT%H:%M:%SZ)
+          dry_run="${DRY_RUN:-false}"
+
+          echo "Cutoff (UTC): ${cutoff}"
+          echo "Dry run: ${dry_run}"
+          echo "Fetching open PRs..."
+
+          prs=$(gh pr list --state open --limit 500 --json number,labels,headRefOid)
+          total=$(echo "$prs" | jq 'length')
+          echo "Found ${total} open PR(s)"
+          echo ""
+
+          if (( total >= 500 )); then
+            echo "::warning::hit 500-PR fetch cap; additional PRs will not be evaluated this run"
+          fi
+
+          closed=()
+          skipped_label=()
+          skipped_error=()
+          active=()
+
+          while IFS=$'\t' read -r number sha action; do
+            if [[ "${action}" == "skip" ]]; then
+              echo "PR #${number}: skipped (${SKIP_LABEL} label present)"
+              skipped_label+=("#${number}")
+              continue
+            fi
+
+            if ! commit_date=$(gh api "repos/${GH_REPO}/commits/${sha}" \
+                --jq '.commit.committer.date' 2>/dev/null) || [[ -z "${commit_date}" ]]; then
+              echo "::warning::PR #${number}: could not fetch last commit date, skipping"
+              skipped_error+=("#${number} (fetch failed)")
+              continue
+            fi
+
+            if [[ "${commit_date}" < "${cutoff}" ]]; then
+              if [[ "${dry_run}" == "true" ]]; then
+                echo "PR #${number}: stale (last commit ${commit_date}) — would close (dry run)"
+                closed+=("#${number} (last commit ${commit_date})")
+              else
+                echo "PR #${number}: stale (last commit ${commit_date}) — closing"
+                if gh pr close "${number}" \
+                    --comment "This PR has been stale for over 2 weeks with no new commits. Closing — feel free to reopen if you'd like to continue this work. To keep a PR exempt from this automation, add the \`${SKIP_LABEL}\` label."; then
+                  closed+=("#${number} (last commit ${commit_date})")
+                else
+                  echo "::warning::PR #${number}: close failed (already closed or merged?)"
+                  skipped_error+=("#${number} (close failed)")
+                fi
+              fi
+            else
+              echo "PR #${number}: active (last commit ${commit_date})"
+              active+=("#${number}")
+            fi
+          done < <(echo "$prs" | jq -r --arg skip "${SKIP_LABEL}" '
+            .[] | [
+              .number,
+              .headRefOid,
+              (if (.labels | any(.name == $skip)) then "skip" else "check" end)
+            ] | @tsv')
+
+          err_count=${#skipped_error[@]}
+          if (( err_count >= 5 && err_count * 2 >= total )); then
+            echo "::error::${err_count}/${total} PRs failed to process — likely rate-limited or upstream API issue"
+            exit 1
+          fi
+
+          closed_heading="Closed"
+          if [[ "${dry_run}" == "true" ]]; then
+            closed_heading="Would close (dry run)"
+          fi
+
+          print_section() {
+            local heading=$1
+            shift
+            echo "## ${heading} ($#)"
+            if (( $# > 0 )); then
+              printf -- '- %s\n' "$@"
+            else
+              echo "_none_"
+            fi
+            echo ""
+          }
+
+          {
+            echo "# Close Stale PRs"
+            echo ""
+            echo "- **Run:** [#${GITHUB_RUN_ID}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})"
+            echo "- **Triggered by:** \`${GITHUB_EVENT_NAME}\` (${GITHUB_TRIGGERING_ACTOR})"
+            echo "- **Started:** $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "- **Cutoff:** \`${cutoff}\` (${STALE_DAYS} days)"
+            echo "- **Open PRs scanned:** ${total}"
+            echo "- **Dry run:** ${dry_run}"
+            echo ""
+            print_section "${closed_heading}" "${closed[@]}"
+            print_section "Skipped — \`${SKIP_LABEL}\` label" "${skipped_label[@]}"
+            print_section "Skipped — errors" "${skipped_error[@]}"
+            print_section "Active" "${active[@]}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo ""
+          echo "Done"
