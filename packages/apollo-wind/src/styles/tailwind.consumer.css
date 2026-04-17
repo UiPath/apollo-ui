@@ -1292,3 +1292,5 @@ body.canvas, .canvas {
     background-color: var(--color-border-hover);
   }
 }
+
+@import "./tailwind.utilities.css";

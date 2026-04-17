@@ -1,0 +1,46 @@
+/**
+ * Apollo Wind — Custom Utilities
+ *
+ * Tailwind @utility rules, @keyframes, and non-token helpers that extend
+ * the base theme. Imported by tailwind.consumer.css.
+ *
+ */
+
+/* ============================================================================
+ * Glow — attention-drawing ring pulse
+ *
+ * `animate-glow` drives an expanding box-shadow ring around any element.
+ * The color and intensity are driven by CSS variables so the same utility
+ * works for status indicators, brand highlights, ad-hoc attention prompts,
+ * or any custom color.
+ *
+ * Knobs (set via inline style or a Tailwind arbitrary value):
+ *   --glow-color    source color  (default: currentColor)
+ *   --glow-strength mix percent   (default: 40%)
+ *
+ * Examples:
+ *   <div className="animate-glow [--glow-color:var(--error)]" />
+ *   <div className="animate-glow [--glow-color:var(--info)] [--glow-strength:60%]" />
+ *   <div className="text-info animate-glow" />   // picks up --brand or falls back to currentColor
+ *
+ * Implementation note: the color-mix lives in the utility body (not the
+ * keyframe) to avoid a lightningcss bug that drops keyframe declarations
+ * containing `color-mix(... var(...) ...)`. The internal `--_glow-shadow`
+ * holds the pre-mixed value for the keyframe to consume.
+ * ============================================================================ */
+
+@keyframes apollo-glow {
+  0%   { box-shadow: 0 0 0 0 var(--_glow-shadow, currentColor); }
+  70%  { box-shadow: 0 0 0 10px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+@utility animate-glow {
+  --_glow-shadow: color-mix(
+    in srgb,
+    var(--glow-color, var(--brand, currentColor)) var(--glow-strength, 40%),
+    transparent
+  );
+  will-change: box-shadow;
+  animation: apollo-glow 2s infinite;
+}
