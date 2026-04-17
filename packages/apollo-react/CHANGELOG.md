@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.6.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.6.1...@uipath/apollo-react@4.6.2) (2026-04-17)
+
+### Bug Fixes
+
+* **apollo-react:** disable task drag-and-drop when stage is read-only [MST-8778] ([fc20529](https://github.com/UiPath/apollo-ui/commit/fc205291eca3c5636ab626a48dc798dc7f2366fd))
+
 ## [@uipath/apollo-react-v4.6.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.6.0...@uipath/apollo-react@4.6.1) (2026-04-16)
 
 ### Bug Fixes
