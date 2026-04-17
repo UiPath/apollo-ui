@@ -192,7 +192,10 @@ export const MOCK_MESSAGES_WITH_CHOICES: UIMessage[] = [
   },
 ];
 
-export const MOCK_SOURCES_BASIC = {
+export const MOCK_SOURCES_BASIC: Record<
+  string,
+  { label: string; url: string }[]
+> = {
   "2": [
     { label: "Apollo UI GitHub", url: "https://github.com/UiPath/apollo-ui" },
     { label: "Tailwind CSS", url: "https://tailwindcss.com" },
@@ -200,7 +203,10 @@ export const MOCK_SOURCES_BASIC = {
   ],
 };
 
-export const MOCK_ATTACHMENTS_BASIC = {
+export const MOCK_ATTACHMENTS_BASIC: Record<
+  string,
+  { name: string; type: string; size: number }[]
+> = {
   "1": [{ name: "Q4_Report.pdf", type: "application/pdf", size: 245000 }],
 };
 

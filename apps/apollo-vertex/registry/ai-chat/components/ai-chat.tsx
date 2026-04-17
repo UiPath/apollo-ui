@@ -131,7 +131,10 @@ export function AiChat({
 
   const displayName = assistantName ?? t("ai_assistant");
 
-  const queuedMessageRef = useRef<{ content: string; attachments?: File[] } | null>(null);
+  const queuedMessageRef = useRef<{
+    content: string;
+    attachments?: File[];
+  } | null>(null);
   const [conversationCopied, setConversationCopied] = useState(false);
   const flowFreeTextResolveRef = useRef<((text: string) => void) | null>(null);
 
@@ -191,10 +194,11 @@ export function AiChat({
       }
     }
     wasLoadingRef.current = isLoading;
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- onSendMessage/scrollToBottom are stable enough; adding them would retrigger on every render
   }, [isLoading]);
 
   const latestChoices = findLatestChoices(messages);
-  const isMultiStep = latestChoices?.step !== undefined;
+  const isMultiStep = latestChoices?.step != null;
   const latestFlow = findLatestFlow(messages);
   const [flowDismissed, setFlowDismissed] = useState(false);
   const prevFlowIdRef = useRef<string | null>(null);
@@ -255,7 +259,9 @@ export function AiChat({
       onFeedback={onFeedback}
       onRegenerate={onRegenerate}
       onEditMessage={onEditMessage}
-      {...(enableTextSelection ? { onQuoteSelect: (text) => setQuotedText(text) } : {})}
+      {...(enableTextSelection
+        ? { onQuoteSelect: (text) => setQuotedText(text) }
+        : {})}
     >
       <div
         className="flex flex-col h-full max-w-[680px] mx-auto bg-transparent text-ai-chat-foreground overflow-hidden"
@@ -290,7 +296,11 @@ export function AiChat({
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={handleCopyConversation}>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          void handleCopyConversation();
+                        }}
+                      >
                         {conversationCopied ? "Copied!" : "Copy conversation"}
                       </DropdownMenuItem>
                       {onClearChat && showClearButton && (
@@ -313,7 +323,12 @@ export function AiChat({
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>{"Cancel"}</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => { onClearChat?.(); setChoiceHistory([]); }}>
+                      <AlertDialogAction
+                        onClick={() => {
+                          onClearChat?.();
+                          setChoiceHistory([]);
+                        }}
+                      >
                         {"New conversation"}
                       </AlertDialogAction>
                     </AlertDialogFooter>
@@ -385,21 +400,26 @@ export function AiChat({
                 {children}
 
                 {/* Single-step choices render inline */}
-                {latestChoices && !latestChoices.step && !isLoading && !isLatestResponseAnimating && (
-                  <AiChatSuggestions
-                    prompt={latestChoices.prompt}
-                    options={latestChoices.options}
-                    onSelect={(option) => {
-                      if (onChoiceSelect) {
-                        onChoiceSelect(option);
-                      } else {
-                        onSendMessage(option.label);
-                      }
-                    }}
-                  />
-                )}
+                {latestChoices &&
+                  !latestChoices.step &&
+                  !isLoading &&
+                  !isLatestResponseAnimating && (
+                    <AiChatSuggestions
+                      prompt={latestChoices.prompt}
+                      options={latestChoices.options}
+                      onSelect={(option) => {
+                        if (onChoiceSelect) {
+                          onChoiceSelect(option);
+                        } else {
+                          onSendMessage(option.label);
+                        }
+                      }}
+                    />
+                  )}
 
-                {showLoadingIndicator && !isMultiStep && !isFlowActive && <AiChatLoading />}
+                {showLoadingIndicator && !isMultiStep && !isFlowActive && (
+                  <AiChatLoading />
+                )}
               </div>
             </div>
 
@@ -422,23 +442,25 @@ export function AiChat({
                       onSendMessage(option.label);
                     }
                   }}
-                  onBack={
-                    latestChoices.canGoBack && choiceHistory.length > 0
-                      ? () => {
+                  {...(latestChoices.canGoBack && choiceHistory.length > 0
+                    ? {
+                        onBack: () => {
                           const prev = choiceHistory.at(-1);
                           setChoiceHistory((h) => h.slice(0, -1));
-                          onSendMessage(`Actually, let me revise my previous answer: ${prev}`);
-                        }
-                      : undefined
-                  }
-                  onSkip={
-                    latestChoices.canSkip
-                      ? () => {
+                          onSendMessage(
+                            `Actually, let me revise my previous answer: ${prev}`,
+                          );
+                        },
+                      }
+                    : {})}
+                  {...(latestChoices.canSkip
+                    ? {
+                        onSkip: () => {
                           setChoiceHistory((h) => [...h, "(skipped)"]);
                           onSendMessage("Skip this step");
-                        }
-                      : undefined
-                  }
+                        },
+                      }
+                    : {})}
                   onDismiss={() => {
                     setChoiceHistory([]);
                     onSendMessage("Never mind, let's stop here");
@@ -507,7 +529,7 @@ export function AiChat({
                 />
               </div>
             )}
-            <div className={isFlowActive ? "relative z-10 -mt-[76px]" : undefined}>
+            <div className={isFlowActive ? "relative z-10 -mt-[76px]" : ""}>
               <AiChatInput
                 ref={inputRef}
                 value={input}
@@ -515,7 +537,9 @@ export function AiChat({
                 onSubmit={handleSubmit}
                 onStop={onStop}
                 isLoading={isLoading}
-                placeholder={isFlowActive ? "Or type your own answer..." : placeholder}
+                placeholder={
+                  isFlowActive ? "Or type your own answer..." : placeholder
+                }
                 hasMessages
                 quotedText={quotedText}
                 onClearQuote={() => setQuotedText(null)}

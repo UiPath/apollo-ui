@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
 import { motion } from "framer-motion";
-import type { ChoiceOption, ToolResultChoices } from "../types";
+import type { ChoiceOption } from "../types";
 
 const ENTRANCE_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -56,7 +56,7 @@ export function AiChatSuggestions({
   onSkip,
   onDismiss,
 }: AiChatSuggestionsProps) {
-  const isMultiStep = step !== undefined;
+  const isMultiStep = step != null;
 
   if (isMultiStep) {
     return (
@@ -70,7 +70,10 @@ export function AiChatSuggestions({
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
           <div className="flex items-center gap-2">
             {isLoading ? (
-              <Loader2 className="size-3.5 animate-spin text-muted-foreground" aria-hidden="true" />
+              <Loader2
+                className="size-3.5 animate-spin text-muted-foreground"
+                aria-hidden="true"
+              />
             ) : (
               <>
                 {canGoBack && onBack && (
@@ -85,7 +88,8 @@ export function AiChatSuggestions({
                 )}
                 {totalSteps && (
                   <span className="text-xs text-muted-foreground">
-                    {step} <span className="opacity-40">/</span> {totalSteps}
+                    {step} <span className="opacity-40">{"/"}</span>{" "}
+                    {totalSteps}
                   </span>
                 )}
               </>
@@ -117,7 +121,9 @@ export function AiChatSuggestions({
 
         {/* Prompt */}
         {prompt && (
-          <p className="px-4 pb-3 text-sm font-medium text-foreground">{prompt}</p>
+          <p className="px-4 pb-3 text-sm font-medium text-foreground">
+            {prompt}
+          </p>
         )}
 
         {/* Options */}

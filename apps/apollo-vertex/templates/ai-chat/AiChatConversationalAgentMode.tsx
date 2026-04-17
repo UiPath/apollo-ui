@@ -53,7 +53,9 @@ function ConversationalAgentChatInner({
       }}
       onStop={stop}
       onClearChat={clear}
-      onRegenerate={reload}
+      onRegenerate={() => {
+        void reload();
+      }}
       title={title}
       assistantName={assistantName}
       enableTextSelection

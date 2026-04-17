@@ -58,10 +58,9 @@ export function AiChatMessageActions({
   // Latest assistant message keeps actions always visible. Everything else
   // (older assistant messages, all user messages) reveals on hover/focus
   // for keyboard a11y.
-  const visibilityClass =
-    isLatest
-      ? "opacity-100"
-      : "opacity-0 group-hover/message:opacity-100 group-focus-within/message:opacity-100";
+  const visibilityClass = isLatest
+    ? "opacity-100"
+    : "opacity-0 group-hover/message:opacity-100 group-focus-within/message:opacity-100";
 
   return (
     <div
@@ -72,7 +71,9 @@ export function AiChatMessageActions({
           <TooltipTrigger asChild>
             <button
               type="button"
-              onClick={handleCopy}
+              onClick={() => {
+                void handleCopy();
+              }}
               className="size-7 inline-flex items-center justify-center rounded-md hover:bg-ai-chat-muted transition-colors"
               aria-label={copyLabel}
             >

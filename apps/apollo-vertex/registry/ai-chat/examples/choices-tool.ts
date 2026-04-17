@@ -19,10 +19,23 @@ const presentChoicesInput = z.object({
     .min(2)
     .max(6)
     .describe("2 to 6 options for the user to pick from"),
-  step: z.number().optional().describe("Current step number (1-based) — include when this is part of a multi-step flow"),
-  totalSteps: z.number().optional().describe("Total number of steps in the flow — include alongside step"),
+  step: z
+    .number()
+    .optional()
+    .describe(
+      "Current step number (1-based) — include when this is part of a multi-step flow",
+    ),
+  totalSteps: z
+    .number()
+    .optional()
+    .describe("Total number of steps in the flow — include alongside step"),
   canSkip: z.boolean().optional().describe("Show a skip button for this step"),
-  canGoBack: z.boolean().optional().describe("Show a back button to let the user revise their previous answer"),
+  canGoBack: z
+    .boolean()
+    .optional()
+    .describe(
+      "Show a back button to let the user revise their previous answer",
+    ),
 });
 
 const presentChoicesOutput = presentChoicesInput.extend({

@@ -76,7 +76,11 @@ export function AiChatMessage({
   const [editValue, setEditValue] = useState(displayContent);
   const editTextareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const [selectionMenu, setSelectionMenu] = useState<{ x: number; y: number; text: string } | null>(null);
+  const [selectionMenu, setSelectionMenu] = useState<{
+    x: number;
+    y: number;
+    text: string;
+  } | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const handleMouseUp = () => {
@@ -193,7 +197,7 @@ export function AiChatMessage({
                 onClick={() => setIsEditing(false)}
                 className="px-3 py-1 text-xs rounded-md hover:bg-muted text-muted-foreground transition-colors"
               >
-                Cancel
+                {"Cancel"}
               </button>
               <button
                 type="button"
@@ -201,7 +205,7 @@ export function AiChatMessage({
                 disabled={!editValue.trim()}
                 className="px-3 py-1 text-xs rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-colors"
               >
-                Save &amp; re-run
+                {"Save & re-run"}
               </button>
             </div>
           </div>
@@ -220,14 +224,17 @@ export function AiChatMessage({
           <div className="px-4 py-2 text-sm leading-6 rounded-2xl rounded-br-md bg-ai-chat-bubble-user text-ai-chat-bubble-user-foreground">
             {attachments && attachments.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mb-2">
-                {attachments.map((att, i) => (
+                {attachments.map((att) => (
                   <div
-                    key={`${att.name}-${i}`}
+                    key={att.name}
                     className="flex items-center gap-1 pl-2 pr-2 py-1 rounded-md bg-white/10 text-xs"
                   >
-                    <FileText className="size-3 flex-shrink-0 opacity-70" aria-hidden="true" />
+                    <FileText
+                      className="size-3 flex-shrink-0 opacity-70"
+                      aria-hidden="true"
+                    />
                     <span className="truncate max-w-[120px]">{att.name}</span>
-                    {att.size !== undefined && (
+                    {att.size != null && (
                       <span className="opacity-60 flex-shrink-0">
                         {formatFileSize(att.size)}
                       </span>
@@ -245,7 +252,9 @@ export function AiChatMessage({
               content={displayContent}
               messageRole="user"
               showCopy={config.showCopyButton}
-              {...(config.onEditMessage ? { onEdit: () => setIsEditing(true) } : {})}
+              {...(config.onEditMessage
+                ? { onEdit: () => setIsEditing(true) }
+                : {})}
             />
           )}
         </div>
@@ -274,79 +283,90 @@ export function AiChatMessage({
           onDismiss={() => setSelectionMenu(null)}
         />
       )}
-    <motion.div
-      className="flex w-full justify-start"
-      initial={ENTRANCE_INITIAL}
-      animate={ENTRANCE_ANIMATE}
-      transition={ENTRANCE_TRANSITION}
-      onMouseUp={handleMouseUp}
-    >
-      <div ref={contentRef} className="group/message flex flex-col gap-3 max-w-[85%]">
-        {displayContent && !messageHasChoices(message) && (
-          isResponseFullyRevealed ? (
-            <AiChatMarkdown>{displayedText}</AiChatMarkdown>
-          ) : (
-            <p className="py-1 text-base leading-relaxed text-foreground whitespace-pre-wrap">{displayedText}</p>
-          )
-        )}
-        {children && <div className="mt-2 flex flex-col gap-2">{children}</div>}
+      <motion.div
+        className="flex w-full justify-start"
+        initial={ENTRANCE_INITIAL}
+        animate={ENTRANCE_ANIMATE}
+        transition={ENTRANCE_TRANSITION}
+        onMouseUp={handleMouseUp}
+      >
+        <div
+          ref={contentRef}
+          className="group/message flex flex-col gap-3 max-w-[85%]"
+        >
+          {displayContent &&
+            !messageHasChoices(message) &&
+            (isResponseFullyRevealed ? (
+              <AiChatMarkdown>{displayedText}</AiChatMarkdown>
+            ) : (
+              <p className="py-1 text-base leading-relaxed text-foreground whitespace-pre-wrap">
+                {displayedText}
+              </p>
+            ))}
+          {children && (
+            <div className="mt-2 flex flex-col gap-2">{children}</div>
+          )}
 
-        {sources && sources.length > 0 && isResponseFullyRevealed && (
-          <motion.div
-            className="flex flex-wrap gap-1.5"
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {sources.map((source, i) =>
-              source.url ? (
-                <a
-                  key={i}
-                  href={source.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="no-underline"
-                >
-                  <Badge variant="outline" className="gap-1 cursor-pointer hover:bg-muted transition-colors">
+          {sources && sources.length > 0 && isResponseFullyRevealed && (
+            <motion.div
+              className="flex flex-wrap gap-1.5"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {sources.map((source) =>
+                source.url ? (
+                  <a
+                    key={source.url}
+                    href={source.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="no-underline"
+                  >
+                    <Badge
+                      variant="outline"
+                      className="gap-1 cursor-pointer hover:bg-muted transition-colors"
+                    >
+                      <ExternalLink className="size-3" aria-hidden="true" />
+                      {source.label}
+                    </Badge>
+                  </a>
+                ) : (
+                  <Badge key={source.label} variant="outline" className="gap-1">
                     <ExternalLink className="size-3" aria-hidden="true" />
                     {source.label}
                   </Badge>
-                </a>
-              ) : (
-                <Badge key={i} variant="outline" className="gap-1">
-                  <ExternalLink className="size-3" aria-hidden="true" />
-                  {source.label}
-                </Badge>
-              ),
-            )}
-          </motion.div>
-        )}
-
-        {config.showMessageActions &&
-          !isInActiveChoicesTurn &&
-          isResponseFullyRevealed && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <AiChatMessageActions
-                content={displayContent}
-                messageRole="assistant"
-                isLatest={isLatestAssistant}
-                showCopy={config.showCopyButton}
-                {...(onFeedback ?? config.onFeedback
-                  ? {
-                      onFeedback:
-                        onFeedback ?? ((type) => config.onFeedback?.(message.id, type)),
-                    }
-                  : {})}
-                onRegenerate={onRegenerate ?? config.onRegenerate}
-              />
+                ),
+              )}
             </motion.div>
           )}
-      </div>
-    </motion.div>
+
+          {config.showMessageActions &&
+            !isInActiveChoicesTurn &&
+            isResponseFullyRevealed && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <AiChatMessageActions
+                  content={displayContent}
+                  messageRole="assistant"
+                  isLatest={isLatestAssistant}
+                  showCopy={config.showCopyButton}
+                  {...((onFeedback ?? config.onFeedback)
+                    ? {
+                        onFeedback:
+                          onFeedback ??
+                          ((type) => config.onFeedback?.(message.id, type)),
+                      }
+                    : {})}
+                  onRegenerate={onRegenerate ?? config.onRegenerate}
+                />
+              </motion.div>
+            )}
+        </div>
+      </motion.div>
     </>
   );
 }

@@ -16,7 +16,6 @@ const defaultConfig: AiChatConfig = {
   setIsLatestResponseAnimating: () => {
     // no-op default — replaced by AiChat with the real setter via context override
   },
-  onEditMessage: undefined,
 };
 
 const AiChatContext = createContext<AiChatConfig>(defaultConfig);

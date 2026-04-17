@@ -1,3 +1,4 @@
+// oxlint-disable eslint/max-lines -- input bundles file handling, paste, quote chip, and lightbox portal; split would add indirection
 "use client";
 
 import {
@@ -36,6 +37,7 @@ import {
 } from "@/registry/tooltip/tooltip";
 
 interface PendingFile {
+  uid: string;
   name: string;
   size: number;
   type: string;
@@ -56,6 +58,22 @@ interface AiChatInputProps {
   initialFiles?: PendingFile[];
   quotedText?: string | null;
   onClearQuote?: () => void;
+}
+
+function makePendingFile(file: File, nameOverride?: string): PendingFile {
+  const uid = crypto.randomUUID();
+  const name = nameOverride ?? file.name;
+  if (file.type.startsWith("image/")) {
+    return {
+      uid,
+      name,
+      size: file.size,
+      type: file.type,
+      file,
+      thumbnailUrl: URL.createObjectURL(file),
+    };
+  }
+  return { uid, name, size: file.size, type: file.type, file };
 }
 
 export interface AiChatInputHandle {
@@ -89,9 +107,11 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
 
     useEffect(() => {
       if (!lightboxUrl) return;
-      const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setLightboxUrl(null); };
-      document.addEventListener("keydown", handler as EventListener);
-      return () => document.removeEventListener("keydown", handler as EventListener);
+      const handler = (e: globalThis.KeyboardEvent) => {
+        if (e.key === "Escape") setLightboxUrl(null);
+      };
+      document.addEventListener("keydown", handler);
+      return () => document.removeEventListener("keydown", handler);
     }, [lightboxUrl]);
 
     useImperativeHandle(ref, () => ({
@@ -116,7 +136,8 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
     const submitMessage = () => {
       if (!value.trim()) return;
       const files = pendingFiles.map((f) => f.file);
-      onSubmit(files.length > 0 ? files : undefined);
+      if (files.length > 0) onSubmit(files);
+      else onSubmit();
       pendingFiles.forEach((f) => {
         if (f.thumbnailUrl) URL.revokeObjectURL(f.thumbnailUrl);
       });
@@ -137,17 +158,6 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
         e.preventDefault();
         submitMessage();
       }
-    };
-
-    const makePendingFile = (
-      file: File,
-      nameOverride?: string,
-    ): PendingFile => {
-      const name = nameOverride ?? file.name;
-      const thumbnailUrl = file.type.startsWith("image/")
-        ? URL.createObjectURL(file)
-        : undefined;
-      return { name, size: file.size, type: file.type, file, thumbnailUrl };
     };
 
     const handleFileClick = () => {
@@ -181,9 +191,9 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
           const file = item.getAsFile();
           if (!file) return [];
           const name =
-            file.name !== ""
-              ? file.name
-              : `pasted-image.${file.type.split("/")[1]}`;
+            file.name === ""
+              ? `pasted-image.${file.type.split("/")[1]}`
+              : file.name;
           return [makePendingFile(file, name)];
         });
       if (imageFiles.length > 0) {
@@ -240,14 +250,16 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
       <div className="flex flex-wrap gap-1.5 px-[10px] pt-2">
         {pendingFiles.map((f, i) => (
           <div
-            key={`${f.name}-${i}`}
+            key={f.uid}
             className="relative flex items-center gap-1 rounded-md bg-muted text-xs text-foreground overflow-hidden"
           >
             {f.thumbnailUrl ? (
               <>
                 <button
                   type="button"
-                  onClick={() => setLightboxUrl(f.thumbnailUrl!)}
+                  onClick={() => {
+                    if (f.thumbnailUrl) setLightboxUrl(f.thumbnailUrl);
+                  }}
                   className="flex-shrink-0 focus:outline-none"
                   aria-label={`Preview ${f.name}`}
                 >
@@ -342,66 +354,89 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
 
     return (
       <>
-      <div className="relative z-10 mt-auto pt-3 px-4">
-        <div className="relative">
-          <div
-            ref={glowRef}
-            className={`absolute pointer-events-none transition-opacity duration-500 ${hasMessages ? "opacity-0" : "opacity-100"}`}
-            style={{
-              top: "-56px",
-              left: "-48px",
-              right: "-48px",
-              bottom: "-64px",
-            }}
-            aria-hidden="true"
-          >
-            <svg
-              viewBox="0 0 561 176"
-              preserveAspectRatio="none"
-              className="w-full h-full"
-              style={{ overflow: "visible" }}
+        <div className="relative z-10 mt-auto pt-3 px-4">
+          <div className="relative">
+            <div
+              ref={glowRef}
+              className={`absolute pointer-events-none transition-opacity duration-500 ${hasMessages ? "opacity-0" : "opacity-100"}`}
+              style={{
+                top: "-56px",
+                left: "-48px",
+                right: "-48px",
+                bottom: "-64px",
+              }}
               aria-hidden="true"
             >
-              <defs>
-                <filter
-                  id="ai-chat-input-glow"
-                  x="-25%"
-                  y="-50%"
-                  width="150%"
-                  height="200%"
-                >
-                  <feGaussianBlur stdDeviation="10" />
-                </filter>
-                <linearGradient
-                  id="ai-chat-input-gradient"
-                  x1="375.705"
-                  y1="97.1886"
-                  x2="356.926"
-                  y2="19.642"
-                  gradientUnits="userSpaceOnUse"
-                >
-                  <stop stopColor="#69C7DD" />
-                  <stop offset="1" stopColor="#6C5AEF" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M124.909 87.7963L40.0002 119.001L40.0471 121.245L88.6762 130.906C132.72 132.472 223.153 135.555 232.53 135.359C244.251 135.113 315.666 133.619 447.602 128.917C579.537 124.214 504.087 109.289 446.803 90.7685C428.089 88.9151 405.086 89.6999 383 82.3956C360.914 75.0913 357.352 70.9186 338.481 61.6054C319.611 52.2922 308.392 55.8035 286.366 51.4103C264.341 47.0172 245.606 44.1934 181.911 40.9756C118.215 37.7579 138.966 43.5125 129.849 43.7033C122.556 43.8559 113.044 50.082 109.2 53.176L124.454 66.084L124.909 87.7963Z"
-                fill="url(#ai-chat-input-gradient)"
-                fillOpacity="0.25"
-                filter="url(#ai-chat-input-glow)"
-              />
-            </svg>
-          </div>
-          {hasMessages ? (
-            <form
-              onSubmit={handleSubmit}
-              className="relative flex flex-col rounded-lg border-2 border-input transition-colors bg-background"
-              {...focusStyles}
-            >
-              {quoteChip}
-              {fileChips}
-              <div className="flex items-end gap-2 pl-[8px] pr-[8px] pt-[4px] pb-[8px]">
-                {plusMenu}
+              <svg
+                viewBox="0 0 561 176"
+                preserveAspectRatio="none"
+                className="w-full h-full"
+                style={{ overflow: "visible" }}
+                aria-hidden="true"
+              >
+                <defs>
+                  <filter
+                    id="ai-chat-input-glow"
+                    x="-25%"
+                    y="-50%"
+                    width="150%"
+                    height="200%"
+                  >
+                    <feGaussianBlur stdDeviation="10" />
+                  </filter>
+                  <linearGradient
+                    id="ai-chat-input-gradient"
+                    x1="375.705"
+                    y1="97.1886"
+                    x2="356.926"
+                    y2="19.642"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stopColor="#69C7DD" />
+                    <stop offset="1" stopColor="#6C5AEF" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M124.909 87.7963L40.0002 119.001L40.0471 121.245L88.6762 130.906C132.72 132.472 223.153 135.555 232.53 135.359C244.251 135.113 315.666 133.619 447.602 128.917C579.537 124.214 504.087 109.289 446.803 90.7685C428.089 88.9151 405.086 89.6999 383 82.3956C360.914 75.0913 357.352 70.9186 338.481 61.6054C319.611 52.2922 308.392 55.8035 286.366 51.4103C264.341 47.0172 245.606 44.1934 181.911 40.9756C118.215 37.7579 138.966 43.5125 129.849 43.7033C122.556 43.8559 113.044 50.082 109.2 53.176L124.454 66.084L124.909 87.7963Z"
+                  fill="url(#ai-chat-input-gradient)"
+                  fillOpacity="0.25"
+                  filter="url(#ai-chat-input-glow)"
+                />
+              </svg>
+            </div>
+            {hasMessages ? (
+              <form
+                onSubmit={handleSubmit}
+                className="relative flex flex-col rounded-lg border-2 border-input transition-colors bg-background"
+                {...focusStyles}
+              >
+                {quoteChip}
+                {fileChips}
+                <div className="flex items-end gap-2 pl-[8px] pr-[8px] pt-[4px] pb-[8px]">
+                  {plusMenu}
+                  <textarea
+                    ref={textareaRef}
+                    value={value}
+                    onChange={(e) => handleChange(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onPaste={handlePaste}
+                    placeholder={displayPlaceholder}
+                    aria-label={displayPlaceholder}
+                    className="flex-1 resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none max-h-[200px] overflow-y-auto h-[40px] pt-[12px] pb-[8px] leading-[20px]"
+                    rows={1}
+                    disabled={disabled}
+                  />
+                  {sendStopButton}
+                </div>
+              </form>
+            ) : (
+              <form
+                onSubmit={handleSubmit}
+                className="relative flex flex-col rounded-lg border-2 border-input transition-colors bg-background"
+                {...focusStyles}
+              >
+                {quoteChip}
+                {fileChips}
                 <textarea
                   ref={textareaRef}
                   value={value}
@@ -410,66 +445,44 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
                   onPaste={handlePaste}
                   placeholder={displayPlaceholder}
                   aria-label={displayPlaceholder}
-                  className="flex-1 resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none max-h-[200px] overflow-y-auto h-[40px] pt-[12px] pb-[8px] leading-[20px]"
+                  className="w-full resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none h-[80px] px-[22px] pt-5 pb-2 leading-relaxed"
                   rows={1}
                   disabled={disabled}
                 />
-                {sendStopButton}
-              </div>
-            </form>
-          ) : (
-            <form
-              onSubmit={handleSubmit}
-              className="relative flex flex-col rounded-lg border-2 border-input transition-colors bg-background"
-              {...focusStyles}
-            >
-              {quoteChip}
-              {fileChips}
-              <textarea
-                ref={textareaRef}
-                value={value}
-                onChange={(e) => handleChange(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onPaste={handlePaste}
-                placeholder={displayPlaceholder}
-                aria-label={displayPlaceholder}
-                className="w-full resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none h-[80px] px-[22px] pt-5 pb-2 leading-relaxed"
-                rows={1}
-                disabled={disabled}
-              />
-              <div className="flex items-center justify-between px-[8px] pb-[8px]">
-                {plusMenu}
-                {sendStopButton}
-              </div>
-            </form>
-          )}
+                <div className="flex items-center justify-between px-[8px] pb-[8px]">
+                  {plusMenu}
+                  {sendStopButton}
+                </div>
+              </form>
+            )}
+          </div>
         </div>
-      </div>
-      {lightboxUrl && createPortal(
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-          onClick={() => setLightboxUrl(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Image preview"
-        >
-          <button
-            type="button"
-            className="absolute top-4 right-4 size-8 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 text-white transition-colors"
-            onClick={() => setLightboxUrl(null)}
-            aria-label="Close preview"
-          >
-            <X className="size-4" aria-hidden="true" />
-          </button>
-          <img
-            src={lightboxUrl}
-            alt="Preview"
-            className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>,
-        document.body,
-      )}
+        {lightboxUrl &&
+          createPortal(
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+              onClick={() => setLightboxUrl(null)}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Image preview"
+            >
+              <button
+                type="button"
+                className="absolute top-4 right-4 size-8 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 text-white transition-colors"
+                onClick={() => setLightboxUrl(null)}
+                aria-label="Close preview"
+              >
+                <X className="size-4" aria-hidden="true" />
+              </button>
+              <img
+                src={lightboxUrl}
+                alt="Preview"
+                className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>,
+            document.body,
+          )}
       </>
     );
   },

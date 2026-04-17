@@ -22,7 +22,10 @@ export function AiChatSelectionMenu({
   // Dismiss on outside mousedown
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+      if (
+        ref.current &&
+        !(e.target instanceof Node && ref.current.contains(e.target))
+      ) {
         onDismiss();
       }
     };
@@ -40,7 +43,11 @@ export function AiChatSelectionMenu({
       }}
       onClick={onAsk}
       className="fixed z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-background border border-border shadow-md text-xs font-semibold text-foreground hover:bg-muted transition-colors"
-      style={{ left: x, top: y, transform: "translate(-50%, -100%) translateY(-8px)" }}
+      style={{
+        left: x,
+        top: y,
+        transform: "translate(-50%, -100%) translateY(-8px)",
+      }}
       aria-label="Ask Autopilot about selected text"
     >
       <AutopilotGradientIcon size={14} aria-hidden="true" />

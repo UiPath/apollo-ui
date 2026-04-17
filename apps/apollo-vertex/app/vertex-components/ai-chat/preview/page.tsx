@@ -32,8 +32,7 @@ import {
 } from "./mock-data";
 import { ThinkingDemo } from "./thinking-demo";
 
-// biome-ignore lint/suspicious/noExplicitAny: preview no-op accepts any args
-function noop(..._args: any[]) {
+function noop(..._args: unknown[]) {
   // no-op for preview
 }
 
@@ -78,11 +77,16 @@ function FlowDemo() {
   if (result !== null) {
     return (
       <div className="flex flex-col gap-3">
-        <p className="text-xs text-muted-foreground font-mono break-all">{result}</p>
+        <p className="text-xs text-muted-foreground font-mono break-all">
+          {result}
+        </p>
         <button
           type="button"
           className="self-start text-xs px-3 py-1.5 rounded-md border border-input bg-background hover:bg-muted transition-colors"
-          onClick={() => { setResult(null); setFlowKey((k) => k + 1); }}
+          onClick={() => {
+            setResult(null);
+            setFlowKey((k) => k + 1);
+          }}
         >
           Reset
         </button>
@@ -95,7 +99,9 @@ function FlowDemo() {
       key={flowKey}
       flow={MOCK_FLOW}
       onComplete={(answers) => {
-        setResult(answers.map((a, i) => `Step ${i + 1}: ${a.answer}`).join(" · "));
+        setResult(
+          answers.map((a, i) => `Step ${i + 1}: ${a.answer}`).join(" · "),
+        );
       }}
       onDismiss={() => {
         setResult("(dismissed)");
@@ -175,8 +181,8 @@ function renderBasicMsg(msg: (typeof MOCK_MESSAGES_BASIC)[number]) {
     <AiChatMessage
       key={msg.id}
       message={msg}
-      sources={MOCK_SOURCES_BASIC[msg.id as keyof typeof MOCK_SOURCES_BASIC]}
-      attachments={MOCK_ATTACHMENTS_BASIC[msg.id as keyof typeof MOCK_ATTACHMENTS_BASIC]}
+      sources={MOCK_SOURCES_BASIC[msg.id]}
+      attachments={MOCK_ATTACHMENTS_BASIC[msg.id]}
     />
   );
 }
@@ -216,7 +222,10 @@ export default function AiChatPreviewPage() {
           title="Empty State (Custom with Suggestions)"
           description="AiChatEmptyState component with quick-start prompts."
         />
-        <PreviewCard className="h-[400px]" title="Empty State (Custom with Suggestions)">
+        <PreviewCard
+          className="h-[400px]"
+          title="Empty State (Custom with Suggestions)"
+        >
           <AiChat
             messages={[]}
             isLoading={false}
@@ -474,7 +483,15 @@ export default function AiChatPreviewPage() {
               onStop={noop}
               isLoading={false}
               hasMessages
-              initialFiles={[{ name: "design-spec.png", size: 84320, type: "image/png", file: new File([], "design-spec.png", { type: "image/png" }) }]}
+              initialFiles={[
+                {
+                  uid: "preview-1",
+                  name: "design-spec.png",
+                  size: 84320,
+                  type: "image/png",
+                  file: new File([], "design-spec.png", { type: "image/png" }),
+                },
+              ]}
             />
           </PreviewCard>
 

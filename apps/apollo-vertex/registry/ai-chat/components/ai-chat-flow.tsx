@@ -3,28 +3,39 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { FlowOption, FlowStep, ToolResultFlow } from "../utils/ai-chat-utils";
+import type { FlowOption, ToolResultFlow } from "../utils/ai-chat-utils";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 interface AiChatFlowProps {
   flow: ToolResultFlow;
-  onComplete: (answers: { stepId: string; prompt: string; answer: string }[]) => void;
+  onComplete: (
+    answers: { stepId: string; prompt: string; answer: string }[],
+  ) => void;
   onDismiss: () => void;
   /** Called on mount and on every step change with a resolver for the current step's free-text answer. */
   onFreeTextReady?: (resolve: (text: string) => void) => void;
 }
 
-export function AiChatFlow({ flow, onComplete, onDismiss, onFreeTextReady }: AiChatFlowProps) {
+export function AiChatFlow({
+  flow,
+  onComplete,
+  onDismiss,
+  onFreeTextReady,
+}: AiChatFlowProps) {
   const [stepIndex, setStepIndex] = useState(0);
-  const [answers, setAnswers] = useState<{ stepId: string; prompt: string; answer: string }[]>([]);
+  const [answers, setAnswers] = useState<
+    { stepId: string; prompt: string; answer: string }[]
+  >([]);
 
-  const step = flow.steps[stepIndex] as FlowStep;
+  const step = flow.steps[stepIndex];
   const isFirst = stepIndex === 0;
   const isLast = stepIndex === flow.steps.length - 1;
   const total = flow.steps.length;
 
-  const advance = (updated: { stepId: string; prompt: string; answer: string }[]) => {
+  const advance = (
+    updated: { stepId: string; prompt: string; answer: string }[],
+  ) => {
     if (isLast) {
       onComplete(updated);
     } else {
@@ -138,7 +149,12 @@ export function AiChatFlow({ flow, onComplete, onDismiss, onFreeTextReady }: AiC
         >
           {step.options.map((option, i) => (
             <div key={option.id}>
-              {i > 0 && <div className="mx-6 border-t border-border" aria-hidden="true" />}
+              {i > 0 && (
+                <div
+                  className="mx-6 border-t border-border"
+                  aria-hidden="true"
+                />
+              )}
               <button
                 type="button"
                 className="w-full text-left px-6 py-3.5 text-sm transition-colors hover:bg-muted text-foreground flex items-center gap-3"

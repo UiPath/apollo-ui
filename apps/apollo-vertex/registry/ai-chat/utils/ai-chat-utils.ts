@@ -27,6 +27,16 @@ export type FlowOption = z.infer<typeof flowOptionSchema>;
 export type FlowStep = z.infer<typeof flowStepSchema>;
 export type ToolResultFlow = z.infer<typeof toolResultFlowSchema>;
 
+function tryParseFlow(content: string): ToolResultFlow | null {
+  try {
+    const result = toolResultFlowSchema.safeParse(JSON.parse(content));
+    return result.success ? result.data : null;
+  } catch {
+    // invalid JSON — not a flow result
+    return null;
+  }
+}
+
 export function findLatestFlow(messages: UIMessage[]): ToolResultFlow | null {
   for (let i = messages.length - 1; i >= 0; i--) {
     const msg = messages[i];
@@ -36,13 +46,13 @@ export function findLatestFlow(messages: UIMessage[]): ToolResultFlow | null {
 
     for (const part of msg.parts) {
       if (part.type === "tool-result" && "content" in part) {
-        try {
-          const result = toolResultFlowSchema.safeParse(JSON.parse(part.content));
-          if (result.success) return result.data;
-        } catch { /* skip */ }
+        const result = tryParseFlow(part.content);
+        if (result) return result;
       }
       if (part.type === "tool-call" && "output" in part) {
-        const result = toolResultFlowSchema.safeParse((part as { output?: unknown }).output);
+        const result = toolResultFlowSchema.safeParse(
+          (part as { output?: unknown }).output,
+        );
         if (result.success) return result.data;
       }
     }
@@ -106,8 +116,16 @@ export function messageHasChoices(message: UIMessage): boolean {
     // tool-result with stringified JSON content
     if (part.type === "tool-result" && "content" in part) {
       try {
-        const parsed = JSON.parse((part as { content: string }).content);
-        if (parsed?.type === "choices") return true;
+        const parsed: unknown = JSON.parse(
+          (part as { content: string }).content,
+        );
+        if (
+          parsed !== null &&
+          typeof parsed === "object" &&
+          "type" in parsed &&
+          (parsed as { type: unknown }).type === "choices"
+        )
+          return true;
       } catch {
         // invalid JSON, skip
       }

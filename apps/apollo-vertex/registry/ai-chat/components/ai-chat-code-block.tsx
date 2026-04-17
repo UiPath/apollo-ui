@@ -67,7 +67,7 @@ import sql from "highlight.js/lib/languages/sql";
 import typescript from "highlight.js/lib/languages/typescript";
 import xml from "highlight.js/lib/languages/xml";
 import { Check, Copy } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -101,11 +101,18 @@ interface AiChatCodeBlockProps {
 
 export function AiChatCodeBlock({ children, language }: AiChatCodeBlockProps) {
   const [copied, setCopied] = useState(false);
+  const codeRef = useRef<HTMLElement>(null);
 
   const highlightedHtml =
     language && hljs.getLanguage(language)
       ? hljs.highlight(children, { language }).value
       : hljs.highlightAuto(children).value;
+
+  useEffect(() => {
+    if (codeRef.current) {
+      codeRef.current.innerHTML = highlightedHtml;
+    }
+  }, [highlightedHtml]);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(children);
@@ -129,7 +136,9 @@ export function AiChatCodeBlock({ children, language }: AiChatCodeBlockProps) {
             <TooltipTrigger asChild>
               <button
                 type="button"
-                onClick={handleCopy}
+                onClick={() => {
+                  void handleCopy();
+                }}
                 className="ml-auto size-6 inline-flex items-center justify-center rounded-md opacity-0 group-hover/codeblock:opacity-100 transition-opacity hover:bg-ai-chat-border"
                 aria-label={copyLabel}
               >
@@ -147,10 +156,7 @@ export function AiChatCodeBlock({ children, language }: AiChatCodeBlockProps) {
           </Tooltip>
         </div>
         <pre className="p-3 overflow-x-auto">
-          <code
-            className="hljs text-xs font-mono"
-            dangerouslySetInnerHTML={{ __html: highlightedHtml }}
-          />
+          <code ref={codeRef} className="hljs text-xs font-mono" />
         </pre>
       </div>
     </>

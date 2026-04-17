@@ -13,7 +13,10 @@ function extractCodeProps(props: NodeProps & { className?: string }) {
   const { className, children } = props;
   const match = /language-(\w+)/.exec(className ?? "");
   const language = match ? match[1] : "";
-  const code = String(children).replace(/\n$/, "");
+  const code = (typeof children === "string" ? children : "").replace(
+    /\n$/,
+    "",
+  );
   return { language, code };
 }
 
@@ -39,7 +42,7 @@ const components: ComponentProps<typeof ReactMarkdown>["components"] = {
     ...props
   }: NodeProps & { className?: string }) => {
     const isBlock =
-      className?.startsWith("language-") ||
+      (className?.startsWith("language-") ?? false) ||
       (typeof children === "string" && children.includes("\n"));
 
     if (isBlock) {
@@ -67,7 +70,7 @@ const components: ComponentProps<typeof ReactMarkdown>["components"] = {
   ),
   img: ({ src, alt, title }: ImageProps) => (
     <img
-      src={typeof src === "string" ? src : undefined}
+      src={typeof src === "string" ? src : ""}
       alt={alt ?? ""}
       title={title}
       loading="lazy"

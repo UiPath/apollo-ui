@@ -5,9 +5,20 @@ import { z } from "zod";
 const flowOptionSchema = z.object({
   id: z.string().describe("Unique identifier for this option"),
   label: z.string().describe("Button text shown to the user"),
-  value: z.string().optional().describe("Optional payload value — defaults to label if omitted"),
-  recommended: z.boolean().optional().describe("Highlight this as the recommended choice"),
-  freeText: z.boolean().optional().describe("When true, selecting this option lets the user type a custom answer in the input instead of choosing a preset"),
+  value: z
+    .string()
+    .optional()
+    .describe("Optional payload value — defaults to label if omitted"),
+  recommended: z
+    .boolean()
+    .optional()
+    .describe("Highlight this as the recommended choice"),
+  freeText: z
+    .boolean()
+    .optional()
+    .describe(
+      "When true, selecting this option lets the user type a custom answer in the input instead of choosing a preset",
+    ),
 });
 
 const flowStepSchema = z.object({
@@ -18,7 +29,11 @@ const flowStepSchema = z.object({
 });
 
 const presentFlowInput = z.object({
-  steps: z.array(flowStepSchema).min(2).max(8).describe("Ordered list of steps — all defined upfront"),
+  steps: z
+    .array(flowStepSchema)
+    .min(2)
+    .max(8)
+    .describe("Ordered list of steps — all defined upfront"),
 });
 
 const presentFlowOutput = presentFlowInput.extend({
