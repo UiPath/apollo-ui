@@ -96,19 +96,11 @@
     "overrides": {
       "minimatch": "^10.2.3",
       "lodash": "^4.18.1",
-      "lodash-es": "^4.18.1",
       "tmp": "^0.2.4",
-      "undici": "^6.24.0",
       "picomatch": ">=4.0.4",
-      "yaml": ">=2.8.3",
-      "brace-expansion": ">=5.0.5",
       "flatted": ">=3.4.2",
-      "happy-dom": ">=20.8.8",
-      "handlebars": ">=4.7.9",
-      "path-to-regexp": ">=8.4.0",
       "@xmldom/xmldom": ">=0.9.9",
-      "hono": ">=4.12.12",
-      "@hono/node-server": ">=1.19.13"
+      "hono": ">=4.12.14"
     }
   }
 }
