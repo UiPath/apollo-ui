@@ -111,11 +111,13 @@ vi.mock('./DraggableTask', () => ({
     task,
     groupIndex,
     taskIndex,
+    isDragDisabled,
     getContextMenuItems,
   }: {
     task: StageTaskItem;
     groupIndex?: number;
     taskIndex?: number;
+    isDragDisabled?: boolean;
     getContextMenuItems?: (
       groupIndex: number,
       taskIndex: number
@@ -125,7 +127,10 @@ vi.mock('./DraggableTask', () => ({
       Array<{ id?: string; label?: string; onClick?: () => void }>
     >([]);
     return (
-      <div data-testid={`draggable-task-${task.id}`}>
+      <div
+        data-testid={`draggable-task-${task.id}`}
+        data-drag-disabled={isDragDisabled ? 'true' : 'false'}
+      >
         <div data-testid={`task-label-${task.id}`}>{task.label}</div>
         {getContextMenuItems && (
           <button
@@ -641,92 +646,51 @@ describe('StageNode - Replace Task Functionality', () => {
   });
 });
 
-describe('StageNode - Add Task Loading State', () => {
+describe('StageNode - DnD in read-only mode', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should set Toolbox loading to true when loadingTaskIds is non-empty', async () => {
-    const user = userEvent.setup();
-    const onAddTaskFromToolbox = vi.fn();
-    const { rerender } = renderStageNode({ onAddTaskFromToolbox, loadingTaskIds: new Set() });
+  const tasks: StageTaskItem[][] = [[createTask('task-1')], [createTask('task-2')]];
 
-    const addButton = screen.getByRole('button', { name: 'Add task' });
-    await user.click(addButton);
+  it('disables task drag when isReadOnly is true', () => {
+    renderStageNode({
+      stageDetails: { ...defaultProps.stageDetails, tasks, isReadOnly: true },
+      onTaskReorder: vi.fn(),
+    });
 
-    rerender(
-      <ReactFlowProvider>
-        <StageNode
-          {...defaultProps}
-          onAddTaskFromToolbox={onAddTaskFromToolbox}
-          loadingTaskIds={new Set(['task-1'])}
-        />
-      </ReactFlowProvider>
+    expect(screen.getByTestId('draggable-task-task-1')).toHaveAttribute(
+      'data-drag-disabled',
+      'true'
     );
-
-    const toolbox = screen.getByTestId('toolbox');
-    expect(toolbox).toHaveAttribute('data-loading', 'true');
-  });
-
-  it('should not pass loading to Toolbox when loadingTaskIds is empty', async () => {
-    const user = userEvent.setup();
-    const onAddTaskFromToolbox = vi.fn();
-    renderStageNode({ onAddTaskFromToolbox, loadingTaskIds: new Set() });
-
-    const addButton = screen.getByRole('button', { name: 'Add task' });
-    await user.click(addButton);
-
-    const toolbox = screen.getByTestId('toolbox');
-    expect(toolbox).toHaveAttribute('data-loading', 'false');
-  });
-
-  it('should disable the add button when loadingTaskIds is non-empty', () => {
-    const onAddTaskFromToolbox = vi.fn();
-    renderStageNode({ onAddTaskFromToolbox, loadingTaskIds: new Set(['task-1']) });
-
-    const addButton = screen.getByRole('button', { name: 'Add task' });
-    expect(addButton).toBeDisabled();
-  });
-
-  it('should not disable the add button when loadingTaskIds is empty', () => {
-    const onAddTaskFromToolbox = vi.fn();
-    renderStageNode({ onAddTaskFromToolbox, loadingTaskIds: new Set() });
-
-    const addButton = screen.getByRole('button', { name: 'Add task' });
-    expect(addButton).not.toBeDisabled();
-  });
-
-  it('should update Toolbox loading when loadingTaskIds changes to empty', async () => {
-    const user = userEvent.setup();
-    const onAddTaskFromToolbox = vi.fn();
-    const { rerender } = renderStageNode({ onAddTaskFromToolbox, loadingTaskIds: new Set() });
-
-    const addButton = screen.getByRole('button', { name: 'Add task' });
-    await user.click(addButton);
-
-    rerender(
-      <ReactFlowProvider>
-        <StageNode
-          {...defaultProps}
-          onAddTaskFromToolbox={onAddTaskFromToolbox}
-          loadingTaskIds={new Set(['task-1'])}
-        />
-      </ReactFlowProvider>
+    expect(screen.getByTestId('draggable-task-task-2')).toHaveAttribute(
+      'data-drag-disabled',
+      'true'
     );
+  });
 
-    expect(screen.getByTestId('toolbox')).toHaveAttribute('data-loading', 'true');
+  it('enables task drag when isReadOnly is false and onTaskReorder is provided', () => {
+    renderStageNode({
+      stageDetails: { ...defaultProps.stageDetails, tasks },
+      onTaskReorder: vi.fn(),
+    });
 
-    rerender(
-      <ReactFlowProvider>
-        <StageNode
-          {...defaultProps}
-          onAddTaskFromToolbox={onAddTaskFromToolbox}
-          loadingTaskIds={new Set()}
-        />
-      </ReactFlowProvider>
+    expect(screen.getByTestId('draggable-task-task-1')).toHaveAttribute(
+      'data-drag-disabled',
+      'false'
     );
+  });
 
-    expect(screen.getByTestId('toolbox')).toHaveAttribute('data-loading', 'false');
+  it('disables task drag when onTaskReorder is not provided', () => {
+    renderStageNode({
+      stageDetails: { ...defaultProps.stageDetails, tasks },
+      onTaskReorder: undefined,
+    });
+
+    expect(screen.getByTestId('draggable-task-task-1')).toHaveAttribute(
+      'data-drag-disabled',
+      'true'
+    );
   });
 });
 
