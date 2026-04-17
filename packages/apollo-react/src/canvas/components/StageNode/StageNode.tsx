@@ -102,8 +102,6 @@ const StageNodeInner = (props: StageNodeProps) => {
     loadingTaskIds,
   } = props;
 
-  const isAnyTaskLoading = loadingTaskIds != null && loadingTaskIds.size > 0;
-
   const taskWidth = width ? width - STAGE_CONTENT_INSET : undefined;
 
   const allTasks = useMemo(() => stageDetails?.tasks || [], [stageDetails?.tasks]);
@@ -657,14 +655,13 @@ const StageNodeInner = (props: StageNodeProps) => {
               </CanvasTooltip>
             )}
             {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly && (
-              <CanvasTooltip content={addTaskLabel} placement="top" hide={isAnyTaskLoading}>
+              <CanvasTooltip content={addTaskLabel} placement="top">
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6"
                   onClick={handleTaskAddClick}
                   aria-label={addTaskLabel}
-                  disabled={isAnyTaskLoading}
                 >
                   <CanvasIcon icon="plus" size={20} />
                 </Button>
@@ -679,11 +676,8 @@ const StageNodeInner = (props: StageNodeProps) => {
               {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly ? (
                 <Button
                   variant="link"
-                  onClick={isAnyTaskLoading ? undefined : handleTaskAddClick}
-                  style={{
-                    maxWidth: 'fit-content',
-                    pointerEvents: isAnyTaskLoading ? 'none' : undefined,
-                  }}
+                  onClick={handleTaskAddClick}
+                  style={{ maxWidth: 'fit-content' }}
                 >
                   {defaultContent}
                 </Button>
@@ -734,7 +728,7 @@ const StageNodeInner = (props: StageNodeProps) => {
                                         ? projected.depth
                                         : undefined
                                     }
-                                    isDragDisabled={!onTaskReorder}
+                                    isDragDisabled={!onTaskReorder || isReadOnly}
                                     isTaskLoading={loadingTaskIds?.has(task.id)}
                                     {...(hasContextMenu &&
                                       !isReadOnly && {
@@ -796,7 +790,6 @@ const StageNodeInner = (props: StageNodeProps) => {
           <Toolbox
             title={addTaskLabel}
             initialItems={taskOptions}
-            loading={isAnyTaskLoading}
             onClose={() => setIsAddingTask(false)}
             onItemSelect={handleAddTaskToolboxItemSelected}
             onSearch={onTaskToolboxSearch}

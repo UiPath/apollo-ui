@@ -1583,6 +1583,25 @@ const AddTaskLoadingStory = () => {
     }, 2000);
   }, []);
 
+  const handleTaskReorder = useCallback((nodeId: string, reorderedTasks: StageTaskItem[][]) => {
+    setNodesRef.current((nds) =>
+      nds.map((n) =>
+        n.id === nodeId
+          ? {
+              ...n,
+              data: {
+                ...n.data,
+                stageDetails: {
+                  ...(n.data as Record<string, any>).stageDetails,
+                  tasks: reorderedTasks,
+                },
+              },
+            }
+          : n
+      )
+    );
+  }, []);
+
   const initialNodes: Node[] = useMemo(
     () => [
       {
@@ -1599,6 +1618,9 @@ const AddTaskLoadingStory = () => {
           taskOptions: [] as ListItem[],
           onAddTaskFromToolbox: (taskItem: ListItem) => {
             handleAddTaskFromToolbox('loading-stage-empty', taskItem);
+          },
+          onTaskReorder: (reorderedTasks: StageTaskItem[][]) => {
+            handleTaskReorder('loading-stage-empty', reorderedTasks);
           },
           onTaskGroupModification: () => {},
         },
@@ -1617,6 +1639,9 @@ const AddTaskLoadingStory = () => {
           taskOptions: loadedTaskOptionsWithChildren,
           onAddTaskFromToolbox: (taskItem: ListItem) => {
             handleAddTaskFromToolbox('loading-stage-children', taskItem);
+          },
+          onTaskReorder: (reorderedTasks: StageTaskItem[][]) => {
+            handleTaskReorder('loading-stage-children', reorderedTasks);
           },
           onTaskGroupModification: () => {},
         },
@@ -1651,11 +1676,14 @@ const AddTaskLoadingStory = () => {
           onAddTaskFromToolbox: (taskItem: ListItem) => {
             handleAddTaskFromToolbox('loading-stage-tasks', taskItem);
           },
+          onTaskReorder: (reorderedTasks: StageTaskItem[][]) => {
+            handleTaskReorder('loading-stage-tasks', reorderedTasks);
+          },
           onTaskGroupModification: () => {},
         },
       },
     ],
-    [handleAddTaskFromToolbox]
+    [handleAddTaskFromToolbox, handleTaskReorder]
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -1716,11 +1744,32 @@ const AddTaskLoadingStory = () => {
     [setEdges]
   );
 
+  // Mark the stage read-only while tasks are loading so DnD is disabled mid-add
+  const nodesWithReadOnly = useMemo(
+    () =>
+      nodes.map((node) => {
+        const data = node.data as Record<string, any>;
+        const isLoading = ((data.loadingTaskIds as Set<string> | undefined)?.size ?? 0) > 0;
+        const existingIsReadOnly = Boolean(data.stageDetails?.isReadOnly);
+        return {
+          ...node,
+          data: {
+            ...data,
+            stageDetails: {
+              ...data.stageDetails,
+              isReadOnly: existingIsReadOnly || isLoading,
+            },
+          },
+        };
+      }),
+    [nodes]
+  );
+
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       <ReactFlowProvider>
         <BaseCanvas
-          nodes={nodes}
+          nodes={nodesWithReadOnly}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
