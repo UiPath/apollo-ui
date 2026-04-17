@@ -1003,6 +1003,7 @@ body.canvas, .canvas {
   --color-background-secondary: var(--surface-raised);
   --color-background-hover: var(--surface-hover);
   --color-border: var(--ap-wind-border);
+  --color-border-de-emp: var(--border-de-emp);
   --color-primary: var(--primary);
   --color-icon-default: var(--foreground-muted);
   --color-error-icon: var(--destructive);
