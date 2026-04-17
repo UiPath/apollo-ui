@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocalStorage } from "@mantine/hooks";
 import { useLiveQuery } from "@tanstack/react-db";
 import type {
   ColumnFiltersState,
@@ -8,9 +9,7 @@ import type {
 } from "@tanstack/react-table";
 import { useSolution } from "@uipath/vs-core";
 import { useState } from "react";
-
 import { ENTITY_TABLE_STORAGE_PREFIX } from "@/lib/constants";
-import { useLocalStorage } from "@mantine/hooks";
 
 import type {
   ColumnDefWithAccessorKey,

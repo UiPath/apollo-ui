@@ -49,7 +49,7 @@ export function useStickyScroll() {
   useEffect(() => {
     if (isStuckRef.current) {
       const el = scrollElRef.current;
-      if (el) el.scrollTop = el.scrollHeight;
+      if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     }
   }, [contentRect.height]);
 

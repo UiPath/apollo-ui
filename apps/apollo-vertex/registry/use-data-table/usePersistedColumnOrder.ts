@@ -1,9 +1,8 @@
 "use client";
 
-import type { OnChangeFn } from "@tanstack/react-table";
-
-import { ENTITY_TABLE_STORAGE_PREFIX } from "@/lib/constants";
 import { useLocalStorage } from "@mantine/hooks";
+import type { OnChangeFn } from "@tanstack/react-table";
+import { ENTITY_TABLE_STORAGE_PREFIX } from "@/lib/constants";
 
 export interface UsePersistedColumnOrderOptions {
   storageKey: string;

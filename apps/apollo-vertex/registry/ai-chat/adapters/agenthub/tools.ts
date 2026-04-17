@@ -1,4 +1,4 @@
-import { convertSchemaToJsonSchema, type AnyClientTool } from "@tanstack/ai";
+import { type AnyClientTool, convertSchemaToJsonSchema } from "@tanstack/ai";
 import type { AgentHubVendor } from "./types";
 
 export function buildToolDefinitions(

@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import type * as React from "react";
 
 import { TableCell, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
