@@ -8,6 +8,7 @@ import {
   type XYPosition,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 
+import { FLOATING_CANVAS_PANEL_OFFSET } from '../constants';
 import { FloatingCanvasPanel } from './FloatingCanvasPanel';
 
 function safeStringify(obj: unknown, indent = 2): string {
@@ -324,7 +325,7 @@ export function NodeInspector({
             nodeId={node.id}
             title="Node Inspector"
             placement="right-start"
-            offset={10}
+            offset={FLOATING_CANVAS_PANEL_OFFSET}
             onClose={showCloseButton ? onClose : undefined}
           >
             <NodeInfoContent
@@ -348,7 +349,7 @@ export function NodeInspector({
             nodeId={nodeId}
             title="Edge Inspector"
             placement="right-start"
-            offset={10 + (nodesToShow.length > 0 ? 420 : 0) + index * 420} // Offset multiple panels
+            offset={FLOATING_CANVAS_PANEL_OFFSET + (nodesToShow.length > 0 ? 420 : 0) + index * 420} // Offset multiple panels
             onClose={showCloseButton ? onClose : undefined}
           >
             <EdgeInfoContent edge={edge} />

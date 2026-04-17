@@ -2,7 +2,7 @@ import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import type React from 'react';
 import { useCallback, useEffect, useRef } from 'react';
-import { PREVIEW_NODE_ID } from '../../constants';
+import { FLOATING_CANVAS_PANEL_OFFSET, PREVIEW_NODE_ID } from '../../constants';
 import { useOptionalNodeTypeRegistry } from '../../core';
 import { usePreviewNode } from '../../hooks/usePreviewNode';
 import { resolveCollisions } from '../../utils';
@@ -242,7 +242,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
       open={!!previewNode}
       nodeId={PREVIEW_NODE_ID}
       placement="right-start"
-      offset={10}
+      offset={FLOATING_CANVAS_PANEL_OFFSET}
     >
       {CustomPanel ? (
         <CustomPanel onNodeSelect={(item) => handleNodeSelect(item)} onClose={handleClose} />

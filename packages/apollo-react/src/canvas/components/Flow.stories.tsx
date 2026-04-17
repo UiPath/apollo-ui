@@ -4,6 +4,7 @@ import type { Edge, Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/r
 import { Handle, Panel, Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Download, Plus, StickyNote } from 'lucide-react';
 import { type FC, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FLOATING_CANVAS_PANEL_OFFSET } from '../constants';
 import { useCanvasEvent, useExportCanvas } from '../hooks';
 import {
   createNode,
@@ -376,7 +377,7 @@ function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
           anchorRect={addButtonRect}
           useFixedPosition
           placement="top"
-          offset={10}
+          offset={FLOATING_CANVAS_PANEL_OFFSET}
         >
           <AddNodePanel onNodeSelect={handleNodeSelect} onClose={handleCloseAddPanel} />
         </FloatingCanvasPanel>
