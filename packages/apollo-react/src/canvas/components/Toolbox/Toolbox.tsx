@@ -2,6 +2,13 @@ import { useNavigationStack } from '@uipath/apollo-react/canvas/hooks';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useListRef } from 'react-window';
+import {
+  TOOLBOX_GAP,
+  TOOLBOX_HEIGHT,
+  TOOLBOX_PADDING_X,
+  TOOLBOX_PADDING_Y,
+  TOOLBOX_WIDTH,
+} from '../../constants';
 import { Header } from './Header';
 import { type ListItem, ListView, type ListViewHandle, type RenderItem } from './ListView';
 import { SearchBox } from './SearchBox';
@@ -534,7 +541,13 @@ export function Toolbox<T>({
 
   return (
     <div ref={containerRef} data-testid="toolbox-container">
-      <Column px={20} py={12} gap={12} w={fullWidth ? '100%' : 320} h={fullHeight ? '100%' : 440}>
+      <Column
+        px={TOOLBOX_PADDING_X}
+        py={TOOLBOX_PADDING_Y}
+        gap={TOOLBOX_GAP}
+        w={fullWidth ? '100%' : TOOLBOX_WIDTH}
+        h={fullHeight ? '100%' : TOOLBOX_HEIGHT}
+      >
         <Header
           title={currentParentItem?.name || title}
           onBack={handleBackTransition}
