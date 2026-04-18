@@ -1146,6 +1146,7 @@
       "dependencies": [
         "@radix-ui/react-slot",
         "class-variance-authority",
+        "framer-motion",
         "lucide-react",
         "react-i18next"
       ],
