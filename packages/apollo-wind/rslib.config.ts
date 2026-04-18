@@ -63,6 +63,8 @@ export default defineConfig({
     copy: [
       // Copy tailwind.consumer.css to dist/tailwind.css
       { from: './src/styles/tailwind.consumer.css', to: './tailwind.css' },
+      // tailwind.consumer.css imports this via relative path
+      { from: './src/styles/tailwind.utilities.css', to: './tailwind.utilities.css' },
     ],
   },
   tools: {
