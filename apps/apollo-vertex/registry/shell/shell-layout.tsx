@@ -1,6 +1,12 @@
 import type { PropsWithChildren } from "react";
+import { useId } from "react";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import type { CompanyLogo, ShellNavItem } from "./shell";
-import { Sidebar } from "./shell-sidebar";
+import { ShellSidebar } from "./shell-sidebar";
 import { useTheme } from "./shell-theme-provider";
 
 const GRADIENT_BLUR = "blur(149.643px)";
@@ -14,6 +20,8 @@ interface ShellLayoutProps {
 }
 
 function DarkGradientBackground() {
+  const filterId = useId();
+
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {/* Base directional wash */}
@@ -74,7 +82,7 @@ function DarkGradientBackground() {
         className="absolute inset-0 w-full h-full opacity-[0.04]"
       >
         <defs>
-          <filter id="noise-dark">
+          <filter id={filterId}>
             <feTurbulence
               type="fractalNoise"
               baseFrequency="0.65"
@@ -84,7 +92,7 @@ function DarkGradientBackground() {
             <feColorMatrix type="saturate" values="0" />
           </filter>
         </defs>
-        <rect width="100%" height="100%" filter="url(#noise-dark)" />
+        <rect width="100%" height="100%" filter={`url(#${filterId})`} />
       </svg>
     </div>
   );
@@ -150,7 +158,7 @@ function LightGradientBackground() {
 
 function GradientBackground() {
   const theme = useTheme();
-  if (theme.theme === "dark") {
+  if (theme.resolvedTheme === "dark") {
     return <DarkGradientBackground />;
   }
   return <LightGradientBackground />;
@@ -169,36 +177,46 @@ export function ShellLayout({
       <div className="h-screen overflow-hidden flex flex-col bg-background dark:bg-sidebar">
         <main className="flex-1 flex flex-col overflow-hidden relative">
           <GradientBackground />
-          <Sidebar
+          <ShellSidebar
             companyName={companyName}
             variant={variant}
             productName={productName}
             companyLogo={companyLogo}
             navItems={navItems}
           />
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
-            {children}
-          </div>
+          <div className="flex-1 overflow-y-auto">{children}</div>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="h-screen overflow-hidden flex bg-background dark:bg-sidebar relative">
+    <SidebarProvider
+      defaultOpen
+      className="relative isolate h-screen overflow-hidden bg-background dark:bg-sidebar"
+      style={
+        /* oxlint-disable typescript-eslint(no-unsafe-type-assertion) -- CSS custom properties not in React.CSSProperties */
+        {
+          "--sidebar-width": "280px",
+          "--sidebar-width-icon": "64px",
+        } as React.CSSProperties
+      }
+    >
       <GradientBackground />
-      <Sidebar
+      <ShellSidebar
         companyName={companyName}
-        variant={variant}
         productName={productName}
         companyLogo={companyLogo}
         navItems={navItems}
       />
-      <main className="flex-1 flex flex-col overflow-hidden relative">
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
+      <SidebarInset className="relative flex-1 flex flex-col overflow-hidden rounded-none m-0 ml-0 shadow-none bg-transparent">
+        <header className="flex items-center h-12 px-4 md:hidden">
+          <SidebarTrigger />
+        </header>
+        <div className="relative flex-1 flex flex-col overflow-y-auto">
           {children}
         </div>
-      </main>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
