@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.6.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.6.2...@uipath/apollo-react@4.6.3) (2026-04-18)
+
+### Bug Fixes
+
+* **apollo-react:** expose canvas sizing variables ([f826fd1](https://github.com/UiPath/apollo-ui/commit/f826fd1d3a23a0051e479f8b5d99da1d839b8ba3))
+
 ## [@uipath/apollo-react-v4.6.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.6.1...@uipath/apollo-react@4.6.2) (2026-04-17)
 
 ### Bug Fixes
