@@ -170,11 +170,6 @@ const components: { slug: string; name: string; description: string }[] = [
     description: "A horizontal menu bar with dropdowns.",
   },
   {
-    slug: "metric-card",
-    name: "Metric Card",
-    description: "Displays a key metric with label and value.",
-  },
-  {
     slug: "navigation-menu",
     name: "Navigation Menu",
     description: "A collection of navigation links.",

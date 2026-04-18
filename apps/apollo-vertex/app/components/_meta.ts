@@ -35,7 +35,6 @@ export default {
   kbd: { display: "hidden" },
   label: { display: "hidden" },
   menubar: { display: "hidden" },
-  "metric-card": { display: "hidden" },
   "navigation-menu": { display: "hidden" },
   pagination: { display: "hidden" },
   popover: { display: "hidden" },
