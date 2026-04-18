@@ -25,36 +25,51 @@ export const snapToGrid = (value: number, gridSize: number = GRID_SPACING): numb
 };
 
 /**
- * Calculates grid-aligned positions for handles that look equidistant and symmetric.
+ * Calculates handle positions that are equidistant, symmetric around the node
+ * center, and use a grid-aligned spacing.
+ *
+ * Symmetry note: positions are placed outward from the node's true center
+ * rather than snapped individually. Per-position snapping with `Math.round`
+ * (round-half-up) systematically biases the entire row in one direction when
+ * `startPosition` lands on a half-grid value — most visibly with even handle
+ * counts and odd-multiple spacings. Computing from the center keeps handles
+ * mirrored across `nodeSize / 2` even if every position ends up half a grid
+ * unit off (still pixel-aligned at the gridSize granularity used here).
+ *
  * @param nodeSize - The size of the node in the relevant dimension (width for Top/Bottom handles, height for Left/Right handles)
  * @param numHandles - Number of handles to position
- * @param gridSize - The grid size
- * @returns Array of grid-snapped pixel positions for each handle
+ * @param gridSize - The grid size for spacing
+ * @returns Array of pixel positions for each handle, symmetric around the node center
  */
 export const calculateGridAlignedHandlePositions = (
   nodeSize: number,
   numHandles: number,
-  gridSize: number = GRID_SPACING
+  gridSize: number = GRID_SPACING / 2
 ): number[] => {
   if (numHandles === 0) return [];
   if (nodeSize <= 0) return [];
 
-  // Calculate ideal spacing for equidistant distribution
+  // Ideal equidistant spacing (with padding on either side equal to the spacing).
   const idealSpacing = nodeSize / (numHandles + 1);
 
-  // Find the best grid-aligned spacing (round to nearest multiple of gridSize)
-  // This ensures equal spacing between handles while staying on grid
-  const gridAlignedSpacing = Math.round(idealSpacing / gridSize) * gridSize;
+  // Round to the nearest grid multiple, with a lower bound of one grid step so
+  // handles don't all stack at the center when `idealSpacing < gridSize / 2`
+  // (e.g. very small node, many handles).
+  //
+  // We deliberately do NOT cap spacing to fit the node: when the natural
+  // spacing would push handles outside the node bounds, we prefer overflow
+  // over visually crowding/overlapping handles inside the node.
+  // This scenario should not happen in typical usage since base node is expected to grow to fit handles.
+  const roundedSpacing = Math.round(idealSpacing / gridSize) * gridSize;
+  const gridAlignedSpacing = Math.max(gridSize, roundedSpacing);
 
+  // Distribute symmetrically around the node center.
   const totalSpan = (numHandles - 1) * gridAlignedSpacing;
-
   const startPosition = (nodeSize - totalSpan) / 2;
 
   const positions: number[] = [];
   for (let i = 0; i < numHandles; i++) {
-    const position = startPosition + i * gridAlignedSpacing;
-    const snappedPosition = snapToGrid(position, gridSize);
-    positions.push(snappedPosition);
+    positions.push(startPosition + i * gridAlignedSpacing);
   }
 
   return positions;

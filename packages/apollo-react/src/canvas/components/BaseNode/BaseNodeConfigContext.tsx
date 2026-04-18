@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react';
 import type { HandleGroupManifest } from '../../schema/node-definition';
+import type { ElementStatusValues } from '../../types/execution';
 import type { HandleActionEvent } from '../ButtonHandle/ButtonHandle';
 import type { NodeToolbarConfig } from '../Toolbar';
 import type { FooterVariant, NodeAdornments } from './BaseNode.types';
@@ -34,7 +35,7 @@ export interface BaseNodeOverrideConfig {
   // Visual State
   suggestionType?: 'add' | 'update' | 'delete';
   disabled?: boolean;
-  executionStatusOverride?: string;
+  executionStatusOverride?: ElementStatusValues;
 
   // Display Customization
   labelTooltip?: string;

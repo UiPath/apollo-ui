@@ -45,6 +45,11 @@ vi.mock('../../utils/adornment-resolver', () => ({ resolveAdornments: () => ({})
 vi.mock('../../utils/toolbar-resolver', () => ({ resolveToolbar: () => undefined }));
 vi.mock('@uipath/apollo-wind', () => ({
   Skeleton: (props: Record<string, unknown>) => <div {...props} />,
+  cn: (...args: unknown[]) =>
+    args
+      .flat(Infinity)
+      .filter((v): v is string => typeof v === 'string' && v.length > 0)
+      .join(' '),
 }));
 vi.mock('@uipath/apollo-react/canvas/utils', () => ({
   cx: (...args: unknown[]) => args.filter(Boolean).join(' '),

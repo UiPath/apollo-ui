@@ -1,29 +1,20 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
-import type { Edge, EdgeChange, Node, NodeChange } from '@uipath/apollo-react/canvas/xyflow/react';
-import {
-  applyEdgeChanges,
-  applyNodeChanges,
-  Panel,
-  ReactFlowProvider,
-} from '@uipath/apollo-react/canvas/xyflow/react';
-import { useCallback, useState } from 'react';
+import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useMemo } from 'react';
 
+import { withCanvasProviders } from '../storybook-utils/decorators';
+import { useCanvasStory } from '../storybook-utils/hooks/useCanvasStory';
+import { createNode } from '../storybook-utils/mocks/nodes';
 import { BaseCanvas } from './BaseCanvas/BaseCanvas';
+import type { BaseNodeData } from './BaseNode/BaseNode.types';
 import { NodeInspector } from './NodeInspector';
 
-const meta = {
+const meta: Meta = {
   title: 'Canvas/NodeInspector',
   component: NodeInspector,
-  decorators: [
-    (Story: any) => (
-      <ReactFlowProvider>
-        <div style={{ height: '100vh', width: '100%' }}>
-          <Story />
-        </div>
-      </ReactFlowProvider>
-    ),
-  ],
+  decorators: [withCanvasProviders()],
   parameters: {
     layout: 'fullscreen',
   },
@@ -33,120 +24,67 @@ const meta = {
       description: 'Custom filter function to determine which nodes to inspect',
     },
   },
-} satisfies Meta<typeof NodeInspector>;
+};
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Sample nodes with different types and data
-const createSampleNodes = (): Node[] => [
-  {
+// Sample nodes using registered manifest types
+const createSampleNodes = (): Node<BaseNodeData>[] => [
+  createNode({
     id: 'agent-1',
-    type: 'agent',
-    position: { x: 200, y: 200 },
-    data: {
+    type: 'uipath.agent',
+    position: { x: 200, y: 350 },
+    display: {
       label: 'AI Agent',
-      provider: 'anthropic',
-      model: 'claude-3-opus',
-      temperature: 0.7,
-      config: {
-        maxTokens: 4096,
-        topP: 0.9,
-        frequencyPenalty: 0,
-        presencePenalty: 0,
-        stopSequences: ['\\n\\nHuman:', '\\n\\nAssistant:'],
-        systemPrompt:
-          'You are a helpful AI assistant that provides accurate and thoughtful responses.',
-        apiKey: 'sk-ant-api03-...',
-        endpoint: 'https://api.anthropic.com/v1/messages',
-        retryConfig: {
-          maxRetries: 3,
-          initialDelay: 1000,
-          maxDelay: 10_000,
-          backoffMultiplier: 2,
-        },
-        timeout: 30_000,
-        customHeaders: {
-          'X-Custom-Header': 'value',
-          'X-Request-ID': 'uuid-123-456',
-        },
-      },
-      metrics: {
-        totalRequests: 1543,
-        successfulRequests: 1498,
-        failedRequests: 45,
-        averageLatency: 342.5,
-        p95Latency: 892.3,
-        p99Latency: 1234.7,
-        totalTokensUsed: 2_456_789,
-        costEstimate: 123.45,
-      },
+      subLabel: 'Claude Opus',
     },
-  },
-  {
-    id: 'resource-1',
-    type: 'resource',
-    position: { x: 450, y: 200 },
     data: {
-      label: 'Database',
-      type: 'tool',
-      description: 'PostgreSQL database connection',
-      status: 'active',
-      connection: {
-        host: 'localhost',
-        port: 5432,
-        database: 'myapp',
-        poolSize: 10,
-        ssl: true,
+      parameters: {
+        description: 'An AI agent that can perform tasks and make decisions.',
+        capabilities: ['Data processing', 'Decision making', 'Integrations'],
       },
     },
-  },
-  {
-    id: 'flow-1',
-    type: 'flow',
-    position: { x: 325, y: 350 },
-    data: {
-      label: 'Decision Node',
-      condition: 'response.success === true',
-      branches: 2,
-      history: [
-        { timestamp: '2024-01-15T10:30:00Z', result: true, executionTime: 123 },
-        { timestamp: '2024-01-15T10:31:00Z', result: false, executionTime: 456 },
-        { timestamp: '2024-01-15T10:32:00Z', result: true, executionTime: 234 },
-      ],
+  }),
+  createNode({
+    id: 'script-1',
+    type: 'uipath.script',
+    position: { x: 600, y: 200 },
+    display: {
+      label: 'Transform Data',
+      subLabel: 'JavaScript',
     },
-  },
+  }),
+  createNode({
+    id: 'decision-1',
+    type: 'uipath.control-flow.decision',
+    position: { x: 600, y: 450 },
+    display: {
+      label: 'Route Response',
+      subLabel: 'Success check',
+    },
+  }),
 ];
 
 const createSampleEdges = (): Edge[] => [
-  { id: 'e1-2', source: 'agent-1', target: 'resource-1' },
-  { id: 'e1-3', source: 'agent-1', target: 'flow-1' },
-  { id: 'e2-3', source: 'resource-1', target: 'flow-1' },
+  {
+    id: 'e-agent-script',
+    source: 'agent-1',
+    sourceHandle: 'success',
+    target: 'script-1',
+  },
+  { id: 'e-agent-decision', source: 'agent-1', sourceHandle: 'error', target: 'decision-1' },
 ];
 
 // Canvas with NodeInspector
 const CanvasWithNodeInspector = () => {
-  const [nodes, setNodes] = useState<Node[]>(createSampleNodes());
-  const [edges, setEdges] = useState<Edge[]>(createSampleEdges());
+  const initialNodes = useMemo(() => createSampleNodes(), []);
+  const initialEdges = useMemo(() => createSampleEdges(), []);
 
-  const onNodesChange = useCallback(
-    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    []
-  );
-
-  const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    []
-  );
+  const { canvasProps } = useCanvasStory({ initialNodes, initialEdges });
 
   return (
-    <BaseCanvas
-      nodes={nodes}
-      edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      mode="design"
-    >
+    <BaseCanvas {...canvasProps} mode="design">
       <NodeInspector />
       <Panel position="top-left">
         <Column

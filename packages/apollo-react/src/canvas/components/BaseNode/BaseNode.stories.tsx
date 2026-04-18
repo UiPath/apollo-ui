@@ -10,7 +10,7 @@ import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Button, Input, Label, Slider, Switch } from '@uipath/apollo-wind';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { NodeRegistryContext, NodeTypeRegistry } from '../../core';
+import { NodeRegistryProvider } from '../../core';
 import type { CategoryManifest, NodeManifest } from '../../schema';
 import {
   createNode,
@@ -26,201 +26,6 @@ import { NodeInspector } from '../NodeInspector';
 import type { BaseNodeData } from './BaseNode.types';
 
 // ============================================================================
-// Sample Manifests
-// ============================================================================
-
-const sampleManifest: { nodes: NodeManifest[]; categories: CategoryManifest[] } = {
-  categories: [
-    {
-      id: 'general',
-      name: 'General',
-      sortOrder: 1,
-      color: '#6c757d',
-      colorDark: '#495057',
-      icon: 'layers',
-      tags: [],
-    },
-    {
-      id: 'ai',
-      name: 'AI',
-      sortOrder: 2,
-      color: '#6c757d',
-      colorDark: '#495057',
-      icon: 'layers',
-      tags: [],
-    },
-    {
-      id: 'control',
-      name: 'Control Flow',
-      sortOrder: 3,
-      color: '#6c757d',
-      colorDark: '#495057',
-      icon: 'git-branch',
-      tags: [],
-    },
-  ],
-  nodes: [
-    {
-      nodeType: 'generic',
-      version: '1.0.0',
-      category: 'general',
-      tags: ['general'],
-      sortOrder: 1,
-      display: {
-        label: 'Generic Node',
-        icon: 'box',
-        shape: 'square',
-      },
-      handleConfiguration: [
-        {
-          position: 'left',
-          handles: [{ id: 'in', type: 'target', handleType: 'input', label: 'Input' }],
-        },
-        {
-          position: 'right',
-          handles: [{ id: 'out', type: 'source', handleType: 'output', label: 'Output' }],
-        },
-      ],
-    },
-    {
-      nodeType: 'uipath.blank-node',
-      version: '1.0.0',
-      category: 'general',
-      tags: ['basic'],
-      sortOrder: 2,
-      display: {
-        label: 'Blank Node',
-        icon: 'square',
-        shape: 'square',
-      },
-      handleConfiguration: [],
-    },
-    {
-      nodeType: 'uipath.agent',
-      version: '1.0.0',
-      category: 'ai',
-      tags: ['ai', 'agent'],
-      sortOrder: 3,
-      display: {
-        label: 'Agent',
-        icon: 'bot',
-        shape: 'rectangle',
-      },
-      handleConfiguration: [
-        {
-          position: 'left',
-          handles: [{ id: 'in', type: 'target', handleType: 'input', label: 'Input' }],
-        },
-        {
-          position: 'right',
-          handles: [{ id: 'out', type: 'source', handleType: 'output', label: 'Output' }],
-        },
-      ],
-    },
-    {
-      nodeType: 'uipath.control-switch',
-      version: '1.0.0',
-      category: 'control',
-      tags: ['dynamic', 'repeat'],
-      sortOrder: 5,
-      display: {
-        label: 'Dynamic Handle Node',
-        icon: 'git-branch',
-        shape: 'square',
-      },
-      handleConfiguration: [
-        {
-          position: 'left',
-          handles: [
-            {
-              id: 'input-{index}',
-              type: 'target',
-              handleType: 'input',
-              label: '{item.label}',
-              repeat: 'inputs.dynamicInputs',
-            },
-          ],
-        },
-        {
-          position: 'right',
-          handles: [
-            {
-              id: 'output-{index}',
-              type: 'source',
-              handleType: 'output',
-              label: '{item.name}',
-              repeat: 'inputs.dynamicOutputs',
-            },
-            {
-              id: 'default',
-              type: 'source',
-              handleType: 'output',
-              label: 'Default Output',
-              visible: 'inputs.hasDefault',
-            },
-          ],
-        },
-        {
-          position: 'bottom',
-          handles: [
-            {
-              id: 'artifact-{index}',
-              type: 'source',
-              handleType: 'artifact',
-              label: 'Artifact {index}: {item.type}',
-              repeat: 'inputs.artifacts',
-            },
-          ],
-        },
-      ],
-    },
-    {
-      nodeType: 'uipath.decision',
-      version: '1.0.0',
-      category: 'control',
-      tags: ['control', 'decision'],
-      sortOrder: 6,
-      display: {
-        label: 'Decision',
-        icon: 'git-branch',
-        shape: 'square',
-      },
-      handleConfiguration: [
-        {
-          position: 'left',
-          handles: [{ id: 'input', type: 'target', handleType: 'input' }],
-        },
-        {
-          position: 'right',
-          handles: [
-            { id: 'true', type: 'source', handleType: 'output', label: '{inputs.trueLabel}' },
-            { id: 'false', type: 'source', handleType: 'output', label: '{inputs.falseLabel}' },
-          ],
-        },
-      ],
-    },
-    {
-      nodeType: 'uipath.control-flow.terminate',
-      version: '1.0.0',
-      category: 'control',
-      tags: ['control', 'terminate'],
-      sortOrder: 6,
-      display: {
-        label: 'Terminate',
-        icon: 'git-branch',
-        shape: 'circle',
-      },
-      handleConfiguration: [
-        {
-          position: 'right',
-          handles: [{ id: 'out', type: 'source', handleType: 'output', label: 'Output' }],
-        },
-      ],
-    },
-  ],
-};
-
-// ============================================================================
 // Meta Configuration
 // ============================================================================
 
@@ -229,22 +34,7 @@ const meta: Meta<BaseNodeData> = {
   parameters: {
     layout: 'fullscreen',
   },
-  decorators: [
-    (Story) => {
-      const registry = useMemo(() => {
-        const reg = new NodeTypeRegistry();
-        reg.registerManifest(sampleManifest.nodes, sampleManifest.categories);
-        return reg;
-      }, []);
-
-      const contextValue = useMemo(() => ({ registry }), [registry]);
-
-      return (
-        <NodeRegistryContext.Provider value={contextValue}>{Story()}</NodeRegistryContext.Provider>
-      );
-    },
-    withCanvasProviders(),
-  ],
+  decorators: [withCanvasProviders()],
 };
 
 export default meta;
@@ -254,7 +44,11 @@ type Story = StoryObj<typeof meta>;
 // Node Grid Definitions
 // ============================================================================
 
-const SHAPES = ['circle', 'square', 'rectangle'] as const;
+const SHAPES = [
+  { shape: 'circle', nodeType: 'uipath.manual-trigger' },
+  { shape: 'square', nodeType: 'uipath.blank-node' },
+  { shape: 'rectangle', nodeType: 'uipath.agent' },
+] as const;
 const STATUSES = ['NotExecuted', 'InProgress', 'Completed', 'Failed', 'Paused'] as const;
 
 const GRID_CONFIG = {
@@ -271,10 +65,7 @@ function createShapeStatusGrid(): Node<BaseNodeData>[] {
   const nodes: Node<BaseNodeData>[] = [];
 
   STATUSES.forEach((status, rowIndex) => {
-    SHAPES.forEach((shape, colIndex) => {
-      const label = shape === 'rectangle' ? 'Invoice approval agent' : 'Header';
-      const nodeType = shape === 'rectangle' ? 'uipath.agent' : 'uipath.blank-node';
-
+    SHAPES.forEach(({ shape, nodeType }, colIndex) => {
       nodes.push(
         createNode({
           id: `${shape}-${status}`,
@@ -288,7 +79,7 @@ function createShapeStatusGrid(): Node<BaseNodeData>[] {
             version: '1.0.0',
             executionStatus: status,
             display: {
-              label,
+              label: shape,
               subLabel: status.replace(/([A-Z])/g, ' $1').trim(),
               shape,
             },
@@ -297,6 +88,42 @@ function createShapeStatusGrid(): Node<BaseNodeData>[] {
       );
     });
   });
+
+  SHAPES.forEach(({ shape, nodeType }, shapeI) => {
+    nodes.push(
+      createNode({
+        id: `${shape}-loading`,
+        type: nodeType,
+        position: {
+          x: GRID_CONFIG.startX + shapeI * GRID_CONFIG.gapX,
+          y: GRID_CONFIG.startY + STATUSES.length * GRID_CONFIG.gapY,
+        },
+        data: {
+          nodeType,
+          version: '1.0.0',
+          display: { label: shape, shape, subLabel: 'Loading state' },
+          loading: true,
+        },
+      })
+    );
+  });
+
+  // Add a node with a non-existent manifest to demonstrate missing node display
+  nodes.push(
+    createNode({
+      id: `unknown-node`,
+      type: 'uipath.unknown-node',
+      position: {
+        x: GRID_CONFIG.startX,
+        y: GRID_CONFIG.startY + (STATUSES.length + 1) * GRID_CONFIG.gapY,
+      },
+      data: {
+        nodeType: 'uipath.unknown-node',
+        version: '1.0.0',
+        display: { label: 'Unknown Node', shape: 'square', subLabel: 'Missing manifest' },
+      },
+    })
+  );
 
   return nodes;
 }
@@ -427,6 +254,102 @@ function CustomizedSizesStory() {
     </BaseCanvas>
   );
 }
+
+/**
+ * Story-only manifest with `repeat` expressions and templated labels so the
+ * DynamicHandles story can demonstrate manifest-level dynamic handle features.
+ *
+ * The shared `defaultWorkflowManifest` deliberately keeps the production
+ * `uipath.control-flow.switch` / `uipath.control-flow.decision` manifests
+ * static (no repeat, no template strings), so the story registers its own
+ * fictional `uipath.control-switch` / `uipath.decision` types that the
+ * `manifest-resolver` can expand.
+ */
+const dynamicHandlesManifest: { nodes: NodeManifest[]; categories: CategoryManifest[] } = {
+  categories: [
+    {
+      id: 'control',
+      name: 'Control Flow',
+      sortOrder: 1,
+      color: '#6c757d',
+      colorDark: '#495057',
+      icon: 'git-branch',
+      tags: [],
+    },
+  ],
+  nodes: [
+    {
+      nodeType: 'uipath.control-switch',
+      version: '1.0.0',
+      category: 'control',
+      tags: ['dynamic', 'repeat'],
+      sortOrder: 1,
+      display: {
+        label: 'Dynamic Handle Node',
+        icon: 'switch',
+        shape: 'square',
+      },
+      handleConfiguration: [
+        {
+          position: 'left',
+          handles: [
+            {
+              id: 'input-{index}',
+              type: 'target',
+              handleType: 'input',
+              label: '{item.label}',
+              repeat: 'inputs.dynamicInputs',
+            },
+          ],
+        },
+        {
+          position: 'right',
+          handles: [
+            {
+              id: 'output-{index}',
+              type: 'source',
+              handleType: 'output',
+              label: '{item.name}',
+              repeat: 'inputs.dynamicOutputs',
+            },
+            {
+              id: 'default',
+              type: 'source',
+              handleType: 'output',
+              label: 'Default Output',
+              visible: 'inputs.hasDefault',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      nodeType: 'uipath.decision',
+      version: '1.0.0',
+      category: 'control',
+      tags: ['control', 'decision'],
+      sortOrder: 2,
+      display: {
+        label: 'Decision',
+        icon: 'decision',
+        shape: 'square',
+      },
+      handleConfiguration: [
+        {
+          position: 'left',
+          handles: [{ id: 'input', type: 'target', handleType: 'input' }],
+        },
+        {
+          position: 'right',
+          handles: [
+            { id: 'true', type: 'source', handleType: 'output', label: '{inputs.trueLabel}' },
+            { id: 'false', type: 'source', handleType: 'output', label: '{inputs.falseLabel}' },
+          ],
+        },
+      ],
+    },
+  ],
+};
 
 function DynamicHandlesStory() {
   const [switchData, setSwitchData] = useState({
@@ -663,6 +586,17 @@ export const CustomizedSizes: Story = {
 
 export const DynamicHandles: Story = {
   name: 'Dynamic Handles',
+  // Story-level decorator wraps innermost, shadowing the registry installed by
+  // the meta-level `withCanvasProviders()`. This lets us register the
+  // story-only `uipath.control-switch` / `uipath.decision` manifests that
+  // declare `repeat` expressions and templated labels.
+  decorators: [
+    (Story) => (
+      <NodeRegistryProvider manifest={dynamicHandlesManifest}>
+        <Story />
+      </NodeRegistryProvider>
+    ),
+  ],
   render: () => <DynamicHandlesStory />,
 };
 
@@ -685,10 +619,7 @@ function createValidationGrid(): Node<BaseNodeData>[] {
   const nodes: Node<BaseNodeData>[] = [];
 
   VALIDATION_SEVERITIES.forEach((severity, rowIndex) => {
-    SHAPES.forEach((shape, colIndex) => {
-      const label = shape === 'rectangle' ? 'Invoice approval agent' : 'Header';
-      const nodeType = shape === 'rectangle' ? 'uipath.agent' : 'uipath.blank-node';
-
+    SHAPES.forEach(({ shape, nodeType }, colIndex) => {
       nodes.push(
         createNode({
           id: `validation-${shape}-${severity}`,
@@ -701,7 +632,7 @@ function createValidationGrid(): Node<BaseNodeData>[] {
             nodeType,
             version: '1.0.0',
             display: {
-              label,
+              label: shape,
               subLabel: severity,
               shape,
             },
@@ -757,10 +688,7 @@ function createAdornmentGrid(): Node<BaseNodeData>[] {
   const nodes: Node<BaseNodeData>[] = [];
 
   ADORNMENT_ROWS.forEach((row, rowIndex) => {
-    SHAPES.forEach((shape, colIndex) => {
-      const label = shape === 'rectangle' ? 'Invoice approval agent' : 'Header';
-      const nodeType = shape === 'rectangle' ? 'uipath.agent' : 'uipath.blank-node';
-
+    SHAPES.forEach(({ shape, nodeType }, colIndex) => {
       nodes.push(
         createNode({
           id: `adorn-${row.key}-${shape}`,
@@ -773,7 +701,7 @@ function createAdornmentGrid(): Node<BaseNodeData>[] {
             nodeType,
             version: '1.0.0',
             display: {
-              label,
+              label: shape,
               subLabel: row.label,
               shape,
             },
@@ -837,19 +765,6 @@ function AdornmentsStory() {
 export const Adornments: Story = {
   name: 'Adornments',
   decorators: [
-    (Story) => {
-      const registry = useMemo(() => {
-        const reg = new NodeTypeRegistry();
-        reg.registerManifest(sampleManifest.nodes, sampleManifest.categories);
-        return reg;
-      }, []);
-
-      const contextValue = useMemo(() => ({ registry }), [registry]);
-
-      return (
-        <NodeRegistryContext.Provider value={contextValue}>{Story()}</NodeRegistryContext.Provider>
-      );
-    },
     withCanvasProviders({
       executionState: {
         getNodeExecutionState: (nodeId: string) => {
@@ -872,19 +787,6 @@ export const Adornments: Story = {
 export const ValidationStates: Story = {
   name: 'Validation States',
   decorators: [
-    (Story) => {
-      const registry = useMemo(() => {
-        const reg = new NodeTypeRegistry();
-        reg.registerManifest(sampleManifest.nodes, sampleManifest.categories);
-        return reg;
-      }, []);
-
-      const contextValue = useMemo(() => ({ registry }), [registry]);
-
-      return (
-        <NodeRegistryContext.Provider value={contextValue}>{Story()}</NodeRegistryContext.Provider>
-      );
-    },
     withCanvasProviders({
       executionState: {
         getNodeExecutionState: () => undefined,

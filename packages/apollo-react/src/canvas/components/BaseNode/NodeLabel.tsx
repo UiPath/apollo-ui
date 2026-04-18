@@ -1,27 +1,39 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef, memo, useCallback, useEffect, useRef, useState } from 'react';
+import { NODE_TEXT_BOTTOM_OFFSET, NODE_TEXT_BOTTOM_OFFSET_WITH_HANDLES } from '../../constants';
 import type { NodeShape } from '../../schema';
+import { cx } from '../../utils/CssUtil';
 import { CanvasTooltip } from '../CanvasTooltip';
-import {
-  BaseHeader,
-  BaseSubHeader,
-  BaseTextContainer,
-  EditableLabel,
-  EmptyLabelPlaceholder,
-} from './BaseNode.styles';
 
-export interface NodeLabelProps {
-  label?: string;
-  subLabel?: string;
-  labelTooltip?: string;
-  labelBackgroundColor?: string;
-  shape?: NodeShape;
+interface BaseTextContainerProps {
   hasBottomHandles?: boolean;
-  selected?: boolean;
-  dragging?: boolean;
-  centerAdornment?: React.ReactNode;
-  readonly?: boolean;
-  onChange: (values: { label: string; subLabel: string }) => void;
+  shape?: NodeShape;
+  children: React.ReactNode;
 }
+
+export const BaseTextContainer = ({
+  hasBottomHandles,
+  shape,
+  children,
+}: BaseTextContainerProps) => {
+  if (shape === 'rectangle') {
+    return <div className="flex flex-1 min-w-0 flex-col items-start text-left">{children}</div>;
+  }
+  return (
+    <div
+      className={cx(
+        'absolute left-1/2 w-[150%] flex flex-col z-10 transition-transform duration-200',
+        hasBottomHandles
+          ? 'items-start text-left translate-x-[20%] translate-y-1/2'
+          : 'items-center text-center -translate-x-1/2 translate-y-full'
+      )}
+      style={{
+        bottom: hasBottomHandles ? NODE_TEXT_BOTTOM_OFFSET_WITH_HANDLES : NODE_TEXT_BOTTOM_OFFSET,
+      }}
+    >
+      {children}
+    </div>
+  );
+};
 
 interface ConditionalTooltipProps {
   content?: string;
@@ -39,6 +51,144 @@ const ConditionalTooltip = ({ content, children }: ConditionalTooltipProps) => {
     </CanvasTooltip>
   );
 };
+
+interface HeaderProps {
+  shape?: NodeShape;
+  backgroundColor?: string;
+  onDoubleClick?: (e: React.MouseEvent) => void;
+  children: React.ReactNode;
+  'data-testid'?: string;
+}
+
+const Header = ({
+  shape,
+  backgroundColor,
+  onDoubleClick,
+  children,
+  'data-testid': dataTestId,
+}: HeaderProps) => (
+  // biome-ignore lint/a11y/noStaticElementInteractions: double-click-to-edit is the existing UX
+  <div
+    data-testid={dataTestId}
+    onDoubleClick={onDoubleClick}
+    className={cx(
+      'text-center text-sm leading-[18px] font-semibold text-foreground overflow-hidden',
+      backgroundColor && 'px-1.5 py-0.5 rounded-sm',
+      shape === 'rectangle'
+        ? 'w-full text-left whitespace-nowrap text-ellipsis'
+        : 'wrap-break-word line-clamp-3'
+    )}
+    style={backgroundColor ? { backgroundColor } : undefined}
+  >
+    {children}
+  </div>
+);
+
+interface SubHeaderProps {
+  shape?: NodeShape;
+  onDoubleClick?: (e: React.MouseEvent) => void;
+  children: React.ReactNode;
+  'data-testid'?: string;
+}
+
+const SubHeader = ({
+  shape,
+  onDoubleClick,
+  children,
+  'data-testid': dataTestId,
+}: SubHeaderProps) => (
+  // biome-ignore lint/a11y/noStaticElementInteractions: double-click-to-edit is the existing UX
+  <div
+    data-testid={dataTestId}
+    onDoubleClick={onDoubleClick}
+    className={cx(
+      'text-center text-xs leading-[18px] text-foreground-muted wrap-break-word overflow-hidden',
+      shape === 'rectangle' ? 'w-full text-left line-clamp-2' : 'line-clamp-5'
+    )}
+  >
+    {children}
+  </div>
+);
+
+interface EditableLabelProps {
+  shape?: NodeShape;
+  backgroundColor?: string;
+  variant: 'normal' | 'subtext';
+  value: string;
+  placeholder?: string;
+  rows?: number;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  onBlur: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
+  'aria-label'?: string;
+}
+
+const EditableLabel = forwardRef<HTMLTextAreaElement, EditableLabelProps>(
+  (
+    {
+      shape,
+      backgroundColor,
+      variant,
+      value,
+      placeholder,
+      rows,
+      onChange,
+      onKeyDown,
+      onBlur,
+      'aria-label': ariaLabel,
+    },
+    ref
+  ) => (
+    <textarea
+      ref={ref}
+      value={value}
+      placeholder={placeholder}
+      rows={rows}
+      aria-label={ariaLabel}
+      onChange={onChange}
+      onKeyDown={onKeyDown}
+      onBlur={onBlur}
+      className={cx(
+        'nodrag nowheel resize-none font-[inherit] text-foreground border-none rounded-sm outline-1 outline-dashed outline-border-de-emp max-w-full',
+        variant === 'subtext'
+          ? 'text-xs leading-[18px] font-normal mb-0'
+          : 'text-sm leading-[18px] font-semibold mb-0.5',
+        shape === 'rectangle' ? 'field-sizing-fixed w-full' : 'field-sizing-content text-center',
+        backgroundColor && 'px-1.5 py-0.5'
+      )}
+      style={backgroundColor ? { backgroundColor } : undefined}
+    />
+  )
+);
+EditableLabel.displayName = 'EditableLabel';
+
+interface EmptyLabelPlaceholderProps {
+  onDoubleClick?: (e: React.MouseEvent) => void;
+}
+
+const EmptyLabelPlaceholder = ({ onDoubleClick }: EmptyLabelPlaceholderProps) => (
+  <button
+    type="button"
+    onDoubleClick={onDoubleClick}
+    className="nodrag nowheel text-sm leading-[18px] font-semibold text-foreground-muted bg-transparent border border-dashed border-border-de-emp rounded-sm cursor-pointer opacity-0 transition-opacity duration-200 min-w-5 min-h-5 hover:opacity-100"
+    aria-label="Add node label"
+    data-testid="empty-label-placeholder"
+  />
+);
+
+export interface NodeLabelProps {
+  label?: string;
+  subLabel?: string;
+  labelTooltip?: string;
+  labelBackgroundColor?: string;
+  shape?: NodeShape;
+  hasBottomHandles?: boolean;
+  selected?: boolean;
+  dragging?: boolean;
+  centerAdornment?: React.ReactNode;
+  readonly?: boolean;
+  onChange?: (values: { label: string; subLabel: string }) => void;
+}
 
 const NodeLabelInternal = ({
   label = '',
@@ -68,7 +218,7 @@ const NodeLabelInternal = ({
 
     // Only call onChange if values have changed
     if (localLabel !== label || localSubLabel !== subLabel) {
-      onChange({
+      onChange?.({
         label: localLabel,
         subLabel: localSubLabel,
       });
@@ -151,10 +301,6 @@ const NodeLabelInternal = ({
       <BaseTextContainer hasBottomHandles={hasBottomHandles} shape={shape}>
         <EmptyLabelPlaceholder
           onDoubleClick={readonly ? undefined : handleDoubleClick(labelInputRef)}
-          className="nodrag nowheel"
-          role="button"
-          aria-label="Add node label"
-          data-testid="empty-label-placeholder"
         />
         {centerAdornment}
       </BaseTextContainer>
@@ -174,10 +320,8 @@ const NodeLabelInternal = ({
             shape={shape}
             variant="normal"
             backgroundColor={labelBackgroundColor}
-            className="nodrag nowheel"
             placeholder="Name"
             rows={shape === 'rectangle' ? 1 : undefined}
-            role="textbox"
             aria-label="Edit node name"
           />
           <EditableLabel
@@ -188,31 +332,29 @@ const NodeLabelInternal = ({
             onBlur={handleBlur}
             shape={shape}
             variant="subtext"
-            className="nodrag nowheel"
             placeholder="Description"
             rows={shape === 'rectangle' ? 2 : undefined}
-            role="textbox"
             aria-label="Edit node description"
           />
         </>
       ) : (
         <ConditionalTooltip content={labelTooltip}>
-          <BaseHeader
+          <Header
             shape={shape}
             backgroundColor={labelBackgroundColor}
             onDoubleClick={readonly ? undefined : handleDoubleClick(labelInputRef)}
             data-testid="node-label"
           >
             {label}
-          </BaseHeader>
+          </Header>
           {subLabel && (
-            <BaseSubHeader
+            <SubHeader
               shape={shape}
               onDoubleClick={readonly ? undefined : handleDoubleClick(subLabelInputRef)}
               data-testid="node-sublabel"
             >
               {subLabel}
-            </BaseSubHeader>
+            </SubHeader>
           )}
         </ConditionalTooltip>
       )}
