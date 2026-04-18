@@ -12,12 +12,19 @@ export interface CompanyLogo {
   url: string;
   darkUrl?: string;
   alt: string;
+  isCustom?: boolean;
+}
+
+export interface ShellSubNavItem {
+  path: string;
+  label: TranslationKey;
 }
 
 export interface ShellNavItem {
   path: string;
   label: TranslationKey;
   icon: LucideIcon;
+  subItems?: ShellSubNavItem[];
 }
 
 export interface ApolloShellProps extends PropsWithChildren {

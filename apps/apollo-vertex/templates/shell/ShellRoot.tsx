@@ -8,7 +8,15 @@ const navItems: ShellNavItem[] = [
   { path: "/preview/shell/projects", label: "projects", icon: FolderOpen },
   { path: "/preview/shell/analytics", label: "analytics", icon: BarChart3 },
   { path: "/preview/shell/team", label: "team", icon: Users },
-  { path: "/preview/shell/settings", label: "settings", icon: Settings },
+  {
+    path: "/preview/shell/settings",
+    label: "settings",
+    icon: Settings,
+    subItems: [
+      { path: "/preview/shell/settings", label: "settings" },
+      { path: "/preview/shell/team", label: "team" },
+    ],
+  },
 ];
 
 const minimalNavItems: ShellNavItem[] = [
