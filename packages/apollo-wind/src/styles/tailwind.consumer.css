@@ -13,6 +13,8 @@
 @import "tailwindcss";
 @import "@uipath/apollo-core/tokens/css/theme-variables.css";
 
+@import "./tailwind.utilities.css";
+
 :root {
   --radius: 0.75rem;
   /* 12px — base border-radius for buttons and UI elements */
