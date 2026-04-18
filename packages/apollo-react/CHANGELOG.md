@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.7.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.6.3...@uipath/apollo-react@4.7.0) (2026-04-18)
+
+### Features
+
+* **apollo-react:** update base node styling [MST-8564] ([3cc827b](https://github.com/UiPath/apollo-ui/commit/3cc827b79627c9a40224cb7d428b5cfda89bf0de))
+
 ## [@uipath/apollo-react-v4.6.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.6.2...@uipath/apollo-react@4.6.3) (2026-04-18)
 
 ### Bug Fixes

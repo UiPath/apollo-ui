@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.4.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.3.0...@uipath/apollo-wind@2.4.0) (2026-04-18)
+
+### Features
+
+* **apollo-wind:** split tailwind utilities file with glow animation ([4cd6016](https://github.com/uipath/apollo-ui/commit/4cd60160fd4ae9a817362c6dbab2816de116894d))
+
 ## [@uipath/apollo-wind-v2.3.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.2.1...@uipath/apollo-wind@2.3.0) (2026-04-16)
 
 ### Features
