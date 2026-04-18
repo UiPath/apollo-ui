@@ -293,25 +293,22 @@ describe('ButtonHandles', () => {
         { id: 'handle2', type: 'source', handleType: 'output' },
       ];
 
-      // With nodeWidth=120, grid-aligned positions should be calculated
-      // GRID_SPACING is 16, so:
-      // Handle 1: ideal = 40px, floor(40/16)*16 = 32px → 32/120*100 = 26.67%
-      // Handle 2: ideal = 80px, ceil(80/16)*16 = 80px → 80/120*100 = 66.67%
+      // With nodeWidth=100, gridSize=8: ideal=33.33, rounded=32, span=32, start=34
+      // Positions: [34, 66] → 34%, 66% (differs from percentage-based 33.33%, 66.66%)
       render(
         <ButtonHandles
           handles={handles}
           nodeId="test-node"
           position={Position.Top}
-          nodeWidth={120}
+          nodeWidth={100}
         />
       );
 
       const handleElements = screen.getAllByTestId('handle');
       expect(handleElements).toHaveLength(2);
 
-      // Grid-aligned positions differ from percentage-based (33.33%, 66.66%)
-      expect(handleElements[0]).toHaveStyle({ left: '26.666666666666668%' });
-      expect(handleElements[1]).toHaveStyle({ left: '66.66666666666666%' });
+      expect(handleElements[0]).toHaveStyle({ left: '34%' });
+      expect(handleElements[1]).toHaveStyle({ left: '66%' });
     });
 
     it('uses grid-aligned positioning for Left handles when nodeHeight is provided', () => {
@@ -320,22 +317,21 @@ describe('ButtonHandles', () => {
         { id: 'handle2', type: 'target', handleType: 'input' },
       ];
 
-      // With nodeHeight=120, grid-aligned positions should be calculated
       // Same logic as Top handles but uses nodeHeight for vertical positioning
       render(
         <ButtonHandles
           handles={handles}
           nodeId="test-node"
           position={Position.Left}
-          nodeHeight={120}
+          nodeHeight={100}
         />
       );
 
       const handleElements = screen.getAllByTestId('handle');
       expect(handleElements).toHaveLength(2);
 
-      expect(handleElements[0]).toHaveStyle({ top: '26.666666666666668%' });
-      expect(handleElements[1]).toHaveStyle({ top: '66.66666666666666%' });
+      expect(handleElements[0]).toHaveStyle({ top: '34%' });
+      expect(handleElements[1]).toHaveStyle({ top: '66%' });
     });
 
     it('falls back to percentage-based positioning when node dimensions are not provided', () => {
@@ -396,9 +392,8 @@ describe('ButtonHandles', () => {
       const handleElements = screen.getAllByTestId('handle');
       expect(handleElements).toHaveLength(1);
 
-      // Single handle with nodeHeight=80: ideal = 40px (center)
-      // round(40/16)*16 = round(2.5)*16 = 3*16 = 48px → 48/80*100 = 60%
-      expect(handleElements[0]).toHaveStyle({ top: '60%' });
+      // Single handle is always placed at the exact node center, regardless of grid.
+      expect(handleElements[0]).toHaveStyle({ top: '50%' });
     });
   });
 });

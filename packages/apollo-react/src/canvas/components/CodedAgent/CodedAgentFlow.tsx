@@ -153,8 +153,8 @@ const createCodedAgentNodeWrapper = (
 
     const executionStatus = useMemo(() => {
       if (nodeData.hasError) return 'Failed';
-      if (nodeData.hasSuccess) return 'Success';
-      if (nodeData.hasRunning) return 'Running';
+      if (nodeData.hasSuccess) return 'Completed';
+      if (nodeData.hasRunning) return 'InProgress';
       return undefined;
     }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
 
@@ -213,8 +213,8 @@ const CodedResourceNodeElement = memo(({ data, selected, id, ...nodeProps }: Nod
 
   const executionStatus = useMemo(() => {
     if (nodeData.hasError) return 'Failed';
-    if (nodeData.hasSuccess) return 'Success';
-    if (nodeData.hasRunning) return 'Running';
+    if (nodeData.hasSuccess) return 'Completed';
+    if (nodeData.hasRunning) return 'InProgress';
     return undefined;
   }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
 

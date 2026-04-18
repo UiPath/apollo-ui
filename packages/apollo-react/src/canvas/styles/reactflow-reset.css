@@ -1,0 +1,34 @@
+/**
+ * React Flow ships cosmetic defaults on its built-in node-type wrapper classes
+ * `react-flow__node-default` — border, padding, background, hover/selected box-shadow, fixed width, etc.
+ * When a node references a `type` that isn't in `nodeTypes`, RF falls back to its
+ * `default` mapping AND tags the wrapper with `react-flow__node-default`,
+ * so its default styling renders behind our custom node visuals.
+ *
+ * Since BaseNode (and any other canvas node) owns its own visuals, we strip
+ * RF's defaults entirely — including the state variants (.selectable:hover,
+ * .selectable.selected, .selectable:focus, .selectable:focus-visible) so no
+ * box-shadow or border bleeds through.
+ *
+ * `!important` is used here because RF's own stylesheet can load AFTER this
+ * file in consuming apps (bundler order / CSS-in-JS injection), and its
+ * selectors share our specificity — source-order ties go to the later rule.
+ * Marking these as important makes the reset deterministic regardless of load
+ * order. This is idiomatic for third-party library resets.
+ */
+.react-flow__node-default,
+.react-flow__node-default.selectable:hover,
+.react-flow__node-default.selectable.selected,
+.react-flow__node-default.selectable:focus,
+.react-flow__node-default.selectable:focus-visible {
+  background: none !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  width: auto !important;
+  color: inherit !important;
+  text-align: inherit !important;
+  font-size: inherit !important;
+  box-shadow: none !important;
+}

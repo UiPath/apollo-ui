@@ -588,8 +588,6 @@ export const allNodeManifests: NodeManifest[] = [
       label: 'Agent',
       icon: 'agent',
       shape: 'rectangle',
-      iconBackground: 'linear-gradient(135deg, #FFE0FF 4.81%, #CFD9FF 97.27%)',
-      iconBackgroundDark: 'linear-gradient(135deg, #A280BC 13.12%, rgba(87, 123, 174, 0.6) 86.88%)',
     },
     handleConfiguration: [
       {
@@ -600,6 +598,16 @@ export const allNodeManifests: NodeManifest[] = [
             type: 'source',
             handleType: 'artifact',
             label: 'Memory',
+            constraints: {
+              allowedTargets: [{ nodeType: 'uipath.agent.resource.memory' }],
+              validationMessage: 'Only Agent Memory nodes can connect here',
+            },
+          },
+          {
+            id: 'memory2',
+            type: 'source',
+            handleType: 'artifact',
+            label: 'Skill',
             constraints: {
               allowedTargets: [{ nodeType: 'uipath.agent.resource.memory' }],
               validationMessage: 'Only Agent Memory nodes can connect here',

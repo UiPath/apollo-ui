@@ -1,4 +1,3 @@
-import { cx } from '@uipath/apollo-react/canvas/utils';
 import type { Node, NodeProps, ReactFlowState } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   Position,
@@ -7,13 +6,25 @@ import {
   useUpdateNodeInternals,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { DEFAULT_NODE_SIZE } from '../../constants';
+import {
+  DEFAULT_NODE_SIZE,
+  DEFAULT_RECTANGLE_NODE_WIDTH,
+  GRID_SPACING,
+  NODE_CONTAINER_RADIUS_RATIO,
+  NODE_HEIGHT_DEFAULT,
+  NODE_HEIGHT_FOOTER_BUTTON,
+  NODE_HEIGHT_FOOTER_DOUBLE,
+  NODE_HEIGHT_FOOTER_SINGLE,
+  NODE_INNER_ICON_RATIO,
+  NODE_INNER_RADIUS_RATIO,
+  NODE_INNER_SHAPE_RATIO,
+} from '../../constants';
 import { useNodeTypeRegistry } from '../../core';
 import { useElementValidationStatus, useNodeExecutionState } from '../../hooks';
+import type { NodeShape } from '../../schema';
 import type { HandleGroupManifest } from '../../schema/node-definition';
-import type { ExecutionState } from '../../types/execution';
 import { resolveAdornments } from '../../utils/adornment-resolver';
-import { CanvasIcon, getIcon } from '../../utils/icon-registry';
+import { getIcon } from '../../utils/icon-registry';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
 import { resolveToolbar } from '../../utils/toolbar-resolver';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
@@ -24,25 +35,50 @@ import type { HandleActionEvent } from '../ButtonHandle/ButtonHandle';
 import { SmartHandle, SmartHandleProvider } from '../ButtonHandle/SmartHandle';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { NodeToolbar } from '../Toolbar';
-import {
-  BaseBadgeSlot,
-  BaseContainer,
-  BaseHeader,
-  BaseIconWrapper,
-  BaseSkeletonIcon,
-  BaseSubHeader,
-  BaseTextContainer,
-} from './BaseNode.styles';
 import type {
   BaseNodeData,
   FooterVariant,
   NodeAdornments,
   NodeStatusContext,
 } from './BaseNode.types';
+import { BaseBadgeSlot } from './BaseNodeBadgeSlot';
 import { useBaseNodeOverrideConfig } from './BaseNodeConfigContext';
+import { BaseContainer } from './BaseNodeContainer';
+import { BaseInnerShape } from './BaseNodeInnerShape';
+import { MissingManifestNode } from './BaseNodeMissingManifest';
 import { NodeLabel } from './NodeLabel';
 
 const selectIsConnecting = (state: ReactFlowState) => !!state.connectionClickStartHandle;
+
+const getContainerWidth = (shape: NodeShape | undefined, width: number | undefined) => {
+  const defaultWidth = shape === 'rectangle' ? DEFAULT_RECTANGLE_NODE_WIDTH : DEFAULT_NODE_SIZE;
+  if (width && width !== DEFAULT_NODE_SIZE && width !== DEFAULT_RECTANGLE_NODE_WIDTH) {
+    return width;
+  }
+  return defaultWidth;
+};
+
+const getContainerHeight = (
+  height: number | undefined,
+  hasFooter: boolean,
+  footerVariant: FooterVariant | undefined
+): number | 'auto' => {
+  if (hasFooter) {
+    switch (footerVariant) {
+      case 'button':
+        return NODE_HEIGHT_FOOTER_BUTTON;
+      case 'single':
+        return NODE_HEIGHT_FOOTER_SINGLE;
+      case 'double':
+        return NODE_HEIGHT_FOOTER_DOUBLE;
+      default:
+        return 'auto';
+    }
+  }
+  // Use `||` rather than `??` — React Flow can pass `height: 0` before measurement,
+  // and we want that to fall through to the default rather than collapse the node.
+  return height || NODE_HEIGHT_DEFAULT;
+};
 
 const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const { type, data, selected, id, dragging, width, height } = props;
@@ -94,7 +130,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const statusContext: NodeStatusContext = useMemo(
     () => ({
       nodeId: id,
-      executionState: (executionStatusOverride as ExecutionState) ?? executionState,
+      executionState: executionStatusOverride ?? executionState,
       validationState,
       isConnecting,
       isSelected: selected,
@@ -203,7 +239,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   // Compute height based on handleConfigurations
   const computedHeight = useMemo(() => {
-    const handleSpacing = 32;
+    const handleSpacing = GRID_SPACING * 2;
 
     const leftHandles = handleConfigurations
       .filter((config) => config.position === Position.Left && config.visible !== false)
@@ -273,6 +309,55 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   // Footer: Component prop (no other sources)
   const displayFooter = footerComponent;
+
+  // ---------------------------------------------------------------------------
+  // Geometry: CSS custom properties for the entire node tree.
+  // Setting them once on the outermost wrapper means every child component
+  // (BaseContainer, BaseInnerShape, BaseBadgeSlot) uses *static* Tailwind
+  // classes that never change between renders — React skips DOM updates when
+  // the className string is === equal, which is the critical perf win over
+  // having per-component inline style objects.
+  // ---------------------------------------------------------------------------
+  const hasFooter = !!displayFooter;
+  const containerWidth = getContainerWidth(displayShape, width);
+  const containerHeight = getContainerHeight(height, hasFooter, displayFooterVariant);
+
+  const nodeVars = useMemo((): React.CSSProperties => {
+    const numH = typeof containerHeight === 'number' ? containerHeight : undefined;
+
+    // Container border-radius
+    const radiusBasis =
+      displayShape === 'rectangle'
+        ? (numH ?? DEFAULT_NODE_SIZE)
+        : Math.min(containerWidth, numH ?? DEFAULT_NODE_SIZE);
+    const nodeRadius =
+      displayShape === 'circle'
+        ? '50%'
+        : hasFooter
+          ? '16px'
+          : `${radiusBasis * NODE_CONTAINER_RADIUS_RATIO}px`;
+
+    // Inner-shape sizing (icon wrapper)
+    const effectiveH = hasFooter ? DEFAULT_NODE_SIZE : (numH ?? DEFAULT_NODE_SIZE);
+    const effectiveW = hasFooter ? DEFAULT_NODE_SIZE : containerWidth;
+    const basis = displayShape === 'rectangle' ? effectiveH : Math.min(effectiveW, effectiveH);
+
+    const innerRadius =
+      displayShape === 'circle'
+        ? '50%'
+        : hasFooter
+          ? '16px'
+          : `${basis * NODE_INNER_RADIUS_RATIO}px`;
+
+    return {
+      '--node-w': `${containerWidth}px`,
+      '--node-h': numH ? `${numH}px` : 'auto',
+      '--node-radius': nodeRadius,
+      '--inner-size': `${basis * NODE_INNER_SHAPE_RATIO}px`,
+      '--inner-radius': innerRadius,
+      '--icon-size': `${basis * NODE_INNER_ICON_RATIO}px`,
+    } as React.CSSProperties;
+  }, [containerWidth, containerHeight, displayShape, hasFooter]);
 
   const interactionState = useMemo(() => {
     if (disabled) return 'disabled';
@@ -437,86 +522,59 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // Use SmartHandle elements if enabled, otherwise use ButtonHandle elements
   const handleElements = useSmartHandles ? smartHandleElements : buttonHandleElements;
 
-  // TODO: refactor to standalone component
   if (!manifest) {
     return (
+      // biome-ignore lint/a11y/noStaticElementInteractions: canvas node interaction
       <div
         ref={containerRef}
-        style={{ position: 'relative' }}
+        className="relative"
+        style={nodeVars}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onFocus={handleFocus}
         onBlur={handleBlur}
       >
-        <BaseContainer
-          selected={selected}
-          shape="square"
-          className={interactionState}
+        <MissingManifestNode
+          type={data.nodeType as string}
+          isSelected={selected}
+          isHovered={isHovered}
           interactionState={interactionState}
-        >
-          <BaseIconWrapper
-            backgroundColor="var(--canvas-error-background)"
-            shape="square"
-            height={height}
-            width={width ?? height}
-          >
-            <CanvasIcon icon="circle-alert" size={32} color="var(--canvas-error-icon)" />
-          </BaseIconWrapper>
-
-          {/* TODO: localize */}
-          <BaseTextContainer shape="square">
-            <BaseHeader shape="square">Manifest not found</BaseHeader>
-            <BaseSubHeader>Node type "{type}" is not registered</BaseSubHeader>
-          </BaseTextContainer>
-        </BaseContainer>
+        />
       </div>
     );
   }
 
   const nodeContent = (
+    // biome-ignore lint/a11y/noStaticElementInteractions: canvas node interaction
     <div
       ref={containerRef}
-      style={{ position: 'relative' }}
+      className="relative"
+      style={nodeVars}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onFocus={handleFocus}
       onBlur={handleBlur}
     >
       <BaseContainer
-        selected={selected}
         shape={displayShape}
-        className={cx(executionStatus, interactionState)}
+        isSelected={selected}
+        isHovered={isHovered}
         interactionState={interactionState}
         executionStatus={executionStatus}
         validationStatus={validationState?.validationStatus}
         suggestionType={suggestionType}
-        width={width}
-        height={height}
-        backgroundColor={displayBackground}
-        hasFooter={!!displayFooter}
-        footerVariant={displayFooterVariant as FooterVariant}
-        aria-busy={data.loading || undefined}
+        hasFooter={hasFooter}
+        background={displayBackground}
+        loading={data.loading}
       >
-        {data.loading ? (
-          // border-radius is controlled via shape prop
-          <BaseSkeletonIcon
-            data-testid="skeleton-icon"
-            shape={displayShape}
-            nodeHeight={displayFooter ? undefined : height}
-            nodeWidth={displayFooter ? undefined : (width ?? height)}
-          />
-        ) : (
-          Icon && (
-            <BaseIconWrapper
-              shape={displayShape}
-              color={displayColor}
-              backgroundColor={displayIconBackground}
-              height={displayFooter ? undefined : height}
-              width={displayFooter ? undefined : (width ?? height)}
-            >
-              {Icon}
-            </BaseIconWrapper>
-          )
+        {(Icon || data.loading) && (
+          <BaseInnerShape
+            color={displayColor}
+            background={displayIconBackground}
+            loading={data.loading}
+          >
+            {data.loading ? null : Icon}
+          </BaseInnerShape>
         )}
 
         {adornments?.topLeft && (
@@ -552,9 +610,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           onChange={handleLabelChange}
         />
         {displayFooter && (
-          <div style={{ flexBasis: '100%', paddingTop: '2px', minWidth: 0, overflow: 'hidden' }}>
-            {displayFooter}
-          </div>
+          <div className="basis-full pt-0.5 min-w-0 overflow-hidden">{displayFooter}</div>
         )}
       </BaseContainer>
       {handleElements}
