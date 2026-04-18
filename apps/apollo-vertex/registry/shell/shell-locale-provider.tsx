@@ -5,7 +5,7 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { configurei18n } from "@/lib/i18n";
 import { LANGUAGE_CHANGED_EVENT } from "./shell-constants";
 
@@ -53,8 +53,9 @@ export const LocaleProvider = ({ children }: PropsWithChildren) => {
 
   if (!isConfigured)
     return (
-      <div className="flex items-center justify-center h-full">
-        <Spinner className="size-10 animate-spin" />
+      <div className="flex h-screen gap-4 p-4 bg-background dark:bg-sidebar">
+        <Skeleton className="h-full w-[280px]" />
+        <Skeleton className="h-full flex-1 rounded-lg" />
       </div>
     );
 

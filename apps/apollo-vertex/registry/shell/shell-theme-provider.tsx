@@ -74,6 +74,7 @@ function applyThemeClass(resolved: "light" | "dark") {
   const root = window.document.documentElement;
   root.classList.remove("light", "dark");
   root.classList.add(resolved);
+  root.style.colorScheme = resolved;
 }
 
 function applyThemeConfig(config: ThemeConfig, resolved: "light" | "dark") {
