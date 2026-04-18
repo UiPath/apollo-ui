@@ -969,7 +969,8 @@
         "tooltip",
         "avatar",
         "dropdown-menu",
-        "spinner"
+        "skeleton",
+        "sidebar"
       ],
       "files": [
         { "path": "registry/shell/shell.tsx", "type": "registry:ui" },
@@ -1022,10 +1023,6 @@
         },
         {
           "path": "registry/shell/shell-text.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "registry/shell/shell-theme-toggle.tsx",
           "type": "registry:ui"
         },
         {
