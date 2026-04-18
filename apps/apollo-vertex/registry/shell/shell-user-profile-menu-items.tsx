@@ -11,7 +11,7 @@ import type { SupportedLocale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useAuth } from "./shell-auth-provider";
 import { LANGUAGE_CHANGED_EVENT, LOCALE_OPTIONS } from "./shell-constants";
-import type { LanguageChangedEvent } from "./shell-language-toggle";
+import type { LanguageChangedEvent } from "./shell-constants";
 import { Text } from "./shell-text";
 import { useTheme } from "./shell-theme-provider";
 

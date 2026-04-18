@@ -2,9 +2,12 @@ import type { SupportedLocale } from "@/lib/i18n";
 import { SUPPORTED_LOCALES } from "@/lib/i18n";
 import type { TranslationKey } from "./shell-translation-key";
 
-export const SIDEBAR_COLLAPSED_KEY = "sidebar-collapsed";
 export const THEME_STORAGE_KEY = "vss-ui-theme";
 export const LANGUAGE_CHANGED_EVENT = "languageChanged";
+
+export type LanguageChangedEvent = {
+  selectedLanguageId: SupportedLocale;
+};
 
 export const MAP_LOCALE_TO_TRANSLATION_KEY: Record<
   SupportedLocale,
