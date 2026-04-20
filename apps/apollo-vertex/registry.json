@@ -436,6 +436,18 @@
           "target": "components/ui/ai-chat/components/ai-chat-input.tsx"
         },
         {
+          "path": "registry/ai-chat/components/ai-chat-provider.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-message-actions.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-selection-menu.tsx",
+          "type": "registry:component"
+        },
+        {
           "path": "registry/ai-chat/components/ai-chat-suggestions.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-suggestions.tsx"
