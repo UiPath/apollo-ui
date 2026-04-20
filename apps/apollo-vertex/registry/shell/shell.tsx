@@ -15,16 +15,10 @@ export interface CompanyLogo {
   isCustom?: boolean;
 }
 
-export interface ShellSubNavItem {
-  path: string;
-  label: TranslationKey;
-}
-
 export interface ShellNavItem {
   path: string;
   label: TranslationKey;
   icon: LucideIcon;
-  subItems?: ShellSubNavItem[];
 }
 
 export interface ApolloShellProps extends PropsWithChildren {
