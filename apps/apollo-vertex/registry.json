@@ -419,6 +419,18 @@
           "target": "components/ui/ai-chat/components/ai-chat-loading.tsx"
         },
         {
+          "path": "registry/ai-chat/components/ai-chat-thinking.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-code-block.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-empty-state.tsx",
+          "type": "registry:component"
+        },
+        {
           "path": "registry/ai-chat/components/ai-chat-input.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-input.tsx"
