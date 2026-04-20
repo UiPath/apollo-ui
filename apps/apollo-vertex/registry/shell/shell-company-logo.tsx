@@ -24,18 +24,12 @@ export const CompanyLogoIcon = ({ companyLogo }: CompanyLogoIconProps) => {
         src={companyLogo.url}
         alt={companyLogo.alt}
         className={cn(sizeClass, companyLogo.darkUrl && "dark:hidden")}
-        onError={(e) => {
-          e.currentTarget.style.display = "none";
-        }}
       />
       {companyLogo.darkUrl && (
         <img
           src={companyLogo.darkUrl}
           alt={companyLogo.alt}
           className={cn(sizeClass, "hidden dark:block")}
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
         />
       )}
     </>
