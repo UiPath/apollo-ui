@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import type { DrilldownTab } from "./drilldown-tabs";
 
 // --- Sample data ---
 
@@ -157,7 +158,7 @@ function CategoryBreakdown() {
           Category breakdown
         </div>
         <p className="text-xs text-muted-foreground">
-          Where "Wrong size/fit" returns are concentrated
+          {`Where "Wrong size/fit" returns are concentrated`}
         </p>
       </div>
       <div className="space-y-4">
@@ -269,26 +270,13 @@ function Recommendations() {
 
 // --- Exports ---
 
-export type DrilldownTab =
-  | "overview"
-  | "trend"
-  | "categories"
-  | "products"
-  | "actions";
-
-export const drilldownTabs: { key: DrilldownTab; label: string }[] = [
-  { key: "overview", label: "Overview" },
-  { key: "categories", label: "Categories" },
-  { key: "products", label: "Products" },
-  { key: "actions", label: "Actions" },
-];
-
 export function DrilldownTabContent({ tab }: { tab: DrilldownTab }) {
   if (tab === "trend") return <TrendChart data={trendData} />;
   if (tab === "categories") return <CategoryBreakdown />;
   if (tab === "products") return <TopProducts />;
   if (tab === "actions") return <Recommendations />;
-  return null; // "overview" is handled by the original card content
+  // "overview" is handled by the original card content
+  return null;
 }
 
 export function AutopilotPrompts({

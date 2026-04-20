@@ -25,10 +25,8 @@ import { InsightGrid } from "./InsightGrid";
 import { DashboardLoading } from "./DashboardLoading";
 import { PromptBar } from "./PromptBar";
 import { AutopilotInsight } from "./AutopilotInsight";
-import {
-  useDashboardData,
-  DashboardDataProvider,
-} from "./DashboardDataProvider";
+import { useDashboardData } from "./dashboard-data-context";
+import { DashboardDataProvider } from "./DashboardDataProvider";
 
 type LayoutType = "executive" | "operational" | "analytics";
 
@@ -57,12 +55,13 @@ function ExecutiveLayout({
       className="grid grid-cols-1 @[800px]:grid-cols-2 @[800px]:h-full"
       style={gapStyle}
     >
-      <div className="flex flex-col h-full" style={{ gap: promptExpanded ? 0 : layout.gap }}>
+      <div
+        className="flex flex-col h-full"
+        style={{ gap: promptExpanded ? 0 : layout.gap }}
+      >
         <div
           className={`overflow-hidden transition-all duration-300 ease-in-out ${
-            promptExpanded
-              ? "flex-[0_0_0%] opacity-0"
-              : "flex-1 opacity-100"
+            promptExpanded ? "flex-[0_0_0%] opacity-0" : "flex-1 opacity-100"
           }`}
         >
           <Card
@@ -199,9 +198,9 @@ function DashboardContentInner() {
       <div
         className={`relative h-full ${viewMode === "stacked" ? "overflow-x-hidden" : "overflow-hidden"}`}
         style={
-          layoutCfg.containerBg !== "none"
-            ? { backgroundColor: `var(--${layoutCfg.containerBg})` }
-            : {}
+          layoutCfg.containerBg === "none"
+            ? {}
+            : { backgroundColor: `var(--${layoutCfg.containerBg})` }
         }
       >
         <DashboardGlow darkConfig={darkGlow} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 type Phase = "logo" | "skeleton" | "done";
 
@@ -87,15 +87,13 @@ export function DashboardLoading({
   const [phase, setPhase] = useState<Phase>("done");
   const [exiting, setExiting] = useState(false);
 
-  const startSequence = useCallback(() => {
-    setExiting(false);
-    setPhase("logo");
-  }, []);
-
   useEffect(() => {
     if (triggerReplay === 0) return;
-    if (triggerReplay) startSequence();
-  }, [triggerReplay, startSequence]);
+    if (triggerReplay) {
+      setExiting(false);
+      setPhase("logo");
+    }
+  }, [triggerReplay]);
 
   useEffect(() => {
     if (phase === "done") return;
