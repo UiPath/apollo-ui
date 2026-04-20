@@ -4,6 +4,13 @@ export type {
 } from "./components/ai-chat-message";
 export type MessageFeedbackType = "up" | "down";
 
+export interface ChoiceOption {
+  id: string;
+  label: string;
+  value?: string;
+  recommended?: boolean;
+}
+
 export interface MessageAction {
   /** Unique key for the action */
   key: string;

@@ -1,9 +1,9 @@
 "use client";
 
+import { useLocalStorage } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { jwtDecode } from "jwt-decode";
 import { ChevronRight, LogIn, LogOut } from "lucide-react";
-import { useLocalStorage } from "@mantine/hooks";
 import type { ReactNode } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -194,7 +194,7 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center flex-1 min-h-0 text-muted-foreground">
+      <div className="flex items-center justify-center h-[500px] text-muted-foreground">
         Signing in...
       </div>
     );
@@ -202,7 +202,7 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex flex-col items-center justify-center flex-1 min-h-0 gap-4 border rounded-lg bg-card">
+      <div className="flex flex-col items-center justify-center h-[500px] gap-4 border rounded-lg bg-card">
         <p className="text-muted-foreground">
           Sign in to UiPath to use the AI Chat demo
         </p>
@@ -221,7 +221,7 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
 
   if (isOrgError) {
     return (
-      <div className="flex flex-col items-center justify-center flex-1 min-h-0 gap-4 border rounded-lg bg-card">
+      <div className="flex flex-col items-center justify-center h-[500px] gap-4 border rounded-lg bg-card">
         <p className="text-muted-foreground">
           We couldn&apos;t load your organization info. Please try signing out
           and signing back in.
@@ -233,7 +233,7 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
 
   if (isOrgLoading || !accessToken) {
     return (
-      <div className="flex items-center justify-center flex-1 min-h-0 text-muted-foreground">
+      <div className="flex items-center justify-center h-[500px] text-muted-foreground">
         Loading organization info...
       </div>
     );
@@ -241,7 +241,7 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
 
   if (!orgTenant || !orgInfo) {
     return (
-      <div className="flex flex-col items-center justify-center flex-1 min-h-0 gap-4 border rounded-lg bg-card">
+      <div className="flex flex-col items-center justify-center h-[500px] gap-4 border rounded-lg bg-card">
         <p className="text-muted-foreground">
           Unable to resolve your organization. Please try signing out and
           signing back in.
@@ -252,8 +252,8 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
   }
 
   return (
-    <div className="flex flex-col gap-2 flex-1 min-h-0">
-      <div className="flex items-center justify-end gap-2">
+    <div className="flex flex-col gap-2 h-full">
+      <div className="flex-shrink-0 flex items-center justify-end gap-2">
         <span className="flex items-center gap-1 text-sm text-muted-foreground">
           {user && (
             <>

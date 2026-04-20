@@ -6,6 +6,7 @@ export default {
   templates: "Templates",
   guidelines: "Guidelines",
   experiment: "Experiment",
+  "vertex-components": "Vertex Components",
   "data-querying": "Data Querying",
   localization: "Localization",
   mcp: "MCP Server",
