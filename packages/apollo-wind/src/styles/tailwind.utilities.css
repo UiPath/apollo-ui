@@ -52,3 +52,12 @@
     box-shadow: 0 0 0 5px var(--_glow-shadow, currentColor);
   }
 }
+
+@keyframes apollo-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@utility animate-fade-in {
+  animation: apollo-fade-in 250ms ease-out;
+}
