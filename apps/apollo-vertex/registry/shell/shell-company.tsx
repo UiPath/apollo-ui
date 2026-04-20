@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { PanelLeft } from "lucide-react";
 import { useState } from "react";
@@ -116,14 +117,15 @@ export const Company = ({
     : "bg-[oklch(0.6533_0.2227_34.41)]";
 
   const iconElement = (
-    <div
+    <Link
+      to="/"
       className={cn(
         "w-8 h-8 rounded-md flex items-center justify-center shrink-0 overflow-hidden",
         logoBgClass,
       )}
     >
       <CompanyLogoIcon companyLogo={companyLogo} />
-    </div>
+    </Link>
   );
 
   return (
