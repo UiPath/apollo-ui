@@ -256,10 +256,10 @@ importers:
         specifier: ^0.8.1
         version: 0.8.1
       '@tanstack/ai-client':
-        specifier: ^0.7.2
+        specifier: 0.7.2
         version: 0.7.2
       '@tanstack/ai-react':
-        specifier: ^0.7.2
+        specifier: 0.7.2
         version: 0.7.2(@tanstack/ai@0.8.1)(@types/react@19.2.8)(react@19.2.3)
       '@tanstack/react-query':
         specifier: ^5.90.21

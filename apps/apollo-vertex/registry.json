@@ -262,8 +262,8 @@
       "dependencies": [
         "@mantine/hooks@^9.0.0",
         "@tanstack/ai@^0.8.1",
-        "@tanstack/ai-client@^0.7.2",
-        "@tanstack/ai-react@^0.7.2",
+        "@tanstack/ai-client@0.7.2",
+        "@tanstack/ai-react@0.7.2",
         "@uipath/uipath-typescript@^1.2.1",
         "eventsource-parser@^3.0.6",
         "zod",
