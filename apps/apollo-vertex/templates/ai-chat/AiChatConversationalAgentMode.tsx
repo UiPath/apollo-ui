@@ -39,9 +39,10 @@ function ConversationalAgentChatInner({
     };
   }, [connection]);
 
-  const { messages, sendMessage, isLoading, stop, clear, error } = useChat({
-    connection,
-  });
+  const { messages, sendMessage, isLoading, stop, clear, reload, error } =
+    useChat({
+      connection,
+    });
 
   return (
     <AiChat
@@ -52,16 +53,16 @@ function ConversationalAgentChatInner({
       }}
       onStop={stop}
       onClearChat={clear}
+      onRegenerate={() => {
+        void reload();
+      }}
       title={title}
       assistantName={assistantName}
+      enableTextSelection
       error={error ?? null}
     >
       {messages.map((message) => (
-        <AiChatMessage
-          key={message.id}
-          message={message}
-          assistantName={assistantName}
-        />
+        <AiChatMessage key={message.id} message={message} />
       ))}
     </AiChat>
   );
@@ -151,7 +152,7 @@ export function ConversationalAgentChat({
           sdk={sdk}
           agentId={selectedAgentConfig.agentId}
           folderId={selectedAgentConfig.folderId}
-          title={t("ai_assistant")}
+          title="Autopilot"
           assistantName={t("assistant")}
         />
       </div>
