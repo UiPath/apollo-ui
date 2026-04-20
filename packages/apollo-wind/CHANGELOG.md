@@ -1,3 +1,13 @@
+## [@uipath/apollo-wind-v2.5.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.4.0...@uipath/apollo-wind@2.5.0) (2026-04-20)
+
+### Features
+
+* **apollo-wind:** rename Ideas to Layout Generator, remove Brand Motion ([8d95fec](https://github.com/uipath/apollo-ui/commit/8d95fec1c894b9c5f11bd99cec979b2dcbf0083c))
+
+### Bug Fixes
+
+* **apollo-wind:** restore correct border color in Future Dark and Light themes ([d09492d](https://github.com/uipath/apollo-ui/commit/d09492da60621d50abdfc5b1e2b2c7888ae5972d))
+
 ## [@uipath/apollo-wind-v2.4.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.3.0...@uipath/apollo-wind@2.4.0) (2026-04-18)
 
 ### Features
