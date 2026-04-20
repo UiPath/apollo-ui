@@ -7,7 +7,7 @@
       "name": "apollo-vertex-theme",
       "type": "registry:theme",
       "title": "Apollo Vertex Theme",
-      "description": "Apollo Vertex design system tokens — colors, typography, spacing, shadows, and easing functions with light and dark mode support.",
+      "description": "Apollo Vertex design system tokens \u2014 colors, typography, spacing, shadows, and easing functions with light and dark mode support.",
       "dependencies": ["tw-animate-css"],
       "registryDependencies": ["font-inter"],
       "cssVars": {
@@ -66,6 +66,20 @@
           "color-sidebar-accent-foreground": "var(--sidebar-accent-foreground)",
           "color-sidebar-border": "var(--sidebar-border)",
           "color-sidebar-ring": "var(--sidebar-ring)",
+          "color-ai-chat": "var(--ai-chat)",
+          "color-ai-chat-foreground": "var(--ai-chat-foreground)",
+          "color-ai-chat-accent": "var(--ai-chat-accent)",
+          "color-ai-chat-accent-foreground": "var(--ai-chat-accent-foreground)",
+          "color-ai-chat-bubble-user": "var(--ai-chat-bubble-user)",
+          "color-ai-chat-bubble-user-foreground": "var(--ai-chat-bubble-user-foreground)",
+          "color-ai-chat-bubble-assistant": "var(--ai-chat-bubble-assistant)",
+          "color-ai-chat-bubble-assistant-foreground": "var(--ai-chat-bubble-assistant-foreground)",
+          "color-ai-chat-border": "var(--ai-chat-border)",
+          "color-ai-chat-input": "var(--ai-chat-input)",
+          "color-ai-chat-input-foreground": "var(--ai-chat-input-foreground)",
+          "color-ai-chat-ring": "var(--ai-chat-ring)",
+          "color-ai-chat-muted": "var(--ai-chat-muted)",
+          "color-ai-chat-muted-foreground": "var(--ai-chat-muted-foreground)",
           "font-sans": "var(--font-sans)"
         },
         "light": {
@@ -120,6 +134,23 @@
           "sidebar-accent-foreground": "oklch(0.1660 0.0283 203.3380)",
           "sidebar-border": "oklch(0.9237 0.0133 262.3780)",
           "sidebar-ring": "oklch(0.64 0.115 208)",
+          "ai-chat": "oklch(0.985 0.002 260)",
+          "ai-chat-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-chat-accent": "oklch(0.64 0.115 208)",
+          "ai-chat-accent-foreground": "oklch(1 0 0)",
+          "ai-chat-bubble-user": "oklch(0.955 0.008 252)",
+          "ai-chat-bubble-user-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-chat-bubble-assistant": "oklch(0.96 0.020 275)",
+          "ai-chat-bubble-assistant-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-chat-border": "oklch(0.92 0.008 260)",
+          "ai-chat-input": "oklch(0.975 0.004 260)",
+          "ai-chat-input-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-chat-ring": "oklch(0.64 0.115 208)",
+          "ai-chat-muted": "oklch(0.955 0.006 260)",
+          "ai-chat-muted-foreground": "oklch(0.50 0.020 260)",
+          "font-sans": "Inter, ui-sans-serif, sans-serif, system-ui",
+          "font-serif": "IBM Plex Serif, ui-serif, serif",
+          "font-mono": "IBM Plex Mono, ui-monospace, monospace",
           "radius": "0.625rem",
           "shadow-x": "0",
           "shadow-y": "0px",
@@ -152,7 +183,8 @@
           "--info-fg": "oklch(0.49 0.12 210)",
           "--success-fg": "oklch(0.46 0.10 152)",
           "--destructive-fg": "oklch(0.50 0.14 18)",
-          "ai-gradient": "linear-gradient(100.64deg, rgb(238, 224, 255) 8.29%, rgb(207, 217, 255) 88.73%)"
+          "ai-gradient": "linear-gradient(100.64deg, rgb(238, 224, 255) 8.29%, rgb(207, 217, 255) 88.73%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)"
         },
         "dark": {
           "background": "oklch(0.2100 0.0300 258.5000)",
@@ -206,6 +238,23 @@
           "sidebar-accent-foreground": "oklch(0.9525 0.0110 225.9830)",
           "sidebar-border": "oklch(0.9525 0.0110 225.9830)",
           "sidebar-ring": "oklch(0.69 0.112 207)",
+          "ai-chat": "oklch(0.19 0.025 260)",
+          "ai-chat-foreground": "oklch(0.95 0.010 225)",
+          "ai-chat-accent": "oklch(0.69 0.112 207)",
+          "ai-chat-accent-foreground": "oklch(0.1660 0.0283 203.34)",
+          "ai-chat-bubble-user": "oklch(0.28 0.035 255)",
+          "ai-chat-bubble-user-foreground": "oklch(0.95 0.010 225)",
+          "ai-chat-bubble-assistant": "oklch(0.25 0.030 270)",
+          "ai-chat-bubble-assistant-foreground": "oklch(0.95 0.010 225)",
+          "ai-chat-border": "oklch(0.30 0.040 258)",
+          "ai-chat-input": "oklch(0.22 0.030 258)",
+          "ai-chat-input-foreground": "oklch(0.95 0.010 225)",
+          "ai-chat-ring": "oklch(0.69 0.112 207)",
+          "ai-chat-muted": "oklch(0.26 0.030 258)",
+          "ai-chat-muted-foreground": "oklch(0.65 0.020 258)",
+          "font-sans": "Inter, ui-sans-serif, sans-serif, system-ui",
+          "font-serif": "IBM Plex Serif, ui-serif, serif",
+          "font-mono": "IBM Plex Mono, ui-monospace, monospace",
           "radius": "0.625rem",
           "shadow-x": "0",
           "shadow-y": "0px",
@@ -223,7 +272,8 @@
           "shadow-2xl": "0 0px 12px 0px hsl(0 0% 0% / 0.25)",
           "tracking-normal": "0em",
           "spacing": "0.25rem",
-          "ai-gradient": "linear-gradient(98.69deg, rgb(108, 90, 239) 8.79%, rgb(105, 199, 221) 91.48%)"
+          "ai-gradient": "linear-gradient(98.69deg, rgb(108, 90, 239) 8.79%, rgb(105, 199, 221) 91.48%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)"
         }
       }
     },
@@ -276,8 +326,23 @@
         "react-markdown",
         "remark-gfm"
       ],
-      "registryDependencies": ["card"],
+      "registryDependencies": [
+        "avatar",
+        "button",
+        "card",
+        "tooltip",
+        "dropdown-menu",
+        "scroll-area",
+        "skeleton",
+        "badge",
+        "kbd"
+      ],
       "files": [
+        {
+          "path": "registry/ai-chat/types.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/types.ts"
+        },
         {
           "path": "registry/ai-chat/adapters/agenthub/types.ts",
           "type": "registry:lib",
@@ -437,6 +502,16 @@
           "path": "registry/ai-chat/tools/data-fabric-line/index.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric-line/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/components/icons/autopilot.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/icons/autopilot.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/icons/autopilot-gradient.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/icons/autopilot-gradient.tsx"
         }
       ]
     },
@@ -445,7 +520,12 @@
       "type": "registry:ui",
       "title": "Alert",
       "description": "Displays a callout for user attention.",
-      "files": [{ "path": "registry/alert/alert.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/alert/alert.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "alert-dialog",
@@ -479,7 +559,12 @@
       "title": "Avatar",
       "description": "An image element with a fallback for representing the user.",
       "dependencies": ["@radix-ui/react-avatar"],
-      "files": [{ "path": "registry/avatar/avatar.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/avatar/avatar.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "badge",
@@ -487,7 +572,12 @@
       "title": "Badge",
       "description": "Displays a badge or a component that looks like a badge.",
       "dependencies": ["@radix-ui/react-slot"],
-      "files": [{ "path": "registry/badge/badge.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/badge/badge.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "breadcrumb",
@@ -508,7 +598,12 @@
       "title": "Button",
       "description": "Displays a button or a component that looks like a button.",
       "dependencies": ["@radix-ui/react-slot"],
-      "files": [{ "path": "registry/button/button.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/button/button.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "button-group",
@@ -529,7 +624,12 @@
       "type": "registry:ui",
       "title": "Card",
       "description": "Displays a card with header, content, and footer. Supports solid, glass, and selectable variants.",
-      "files": [{ "path": "registry/card/card.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/card/card.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "carousel",
@@ -550,7 +650,12 @@
       "title": "Chart",
       "description": "Beautiful charts using Recharts with consistent theming.",
       "dependencies": ["recharts@2.15.4", "lucide-react"],
-      "files": [{ "path": "registry/chart/chart.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/chart/chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "checkbox",
@@ -722,7 +827,12 @@
       "title": "Dialog",
       "description": "A modal dialog that appears in front of app content.",
       "dependencies": ["@radix-ui/react-dialog", "react-i18next"],
-      "files": [{ "path": "registry/dialog/dialog.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/dialog/dialog.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "drawer",
@@ -730,7 +840,12 @@
       "title": "Drawer",
       "description": "A drawer component that slides in from the edge of the screen.",
       "dependencies": ["vaul", "@radix-ui/react-dialog"],
-      "files": [{ "path": "registry/drawer/drawer.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/drawer/drawer.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "dropdown-menu",
@@ -750,7 +865,12 @@
       "type": "registry:ui",
       "title": "Empty",
       "description": "An empty state component for when there's no data to display.",
-      "files": [{ "path": "registry/empty/empty.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/empty/empty.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "field",
@@ -758,7 +878,12 @@
       "title": "Field",
       "description": "A form field component with label, input, and description.",
       "registryDependencies": ["label", "separator"],
-      "files": [{ "path": "registry/field/field.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/field/field.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "filter-dropdown",
@@ -797,7 +922,12 @@
         "react-hook-form"
       ],
       "registryDependencies": ["label"],
-      "files": [{ "path": "registry/form/form.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/form/form.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "hover-card",
@@ -817,7 +947,12 @@
       "type": "registry:ui",
       "title": "Input",
       "description": "Displays a form input field.",
-      "files": [{ "path": "registry/input/input.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/input/input.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "input-group",
@@ -852,14 +987,24 @@
       "description": "A list item component for displaying content in lists.",
       "dependencies": ["@radix-ui/react-slot"],
       "registryDependencies": ["separator"],
-      "files": [{ "path": "registry/item/item.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/item/item.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "kbd",
       "type": "registry:ui",
       "title": "Kbd",
       "description": "Displays keyboard shortcuts.",
-      "files": [{ "path": "registry/kbd/kbd.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/kbd/kbd.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "label",
@@ -867,7 +1012,12 @@
       "title": "Label",
       "description": "Renders an accessible label associated with controls.",
       "dependencies": ["@radix-ui/react-label"],
-      "files": [{ "path": "registry/label/label.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/label/label.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "menubar",
@@ -1006,7 +1156,12 @@
       "title": "Select",
       "description": "Displays a list of options for the user to pick from.",
       "dependencies": ["@radix-ui/react-select"],
-      "files": [{ "path": "registry/select/select.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/select/select.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "separator",
@@ -1027,7 +1182,12 @@
       "title": "Sheet",
       "description": "Extends the Dialog component to display content that slides in.",
       "dependencies": ["@radix-ui/react-dialog", "react-i18next"],
-      "files": [{ "path": "registry/sheet/sheet.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/sheet/sheet.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "shell",
@@ -1056,7 +1216,10 @@
         "sidebar"
       ],
       "files": [
-        { "path": "registry/shell/shell.tsx", "type": "registry:ui" },
+        {
+          "path": "registry/shell/shell.tsx",
+          "type": "registry:ui"
+        },
         {
           "path": "registry/shell/shell-layout.tsx",
           "type": "registry:ui"
@@ -1081,9 +1244,18 @@
           "path": "registry/shell/shell-translation-key.ts",
           "type": "registry:ui"
         },
-        { "path": "lib/i18n.ts", "type": "registry:lib" },
-        { "path": "lib/auth.ts", "type": "registry:lib" },
-        { "path": "lib/react-i18next.d.ts", "type": "registry:lib" },
+        {
+          "path": "lib/i18n.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "lib/auth.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "lib/react-i18next.d.ts",
+          "type": "registry:lib"
+        },
         {
           "path": "registry/shell/shell-animations.ts",
           "type": "registry:ui"
@@ -1144,7 +1316,10 @@
           "path": "registry/shell/use-is-group-member.ts",
           "type": "registry:ui"
         },
-        { "path": "lib/identity-service.ts", "type": "registry:lib" }
+        {
+          "path": "lib/identity-service.ts",
+          "type": "registry:lib"
+        }
       ]
     },
     {
@@ -1170,7 +1345,10 @@
           "path": "registry/use-data-table/types.ts",
           "type": "registry:hook"
         },
-        { "path": "lib/constants.ts", "type": "registry:lib" },
+        {
+          "path": "lib/constants.ts",
+          "type": "registry:lib"
+        },
         {
           "path": "registry/use-data-table/useDataTable.tsx",
           "type": "registry:hook"
@@ -1213,11 +1391,26 @@
           "path": "registry/use-data-table/useEntityColumns.tsx",
           "type": "registry:hook"
         },
-        { "path": "lib/renderValueOrEmptyState.ts", "type": "registry:lib" },
-        { "path": "lib/asserts/assert.ts", "type": "registry:lib" },
-        { "path": "lib/asserts/assertDateOrString.ts", "type": "registry:lib" },
-        { "path": "lib/asserts/assertNumber.ts", "type": "registry:lib" },
-        { "path": "lib/asserts/assertString.ts", "type": "registry:lib" }
+        {
+          "path": "lib/renderValueOrEmptyState.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "lib/asserts/assert.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "lib/asserts/assertDateOrString.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "lib/asserts/assertNumber.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "lib/asserts/assertString.ts",
+          "type": "registry:lib"
+        }
       ]
     },
     {
@@ -1246,14 +1439,26 @@
           "path": "registry/sidebar/sidebar-provider.tsx",
           "type": "registry:ui"
         },
-        { "path": "registry/sidebar/sidebar.tsx", "type": "registry:ui" },
+        {
+          "path": "registry/sidebar/sidebar.tsx",
+          "type": "registry:ui"
+        },
         {
           "path": "registry/sidebar/sidebar-trigger.tsx",
           "type": "registry:ui"
         },
-        { "path": "registry/sidebar/sidebar-rail.tsx", "type": "registry:ui" },
-        { "path": "registry/sidebar/sidebar-inset.tsx", "type": "registry:ui" },
-        { "path": "registry/sidebar/sidebar-input.tsx", "type": "registry:ui" },
+        {
+          "path": "registry/sidebar/sidebar-rail.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/sidebar/sidebar-inset.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/sidebar/sidebar-input.tsx",
+          "type": "registry:ui"
+        },
         {
           "path": "registry/sidebar/sidebar-header.tsx",
           "type": "registry:ui"
@@ -1270,7 +1475,10 @@
           "path": "registry/sidebar/sidebar-content.tsx",
           "type": "registry:ui"
         },
-        { "path": "registry/sidebar/sidebar-group.tsx", "type": "registry:ui" },
+        {
+          "path": "registry/sidebar/sidebar-group.tsx",
+          "type": "registry:ui"
+        },
         {
           "path": "registry/sidebar/sidebar-group-label.tsx",
           "type": "registry:ui"
@@ -1283,7 +1491,10 @@
           "path": "registry/sidebar/sidebar-group-content.tsx",
           "type": "registry:ui"
         },
-        { "path": "registry/sidebar/sidebar-menu.tsx", "type": "registry:ui" },
+        {
+          "path": "registry/sidebar/sidebar-menu.tsx",
+          "type": "registry:ui"
+        },
         {
           "path": "registry/sidebar/sidebar-menu-item.tsx",
           "type": "registry:ui"
@@ -1336,7 +1547,12 @@
       "title": "Slider",
       "description": "An input where the user selects a value from within a given range.",
       "dependencies": ["@radix-ui/react-slider"],
-      "files": [{ "path": "registry/slider/slider.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/slider/slider.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "sonner",
@@ -1344,7 +1560,12 @@
       "title": "Sonner",
       "description": "An opinionated toast component for React.",
       "dependencies": ["sonner", "next-themes"],
-      "files": [{ "path": "registry/sonner/sonner.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/sonner/sonner.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "spinner",
@@ -1365,14 +1586,24 @@
       "title": "Switch",
       "description": "A control that allows the user to toggle between on and off.",
       "dependencies": ["@radix-ui/react-switch"],
-      "files": [{ "path": "registry/switch/switch.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/switch/switch.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "table",
       "type": "registry:ui",
       "title": "Table",
       "description": "A responsive table component.",
-      "files": [{ "path": "registry/table/table.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/table/table.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "tabs",
@@ -1380,7 +1611,12 @@
       "title": "Tabs",
       "description": "A set of layered sections of content shown one at a time.",
       "dependencies": ["@radix-ui/react-tabs"],
-      "files": [{ "path": "registry/tabs/tabs.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/tabs/tabs.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "textarea",
@@ -1400,7 +1636,12 @@
       "title": "Toggle",
       "description": "A two-state button that can be either on or off.",
       "dependencies": ["@radix-ui/react-toggle"],
-      "files": [{ "path": "registry/toggle/toggle.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "registry/toggle/toggle.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "toggle-group",
@@ -1455,7 +1696,10 @@
       "description": "A calendar component.",
       "dependencies": ["react-day-picker"],
       "files": [
-        { "path": "registry/calendar/calendar.tsx", "type": "registry:ui" }
+        {
+          "path": "registry/calendar/calendar.tsx",
+          "type": "registry:ui"
+        }
       ]
     },
     {
