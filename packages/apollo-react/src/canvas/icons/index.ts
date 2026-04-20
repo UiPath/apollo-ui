@@ -9,6 +9,7 @@ export { BusinessProcessProject } from './BusinessProcessProject';
 export { CaseManagementProject } from './CaseManagementProject';
 export { CodedAgentIcon } from './CodedAgentIcon';
 export { ConnectorBuilderProject } from './ConnectorBuilderProject';
+export { ContextIcon } from './ContextIcon';
 export { ControlFlowIcon } from './ControlFlowIcon';
 export { ConversationalAgentIcon } from './ConversationalAgentIcon';
 export { DataAndTools } from './DataAndTools';
