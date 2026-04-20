@@ -66,6 +66,20 @@
           "color-sidebar-accent-foreground": "var(--sidebar-accent-foreground)",
           "color-sidebar-border": "var(--sidebar-border)",
           "color-sidebar-ring": "var(--sidebar-ring)",
+          "color-ai-chat": "var(--ai-chat)",
+          "color-ai-chat-foreground": "var(--ai-chat-foreground)",
+          "color-ai-chat-accent": "var(--ai-chat-accent)",
+          "color-ai-chat-accent-foreground": "var(--ai-chat-accent-foreground)",
+          "color-ai-chat-bubble-user": "var(--ai-chat-bubble-user)",
+          "color-ai-chat-bubble-user-foreground": "var(--ai-chat-bubble-user-foreground)",
+          "color-ai-chat-bubble-assistant": "var(--ai-chat-bubble-assistant)",
+          "color-ai-chat-bubble-assistant-foreground": "var(--ai-chat-bubble-assistant-foreground)",
+          "color-ai-chat-border": "var(--ai-chat-border)",
+          "color-ai-chat-input": "var(--ai-chat-input)",
+          "color-ai-chat-input-foreground": "var(--ai-chat-input-foreground)",
+          "color-ai-chat-ring": "var(--ai-chat-ring)",
+          "color-ai-chat-muted": "var(--ai-chat-muted)",
+          "color-ai-chat-muted-foreground": "var(--ai-chat-muted-foreground)",
           "font-sans": "var(--font-sans)"
         },
         "light": {
@@ -120,6 +134,23 @@
           "sidebar-accent-foreground": "oklch(0.1660 0.0283 203.3380)",
           "sidebar-border": "oklch(0.9237 0.0133 262.3780)",
           "sidebar-ring": "oklch(0.64 0.115 208)",
+          "ai-chat": "oklch(0.985 0.002 260)",
+          "ai-chat-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-chat-accent": "oklch(0.64 0.115 208)",
+          "ai-chat-accent-foreground": "oklch(1 0 0)",
+          "ai-chat-bubble-user": "oklch(0.955 0.008 252)",
+          "ai-chat-bubble-user-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-chat-bubble-assistant": "oklch(0.96 0.020 275)",
+          "ai-chat-bubble-assistant-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-chat-border": "oklch(0.92 0.008 260)",
+          "ai-chat-input": "oklch(0.975 0.004 260)",
+          "ai-chat-input-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-chat-ring": "oklch(0.64 0.115 208)",
+          "ai-chat-muted": "oklch(0.955 0.006 260)",
+          "ai-chat-muted-foreground": "oklch(0.50 0.020 260)",
+          "font-sans": "Inter, ui-sans-serif, sans-serif, system-ui",
+          "font-serif": "IBM Plex Serif, ui-serif, serif",
+          "font-mono": "IBM Plex Mono, ui-monospace, monospace",
           "radius": "0.625rem",
           "shadow-x": "0",
           "shadow-y": "0px",
@@ -152,7 +183,8 @@
           "--info-fg": "oklch(0.49 0.12 210)",
           "--success-fg": "oklch(0.46 0.10 152)",
           "--destructive-fg": "oklch(0.50 0.14 18)",
-          "ai-gradient": "linear-gradient(100.64deg, rgb(238, 224, 255) 8.29%, rgb(207, 217, 255) 88.73%)"
+          "ai-gradient": "linear-gradient(100.64deg, rgb(238, 224, 255) 8.29%, rgb(207, 217, 255) 88.73%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)"
         },
         "dark": {
           "background": "oklch(0.2100 0.0300 258.5000)",
@@ -206,6 +238,23 @@
           "sidebar-accent-foreground": "oklch(0.9525 0.0110 225.9830)",
           "sidebar-border": "oklch(0.9525 0.0110 225.9830)",
           "sidebar-ring": "oklch(0.69 0.112 207)",
+          "ai-chat": "oklch(0.19 0.025 260)",
+          "ai-chat-foreground": "oklch(0.95 0.010 225)",
+          "ai-chat-accent": "oklch(0.69 0.112 207)",
+          "ai-chat-accent-foreground": "oklch(0.1660 0.0283 203.34)",
+          "ai-chat-bubble-user": "oklch(0.28 0.035 255)",
+          "ai-chat-bubble-user-foreground": "oklch(0.95 0.010 225)",
+          "ai-chat-bubble-assistant": "oklch(0.25 0.030 270)",
+          "ai-chat-bubble-assistant-foreground": "oklch(0.95 0.010 225)",
+          "ai-chat-border": "oklch(0.30 0.040 258)",
+          "ai-chat-input": "oklch(0.22 0.030 258)",
+          "ai-chat-input-foreground": "oklch(0.95 0.010 225)",
+          "ai-chat-ring": "oklch(0.69 0.112 207)",
+          "ai-chat-muted": "oklch(0.26 0.030 258)",
+          "ai-chat-muted-foreground": "oklch(0.65 0.020 258)",
+          "font-sans": "Inter, ui-sans-serif, sans-serif, system-ui",
+          "font-serif": "IBM Plex Serif, ui-serif, serif",
+          "font-mono": "IBM Plex Mono, ui-monospace, monospace",
           "radius": "0.625rem",
           "shadow-x": "0",
           "shadow-y": "0px",
@@ -223,7 +272,8 @@
           "shadow-2xl": "0 0px 12px 0px hsl(0 0% 0% / 0.25)",
           "tracking-normal": "0em",
           "spacing": "0.25rem",
-          "ai-gradient": "linear-gradient(98.69deg, rgb(108, 90, 239) 8.79%, rgb(105, 199, 221) 91.48%)"
+          "ai-gradient": "linear-gradient(98.69deg, rgb(108, 90, 239) 8.79%, rgb(105, 199, 221) 91.48%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)"
         }
       }
     },
@@ -272,7 +322,16 @@
         "react-markdown",
         "remark-gfm"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "avatar",
+        "button",
+        "tooltip",
+        "dropdown-menu",
+        "scroll-area",
+        "skeleton",
+        "badge",
+        "kbd"
+      ],
       "files": [
         {
           "path": "registry/ai-chat/types.ts",
@@ -340,6 +399,21 @@
           "target": "components/ui/ai-chat/hooks/use-sticky-scroll.ts"
         },
         {
+          "path": "registry/ai-chat/hooks/use-typewriter.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/hooks/use-typewriter.ts"
+        },
+        {
+          "path": "registry/ai-chat/hooks/use-thinking-label.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/hooks/use-thinking-label.ts"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-provider.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-provider.tsx"
+        },
+        {
           "path": "registry/ai-chat/components/ai-chat.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat.tsx"
@@ -360,6 +434,11 @@
           "target": "components/ui/ai-chat/components/ai-chat-loading.tsx"
         },
         {
+          "path": "registry/ai-chat/components/ai-chat-thinking.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-thinking.tsx"
+        },
+        {
           "path": "registry/ai-chat/components/ai-chat-input.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-input.tsx"
@@ -368,6 +447,31 @@
           "path": "registry/ai-chat/components/ai-chat-suggestions.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-suggestions.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-message-actions.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-message-actions.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-code-block.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-code-block.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-empty-state.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-empty-state.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/icons/autopilot.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/icons/autopilot.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/icons/autopilot-gradient.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/icons/autopilot-gradient.tsx"
         }
       ]
     },
