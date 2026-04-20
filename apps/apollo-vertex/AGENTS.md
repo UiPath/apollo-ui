@@ -211,6 +211,62 @@ docs(apollo-vertex): update component documentation
 
 Valid scopes: `apollo-vertex`, `apollo-react`, `apollo-wind`, `apollo-core`, `repo`
 
+### Stacked PRs Are Required
+
+Apollo Vertex uses **stacked PRs** for any PR that targets this app. Standardize on
+**`ghstack`** for creating and updating those PRs.
+
+- Do **not** open Apollo Vertex PRs with a plain branch workflow (`git push` + `gh pr create`).
+- Do **not** use Graphite, `gh stack`, `spr`, Git Town, or manual base-branch rewiring here unless
+  the user explicitly asks for it.
+- Treat **each commit as one PR layer**. A stack should be a sequence of small, reviewable,
+  logically complete commits.
+- If the work is truly one indivisible change, a **single-commit stack** is acceptable. Do not
+  invent artificial PR layers just to satisfy the rule.
+- If `ghstack` is missing or not configured, **stop and tell the user** instead of silently falling
+  back to a non-stacked workflow.
+
+### ghstack Setup
+
+`ghstack` requires:
+- `gh` authenticated for GitHub access
+- Python 3.9.1+
+- a configured `~/.ghstackrc`
+
+Install it with:
+
+```bash
+uv tool install ghstack
+```
+
+Set it up using the upstream instructions from
+[`ezyang/ghstack`](https://github.com/ezyang/ghstack#how-to-setup):
+
+- Read and follow the upstream setup steps at the GitHub link above.
+- Do not recreate the setup from memory or invent a repo-specific variant unless the user asks.
+
+If `ghstack` is not installed or `~/.ghstackrc` is missing, stop and tell the user.
+
+### ghstack Usage
+
+Follow the upstream usage guide from
+[`ezyang/ghstack`](https://github.com/ezyang/ghstack#how-to-use), with Apollo Vertex's trunk branch
+being `main` rather than `master`:
+
+- Make sure you have write permission to the repository where the PRs will be created.
+- Prepare a series of focused commits on top of `main`.
+- Run `ghstack` to push the stack and create or update one PR per commit.
+- To stack another PR on top of an existing one, check out the latest commit from that stack, add a
+  new commit on top, then run `ghstack` again.
+- To modify an existing PR layer, edit the corresponding commit directly:
+  use `git commit --amend` if it is the top commit, otherwise use `git rebase -i`.
+- To rebase, use `git rebase origin/main`. Do not merge `main` into your stack.
+- To land a ghstack-created PR, use `ghstack land <pr-url-or-number>` rather than the normal GitHub
+  merge UI.
+
+`ghstack` manages the entire stack together. Do not try to update only one layer via ad hoc branch
+pushes or manual PR base changes.
+
 ### Rebasing & Commit History
 
 Always **rebase over main** instead of creating merge commits. This keeps commit history linear and clean. When updating your PR:
@@ -219,12 +275,13 @@ Always **rebase over main** instead of creating merge commits. This keeps commit
 git fetch origin main
 git rebase -i origin/main
 # Resolve any conflicts, then continue
-git push --force-with-lease
+ghstack
 ```
 
 ### Fixing Previous Changes in a PR
 
-If a previous commit in your PR already contains the change you're making, **do not add a new commit**. Instead, use fixup commits and rebase to squash them together:
+If a previous commit in your stack already contains the change you're making, **do not add a new
+"fix" commit**. Update the existing PR layer with fixup commits and autosquash:
 
 ```bash
 # Make your changes
@@ -233,30 +290,48 @@ git commit --fixup <original-commit-sha>
 
 # Rebase and auto-squash
 git rebase -i origin/main --autosquash
-git push --force-with-lease
+ghstack
 ```
 
-This keeps the PR history clean with meaningful, non-duplicate commits.
+This keeps the stack clean with meaningful, non-duplicate commits.
+
+### Creating And Updating A Stack
+
+For Apollo Vertex work, structure the change as a stack from the start:
+
+```bash
+# Create focused commits from bottom layer to top layer
+git commit -m "refactor(apollo-vertex): ..."
+git commit -m "feat(apollo-vertex): ..."
+git commit -m "docs(apollo-vertex): ..."
+
+# Create or update the stacked PRs on GitHub
+ghstack
+```
+
+When review feedback lands on an older layer, amend or fix up that specific commit, rebase the
+stack, then run `ghstack` again. Do not add a "follow-up" commit on top unless it is intentionally
+a new PR layer.
 
 ### Finalizing Changes
 
 After implementing components or making changes, **always run the build, linting, and formatting**:
 
 ```bash
-bun run build
-bun run lint
-bun run format
+pnpm build
+pnpm lint
+pnpm format
 ```
 
 If build errors are found:
-1. Review the error output from `bun run build`
+1. Review the error output from `pnpm build`
 2. Fix any type errors, missing imports, or other build issues
-3. Re-run `bun run build` to confirm the errors are resolved
+3. Re-run `pnpm build` to confirm the errors are resolved
 
 If linting or formatting issues are found:
-1. Review the issues reported by `bun run lint`
+1. Review the issues reported by `pnpm lint`
 2. Fix any issues manually if needed
-3. Run `bun run format` to auto-format the code
+3. Run `pnpm format` to auto-format the code
 
 Commit any build, formatting, or lint fixes before pushing. This ensures all code compiles correctly, follows the project's style guidelines, and catches any issues before submitting the PR.
 
@@ -267,11 +342,11 @@ Commit any build, formatting, or lint fixes before pushing. This ensures all cod
 The `app/globals.css` file is **automatically generated** from `registry.json` when you run:
 
 ```bash
-bun run dev
+pnpm dev
 ```
 or 
 ```bash
-bun run build
+pnpm build
 ```
 
 ## Key Dependencies
