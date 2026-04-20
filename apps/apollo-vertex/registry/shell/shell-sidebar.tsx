@@ -25,10 +25,11 @@ export const Sidebar = ({
   companyLogo,
   navItems,
 }: SidebarProps) => {
-  const [isCollapsed] = useLocalStorage<boolean>({
+  const [isCollapsed, setIsCollapsed] = useLocalStorage<boolean>({
     key: SIDEBAR_COLLAPSED_KEY,
     defaultValue: false,
   });
+  const toggleCollapse = () => setIsCollapsed((prev) => !prev);
 
   const sidebarWidth = isCollapsed ? "w-16" : "w-[280px]";
 
@@ -75,6 +76,8 @@ export const Sidebar = ({
         companyName={companyName}
         productName={productName}
         companyLogo={companyLogo}
+        isCollapsed={isCollapsed}
+        toggleCollapse={toggleCollapse}
       />
       <nav className="flex-1 mt-10 space-y-1 pb-3">
         {navItems.map((item) => (
