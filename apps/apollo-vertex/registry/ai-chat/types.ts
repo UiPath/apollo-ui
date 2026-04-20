@@ -1,3 +1,7 @@
+export type {
+  MessageAttachment,
+  MessageSource,
+} from "./components/ai-chat-message";
 export type MessageFeedbackType = "up" | "down";
 
 export interface MessageAction {

@@ -9,7 +9,6 @@ const defaultConfig: AiChatConfig = {
   showMessageActions: true,
   showCopyButton: true,
   isLoading: false,
-  activeChoicesMessageIds: new Set(),
   latestAssistantMessageId: null,
 };
 
