@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import type { CompanyLogo } from "./shell";
 import { CompanyLogoIcon } from "./shell-company-logo";
@@ -20,14 +21,15 @@ export const MinimalCompany = ({
 
   return (
     <div className="flex items-center gap-2">
-      <div
+      <Link
+        to="/"
         className={cn(
           "w-8 h-8 rounded-md flex items-center justify-center shrink-0 overflow-hidden",
           logoBgClass,
         )}
       >
         <CompanyLogoIcon companyLogo={companyLogo} />
-      </div>
+      </Link>
       <div className="flex items-center gap-1.5">
         <span className="text-sm font-semibold text-foreground">
           {companyName}
