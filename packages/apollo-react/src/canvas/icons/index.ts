@@ -10,6 +10,7 @@ export { CaseManagementProject } from './CaseManagementProject';
 export { CasePlanIcon } from './CasePlanIcon';
 export { CodedAgentIcon } from './CodedAgentIcon';
 export { ConnectorBuilderProject } from './ConnectorBuilderProject';
+export { ContextIcon } from './ContextIcon';
 export { ControlFlowIcon } from './ControlFlowIcon';
 export { ConversationalAgentIcon } from './ConversationalAgentIcon';
 export { DataAndTools } from './DataAndTools';

@@ -137,7 +137,7 @@ export const ResourceNode = memo(
       let icon: React.ReactNode | undefined;
       switch (data.type) {
         case 'context':
-          icon = <CanvasIcon icon="file-text" size={40} />;
+          icon = <Icons.ContextIcon w={40} h={40} />;
           break;
         case 'escalation':
           icon = <CanvasIcon icon="user" size={40} />;
