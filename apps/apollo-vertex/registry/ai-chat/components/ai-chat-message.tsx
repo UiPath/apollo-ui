@@ -10,8 +10,8 @@ import type { MessageFeedbackType } from "../types";
 import { messageHasChoices } from "../utils/ai-chat-utils";
 import { AiChatMarkdown } from "./ai-chat-markdown";
 import { AiChatMessageActions } from "./ai-chat-message-actions";
-import { AiChatSelectionMenu } from "./ai-chat-selection-menu";
 import { useAiChat } from "./ai-chat-provider";
+import { AiChatSelectionMenu } from "./ai-chat-selection-menu";
 
 // Quick, subtle entrance — fade + 8px slide up. Quartic ease-out for a soft settle.
 const ENTRANCE_INITIAL = { opacity: 0, y: 8 };
@@ -295,14 +295,9 @@ export function AiChatMessage({
           className="group/message flex flex-col gap-3 max-w-[85%]"
         >
           {displayContent &&
-            !messageHasChoices(message) &&
-            (isResponseFullyRevealed ? (
+            !messageHasChoices(message) && (
               <AiChatMarkdown>{displayedText}</AiChatMarkdown>
-            ) : (
-              <p className="py-1 text-base leading-relaxed text-foreground whitespace-pre-wrap">
-                {displayedText}
-              </p>
-            ))}
+            )}
           {children && (
             <div className="mt-2 flex flex-col gap-2">{children}</div>
           )}

@@ -1,23 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { ArrowUpRight, Maximize2, Minimize2 } from "lucide-react";
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useDashboardData } from "./DashboardDataProvider";
+import {
+  AutopilotPrompts,
+  type DrilldownTab,
+  DrilldownTabContent,
+  drilldownTabs,
+} from "./ExpandedInsightContent";
+import {
+  type CardConfig,
   cardBgStyle,
   getInsightCardClasses,
-  type CardConfig,
   type InsightCardConfig,
   type LayoutConfig,
 } from "./glow-config";
 import { InsightCardBody } from "./insight-card-renderers";
-import { useDashboardData } from "./DashboardDataProvider";
-import {
-  type DrilldownTab,
-  drilldownTabs,
-  DrilldownTabContent,
-  AutopilotPrompts,
-} from "./ExpandedInsightContent";
 
 const sizeToFr: Record<string, string> = { sm: "1fr", md: "2fr", lg: "1fr" };
 
@@ -35,7 +41,7 @@ interface InsightCardInnerProps {
   drilldownTab: DrilldownTab;
   onDrilldownTabChange: (tab: DrilldownTab) => void;
   onExpandClick: () => void;
-  onAutopilotOpen?: () => void;
+  onAutopilotOpen?: (prompt?: string) => void;
   isAutopilotActive?: boolean;
   className?: string;
   style?: React.CSSProperties;
@@ -97,7 +103,13 @@ function InsightCardInner({
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onAutopilotOpen();
+                    if (isAutopilotActive) {
+                      onAutopilotOpen(); // no prompt = toggle close
+                    } else {
+                      onAutopilotOpen(
+                        `What are the key insights from the ${cardTitle} data?`,
+                      );
+                    }
                   }}
                   className={`size-7 rounded-md flex items-center justify-center transition-all ${
                     isAutopilotActive
@@ -240,7 +252,9 @@ function InsightCardInner({
             </div>
           </div>
           <div className="shrink-0 pb-2">
-            <AutopilotPrompts onPromptSelect={() => onAutopilotOpen?.()} />
+            <AutopilotPrompts
+              onPromptSelect={(prompt) => onAutopilotOpen?.(prompt)}
+            />
           </div>
         </div>
       ) : (
@@ -301,7 +315,7 @@ export function InsightGrid({
   shared: string;
   cards: CardConfig;
   viewMode?: "desktop" | "compact" | "stacked";
-  onAutopilotOpen?: (sourceTitle: string, idx: number) => void;
+  onAutopilotOpen?: (sourceTitle: string, idx: number, prompt?: string) => void;
   autopilotActiveIdx?: number | null;
 }) {
   const { data } = useDashboardData();
@@ -418,10 +432,11 @@ export function InsightGrid({
                   onExpandClick={() => handleClick(cfg, idx)}
                   onAutopilotOpen={
                     onAutopilotOpen
-                      ? () =>
+                      ? (prompt?: string) =>
                           onAutopilotOpen(
                             data.insightCards[idx]?.title ?? cfg.content.title,
                             idx,
+                            prompt,
                           )
                       : undefined
                   }
@@ -481,11 +496,12 @@ export function InsightGrid({
                       onExpandClick={() => handleClick(cfg, idx)}
                       onAutopilotOpen={
                         onAutopilotOpen
-                          ? () =>
+                          ? (prompt?: string) =>
                               onAutopilotOpen(
                                 data.insightCards[idx]?.title ??
                                   cfg.content.title,
                                 idx,
+                                prompt,
                               )
                           : undefined
                       }

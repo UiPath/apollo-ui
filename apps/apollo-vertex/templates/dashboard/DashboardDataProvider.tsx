@@ -13,12 +13,29 @@ const DashboardDataContext = createContext<DashboardDataContextValue>({
   setDataset: () => {},
 });
 
+const DashboardDataSeedContext = createContext<DashboardDataset>(ecommerceDataset);
+
 export function useDashboardData() {
   return useContext(DashboardDataContext);
 }
 
+export function DashboardDataSeedProvider({
+  children,
+  dataset,
+}: {
+  children: ReactNode;
+  dataset: DashboardDataset;
+}) {
+  return (
+    <DashboardDataSeedContext.Provider value={dataset}>
+      {children}
+    </DashboardDataSeedContext.Provider>
+  );
+}
+
 export function DashboardDataProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<DashboardDataset>(ecommerceDataset);
+  const seed = useContext(DashboardDataSeedContext);
+  const [data, setData] = useState<DashboardDataset>(seed);
 
   return (
     <DashboardDataContext.Provider value={{ data, setDataset: setData }}>

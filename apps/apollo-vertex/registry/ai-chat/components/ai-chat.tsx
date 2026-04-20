@@ -2,6 +2,7 @@
 "use client";
 
 import type { TextPart, UIMessage } from "@tanstack/ai-client";
+import { AnimatePresence } from "framer-motion";
 import {
   AlertCircle,
   ArrowDown,
@@ -417,9 +418,11 @@ export function AiChat({
                     />
                   )}
 
-                {showLoadingIndicator && !isMultiStep && !isFlowActive && (
-                  <AiChatLoading />
-                )}
+                <AnimatePresence mode="popLayout">
+                  {showLoadingIndicator && !isMultiStep && !isFlowActive && (
+                    <AiChatLoading key="thinking" />
+                  )}
+                </AnimatePresence>
               </div>
             </div>
 

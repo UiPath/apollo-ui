@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -9,26 +10,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DashboardGlow } from "./DashboardGlow";
+import { AutopilotInsight } from "./AutopilotInsight";
 import {
+  DashboardDataProvider,
+  useDashboardData,
+} from "./DashboardDataProvider";
+import { DashboardGlow } from "./DashboardGlow";
+import { DashboardLoading } from "./DashboardLoading";
+import { GlowDevControls } from "./GlowDevControls";
+import {
+  type CardConfig,
   cardBgStyle,
   defaultDarkCards,
   defaultDarkGlow,
   defaultLayout,
-  type CardConfig,
   type GlowConfig,
   type LayoutConfig,
 } from "./glow-config";
-import { GlowDevControls } from "./GlowDevControls";
 import { InsightGrid } from "./InsightGrid";
-import { DashboardLoading } from "./DashboardLoading";
 import { PromptBar } from "./PromptBar";
-import { AutopilotInsight } from "./AutopilotInsight";
-import {
-  useDashboardData,
-  DashboardDataProvider,
-} from "./DashboardDataProvider";
 
 type LayoutType = "executive" | "operational" | "analytics";
 
@@ -57,12 +57,13 @@ function ExecutiveLayout({
       className="grid grid-cols-1 @[800px]:grid-cols-2 @[800px]:h-full"
       style={gapStyle}
     >
-      <div className="flex flex-col h-full" style={{ gap: promptExpanded ? 0 : layout.gap }}>
+      <div
+        className="flex flex-col h-full"
+        style={{ gap: promptExpanded ? 0 : layout.gap }}
+      >
         <div
           className={`overflow-hidden transition-all duration-300 ease-in-out ${
-            promptExpanded
-              ? "flex-[0_0_0%] opacity-0"
-              : "flex-1 opacity-100"
+            promptExpanded ? "flex-[0_0_0%] opacity-0" : "flex-1 opacity-100"
           }`}
         >
           <Card
@@ -172,24 +173,35 @@ function DashboardContentInner() {
   const [replayCount] = useState(0);
   const [autopilotOpen, setAutopilotOpen] = useState(false);
   const [autopilotSource, setAutopilotSource] = useState("");
+  const [autopilotInitialMessage, setAutopilotInitialMessage] = useState<
+    string | undefined
+  >(undefined);
   const [autopilotActiveIdx, setAutopilotActiveIdx] = useState<number | null>(
     null,
   );
   const containerRef = useRef<HTMLDivElement>(null);
   const viewMode = useViewMode(containerRef);
 
-  const handleAutopilotOpen = (sourceTitle: string, idx: number) => {
-    if (autopilotOpen && autopilotActiveIdx === idx) {
+  const handleAutopilotOpen = (
+    sourceTitle: string,
+    idx: number,
+    prompt?: string,
+  ) => {
+    if (autopilotOpen && autopilotActiveIdx === idx && !prompt) {
+      // Toggle close — preserve source/message so the key doesn't change during slide-out
       setAutopilotOpen(false);
       setAutopilotActiveIdx(null);
     } else {
       setAutopilotSource(sourceTitle);
       setAutopilotActiveIdx(idx);
       setAutopilotOpen(true);
+      setAutopilotInitialMessage(prompt);
     }
   };
 
   const handleAutopilotClose = () => {
+    // Preserve source/message so the key doesn't change during the slide-out animation.
+    // Conversation is kept alive for the next open of the same card.
     setAutopilotOpen(false);
     setAutopilotActiveIdx(null);
   };
@@ -284,10 +296,13 @@ function DashboardContentInner() {
               }}
             >
               <div className="h-full pl-1">
-                <AutopilotInsight
-                  onClose={handleAutopilotClose}
-                  sourceCardTitle={autopilotSource}
-                />
+                {autopilotSource && (
+                  <AutopilotInsight
+                    onClose={handleAutopilotClose}
+                    sourceCardTitle={autopilotSource}
+                    initialMessage={autopilotInitialMessage}
+                  />
+                )}
               </div>
             </div>
           </div>
