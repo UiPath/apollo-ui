@@ -32,3 +32,32 @@
   font-size: inherit !important;
   box-shadow: none !important;
 }
+
+/**
+ * Canvas pane gradient for future themes.
+ *
+ * <Background /> passes bgColor as `background-color`, which only accepts
+ * solid colors. We layer `background-image` on top of the same SVG to
+ * render a gradient — the dot pattern (SVG content) still paints above.
+ * The `.apollo-canvas-background` class is applied via <Background />'s
+ * documented `className` prop in CanvasBackground.tsx.
+ *
+ * FIXME: Inline gradients should become gradient tokens in apollo-wind's
+ * tailwind.consumer.css once a 135° / 0–100% variant is added — then
+ * these rules collapse to `background-image: var(--gradient-N)`.
+ */
+.future-dark .apollo-canvas-background {
+  background-image: linear-gradient(
+    135deg,
+    var(--canvas-background-overlay, var(--surface-overlay)) 0%,
+    var(--canvas-background, var(--surface)) 100%
+  );
+}
+
+.future-light .apollo-canvas-background {
+  background-image: linear-gradient(
+    135deg,
+    var(--canvas-background, var(--surface)) 0%,
+    var(--canvas-background-overlay, var(--surface-overlay)) 100%
+  );
+}
