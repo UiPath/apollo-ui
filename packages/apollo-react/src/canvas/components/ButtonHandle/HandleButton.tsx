@@ -1,9 +1,8 @@
 import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Button } from '@uipath/apollo-wind';
 import { memo, useCallback, useEffect, useRef } from 'react';
 import { cx } from '../../utils/CssUtil';
-import { CanvasIcon } from '../../utils/icon-registry';
+import { CanvasInlineButton } from './CanvasInlineButton';
 
 const BUTTON_POSITION: Record<Position, string> = {
   [Position.Top]: 'flex-col-reverse bottom-full left-1/2 -translate-x-1/2',
@@ -111,17 +110,12 @@ export const HandleButton = memo(
         )}
       >
         {visible && (
-          <Button
+          <CanvasInlineButton
             aria-label="Add node"
-            variant="outline"
-            size="3xs"
-            icon
             onClick={handleClick}
             onPointerDown={handlePointerDown}
-            className="nodrag nopan pointer-events-auto rounded-[10px] animate-fade-in w-7 h-7"
-          >
-            <CanvasIcon icon="plus" size={14} />
-          </Button>
+            className="nodrag nopan pointer-events-auto animate-fade-in"
+          />
         )}
         {label && (
           <InlineLabel

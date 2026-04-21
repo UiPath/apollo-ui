@@ -20,7 +20,7 @@ export interface ToolbarButtonProps {
 
 export const ToolbarButton = memo(({ action, layoutId }: ToolbarButtonProps) => {
   const isEnabled = !action.disabled;
-  const hoverColor = action.color ? getLighterColor(action.color) : undefined;
+  const hoverBg = action.color ? getLighterColor(action.color) : undefined;
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -45,7 +45,7 @@ export const ToolbarButton = memo(({ action, layoutId }: ToolbarButtonProps) => 
         disabled={!isEnabled}
         isToggled={action.isToggled}
         color={action.color}
-        hoverColor={hoverColor}
+        hoverBg={hoverBg}
       >
         {action.icon && typeof action.icon === 'string' ? (
           <CanvasIcon icon={action.icon} size={16} color={action.color} />

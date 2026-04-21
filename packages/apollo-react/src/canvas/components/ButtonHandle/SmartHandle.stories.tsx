@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import type {
   Connection,
@@ -9,7 +10,6 @@ import type {
   OnEdgesChange,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import { useCallback, useMemo } from 'react';
 
 import { StoryInfoPanel, useCanvasStory, withCanvasProviders } from '../../storybook-utils';

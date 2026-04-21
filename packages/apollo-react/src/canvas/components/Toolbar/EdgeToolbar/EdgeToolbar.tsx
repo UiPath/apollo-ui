@@ -1,9 +1,7 @@
 import { EdgeLabelRenderer } from '@uipath/apollo-react/canvas/xyflow/react';
-import { AnimatePresence } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { memo, useMemo } from 'react';
-import type { ExtendedToolbarAction } from '../shared';
-import { ToolbarButton } from '../shared';
-import { StyledEdgeToolbarContainer, StyledEdgeToolbarContent } from './EdgeToolbar.styles';
+import { CanvasInlineButton } from '../../ButtonHandle/CanvasInlineButton';
 import type { EdgeToolbarProps } from './EdgeToolbar.types';
 
 const EdgeToolbarComponent = ({
@@ -14,16 +12,6 @@ const EdgeToolbarComponent = ({
   onMouseEnter,
   onMouseLeave,
 }: EdgeToolbarProps) => {
-  // Convert EdgeToolbarActionItem to ExtendedToolbarAction for ToolbarButton
-  const actionsWithHandlers = useMemo(
-    () =>
-      config.actions.map((action) => ({
-        ...action,
-        onClick: () => action.onAction(edgeId, positioning.pathPosition),
-      })),
-    [config.actions, edgeId, positioning.pathPosition]
-  );
-
   const transform = useMemo(
     () =>
       `translate(-50%, -50%) translate(${positioning.offsetPosition.x}px, ${positioning.offsetPosition.y}px)`,
@@ -34,23 +22,33 @@ const EdgeToolbarComponent = ({
     <EdgeLabelRenderer>
       <AnimatePresence>
         {visible && (
-          <StyledEdgeToolbarContainer
+          <motion.div
             key={`edge-toolbar-${edgeId}`}
+            className="nodrag nopan absolute top-0 left-0 pointer-events-auto z-[1000] flex flex-row items-center gap-1"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
             style={{ transform }}
-            className="nodrag nopan"
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
           >
-            <StyledEdgeToolbarContent>
-              {actionsWithHandlers.map((action) => (
-                <ToolbarButton key={action.id} action={action as ExtendedToolbarAction} />
-              ))}
-            </StyledEdgeToolbarContent>
-          </StyledEdgeToolbarContainer>
+            {config.actions.map((action) => (
+              <CanvasInlineButton
+                key={action.id}
+                aria-label={action.label}
+                disabled={action.disabled}
+                icon={action.icon ?? 'plus'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  if (!action.disabled) {
+                    action.onAction(edgeId, positioning.pathPosition);
+                  }
+                }}
+              />
+            ))}
+          </motion.div>
         )}
       </AnimatePresence>
     </EdgeLabelRenderer>

@@ -12,12 +12,6 @@ import { useMemo } from 'react';
 import { CanvasThemeProvider } from '../components/BaseCanvas';
 import { CanvasTooltipProviderMarker } from '../components/CanvasTooltip';
 import { NodeRegistryProvider } from '../core';
-
-/**
- * Storybook theme globals that represent dark canvases. Kept in sync with the
- * theme toolbar in `apps/storybook/.storybook/preview.tsx`.
- */
-const DARK_THEMES = new Set(['dark', 'dark-hc', 'future-dark', 'vertex', 'canvas']);
 import {
   type ExecutionStateContextValue,
   ExecutionStatusContext,
@@ -27,6 +21,12 @@ import {
 import type { ElementStatus } from '../types/execution';
 import type { ValidationErrorSeverity } from '../types/validation';
 import { defaultWorkflowManifest } from './manifests';
+
+/**
+ * Storybook theme globals that represent dark canvases. Kept in sync with the
+ * theme toolbar in `apps/storybook/.storybook/preview.tsx`.
+ */
+const DARK_THEMES = new Set(['dark', 'dark-hc', 'future-dark', 'vertex', 'canvas']);
 
 /**
  * Props for execution state configuration.

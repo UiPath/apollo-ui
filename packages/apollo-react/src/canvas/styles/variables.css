@@ -39,7 +39,7 @@ body.dark-hc {
   --canvas-background: var(--color-background);
   --canvas-background-secondary: var(--color-background-secondary);
   --canvas-background-raised: var(--color-background-raised);
-  --canvas-background-overlay: var(--surface-overlay);
+  --canvas-background-overlay: var(--color-background-selected);
   --canvas-background-hover: var(--color-background-hover);
   --canvas-background-inverse: var(--color-background-inverse);
 

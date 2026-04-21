@@ -168,7 +168,7 @@ const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarP
                         exit={{ opacity: 0, x: -8 }}
                         transition={{ duration: 0.15 }}
                         role="menu"
-                        aria-labelledby={buttonRef.current?.id}
+                        aria-label={config.overflowLabel ?? 'More options'}
                       >
                         {overflowActionsToDisplay.map((item, i) => {
                           if (isSeparator(item)) {
