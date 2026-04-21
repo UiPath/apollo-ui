@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.8.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.8.0...@uipath/apollo-react@4.8.1) (2026-04-21)
+
+### Bug Fixes
+
+* **apollo-react:** make category colors optional ([fb15740](https://github.com/UiPath/apollo-ui/commit/fb1574069274324a3696d6e7d3a00e71f7d4d8c0))
+
 ## [@uipath/apollo-react-v4.8.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.7.0...@uipath/apollo-react@4.8.0) (2026-04-21)
 
 ### Features
