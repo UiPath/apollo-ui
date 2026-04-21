@@ -49,7 +49,9 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async () => {
         </div>
       );
     },
-    Background: ({ variant }: any) => <div data-testid="background" data-variant={variant} />,
+    Background: ({ variant, className }: any) => (
+      <div className={className} data-testid="background" data-variant={variant} />
+    ),
     Panel: ({ children, position }: any) => <div data-testid={`panel-${position}`}>{children}</div>,
     useReactFlow: () => mockReactFlowInstance,
   };
@@ -87,6 +89,11 @@ describe('BaseCanvas', () => {
     const background = screen.getByTestId('background');
     expect(background).toBeInTheDocument();
     expect(background).toHaveAttribute('data-variant', 'dots');
+  });
+
+  it('passes apollo-canvas-background className to Background', () => {
+    renderBaseCanvas();
+    expect(screen.getByTestId('background')).toHaveClass('apollo-canvas-background');
   });
 
   it('renders controls in default position', () => {

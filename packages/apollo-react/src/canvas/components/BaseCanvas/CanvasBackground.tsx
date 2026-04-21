@@ -18,6 +18,7 @@ export const CanvasBackground: React.FC<CanvasBackgroundProps> = ({
 }) => {
   return (
     <Background
+      className="apollo-canvas-background"
       color={color}
       bgColor={bgColor}
       variant={variant}
