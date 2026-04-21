@@ -9,8 +9,15 @@ import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import { TooltipProvider } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useMemo } from 'react';
+import { CanvasThemeProvider } from '../components/BaseCanvas';
 import { CanvasTooltipProviderMarker } from '../components/CanvasTooltip';
 import { NodeRegistryProvider } from '../core';
+
+/**
+ * Storybook theme globals that represent dark canvases. Kept in sync with the
+ * theme toolbar in `apps/storybook/.storybook/preview.tsx`.
+ */
+const DARK_THEMES = new Set(['dark', 'dark-hc', 'future-dark', 'vertex', 'canvas']);
 import {
   type ExecutionStateContextValue,
   ExecutionStatusContext,
@@ -128,25 +135,29 @@ export function withCanvasProviders(options: CanvasProvidersOptions = {}): Decor
     containerStyle,
   } = options;
 
-  return function CanvasProvidersDecorator(Story) {
+  return function CanvasProvidersDecorator(Story, context) {
     const manifest = useMemo(() => defaultWorkflowManifest, []);
     const executions = useMemo(() => executionState, []);
     const validations = useMemo(() => validationState, []);
+    const theme = context.globals.theme as string | undefined;
+    const isDarkMode = theme ? DARK_THEMES.has(theme) : false;
 
     const content = (
-      <NodeRegistryProvider manifest={manifest}>
-        <ExecutionStatusContext.Provider value={executions}>
-          <ValidationStatusContext.Provider value={validations}>
-            <ReactFlowProvider>
-              <TooltipProvider>
-                <CanvasTooltipProviderMarker>
-                  <Story />
-                </CanvasTooltipProviderMarker>
-              </TooltipProvider>
-            </ReactFlowProvider>
-          </ValidationStatusContext.Provider>
-        </ExecutionStatusContext.Provider>
-      </NodeRegistryProvider>
+      <CanvasThemeProvider isDarkMode={isDarkMode}>
+        <NodeRegistryProvider manifest={manifest}>
+          <ExecutionStatusContext.Provider value={executions}>
+            <ValidationStatusContext.Provider value={validations}>
+              <ReactFlowProvider>
+                <TooltipProvider>
+                  <CanvasTooltipProviderMarker>
+                    <Story />
+                  </CanvasTooltipProviderMarker>
+                </TooltipProvider>
+              </ReactFlowProvider>
+            </ValidationStatusContext.Provider>
+          </ExecutionStatusContext.Provider>
+        </NodeRegistryProvider>
+      </CanvasThemeProvider>
     );
 
     if (fullscreen) {

@@ -13,7 +13,9 @@ export const CanvasThemeProvider: React.FC<React.PropsWithChildren<{ isDarkMode?
   children,
   isDarkMode,
 }) => {
-  const value = useMemo(() => ({ isDarkMode }), [isDarkMode]);
+  const parent = useContext(CanvasThemeContext);
+  const resolved = isDarkMode ?? parent?.isDarkMode;
+  const value = useMemo(() => ({ isDarkMode: resolved }), [resolved]);
   return <CanvasThemeContext.Provider value={value}>{children}</CanvasThemeContext.Provider>;
 };
 
