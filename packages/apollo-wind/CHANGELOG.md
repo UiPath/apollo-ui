@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.6.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.5.0...@uipath/apollo-wind@2.6.0) (2026-04-21)
+
+### Features
+
+* **apollo-wind:** add fade-in animation utility ([0903e60](https://github.com/uipath/apollo-ui/commit/0903e60ef9687f2e376fe2cffd78552f453e7760))
+
 ## [@uipath/apollo-wind-v2.5.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.4.0...@uipath/apollo-wind@2.5.0) (2026-04-20)
 
 ### Features
