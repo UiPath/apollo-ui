@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.7.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.6.0...@uipath/apollo-wind@2.7.0) (2026-04-21)
+
+### Features
+
+* **apollo-wind:** add xs size variant to toggle ([fa3117a](https://github.com/uipath/apollo-ui/commit/fa3117a2c9208317443e774dc7edf2660874298c))
+
 ## [@uipath/apollo-wind-v2.6.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.5.0...@uipath/apollo-wind@2.6.0) (2026-04-21)
 
 ### Features
