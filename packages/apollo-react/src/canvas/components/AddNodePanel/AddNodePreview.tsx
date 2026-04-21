@@ -1,7 +1,8 @@
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Handle, Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import {
   DEFAULT_NODE_SIZE,
@@ -19,8 +20,17 @@ export interface AddNodePreviewData {
   outputHandlePosition?: Position;
 }
 
-export const AddNodePreview: React.FC<NodeProps> = ({ selected, data, width, height }) => {
+export const AddNodePreview: React.FC<NodeProps> = ({
+  selected,
+  data,
+  width,
+  height,
+  dragging,
+}) => {
   const nodeData = data as AddNodePreviewData;
+  const [isHovered, setIsHovered] = useState(false);
+  const handlePointerEnter = useCallback(() => setIsHovered(true), []);
+  const handlePointerLeave = useCallback(() => setIsHovered(false), []);
 
   const icon = useMemo(() => {
     const IconComponent = getIcon(nodeData?.iconName ?? 'square-dashed');
@@ -32,6 +42,19 @@ export const AddNodePreview: React.FC<NodeProps> = ({ selected, data, width, hei
 
   const containerWidth = width ?? DEFAULT_NODE_SIZE;
   const containerHeight = height ?? DEFAULT_NODE_SIZE;
+
+  const containerClassName = useMemo(
+    () =>
+      cn(
+        'relative flex flex-col items-center justify-center bg-surface-overlay',
+        'w-(--node-w) h-(--node-h) rounded-(--node-radius)',
+        'border border-dashed',
+        'shadow-(--canvas-node-shadow-rest) transition-[box-shadow,border-color] duration-150',
+        isHovered && 'shadow-(--canvas-node-shadow-hover)',
+        dragging && 'shadow-(--canvas-node-shadow-lifted) cursor-grabbing'
+      ),
+    [isHovered, dragging]
+  );
 
   const containerStyle = useMemo((): React.CSSProperties => {
     const basis = Math.min(containerWidth, containerHeight);
@@ -56,12 +79,10 @@ export const AddNodePreview: React.FC<NodeProps> = ({ selected, data, width, hei
   return (
     <>
       <div
-        className="
-          relative flex flex-col items-center justify-center bg-surface-overlay
-          w-(--node-w) h-(--node-h) rounded-(--node-radius)
-          border border-dashed
-        "
+        className={containerClassName}
         style={containerStyle}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
       >
         <BaseInnerShape>{icon}</BaseInnerShape>
       </div>

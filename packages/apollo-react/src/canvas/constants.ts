@@ -46,7 +46,7 @@ export const NODE_CONTAINER_RADIUS_RATIO = 32 / DEFAULT_NODE_SIZE;
 export const NODE_INNER_SHAPE_RATIO = 80 / DEFAULT_NODE_SIZE;
 export const NODE_INNER_ICON_RATIO = 40 / DEFAULT_NODE_SIZE;
 export const NODE_INNER_RADIUS_RATIO = 24 / DEFAULT_NODE_SIZE;
-export const NODE_BORDER_SIZE = 2; // px
+export const NODE_BORDER_SIZE = 1; // px
 
 /** Icon size used in the "manifest not found" error fallback (px). */
 export const NODE_ERROR_ICON_SIZE = 40;

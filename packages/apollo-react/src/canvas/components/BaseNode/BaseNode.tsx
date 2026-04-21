@@ -637,16 +637,16 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         {displayFooter && (
           <div className="basis-full pt-0.5 min-w-0 overflow-hidden">{displayFooter}</div>
         )}
+        {toolbarConfig && (
+          <NodeToolbar
+            nodeId={id}
+            config={toolbarConfig}
+            expanded={selected}
+            hidden={dragging || multipleNodesSelected}
+          />
+        )}
       </BaseContainer>
       {handleElements}
-      {toolbarConfig && (
-        <NodeToolbar
-          nodeId={id}
-          config={toolbarConfig}
-          expanded={selected}
-          hidden={dragging || multipleNodesSelected}
-        />
-      )}
     </div>
   );
 

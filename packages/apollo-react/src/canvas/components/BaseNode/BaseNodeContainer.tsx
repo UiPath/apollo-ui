@@ -65,18 +65,19 @@ export const BaseContainer = ({
   const className = useMemo(
     () =>
       cn(
-        'relative flex items-center cursor-pointer bg-surface-overlay border-2 border-border',
+        'relative flex items-center cursor-pointer bg-surface-overlay border border-border',
         'w-(--node-w) h-(--node-h) rounded-(--node-radius)',
+        'shadow-(--canvas-node-shadow-rest) outline-offset-0 transition-[box-shadow,border-color] duration-150',
         shape === 'rectangle'
           ? 'flex-row justify-start gap-3 p-(--node-gap)'
           : 'flex-col justify-center',
         hasFooter && 'flex-wrap',
         getStatusBorder(activeStatus),
-        !isSelected && isHovered && 'border-foreground-muted',
-        isSelected && 'border-brand',
-        isSelected && isHovered && 'border-foreground-accent-muted',
+        isHovered && 'shadow-(--canvas-node-shadow-hover)',
+        !isSelected && isHovered && 'border-border-hover',
+        isSelected && 'outline-2 outline-foreground-accent-muted',
         interactionState === 'disabled' && 'opacity-50 cursor-not-allowed',
-        interactionState === 'drag' && 'cursor-grabbing opacity-80'
+        interactionState === 'drag' && 'cursor-grabbing shadow-(--canvas-node-shadow-lifted)'
       ),
     [shape, hasFooter, activeStatus, isSelected, isHovered, interactionState]
   );
