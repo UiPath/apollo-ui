@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.12.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.11.0...@uipath/apollo-react@4.12.0) (2026-04-21)
+
+### Features
+
+* **apollo-react:** add new event-driven section for tasks in a case stage node ([490ac46](https://github.com/UiPath/apollo-ui/commit/490ac460895d92206887152c13dc8240b4edc575))
+
 ## [@uipath/apollo-react-v4.11.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.10.0...@uipath/apollo-react@4.11.0) (2026-04-21)
 
 ### Features
