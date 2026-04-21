@@ -23,6 +23,7 @@ export interface StageTaskItem {
   label: string;
   icon?: React.ReactElement;
   isAdhoc?: boolean;
+  taskGroupType?: 'sequential' | 'event-driven' | 'adhoc';
   hasEntryCondition?: boolean;
 }
 
@@ -106,4 +107,16 @@ export interface StageTaskDragOverlayProps {
   activeTask: StageTaskItem | undefined;
   isActiveTaskParallel: boolean;
   taskWidthStyle: React.CSSProperties | undefined;
+}
+
+export interface TaskStateReference {
+  isParallel: boolean;
+  groupIndex: number;
+  taskIndex: number;
+}
+
+export interface StageTaskGroup {
+  task: StageTaskItem;
+  groupIndex: number;
+  taskIndex: number;
 }
