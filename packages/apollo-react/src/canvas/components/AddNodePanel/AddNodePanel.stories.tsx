@@ -152,7 +152,7 @@ function StandalonePanelWrapper({ children }: { children: React.ReactNode }) {
         style={{
           width: '320px',
           margin: '0 auto',
-          backgroundColor: 'var(--canvas-background)',
+          backgroundColor: 'var(--canvas-background-raised)',
           border: '1px solid var(--canvas-border-de-emp)',
           borderRadius: '8px',
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
