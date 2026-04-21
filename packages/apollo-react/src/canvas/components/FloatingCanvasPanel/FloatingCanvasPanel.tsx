@@ -1,28 +1,21 @@
-import styled from '@emotion/styled';
 import type { Placement } from '@floating-ui/react';
 import { ViewportPortal } from '@uipath/apollo-react/canvas/xyflow/react';
+import { cn } from '@uipath/apollo-wind';
 import type { ReactNode } from 'react';
+import { useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { CanvasPortal } from './CanvasPortal';
 import { PanelChrome } from './PanelChrome';
 import { type AnchorRect, useFloatingPosition } from './useFloatingPosition';
 
-const PanelContainer = styled.div<{ isPinned?: boolean }>`
-  color: var(--canvas-foreground);
-  background-color: var(--canvas-background-raised);
-  border: 1px solid var(--canvas-border-de-emp);
-  border-radius: ${(props) => (props.isPinned ? '0' : '8px')};
-  box-shadow: ${(props) => (props.isPinned ? 'none' : '0 4px 16px rgba(0, 0, 0, 0.12)')};
-  font-size: 14px;
-  min-width: ${(props) => (props.isPinned ? '320px' : '280px')};
-  max-width: ${(props) => (props.isPinned ? '320px' : 'none')};
-  width: ${(props) => (props.isPinned ? '320px' : 'auto')};
-  height: ${(props) => (props.isPinned ? '100vh' : 'auto')};
-  max-height: ${(props) => (props.isPinned ? '100vh' : '600px')};
-  display: flex;
-  flex-direction: column;
-  transition: opacity 0.2s ease-in-out;
-`;
+const PANEL_BASE_CLASS =
+  'text-(--canvas-foreground) bg-(--canvas-background-raised) border border-(--canvas-border-de-emp) text-sm flex flex-col transition-opacity duration-200 ease-in-out';
+
+const PANEL_FLOATING_CLASS =
+  'rounded-lg shadow-[0_4px_16px_rgba(0,0,0,0.12)] w-auto min-w-[280px] max-w-none h-auto max-h-[600px]';
+
+const PANEL_PINNED_CLASS =
+  'rounded-none shadow-none w-[320px] min-w-[320px] max-w-[320px] h-screen max-h-screen';
 
 export type FloatingCanvasPanelProps = {
   // Anchor/floating
@@ -96,6 +89,11 @@ export function FloatingCanvasPanel({
     fallbackPlacement,
   });
 
+  const panelClassName = useMemo(
+    () => cn(PANEL_BASE_CLASS, isPinned ? PANEL_PINNED_CLASS : PANEL_FLOATING_CLASS),
+    [isPinned]
+  );
+
   if (!open || !computedAnchor) return null;
 
   if (useFixedPosition && anchorRect) {
@@ -145,11 +143,10 @@ export function FloatingCanvasPanel({
     const screenPosition = getScreenSpacePosition();
 
     const fixedContent = (
-      <PanelContainer
-        className="nodrag nopan nowheel"
-        isPinned={isPinned}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
+      <div
+        className={cn('nodrag nopan nowheel', panelClassName)}
+        onPointerEnter={onMouseEnter}
+        onPointerLeave={onMouseLeave}
         style={{
           position: 'fixed',
           ...screenPosition,
@@ -166,7 +163,7 @@ export function FloatingCanvasPanel({
         >
           {children}
         </PanelChrome>
-      </PanelContainer>
+      </div>
     );
 
     return portalToBody ? (
@@ -177,12 +174,11 @@ export function FloatingCanvasPanel({
   }
 
   const panelContent = (
-    <PanelContainer
+    <div
       ref={refs.setFloating}
-      className="nodrag nopan nowheel"
-      isPinned={isPinned}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
+      className={cn('nodrag nopan nowheel', panelClassName)}
+      onPointerEnter={onMouseEnter}
+      onPointerLeave={onMouseLeave}
       style={{
         ...(isPinned ? {} : floatingStyles),
         position: isPinned ? 'fixed' : 'absolute',
@@ -201,7 +197,7 @@ export function FloatingCanvasPanel({
       >
         {children}
       </PanelChrome>
-    </PanelContainer>
+    </div>
   );
 
   return (

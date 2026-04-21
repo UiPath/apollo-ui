@@ -1,19 +1,61 @@
-import { AnimatePresence } from 'motion/react';
-import { Fragment, memo, useMemo } from 'react';
+import { cn } from '@uipath/apollo-wind';
+import { AnimatePresence, motion } from 'motion/react';
+import { memo, useMemo } from 'react';
 import { CanvasIcon } from '../../../utils/icon-registry';
 import { CanvasTooltip } from '../../CanvasTooltip';
-import { StyledToolbarButton, ToolbarButton } from '../shared';
-import {
-  StyledDropdownItem,
-  StyledDropdownMenu,
-  StyledOverflowContainer,
-  StyledToolbarContainer,
-  StyledToolbarPositioner,
-  StyledToolbarSeparator,
-} from './NodeToolbar.styles';
+import { ToolbarButton, ToolbarIconButton } from '../shared';
 import type { NodeToolbarProps } from './NodeToolbar.types';
 import { isSeparator } from './NodeToolbar.utils';
 import { useToolbarState } from './useToolbarState';
+
+const POSITIONER_BASE_CLASS = 'absolute flex pointer-events-none z-10';
+
+// Offsets chosen so every placement renders a ~12px gap between the toolbar
+// and the node. Horizontal (top/bottom) toolbars are 34px tall, vertical
+// (left/right) toolbars are 42px wide, so the vertical offset is 8px larger
+// to keep the visual gap consistent.
+const POSITIONER_POSITION_CLASS: Record<'top' | 'bottom' | 'left' | 'right', string> = {
+  top: 'top-[-46px] left-0 right-0 flex-row',
+  bottom: 'bottom-[-46px] left-0 right-0 flex-row',
+  left: 'left-[-54px] top-0 bottom-0 flex-col',
+  right: 'right-[-54px] top-0 bottom-0 flex-col',
+};
+
+const POSITIONER_ALIGN_CLASS: Record<'start' | 'center' | 'end', string> = {
+  start: 'justify-start',
+  center: 'justify-center',
+  end: 'justify-end',
+};
+
+const CONTAINER_BASE_CLASS =
+  'flex items-center gap-1 py-1 px-2 bg-(--canvas-background-raised) ' +
+  'border border-(--canvas-background-overlay) rounded-xl shadow-[0_2px_6px_rgba(0,0,0,0.08)] ' +
+  'pointer-events-auto';
+
+const CONTAINER_DIRECTION_CLASS: Record<'top' | 'bottom' | 'left' | 'right', string> = {
+  top: 'flex-row',
+  bottom: 'flex-row',
+  left: 'flex-col',
+  right: 'flex-col',
+};
+
+const SEPARATOR_BASE_CLASS = 'flex-[0_0_auto] bg-(--canvas-background-overlay) self-center';
+const SEPARATOR_VERTICAL_CLASS = 'w-px h-5';
+const SEPARATOR_HORIZONTAL_CLASS = 'w-full h-px';
+
+const DROPDOWN_MENU_CLASS =
+  'absolute top-[-2px] left-[calc(100%+4px)] min-w-[180px] ' +
+  'bg-(--canvas-background-raised) border border-(--canvas-background-overlay) rounded-md ' +
+  'shadow-[0_4px_12px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)] p-1 z-[1000] pointer-events-auto';
+
+const DROPDOWN_ITEM_BASE_CLASS =
+  'flex items-center gap-3 w-full py-2 px-3 bg-transparent border-none rounded-[4px] ' +
+  'text-sm text-(--canvas-foreground) text-left [transition:background_0.15s_ease] ' +
+  'enabled:hover:bg-(--canvas-background-hover) future:enabled:hover:bg-(--canvas-background-overlay) ' +
+  '[&>svg]:shrink-0 [&>svg]:text-(--canvas-foreground)';
+
+const DROPDOWN_ITEM_DISABLED_CLASS = 'cursor-not-allowed opacity-40 pointer-events-none';
+const DROPDOWN_ITEM_ENABLED_CLASS = 'cursor-pointer opacity-100';
 
 const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarProps) => {
   const {
@@ -29,9 +71,34 @@ const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarP
     toggleDropdown,
   } = useToolbarState({ config, expanded, nodeId, hidden });
 
+  const position = config.position || 'top';
+  const align = config.align || 'center';
+
+  const positionerClassName = useMemo(
+    () =>
+      cn(POSITIONER_BASE_CLASS, POSITIONER_POSITION_CLASS[position], POSITIONER_ALIGN_CLASS[align]),
+    [position, align]
+  );
+
+  const containerClassName = useMemo(
+    () => cn(CONTAINER_BASE_CLASS, CONTAINER_DIRECTION_CLASS[position]),
+    [position]
+  );
+
+  const separatorClassName = useMemo(
+    () =>
+      cn(
+        SEPARATOR_BASE_CLASS,
+        separatorOrientation === 'horizontal'
+          ? SEPARATOR_HORIZONTAL_CLASS
+          : SEPARATOR_VERTICAL_CLASS
+      ),
+    [separatorOrientation]
+  );
+
   const toolbarAnimationVariants = useMemo(() => {
-    const offsetAxis = config.position === 'top' || config.position === 'bottom' ? 'y' : 'x';
-    const offsetAmount = config.position === 'top' || config.position === 'left' ? -10 : 10;
+    const offsetAxis = position === 'top' || position === 'bottom' ? 'y' : 'x';
+    const offsetAmount = position === 'top' || position === 'left' ? -10 : 10;
 
     const offset = displayState !== 'pinned' ? { [offsetAxis]: offsetAmount } : {};
     const offsetAtRest = displayState !== 'pinned' ? { [offsetAxis]: 0 } : {};
@@ -41,7 +108,7 @@ const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarP
       animate: { opacity: 1, ...offsetAtRest },
       exit: { opacity: 0, ...offset },
     };
-  }, [config.position, displayState]);
+  }, [position, displayState]);
 
   if (
     config.actions.length === 0 &&
@@ -53,50 +120,32 @@ const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarP
   return (
     <AnimatePresence>
       {displayState !== 'hidden' && (
-        <StyledToolbarPositioner
-          $position={config.position || 'top'}
-          $align={config.align || 'center'}
-        >
-          <StyledToolbarContainer
+        <div className={positionerClassName}>
+          <motion.div
             layout="position"
-            $position={config.position || 'top'}
+            className={containerClassName}
             initial={toolbarAnimationVariants.initial}
             animate={toolbarAnimationVariants.animate}
             exit={toolbarAnimationVariants.exit}
             transition={{ duration: 0.15, ease: 'easeOut' }}
             role="toolbar"
           >
-            {actionsToDisplay.map((item, i) => {
-              if (isSeparator(item)) {
-                return (
-                  <StyledToolbarSeparator
-                    key={`separator-${i}`}
-                    $orientation={separatorOrientation}
-                  />
-                );
-              }
-              const nextItem = actionsToDisplay[i + 1];
-              const isLast = i === actionsToDisplay.length - 1;
-              const hasExplicitSeparatorNext = nextItem ? isSeparator(nextItem) : false;
-              return (
-                <Fragment key={item.id}>
-                  <ToolbarButton
-                    action={item}
-                    layoutId={item.isPinned ? `toolbar-btn-${nodeId}-${item.id}` : undefined}
-                  />
-                  {!isLast && !hasExplicitSeparatorNext && (
-                    <StyledToolbarSeparator $orientation={separatorOrientation} />
-                  )}
-                </Fragment>
-              );
-            })}
+            {actionsToDisplay.map((item, i) =>
+              isSeparator(item) ? (
+                <div key={`separator-${i}`} className={separatorClassName} />
+              ) : (
+                <ToolbarButton
+                  key={item.id}
+                  action={item}
+                  layoutId={item.isPinned ? `toolbar-btn-${nodeId}-${item.id}` : undefined}
+                />
+              )
+            )}
             {shouldShowOverflow && (
               <>
-                {actionsToDisplay.length > 0 && (
-                  <StyledToolbarSeparator $orientation={separatorOrientation} />
-                )}
-                <StyledOverflowContainer>
-                  <StyledToolbarButton
+                {actionsToDisplay.length > 0 && <div className={separatorClassName} />}
+                <div className="relative">
+                  <ToolbarIconButton
                     ref={buttonRef}
                     type="button"
                     className="nodrag nopan"
@@ -108,11 +157,12 @@ const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarP
                     <CanvasTooltip content={config.overflowLabel} placement="top">
                       <CanvasIcon icon="ellipsis-vertical" size={16} />
                     </CanvasTooltip>
-                  </StyledToolbarButton>
+                  </ToolbarIconButton>
                   <AnimatePresence>
                     {isDropdownOpen && (
-                      <StyledDropdownMenu
+                      <motion.div
                         ref={dropdownRef}
+                        className={DROPDOWN_MENU_CLASS}
                         initial={{ opacity: 0, x: -8 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -8 }}
@@ -123,17 +173,23 @@ const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarP
                         {overflowActionsToDisplay.map((item, i) => {
                           if (isSeparator(item)) {
                             return (
-                              <StyledToolbarSeparator
+                              <div
                                 key={`separator-${i}`}
-                                $orientation="horizontal"
+                                className={cn(SEPARATOR_BASE_CLASS, SEPARATOR_HORIZONTAL_CLASS)}
                               />
                             );
                           }
                           return (
-                            <StyledDropdownItem
+                            <button
                               key={item.id}
                               type="button"
-                              className="nodrag nopan"
+                              className={cn(
+                                DROPDOWN_ITEM_BASE_CLASS,
+                                item.disabled
+                                  ? DROPDOWN_ITEM_DISABLED_CLASS
+                                  : DROPDOWN_ITEM_ENABLED_CLASS,
+                                'nodrag nopan'
+                              )}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
@@ -144,8 +200,8 @@ const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarP
                               }}
                               aria-label={item.label}
                               aria-disabled={item.disabled}
+                              disabled={item.disabled}
                               role="menuitem"
-                              $disabled={item.disabled}
                             >
                               {item.icon && typeof item.icon === 'string' && (
                                 <span style={{ flex: 'unset', display: 'inline-flex' }}>
@@ -153,18 +209,20 @@ const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarP
                                 </span>
                               )}
                               {item.icon && typeof item.icon !== 'string' && item.icon}
-                              <span>{item.label}</span>
-                            </StyledDropdownItem>
+                              <span className="flex-1 text-(--canvas-foreground)">
+                                {item.label}
+                              </span>
+                            </button>
                           );
                         })}
-                      </StyledDropdownMenu>
+                      </motion.div>
                     )}
                   </AnimatePresence>
-                </StyledOverflowContainer>
+                </div>
               </>
             )}
-          </StyledToolbarContainer>
-        </StyledToolbarPositioner>
+          </motion.div>
+        </div>
       )}
     </AnimatePresence>
   );

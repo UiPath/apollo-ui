@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { type Node, Panel, ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useMemo } from 'react';
+import { Button } from '@uipath/apollo-wind';
+import { useMemo, useState } from 'react';
 import { NodeRegistryProvider } from '../../../core';
 import { ExecutionStatusContext } from '../../../hooks';
 import type { NodeManifest, NodeShape } from '../../../schema';
@@ -8,7 +10,9 @@ import { StoryInfoPanel, useCanvasStory } from '../../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../../types';
 import { BaseCanvas } from '../../BaseCanvas';
 import type { BaseNodeData } from '../../BaseNode/BaseNode.types';
+import { BaseNodeOverrideConfigProvider } from '../../BaseNode/BaseNodeConfigContext';
 import { CanvasPositionControls } from '../../CanvasPositionControls';
+import type { NodeToolbarConfig } from './NodeToolbar.types';
 
 // ============================================================================
 // Node Manifests
@@ -174,20 +178,124 @@ function createToolbarNodes(): Node<BaseNodeData>[] {
 // Story Components
 // ============================================================================
 
+type ToolbarPosition = NonNullable<NodeToolbarConfig['position']>;
+type ToolbarAlign = NonNullable<NodeToolbarConfig['align']>;
+
+const POSITION_OPTIONS: ToolbarPosition[] = ['top', 'bottom', 'left', 'right'];
+const ALIGN_OPTIONS: ToolbarAlign[] = ['start', 'center', 'end'];
+
 function DefaultStory() {
   const initialNodes = useMemo(() => createToolbarNodes(), []);
   const { canvasProps } = useCanvasStory({ initialNodes });
 
+  const [position, setPosition] = useState<ToolbarPosition>('top');
+  const [align, setAlign] = useState<ToolbarAlign>('center');
+
+  const overrideConfig = useMemo(
+    () => ({
+      toolbarConfig: {
+        actions: [
+          { id: 'delete', icon: 'trash', label: 'Delete', onAction: () => {} },
+          { id: 'duplicate', icon: 'copy', label: 'Duplicate', onAction: () => {} },
+          { id: 'breakpoint', icon: 'circle', label: 'Toggle breakpoint', onAction: () => {} },
+        ],
+        position,
+        align,
+      } satisfies NodeToolbarConfig,
+    }),
+    [position, align]
+  );
+
   return (
-    <BaseCanvas {...canvasProps} mode="design">
-      <StoryInfoPanel
-        title="Node Toolbar"
-        description="Hover over nodes to see default toolbar actions (delete, duplicate, breakpoint)"
-      />
-      <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} />
-      </Panel>
-    </BaseCanvas>
+    <BaseNodeOverrideConfigProvider value={overrideConfig}>
+      <BaseCanvas {...canvasProps} mode="design">
+        <StoryInfoPanel
+          title="Node Toolbar"
+          collapsible
+          defaultCollapsed={false}
+          position="top-right"
+        >
+          <Column mt={12} gap={12}>
+            <Column gap={4}>
+              <span className="text-sm" style={{ fontWeight: 600 }}>
+                Position:
+              </span>
+              <Row gap={4} style={{ flexWrap: 'wrap' }}>
+                {POSITION_OPTIONS.map((value) => (
+                  <Button
+                    key={value}
+                    size="sm"
+                    variant={position === value ? 'default' : 'secondary'}
+                    onClick={() => setPosition(value)}
+                  >
+                    {value}
+                  </Button>
+                ))}
+              </Row>
+            </Column>
+            <Column gap={4}>
+              <span className="text-sm" style={{ fontWeight: 600 }}>
+                Align:
+              </span>
+              <Row gap={4} style={{ flexWrap: 'wrap' }}>
+                {ALIGN_OPTIONS.map((value) => (
+                  <Button
+                    key={value}
+                    size="sm"
+                    variant={align === value ? 'default' : 'secondary'}
+                    onClick={() => setAlign(value)}
+                  >
+                    {value}
+                  </Button>
+                ))}
+              </Row>
+            </Column>
+          </Column>
+        </StoryInfoPanel>
+        <Panel position="bottom-right">
+          <CanvasPositionControls translations={DefaultCanvasTranslations} />
+        </Panel>
+      </BaseCanvas>
+    </BaseNodeOverrideConfigProvider>
+  );
+}
+
+function OverflowMenuStory() {
+  const initialNodes = useMemo(() => createToolbarNodes(), []);
+  const { canvasProps } = useCanvasStory({ initialNodes });
+
+  const overrideConfig = useMemo(
+    () => ({
+      toolbarConfig: {
+        actions: [
+          { id: 'edit', icon: 'pencil', label: 'Edit', onAction: () => {} },
+          { id: 'run', icon: 'play', label: 'Run single step', onAction: () => {} },
+          { id: 'expand', icon: 'maximize-2', label: 'Expand inline', onAction: () => {} },
+        ],
+        overflowLabel: 'More options',
+        overflowActions: [
+          { id: 'breakpoint', icon: 'circle', label: 'Toggle breakpoint', onAction: () => {} },
+          { id: 'duplicate', icon: 'copy', label: 'Duplicate', onAction: () => {} },
+          { id: 'comment', icon: 'message-square', label: 'Add comment', onAction: () => {} },
+          { id: 'delete', icon: 'trash', label: 'Delete', onAction: () => {} },
+        ],
+      } satisfies NodeToolbarConfig,
+    }),
+    []
+  );
+
+  return (
+    <BaseNodeOverrideConfigProvider value={overrideConfig}>
+      <BaseCanvas {...canvasProps} mode="design">
+        <StoryInfoPanel
+          title="Toolbar with Overflow Menu"
+          description="Primary actions render inline. The trailing '…' button opens a dropdown with the overflow actions"
+        />
+        <Panel position="bottom-right">
+          <CanvasPositionControls translations={DefaultCanvasTranslations} />
+        </Panel>
+      </BaseCanvas>
+    </BaseNodeOverrideConfigProvider>
   );
 }
 
@@ -233,6 +341,11 @@ function CustomToolbarStory() {
 export const Default: Story = {
   name: 'Default Toolbar',
   render: () => <DefaultStory />,
+};
+
+export const OverflowMenu: Story = {
+  name: 'Toolbar with Overflow Menu',
+  render: () => <OverflowMenuStory />,
 };
 
 export const CustomToolbarExtensions: Story = {

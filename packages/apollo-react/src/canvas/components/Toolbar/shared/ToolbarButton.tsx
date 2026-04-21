@@ -2,7 +2,7 @@ import { getLighterColor } from '@uipath/apollo-react/canvas/utils';
 import { memo } from 'react';
 import { CanvasIcon } from '../../../utils/icon-registry';
 import { CanvasTooltip } from '../../CanvasTooltip';
-import { StyledToolbarButton } from './ToolbarButton.styles';
+import { ToolbarIconButton } from './ToolbarIconButton';
 import type { ToolbarActionItem } from './toolbar.types';
 
 export interface ExtendedToolbarAction extends ToolbarActionItem {
@@ -32,7 +32,7 @@ export const ToolbarButton = memo(({ action, layoutId }: ToolbarButtonProps) => 
 
   return (
     <CanvasTooltip content={action.label} placement="top">
-      <StyledToolbarButton
+      <ToolbarIconButton
         layout={layoutId ? true : undefined}
         layoutId={layoutId}
         transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
@@ -42,17 +42,17 @@ export const ToolbarButton = memo(({ action, layoutId }: ToolbarButtonProps) => 
         aria-label={action.label}
         aria-disabled={!isEnabled}
         aria-pressed={action.isToggled}
-        $disabled={!isEnabled}
-        $isToggled={action.isToggled}
-        $color={action.color}
-        $hoverColor={hoverColor}
+        disabled={!isEnabled}
+        isToggled={action.isToggled}
+        color={action.color}
+        hoverColor={hoverColor}
       >
         {action.icon && typeof action.icon === 'string' ? (
           <CanvasIcon icon={action.icon} size={16} color={action.color} />
         ) : (
           action.icon
         )}
-      </StyledToolbarButton>
+      </ToolbarIconButton>
     </CanvasTooltip>
   );
 });
