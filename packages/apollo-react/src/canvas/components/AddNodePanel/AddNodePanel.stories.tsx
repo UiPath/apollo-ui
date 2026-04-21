@@ -118,6 +118,64 @@ const CATEGORY_ITEMS: ListItem<NodeItemData>[] = Object.entries(
   children: nodes,
 }));
 
+// Tall categories that overflow the panel height so scroll position is
+// actually meaningful. Used by the scroll-preservation story.
+const makeLeafChildren = (
+  prefix: string,
+  count: number,
+  iconName: string
+): ListItem<NodeItemData>[] =>
+  Array.from({ length: count }, (_, i) => ({
+    id: `${prefix}-${i}`,
+    name: `${prefix} item ${String(i).padStart(2, '0')}`,
+    icon: { name: iconName },
+    data: { type: prefix, category: prefix },
+  }));
+
+// Insert a drillable subcategory partway down so exercising scroll-restore
+// requires the user to scroll first.
+const makeCategoryWithNestedSubcategory = (
+  prefix: string,
+  leafCount: number,
+  subcategoryAtIndex: number,
+  iconName: string,
+  subIconName: string
+): ListItem<NodeItemData>[] => {
+  const leaves = makeLeafChildren(prefix, leafCount, iconName);
+  const subcategory: ListItem<NodeItemData> = {
+    id: `${prefix}-sub`,
+    name: `${prefix} ▸ Subcategory (drill in, then Back)`,
+    icon: { name: 'folder_open' },
+    data: { type: 'subcategory', category: `${prefix}/Sub` },
+    children: makeLeafChildren(`${prefix}-sub`, 30, subIconName),
+  };
+  return [...leaves.slice(0, subcategoryAtIndex), subcategory, ...leaves.slice(subcategoryAtIndex)];
+};
+
+const SCROLLABLE_CATEGORY_ITEMS: ListItem<NodeItemData>[] = [
+  {
+    id: 'scroll-category-a',
+    name: 'Category A — scroll down to find the subcategory',
+    icon: { name: 'folder' },
+    data: { type: 'category', category: 'A' },
+    children: makeCategoryWithNestedSubcategory('A', 40, 15, 'bolt', 'database'),
+  },
+  {
+    id: 'scroll-category-b',
+    name: 'Category B — subcategory near the bottom',
+    icon: { name: 'folder' },
+    data: { type: 'category', category: 'B' },
+    children: makeCategoryWithNestedSubcategory('B', 40, 30, 'code', 'bug_report'),
+  },
+  {
+    id: 'scroll-category-c',
+    name: 'Category C — never visited, opens at top',
+    icon: { name: 'folder' },
+    data: { type: 'category', category: 'C' },
+    children: makeCategoryWithNestedSubcategory('C', 40, 5, 'cpu', 'shield'),
+  },
+];
+
 function createInitialNodes(): Node<BaseNodeData>[] {
   return [
     createNode({
@@ -349,6 +407,46 @@ export const NodePanelRegistryItems: Story = {
     },
     onClose: () => console.log('Closed selector'),
     onSearch: undefined,
+  },
+  render: (args) => (
+    <StandalonePanelWrapper>
+      <AddNodePanel {...args} />
+    </StandalonePanelWrapper>
+  ),
+};
+
+export const NodePanelScrollPreservation: Story = {
+  name: 'Scroll position preservation per navigation branch',
+  parameters: {
+    docs: {
+      description: {
+        story: [
+          'Each category contains a drillable subcategory placed partway through',
+          'the list, so exercising scroll-restore requires the user to scroll',
+          'first. Plain items without a chevron are leaves — clicking them just',
+          'selects and does not navigate.',
+          '',
+          'To verify the three behaviors:',
+          '',
+          '1. Restore on back: open Category A, scroll down until the',
+          '   "Subcategory" row is visible, click it, then click Back. The list',
+          '   should return to the exact scroll position you left (not snap back',
+          '   to the top or to the subcategory row).',
+          '2. First entry resets to top: directly after clicking a subcategory,',
+          '   the inner list is at the top regardless of where the parent was',
+          '   scrolled.',
+          '3. Independent per branch: scroll Category A, go back to root, enter',
+          '   Category B and scroll it, then back to root and re-enter A — each',
+          '   branch owns its own scroll memory for as long as it is on the nav',
+          '   stack.',
+        ].join('\n'),
+      },
+    },
+  },
+  args: {
+    items: SCROLLABLE_CATEGORY_ITEMS,
+    onNodeSelect: (node) => console.log('Selected node:', node),
+    onClose: () => console.log('Closed selector'),
   },
   render: (args) => (
     <StandalonePanelWrapper>
