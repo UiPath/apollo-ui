@@ -94,24 +94,9 @@ describe('ButtonHandles', () => {
       />
     );
 
-    // Find the handle element first
-    const handle = screen.getByTestId('handle');
-
-    // The button is rendered within the handle, look for the clickable element
-    // The AddButton component uses a motion div that contains the icon
-    const buttonContainer = handle.querySelector('.nodrag.nopan');
-
-    if (!buttonContainer) {
-      throw new Error('Button container not found');
-    }
-
-    // Click on the button container's child (the animated button)
-    const animatedButton = buttonContainer.firstElementChild;
-    if (!animatedButton) {
-      throw new Error('Animated button not found');
-    }
-
-    await user.click(animatedButton);
+    // The add button is an apollo-wind Button rendered inside HandleAddButton
+    const addButton = screen.getByRole('button');
+    await user.click(addButton);
 
     expect(handleClick).toHaveBeenCalledOnce();
     expect(handleClick).toHaveBeenCalledWith(
@@ -182,7 +167,7 @@ describe('ButtonHandles', () => {
     );
 
     const handle = screen.getByTestId('handle');
-    expect(handle).toHaveStyle({ opacity: '1' });
+    expect(handle).toHaveClass('opacity-100');
 
     rerender(
       <ButtonHandles
@@ -193,7 +178,7 @@ describe('ButtonHandles', () => {
       />
     );
 
-    expect(handle).toHaveStyle({ opacity: '0' });
+    expect(handle).toHaveClass('opacity-0');
   });
 
   it('positions handles correctly for different positions', () => {
@@ -228,19 +213,17 @@ describe('ButtonHandles', () => {
     expect(screen.getByTestId('handle')).toBeInTheDocument();
   });
 
-  it('applies custom color to handles', () => {
+  it('renders handle without color prop', () => {
     const handles: ButtonHandleConfig[] = [
       {
         id: 'handle1',
         type: 'source',
         handleType: 'output',
-        color: 'red',
       },
     ];
 
     render(<ButtonHandles handles={handles} nodeId="test-node" position={Position.Right} />);
 
-    // The color is applied to HandleNotch component
     expect(screen.getByTestId('handle')).toBeInTheDocument();
   });
 

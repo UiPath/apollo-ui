@@ -67,7 +67,9 @@ export const BaseContainer = ({
       cn(
         'relative flex items-center cursor-pointer bg-surface-overlay border-2 border-border',
         'w-(--node-w) h-(--node-h) rounded-(--node-radius)',
-        shape === 'rectangle' ? 'flex-row justify-start gap-3 p-2' : 'flex-col justify-center',
+        shape === 'rectangle'
+          ? 'flex-row justify-start gap-3 p-(--node-gap)'
+          : 'flex-col justify-center',
         hasFooter && 'flex-wrap',
         getStatusBorder(activeStatus),
         !isSelected && isHovered && 'border-foreground-muted',

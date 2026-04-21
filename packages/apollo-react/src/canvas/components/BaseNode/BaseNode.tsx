@@ -10,6 +10,7 @@ import {
   DEFAULT_NODE_SIZE,
   DEFAULT_RECTANGLE_NODE_WIDTH,
   GRID_SPACING,
+  NODE_BORDER_SIZE,
   NODE_CONTAINER_RADIUS_RATIO,
   NODE_HEIGHT_DEFAULT,
   NODE_HEIGHT_FOOTER_BUTTON,
@@ -48,7 +49,12 @@ import { BaseInnerShape } from './BaseNodeInnerShape';
 import { MissingManifestNode } from './BaseNodeMissingManifest';
 import { NodeLabel } from './NodeLabel';
 
-const selectIsConnecting = (state: ReactFlowState) => !!state.connectionClickStartHandle;
+// Use `connection.inProgress` rather than `connectionClickStartHandle`.
+// `connectionClickStartHandle` is set by click-to-connect and only cleared when
+// the user clicks a second handle — clicking the pane does NOT clear it, so it
+// can get stuck and cause all handles across all nodes to stay visible.
+// `connection.inProgress` accurately reflects an active drag-to-connect gesture.
+const selectIsConnecting = (state: ReactFlowState) => !!state.connection.inProgress;
 
 const getContainerWidth = (shape: NodeShape | undefined, width: number | undefined) => {
   const defaultWidth = shape === 'rectangle' ? DEFAULT_RECTANGLE_NODE_WIDTH : DEFAULT_NODE_SIZE;
@@ -108,7 +114,17 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
-  const originalHeightRef = useRef<number | undefined>(undefined);
+  // Tracks the height we last synced to React Flow via updateNode, so we can
+  // distinguish our own handle-based writes from external changes (user-specified
+  // height, React Flow measurement, resize).
+  const syncedHeightRef = useRef<number | undefined>(undefined);
+  // The "base" height — what the node height would be without handle inflation.
+  // Updated when height changes from an external source (not our sync).
+  const baseHeightRef = useRef<number>(DEFAULT_NODE_SIZE);
+
+  if (height && height !== syncedHeightRef.current) {
+    baseHeightRef.current = height;
+  }
 
   // Get execution status from external source
   const executionState = useNodeExecutionState(id);
@@ -237,40 +253,42 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     };
   }, [adornmentsProp, statusContext]);
 
-  // Compute height based on handleConfigurations
+  // Compute height: max of base height (user-specified or measured) and handle minimum.
+  // baseHeightRef is updated above from external height changes; handle inflation
+  // is computed from the current handleConfigurations.
   const computedHeight = useMemo(() => {
-    const handleSpacing = GRID_SPACING * 2;
+    // 2.5 grid units between handles to allow space for button handles and notches
+    const handleSpacing = 2.5 * GRID_SPACING;
 
     const leftHandles = handleConfigurations
       .filter((config) => config.position === Position.Left && config.visible !== false)
-      .reduce((count, config) => count + config.handles.length, 0);
+      .reduce(
+        (count, config) => count + config.handles.filter((h) => h.visible !== false).length,
+        0
+      );
 
     const rightHandles = handleConfigurations
       .filter((config) => config.position === Position.Right && config.visible !== false)
-      .reduce((count, config) => count + config.handles.length, 0);
+      .reduce(
+        (count, config) => count + config.handles.filter((h) => h.visible !== false).length,
+        0
+      );
 
     const leftRightHandles = Math.max(leftHandles, rightHandles);
 
-    return Math.max(
-      originalHeightRef.current ?? DEFAULT_NODE_SIZE,
-      leftRightHandles * handleSpacing
-    );
-  }, [handleConfigurations]);
+    return Math.max(baseHeightRef.current, leftRightHandles * handleSpacing);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- height is not read directly but triggers recalculation after baseHeightRef is updated above
+  }, [handleConfigurations, height]);
 
   useEffect(() => {
     updateNodeInternals(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional when handle configurations change so it recalculates edge positions
   }, [handleConfigurations, id, updateNodeInternals]);
 
-  // Sync computed height to node when it changes
+  // Sync computed height to node when it differs from React Flow's current value
   useEffect(() => {
-    // Initializing originalHeightRef only when React Flow has finished measuring it and updated the height prop
-    if (!originalHeightRef.current && height) {
-      originalHeightRef.current = height;
-      return;
-    }
-
     if (computedHeight !== undefined && computedHeight !== height) {
+      syncedHeightRef.current = computedHeight;
       const frameId = requestAnimationFrame(() => {
         updateNode(id, { height: computedHeight });
         updateNodeInternals(id);
@@ -323,39 +341,45 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const containerHeight = getContainerHeight(height, hasFooter, displayFooterVariant);
 
   const nodeVars = useMemo((): React.CSSProperties => {
-    const numH = typeof containerHeight === 'number' ? containerHeight : undefined;
+    const numH = typeof containerHeight === 'number' ? containerHeight : DEFAULT_NODE_SIZE;
+
+    const getRadius = (basis: number, ratio: number) => {
+      return displayShape === 'circle'
+        ? '50%'
+        : hasFooter
+          ? `${GRID_SPACING}px`
+          : `${basis * ratio}px`;
+    };
 
     // Container border-radius
-    const radiusBasis =
-      displayShape === 'rectangle'
-        ? (numH ?? DEFAULT_NODE_SIZE)
-        : Math.min(containerWidth, numH ?? DEFAULT_NODE_SIZE);
-    const nodeRadius =
-      displayShape === 'circle'
-        ? '50%'
-        : hasFooter
-          ? '16px'
-          : `${radiusBasis * NODE_CONTAINER_RADIUS_RATIO}px`;
+    const radiusBasis = Math.min(containerWidth, numH);
+    const nodeRadius = getRadius(radiusBasis, NODE_CONTAINER_RADIUS_RATIO);
 
     // Inner-shape sizing (icon wrapper)
-    const effectiveH = hasFooter ? DEFAULT_NODE_SIZE : (numH ?? DEFAULT_NODE_SIZE);
+    const effectiveH = hasFooter ? DEFAULT_NODE_SIZE : numH;
     const effectiveW = hasFooter ? DEFAULT_NODE_SIZE : containerWidth;
-    const basis = displayShape === 'rectangle' ? effectiveH : Math.min(effectiveW, effectiveH);
 
-    const innerRadius =
-      displayShape === 'circle'
-        ? '50%'
-        : hasFooter
-          ? '16px'
-          : `${basis * NODE_INNER_RADIUS_RATIO}px`;
+    const innerBasis = Math.min(effectiveH, effectiveW);
+    const innerRadius = getRadius(innerBasis, NODE_INNER_RADIUS_RATIO);
+
+    // Uniform gap: derive a fixed gap from the reference (smallest) dimension
+    // so spacing is consistent on all sides regardless of aspect ratio.
+    // Circles and rectangles keep the inner shape square (based on innerBasis).
+    // Square nodes let the inner shape grow with the container.
+    const gap = innerBasis * (1 - NODE_INNER_SHAPE_RATIO);
+    const keepSquare = displayShape === 'circle' || displayShape === 'rectangle';
+    const innerW = keepSquare ? innerBasis - gap : effectiveW - gap;
+    const innerH = keepSquare ? innerBasis - gap : effectiveH - gap;
 
     return {
       '--node-w': `${containerWidth}px`,
-      '--node-h': numH ? `${numH}px` : 'auto',
+      '--node-h': typeof containerHeight === 'number' ? `${containerHeight}px` : 'auto',
       '--node-radius': nodeRadius,
-      '--inner-size': `${basis * NODE_INNER_SHAPE_RATIO}px`,
+      '--node-gap': `${(gap - NODE_BORDER_SIZE * 2) / 2}px`,
+      '--inner-w': `${innerW}px`,
+      '--inner-h': `${innerH}px`,
       '--inner-radius': innerRadius,
-      '--icon-size': `${basis * NODE_INNER_ICON_RATIO}px`,
+      '--icon-size': `${innerBasis * NODE_INNER_ICON_RATIO}px`,
     } as React.CSSProperties;
   }, [containerWidth, containerHeight, displayShape, hasFooter]);
 
@@ -447,7 +471,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     handleAction,
     nodeId: id,
     selected: selected ?? false,
-    showAddButton: mode === 'design' && !multipleNodesSelected,
+    hovered: isHovered,
+    showAddButton: mode === 'design' && !multipleNodesSelected && !isConnecting,
     showNotches,
     nodeWidth: width,
     nodeHeight: height,

@@ -13,7 +13,7 @@ export const BaseInnerShape = memo(
     <div
       className="
         flex items-center justify-center overflow-hidden bg-surface text-foreground 
-        w-(--inner-size) h-(--inner-size) rounded-(--inner-radius) 
+        w-(--inner-w) h-(--inner-h) rounded-(--inner-radius) 
         [&>svg]:w-(--icon-size) [&>svg]:h-(--icon-size) 
         [&>img]:w-(--icon-size) [&>img]:h-(--icon-size) [&>img]:object-contain
       "
