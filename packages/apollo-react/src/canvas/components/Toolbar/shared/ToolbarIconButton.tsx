@@ -15,32 +15,39 @@ const TOOLBAR_ICON_BUTTON_CLASS =
   '[&>svg]:w-4 [&>svg]:h-4 [&>svg]:text-[inherit] ' +
   '[&>svg]:[transition:width_140ms_ease,height_140ms_ease] ' +
   'text-(--tb-color) bg-(--tb-bg) ' +
-  'enabled:hover:bg-(--tb-hover-bg) enabled:hover:text-(--canvas-foreground) ' +
+  'enabled:hover:bg-(--tb-hover-bg) enabled:hover:text-(--tb-hover-color) ' +
   'enabled:hover:[&>svg]:w-[18px] enabled:hover:[&>svg]:h-[18px]';
 
 const TOOLBAR_ICON_BUTTON_DISABLED_CLASS = 'cursor-not-allowed opacity-40 pointer-events-none';
 const TOOLBAR_ICON_BUTTON_ENABLED_CLASS = 'cursor-pointer opacity-100';
 
 export interface ToolbarIconButtonProps extends HTMLMotionProps<'button'> {
-  /** Overrides the default rest/hover color computation. */
+  /** Overrides the default rest/hover foreground (icon) color. */
   color?: string;
-  /** Overrides the default hover background. Falls back to `--canvas-background-hover`. */
-  hoverColor?: string;
+  /**
+   * Overrides the hover background color (and the rest background when
+   * `isToggled`). Falls back to `--canvas-background-hover`.
+   */
+  hoverBg?: string;
   /** When true, the button renders in its "pressed-in" background color at rest. */
   isToggled?: boolean;
 }
 
 const ToolbarIconButtonInner = (
-  { disabled, isToggled, color, hoverColor, className, style, ...rest }: ToolbarIconButtonProps,
+  { disabled, isToggled, color, hoverBg, className, style, ...rest }: ToolbarIconButtonProps,
   ref: Ref<HTMLButtonElement>
 ) => {
   const restColor =
     color ?? (isToggled ? 'var(--canvas-foreground)' : 'var(--canvas-foreground-de-emp)');
-  const restBg = isToggled ? (hoverColor ?? 'var(--canvas-background-hover)') : 'transparent';
-  const effectiveHoverBg = hoverColor ?? 'var(--canvas-background-hover)';
+  // Actions with a custom `color` keep that color on hover; the default
+  // untinted button brightens to `--canvas-foreground` on hover.
+  const effectiveHoverColor = color ?? 'var(--canvas-foreground)';
+  const restBg = isToggled ? (hoverBg ?? 'var(--canvas-background-hover)') : 'transparent';
+  const effectiveHoverBg = hoverBg ?? 'var(--canvas-background-hover)';
 
   const mergedStyle = {
     ['--tb-color' as string]: restColor,
+    ['--tb-hover-color' as string]: effectiveHoverColor,
     ['--tb-bg' as string]: restBg,
     ['--tb-hover-bg' as string]: effectiveHoverBg,
     ...style,

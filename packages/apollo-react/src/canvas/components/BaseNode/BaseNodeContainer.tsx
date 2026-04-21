@@ -75,7 +75,7 @@ export const BaseContainer = ({
         getStatusBorder(activeStatus),
         isHovered && 'shadow-(--canvas-node-shadow-hover)',
         !isSelected && isHovered && 'border-border-hover',
-        isSelected && 'outline-2 outline-foreground-accent-muted',
+        isSelected && 'outline outline-2 outline-foreground-accent-muted',
         interactionState === 'disabled' && 'opacity-50 cursor-not-allowed',
         interactionState === 'drag' && 'cursor-grabbing shadow-(--canvas-node-shadow-lifted)'
       ),
