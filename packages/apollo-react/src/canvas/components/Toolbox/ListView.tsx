@@ -191,6 +191,7 @@ interface ListViewProps<T extends ListItem> {
   listRef?: React.RefObject<ListImperativeAPI | null>;
   onItemClick: (item: T, index: number) => void;
   onItemHover?: (item: T) => void;
+  onScroll?: React.UIEventHandler<HTMLDivElement>;
   emptyStateMessage?: string;
   emptyStateIcon?: string;
   isLoading?: boolean;
@@ -204,6 +205,7 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
     listRef,
     onItemClick,
     onItemHover,
+    onScroll,
     emptyStateMessage = 'No items found',
     emptyStateIcon = 'search-x',
     isLoading = false,
@@ -256,6 +258,7 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
       rowCount={renderedItems.length}
       rowHeight={40}
       overscanCount={20}
+      onScroll={onScroll}
     />
   );
 });
