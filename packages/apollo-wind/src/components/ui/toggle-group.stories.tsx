@@ -91,6 +91,17 @@ export const Large = {
   ),
 };
 
+export const ExtraSmall = {
+  args: {},
+  render: () => (
+    <ToggleGroup type="single" size="xs">
+      <ToggleGroupItem value="left">Left</ToggleGroupItem>
+      <ToggleGroupItem value="center">Center</ToggleGroupItem>
+      <ToggleGroupItem value="right">Right</ToggleGroupItem>
+    </ToggleGroup>
+  ),
+};
+
 export const Disabled = {
   args: {},
   render: () => (
