@@ -130,7 +130,7 @@ export const StageTaskList = styled.div`
   gap: ${Spacing.SpacingS};
 `;
 
-export const StageTaskGroup = styled.div<{ isParallel?: boolean }>`
+export const StageTaskGroupContainer = styled.div<{ isParallel?: boolean }>`
   position: relative;
   display: flex;
   flex-direction: column;
@@ -305,13 +305,13 @@ export const StageChip = styled.button`
   }
 `;
 
-export const StageAdhocSection = styled.div`
+export const StageAdditionalTasksSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${Spacing.SpacingS};
 `;
 
-export const StageAdhocHeaderSection = styled.div`
+export const StageAdditionalTasksHeaderSection = styled.div`
   height: 36px;
   display: flex;
   align-items: center;

@@ -2,8 +2,6 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useCallback, useMemo, useRef } from 'react';
-import { EntryConditionIcon } from '../../icons';
-import { CanvasTooltip } from '../CanvasTooltip';
 import type { DraggableTaskProps } from './DraggableTask.types';
 import {
   INDENTATION_WIDTH,
@@ -12,6 +10,7 @@ import {
   StageTaskDragPlaceholderWrapper,
   StageTaskWrapper,
 } from './StageNode.styles';
+import { StageTaskEntryConditionIcon } from './StageTaskEntryConditionIcon';
 import { TaskContent } from './TaskContent';
 import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
 
@@ -99,20 +98,7 @@ const DraggableTaskComponent = ({
     >
       <TaskContent task={task} taskExecution={taskExecution} />
 
-      {task.hasEntryCondition && (
-        <CanvasTooltip content="Entry condition" placement="top">
-          <span
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              color: 'var(--color-icon-default)',
-              flexShrink: 0,
-            }}
-          >
-            <EntryConditionIcon w={20} h={20} />
-          </span>
-        </CanvasTooltip>
-      )}
+      <StageTaskEntryConditionIcon task={task} />
       {getContextMenuItems && (
         <TaskMenu
           ref={menuRef}

@@ -1992,6 +1992,281 @@ export const AdhocTasks: Story = {
   },
 };
 
+export const TasksBySection: Story = {
+  name: 'Tasks by section',
+  parameters: {
+    nodes: [
+      {
+        id: '0',
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'With sequential tasks',
+            tasks: [
+              [
+                {
+                  id: '1',
+                  label: 'First task',
+                  icon: <VerificationIcon />,
+                  taskGroupType: 'sequential',
+                },
+              ],
+              [
+                {
+                  id: '2',
+                  label: 'Next task',
+                  icon: <DocumentIcon />,
+                  taskGroupType: 'sequential',
+                },
+              ],
+              [
+                {
+                  id: '3',
+                  label: 'Parallel task 1',
+                  icon: <DocumentIcon />,
+                  taskGroupType: 'sequential',
+                },
+                {
+                  id: '4',
+                  label: 'Parallel task 2',
+                  icon: <DocumentIcon />,
+                  taskGroupType: 'sequential',
+                },
+              ],
+              [
+                {
+                  id: '5',
+                  label: 'Last task',
+                  icon: <VerificationIcon />,
+                  taskGroupType: 'sequential',
+                },
+              ],
+            ],
+          },
+          onTaskPlay: (taskId: string) => {
+            return new Promise<void>((resolve) =>
+              setTimeout(() => {
+                resolve();
+                console.log(`Play task: ${taskId}`);
+              }, 5000)
+            );
+          },
+          onTaskClick: (taskId: string) => {
+            window.alert(`Task clicked: ${taskId}`);
+          },
+        },
+      },
+      {
+        id: '1',
+        type: 'stage',
+        position: { x: 400, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'With adhoc tasks',
+            tasks: [
+              [
+                {
+                  id: '1',
+                  label: 'Ad hoc - Risk Assessment',
+                  icon: <VerificationIcon />,
+                  taskGroupType: 'adhoc',
+                },
+              ],
+              [
+                {
+                  id: '2',
+                  label: 'Ad hoc - Compliance Review',
+                  icon: <DocumentIcon />,
+                  taskGroupType: 'adhoc',
+                },
+              ],
+              [
+                {
+                  id: '3',
+                  label: 'Regular Task',
+                  icon: <ProcessIcon />,
+                  taskGroupType: 'sequential',
+                },
+              ],
+              [
+                {
+                  id: '4',
+                  label: 'Regular Task',
+                  icon: <DocumentIcon />,
+                  taskGroupType: 'sequential',
+                },
+              ],
+            ],
+          },
+          onTaskClick: (taskId: string) => {
+            window.alert(`Task clicked: ${taskId}`);
+          },
+          onTaskGroupModification: (type: string, groupIndex: number, taskIndex: number) => {
+            console.log(
+              `Task group modification: ${type}, group: ${groupIndex}, task: ${taskIndex}`
+            );
+          },
+          onReplaceTaskFromToolbox: (task: unknown, groupIndex: number, taskIndex: number) => {
+            console.log(`Replace task at group: ${groupIndex}, task: ${taskIndex}`, task);
+          },
+        },
+      },
+      {
+        id: '2',
+        type: 'stage',
+        position: { x: 752, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'With event-driven tasks',
+            tasks: [
+              [
+                {
+                  id: '1',
+                  label: 'Waiting for specific condition',
+                  icon: <VerificationIcon />,
+                  taskGroupType: 'event-driven',
+                  hasEntryCondition: true,
+                },
+              ],
+              [
+                {
+                  id: '2',
+                  label: 'Regular Task',
+                  icon: <ProcessIcon />,
+                  taskGroupType: 'sequential',
+                },
+              ],
+              [
+                {
+                  id: '3',
+                  label: 'Wait for connector',
+                  icon: <DocumentIcon />,
+                  taskGroupType: 'event-driven',
+                  hasEntryCondition: true,
+                },
+              ],
+              [
+                {
+                  id: '4',
+                  label: 'Regular Task',
+                  icon: <DocumentIcon />,
+                  taskGroupType: 'sequential',
+                },
+              ],
+            ],
+          },
+          onTaskClick: (taskId: string) => {
+            window.alert(`Task clicked: ${taskId}`);
+          },
+          onTaskGroupModification: (type: string, groupIndex: number, taskIndex: number) => {
+            console.log(
+              `Task group modification: ${type}, group: ${groupIndex}, task: ${taskIndex}`
+            );
+          },
+          onReplaceTaskFromToolbox: (task: unknown, groupIndex: number, taskIndex: number) => {
+            console.log(`Replace task at group: ${groupIndex}, task: ${taskIndex}`, task);
+          },
+        },
+      },
+      {
+        id: '3',
+        type: 'stage',
+        position: { x: 1104, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'All task sections',
+            isReadOnly: true,
+            tasks: [
+              [
+                {
+                  id: '1',
+                  label: 'Ad hoc - Verify Address',
+                  icon: <VerificationIcon />,
+                  taskGroupType: 'adhoc',
+                },
+              ],
+              [
+                {
+                  id: '2',
+                  label: 'Wait for connector',
+                  icon: <VerificationIcon />,
+                  taskGroupType: 'event-driven',
+                  hasEntryCondition: true,
+                },
+              ],
+              [
+                {
+                  id: '4',
+                  label: 'Task',
+                  icon: <DocumentIcon />,
+                  taskGroupType: 'sequential',
+                },
+              ],
+              [{ id: '5', label: 'Regular Processing', icon: <ProcessIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'InProgress',
+              label: 'In progress',
+              duration: 'SLA: 3h 45m',
+            },
+            taskStatus: {
+              '1': {
+                status: 'Completed',
+                label: 'Verify Address',
+                duration: '1h 20m',
+                retryDuration: '35m',
+                badge: 'Reworked',
+                badgeStatus: 'warning',
+                retryCount: 2,
+              },
+              '2': {
+                status: 'Failed',
+                label: 'Verify Identity',
+                duration: '45m',
+                message: 'Identity verification failed - document expired',
+                badge: 'Action needed',
+                badgeStatus: 'error',
+              },
+              '3': {
+                status: 'InProgress',
+                label: 'Background Check',
+              },
+              '4': {
+                status: 'InProgress',
+                label: 'Review Docs',
+                duration: '30m',
+                retryDuration: '10m',
+                badge: 'Reworked',
+                badgeStatus: 'info',
+                retryCount: 1,
+              },
+              '5': {
+                status: 'InProgress',
+                label: 'Regular Processing',
+              },
+            },
+          },
+          onTaskPlay: (taskId: string) => {
+            return new Promise<void>((resolve) =>
+              setTimeout(() => {
+                resolve();
+                console.log(`Play task: ${taskId}`);
+              }, 5000)
+            );
+          },
+        },
+      },
+    ],
+  },
+};
+
 export const WithRulesTags: Story = {
   name: 'With Rules & Tags',
   parameters: {
