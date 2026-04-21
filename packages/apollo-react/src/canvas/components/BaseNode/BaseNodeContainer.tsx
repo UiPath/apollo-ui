@@ -73,8 +73,7 @@ export const BaseContainer = ({
           : 'flex-col justify-center',
         hasFooter && 'flex-wrap',
         getStatusBorder(activeStatus),
-        isHovered && 'shadow-(--canvas-node-shadow-hover)',
-        !isSelected && isHovered && 'border-border-hover',
+        isHovered && 'shadow-(--canvas-node-shadow-hover) border-border-hover',
         isSelected && 'outline outline-2 outline-foreground-accent-muted',
         interactionState === 'disabled' && 'opacity-50 cursor-not-allowed',
         interactionState === 'drag' && 'cursor-grabbing shadow-(--canvas-node-shadow-lifted)'

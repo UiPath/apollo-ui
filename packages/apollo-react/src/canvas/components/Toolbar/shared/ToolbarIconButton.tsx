@@ -13,10 +13,10 @@ const TOOLBAR_ICON_BUTTON_CLASS =
   'grid place-items-center w-6 h-6 p-0 border-0 rounded-[4px] ' +
   '[transition:background-color_140ms_ease,color_140ms_ease,opacity_140ms_ease] ' +
   '[&>svg]:w-4 [&>svg]:h-4 [&>svg]:text-[inherit] ' +
-  '[&>svg]:[transition:width_140ms_ease,height_140ms_ease] ' +
+  '[&>svg]:origin-center [&>svg]:transition-transform [&>svg]:duration-[140ms] [&>svg]:ease-[ease] ' +
   'text-(--tb-color) bg-(--tb-bg) ' +
   'enabled:hover:bg-(--tb-hover-bg) enabled:hover:text-(--tb-hover-color) ' +
-  'enabled:hover:[&>svg]:w-[18px] enabled:hover:[&>svg]:h-[18px]';
+  'enabled:hover:[&>svg]:scale-[1.125]';
 
 const TOOLBAR_ICON_BUTTON_DISABLED_CLASS = 'cursor-not-allowed opacity-40 pointer-events-none';
 const TOOLBAR_ICON_BUTTON_ENABLED_CLASS = 'cursor-pointer opacity-100';

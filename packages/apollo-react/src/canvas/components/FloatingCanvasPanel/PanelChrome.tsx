@@ -9,7 +9,7 @@ import { CanvasIcon } from '../../utils/icon-registry';
 const PanelHeader = styled.div`
   border-bottom: 1px solid var(--canvas-border-de-emp);
   padding: 8px 16px;
-  background-color: var(--canvas-background);
+  background-color: var(--canvas-background-raised);
   border-radius: 8px 8px 0 0;
   flex-shrink: 0;
 `;

@@ -10,15 +10,14 @@ import { useToolbarState } from './useToolbarState';
 
 const POSITIONER_BASE_CLASS = 'absolute flex pointer-events-none z-10';
 
-// Offsets chosen so every placement renders a ~12px gap between the toolbar
-// and the node. Horizontal (top/bottom) toolbars are 34px tall, vertical
-// (left/right) toolbars are 42px wide, so the vertical offset is 8px larger
-// to keep the visual gap consistent.
+// Container enforces a 40px cross-axis (`min-h-10 min-w-10`) in every
+// orientation, so the same offset produces a consistent ~12px gap on every
+// side: 40 (toolbar) + 12 (gap) = 52.
 const POSITIONER_POSITION_CLASS: Record<'top' | 'bottom' | 'left' | 'right', string> = {
-  top: 'top-[-46px] left-0 right-0 flex-row',
-  bottom: 'bottom-[-46px] left-0 right-0 flex-row',
-  left: 'left-[-54px] top-0 bottom-0 flex-col',
-  right: 'right-[-54px] top-0 bottom-0 flex-col',
+  top: 'top-[-52px] left-0 right-0 flex-row',
+  bottom: 'bottom-[-52px] left-0 right-0 flex-row',
+  left: 'left-[-52px] top-0 bottom-0 flex-col',
+  right: 'right-[-52px] top-0 bottom-0 flex-col',
 };
 
 const POSITIONER_ALIGN_CLASS: Record<'start' | 'center' | 'end', string> = {
@@ -28,7 +27,7 @@ const POSITIONER_ALIGN_CLASS: Record<'start' | 'center' | 'end', string> = {
 };
 
 const CONTAINER_BASE_CLASS =
-  'flex items-center gap-1 py-1 px-2 bg-(--canvas-background-raised) ' +
+  'flex items-center gap-1 p-1 min-h-10 min-w-10 shrink-0 bg-(--canvas-background-raised) ' +
   'border border-(--canvas-background-overlay) rounded-xl shadow-[0_2px_6px_rgba(0,0,0,0.08)] ' +
   'pointer-events-auto';
 
@@ -145,19 +144,19 @@ const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarP
               <>
                 {actionsToDisplay.length > 0 && <div className={separatorClassName} />}
                 <div className="relative">
-                  <ToolbarIconButton
-                    ref={buttonRef}
-                    type="button"
-                    className="nodrag nopan"
-                    onClick={toggleDropdown}
-                    aria-label="More options"
-                    aria-expanded={isDropdownOpen}
-                    aria-haspopup="menu"
-                  >
-                    <CanvasTooltip content={config.overflowLabel} placement="top">
+                  <CanvasTooltip content={config.overflowLabel ?? 'More options'} placement="top">
+                    <ToolbarIconButton
+                      ref={buttonRef}
+                      type="button"
+                      className="nodrag nopan"
+                      onClick={toggleDropdown}
+                      aria-label={config.overflowLabel ?? 'More options'}
+                      aria-expanded={isDropdownOpen}
+                      aria-haspopup="menu"
+                    >
                       <CanvasIcon icon="ellipsis-vertical" size={16} />
-                    </CanvasTooltip>
-                  </ToolbarIconButton>
+                    </ToolbarIconButton>
+                  </CanvasTooltip>
                   <AnimatePresence>
                     {isDropdownOpen && (
                       <motion.div
