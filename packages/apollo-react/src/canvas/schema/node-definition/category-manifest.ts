@@ -51,10 +51,10 @@ export const categoryManifestSchema = z.object({
   sortOrder: z.number().int().nonnegative(),
 
   /** Light mode color/gradient */
-  color: z.string().min(1),
+  color: z.string().min(1).optional(),
 
   /** Dark mode color/gradient */
-  colorDark: z.string().min(1),
+  colorDark: z.string().min(1).optional(),
 
   /** Icon identifier */
   icon: z.string().min(1),
