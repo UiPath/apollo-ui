@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v4.9.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.8.1...@uipath/apollo-react@4.9.0) (2026-04-21)
+
+### Features
+
+* **apollo-react:** add canvas background for future ([f337b24](https://github.com/UiPath/apollo-ui/commit/f337b2434377f6bc9aff77c74242c4853af093d8))
+* **apollo-react:** add node redesign ([b205e11](https://github.com/UiPath/apollo-ui/commit/b205e11bd3d5236758dfbc044123c90a7b4f200e))
+
 ## [@uipath/apollo-react-v4.8.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.8.0...@uipath/apollo-react@4.8.1) (2026-04-21)
 
 ### Bug Fixes
