@@ -1,3 +1,15 @@
+## [@uipath/apollo-react-v4.11.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.10.0...@uipath/apollo-react@4.11.0) (2026-04-21)
+
+### Features
+
+* **apollo-react:** adapt add button to design ([c6f0a09](https://github.com/UiPath/apollo-ui/commit/c6f0a09fa29a339bef63635d1e4fa86db1ab75d8))
+* **apollo-react:** address feedback ([965c777](https://github.com/UiPath/apollo-ui/commit/965c777b740f4c9909959c2e0231c9039670d4e4))
+* **apollo-react:** apply proper hover/selected + node toolbar ([8278060](https://github.com/UiPath/apollo-ui/commit/8278060aaee5010978ba172e5c626594e3d6d215))
+
+### Bug Fixes
+
+* **storybook:** colors for icons on dark themes ([dd64889](https://github.com/UiPath/apollo-ui/commit/dd64889f4fdb30789a96367cd15f6e0d52382343))
+
 ## [@uipath/apollo-react-v4.10.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.9.0...@uipath/apollo-react@4.10.0) (2026-04-21)
 
 ### Features
