@@ -1,5 +1,5 @@
 import { AnimatePresence } from 'motion/react';
-import { memo, useMemo } from 'react';
+import { Fragment, memo, useMemo } from 'react';
 import { CanvasIcon } from '../../../utils/icon-registry';
 import { CanvasTooltip } from '../../CanvasTooltip';
 import { StyledToolbarButton, ToolbarButton } from '../shared';
@@ -8,6 +8,7 @@ import {
   StyledDropdownMenu,
   StyledOverflowContainer,
   StyledToolbarContainer,
+  StyledToolbarPositioner,
   StyledToolbarSeparator,
 } from './NodeToolbar.styles';
 import type { NodeToolbarProps } from './NodeToolbar.types';
@@ -52,101 +53,118 @@ const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarP
   return (
     <AnimatePresence>
       {displayState !== 'hidden' && (
-        <StyledToolbarContainer
-          layout
+        <StyledToolbarPositioner
           $position={config.position || 'top'}
-          $align={config.align || 'end'}
-          initial={toolbarAnimationVariants.initial}
-          animate={toolbarAnimationVariants.animate}
-          exit={toolbarAnimationVariants.exit}
-          transition={{ duration: 0.15, ease: 'easeOut' }}
-          role="toolbar"
+          $align={config.align || 'center'}
         >
-          {actionsToDisplay.map((item, i) =>
-            isSeparator(item) ? (
-              <StyledToolbarSeparator key={`separator-${i}`} $orientation={separatorOrientation} />
-            ) : (
-              <ToolbarButton
-                key={item.id}
-                action={item}
-                layoutId={item.isPinned ? `toolbar-btn-${nodeId}-${item.id}` : undefined}
-              />
-            )
-          )}
-          {shouldShowOverflow && (
-            <>
-              {actionsToDisplay.length > 0 && (
-                <StyledToolbarSeparator $orientation={separatorOrientation} />
-              )}
-              <StyledOverflowContainer>
-                <StyledToolbarButton
-                  ref={buttonRef}
-                  type="button"
-                  className="nodrag nopan"
-                  onClick={toggleDropdown}
-                  aria-label="More options"
-                  aria-expanded={isDropdownOpen}
-                  aria-haspopup="menu"
-                >
-                  <CanvasTooltip content={config.overflowLabel} placement="top">
-                    <CanvasIcon icon="ellipsis-vertical" size={16} />
-                  </CanvasTooltip>
-                </StyledToolbarButton>
-                <AnimatePresence>
-                  {isDropdownOpen && (
-                    <StyledDropdownMenu
-                      ref={dropdownRef}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -8 }}
-                      transition={{ duration: 0.15 }}
-                      role="menu"
-                      aria-labelledby={buttonRef.current?.id}
-                    >
-                      {overflowActionsToDisplay.map((item, i) => {
-                        if (isSeparator(item)) {
-                          return (
-                            <StyledToolbarSeparator
-                              key={`separator-${i}`}
-                              $orientation="horizontal"
-                            />
-                          );
-                        }
-                        return (
-                          <StyledDropdownItem
-                            key={item.id}
-                            type="button"
-                            className="nodrag nopan"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              if (!item.disabled) {
-                                item.onClick();
-                                setIsDropdownOpen(false);
-                              }
-                            }}
-                            aria-label={item.label}
-                            aria-disabled={item.disabled}
-                            role="menuitem"
-                            $disabled={item.disabled}
-                          >
-                            {item.icon && typeof item.icon === 'string' && (
-                              <span style={{ flex: 'unset', display: 'inline-flex' }}>
-                                <CanvasIcon icon={item.icon} size={16} />
-                              </span>
-                            )}
-                            {item.icon && typeof item.icon !== 'string' && item.icon}
-                            <span>{item.label}</span>
-                          </StyledDropdownItem>
-                        );
-                      })}
-                    </StyledDropdownMenu>
+          <StyledToolbarContainer
+            layout="position"
+            $position={config.position || 'top'}
+            initial={toolbarAnimationVariants.initial}
+            animate={toolbarAnimationVariants.animate}
+            exit={toolbarAnimationVariants.exit}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            role="toolbar"
+          >
+            {actionsToDisplay.map((item, i) => {
+              if (isSeparator(item)) {
+                return (
+                  <StyledToolbarSeparator
+                    key={`separator-${i}`}
+                    $orientation={separatorOrientation}
+                  />
+                );
+              }
+              const nextItem = actionsToDisplay[i + 1];
+              const isLast = i === actionsToDisplay.length - 1;
+              const hasExplicitSeparatorNext = nextItem ? isSeparator(nextItem) : false;
+              return (
+                <Fragment key={item.id}>
+                  <ToolbarButton
+                    action={item}
+                    layoutId={item.isPinned ? `toolbar-btn-${nodeId}-${item.id}` : undefined}
+                  />
+                  {!isLast && !hasExplicitSeparatorNext && (
+                    <StyledToolbarSeparator $orientation={separatorOrientation} />
                   )}
-                </AnimatePresence>
-              </StyledOverflowContainer>
-            </>
-          )}
-        </StyledToolbarContainer>
+                </Fragment>
+              );
+            })}
+            {shouldShowOverflow && (
+              <>
+                {actionsToDisplay.length > 0 && (
+                  <StyledToolbarSeparator $orientation={separatorOrientation} />
+                )}
+                <StyledOverflowContainer>
+                  <StyledToolbarButton
+                    ref={buttonRef}
+                    type="button"
+                    className="nodrag nopan"
+                    onClick={toggleDropdown}
+                    aria-label="More options"
+                    aria-expanded={isDropdownOpen}
+                    aria-haspopup="menu"
+                  >
+                    <CanvasTooltip content={config.overflowLabel} placement="top">
+                      <CanvasIcon icon="ellipsis-vertical" size={16} />
+                    </CanvasTooltip>
+                  </StyledToolbarButton>
+                  <AnimatePresence>
+                    {isDropdownOpen && (
+                      <StyledDropdownMenu
+                        ref={dropdownRef}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -8 }}
+                        transition={{ duration: 0.15 }}
+                        role="menu"
+                        aria-labelledby={buttonRef.current?.id}
+                      >
+                        {overflowActionsToDisplay.map((item, i) => {
+                          if (isSeparator(item)) {
+                            return (
+                              <StyledToolbarSeparator
+                                key={`separator-${i}`}
+                                $orientation="horizontal"
+                              />
+                            );
+                          }
+                          return (
+                            <StyledDropdownItem
+                              key={item.id}
+                              type="button"
+                              className="nodrag nopan"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                if (!item.disabled) {
+                                  item.onClick();
+                                  setIsDropdownOpen(false);
+                                }
+                              }}
+                              aria-label={item.label}
+                              aria-disabled={item.disabled}
+                              role="menuitem"
+                              $disabled={item.disabled}
+                            >
+                              {item.icon && typeof item.icon === 'string' && (
+                                <span style={{ flex: 'unset', display: 'inline-flex' }}>
+                                  <CanvasIcon icon={item.icon} size={16} />
+                                </span>
+                              )}
+                              {item.icon && typeof item.icon !== 'string' && item.icon}
+                              <span>{item.label}</span>
+                            </StyledDropdownItem>
+                          );
+                        })}
+                      </StyledDropdownMenu>
+                    )}
+                  </AnimatePresence>
+                </StyledOverflowContainer>
+              </>
+            )}
+          </StyledToolbarContainer>
+        </StyledToolbarPositioner>
       )}
     </AnimatePresence>
   );

@@ -1,136 +1,86 @@
 import styled from '@emotion/styled';
 import { motion } from 'motion/react';
 
-export const StyledToolbarContainer = styled(motion.div, {
-  shouldForwardProp: (prop: string) => !prop.startsWith('$'),
-})<{
+/**
+ * Absolutely-positioned flex track that spans the full width (or height)
+ * of the node along one axis, and lets its child (the visual toolbar)
+ * center / start / end itself via `justify-content`. This keeps the toolbar
+ * centered even when it is wider than the node (where `margin: auto` would
+ * degrade to 0 because the element is over-constrained).
+ */
+export const StyledToolbarPositioner = styled.div<{
   $position: 'top' | 'bottom' | 'left' | 'right';
   $align?: 'start' | 'center' | 'end';
 }>`
   position: absolute;
   display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px;
-  background: var(--canvas-background);
-  border: 1px solid var(--canvas-border-grid);
-  border-radius: 8px;
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.08),
-    0 1px 2px rgba(0, 0, 0, 0.04);
-  pointer-events: auto;
+  pointer-events: none;
   z-index: 10;
 
   ${({ $position, $align = 'center' }) => {
+    const justifyContent =
+      $align === 'start' ? 'flex-start' : $align === 'end' ? 'flex-end' : 'center';
+
     switch ($position) {
       case 'top':
-        switch ($align) {
-          case 'start':
-            return `
-              top: -40px;
-              left: 0;
-              flex-direction: row;
-            `;
-          case 'end':
-            return `
-              top: -40px;
-              right: 0;
-              flex-direction: row;
-            `;
-          case 'center':
-          default:
-            return `
-              top: -40px;
-              left: 0;
-              right: 0;
-              margin: 0 auto;
-              width: fit-content;
-              flex-direction: row;
-            `;
-        }
+        return `
+          top: -46px;
+          left: 0;
+          right: 0;
+          flex-direction: row;
+          justify-content: ${justifyContent};
+        `;
       case 'bottom':
-        switch ($align) {
-          case 'start':
-            return `
-              bottom: -40px;
-              left: 0;
-              flex-direction: row;
-            `;
-          case 'end':
-            return `
-              bottom: -40px;
-              right: 0;
-              flex-direction: row;
-            `;
-          case 'center':
-          default:
-            return `
-              bottom: -40px;
-              left: 0;
-              right: 0;
-              margin: 0 auto;
-              width: fit-content;
-              flex-direction: row;
-            `;
-        }
+        return `
+          bottom: -46px;
+          left: 0;
+          right: 0;
+          flex-direction: row;
+          justify-content: ${justifyContent};
+        `;
       case 'left':
-        switch ($align) {
-          case 'start':
-            return `
-              left: -40px;
-              top: 0;
-              flex-direction: column;
-            `;
-          case 'end':
-            return `
-              left: -40px;
-              bottom: 0;
-              flex-direction: column;
-            `;
-          case 'center':
-          default:
-            return `
-              left: -40px;
-              top: 0;
-              bottom: 0;
-              margin: auto 0;
-              height: fit-content;
-              flex-direction: column;
-            `;
-        }
+        return `
+          left: -46px;
+          top: 0;
+          bottom: 0;
+          flex-direction: column;
+          justify-content: ${justifyContent};
+        `;
       case 'right':
-        switch ($align) {
-          case 'start':
-            return `
-              right: -40px;
-              top: 0;
-              flex-direction: column;
-            `;
-          case 'end':
-            return `
-              right: -40px;
-              bottom: 0;
-              flex-direction: column;
-            `;
-          case 'center':
-          default:
-            return `
-              right: -40px;
-              top: 0;
-              bottom: 0;
-              margin: auto 0;
-              height: fit-content;
-              flex-direction: column;
-            `;
-        }
+        return `
+          right: -46px;
+          top: 0;
+          bottom: 0;
+          flex-direction: column;
+          justify-content: ${justifyContent};
+        `;
     }
   }}
 `;
 
+export const StyledToolbarContainer = styled(motion.div, {
+  shouldForwardProp: (prop: string) => !prop.startsWith('$'),
+})<{
+  $position: 'top' | 'bottom' | 'left' | 'right';
+}>`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: var(--canvas-background-raised);
+  border: 1px solid var(--canvas-background-overlay);
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  pointer-events: auto;
+  flex-direction: ${({ $position }) =>
+    $position === 'left' || $position === 'right' ? 'column' : 'row'};
+`;
+
 export const StyledToolbarSeparator = styled.div<{ $orientation: 'horizontal' | 'vertical' }>`
-  width: ${({ $orientation }) => ($orientation === 'vertical' ? '1px' : 'calc(100%)')};
+  flex: 0 0 auto;
+  width: ${({ $orientation }) => ($orientation === 'horizontal' ? '100%' : '1px')};
   height: ${({ $orientation }) => ($orientation === 'horizontal' ? '1px' : '20px')};
-  background: var(--canvas-border-grid);
+  background: var(--canvas-background-overlay);
   align-self: center;
 `;
 

@@ -39,6 +39,7 @@ body.dark-hc {
   --canvas-background: var(--color-background);
   --canvas-background-secondary: var(--color-background-secondary);
   --canvas-background-raised: var(--color-background-raised);
+  --canvas-background-overlay: var(--surface-overlay);
   --canvas-background-hover: var(--color-background-hover);
   --canvas-background-inverse: var(--color-background-inverse);
 
@@ -93,6 +94,20 @@ body.dark-hc {
      ========================================================================== */
 
   --canvas-icon-default: var(--color-icon-default);
+
+  /* ==========================================================================
+     Node interaction shadows
+     ========================================================================== */
+
+  --canvas-node-shadow-rest: 0 2px 8px rgba(0, 0, 0, 0.18);
+  --canvas-node-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.36);
+  --canvas-node-shadow-lifted: 0 16px 48px rgba(0, 0, 0, 0.72), 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Softer lifted shadow for light core themes. */
+body.light,
+body.light-hc {
+  --canvas-node-shadow-lifted: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 /**
@@ -116,6 +131,7 @@ body.dark-hc {
   --canvas-background: var(--surface);
   --canvas-background-secondary: var(--background);
   --canvas-background-raised: var(--surface-raised);
+  --canvas-background-overlay: var(--surface-overlay);
   --canvas-background-hover: var(--surface-hover);
   --canvas-background-inverse: var(--surface-inverse);
 
@@ -159,4 +175,15 @@ body.dark-hc {
 
   /* Misc */
   --canvas-icon-default: var(--foreground-muted);
+
+  /* Node interaction shadows */
+  --canvas-node-shadow-rest: 0 2px 8px rgba(0, 0, 0, 0.18);
+  --canvas-node-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.36);
+  --canvas-node-shadow-lifted: 0 16px 48px rgba(0, 0, 0, 0.72), 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Softer lifted shadow for light element themes. */
+.future-light,
+.wireframe {
+  --canvas-node-shadow-lifted: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
 }

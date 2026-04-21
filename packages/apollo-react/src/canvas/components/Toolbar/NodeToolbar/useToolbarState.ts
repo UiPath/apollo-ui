@@ -145,7 +145,9 @@ export const useToolbarState = ({
     actionsToDisplay,
     overflowActionsToDisplay: overflowActionsWithState,
     separatorOrientation:
-      config.position === 'top' || config.position === 'bottom' ? 'vertical' : 'horizontal',
+      !config.position || config.position === 'top' || config.position === 'bottom'
+        ? 'vertical'
+        : 'horizontal',
     toggleDropdown,
   };
 };

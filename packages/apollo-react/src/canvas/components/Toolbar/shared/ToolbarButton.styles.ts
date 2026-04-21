@@ -9,32 +9,41 @@ export const StyledToolbarButton = styled(motion.button, {
   $color?: string;
   $hoverColor?: string;
 }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   width: 24px;
   height: 24px;
   padding: 0;
   background: ${({ $isToggled, $hoverColor }) =>
-    ($isToggled && ($hoverColor || 'var(--canvas-background-secondary)')) || 'transparent'};
+    ($isToggled && ($hoverColor || 'var(--canvas-background-hover)')) || 'transparent'};
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
   opacity: ${({ $disabled }) => ($disabled ? 0.4 : 1)};
+  color: ${({ $color, $isToggled }) =>
+    $color || ($isToggled ? 'var(--canvas-foreground)' : 'var(--canvas-foreground-de-emp)')};
   transition:
-    background 0.15s ease,
-    opacity 0.15s ease;
+    background-color 140ms ease,
+    color 140ms ease,
+    opacity 140ms ease;
   pointer-events: ${({ $disabled }) => ($disabled ? 'none' : 'auto')};
 
-  &:hover:not(:disabled) {
-    background: ${({ $hoverColor }) => $hoverColor || 'var(--canvas-background-secondary)'};
-  }
-
-  &:active:not(:disabled) {
-    transform: scale(0.95);
-  }
-
   svg {
-    color: ${({ $color }) => $color || 'var(--canvas-foreground)'};
+    width: 16px;
+    height: 16px;
+    color: inherit;
+    transition:
+      width 140ms ease,
+      height 140ms ease;
+  }
+
+  &:hover:not(:disabled) {
+    background: ${({ $hoverColor }) => $hoverColor || 'var(--canvas-background-hover)'};
+    color: var(--canvas-foreground);
+  }
+
+  &:hover:not(:disabled) svg {
+    width: 18px;
+    height: 18px;
   }
 `;
