@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.12.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.12.0...@uipath/apollo-react@4.12.1) (2026-04-21)
+
+### Bug Fixes
+
+* **apollo-react:** implement scroll position preservation across navigation branches ([b95c15b](https://github.com/UiPath/apollo-ui/commit/b95c15b508c9d0ed6d4b2e9b82a9b96f57e7eaa9))
+
 ## [@uipath/apollo-react-v4.12.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.11.0...@uipath/apollo-react@4.12.0) (2026-04-21)
 
 ### Features
