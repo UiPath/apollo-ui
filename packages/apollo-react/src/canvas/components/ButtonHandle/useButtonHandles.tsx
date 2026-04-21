@@ -13,6 +13,7 @@ export const useButtonHandles = ({
   handleAction,
   nodeId,
   selected,
+  hovered,
   showAddButton,
   showNotches,
   shouldShowAddButtonFn,
@@ -23,6 +24,7 @@ export const useButtonHandles = ({
   shouldShowHandles: boolean;
   nodeId: string;
   selected: boolean;
+  hovered?: boolean;
   handleAction?: (event: HandleActionEvent) => void;
   showAddButton?: boolean;
   showNotches?: boolean;
@@ -34,15 +36,17 @@ export const useButtonHandles = ({
    *
    * Defaults to:
    * ```ts
-   * ({ showAddButton, selected }) => showAddButton && selected
+   * ({ showAddButton, selected, hovered }) => showAddButton && (selected || hovered)
    * ```
    */
   shouldShowAddButtonFn?: ({
     showAddButton,
     selected,
+    hovered,
   }: {
     showAddButton: boolean;
     selected: boolean;
+    hovered: boolean;
   }) => boolean;
 }) => {
   const connectedHandleIds = useConnectedHandles(nodeId);
@@ -59,11 +63,15 @@ export const useButtonHandles = ({
     const resolvedHandles = resolveHandles(handleConfigurations, node?.data ?? {});
 
     const elements = resolvedHandles.map((config, i) => {
-      const hasConnectedHandle = config.handles.some((h) => connectedHandleIds.has(h.id));
-      const finalVisible = hasConnectedHandle || (shouldShowHandles && (config.visible ?? true));
+      const groupVisible = shouldShowHandles && (config.visible ?? true);
 
       const enhancedHandles = config.handles.map((handle) => ({
         ...handle,
+        // Per-handle opacity: connected handles are always shown (opacity 1),
+        // others follow the group hover/selection state.
+        // `handle.visible` (config-level) is left untouched — it controls
+        // whether the handle is rendered at all in ButtonHandlesBase.
+        showHandle: connectedHandleIds.has(handle.id) || groupVisible,
         // Preserve individual handle's onAction if it exists, otherwise use global handleAction
         onAction: handle.onAction || handleAction,
       }));
@@ -75,7 +83,7 @@ export const useButtonHandles = ({
           handles={enhancedHandles}
           position={config.position as Position}
           selected={selected}
-          visible={finalVisible}
+          hovered={hovered}
           showAddButton={showAddButton}
           showNotches={showNotches}
           customPositionAndOffsets={config.customPositionAndOffsets}
@@ -90,6 +98,7 @@ export const useButtonHandles = ({
   }, [
     handleConfigurations,
     selected,
+    hovered,
     shouldShowHandles,
     connectedHandleIds,
     handleAction,

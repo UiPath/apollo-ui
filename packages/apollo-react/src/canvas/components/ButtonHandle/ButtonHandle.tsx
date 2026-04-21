@@ -1,20 +1,13 @@
-import { Row } from '@uipath/apollo-react/canvas/layouts';
-import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { AnimatePresence } from 'motion/react';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { Handle, Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import type { HandleConfigurationSpecificPosition } from '../../schema/node-definition/handle';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
-import { CanvasIcon } from '../../utils/icon-registry';
-import { CanvasTooltip } from '../CanvasTooltip';
-import {
-  StyledAddButton,
-  StyledHandle,
-  StyledLabel,
-  StyledLine,
-  StyledNotch,
-  StyledWrapper,
-} from './ButtonHandle.styles';
+import { cx } from '../../utils/CssUtil';
 import { calculateGridAlignedHandlePositions, pixelToPercent } from './ButtonHandleStyleUtils';
+import { HandleButton, HandleHoverBridge } from './HandleButton';
+import { HandleLabel } from './HandleLabel';
+import { HandleNotch } from './HandleNotch';
+import { useButtonHandleSizeAndPosition } from './useButtonHandleSizeAndPosition';
 
 export interface HandleActionEvent {
   handleId: string;
@@ -23,35 +16,6 @@ export interface HandleActionEvent {
   position: Position;
   originalEvent: React.MouseEvent;
 }
-
-type AddButtonProps = {
-  onAction: (event: React.MouseEvent) => void;
-};
-
-const AddButton = memo(({ onAction }: AddButtonProps) => {
-  const handleClick = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      onAction(e);
-    },
-    [onAction]
-  );
-
-  return (
-    <AnimatePresence>
-      <StyledAddButton
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.5 }}
-        transition={{ duration: 0.25 }}
-        whileHover={{ scale: 1.05 }}
-        onClick={handleClick}
-      >
-        <CanvasIcon icon="plus" size={14} />
-      </StyledAddButton>
-    </AnimatePresence>
-  );
-});
 
 type ButtonHandleProps = {
   id: string;
@@ -65,7 +29,6 @@ type ButtonHandleProps = {
   visible?: boolean;
   showButton?: boolean;
   selected?: boolean;
-  color?: string;
   index?: number; // 0-based index of this handle on the edge
   total?: number; // Total number of handles on this edge
   onAction?: (event: HandleActionEvent) => void;
@@ -86,7 +49,6 @@ const ButtonHandleBase = ({
   labelBackgroundColor = 'var(--canvas-background-secondary)',
   visible = true,
   showButton = true,
-  color = 'var(--canvas-border)',
   selected = false,
   index = 0,
   total = 1,
@@ -96,6 +58,7 @@ const ButtonHandleBase = ({
   nodeWidth,
   nodeHeight,
 }: ButtonHandleProps) => {
+  const handleRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const isVertical = position === Position.Top || position === Position.Bottom;
 
@@ -146,73 +109,75 @@ const ButtonHandleBase = ({
   const markAsHovered = useCallback(() => setIsHovered(true), []);
   const unmarkAsHovered = useCallback(() => setIsHovered(false), []);
 
-  const shouldTruncateLabel = useMemo(() => {
-    return showButton && !!onAction && type === 'source' && !isVertical;
-  }, [showButton, onAction, type, isVertical]);
+  const {
+    width: handleWidth,
+    height: handleHeight,
+    top,
+    bottom,
+    left,
+    right,
+    transform,
+  } = useButtonHandleSizeAndPosition({
+    position,
+    positionPercent,
+    numHandles: total,
+    customPositionAndOffsets,
+  });
 
   return (
-    <StyledHandle
+    <Handle
+      ref={handleRef}
       type={type}
       position={position}
       id={id}
-      $positionPercent={positionPercent}
-      $total={total}
-      $visible={visible}
-      $customPositionAndOffsets={customPositionAndOffsets}
       onMouseEnter={markAsHovered}
       onMouseLeave={unmarkAsHovered}
       onMouseDown={unmarkAsHovered}
+      className={cx(
+        'flex! items-center! justify-center! border-0! rounded-none! bg-transparent!',
+        visible
+          ? 'cursor-crosshair! pointer-events-auto! opacity-100'
+          : 'cursor-default! pointer-events-none! opacity-0'
+      )}
+      style={{
+        width: handleWidth,
+        height: handleHeight,
+        top,
+        bottom,
+        left,
+        right,
+        transform,
+      }}
     >
-      {label && (
-        <StyledLabel
-          $position={position}
-          $backgroundColor={labelBackgroundColor}
-          $shouldTruncate={shouldTruncateLabel}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Row align="center" gap={4}>
-            {labelIcon}
-            <span
-              className="text-xs font-bold text-foreground-muted"
-              style={
-                shouldTruncateLabel
-                  ? {
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }
-                  : undefined
-              }
-            >
-              {label}
-            </span>
-          </Row>
-        </StyledLabel>
-      )}
-      {showButton && onAction && type === 'source' && (
-        <StyledWrapper $position={position}>
-          <StyledLine
-            $isVertical={isVertical}
-            $selected={selected}
-            $size={label ? '60px' : '16px'}
-          />
-          <CanvasTooltip content="Add node" placement="bottom">
-            <div className="nodrag nopan" style={{ pointerEvents: 'auto' }}>
-              <AddButton onAction={handleButtonClick} />
-            </div>
-          </CanvasTooltip>
-        </StyledWrapper>
-      )}
-      <StyledNotch
-        $notchColor={color}
-        $handleType={handleType}
-        $visible={visible}
-        $isVertical={isVertical}
-        $selected={selected}
-        $hovered={isHovered}
-        $showNotch={showNotches}
+      <HandleNotch
+        handleType={handleType}
+        isVertical={isVertical}
+        selected={selected}
+        hovered={isHovered}
+        showNotch={showNotches}
       />
-    </StyledHandle>
+      {onAction && type === 'source' ? (
+        <HandleButton
+          visible={showButton}
+          labelVisible={visible}
+          position={position}
+          onAction={handleButtonClick}
+          handleRef={handleRef}
+          label={label}
+          labelIcon={labelIcon}
+          labelBackgroundColor={labelBackgroundColor}
+        />
+      ) : (
+        label && (
+          <HandleLabel
+            position={position}
+            backgroundColor={labelBackgroundColor}
+            label={label}
+            labelIcon={labelIcon}
+          />
+        )
+      )}
+    </Handle>
   );
 };
 
@@ -226,9 +191,11 @@ export interface ButtonHandleConfig {
   label?: string;
   labelIcon?: React.ReactNode;
   showButton?: boolean;
-  color?: string;
   labelBackgroundColor?: string;
+  /** Config-level visibility — controls whether the handle is rendered at all. */
   visible?: boolean;
+  /** Runtime visibility — controls opacity (e.g. connected handles stay visible). */
+  showHandle?: boolean;
   onAction?: (event: HandleActionEvent) => void;
   customPositionAndOffsets?: HandleConfigurationSpecificPosition;
 }
@@ -238,11 +205,13 @@ const ButtonHandlesBase = ({
   handles,
   position,
   selected = false,
+  hovered = false,
   visible = true,
   showAddButton = true,
   showNotches = true,
   customPositionAndOffsets,
-  shouldShowAddButtonFn = ({ showAddButton, selected }) => showAddButton && selected,
+  shouldShowAddButtonFn = ({ showAddButton, selected, hovered }) =>
+    showAddButton && (selected || hovered),
   nodeWidth,
   nodeHeight,
 }: {
@@ -250,6 +219,7 @@ const ButtonHandlesBase = ({
   handles: ButtonHandleConfig[];
   position: Position;
   selected?: boolean;
+  hovered?: boolean;
   visible?: boolean;
   showAddButton?: boolean;
   showNotches?: boolean;
@@ -262,26 +232,33 @@ const ButtonHandlesBase = ({
    *
    * Defaults to:
    * ```ts
-   * ({ showAddButton, selected }) => showAddButton && selected
+   * ({ showAddButton, selected, hovered }) => showAddButton && (selected || hovered)
    * ```
    */
   shouldShowAddButtonFn?: ({
     showAddButton,
     selected,
+    hovered,
   }: {
     showAddButton: boolean;
     selected: boolean;
+    hovered: boolean;
   }) => boolean;
 }) => {
-  const finalSelected = shouldShowAddButtonFn({ showAddButton, selected });
+  const finalSelected = shouldShowAddButtonFn({ showAddButton, selected, hovered });
 
-  // Filter only visible handles for spacing calculations
+  // Only render handles whose config marks them as visible.
+  // Handles with visible: false are excluded from the DOM entirely —
+  // group-level visibility (hover/selection state) is handled via opacity.
   const visibleHandles = handles.filter((h) => h.visible ?? true);
-  const total = visibleHandles.length;
+
+  // Show the hover bridge when any source handle in this group has an onAction callback
+  const hasSourceButtons = visibleHandles.some((h) => h.type === 'source' && h.onAction);
 
   return (
     <>
-      {handles.map((handle, index) => (
+      <HandleHoverBridge position={position} visible={hasSourceButtons && finalSelected} />
+      {visibleHandles.map((handle, index) => (
         <ButtonHandle
           key={handle.id}
           id={handle.id}
@@ -293,12 +270,10 @@ const ButtonHandlesBase = ({
           labelIcon={handle.labelIcon}
           labelBackgroundColor={handle.labelBackgroundColor}
           index={index}
-          total={total}
+          total={visibleHandles.length}
           selected={selected}
-          // Need top level visibility to be true and current handle visibility to be true to keep positioning of handles consistent
-          visible={visible && (handle.visible ?? true)}
-          showButton={finalSelected && visible && handle.showButton}
-          color={handle.color}
+          visible={handle.showHandle ?? visible}
+          showButton={finalSelected && (handle.showHandle ?? visible) && handle.showButton}
           onAction={handle.onAction}
           showNotches={showNotches}
           customPositionAndOffsets={customPositionAndOffsets}

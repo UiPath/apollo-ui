@@ -1,4 +1,3 @@
-import { Row } from '@uipath/apollo-react/canvas/layouts';
 import {
   type Edge,
   Handle,
@@ -10,10 +9,8 @@ import {
   useStore,
   useUpdateNodeInternals,
 } from '@xyflow/react';
-import { AnimatePresence } from 'motion/react';
 import {
   createContext,
-  memo,
   useCallback,
   useContext,
   useEffect,
@@ -22,16 +19,12 @@ import {
   useState,
 } from 'react';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
-import { CanvasIcon } from '../../utils/icon-registry';
+import { cx } from '../../utils/CssUtil';
 import type { HandleActionEvent } from './ButtonHandle';
-import {
-  StyledAddButton,
-  StyledLabel,
-  StyledLine,
-  StyledNotch,
-  StyledWrapper,
-} from './ButtonHandle.styles';
 import { calculateGridAlignedHandlePositions, pixelToPercent } from './ButtonHandleStyleUtils';
+import { HandleButton } from './HandleButton';
+import { HandleLabel } from './HandleLabel';
+import { HandleNotch } from './HandleNotch';
 import { useButtonHandleSizeAndPosition } from './useButtonHandleSizeAndPosition';
 
 // ============================================================================
@@ -63,8 +56,6 @@ export interface SmartHandleProps extends Omit<HandleProps, 'position'> {
   showButton?: boolean;
   /** Whether the node is selected */
   selected?: boolean;
-  /** Color for the notch */
-  color?: string;
   /** Whether to show notches */
   showNotches?: boolean;
   /** Callback when handle action is triggered */
@@ -134,41 +125,6 @@ const NEXT_SIDE_CLOCKWISE: Record<Side, Side> = {
   bottom: 'left',
   left: 'top',
 };
-
-// ============================================================================
-// Add Button Component
-// ============================================================================
-
-type AddButtonProps = {
-  onAction: (event: React.MouseEvent) => void;
-};
-
-const AddButton = memo(({ onAction }: AddButtonProps) => {
-  const handleClick = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      onAction(e);
-    },
-    [onAction]
-  );
-
-  return (
-    <AnimatePresence>
-      <StyledAddButton
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.5 }}
-        transition={{ duration: 0.25 }}
-        whileHover={{ scale: 1.05 }}
-        onClick={handleClick}
-      >
-        <CanvasIcon icon="plus" size={14} />
-      </StyledAddButton>
-    </AnimatePresence>
-  );
-});
-
-AddButton.displayName = 'AddButton';
 
 // ============================================================================
 // Smart Handle Context (for coordinating multiple handles on same side)
@@ -600,7 +556,6 @@ export function SmartHandle({
   labelBackgroundColor = 'var(--canvas-background-secondary)',
   showButton = false,
   selected = false,
-  color = 'var(--canvas-border)',
   showNotches = true,
   onAction,
   visible = true,
@@ -612,6 +567,7 @@ export function SmartHandle({
   const [isHovered, setIsHovered] = useState(false);
   const smartHandleContext = useSmartHandleContext();
 
+  const handleRef = useRef<HTMLDivElement>(null);
   // Track previous position to avoid unnecessary updates
   const prevPositionRef = useRef<Position | null>(null);
 
@@ -737,18 +693,20 @@ export function SmartHandle({
 
   return (
     <Handle
+      ref={handleRef}
       type={type}
       position={computedPosition}
       id={id}
-      className={className}
+      className={cx(
+        'flex! items-center! justify-center! border-0! rounded-none! bg-transparent!',
+        visible ? 'cursor-crosshair! pointer-events-auto!' : 'cursor-default! pointer-events-none!',
+        className
+      )}
       isConnectable={visible && handleType !== 'artifact'}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onMouseDown={() => setIsHovered(false)}
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         width,
         height,
         top,
@@ -756,11 +714,6 @@ export function SmartHandle({
         left,
         right,
         transform,
-        borderWidth: 0,
-        borderRadius: 0,
-        backgroundColor: 'transparent',
-        cursor: visible ? 'crosshair' : 'default',
-        pointerEvents: visible ? 'auto' : 'none',
         ...style,
       }}
       {...rest}
@@ -768,34 +721,33 @@ export function SmartHandle({
       {/* Only render visual elements when visible */}
       {visible && (
         <>
-          {label && (
-            <StyledLabel $position={computedPosition} $backgroundColor={labelBackgroundColor}>
-              <Row align="center" gap={4}>
-                {labelIcon}
-                <span className="text-xs font-bold text-foreground-muted">{label}</span>
-              </Row>
-            </StyledLabel>
-          )}
-          {showButton && onAction && type === 'source' && (
-            <StyledWrapper $position={computedPosition}>
-              <StyledLine
-                $isVertical={isVertical}
-                $selected={selected}
-                $size={label ? '60px' : '16px'}
+          {onAction && type === 'source' ? (
+            <HandleButton
+              visible={showButton}
+              labelVisible={visible}
+              position={computedPosition}
+              onAction={handleButtonClick}
+              handleRef={handleRef}
+              label={label}
+              labelIcon={labelIcon}
+              labelBackgroundColor={labelBackgroundColor}
+            />
+          ) : (
+            label && (
+              <HandleLabel
+                position={computedPosition}
+                backgroundColor={labelBackgroundColor}
+                label={label}
+                labelIcon={labelIcon}
               />
-              <div className="nodrag nopan" style={{ pointerEvents: 'auto' }}>
-                <AddButton onAction={handleButtonClick} />
-              </div>
-            </StyledWrapper>
+            )
           )}
-          <StyledNotch
-            $notchColor={color}
-            $handleType={handleType}
-            $visible={true}
-            $isVertical={isVertical}
-            $selected={selected}
-            $hovered={isHovered}
-            $showNotch={showNotches}
+          <HandleNotch
+            handleType={handleType}
+            isVertical={isVertical}
+            selected={selected}
+            hovered={isHovered}
+            showNotch={showNotches}
           />
         </>
       )}

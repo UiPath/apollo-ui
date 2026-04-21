@@ -233,7 +233,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         handleType: 'artifact',
         label: translations.memory,
         showButton: mode === 'design' && !hasMemory,
-        color: 'var(--canvas-foreground-de-emp)',
         labelBackgroundColor: 'var(--canvas-background-secondary)',
         visible: displayMemory,
         onAction: (_e: HandleActionEvent) => {
@@ -249,7 +248,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         handleType: 'artifact',
         label: translations.escalations,
         showButton: mode === 'design',
-        color: 'var(--canvas-foreground-de-emp)',
         labelBackgroundColor: 'var(--canvas-background-secondary)',
         visible: displayEscalation,
         onAction: (_e: HandleActionEvent) => {
@@ -274,7 +272,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           handleType: 'artifact',
           label: translations.context,
           showButton: mode === 'design',
-          color: 'var(--canvas-foreground-de-emp)',
           labelBackgroundColor: 'var(--canvas-background-secondary)',
           visible: displayContext,
           onAction: (_e: HandleActionEvent) => {
@@ -287,7 +284,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           handleType: 'artifact',
           label: translations.tools,
           showButton: mode === 'design',
-          color: 'var(--canvas-foreground-de-emp)',
           labelBackgroundColor: 'var(--canvas-background-secondary)',
           visible: displayTool || displayMcp || displayA2a,
           onAction: (_e: HandleActionEvent) => {

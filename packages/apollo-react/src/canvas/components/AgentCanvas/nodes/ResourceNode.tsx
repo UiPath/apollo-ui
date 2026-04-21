@@ -300,7 +300,6 @@ export const ResourceNode = memo(
           type: 'target' as const,
           handleType: 'artifact' as const,
           showButton: false,
-          color: 'var(--canvas-foreground-de-emp)',
         },
       ],
       []
@@ -313,7 +312,6 @@ export const ResourceNode = memo(
           type: 'source' as const,
           handleType: 'artifact' as const,
           showButton: false,
-          color: 'var(--canvas-foreground-de-emp)',
         },
       ],
       []
@@ -326,7 +324,6 @@ export const ResourceNode = memo(
           type: 'source' as const,
           handleType: 'artifact' as const,
           showButton: false,
-          color: 'var(--canvas-foreground-de-emp)',
         },
       ],
       []
@@ -339,7 +336,6 @@ export const ResourceNode = memo(
           type: 'target' as const,
           handleType: 'artifact' as const,
           showButton: false,
-          color: 'var(--canvas-foreground-de-emp)',
         },
       ],
       []
@@ -352,7 +348,6 @@ export const ResourceNode = memo(
           type: 'target' as const,
           handleType: 'artifact' as const,
           showButton: false,
-          color: 'var(--canvas-foreground-de-emp)',
         },
       ],
       []
