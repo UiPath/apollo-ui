@@ -36,7 +36,7 @@ const EdgeToolbarComponent = ({
             {config.actions.map((action) => (
               <CanvasInlineButton
                 key={action.id}
-                aria-label={action.label}
+                aria-label={action.label ?? action.id}
                 disabled={action.disabled}
                 icon={action.icon ?? 'plus'}
                 onClick={(e) => {

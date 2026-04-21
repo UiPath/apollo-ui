@@ -4,12 +4,7 @@ import { CanvasIcon } from '../../utils/icon-registry';
 
 /**
  * Canvas inline icon-only button used for small affordances rendered directly
- * next to nodes / edges (e.g. the "+" on node handles or on an edge). Styling
- * mirrors flow-prototype's `.node-inline-add-btn`:
- *   - 32×32, `rounded-[12px]`
- *   - rest: `--canvas-background-raised` + `--canvas-border`
- *   - hover: `--canvas-background-overlay` + `--canvas-primary-hover`
- *   - 120ms transition on opacity / color / background / border
+ * next to nodes / edges (e.g. the "+" on node handles or on an edge).
  */
 export interface CanvasInlineButtonProps
   extends Omit<ComponentPropsWithoutRef<typeof Button>, 'variant' | 'size' | 'icon' | 'children'> {
@@ -23,7 +18,7 @@ export interface CanvasInlineButtonProps
 }
 
 const CANVAS_INLINE_BUTTON_CLASS =
-  'grid place-items-center w-8 h-8 rounded-[12px] ' +
+  'grid place-items-center w-7 h-7 rounded-[10px] ' +
   'border border-(--canvas-border) bg-(--canvas-background-raised) text-(--canvas-foreground) ' +
   'enabled:hover:bg-(--canvas-background-overlay) enabled:hover:border-(--canvas-primary-hover) enabled:hover:text-(--canvas-foreground) ' +
   '[transition:opacity_120ms_ease,color_120ms_ease,background-color_120ms_ease,border-color_120ms_ease]';
