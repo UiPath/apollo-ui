@@ -1,71 +1,46 @@
 import { useQuery } from "@tanstack/react-query";
+import type { Entities } from "@uipath/uipath-typescript/entities";
+import {
+  EntityFieldDataType,
+  type EntityGetResponse,
+  type FieldMetaData,
+} from "@uipath/uipath-typescript/entities";
 import type { Entity, EntityField } from "../tools/data-fabric/shared";
 
 interface UseDataFabricEntitiesOptions {
-  baseUrl: string;
-  accessToken: string;
+  entities: Entities;
   enabled?: boolean;
 }
 
-interface ApiEntityField {
-  name: string;
-  isPrimaryKey?: boolean;
-  isForeignKey?: boolean;
-  isExternalField?: boolean;
-  isRequired?: boolean;
-  sqlType: { name: string };
-}
+const NUMERIC_FIELD_TYPES = new Set<EntityFieldDataType>([
+  EntityFieldDataType.INTEGER,
+  EntityFieldDataType.DECIMAL,
+  EntityFieldDataType.FLOAT,
+  EntityFieldDataType.DOUBLE,
+  EntityFieldDataType.BIG_INTEGER,
+  EntityFieldDataType.AUTO_NUMBER,
+]);
 
-interface ApiEntity {
-  id: string;
-  name: string;
-  fields: ApiEntityField[];
-}
-
-function isApiEntityArray(data: unknown): data is ApiEntity[] {
-  return (
-    Array.isArray(data) &&
-    data.every(
-      (item) =>
-        typeof item === "object" &&
-        item !== null &&
-        "name" in item &&
-        "fields" in item,
-    )
-  );
-}
-
-const SQL_TYPE_MAP: Record<string, "number" | "boolean"> = {
-  INT: "number",
-  BIGINT: "number",
-  SMALLINT: "number",
-  TINYINT: "number",
-  DECIMAL: "number",
-  FLOAT: "number",
-  REAL: "number",
-  NUMBER: "number",
-  BIT: "boolean",
-  BOOLEAN: "boolean",
-};
-
-function mapSqlTypeToDataType(
-  sqlTypeName: string,
+function mapFieldDataType(
+  fieldDataType: EntityFieldDataType,
 ): "string" | "number" | "boolean" {
-  return SQL_TYPE_MAP[sqlTypeName] ?? "string";
+  if (NUMERIC_FIELD_TYPES.has(fieldDataType)) return "number";
+  if (fieldDataType === EntityFieldDataType.BOOLEAN) return "boolean";
+  return "string";
 }
 
-function isDirectlyQueryable(f: ApiEntityField): boolean {
+function isDirectlyQueryable(f: FieldMetaData): boolean {
   return !f.isForeignKey && !f.isExternalField;
 }
 
-function toEntity(api: ApiEntity): Entity {
+function toEntity(sdkEntity: EntityGetResponse): Entity {
   return {
-    id: api.id,
-    name: api.name,
-    fields: api.fields.filter(isDirectlyQueryable).map(
+    id: sdkEntity.id,
+    name: sdkEntity.name,
+    fields: sdkEntity.fields.filter(isDirectlyQueryable).map(
       (f): EntityField => ({
         name: f.name,
-        dataType: mapSqlTypeToDataType(f.sqlType.name),
+        dataType: mapFieldDataType(f.fieldDataType.name),
         isPrimaryKey: f.isPrimaryKey ?? false,
         isRequired: f.isRequired ?? false,
       }),
@@ -74,44 +49,19 @@ function toEntity(api: ApiEntity): Entity {
 }
 
 async function fetchEntities(
-  baseUrl: string,
-  accessToken: string,
+  entitiesService: Entities,
 ): Promise<Record<string, Entity>> {
-  const response = await fetch(`${baseUrl}v2/Entity`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch entities: ${response.status}`);
-  }
-
-  const data: unknown = await response.json();
-
-  let apiEntities: ApiEntity[];
-  if (isApiEntityArray(data)) {
-    apiEntities = data;
-  } else if (typeof data === "object" && data !== null && "value" in data) {
-    const wrapped = data as Record<string, unknown>;
-    if (isApiEntityArray(wrapped.value)) {
-      apiEntities = wrapped.value;
-    } else {
-      return {};
-    }
-  } else {
-    return {};
-  }
-
-  return Object.fromEntries(apiEntities.map((e) => [e.name, toEntity(e)]));
+  const allEntities = await entitiesService.getAll();
+  return Object.fromEntries(allEntities.map((e) => [e.name, toEntity(e)]));
 }
 
 export function useDataFabricEntities({
-  baseUrl,
-  accessToken,
+  entities,
   enabled = true,
 }: UseDataFabricEntitiesOptions) {
   return useQuery({
-    queryKey: ["data-fabric-entities", baseUrl],
-    queryFn: () => fetchEntities(baseUrl, accessToken),
+    queryKey: ["data-fabric-entities"],
+    queryFn: () => fetchEntities(entities),
     enabled,
     staleTime: 5 * 60 * 1000,
   });

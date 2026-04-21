@@ -272,9 +272,17 @@
         "lucide-react",
         "react-i18next",
         "react-markdown",
-        "remark-gfm"
+        "remark-gfm",
+        "sonner"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "dialog",
+        "button",
+        "tooltip",
+        "select",
+        "table",
+        "card"
+      ],
       "files": [
         {
           "path": "registry/ai-chat/adapters/agenthub/types.ts",
@@ -367,9 +375,19 @@
           "target": "components/ui/ai-chat/components/ai-chat-suggestions.tsx"
         },
         {
-          "path": "registry/ai-chat/charts/data-fabric-table-adapter.ts",
+          "path": "registry/ai-chat/charts/csv-export.ts",
           "type": "registry:lib",
-          "target": "components/ui/ai-chat/charts/data-fabric-table-adapter.ts"
+          "target": "components/ui/ai-chat/charts/csv-export.ts"
+        },
+        {
+          "path": "registry/ai-chat/charts/fullscreen-table.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/fullscreen-table.tsx"
+        },
+        {
+          "path": "registry/ai-chat/charts/table-chart-actions.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/table-chart-actions.tsx"
         },
         {
           "path": "registry/ai-chat/charts/table-chart-card.tsx",

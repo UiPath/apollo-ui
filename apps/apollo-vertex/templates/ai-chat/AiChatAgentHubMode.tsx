@@ -2,6 +2,7 @@
 
 import { useChat } from "@tanstack/ai-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Entities } from "@uipath/uipath-typescript/entities";
 import { useTranslation } from "react-i18next";
 import { createAgentHubConnection } from "@/registry/ai-chat/adapters/agenthub/adapter";
 import { AiChat } from "@/registry/ai-chat/components/ai-chat";
@@ -15,6 +16,7 @@ import {
 import { createDataFabricTableTool } from "@/registry/ai-chat/tools/data-fabric-table";
 import { DataFabricGate } from "./AiChatDataFabricGate";
 import type { OrgTenantInfo } from "./AiChatLoginGate";
+import { createUiPathSdk } from "./ai-chat-example-utils";
 
 const queryClient = new QueryClient();
 
@@ -36,12 +38,12 @@ function AgentHubChatInner({
 }: AgentHubChatInnerProps) {
   const { t } = useTranslation();
 
-  const dataFabricBaseUrl = `/api/agenthub/${orgTenant.orgName}/${orgTenant.tenantName}/datafabric_/api/`;
+  const dataFabricBaseUrl = `/api/agenthub/${orgTenant.orgName}/${orgTenant.tenantName}/datafabric_/api`;
 
   const tableTool = createDataFabricTableTool({
     entities,
-    baseUrl: dataFabricBaseUrl,
     accessToken,
+    dataFabricBaseUrl,
   });
 
   const clientTools = [presentChoicesClient, tableTool.clientTool];
@@ -102,11 +104,12 @@ function AgentHubChatInner({
 }
 
 export function AgentHubChat({ accessToken, orgTenant }: AgentHubChatProps) {
-  const dataFabricBaseUrl = `/api/agenthub/${orgTenant.orgName}/${orgTenant.tenantName}/datafabric_/api/`;
+  const sdk = createUiPathSdk(accessToken, orgTenant);
+  const entitiesService = new Entities(sdk);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <DataFabricGate baseUrl={dataFabricBaseUrl} accessToken={accessToken}>
+      <DataFabricGate entities={entitiesService}>
         {({ entities }) => (
           <AgentHubChatInner
             accessToken={accessToken}

@@ -1,10 +1,11 @@
 "use client";
 
 import { toolDefinition } from "@tanstack/ai";
-import { dataFabricTableAdapter } from "../../charts/data-fabric-table-adapter";
+import { dataFabricAdapter } from "@uipath/apollo-dashboarding";
 import { Suspense } from "react";
 import { z } from "zod";
 import { NoDataMessage } from "../../charts/no-data-message";
+import type { QueryEntityParams } from "../../charts/fullscreen-table";
 import { TableChartCard } from "../../charts/table-chart-card";
 import type { DataFabricToolContext } from "../data-fabric/shared";
 import {
@@ -77,11 +78,47 @@ ${generateEntityFieldsDocs(context.entities)}`;
       dimensions: validDimensions,
     };
 
-    const adapter = dataFabricTableAdapter({
-      baseUrl: context.baseUrl,
+    const adapter = dataFabricAdapter({
+      baseUrl: context.dataFabricBaseUrl,
       accessToken: context.accessToken,
-      entityId: entity.id,
+      entityName,
     });
+
+    const queryEntity = async (params: QueryEntityParams) => {
+      const response = await fetch(
+        `${context.dataFabricBaseUrl}/v2/EntityService/${encodeURIComponent(entityName)}/query`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${context.accessToken}`,
+          },
+          body: JSON.stringify({
+            selectedFields: validDimensions,
+            skip: params.skip,
+            top: params.top,
+            sortOptions: params.sortBy
+              ? [
+                  {
+                    fieldName: params.sortBy.field,
+                    isDescending: params.sortBy.direction === "desc",
+                  },
+                ]
+              : [],
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`Query failed: ${response.status}`);
+      }
+
+      const data: {
+        totalRecordCount: number;
+        value: Record<string, unknown>[];
+      } = await response.json();
+      return { rows: data.value, totalRecordCount: data.totalRecordCount };
+    };
 
     return (
       <Suspense>
@@ -89,6 +126,11 @@ ${generateEntityFieldsDocs(context.entities)}`;
           configuration={configuration}
           dataModel={dataModel}
           dataAdapter={adapter}
+          toolDefinition={{
+            entityName,
+            dimensions: validDimensions,
+          }}
+          queryEntity={queryEntity}
         />
       </Suspense>
     );

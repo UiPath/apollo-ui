@@ -13,8 +13,8 @@ export interface Entity {
 
 export interface DataFabricToolContext {
   entities: Record<string, Entity>;
-  baseUrl: string;
   accessToken: string;
+  dataFabricBaseUrl: string;
 }
 
 function mapFieldType(
