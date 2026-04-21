@@ -121,6 +121,109 @@ export const Blank: Story = {
   ),
 };
 
+// ============================================================================
+// My Experiment — 10-node pipeline with one alert node
+// ============================================================================
+
+function createExperimentNodes(): Node<BaseNodeData>[] {
+  return [
+    createNode({
+      id: 'exp-trigger',
+      type: 'uipath.manual-trigger',
+      position: { x: 80, y: 250 },
+      display: { label: 'Manual trigger' },
+    }),
+    createNode({
+      id: 'exp-fetch-data',
+      type: 'uipath.blank-node',
+      position: { x: 280, y: 130 },
+      display: { label: 'Fetch data', subLabel: 'Excel activities' },
+    }),
+    createNode({
+      id: 'exp-fetch-db',
+      type: 'uipath.blank-node',
+      position: { x: 280, y: 370 },
+      display: { label: 'Query database', subLabel: 'SQL activities' },
+    }),
+    createNode({
+      id: 'exp-validate',
+      type: 'uipath.blank-node',
+      position: { x: 490, y: 250 },
+      display: { label: 'Validate input', subLabel: 'Data validation' },
+    }),
+    createNode({
+      id: 'exp-alert',
+      type: 'uipath.blank-node',
+      position: { x: 700, y: 80 },
+      display: { label: 'Check errors', subLabel: 'Alert notification', icon: 'triangle-alert' },
+      executionStatus: 'Failed',
+    }),
+    createNode({
+      id: 'exp-transform',
+      type: 'uipath.blank-node',
+      position: { x: 700, y: 250 },
+      display: { label: 'Transform data', subLabel: 'Data transform' },
+    }),
+    createNode({
+      id: 'exp-enrich',
+      type: 'uipath.blank-node',
+      position: { x: 700, y: 420 },
+      display: { label: 'Enrich records', subLabel: 'AI Agent' },
+    }),
+    createNode({
+      id: 'exp-aggregate',
+      type: 'uipath.blank-node',
+      position: { x: 910, y: 250 },
+      display: { label: 'Aggregate results', subLabel: 'Processing' },
+    }),
+    createNode({
+      id: 'exp-report',
+      type: 'uipath.blank-node',
+      position: { x: 1110, y: 130 },
+      display: { label: 'Generate report', subLabel: 'Reporting' },
+    }),
+    createNode({
+      id: 'exp-notify',
+      type: 'uipath.blank-node',
+      position: { x: 1110, y: 370 },
+      display: { label: 'Send notification', subLabel: 'Slack integration' },
+    }),
+  ];
+}
+
+const experimentEdges: Edge[] = [
+  { id: 'ee-1', source: 'exp-trigger', target: 'exp-fetch-data', sourceHandle: 'output', targetHandle: 'input' },
+  { id: 'ee-2', source: 'exp-trigger', target: 'exp-fetch-db', sourceHandle: 'output', targetHandle: 'input' },
+  { id: 'ee-3', source: 'exp-fetch-data', target: 'exp-validate', sourceHandle: 'output', targetHandle: 'input' },
+  { id: 'ee-4', source: 'exp-fetch-db', target: 'exp-validate', sourceHandle: 'output', targetHandle: 'input' },
+  { id: 'ee-5', source: 'exp-validate', target: 'exp-alert', sourceHandle: 'output', targetHandle: 'input' },
+  { id: 'ee-6', source: 'exp-validate', target: 'exp-transform', sourceHandle: 'output', targetHandle: 'input' },
+  { id: 'ee-7', source: 'exp-validate', target: 'exp-enrich', sourceHandle: 'output', targetHandle: 'input' },
+  { id: 'ee-8', source: 'exp-transform', target: 'exp-aggregate', sourceHandle: 'output', targetHandle: 'input' },
+  { id: 'ee-9', source: 'exp-enrich', target: 'exp-aggregate', sourceHandle: 'output', targetHandle: 'input' },
+  { id: 'ee-10', source: 'exp-aggregate', target: 'exp-report', sourceHandle: 'output', targetHandle: 'input' },
+  { id: 'ee-11', source: 'exp-aggregate', target: 'exp-notify', sourceHandle: 'output', targetHandle: 'input' },
+];
+
+function ExperimentCanvas() {
+  const initialNodes = useMemo(() => createExperimentNodes(), []);
+  const { canvasProps } = useCanvasStory({
+    initialNodes,
+    initialEdges: experimentEdges,
+  });
+
+  return <BaseCanvas {...canvasProps} mode="design" />;
+}
+
+export const MyExperiment: Story = {
+  name: 'My experiment',
+  render: (_, { globals }) => (
+    <FlowTemplate theme={globals.theme || 'future-dark'} blank>
+      <ExperimentCanvas />
+    </FlowTemplate>
+  ),
+};
+
 export const LeftPanelCollapsed: Story = {
   name: 'Left panel collapsed',
   render: (_, { globals }) => (
