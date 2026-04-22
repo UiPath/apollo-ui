@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.72.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.71.1...@uipath/apollo-react@3.72.0) (2026-04-22)
+
+### Features
+
+* **apollo-react:** add ContextIcon for context canvas node ([83e59b9](https://github.com/UiPath/apollo-ui/commit/83e59b9fc33529edc059620542abbee61f50d9d7))
+
 ## [@uipath/apollo-react-v3.71.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.71.0...@uipath/apollo-react@3.71.1) (2026-04-15)
 
 ### Bug Fixes
