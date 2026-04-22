@@ -168,7 +168,69 @@ See [Usage Examples](#usage-examples) for complete setup details.
 
 | Method                                                         | Description                                                                                                                                                                                |
 | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `setDisabledFeatures(features: AutopilotChatDisabledFeatures)` | Configures which features should be disabled in the chat interface (see [AutopilotChatDisabledFeatures](#autopilotchatdisabledfeatures)). Note: Settings and audio are disabled by default |
+| `setDisabledFeatures(features: AutopilotChatDisabledFeatures)` | Configures which features should be disabled in the chat interface (see [AutopilotChatDisabledFeatures](#autopilotchatdisabledfeatures)). Note: Settings, audio, and audioStreaming are disabled by default |
+
+### Speech To Text
+
+The chat ships two separate voice affordances, each gated by its own disabled feature:
+
+- **STT dictate button** (mic icon, gated by `disabledFeatures.audio`) — toggles dictation on/off. The chat only manages UI state; consumers wire an actual recognizer (e.g. Azure Speech SDK) by listening to `SpeechToTextToggle`.
+- **Always-on voice interaction button** (waveform icon, gated by `disabledFeatures.audioStreaming`) — replaces the send button when the input is empty. Streams mic audio via `InputStream` events and plays model audio via `OutputStream` events.
+
+| Method                                    | Description                                                                                                                                                                                    |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `publishSpeechToTextToggle()`             | Toggles the STT active state and emits both `SetSpeechToTextState` and `SpeechToTextToggle`. Called automatically when the mic button is clicked; consumers listen to drive their recognizer. |
+| `setSpeechToTextState(isActive: boolean)` | Sets the STT active state explicitly and emits `SetSpeechToTextState` only. Useful for reverting the UI when recognizer start/stop fails outside the user's click.                             |
+| `isSpeechToTextActive`                    | Getter that returns the current STT state.                                                                                                                                                     |
+
+#### STT Dictate Usage
+
+The STT dictate button is disabled by default. Enable it, then listen to `SpeechToTextToggle` to drive your recognizer:
+
+```typescript
+// Enable the STT dictate button
+chatService.setDisabledFeatures({ audio: false });
+
+// Listen for toggle events to start/stop your recognizer
+chatService.on(AutopilotChatEvent.SpeechToTextToggle, async (isActive) => {
+  if (isActive) {
+    try {
+      await startRecognizer((transcript) => chatService.setPrompt(transcript));
+    } catch (err) {
+      // Revert UI state if the recognizer failed to start
+      chatService.setSpeechToTextState(false);
+    }
+  } else {
+    stopRecognizer();
+  }
+});
+
+// Listen for state changes (fires for both publishSpeechToTextToggle and setSpeechToTextState)
+chatService.on(AutopilotChatEvent.SetSpeechToTextState, (isActive) => {
+  console.log('STT state changed:', isActive);
+});
+
+// Read current state
+const isDictating = chatService.isSpeechToTextActive;
+```
+
+#### Voice Interaction Usage
+
+The always-on voice interaction button is disabled by default. Enable it, then handle `InputStream` / `OutputStream` events to move audio between the mic and your model:
+
+```typescript
+chatService.setDisabledFeatures({ audioStreaming: false });
+
+// Outbound: mic -> model
+chatService.on(AutopilotChatEvent.InputStream, (event) => {
+  if (event.activityStart) { /* user started speaking */ }
+  if (event.mediaChunks)   { /* forward PCM chunks to model */ }
+  if (event.activityEnd)   { /* user stopped speaking */ }
+});
+
+// Inbound: model -> chat (chat plays the audio via useAudioOutput)
+chatService.sendOutputStreamEvent({ mediaChunks: [ /* audio/pcm chunks */ ] });
+```
 
 ### Labels Override
 
@@ -234,6 +296,8 @@ Subscribes to chat events and returns an unsubscribe function. The handler will 
 - `SetSelectedAgentMode`: Emitted when the agent mode is selected
 - `CustomHeaderActionClicked`: Emitted when a custom header action is selected by the user (see [AutopilotChatCustomHeaderAction](#autopilotchatcustomheaderaction))
 - `SetResourceManager`: Emitted when a resource manager is set for the @ mention picker (see [Resource Picker](#resource-picker))
+- `SpeechToTextToggle`: Emitted when the STT dictate button is clicked. Payload is the new active state (boolean). Consumers listen to drive their recognizer.
+- `SetSpeechToTextState`: Emitted whenever the STT active state changes (from either `publishSpeechToTextToggle()` or `setSpeechToTextState()`). Payload is a boolean.
 
 #### Intercepting Events
 
@@ -3001,10 +3065,12 @@ enum AutopilotChatMode {
  * @property close - Whether the chat has the close button
  * @property newChat - Whether the chat has the new chat button
  * @property settings - Whether the chat has the settings button
- * @property audio - Whether the chat has realtime audio enabled
+ * @property audio - Whether the chat has the STT dictate (mic) button
  * @property feedback - Whether the chat has the feedback button
  * @property fullHeight - Whether the chat has viewport height
  * @property copy - Whether the chat has copy button
+ * @property audioStreaming - Whether the chat has the always-on voice interaction button
+ *                            (requires the consumer to handle InputStream/OutputStream audio events)
  */
 export interface AutopilotChatDisabledFeatures {
   resize?: boolean;
@@ -3022,6 +3088,7 @@ export interface AutopilotChatDisabledFeatures {
   feedback?: boolean;
   fullHeight?: boolean;
   copy?: boolean;
+  audioStreaming?: boolean;
 }
 ```
 

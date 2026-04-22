@@ -244,20 +244,36 @@ function AutopilotChatInputComponent() {
     editorRef.current?.openResourcePicker();
   }, []);
 
+  const [isVoiceInteractionActive, setIsVoiceInteractionActive] = React.useState(false);
+
   return (
     <>
-      <AutopilotChatInputError />
+      {/* Suppress the input error during voice interaction: the textarea it sits above is
+          visibility:hidden (see below), so the error would otherwise look orphaned. */}
+      {!isVoiceInteractionActive && <AutopilotChatInputError />}
 
       <InputContainer
         primaryFontToken={spacing.primaryFontToken}
-        onClick={() => editorRef?.current?.focus()}
+        onClick={isVoiceInteractionActive ? undefined : () => editorRef?.current?.focus()}
         ref={inputContainerRef}
+        sx={
+          isVoiceInteractionActive
+            ? {
+                borderColor: 'transparent',
+                boxShadow: 'none',
+                background: 'transparent',
+              }
+            : undefined
+        }
       >
         <AutopilotChatInputAttachments />
 
         <Box
           className="autopilot-chat-input"
-          sx={{ padding: `${token.Spacing.SpacingS} 0 0 !important` }}
+          sx={{
+            padding: `${token.Spacing.SpacingS} 0 0 !important`,
+            ...(isVoiceInteractionActive && { visibility: 'hidden' }),
+          }}
         >
           <div className="tiptap-editor-container">
             <ChatInputEditor
@@ -290,6 +306,8 @@ function AutopilotChatInputComponent() {
           waitingResponse={waitingResponse || streaming}
           handleSubmit={handleSubmit}
           onResourceTriggerClick={hasResources ? handleResourceTriggerClick : undefined}
+          onVoiceInteractionChange={setIsVoiceInteractionActive}
+          isVoiceInteractionActive={isVoiceInteractionActive}
         />
       </InputContainer>
 

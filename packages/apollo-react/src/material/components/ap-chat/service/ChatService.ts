@@ -58,13 +58,15 @@ export class AutopilotChatService {
     // Settings will be disabled by default since each consumer needs to implement their own settings page
     // Header Separator will be disabled by default, consumers can selectively enable it
     // Or the framework will provide a settings page that will be used by all framework consumers
-    // Audio will be disabled by default since each consumer needs to implement their own audio support
+    // Audio (STT dictate button) will be disabled by default since each consumer needs to implement their own recognizer
+    // AudioStreaming (always-on voice interaction) will be disabled by default since each consumer needs to wire InputStream/OutputStream events
     // FullHeight will be disabled by default since most of the consumers will have the portal-shell header
     // HtmlPreview will be disabled by default
     disabledFeatures: {
       settings: true,
       headerSeparator: true,
       audio: true,
+      audioStreaming: true,
       fullHeight: true,
       htmlPreview: true,
     },
@@ -98,6 +100,7 @@ export class AutopilotChatService {
   private _locale: string = 'en';
   private _theme: string = 'light';
   private _resourceManager: AutopilotChatResourceManager | undefined;
+  private _isSpeechToTextActive: boolean = false;
 
   private constructor(instanceName: string) {
     this._instanceName = instanceName;
@@ -1226,6 +1229,35 @@ export class AutopilotChatService {
    */
   sendOutputStreamEvent(event: AutopilotChatOutputStreamEvent) {
     this._eventBus.publish(AutopilotChatEvent.OutputStream, event);
+  }
+
+  /**
+   * Publishes a speech-to-text toggle event and updates the STT active state.
+   * Consumers subscribe to SpeechToTextToggle to start/stop their recognizer.
+   * Fires both SetSpeechToTextState and SpeechToTextToggle.
+   */
+  publishSpeechToTextToggle() {
+    this._isSpeechToTextActive = !this._isSpeechToTextActive;
+    this._eventBus.publish(AutopilotChatEvent.SetSpeechToTextState, this._isSpeechToTextActive);
+    this._eventBus.publish(AutopilotChatEvent.SpeechToTextToggle, this._isSpeechToTextActive);
+  }
+
+  /**
+   * Sets the STT active state explicitly. Fires SetSpeechToTextState only.
+   * Use this to revert the UI when the recognizer fails to start/stop outside the user's click.
+   * @param isActive - Whether STT is active
+   */
+  setSpeechToTextState(isActive: boolean) {
+    this._isSpeechToTextActive = isActive;
+    this._eventBus.publish(AutopilotChatEvent.SetSpeechToTextState, isActive);
+  }
+
+  /**
+   * Gets the current speech-to-text state.
+   * @returns Whether STT is active
+   */
+  get isSpeechToTextActive(): boolean {
+    return this._isSpeechToTextActive;
   }
 
   /**
