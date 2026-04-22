@@ -120,7 +120,8 @@ vi.mock('./DraggableTask', () => ({
     isDragDisabled?: boolean;
     getContextMenuItems?: (
       groupIndex: number,
-      taskIndex: number
+      taskIndex: number,
+      taskId: string
     ) => Array<{ id?: string; label?: string; onClick?: () => void }>;
   }) => {
     const [menuItems, setMenuItems] = React.useState<
@@ -138,7 +139,7 @@ vi.mock('./DraggableTask', () => ({
             data-testid={`task-menu-button-${task.id}`}
             onClick={() => {
               if (groupIndex !== undefined && taskIndex !== undefined) {
-                setMenuItems(getContextMenuItems(groupIndex, taskIndex));
+                setMenuItems(getContextMenuItems(groupIndex, taskIndex, task.id));
               }
             }}
           >
