@@ -8,7 +8,7 @@ export interface DraggableTaskProps {
   isParallel: boolean;
   groupIndex: number;
   taskIndex: number;
-  getContextMenuItems?: (groupIndex: number, taskIndex: number) => NodeMenuItem[];
+  getContextMenuItems?: (groupIndex: number, taskIndex: number, taskId: string) => NodeMenuItem[];
   onTaskClick: (e: React.MouseEvent, taskId: string) => void;
   onTaskPlay?: (taskId: string) => Promise<void>;
   isDragDisabled?: boolean;

@@ -13,7 +13,7 @@ import {
 } from '@dnd-kit/sortable';
 import { Spacing } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
-import { CSSProperties, RefObject, useCallback, useMemo } from 'react';
+import { CSSProperties, useCallback, useMemo } from 'react';
 import {
   GroupModificationType,
   moveGroupDown,
@@ -28,49 +28,40 @@ import {
   StageTaskGroupContainer,
   StageTaskList,
 } from './StageNode.styles';
-import type {
-  StageNodeProps,
-  StageTaskGroup,
-  StageTaskItem,
-  TaskStateReference,
-} from './StageNode.types';
-import { getContextMenuItems, getDivider, getMenuItem } from './StageNodeTaskUtilities';
+import type { StageNodeProps, StageTaskGroup, StageTaskItem } from './StageNode.types';
+import { getContextMenuItems, getDivider } from './StageNodeTaskUtilities';
 import { StageTaskDragOverlay } from './StageTaskDragOverlay';
 
 export const StageNodeSequentialTaskGroups = ({
   props,
   sequentialTaskGroups,
   sequentialTasks,
+  allTasks,
   isReadOnly,
   selectedTaskId,
   taskWidthStyle,
-  taskStateReference,
   hasContextMenu,
   handleTaskClick,
-  setIsReplacingTask,
   handleReorderSequentialTasks,
+  generateReplaceTaskMenuItemForTask,
 }: {
   props: StageNodeProps;
   sequentialTaskGroups: StageTaskItem[][];
   sequentialTasks: StageTaskGroup[];
+  allTasks: StageTaskItem[][];
   isReadOnly: boolean;
   selectedTaskId?: string;
   taskWidthStyle?: CSSProperties;
-  taskStateReference: RefObject<TaskStateReference>;
   hasContextMenu: boolean;
   handleTaskClick: (e: React.MouseEvent, taskElementId: string) => void;
-  setIsReplacingTask: (isReplacingTask: boolean) => void;
   handleReorderSequentialTasks: (newTasks: StageTaskItem[][]) => void;
+  generateReplaceTaskMenuItemForTask: (
+    taskId: string,
+    isParallel: boolean
+  ) => NodeMenuItem | undefined;
 }) => {
-  const {
-    execution,
-    onTaskClick,
-    onTaskGroupModification,
-    onTaskReorder,
-    onReplaceTaskFromToolbox,
-    hideParallelOptions,
-    loadingTaskIds,
-  } = props;
+  const { execution, onTaskGroupModification, onTaskReorder, hideParallelOptions, loadingTaskIds } =
+    props;
 
   const sequentialTaskIds = useMemo(
     () => sequentialTasks.map(({ task }) => task.id),
@@ -117,53 +108,56 @@ export const StageNodeSequentialTaskGroups = ({
   /** Lazily builds context menu items for a task. Called only when the menu opens,
    * avoiding object allocation on every render for every task. */
   const buildContextMenuItems = useCallback(
-    (groupIndex: number, taskIndex: number) => {
+    (groupIndex: number, _: number, taskId: string) => {
       const taskGroup = sequentialTaskGroups[groupIndex] ?? [];
       const isParallel = taskGroup.length > 1;
       const items: NodeMenuItem[] = [];
 
-      if (onReplaceTaskFromToolbox) {
-        items.push(
-          getMenuItem('replace-task', 'Replace task', () => {
-            taskStateReference.current = {
-              isParallel,
-              groupIndex,
-              taskIndex,
-            };
-            const taskId = taskGroup[taskIndex]?.id;
-            if (taskId) onTaskClick?.(taskId);
-            setIsReplacingTask(true);
-          })
-        );
+      const replaceTaskMenuItem = generateReplaceTaskMenuItemForTask(taskId, isParallel);
+      if (replaceTaskMenuItem) {
+        items.push(replaceTaskMenuItem);
         items.push(getDivider());
       }
+      let groupIndexInAllTasks: number | undefined;
+      let taskIndexInAllTasks: number | undefined;
+      for (const [allTasksGroupIndex, group] of allTasks.entries()) {
+        for (const [allTasksTaskIndex, task] of group.entries()) {
+          if (task.id === taskId) {
+            groupIndexInAllTasks = allTasksGroupIndex;
+            taskIndexInAllTasks = allTasksTaskIndex;
+            break;
+          }
+        }
+      }
 
-      if (onTaskGroupModification) {
-        const reGroupOptions = getContextMenuItems(
-          isParallel,
+      if (
+        onTaskGroupModification &&
+        groupIndexInAllTasks !== undefined &&
+        taskIndexInAllTasks !== undefined
+      ) {
+        const reGroupOptions = getContextMenuItems({
+          isParallelGroup: isParallel,
           groupIndex,
-          sequentialTaskGroups.length,
-          taskIndex,
-          taskGroup.length,
-          (sequentialTaskGroups[groupIndex - 1]?.length ?? 0) > 1,
-          (sequentialTaskGroups[groupIndex + 1]?.length ?? 0) > 1,
-          handleTaskRegroup,
-          hideParallelOptions
-        );
+          tasksLength: sequentialTaskGroups.length,
+          groupIndexInAllTasks,
+          taskIndexInAllTasks,
+          isAboveParallel: (sequentialTaskGroups[groupIndex - 1]?.length ?? 0) > 1,
+          isBelowParallel: (sequentialTaskGroups[groupIndex + 1]?.length ?? 0) > 1,
+          reGroupTaskFunction: handleTaskRegroup,
+          hideParallelOptions,
+        });
         return [...items, ...reGroupOptions];
       }
 
       return items;
     },
     [
-      onReplaceTaskFromToolbox,
-      onTaskClick,
       onTaskGroupModification,
       sequentialTaskGroups,
       hideParallelOptions,
       handleTaskRegroup,
-      setIsReplacingTask,
-      taskStateReference,
+      generateReplaceTaskMenuItemForTask,
+      allTasks,
     ]
   );
 
