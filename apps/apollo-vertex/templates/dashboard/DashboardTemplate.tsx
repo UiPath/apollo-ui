@@ -6,7 +6,13 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
-import { Component, type ErrorInfo, type ReactNode, useEffect, useState } from "react";
+import {
+  Component,
+  type ErrorInfo,
+  type ReactNode,
+  useEffect,
+  useState,
+} from "react";
 import { ShellAuthProvider } from "@/registry/shell/shell-auth-provider";
 import {
   AICHAT_CLIENT_ID,
@@ -38,13 +44,27 @@ class DashboardErrorBoundary extends Component<
     return { error, componentStack: "" };
   }
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("[DashboardErrorBoundary] caught:", error.message, info.componentStack);
+    console.error(
+      "[DashboardErrorBoundary] caught:",
+      error.message,
+      info.componentStack,
+    );
     this.setState({ error, componentStack: info.componentStack ?? "" });
   }
   render() {
     if (this.state.error) {
       return (
-        <div style={{ padding: 24, fontFamily: "monospace", fontSize: 12, color: "red", background: "#fff", overflow: "auto", height: "100%" }}>
+        <div
+          style={{
+            padding: 24,
+            fontFamily: "monospace",
+            fontSize: 12,
+            color: "red",
+            background: "#fff",
+            overflow: "auto",
+            height: "100%",
+          }}
+        >
           <strong>DashboardTemplate Error</strong>
           <p>{this.state.error.message}</p>
           <pre style={{ whiteSpace: "pre-wrap", marginTop: 12, color: "#333" }}>

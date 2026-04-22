@@ -32,6 +32,7 @@ import { createDemoConnection } from "./demo-connection";
 
 interface AutopilotInsightProps {
   onClose: () => void;
+  onResponseReady?: () => void;
   sourceCardTitle: string;
   initialMessage?: string;
 }
@@ -43,6 +44,7 @@ interface AutopilotChatProps {
   initialMessage?: string;
   demo?: boolean;
   onClose: () => void;
+  onResponseReady?: () => void;
 }
 
 function AutopilotChat({
@@ -52,6 +54,7 @@ function AutopilotChat({
   initialMessage,
   demo = false,
   onClose,
+  onResponseReady,
 }: AutopilotChatProps) {
   // Keep access token ref in sync on every render so the connection closure
   // always reads the latest value without recreating the connection.
@@ -105,6 +108,19 @@ function AutopilotChat({
     }, 0);
     return () => clearTimeout(id);
   }, []);
+
+  // Fire onResponseReady when the stream completes (isLoading flips false after messages arrive).
+  // Use a ref for the callback so changing function identity on parent re-renders
+  // (e.g. panel close) doesn't retrigger this effect spuriously.
+  const onResponseReadyRef = useRef(onResponseReady);
+  onResponseReadyRef.current = onResponseReady;
+  const prevLoadingRef = useRef(false);
+  useEffect(() => {
+    if (prevLoadingRef.current && !isLoading && messages.length > 0) {
+      onResponseReadyRef.current?.();
+    }
+    prevLoadingRef.current = isLoading;
+  }, [isLoading, messages.length]);
 
   const handleCopyConversation = async () => {
     const text = messages
@@ -246,6 +262,7 @@ function AutopilotChat({
 
 export function AutopilotInsight({
   onClose,
+  onResponseReady,
   sourceCardTitle,
   initialMessage,
 }: AutopilotInsightProps) {
@@ -331,6 +348,7 @@ export function AutopilotInsight({
             initialMessage={initialMessage}
             demo={demo}
             onClose={onClose}
+            onResponseReady={onResponseReady}
           />
         )}
       </div>

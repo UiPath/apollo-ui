@@ -8,13 +8,11 @@ export const productDemoDataset: DashboardDataset = {
   badgeText: "Demo",
   greeting: "Good morning",
   headline: "Your headline goes here.",
-  subhead: "Your supporting narrative goes here — describe the key trend or outcome.",
+  subhead:
+    "Your supporting narrative goes here — describe the key trend or outcome.",
   chartLabels: { y: ["600", "450", "300", "150"], target: "Target" },
   promptPlaceholder: "Ask a question about your data...",
-  promptSuggestions: [
-    "Suggestion one",
-    "Suggestion two",
-  ],
+  promptSuggestions: ["Suggestion one", "Suggestion two"],
   insightCards: [
     {
       title: "KPI title",

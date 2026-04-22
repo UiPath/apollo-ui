@@ -115,7 +115,7 @@ export const AiChatInput = forwardRef<AiChatInputHandle, AiChatInputProps>(
     }, [lightboxUrl]);
 
     useImperativeHandle(ref, () => ({
-      focus: () => textareaRef.current?.focus(),
+      focus: () => textareaRef.current?.focus({ preventScroll: true }),
     }));
     const displayPlaceholder = placeholder ?? "Start with a task or goal";
 

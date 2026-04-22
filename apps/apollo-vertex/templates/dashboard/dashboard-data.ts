@@ -1,7 +1,14 @@
 export interface InsightCardData {
   title: string;
   type: "kpi" | "chart";
-  chartType: "donut" | "horizontal-bars" | "sparkline" | "area" | "stacked-bar";
+  chartType:
+    | "donut"
+    | "horizontal-bars"
+    | "sparkline"
+    | "area"
+    | "stacked-bar"
+    | "composed"
+    | "multi-line";
   size?: "sm" | "md" | "lg";
   interaction?: "static" | "expand" | "navigate";
   // Navigate config
@@ -26,6 +33,11 @@ export interface InsightCardData {
   donutDescription?: string;
   // Sparkline / Area data
   points?: number[];
+  // Composed chart data (bars + optional target line)
+  composedBars?: { label: string; value: number; target?: number }[];
+  // Multi-line chart data
+  multiLineSeries?: { name: string; points: number[] }[];
+  multiLineLabels?: string[];
 }
 
 export interface DashboardDataset {
@@ -40,12 +52,7 @@ export interface DashboardDataset {
   chartLabels: { y: string[]; target: string };
   promptPlaceholder: string;
   promptSuggestions: string[];
-  insightCards: [
-    InsightCardData,
-    InsightCardData,
-    InsightCardData,
-    InsightCardData,
-  ];
+  insightCards: InsightCardData[];
 }
 
 export const defaultDataset: DashboardDataset = {
@@ -222,7 +229,101 @@ export const ecommerceDataset: DashboardDataset = {
   ],
 };
 
+export const invoiceProcessingDataset: DashboardDataset = {
+  name: "Invoice Processing",
+  brandName: "UiPath",
+  brandLine: "Vertical Solutions",
+  dashboardTitle: "Invoice processing",
+  badgeText: "Experimental",
+  greeting: "Good morning, Peter",
+  headline:
+    "Straight-through processing hits 78% as exception volume drops for the third consecutive week.",
+  subhead:
+    "STP rate improved ↑5.2 pts month over month while average cycle time compressed from 3.1 to 1.8 days. Missing PO numbers remain the primary exception driver.",
+  chartLabels: { y: ["400", "300", "200", "100"], target: "Target" },
+  promptPlaceholder:
+    "What would you like to understand about invoice processing?",
+  promptSuggestions: [
+    "What's driving the exception spike on Wednesdays?",
+    "Show me vendor-level exception breakdown",
+    "Which departments have the longest approval cycles?",
+    "Forecast next week's processing volume",
+  ],
+  insightCards: [
+    {
+      title: "Straight-through rate",
+      type: "kpi",
+      chartType: "donut",
+      size: "sm",
+      interaction: "static",
+      kpiNumber: "78.4%",
+      kpiBadge: "+5.2%",
+      kpiDescription:
+        "Invoices processed end-to-end without human intervention.",
+    },
+    {
+      title: "Top exceptions",
+      type: "chart",
+      chartType: "horizontal-bars",
+      size: "md",
+      interaction: "expand",
+      expandContent: {
+        summary:
+          "Exception volume is down 14% month over month, but missing PO numbers continue to be the leading driver of manual intervention.",
+        details: [
+          "Coordinate with procurement to enforce PO-first ordering workflows",
+          "Review ERP vendor master for onboarding gaps causing vendor-not-found errors",
+          "Escalate recurring approval timeout patterns to department heads",
+        ],
+      },
+      bars: [
+        { label: "Missing PO number", value: 38 },
+        { label: "Amount mismatch", value: 27 },
+        { label: "Duplicate invoice", value: 19 },
+        { label: "Vendor not in system", value: 11 },
+        { label: "Approval timeout", value: 5 },
+      ],
+    },
+    {
+      title: "Weekly pipeline",
+      type: "chart",
+      chartType: "stacked-bar",
+      size: "md",
+      interaction: "expand",
+      expandContent: {
+        summary:
+          "End-of-week volume spikes align with supplier payment terms, with Thursday and Friday handling the highest throughput. Wednesday shows the most on-hold exceptions.",
+        details: [
+          "Review staffing capacity ahead of Thursday and Friday peak volume",
+          "Investigate Wednesday on-hold spike — likely tied to midweek PO discrepancies",
+          "Assess whether Monday pending volume reflects unresolved Friday carryover",
+        ],
+      },
+      stackedBars: [
+        { label: "Mon", segments: [312, 48, 24] },
+        { label: "Tue", segments: [338, 42, 19] },
+        { label: "Wed", segments: [295, 61, 28] },
+        { label: "Thu", segments: [374, 33, 17] },
+        { label: "Fri", segments: [351, 44, 21] },
+      ],
+      stackedLegend: ["Processed", "Pending", "On hold"],
+    },
+    {
+      title: "On-time payment rate",
+      type: "kpi",
+      chartType: "donut",
+      size: "sm",
+      interaction: "static",
+      kpiNumber: "96.3%",
+      kpiBadge: "+2.1%",
+      kpiDescription:
+        "Invoices approved and scheduled for payment within agreed supplier terms.",
+    },
+  ],
+};
+
 export const datasetPresets: Record<string, DashboardDataset> = {
   default: defaultDataset,
   ecommerce: ecommerceDataset,
+  invoiceProcessing: invoiceProcessingDataset,
 };

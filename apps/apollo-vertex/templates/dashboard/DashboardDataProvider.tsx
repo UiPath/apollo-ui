@@ -1,7 +1,10 @@
 "use client";
 
 import { createContext, useContext, useState, type ReactNode } from "react";
-import { ecommerceDataset, type DashboardDataset } from "./dashboard-data";
+import {
+  invoiceProcessingDataset,
+  type DashboardDataset,
+} from "./dashboard-data";
 
 interface DashboardDataContextValue {
   data: DashboardDataset;
@@ -9,11 +12,13 @@ interface DashboardDataContextValue {
 }
 
 const DashboardDataContext = createContext<DashboardDataContextValue>({
-  data: ecommerceDataset,
+  data: invoiceProcessingDataset,
   setDataset: () => {},
 });
 
-const DashboardDataSeedContext = createContext<DashboardDataset>(ecommerceDataset);
+const DashboardDataSeedContext = createContext<DashboardDataset>(
+  invoiceProcessingDataset,
+);
 
 export function useDashboardData() {
   return useContext(DashboardDataContext);

@@ -294,10 +294,9 @@ export function AiChatMessage({
           ref={contentRef}
           className="group/message flex flex-col gap-3 max-w-[85%]"
         >
-          {displayContent &&
-            !messageHasChoices(message) && (
-              <AiChatMarkdown>{displayedText}</AiChatMarkdown>
-            )}
+          {displayContent && !messageHasChoices(message) && (
+            <AiChatMarkdown>{displayedText}</AiChatMarkdown>
+          )}
           {children && (
             <div className="mt-2 flex flex-col gap-2">{children}</div>
           )}

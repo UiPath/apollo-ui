@@ -58,7 +58,9 @@ export type ChartType =
   | "horizontal-bars"
   | "sparkline"
   | "area"
-  | "stacked-bar";
+  | "stacked-bar"
+  | "composed"
+  | "multi-line";
 
 export interface InsightCardContent {
   type: InsightCardType;
@@ -80,12 +82,7 @@ export interface LayoutConfig {
   gap: number;
   overviewRatio: number;
   promptRatio: number;
-  insightCards: [
-    InsightCardConfig,
-    InsightCardConfig,
-    InsightCardConfig,
-    InsightCardConfig,
-  ];
+  insightCards: InsightCardConfig[];
   padding: number;
   containerBg: string;
 }
@@ -185,6 +182,8 @@ export const chartTypeOptions = [
   { label: "Sparkline", value: "sparkline" },
   { label: "Area", value: "area" },
   { label: "Stacked Bar", value: "stacked-bar" },
+  { label: "Composed (Bar + Line)", value: "composed" },
+  { label: "Multi-Line", value: "multi-line" },
 ];
 
 export const sizeOptions = [

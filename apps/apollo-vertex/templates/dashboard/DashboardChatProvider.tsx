@@ -78,7 +78,13 @@ export function DashboardChatProvider({
   if (demo) {
     return (
       <DashboardChatContext.Provider
-        value={{ accessToken: null, orgTenant: null, isLoading: false, login: () => {}, demo: true }}
+        value={{
+          accessToken: null,
+          orgTenant: null,
+          isLoading: false,
+          login: () => {},
+          demo: true,
+        }}
       >
         {children}
       </DashboardChatContext.Provider>

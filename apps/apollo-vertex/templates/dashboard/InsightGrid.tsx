@@ -1,7 +1,13 @@
 "use client";
 
-import { ArrowUpRight, Maximize2, Minimize2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  ArrowUpRight,
+  GripVertical,
+  Maximize2,
+  Minimize2,
+  X,
+} from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Card,
   CardAction,
@@ -27,6 +33,213 @@ import { InsightCardBody } from "./insight-card-renderers";
 
 const sizeToFr: Record<string, string> = { sm: "1fr", md: "2fr", lg: "1fr" };
 
+// --- Edit mode types and components ---
+
+interface EditCardItem {
+  id: string;
+  title: string;
+  size: "sm" | "md" | "lg";
+}
+
+function SkeletonEditCard({
+  item,
+  cardRef,
+  isDragging,
+  isDropTarget,
+  onGripPointerDown,
+  onRemove,
+  onResize,
+}: {
+  item: EditCardItem;
+  cardRef: (el: HTMLDivElement | null) => void;
+  isDragging: boolean;
+  isDropTarget: boolean;
+  onGripPointerDown: (e: React.PointerEvent<HTMLDivElement>) => void;
+  onRemove: () => void;
+  onResize: (size: "sm" | "md" | "lg") => void;
+}) {
+  return (
+    <div
+      ref={cardRef}
+      className={`relative flex flex-col rounded-2xl border overflow-hidden transition-all duration-150 bg-card/50 dark:bg-card/40 ${
+        isDragging ? "opacity-40 scale-[0.97]" : ""
+      } ${isDropTarget ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
+    >
+      {/* Title */}
+      <div className="px-4 pt-3.5 pb-2 shrink-0">
+        <span className="text-xs font-semibold text-foreground/50 truncate block pr-6">
+          {item.title}
+        </span>
+      </div>
+
+      {/* Static skeleton bars */}
+      <div className="flex-1 min-h-0 px-4 pb-10 flex items-end gap-1">
+        {[38, 62, 48, 72, 55, 80, 44].map((h, i) => (
+          <div
+            key={i}
+            className="flex-1 rounded-sm bg-muted-foreground/[0.07]"
+            style={{ height: `${h}%` }}
+          />
+        ))}
+      </div>
+
+      {/* Drag grip — top left */}
+      <div
+        onPointerDown={onGripPointerDown}
+        className="absolute top-3 left-3 size-5 flex items-center justify-center cursor-grab active:cursor-grabbing rounded hover:bg-muted/40 transition-colors touch-none select-none"
+      >
+        <GripVertical className="size-3.5 text-muted-foreground/30" />
+      </div>
+
+      {/* Remove — top right */}
+      <button
+        type="button"
+        onClick={onRemove}
+        className="absolute top-2.5 right-2.5 size-5 flex items-center justify-center rounded text-muted-foreground/30 hover:text-destructive hover:bg-destructive/10 transition-colors"
+      >
+        <X className="size-3" />
+      </button>
+
+      {/* Size toggles — bottom right */}
+      <div className="absolute bottom-2.5 right-2.5 flex items-center gap-0.5">
+        {(["sm", "md", "lg"] as const).map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => onResize(s)}
+            className={`w-6 h-5 text-[10px] rounded font-semibold transition-colors ${
+              item.size === s
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground/40 hover:text-foreground hover:bg-muted/50"
+            }`}
+          >
+            {s === "sm" ? "S" : s === "md" ? "M" : "L"}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function EditSkeletonGrid({
+  editItems,
+  onReorderEditItems,
+  onRemoveEditItem,
+  onResizeEditItem,
+  gap,
+}: {
+  editItems: EditCardItem[];
+  onReorderEditItems?: (items: EditCardItem[]) => void;
+  onRemoveEditItem?: (id: string) => void;
+  onResizeEditItem?: (id: string, size: "sm" | "md" | "lg") => void;
+  gap: number;
+}) {
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
+  const [dropIdx, setDropIdx] = useState<number | null>(null);
+
+  const getNearestIdx = useCallback(
+    (clientX: number, clientY: number, excludeIdx: number): number | null => {
+      let closest: number | null = null;
+      let closestDist = Infinity;
+      cardRefs.current.forEach((ref, i) => {
+        if (i === excludeIdx || !ref) return;
+        const r = ref.getBoundingClientRect();
+        const d = Math.hypot(
+          clientX - (r.left + r.width / 2),
+          clientY - (r.top + r.height / 2),
+        );
+        if (d < closestDist) {
+          closestDist = d;
+          closest = i;
+        }
+      });
+      return closest;
+    },
+    [],
+  );
+
+  const handleGripPointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>, fromIdx: number) => {
+      e.currentTarget.setPointerCapture(e.pointerId);
+      setDraggingIdx(fromIdx);
+      setDropIdx(null);
+      let currentDrop: number | null = null;
+      const el = e.currentTarget;
+      const onMove = (me: PointerEvent) => {
+        currentDrop = getNearestIdx(me.clientX, me.clientY, fromIdx);
+        setDropIdx(currentDrop);
+      };
+      const onUp = () => {
+        if (currentDrop !== null && currentDrop !== fromIdx) {
+          const next = [...editItems];
+          [next[fromIdx], next[currentDrop]] = [
+            next[currentDrop],
+            next[fromIdx],
+          ];
+          onReorderEditItems?.(next);
+        }
+        setDraggingIdx(null);
+        setDropIdx(null);
+        el.removeEventListener("pointermove", onMove);
+      };
+      el.addEventListener("pointermove", onMove);
+      el.addEventListener("pointerup", onUp, { once: true });
+    },
+    [editItems, getNearestIdx, onReorderEditItems],
+  );
+
+  const rows: Array<Array<{ item: EditCardItem; idx: number }>> = [];
+  let ei = 0;
+  while (ei < editItems.length) {
+    if (editItems[ei].size === "lg") {
+      rows.push([{ item: editItems[ei], idx: ei }]);
+      ei++;
+    } else if (ei + 1 < editItems.length && editItems[ei + 1].size !== "lg") {
+      rows.push([
+        { item: editItems[ei], idx: ei },
+        { item: editItems[ei + 1], idx: ei + 1 },
+      ]);
+      ei += 2;
+    } else {
+      rows.push([{ item: editItems[ei], idx: ei }]);
+      ei++;
+    }
+  }
+
+  return (
+    <div className="h-full flex flex-col" style={{ gap }}>
+      {rows.map((row, rowIdx) => (
+        <div
+          key={rowIdx}
+          className="flex-1 min-h-0 grid"
+          style={{
+            gridTemplateColumns: row
+              .map(({ item }) => sizeToFr[item.size])
+              .join(" "),
+            gap,
+          }}
+        >
+          {row.map(({ item, idx }) => (
+            <SkeletonEditCard
+              key={item.id}
+              item={item}
+              cardRef={(el) => {
+                cardRefs.current[idx] = el;
+              }}
+              isDragging={draggingIdx === idx}
+              isDropTarget={dropIdx === idx}
+              onGripPointerDown={(e) => handleGripPointerDown(e, idx)}
+              onRemove={() => onRemoveEditItem?.(item.id)}
+              onResize={(size) => onResizeEditItem?.(item.id, size)}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // --- Shared card inner content ---
 
 interface InsightCardInnerProps {
@@ -43,6 +256,7 @@ interface InsightCardInnerProps {
   onExpandClick: () => void;
   onAutopilotOpen?: (prompt?: string) => void;
   isAutopilotActive?: boolean;
+  isAutopilotUnread?: boolean;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -61,6 +275,7 @@ function InsightCardInner({
   drilldownTab,
   onDrilldownTabChange,
   isAutopilotActive = false,
+  isAutopilotUnread = false,
   className = "",
   style,
 }: InsightCardInnerProps) {
@@ -93,7 +308,7 @@ function InsightCardInner({
           <CardAction>
             <div
               className={`flex items-center gap-1 transition-all duration-75 ${
-                isThis || isAutopilotActive
+                isThis || isAutopilotActive || isAutopilotUnread
                   ? "opacity-100 translate-x-0"
                   : "opacity-0 translate-x-2 group-hover/card:opacity-100 group-hover/card:translate-x-0"
               }`}
@@ -111,7 +326,7 @@ function InsightCardInner({
                       );
                     }
                   }}
-                  className={`size-7 rounded-md flex items-center justify-center transition-all ${
+                  className={`relative size-7 rounded-md flex items-center justify-center transition-all ${
                     isAutopilotActive
                       ? "bg-gradient-to-br from-insight-500 to-primary-400 text-white"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -136,6 +351,12 @@ function InsightCardInner({
                         className="size-4 hidden dark:block"
                       />
                     </>
+                  )}
+                  {isAutopilotUnread && (
+                    <span className="absolute -top-0.5 -right-0.5 flex size-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-insight-500 opacity-75" />
+                      <span className="relative inline-flex rounded-full size-2 bg-insight-500" />
+                    </span>
                   )}
                 </button>
               )}
@@ -310,6 +531,14 @@ export function InsightGrid({
   viewMode = "desktop",
   onAutopilotOpen,
   autopilotActiveIdx,
+  autopilotUnreadIdx,
+  expandedIdx: controlledExpandedIdx,
+  onExpandedChange,
+  editMode = false,
+  editItems = [],
+  onReorderEditItems,
+  onRemoveEditItem,
+  onResizeEditItem,
 }: {
   layout: LayoutConfig;
   shared: string;
@@ -317,9 +546,27 @@ export function InsightGrid({
   viewMode?: "desktop" | "compact" | "stacked";
   onAutopilotOpen?: (sourceTitle: string, idx: number, prompt?: string) => void;
   autopilotActiveIdx?: number | null;
+  autopilotUnreadIdx?: number | null;
+  expandedIdx?: number | null;
+  onExpandedChange?: (idx: number | null) => void;
+  editMode?: boolean;
+  editItems?: EditCardItem[];
+  onReorderEditItems?: (items: EditCardItem[]) => void;
+  onRemoveEditItem?: (id: string) => void;
+  onResizeEditItem?: (id: string, size: "sm" | "md" | "lg") => void;
 }) {
   const { data } = useDashboardData();
-  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+  const [internalExpandedIdx, setInternalExpandedIdx] = useState<number | null>(
+    null,
+  );
+  const expandedIdx =
+    controlledExpandedIdx !== undefined
+      ? controlledExpandedIdx
+      : internalExpandedIdx;
+  const setExpandedIdx = (idx: number | null) => {
+    setInternalExpandedIdx(idx);
+    onExpandedChange?.(idx);
+  };
   const [phase, setPhase] = useState<ExpandPhase>("idle");
   const [drilldownTab, setDrilldownTab] = useState<DrilldownTab>("overview");
 
@@ -355,9 +602,23 @@ export function InsightGrid({
       return { cfg: merged, idx: i };
     })
     .filter(({ cfg }) => cfg.visible);
+
   const rows: (typeof visibleCards)[] = [];
-  for (let i = 0; i < visibleCards.length; i += 2) {
-    rows.push(visibleCards.slice(i, i + 2));
+  let vi = 0;
+  while (vi < visibleCards.length) {
+    if (visibleCards[vi].cfg.size === "lg") {
+      rows.push([visibleCards[vi]]);
+      vi++;
+    } else if (
+      vi + 1 < visibleCards.length &&
+      visibleCards[vi + 1].cfg.size !== "lg"
+    ) {
+      rows.push([visibleCards[vi], visibleCards[vi + 1]]);
+      vi += 2;
+    } else {
+      rows.push([visibleCards[vi]]);
+      vi++;
+    }
   }
 
   const isExpanding = expandedIdx !== null;
@@ -397,6 +658,18 @@ export function InsightGrid({
     drilldownTab,
     onDrilldownTabChange: setDrilldownTab,
   };
+
+  if (editMode && editItems.length > 0) {
+    return (
+      <EditSkeletonGrid
+        editItems={editItems}
+        onReorderEditItems={onReorderEditItems}
+        onRemoveEditItem={onRemoveEditItem}
+        onResizeEditItem={onResizeEditItem}
+        gap={layout.gap}
+      />
+    );
+  }
 
   return (
     <div
@@ -441,6 +714,7 @@ export function InsightGrid({
                       : undefined
                   }
                   isAutopilotActive={autopilotActiveIdx === idx}
+                  isAutopilotUnread={autopilotUnreadIdx === idx}
                   className="h-full"
                 />
               </div>
@@ -506,6 +780,7 @@ export function InsightGrid({
                           : undefined
                       }
                       isAutopilotActive={autopilotActiveIdx === idx}
+                      isAutopilotUnread={autopilotUnreadIdx === idx}
                       style={{
                         opacity: isSibling && phase !== "idle" ? 0 : 1,
                         transform:
