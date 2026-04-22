@@ -212,6 +212,8 @@ export interface AutopilotChatError {
  * @property {string} SetResourceManager - Emitted when a resource manager is set for the variable picker
  * @property {string} SetReadOnly - Emitted when the read-only mode is set
  * @property {string} ResourceItemSelected - Emitted when a resource item is selected from the variable picker
+ * @property {string} SpeechToTextToggle - Emitted when the STT dictate button is clicked (payload: boolean — new active state)
+ * @property {string} SetSpeechToTextState - Emitted when the STT active state changes (payload: boolean)
  */
 export enum AutopilotChatEvent {
   Error = 'error',
@@ -251,6 +253,8 @@ export enum AutopilotChatEvent {
   SetReadOnly = 'setReadOnly',
   SetResourceManager = 'setResourceManager',
   ResourceItemSelected = 'resourceItemSelected',
+  SpeechToTextToggle = 'speechToTextToggle',
+  SetSpeechToTextState = 'setSpeechToTextState',
 }
 
 /**
@@ -411,11 +415,13 @@ export interface PdfCitation extends Citation {
  * @property close - Whether the chat has the close button
  * @property newChat - Whether the chat has the new chat button
  * @property settings - Whether the chat has the settings button
- * @property audio - Whether the chat has realtime audio enabled
+ * @property audio - Whether the chat has the STT dictate (mic) button
  * @property feedback - Whether the chat has the feedback button
  * @property fullHeight - Whether the chat has viewport height
  * @property copy - Whether the chat has copy button
  * @property htmlPreview - Whether the chat has HTML preview for code blocks
+ * @property audioStreaming - Whether the chat has the always-on voice interaction button
+ *                            (requires the consumer to handle InputStream/OutputStream audio events)
  */
 export interface AutopilotChatDisabledFeatures {
   resize?: boolean;
@@ -434,6 +440,7 @@ export interface AutopilotChatDisabledFeatures {
   fullHeight?: boolean;
   copy?: boolean;
   htmlPreview?: boolean;
+  audioStreaming?: boolean;
 }
 
 /**
