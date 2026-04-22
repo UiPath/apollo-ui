@@ -1071,6 +1071,10 @@
           "path": "registry/shell/use-group-members.ts",
           "type": "registry:ui"
         },
+        {
+          "path": "registry/shell/use-is-group-member.ts",
+          "type": "registry:ui"
+        },
         { "path": "lib/identity-service.ts", "type": "registry:lib" }
       ]
     },
