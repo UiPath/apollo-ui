@@ -13,9 +13,15 @@ import { useUser } from "./shell-user-provider";
 
 interface UserProfileProps {
   isCollapsed: boolean;
+  collapsedMenuSide?: "top" | "right" | "bottom" | "left";
+  collapsedMenuAlign?: "start" | "center" | "end";
 }
 
-export const UserProfile = ({ isCollapsed }: UserProfileProps) => {
+export const UserProfile = ({
+  isCollapsed,
+  collapsedMenuSide = "top",
+  collapsedMenuAlign = "start",
+}: UserProfileProps) => {
   const { t } = useTranslation();
   const { user } = useUser();
   const userInitials = user
@@ -52,8 +58,8 @@ export const UserProfile = ({ isCollapsed }: UserProfileProps) => {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-56"
-            align="center"
-            side="right"
+            align={collapsedMenuAlign}
+            side={collapsedMenuSide}
             sideOffset={8}
           >
             <div className="flex flex-col gap-2 p-2">
