@@ -55,7 +55,11 @@ export const Sidebar = ({
         )}
 
         <div className="flex items-center gap-2">
-          <UserProfile isCollapsed />
+          <UserProfile
+            isCollapsed
+            collapsedMenuSide="bottom"
+            collapsedMenuAlign="end"
+          />
         </div>
       </header>
     );
