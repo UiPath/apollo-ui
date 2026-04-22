@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v4.12.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.12.1...@uipath/apollo-react@4.12.2) (2026-04-22)
+
+### Bug Fixes
+
+* **apollo-react:** stage node task menu options not respecting index properly ([703993c](https://github.com/UiPath/apollo-ui/commit/703993ccce0d4d744af6f8e13fa67258d5deb9a8))
+* **apollo-react:** test fix ([b7c3bb7](https://github.com/UiPath/apollo-ui/commit/b7c3bb70a1ffa588d3ab60c843b101d257f87be3))
+
 ## [@uipath/apollo-react-v4.12.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.12.0...@uipath/apollo-react@4.12.1) (2026-04-21)
 
 ### Bug Fixes
