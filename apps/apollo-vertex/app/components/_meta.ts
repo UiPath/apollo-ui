@@ -1,5 +1,6 @@
 export default {
-  index: "Overview",
+  index: { display: "hidden" },
+  overview: "Overview",
   accordion: "Accordion",
   alert: "Alert",
   "alert-dialog": "Alert Dialog",
