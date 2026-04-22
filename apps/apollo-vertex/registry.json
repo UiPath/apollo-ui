@@ -1062,7 +1062,16 @@
         {
           "path": "registry/shell/shell-user-profile-menu-items.tsx",
           "type": "registry:ui"
-        }
+        },
+        {
+          "path": "registry/shell/group-membership-guard.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/use-group-members.ts",
+          "type": "registry:ui"
+        },
+        { "path": "lib/identity-service.ts", "type": "registry:lib" }
       ]
     },
     {
