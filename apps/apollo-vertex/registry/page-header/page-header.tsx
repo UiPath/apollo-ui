@@ -18,7 +18,7 @@ const pageHeaderVariants = cva("", {
   variants: {
     size: {
       default: [
-        "flex flex-wrap items-center gap-4 py-4 px-6 min-h-[92px]",
+        "flex flex-wrap items-center gap-4 py-4 px-4 sm:px-6 lg:px-8 min-h-[92px]",
         "@3xl:grid @3xl:grid-cols-[1fr_auto] @3xl:py-0",
         "@3xl:has-[[data-slot=page-header-content]]:grid-cols-[3fr_6fr_3fr]",
       ].join(" "),
