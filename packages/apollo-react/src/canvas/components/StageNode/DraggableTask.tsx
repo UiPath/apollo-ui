@@ -46,8 +46,8 @@ const DraggableTaskComponent = ({
     if (!getContextMenuItems) {
       return [];
     }
-    return getContextMenuItems(groupIndex, taskIndex);
-  }, [getContextMenuItems, groupIndex, taskIndex]);
+    return getContextMenuItems(groupIndex, taskIndex, task.id);
+  }, [getContextMenuItems, groupIndex, taskIndex, task.id]);
 
   const { attributes, listeners, setNodeRef, transition, transform, isDragging } = useSortable({
     id: task.id,
