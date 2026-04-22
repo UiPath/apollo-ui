@@ -3,13 +3,13 @@ import { type PropsWithChildren, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "./shell-auth-provider";
-import { useGroupMembers } from "./use-group-members";
+import { useIsGroupMember } from "./use-is-group-member";
 
 export interface GroupMembershipGuardProps {
   baseUrl: string;
   orgName: string;
   orgId: string;
-  groupId: string;
+  groupIds: string[];
   deniedDescription?: string;
 }
 
@@ -17,7 +17,7 @@ export const GroupMembershipGuard = ({
   baseUrl,
   orgName,
   orgId,
-  groupId,
+  groupIds,
   deniedDescription,
   children,
 }: PropsWithChildren<GroupMembershipGuardProps>) => {
@@ -33,7 +33,7 @@ export const GroupMembershipGuard = ({
         baseUrl={baseUrl}
         orgName={orgName}
         orgId={orgId}
-        groupId={groupId}
+        groupIds={groupIds}
         deniedDescription={deniedDescription}
       >
         {children}
@@ -46,23 +46,19 @@ const GroupMembershipGuardContent = ({
   baseUrl,
   orgName,
   orgId,
-  groupId,
+  groupIds,
   deniedDescription,
   children,
 }: PropsWithChildren<GroupMembershipGuardProps>) => {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
-  const { users } = useGroupMembers({ baseUrl, orgName, orgId, groupId });
+  const isMember = useIsGroupMember({ baseUrl, orgName, orgId, groupIds });
 
   if (!user) {
     return <VerifyingMembership />;
   }
 
-  const isUserInGroup = users.some(
-    (member) => member.email.toLowerCase() === user.email.toLowerCase(),
-  );
-
-  if (!isUserInGroup) {
+  if (!isMember) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="w-full max-w-md">
