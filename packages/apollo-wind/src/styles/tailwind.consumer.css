@@ -377,12 +377,24 @@ body.future-dark, .future-dark {
   /* badges, indicators */
   --surface-inverse: var(--color-zinc-50);
   /* buttons on dark bg */
+  --surface-disabled: var(--color-zinc-900);
+  /* disabled inputs, buttons, containers */
+  --surface-selected: var(--color-zinc-700);
+  /* selected items, active rows */
 
   /* ── Brand ──────────────────────────────────────────────────────────── */
   --brand: var(--color-cyan-500);
   /* logo, submit, run */
   --brand-subtle: var(--color-cyan-950);
   /* status badge, active nav */
+  --brand-hover: var(--color-cyan-400);
+  /* hovered brand elements */
+  --brand-lighter: var(--color-cyan-300);
+  /* subtle tinted states, badges */
+  --brand-darker: var(--color-cyan-600);
+  /* pressed / deep accent states */
+  --logo: var(--color-white);
+  /* UiPath logo color */
 
   /* ── Foreground (text / icons) ────────────────────────────────────────── */
   --foreground: var(--color-zinc-50);
@@ -403,6 +415,10 @@ body.future-dark, .future-dark {
   /* accent text */
   --foreground-accent-muted: var(--color-cyan-400);
   /* muted accent text */
+  --foreground-emp: var(--color-white);
+  /* emphasized text — highest priority headings */
+  --foreground-link: var(--color-cyan-400);
+  /* hyperlinks, inline navigational text */
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
   --ap-wind-border: var(--color-zinc-700);
@@ -417,6 +433,10 @@ body.future-dark, .future-dark {
   /* borders on inverse bg */
   --border-hover: var(--color-zinc-600);
   /* border hover state */
+  --border-disabled: var(--color-zinc-800);
+  /* disabled control borders */
+  --border-grid: var(--color-zinc-800);
+  /* table / data grid internal lines */
 
   /* ── Ring ──────────────────────────────────────────────────────────────── */
   --ring: var(--color-zinc-600);
@@ -452,13 +472,13 @@ body.future-dark, .future-dark {
 
   /* ── Status ──────────────────────────────────────────────────────────── */
   --error: #ff8484;
-  --error-background:  #000000;
+  --error-background:  var(--status-destructive);
   --success: #74c94b;
-  --success-background: #000000;
+  --success-background: var(--status-success);
   --warning: #ffbb27;
-  --warning-background: #000000;
+  --warning-background: var(--status-warning);
   --info: #42a1ff;
-  --info-background: #000000;
+  --info-background: var(--status-info);
   --status-destructive: var(--color-red-950);
   --status-destructive-fg: var(--color-red-400);
   --status-success: var(--color-emerald-950);
@@ -524,12 +544,24 @@ body.future-light, .future-light {
   /* badges, indicators */
   --surface-inverse: var(--color-zinc-950);
   /* buttons on light bg */
+  --surface-disabled: var(--color-zinc-200);
+  /* disabled inputs, buttons, containers */
+  --surface-selected: var(--color-zinc-300);
+  /* selected items, active rows */
 
   /* ── Brand ──────────────────────────────────────────────────────────── */
   --brand: var(--color-cyan-500);
   /* logo, submit, run */
   --brand-subtle: var(--color-cyan-50);
   /* status badge, active nav */
+  --brand-hover: var(--color-cyan-600);
+  /* hovered brand elements */
+  --brand-lighter: var(--color-cyan-100);
+  /* subtle tinted states, badges */
+  --brand-darker: var(--color-cyan-700);
+  /* pressed / deep accent states */
+  --logo: var(--color-black);
+  /* UiPath logo color */
 
   /* ── Foreground (text / icons) ────────────────────────────────────────── */
   --foreground: var(--color-zinc-950);
@@ -550,6 +582,10 @@ body.future-light, .future-light {
   /* accent text */
   --foreground-accent-muted: var(--color-cyan-600);
   /* muted accent text */
+  --foreground-emp: var(--color-black);
+  /* emphasized text — highest priority headings */
+  --foreground-link: var(--color-cyan-600);
+  /* hyperlinks, inline navigational text */
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
   --ap-wind-border: var(--color-zinc-300);
@@ -564,6 +600,10 @@ body.future-light, .future-light {
   /* borders on inverse bg */
   --border-hover: var(--color-zinc-400);
   /* border hover state */
+  --border-disabled: var(--color-zinc-200);
+  /* disabled control borders */
+  --border-grid: var(--color-zinc-200);
+  /* table / data grid internal lines */
 
   /* ── Ring ──────────────────────────────────────────────────────────────── */
   --ring: var(--color-zinc-400);
