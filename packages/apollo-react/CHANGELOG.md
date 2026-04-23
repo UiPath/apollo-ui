@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.13.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.12.2...@uipath/apollo-react@4.13.0) (2026-04-23)
+
+### Features
+
+* **apollo-react:** stacked node visual treatment [MST-8373] ([792ebc1](https://github.com/UiPath/apollo-ui/commit/792ebc1f480eebfdb885e1b876bb305bb0bdabad))
+
 ## [@uipath/apollo-react-v4.12.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.12.1...@uipath/apollo-react@4.12.2) (2026-04-22)
 
 ### Bug Fixes
