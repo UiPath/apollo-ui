@@ -257,9 +257,6 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // baseHeightRef is updated above from external height changes; handle inflation
   // is computed from the current handleConfigurations.
   const computedHeight = useMemo(() => {
-    // 2.5 grid units between handles to allow space for button handles and notches
-    const handleSpacing = 2.5 * GRID_SPACING;
-
     const leftHandles = handleConfigurations
       .filter((config) => config.position === Position.Left && config.visible !== false)
       .reduce(
@@ -276,7 +273,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
     const leftRightHandles = Math.max(leftHandles, rightHandles);
 
-    return Math.max(baseHeightRef.current, leftRightHandles * handleSpacing);
+    // Each handle gets a 2-grid-space lane (32px), plus 2-grid-space padding at top + bottom of node.
+    const minNodeHeight = (leftRightHandles * 2 + 2) * GRID_SPACING;
+    return Math.max(baseHeightRef.current, minNodeHeight);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- height is not read directly but triggers recalculation after baseHeightRef is updated above
   }, [handleConfigurations, height]);
 
@@ -393,9 +392,22 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   }, [disabled, dragging, selected, isHovered, isFocused]);
 
   const shouldShowHandles = useMemo(
-    () => isConnecting || selected || isHovered,
-    [isConnecting, selected, isHovered]
+    () => (isConnecting || selected || isHovered) && !dragging,
+    [isConnecting, selected, isHovered, dragging]
   );
+
+  const toolbarPosition = toolbarConfig?.position ?? (toolbarConfig ? Position.Top : undefined);
+
+  // True when handle buttons at the toolbar's position would collide with it.
+  const hasHandleButtonsAtToolbar = useMemo(() => {
+    if (!toolbarPosition || !handleConfigurations?.length) return false;
+    return handleConfigurations.some(
+      (config) =>
+        config.position === toolbarPosition &&
+        config.visible !== false &&
+        config.handles.some((h) => h.type === 'source' && h.showButton !== false)
+    );
+  }, [toolbarPosition, handleConfigurations]);
 
   const hasVisibleBottomHandles = useMemo(() => {
     if (
@@ -472,7 +484,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     nodeId: id,
     selected: selected ?? false,
     hovered: isHovered,
-    showAddButton: mode === 'design' && !multipleNodesSelected && !isConnecting,
+    showAddButton: mode === 'design' && !multipleNodesSelected && !isConnecting && !dragging,
     showNotches,
     nodeWidth: width,
     nodeHeight: height,
@@ -641,8 +653,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           <NodeToolbar
             nodeId={id}
             config={toolbarConfig}
-            expanded={selected}
+            expanded={selected || isHovered}
             hidden={dragging || multipleNodesSelected}
+            offsetToolbar={hasHandleButtonsAtToolbar}
           />
         )}
       </BaseContainer>

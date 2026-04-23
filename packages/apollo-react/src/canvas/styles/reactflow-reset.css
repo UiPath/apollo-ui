@@ -34,6 +34,15 @@
 }
 
 /**
+ * Elevate hovered nodes so toolbars and handle buttons aren't clipped by
+ * neighboring node wrappers. React Flow sets z-index inline, so `!important`
+ * is required to override it.
+ */
+.react-flow__node:hover {
+  z-index: 1000 !important;
+}
+
+/**
  * Canvas pane gradient for future themes.
  *
  * <Background /> passes bgColor as `background-color`, which only accepts

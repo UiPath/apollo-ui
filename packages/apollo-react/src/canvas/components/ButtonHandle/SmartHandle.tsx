@@ -553,7 +553,7 @@ export function SmartHandle({
   nodeHeight,
   label,
   labelIcon,
-  labelBackgroundColor = 'var(--canvas-background-secondary)',
+  labelBackgroundColor,
   showButton = false,
   selected = false,
   showNotches = true,

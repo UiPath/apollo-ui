@@ -14,4 +14,6 @@ export interface NodeToolbarProps {
   expanded: boolean;
   /** When true, forcefully hides all toolbar actions including pinned items */
   hidden?: boolean;
+  /** When true, push the toolbar further from the node to clear handle buttons. */
+  offsetToolbar?: boolean;
 }
