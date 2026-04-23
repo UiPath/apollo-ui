@@ -554,36 +554,33 @@ export function ApChatShowcase() {
 		let sttPhraseIndex = 0;
 		let sttDictationInterval: ReturnType<typeof setInterval> | null = null;
 		unsubscribes.push(
-			service.on(
-				AutopilotChatEvent.SpeechToTextToggle,
-				(isActive: unknown) => {
-					console.log("[STT] toggle:", isActive);
-					// Mirror the publish back via setSpeechToTextState so the mic button stays in sync
-					// (publishSpeechToTextToggle already did this, but a real consumer would do it
-					// here after its recognizer actually started/failed).
-					if (isActive) {
-						const phrase =
-							fakeSttPhrases[sttPhraseIndex % fakeSttPhrases.length] ?? "";
-						sttPhraseIndex++;
-						const words = phrase.split(" ");
-						let wordIndex = 0;
-						let transcript = "";
-						sttDictationInterval = setInterval(() => {
-							if (wordIndex < words.length) {
-								transcript += (wordIndex === 0 ? "" : " ") + words[wordIndex];
-								service.setPrompt(transcript);
-								wordIndex++;
-							} else if (sttDictationInterval) {
-								clearInterval(sttDictationInterval);
-								sttDictationInterval = null;
-							}
-						}, 150);
-					} else if (sttDictationInterval) {
-						clearInterval(sttDictationInterval);
-						sttDictationInterval = null;
-					}
-				},
-			),
+			service.on(AutopilotChatEvent.SpeechToTextToggle, (isActive: unknown) => {
+				console.log("[STT] toggle:", isActive);
+				// Mirror the publish back via setSpeechToTextState so the mic button stays in sync
+				// (publishSpeechToTextToggle already did this, but a real consumer would do it
+				// here after its recognizer actually started/failed).
+				if (isActive) {
+					const phrase =
+						fakeSttPhrases[sttPhraseIndex % fakeSttPhrases.length] ?? "";
+					sttPhraseIndex++;
+					const words = phrase.split(" ");
+					let wordIndex = 0;
+					let transcript = "";
+					sttDictationInterval = setInterval(() => {
+						if (wordIndex < words.length) {
+							transcript += (wordIndex === 0 ? "" : " ") + words[wordIndex];
+							service.setPrompt(transcript);
+							wordIndex++;
+						} else if (sttDictationInterval) {
+							clearInterval(sttDictationInterval);
+							sttDictationInterval = null;
+						}
+					}, 150);
+				} else if (sttDictationInterval) {
+					clearInterval(sttDictationInterval);
+					sttDictationInterval = null;
+				}
+			}),
 		);
 		unsubscribes.push(() => {
 			if (sttDictationInterval) {
