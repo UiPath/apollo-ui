@@ -200,9 +200,7 @@ function AutopilotChatInputActionsComponent({
     <InputActionsContainer>
       {/* visibility:hidden (not display:none) keeps the left group's layout footprint so the
           right group (stop button) stays anchored to the right edge during voice interaction. */}
-      <InputActionsGroup
-        style={isVoiceInteractionActive ? { visibility: 'hidden' } : undefined}
-      >
+      <InputActionsGroup style={isVoiceInteractionActive ? { visibility: 'hidden' } : undefined}>
         {!disabledFeatures.attachments && (
           <>
             <input
@@ -309,14 +307,10 @@ function AutopilotChatInputActionsComponent({
               iconName="mic"
               onClick={handleSpeechToTextClick}
               tooltipPlacement="top"
-              tooltip={_(
-                msg({ id: 'autopilot-chat.input.actions.dictate', message: `Dictate` })
-              )}
+              tooltip={_(msg({ id: 'autopilot-chat.input.actions.dictate', message: `Dictate` }))}
               overrideColor={isSpeechToTextActive ? 'var(--color-background)' : undefined}
               data-testid="autopilot-chat-stt-button"
-              ariaLabel={_(
-                msg({ id: 'autopilot-chat.input.actions.dictate', message: `Dictate` })
-              )}
+              ariaLabel={_(msg({ id: 'autopilot-chat.input.actions.dictate', message: `Dictate` }))}
             />
           </VoiceButtonContainer>
         )}

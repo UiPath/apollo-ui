@@ -39,7 +39,10 @@ interface AlwaysOnVoiceButtonProps {
  * Replaces the send button when the chat input is empty and audioStreaming is enabled.
  * Uses the existing useAudioInput hook for mic capture and streams audio via InputStream.
  */
-export const AlwaysOnVoiceButton = ({ disabled = false, onActiveChange }: AlwaysOnVoiceButtonProps) => {
+export const AlwaysOnVoiceButton = ({
+  disabled = false,
+  onActiveChange,
+}: AlwaysOnVoiceButtonProps) => {
   const { _ } = useLingui();
   const [isActive, setIsActive] = useState(false);
   const chatService = useChatService();
