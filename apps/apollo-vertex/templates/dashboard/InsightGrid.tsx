@@ -335,19 +335,19 @@ function InsightCardInner({
                   {isAutopilotActive ? (
                     <img
                       src="/Autopilot_light.svg"
-                      alt="Autopilot"
+                      alt="AI assistant"
                       className="size-4"
                     />
                   ) : (
                     <>
                       <img
                         src="/Autopilot_dark.svg"
-                        alt="Autopilot"
+                        alt="AI assistant"
                         className="size-4 block dark:hidden"
                       />
                       <img
                         src="/Autopilot_light.svg"
-                        alt="Autopilot"
+                        alt="AI assistant"
                         className="size-4 hidden dark:block"
                       />
                     </>

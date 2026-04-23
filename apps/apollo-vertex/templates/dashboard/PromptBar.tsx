@@ -987,7 +987,7 @@ export function PromptBar({
           .map((p) => p.content)
           .join("");
         if (!content) return null;
-        return `${m.role === "user" ? "You" : "Autopilot"}: ${content}`;
+        return `${m.role === "user" ? "You" : "AI assistant"}: ${content}`;
       })
       .filter(Boolean)
       .join("\n\n");
@@ -1045,7 +1045,7 @@ export function PromptBar({
               <AutopilotGradientIcon size={20} />
               <div>
                 <p className="text-sm font-bold tracking-tight leading-tight">
-                  Autopilot
+                  AI assistant
                 </p>
                 <p className="text-xs text-muted-foreground leading-tight">
                   Ask me anything

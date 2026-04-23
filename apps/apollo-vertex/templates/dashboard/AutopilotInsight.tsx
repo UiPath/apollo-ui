@@ -132,7 +132,7 @@ function AutopilotChat({
           .map((p) => p.content)
           .join("");
         if (!content) return null;
-        const label = m.role === "user" ? "You" : "Autopilot";
+        const label = m.role === "user" ? "You" : "AI assistant";
         return `${label}: ${content}`;
       })
       .filter(Boolean)
@@ -169,7 +169,7 @@ function AutopilotChat({
       onClearChat={clear}
       onRegenerate={() => void reload()}
       onEditMessage={handleEditMessage}
-      assistantName="Autopilot"
+      assistantName="AI assistant"
       enableTextSelection
       showClearButton={hasMessages}
       error={error ?? null}
@@ -181,17 +181,17 @@ function AutopilotChat({
           <div className="flex items-center gap-2">
             <img
               src="/Autopilot_dark.svg"
-              alt="Autopilot"
+              alt="AI assistant"
               className="size-5 block dark:hidden"
             />
             <img
               src="/Autopilot_light.svg"
-              alt="Autopilot"
+              alt="AI assistant"
               className="size-5 hidden dark:block"
             />
             <div>
               <p className="text-sm font-bold tracking-tight">
-                Autopilot Insight
+                AI assistant
               </p>
               <p className="text-xs text-muted-foreground">
                 Analyzing {sourceCardTitle}
@@ -284,17 +284,17 @@ export function AutopilotInsight({
           <div className="flex items-center gap-2">
             <img
               src="/Autopilot_dark.svg"
-              alt="Autopilot"
+              alt="AI assistant"
               className="size-5 block dark:hidden"
             />
             <img
               src="/Autopilot_light.svg"
-              alt="Autopilot"
+              alt="AI assistant"
               className="size-5 hidden dark:block"
             />
             <div>
               <p className="text-sm font-bold tracking-tight">
-                Autopilot Insight
+                AI assistant
               </p>
               <p className="text-xs text-muted-foreground">
                 Analyzing {sourceCardTitle}
@@ -330,7 +330,7 @@ export function AutopilotInsight({
         {!isLoading && !isReady && (
           <div className="flex flex-col items-center justify-center h-full gap-3">
             <p className="text-sm text-muted-foreground text-center">
-              Sign in to use Autopilot
+              Sign in to use AI assistant
             </p>
             <Button size="sm" onClick={login}>
               <LogIn className="size-4 mr-1" />

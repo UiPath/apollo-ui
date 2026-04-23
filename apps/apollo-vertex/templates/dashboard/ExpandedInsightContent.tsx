@@ -303,15 +303,15 @@ export function AutopilotPrompts({
       <div className="flex items-center gap-1.5 mb-2">
         <img
           src="/Autopilot_dark.svg"
-          alt="Autopilot"
+          alt="AI assistant"
           className="size-3.5 block dark:hidden"
         />
         <img
           src="/Autopilot_light.svg"
-          alt="Autopilot"
+          alt="AI assistant"
           className="size-3.5 hidden dark:block"
         />
-        <span className="text-[10px] text-muted-foreground">Ask Autopilot</span>
+        <span className="text-[10px] text-muted-foreground">Ask AI assistant</span>
       </div>
       <div className="flex flex-wrap gap-1.5">
         {suggestedPrompts.map((prompt) => (

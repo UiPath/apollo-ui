@@ -397,12 +397,12 @@ function ExecutiveLayout({
             <CardHeader className="!p-0 !gap-2">
               <img
                 src="/Autopilot_dark.svg"
-                alt="Autopilot"
+                alt="AI assistant"
                 className="size-5 block dark:hidden"
               />
               <img
                 src="/Autopilot_light.svg"
-                alt="Autopilot"
+                alt="AI assistant"
                 className="size-5 hidden dark:block"
               />
               <CardTitle className="text-sm font-bold tracking-tight">
@@ -811,7 +811,7 @@ function DashboardContentInner() {
     if (autopilotOpen && !autopilotDismissed) return;
     const idx = closedAutopilotIdxRef.current;
     setAutopilotUnreadIdx(idx);
-    toast.info("Autopilot response ready", {
+    toast.info("AI assistant response ready", {
       description: autopilotSource
         ? `${autopilotSource} analysis complete`
         : undefined,
