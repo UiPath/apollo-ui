@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.13.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.13.0...@uipath/apollo-react@4.13.1) (2026-04-23)
+
+### Bug Fixes
+
+* **apollo-react:** handle and toolbar consistency [MST-8974] ([cd9a34a](https://github.com/UiPath/apollo-ui/commit/cd9a34a0674b3e1fd208f8fb36043860ddb4c445))
+
 ## [@uipath/apollo-react-v4.13.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.12.2...@uipath/apollo-react@4.13.0) (2026-04-23)
 
 ### Features
