@@ -46,7 +46,7 @@ const ButtonHandleBase = ({
   handleType,
   label,
   labelIcon,
-  labelBackgroundColor = 'var(--canvas-background-secondary)',
+  labelBackgroundColor,
   visible = true,
   showButton = true,
   selected = false,

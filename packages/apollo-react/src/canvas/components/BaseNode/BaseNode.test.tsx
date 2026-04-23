@@ -181,19 +181,19 @@ describe('BaseNode', () => {
     });
 
     it('shrinks back to user-provided height after handle removal', () => {
-      // User height=200, 8 handles need 320px
+      // User height=200, 8 handles need 288px
       mockHandleConfigs.current = makeHandles(Position.Left, 8);
       const { rerender } = render(<BaseNode {...defaultProps} height={200} />);
-      expect(mockUpdateNode).toHaveBeenCalledWith('test-node', { height: 320 });
+      expect(mockUpdateNode).toHaveBeenCalledWith('test-node', { height: 288 });
 
       // Simulate React Flow updating height
       mockUpdateNode.mockClear();
-      rerender(<BaseNode {...defaultProps} height={320} data={{}} />);
+      rerender(<BaseNode {...defaultProps} height={288} data={{}} />);
 
       // Remove handles — should return to 200, not DEFAULT_NODE_SIZE (96)
       mockHandleConfigs.current = [];
       mockUpdateNode.mockClear();
-      rerender(<BaseNode {...defaultProps} height={320} data={{}} />);
+      rerender(<BaseNode {...defaultProps} height={288} data={{}} />);
       expect(mockUpdateNode).toHaveBeenCalledWith('test-node', { height: 200 });
     });
 
