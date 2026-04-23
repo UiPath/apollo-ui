@@ -10,6 +10,7 @@ export * from './ExecutionStatusIcon';
 export * from './FloatingCanvasPanel';
 export * from './GroupNode';
 export * from './HierarchicalCanvas';
+export * from './LoopNode';
 export * from './MiniCanvasNavigator';
 export * from './NodeContextMenu';
 export * from './NodeInspector';

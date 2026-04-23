@@ -20,7 +20,7 @@ import {
 import { Spinner } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../../constants';
+import { PREVIEW_NODE_ID } from '../../constants';
 import { Breadcrumb } from '../../controls';
 import { useNodeManifests } from '../../core';
 import { useAddNodeOnConnectEnd } from '../../hooks/useAddNodeOnConnectEnd';
@@ -47,6 +47,7 @@ import {
 import { viewportManager } from '../../stores/viewportManager';
 import { DefaultCanvasTranslations } from '../../types';
 import type { CanvasLevel } from '../../types/canvas.types';
+import { inferParentId } from '../../utils/createPreviewGraph';
 import { CanvasIcon } from '../../utils/icon-registry';
 import { prefersReducedMotion } from '../../utils/transitions';
 import { AddNodeManager } from '../AddNodePanel/AddNodeManager';
@@ -58,6 +59,7 @@ import { CanvasPositionControls } from '../CanvasPositionControls';
 import { MiniCanvasNavigator } from '../MiniCanvasNavigator';
 
 interface HierarchicalCanvasProps {
+  additionalNodeTypes?: NodeTypes;
   mode?: 'view' | 'design' | 'readonly';
   /**
    * Initial canvas data used to populate the store on mount.
@@ -89,6 +91,7 @@ const DEFAULT_NODE_TYPES = {
 } as const;
 
 export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
+  additionalNodeTypes,
   mode = 'design',
   initialCanvases,
   initialPath,
@@ -105,17 +108,19 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
   // Build node types mapping from manifests and defaults
   const nodeManifests = useNodeManifests();
   const nodeTypes = useMemo(() => {
-    const types = nodeManifests.reduce(
-      (acc, manifest) => {
-        if (!acc[manifest.nodeType]) {
-          acc[manifest.nodeType] = BaseNode;
-        }
-        return acc;
-      },
-      { ...DEFAULT_NODE_TYPES } as NodeTypes
-    );
-    return types as NodeTypes;
-  }, [nodeManifests]);
+    const manifestNodeTypes = Object.fromEntries(
+      nodeManifests
+        .map(({ nodeType }) => nodeType)
+        .filter((nodeType) => !Object.hasOwn(DEFAULT_NODE_TYPES, nodeType))
+        .map((nodeType) => [nodeType, BaseNode])
+    ) as NodeTypes;
+
+    return {
+      ...DEFAULT_NODE_TYPES,
+      ...manifestNodeTypes,
+      ...additionalNodeTypes,
+    } as NodeTypes;
+  }, [additionalNodeTypes, nodeManifests]);
 
   // Optimized selectors to prevent unnecessary re-renders
   const currentCanvas = useCanvasStore(selectCurrentCanvas);
@@ -313,21 +318,28 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
         return;
       }
 
+      const parentId = inferParentId(connection.source, connection.target, canvas.nodes);
+
       const newEdge: Edge = {
         id: `${connection.source}-${connection.target}-${Date.now()}`,
         source: connection.source,
         target: connection.target,
         sourceHandle: connection.sourceHandle || undefined,
         targetHandle: connection.targetHandle || undefined,
+        ...(parentId ? { data: { parentId } } : {}),
       };
 
-      updateEdges([...canvas.edges, newEdge]);
-
-      // Remove any preview node/edge after successful connection
       const hasPreview = canvas.nodes.some((n) => n.id === PREVIEW_NODE_ID);
+      const baseEdges = hasPreview
+        ? canvas.edges.filter(
+            (edge) => edge.source !== PREVIEW_NODE_ID && edge.target !== PREVIEW_NODE_ID
+          )
+        : canvas.edges;
+
+      updateEdges([...baseEdges, newEdge]);
+
       if (hasPreview) {
         updateNodes(canvas.nodes.filter((n) => n.id !== PREVIEW_NODE_ID));
-        updateEdges(canvas.edges.filter((e) => e.id !== PREVIEW_EDGE_ID));
       }
     },
     [updateNodes, updateEdges]

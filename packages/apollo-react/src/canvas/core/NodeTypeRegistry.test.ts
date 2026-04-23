@@ -333,6 +333,87 @@ describe('NodeTypeRegistry', () => {
       const manifest = registry.getManifest('nonexistent');
       expect(manifest).toBeUndefined();
     });
+
+    it('should support looking up a specific manifest version without duplicating toolbox entries', () => {
+      const manifest = createMockManifest();
+      const triggerV1 = manifest.nodes.find((node) => node.nodeType === 'trigger');
+
+      expect(triggerV1).toBeDefined();
+
+      const triggerV2: NodeManifest = {
+        ...triggerV1!,
+        version: '2.0.0',
+        display: {
+          ...triggerV1!.display,
+          label: 'Trigger v2',
+        },
+        handleConfiguration: [
+          {
+            position: 'right',
+            handles: [
+              {
+                id: 'next',
+                type: 'source',
+                handleType: 'output',
+                label: 'Next',
+                isDefaultForType: true,
+              },
+            ],
+          },
+        ],
+      };
+
+      const versionedRegistry = new NodeTypeRegistry();
+      versionedRegistry.registerManifest([...manifest.nodes, triggerV2], manifest.categories);
+
+      expect(versionedRegistry.getManifest('trigger')?.version).toBe('2.0.0');
+      expect(versionedRegistry.getManifest('trigger', '1.0.0')?.display.label).toBe('Trigger');
+      expect(versionedRegistry.getManifest('trigger', '2.0.0')?.display.label).toBe('Trigger v2');
+      expect(versionedRegistry.getDefaultHandle('trigger', 'source', '1.0.0')?.id).toBe('output');
+      expect(versionedRegistry.getDefaultHandle('trigger', 'source', '2.0.0')?.id).toBe('next');
+      expect(
+        versionedRegistry
+          .getAllManifests()
+          .filter((nodeManifest) => nodeManifest.nodeType === 'trigger')
+      ).toHaveLength(1);
+    });
+
+    it('should not fall back to the default manifest when a requested version is missing', () => {
+      const manifest = createMockManifest();
+      const triggerV1 = manifest.nodes.find((node) => node.nodeType === 'trigger');
+
+      expect(triggerV1).toBeDefined();
+
+      const triggerV2: NodeManifest = {
+        ...triggerV1!,
+        version: '2.0.0',
+        display: {
+          ...triggerV1!.display,
+          label: 'Trigger v2',
+        },
+        handleConfiguration: [
+          {
+            position: 'right',
+            handles: [
+              {
+                id: 'next',
+                type: 'source',
+                handleType: 'output',
+                label: 'Next',
+                isDefaultForType: true,
+              },
+            ],
+          },
+        ],
+      };
+
+      const versionedRegistry = new NodeTypeRegistry();
+      versionedRegistry.registerManifest([...manifest.nodes, triggerV2], manifest.categories);
+
+      expect(versionedRegistry.getManifest('trigger', '3.0.0')).toBeUndefined();
+      expect(versionedRegistry.getHandlesByNodeType('trigger', '3.0.0')).toEqual({});
+      expect(versionedRegistry.getDefaultHandle('trigger', 'source', '3.0.0')).toBeUndefined();
+    });
   });
 
   describe('getAllManifests', () => {

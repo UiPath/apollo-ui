@@ -304,3 +304,42 @@ export const transformForHandle = ({
 
   return `translate(${horizontalPercent}, ${verticalPercent})`;
 };
+
+export const getInwardHandleSize = (handleType: 'artifact' | 'input' | 'output'): string => {
+  if (handleType === 'input') return '14px';
+  if (handleType === 'artifact') return '16px';
+  return '18px';
+};
+
+export const getInwardHandleTransform = (position: Position, inset: number): string => {
+  switch (position) {
+    case Position.Left:
+      return `translate(${inset}px, -50%)`;
+    case Position.Right:
+      return `translate(${-inset}px, -50%)`;
+    case Position.Top:
+      return `translate(-50%, ${inset}px)`;
+    case Position.Bottom:
+      return `translate(-50%, ${-inset}px)`;
+  }
+};
+
+export const getInwardNotchLayout = (position: Position): string => {
+  switch (position) {
+    case Position.Top:
+      return 'flex-col justify-start';
+    case Position.Bottom:
+      return 'flex-col justify-end';
+    case Position.Left:
+      return 'justify-start';
+    case Position.Right:
+      return 'justify-end';
+  }
+};
+
+export const INWARD_LABEL_POSITION: Record<Position, string> = {
+  [Position.Top]: 'top-full left-1/2 -translate-x-1/2',
+  [Position.Bottom]: 'bottom-full left-1/2 -translate-x-1/2',
+  [Position.Left]: 'left-full top-1/2 -translate-y-1/2',
+  [Position.Right]: 'right-full top-1/2 -translate-y-1/2',
+};

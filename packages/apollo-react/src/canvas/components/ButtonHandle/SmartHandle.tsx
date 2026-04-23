@@ -721,7 +721,7 @@ export function SmartHandle({
       {/* Only render visual elements when visible */}
       {visible && (
         <>
-          {onAction && type === 'source' ? (
+          {onAction && type === 'source' && showButton ? (
             <HandleButton
               visible={showButton}
               labelVisible={visible}

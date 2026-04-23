@@ -1,9 +1,17 @@
+import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { Handle, Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { memo, useCallback, useMemo, useRef, useState } from 'react';
+import { forwardRef, memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { HandleConfigurationSpecificPosition } from '../../schema/node-definition/handle';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import { cx } from '../../utils/CssUtil';
-import { calculateGridAlignedHandlePositions, pixelToPercent } from './ButtonHandleStyleUtils';
+import {
+  calculateGridAlignedHandlePositions,
+  getInwardHandleSize,
+  getInwardHandleTransform,
+  getInwardNotchLayout,
+  INWARD_LABEL_POSITION,
+  pixelToPercent,
+} from './ButtonHandleStyleUtils';
 import { HandleButton, HandleHoverBridge } from './HandleButton';
 import { HandleLabel } from './HandleLabel';
 import { HandleNotch } from './HandleNotch';
@@ -17,11 +25,24 @@ export interface HandleActionEvent {
   originalEvent: React.MouseEvent;
 }
 
+type InwardLabelLayoutOptions = {
+  hasInwardLabel: boolean;
+  isVertical: boolean;
+  position: Position;
+  handleType: 'artifact' | 'input' | 'output';
+  handleWidth: string;
+  handleHeight: string;
+  transform: string;
+};
+
 type ButtonHandleProps = {
   id: string;
   nodeId: string;
   type: 'source' | 'target';
   position: Position;
+  // Defaults to `position`. Loop/container handles can render on one side while
+  // React Flow anchors the edge on another — set this to decouple the two.
+  connectionPosition?: Position;
   handleType: 'artifact' | 'input' | 'output';
   label?: string;
   labelIcon?: React.ReactNode;
@@ -43,6 +64,7 @@ const ButtonHandleBase = ({
   nodeId,
   type,
   position,
+  connectionPosition = position,
   handleType,
   label,
   labelIcon,
@@ -87,7 +109,7 @@ const ButtonHandleBase = ({
         handleId: id,
         nodeId,
         handleType,
-        position,
+        position: connectionPosition,
         originalEvent: event,
       };
 
@@ -99,11 +121,11 @@ const ButtonHandleBase = ({
         handleId: id,
         nodeId,
         handleType,
-        position,
+        position: connectionPosition,
         // timestamp: Date.now(), // Optional - uncomment if you need timing info
       });
     },
-    [id, nodeId, handleType, position, onAction]
+    [connectionPosition, id, nodeId, handleType, onAction]
   );
 
   const markAsHovered = useCallback(() => setIsHovered(true), []);
@@ -123,12 +145,22 @@ const ButtonHandleBase = ({
     numHandles: total,
     customPositionAndOffsets,
   });
+  const hasInwardLabel = Boolean(label && connectionPosition !== position);
+  const { inwardLabelRef, rootWidth, rootHeight, rootTransform } = useInwardLabelLayout({
+    hasInwardLabel,
+    isVertical,
+    position,
+    handleType,
+    handleWidth,
+    handleHeight,
+    transform,
+  });
 
   return (
     <Handle
       ref={handleRef}
       type={type}
-      position={position}
+      position={connectionPosition}
       id={id}
       onMouseEnter={markAsHovered}
       onMouseLeave={unmarkAsHovered}
@@ -140,42 +172,74 @@ const ButtonHandleBase = ({
           : 'cursor-default! pointer-events-none! opacity-0'
       )}
       style={{
-        width: handleWidth,
-        height: handleHeight,
+        width: rootWidth,
+        height: rootHeight,
         top,
         bottom,
         left,
         right,
-        transform,
+        transform: rootTransform,
       }}
     >
-      <HandleNotch
-        handleType={handleType}
-        isVertical={isVertical}
-        selected={selected}
-        hovered={isHovered}
-        showNotch={showNotches}
-      />
-      {onAction && type === 'source' ? (
-        <HandleButton
-          visible={showButton}
-          labelVisible={visible}
-          position={position}
-          onAction={handleButtonClick}
-          handleRef={handleRef}
-          label={label}
-          labelIcon={labelIcon}
-          labelBackgroundColor={labelBackgroundColor}
-        />
-      ) : (
-        label && (
-          <HandleLabel
-            position={position}
-            backgroundColor={labelBackgroundColor}
-            label={label}
+      {hasInwardLabel ? (
+        <>
+          <div className={cx('flex h-full w-full items-center', getInwardNotchLayout(position))}>
+            <HandleNotch
+              handleType={handleType}
+              isVertical={isVertical}
+              selected={selected}
+              hovered={isHovered}
+              showNotch={showNotches}
+            />
+          </div>
+          <InwardHandleLabel
+            ref={inwardLabelRef}
+            connectionPosition={connectionPosition}
+            label={label!}
             labelIcon={labelIcon}
+            backgroundColor={labelBackgroundColor}
           />
-        )
+          {onAction && type === 'source' && showButton ? (
+            <HandleButton
+              visible={showButton}
+              labelVisible={visible}
+              position={position}
+              onAction={handleButtonClick}
+              handleRef={handleRef}
+            />
+          ) : null}
+        </>
+      ) : (
+        <>
+          <HandleNotch
+            handleType={handleType}
+            isVertical={isVertical}
+            selected={selected}
+            hovered={isHovered}
+            showNotch={showNotches}
+          />
+          {onAction && type === 'source' && showButton ? (
+            <HandleButton
+              visible={showButton}
+              labelVisible={visible}
+              position={position}
+              onAction={handleButtonClick}
+              handleRef={handleRef}
+              label={label}
+              labelIcon={labelIcon}
+              labelBackgroundColor={labelBackgroundColor}
+            />
+          ) : (
+            label && (
+              <HandleLabel
+                position={position}
+                backgroundColor={labelBackgroundColor}
+                label={label}
+                labelIcon={labelIcon}
+              />
+            )
+          )}
+        </>
       )}
     </Handle>
   );
@@ -204,6 +268,7 @@ const ButtonHandlesBase = ({
   nodeId,
   handles,
   position,
+  connectionPosition = position,
   selected = false,
   hovered = false,
   visible = true,
@@ -218,6 +283,7 @@ const ButtonHandlesBase = ({
   nodeId: string;
   handles: ButtonHandleConfig[];
   position: Position;
+  connectionPosition?: Position;
   selected?: boolean;
   hovered?: boolean;
   visible?: boolean;
@@ -252,7 +318,7 @@ const ButtonHandlesBase = ({
   // group-level visibility (hover/selection state) is handled via opacity.
   const visibleHandles = handles.filter((h) => h.visible ?? true);
 
-  // Show the hover bridge when any source handle in this group has an onAction callback
+  // Show the hover bridge when any source handle in this group has an onAction callback.
   const hasSourceButtons = visibleHandles.some((h) => h.type === 'source' && h.onAction);
 
   return (
@@ -265,6 +331,7 @@ const ButtonHandlesBase = ({
           nodeId={nodeId}
           type={handle.type}
           position={position}
+          connectionPosition={connectionPosition}
           handleType={handle.handleType}
           label={handle.label}
           labelIcon={handle.labelIcon}
@@ -286,3 +353,70 @@ const ButtonHandlesBase = ({
 };
 
 export const ButtonHandles = memo(ButtonHandlesBase);
+
+function useInwardLabelLayout({
+  hasInwardLabel,
+  isVertical,
+  position,
+  handleType,
+  handleWidth,
+  handleHeight,
+  transform,
+}: InwardLabelLayoutOptions) {
+  // Inward loop labels sit flush to the inner wall, so we measure the pill size
+  // on the relevant axis and shift the React Flow handle inward by that amount.
+  const inwardLabelRef = useRef<HTMLDivElement>(null);
+  const [inwardLabelInset, setInwardLabelInset] = useState(0);
+
+  useLayoutEffect(() => {
+    if (!hasInwardLabel) {
+      setInwardLabelInset((current) => (current === 0 ? current : 0));
+      return;
+    }
+
+    const rect = inwardLabelRef.current?.getBoundingClientRect();
+    const nextInset = isVertical ? (rect?.height ?? 0) : (rect?.width ?? 0);
+    setInwardLabelInset((current) => (current === nextInset ? current : nextInset));
+  }, [hasInwardLabel, isVertical]);
+
+  const inwardHandleSize = getInwardHandleSize(handleType);
+
+  return {
+    inwardLabelRef,
+    rootWidth: hasInwardLabel && !isVertical ? inwardHandleSize : handleWidth,
+    rootHeight: hasInwardLabel && isVertical ? inwardHandleSize : handleHeight,
+    rootTransform: hasInwardLabel
+      ? getInwardHandleTransform(position, inwardLabelInset)
+      : transform,
+  };
+}
+
+const InwardHandleLabel = forwardRef<HTMLDivElement, InwardHandleLabelProps>(
+  function InwardHandleLabel(
+    { connectionPosition, label, labelIcon, backgroundColor }: InwardHandleLabelProps,
+    ref
+  ) {
+    return (
+      <div
+        ref={ref}
+        className={cx(
+          'pointer-events-none absolute flex h-6 items-center whitespace-nowrap rounded-full border border-border-subtle px-2.5',
+          INWARD_LABEL_POSITION[connectionPosition]
+        )}
+        style={{ backgroundColor }}
+      >
+        <Row align="center" gap={3}>
+          {labelIcon}
+          <span className="text-xs font-medium text-foreground">{label}</span>
+        </Row>
+      </div>
+    );
+  }
+);
+
+type InwardHandleLabelProps = {
+  connectionPosition: Position;
+  label: string;
+  labelIcon?: React.ReactNode;
+  backgroundColor: string;
+};

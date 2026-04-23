@@ -1,6 +1,6 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { PREVIEW_NODE_ID } from '../../constants';
+import { DEFAULT_NODE_SIZE, PREVIEW_NODE_ID } from '../../constants';
 import type { PreviewNodeConnectionInfo } from '../../hooks/usePreviewNode';
 import { render, screen } from '../../utils/testing';
 import type { ListItem } from '../Toolbox';
@@ -11,7 +11,8 @@ import { AddNodeManager } from './AddNodeManager';
 let mockNodes: Node[] = [];
 let mockEdges: Edge[] = [];
 
-vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
+vi.mock('@uipath/apollo-react/canvas/xyflow/react', async () => ({
+  ...(await vi.importActual('@uipath/apollo-react/canvas/xyflow/react')),
   useReactFlow: () => ({
     getNode: (id: string) => mockNodes.find((n) => n.id === id),
     getNodes: () => mockNodes,
@@ -32,10 +33,6 @@ vi.mock('../../hooks/usePreviewNode', () => ({
 
 vi.mock('../../core', () => ({
   useOptionalNodeTypeRegistry: () => null,
-}));
-
-vi.mock('../../utils', () => ({
-  resolveCollisions: (nodes: Node[]) => nodes,
 }));
 
 vi.mock('../FloatingCanvasPanel', () => ({
@@ -107,6 +104,20 @@ describe('AddNodeManager', () => {
       Select
     </button>
   );
+
+  const nodesOverlap = (firstNode: Node, secondNode: Node) => {
+    const firstWidth = firstNode.width ?? firstNode.measured?.width ?? DEFAULT_NODE_SIZE;
+    const firstHeight = firstNode.height ?? firstNode.measured?.height ?? DEFAULT_NODE_SIZE;
+    const secondWidth = secondNode.width ?? secondNode.measured?.width ?? DEFAULT_NODE_SIZE;
+    const secondHeight = secondNode.height ?? secondNode.measured?.height ?? DEFAULT_NODE_SIZE;
+
+    return (
+      firstNode.position.x < secondNode.position.x + secondWidth &&
+      firstNode.position.x + firstWidth > secondNode.position.x &&
+      firstNode.position.y < secondNode.position.y + secondHeight &&
+      firstNode.position.y + firstHeight > secondNode.position.y
+    );
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -290,6 +301,73 @@ describe('AddNodeManager', () => {
         data: expect.objectContaining({ customProp: 'transformed' }),
         position: { x: 500, y: 600 },
       })
+    );
+  });
+
+  it('preserves parentId metadata on edges created from a parented preview', () => {
+    const loopPreviewNode: Node = {
+      ...previewNode,
+      parentId: 'loop-container',
+      extent: 'parent',
+    };
+
+    mockNodes = [existingNode, loopPreviewNode];
+    mockPreviewNodeReturn.mockReturnValue({
+      previewNode: loopPreviewNode,
+      previewNodeConnectionInfo: connectionInfo,
+    });
+
+    render(<AddNodeManager customPanel={TestPanel} />);
+
+    screen.getByTestId('select-node').click();
+
+    const addedEdge = mockEdges.find((edge) => edge.id !== 'preview-edge-1');
+    expect(addedEdge).toMatchObject({
+      data: { parentId: 'loop-container' },
+    });
+  });
+
+  it('only reflows nodes inside the same container when adding into a parented preview', () => {
+    const siblingNode: Node = {
+      id: 'sibling-node',
+      type: 'existing',
+      parentId: 'loop-container',
+      extent: 'parent',
+      position: { x: 120, y: 200 },
+      data: {},
+    };
+    const loopPreviewNode: Node = {
+      ...previewNode,
+      parentId: 'loop-container',
+      extent: 'parent',
+    };
+
+    mockNodes = [existingNode, siblingNode, loopPreviewNode];
+    mockPreviewNodeReturn.mockReturnValue({
+      previewNode: loopPreviewNode,
+      previewNodeConnectionInfo: connectionInfo,
+    });
+    render(<AddNodeManager customPanel={TestPanel} />);
+
+    screen.getByTestId('select-node').click();
+
+    const unchangedNode = mockNodes.find((node) => node.id === 'existing-node-1');
+    const reflowedSibling = mockNodes.find((node) => node.id === 'sibling-node');
+    const insertedNode = mockNodes.find((node) => node.id === 'test-node-1234567890');
+
+    expect(unchangedNode).toMatchObject({
+      position: { x: 0, y: 0 },
+    });
+    expect(reflowedSibling).toMatchObject({
+      parentId: 'loop-container',
+    });
+    expect(insertedNode).toMatchObject({
+      parentId: 'loop-container',
+    });
+    expect(reflowedSibling?.position).not.toEqual({ x: 120, y: 200 });
+    expect(insertedNode?.position).not.toEqual({ x: 100, y: 200 });
+    expect(reflowedSibling && insertedNode && nodesOverlap(reflowedSibling, insertedNode)).toBe(
+      false
     );
   });
 });

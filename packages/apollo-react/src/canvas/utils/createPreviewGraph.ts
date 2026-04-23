@@ -4,7 +4,14 @@ import {
   Position,
   type ReactFlowInstance,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { DEFAULT_NODE_SIZE, GRID_SPACING, PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../constants';
+import {
+  DEFAULT_NODE_SIZE,
+  DEFAULT_SOURCE_HANDLE_ID,
+  DEFAULT_TARGET_HANDLE_ID,
+  GRID_SPACING,
+  PREVIEW_EDGE_ID,
+  PREVIEW_NODE_ID,
+} from '../constants';
 import {
   getAbsolutePosition,
   getNonOverlappingPositionForDirection,
@@ -12,11 +19,104 @@ import {
   resolveHandleContext,
 } from './NodeUtils';
 
+export interface PreviewGraph {
+  node: Node;
+  edges: Edge[];
+  removedEdgeIds?: string[];
+}
+
+export const PREVIEW_EDGE_STYLE: Edge['style'] = {
+  strokeDasharray: '5,5',
+  opacity: 0.8,
+  stroke: 'var(--canvas-selection-indicator)',
+  strokeWidth: 2,
+};
+
+export type PreviewNodePositionMode = 'drop' | 'center';
+
+interface CreatePreviewNodeOptions {
+  sourceNodeId: string;
+  sourceHandleId: string;
+  reactFlowInstance: ReactFlowInstance;
+  position?: { x: number; y: number };
+  data?: Record<string, unknown>;
+  sourceHandleType?: 'source' | 'target';
+  previewNodeSize?: { width: number; height: number };
+  handlePosition?: Position;
+  ignoredNodeTypes?: string[];
+  positionMode?: PreviewNodePositionMode;
+}
+
+export interface CreatePreviewGraphOptions extends CreatePreviewNodeOptions {
+  targetNodeId?: string;
+  targetHandleId?: string | null;
+  containerId?: string;
+  removedEdgeIds?: string[];
+  trailingEdgeId?: string;
+  trailingEdgeStyle?: Edge['style'];
+}
+
+interface PreviewNodeResult {
+  sourceNode: Node;
+  node: Node;
+  edge: Edge;
+}
+
+export function inferParentId(
+  sourceId: string,
+  targetId: string,
+  nodes: Node[]
+): string | undefined {
+  const sourceNode = nodes.find((node) => node.id === sourceId);
+  const targetNode = nodes.find((node) => node.id === targetId);
+  if (!sourceNode || !targetNode) return undefined;
+
+  if (sourceNode.parentId && sourceNode.parentId === targetNode.parentId) {
+    return sourceNode.parentId;
+  }
+
+  if (targetNode.parentId && targetNode.parentId === sourceNode.id) {
+    return sourceNode.id;
+  }
+
+  if (sourceNode.parentId && sourceNode.parentId === targetNode.id) {
+    return targetNode.id;
+  }
+
+  return undefined;
+}
+
+export function reparentPreviewNodeToContainer(
+  previewNode: Node,
+  containerId: string,
+  reactFlowInstance: ReactFlowInstance
+): Node | null {
+  const containerNode = reactFlowInstance.getNode(containerId);
+  if (!containerNode) {
+    return null;
+  }
+
+  const containerAbsolutePosition = getAbsolutePosition(
+    containerNode,
+    reactFlowInstance.getNodes()
+  );
+
+  return {
+    ...previewNode,
+    position: {
+      x: previewNode.position.x - containerAbsolutePosition.x,
+      y: previewNode.position.y - containerAbsolutePosition.y,
+    },
+    parentId: containerId,
+    extent: 'parent',
+  };
+}
+
 /**
  * Returns the opposite position for a given handle position.
  * Used when dragging from a target handle where the preview should appear on the opposite side.
  */
-function getOppositePosition(position: Position): Position {
+export function getOppositePosition(position: Position): Position {
   switch (position) {
     case Position.Left:
       return Position.Right;
@@ -72,6 +172,16 @@ function calculatePositionFromDrop(
         y: dropPosition.y - previewNodeSize.height / 2,
       };
   }
+}
+
+function calculateCenteredPosition(
+  centerPosition: { x: number; y: number },
+  previewNodeSize: { width: number; height: number }
+): { x: number; y: number } {
+  return {
+    x: centerPosition.x - previewNodeSize.width / 2,
+    y: centerPosition.y - previewNodeSize.height / 2,
+  };
 }
 
 /**
@@ -191,25 +301,23 @@ function calculateAutoPosition(
 }
 
 /**
- * Creates a preview node and edge at a specific position or calculated position
- * This is the single source of truth for preview node creation
- *
- * @param ignoredNodeTypes Optional array of node types to ignore when calculating overlap (e.g., ["stickyNote"])
+ * Builds the preview node plus its primary edge back to the source handle.
  */
-export function createPreviewNode(
-  sourceNodeId: string,
-  sourceHandleId: string,
-  reactFlowInstance: ReactFlowInstance,
-  position?: { x: number; y: number },
-  data?: Record<string, any>,
-  sourceHandleType: 'source' | 'target' = 'source',
-  previewNodeSize: { width: number; height: number } = {
+function createPreviewNode({
+  sourceNodeId,
+  sourceHandleId,
+  reactFlowInstance,
+  position,
+  data,
+  sourceHandleType = 'source',
+  previewNodeSize = {
     width: DEFAULT_NODE_SIZE,
     height: DEFAULT_NODE_SIZE,
   },
-  handlePosition: Position = Position.Right,
-  ignoredNodeTypes: string[] = []
-): { node: Node; edge: Edge } | null {
+  handlePosition = Position.Right,
+  ignoredNodeTypes = [],
+  positionMode = 'drop',
+}: CreatePreviewNodeOptions): PreviewNodeResult | null {
   const sourceNode = reactFlowInstance.getNode(sourceNodeId);
   if (!sourceNode) {
     console.warn(`Source node ${sourceNodeId} not found`);
@@ -229,8 +337,10 @@ export function createPreviewNode(
     ? resolveHandleContext(internalNode, sourceHandleId, handlePosition)
     : undefined;
 
-  const nodePosition = position
-    ? calculatePositionFromDrop(position, handlePosition, previewNodeSize)
+  const previewPosition = position
+    ? positionMode === 'center'
+      ? calculateCenteredPosition(position, previewNodeSize)
+      : calculatePositionFromDrop(position, handlePosition, previewNodeSize)
     : calculateAutoPosition(
         sourceNode,
         handlePosition,
@@ -246,7 +356,7 @@ export function createPreviewNode(
   const handleFacingSource = getOppositePosition(handlePosition);
 
   // Create preview node
-  const finalData: Record<string, unknown> = { ...(data ?? {}) };
+  const previewData: Record<string, unknown> = { ...(data ?? {}) };
   // Set handle positions based on whether preview is acting as the source or the target.
   //
   // - When dragging from a *target* handle, we treat the preview node as the *source* (`treatPreviewAsSource`).
@@ -260,54 +370,107 @@ export function createPreviewNode(
   // - When dragging from a *source* handle (`treatPreviewAsSource` is false), the original node remains the source.
   //   The preview acts as the target, so its *input* handle must face the original node, and its *output* handle
   //   stays on the original `handlePosition` side for any downstream connections from the preview.
-  finalData.inputHandlePosition = treatPreviewAsSource ? handlePosition : handleFacingSource;
-  finalData.outputHandlePosition = treatPreviewAsSource ? handleFacingSource : handlePosition;
+  previewData.inputHandlePosition = treatPreviewAsSource ? handlePosition : handleFacingSource;
+  previewData.outputHandlePosition = treatPreviewAsSource ? handleFacingSource : handlePosition;
 
-  const previewNode: Node = {
+  const node: Node = {
     id: PREVIEW_NODE_ID,
     type: 'preview',
-    position: nodePosition,
+    position: previewPosition,
     ...previewNodeSize,
     selected: true,
-    data: finalData,
+    data: previewData,
   };
-
-  const previewSourceAndTargetData = treatPreviewAsSource
-    ? {
-        source: PREVIEW_NODE_ID,
-        sourceHandle: 'output',
-        target: sourceNodeId,
-        targetHandle: sourceHandleId,
-      }
-    : {
-        source: sourceNodeId,
-        sourceHandle: sourceHandleId,
-        target: PREVIEW_NODE_ID,
-        targetHandle: 'input',
-      };
 
   // Create preview edge with consistent styling
-  const previewEdge: Edge = {
+  const edge: Edge = {
     id: PREVIEW_EDGE_ID,
-    ...previewSourceAndTargetData,
+    ...(treatPreviewAsSource
+      ? {
+          source: PREVIEW_NODE_ID,
+          sourceHandle: DEFAULT_SOURCE_HANDLE_ID,
+          target: sourceNodeId,
+          targetHandle: sourceHandleId,
+        }
+      : {
+          source: sourceNodeId,
+          sourceHandle: sourceHandleId,
+          target: PREVIEW_NODE_ID,
+          targetHandle: DEFAULT_TARGET_HANDLE_ID,
+        }),
     type: 'default',
-    style: {
-      strokeDasharray: '5,5',
-      opacity: 0.8,
-      stroke: 'var(--canvas-selection-indicator)',
-      strokeWidth: 2,
-    },
+    style: PREVIEW_EDGE_STYLE,
   };
 
-  return { node: previewNode, edge: previewEdge };
+  return {
+    sourceNode,
+    node,
+    edge,
+  };
+}
+
+export function createPreviewGraph(options: CreatePreviewGraphOptions): PreviewGraph | null {
+  const {
+    reactFlowInstance,
+    targetNodeId,
+    targetHandleId,
+    containerId,
+    removedEdgeIds,
+    trailingEdgeId,
+    trailingEdgeStyle = PREVIEW_EDGE_STYLE,
+  } = options;
+
+  const preview = createPreviewNode(options);
+  if (!preview) return null;
+
+  const resolvedContainerId = containerId ?? preview.sourceNode.parentId;
+  const finalPreviewNode = resolvedContainerId
+    ? reparentPreviewNodeToContainer(preview.node, resolvedContainerId, reactFlowInstance)
+    : preview.node;
+
+  if (!finalPreviewNode) return null;
+
+  const edges: Edge[] = [preview.edge];
+
+  if (targetNodeId) {
+    edges.push({
+      id: trailingEdgeId ?? `${PREVIEW_NODE_ID}-${targetNodeId}`,
+      source: PREVIEW_NODE_ID,
+      sourceHandle: DEFAULT_SOURCE_HANDLE_ID,
+      target: targetNodeId,
+      targetHandle: targetHandleId,
+      type: 'default',
+      style: trailingEdgeStyle,
+    });
+  }
+
+  return {
+    node: finalPreviewNode,
+    edges,
+    removedEdgeIds,
+  };
 }
 
 /**
- * Applies preview node and edge to React Flow instance
- * Handles cleanup of existing previews and selection
+ * Creates and shows a preview graph in React Flow.
+ * Returns the created preview graph when successful so callers can still
+ * inspect the result if needed.
  */
-export function applyPreviewToReactFlow(
-  preview: { node: Node; edge: Edge },
+export function showPreviewGraph(options: CreatePreviewGraphOptions): PreviewGraph | null {
+  const preview = createPreviewGraph(options);
+  if (preview) {
+    applyPreviewGraphToReactFlow(preview, options.reactFlowInstance);
+  }
+  return preview;
+}
+
+/**
+ * Applies a preview graph to React Flow.
+ * This supports both the classic single-edge preview and multi-edge previews
+ * such as container/loop insertion flows.
+ */
+export function applyPreviewGraphToReactFlow(
+  preview: PreviewGraph,
   reactFlowInstance: ReactFlowInstance
 ): void {
   // Use a timeout to avoid React Flow internal reset.
@@ -319,16 +482,23 @@ export function applyPreviewToReactFlow(
     ]);
 
     reactFlowInstance.setEdges((edges) => [
-      ...edges.filter((e) => e.id !== PREVIEW_EDGE_ID),
-      preview.edge,
+      ...edges.filter(
+        (edge) =>
+          edge.source !== PREVIEW_NODE_ID &&
+          edge.target !== PREVIEW_NODE_ID &&
+          !preview.removedEdgeIds?.includes(edge.id)
+      ),
+      ...preview.edges,
     ]);
   }, 0);
 }
 
 /**
- * Removes preview node and edge from React Flow instance
+ * Removes the preview node and every preview-connected edge from React Flow.
  */
 export function removePreviewFromReactFlow(reactFlowInstance: ReactFlowInstance): void {
   reactFlowInstance.setNodes((nodes) => nodes.filter((n) => n.id !== PREVIEW_NODE_ID));
-  reactFlowInstance.setEdges((edges) => edges.filter((e) => e.id !== PREVIEW_EDGE_ID));
+  reactFlowInstance.setEdges((edges) =>
+    edges.filter((edge) => edge.source !== PREVIEW_NODE_ID && edge.target !== PREVIEW_NODE_ID)
+  );
 }

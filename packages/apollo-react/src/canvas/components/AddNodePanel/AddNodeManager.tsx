@@ -51,6 +51,18 @@ export interface AddNodeManagerProps {
   ignoredNodeTypes?: string[];
 }
 
+function resolveNodePlacement(nodes: Node[], insertedNode: Node, ignoredNodeTypes?: string[]) {
+  if (!insertedNode.parentId) {
+    return resolveCollisions(nodes, { ignoredNodeTypes });
+  }
+
+  const siblingNodes = nodes.filter((node) => node.parentId === insertedNode.parentId);
+  const resolvedSiblings = resolveCollisions(siblingNodes, { ignoredNodeTypes });
+  const resolvedSiblingsById = new Map(resolvedSiblings.map((node) => [node.id, node]));
+
+  return nodes.map((node) => resolvedSiblingsById.get(node.id) ?? node);
+}
+
 /**
  * Component that manages preview node selection and replacement.
  * Must be rendered as a child of ReactFlow/BaseCanvas.
@@ -139,11 +151,13 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
         id: newNodeId,
         type: nodeItem.data.type,
         position: currentPreviewNode.position,
+        parentId: currentPreviewNode.parentId,
+        extent: currentPreviewNode.extent,
         selected: true,
         data: nodeData,
       };
       // Get the manifest for the new node type to find its default handles
-      const newNodeManifest = registry?.getManifest(nodeItem.data.type);
+      const newNodeManifest = registry?.getManifest(nodeItem.data.type, nodeItem.data.version);
 
       // Create edges for all connections
       const newEdges: Edge[] = [];
@@ -153,7 +167,11 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
         // Get the default handle for the new node based on connection direction
         const newNodeHandleType = connectionInfoItem.addNewNodeAsSource ? 'source' : 'target';
         const newNodeDefaultHandle = newNodeManifest
-          ? registry?.getDefaultHandle(newNodeManifest.nodeType, newNodeHandleType)
+          ? registry?.getDefaultHandle(
+              newNodeManifest.nodeType,
+              newNodeHandleType,
+              nodeItem.data.version
+            )
           : undefined;
         const newNodeHandleId = newNodeDefaultHandle?.id;
         // Arrange edge based on whether new node is source or target
@@ -176,6 +194,9 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
           id: newEdgeId,
           ...edgeSourceTargetData,
           type: 'default',
+          ...(currentPreviewNode.parentId
+            ? { data: { parentId: currentPreviewNode.parentId } }
+            : {}),
         });
         previewEdgeIds.push(connectionInfoItem.previewEdgeId);
       }
@@ -194,7 +215,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
           ...nodes.filter((n) => n.id !== PREVIEW_NODE_ID).map((n) => ({ ...n, selected: false })),
           finalNode,
         ];
-        return resolveCollisions(newNodes, { ignoredNodeTypes });
+        return resolveNodePlacement(newNodes, finalNode, ignoredNodeTypes);
       });
 
       // Replace all preview edges with actual edges
@@ -207,7 +228,9 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
       const [firstConnection] = previewNodeConnectionInfo;
       if (firstConnection) {
         const firstEdgeSourceHandle = firstConnection.addNewNodeAsSource
-          ? newNodeManifest && registry?.getDefaultHandle(newNodeManifest.nodeType, 'source')?.id
+          ? newNodeManifest &&
+            registry?.getDefaultHandle(newNodeManifest.nodeType, 'source', nodeItem.data.version)
+              ?.id
           : firstConnection.existingHandleId;
         const firstEdgeData = firstConnection.addNewNodeAsSource
           ? { source: finalNode.id, sourceHandle: firstEdgeSourceHandle ?? 'output' }

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel, Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useMemo } from 'react';
 import { useAddNodeOnConnectEnd, useCanvasEvent } from '../../hooks';
@@ -11,15 +11,15 @@ import {
   withCanvasProviders,
 } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
-import type { CanvasHandleActionEvent } from '../../utils';
+import { type CanvasHandleActionEvent, showPreviewGraph } from '../../utils';
 import { BaseCanvas } from '../BaseCanvas';
 import type { BaseNodeData } from '../BaseNode';
 import { CanvasPositionControls } from '../CanvasPositionControls';
+import { LoopCanvasNode } from '../LoopNode';
 import type { ListItem } from '../Toolbox';
 import { AddNodePanel } from '.';
 import { AddNodeManager } from './AddNodeManager';
 import type { NodeItemData } from './AddNodePanel.types';
-import { createAddNodePreview } from './createAddNodePreview';
 
 // ============================================================================
 // Meta Configuration
@@ -176,6 +176,32 @@ const SCROLLABLE_CATEGORY_ITEMS: ListItem<NodeItemData>[] = [
   },
 ];
 
+const PREVIEW_SELECTION_NODE_TYPES = {
+  'uipath.control-flow.foreach': LoopCanvasNode,
+  'uipath.control-flow.while': LoopCanvasNode,
+};
+
+const PREVIEW_SELECTION_LOOP_TYPES = new Set([
+  'uipath.control-flow.foreach',
+  'uipath.control-flow.while',
+]);
+const PREVIEW_SELECTION_LOOP_SIZE = { width: 720, height: 432 } as const;
+
+function applyPreviewSelectionNodeSizing(newNode: Node, newEdges: Edge[]) {
+  if (!PREVIEW_SELECTION_LOOP_TYPES.has(newNode.type!)) {
+    return { newNode, newEdges };
+  }
+
+  return {
+    newNode: {
+      ...newNode,
+      width: PREVIEW_SELECTION_LOOP_SIZE.width,
+      height: PREVIEW_SELECTION_LOOP_SIZE.height,
+    },
+    newEdges,
+  };
+}
+
 function createInitialNodes(): Node<BaseNodeData>[] {
   return [
     createNode({
@@ -242,6 +268,7 @@ function PreviewSelectionStory() {
         targetHandle: 'input',
       },
     ],
+    additionalNodeTypes: PREVIEW_SELECTION_NODE_TYPES,
   });
 
   const reactFlowInstance = useReactFlow();
@@ -251,13 +278,13 @@ function PreviewSelectionStory() {
     const { handleId, nodeId, position, handleType } = event;
     if (handleId && nodeId) {
       const sourceHandleType = handleType === 'input' ? 'target' : 'source';
-      createAddNodePreview(
-        nodeId,
-        handleId,
+      showPreviewGraph({
+        sourceNodeId: nodeId,
+        sourceHandleId: handleId,
         reactFlowInstance,
-        position as Position,
-        sourceHandleType
-      );
+        sourceHandleType,
+        handlePosition: position as Position,
+      });
     }
   });
 
@@ -271,7 +298,7 @@ function PreviewSelectionStory() {
       mode="design"
       defaultViewport={{ x: 0, y: 0, zoom: 1 }}
     >
-      <AddNodeManager />
+      <AddNodeManager onBeforeNodeAdded={applyPreviewSelectionNodeSizing} />
       <Panel position="bottom-right">
         <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
@@ -325,13 +352,13 @@ function AllSidesStory() {
     const { handleId, nodeId, position, handleType } = event;
     if (handleId && nodeId) {
       const sourceHandleType = handleType === 'input' ? 'target' : 'source';
-      createAddNodePreview(
-        nodeId,
-        handleId,
+      showPreviewGraph({
+        sourceNodeId: nodeId,
+        sourceHandleId: handleId,
         reactFlowInstance,
-        position as Position,
-        sourceHandleType
-      );
+        sourceHandleType,
+        handlePosition: position as Position,
+      });
     }
   });
 

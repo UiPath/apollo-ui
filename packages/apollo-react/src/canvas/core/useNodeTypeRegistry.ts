@@ -44,7 +44,7 @@ export const useNodeManifests = (): NodeManifest[] => {
  * @param nodeType - Node type identifier
  * @returns Node manifest or undefined if not found
  */
-export const useNodeManifest = (nodeType: string): NodeManifest | undefined => {
+export const useNodeManifest = (nodeType: string, version?: string): NodeManifest | undefined => {
   const registry = useNodeTypeRegistry();
-  return useMemo(() => registry.getManifest(nodeType), [registry, nodeType]);
+  return useMemo(() => registry.getManifest(nodeType, version), [registry, nodeType, version]);
 };

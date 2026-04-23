@@ -1,7 +1,7 @@
 import { type Edge, type Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useMemo } from 'react';
-import { PREVIEW_NODE_ID } from '../../../constants';
-import { applyPreviewToReactFlow, createPreviewNode } from '../../../utils/createPreviewNode';
+import { DEFAULT_SOURCE_HANDLE_ID, PREVIEW_NODE_ID } from '../../../constants';
+import { showPreviewGraph } from '../../../utils/createPreviewGraph';
 import { useBaseCanvasMode } from '../../BaseCanvas/BaseCanvasModeProvider';
 import type { EdgeToolbarConfig, EdgeToolbarPositionData } from './EdgeToolbar.types';
 import { useEdgeToolbarPositioning } from './useEdgeToolbarPositioning';
@@ -17,6 +17,7 @@ export interface UseEdgeToolbarStateProps {
   sourcePosition: Position;
   targetPosition: Position;
   ignoredNodeTypes?: string[];
+  parentId?: string;
 }
 
 export interface EdgeToolbarState {
@@ -37,6 +38,7 @@ export function useEdgeToolbarState({
   sourcePosition,
   targetPosition,
   ignoredNodeTypes,
+  parentId,
 }: UseEdgeToolbarStateProps): EdgeToolbarState {
   const reactFlow = useReactFlow();
   const { mode } = useBaseCanvasMode();
@@ -54,49 +56,43 @@ export function useEdgeToolbarState({
   // Handle adding a node at the current mouse position along the edge
   const handleAddNodeOnEdge = useCallback(
     (position: { x: number; y: number }) => {
+      const existingEdge = reactFlow.getEdges().find((edge) => edge.id === edgeId);
+
       // Store original edge to restore if preview is cancelled
-      const originalEdge: Edge = {
-        id: edgeId,
-        source,
-        sourceHandle: sourceHandleId,
-        target,
-        targetHandle: targetHandleId,
-        type: 'default',
-      };
+      const originalEdge: Edge = existingEdge
+        ? {
+            ...existingEdge,
+            data: parentId
+              ? {
+                  ...(existingEdge.data ?? {}),
+                  parentId,
+                }
+              : existingEdge.data,
+          }
+        : {
+            id: edgeId,
+            source,
+            sourceHandle: sourceHandleId,
+            target,
+            targetHandle: targetHandleId,
+            type: 'default',
+            data: parentId ? { parentId } : undefined,
+          };
 
-      // Use createPreviewNode utility to create preview node with proper positioning
-      const preview = createPreviewNode(
-        source,
-        sourceHandleId || 'output',
-        reactFlow,
-        position, // Drop position at mouse cursor
-        { originalEdge }, // Pass original edge to restore if cancelled
-        'source', // Source handle type
-        undefined, // Use default node size
-        sourcePosition,
-        ignoredNodeTypes
-      );
-
-      if (!preview) return;
-
-      // Create second edge from preview to target
-      const secondEdge: Edge = {
-        id: `${PREVIEW_NODE_ID}-${target}`,
-        source: PREVIEW_NODE_ID,
-        sourceHandle: 'output',
-        target,
-        targetHandle: targetHandleId,
-        type: 'default',
-      };
-
-      // Apply preview (adds preview node and first edge: source → preview)
-      applyPreviewToReactFlow(preview, reactFlow);
-
-      // Remove original edge and add second edge (preview → target)
-      reactFlow.setEdges((edges) => [
-        ...edges.filter((e) => e.id !== edgeId).map((e) => ({ ...e, selected: false })),
-        secondEdge,
-      ]);
+      showPreviewGraph({
+        sourceNodeId: source,
+        sourceHandleId: sourceHandleId ?? DEFAULT_SOURCE_HANDLE_ID,
+        reactFlowInstance: reactFlow,
+        position,
+        data: { originalEdge },
+        sourceHandleType: 'source',
+        handlePosition: sourcePosition,
+        ignoredNodeTypes: ignoredNodeTypes ?? [],
+        targetNodeId: target,
+        targetHandleId,
+        containerId: parentId,
+        removedEdgeIds: [edgeId],
+      });
     },
     [
       sourcePosition,
@@ -107,6 +103,7 @@ export function useEdgeToolbarState({
       targetHandleId,
       edgeId,
       ignoredNodeTypes,
+      parentId,
     ]
   );
 

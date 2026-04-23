@@ -22,12 +22,30 @@ interface NodeHandles {
 export class NodeTypeRegistry {
   private categoryById = new Map<string, CategoryManifest>();
   private nodeByType = new Map<string, NodeManifest>();
+  private nodeByTypeVersion = new Map<string, NodeManifest>();
   private nodeHandles = new Map<string, NodeHandles>();
+  private nodeHandlesByTypeVersion = new Map<string, NodeHandles>();
   private categoriesByParent = new Map<string | undefined, CategoryManifest[]>();
   private nodesByCategory = new Map<string | undefined, NodeManifest[]>();
   private categoryAncestors = new Map<string, string[]>();
   private categoryDescendants = new Map<string, string[]>();
   private categoryTree: CategoryTree | null = null;
+
+  private getNodeHandles(manifest: NodeManifest): NodeHandles {
+    return manifest.handleConfiguration
+      .flatMap((hc) => hc.handles)
+      .reduce((acc, handle) => {
+        if (!acc[handle.type]) {
+          acc[handle.type] = [];
+        }
+        acc[handle.type]?.push(handle);
+        return acc;
+      }, {} as NodeHandles);
+  }
+
+  private getTypeVersionKey(nodeType: string, version: string): string {
+    return `${nodeType}:${version}`;
+  }
 
   /**
    * Register multiple node manifests at once.
@@ -70,21 +88,27 @@ export class NodeTypeRegistry {
   registerManifest(nodeManifests: NodeManifest[], categoryManifests: CategoryManifest[]) {
     // Build direct lookup maps O(n) + O(m)
     this.categoryById = new Map(categoryManifests.map((c) => [c.id, c]));
-    this.nodeByType = new Map(nodeManifests.map((n) => [n.nodeType, n]));
-    this.nodeHandles = new Map<string, NodeHandles>(
-      nodeManifests.map((n) => [
-        n.nodeType,
-        n.handleConfiguration
-          .flatMap((hc) => hc.handles)
-          .reduce((acc, handle) => {
-            if (!acc[handle.type]) {
-              acc[handle.type] = [];
-            }
-            acc[handle.type]?.push(handle);
-            return acc;
-          }, {} as NodeHandles),
-      ])
-    );
+    this.nodeByType = new Map<string, NodeManifest>();
+    this.nodeByTypeVersion = new Map<string, NodeManifest>();
+    this.nodeHandles = new Map<string, NodeHandles>();
+    this.nodeHandlesByTypeVersion = new Map<string, NodeHandles>();
+
+    for (const nodeManifest of nodeManifests) {
+      const nodeHandles = this.getNodeHandles(nodeManifest);
+      this.nodeByTypeVersion.set(
+        this.getTypeVersionKey(nodeManifest.nodeType, nodeManifest.version),
+        nodeManifest
+      );
+      this.nodeHandlesByTypeVersion.set(
+        this.getTypeVersionKey(nodeManifest.nodeType, nodeManifest.version),
+        nodeHandles
+      );
+
+      this.nodeByType.set(nodeManifest.nodeType, nodeManifest);
+      this.nodeHandles.set(nodeManifest.nodeType, nodeHandles);
+    }
+
+    const defaultNodeManifests = Array.from(this.nodeByType.values());
 
     // Build parent-child relationships O(n)
     this.categoriesByParent = new Map<string | undefined, CategoryManifest[]>();
@@ -125,7 +149,7 @@ export class NodeTypeRegistry {
     // Build category-to-nodes mapping O(m)
     // Note: nodes without a category are stored with undefined as the key
     this.nodesByCategory = new Map<string, NodeManifest[]>();
-    for (const node of nodeManifests) {
+    for (const node of defaultNodeManifests) {
       const categoryKey = node.category ?? undefined;
       const nodes = this.nodesByCategory.get(categoryKey) ?? [];
       nodes.push(node);
@@ -133,7 +157,7 @@ export class NodeTypeRegistry {
     }
 
     // Build hierarchical category tree O(n)
-    this.categoryTree = new CategoryTree(categoryManifests, nodeManifests);
+    this.categoryTree = new CategoryTree(categoryManifests, defaultNodeManifests);
   }
 
   /**
@@ -141,8 +165,12 @@ export class NodeTypeRegistry {
    * @param nodeType - Node type identifier
    * @returns Node manifest or undefined if not found
    */
-  getManifest(nodeType: string): NodeManifest | undefined {
-    return this.nodeByType.get(nodeType);
+  getManifest(nodeType: string, version?: string): NodeManifest | undefined {
+    if (!version) {
+      return this.nodeByType.get(nodeType);
+    }
+
+    return this.nodeByTypeVersion.get(this.getTypeVersionKey(nodeType, version));
   }
 
   /**
@@ -172,15 +200,23 @@ export class NodeTypeRegistry {
   /**
    * Get handles handles for a given node. Will be organized by handle type (source/target).
    */
-  getHandlesByNodeType(nodeType: string): NodeHandles {
-    return this.nodeHandles.get(nodeType) ?? {};
+  getHandlesByNodeType(nodeType: string, version?: string): NodeHandles {
+    if (!version) {
+      return this.nodeHandles.get(nodeType) ?? {};
+    }
+
+    return this.nodeHandlesByTypeVersion.get(this.getTypeVersionKey(nodeType, version)) ?? {};
   }
 
   /**
    * Get the default handle for a given node type and handle type.
    */
-  getDefaultHandle(nodeType: string, handleType: 'source' | 'target'): HandleManifest | undefined {
-    const handles = this.nodeHandles.get(nodeType)?.[handleType];
+  getDefaultHandle(
+    nodeType: string,
+    handleType: 'source' | 'target',
+    version?: string
+  ): HandleManifest | undefined {
+    const handles = this.getHandlesByNodeType(nodeType, version)[handleType];
     return handles?.find((h) => h.isDefaultForType) ?? handles?.[0];
   }
 
@@ -190,14 +226,14 @@ export class NodeTypeRegistry {
    * @param label - Optional custom label
    * @returns Default node data
    */
-  createDefaultData(nodeType: string, label?: string): BaseNodeData {
-    const manifest = this.getManifest(nodeType);
+  createDefaultData(nodeType: string, label?: string, version?: string): BaseNodeData {
+    const manifest = this.getManifest(nodeType, version);
 
     if (!manifest) {
       // Return minimal data if manifest not found
       return {
         nodeType,
-        version: '1.0.0',
+        version: version ?? '1.0.0',
         display: {
           label: label || nodeType,
         },
@@ -237,7 +273,9 @@ export class NodeTypeRegistry {
   clear(): void {
     this.nodesByCategory.clear();
     this.nodeHandles.clear();
+    this.nodeHandlesByTypeVersion.clear();
     this.nodeByType.clear();
+    this.nodeByTypeVersion.clear();
     this.categoryById.clear();
     this.categoryAncestors.clear();
     this.categoryDescendants.clear();

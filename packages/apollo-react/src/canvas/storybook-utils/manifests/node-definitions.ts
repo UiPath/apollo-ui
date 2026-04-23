@@ -89,7 +89,7 @@ export const allNodeManifests: NodeManifest[] = [
   // Decision (Control Flow)
   {
     nodeType: 'uipath.control-flow.decision',
-    version: '1',
+    version: '1.0.0',
     category: 'control-flow',
     tags: ['control-flow', 'if', 'loop', 'switch'],
     sortOrder: 1,
@@ -157,7 +157,7 @@ export const allNodeManifests: NodeManifest[] = [
   // Switch (Control Flow)
   {
     nodeType: 'uipath.control-flow.switch',
-    version: '1',
+    version: '1.0.0',
     category: 'control-flow',
     tags: ['control-flow', 'switch'],
     sortOrder: 2,
@@ -182,7 +182,7 @@ export const allNodeManifests: NodeManifest[] = [
   // Manual Trigger
   {
     nodeType: 'uipath.manual-trigger',
-    version: '1',
+    version: '1.0.0',
     category: 'trigger',
     tags: ['trigger', 'manual'],
     sortOrder: 1,
@@ -222,7 +222,47 @@ export const allNodeManifests: NodeManifest[] = [
   // For Each Loop
   {
     nodeType: 'uipath.control-flow.foreach',
-    version: '1',
+    version: '1.0.0',
+    category: 'control-flow',
+    tags: ['control-flow', 'loop', 'iteration'],
+    sortOrder: 3,
+    display: {
+      label: 'For Each',
+      icon: 'repeat',
+    },
+    handleConfiguration: [
+      {
+        position: 'left',
+        handles: [
+          { id: 'input', type: 'target', handleType: 'input' },
+          { id: 'loopBack', type: 'target', handleType: 'input' },
+        ],
+      },
+      {
+        position: 'right',
+        handles: [
+          {
+            id: 'success',
+            label: 'Completed',
+            type: 'source',
+            handleType: 'output',
+            showButton: true,
+          },
+          {
+            id: 'body',
+            label: 'Body',
+            type: 'source',
+            handleType: 'output',
+          },
+        ],
+      },
+    ],
+  },
+
+  // For Each Loop
+  {
+    nodeType: 'uipath.control-flow.foreach',
+    version: '2.0.0',
     category: 'control-flow',
     tags: ['control-flow', 'loop', 'iteration'],
     sortOrder: 3,
@@ -243,12 +283,38 @@ export const allNodeManifests: NodeManifest[] = [
             label: 'Completed',
             type: 'source',
             handleType: 'output',
+            showButton: true,
           },
+        ],
+      },
+      {
+        position: 'left',
+        boundary: 'inner',
+        handles: [
           {
-            id: 'body',
-            label: 'Body',
+            id: 'start',
+            label: 'Start',
             type: 'source',
             handleType: 'output',
+          },
+        ],
+      },
+      {
+        position: 'right',
+        boundary: 'inner',
+        handles: [
+          {
+            id: 'continue',
+            label: 'Continue',
+            type: 'target',
+            handleType: 'input',
+            isDefaultForType: true,
+          },
+          {
+            id: 'break',
+            label: 'Break',
+            type: 'target',
+            handleType: 'input',
           },
         ],
       },
@@ -258,7 +324,7 @@ export const allNodeManifests: NodeManifest[] = [
   // While Loop
   {
     nodeType: 'uipath.control-flow.while',
-    version: '1',
+    version: '1.0.0',
     category: 'control-flow',
     tags: ['control-flow', 'loop', 'while'],
     sortOrder: 4,
@@ -297,7 +363,7 @@ export const allNodeManifests: NodeManifest[] = [
   // Try-Catch (Error Handling)
   {
     nodeType: 'uipath.control-flow.try-catch',
-    version: '1',
+    version: '1.0.0',
     category: 'control-flow',
     tags: ['control-flow', 'error', 'exception'],
     sortOrder: 5,
@@ -360,7 +426,7 @@ export const allNodeManifests: NodeManifest[] = [
   // Parallel (Fork)
   {
     nodeType: 'uipath.control-flow.parallel',
-    version: '1',
+    version: '1.0.0',
     category: 'control-flow',
     tags: ['control-flow', 'parallel', 'concurrent'],
     sortOrder: 6,
@@ -402,7 +468,7 @@ export const allNodeManifests: NodeManifest[] = [
   // Terminate
   {
     nodeType: 'uipath.control-flow.terminate',
-    version: '1',
+    version: '1.0.0',
     category: 'control-flow',
     tags: ['control-flow', 'end', 'stop'],
     sortOrder: 99,
@@ -434,7 +500,7 @@ export const allNodeManifests: NodeManifest[] = [
   // Transform Data
   {
     nodeType: 'uipath.data.transform',
-    version: '1',
+    version: '1.0.0',
     category: 'data-operations',
     tags: ['data', 'transformation'],
     sortOrder: 2,
@@ -457,7 +523,7 @@ export const allNodeManifests: NodeManifest[] = [
   // Agent Memory (Configuration Node)
   {
     nodeType: 'uipath.agent.resource.memory',
-    version: '1',
+    version: '1.0.0',
     category: 'agent-memory',
     tags: ['agentic', 'ai', 'memory'],
     sortOrder: 0,
@@ -487,7 +553,7 @@ export const allNodeManifests: NodeManifest[] = [
   // Agent Escalation (Configuration Node)
   {
     nodeType: 'uipath.agent.resource.escalation',
-    version: '1',
+    version: '1.0.0',
     category: 'agent-escalation',
     tags: ['agentic', 'ai', 'escalation'],
     sortOrder: 0,
@@ -518,7 +584,7 @@ export const allNodeManifests: NodeManifest[] = [
   // Agent Context (Configuration Node)
   {
     nodeType: 'uipath.agent.resource.context',
-    version: '1',
+    version: '1.0.0',
     category: 'agent-context',
     tags: ['agentic', 'ai', 'context'],
     sortOrder: 0,
@@ -548,7 +614,7 @@ export const allNodeManifests: NodeManifest[] = [
   // Agent Tools (Configuration Node)
   {
     nodeType: 'uipath.agent.resource.tool',
-    version: '1',
+    version: '1.0.0',
     category: 'agent-tools',
     tags: ['agentic', 'ai', 'tools', 'functions'],
     sortOrder: 0,
@@ -578,7 +644,7 @@ export const allNodeManifests: NodeManifest[] = [
   // Agent
   {
     nodeType: 'uipath.agent',
-    version: '1',
+    version: '1.0.0',
     category: 'agent',
     tags: ['agentic', 'ai', 'agent'],
     sortOrder: 1,
@@ -694,7 +760,7 @@ export const allNodeManifests: NodeManifest[] = [
   // Code Interpreter
   {
     nodeType: 'uipath.script',
-    version: '1',
+    version: '1.0.0',
     category: 'data-operations',
     tags: ['code', 'javascript', 'python'],
     sortOrder: 3,
@@ -729,7 +795,7 @@ export const allNodeManifests: NodeManifest[] = [
   // Approval Task
   {
     nodeType: 'uipath.human-task.approval',
-    version: '1',
+    version: '1.0.0',
     category: 'human-task',
     tags: ['human-task', 'approval', 'review'],
     sortOrder: 1,
@@ -771,7 +837,7 @@ export const allNodeManifests: NodeManifest[] = [
   // Form Task
   {
     nodeType: 'uipath.human-task.form',
-    version: '1',
+    version: '1.0.0',
     category: 'human-task',
     tags: ['human-task', 'form', 'input'],
     sortOrder: 2,
@@ -807,7 +873,7 @@ export const allNodeManifests: NodeManifest[] = [
   // Call Workflow (Sub-workflow)
   {
     nodeType: 'uipath.workflow.call',
-    version: '1',
+    version: '1.0.0',
     category: 'rpa-workflow',
     tags: ['rpa', 'workflow', 'subprocess'],
     sortOrder: 1,
@@ -845,7 +911,7 @@ export const allNodeManifests: NodeManifest[] = [
   // API Workflow Trigger
   {
     nodeType: 'uipath.api-workflow',
-    version: '1',
+    version: '1.0.0',
     category: 'api-workflow',
     tags: ['api', 'workflow', 'endpoint'],
     sortOrder: 1,

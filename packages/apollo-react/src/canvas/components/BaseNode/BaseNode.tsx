@@ -54,7 +54,7 @@ import { NodeLabel } from './NodeLabel';
 // the user clicks a second handle — clicking the pane does NOT clear it, so it
 // can get stuck and cause all handles across all nodes to stay visible.
 // `connection.inProgress` accurately reflects an active drag-to-connect gesture.
-const selectIsConnecting = (state: ReactFlowState) => !!state.connection.inProgress;
+export const selectIsConnecting = (state: ReactFlowState) => !!state.connection.inProgress;
 
 const getContainerWidth = (shape: NodeShape | undefined, width: number | undefined) => {
   const defaultWidth = shape === 'rectangle' ? DEFAULT_RECTANGLE_NODE_WIDTH : DEFAULT_NODE_SIZE;
@@ -88,6 +88,7 @@ const getContainerHeight = (
 
 const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const { type, data, selected, id, dragging, width, height } = props;
+  const nodeVersion = typeof data?.version === 'string' ? data.version : undefined;
 
   // Read runtime configuration from context (provided by parent node components)
   const {
@@ -141,7 +142,10 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const { isDarkMode } = useCanvasTheme();
 
   // Get manifest and resolve with instance data
-  const manifest = useMemo(() => nodeTypeRegistry.getManifest(type), [type, nodeTypeRegistry]);
+  const manifest = useMemo(
+    () => nodeTypeRegistry.getManifest(type, nodeVersion),
+    [type, nodeTypeRegistry, nodeVersion]
+  );
 
   const statusContext: NodeStatusContext = useMemo(
     () => ({

@@ -1,6 +1,6 @@
 import { type OnConnectEnd, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback } from 'react';
-import { applyPreviewToReactFlow, createPreviewNode } from '../utils';
+import { showPreviewGraph } from '../utils/createPreviewGraph';
 
 const EMPTY_IGNORED_NODE_TYPES: string[] = [];
 
@@ -49,20 +49,15 @@ export function useAddNodeOnConnectEnd(ignoredNodeTypes: string[] = EMPTY_IGNORE
         y: clientY,
       });
 
-      const preview = createPreviewNode(
-        connectionState.fromNode.id,
-        connectionState.fromHandle.id ?? 'output',
+      showPreviewGraph({
+        sourceNodeId: connectionState.fromNode.id,
+        sourceHandleId: connectionState.fromHandle.id ?? 'output',
         reactFlowInstance,
-        flowDropPosition,
-        undefined,
-        connectionState.fromHandle.type,
-        undefined, // Use default preview node size
-        connectionState.fromHandle.position,
-        ignoredNodeTypes
-      );
-      if (preview) {
-        applyPreviewToReactFlow(preview, reactFlowInstance);
-      }
+        handlePosition: connectionState.fromHandle.position,
+        sourceHandleType: connectionState.fromHandle.type,
+        ignoredNodeTypes,
+        position: flowDropPosition,
+      });
     },
     [reactFlowInstance, ignoredNodeTypes]
   );

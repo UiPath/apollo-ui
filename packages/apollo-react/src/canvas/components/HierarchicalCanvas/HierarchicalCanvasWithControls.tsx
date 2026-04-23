@@ -1,6 +1,7 @@
 import {
   type Node,
   Panel,
+  Position,
   ReactFlowProvider,
   useReactFlow,
 } from '@uipath/apollo-react/canvas/xyflow/react';
@@ -21,8 +22,8 @@ import {
 } from '../../stores/canvasStore';
 import type { CanvasLevel } from '../../types/canvas.types';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
+import { showPreviewGraph } from '../../utils/createPreviewGraph';
 import { CanvasIcon } from '../../utils/icon-registry';
-import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
 import { HierarchicalCanvas } from './HierarchicalCanvas';
 
 // Demo canvas data for Storybook testing
@@ -313,16 +314,17 @@ const CanvasWithControlsContent: React.FC<CanvasWithControlsContentProps> = ({
 
   // Listen for handle action events and create preview
   useEffect(() => {
-    const handleAction = (event: { nodeId: string; handleId: string }) => {
-      if (reactFlowInstance) {
-        createAddNodePreview(event.nodeId, event.handleId, reactFlowInstance);
-      }
-    };
+    const unsubscribe = canvasEventBus.on('handle:action', (event) => {
+      showPreviewGraph({
+        sourceNodeId: event.nodeId,
+        sourceHandleId: event.handleId,
+        reactFlowInstance,
+        sourceHandleType: event.handleType === 'input' ? 'target' : 'source',
+        handlePosition: event.position as Position,
+      });
+    });
 
-    canvasEventBus.on('handle:action', handleAction);
-    return () => {
-      canvasEventBus.off('handle:action', handleAction);
-    };
+    return unsubscribe;
   }, [reactFlowInstance]);
 
   const handleAddNode = useCallback(

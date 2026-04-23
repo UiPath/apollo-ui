@@ -100,9 +100,12 @@ export const usePreviewNode = (): UsePreviewNodeResult => {
       const existingNodeId = sourceIsPreviewNode ? previewEdge.target : previewEdge.source;
 
       // Get the existing node's manifest.
-      const existingNodeType = reactFlowInstance.getNode(existingNodeId)?.type;
+      const existingNode = reactFlowInstance.getNode(existingNodeId);
+      const existingNodeType = existingNode?.type;
+      const existingNodeVersion =
+        typeof existingNode?.data?.version === 'string' ? existingNode.data.version : undefined;
       const existingNodeManifest = existingNodeType
-        ? registry?.getManifest(existingNodeType)
+        ? registry?.getManifest(existingNodeType, existingNodeVersion)
         : undefined;
 
       // Determine which handle on the existing node is involved.

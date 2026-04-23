@@ -1,6 +1,6 @@
-import { type EdgeProps, Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import { type Edge, type EdgeProps, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useRef, useState } from 'react';
-import { PREVIEW_EDGE_ID } from '../../constants';
+import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../../constants';
 import { useEdgeExecutionState, useEdgePath, useElementValidationStatus } from '../../hooks';
 import type { NodeExecutionStateWithDebug } from '../../types/execution';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
@@ -8,6 +8,16 @@ import { EdgeToolbar, useEdgeToolbarState } from '../Toolbar';
 import { edgeTargetStatusToEdgeColor, getStatusAnimation } from './EdgeUtils';
 
 const ARROW_SIZE = 10;
+
+interface SequenceEdgeData extends Record<string, unknown> {
+  isDiffAdded?: boolean;
+  isDiffRemoved?: boolean;
+  label?: string;
+  parentId?: string;
+}
+
+type SequenceEdgeType = Edge<SequenceEdgeData>;
+type SequenceEdgeProps = EdgeProps<SequenceEdgeType>;
 
 // Arrow angle based on which side of the TARGET node the edge connects to
 // The arrow should point INTO the target node
@@ -29,7 +39,7 @@ const ARROW_OFFSETS: Record<Position, { x: number; y: number }> = {
 
 // Custom comparison to prevent re-renders during pan/zoom
 // Coordinates can have tiny floating point differences that don't affect visual output
-function areEdgePropsEqual(prevProps: EdgeProps, nextProps: EdgeProps): boolean {
+function areEdgePropsEqual(prevProps: SequenceEdgeProps, nextProps: SequenceEdgeProps): boolean {
   // Always re-render if these change
   if (prevProps.id !== nextProps.id) return false;
   if (prevProps.selected !== nextProps.selected) return false;
@@ -65,13 +75,14 @@ export const SequenceEdge = memo(function SequenceEdge({
   targetHandleId,
   style,
   data,
-}: EdgeProps) {
+}: SequenceEdgeProps) {
   const [isHovered, setIsHovered] = useState(false);
   const pathElementRef = useRef<SVGPathElement | null>(null);
 
   const { mode } = useBaseCanvasMode();
   const isReadOnly = mode === 'readonly';
-  const isPreviewEdge = id === PREVIEW_EDGE_ID;
+  const isPreviewEdge =
+    id === PREVIEW_EDGE_ID || source === PREVIEW_NODE_ID || target === PREVIEW_NODE_ID;
 
   const executionStatus = useEdgeExecutionState(id, target);
   const { validationStatus } = useElementValidationStatus(id) ?? { validationStatus: undefined };
@@ -117,6 +128,7 @@ export const SequenceEdge = memo(function SequenceEdge({
     targetPosition,
     source,
     target,
+    parentId: data?.parentId,
   });
 
   const getEdgeColor = () => {
