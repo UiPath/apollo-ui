@@ -180,6 +180,10 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     [manifest, data, id]
   );
 
+  // Drillable (manifest) or collapsed (instance data) nodes render a decorative
+  // stacked layer to signal they stand in for more than themselves.
+  const isStacked = Boolean(manifest?.drillable || data?.isCollapsed);
+
   // Icon resolution: component prop takes precedence, then icon string from display
   const Icon = useMemo(() => {
     // Priority 1: Component prop (e.g., dynamic tool icon)
@@ -584,6 +588,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         shape={displayShape}
         isSelected={selected}
         isHovered={isHovered}
+        isStacked={isStacked}
         interactionState={interactionState}
         executionStatus={executionStatus}
         validationStatus={validationState?.validationStatus}
