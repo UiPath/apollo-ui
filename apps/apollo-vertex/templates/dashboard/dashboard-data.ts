@@ -53,6 +53,7 @@ export interface DashboardDataset {
   promptPlaceholder: string;
   promptSuggestions: string[];
   insightCards: InsightCardData[];
+  heroPoints?: number[];
 }
 
 export const defaultDataset: DashboardDataset = {
@@ -134,6 +135,7 @@ export const defaultDataset: DashboardDataset = {
       kpiDescription: "Loans processed within defined SLA thresholds.",
     },
   ],
+  heroPoints: [148, 155, 160, 167, 173, 180, 188, 196, 205, 214, 222, 231],
 };
 
 export const ecommerceDataset: DashboardDataset = {
@@ -227,6 +229,9 @@ export const ecommerceDataset: DashboardDataset = {
         "Average rating remains strong, though recent feedback highlights sizing inconsistency and occasional packaging damage.",
     },
   ],
+  heroPoints: [
+    94.2, 94.6, 95.0, 95.3, 95.7, 96.0, 96.3, 96.5, 96.7, 96.9, 97.1, 97.3,
+  ],
 };
 
 export const invoiceProcessingDataset: DashboardDataset = {
@@ -319,6 +324,9 @@ export const invoiceProcessingDataset: DashboardDataset = {
       kpiDescription:
         "Invoices approved and scheduled for payment within agreed supplier terms.",
     },
+  ],
+  heroPoints: [
+    68.2, 69.5, 70.8, 71.6, 72.4, 73.5, 74.8, 75.6, 76.3, 77.1, 77.8, 78.4,
   ],
 };
 

@@ -7,6 +7,7 @@ export interface AIScreen {
   subhead: string;
   layout: LayoutConfig;
   cards: InsightCardData[];
+  heroPoints?: number[];
 }
 
 const BASE_LAYOUT = {
@@ -176,6 +177,7 @@ export const performancePreset: AIScreen = {
     "Average processing time has dropped from 3.4 to 2.1 days over 8 weeks. Two approval bottlenecks remain — resolving them puts the 2-day target within reach this quarter.",
   layout: performanceLayout,
   cards: performanceCards,
+  heroPoints: [3.4, 3.1, 2.9, 2.8, 2.6, 2.4, 2.3, 2.1],
 };
 
 // --- Risk & Issues ---
@@ -335,6 +337,7 @@ export const riskPreset: AIScreen = {
     "SLA breach rate sits at 4.1%, up 0.3 pts this period. Open backlog peaked in W5 and is declining but above baseline. Missing PO numbers and amount mismatches account for 65% of exception volume.",
   layout: riskLayout,
   cards: riskCards,
+  heroPoints: [58, 52, 47, 43, 40, 36, 32, 29],
 };
 
 // --- Opportunities & Growth ---
@@ -495,6 +498,7 @@ export const opportunitiesPreset: AIScreen = {
     "PO validation passed its 6-week payback point. Volume is up ↑15% for 8 consecutive weeks without added headcount. A new approval automation initiative could add $0.6M if approved in Q3.",
   layout: opportunitiesLayout,
   cards: opportunitiesCards,
+  heroPoints: [18, 41, 88, 142, 194, 245, 293, 338],
 };
 
 // --- Intent detection ---

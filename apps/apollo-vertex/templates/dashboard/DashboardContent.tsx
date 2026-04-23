@@ -152,6 +152,94 @@ function GridSkeleton({
   );
 }
 
+function HeroSparkline({ points }: { points: number[] }) {
+  if (points.length < 2) return null;
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const range = max - min || 1;
+  const step = 100 / (points.length - 1);
+  const coords = points.map((v, i): [number, number] => [
+    i * step,
+    8 + (1 - (v - min) / range) * 76,
+  ]);
+  const linePts = coords.map(([x, y]) => `${x},${y}`).join(" ");
+  const area = [
+    "M0,100",
+    ...coords.map(([x, y]) => `L${x},${y}`),
+    "L100,100",
+    "Z",
+  ].join(" ");
+  const lastY = coords[coords.length - 1][1];
+
+  const fmt = (v: number) =>
+    v >= 10000
+      ? `${Math.round(v / 1000)}k`
+      : v >= 1000
+        ? `${(v / 1000).toFixed(1)}k`
+        : v < 10
+          ? v.toFixed(1)
+          : Number.isInteger(v)
+            ? v.toString()
+            : v.toFixed(1);
+
+  return (
+    <div className="flex flex-col w-full h-full">
+      {/* Chart area */}
+      <div className="relative flex-1 min-h-0">
+        <svg
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          className="absolute inset-0 w-full h-full"
+          aria-hidden
+        >
+          <defs>
+            <linearGradient id="hero-sparkline-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--color-insight-500)" stopOpacity="0.22" />
+              <stop offset="100%" stopColor="var(--color-insight-500)" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d={area} fill="url(#hero-sparkline-grad)" />
+          <polyline
+            points={linePts}
+            fill="none"
+            stroke="var(--color-insight-500)"
+            strokeWidth="2"
+            strokeOpacity="0.55"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+        {/* 4px CSS circle dot at line endpoint */}
+        <div
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            width: 4,
+            height: 4,
+            right: 0,
+            top: `${lastY}%`,
+            transform: "translateY(-50%)",
+            background: "var(--color-insight-500)",
+            opacity: 0.9,
+          }}
+        />
+      </div>
+      {/* Labels row */}
+      <div className="flex items-center justify-between pt-1.5 shrink-0 select-none">
+        <span className="text-[10px] leading-none text-muted-foreground/40 tabular-nums font-mono">
+          {fmt(points[0])}
+        </span>
+        <span className="text-[10px] leading-none text-muted-foreground/25">
+          {points.length} wks
+        </span>
+        <span className="text-[10px] leading-none text-foreground/55 font-semibold tabular-nums">
+          {fmt(points[points.length - 1])}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function ScreenNavigator({
   screens,
   activeIdx,
@@ -227,6 +315,7 @@ function ExecutiveLayout({
   onResizeEditItem,
   aiScreenLabels,
   onPinChart,
+  heroPoints,
 }: {
   cards: CardConfig;
   layout: LayoutConfig;
@@ -256,6 +345,7 @@ function ExecutiveLayout({
   onResizeEditItem: (id: string, size: "sm" | "md" | "lg") => void;
   aiScreenLabels: string[];
   onPinChart: (card: InsightCardData, screenIdx: number) => void;
+  heroPoints: number[];
 }) {
   const { data } = useDashboardData();
   const [promptExpanded, setPromptExpanded] = useState(false);
@@ -334,6 +424,25 @@ function ExecutiveLayout({
                   <p className="text-sm font-normal text-muted-foreground pr-32 mt-8 leading-relaxed">
                     {activeSubhead}
                   </p>
+                </motion.div>
+              </AnimatePresence>
+              {/* Spacer: grows to fill space, minimum 80px gap from subtext */}
+              <div className="flex-1 min-h-20" />
+              {/* Hero sparkline — respects card padding, taller */}
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={heroPoints.join(",")}
+                  className="h-36 shrink-0 pointer-events-none"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{
+                    duration: 0.5,
+                    ease: [0.22, 1, 0.36, 1],
+                    delay: 0.1,
+                  }}
+                >
+                  <HeroSparkline points={heroPoints} />
                 </motion.div>
               </AnimatePresence>
             </CardContent>
@@ -475,6 +584,7 @@ function DashboardContentInner() {
     activeScreenIdx > 0 ? aiScreens[activeScreenIdx - 1] : null;
   const activeHeadline = activeScreen?.headline ?? data.headline;
   const activeSubhead = activeScreen?.subhead ?? data.subhead;
+  const activeHeroPoints = activeScreen?.heroPoints ?? data.heroPoints ?? [];
   const slideDir = activeScreenIdx > prevScreenIdxRef.current ? 1 : -1;
   const screenLabels = ["Overview", ...aiScreens.map((s) => s.label)];
 
@@ -900,6 +1010,7 @@ function DashboardContentInner() {
                   onResizeEditItem={handleResizeEditItem}
                   aiScreenLabels={aiScreens.map((s) => s.label)}
                   onPinChart={handlePinChart}
+                  heroPoints={activeHeroPoints}
                 />
               )}
               {layout === "operational" && <OperationalLayout />}
