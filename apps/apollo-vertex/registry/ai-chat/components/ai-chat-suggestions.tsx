@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { ChoiceOption } from "../types";
+import type { ChoiceOption } from "../tools/choices";
 
 interface AiChatSuggestionsProps {
   prompt?: string;
