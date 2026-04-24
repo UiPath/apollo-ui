@@ -827,6 +827,50 @@
       ]
     },
     {
+      "name": "onboarding-tour-joyride",
+      "type": "registry:ui",
+      "title": "Onboarding Tour (Joyride)",
+      "description": "Guided onboarding tour built on React Joyride with an Apollo Vertex–styled custom tooltip, welcome modal, and conditional step gating.",
+      "dependencies": [
+        "react-joyride",
+        "lucide-react",
+        "@radix-ui/react-dialog"
+      ],
+      "registryDependencies": ["button"],
+      "files": [
+        {
+          "path": "registry/onboarding-tour-joyride/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/index.ts"
+        },
+        {
+          "path": "registry/onboarding-tour-joyride/onboarding-tour-joyride-types.ts",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/onboarding-tour-joyride-types.ts"
+        },
+        {
+          "path": "registry/onboarding-tour-joyride/tour-persistence.ts",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/tour-persistence.ts"
+        },
+        {
+          "path": "registry/onboarding-tour-joyride/onboarding-tour-joyride-popover.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/onboarding-tour-joyride-popover.tsx"
+        },
+        {
+          "path": "registry/onboarding-tour-joyride/onboarding-tour-joyride-welcome-modal.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/onboarding-tour-joyride-welcome-modal.tsx"
+        },
+        {
+          "path": "registry/onboarding-tour-joyride/onboarding-tour-joyride-provider.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/onboarding-tour-joyride-provider.tsx"
+        }
+      ]
+    },
+    {
       "name": "navigation-menu",
       "type": "registry:ui",
       "title": "Navigation Menu",
