@@ -998,12 +998,14 @@ export function PromptBar({
     () => new Set(),
   );
   const processedMessageIdsRef = useRef<Set<string>>(new Set());
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     if (pendingScreen) {
       setSelectedCardIndices(pendingScreen.cards.map((_, i) => i));
     }
   }, [pendingScreen]);
+
   const hasInput = value.trim().length > 0;
   const { scrollRef: scrollContainerRef, contentRef: scrollContentRef, isStuck, scrollToBottom } = useStickyScroll();
 
@@ -1023,6 +1025,13 @@ export function PromptBar({
 
   const { messages, sendMessage, isLoading, reload, setMessages, clear } =
     useChat({ connection });
+
+  // Reset the submit guard once the chat client acknowledges the stream started.
+  // This closes the race window where React's isLoading state update lags behind
+  // the synchronous ChatClient state, allowing a second sendMessage to slip through.
+  useEffect(() => {
+    if (isLoading) submittingRef.current = false;
+  }, [isLoading]);
 
   const lastMessage = messages.at(-1);
   const lastAssistantHasText =
@@ -1091,7 +1100,8 @@ export function PromptBar({
   };
 
   const handleSubmit = () => {
-    if (hasInput && !isLoading) {
+    if (hasInput && !isLoading && !submittingRef.current) {
+      submittingRef.current = true;
       const base = value;
       const query = quotedText ? `> ${quotedText}\n\n${base}` : base;
       setValue("");
@@ -1102,7 +1112,8 @@ export function PromptBar({
   };
 
   const handleChipClick = (suggestion: string) => {
-    if (isLoading) return;
+    if (isLoading || submittingRef.current) return;
+    submittingRef.current = true;
     void sendMessage(suggestion);
     onSubmit?.(suggestion);
   };
@@ -1379,7 +1390,7 @@ export function PromptBar({
             )}
             <button
               type="button"
-              disabled={!hasInput}
+              disabled={!hasInput || isLoading}
               onClick={handleSubmit}
               className="size-8 rounded-full bg-gradient-to-br from-insight-500 to-primary-400 flex items-center justify-center text-white transition-opacity disabled:opacity-30"
               aria-label="Submit"
