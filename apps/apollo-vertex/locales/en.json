@@ -144,7 +144,7 @@
   "unknown_field_in_entity": "Field \"{{field}}\" doesn't exist on {{entity}}.",
   "unknown_field_in_joined": "Field \"{{field}}\" doesn't exist on the joined entities.",
   "user_email_placeholder": "user@company.com",
-  "user_profile": "Profile and settings",
+  "user_profile": "User profile",
   "verifying_access": "Verifying access…",
   "view": "View",
   "view_customer": "View customer",
