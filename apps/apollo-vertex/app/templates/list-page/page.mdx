@@ -1,0 +1,63 @@
+import { ListPageTemplate } from '@/templates/list-page/ListPageTemplate';
+import { PreviewFullScreen } from '@/app/_components/preview-full-screen';
+
+# List page
+
+A full-page composition for listing records with summary metrics and a
+filterable data table. Built from the `PageHeader`, `MetricCard`,
+and `DataTable` primitives, laid out on the 12-column foundations grid,
+and intended to render inside an [`ApolloShell`](/patterns/shell).
+
+<PreviewFullScreen title="List page preview">
+    <ListPageTemplate />
+</PreviewFullScreen>
+
+## Composition
+
+From top to bottom the template stacks:
+
+- **[`Shell`](/patterns/shell)** (outer) — provides the chrome (sidebar,
+  header, auth, theme). Wrap the rest of the page inside `ApolloShell`.
+- **`PageHeader`** — title and contextual actions (refresh, time range).
+- **Metric cards row** — four `MetricCard`s summarizing pipeline counts.
+- **`DataTable`** — the record list with search, column filters, and
+  pagination. Toolbar filters target columns directly via `column={...}`.
+
+The content region uses the [layout grid](/foundation/grid): `4` columns on
+mobile, `8` on tablet, `12` on desktop, with matching `px-4 / sm:px-6 /
+lg:px-8` margins so it aligns with the default `PageHeader` padding.
+
+Source: [`templates/list-page/ClinicalReviewList.tsx`](https://github.com/UiPath/apollo-ui/blob/main/apps/apollo-vertex/templates/list-page/ClinicalReviewList.tsx)
+
+## Installation
+
+The composition itself is a pattern — copy the source from
+`templates/list-page/ClinicalReviewList.tsx` into your app, wrap it in
+`ApolloShell`, and swap in your own data. The underlying components install
+from the registry:
+
+```bash
+npx shadcn@latest add @uipath/shell
+npx shadcn@latest add @uipath/page-header
+npx shadcn@latest add @uipath/metric-card
+npx shadcn@latest add @uipath/data-table
+npx shadcn@latest add @uipath/filter-dropdown
+```
+
+## Customizing
+
+- **Metric count** — the grid is 12 columns on desktop, so two cards use
+  `lg:col-span-6`, three use `lg:col-span-4`, four use `lg:col-span-3`, six
+  use `lg:col-span-2`.
+- **Row clickability** — pass `onRowClick={(row) => navigate(...)}` to
+  `DataTable` to enable the hover state and open a detail view.
+- **Table density** — `DataTable` accepts `isLoading`,
+  `skeletonColumnWidths`, `enableSearch`, `enableViewOptions`, and a
+  `toolbarContent` render prop for filters.
+- **Status colors** — `Badge`'s `status` prop (`success | info | warning |
+  error`) maps directly to semantic tokens, so status colors follow the
+  theme.
+- **i18n** — `DataTable` uses `react-i18next`; wrap your app in
+  `ApolloShell` (which initializes i18n via `LocaleProvider`) or provide
+  your own `I18nextProvider` so strings like the pagination count render
+  correctly.
