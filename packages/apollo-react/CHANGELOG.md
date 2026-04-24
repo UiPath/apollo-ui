@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v4.14.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.13.1...@uipath/apollo-react@4.14.0) (2026-04-24)
+
+### Features
+
+* **apollo-react:** add STT dictate and voice interaction buttons [JAR-9545] ([50ebb16](https://github.com/UiPath/apollo-ui/commit/50ebb1648384888a373bfcd5987c3cf78b77c972)), closes [UiPath/apollo-design-system#5094](https://github.com/UiPath/apollo-design-system/issues/5094)
+
+### Bug Fixes
+
+* **apollo-react:** address Copilot review feedback on STT/voice buttons ([c0137d6](https://github.com/UiPath/apollo-ui/commit/c0137d64c09b226b5bb3d041211369437e2fcb51))
+
 ## [@uipath/apollo-react-v4.13.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.13.0...@uipath/apollo-react@4.13.1) (2026-04-23)
 
 ### Bug Fixes
