@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { cn } from '@/lib';
 import {
   CellContext,
   Column,
@@ -53,6 +54,12 @@ export interface DataTableProps<TData, TValue> {
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: (selection: RowSelectionState) => void;
   toolbarContent?: React.ReactNode;
+  /**
+   * When set, the table body scrolls independently with this max height (any CSS length).
+   * The header stays above the scroll region and the vertical scrollbar is confined to the
+   * body, leaving the header row clear of scrollbar tracks.
+   */
+  maxBodyHeight?: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -71,7 +78,10 @@ export function DataTable<TData, TValue>({
   rowSelection: controlledRowSelection,
   onRowSelectionChange: controlledOnRowSelectionChange,
   toolbarContent,
+  maxBodyHeight,
 }: DataTableProps<TData, TValue>) {
+  const useBlockLayout = maxBodyHeight !== undefined;
+  const blockRowClasses = '[&>tr]:table [&>tr]:w-full [&>tr]:table-fixed';
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
@@ -176,11 +186,22 @@ export function DataTable<TData, TValue>({
           </DropdownMenu>
         )}
       </div>
-      <div className="rounded-md border overflow-auto">
+      <div
+        className={cn(
+          'rounded-md border',
+          useBlockLayout ? 'overflow-x-auto' : 'overflow-auto'
+        )}
+      >
         <Table
+          className={useBlockLayout ? 'block' : undefined}
           style={resizable ? { width: table.getTotalSize(), tableLayout: 'fixed' } : undefined}
         >
-          <TableHeader>
+          <TableHeader
+            className={cn(
+              'sticky top-0 z-10 bg-background',
+              useBlockLayout && `block ${blockRowClasses}`
+            )}
+          >
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -188,7 +209,10 @@ export function DataTable<TData, TValue>({
                   return (
                     <TableHead
                       key={header.id}
-                      className={compact ? 'relative h-8 px-2 py-0' : 'relative py-0'}
+                      className={cn(
+                        compact ? 'relative h-8 px-2 py-0' : 'relative py-0',
+                        resizable && 'overflow-visible'
+                      )}
                       style={{
                         width: resizable
                           ? header.getSize()
@@ -216,11 +240,12 @@ export function DataTable<TData, TValue>({
                           className={`absolute -right-1 top-0 z-10 h-full w-2 cursor-col-resize select-none touch-none group`}
                         >
                           <div
-                            className={`h-full w-px mx-auto ${
+                            className={cn(
+                              'h-full mx-auto transition-all duration-150',
                               header.column.getIsResizing()
-                                ? 'bg-primary'
-                                : 'group-hover:bg-primary/50'
-                            }`}
+                                ? 'w-0.5 bg-primary'
+                                : 'w-px group-hover:w-0.5 group-hover:bg-primary'
+                            )}
                           />
                         </div>
                       )}
@@ -230,7 +255,13 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
+          <TableBody
+            className={
+              useBlockLayout ? cn('block overflow-y-auto', blockRowClasses) : undefined
+            }
+            style={useBlockLayout ? { maxHeight: maxBodyHeight } : undefined}
+            tabIndex={useBlockLayout ? 0 : undefined}
+          >
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
@@ -325,10 +356,10 @@ export function DataTableColumnHeader<TData, TValue>({
     <Button
       variant="ghost"
       size="sm"
-      className="-ml-3 h-8 data-[state=open]:bg-accent"
+      className="-ml-3 h-8 max-w-full data-[state=open]:bg-accent"
       onClick={handleClick}
     >
-      <span>{title}</span>
+      <span className="truncate min-w-0">{title}</span>
       {children}
       {sorted === 'asc' ? (
         <ArrowUp className="ml-2 h-4 w-4" />

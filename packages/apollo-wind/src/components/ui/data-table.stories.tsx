@@ -1061,6 +1061,180 @@ export const Density = {
 };
 
 // ============================================================================
+// Scrolling & Resizing
+// ============================================================================
+
+const manyUsers: User[] = Array.from({ length: 40 }, (_, i) => {
+  const base = sampleUsers[i % sampleUsers.length];
+  return { ...base, id: `sticky-${i + 1}`, name: `${base.name} ${i + 1}` };
+});
+
+function StickyHeaderExample() {
+  const columns: ColumnDef<User>[] = [
+    {
+      accessorKey: 'name',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
+    },
+    {
+      accessorKey: 'email',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
+    },
+    {
+      accessorKey: 'role',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Role" />,
+    },
+    {
+      accessorKey: 'department',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Department" />,
+    },
+    {
+      accessorKey: 'status',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
+      cell: ({ row }) => statusBadge(row.getValue('status')),
+    },
+  ];
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm text-muted-foreground">
+        Scroll the table body — the column headers stay pinned. The scrollbar is confined to the
+        body region via <code>maxBodyHeight</code>, so it doesn't run up next to the header row.
+      </p>
+      <DataTable
+        columns={columns}
+        data={manyUsers}
+        maxBodyHeight="24rem"
+        showPagination={false}
+        showColumnToggle={false}
+      />
+    </div>
+  );
+}
+
+export const StickyHeader = {
+  name: 'Sticky Header',
+  render: () => <StickyHeaderExample />,
+};
+
+type ResizableRow = User & {
+  team: string;
+  manager: string;
+  location: string;
+  lastActive: string;
+  employeeId: string;
+};
+
+const teams = ['Platform', 'Growth', 'Data', 'Insights', 'Runtime'];
+const managers = ['Pat Jenkins', 'Sam Okonkwo', 'Riley Kim', 'Morgan Chen', 'Alex Petrov'];
+const locations = ['Bucharest', 'Seattle', 'Bengaluru', 'London', 'New York', 'Tokyo'];
+
+const resizableSampleRows: ResizableRow[] = sampleUsers.map((u, i) => ({
+  ...u,
+  team: teams[i % teams.length],
+  manager: managers[i % managers.length],
+  location: locations[i % locations.length],
+  lastActive: `2026-04-${String(10 + (i % 14)).padStart(2, '0')} 14:32`,
+  employeeId: `EMP-${String(10000 + i)}`,
+}));
+
+function ResizableNarrowColumnsExample() {
+  const columns: ColumnDef<ResizableRow>[] = [
+    {
+      accessorKey: 'name',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Full contact name" />
+      ),
+      size: 160,
+      minSize: 60,
+    },
+    {
+      accessorKey: 'email',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Primary email address" />
+      ),
+      size: 170,
+      minSize: 60,
+    },
+    {
+      accessorKey: 'role',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Role" />,
+      size: 110,
+      minSize: 60,
+    },
+    {
+      accessorKey: 'department',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Department assignment" />
+      ),
+      size: 150,
+      minSize: 60,
+    },
+    {
+      accessorKey: 'team',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Team" />,
+      size: 110,
+      minSize: 60,
+    },
+    {
+      accessorKey: 'manager',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Direct manager" />,
+      size: 140,
+      minSize: 60,
+    },
+    {
+      accessorKey: 'location',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Office location" />,
+      size: 140,
+      minSize: 60,
+    },
+    {
+      accessorKey: 'joined',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Date joined" />,
+      size: 120,
+      minSize: 60,
+    },
+    {
+      accessorKey: 'lastActive',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Last activity timestamp" />
+      ),
+      size: 170,
+      minSize: 60,
+    },
+    {
+      accessorKey: 'status',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
+      cell: ({ row }) => statusBadge(row.getValue('status')),
+      size: 100,
+      minSize: 60,
+    },
+  ];
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm text-muted-foreground">
+        Ten columns sized to fill a typical canvas. Long titles start narrower than their text so
+        the ellipsis is visible immediately. Drag any column divider to resize — the handle
+        brightens and thickens on hover and during drag, and narrowing further keeps each label
+        cleanly truncated without bleeding into the next column.
+      </p>
+      <DataTable
+        columns={columns}
+        data={resizableSampleRows}
+        resizable
+        showPagination={false}
+        showColumnToggle={false}
+      />
+    </div>
+  );
+}
+
+export const ResizableNarrowColumns = {
+  name: 'Resizable Narrow Columns',
+  render: () => <ResizableNarrowColumnsExample />,
+};
+
+// ============================================================================
 // Examples
 // ============================================================================
 
