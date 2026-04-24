@@ -6,6 +6,7 @@ import { EntryConditionIcon, ExitConditionIcon, ReturnToOriginIcon } from '../..
 import { CanvasIcon } from '../../utils/icon-registry';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
+import { getExecutionStatusColor } from '../ExecutionStatusIcon/ExecutionStatusIcon';
 import {
   StageChip,
   StageHeader,
@@ -175,7 +176,15 @@ const StageNodeHeaderInner = ({
         {status && (
           <CanvasTooltip content={statusLabel} placement="top">
             <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={statusLabel}>
-              <ExecutionStatusIcon status={status} size={20} />
+              {status === 'NotExecuted' ? (
+                <CanvasIcon
+                  icon="hourglass"
+                  size={20}
+                  color={getExecutionStatusColor('NotExecuted')}
+                />
+              ) : (
+                <ExecutionStatusIcon status={status} size={20} />
+              )}
             </Button>
           </CanvasTooltip>
         )}
