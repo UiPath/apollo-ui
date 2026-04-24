@@ -2,7 +2,7 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useChatService } from '../../providers/chat-service.provider';
 import { AutopilotChatEvent, type AutopilotChatOutputStreamEvent } from '../../service';
@@ -47,16 +47,28 @@ export const AlwaysOnVoiceButton = ({
   const [isActive, setIsActive] = useState(false);
   const chatService = useChatService();
 
-  // Audio output: subscribe to OutputStream events and play the model's audio response
+  // Mirrors `isActive` synchronously so the OutputStream handler (below) can gate on
+  // the current state without waiting for a render pass. The subscription itself must
+  // be attached on mount so chunks that arrive synchronously from the consumer's
+  // `activityStart` handler are not dropped between `setIsActive(true)` and the effect
+  // re-running.
+  const isActiveRef = useRef(false);
+  const onActiveChangeRef = useRef(onActiveChange);
+  onActiveChangeRef.current = onActiveChange;
+
+  // Audio output: play the model's audio response.
   const { queueOutputAudio, clearOutputAudioQueue } = useAudioOutput();
 
-  React.useEffect(() => {
-    if (!chatService || !isActive) {
+  useEffect(() => {
+    if (!chatService) {
       return;
     }
     return chatService.on(
       AutopilotChatEvent.OutputStream,
       (event: AutopilotChatOutputStreamEvent) => {
+        if (!isActiveRef.current) {
+          return;
+        }
         if (event.mediaChunks) {
           for (const chunk of event.mediaChunks) {
             if (chunk.mimeType.startsWith('audio/pcm;')) {
@@ -69,18 +81,19 @@ export const AlwaysOnVoiceButton = ({
         }
       }
     );
-  }, [chatService, isActive, queueOutputAudio, clearOutputAudioQueue]);
+  }, [chatService, queueOutputAudio, clearOutputAudioQueue]);
 
   const handleAudioInputStart = useCallback<AudioInputStartHandler>(
     (automaticActivityDetectionEnabled) => {
       if (!chatService) {
         return;
       }
+      isActiveRef.current = true;
       setIsActive(true);
-      onActiveChange?.(true);
+      onActiveChangeRef.current?.(true);
       chatService.sendInputStreamEvent({ activityStart: { automaticActivityDetectionEnabled } });
     },
-    [chatService, onActiveChange]
+    [chatService]
   );
 
   const handleAudioInputEnd = useCallback<AudioInputEndHandler>(
@@ -88,12 +101,13 @@ export const AlwaysOnVoiceButton = ({
       if (!chatService) {
         return;
       }
+      isActiveRef.current = false;
       setIsActive(false);
-      onActiveChange?.(false);
+      onActiveChangeRef.current?.(false);
       clearOutputAudioQueue();
       chatService.sendInputStreamEvent({ activityEnd: { sequenceNumber } });
     },
-    [chatService, clearOutputAudioQueue, onActiveChange]
+    [chatService, clearOutputAudioQueue]
   );
 
   const handleAudioInputData = useCallback<AudioInputDataHandler>(
@@ -113,6 +127,19 @@ export const AlwaysOnVoiceButton = ({
     handleAudioInputStart,
     handleAudioInputEnd,
   });
+
+  // Release the mic / AudioContext / playback queue if the button unmounts while voice
+  // mode is still active (e.g. the chat closes or `audioStreaming` is re-disabled).
+  useEffect(() => {
+    return () => {
+      if (isActiveRef.current) {
+        isActiveRef.current = false;
+        stopAudioInput();
+        clearOutputAudioQueue();
+        onActiveChangeRef.current?.(false);
+      }
+    };
+  }, [stopAudioInput, clearOutputAudioQueue]);
 
   const handleClick = useCallback(async () => {
     if (disabled) {
@@ -151,6 +178,7 @@ export const AlwaysOnVoiceButton = ({
         onClick={handleClick}
         data-testid="autopilot-chat-always-on-voice-button"
         ariaLabel={isActive ? stopLabel : voiceLabel}
+        ariaPressed={isActive}
       />
     </VoiceButtonContainer>
   );

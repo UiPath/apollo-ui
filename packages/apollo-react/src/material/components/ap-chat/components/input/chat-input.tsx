@@ -150,6 +150,16 @@ function AutopilotChatInputComponent() {
       return;
     }
 
+    // Stop dictation before sending so the growing transcript can't re-populate the
+    // input we're about to clear. Using `publishSpeechToTextToggle` (not
+    // `setSpeechToTextState`) is deliberate — consumers listen for
+    // SpeechToTextToggle to tear down the recognizer. Intentionally gated behind the
+    // stop-response early-return above so hitting "Stop response" doesn't also kill
+    // active dictation.
+    if (chatService.isSpeechToTextActive) {
+      chatService.publishSpeechToTextToggle();
+    }
+
     const serializedContent = editorRef.current?.getSerializedContent() ?? message;
 
     chatService.sendRequest({
@@ -240,6 +250,11 @@ function AutopilotChatInputComponent() {
   const hasLoadingAttachments =
     attachmentsLoading.filter((attachment) => attachment.loading).length > 0;
 
+  // True when the user has nothing to submit. Distinct from `disableSubmit` — that
+  // also goes true during attachment-loading / skeleton. The send↔voice-interaction
+  // swap below keys off real input emptiness, not transient disabled states.
+  const isInputEmpty = message.trim().length === 0 && attachments.length === 0;
+
   const handleResourceTriggerClick = React.useCallback(() => {
     editorRef.current?.openResourcePicker();
   }, []);
@@ -296,13 +311,11 @@ function AutopilotChatInputComponent() {
 
         <AutopilotChatInputActions
           disableSubmit={
-            (message.trim().length === 0 &&
-              attachments.length === 0 &&
-              !waitingResponse &&
-              !streaming) ||
+            (isInputEmpty && !waitingResponse && !streaming) ||
             (skeletonLoader && !waitingResponse && !streaming) ||
             hasLoadingAttachments
           }
+          isInputEmpty={isInputEmpty}
           waitingResponse={waitingResponse || streaming}
           handleSubmit={handleSubmit}
           onResourceTriggerClick={hasResources ? handleResourceTriggerClick : undefined}

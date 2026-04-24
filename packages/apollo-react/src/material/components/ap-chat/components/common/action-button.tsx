@@ -38,6 +38,7 @@ interface AutopilotChatActionButtonProps {
   tooltipPlacement?: TooltipProps['placement'];
   ariaLabel?: string;
   ariaDescribedby?: string;
+  ariaPressed?: boolean;
   title?: string;
   tabIndex?: number;
   disableInteractiveTooltip?: boolean;
@@ -69,6 +70,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<
       tooltipPlacement = 'bottom',
       ariaLabel,
       ariaDescribedby,
+      ariaPressed,
       title,
       tabIndex,
       onClick,
@@ -116,6 +118,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<
           }
           aria-label={ariaLabel}
           aria-describedby={ariaDescribedby}
+          aria-pressed={ariaPressed}
           title={showTooltip ? undefined : title}
           variant="text"
           size="small"
@@ -146,6 +149,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<
         onKeyDown={onKeyDown}
         aria-label={ariaLabel}
         aria-describedby={ariaDescribedby}
+        aria-pressed={ariaPressed}
         title={showTooltip ? undefined : title}
         onMouseEnter={(event: React.MouseEvent<HTMLButtonElement>) => {
           onMouseEnter?.(event);
