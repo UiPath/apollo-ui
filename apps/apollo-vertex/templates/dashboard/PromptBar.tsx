@@ -13,29 +13,29 @@ import {
   Pin,
   X,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import {
-  AreaChart,
   Area,
-  BarChart,
+  AreaChart,
   Bar,
-  ComposedChart,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
+  BarChart,
   Cell,
+  ComposedChart,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
   XAxis,
   YAxis,
-  ResponsiveContainer,
 } from "recharts";
-import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { createAgentHubConnection } from "@/registry/ai-chat/adapters/agenthub/adapter";
 import { AiChatLoading } from "@/registry/ai-chat/components/ai-chat-loading";
 import { AiChatMessage } from "@/registry/ai-chat/components/ai-chat-message";
 import { AiChatProvider } from "@/registry/ai-chat/components/ai-chat-provider";
-import { useStickyScroll } from "@/registry/ai-chat/hooks/use-sticky-scroll";
 import { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
+import { useStickyScroll } from "@/registry/ai-chat/hooks/use-sticky-scroll";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -823,7 +823,9 @@ function CardSelectionCarousel({
               exit="exit"
               transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
               className="grid gap-3"
-              style={{ gridTemplateColumns: `repeat(${needsCarousel ? CAROUSEL_VISIBLE : total}, minmax(0, 1fr))` }}
+              style={{
+                gridTemplateColumns: `repeat(${needsCarousel ? CAROUSEL_VISIBLE : total}, minmax(0, 1fr))`,
+              }}
             >
               {visibleCards.map((card, localIdx) => {
                 const idx = needsCarousel ? startIdx + localIdx : localIdx;
@@ -1007,7 +1009,11 @@ export function PromptBar({
   }, [pendingScreen]);
 
   const hasInput = value.trim().length > 0;
-  const { scrollRef: scrollContainerRef, contentRef: scrollContentRef, isStuck, scrollToBottom } = useStickyScroll();
+  const {
+    scrollRef: scrollContainerRef,
+    isStuck,
+    scrollToBottom,
+  } = useStickyScroll();
 
   const accessTokenRef = useRef(accessToken);
   accessTokenRef.current = accessToken;
@@ -1142,9 +1148,7 @@ export function PromptBar({
           <div className="flex items-center justify-between px-7 pt-5 pb-3 shrink-0">
             <div className="flex items-center gap-2">
               <AutopilotGradientIcon size={20} />
-              <p className="text-sm font-bold tracking-tight">
-                AI assistant
-              </p>
+              <p className="text-sm font-bold tracking-tight">AI assistant</p>
             </div>
             <div className="flex items-center gap-1">
               {hasMessages && (
@@ -1208,68 +1212,68 @@ export function PromptBar({
               ref={scrollContainerRef}
               className="h-full overflow-y-auto px-7 pb-4"
             >
-            {messages.length === 0 && !isLoading ? (
-              <div className="flex h-full items-center justify-center">
-                <p className="text-sm text-muted-foreground/50">
-                  Responses will appear here
-                </p>
-              </div>
-            ) : (
-              <AiChatProvider
-                isLoading={isLoading}
-                latestAssistantMessageId={latestAssistantMessageId}
-                isLatestResponseAnimating={isLatestResponseAnimating}
-                setIsLatestResponseAnimating={setIsLatestResponseAnimating}
-                onRegenerate={() => void reload()}
-                onEditMessage={handleEditMessage}
-                onQuoteSelect={setQuotedText}
-              >
-                <div className="flex flex-col gap-4 py-4">
-                  {messages.map((msg) => (
-                    <div key={msg.id} className="flex flex-col gap-3">
-                      <AiChatMessage message={msg} />
-                      {msg.role === "assistant" &&
-                        messageCharts.has(msg.id) && (
-                          <InlineChartCard
-                            chart={messageCharts.get(msg.id)!}
-                            aiScreenLabels={aiScreenLabels}
-                            isPinned={pinnedMessageIds.has(msg.id)}
-                            onPin={(screenIdx) => {
-                              onPinChart?.(
-                                messageCharts.get(msg.id)!,
-                                screenIdx,
-                              );
-                              setPinnedMessageIds((prev) =>
-                                new Set(prev).add(msg.id),
-                              );
-                            }}
-                          />
-                        )}
-                    </div>
-                  ))}
-                  <AnimatePresence>
-                    {showLoadingIndicator && <AiChatLoading />}
-                  </AnimatePresence>
-                  {showRecommendation && (
-                    <CardSelectionCarousel
-                      screen={pendingScreen!}
-                      selectedIndices={selectedCardIndices}
-                      onToggle={(idx) =>
-                        setSelectedCardIndices((prev) => {
-                          if (prev.includes(idx)) {
-                            if (prev.length === 1) return prev;
-                            return prev.filter((i) => i !== idx);
-                          }
-                          return [...prev, idx].sort((a, b) => a - b);
-                        })
-                      }
-                      onConfirm={() => onConfirmBuild?.(selectedCardIndices)}
-                      onCancel={() => onCancelBuild?.()}
-                    />
-                  )}
+              {messages.length === 0 && !isLoading ? (
+                <div className="flex h-full items-center justify-center">
+                  <p className="text-sm text-muted-foreground/50">
+                    Responses will appear here
+                  </p>
                 </div>
-              </AiChatProvider>
-            )}
+              ) : (
+                <AiChatProvider
+                  isLoading={isLoading}
+                  latestAssistantMessageId={latestAssistantMessageId}
+                  isLatestResponseAnimating={isLatestResponseAnimating}
+                  setIsLatestResponseAnimating={setIsLatestResponseAnimating}
+                  onRegenerate={() => void reload()}
+                  onEditMessage={handleEditMessage}
+                  onQuoteSelect={setQuotedText}
+                >
+                  <div className="flex flex-col gap-4 py-4">
+                    {messages.map((msg) => (
+                      <div key={msg.id} className="flex flex-col gap-3">
+                        <AiChatMessage message={msg} />
+                        {msg.role === "assistant" &&
+                          messageCharts.has(msg.id) && (
+                            <InlineChartCard
+                              chart={messageCharts.get(msg.id)!}
+                              aiScreenLabels={aiScreenLabels}
+                              isPinned={pinnedMessageIds.has(msg.id)}
+                              onPin={(screenIdx) => {
+                                onPinChart?.(
+                                  messageCharts.get(msg.id)!,
+                                  screenIdx,
+                                );
+                                setPinnedMessageIds((prev) =>
+                                  new Set(prev).add(msg.id),
+                                );
+                              }}
+                            />
+                          )}
+                      </div>
+                    ))}
+                    <AnimatePresence>
+                      {showLoadingIndicator && <AiChatLoading />}
+                    </AnimatePresence>
+                    {showRecommendation && (
+                      <CardSelectionCarousel
+                        screen={pendingScreen!}
+                        selectedIndices={selectedCardIndices}
+                        onToggle={(idx) =>
+                          setSelectedCardIndices((prev) => {
+                            if (prev.includes(idx)) {
+                              if (prev.length === 1) return prev;
+                              return prev.filter((i) => i !== idx);
+                            }
+                            return [...prev, idx].sort((a, b) => a - b);
+                          })
+                        }
+                        onConfirm={() => onConfirmBuild?.(selectedCardIndices)}
+                        onCancel={() => onCancelBuild?.()}
+                      />
+                    )}
+                  </div>
+                </AiChatProvider>
+              )}
             </div>
 
             {!isStuck && (
@@ -1315,12 +1319,14 @@ export function PromptBar({
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() =>
                   handleChipClick(
-                    data.promptSuggestions[1] ?? "Create a performance dashboard",
+                    data.promptSuggestions[1] ??
+                      "Create a performance dashboard",
                   )
                 }
               >
                 <span className="truncate font-semibold">
-                  {data.promptSuggestions[1] ?? "Create a performance dashboard"}
+                  {data.promptSuggestions[1] ??
+                    "Create a performance dashboard"}
                 </span>
               </Badge>
               <Badge
