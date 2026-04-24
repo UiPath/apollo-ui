@@ -31,7 +31,9 @@ export function PreviewFullScreen({
         style={{ height }}
       >
         {!isOpen && (
-          <div className="[&_.h-screen]:!h-full h-full">{children}</div>
+          <div className="[&_.h-screen]:!h-full [&_.h-svh]:!h-full [&_.min-h-svh]:!min-h-full h-full [transform:translateZ(0)]">
+            {children}
+          </div>
         )}
         <DialogTrigger asChild>
           <Button
@@ -59,7 +61,9 @@ export function PreviewFullScreen({
             <Minimize2 className="size-4" />
           </Button>
         </DialogClose>
-        <div className="[&_.h-screen]:!h-full h-full">{children}</div>
+        <div className="[&_.h-screen]:!h-full [&_.h-svh]:!h-full [&_.min-h-svh]:!min-h-full h-full [transform:translateZ(0)]">
+          {children}
+        </div>
       </DialogContent>
     </Dialog>
   );
