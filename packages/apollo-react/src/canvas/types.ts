@@ -91,6 +91,8 @@ export type AgentFlowContextResource = {
   projectId?: string;
   isDisabled?: boolean;
   errorAction?: Omit<ToolbarActionItem, 'id' | 'onAction'>;
+  /** Sub-type picked by ResourceNode to choose the icon glyph. */
+  contextType?: 'index' | 'attachments' | 'datafabricentityset';
 };
 
 export type AgentFlowEscalationResource = {
@@ -452,6 +454,13 @@ export type ToolResourceData = {
 };
 export type ContextResourceData = {
   type: 'context';
+  /**
+   * Sub-type of the context resource. Drives which icon ResourceNode renders.
+   * Values match the consumer-side enum (`index` / `attachments` /
+   * `datafabricentityset`); anything else (including `undefined`) falls back
+   * to the generic ContextIcon.
+   */
+  contextType?: 'index' | 'attachments' | 'datafabricentityset';
 };
 export type EscalationResourceData = {
   type: 'escalation';

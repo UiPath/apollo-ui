@@ -138,7 +138,17 @@ export const ResourceNode = memo(
       let icon: React.ReactNode | undefined;
       switch (data.type) {
         case 'context':
-          icon = <Icons.ContextIcon w={40} h={40} />;
+          switch (data.contextType) {
+            case 'datafabricentityset':
+              icon = <Icons.ContextEntitiesIcon w={40} h={40} />;
+              break;
+            case 'index':
+              icon = <Icons.ContextIndexesIcon w={40} h={40} />;
+              break;
+            default:
+              icon = <Icons.ContextIcon w={40} h={40} />;
+              break;
+          }
           break;
         case 'escalation':
           icon = <ApIcon name="person" size="40px" />;

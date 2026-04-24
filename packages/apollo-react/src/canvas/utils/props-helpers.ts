@@ -230,6 +230,7 @@ const createResourceNode = (
       return createBaseNode({
         ...baseData,
         type: 'context',
+        contextType: resource.contextType,
         projectId: resource.projectId,
         parentNodeId,
       });
