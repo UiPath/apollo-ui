@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.14.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.14.0...@uipath/apollo-react@4.14.1) (2026-04-24)
+
+### Bug Fixes
+
+* **apollo-react:** change case NotExecuted to be hourglass ([70c2004](https://github.com/UiPath/apollo-ui/commit/70c2004141b8dced75c1ae945cf4e4e9fbf7f12e))
+
 ## [@uipath/apollo-react-v4.14.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.13.1...@uipath/apollo-react@4.14.0) (2026-04-24)
 
 ### Features
