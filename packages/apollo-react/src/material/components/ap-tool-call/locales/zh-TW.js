@@ -1,0 +1,1 @@
+/*eslint-disable*/module.exports={messages:JSON.parse("{\"tool-call.errors\":[\"個錯誤\"],\"tool-call.escalation\":[\"升級\"],\"tool-call.execution\":[\"執行\"],\"tool-call.input\":[\"輸入\"],\"tool-call.output\":[\"輸出\"],\"tool-call.ran\":[\"已執行 \",[\"toolName\"],\" (\",[\"duration\"],\" 秒)\"],\"tool-call.running\":[\"正在執行 \",[\"toolName\"],\"…\"]}")};
