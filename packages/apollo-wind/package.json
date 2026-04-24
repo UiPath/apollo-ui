@@ -156,7 +156,7 @@
     "globals": "^16.5.0",
     "jest-axe": "^10.0.0",
     "jsdom": "^27.2.0",
-    "postcss": "^8.5.6",
+    "postcss": "^8.5.10",
     "postcss-import": "^16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",

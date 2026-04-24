@@ -79,7 +79,7 @@
     "nextra": "^4.6.1",
     "nextra-theme-docs": "^4.6.1",
     "pkce-challenge": "^6.0.0",
-    "postcss": "^8.5.6",
+    "postcss": "^8.5.10",
     "react": "19.2.3",
     "react-day-picker": "^9.13.0",
     "react-dom": "19.2.3",
