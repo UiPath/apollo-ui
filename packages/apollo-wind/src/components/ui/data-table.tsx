@@ -187,10 +187,7 @@ export function DataTable<TData, TValue>({
         )}
       </div>
       <div
-        className={cn(
-          'rounded-md border',
-          useBlockLayout ? 'overflow-x-auto' : 'overflow-auto'
-        )}
+        className={cn('rounded-md border', useBlockLayout ? 'overflow-x-auto' : 'overflow-auto')}
       >
         <Table
           className={useBlockLayout ? 'block' : undefined}
@@ -256,9 +253,7 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody
-            className={
-              useBlockLayout ? cn('block overflow-y-auto', blockRowClasses) : undefined
-            }
+            className={useBlockLayout ? cn('block overflow-y-auto', blockRowClasses) : undefined}
             style={useBlockLayout ? { maxHeight: maxBodyHeight } : undefined}
             tabIndex={useBlockLayout ? 0 : undefined}
           >
