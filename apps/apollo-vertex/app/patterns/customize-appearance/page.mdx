@@ -1,0 +1,245 @@
+import { CustomizeAppearanceTemplate } from '@/templates/customize-appearance/CustomizeAppearanceTemplate';
+import { PreviewFullScreen } from '@/app/_components/preview-full-screen';
+
+# Customize Appearance
+
+A self-serve branding settings page that lets a tenant admin swap in their own company name, logo, and brand colors. Edits preview live across the shell — sidebar logo, product title, and primary-driven surfaces (active nav, buttons, focus rings) all update as the user types.
+
+<PreviewFullScreen title="Customize appearance preview">
+    <CustomizeAppearanceTemplate />
+</PreviewFullScreen>
+
+## Minimal header variant
+
+The same pattern works with the minimal shell variant. The customization form is identical; the shell chrome is just a horizontal header instead of a sidebar.
+
+<PreviewFullScreen title="Customize appearance minimal preview">
+    <CustomizeAppearanceTemplate variant="minimal" />
+</PreviewFullScreen>
+
+## Composition
+
+From top to bottom the pattern stacks:
+
+- **[`Shell`](/patterns/shell)** (outer) — wrap your app in `ApolloShell`. Read `companyName` and `companyLogo` from the branding store so the shell updates live.
+- **`PageHeader`** (`size="content"`) — in-page title and description for the settings form.
+- **Company logo** — file-upload tile with hover-to-remove. Accepts any image; converts to a data URL for local preview.
+- **Company name** — text `Input`, feeds `ApolloShell`'s `companyName`.
+- **Theming** — two-up `Card` selector (Default / Custom). Custom mode locks to light theme and reveals color pickers.
+- **Primary & Accent** — native `<input type="color">` overlaid on an `Input` that shows the raw `oklch()` string. Conversion is bidirectional.
+- **Actions** — `Reset to defaults` and `Save changes` `Button`s.
+
+The content region uses the [layout grid](/foundation/grid): `4` columns on mobile, `8` on tablet, `12` on desktop, with `px-4 / sm:px-6 / lg:px-8` margins. The form itself spans `col-span-7` on desktop for a readable measure.
+
+Files:
+
+- [`templates/customize-appearance/CustomizeAppearance.tsx`](https://github.com/UiPath/apollo-ui/blob/main/apps/apollo-vertex/templates/customize-appearance/CustomizeAppearance.tsx) — the form composition.
+- [`templates/customize-appearance/branding-store.ts`](https://github.com/UiPath/apollo-ui/blob/main/apps/apollo-vertex/templates/customize-appearance/branding-store.ts) — store + persistence adapter.
+- [`templates/customize-appearance/color-utils.ts`](https://github.com/UiPath/apollo-ui/blob/main/apps/apollo-vertex/templates/customize-appearance/color-utils.ts) — oklch ↔ hex conversion and primary-ramp generation.
+- [`templates/customize-appearance/use-branding-theme-enforcer.ts`](https://github.com/UiPath/apollo-ui/blob/main/apps/apollo-vertex/templates/customize-appearance/use-branding-theme-enforcer.ts) — hook that locks the app to light mode when a custom theme is active.
+
+## Installation
+
+Copy the three files above into your app and wire them into your router. The underlying components install from the registry:
+
+```bash
+npx shadcn@latest add @uipath/shell
+npx shadcn@latest add @uipath/page-header
+npx shadcn@latest add @uipath/card
+npx shadcn@latest add @uipath/collapsible
+npx shadcn@latest add @uipath/button
+npx shadcn@latest add @uipath/input
+npx shadcn@latest add @uipath/label
+npx shadcn@latest add @uipath/spinner
+npx shadcn@latest add @uipath/sonner
+```
+
+In your app root, render a `<Toaster />`, call `useBrandingThemeEnforcer()` inside the `ThemeProvider`, and pass live branding to `<ApolloShell>`:
+
+```tsx
+import { ApolloShell } from '@/components/ui/shell';
+import { ThemeProvider } from '@/components/ui/shell/shell-theme-provider';
+import { Toaster } from '@/components/ui/sonner';
+import { useEffect } from 'react';
+import { brandingStore, useBrandingStore } from './branding-store';
+import { buildBrandingStyle } from './color-utils';
+import { useBrandingThemeEnforcer } from './use-branding-theme-enforcer';
+
+function BrandedApp() {
+  useBrandingThemeEnforcer();
+  const { appTitle, logoUrl, logoAlt, themeMode, primaryColor, accentColor } =
+    useBrandingStore();
+
+  useEffect(() => {
+    brandingStore.hydrate();
+  }, []);
+
+  const style =
+    themeMode === 'custom'
+      ? buildBrandingStyle(primaryColor, accentColor)
+      : undefined;
+
+  return (
+    <div style={style}>
+      <ApolloShell
+        companyName={appTitle || 'Your Company'}
+        productName="Your Product"
+        companyLogo={
+          logoUrl
+            ? { url: logoUrl, alt: logoAlt || 'Company logo', isCustom: true }
+            : undefined
+        }
+        navItems={navItems}
+      >
+        <YourRoutes />
+      </ApolloShell>
+      <Toaster />
+    </div>
+  );
+}
+
+export function App() {
+  return (
+    <ThemeProvider>
+      <BrandedApp />
+    </ThemeProvider>
+  );
+}
+```
+
+The `style` prop on the outer `<div>` applies the custom CSS variables via inheritance, scoped to that subtree. No global `document.documentElement` mutation.
+
+### Why the theme enforcer
+
+The primary-ramp generator (`buildPrimaryVars`) is calibrated for light-palette lightness values. Applied in dark mode the ramp looks wrong against dark chrome, and many brand colors lose sufficient contrast on dark surfaces. `useBrandingThemeEnforcer` locks the app to light whenever `themeMode === 'custom'` and restores the user's previous theme (light / dark / system) when they switch back to the default themes. Call it once at app root, inside `ThemeProvider` — never inside the customization form itself.
+
+## Persisting to a backend
+
+The store ships with a `localStorage` adapter so the pattern works out of the box. For real deployments, replace the adapter with one that syncs to your backend. The recommended target for UiPath vertical solutions is **Data Fabric**, which stores the branding record on a first-class entity and uploads the logo as an attachment.
+
+### Adapter interface
+
+```ts
+export interface BrandingAdapter {
+  load(): Promise<Partial<BrandingSettings> | null>;
+  save(settings: BrandingSettings): Promise<void>;
+  uploadLogo?(file: File): Promise<string>;
+  clearLogo?(): Promise<void>;
+}
+```
+
+Logo uploads are deferred: `CustomizeAppearance` stages the `File` locally (reading it as a data URL for instant preview) and only calls `adapter.uploadLogo` when the user clicks **Save changes**. Backends that separate the settings record from file attachments (like Data Fabric) should implement both `uploadLogo` and `clearLogo` so the store can orchestrate the upload → save (or clear → save) flow atomically. `save` should only persist the non-logo fields — the store writes the resolved `logoUrl` back into the record after `uploadLogo` resolves.
+
+### Data Fabric adapter (sketch)
+
+```ts
+import dataFabricService from '@/services/dataFabricService';
+import {
+  readFileAsDataUrl,
+  type BrandingAdapter,
+  type BrandingSettings,
+} from './branding-store';
+
+const ENTITY_NAME = 'AppBranding';
+const LOGO_FIELD = 'Logo';
+
+export function createDataFabricAdapter(): BrandingAdapter {
+  let entityId: string | null = null;
+  let recordId: string | null = null;
+
+  async function ensureEntity() {
+    if (entityId) return entityId;
+    const entities = await dataFabricService.getAllEntities();
+    const entity = entities.find((e) => e.name === ENTITY_NAME);
+    if (!entity) throw new Error(`${ENTITY_NAME} entity not found`);
+    entityId = entity.id;
+    return entityId;
+  }
+
+  return {
+    async load() {
+      const id = await ensureEntity();
+      const response = await dataFabricService.queryEntityRecords(id, {
+        selectedFields: ['Id', 'HeaderTitle', 'PrimaryColor', 'AccentColor', 'Logo'],
+        limit: 1,
+      });
+      const record = response.value[0];
+      if (!record) return null;
+      recordId = record.Id;
+
+      let logoUrl = '';
+      if (record.Logo) {
+        logoUrl = await dataFabricService.getFileAsDataUrl(
+          ENTITY_NAME,
+          record.Id,
+          LOGO_FIELD,
+        );
+      }
+
+      return {
+        appTitle: record.HeaderTitle ?? '',
+        primaryColor: record.PrimaryColor ?? '',
+        accentColor: record.AccentColor ?? '',
+        themeMode: record.PrimaryColor || record.AccentColor ? 'custom' : 'default',
+        logoUrl,
+      };
+    },
+
+    async save(settings: BrandingSettings) {
+      const id = await ensureEntity();
+      const record = {
+        HeaderTitle: settings.appTitle,
+        PrimaryColor: settings.primaryColor,
+        AccentColor: settings.accentColor,
+      };
+      if (recordId) {
+        await dataFabricService.updateRecords(id, [{ Id: recordId, ...record }]);
+      } else {
+        const result = await dataFabricService.insertRecords(id, [record]);
+        recordId = result.items[0].Id;
+      }
+    },
+
+    async uploadLogo(file: File) {
+      const id = await ensureEntity();
+      if (!recordId) {
+        const result = await dataFabricService.insertRecords(id, [{ HeaderTitle: '' }]);
+        recordId = result.items[0].Id;
+      }
+      await dataFabricService.uploadFileToEntity(
+        ENTITY_NAME,
+        recordId,
+        LOGO_FIELD,
+        file,
+      );
+      // Return a data URL so the shell can render the logo without a refetch.
+      return readFileAsDataUrl(file);
+    },
+
+    async clearLogo() {
+      if (!recordId) return;
+      await dataFabricService.deleteFileFromEntity(
+        ENTITY_NAME,
+        recordId,
+        LOGO_FIELD,
+      );
+    },
+  };
+}
+```
+
+Wire it up once at app startup, before the first `brandingStore.hydrate()` call:
+
+```ts
+brandingStore.setAdapter(createDataFabricAdapter());
+```
+
+Model the entity in Data Fabric with `HeaderTitle`, `PrimaryColor`, `AccentColor` (plus any additional fields you want to expose — `BodyFont`, `LogoAlt`, etc.) and a file field `Logo` for the uploaded image.
+
+## Customizing
+
+- **Add more fields** — the pattern generalizes: add `bodyFont`, `brandVoice`, `favicon`, etc. to `BrandingSettings`, surface them in `CustomizeAppearance`, and update `BrandingAdapter` implementations to persist them. `buildBrandingStyle` is the single place where CSS variables are derived.
+- **Lock dark mode** — the example locks custom theming to light mode (the primary-ramp generator targets light-palette lightness values). To support custom dark mode, generate a second ramp in `buildPrimaryVars` and merge `dark: {...}` into the style map.
+- **Restrict access** — this is a tenant-admin surface. Gate the route behind a group check (see [`GroupMembershipGuard`](/patterns/shell#gating-access-by-group-membership)) so only admins can change the tenant's branding.
+- **Accessibility** — warn users before they save colors with insufficient contrast. Run `primaryColor` through a contrast check (WCAG 4.5:1 against `--primary-foreground`) and surface a toast if it fails. The color picker does not validate this by default.
+- **Debounce saves** — if you wire the adapter to hit the backend on every keystroke, your users will DOS themselves. The pattern defers persistence to the explicit `Save changes` button; keep that interaction model when you swap adapters.
