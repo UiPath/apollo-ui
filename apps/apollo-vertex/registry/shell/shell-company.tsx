@@ -4,6 +4,7 @@ import { PanelLeft } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { useSidebar } from "@/components/ui/sidebar";
 import {
   Tooltip,
   TooltipContent,
@@ -24,8 +25,6 @@ interface CompanyProps {
   companyName: string;
   productName: string;
   companyLogo?: CompanyLogo;
-  isCollapsed: boolean;
-  toggleCollapse: () => void;
   sidebarHovered?: boolean;
 }
 
@@ -105,11 +104,11 @@ export const Company = ({
   companyName,
   productName,
   companyLogo,
-  isCollapsed,
-  toggleCollapse,
   sidebarHovered = false,
 }: CompanyProps) => {
   const { t } = useTranslation();
+  const { state, toggleSidebar } = useSidebar();
+  const isCollapsed = state === "collapsed";
 
   const isCustomLogo = companyLogo?.isCustom ?? false;
   const logoBgClass = isCustomLogo
@@ -135,7 +134,7 @@ export const Company = ({
           <CollapsedLogo
             companyLogo={companyLogo}
             sidebarHovered={sidebarHovered}
-            onExpand={toggleCollapse}
+            onExpand={toggleSidebar}
           />
         ) : (
           iconElement
@@ -188,7 +187,7 @@ export const Company = ({
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    onClick={toggleCollapse}
+                    onClick={toggleSidebar}
                     className="ml-auto shrink-0 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground cursor-pointer"
                   >
                     <PanelLeft className="w-4 h-4" />
