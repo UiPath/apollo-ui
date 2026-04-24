@@ -1141,9 +1141,7 @@ function ResizableNarrowColumnsExample() {
   const columns: ColumnDef<ResizableRow>[] = [
     {
       accessorKey: 'name',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Full contact name" />
-      ),
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Full contact name" />,
       size: 160,
       minSize: 60,
     },
