@@ -25,7 +25,11 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import type { CompanyLogo, ShellNavItem } from "./shell";
-import { fastFadeTransition, textFadeVariants } from "./shell-animations";
+import {
+  fastFadeTransition,
+  iconHoverScale,
+  textFadeVariants,
+} from "./shell-animations";
 import { Company } from "./shell-company";
 import { MinimalCompany } from "./shell-minimal-company";
 import { MinimalNavItem } from "./shell-minimal-nav-item";
@@ -214,7 +218,14 @@ function SidebarNav({
                             isActive={showParentActive}
                             className={navButtonClass}
                           >
-                            <Icon />
+                            <motion.span
+                              className="inline-flex items-center justify-center shrink-0"
+                              {...(isCollapsed
+                                ? { whileHover: iconHoverScale }
+                                : {})}
+                            >
+                              <Icon className="size-4 shrink-0" />
+                            </motion.span>
                             <AnimatePresence initial={false}>
                               {!isCollapsed && (
                                 <motion.span
@@ -289,7 +300,14 @@ function SidebarNav({
                       className={navButtonClass}
                     >
                       <Link to={item.path}>
-                        <Icon />
+                        <motion.span
+                          className="inline-flex items-center justify-center shrink-0"
+                          {...(isCollapsed
+                            ? { whileHover: iconHoverScale }
+                            : {})}
+                        >
+                          <Icon className="size-4 shrink-0" />
+                        </motion.span>
                         <AnimatePresence initial={false}>
                           {!isCollapsed && (
                             <motion.span
