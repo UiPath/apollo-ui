@@ -1037,8 +1037,13 @@ export function PromptBar({
   const lastAssistantHasText =
     lastMessage?.role === "assistant" &&
     lastMessage.parts.some((p) => p.type === "text" && p.content);
+  // When loading but the last message is still a user message, the AI hasn't
+  // started responding yet. Return null so previous completed assistant messages
+  // don't get isStreaming=true and re-animate their typewriter from scratch.
   const latestAssistantMessageId =
-    messages.findLast((m) => m.role === "assistant")?.id ?? null;
+    isLoading && lastMessage?.role === "user"
+      ? null
+      : (messages.findLast((m) => m.role === "assistant")?.id ?? null);
   const showLoadingIndicator = isLoading && !lastAssistantHasText;
   const hasMessages = messages.length > 0;
   const isResponseComplete = isExpanded && hasMessages && !isLoading;
