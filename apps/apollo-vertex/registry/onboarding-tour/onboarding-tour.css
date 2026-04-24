@@ -1,0 +1,38 @@
+/* Reset driver.js popover — custom React content rendered inside.
+   Keep padding so driver.js offset calculations work correctly;
+   the transparent background makes the padding invisible. */
+.driver-popover {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: inherit !important;
+}
+
+/* 20px wider than the inner popover/modal content (360 / 520) to account for
+   driver.js wrapper padding used by its positioning math. */
+.driver-popover.onboarding-tour-step {
+  max-width: 380px !important;
+}
+
+.driver-popover.onboarding-tour-modal {
+  max-width: 540px !important;
+}
+
+/* Fade-in instead of driver.js positional animation to avoid jitter
+   from the initial measure → refresh repositioning cycle. */
+.driver-popover {
+  animation: onboarding-tour-fade-in 200ms ease-out;
+}
+
+@keyframes onboarding-tour-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.driver-popover-arrow {
+  display: none !important;
+}
