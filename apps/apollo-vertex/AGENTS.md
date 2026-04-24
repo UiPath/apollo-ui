@@ -145,6 +145,14 @@ export type { ButtonProps };
 - **Utilities**: camelCase (`cn`, `formatDate`)
 - **CSS variables**: kebab-case (`--color-primary`, `--spacing-md`)
 
+### Hooks
+
+Before implementing a custom hook, check whether a well-maintained, widely-used
+package already provides it. Prefer adopting a battle-tested implementation
+over writing one from scratch — it saves maintenance, edge-case handling, and
+test surface. Only implement a hook locally when no suitable package exists,
+the package is unmaintained, or the dependency cost outweighs the benefit.
+
 ### Tailwind CSS
 - Use Tailwind utility classes directly in JSX
 - Use `cn()` to merge conditional classes
