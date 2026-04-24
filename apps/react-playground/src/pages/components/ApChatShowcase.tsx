@@ -556,9 +556,11 @@ export function ApChatShowcase() {
 		unsubscribes.push(
 			service.on(AutopilotChatEvent.SpeechToTextToggle, (isActive: unknown) => {
 				console.log("[STT] toggle:", isActive);
-				// Mirror the publish back via setSpeechToTextState so the mic button stays in sync
-				// (publishSpeechToTextToggle already did this, but a real consumer would do it
-				// here after its recognizer actually started/failed).
+				// The button already reflects the active state — `publishSpeechToTextToggle`
+				// fired `SetSpeechToTextState` before this handler ran. A real consumer that
+				// owns a recognizer should call `service.setSpeechToTextState(false)` here if
+				// its recognizer fails to start, to revert the UI. This fake recognizer can't
+				// fail, so we just drive the transcript simulation.
 				if (isActive) {
 					const phrase =
 						fakeSttPhrases[sttPhraseIndex % fakeSttPhrases.length] ?? "";
