@@ -65,6 +65,16 @@ const excludedPackages: Record<string, string> = {
   // Missing license field in package.json. Actual license is MIT per GitHub repo
   // (https://github.com/fabiospampinato/khroma). Transitive dep of mermaid.
   'khroma': 'MIT per GitHub repo, missing license field in package.json',
+  // Actual license is BSD-2-Clause per bundled LICENSE file
+  // (https://github.com/substack/hyperx). package.json declares non-SPDX "BSD".
+  'hyperx': 'BSD-2-Clause per LICENSE file, non-SPDX "BSD" in package.json',
+};
+
+// Scopes excluded wholesale from license checks. Use sparingly — only for
+// first-party packages where every name under the scope is published by the
+// same org as this repo.
+const excludedScopes: Record<string, string> = {
+  '@uipath/': 'UiPath first-party package',
 };
 
 /**
@@ -110,8 +120,14 @@ try {
 
     if (!isApproved(license)) {
       for (const pkg of packages) {
-        if (excludedPackages[pkg.name]) {
-          excluded.push({ name: pkg.name, version: pkg.versions.join(', '), license, reason: excludedPackages[pkg.name] });
+        const packageReason = excludedPackages[pkg.name];
+        if (packageReason) {
+          excluded.push({ name: pkg.name, version: pkg.versions.join(', '), license, reason: packageReason });
+          continue;
+        }
+        const scopeMatch = Object.entries(excludedScopes).find(([scope]) => pkg.name.startsWith(scope));
+        if (scopeMatch) {
+          excluded.push({ name: pkg.name, version: pkg.versions.join(', '), license, reason: scopeMatch[1] });
           continue;
         }
         violations.push({ name: pkg.name, version: pkg.versions.join(', '), license });
