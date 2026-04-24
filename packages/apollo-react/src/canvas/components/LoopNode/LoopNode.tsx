@@ -44,7 +44,6 @@ import { partitionLoopHandleGroups } from './LoopNode.helpers';
 import type { LoopNodeProps } from './LoopNode.types';
 
 const EMPTY_DATA: Record<string, unknown> = {};
-const NOOP_HANDLE_ACTION = (_event: HandleActionEvent) => {};
 
 const RESIZE_CONTROLS = [
   { position: 'top-left', cursor: 'nwse-resize', indicatorClassName: 'top-[-5px] left-[-5px]' },
@@ -201,10 +200,14 @@ function LoopNodeComponent(props: LoopNodeProps) {
 
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
+  const handleOuterHandleAction = useCallback((_event: HandleActionEvent) => {
+    setIsHovered(false);
+  }, []);
 
-  const shouldShowHandles = isConnecting || selected || isHovered;
+  const shouldShowHandles = (isConnecting || selected || isHovered) && !dragging;
 
-  const showHandleAddButtons = mode === 'design' && !multipleNodesSelected && !isConnecting;
+  const showHandleAddButtons =
+    mode === 'design' && !multipleNodesSelected && !isConnecting && !dragging;
   const showResizeControls = selected && !dragging && mode === 'design';
   const showEmptyStateButton = mode === 'design' && !hasChildNodes && !!onAddFirstChild;
 
@@ -299,7 +302,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
         <NodeToolbar
           nodeId={id}
           config={toolbarConfig}
-          expanded={selected}
+          expanded={selected || isHovered}
           hidden={dragging || multipleNodesSelected}
         />
       )}
@@ -317,6 +320,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
           nodeWidth={width}
           nodeHeight={height}
           connectedHandleIds={connectedHandleIds}
+          onOuterHandleAction={handleOuterHandleAction}
         />
       ))}
     </div>
@@ -451,6 +455,7 @@ function HandleGroups({
   nodeWidth,
   nodeHeight,
   connectedHandleIds,
+  onOuterHandleAction,
 }: {
   nodeId: string;
   variant: HandleBoundary;
@@ -463,6 +468,7 @@ function HandleGroups({
   nodeWidth: number;
   nodeHeight: number;
   connectedHandleIds: ReadonlySet<string>;
+  onOuterHandleAction: (event: HandleActionEvent) => void;
 }) {
   if (groups.length === 0) return null;
 
@@ -482,6 +488,7 @@ function HandleGroups({
           nodeWidth={nodeWidth}
           nodeHeight={nodeHeight}
           connectedHandleIds={connectedHandleIds}
+          onOuterHandleAction={onOuterHandleAction}
         />
       ))}
     </>
@@ -500,6 +507,7 @@ function HandleGroup({
   nodeWidth,
   nodeHeight,
   connectedHandleIds,
+  onOuterHandleAction,
 }: {
   nodeId: string;
   variant: HandleBoundary;
@@ -512,6 +520,7 @@ function HandleGroup({
   nodeWidth: number;
   nodeHeight: number;
   connectedHandleIds: ReadonlySet<string>;
+  onOuterHandleAction: (event: HandleActionEvent) => void;
 }) {
   const groupVisible = shouldShowHandles && (group.visible ?? true);
   const enhancedHandles = useMemo(
@@ -523,10 +532,10 @@ function HandleGroup({
         onAction:
           handle.onAction ??
           (variant !== 'inner' && handle.type === 'source' && handle.showButton
-            ? NOOP_HANDLE_ACTION
+            ? onOuterHandleAction
             : undefined),
       })),
-    [group.handles, connectedHandleIds, groupVisible, variant]
+    [group.handles, connectedHandleIds, groupVisible, onOuterHandleAction, variant]
   );
 
   return (

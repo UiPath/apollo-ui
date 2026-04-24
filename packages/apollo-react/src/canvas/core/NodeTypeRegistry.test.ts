@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { ListItem } from '../components';
 import type { PreviewNodeConnectionInfo } from '../hooks';
 import type { CategoryManifest, NodeManifest } from '../schema';
+import { allNodeManifests } from '../storybook-utils/manifests/node-definitions';
 import { NodeTypeRegistry } from './NodeTypeRegistry';
 
 describe('NodeTypeRegistry', () => {
@@ -413,6 +414,21 @@ describe('NodeTypeRegistry', () => {
       expect(versionedRegistry.getManifest('trigger', '3.0.0')).toBeUndefined();
       expect(versionedRegistry.getHandlesByNodeType('trigger', '3.0.0')).toEqual({});
       expect(versionedRegistry.getDefaultHandle('trigger', 'source', '3.0.0')).toBeUndefined();
+    });
+
+    it('should not treat inner loop handles as the node-type default target', () => {
+      const loopManifest = allNodeManifests.find(
+        (node) => node.nodeType === 'uipath.control-flow.foreach' && node.version === '2.0.0'
+      );
+
+      expect(loopManifest).toBeDefined();
+
+      const versionedRegistry = new NodeTypeRegistry();
+      versionedRegistry.registerManifest([loopManifest!], []);
+
+      expect(
+        versionedRegistry.getDefaultHandle('uipath.control-flow.foreach', 'target', '2.0.0')?.id
+      ).toBe('input');
     });
   });
 

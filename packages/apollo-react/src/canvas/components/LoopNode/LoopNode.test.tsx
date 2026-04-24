@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import type { NodeManifest } from '@uipath/apollo-react/canvas';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PREVIEW_NODE_ID } from '../../constants';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import { LoopNode } from './LoopNode';
@@ -84,11 +84,13 @@ vi.mock('../Toolbar', () => ({
   NodeToolbar: ({
     config,
     hidden,
+    expanded,
   }: {
     config: { actions: Array<{ id: string; label?: string }> };
     hidden?: boolean;
+    expanded?: boolean;
   }) =>
-    hidden ? null : (
+    hidden || !expanded ? null : (
       <div data-testid="node-toolbar">
         {config.actions
           .filter((action) => action.id !== 'separator')
@@ -284,5 +286,34 @@ describe('LoopNode', () => {
     render(<LoopNode {...defaultProps} selected />);
 
     expect(screen.queryByTestId('node-toolbar')).not.toBeInTheDocument();
+  });
+
+  it('shows the toolbar on hover when the loop node is not selected', () => {
+    render(<LoopNode {...defaultProps} />);
+
+    expect(screen.queryByTestId('node-toolbar')).not.toBeInTheDocument();
+
+    fireEvent.mouseEnter(screen.getByText('For Each').closest('[data-loop-container]')!);
+
+    expect(screen.getByTestId('node-toolbar')).toBeInTheDocument();
+  });
+
+  it('hides outer add buttons while the loop node is being dragged', () => {
+    render(<LoopNode {...defaultProps} selected dragging />);
+
+    expect(screen.queryByRole('button', { name: 'Add node' })).not.toBeInTheDocument();
+  });
+
+  it('clears hover state after clicking an outer add button', () => {
+    render(<LoopNode {...defaultProps} />);
+
+    fireEvent.mouseEnter(screen.getByText('For Each').closest('[data-loop-container]')!);
+
+    expect(screen.getByTestId('node-toolbar')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add node' }));
+
+    expect(screen.queryByTestId('node-toolbar')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Add node' })).not.toBeInTheDocument();
   });
 });

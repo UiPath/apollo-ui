@@ -137,5 +137,5 @@ function pickPreferredInnerHandle(
 
   if (candidates.length === 0) return null;
 
-  return candidates.find((candidate) => candidate.handle.isDefaultForType) ?? candidates[0]!;
+  return candidates[0]!;
 }

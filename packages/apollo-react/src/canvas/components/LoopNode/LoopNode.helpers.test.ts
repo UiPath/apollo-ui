@@ -39,7 +39,7 @@ describe('resolveLoopPreviewConnectionHandles', () => {
     });
   });
 
-  it('prefers the manifest default target handle when multiple inner targets exist', () => {
+  it('picks the first visible inner target when multiple targets exist', () => {
     const manifest: NodeManifest = {
       nodeType: 'uipath.control-flow.foreach',
       version: '1.0.0',
@@ -60,9 +60,15 @@ describe('resolveLoopPreviewConnectionHandles', () => {
           position: 'bottom',
           boundary: 'inner',
           handles: [
-            { id: 'break-path', type: 'target', handleType: 'input' },
             {
-              id: 'continue-path',
+              id: 'path-1',
+              label: 'Break',
+              type: 'target',
+              handleType: 'input',
+            },
+            {
+              id: 'path-2',
+              label: 'Continue',
               type: 'target',
               handleType: 'input',
               isDefaultForType: true,
@@ -75,7 +81,7 @@ describe('resolveLoopPreviewConnectionHandles', () => {
     expect(resolveLoopPreviewConnectionHandles(manifest, { nodeId: 'loop-1' })).toEqual({
       sourceHandleId: 'loop-source',
       sourceHandlePosition: Position.Bottom,
-      targetHandleId: 'continue-path',
+      targetHandleId: 'path-1',
     });
   });
 

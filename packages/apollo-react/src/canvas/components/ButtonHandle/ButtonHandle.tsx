@@ -403,7 +403,7 @@ const InwardHandleLabel = forwardRef<HTMLDivElement, InwardHandleLabelProps>(
           'pointer-events-none absolute flex h-6 items-center whitespace-nowrap rounded-full border border-border-subtle px-2.5',
           INWARD_LABEL_POSITION[connectionPosition]
         )}
-        style={{ backgroundColor }}
+        style={backgroundColor ? { backgroundColor } : undefined}
       >
         <Row align="center" gap={3}>
           {labelIcon}
@@ -418,5 +418,5 @@ type InwardHandleLabelProps = {
   connectionPosition: Position;
   label: string;
   labelIcon?: React.ReactNode;
-  backgroundColor: string;
+  backgroundColor?: string;
 };

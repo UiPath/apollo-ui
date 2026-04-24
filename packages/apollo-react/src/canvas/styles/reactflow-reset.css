@@ -43,6 +43,17 @@
 }
 
 /**
+ * Parent/container nodes must not jump above their children on plain hover, or
+ * the shell background will occlude the child node wrappers. React Flow adds a
+ * built-in `parent` class to node wrappers that own child nodes, so we can
+ * keep the generic hover-elevation behavior for leaf nodes while exempting
+ * unselected parent wrappers.
+ */
+.react-flow__node.parent:hover:not(.selected) {
+  z-index: 0 !important;
+}
+
+/**
  * Canvas pane gradient for future themes.
  *
  * <Background /> passes bgColor as `background-color`, which only accepts

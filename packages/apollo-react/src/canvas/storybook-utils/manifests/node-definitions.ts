@@ -308,7 +308,6 @@ export const allNodeManifests: NodeManifest[] = [
             label: 'Continue',
             type: 'target',
             handleType: 'input',
-            isDefaultForType: true,
           },
           {
             id: 'break',
