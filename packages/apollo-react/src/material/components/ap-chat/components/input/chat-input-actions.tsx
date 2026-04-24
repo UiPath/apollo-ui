@@ -48,6 +48,12 @@ const SubmitButtonContainer = styled('div')(() => ({
 interface AutopilotChatInputActionsProps {
   handleSubmit: (event: React.MouseEvent) => void;
   disableSubmit: boolean;
+  /**
+   * True when the user has nothing to submit (no text, no attachments). Drives the
+   * send↔voice-interaction swap independently of `disableSubmit`, which also goes
+   * true during attachment-loading / skeleton states.
+   */
+  isInputEmpty?: boolean;
   waitingResponse: boolean;
   onResourceTriggerClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   onVoiceInteractionChange?: (isActive: boolean) => void;
@@ -57,6 +63,7 @@ interface AutopilotChatInputActionsProps {
 function AutopilotChatInputActionsComponent({
   handleSubmit,
   disableSubmit,
+  isInputEmpty,
   waitingResponse,
   onResourceTriggerClick,
   onVoiceInteractionChange,
@@ -69,11 +76,18 @@ function AutopilotChatInputActionsComponent({
   const { disabledFeatures, allowedAttachments } = useChatState();
   const { models, agentModes } = usePicker();
 
-  const [isSpeechToTextActive, setIsSpeechToTextActive] = React.useState(false);
+  // Seed from the service getter so a remount while STT is already active shows the
+  // active visual immediately, without waiting for the next SetSpeechToTextState event.
+  const [isSpeechToTextActive, setIsSpeechToTextActive] = React.useState(
+    () => chatService?.isSpeechToTextActive ?? false
+  );
   React.useEffect(() => {
     if (!chatService) {
       return;
     }
+    // Re-sync after mount in case the service state changed between `useState` init
+    // and the effect running.
+    setIsSpeechToTextActive(chatService.isSpeechToTextActive);
     return chatService.on(AutopilotChatEvent.SetSpeechToTextState, (isActive: boolean) => {
       setIsSpeechToTextActive(isActive);
     });
@@ -82,19 +96,6 @@ function AutopilotChatInputActionsComponent({
   const handleSpeechToTextClick = React.useCallback(() => {
     chatService?.publishSpeechToTextToggle();
   }, [chatService]);
-
-  // Stop dictation before sending, so the old transcript doesn't re-populate the input.
-  // Must use publishSpeechToTextToggle (not setSpeechToTextState) so both SetSpeechToTextState
-  // AND SpeechToTextToggle events fire — consumers listen to SpeechToTextToggle to stop the SDK.
-  const handleSubmitWithSttStop = React.useCallback(
-    (event: React.MouseEvent) => {
-      if (isSpeechToTextActive) {
-        chatService?.publishSpeechToTextToggle();
-      }
-      handleSubmit(event);
-    },
-    [handleSubmit, isSpeechToTextActive, chatService]
-  );
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -184,11 +185,13 @@ function AutopilotChatInputActionsComponent({
     return parts.join('. ');
   }, [allowedAttachments, acceptedExtensions, _]);
 
-  // Show voice interaction button when audioStreaming is enabled and either
-  // voice is already active or the input is empty (no text to submit).
+  // Show voice interaction button when audioStreaming is enabled and either voice
+  // is already active, or the input is genuinely empty (no text, no attachments).
+  // Keyed off `isInputEmpty` — not `disableSubmit` — so transient disables from
+  // attachment-loading / skeleton don't flip the send button to voice.
   const showVoice =
     disabledFeatures.audioStreaming === false &&
-    (isVoiceInteractionActive || (disableSubmit && !waitingResponse));
+    (isVoiceInteractionActive || (!!isInputEmpty && !waitingResponse));
 
   // Calculate if we should use icons based on how many features are enabled
   const hasMultipleFeatures =
@@ -311,6 +314,7 @@ function AutopilotChatInputActionsComponent({
               overrideColor={isSpeechToTextActive ? 'var(--color-background)' : undefined}
               data-testid="autopilot-chat-stt-button"
               ariaLabel={_(msg({ id: 'autopilot-chat.input.actions.dictate', message: `Dictate` }))}
+              ariaPressed={isSpeechToTextActive}
             />
           </VoiceButtonContainer>
         )}
@@ -335,7 +339,9 @@ function AutopilotChatInputActionsComponent({
               variant={waitingResponse ? 'normal' : 'outlined'}
               preventHover={true}
               disabled={disableSubmit}
-              onClick={handleSubmitWithSttStop}
+              // STT auto-stop-on-submit lives inside `handleSubmit` (see chat-input.tsx)
+              // so the keyboard-Enter path gets the same behavior as this click path.
+              onClick={handleSubmit}
               data-testid="autopilot-chat-submit-button"
               ariaLabel={
                 waitingResponse
