@@ -1,0 +1,115 @@
+import { SettingsTemplate } from '@/templates/settings/SettingsTemplate';
+import { PreviewFullScreen } from '@/app/_components/preview-full-screen';
+
+# Settings
+
+A traditional settings page composition: a single, vertically-stacked form
+constrained to a comfortable reading width, broken into titled sections.
+Built from `PageHeader`, `Field` (and friends), `Input`, `Textarea`,
+`Select`, `RadioGroup`, `Switch`, and `Button`. Intended to render inside
+an [`ApolloShell`](/patterns/shell).
+
+<PreviewFullScreen title="Settings page preview">
+    <SettingsTemplate />
+</PreviewFullScreen>
+
+## Composition
+
+From top to bottom the template stacks:
+
+- **[`Shell`](/patterns/shell)** (outer) — provides the chrome (sidebar,
+  header, auth, theme). Wrap the rest of the page inside `ApolloShell`.
+- **`PageHeader`** — page title.
+- **Sections** — four titled `<section>`s (Profile, Notifications, Regional,
+  Privacy & security) wrapped by a small in-file `Section` helper. Each
+  section starts with an `h2` + description header, then a `FieldGroup` of
+  `Field`s. Sections use `mb-8` for vertical rhythm.
+- **Field stack** — within each `Field`, content stacks `FieldLabel` →
+  `FieldDescription` → control (Input, Textarea, Select, RadioGroup). Toggle
+  rows use `orientation="horizontal"` so the label sits left and the
+  `Switch` sits right.
+- **Action footer** — right-aligned `Reset to defaults` (outline) and
+  `Save changes` (primary) `Button`s. `Save` is disabled until the draft
+  diverges from the saved state.
+
+## Grid
+
+The page uses the [foundation grid](/foundation/grid):
+
+- Outer container has `px-4 sm:px-6 lg:px-8` margins matching the default
+  `PageHeader`, and a `grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-12
+  gap-4` row.
+- The form column spans `col-span-4 sm:col-span-8 lg:col-span-7` — full
+  width on mobile/tablet, ~58% width on desktop. This keeps line lengths
+  readable (~600–760px depending on viewport) instead of letting the form
+  stretch edge-to-edge on wide monitors.
+- Within Regional, Language and Timezone share a nested
+  `grid grid-cols-1 sm:grid-cols-2 gap-4` so they pair on one row from
+  tablet up.
+
+| Breakpoint | Form column |
+|---|---|
+| Mobile (`grid-cols-4`) | `col-span-4` (full width) |
+| Tablet (`sm:grid-cols-8`) | `sm:col-span-8` (full width) |
+| Desktop (`lg:grid-cols-12`) | `lg:col-span-7` (~58%) |
+
+Sections inside the form column are separated vertically with `mb-8` (32px)
+on each section.
+
+Source: [`templates/settings/WorkspaceSettings.tsx`](https://github.com/UiPath/apollo-ui/blob/main/apps/apollo-vertex/templates/settings/WorkspaceSettings.tsx)
+
+## Installation
+
+The composition itself is a pattern — copy the source from
+`templates/settings/WorkspaceSettings.tsx` into your app, wrap it in
+`ApolloShell`, and swap in your own state/persistence. The underlying
+components install from the registry:
+
+```bash
+npx shadcn@latest add @uipath/shell
+npx shadcn@latest add @uipath/page-header
+npx shadcn@latest add @uipath/field
+npx shadcn@latest add @uipath/input
+npx shadcn@latest add @uipath/textarea
+npx shadcn@latest add @uipath/select
+npx shadcn@latest add @uipath/radio-group
+npx shadcn@latest add @uipath/switch
+npx shadcn@latest add @uipath/button
+```
+
+## Customizing
+
+- **Form width** — `lg:col-span-7` matches the comfortable form line length
+  used across the Vertex apps. Bump to `lg:col-span-8` for slightly wider
+  controls or `lg:col-span-6` for tighter forms. Stay within the 12-column
+  grid so margins line up with the `PageHeader`.
+- **Persistence** — the template uses two `useState` slots (`draft` and
+  `saved`) and compares them field-by-field to power the `Save` button.
+  Replace `handleSave` and `handleReset` with calls to your own store,
+  server action, or settings API. Toast feedback can be added with
+  `Sonner` from the registry.
+- **Categorical fields** — `emailFrequency` and `visibility` are typed as
+  unions derived from their option arrays via `as const` plus a small type
+  guard at the `RadioGroup`'s `onValueChange`. Follow the same pattern when
+  adding more categorical settings so values stay type-safe end-to-end.
+- **Date format** — the `dateFormat` option values (`short`, `medium`,
+  `long`) map directly to `Intl.DateTimeFormat({ dateStyle })` so they
+  render without a date library. Swap in `date-fns` format strings or your
+  own enum if you need finer control.
+- **Sub-page navigation** — settings UIs often have multiple sub-sections
+  routed independently (e.g. `/settings/profile`,
+  `/settings/notifications`). Move each `<Section>` to its own route and
+  add a left-rail nav with vertical `Tabs` or a sidebar.
+- **Field orientation** — `Field` accepts `orientation="horizontal"`
+  (label left, control right) or `"vertical"` (label above control). The
+  template uses horizontal for `Switch` rows and vertical for everything
+  else.
+- **Pairing fields** — wrap a couple of `Field`s in a nested
+  `grid grid-cols-1 sm:grid-cols-2 gap-4` to lay them side-by-side from
+  tablet up (as Language + Timezone do here).
+- **Validation** — pair each `Field` with `FieldError` and pass an
+  `errors` array to surface validation messages, or wrap the page with
+  `react-hook-form` + `zod` for full form management.
+- **i18n** — wrap your app in `ApolloShell` (which initializes i18n via
+  `LocaleProvider`) or provide your own `I18nextProvider` so any
+  registry-component strings render correctly.
