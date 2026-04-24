@@ -415,13 +415,13 @@ export interface PdfCitation extends Citation {
  * @property close - Whether the chat has the close button
  * @property newChat - Whether the chat has the new chat button
  * @property settings - Whether the chat has the settings button
- * @property audio - Whether the chat has the STT dictate (mic) button
+ * @property audio - Whether to disable the STT dictate (mic) button
  * @property feedback - Whether the chat has the feedback button
  * @property fullHeight - Whether the chat has viewport height
  * @property copy - Whether the chat has copy button
  * @property htmlPreview - Whether the chat has HTML preview for code blocks
- * @property audioStreaming - Whether the chat has the always-on voice interaction button
- *                            (requires the consumer to handle InputStream/OutputStream audio events)
+ * @property audioStreaming - Whether to disable the always-on voice interaction button
+ *                            (the feature requires the consumer to handle InputStream/OutputStream audio events)
  */
 export interface AutopilotChatDisabledFeatures {
   resize?: boolean;
