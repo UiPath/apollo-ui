@@ -975,8 +975,7 @@
         "@tanstack/react-query",
         "@tanstack/react-router",
         "pkce-challenge",
-        "sonner",
-        "@mantine/hooks@^9.0.0"
+        "sonner"
       ],
       "registryDependencies": [
         "button",
@@ -984,7 +983,8 @@
         "avatar",
         "dropdown-menu",
         "skeleton",
-        "sidebar"
+        "sidebar",
+        "collapsible"
       ],
       "files": [
         { "path": "registry/shell/shell.tsx", "type": "registry:ui" },
@@ -1017,10 +1017,6 @@
         { "path": "lib/react-i18next.d.ts", "type": "registry:lib" },
         {
           "path": "registry/shell/shell-animations.ts",
-          "type": "registry:ui"
-        },
-        {
-          "path": "registry/shell/shell-nav-item.tsx",
           "type": "registry:ui"
         },
         {
