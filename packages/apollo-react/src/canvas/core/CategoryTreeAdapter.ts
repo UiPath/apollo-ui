@@ -38,7 +38,7 @@ export class CategoryTreeAdapter {
       data: {
         type: node.nodeType,
         category: node.category,
-        version: node.version,
+        typeVersion: node.version,
       },
       icon: { name: node.display.icon },
       color: node.display.iconBackground,

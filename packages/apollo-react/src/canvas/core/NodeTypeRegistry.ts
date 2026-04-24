@@ -233,7 +233,7 @@ export class NodeTypeRegistry {
       // Return minimal data if manifest not found
       return {
         nodeType,
-        version: version ?? '1.0.0',
+        typeVersion: version ?? '1.0.0',
         display: {
           label: label || nodeType,
         },
@@ -253,7 +253,7 @@ export class NodeTypeRegistry {
 
     return {
       nodeType,
-      version: manifest.version,
+      typeVersion: manifest.version,
       parameters: manifest.defaultProperties ?? {},
       display: display as BaseNodeData['display'],
     };

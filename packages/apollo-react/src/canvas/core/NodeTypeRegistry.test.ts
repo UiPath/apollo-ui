@@ -456,7 +456,7 @@ describe('NodeTypeRegistry', () => {
     it('should create default data for a node', () => {
       const data = registry.createDefaultData('trigger', 'My Trigger');
       expect(data.nodeType).toBe('trigger');
-      expect(data.version).toBe('1.0.0');
+      expect(data.typeVersion).toBe('1.0.0');
       expect(data.display!.label).toBe('My Trigger');
       expect(data.display!.icon).toBe('trigger');
     });
@@ -829,6 +829,7 @@ describe('NodeTypeRegistry', () => {
       const rootNode = items.find((item) => item.id === 'root-node');
       expect(rootNode).toBeDefined();
       expect(rootNode?.name).toBe('Root Node');
+      expect(rootNode?.data).toMatchObject({ type: 'root-node', typeVersion: '1.0.0' });
     });
 
     it('should handle specific handle validation in connections', () => {

@@ -145,6 +145,7 @@ describe('AddNodePanel', () => {
       data: {
         type: 'agent-node',
         category: 'agents',
+        typeVersion: '1.0.0',
       },
     });
 
@@ -162,6 +163,7 @@ describe('AddNodePanel', () => {
       data: {
         type: 'tool-node',
         category: 'tools',
+        typeVersion: '1.0.0',
       },
     });
   });

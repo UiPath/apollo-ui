@@ -81,7 +81,7 @@ export interface CreateNodeOptions<T = Record<string, unknown>> {
  *   position: NodePositions.row1col1,
  *   data: {
  *     nodeType: 'uipath.decision',
- *     version: '1.0.0',
+ *     typeVersion: '1.0.0',
  *     parameters: { condition: 'value > 10' },
  *   },
  *   display: { label: 'Check Value', shape: 'square' },
@@ -111,7 +111,7 @@ export function createNode<T = Record<string, unknown>>(
 
   const baseData: Partial<BaseNodeData> = {
     nodeType: type,
-    version: (data as any).version || '1.0.0',
+    typeVersion: (data as any).typeVersion || '1.0.0',
     parameters: (data as any).parameters || {},
     display: display || (data as any).display,
     ...(resolvedHandleConfigs !== undefined && { handleConfigurations: resolvedHandleConfigs }),
@@ -188,7 +188,7 @@ export function createNodeGrid(options: {
           },
           data: {
             nodeType: type,
-            version: '1.0.0',
+            typeVersion: '1.0.0',
           },
           display: {
             label: cell.label,
@@ -268,7 +268,7 @@ export const HandleConfigs = {
  *   position: { x: 96, y: 96 },
  *   data: {
  *     nodeType: 'uipath.decision',
- *     version: '1.0.0',
+ *     typeVersion: '1.0.0',
  *   },
  *   display: { label: 'Decision', shape: 'square' },
  * });
@@ -295,7 +295,7 @@ export function createStatusVariations(
       },
       data: {
         nodeType: baseConfig.type || 'generic',
-        version: '1.0.0',
+        typeVersion: '1.0.0',
         ...baseConfig.data,
       },
       display: {

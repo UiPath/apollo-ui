@@ -2,7 +2,7 @@ import type { ListItem } from '../Toolbox';
 
 export interface NodeItemData {
   type: string;
-  version?: string;
+  typeVersion?: string;
   category?: string;
 }
 

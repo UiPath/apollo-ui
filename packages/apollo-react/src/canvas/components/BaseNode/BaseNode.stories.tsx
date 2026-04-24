@@ -78,7 +78,7 @@ function createShapeStatusGrid(): Node<BaseNodeData>[] {
           },
           data: {
             nodeType,
-            version: '1.0.0',
+            typeVersion: '1.0.0',
             executionStatus: status,
             display: {
               label: shape,
@@ -102,7 +102,7 @@ function createShapeStatusGrid(): Node<BaseNodeData>[] {
         },
         data: {
           nodeType,
-          version: '1.0.0',
+          typeVersion: '1.0.0',
           display: { label: shape, shape, subLabel: 'Loading state' },
           loading: true,
         },
@@ -121,7 +121,7 @@ function createShapeStatusGrid(): Node<BaseNodeData>[] {
       },
       data: {
         nodeType: 'uipath.unknown-node',
-        version: '1.0.0',
+        typeVersion: '1.0.0',
         display: { label: 'Unknown Node', shape: 'square', subLabel: 'Missing manifest' },
       },
     })
@@ -159,7 +159,7 @@ function createSizeGrid(): Node<BaseNodeData>[] {
         position: { x: xOffset, y: 96 },
         data: {
           nodeType: 'uipath.blank-node',
-          version: '1.0.0',
+          typeVersion: '1.0.0',
           display: { label: String(size), shape: 'square' },
         },
       }),
@@ -179,7 +179,7 @@ function createSizeGrid(): Node<BaseNodeData>[] {
         position: { x: xOffset, y: 272 },
         data: {
           nodeType: 'uipath.blank-node',
-          version: '1.0.0',
+          typeVersion: '1.0.0',
           display: { label: String(size), shape: 'circle' },
         },
       }),
@@ -200,7 +200,7 @@ function createSizeGrid(): Node<BaseNodeData>[] {
         position: { x: rectX, y: rectY },
         data: {
           nodeType: 'uipath.agent',
-          version: '1.0.0',
+          typeVersion: '1.0.0',
           display: { label: `${width}×${height}`, shape: 'rectangle' },
         },
       }),
@@ -378,7 +378,7 @@ function DynamicHandlesStory() {
           position: { x: 700, y: 200 },
           data: {
             nodeType: 'uipath.control-switch',
-            version: '1.0.0',
+            typeVersion: '1.0.0',
             inputs: {
               dynamicInputs: switchData.dynamicInputs,
               dynamicOutputs: switchData.dynamicOutputs,
@@ -401,7 +401,7 @@ function DynamicHandlesStory() {
           position: { x: 700, y: 600 },
           data: {
             nodeType: 'uipath.decision',
-            version: '1.0.0',
+            typeVersion: '1.0.0',
             inputs: {
               trueLabel: decisionData.trueLabel,
               falseLabel: decisionData.falseLabel,
@@ -632,7 +632,7 @@ function createValidationGrid(): Node<BaseNodeData>[] {
           },
           data: {
             nodeType,
-            version: '1.0.0',
+            typeVersion: '1.0.0',
             display: {
               label: shape,
               subLabel: severity,
@@ -701,7 +701,7 @@ function createAdornmentGrid(): Node<BaseNodeData>[] {
           },
           data: {
             nodeType,
-            version: '1.0.0',
+            typeVersion: '1.0.0',
             display: {
               label: shape,
               subLabel: row.label,
@@ -845,7 +845,7 @@ function StackedTreatmentStory() {
         position: { x: 96, y: 200 },
         data: {
           nodeType: 'uipath.blank-node',
-          version: '1.0.0',
+          typeVersion: '1.0.0',
           display: { label: 'Plain', subLabel: 'No treatment', shape: 'square' },
         },
       }),
@@ -855,7 +855,7 @@ function StackedTreatmentStory() {
         position: { x: 320, y: 200 },
         data: {
           nodeType: 'uipath.agent.drillable',
-          version: '1.0.0',
+          typeVersion: '1.0.0',
           display: { label: 'Drillable', subLabel: 'manifest.drillable', shape: 'square' },
         },
       }),
@@ -865,7 +865,7 @@ function StackedTreatmentStory() {
         position: { x: 544, y: 200 },
         data: {
           nodeType: 'uipath.blank-node',
-          version: '1.0.0',
+          typeVersion: '1.0.0',
           display: { label: 'Collapsed', subLabel: 'data.isCollapsed', shape: 'square' },
           isCollapsed: true,
         },

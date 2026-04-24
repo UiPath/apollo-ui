@@ -5,6 +5,16 @@ import type { ValidationState } from '../../types/validation';
 export type FooterVariant = 'none' | 'button' | 'single' | 'double';
 
 export interface BaseNodeData extends Record<string, unknown> {
+  /**
+   * Node type identifier for this runtime canvas node.
+   */
+  nodeType?: string;
+
+  /**
+   * Version of the node type used to create this runtime canvas node.
+   */
+  typeVersion?: string;
+
   display?: {
     label?: string;
     subLabel?: string;
