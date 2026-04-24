@@ -466,6 +466,98 @@ function EdgeLabelsStory() {
 }
 
 // ============================================================================
+// Plain Line Story (artifact-style: no arrow head, no edge toolbar)
+// ============================================================================
+
+function PlainLineStory() {
+  const initialNodes = useMemo(
+    () => [
+      createStickyNote(
+        'sticky-plain-line',
+        'yellow',
+        '**Plain Line**\nSet `data.hideArrowHead: true` to render a line with no arrow — the target end terminates plainly like the source end. Set `data.hideToolbar: true` to suppress the mid-edge insert toolbar. Useful for artifact / annotation edges.',
+        { x: 100, y: 70 },
+        { width: 550, height: 256 }
+      ),
+      createNode({
+        id: 'plain-source',
+        label: 'Source',
+        x: 130,
+        y: 180,
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'plain-target',
+        label: 'Target',
+        x: 470,
+        y: 180,
+        targetPositions: [Position.Left],
+      }),
+
+      createStickyNote(
+        'sticky-plain-compare',
+        'white',
+        '**With arrow (default)**\nStandard SequenceEdge for comparison.',
+        { x: 100, y: 340 },
+        { width: 550, height: 224 }
+      ),
+      createNode({
+        id: 'compare-source',
+        label: 'Source',
+        x: 130,
+        y: 410,
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'compare-target',
+        label: 'Target',
+        x: 470,
+        y: 410,
+        targetPositions: [Position.Left],
+      }),
+    ],
+    []
+  );
+
+  const initialEdges: Edge[] = useMemo(
+    () => [
+      {
+        id: 'e-plain',
+        source: 'plain-source',
+        target: 'plain-target',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+        data: { hideArrowHead: true, hideToolbar: true, label: 'artifact' },
+      },
+      {
+        id: 'e-compare',
+        source: 'compare-source',
+        target: 'compare-target',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+      },
+    ],
+    []
+  );
+
+  const { canvasProps } = useCanvasStory({
+    initialNodes,
+    initialEdges,
+    additionalNodeTypes: nodeTypes,
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} edgeTypes={edgeTypes} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+// ============================================================================
 // Readonly Mode Story (Execution States)
 // ============================================================================
 
@@ -605,6 +697,129 @@ function ReadonlyStory() {
         { x: 100, y: 80 },
         { width: 400, height: 320 }
       ),
+
+      // Plain-line (no arrow head) duplicate
+      createStickyNote(
+        'sticky-execution-plain',
+        'blue',
+        '**Execution States (Plain line)**\nReadonly mode edge statuses',
+        { x: 1150, y: 80 },
+        { width: 550, height: 825 }
+      ),
+      createNode({
+        id: 'execp-start',
+        label: 'Start',
+        x: 1180,
+        y: 160,
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'execp-InProgress',
+        label: 'In Progress',
+        x: 1370,
+        y: 160,
+        targetPositions: [Position.Left],
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'execp-target-1',
+        label: 'Target',
+        x: 1570,
+        y: 160,
+        targetPositions: [Position.Left],
+      }),
+
+      createNode({
+        id: 'execp-source-2',
+        label: 'Source',
+        x: 1180,
+        y: 310,
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'execp-Completed',
+        label: 'Completed',
+        x: 1370,
+        y: 310,
+        targetPositions: [Position.Left],
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'execp-target-2',
+        label: 'Target',
+        x: 1570,
+        y: 310,
+        targetPositions: [Position.Left],
+      }),
+
+      createNode({
+        id: 'execp-source-3',
+        label: 'Source',
+        x: 1180,
+        y: 460,
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'execp-Failed',
+        label: 'Failed',
+        x: 1370,
+        y: 460,
+        targetPositions: [Position.Left],
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'execp-target-3',
+        label: 'Target',
+        x: 1570,
+        y: 460,
+        targetPositions: [Position.Left],
+      }),
+
+      createNode({
+        id: 'execp-source-4',
+        label: 'Source',
+        x: 1180,
+        y: 610,
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'execp-Paused',
+        label: 'Paused',
+        x: 1370,
+        y: 610,
+        targetPositions: [Position.Left],
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'execp-target-4',
+        label: 'Target',
+        x: 1570,
+        y: 610,
+        targetPositions: [Position.Left],
+      }),
+
+      createNode({
+        id: 'execp-source-5',
+        label: 'Source',
+        x: 1180,
+        y: 760,
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'execp-Cancelled',
+        label: 'Cancelled',
+        x: 1370,
+        y: 760,
+        targetPositions: [Position.Left],
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'execp-target-5',
+        label: 'Target',
+        x: 1570,
+        y: 760,
+        targetPositions: [Position.Left],
+      }),
     ],
     []
   );
@@ -691,6 +906,98 @@ function ReadonlyStory() {
         sourceHandle: `out-${Position.Right}`,
         targetHandle: `in-${Position.Left}`,
         type: 'sequence',
+      },
+
+      // Plain-line (hideArrowHead) duplicates of the same execution states
+      {
+        id: 'ep-InProgress-1',
+        source: 'execp-start',
+        target: 'execp-InProgress',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+        data: { hideArrowHead: true },
+      },
+      {
+        id: 'ep-InProgress-2',
+        source: 'execp-InProgress',
+        target: 'execp-target-1',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+        data: { hideArrowHead: true },
+      },
+      {
+        id: 'ep-Completed-1',
+        source: 'execp-source-2',
+        target: 'execp-Completed',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+        data: { hideArrowHead: true },
+      },
+      {
+        id: 'ep-Completed-2',
+        source: 'execp-Completed',
+        target: 'execp-target-2',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+        data: { hideArrowHead: true },
+      },
+      {
+        id: 'ep-Failed-1',
+        source: 'execp-source-3',
+        target: 'execp-Failed',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+        data: { hideArrowHead: true },
+      },
+      {
+        id: 'ep-Failed-2',
+        source: 'execp-Failed',
+        target: 'execp-target-3',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+        data: { hideArrowHead: true },
+      },
+      {
+        id: 'ep-Paused-1',
+        source: 'execp-source-4',
+        target: 'execp-Paused',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+        data: { hideArrowHead: true },
+      },
+      {
+        id: 'ep-Paused-2',
+        source: 'execp-Paused',
+        target: 'execp-target-4',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+        data: { hideArrowHead: true },
+      },
+      {
+        id: 'ep-Cancelled-1',
+        source: 'execp-source-5',
+        target: 'execp-Cancelled',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+        data: { hideArrowHead: true },
+      },
+      {
+        id: 'ep-Cancelled-2',
+        source: 'execp-Cancelled',
+        target: 'execp-target-5',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+        data: { hideArrowHead: true },
       },
     ],
     []
@@ -969,6 +1276,18 @@ export const EdgeLabels: Story = {
       description: {
         story:
           'Demonstrates edge labels rendered at the midpoint via data.label. Labels work alongside all edge states including diff styling.',
+      },
+    },
+  },
+};
+
+export const PlainLine: Story = {
+  render: () => <PlainLineStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates a SequenceEdge parameterized to render as a plain line. `data.hideArrowHead: true` omits the directional arrow at the target so both ends terminate plainly (useful for artifact / annotation edges). `data.hideToolbar: true` suppresses the mid-edge insert toolbar. Everything else about SequenceEdge (path, label, status animations, diff styling) is unchanged.',
       },
     },
   },
