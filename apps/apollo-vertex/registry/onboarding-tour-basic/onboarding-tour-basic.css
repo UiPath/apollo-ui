@@ -1,0 +1,137 @@
+/*
+ * Apollo Vertex theme overrides for driver.js's native popover.
+ *
+ * driver.js ships its own styles for `.driver-popover` and its buttons,
+ * so `!important` is required to win specificity without increasing it artificially.
+ * Colors resolve from the Apollo Vertex theme CSS variables, so dark mode
+ * flips automatically via the `.dark` class on `documentElement`.
+ */
+
+.driver-popover.onboarding-tour-basic {
+  background-color: var(--card) !important;
+  color: var(--foreground) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+  padding: 20px !important;
+  max-width: 360px !important;
+  font-family: var(--font-sans, inherit) !important;
+}
+
+.driver-popover.onboarding-tour-basic .driver-popover-title {
+  color: var(--foreground) !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+  margin: 0 0 8px 0 !important;
+  padding: 0 !important;
+}
+
+.driver-popover.onboarding-tour-basic .driver-popover-description {
+  color: var(--muted-foreground) !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  margin: 0 0 16px 0 !important;
+  padding: 0 !important;
+}
+
+/* driver.js's close button is absolutely positioned in the top-right.
+   Style it as a subtle icon-button style. */
+.driver-popover.onboarding-tour-basic .driver-popover-close-btn {
+  color: var(--muted-foreground) !important;
+  background: transparent !important;
+  border: none !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  padding: 4px !important;
+  top: 8px !important;
+  right: 8px !important;
+  border-radius: 6px !important;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease !important;
+}
+
+.driver-popover.onboarding-tour-basic .driver-popover-close-btn:hover,
+.driver-popover.onboarding-tour-basic .driver-popover-close-btn:focus {
+  background-color: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+  outline: none !important;
+}
+
+/* Footer hosts prev/next buttons. */
+.driver-popover.onboarding-tour-basic .driver-popover-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  margin-top: 0 !important;
+  padding: 0 !important;
+}
+
+.driver-popover.onboarding-tour-basic .driver-popover-progress-text {
+  color: var(--muted-foreground) !important;
+  font-size: 12px !important;
+  margin-right: auto !important;
+}
+
+/* Shared button reset for prev/next. */
+.driver-popover.onboarding-tour-basic .driver-popover-prev-btn,
+.driver-popover.onboarding-tour-basic .driver-popover-next-btn {
+  height: 32px !important;
+  padding: 0 12px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  border-radius: 8px !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease !important;
+}
+
+/* Previous button → Vertex `outline` button variant. */
+.driver-popover.onboarding-tour-basic .driver-popover-prev-btn {
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.driver-popover.onboarding-tour-basic .driver-popover-prev-btn:hover,
+.driver-popover.onboarding-tour-basic .driver-popover-prev-btn:focus {
+  background-color: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+  outline: none !important;
+}
+
+/* Next button → Vertex `default` (primary) button variant. */
+.driver-popover.onboarding-tour-basic .driver-popover-next-btn {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  border: 1px solid var(--primary) !important;
+}
+
+.driver-popover.onboarding-tour-basic .driver-popover-next-btn:hover,
+.driver-popover.onboarding-tour-basic .driver-popover-next-btn:focus {
+  background-color: var(--primary-600, var(--primary)) !important;
+  border-color: var(--primary-600, var(--primary)) !important;
+  outline: none !important;
+}
+
+/* Hide arrow — Vertex popovers don't use a stem. */
+.driver-popover.onboarding-tour-basic .driver-popover-arrow {
+  display: none !important;
+}
+
+/* driver.js adds `overflow: hidden !important` to any non-body ancestor that
+   has the active element as a direct child. If that ancestor had a visible
+   scrollbar, it's removed and the text width shifts (~15px). Undo it — the
+   page scroll container isn't our highlight target anyway. */
+:not(body):has(> .driver-active-element) {
+  overflow: visible !important;
+}

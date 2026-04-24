@@ -1,0 +1,129 @@
+import { OnboardingTourBasicDemoTrigger } from './onboarding-tour-basic-demo';
+import { PopoverStepPreview } from './onboarding-tour-basic-static-preview';
+
+# Onboarding tour (basic)
+
+A lightweight onboarding tour using driver.js's native popover with Apollo Vertex theme overrides. No custom React popover rendering, no welcome modal, no conditional steps — the smallest possible surface area while still looking like Vertex.
+
+<div className="not-prose my-6">
+  <OnboardingTourBasicDemoTrigger />
+</div>
+
+## Step popover
+
+driver.js ships the popover; we override its CSS so it uses Vertex tokens for background, border, foreground, muted foreground, and button variants. Light and dark mode both resolve from `var(--*)` tokens, so the popover follows the theme automatically.
+
+<div className="not-prose my-8">
+  <PopoverStepPreview />
+</div>
+
+## Features
+
+<div id="tour-features">
+
+- **Spotlight overlay**: driver.js highlights the target element with a cutout in a dimmed overlay
+- **Native popover**: driver.js renders the popover — we only override CSS
+- **CSS selector targeting**: Target elements by CSS selector; omit the selector for a centered popover
+- **Native navigation**: driver.js's built-in next / previous / close buttons, styled to match Vertex buttons
+- **Keyboard support**: Escape to close the tour (driver.js default)
+- **Persistence**: Tracks completed tours in `localStorage` so they don't repeat
+- **Dark mode**: Popover inherits from theme CSS variables; overlay switches based on the `.dark` class
+
+</div>
+
+## Installation
+
+<div id="tour-install">
+
+```bash
+npx shadcn@latest add @uipath/onboarding-tour-basic
+```
+
+</div>
+
+## Usage
+
+### 1. Define your tour
+
+```tsx
+import type { TourDefinition } from '@/components/ui/onboarding-tour-basic';
+
+const myTour: TourDefinition = {
+  id: 'my-onboarding-tour',
+  steps: [
+    {
+      id: 'welcome',
+      title: 'Welcome!',
+      description: 'Let us show you around your new workspace.',
+    },
+    {
+      id: 'sidebar',
+      selector: '[data-sidebar]',
+      title: 'Navigation',
+      description: 'Use the sidebar to move between sections.',
+      placement: 'right',
+    },
+    {
+      id: 'search',
+      selector: '#search-bar',
+      title: 'Quick search',
+      description: 'Find anything across your workspace. Try <strong>Cmd+K</strong> for a shortcut.',
+      placement: 'bottom',
+    },
+  ],
+};
+```
+
+### 2. Set up the provider
+
+```tsx
+import { OnboardingTourProvider } from '@/components/ui/onboarding-tour-basic';
+
+function App() {
+  return (
+    <OnboardingTourProvider tours={[myTour]}>
+      <YourApp />
+    </OnboardingTourProvider>
+  );
+}
+```
+
+### 3. Start the tour
+
+```tsx
+import {
+  isTourCompleted,
+  useOnboardingTour,
+} from '@/components/ui/onboarding-tour-basic';
+
+function WelcomeBanner() {
+  const { startTour } = useOnboardingTour();
+
+  if (isTourCompleted('my-onboarding-tour')) return null;
+
+  return (
+    <button onClick={() => startTour('my-onboarding-tour')}>Take a tour</button>
+  );
+}
+```
+
+## Step types
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | Unique step identifier |
+| `selector` | `string` | CSS selector for the target element. Omit for a centered popover (e.g. welcome). |
+| `title` | `string` | Step title |
+| `description` | `string` | Step description. driver.js renders HTML strings, so `<strong>` / `<em>` work. |
+| `placement` | `'top' \| 'bottom' \| 'left' \| 'right'` | Popover position relative to the target |
+| `onEnter` | `() => void` | Callback when the step becomes active |
+
+## API
+
+| Export | Description |
+|--------|-------------|
+| `OnboardingTourProvider` | Context provider — wrap your app with this. Accepts `tours`. |
+| `useOnboardingTour()` | Access tour actions: `startTour`. Must be inside `OnboardingTourProvider`. |
+| `isTourCompleted(tourId)` | Check whether a tour has been completed. |
+| `markTourCompleted(tourId)` | Manually mark a tour as completed. |
+| `resetTourState(tourId)` | Clear completion state so the tour can be shown again. |

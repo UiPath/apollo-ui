@@ -62,6 +62,9 @@
       "@/components/ui/navigation-menu": [
         "./registry/navigation-menu/navigation-menu"
       ],
+      "@/components/ui/onboarding-tour-basic": [
+        "./registry/onboarding-tour-basic/index"
+      ],
       "@/components/ui/page-header": ["./registry/page-header/page-header"],
       "@/components/ui/pagination": ["./registry/pagination/pagination"],
       "@/components/ui/popover": ["./registry/popover/popover"],

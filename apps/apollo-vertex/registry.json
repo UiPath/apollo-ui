@@ -840,6 +840,41 @@
       ]
     },
     {
+      "name": "onboarding-tour-basic",
+      "type": "registry:ui",
+      "title": "Onboarding Tour (Basic)",
+      "description": "A lightweight onboarding tour using driver.js's native popover with Apollo Vertex theme overrides. No custom React popover, no welcome modal, no conditional steps.",
+      "dependencies": ["driver.js"],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/onboarding-tour-basic/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-basic/index.ts"
+        },
+        {
+          "path": "registry/onboarding-tour-basic/onboarding-tour-basic-types.ts",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-basic/onboarding-tour-basic-types.ts"
+        },
+        {
+          "path": "registry/onboarding-tour-basic/onboarding-tour-basic-provider.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-basic/onboarding-tour-basic-provider.tsx"
+        },
+        {
+          "path": "registry/onboarding-tour-basic/onboarding-tour-basic.css",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-basic/onboarding-tour-basic.css"
+        },
+        {
+          "path": "registry/onboarding-tour-basic/tour-persistence.ts",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-basic/tour-persistence.ts"
+        }
+      ]
+    },
+    {
       "name": "pagination",
       "type": "registry:ui",
       "title": "Pagination",
