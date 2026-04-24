@@ -78,7 +78,7 @@ export const ShellSidebar = ({
         )}
 
         <div className="flex items-center gap-2">
-          <UserProfile isCollapsed />
+          <UserProfile isMinimal />
         </div>
       </header>
     );
