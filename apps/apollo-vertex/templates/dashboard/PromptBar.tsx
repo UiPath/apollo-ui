@@ -4,6 +4,9 @@ import { useChat } from "@tanstack/ai-react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   MessagesSquare,
   Minimize2,
   MoreHorizontal,
@@ -31,6 +34,7 @@ import { createAgentHubConnection } from "@/registry/ai-chat/adapters/agenthub/a
 import { AiChatLoading } from "@/registry/ai-chat/components/ai-chat-loading";
 import { AiChatMessage } from "@/registry/ai-chat/components/ai-chat-message";
 import { AiChatProvider } from "@/registry/ai-chat/components/ai-chat-provider";
+import { useStickyScroll } from "@/registry/ai-chat/hooks/use-sticky-scroll";
 import { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
 import {
   AlertDialog,
@@ -739,6 +743,14 @@ function InlineChartCard({
 
 // --- Card selection carousel ---
 
+const CAROUSEL_VISIBLE = 3;
+
+const carouselSlideVariants = {
+  enter: (dir: number) => ({ x: dir > 0 ? 48 : -48, opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: (dir: number) => ({ x: dir > 0 ? -48 : 48, opacity: 0 }),
+};
+
 function CardSelectionCarousel({
   screen,
   selectedIndices,
@@ -753,72 +765,150 @@ function CardSelectionCarousel({
   onCancel: () => void;
 }) {
   const count = selectedIndices.length;
+  const total = screen.cards.length;
+  const needsCarousel = total > CAROUSEL_VISIBLE;
+  const [startIdx, setStartIdx] = useState(0);
+  const [direction, setDirection] = useState(1);
+
+  const pageIdx = Math.floor(startIdx / CAROUSEL_VISIBLE);
+  const pageCount = Math.ceil(total / CAROUSEL_VISIBLE);
+  const canPrev = pageIdx > 0;
+  const canNext = pageIdx < pageCount - 1;
+
+  const visibleCards = needsCarousel
+    ? screen.cards.slice(startIdx, startIdx + CAROUSEL_VISIBLE)
+    : screen.cards;
+
   return (
     <motion.div
-      className="space-y-3"
+      className="space-y-5"
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.28, ease: CHIP_EASE }}
     >
-      <p className="text-sm text-muted-foreground">
-        Choose cards for the{" "}
-        <span className="font-semibold text-foreground">✦ {screen.label}</span>{" "}
-        view
-      </p>
-
-      <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 -mx-1 px-1">
-        {screen.cards.map((card, idx) => {
-          const isSelected = selectedIndices.includes(idx);
-          return (
-            <motion.button
-              key={idx}
-              type="button"
-              onClick={() => onToggle(idx)}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.22,
-                ease: CHIP_EASE,
-                delay: idx * 0.06,
-              }}
-              whileHover={{ scale: 1.02 }}
-              className={`shrink-0 w-36 rounded-xl border p-3 flex flex-col gap-2 text-left transition-all duration-200 ${
-                isSelected
-                  ? "border-insight-500/50 bg-card shadow-sm"
-                  : "border-border/40 bg-muted/20 opacity-40"
-              }`}
-            >
-              <div className="flex items-start justify-between gap-1">
-                <p className="text-[11px] font-semibold leading-tight line-clamp-2 flex-1">
-                  {card.title}
-                </p>
-                <div
-                  className={`shrink-0 size-4 rounded-full flex items-center justify-center mt-0.5 transition-all duration-200 ${
-                    isSelected
-                      ? "bg-insight-500"
-                      : "border border-border/60 bg-transparent"
-                  }`}
-                >
-                  {isSelected && (
-                    <svg
-                      viewBox="0 0 10 10"
-                      className="size-2.5 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path d="M1.5 5l2.5 2.5 4.5-4.5" />
-                    </svg>
-                  )}
-                </div>
-              </div>
-              <MiniCardPreview card={card} />
-            </motion.button>
-          );
-        })}
+      <div>
+        <p className="text-sm font-medium text-foreground mb-0.5">
+          ✦ {screen.label}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Select the cards you want on this view
+        </p>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex items-center gap-2.5">
+        {needsCarousel && (
+          <button
+            type="button"
+            onClick={() => {
+              setDirection(-1);
+              setStartIdx((i) => i - CAROUSEL_VISIBLE);
+            }}
+            disabled={!canPrev}
+            className="shrink-0 size-7 rounded-full flex items-center justify-center border border-border/50 bg-background hover:bg-muted transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+            aria-label="Previous cards"
+          >
+            <ChevronLeft className="size-3.5" />
+          </button>
+        )}
+
+        {/* p-1 -m-1 gives the overflow boundary 4px of room so hover borders aren't clipped */}
+        <div className="flex-1 overflow-hidden p-1 -m-1">
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={startIdx}
+              custom={direction}
+              variants={carouselSlideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              className="grid gap-3"
+              style={{ gridTemplateColumns: `repeat(${needsCarousel ? CAROUSEL_VISIBLE : total}, minmax(0, 1fr))` }}
+            >
+              {visibleCards.map((card, localIdx) => {
+                const idx = needsCarousel ? startIdx + localIdx : localIdx;
+                const isSelected = selectedIndices.includes(idx);
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => onToggle(idx)}
+                    className={`rounded-xl border p-3.5 flex flex-col gap-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
+                      isSelected
+                        ? "border-insight-500/50 bg-card shadow-sm"
+                        : "border-border/40 bg-muted/20 opacity-40 hover:opacity-60"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-1.5">
+                      <p className="text-[11px] font-semibold leading-tight line-clamp-2 flex-1">
+                        {card.title}
+                      </p>
+                      <div
+                        className={`shrink-0 size-4 rounded-full flex items-center justify-center mt-0.5 transition-all duration-200 ${
+                          isSelected
+                            ? "bg-insight-500"
+                            : "border border-border/60 bg-transparent"
+                        }`}
+                      >
+                        {isSelected && (
+                          <svg
+                            viewBox="0 0 10 10"
+                            className="size-2.5 text-white"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path d="M1.5 5l2.5 2.5 4.5-4.5" />
+                          </svg>
+                        )}
+                      </div>
+                    </div>
+                    <MiniCardPreview card={card} />
+                  </button>
+                );
+              })}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {needsCarousel && (
+          <button
+            type="button"
+            onClick={() => {
+              setDirection(1);
+              setStartIdx((i) => i + CAROUSEL_VISIBLE);
+            }}
+            disabled={!canNext}
+            className="shrink-0 size-7 rounded-full flex items-center justify-center border border-border/50 bg-background hover:bg-muted transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+            aria-label="Next cards"
+          >
+            <ChevronRight className="size-3.5" />
+          </button>
+        )}
+      </div>
+
+      {needsCarousel && (
+        <div className="flex justify-center gap-1.5">
+          {Array.from({ length: pageCount }).map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => {
+                setDirection(i > pageIdx ? 1 : -1);
+                setStartIdx(i * CAROUSEL_VISIBLE);
+              }}
+              className={`rounded-full transition-all duration-200 ${
+                i === pageIdx
+                  ? "w-3 h-1.5 bg-foreground/60"
+                  : "size-1.5 bg-muted-foreground/25 hover:bg-muted-foreground/40"
+              }`}
+              aria-label={`Page ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-2 pt-0.5">
         <motion.button
           type="button"
           onClick={onConfirm}
@@ -829,10 +919,7 @@ function CardSelectionCarousel({
           whileHover={{ scale: 1.02 }}
           className="h-auto py-2 px-4 rounded-full text-xs font-semibold border border-input bg-background text-foreground hover:bg-muted transition-colors disabled:opacity-30"
         >
-          ✦ Build view
-          {count < screen.cards.length
-            ? ` with ${count} card${count !== 1 ? "s" : ""}`
-            : ""}
+          {`✦ Build view with ${count} card${count !== 1 ? "s" : ""}`}
         </motion.button>
         <motion.button
           type="button"
@@ -918,7 +1005,7 @@ export function PromptBar({
     }
   }, [pendingScreen]);
   const hasInput = value.trim().length > 0;
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const { scrollRef: scrollContainerRef, contentRef: scrollContentRef, isStuck, scrollToBottom } = useStickyScroll();
 
   const accessTokenRef = useRef(accessToken);
   accessTokenRef.current = accessToken;
@@ -948,11 +1035,6 @@ export function PromptBar({
   const isResponseComplete = isExpanded && hasMessages && !isLoading;
   const showRecommendation =
     !!pendingScreen && !isLoading && hasMessages && !isLatestResponseAnimating;
-
-  useEffect(() => {
-    const el = scrollContainerRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [messages, isLoading]);
 
   // Detect chart queries and associate chart data with the assistant message that answered them
   useEffect(() => {
@@ -1009,7 +1091,7 @@ export function PromptBar({
   };
 
   const handleSubmit = () => {
-    if (hasInput) {
+    if (hasInput && !isLoading) {
       const base = value;
       const query = quotedText ? `> ${quotedText}\n\n${base}` : base;
       setValue("");
@@ -1020,6 +1102,7 @@ export function PromptBar({
   };
 
   const handleChipClick = (suggestion: string) => {
+    if (isLoading) return;
     void sendMessage(suggestion);
     onSubmit?.(suggestion);
   };
@@ -1043,14 +1126,9 @@ export function PromptBar({
           <div className="flex items-center justify-between px-7 pt-5 pb-3 shrink-0">
             <div className="flex items-center gap-2">
               <AutopilotGradientIcon size={20} />
-              <div>
-                <p className="text-sm font-bold tracking-tight leading-tight">
-                  AI assistant
-                </p>
-                <p className="text-xs text-muted-foreground leading-tight">
-                  Ask me anything
-                </p>
-              </div>
+              <p className="text-sm font-bold tracking-tight">
+                AI assistant
+              </p>
             </div>
             <div className="flex items-center gap-1">
               {hasMessages && (
@@ -1109,10 +1187,11 @@ export function PromptBar({
           </div>
 
           {/* Messages */}
-          <div
-            ref={scrollContainerRef}
-            className="flex-1 overflow-y-auto min-h-0 px-7 pb-4"
-          >
+          <div className="flex-1 overflow-y-auto min-h-0 relative">
+            <div
+              ref={scrollContainerRef}
+              className="h-full overflow-y-auto px-7 pb-4"
+            >
             {messages.length === 0 && !isLoading ? (
               <div className="flex h-full items-center justify-center">
                 <p className="text-sm text-muted-foreground/50">
@@ -1175,6 +1254,18 @@ export function PromptBar({
                 </div>
               </AiChatProvider>
             )}
+            </div>
+
+            {!isStuck && (
+              <button
+                type="button"
+                onClick={scrollToBottom}
+                aria-label="Scroll to bottom"
+                className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center size-7 rounded-full border border-border bg-background shadow-md hover:bg-muted transition-colors"
+              >
+                <ChevronDown className="size-3.5" />
+              </button>
+            )}
           </div>
 
           <div className="border-t border-border shrink-0" />
@@ -1189,31 +1280,46 @@ export function PromptBar({
               <Badge
                 variant="secondary"
                 status="info"
-                className="!bg-white/35 !text-foreground opacity-0 translate-y-2 group-focus-within:opacity-100 group-focus-within:translate-y-0 transition-all duration-300 cursor-pointer max-w-[200px]"
+                className="!bg-white/65 !text-foreground opacity-0 translate-y-2 group-focus-within:opacity-100 group-focus-within:translate-y-0 transition-all duration-300 cursor-pointer max-w-[200px]"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() =>
                   handleChipClick(
-                    data.promptSuggestions[0] ?? "Show me top risk factors",
+                    data.promptSuggestions[0] ?? "Create a risk dashboard",
                   )
                 }
               >
-                <span className="truncate">
-                  {data.promptSuggestions[0] ?? "Show me top risk factors"}
+                <span className="truncate font-semibold">
+                  {data.promptSuggestions[0] ?? "Create a risk dashboard"}
                 </span>
               </Badge>
               <Badge
                 variant="secondary"
                 status="info"
-                className="!bg-white/35 !text-foreground opacity-0 translate-y-2 group-focus-within:opacity-100 group-focus-within:translate-y-0 transition-all duration-300 delay-75 cursor-pointer max-w-[200px]"
+                className="!bg-white/65 !text-foreground opacity-0 translate-y-2 group-focus-within:opacity-100 group-focus-within:translate-y-0 transition-all duration-300 delay-75 cursor-pointer max-w-[200px]"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() =>
                   handleChipClick(
-                    data.promptSuggestions[1] ?? "Compare Q1 vs Q2 performance",
+                    data.promptSuggestions[1] ?? "Create a performance dashboard",
                   )
                 }
               >
-                <span className="truncate">
-                  {data.promptSuggestions[1] ?? "Compare Q1 vs Q2 performance"}
+                <span className="truncate font-semibold">
+                  {data.promptSuggestions[1] ?? "Create a performance dashboard"}
+                </span>
+              </Badge>
+              <Badge
+                variant="secondary"
+                status="info"
+                className="!bg-white/65 !text-foreground opacity-0 translate-y-2 group-focus-within:opacity-100 group-focus-within:translate-y-0 transition-all duration-300 delay-150 cursor-pointer max-w-[200px]"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() =>
+                  handleChipClick(
+                    data.promptSuggestions[2] ?? "Show me cycle time",
+                  )
+                }
+              >
+                <span className="truncate font-semibold">
+                  {data.promptSuggestions[2] ?? "Show me cycle time"}
                 </span>
               </Badge>
             </div>

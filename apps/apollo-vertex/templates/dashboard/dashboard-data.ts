@@ -70,8 +70,9 @@ export const defaultDataset: DashboardDataset = {
   promptPlaceholder:
     "What would you like to understand about loan performance?",
   promptSuggestions: [
-    "Show me top risk factors",
-    "Compare Q1 vs Q2 performance",
+    "Create a risk dashboard",
+    "Create a performance dashboard",
+    "Show me cycle time",
   ],
   insightCards: [
     {
@@ -153,10 +154,9 @@ export const ecommerceDataset: DashboardDataset = {
   promptPlaceholder:
     "What would you like to understand about order fulfillment?",
   promptSuggestions: [
-    "Why are fit-related returns increasing?",
-    "Show me products driving return volume",
-    "Compare warehouse performance",
-    "Which orders are most at risk of delay?",
+    "Create a risk dashboard",
+    "Create a performance dashboard",
+    "Show me cycle time",
   ],
   insightCards: [
     {
@@ -249,10 +249,9 @@ export const invoiceProcessingDataset: DashboardDataset = {
   promptPlaceholder:
     "What would you like to understand about invoice processing?",
   promptSuggestions: [
-    "What's driving the exception spike on Wednesdays?",
-    "Show me vendor-level exception breakdown",
-    "Which departments have the longest approval cycles?",
-    "Forecast next week's processing volume",
+    "Create a risk dashboard",
+    "Create a performance dashboard",
+    "Show me cycle time",
   ],
   insightCards: [
     {

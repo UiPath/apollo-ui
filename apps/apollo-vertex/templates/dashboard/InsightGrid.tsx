@@ -45,7 +45,6 @@ function SkeletonEditCard({
   item,
   cardRef,
   isDragging,
-  isDropTarget,
   onGripPointerDown,
   onRemove,
   onResize,
@@ -53,7 +52,6 @@ function SkeletonEditCard({
   item: EditCardItem;
   cardRef: (el: HTMLDivElement | null) => void;
   isDragging: boolean;
-  isDropTarget: boolean;
   onGripPointerDown: (e: React.PointerEvent<HTMLDivElement>) => void;
   onRemove: () => void;
   onResize: (size: "sm" | "md" | "lg") => void;
@@ -61,61 +59,66 @@ function SkeletonEditCard({
   return (
     <div
       ref={cardRef}
-      className={`relative flex flex-col rounded-2xl border overflow-hidden transition-all duration-150 bg-card/50 dark:bg-card/40 ${
-        isDragging ? "opacity-40 scale-[0.97]" : ""
-      } ${isDropTarget ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
+      className={`relative flex flex-col rounded-2xl overflow-hidden transition-all duration-150 ${
+        isDragging
+          ? "border-2 border-dashed border-foreground/15 bg-muted/10 opacity-30 scale-[0.97]"
+          : "border border-border/40 bg-card/50 dark:bg-card/40 shadow-sm"
+      }`}
     >
-      {/* Title */}
-      <div className="px-4 pt-3.5 pb-2 shrink-0">
-        <span className="text-xs font-semibold text-foreground/50 truncate block pr-6">
-          {item.title}
-        </span>
+      {/* Content — hidden while dragging so the ghost is clearly a placeholder */}
+      <div className={`contents transition-opacity duration-100 ${isDragging ? "opacity-0" : ""}`}>
+        {/* Title */}
+        <div className="px-4 pt-3.5 pb-2 shrink-0">
+          <span className="text-xs font-semibold text-foreground/50 truncate block pr-14 pl-7">
+            {item.title}
+          </span>
+        </div>
+
+        {/* Skeleton bars */}
+        <div className="flex-1 min-h-0 px-4 pb-10 flex items-end gap-1">
+          {[38, 62, 48, 72, 55, 80, 44].map((h, i) => (
+            <div
+              key={i}
+              className="flex-1 rounded-sm bg-muted-foreground/[0.07]"
+              style={{ height: `${h}%` }}
+            />
+          ))}
+        </div>
+
+        {/* Remove — top right */}
+        <button
+          type="button"
+          onClick={onRemove}
+          className="absolute top-2.5 right-2.5 size-6 flex items-center justify-center rounded-md text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors"
+        >
+          <X className="size-3.5" />
+        </button>
+
+        {/* Size toggles — bottom right */}
+        <div className="absolute bottom-2.5 right-2.5 flex items-center gap-0.5">
+          {(["sm", "md", "lg"] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => onResize(s)}
+              className={`w-6 h-5 text-[10px] rounded font-semibold transition-colors ${
+                item.size === s
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground/40 hover:text-foreground hover:bg-muted/50"
+              }`}
+            >
+              {s === "sm" ? "S" : s === "md" ? "M" : "L"}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Static skeleton bars */}
-      <div className="flex-1 min-h-0 px-4 pb-10 flex items-end gap-1">
-        {[38, 62, 48, 72, 55, 80, 44].map((h, i) => (
-          <div
-            key={i}
-            className="flex-1 rounded-sm bg-muted-foreground/[0.07]"
-            style={{ height: `${h}%` }}
-          />
-        ))}
-      </div>
-
-      {/* Drag grip — top left */}
+      {/* Drag grip — always visible, top left */}
       <div
         onPointerDown={onGripPointerDown}
-        className="absolute top-3 left-3 size-5 flex items-center justify-center cursor-grab active:cursor-grabbing rounded hover:bg-muted/40 transition-colors touch-none select-none"
+        className="absolute top-2.5 left-2.5 size-6 flex items-center justify-center cursor-grab active:cursor-grabbing rounded-md hover:bg-muted/60 transition-colors touch-none select-none"
       >
-        <GripVertical className="size-3.5 text-muted-foreground/30" />
-      </div>
-
-      {/* Remove — top right */}
-      <button
-        type="button"
-        onClick={onRemove}
-        className="absolute top-2.5 right-2.5 size-5 flex items-center justify-center rounded text-muted-foreground/30 hover:text-destructive hover:bg-destructive/10 transition-colors"
-      >
-        <X className="size-3" />
-      </button>
-
-      {/* Size toggles — bottom right */}
-      <div className="absolute bottom-2.5 right-2.5 flex items-center gap-0.5">
-        {(["sm", "md", "lg"] as const).map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => onResize(s)}
-            className={`w-6 h-5 text-[10px] rounded font-semibold transition-colors ${
-              item.size === s
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground/40 hover:text-foreground hover:bg-muted/50"
-            }`}
-          >
-            {s === "sm" ? "S" : s === "md" ? "M" : "L"}
-          </button>
-        ))}
+        <GripVertical className="size-4 text-muted-foreground/50" />
       </div>
     </div>
   );
@@ -134,84 +137,136 @@ function EditSkeletonGrid({
   onResizeEditItem?: (id: string, size: "sm" | "md" | "lg") => void;
   gap: number;
 }) {
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
-  const [dropIdx, setDropIdx] = useState<number | null>(null);
+  // Ref map keyed by card id — never desyncs from DOM regardless of reorder
+  const cardRefMap = useRef<Map<string, HTMLDivElement | null>>(new Map());
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [liveItems, setLiveItems] = useState<EditCardItem[]>(editItems);
+  const liveItemsRef = useRef(editItems);
 
-  const getNearestIdx = useCallback(
-    (clientX: number, clientY: number, excludeIdx: number): number | null => {
-      let closest: number | null = null;
-      let closestDist = Infinity;
-      cardRefs.current.forEach((ref, i) => {
-        if (i === excludeIdx || !ref) return;
+  // Keep liveItems in sync with props when not dragging
+  useEffect(() => {
+    if (draggingId === null) {
+      setLiveItems(editItems);
+      liveItemsRef.current = editItems;
+    }
+  }, [editItems, draggingId]);
+
+  // Compute insertion index by scanning non-dragging cards in reading order
+  // (left→right, top→bottom) and finding where the cursor falls relative to
+  // each card's midpoint. This maps directly to the originalItems array minus
+  // the dragged card, so no id→index translation is needed.
+  const getInsertionIndex = useCallback(
+    (clientX: number, clientY: number, excludeId: string): number => {
+      // Collect current DOM rects for all non-dragging cards
+      const cards: Array<{ id: string; cx: number; cy: number; top: number; bottom: number }> = [];
+      cardRefMap.current.forEach((ref, id) => {
+        if (!ref || id === excludeId) return;
         const r = ref.getBoundingClientRect();
-        const d = Math.hypot(
-          clientX - (r.left + r.width / 2),
-          clientY - (r.top + r.height / 2),
-        );
-        if (d < closestDist) {
-          closestDist = d;
-          closest = i;
-        }
+        cards.push({ id, cx: r.left + r.width / 2, cy: r.top + r.height / 2, top: r.top, bottom: r.bottom });
       });
-      return closest;
+
+      // Sort into reading order: top→bottom rows, left→right within a row
+      cards.sort((a, b) => {
+        const sameRow = Math.abs(a.top - b.top) < 40;
+        return sameRow ? a.cx - b.cx : a.top - b.top;
+      });
+
+      // Insert before the first card whose center the cursor hasn't passed yet.
+      // "Passed" means: cursor is below the card's vertical midpoint OR
+      // in the same row but right of its horizontal midpoint.
+      for (let i = 0; i < cards.length; i++) {
+        const c = cards[i];
+        const inRow = clientY >= c.top && clientY <= c.bottom;
+        if (inRow) {
+          if (clientX < c.cx) return i; // cursor is left of center → insert before
+        } else if (clientY < c.cy) {
+          return i; // cursor is above this card's row → insert before
+        }
+      }
+
+      return cards.length; // past all cards → append at end
     },
     [],
   );
 
   const handleGripPointerDown = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>, fromIdx: number) => {
-      e.currentTarget.setPointerCapture(e.pointerId);
-      setDraggingIdx(fromIdx);
-      setDropIdx(null);
-      let currentDrop: number | null = null;
-      const el = e.currentTarget;
+    (e: React.PointerEvent<HTMLDivElement>, id: string) => {
+      e.preventDefault();
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
+      const pointerId = e.pointerId;
+      setDraggingId(id);
+      document.body.style.cursor = "grabbing";
+
+      // Snapshot order at drag start — all reorders computed from this base
+      const originalItems = [...liveItemsRef.current];
+
+      const applyPreview = (insertIdx: number) => {
+        const without = originalItems.filter((item) => item.id !== id);
+        const dragged = originalItems.find((item) => item.id === id)!;
+        const preview = [...without];
+        preview.splice(Math.min(insertIdx, preview.length), 0, dragged);
+        liveItemsRef.current = preview;
+        setLiveItems(preview);
+      };
+
       const onMove = (me: PointerEvent) => {
-        currentDrop = getNearestIdx(me.clientX, me.clientY, fromIdx);
-        setDropIdx(currentDrop);
+        if (me.pointerId !== pointerId) return;
+        const insertIdx = getInsertionIndex(me.clientX, me.clientY, id);
+        applyPreview(insertIdx);
       };
-      const onUp = () => {
-        if (currentDrop !== null && currentDrop !== fromIdx) {
-          const next = [...editItems];
-          [next[fromIdx], next[currentDrop]] = [
-            next[currentDrop],
-            next[fromIdx],
-          ];
-          onReorderEditItems?.(next);
-        }
-        setDraggingIdx(null);
-        setDropIdx(null);
-        el.removeEventListener("pointermove", onMove);
+
+      const commitCleanup = (me: PointerEvent) => {
+        if (me.pointerId !== pointerId) return;
+        onReorderEditItems?.(liveItemsRef.current);
+        finish();
       };
-      el.addEventListener("pointermove", onMove);
-      el.addEventListener("pointerup", onUp, { once: true });
+
+      const cancelCleanup = (me: PointerEvent) => {
+        if (me.pointerId !== pointerId) return;
+        liveItemsRef.current = originalItems;
+        setLiveItems(originalItems);
+        finish();
+      };
+
+      const finish = () => {
+        setDraggingId(null);
+        document.body.style.cursor = "";
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", commitCleanup);
+        window.removeEventListener("pointercancel", cancelCleanup);
+      };
+
+      // Use window listeners — reliable across re-renders and pointer capture edge cases
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", commitCleanup);
+      window.addEventListener("pointercancel", cancelCleanup);
     },
-    [editItems, getNearestIdx, onReorderEditItems],
+    [getInsertionIndex, onReorderEditItems],
   );
 
   const rows: Array<Array<{ item: EditCardItem; idx: number }>> = [];
   let ei = 0;
-  while (ei < editItems.length) {
-    if (editItems[ei].size === "lg") {
-      rows.push([{ item: editItems[ei], idx: ei }]);
+  while (ei < liveItems.length) {
+    if (liveItems[ei].size === "lg") {
+      rows.push([{ item: liveItems[ei], idx: ei }]);
       ei++;
-    } else if (ei + 1 < editItems.length && editItems[ei + 1].size !== "lg") {
+    } else if (ei + 1 < liveItems.length && liveItems[ei + 1].size !== "lg") {
       rows.push([
-        { item: editItems[ei], idx: ei },
-        { item: editItems[ei + 1], idx: ei + 1 },
+        { item: liveItems[ei], idx: ei },
+        { item: liveItems[ei + 1], idx: ei + 1 },
       ]);
       ei += 2;
     } else {
-      rows.push([{ item: editItems[ei], idx: ei }]);
+      rows.push([{ item: liveItems[ei], idx: ei }]);
       ei++;
     }
   }
 
   return (
     <div className="h-full flex flex-col" style={{ gap }}>
-      {rows.map((row, rowIdx) => (
+      {rows.map((row) => (
         <div
-          key={rowIdx}
+          key={row.map((r) => r.item.id).join("-")}
           className="flex-1 min-h-0 grid"
           style={{
             gridTemplateColumns: row
@@ -220,16 +275,13 @@ function EditSkeletonGrid({
             gap,
           }}
         >
-          {row.map(({ item, idx }) => (
+          {row.map(({ item }) => (
             <SkeletonEditCard
               key={item.id}
               item={item}
-              cardRef={(el) => {
-                cardRefs.current[idx] = el;
-              }}
-              isDragging={draggingIdx === idx}
-              isDropTarget={dropIdx === idx}
-              onGripPointerDown={(e) => handleGripPointerDown(e, idx)}
+              cardRef={(el) => cardRefMap.current.set(item.id, el)}
+              isDragging={draggingId === item.id}
+              onGripPointerDown={(e) => handleGripPointerDown(e, item.id)}
               onRemove={() => onRemoveEditItem?.(item.id)}
               onResize={(size) => onResizeEditItem?.(item.id, size)}
             />

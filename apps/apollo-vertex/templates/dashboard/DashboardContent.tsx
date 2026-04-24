@@ -881,93 +881,73 @@ function DashboardContentInner() {
                     />
                   )}
                 </AnimatePresence>
-                <AnimatePresence>
-                  {aiScreens.length > 0 && !isEditMode && (
-                    <motion.button
-                      key="edit-btn"
-                      initial={{ opacity: 0, scale: 0.85 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.85 }}
-                      transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
-                      onClick={
-                        activeScreenIdx > 0 ? handleEnterEditMode : undefined
-                      }
-                      disabled={activeScreenIdx === 0}
-                      className={`size-7 rounded-md flex items-center justify-center transition-colors ${
-                        activeScreenIdx === 0
+                {aiScreens.length > 0 && (
+                  <button
+                    onClick={
+                      activeScreenIdx > 0 && !isEditMode ? handleEnterEditMode : undefined
+                    }
+                    disabled={activeScreenIdx === 0}
+                    className={`size-7 rounded-md flex items-center justify-center transition-all duration-200 ${
+                      isEditMode
+                        ? "bg-muted/70 text-foreground"
+                        : activeScreenIdx === 0
                           ? "text-muted-foreground/25 cursor-not-allowed"
                           : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                      }`}
-                      type="button"
-                      title={
-                        activeScreenIdx === 0
-                          ? "Overview cannot be edited"
-                          : "Edit view"
-                      }
-                    >
-                      <SlidersHorizontal className="size-4" />
-                    </motion.button>
-                  )}
-                </AnimatePresence>
+                    }`}
+                    type="button"
+                    title={
+                      activeScreenIdx === 0
+                        ? "Overview cannot be edited"
+                        : "Edit view"
+                    }
+                  >
+                    <SlidersHorizontal className="size-4" />
+                  </button>
+                )}
               </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
-              <AnimatePresence mode="wait" initial={false}>
-                {isEditMode ? (
-                  <motion.div
-                    key="edit-controls"
-                    initial={{ opacity: 0, x: 8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 8 }}
-                    transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-                    className="flex items-center gap-2"
-                  >
-                    <button
-                      type="button"
-                      onClick={handleCancelEdit}
-                      className="h-9 px-4 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSaveEdit}
-                      className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
-                    >
-                      Set view
-                    </button>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="normal-controls"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.18 }}
-                    className="flex items-center gap-2"
-                  >
-                    <Select defaultValue="30">
-                      <SelectTrigger className="h-9 w-auto text-xs font-medium">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="7">Last 7 days</SelectItem>
-                        <SelectItem value="14">Last 14 days</SelectItem>
-                        <SelectItem value="30">Last 30 days</SelectItem>
-                        <SelectItem value="90">Last 90 days</SelectItem>
-                        <SelectItem value="365">Last 12 months</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <button
-                      type="button"
-                      className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
-                    >
-                      Primary action
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+            {/* Right controls — normal controls always hold the layout width;
+                edit controls overlay them absolutely so the total width never changes */}
+            <div className="relative flex items-center gap-2 shrink-0">
+              {/* Normal controls — always in flow to lock width */}
+              <div className={`flex items-center gap-2 transition-opacity duration-180 ${isEditMode ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+                <Select defaultValue="30">
+                  <SelectTrigger className="h-9 w-auto text-xs font-medium">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7">Last 7 days</SelectItem>
+                    <SelectItem value="14">Last 14 days</SelectItem>
+                    <SelectItem value="30">Last 30 days</SelectItem>
+                    <SelectItem value="90">Last 90 days</SelectItem>
+                    <SelectItem value="365">Last 12 months</SelectItem>
+                  </SelectContent>
+                </Select>
+                <button
+                  type="button"
+                  className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
+                >
+                  Primary action
+                </button>
+              </div>
+              {/* Edit controls — absolutely overlaid on the right */}
+              <div className={`absolute inset-y-0 right-0 flex items-center gap-2 transition-opacity duration-180 ${isEditMode ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  className="h-9 px-4 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveEdit}
+                  className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
+                >
+                  Save view
+                </button>
+              </div>
             </div>
           </div>
 
