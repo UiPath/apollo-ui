@@ -43,7 +43,7 @@ function Card({
 
     return (
       <div
-        className="relative group h-full"
+        className="relative group/card h-full"
         data-slot="card"
         data-variant={variant}
         data-selectable={selectable}
@@ -73,7 +73,7 @@ function Card({
           className={cn(
             "absolute inset-0 rounded-2xl pointer-events-none blur-xl bg-primary-400/15 dark:bg-primary-400/50",
             "opacity-0 transition-opacity duration-150",
-            !selected && "group-hover:opacity-100",
+            !selected && "group-hover/card:opacity-100",
           )}
         />
 
