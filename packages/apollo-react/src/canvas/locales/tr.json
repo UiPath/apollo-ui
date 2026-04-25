@@ -1,8 +1,8 @@
 {
-  "sticky-note.formatting.bold": "",
-  "sticky-note.formatting.italic": "",
-  "sticky-note.formatting.strikethrough": "",
-  "sticky-note.formatting.bullet-list": "",
-  "sticky-note.formatting.numbered-list": "",
-  "sticky-note.formatting.toolbar": ""
+  "sticky-note.formatting.bold": "Kalın ({boldShortcut})",
+  "sticky-note.formatting.italic": "İtalik ({italicShortcut})",
+  "sticky-note.formatting.strikethrough": "Üstü Çizili ({strikethroughShortcut})",
+  "sticky-note.formatting.bullet-list": "Madde işaretli liste",
+  "sticky-note.formatting.numbered-list": "Numaralı Liste",
+  "sticky-note.formatting.toolbar": "Metin biçimlendirmesi"
 }

@@ -1,8 +1,8 @@
 {
-  "sticky-note.formatting.bold": "",
-  "sticky-note.formatting.italic": "",
-  "sticky-note.formatting.strikethrough": "",
-  "sticky-note.formatting.bullet-list": "",
-  "sticky-note.formatting.numbered-list": "",
-  "sticky-note.formatting.toolbar": ""
+  "sticky-note.formatting.bold": "粗體 ({boldShortcut})",
+  "sticky-note.formatting.italic": "斜體 ({italicShortcut})",
+  "sticky-note.formatting.strikethrough": "刪除線 ({strikethroughShortcut})",
+  "sticky-note.formatting.bullet-list": "項目符號清單",
+  "sticky-note.formatting.numbered-list": "編號清單",
+  "sticky-note.formatting.toolbar": "文字格式"
 }

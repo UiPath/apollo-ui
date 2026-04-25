@@ -2,7 +2,7 @@
   "tool-call.running": "正在執行 {toolName}…",
   "tool-call.ran": "已執行 {toolName} ({duration} 秒)",
   "tool-call.input": "輸入",
-  "tool-call.execution": "執行",
+  "tool-call.traces": "追蹤",
   "tool-call.escalation": "升級",
   "tool-call.errors": "個錯誤",
   "tool-call.output": "輸出"
