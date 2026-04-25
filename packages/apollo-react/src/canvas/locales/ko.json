@@ -1,8 +1,8 @@
 {
-  "sticky-note.formatting.bold": "",
-  "sticky-note.formatting.italic": "",
-  "sticky-note.formatting.strikethrough": "",
-  "sticky-note.formatting.bullet-list": "",
-  "sticky-note.formatting.numbered-list": "",
-  "sticky-note.formatting.toolbar": ""
+  "sticky-note.formatting.bold": "굵게({boldShortcut})",
+  "sticky-note.formatting.italic": "기울임꼴({italicShortcut})",
+  "sticky-note.formatting.strikethrough": "취소선({strikethroughShortcut})",
+  "sticky-note.formatting.bullet-list": "글머리 기호 목록",
+  "sticky-note.formatting.numbered-list": "번호 매기기 목록",
+  "sticky-note.formatting.toolbar": "텍스트 서식 지정"
 }
