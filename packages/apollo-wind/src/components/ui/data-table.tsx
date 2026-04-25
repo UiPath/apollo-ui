@@ -266,11 +266,15 @@ export function DataTable<TData, TValue>({
                       <TableCell
                         key={cell.id}
                         className={compact ? 'h-8 truncate px-2 py-0' : 'h-12 truncate px-4 py-0'}
-                        title={
-                          typeof cell.getValue() === 'string' || typeof cell.getValue() === 'number'
-                            ? String(cell.getValue())
-                            : undefined
-                        }
+                        onMouseEnter={(e) => {
+                          const el = e.currentTarget;
+                          const value = cell.getValue();
+                          el.title =
+                            el.scrollWidth > el.clientWidth &&
+                            (typeof value === 'string' || typeof value === 'number')
+                              ? String(value)
+                              : '';
+                        }}
                         style={{
                           width: resizable
                             ? cell.column.getSize()
@@ -358,7 +362,10 @@ export function DataTableColumnHeader<TData, TValue>({
       size="sm"
       className="-ml-3 h-8 max-w-full data-[state=open]:bg-accent"
       onClick={handleClick}
-      title={title}
+      onMouseEnter={(e) => {
+        const span = e.currentTarget.querySelector<HTMLSpanElement>('span');
+        e.currentTarget.title = span && span.scrollWidth > span.clientWidth ? title : '';
+      }}
     >
       <span className="truncate min-w-0">{title}</span>
       {children}
