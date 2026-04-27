@@ -265,11 +265,13 @@
         "@tanstack/ai-client@0.7.2",
         "@tanstack/ai-react@0.7.2",
         "@tanstack/react-query@^5.90.0",
+        "@types/luxon",
         "@uipath/apollo-dashboarding@0.0.61",
         "@uipath/uipath-typescript@^1.3.1",
         "eventsource-parser@^3.0.6",
         "zod",
         "lucide-react",
+        "luxon",
         "react-i18next",
         "react-markdown",
         "remark-gfm"
@@ -372,6 +374,11 @@
           "target": "components/ui/ai-chat/charts/no-data-message.tsx"
         },
         {
+          "path": "registry/ai-chat/charts/distribution-chart-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/distribution-chart-card.tsx"
+        },
+        {
           "path": "registry/ai-chat/tools/choices/choices-tool.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/tools/choices/choices-tool.tsx"
@@ -400,6 +407,16 @@
           "path": "registry/ai-chat/tools/data-fabric-table/index.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric-table/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-distribution/data-fabric-distribution-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/data-fabric-distribution/data-fabric-distribution-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-distribution/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric-distribution/index.ts"
         }
       ]
     },

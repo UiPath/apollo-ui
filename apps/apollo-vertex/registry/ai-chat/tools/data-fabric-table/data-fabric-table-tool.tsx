@@ -2,6 +2,7 @@
 
 import { toolDefinition } from "@tanstack/ai";
 import { dataFabricAdapter } from "@uipath/apollo-dashboarding";
+import { DateTime } from "luxon";
 import { z } from "zod";
 import { NoDataMessage } from "../../charts/no-data-message";
 import { TableChartCard } from "../../charts/table-chart-card";
@@ -10,94 +11,12 @@ import {
   buildMultiEntityDataModel,
   buildTableDataModel,
   collectQualifiedFields,
+  filterSchema,
   generateEntityFieldsDocs,
+  joinSchema,
   resolveFilters,
   validateDimensions,
 } from "../data-fabric/shared";
-
-const stringListFilterSchema = z.object({
-  type: z.literal("list"),
-  field: z.string().describe("Field name to filter on"),
-  valueType: z.literal("string"),
-  values: z.array(z.union([z.string(), z.null()])).describe("Values to match"),
-  invert: z
-    .boolean()
-    .optional()
-    .describe("If true, exclude matching values instead"),
-});
-
-const numberListFilterSchema = z.object({
-  type: z.literal("list"),
-  field: z.string().describe("Field name to filter on"),
-  valueType: z.literal("number"),
-  values: z.array(z.union([z.number(), z.null()])).describe("Values to match"),
-  invert: z
-    .boolean()
-    .optional()
-    .describe("If true, exclude matching values instead"),
-});
-
-const booleanListFilterSchema = z.object({
-  type: z.literal("list"),
-  field: z.string().describe("Field name to filter on"),
-  valueType: z.literal("boolean"),
-  values: z.array(z.union([z.boolean(), z.null()])).describe("Values to match"),
-  invert: z
-    .boolean()
-    .optional()
-    .describe("If true, exclude matching values instead"),
-});
-
-const searchFilterSchema = z.object({
-  type: z.literal("search"),
-  field: z.string().describe("String field name to search"),
-  valueType: z.literal("string"),
-  pattern: z.string().describe("Text pattern to match"),
-  searchFilterType: z
-    .enum(["default", "startsWith", "endsWith"])
-    .describe("default = contains"),
-});
-
-const rangeFilterSchema = z.object({
-  type: z.literal("range"),
-  field: z.string().describe("Numeric field name"),
-  valueType: z.literal("number"),
-  range: z.union([
-    z.object({
-      min: z.number().describe("Minimum value (inclusive)"),
-      max: z.number().optional().describe("Maximum value (inclusive)"),
-      inclusive: z.boolean().optional(),
-    }),
-    z.object({
-      min: z.number().optional().describe("Minimum value (inclusive)"),
-      max: z.number().describe("Maximum value (inclusive)"),
-      inclusive: z.boolean().optional(),
-    }),
-  ]),
-});
-
-const filterSchema = z
-  .union([
-    stringListFilterSchema,
-    numberListFilterSchema,
-    booleanListFilterSchema,
-    searchFilterSchema,
-    rangeFilterSchema,
-  ])
-  .describe("Filter to apply to the table data");
-
-const joinSchema = z.object({
-  type: z.enum(["INNER", "LEFT"]).describe("Join type"),
-  entity: z.string().describe("Entity to join"),
-  on: z.object({
-    left: z
-      .string()
-      .describe("Field from the primary entity (EntityName.Field format)"),
-    right: z
-      .string()
-      .describe("Field from the joined entity (EntityName.Field format)"),
-  }),
-});
 
 const dataFabricTableInput = z.object({
   entityName: z.string().describe("Data Fabric entity name to query"),
@@ -120,7 +39,7 @@ const dataFabricTableInput = z.object({
 const dataFabricTableDef = toolDefinition({
   name: "data_fabric_table",
   description:
-    "Display data from a Data Fabric entity as a table. Call this when the user wants to see data, view records, or display information about entities. Supports optional filters (list, search, range) to narrow results. Only use fields that exist for the chosen entity.",
+    "Display data from a Data Fabric entity as a table. Call this when the user wants to see data, view records, or display information about entities. Supports optional filters (list, search, range — including datetime ranges) to narrow results. Only use fields that exist for the chosen entity.",
   inputSchema: dataFabricTableInput,
   outputSchema: dataFabricTableInput,
   metadata: { skipFollowUp: true },
@@ -188,6 +107,7 @@ function buildMultiEntityResult(
 }
 
 export function createDataFabricTableTool(context: DataFabricToolContext) {
+  const today = DateTime.now().toISODate();
   const toolPrompt = `You have a "data_fabric_table" tool.
 When the user wants to see data as a table, call it with the entity name and field names as dimensions.
 If the user asks for specific fields, use exactly those fields.
@@ -198,7 +118,8 @@ Only use fields that exist for the chosen entity (see Entity Reference).
 You can optionally pass filters to narrow results. Available filter types:
 - **list**: match specific values. Use valueType matching the field type (string/number/boolean). Set invert=true to exclude.
 - **search**: text pattern matching on string fields. searchFilterType: "default" (contains), "startsWith", "endsWith".
-- **range**: numeric range with optional min/max.
+- **range** (numeric): use valueType="number" with min/max numbers.
+- **range** (datetime): use valueType="datetime" with min/max as ISO 8601 strings (e.g. "2026-01-01" or "2026-01-01T00:00:00Z"). Today is ${today} — use it to resolve relative phrases like "last 30 days" or "this year" into absolute ISO dates before passing them.
 Only add filters when the user asks to filter, search, or narrow results.
 
 ## Multi-Entity Joins
