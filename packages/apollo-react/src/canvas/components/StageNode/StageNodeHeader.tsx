@@ -46,7 +46,10 @@ const StageNodeHeaderInner = ({
     onTaskAdd,
     onAddTaskFromToolbox,
     onStageTitleChange,
+    loadingTaskIds,
   } = props;
+
+  const isAddTaskDisabled = (loadingTaskIds?.size ?? 0) > 0;
 
   const icon = stageDetails?.icon;
   const statusLabel = execution?.stageStatus?.label;
@@ -196,6 +199,7 @@ const StageNodeHeaderInner = ({
               className="h-6 w-6"
               onClick={handleTaskAddClick}
               aria-label={addTaskLabel}
+              disabled={isAddTaskDisabled}
             >
               <CanvasIcon icon="plus" size={20} />
             </Button>
