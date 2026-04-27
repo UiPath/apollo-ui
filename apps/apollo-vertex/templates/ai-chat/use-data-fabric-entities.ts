@@ -25,10 +25,17 @@ const NUMERIC_FIELD_TYPES = new Set<EntityFieldDataType>([
   EntityFieldDataType.AUTO_NUMBER,
 ]);
 
+const DATETIME_FIELD_TYPES = new Set<EntityFieldDataType>([
+  EntityFieldDataType.DATE,
+  EntityFieldDataType.DATETIME,
+  EntityFieldDataType.DATETIME_WITH_TZ,
+]);
+
 function mapFieldDataType(
   fieldDataType: EntityFieldDataType,
-): "string" | "number" | "boolean" {
+): "string" | "number" | "boolean" | "datetime" {
   if (NUMERIC_FIELD_TYPES.has(fieldDataType)) return "number";
+  if (DATETIME_FIELD_TYPES.has(fieldDataType)) return "datetime";
   if (fieldDataType === EntityFieldDataType.BOOLEAN) return "boolean";
   return "string";
 }

@@ -2,7 +2,7 @@ import { AiChatTemplateLazy } from '@/templates/AiChatTemplateLazy';
 
 # AI Chat
 
-A composable AI chat UI component for Apollo Vertex. Built with React, TypeScript, and Tailwind CSS. Designed to work with [TanStack AI](https://tanstack.com/ai) — you bring `useChat` and a connection adapter, the component handles the chrome (scroll, input, loading, suggestions, errors) while you control how messages and tool calls render.
+A composable AI chat UI component for Apollo Vertex. Built with React, TypeScript, and Tailwind CSS. Designed to work with [TanStack AI](https://tanstack.com/ai)
 
 <div className="not-prose my-8 h-[70vh] min-h-[500px] max-h-[900px] flex w-full flex-col">
   <AiChatTemplateLazy />
@@ -17,16 +17,28 @@ A composable AI chat UI component for Apollo Vertex. Built with React, TypeScrip
 - **Conversational Agent Adapter** — Built-in adapter for a deployed UiPath Conversational Agent, with session management
 - **Markdown Rendering** — Renders assistant responses with GitHub Flavored Markdown
 - **Data Fabric Table Tool** — Display entity data as filterable tables with list, search, and range filters, and multi-entity joins
+- **Data Fabric Distribution Tool** — Render histogram charts for numeric or datetime fields with optional aggregations, filters, and joins
 - **Suggestion Buttons** — Interactive choice buttons rendered from tool results
-- **Error Display** — Inline error banner for API and network errors
-- **i18n Support** — Built-in internationalization via react-i18next
-- **Accessible** — WCAG 2.1 compliant with keyboard navigation and ARIA live regions
 
 ## Installation
+
+Apollo Vertex components are published to a custom shadcn registry under the `@uipath` namespace. Before running the `add` command, register the namespace once in your project's `components.json` so shadcn knows where to fetch from (otherwise the CLI will prompt you for a registry URL):
+
+```json
+{
+  "registries": {
+    "@uipath": "https://apollo-vertex.vercel.app/r/{name}.json"
+  }
+}
+```
+
+Then install the component:
 
 ```bash
 npx shadcn@latest add @uipath/ai-chat
 ```
+
+> This `registries` setup is a one-time configuration per project — every `@uipath/*` component on this site uses the same alias.
 
 ## Quick Start
 
@@ -211,7 +223,8 @@ The LLM can pass filters based on the user's request:
 
 - **List filter** — match or exclude specific values: `"show invoices where Status is Pending"`
 - **Search filter** — text pattern matching (contains, startsWith, endsWith): `"find customers starting with A"`
-- **Range filter** — numeric min/max: `"show orders over $200"`
+- **Range filter (numeric)** — numeric min/max: `"show orders over $200"`
+- **Range filter (datetime)** — ISO 8601 min/max: `"show orders from the last 30 days"`. The tool prompt is given today's date so the LLM can resolve relative phrases into absolute ISO dates before calling the tool.
 
 Filters are passed through the table configuration to `@uipath/apollo-dashboarding`, which translates them to Data Fabric query filters server-side.
 
@@ -234,6 +247,54 @@ The tool can combine data from related entities via the `joins` argument. The `e
 ```
 
 When joins are present, dimensions and filter fields must use qualified `EntityName.FieldName` names (using the exact entity names from the Entity Reference — never aliases). The join condition goes in `joins[].on`; don't also add it as a filter.
+
+---
+
+## Data Fabric Distribution Tool
+
+The `data_fabric_distribution` tool renders a histogram from a Data Fabric entity by binning a single numeric or datetime field. It shares the filter and join system with the table tool, and adds an optional aggregation metric.
+
+```tsx
+import {
+  createDataFabricDistributionTool,
+  dataFabricDistributionClient,
+} from '@/components/ui/ai-chat/tools/data-fabric-distribution';
+
+const distributionTool = createDataFabricDistributionTool({
+  entities,           // Record<string, Entity> — entity metadata with field names and types
+  accessToken,        // Bearer token for Data Fabric API
+  dataFabricBaseUrl,  // Base URL for Data Fabric proxy
+});
+
+// Use dataFabricDistributionClient in your tools array, distributionTool.toolPrompt in your
+// system prompt, and distributionTool.renderDistribution(part.output, part.id) in your parts loop.
+```
+
+### Dimension
+
+The `dimension` is the field used for binning and must be **numeric** or **datetime**:
+
+- Datetime dimensions bin by time (e.g. orders per month).
+- Numeric dimensions bin by value range.
+
+### Metric
+
+Omit `metric` entirely for the default `COUNT` of records per bin. To plot an aggregated numeric field, pass `{ aggregation, field }`:
+
+- `COUNT` — records per bin (default; `field` optional, picks the primary key).
+- `SUM`, `AVG`, `MIN`, `MAX` — applied to a numeric `field`.
+
+```json
+{
+  "entityName": "Order",
+  "dimension": "OrderDate",
+  "metric": { "aggregation": "SUM", "field": "Total" }
+}
+```
+
+### Filters and joins
+
+Filters and joins use the same schemas as the table tool (including the new datetime range filter). When joins are present, the `dimension` and `metric.field` must use qualified `EntityName.FieldName` names.
 
 ---
 
@@ -265,23 +326,6 @@ import {
 
 > **Try it out** — type *"give me some choices"* in the demo above to see suggestion buttons in action.
 
-## Error Display
-
-Pass an `Error` object to show an inline error banner:
-
-```tsx
-<AiChat
-  messages={messages}
-  isLoading={isLoading}
-  onSendMessage={(text) => sendMessage(text)}
-  onStop={stop}
-  error={error}
->
-  {messages.map((message) => (
-    <AiChatMessage key={message.id} message={message} />
-  ))}
-</AiChat>
-```
 
 ---
 

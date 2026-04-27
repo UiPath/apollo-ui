@@ -15,6 +15,10 @@ import {
 } from "@/registry/ai-chat/tools/choices";
 import type { Entity } from "@/registry/ai-chat/tools/data-fabric/shared";
 import {
+  createDataFabricDistributionTool,
+  dataFabricDistributionClient,
+} from "@/registry/ai-chat/tools/data-fabric-distribution";
+import {
   createDataFabricTableTool,
   dataFabricTableClient,
 } from "@/registry/ai-chat/tools/data-fabric-table";
@@ -48,12 +52,23 @@ function AgentHubChatInner({
     dataFabricBaseUrl,
   });
 
-  const tools = clientTools(presentChoicesClient, dataFabricTableClient);
+  const distributionTool = createDataFabricDistributionTool({
+    entities,
+    accessToken,
+    dataFabricBaseUrl,
+  });
+
+  const tools = clientTools(
+    presentChoicesClient,
+    dataFabricTableClient,
+    dataFabricDistributionClient,
+  );
 
   const systemPrompt = [
     "You are a helpful assistant. Always respond using markdown format.",
     CHOICES_TOOL_PROMPT,
     tableTool.toolPrompt,
+    distributionTool.toolPrompt,
   ].join("\n\n");
 
   const connection = createAgentHubConnection({
@@ -95,6 +110,14 @@ function AgentHubChatInner({
               return (
                 <Suspense key={part.id}>
                   {tableTool.renderTable(part.output, part.id)}
+                </Suspense>
+              );
+            }
+
+            if (part.name === "data_fabric_distribution") {
+              return (
+                <Suspense key={part.id}>
+                  {distributionTool.renderDistribution(part.output, part.id)}
                 </Suspense>
               );
             }
