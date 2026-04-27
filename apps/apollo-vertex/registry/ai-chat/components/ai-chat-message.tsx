@@ -21,11 +21,11 @@ export function AiChatMessage({
   const isUser = message.role === "user";
   const displayName = assistantName ?? t("ai_assistant");
 
-  const hasToolCalls = message.parts.some(
+  const hasToolOutputs = message.parts.some(
     (p) => p.type === "tool-call" && p.output != null,
   );
   const hasContent =
-    hasToolCalls || message.parts.some((p) => p.type === "text" && p.content);
+    hasToolOutputs || message.parts.some((p) => p.type === "text" && p.content);
 
   if (!isUser && !hasContent) {
     return null;
@@ -54,13 +54,15 @@ export function AiChatMessage({
           aria-hidden="true"
         />
       </div>
-      <div
-        className={`flex flex-col gap-1 min-w-0 max-w-[85%]${hasToolCalls ? " w-full" : ""}`}
-      >
+      <div className="flex flex-col gap-1 min-w-0 flex-1">
         <span className="text-xs text-muted-foreground font-medium">
           {displayName}
         </span>
-        {!hasToolCalls && text && <AiChatMarkdown>{text}</AiChatMarkdown>}
+        {text && (
+          <div className="max-w-[85%] w-fit">
+            <AiChatMarkdown>{text}</AiChatMarkdown>
+          </div>
+        )}
         {children}
       </div>
     </div>
