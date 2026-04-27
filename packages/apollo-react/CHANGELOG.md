@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.73.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.72.0...@uipath/apollo-react@3.73.0) (2026-04-27)
+
+### Features
+
+* **apollo-react:** add per-contextType icons for ResourceNode ([1aa62ec](https://github.com/UiPath/apollo-ui/commit/1aa62ec4a8e415788324a9792e82da4f51612671))
+
 ## [@uipath/apollo-react-v3.72.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.71.1...@uipath/apollo-react@3.72.0) (2026-04-22)
 
 ### Features
