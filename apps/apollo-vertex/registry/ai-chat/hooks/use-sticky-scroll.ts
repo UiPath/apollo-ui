@@ -9,6 +9,7 @@ export function useStickyScroll() {
   const [isStuck, setIsStuck] = useState(true);
   const isStuckRef = useRef(true);
   const scrollElRef = useRef<HTMLDivElement | null>(null);
+  const rafIdRef = useRef(0);
 
   function setStuck(stuck: boolean) {
     isStuckRef.current = stuck;
@@ -22,8 +23,25 @@ export function useStickyScroll() {
     setStuck(true);
   }
 
+  function unstickIfScrolled() {
+    const el = scrollElRef.current;
+    if (!el) return;
+    const before = el.scrollTop;
+    cancelAnimationFrame(rafIdRef.current);
+    rafIdRef.current = requestAnimationFrame(() => {
+      const after = el.scrollTop;
+      if (after < before - 0.5) setStuck(false);
+    });
+  }
+
+  useEffect(() => {
+    return () => cancelAnimationFrame(rafIdRef.current);
+  }, []);
+
   function handleWheel(e: WheelEvent) {
-    if (e.deltaY < 0) setStuck(false);
+    if (e.deltaY >= 0) return;
+    if (!isStuckRef.current) return;
+    unstickIfScrolled();
   }
 
   function handleScroll() {
