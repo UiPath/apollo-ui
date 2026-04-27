@@ -27,11 +27,14 @@ import {
   ColumnDef,
   ColumnFiltersState,
   ColumnResizeMode,
+  ColumnSizingState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  OnChangeFn,
+  Row,
   RowSelectionState,
   SortingState,
   useReactTable,
@@ -53,6 +56,28 @@ export interface DataTableProps<TData, TValue> {
   columnToggleText?: string;
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: (selection: RowSelectionState) => void;
+  /** Controlled sort state. When provided, the table runs in controlled mode for sorting. */
+  sorting?: SortingState;
+  onSortingChange?: OnChangeFn<SortingState>;
+  /** Initial sort applied when `sorting` is uncontrolled. */
+  initialSorting?: SortingState;
+  /** Controlled column-sizing state. Pairs with `resizable`. */
+  columnSizing?: ColumnSizingState;
+  onColumnSizingChange?: OnChangeFn<ColumnSizingState>;
+  /** Controlled column-visibility state. */
+  columnVisibility?: VisibilityState;
+  onColumnVisibilityChange?: OnChangeFn<VisibilityState>;
+  /**
+   * When set, the search input filters whole rows via this predicate.
+   * Takes precedence over `searchKey`.
+   */
+  globalFilterFn?: (row: TData, query: string) => boolean;
+  /**
+   * When true, body cells render multi-line content (drops the default `truncate` class).
+   * Useful for tables that show JSON, long text, or preformatted content.
+   * Default: false (single-line + ellipsis).
+   */
+  allowWrap?: boolean;
   toolbarContent?: React.ReactNode;
   /**
    * When set, the table body scrolls independently with this max height (any CSS length).
@@ -77,25 +102,96 @@ export function DataTable<TData, TValue>({
   columnToggleText = 'Columns',
   rowSelection: controlledRowSelection,
   onRowSelectionChange: controlledOnRowSelectionChange,
+  sorting: controlledSorting,
+  onSortingChange: controlledOnSortingChange,
+  initialSorting,
+  columnSizing: controlledColumnSizing,
+  onColumnSizingChange: controlledOnColumnSizingChange,
+  columnVisibility: controlledColumnVisibility,
+  onColumnVisibilityChange: controlledOnColumnVisibilityChange,
+  globalFilterFn,
+  allowWrap = false,
   toolbarContent,
   maxBodyHeight,
 }: DataTableProps<TData, TValue>) {
   const useBlockLayout = maxBodyHeight !== undefined;
   const blockRowClasses = '[&>tr]:table [&>tr]:w-full [&>tr]:table-fixed';
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [internalSorting, setInternalSorting] = React.useState<SortingState>(initialSorting ?? []);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [internalColumnVisibility, setInternalColumnVisibility] = React.useState<VisibilityState>(
+    {}
+  );
+  const [internalColumnSizing, setInternalColumnSizing] = React.useState<ColumnSizingState>({});
   const [internalRowSelection, setInternalRowSelection] = React.useState<RowSelectionState>({});
+  const [globalFilter, setGlobalFilter] = React.useState('');
 
-  const isControlled = controlledRowSelection !== undefined;
-  const rowSelection = isControlled ? controlledRowSelection : internalRowSelection;
-  const setRowSelection = React.useCallback(
-    (updater: React.SetStateAction<RowSelectionState>) => {
-      const next = typeof updater === 'function' ? updater(rowSelection) : updater;
-      if (!isControlled) setInternalRowSelection(next);
+  // Sorting/sizing/visibility wrappers forward the TanStack updater (value or
+  // function) verbatim to the consumer's callback so `setState`-shaped handlers
+  // can be passed directly and their functional-updater contract is preserved.
+  // `onRowSelectionChange` predates this contract and accepts a resolved value,
+  // so its wrapper resolves the updater before invoking the consumer callback.
+  const isRowSelectionControlled = controlledRowSelection !== undefined;
+  const rowSelection = isRowSelectionControlled ? controlledRowSelection : internalRowSelection;
+  const rowSelectionRef = React.useRef(rowSelection);
+  rowSelectionRef.current = rowSelection;
+  const setRowSelection: OnChangeFn<RowSelectionState> = React.useCallback(
+    (updater) => {
+      const next = typeof updater === 'function' ? updater(rowSelectionRef.current) : updater;
+      if (!isRowSelectionControlled) setInternalRowSelection(next);
       controlledOnRowSelectionChange?.(next);
     },
-    [isControlled, rowSelection, controlledOnRowSelectionChange]
+    [isRowSelectionControlled, controlledOnRowSelectionChange]
+  );
+
+  const isSortingControlled = controlledSorting !== undefined;
+  const sorting = isSortingControlled ? controlledSorting : internalSorting;
+  const onSortingChange: OnChangeFn<SortingState> = React.useCallback(
+    (updater) => {
+      if (!isSortingControlled) {
+        setInternalSorting((prev) => (typeof updater === 'function' ? updater(prev) : updater));
+      }
+      controlledOnSortingChange?.(updater);
+    },
+    [isSortingControlled, controlledOnSortingChange]
+  );
+
+  const isColumnSizingControlled = controlledColumnSizing !== undefined;
+  const columnSizing = isColumnSizingControlled ? controlledColumnSizing : internalColumnSizing;
+  const onColumnSizingChange: OnChangeFn<ColumnSizingState> = React.useCallback(
+    (updater) => {
+      if (!isColumnSizingControlled) {
+        setInternalColumnSizing((prev) =>
+          typeof updater === 'function' ? updater(prev) : updater
+        );
+      }
+      controlledOnColumnSizingChange?.(updater);
+    },
+    [isColumnSizingControlled, controlledOnColumnSizingChange]
+  );
+
+  const isColumnVisibilityControlled = controlledColumnVisibility !== undefined;
+  const columnVisibility = isColumnVisibilityControlled
+    ? controlledColumnVisibility
+    : internalColumnVisibility;
+  const onColumnVisibilityChange: OnChangeFn<VisibilityState> = React.useCallback(
+    (updater) => {
+      if (!isColumnVisibilityControlled) {
+        setInternalColumnVisibility((prev) =>
+          typeof updater === 'function' ? updater(prev) : updater
+        );
+      }
+      controlledOnColumnVisibilityChange?.(updater);
+    },
+    [isColumnVisibilityControlled, controlledOnColumnVisibilityChange]
+  );
+
+  const tanstackGlobalFilterFn = React.useMemo(
+    () =>
+      globalFilterFn
+        ? (row: Row<TData>, _columnId: string, filterValue: string) =>
+            globalFilterFn(row.original, filterValue)
+        : undefined,
+    [globalFilterFn]
   );
 
   // Wrap columns with editable cell renderer if editable mode is enabled
@@ -124,21 +220,26 @@ export function DataTable<TData, TValue>({
   const table = useReactTable({
     data,
     columns: processedColumns,
-    onSortingChange: setSorting,
+    onSortingChange,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
+    onColumnVisibilityChange,
+    onColumnSizingChange,
     onRowSelectionChange: setRowSelection,
+    onGlobalFilterChange: setGlobalFilter,
+    globalFilterFn: tanstackGlobalFilterFn,
     enableColumnResizing: resizable,
     columnResizeMode: 'onChange' as ColumnResizeMode,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
+      columnSizing,
       rowSelection,
+      globalFilter,
     },
     initialState: {
       pagination: {
@@ -150,13 +251,22 @@ export function DataTable<TData, TValue>({
   return (
     <div className="w-full">
       <div className="flex items-center gap-4 py-4">
-        {searchKey && (
+        {globalFilterFn ? (
           <Input
             placeholder={searchPlaceholder}
-            value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
-            onChange={(event) => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
+            value={globalFilter}
+            onChange={(event) => setGlobalFilter(event.target.value)}
             className="max-w-sm"
           />
+        ) : (
+          searchKey && (
+            <Input
+              placeholder={searchPlaceholder}
+              value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
+              onChange={(event) => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
+              className="max-w-sm"
+            />
+          )
         )}
         {toolbarContent}
         {showColumnToggle && (
@@ -265,8 +375,17 @@ export function DataTable<TData, TValue>({
                     return (
                       <TableCell
                         key={cell.id}
-                        className={compact ? 'h-8 truncate px-2 py-0' : 'h-12 truncate px-4 py-0'}
+                        className={cn(
+                          allowWrap
+                            ? compact
+                              ? 'min-h-8 px-2 py-1'
+                              : 'min-h-12 px-4 py-2'
+                            : compact
+                              ? 'h-8 truncate px-2 py-0'
+                              : 'h-12 truncate px-4 py-0'
+                        )}
                         onMouseEnter={(e) => {
+                          if (allowWrap) return;
                           const el = e.currentTarget;
                           const value = cell.getValue();
                           el.title =
