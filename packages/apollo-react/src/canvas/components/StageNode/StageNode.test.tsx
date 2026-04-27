@@ -944,3 +944,30 @@ describe('StageNode - Header Chips', () => {
     ).toBeInTheDocument();
   });
 });
+
+describe('StageNode - Add Task Button', () => {
+  it('disables the add task button when loadingTaskIds is non-empty', () => {
+    renderStageNode({
+      onTaskAdd: vi.fn(),
+      loadingTaskIds: new Set(['loading-task']),
+    });
+
+    expect(screen.getByRole('button', { name: 'Add task' })).toBeDisabled();
+  });
+
+  it('does not invoke onTaskAdd when the disabled add task button is clicked', async () => {
+    const user = userEvent.setup();
+    const onTaskAdd = vi.fn();
+    renderStageNode({ onTaskAdd, loadingTaskIds: new Set(['loading-task']) });
+
+    await user.click(screen.getByRole('button', { name: 'Add task' }));
+
+    expect(onTaskAdd).not.toHaveBeenCalled();
+  });
+
+  it('enables the add task button when loadingTaskIds is empty', () => {
+    renderStageNode({ onTaskAdd: vi.fn(), loadingTaskIds: new Set() });
+
+    expect(screen.getByRole('button', { name: 'Add task' })).not.toBeDisabled();
+  });
+});
