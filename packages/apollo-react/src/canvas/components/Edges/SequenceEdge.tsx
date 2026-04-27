@@ -85,9 +85,15 @@ export const SequenceEdge = memo(function SequenceEdge({
   const isDiffAdded = data?.isDiffAdded === true;
   const isDiffRemoved = data?.isDiffRemoved === true;
 
+  const hideArrowHead = data?.hideArrowHead === true;
+  const hideToolbar = data?.hideToolbar === true;
+
   const angle = ANGLE_MAP[targetPosition];
   const { x: offsetX, y: offsetY } = ARROW_OFFSETS[targetPosition];
 
+  // When the arrow head is hidden, inset the target point so the line stops at
+  // the same visual distance from the target node as the source side — the
+  // arrow polygon normally fills this gap.
   const { edgePath, labelX, labelY } = useEdgePath({
     sourceNodeId: source,
     targetNodeId: target,
@@ -96,8 +102,8 @@ export const SequenceEdge = memo(function SequenceEdge({
     sourceX,
     sourceY,
     sourcePosition,
-    targetX,
-    targetY,
+    targetX: hideArrowHead ? targetX + offsetX : targetX,
+    targetY: hideArrowHead ? targetY + offsetY : targetY,
     targetPosition,
   });
 
@@ -186,20 +192,22 @@ export const SequenceEdge = memo(function SequenceEdge({
         />
 
         {/* Arrow head - filled triangle */}
-        <polygon
-          points={`
-            ${targetX},${targetY}
-            ${targetX - ARROW_SIZE * Math.cos(angle - Math.PI / 6)},${targetY - ARROW_SIZE * Math.sin(angle - Math.PI / 6)}
-            ${targetX - ARROW_SIZE * Math.cos(angle + Math.PI / 6)},${targetY - ARROW_SIZE * Math.sin(angle + Math.PI / 6)}
-          `}
-          fill={edgeColor}
-          style={{
-            pointerEvents: 'none',
-            opacity: style?.opacity !== undefined ? style.opacity : 1,
-            transition: 'fill 0.2s ease, opacity 0.2s ease',
-            transform: `translate(${offsetX}px, ${offsetY}px)`,
-          }}
-        />
+        {!hideArrowHead && (
+          <polygon
+            points={`
+              ${targetX},${targetY}
+              ${targetX - ARROW_SIZE * Math.cos(angle - Math.PI / 6)},${targetY - ARROW_SIZE * Math.sin(angle - Math.PI / 6)}
+              ${targetX - ARROW_SIZE * Math.cos(angle + Math.PI / 6)},${targetY - ARROW_SIZE * Math.sin(angle + Math.PI / 6)}
+            `}
+            fill={edgeColor}
+            style={{
+              pointerEvents: 'none',
+              opacity: style?.opacity !== undefined ? style.opacity : 1,
+              transition: 'fill 0.2s ease, opacity 0.2s ease',
+              transform: `translate(${offsetX}px, ${offsetY}px)`,
+            }}
+          />
+        )}
 
         {getStatusAnimation(status, edgePath)}
 
@@ -237,7 +245,7 @@ export const SequenceEdge = memo(function SequenceEdge({
       </g>
 
       {/* Edge toolbar for adding nodes */}
-      {showToolbar && toolbarPositioning && (
+      {!hideToolbar && showToolbar && toolbarPositioning && (
         <EdgeToolbar
           edgeId={id}
           visible={showToolbar}
