@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.15.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.14.1...@uipath/apollo-react@4.15.0) (2026-04-27)
+
+### Features
+
+* **apollo-react:** parameterize sequence edge [AG-1080] ([b5a7e97](https://github.com/UiPath/apollo-ui/commit/b5a7e972375aac1819cf7b115c359544658f7efc))
+
 ## [@uipath/apollo-react-v4.14.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.14.0...@uipath/apollo-react@4.14.1) (2026-04-24)
 
 ### Bug Fixes
