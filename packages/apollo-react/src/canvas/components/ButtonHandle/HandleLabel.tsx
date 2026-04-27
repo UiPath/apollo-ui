@@ -2,6 +2,10 @@ import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { cx } from '../../utils/CssUtil';
 
+export const LABEL_SHADOW_STYLE = {
+  textShadow: '0 0 4px var(--canvas-background), 0 0 4px var(--canvas-background)',
+} as const;
+
 const LABEL_POSITION: Record<Position, string> = {
   [Position.Top]: 'bottom-[calc(100%+4px)] left-1/2 -translate-x-1/2',
   [Position.Bottom]: 'top-[calc(100%+4px)] left-1/2 -translate-x-1/2',
@@ -17,7 +21,7 @@ export const HandleLabel = ({
   shouldTruncate,
 }: {
   position: Position;
-  backgroundColor: string;
+  backgroundColor?: string;
   label: string;
   labelIcon?: React.ReactNode;
   shouldTruncate?: boolean;
@@ -28,7 +32,7 @@ export const HandleLabel = ({
       LABEL_POSITION[position],
       shouldTruncate && 'max-w-[50px] overflow-hidden'
     )}
-    style={{ backgroundColor }}
+    style={backgroundColor ? { backgroundColor } : undefined}
   >
     <Row align="center" gap={4}>
       {labelIcon}
@@ -37,6 +41,7 @@ export const HandleLabel = ({
           'text-xs font-bold text-foreground-muted',
           shouldTruncate && 'overflow-hidden text-ellipsis whitespace-nowrap'
         )}
+        style={backgroundColor ? undefined : LABEL_SHADOW_STYLE}
       >
         {label}
       </span>

@@ -13,12 +13,16 @@ const POSITIONER_BASE_CLASS = 'absolute flex pointer-events-none z-10';
 // Container enforces a 40px cross-axis (`min-h-10 min-w-10`) in every
 // orientation, so the same offset produces a consistent ~12px gap on every
 // side: 40 (toolbar) + 12 (gap) = 52.
+// `--toolbar-offset` (default 0) adds extra displacement to clear handle buttons.
 const POSITIONER_POSITION_CLASS: Record<'top' | 'bottom' | 'left' | 'right', string> = {
-  top: 'top-[-52px] left-0 right-0 flex-row',
-  bottom: 'bottom-[-52px] left-0 right-0 flex-row',
-  left: 'left-[-52px] top-0 bottom-0 flex-col',
-  right: 'right-[-52px] top-0 bottom-0 flex-col',
+  top: 'top-[calc(-52px-var(--toolbar-offset,0px))] left-0 right-0 flex-row',
+  bottom: 'bottom-[calc(-52px-var(--toolbar-offset,0px))] left-0 right-0 flex-row',
+  left: 'left-[calc(-52px-var(--toolbar-offset,0px))] top-0 bottom-0 flex-col',
+  right: 'right-[calc(-52px-var(--toolbar-offset,0px))] top-0 bottom-0 flex-col',
 };
+
+/** Extra displacement (px) applied when `offsetToolbar` is true. */
+const TOOLBAR_OFFSET = 48; // Clears the button handle + label + gaps
 
 const POSITIONER_ALIGN_CLASS: Record<'start' | 'center' | 'end', string> = {
   start: 'justify-start',
@@ -56,7 +60,13 @@ const DROPDOWN_ITEM_BASE_CLASS =
 const DROPDOWN_ITEM_DISABLED_CLASS = 'cursor-not-allowed opacity-40 pointer-events-none';
 const DROPDOWN_ITEM_ENABLED_CLASS = 'cursor-pointer opacity-100';
 
-const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarProps) => {
+const NodeToolbarComponent = ({
+  nodeId,
+  config,
+  expanded,
+  hidden,
+  offsetToolbar,
+}: NodeToolbarProps) => {
   const {
     isDropdownOpen,
     setIsDropdownOpen,
@@ -95,6 +105,11 @@ const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarP
     [separatorOrientation]
   );
 
+  const offsetStyle = useMemo(() => {
+    if (!offsetToolbar) return undefined;
+    return { '--toolbar-offset': `${TOOLBAR_OFFSET}px` } as React.CSSProperties;
+  }, [offsetToolbar]);
+
   const toolbarAnimationVariants = useMemo(() => {
     const offsetAxis = position === 'top' || position === 'bottom' ? 'y' : 'x';
     const offsetAmount = position === 'top' || position === 'left' ? -10 : 10;
@@ -119,7 +134,7 @@ const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarP
   return (
     <AnimatePresence>
       {displayState !== 'hidden' && (
-        <div className={positionerClassName}>
+        <div className={positionerClassName} style={offsetStyle}>
           <motion.div
             layout="position"
             className={containerClassName}

@@ -44,28 +44,41 @@ export const snapToGrid = (value: number, gridSize: number = GRID_SPACING): numb
 export const calculateGridAlignedHandlePositions = (
   nodeSize: number,
   numHandles: number,
-  gridSize: number = GRID_SPACING / 2
+  gridSize: number = GRID_SPACING
 ): number[] => {
   if (numHandles === 0) return [];
   if (nodeSize <= 0) return [];
+  if (numHandles === 1) return [nodeSize / 2];
 
-  // Ideal equidistant spacing (with padding on either side equal to the spacing).
   const idealSpacing = nodeSize / (numHandles + 1);
 
+  // Grid alignment is only meaningful when the node itself sits on the grid.
+  // When nodeSize isn't a grid multiple, snapping spacing can't produce
+  // grid-aligned positions, so just return ideal equidistant positions.
+  if (nodeSize % gridSize !== 0) {
+    const positions: number[] = [];
+    for (let i = 0; i < numHandles; i++) {
+      positions.push(idealSpacing * (i + 1));
+    }
+    return positions;
+  }
+
   // Round to the nearest grid multiple, with a lower bound of one grid step so
-  // handles don't all stack at the center when `idealSpacing < gridSize / 2`
-  // (e.g. very small node, many handles).
-  //
-  // We deliberately do NOT cap spacing to fit the node: when the natural
-  // spacing would push handles outside the node bounds, we prefer overflow
-  // over visually crowding/overlapping handles inside the node.
-  // This scenario should not happen in typical usage since base node is expected to grow to fit handles.
+  // handles don't all stack at the center when `idealSpacing < gridSize / 2`.
   const roundedSpacing = Math.round(idealSpacing / gridSize) * gridSize;
-  const gridAlignedSpacing = Math.max(gridSize, roundedSpacing);
+  let gridAlignedSpacing = Math.max(gridSize, roundedSpacing);
 
   // Distribute symmetrically around the node center.
-  const totalSpan = (numHandles - 1) * gridAlignedSpacing;
-  const startPosition = (nodeSize - totalSpan) / 2;
+  let totalSpan = (numHandles - 1) * gridAlignedSpacing;
+  let startPosition = (nodeSize - totalSpan) / 2;
+
+  // Since nodeSize is a grid multiple, startPosition is either on-grid or
+  // exactly half a grid step off. Bump spacing down one grid step to fix parity.
+  if (startPosition % gridSize !== 0 && gridAlignedSpacing > gridSize) {
+    gridAlignedSpacing -= gridSize;
+    totalSpan = (numHandles - 1) * gridAlignedSpacing;
+    startPosition = (nodeSize - totalSpan) / 2;
+  }
 
   const positions: number[] = [];
   for (let i = 0; i < numHandles; i++) {

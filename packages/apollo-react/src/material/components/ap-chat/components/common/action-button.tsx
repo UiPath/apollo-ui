@@ -26,13 +26,7 @@ const StyledButtonContainer = styled('div')(() => ({
   },
 }));
 
-/**
- * Either onClick or onPress and onRelease are required.
- */
-type AutopilotChatActionButtonProps = AutopilotChatActionButtonBaseProps &
-  (AutopilotChatActionButtonClickProps | AutopilotChatActionButtonPressProps);
-
-interface AutopilotChatActionButtonBaseProps {
+interface AutopilotChatActionButtonProps {
   iconName: string;
   iconSize?: string;
   disabled?: boolean;
@@ -44,9 +38,11 @@ interface AutopilotChatActionButtonBaseProps {
   tooltipPlacement?: TooltipProps['placement'];
   ariaLabel?: string;
   ariaDescribedby?: string;
+  ariaPressed?: boolean;
   title?: string;
   tabIndex?: number;
   disableInteractiveTooltip?: boolean;
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
   onFocus?: (event: React.FocusEvent<HTMLButtonElement>) => void;
   onBlur?: (event: React.FocusEvent<HTMLButtonElement>) => void;
   onMouseDown?: (event: React.MouseEvent<HTMLButtonElement>) => void;
@@ -55,15 +51,6 @@ interface AutopilotChatActionButtonBaseProps {
   onMouseEnter?: (event: React.MouseEvent<HTMLElement>) => void;
   onMouseLeave?: (event: React.MouseEvent<HTMLElement>) => void;
   'data-testid'?: string;
-}
-
-interface AutopilotChatActionButtonClickProps {
-  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
-}
-
-interface AutopilotChatActionButtonPressProps {
-  onPress: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  onRelease: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 const AutopilotChatActionButtonComponent = React.forwardRef<
@@ -83,8 +70,10 @@ const AutopilotChatActionButtonComponent = React.forwardRef<
       tooltipPlacement = 'bottom',
       ariaLabel,
       ariaDescribedby,
+      ariaPressed,
       title,
       tabIndex,
+      onClick,
       onMouseEnter,
       onMouseLeave,
       onFocus,
@@ -94,17 +83,11 @@ const AutopilotChatActionButtonComponent = React.forwardRef<
       onKeyDown,
       disableInteractiveTooltip = false,
       'data-testid': dataTestId,
-      ...props
     },
     ref
   ) => {
     const [iconColor, setIconColor] = React.useState('var(--color-icon-default)');
     const { chatMode } = useChatState();
-    const [isPressed, setIsPressed] = React.useState(false);
-
-    const onClick = 'onClick' in props ? props.onClick : () => {};
-    const onPress = 'onPress' in props ? props.onPress : () => {};
-    const onRelease = 'onRelease' in props ? props.onRelease : () => {};
 
     // Determine if we should show tooltip
     const showTooltip = tooltip && chatMode !== AutopilotChatMode.Closed && !disabled;
@@ -121,13 +104,6 @@ const AutopilotChatActionButtonComponent = React.forwardRef<
           }}
           onMouseLeave={(event: React.MouseEvent<HTMLButtonElement>) => {
             onMouseLeave?.(event);
-            if (isPressed) {
-              // Moving the mouse back over the button while still pressing does NOT retrigger onPress. The
-              // mouse must be released and re-pressed. This behavior is safer for the initial use of
-              // press/release behavior, which is for a "push to talk" button used to enable audio input.
-              setIsPressed(false);
-              onRelease(event);
-            }
             if (!preventHover) {
               setIconColor('var(--color-icon-default)');
             }
@@ -142,6 +118,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<
           }
           aria-label={ariaLabel}
           aria-describedby={ariaDescribedby}
+          aria-pressed={ariaPressed}
           title={showTooltip ? undefined : title}
           variant="text"
           size="small"
@@ -149,16 +126,8 @@ const AutopilotChatActionButtonComponent = React.forwardRef<
           onClick={onClick}
           onFocus={onFocus}
           onBlur={onBlur}
-          onMouseDown={(event: React.MouseEvent<HTMLButtonElement>) => {
-            onMouseDown?.(event);
-            setIsPressed(true);
-            onPress(event);
-          }}
-          onMouseUp={(event: React.MouseEvent<HTMLButtonElement>) => {
-            onMouseUp?.(event);
-            setIsPressed(false);
-            onRelease(event);
-          }}
+          onMouseDown={onMouseDown}
+          onMouseUp={onMouseUp}
           tabIndex={tabIndex}
           onKeyDown={onKeyDown}
           data-testid={dataTestId}
@@ -174,20 +143,13 @@ const AutopilotChatActionButtonComponent = React.forwardRef<
         onClick={onClick}
         onFocus={onFocus}
         onBlur={onBlur}
-        onMouseDown={(event: React.MouseEvent<HTMLButtonElement>) => {
-          onMouseDown?.(event);
-          setIsPressed(true);
-          onPress(event as React.MouseEvent<HTMLButtonElement>);
-        }}
-        onMouseUp={(event: React.MouseEvent<HTMLButtonElement>) => {
-          onMouseUp?.(event);
-          setIsPressed(false);
-          onRelease(event);
-        }}
+        onMouseDown={onMouseDown}
+        onMouseUp={onMouseUp}
         tabIndex={tabIndex}
         onKeyDown={onKeyDown}
         aria-label={ariaLabel}
         aria-describedby={ariaDescribedby}
+        aria-pressed={ariaPressed}
         title={showTooltip ? undefined : title}
         onMouseEnter={(event: React.MouseEvent<HTMLButtonElement>) => {
           onMouseEnter?.(event);
@@ -197,11 +159,6 @@ const AutopilotChatActionButtonComponent = React.forwardRef<
         }}
         onMouseLeave={(event: React.MouseEvent<HTMLButtonElement>) => {
           onMouseLeave?.(event);
-          if (isPressed) {
-            // See note above about re-enter behavior.
-            setIsPressed(false);
-            onRelease(event);
-          }
           if (!preventHover) {
             setIconColor('var(--color-icon-default)');
           }

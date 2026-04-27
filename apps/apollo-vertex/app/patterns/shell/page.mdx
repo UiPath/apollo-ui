@@ -1,4 +1,5 @@
 import { ShellTemplate } from '@/templates/shell/ShellTemplateDynamic';
+import { GroupMembershipGuardTemplate } from '@/templates/shell/GroupMembershipGuardTemplateDynamic';
 import { PreviewFullScreen } from '@/app/_components/preview-full-screen';
 
 # Shell
@@ -91,6 +92,59 @@ function App() {
         >
           <YourApp />
         </ApolloShell>
+      </ShellAuthProvider>
+    </QueryClientProvider>
+  );
+}
+```
+
+## Gating access by group membership
+
+Use `GroupMembershipGuard` to restrict the application to members of one or more
+UiPath Identity groups. The guard fetches each configured group in parallel,
+compares the signed-in user's email against the combined member list, and
+renders either a loading indicator or an access-denied screen with a sign-out
+action. When the user is a member of **any** of the listed groups, the children
+render unchanged. An empty `groupIds` array denies access. Fetch failures bubble
+up to the nearest error boundary.
+
+The toggle below switches between the loading, denied, and granted states using
+stubbed authentication and pre-populated query data.
+
+<PreviewFullScreen title="GroupMembershipGuard preview">
+    <GroupMembershipGuardTemplate />
+</PreviewFullScreen>
+
+Place `GroupMembershipGuard` inside `ShellAuthProvider` so it can read the
+authenticated user from `useAuth`. The `baseUrl`, `orgName`, `orgId`, and each
+`groupId` in `groupIds` compose the Identity API URL
+(`{baseUrl}/{orgName}/identity_/api/Group/{orgId}/{groupId}`):
+
+```tsx
+import { GroupMembershipGuard } from '@/components/ui/shell/group-membership-guard';
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ShellAuthProvider
+        clientId="your-client-id"
+        scope="openid profile email offline_access"
+        baseUrl={window.location.origin}
+      >
+        <GroupMembershipGuard
+          baseUrl="https://staging.uipath.com"
+          orgName="your-org"
+          orgId="your-org-id"
+          groupIds={['admins-group-id', 'editors-group-id']}
+        >
+          <ApolloShell
+            companyName="Your Company"
+            productName="Your Product"
+            navItems={navItems}
+          >
+            <YourApp />
+          </ApolloShell>
+        </GroupMembershipGuard>
       </ShellAuthProvider>
     </QueryClientProvider>
   );

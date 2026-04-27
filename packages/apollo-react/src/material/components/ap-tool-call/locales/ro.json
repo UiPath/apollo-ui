@@ -2,7 +2,7 @@
   "tool-call.running": "În execuție {toolName}...",
   "tool-call.ran": "A rulat {toolName} ({duration}s)",
   "tool-call.input": "Input",
-  "tool-call.execution": "Execuție",
+  "tool-call.traces": "Traces",
   "tool-call.escalation": "Escaladare",
   "tool-call.errors": "Erori",
   "tool-call.output": "Output"

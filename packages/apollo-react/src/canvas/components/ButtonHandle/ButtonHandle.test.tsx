@@ -276,22 +276,22 @@ describe('ButtonHandles', () => {
         { id: 'handle2', type: 'source', handleType: 'output' },
       ];
 
-      // With nodeWidth=100, gridSize=8: ideal=33.33, rounded=32, span=32, start=34
-      // Positions: [34, 66] → 34%, 66% (differs from percentage-based 33.33%, 66.66%)
+      // With nodeWidth=96, gridSize=16: ideal=32, rounded=32, span=32, start=32.
+      // Positions: [32, 64] → 33.333...%, 66.666...%
       render(
         <ButtonHandles
           handles={handles}
           nodeId="test-node"
           position={Position.Top}
-          nodeWidth={100}
+          nodeWidth={96}
         />
       );
 
       const handleElements = screen.getAllByTestId('handle');
       expect(handleElements).toHaveLength(2);
 
-      expect(handleElements[0]).toHaveStyle({ left: '34%' });
-      expect(handleElements[1]).toHaveStyle({ left: '66%' });
+      expect(handleElements[0]).toHaveStyle({ left: '33.33333333333333%' });
+      expect(handleElements[1]).toHaveStyle({ left: '66.66666666666666%' });
     });
 
     it('uses grid-aligned positioning for Left handles when nodeHeight is provided', () => {
@@ -306,15 +306,15 @@ describe('ButtonHandles', () => {
           handles={handles}
           nodeId="test-node"
           position={Position.Left}
-          nodeHeight={100}
+          nodeHeight={96}
         />
       );
 
       const handleElements = screen.getAllByTestId('handle');
       expect(handleElements).toHaveLength(2);
 
-      expect(handleElements[0]).toHaveStyle({ top: '34%' });
-      expect(handleElements[1]).toHaveStyle({ top: '66%' });
+      expect(handleElements[0]).toHaveStyle({ top: '33.33333333333333%' });
+      expect(handleElements[1]).toHaveStyle({ top: '66.66666666666666%' });
     });
 
     it('falls back to percentage-based positioning when node dimensions are not provided', () => {

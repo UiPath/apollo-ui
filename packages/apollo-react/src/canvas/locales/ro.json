@@ -1,0 +1,8 @@
+{
+  "sticky-note.formatting.bold": "Bold ({boldShortcut})",
+  "sticky-note.formatting.italic": "Cursiv ({italicShortcut})",
+  "sticky-note.formatting.strikethrough": "Barare ({strikethroughShortcut})",
+  "sticky-note.formatting.bullet-list": "Listă cu marcatori",
+  "sticky-note.formatting.numbered-list": "Listă numerotată",
+  "sticky-note.formatting.toolbar": "Formatarea textului"
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import type { TextPart, UIMessage } from "@tanstack/ai-client";
+import type { UIMessage } from "@tanstack/ai-client";
 import { Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,13 +12,6 @@ interface AiChatMessageProps {
   children?: ReactNode;
 }
 
-function getDisplayText(message: UIMessage): string {
-  return message.parts
-    .filter((p): p is TextPart => p.type === "text")
-    .map((p) => p.content)
-    .join("");
-}
-
 export function AiChatMessage({
   message,
   assistantName,
@@ -27,20 +20,27 @@ export function AiChatMessage({
   const { t } = useTranslation();
   const isUser = message.role === "user";
   const displayName = assistantName ?? t("ai_assistant");
-  const displayContent = getDisplayText(message);
 
-  // Don't render assistant messages if they have no text content and no children (e.g. calling tools)
-  if (!isUser && !displayContent && !children) {
+  const hasToolCalls = message.parts.some(
+    (p) => p.type === "tool-call" && p.output != null,
+  );
+  const hasContent =
+    hasToolCalls || message.parts.some((p) => p.type === "text" && p.content);
+
+  if (!isUser && !hasContent) {
     return null;
   }
+
+  const text = message.parts
+    .filter((p) => p.type === "text")
+    .map((p) => p.content)
+    .join("");
 
   if (isUser) {
     return (
       <div className="flex w-full justify-end">
         <div className="max-w-[80%] px-4 py-3 text-sm rounded-lg border border-border bg-muted/50">
-          {displayContent && (
-            <p className="whitespace-pre-wrap">{displayContent}</p>
-          )}
+          {text && <p className="whitespace-pre-wrap">{text}</p>}
         </div>
       </div>
     );
@@ -54,12 +54,14 @@ export function AiChatMessage({
           aria-hidden="true"
         />
       </div>
-      <div className="flex flex-col gap-1 max-w-[85%]">
+      <div
+        className={`flex flex-col gap-1 min-w-0 max-w-[85%]${hasToolCalls ? " w-full" : ""}`}
+      >
         <span className="text-xs text-muted-foreground font-medium">
           {displayName}
         </span>
-        {displayContent && <AiChatMarkdown>{displayContent}</AiChatMarkdown>}
-        {children && <div className="mt-2 flex flex-col gap-2">{children}</div>}
+        {!hasToolCalls && text && <AiChatMarkdown>{text}</AiChatMarkdown>}
+        {children}
       </div>
     </div>
   );

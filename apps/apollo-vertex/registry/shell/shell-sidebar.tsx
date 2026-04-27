@@ -35,7 +35,7 @@ export const Sidebar = ({
 
   if (variant === "minimal") {
     return (
-      <header className="relative flex items-center justify-between px-8 py-6">
+      <header className="relative flex items-center justify-between px-4 sm:px-6 lg:px-8 py-6 transition-[padding] duration-300 ease-in-out">
         <MinimalCompany
           companyName={companyName}
           productName={productName}
@@ -55,7 +55,11 @@ export const Sidebar = ({
         )}
 
         <div className="flex items-center gap-2">
-          <UserProfile isCollapsed />
+          <UserProfile
+            isCollapsed
+            collapsedMenuSide="bottom"
+            collapsedMenuAlign="end"
+          />
         </div>
       </header>
     );
