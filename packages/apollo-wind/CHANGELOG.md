@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.8.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.7.1...@uipath/apollo-wind@2.8.0) (2026-04-28)
+
+### Features
+
+* **apollo-wind:** controllable DataTable state + multi-field search ([e71efea](https://github.com/uipath/apollo-ui/commit/e71efea72f686c0c13c884ac9895a82dcd6ae385))
+
 ## [@uipath/apollo-wind-v2.7.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.7.0...@uipath/apollo-wind@2.7.1) (2026-04-27)
 
 ### Bug Fixes
