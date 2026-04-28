@@ -141,6 +141,8 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
         position: currentPreviewNode.position,
         selected: true,
         data: nodeData,
+        parentId: currentPreviewNode.parentId,
+        extent: currentPreviewNode.extent,
       };
       // Get the manifest for the new node type to find its default handles
       const newNodeManifest = registry?.getManifest(nodeItem.data.type);

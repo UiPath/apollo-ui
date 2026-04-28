@@ -1,8 +1,8 @@
 import { type EdgeProps, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useRef, useState } from 'react';
-import { PREVIEW_EDGE_ID } from '../../constants';
 import { useEdgeExecutionState, useEdgePath, useElementValidationStatus } from '../../hooks';
 import type { NodeExecutionStateWithDebug } from '../../types/execution';
+import { isPreviewEdge } from '../../utils/createPreviewNode';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
 import { EdgeToolbar, useEdgeToolbarState } from '../Toolbar';
 import { edgeTargetStatusToEdgeColor, getStatusAnimation } from './EdgeUtils';
@@ -71,7 +71,7 @@ export const SequenceEdge = memo(function SequenceEdge({
 
   const { mode } = useBaseCanvasMode();
   const isReadOnly = mode === 'readonly';
-  const isPreviewEdge = id === PREVIEW_EDGE_ID;
+  const previewEdge = isPreviewEdge({ id, source, target });
 
   const executionStatus = useEdgeExecutionState(id, target);
   const { validationStatus } = useElementValidationStatus(id) ?? { validationStatus: undefined };
@@ -130,7 +130,7 @@ export const SequenceEdge = memo(function SequenceEdge({
     if (isDiffAdded) return 'var(--canvas-success-icon)';
     if (isDiffRemoved) return 'var(--canvas-error-icon)';
 
-    if (isPreviewEdge) return 'var(--canvas-primary)';
+    if (previewEdge) return 'var(--canvas-primary)';
     if (selected) return 'var(--canvas-primary)';
     if (isHovered) return 'var(--canvas-primary-hover)';
     if (status) return edgeTargetStatusToEdgeColor[status] ?? 'var(--canvas-border)';
@@ -182,7 +182,7 @@ export const SequenceEdge = memo(function SequenceEdge({
             stroke: edgeColor,
             strokeDasharray: isDiffRemoved
               ? style?.strokeDasharray || '5,5'
-              : isPreviewEdge
+              : previewEdge
                 ? '5,5'
                 : '0',
             opacity: style?.opacity !== undefined ? style.opacity : 1,

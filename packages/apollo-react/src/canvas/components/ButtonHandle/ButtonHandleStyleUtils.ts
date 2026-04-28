@@ -14,6 +14,11 @@ const isHorizontalEdge = (position: Position): boolean =>
 const isVerticalEdge = (position: Position): boolean =>
   position === Position.Left || position === Position.Right;
 
+// Default handle hit areas cover half of the node edge, split across handles.
+// The cross-axis remains fixed so labels/buttons align to a stable anchor.
+export const HANDLE_CROSS_AXIS_SIZE_PX = 24;
+export const HANDLE_EDGE_COVERAGE_RATIO = 0.5;
+
 /**
  * Snaps a value to the nearest grid multiple
  * @param value - The value to snap
@@ -112,7 +117,9 @@ export const widthForHandleWithPosition = ({
     return `${customWidth}px`;
   }
   // Horizontal edges (Top/Bottom) scale width based on handle count; vertical edges use fixed width
-  return isHorizontalEdge(position) ? `${50 / numHandles}%` : '24px';
+  return isHorizontalEdge(position)
+    ? `${(HANDLE_EDGE_COVERAGE_RATIO * 100) / numHandles}%`
+    : `${HANDLE_CROSS_AXIS_SIZE_PX}px`;
 };
 
 export const heightForHandleWithPosition = ({
@@ -128,7 +135,9 @@ export const heightForHandleWithPosition = ({
     return `${customHeight}px`;
   }
   // Horizontal edges (Top/Bottom) use fixed height; vertical edges scale height based on handle count
-  return isHorizontalEdge(position) ? '24px' : `${50 / numHandles}%`;
+  return isHorizontalEdge(position)
+    ? `${HANDLE_CROSS_AXIS_SIZE_PX}px`
+    : `${(HANDLE_EDGE_COVERAGE_RATIO * 100) / numHandles}%`;
 };
 
 export const topPositionForHandle = ({

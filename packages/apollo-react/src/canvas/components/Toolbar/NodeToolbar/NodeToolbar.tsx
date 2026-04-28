@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { memo, useMemo } from 'react';
 import { CanvasIcon } from '../../../utils/icon-registry';
 import { CanvasTooltip } from '../../CanvasTooltip';
+import { NodeViewportOverlay } from '../../NodeViewportOverlay';
 import { ToolbarButton, ToolbarIconButton } from '../shared';
 import type { NodeToolbarProps } from './NodeToolbar.types';
 import { isSeparator } from './NodeToolbar.utils';
@@ -49,7 +50,7 @@ const SEPARATOR_HORIZONTAL_CLASS = 'w-full h-px';
 const DROPDOWN_MENU_CLASS =
   'absolute top-[-2px] left-[calc(100%+4px)] min-w-[180px] ' +
   'bg-(--canvas-background-raised) border border-(--canvas-background-overlay) rounded-md ' +
-  'shadow-[0_4px_12px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)] p-1 z-[1000] pointer-events-auto';
+  'shadow-[0_4px_12px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)] p-1 pointer-events-auto';
 
 const DROPDOWN_ITEM_BASE_CLASS =
   'flex items-center gap-3 w-full py-2 px-3 bg-transparent border-none rounded-[4px] ' +
@@ -66,6 +67,7 @@ const NodeToolbarComponent = ({
   expanded,
   hidden,
   offsetToolbar,
+  portalToNodeOverlay,
 }: NodeToolbarProps) => {
   const {
     isDropdownOpen,
@@ -131,7 +133,7 @@ const NodeToolbarComponent = ({
     return null;
   }
 
-  return (
+  const toolbarContent = (
     <AnimatePresence>
       {displayState !== 'hidden' && (
         <div className={positionerClassName} style={offsetStyle}>
@@ -240,6 +242,16 @@ const NodeToolbarComponent = ({
       )}
     </AnimatePresence>
   );
+
+  if (portalToNodeOverlay) {
+    return (
+      <NodeViewportOverlay nodeId={nodeId} layer="nodeToolbar">
+        {toolbarContent}
+      </NodeViewportOverlay>
+    );
+  }
+
+  return toolbarContent;
 };
 
 export const NodeToolbar = memo(NodeToolbarComponent);

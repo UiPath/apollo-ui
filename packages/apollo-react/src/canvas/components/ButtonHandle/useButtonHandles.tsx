@@ -19,6 +19,7 @@ export const useButtonHandles = ({
   shouldShowAddButtonFn,
   nodeWidth,
   nodeHeight,
+  portalActions,
 }: {
   handleConfigurations: HandleGroupManifest[];
   shouldShowHandles: boolean;
@@ -30,6 +31,7 @@ export const useButtonHandles = ({
   showNotches?: boolean;
   nodeWidth?: number;
   nodeHeight?: number;
+  portalActions?: boolean;
 
   /**
    * Allows for consumers to control the predicate for showing the add button from the props that's passed in
@@ -90,6 +92,7 @@ export const useButtonHandles = ({
           shouldShowAddButtonFn={shouldShowAddButtonFn}
           nodeWidth={nodeWidth}
           nodeHeight={nodeHeight}
+          portalActions={portalActions}
         />
       );
     });
@@ -108,6 +111,7 @@ export const useButtonHandles = ({
     shouldShowAddButtonFn,
     nodeWidth,
     nodeHeight,
+    portalActions,
     node?.data,
   ]);
 

@@ -20,7 +20,7 @@ import {
 import { Spinner } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../../constants';
+import { PREVIEW_NODE_ID } from '../../constants';
 import { Breadcrumb } from '../../controls';
 import { useNodeManifests } from '../../core';
 import { useAddNodeOnConnectEnd } from '../../hooks/useAddNodeOnConnectEnd';
@@ -47,6 +47,7 @@ import {
 import { viewportManager } from '../../stores/viewportManager';
 import { DefaultCanvasTranslations } from '../../types';
 import type { CanvasLevel } from '../../types/canvas.types';
+import { isPreviewEdge } from '../../utils/createPreviewNode';
 import { CanvasIcon } from '../../utils/icon-registry';
 import { prefersReducedMotion } from '../../utils/transitions';
 import { AddNodeManager } from '../AddNodePanel/AddNodeManager';
@@ -55,6 +56,7 @@ import { BaseCanvas, type BaseCanvasRef } from '../BaseCanvas';
 import { BaseNode } from '../BaseNode';
 import { BlankCanvasNode } from '../BlankCanvasNode';
 import { CanvasPositionControls } from '../CanvasPositionControls';
+import { isContainerNodeManifest, LoopCanvasNode } from '../LoopNode';
 import { MiniCanvasNavigator } from '../MiniCanvasNavigator';
 
 interface HierarchicalCanvasProps {
@@ -88,6 +90,22 @@ const DEFAULT_NODE_TYPES = {
   preview: AddNodePreview,
 } as const;
 
+function shouldPersistNodeChange(change: NodeChange): boolean {
+  if (change.type === 'position') {
+    return !!change.dragging;
+  }
+
+  if (change.type === 'dimensions') {
+    return !!change.setAttributes;
+  }
+
+  return true;
+}
+
+function isDefaultViewport(viewport: Viewport): boolean {
+  return viewport.x === 0 && viewport.y === 0 && viewport.zoom === 1;
+}
+
 export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
   mode = 'design',
   initialCanvases,
@@ -102,19 +120,16 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
   const lastCanvasIdRef = useRef<string | null>(null);
   const shouldAnimate = mode === 'design' && !prefersReducedMotion();
 
-  // Build node types mapping from manifests and defaults
+  // Build node types mapping from manifests and defaults.
   const nodeManifests = useNodeManifests();
   const nodeTypes = useMemo(() => {
-    const types = nodeManifests.reduce(
+    return nodeManifests.reduce(
       (acc, manifest) => {
-        if (!acc[manifest.nodeType]) {
-          acc[manifest.nodeType] = BaseNode;
-        }
+        acc[manifest.nodeType] = isContainerNodeManifest(manifest) ? LoopCanvasNode : BaseNode;
         return acc;
       },
       { ...DEFAULT_NODE_TYPES } as NodeTypes
     );
-    return types as NodeTypes;
   }, [nodeManifests]);
 
   // Optimized selectors to prevent unnecessary re-renders
@@ -148,6 +163,7 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
   const hasInitialized = useRef(false);
 
   // Initialize canvas on mount only - props are intentionally ignored after mount
+  // biome-ignore lint/correctness/useExhaustiveDependencies: initialization intentionally uses first prop values only
   useEffect(() => {
     if (hasInitialized.current) return;
     hasInitialized.current = true;
@@ -157,7 +173,6 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
     } else {
       initializeCanvas();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally only run on mount
   }, []);
 
   // Sync canvas changes back to consumer
@@ -213,7 +228,7 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
       if (reactFlowInstance && currentCanvas?.viewport) {
         const viewport = currentCanvas.viewport;
         // Only restore if viewport has been modified from defaults
-        if (viewport.x !== 0 || viewport.y !== 0 || viewport.zoom !== 1) {
+        if (!isDefaultViewport(viewport)) {
           // Use setTimeout to ensure React Flow has updated its internal state
           setTimeout(() => {
             reactFlowInstance.setViewport(viewport);
@@ -242,18 +257,7 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
       const canvas = currentCanvasRef.current;
       if (!canvas) return;
 
-      // Skip dimension-only changes to prevent infinite loops
-      // React Flow calls onNodesChange with dimension updates after measuring nodes
-      const hasMeaningfulChanges = changes.some(
-        (change) => change.type !== 'dimensions' && change.type !== 'position'
-      );
-
-      // For position changes, only update if the node was actually dragged (not just measured)
-      const hasPositionChanges = changes.some(
-        (change) => change.type === 'position' && change.dragging
-      );
-
-      if (!hasMeaningfulChanges && !hasPositionChanges) {
+      if (!changes.some(shouldPersistNodeChange)) {
         return;
       }
 
@@ -309,7 +313,7 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
       if (!connection.source || !connection.target || !canvas) return;
 
       // Don't create a connection to the preview node
-      if (connection.target === PREVIEW_NODE_ID || connection.source === PREVIEW_NODE_ID) {
+      if (isPreviewEdge(connection)) {
         return;
       }
 
@@ -321,13 +325,15 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
         targetHandle: connection.targetHandle || undefined,
       };
 
-      updateEdges([...canvas.edges, newEdge]);
-
-      // Remove any preview node/edge after successful connection
       const hasPreview = canvas.nodes.some((n) => n.id === PREVIEW_NODE_ID);
+      const baseEdges = hasPreview
+        ? canvas.edges.filter((edge) => !isPreviewEdge(edge))
+        : canvas.edges;
+
+      updateEdges([...baseEdges, newEdge]);
+
       if (hasPreview) {
         updateNodes(canvas.nodes.filter((n) => n.id !== PREVIEW_NODE_ID));
-        updateEdges(canvas.edges.filter((e) => e.id !== PREVIEW_EDGE_ID));
       }
     },
     [updateNodes, updateEdges]
@@ -384,7 +390,7 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
   // Only fit view if viewport is at default values (never been modified)
   const shouldFitView = useMemo(() => {
     const viewport = currentCanvas?.viewport;
-    return viewport ? viewport.x === 0 && viewport.y === 0 && viewport.zoom === 1 : false;
+    return viewport ? isDefaultViewport(viewport) : false;
   }, [currentCanvas?.viewport]);
 
   if (!currentCanvas) {

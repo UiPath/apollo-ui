@@ -12,6 +12,7 @@ import { connectionConstraintSchema } from './constraints';
  * Uses XYFlow Position enum values
  */
 export const handlePositionSchema = z.enum(['left', 'top', 'right', 'bottom']);
+export const handleBoundarySchema = z.enum(['outer', 'inner']);
 
 /**
  * Handle type (source or target)
@@ -117,6 +118,13 @@ export const handleGroupManifestSchema = z.object({
   /** Position on the node */
   position: handlePositionSchema,
 
+  /**
+   * Optional boundary for container-style nodes.
+   * `outer` renders on the node shell; `inner` renders on an inner frame/wall.
+   * Defaults to `outer` when omitted.
+   */
+  boundary: handleBoundarySchema.optional(),
+
   customPositionAndOffsets: handleConfigurationSpecificPositionSchema.optional(),
 
   /** Array of handles at this position */
@@ -143,6 +151,7 @@ export const handleGroupOverrideSchema = z.object({
 
 // Export inferred types
 export type HandlePosition = z.infer<typeof handlePositionSchema>;
+export type HandleBoundary = z.infer<typeof handleBoundarySchema>;
 export type HandleType = z.infer<typeof handleTypeSchema>;
 export type HandleCategory = z.infer<typeof handleTypeDisplaySchema>;
 export type HandleManifest = z.infer<typeof handleManifestSchema>;

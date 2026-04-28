@@ -17,16 +17,14 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async () => ({
 }));
 
 vi.mock('../utils', () => ({
-  applyPreviewToReactFlow: vi.fn(),
-  createPreviewNode: vi.fn(),
+  showPreviewGraph: vi.fn(),
 }));
 
 import * as utils from '../utils';
 // Import after mocks are set up
 import { useAddNodeOnConnectEnd } from './useAddNodeOnConnectEnd';
 
-const mockApplyPreviewToReactFlow = vi.mocked(utils.applyPreviewToReactFlow);
-const mockCreatePreviewNode = vi.mocked(utils.createPreviewNode);
+const mockShowPreviewGraph = vi.mocked(utils.showPreviewGraph);
 
 describe('useAddNodeOnConnectEnd', () => {
   const mockFromNode = {
@@ -85,47 +83,31 @@ describe('useAddNodeOnConnectEnd', () => {
 
     result.current({} as MouseEvent, connectionStateBase);
 
-    expect(mockCreatePreviewNode).not.toHaveBeenCalled();
-    expect(mockApplyPreviewToReactFlow).not.toHaveBeenCalled();
+    expect(mockShowPreviewGraph).not.toHaveBeenCalled();
   });
 
-  it('should create and apply preview node when connection ends on empty space', () => {
-    const mockPreview = {
-      node: { id: 'preview-node', position: { x: 100, y: 100 }, data: {} },
-      edge: { id: 'preview-edge', source: 'node-1', target: 'preview-node' },
-    };
-
+  it('should show preview graph when connection ends on empty space', () => {
     const mockFlowPosition = { x: 100, y: 100 };
     mockReactFlowInstance.screenToFlowPosition = vi.fn().mockReturnValue(mockFlowPosition);
-    mockCreatePreviewNode.mockReturnValue(mockPreview);
 
     const { result } = renderHook(() => useAddNodeOnConnectEnd());
 
     result.current(mockMouseEvent, connectionStateBase);
 
     expect(mockReactFlowInstance.screenToFlowPosition).toHaveBeenCalledWith({ x: 200, y: 200 });
-    expect(mockCreatePreviewNode).toHaveBeenCalledWith(
-      'node-1',
-      'mock-output',
-      mockReactFlowInstance,
-      mockFlowPosition,
-      undefined,
-      'source',
-      undefined, // previewNodeSize (uses default)
-      Position.Right, // handlePosition from connectionState.fromHandle.position
-      [] // ignoredNodeTypes
-    );
-    expect(mockApplyPreviewToReactFlow).toHaveBeenCalledWith(mockPreview, mockReactFlowInstance);
+    expect(mockShowPreviewGraph).toHaveBeenCalledWith({
+      sourceNodeId: 'node-1',
+      sourceHandleId: 'mock-output',
+      reactFlowInstance: mockReactFlowInstance,
+      position: mockFlowPosition,
+      sourceHandleType: 'source',
+      handlePosition: Position.Right,
+      ignoredNodeTypes: [],
+    });
   });
 
   it("should use handle id if provided, default to 'output' if not", () => {
-    const mockPreview = {
-      node: { id: 'preview-node', position: { x: 100, y: 100 }, data: {} },
-      edge: { id: 'preview-edge', source: 'node-1', target: 'preview-node' },
-    };
-
     mockReactFlowInstance.screenToFlowPosition = vi.fn().mockReturnValue({ x: 100, y: 100 });
-    vi.mocked(mockCreatePreviewNode).mockReturnValue(mockPreview);
 
     const { result } = renderHook(() => useAddNodeOnConnectEnd());
 
@@ -145,16 +127,16 @@ describe('useAddNodeOnConnectEnd', () => {
 
     result.current(mockTouchEventWithTouches, connectionState);
 
-    expect(mockCreatePreviewNode).toHaveBeenCalledWith(
-      'node-1',
-      'output',
-      mockReactFlowInstance,
-      expect.any(Object),
-      undefined,
-      'source',
-      undefined, // previewNodeSize (uses default)
-      Position.Right, // handlePosition from connectionState.fromHandle.position
-      [] // ignoredNodeTypes
+    expect(mockShowPreviewGraph).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceNodeId: 'node-1',
+        sourceHandleId: 'output',
+        reactFlowInstance: mockReactFlowInstance,
+        position: expect.any(Object),
+        sourceHandleType: 'source',
+        handlePosition: Position.Right,
+        ignoredNodeTypes: [],
+      })
     );
   });
 
@@ -168,8 +150,7 @@ describe('useAddNodeOnConnectEnd', () => {
 
     result.current({} as MouseEvent, connectionState);
 
-    expect(mockCreatePreviewNode).not.toHaveBeenCalled();
-    expect(mockApplyPreviewToReactFlow).not.toHaveBeenCalled();
+    expect(mockShowPreviewGraph).not.toHaveBeenCalled();
   });
 
   it('should not add preview if fromHandle is missing', () => {
@@ -182,8 +163,7 @@ describe('useAddNodeOnConnectEnd', () => {
 
     result.current({} as MouseEvent, connectionState);
 
-    expect(mockCreatePreviewNode).not.toHaveBeenCalled();
-    expect(mockApplyPreviewToReactFlow).not.toHaveBeenCalled();
+    expect(mockShowPreviewGraph).not.toHaveBeenCalled();
   });
 
   it("should not add preview if 'to' is missing", () => {
@@ -196,8 +176,7 @@ describe('useAddNodeOnConnectEnd', () => {
 
     result.current({} as MouseEvent, connectionState);
 
-    expect(mockCreatePreviewNode).not.toHaveBeenCalled();
-    expect(mockApplyPreviewToReactFlow).not.toHaveBeenCalled();
+    expect(mockShowPreviewGraph).not.toHaveBeenCalled();
   });
 
   it('should not add preview if connection already has a target handle', () => {
@@ -228,20 +207,17 @@ describe('useAddNodeOnConnectEnd', () => {
 
     result.current({} as MouseEvent, connectionState);
 
-    expect(mockCreatePreviewNode).not.toHaveBeenCalled();
-    expect(mockApplyPreviewToReactFlow).not.toHaveBeenCalled();
+    expect(mockShowPreviewGraph).not.toHaveBeenCalled();
   });
 
-  it('should not apply preview if createPreviewNode returns null', () => {
+  it('should delegate preview creation to showPreviewGraph', () => {
     mockReactFlowInstance.screenToFlowPosition = vi.fn().mockReturnValue({ x: 100, y: 100 });
-    mockCreatePreviewNode.mockReturnValueOnce(null);
 
     const { result } = renderHook(() => useAddNodeOnConnectEnd());
 
     result.current(mockTouchEventWithChangedTouches, connectionStateBase);
 
-    expect(mockCreatePreviewNode).toHaveBeenCalled();
-    expect(mockApplyPreviewToReactFlow).not.toHaveBeenCalled();
+    expect(mockShowPreviewGraph).toHaveBeenCalledOnce();
   });
 
   it('should memoize callback with reactFlowInstance dependency', () => {
