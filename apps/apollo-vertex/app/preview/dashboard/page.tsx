@@ -3,7 +3,10 @@
 import dynamic from "next/dynamic";
 
 const DashboardTemplate = dynamic(
-  () => import("@/templates/dashboard/DashboardTemplate").then((mod) => mod.DashboardTemplate),
+  () =>
+    import("@/templates/dashboard/DashboardTemplate").then(
+      (mod) => mod.DashboardTemplate,
+    ),
   { ssr: false },
 );
 
