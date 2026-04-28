@@ -3,27 +3,8 @@
 import { useState } from "react";
 import { MessagesSquare, Minimize2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import type { CardConfig, CardGradient } from "./glow-config";
-import { useDashboardData } from "./DashboardDataProvider";
-
-function cardBgStyle(
-  bg: string,
-  opacity: number,
-  gradient: CardGradient,
-): React.CSSProperties {
-  if (gradient.enabled) {
-    const alpha = gradient.opacity / 100;
-    return {
-      "--card-bg-override": `linear-gradient(${gradient.angle}deg, color-mix(in srgb, ${gradient.start} ${alpha * 100}%, transparent), color-mix(in srgb, ${gradient.end} ${alpha * 100}%, transparent))`,
-      borderColor: "transparent",
-    } as React.CSSProperties;
-  }
-  const value =
-    bg === "white"
-      ? `rgba(255,255,255,${opacity / 100})`
-      : `color-mix(in srgb, var(--${bg}) ${opacity}%, transparent)`;
-  return { "--card-bg-override": value } as React.CSSProperties;
-}
+import { cardBgStyle, type CardConfig } from "./glow-config";
+import { useDashboardData } from "./dashboard-data-context";
 
 export function PromptBar({
   shared,
@@ -123,8 +104,7 @@ export function PromptBar({
                 className="!bg-white/35 !text-foreground opacity-0 translate-y-2 group-focus-within:opacity-100 group-focus-within:translate-y-0 transition-all duration-300 delay-75 cursor-pointer"
                 onClick={() =>
                   handleChipClick(
-                    data.promptSuggestions[1] ??
-                      "Compare Q1 vs Q2 performance",
+                    data.promptSuggestions[1] ?? "Compare Q1 vs Q2 performance",
                   )
                 }
               >

@@ -43,15 +43,24 @@ const routeTree = dashboardRootRoute.addChildren([
   ]),
 ]);
 
+const BASE_PATHS = {
+  default: "/preview/dashboard/",
+  minimal: "/preview/dashboard-minimal/",
+} as const;
+
+function normalizeEntry(path: string): string {
+  if (path === "/preview/dashboard") return BASE_PATHS.default;
+  if (path === "/preview/dashboard-minimal") return BASE_PATHS.minimal;
+  return path;
+}
+
 function getInitialEntry(
   storageKey: DashboardPreviewPathKey,
   variant?: "minimal",
 ) {
   const stored = localStorage.getItem(storageKey);
-  if (stored) return stored;
-  return variant === "minimal"
-    ? "/preview/dashboard-minimal"
-    : "/preview/dashboard";
+  if (stored) return normalizeEntry(stored);
+  return variant === "minimal" ? BASE_PATHS.minimal : BASE_PATHS.default;
 }
 
 function createDashboardRouter(
@@ -75,7 +84,7 @@ export function DashboardTemplate({ shellVariant }: DashboardTemplateProps) {
 
   useEffect(() => {
     const unsubscribe = router.subscribe("onResolved", ({ toLocation }) => {
-      localStorage.setItem(storageKey, toLocation.pathname);
+      localStorage.setItem(storageKey, normalizeEntry(toLocation.pathname));
     });
     return unsubscribe;
   }, [router, storageKey]);
