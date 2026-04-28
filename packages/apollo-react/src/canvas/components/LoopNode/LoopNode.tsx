@@ -27,13 +27,8 @@ import type { HandleActionEvent } from '../ButtonHandle';
 import { ButtonHandles } from '../ButtonHandle';
 import { NodeToolbar } from '../Toolbar';
 import {
-  CONTAINER_FRAME_INSET_PX,
-  CONTAINER_SHELL_RADIUS_PX,
-  DEFAULT_CONTAINER_FRAME_BACKGROUND,
-  DEFAULT_CONTAINER_FRAME_BORDER,
   DEFAULT_CONTAINER_MIN_HEIGHT,
   DEFAULT_CONTAINER_MIN_WIDTH,
-  DEFAULT_CONTAINER_SHELL_BACKGROUND,
   DEFAULT_LOOP_ICON,
   DEFAULT_LOOP_TITLE,
 } from './LoopNode.constants';
@@ -43,17 +38,17 @@ import type { LoopNodeProps } from './LoopNode.types';
 const EMPTY_DATA: Record<string, unknown> = {};
 
 const RESIZE_CONTROLS = [
-  { position: 'top-left', cursor: 'nwse-resize', indicatorClassName: 'top-[-5px] left-[-5px]' },
-  { position: 'top-right', cursor: 'nesw-resize', indicatorClassName: 'top-[-5px] right-[-5px]' },
+  { position: 'top-left', cursor: 'nwse-resize', indicatorClassName: 'top-[-4px] left-[-4px]' },
+  { position: 'top-right', cursor: 'nesw-resize', indicatorClassName: 'top-[-4px] right-[-4px]' },
   {
     position: 'bottom-left',
     cursor: 'nesw-resize',
-    indicatorClassName: 'bottom-[-5px] left-[-5px]',
+    indicatorClassName: 'bottom-[-4px] left-[-4px]',
   },
   {
     position: 'bottom-right',
     cursor: 'nwse-resize',
-    indicatorClassName: 'bottom-[-5px] right-[-5px]',
+    indicatorClassName: 'bottom-[-4px] right-[-4px]',
   },
 ] as const;
 const RESIZE_CONTROL_STYLE = { background: 'transparent', border: 'none', zIndex: 100 } as const;
@@ -176,6 +171,8 @@ function LoopNodeComponent(props: LoopNodeProps) {
 
   const displayTitle = display.label ?? DEFAULT_LOOP_TITLE;
   const displayIcon = display.icon ?? DEFAULT_LOOP_ICON;
+  const isParallel = resolvedData.parallel === true;
+  const isDropTarget = resolvedData.isDropTarget === true;
   const containerWidth = width || DEFAULT_CONTAINER_WIDTH;
   const containerHeight = height || DEFAULT_CONTAINER_HEIGHT;
   const nodeSizeStyle = {
@@ -270,18 +267,18 @@ function LoopNodeComponent(props: LoopNodeProps) {
       data-validation-status={validationState?.validationStatus}
       aria-busy={resolvedData.loading || undefined}
       className={cn(
-        'group/loop-shell relative flex h-full w-full flex-col overflow-visible border bg-surface-overlay',
+        'group/loop-shell relative box-border flex h-full w-full flex-col overflow-visible rounded-[20px] border bg-transparent',
         'transition-[border-color,box-shadow,opacity] shadow-(--canvas-node-shadow-rest)',
         'border-border-subtle',
         getStatusBorder(suggestionType ?? validationState?.validationStatus ?? executionStatus),
         isHovered && 'shadow-(--canvas-node-shadow-hover) border-border-hover',
-        selected && 'outline outline-foreground-accent-muted',
+        selected && 'outline outline-2 outline-foreground-accent-muted',
+        isDropTarget && 'bg-surface-hover outline outline-2 outline-brand',
         interactionState === 'drag' && 'cursor-grabbing shadow-(--canvas-node-shadow-lifted)'
       )}
       style={{
         ...nodeSizeStyle,
-        borderRadius: CONTAINER_SHELL_RADIUS_PX,
-        background: display.background ?? DEFAULT_CONTAINER_SHELL_BACKGROUND,
+        ...(display.background ? { background: display.background } : {}),
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -295,7 +292,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
       )}
       <ResizeCornerIndicators visible={showResizeControls} />
       {showResizeControls ? <ResizeControls onResize={handleResize} /> : null}
-      <Header title={displayTitle} icon={displayIcon} loading={isLoading} />
+      <Header title={displayTitle} icon={displayIcon} loading={isLoading} isParallel={isParallel} />
       <BodyFrame
         isEmpty={showEmptyStateButton}
         isLoading={isLoading}
@@ -329,11 +326,21 @@ function LoopNodeComponent(props: LoopNodeProps) {
 
 export const LoopNode = memo(LoopNodeComponent);
 
-function Header({ title, icon, loading }: { title: string; icon?: string; loading: boolean }) {
+function Header({
+  title,
+  icon,
+  loading,
+  isParallel,
+}: {
+  title: string;
+  icon?: string;
+  loading: boolean;
+  isParallel: boolean;
+}) {
   const titleContent = loading ? (
     <div className="h-5 w-28 animate-pulse rounded bg-(--canvas-background-overlay)" />
   ) : (
-    <span className="truncate text-[14px] font-semibold tracking-normal">{title}</span>
+    <span className="truncate text-[15px] font-semibold leading-5 tracking-normal">{title}</span>
   );
 
   const iconContent = loading ? (
@@ -346,13 +353,19 @@ function Header({ title, icon, loading }: { title: string; icon?: string; loadin
 
   return (
     <div
-      className="flex shrink-0 items-center justify-between gap-2.5 pl-4.5 pr-5 pt-3.5 text-foreground cursor-grab active:cursor-grabbing"
+      className="flex shrink-0 cursor-grab items-center justify-between gap-2.5 px-3.5 pt-2.5 text-foreground active:cursor-grabbing"
       data-testid="loop-node-header"
     >
-      <div className="flex min-w-0 items-center gap-2">
+      <div className="flex min-w-0 items-center gap-2.5">
         {iconContent}
         {titleContent}
       </div>
+      <span className="flex shrink-0 items-center gap-1 rounded-full border border-border-subtle bg-transparent px-2.5 py-0.5 text-[11px] font-semibold leading-4 text-foreground">
+        <span className={cn('flex shrink-0', isParallel && 'rotate-90')} aria-hidden>
+          <CanvasIcon icon="align-justify" size={11} />
+        </span>
+        {isParallel ? 'Parallel' : 'Sequential'}
+      </span>
     </div>
   );
 }
@@ -391,15 +404,10 @@ function BodyFrame({
       data-testid="loop-body-frame"
       data-empty={isEmpty ? 'true' : 'false'}
       className={cn(
-        'relative flex flex-1 rounded-[26px] border border-dashed',
+        'relative m-2.5 flex flex-1 rounded-xl border-[1.5px] border-dashed border-border-subtle bg-transparent',
         'pointer-events-none',
         isEmpty && 'items-center justify-center'
       )}
-      style={{
-        margin: CONTAINER_FRAME_INSET_PX,
-        background: DEFAULT_CONTAINER_FRAME_BACKGROUND,
-        borderColor: DEFAULT_CONTAINER_FRAME_BORDER,
-      }}
     >
       {isLoading ? (
         <div className="m-6 h-14 w-full animate-pulse rounded-[18px] bg-(--canvas-background-overlay)" />
@@ -443,7 +451,7 @@ function ResizeCornerIndicators({ visible }: { visible: boolean }) {
           key={position}
           aria-hidden
           className={cn(
-            'pointer-events-none absolute h-1.5 w-1.5 rounded-[1px] border border-brand bg-background transition-opacity',
+            'pointer-events-none absolute h-2 w-2 rounded-full bg-brand transition-opacity',
             indicatorClassName,
             visible ? 'opacity-100' : 'opacity-0'
           )}
