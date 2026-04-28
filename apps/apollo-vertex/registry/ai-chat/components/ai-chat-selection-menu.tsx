@@ -48,10 +48,10 @@ export function AiChatSelectionMenu({
         top: y,
         transform: "translate(-50%, -100%) translateY(-8px)",
       }}
-      aria-label="Ask Autopilot about selected text"
+      aria-label="Ask AI assistant about selected text"
     >
       <AutopilotGradientIcon size={14} aria-hidden="true" />
-      {"Ask Autopilot"}
+      {"Ask AI assistant"}
     </button>,
     document.body,
   );

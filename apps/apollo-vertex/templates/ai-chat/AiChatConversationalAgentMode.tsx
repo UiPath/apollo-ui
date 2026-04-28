@@ -152,7 +152,7 @@ export function ConversationalAgentChat({
           sdk={sdk}
           agentId={selectedAgentConfig.agentId}
           folderId={selectedAgentConfig.folderId}
-          title="Autopilot"
+          title="AI assistant"
           assistantName={t("assistant")}
         />
       </div>

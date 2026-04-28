@@ -313,29 +313,28 @@ export function AiChatMessage({
             </motion.div>
           )}
 
-          {config.showMessageActions &&
-            isResponseFullyRevealed && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <AiChatMessageActions
-                  content={displayContent}
-                  messageRole="assistant"
-                  isLatest={isLatestAssistant}
-                  showCopy={config.showCopyButton}
-                  {...((onFeedback ?? config.onFeedback)
-                    ? {
-                        onFeedback:
-                          onFeedback ??
-                          ((type) => config.onFeedback?.(message.id, type)),
-                      }
-                    : {})}
-                  onRegenerate={onRegenerate ?? config.onRegenerate}
-                />
-              </motion.div>
-            )}
+          {config.showMessageActions && isResponseFullyRevealed && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <AiChatMessageActions
+                content={displayContent}
+                messageRole="assistant"
+                isLatest={isLatestAssistant}
+                showCopy={config.showCopyButton}
+                {...((onFeedback ?? config.onFeedback)
+                  ? {
+                      onFeedback:
+                        onFeedback ??
+                        ((type) => config.onFeedback?.(message.id, type)),
+                    }
+                  : {})}
+                onRegenerate={onRegenerate ?? config.onRegenerate}
+              />
+            </motion.div>
+          )}
         </div>
       </motion.div>
     </>

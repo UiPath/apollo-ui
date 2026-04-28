@@ -135,7 +135,7 @@ export default function AiChatPreviewPage() {
             isLoading={false}
             onSendMessage={noop}
             onStop={noop}
-            title="Autopilot"
+            title="AI assistant"
           />
         </PreviewCard>
       </section>
@@ -155,7 +155,7 @@ export default function AiChatPreviewPage() {
             isLoading={false}
             onSendMessage={noop}
             onStop={noop}
-            title="Autopilot"
+            title="AI assistant"
             emptyState={
               <AiChatEmptyState
                 title="What would you like to do?"
@@ -179,7 +179,7 @@ export default function AiChatPreviewPage() {
             isLoading={false}
             onSendMessage={noop}
             onStop={noop}
-            title="Autopilot"
+            title="AI assistant"
             showTimestamps
             showMessageActions
             enableTextSelection
@@ -204,7 +204,7 @@ export default function AiChatPreviewPage() {
             isLoading={false}
             onSendMessage={noop}
             onStop={noop}
-            title="Autopilot"
+            title="AI assistant"
             showTimestamps
             onEditMessage={noop}
           >
@@ -227,7 +227,7 @@ export default function AiChatPreviewPage() {
             isLoading={false}
             onSendMessage={noop}
             onStop={noop}
-            title="Autopilot"
+            title="AI assistant"
             onEditMessage={noop}
           >
             {MOCK_MESSAGES_MARKDOWN.map((msg) => (
@@ -250,7 +250,7 @@ export default function AiChatPreviewPage() {
               isLoading
               onSendMessage={noop}
               onStop={noop}
-              title="Autopilot"
+              title="AI assistant"
               onEditMessage={noop}
             >
               {renderBasicMsg(MOCK_MESSAGES_BASIC[0])}
@@ -279,7 +279,7 @@ export default function AiChatPreviewPage() {
             onStop={noop}
             onRetry={noop}
             onEditMessage={noop}
-            title="Autopilot"
+            title="AI assistant"
             error={
               new Error(
                 "Failed to connect to the AI service. Please check your network connection.",
@@ -304,7 +304,7 @@ export default function AiChatPreviewPage() {
             onSendMessage={noop}
             onStop={noop}
             onEditMessage={noop}
-            title="Autopilot"
+            title="AI assistant"
           >
             {MOCK_MESSAGES_WITH_CHOICES.map((msg) => (
               <AiChatMessage key={msg.id} message={msg} />
@@ -360,7 +360,7 @@ export default function AiChatPreviewPage() {
             isLoading={false}
             onSendMessage={noop}
             onStop={noop}
-            title="Autopilot"
+            title="AI assistant"
             showMessageActions
             onEditMessage={noop}
             onRegenerate={noop}
