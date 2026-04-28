@@ -7,7 +7,7 @@ import {
   type TableChartConfiguration,
   type TableDataModel,
 } from "@uipath/apollo-dashboarding";
-import { Card, CardContent } from "@/registry/card/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 const DEFAULT_TABLE_STATE = { sortBy: null } as const;
 

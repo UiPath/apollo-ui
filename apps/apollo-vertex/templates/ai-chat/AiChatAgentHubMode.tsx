@@ -19,6 +19,10 @@ import {
   dataFabricDistributionClient,
 } from "@/registry/ai-chat/tools/data-fabric-distribution";
 import {
+  createDataFabricLineTool,
+  dataFabricLineClient,
+} from "@/registry/ai-chat/tools/data-fabric-line";
+import {
   createDataFabricTableTool,
   dataFabricTableClient,
 } from "@/registry/ai-chat/tools/data-fabric-table";
@@ -58,17 +62,34 @@ function AgentHubChatInner({
     dataFabricBaseUrl,
   });
 
+  const lineTool = createDataFabricLineTool({
+    entities,
+    accessToken,
+    dataFabricBaseUrl,
+  });
+
   const tools = clientTools(
     presentChoicesClient,
     dataFabricTableClient,
     dataFabricDistributionClient,
+    dataFabricLineClient,
   );
+
+  const chartToolSteering = [
+    "When the user asks about Data Fabric data, pick the chart tool that best fits the request:",
+    '- "data_fabric_table" — list/show records, view fields side by side.',
+    '- "data_fabric_line" — trend / time-series questions ("orders over time", "revenue by month", "growth across quarters").',
+    '- "data_fabric_distribution" — histogram-style requests ("distribution of X", "histogram of X", numeric value-range binning).',
+    "If two tools could both answer, prefer the more specific one (line beats distribution for explicit time-series phrasing).",
+  ].join("\n");
 
   const systemPrompt = [
     "You are a helpful assistant. Always respond using markdown format.",
     CHOICES_TOOL_PROMPT,
+    chartToolSteering,
     tableTool.toolPrompt,
     distributionTool.toolPrompt,
+    lineTool.toolPrompt,
   ].join("\n\n");
 
   const connection = createAgentHubConnection({
@@ -118,6 +139,14 @@ function AgentHubChatInner({
               return (
                 <Suspense key={part.id}>
                   {distributionTool.renderDistribution(part.output, part.id)}
+                </Suspense>
+              );
+            }
+
+            if (part.name === "data_fabric_line") {
+              return (
+                <Suspense key={part.id}>
+                  {lineTool.renderLine(part.output, part.id)}
                 </Suspense>
               );
             }
