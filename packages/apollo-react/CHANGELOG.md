@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.15.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.15.0...@uipath/apollo-react@4.15.1) (2026-04-28)
+
+### Bug Fixes
+
+* **apollo-react:** disable add task button while task is loading [MST-8019][MST-8171] ([1474c13](https://github.com/UiPath/apollo-ui/commit/1474c13e28f200ea068b73fe27efce8dc642dce8))
+
 ## [@uipath/apollo-react-v4.15.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.14.1...@uipath/apollo-react@4.15.0) (2026-04-27)
 
 ### Features
