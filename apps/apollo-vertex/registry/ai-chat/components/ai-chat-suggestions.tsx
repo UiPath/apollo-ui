@@ -1,7 +1,7 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
 import { motion } from "framer-motion";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { ChoiceOption } from "../types";
 
 const ENTRANCE_EASE = [0.22, 1, 0.36, 1] as const;
@@ -61,51 +61,45 @@ export function AiChatSuggestions({
   if (isMultiStep) {
     return (
       <motion.div
-        className="mt-4 rounded-xl border border-border bg-background shadow-sm overflow-hidden"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
+        className="w-full rounded-xl border border-border bg-background shadow-lg overflow-hidden"
+        initial={{ opacity: 0, y: 12, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 8, scale: 0.97 }}
+        transition={{ duration: 0.25, ease: ENTRANCE_EASE }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 pt-3 pb-2">
-          <div className="flex items-center gap-2">
-            {isLoading ? (
-              <Loader2
-                className="size-3.5 animate-spin text-muted-foreground"
-                aria-hidden="true"
-              />
-            ) : (
-              <>
-                {canGoBack && onBack && (
-                  <button
-                    type="button"
-                    onClick={onBack}
-                    className="size-6 inline-flex items-center justify-center rounded-md hover:bg-muted transition-colors text-muted-foreground"
-                    aria-label="Go back"
-                  >
-                    <ChevronLeft className="size-4" aria-hidden="true" />
-                  </button>
-                )}
-                {totalSteps && (
-                  <span className="text-xs text-muted-foreground">
-                    {step} <span className="opacity-40">{"/"}</span>{" "}
-                    {totalSteps}
-                  </span>
-                )}
-              </>
-            )}
-          </div>
-          <div className="flex items-center gap-1">
-            {canSkip && onSkip && (
+        {/* Header: prompt + controls */}
+        <div className="flex items-start gap-3 px-6 pt-6 pb-3">
+          <p className="flex-1 text-base font-bold tracking-tight text-foreground">
+            {prompt}
+          </p>
+          <div className="flex items-center gap-4 flex-shrink-0 mt-0.5">
+            <div className="flex items-center gap-0.5">
+              <button
+                type="button"
+                onClick={onBack}
+                disabled={!canGoBack || !onBack || isLoading}
+                className="size-6 inline-flex items-center justify-center rounded-md hover:bg-muted transition-colors text-muted-foreground disabled:opacity-30 disabled:pointer-events-none"
+                aria-label="Go back"
+              >
+                <ChevronLeft className="size-4" aria-hidden="true" />
+              </button>
+              {totalSteps && (
+                <span className="text-xs text-muted-foreground px-0.5">
+                  {step}
+                  <span className="opacity-40 mx-0.5">{"/"}</span>
+                  {totalSteps}
+                </span>
+              )}
               <button
                 type="button"
                 onClick={onSkip}
-                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-muted"
+                disabled={!canSkip || !onSkip || isLoading}
+                className="size-6 inline-flex items-center justify-center rounded-md hover:bg-muted transition-colors text-muted-foreground disabled:opacity-30 disabled:pointer-events-none"
+                aria-label="Skip step"
               >
-                {"Skip"}
-                <ChevronRight className="size-3" aria-hidden="true" />
+                <ChevronRight className="size-4" aria-hidden="true" />
               </button>
-            )}
+            </div>
             {onDismiss && (
               <button
                 type="button"
@@ -119,27 +113,28 @@ export function AiChatSuggestions({
           </div>
         </div>
 
-        {/* Prompt */}
-        {prompt && (
-          <p className="px-4 pb-3 text-sm font-medium text-foreground">
-            {prompt}
-          </p>
-        )}
-
-        {/* Options */}
-        <div className="flex flex-col px-2 pb-3 gap-1">
-          {options.map((option) => (
-            <motion.button
-              key={option.id}
-              type="button"
-              variants={buttonVariants}
-              whileHover={isLoading ? {} : { x: 2 }}
-              disabled={isLoading}
-              className="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors hover:bg-muted text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
-              onClick={() => onSelect(option)}
-            >
-              {option.label}
-            </motion.button>
+        {/* Options with numbered circles and dividers */}
+        <div className="pb-[76px]">
+          {options.map((option, i) => (
+            <div key={option.id}>
+              {i > 0 && (
+                <div
+                  className="mx-6 border-t border-border"
+                  aria-hidden="true"
+                />
+              )}
+              <button
+                type="button"
+                disabled={isLoading}
+                className="w-full text-left px-6 py-3.5 text-sm transition-colors hover:bg-muted text-foreground flex items-center gap-3 disabled:opacity-40 disabled:cursor-not-allowed"
+                onClick={() => onSelect(option)}
+              >
+                <span className="size-5 rounded-full bg-secondary flex items-center justify-center text-[10px] font-semibold text-secondary-foreground flex-shrink-0 tabular-nums">
+                  {i + 1}
+                </span>
+                {option.label}
+              </button>
+            </div>
           ))}
         </div>
       </motion.div>
