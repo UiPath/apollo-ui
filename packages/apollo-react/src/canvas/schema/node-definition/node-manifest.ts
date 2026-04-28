@@ -12,7 +12,7 @@ import { handleGroupManifestSchema } from './handle';
 /**
  * Node shape for display
  */
-export const nodeShapeSchema = z.enum(['circle', 'square', 'rectangle']);
+export const nodeShapeSchema = z.enum(['circle', 'square', 'rectangle', 'container']);
 
 /**
  * Debug configuration for a node

@@ -42,41 +42,18 @@ vi.mock('./useEdgeToolbarPositioning', () => ({
 }));
 
 vi.mock('../../../utils/createPreviewNode', () => ({
-  createPreviewNode: vi.fn(
-    (
-      source,
-      sourceHandleId,
-      _reactFlow,
-      position,
-      _metadata,
-      _handleType,
-      _nodeSize,
-      _sourcePosition,
-      _ignoredNodeTypes
-    ) => ({
-      node: {
-        id: PREVIEW_NODE_ID,
-        type: 'default',
-        position,
-        data: {},
-      },
-      edge: {
-        id: `${source}-${PREVIEW_NODE_ID}`,
-        source,
-        sourceHandle: sourceHandleId,
-        target: PREVIEW_NODE_ID,
-        targetHandle: 'input',
-        type: 'default',
-      },
-    })
+  isPreviewEdge: vi.fn(
+    ({ source, target }: { id: string; source: string; target: string }) =>
+      source === PREVIEW_NODE_ID || target === PREVIEW_NODE_ID
   ),
-  applyPreviewToReactFlow: vi.fn(),
+}));
+
+vi.mock('../../../utils/createPreviewGraph', () => ({
+  showPreviewGraph: vi.fn(),
 }));
 
 const { useEdgeToolbarPositioning } = await import('./useEdgeToolbarPositioning');
-const { createPreviewNode, applyPreviewToReactFlow } = await import(
-  '../../../utils/createPreviewNode'
-);
+const { showPreviewGraph } = await import('../../../utils/createPreviewGraph');
 
 describe('useEdgeToolbarState', () => {
   const defaultProps = {
@@ -257,27 +234,29 @@ describe('useEdgeToolbarState', () => {
         result.current.config.actions[0]?.onAction('edge-1', position);
       });
 
-      expect(createPreviewNode).toHaveBeenCalledWith(
-        'node-1',
-        'output',
-        mockReactFlowInstance,
+      expect(showPreviewGraph).toHaveBeenCalledWith({
+        sourceNodeId: 'node-1',
+        sourceHandleId: 'output',
+        reactFlowInstance: mockReactFlowInstance,
         position,
-        expect.objectContaining({
+        data: expect.objectContaining({
           originalEdge: expect.objectContaining({
             id: 'edge-1',
             source: 'node-1',
             target: 'node-2',
           }),
         }),
-        'source',
-        undefined,
-        Position.Right,
-        undefined // ignoredNodeTypes
-      );
+        sourceHandleType: 'source',
+        handlePosition: Position.Right,
+        ignoredNodeTypes: [],
+        targetNodeId: 'node-2',
+        targetHandleId: 'input',
+        removedEdgeIds: ['edge-1'],
+      });
     });
 
-    it('should not create nodes if createPreviewNode returns null', () => {
-      vi.mocked(createPreviewNode).mockReturnValueOnce(null);
+    it('should not mutate edges directly if preview graph creation returns null', () => {
+      vi.mocked(showPreviewGraph).mockReturnValueOnce(null);
 
       const { result } = renderHook(() =>
         useEdgeToolbarState({
@@ -290,7 +269,7 @@ describe('useEdgeToolbarState', () => {
         result.current.config.actions[0]?.onAction('edge-1', { x: 150, y: 100 });
       });
 
-      expect(applyPreviewToReactFlow).not.toHaveBeenCalled();
+      expect(showPreviewGraph).toHaveBeenCalledOnce();
       expect(mockReactFlowInstance.setEdges).not.toHaveBeenCalled();
     });
   });

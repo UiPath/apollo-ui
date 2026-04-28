@@ -3,9 +3,17 @@ import {
   type InternalNode,
   type Node,
   Position,
+  type ReactFlowState,
   type XYPosition,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { DEFAULT_NODE_SIZE, GRID_SPACING, PREVIEW_NODE_ID } from '../constants';
+
+// Use `connection.inProgress` rather than `connectionClickStartHandle`.
+// `connectionClickStartHandle` is set by click-to-connect and only cleared when
+// the user clicks a second handle — clicking the pane does NOT clear it, so it
+// can get stuck and cause all handles across all nodes to stay visible.
+// `connection.inProgress` accurately reflects an active drag-to-connect gesture.
+export const selectIsConnecting = (state: ReactFlowState) => !!state.connection.inProgress;
 
 /**
  * Calculates the absolute position of a node, taking into account its parent nodes.

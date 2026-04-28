@@ -5,6 +5,7 @@
  * These helpers ensure consistent behavior across the codebase.
  */
 
+import { DEFAULT_CONTAINER_HEIGHT, DEFAULT_CONTAINER_WIDTH } from '../constants';
 import type { NodeShape } from '../schema/node-definition';
 
 /**
@@ -51,6 +52,13 @@ export const getCollapsedSize = (): { width: number; height: number } => {
  * when expanding a collapsed node.
  */
 export const getExpandedSize = (shape?: NodeShape): { width: number; height: number } => {
+  if (shape === 'container') {
+    return {
+      width: DEFAULT_CONTAINER_WIDTH,
+      height: DEFAULT_CONTAINER_HEIGHT,
+    };
+  }
+
   return {
     width: shape === 'rectangle' ? EXPANDED_RECTANGLE_WIDTH : COLLAPSED_NODE_SIZE,
     height: COLLAPSED_NODE_SIZE,

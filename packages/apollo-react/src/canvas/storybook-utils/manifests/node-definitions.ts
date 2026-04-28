@@ -229,6 +229,7 @@ export const allNodeManifests: NodeManifest[] = [
     display: {
       label: 'For Each',
       icon: 'repeat',
+      shape: 'container',
     },
     handleConfiguration: [
       {
@@ -240,15 +241,39 @@ export const allNodeManifests: NodeManifest[] = [
         handles: [
           {
             id: 'success',
-            label: 'Completed',
+            label: 'Success',
             type: 'source',
             handleType: 'output',
           },
+        ],
+      },
+      {
+        position: 'left',
+        boundary: 'inner',
+        handles: [
           {
-            id: 'body',
-            label: 'Body',
+            id: 'start',
+            label: 'Start',
             type: 'source',
             handleType: 'output',
+          },
+        ],
+      },
+      {
+        position: 'right',
+        boundary: 'inner',
+        handles: [
+          {
+            id: 'continue',
+            label: 'Continue',
+            type: 'target',
+            handleType: 'input',
+          },
+          {
+            id: 'break',
+            label: 'Break',
+            type: 'target',
+            handleType: 'input',
           },
         ],
       },

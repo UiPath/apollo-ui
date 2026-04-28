@@ -12,11 +12,28 @@ import {
   resolveHandleContext,
 } from './NodeUtils';
 
+export type PreviewNodePositionMode = 'drop' | 'center';
+
+export const PREVIEW_EDGE_STYLE: Edge['style'] = {
+  strokeDasharray: '5,5',
+  opacity: 0.8,
+  stroke: 'var(--canvas-selection-indicator)',
+  strokeWidth: 2,
+};
+
+export function isPreviewEdge(edge: { id?: string; source?: string; target?: string }): boolean {
+  return (
+    edge.id === PREVIEW_EDGE_ID ||
+    edge.source === PREVIEW_NODE_ID ||
+    edge.target === PREVIEW_NODE_ID
+  );
+}
+
 /**
  * Returns the opposite position for a given handle position.
  * Used when dragging from a target handle where the preview should appear on the opposite side.
  */
-function getOppositePosition(position: Position): Position {
+export function getOppositePosition(position: Position): Position {
   switch (position) {
     case Position.Left:
       return Position.Right;
@@ -72,6 +89,16 @@ function calculatePositionFromDrop(
         y: dropPosition.y - previewNodeSize.height / 2,
       };
   }
+}
+
+function calculateCenteredPosition(
+  centerPosition: { x: number; y: number },
+  previewNodeSize: { width: number; height: number }
+): { x: number; y: number } {
+  return {
+    x: centerPosition.x - previewNodeSize.width / 2,
+    y: centerPosition.y - previewNodeSize.height / 2,
+  };
 }
 
 /**
@@ -201,14 +228,15 @@ export function createPreviewNode(
   sourceHandleId: string,
   reactFlowInstance: ReactFlowInstance,
   position?: { x: number; y: number },
-  data?: Record<string, any>,
+  data?: Record<string, unknown>,
   sourceHandleType: 'source' | 'target' = 'source',
   previewNodeSize: { width: number; height: number } = {
     width: DEFAULT_NODE_SIZE,
     height: DEFAULT_NODE_SIZE,
   },
   handlePosition: Position = Position.Right,
-  ignoredNodeTypes: string[] = []
+  ignoredNodeTypes: string[] = [],
+  positionMode: PreviewNodePositionMode = 'drop'
 ): { node: Node; edge: Edge } | null {
   const sourceNode = reactFlowInstance.getNode(sourceNodeId);
   if (!sourceNode) {
@@ -230,7 +258,9 @@ export function createPreviewNode(
     : undefined;
 
   const nodePosition = position
-    ? calculatePositionFromDrop(position, handlePosition, previewNodeSize)
+    ? positionMode === 'center'
+      ? calculateCenteredPosition(position, previewNodeSize)
+      : calculatePositionFromDrop(position, handlePosition, previewNodeSize)
     : calculateAutoPosition(
         sourceNode,
         handlePosition,
@@ -291,12 +321,7 @@ export function createPreviewNode(
     id: PREVIEW_EDGE_ID,
     ...previewSourceAndTargetData,
     type: 'default',
-    style: {
-      strokeDasharray: '5,5',
-      opacity: 0.8,
-      stroke: 'var(--canvas-selection-indicator)',
-      strokeWidth: 2,
-    },
+    style: PREVIEW_EDGE_STYLE,
   };
 
   return { node: previewNode, edge: previewEdge };
@@ -319,7 +344,7 @@ export function applyPreviewToReactFlow(
     ]);
 
     reactFlowInstance.setEdges((edges) => [
-      ...edges.filter((e) => e.id !== PREVIEW_EDGE_ID),
+      ...edges.filter((edge) => !isPreviewEdge(edge)),
       preview.edge,
     ]);
   }, 0);
@@ -330,5 +355,5 @@ export function applyPreviewToReactFlow(
  */
 export function removePreviewFromReactFlow(reactFlowInstance: ReactFlowInstance): void {
   reactFlowInstance.setNodes((nodes) => nodes.filter((n) => n.id !== PREVIEW_NODE_ID));
-  reactFlowInstance.setEdges((edges) => edges.filter((e) => e.id !== PREVIEW_EDGE_ID));
+  reactFlowInstance.setEdges((edges) => edges.filter((edge) => !isPreviewEdge(edge)));
 }

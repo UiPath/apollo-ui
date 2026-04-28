@@ -1,5 +1,5 @@
 import { Position, type ReactFlowInstance } from '@uipath/apollo-react/canvas/xyflow/react';
-import { applyPreviewToReactFlow, createPreviewNode } from '../../utils/createPreviewNode';
+import { showPreviewGraph } from '../../utils/createPreviewGraph';
 
 /**
  * Creates a preview node and edge when a button handle is clicked.
@@ -19,20 +19,12 @@ export function createAddNodePreview(
   sourceHandleType: 'source' | 'target' = 'source',
   ignoredNodeTypes: string[] = []
 ): void {
-  // Use the unified preview creation utility
-  const preview = createPreviewNode(
+  showPreviewGraph({
     sourceNodeId,
     sourceHandleId,
     reactFlowInstance,
-    undefined, // No drop position - use auto-placement
-    undefined, // No custom data
     sourceHandleType,
-    undefined, // Use default preview node size
     handlePosition,
-    ignoredNodeTypes
-  );
-
-  if (preview) {
-    applyPreviewToReactFlow(preview, reactFlowInstance);
-  }
+    ignoredNodeTypes,
+  });
 }

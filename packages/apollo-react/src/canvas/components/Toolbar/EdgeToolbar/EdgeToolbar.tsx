@@ -24,7 +24,7 @@ const EdgeToolbarComponent = ({
         {visible && (
           <motion.div
             key={`edge-toolbar-${edgeId}`}
-            className="nodrag nopan absolute top-0 left-0 pointer-events-auto z-[1000] flex flex-row items-center gap-1"
+            className="nodrag nopan absolute top-0 left-0 z-1004 pointer-events-auto flex flex-row items-center gap-1"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

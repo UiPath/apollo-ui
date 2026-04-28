@@ -16,4 +16,6 @@ export interface NodeToolbarProps {
   hidden?: boolean;
   /** When true, push the toolbar further from the node to clear handle buttons. */
   offsetToolbar?: boolean;
+  /** Render the toolbar in the node overlay layer instead of inside the node wrapper. */
+  portalToNodeOverlay?: boolean;
 }
