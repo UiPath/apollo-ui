@@ -379,6 +379,11 @@
           "target": "components/ui/ai-chat/charts/distribution-chart-card.tsx"
         },
         {
+          "path": "registry/ai-chat/charts/line-chart-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/line-chart-card.tsx"
+        },
+        {
           "path": "registry/ai-chat/tools/choices/choices-tool.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/tools/choices/choices-tool.tsx"
@@ -392,6 +397,11 @@
           "path": "registry/ai-chat/tools/data-fabric/shared.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric/shared.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric/binned.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric/binned.ts"
         },
         {
           "path": "registry/ai-chat/tools/data-fabric/index.ts",
@@ -417,6 +427,16 @@
           "path": "registry/ai-chat/tools/data-fabric-distribution/index.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric-distribution/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-line/data-fabric-line-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/data-fabric-line/data-fabric-line-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-line/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric-line/index.ts"
         }
       ]
     },

@@ -1,8 +1,4 @@
-import type {
-  ChartDataModel,
-  NumericOrDatetimeField,
-  TableChartConfiguration,
-} from "@uipath/apollo-dashboarding";
+import type { TableChartConfiguration } from "@uipath/apollo-dashboarding";
 import { DateTime } from "luxon";
 import { z } from "zod";
 
@@ -332,43 +328,4 @@ export function pickCountFieldQualified(
   const numeric = primaryEntries.find(([, f]) => f.dataType === "number");
   if (numeric) return numeric[0];
   return primaryEntries[0]?.[0] ?? null;
-}
-
-export type DistributionAggregation = "COUNT" | "SUM" | "AVG" | "MIN" | "MAX";
-
-interface BuildDistributionDataModelInput {
-  id: string;
-  dimension: string;
-  dimensionType: "numeric" | "datetime";
-  metric: {
-    aggregation: DistributionAggregation;
-    field: string;
-    display: string;
-  };
-}
-
-export function buildDistributionDataModel({
-  id,
-  dimension,
-  dimensionType,
-  metric,
-}: BuildDistributionDataModelInput): ChartDataModel<NumericOrDatetimeField> {
-  // Data Fabric rewrites aliases that contain dots (qualified field paths)
-  // into a canonical `<FUNCTION>_<field>` form when joins are used, breaking
-  // the chart's `r[alias]` lookup. Sanitize the alias by replacing dots, so
-  // the server respects what we send. The `field` reference still needs to
-  // be qualified for the server to resolve the correct entity.
-  const aliasField = metric.field.replaceAll(".", "_");
-  return {
-    id,
-    dimensions: [{ id: dimension, type: dimensionType }],
-    metrics: [
-      {
-        id: `${metric.aggregation.toLowerCase()}_${aliasField}`,
-        display: metric.display,
-        aggregation: metric.aggregation,
-        field: metric.field,
-      },
-    ],
-  };
 }

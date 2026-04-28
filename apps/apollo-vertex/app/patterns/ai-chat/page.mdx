@@ -18,6 +18,7 @@ A composable AI chat UI component for Apollo Vertex. Built with React, TypeScrip
 - **Markdown Rendering** — Renders assistant responses with GitHub Flavored Markdown
 - **Data Fabric Table Tool** — Display entity data as filterable tables with list, search, and range filters, and multi-entity joins
 - **Data Fabric Distribution Tool** — Render histogram charts for numeric or datetime fields with optional aggregations, filters, and joins
+- **Data Fabric Line Chart Tool** — Render time-series line charts over a datetime field with optional aggregations, filters, and joins
 - **Suggestion Buttons** — Interactive choice buttons rendered from tool results
 
 ## Installation
@@ -295,6 +296,37 @@ Omit `metric` entirely for the default `COUNT` of records per bin. To plot an ag
 ### Filters and joins
 
 Filters and joins use the same schemas as the table tool (including the new datetime range filter). When joins are present, the `dimension` and `metric.field` must use qualified `EntityName.FieldName` names.
+
+---
+
+## Data Fabric Line Chart Tool
+
+The `data_fabric_line` tool renders a line chart from a Data Fabric entity, plotting a metric over a **datetime** dimension. It shares the metric, filter, and join system with the distribution tool — the only constraint is that the dimension must be a datetime field.
+
+```tsx
+import {
+  createDataFabricLineTool,
+  dataFabricLineClient,
+} from '@/components/ui/ai-chat/tools/data-fabric-line';
+
+const lineTool = createDataFabricLineTool({
+  entities,           // Record<string, Entity> — entity metadata with field names and types
+  accessToken,        // Bearer token for Data Fabric API
+  dataFabricBaseUrl,  // Base URL for Data Fabric proxy
+});
+
+// Use dataFabricLineClient in your tools array, lineTool.toolPrompt in your
+// system prompt, and lineTool.renderLine(part.output, part.id) in your parts loop.
+```
+
+### When to use line vs distribution
+
+- **Line** — trend / time-series questions: *"orders over time"*, *"revenue trend by month"*, *"growth across quarters"*. Always datetime on the X axis.
+- **Distribution** — histogram-style requests: *"distribution of order amount"*, *"histogram of X"*, numeric value-range binning. Either numeric or datetime dimension.
+
+### Metric, filters, and joins
+
+Metric, filter, and join semantics are identical to the distribution tool. Omit `metric` for `COUNT`, or pass `{ aggregation, field }` for `SUM` / `AVG` / `MIN` / `MAX` of a numeric field. When joins are present, `dimension` and `metric.field` must use qualified `EntityName.FieldName` names.
 
 ---
 
