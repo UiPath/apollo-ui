@@ -132,6 +132,13 @@ export function CanvasTooltip({
 
   const hasProvider = useContext(HasTooltipProviderContext);
 
+  const isEmptyContent =
+    content == null || content === false || (typeof content === 'string' && content.trim() === '');
+
+  if (isEmptyContent) {
+    return children;
+  }
+
   const tooltip = (
     <Tooltip open={effectiveOpen} onOpenChange={handleOpenChange} delayDuration={delay ? 700 : 200}>
       <TooltipTrigger asChild>{triggerWithHandlers}</TooltipTrigger>
