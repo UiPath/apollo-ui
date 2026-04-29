@@ -1,3 +1,14 @@
+## [@uipath/apollo-react-v4.16.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.15.1...@uipath/apollo-react@4.16.0) (2026-04-29)
+
+### Features
+
+* **apollo-react:** add loop node [MST-8596] ([7624d02](https://github.com/UiPath/apollo-ui/commit/7624d02bdbd8153360f5060898b8167a993ff74b))
+
+### Bug Fixes
+
+* **apollo-react:** address review comments ([7db2ef9](https://github.com/UiPath/apollo-ui/commit/7db2ef905b0ee4eb929aed9ee50ad503144ef202))
+* **apollo-react:** update styling to match prototype ([89552d7](https://github.com/UiPath/apollo-ui/commit/89552d76b7cf22d402eb63139f74a0aa31dfe5ca))
+
 ## [@uipath/apollo-react-v4.15.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.15.0...@uipath/apollo-react@4.15.1) (2026-04-28)
 
 ### Bug Fixes
