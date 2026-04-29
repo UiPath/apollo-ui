@@ -25,15 +25,22 @@ export interface ListItemIcon {
 /**
  * Configuration for the skeleton placeholder shown when an item is drilled
  * into and its children are still loading.
+ *
+ * For best perf, callers passing this as an object should memoize it —
+ * passing a fresh object each render rebuilds the skeleton items and
+ * cascades through the row virtualizer.
  */
 export type ChildrenLoadingSpec = {
-  /** Number of skeleton rows to render when no `sections` are provided. Defaults to 3. */
+  /**
+   * Number of skeleton rows. When `sections` is set, this is the per-section
+   * default for any section that omits its own `count`. Defaults to 3.
+   */
   count?: number;
   /**
    * Pre-render section headers + skeleton rows under each. Once real items
    * arrive with a matching `section`, they slot under the same header so the
-   * layout doesn't shift. Use this when you already know the final section
-   * structure (e.g. "Published", "In this solution").
+   * layout doesn't shift. Each section's `count` overrides the top-level
+   * `count` (or the built-in default of 3).
    */
   sections?: { name: string; count?: number }[];
 };
@@ -159,8 +166,8 @@ const ListViewRow = memo(
     const item = renderItem.item;
 
     // Skeleton sentinels render as the placeholder bar, never as a clickable
-    // row. They can't appear in `activeIndex` because Toolbox's keyboard
-    // navigation skips items injected by ListView itself.
+    // row. Toolbox's keyboard nav also skips them via the exported
+    // `isSkeletonItem` helper, so they never become the active descendant.
     if (isSkeletonItem(item)) {
       return (
         <div style={style}>
@@ -261,10 +268,20 @@ const ListItemSkeleton = () => (
   </div>
 );
 
-// Internal id prefix used to mark skeleton sentinel items injected by
-// `ListView`. Consumers must not produce ids with this prefix.
-const SKELETON_ID_PREFIX = '__listview_skeleton__';
-const isSkeletonItem = (item: ListItem): boolean => item.id.startsWith(SKELETON_ID_PREFIX);
+// Skeleton sentinel items are tracked by reference in this `WeakSet`, not by
+// an id prefix. This keeps the marker entirely internal — consumers can't
+// collide with it from their own `id` strings — and entries auto-expire when
+// the items become unreferenced.
+const skeletonItemRegistry = new WeakSet<ListItem>();
+
+/**
+ * True for skeleton sentinel rows produced by {@link ListView} (via the
+ * `loadingSkeleton` prop or `ListItem.childrenLoading`). Exposed so callers
+ * such as `Toolbox`'s keyboard navigation can skip these presentational rows.
+ */
+export function isSkeletonItem(item: ListItem): boolean {
+  return skeletonItemRegistry.has(item);
+}
 
 /**
  * Build the synthetic skeleton ListItem entries that get appended to the
@@ -276,19 +293,25 @@ const isSkeletonItem = (item: ListItem): boolean => item.id.startsWith(SKELETON_
 function buildSkeletonItems(spec: boolean | ChildrenLoadingSpec): ListItem[] {
   const config: ChildrenLoadingSpec = typeof spec === 'object' ? spec : {};
   const defaultCount = config.count ?? 3;
-  const make = (id: string, section?: string): ListItem => ({
-    id: `${SKELETON_ID_PREFIX}${id}`,
-    name: '',
-    data: {},
-    ...(section ? { section } : {}),
-  });
+  const make = (id: string, section?: string): ListItem => {
+    const item: ListItem = {
+      id,
+      name: '',
+      data: {},
+      ...(section ? { section } : {}),
+    };
+    skeletonItemRegistry.add(item);
+    return item;
+  };
 
   if (config.sections && config.sections.length > 0) {
     return config.sections.flatMap((s) =>
-      Array.from({ length: s.count ?? defaultCount }, (_, i) => make(`${s.name}-${i}`, s.name))
+      Array.from({ length: s.count ?? defaultCount }, (_, i) =>
+        make(`__listview_skeleton__${s.name}-${i}`, s.name)
+      )
     );
   }
-  return Array.from({ length: defaultCount }, (_, i) => make(`${i}`));
+  return Array.from({ length: defaultCount }, (_, i) => make(`__listview_skeleton__${i}`));
 }
 
 const ListViewInner = forwardRef(function ListView<T extends ListItem>(
@@ -314,11 +337,15 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
   // is the opt-in per-drill-in path; the legacy `isLoading && items.length
   // === 0` behaviour is preserved by falling through to a `true` spec.
   const activeSkeleton = loadingSkeleton ?? (isLoading && items.length === 0 ? true : null);
-  const skeletonItems = useMemo(
-    () => (activeSkeleton ? buildSkeletonItems(activeSkeleton) : []),
+  // Skeletons are synthesized as plain `ListItem`s with `data: {}` and an
+  // internal id prefix. Casting to `T[]` is sound because `ListViewRow`
+  // short-circuits skeleton sentinels before reading any consumer-shaped data
+  // (handled by `isSkeletonItem`).
+  const skeletonItems = useMemo<T[]>(
+    () => (activeSkeleton ? (buildSkeletonItems(activeSkeleton) as T[]) : []),
     [activeSkeleton]
   );
-  const allItems = useMemo(
+  const allItems = useMemo<T[]>(
     () => (skeletonItems.length > 0 ? [...items, ...skeletonItems] : items),
     [items, skeletonItems]
   );
@@ -349,6 +376,9 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
     <StyledList
       id="toolbox-listbox"
       role="listbox"
+      // Signal "list is being updated" to assistive tech while skeleton
+      // sentinels are rendered in place of real items.
+      aria-busy={skeletonItems.length > 0 || undefined}
       listRef={listRef}
       rowProps={rowProps}
       rowComponent={ListViewRow}

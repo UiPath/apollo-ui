@@ -10,7 +10,13 @@ import {
   TOOLBOX_WIDTH,
 } from '../../constants';
 import { Header } from './Header';
-import { type ListItem, ListView, type ListViewHandle, type RenderItem } from './ListView';
+import {
+  isSkeletonItem,
+  type ListItem,
+  ListView,
+  type ListViewHandle,
+  type RenderItem,
+} from './ListView';
 import { SearchBox } from './SearchBox';
 import { AnimatedContainer, AnimatedContent } from './Toolbox.styles';
 
@@ -69,6 +75,10 @@ export interface ToolboxProps<T> {
   onSearch?: ToolboxSearchHandler<T>;
 }
 
+function isSelectable(rendered: RenderItem<ListItem> | undefined): boolean {
+  return rendered?.type === 'item' && !isSkeletonItem(rendered.item);
+}
+
 function getNextSelectableIndex(
   renderedItems: RenderItem<ListItem>[],
   currentIndex: number,
@@ -77,7 +87,7 @@ function getNextSelectableIndex(
   const numericDirection = direction === 'up' ? -1 : 1;
   let next = currentIndex + numericDirection;
   while (next >= 0 && next < renderedItems.length) {
-    if (renderedItems[next]?.type === 'item') return next;
+    if (isSelectable(renderedItems[next])) return next;
     next += numericDirection;
   }
   return SEARCH_BAR_INDEX;
@@ -85,14 +95,14 @@ function getNextSelectableIndex(
 
 function getFirstSelectableIndex(renderedItems: RenderItem<ListItem>[]): number {
   for (let i = 0; i < renderedItems.length; i++) {
-    if (renderedItems[i]?.type === 'item') return i;
+    if (isSelectable(renderedItems[i])) return i;
   }
   return SEARCH_BAR_INDEX;
 }
 
 function getLastSelectableIndex(renderedItems: RenderItem<ListItem>[]): number {
   for (let i = renderedItems.length - 1; i >= 0; i--) {
-    if (renderedItems[i]?.type === 'item') return i;
+    if (isSelectable(renderedItems[i])) return i;
   }
   return SEARCH_BAR_INDEX;
 }
@@ -130,7 +140,10 @@ export function Toolbox<T>({
   const [items, setItems] = useState<ListItem<T>[]>(initialItems);
   const [search, setSearch] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
-  const [childrenLoading, setChildrenLoading] = useState(false);
+  // True only while we're awaiting an async `item.children(...)` resolver.
+  // Distinct from the public `ListItem.childrenLoading` API field, which
+  // signals to ListView that an item should render skeleton placeholders.
+  const [awaitingChildren, setAwaitingChildren] = useState(false);
   const [isSearchingInitialItems, setIsSearchingInitialItems] = useState(true);
   const [searchedItems, setSearchedItems] = useState<ListItem<T>[]>([]);
   const [currentParentItem, setCurrentParentItem] = useState<ListItem<T> | null>(null);
@@ -283,7 +296,7 @@ export function Toolbox<T>({
         onItemSelect(item);
         return;
       }
-      setChildrenLoading(true);
+      setAwaitingChildren(true);
       const nestedItems =
         typeof item.children === 'function'
           ? await item.children(item.id, item.name)
@@ -315,7 +328,7 @@ export function Toolbox<T>({
         lastScrollTopRef.current = 0;
       });
       startTransition('forward');
-      setChildrenLoading(false);
+      setAwaitingChildren(false);
     },
     [
       navigationStack,
@@ -615,7 +628,7 @@ export function Toolbox<T>({
           <AnimatedContent entering={isTransitioning} direction={animationDirection}>
             <ListView
               ref={listViewRef}
-              isLoading={childrenLoading || searchLoading || loading}
+              isLoading={awaitingChildren || searchLoading || loading}
               items={displayedItems}
               activeIndex={activeIndex}
               listRef={listRef}
