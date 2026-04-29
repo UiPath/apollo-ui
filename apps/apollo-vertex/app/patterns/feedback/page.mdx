@@ -1,0 +1,146 @@
+import { FeedbackOverrideDialogTemplate } from '@/templates/FeedbackOverrideDialogTemplate';
+import { FeedbackDashboardTemplate } from '@/templates/FeedbackDashboardTemplate';
+
+# Feedback Collection
+
+Patterns for collecting and displaying user feedback on AI-generated content, integrated with the UiPath Platform Feedback API via [`@uipath/vs-feedback`](https://github.com/UiPath/vertical-solutions).
+
+This page documents the two main flows:
+
+1. **Submit** — Users vote on AI output (👍/👎) or override sections with a reason. Maps to `PlatformFeedbackClient.submit()`.
+2. **Read** — A dashboard lists collected feedback with filters, KPIs, and expandable rows. Maps to `PlatformFeedbackClient.listByAgent()`.
+
+For the standalone vote control, see [Feedback Vote Widget](/patterns/feedback-vote-widget). Triage and severity classification are out of scope for this page — they're a separate workflow.
+
+---
+
+## Override flow
+
+When an AI output has distinct sections or fields a user can correct, present an override dialog: a textarea with the original content, a closed-set reason picker, and an optional free-form comment for the agent.
+
+<div className="not-prose my-8 rounded-lg border bg-gradient-to-br from-muted/40 via-background to-muted/40 dark:from-muted/20 dark:via-background dark:to-muted/20">
+  <FeedbackOverrideDialogTemplate />
+</div>
+
+This template is a reference composition — copy [`FeedbackOverrideDialogTemplate.tsx`](https://github.com/UiPath/apollo-ui/blob/main/apps/apollo-vertex/templates/FeedbackOverrideDialogTemplate.tsx) and adapt the reason taxonomy, content shape, and submit handler to your domain.
+
+### Components used
+
+- [Dialog](/components/dialog) — modal container
+- [Select](/components/select) — reason picker (closed-set taxonomy)
+- [Textarea](/components/textarea) — content editor + agent feedback
+- [Label](/components/label) — accessible labels
+- [Button](/components/button) — Save / Cancel actions
+
+### Submit handler shape
+
+```tsx
+import { client } from "./feedback-client"; // your PlatformFeedbackClient<TCustom, TComment>
+import { resolveTraceContext } from "./trace-context";
+
+async function handleOverrideSubmit(args: {
+  overriddenContent: string;
+  reason: OverrideReason;
+  agentFeedback: string;
+}) {
+  await client.submit({
+    isPositive: false,
+    comment: JSON.stringify({
+      after: args.overriddenContent,
+      feedbackToAgent: args.agentFeedback,
+    }),
+    metadata: {
+      // your TCustom — typically section/entity IDs and the override reason
+      overrideReason: args.reason,
+    },
+    traceContext: await resolveTraceContext({ instanceId, folderKey, agentId }),
+  });
+}
+```
+
+The `comment` JSON shape is defined by your vertical's `TComment` type — what's shown above is one common pattern.
+
+---
+
+## Dashboard flow
+
+Once feedback is collected, render it in a filterable, expandable dashboard. The pattern composes the existing [Data Table](/patterns/data-table) with [Metric Card](/patterns/metric-card) for KPIs.
+
+<div className="not-prose my-8 rounded-lg border overflow-hidden bg-gradient-to-br from-muted/40 via-background to-muted/40 dark:from-muted/20 dark:via-background dark:to-muted/20">
+  <FeedbackDashboardTemplate />
+</div>
+
+Copy [`FeedbackDashboardTemplate.tsx`](https://github.com/UiPath/apollo-ui/blob/main/apps/apollo-vertex/templates/FeedbackDashboardTemplate.tsx) and replace the static `data` array with a fetch from `client.listByAgent()`.
+
+### Components used
+
+- [Metric Card](/patterns/metric-card) — KPI cards (total / positive / negative / critical). For richer KPIs, see [Dashboards](/dashboards).
+- [Data Table](/patterns/data-table) — the row list with sorting, filtering, and expandable rows
+- [Badge](/components/badge) — severity tags
+
+### Fetching from the Platform Feedback API
+
+`@uipath/vs-feedback` exposes `client.listByAgent()`, returning `PlatformFeedbackRecord<TCustom, TComment>[]`. Adapt to the table's row shape with a small mapper:
+
+```tsx
+import { useQuery } from "@tanstack/react-query";
+import { client } from "./feedback-client";
+
+function useFeedbackData(agentId: string) {
+  return useQuery({
+    queryKey: ["feedback", agentId],
+    queryFn: async () => {
+      const records = await client.listByAgent({
+        agentId,
+        startTime: /* 30 days ago */,
+        endTime: new Date(),
+      });
+      return records.map(adaptToFeedbackRow);
+    },
+  });
+}
+
+function adaptToFeedbackRow(record: PlatformFeedbackRecord<MyCustom, MyComment>): FeedbackRow {
+  return {
+    id: record.id,
+    isPositive: record.isPositive ?? false,
+    section: record.metadata.customFields.sectionName,
+    user: record.userEmail,
+    reason: record.metadata.customFields.overrideReason ?? "—",
+    severity: record.metadata.customFields.aiProducedFields.aiSeverity ?? null,
+    createdAt: record.createdAt,
+    comment: record.comment.text ?? "",
+    agentFeedback: record.comment.feedbackToAgent ?? "",
+  };
+}
+```
+
+The adapter is per-vertical — it's the seam between the lib's generic shape and your domain. Keep it small.
+
+### When to reach for `@uipath/apollo-dashboarding` instead
+
+For richer dashboarding (custom layouts, data adapters, time-range filters, distribution charts), use [Dashboards](/dashboards). The pattern above is the lightweight alternative for simple lists with a handful of KPIs.
+
+---
+
+## Trace context
+
+Both flows depend on resolving the trace context for the agent execution being reviewed. Use `MaestroTraceResolver` and `SolutionVersionResolver` from `@uipath/vs-platform-services`:
+
+```tsx
+import {
+  MaestroTraceResolver,
+  SolutionVersionResolver,
+} from "@uipath/vs-platform-services";
+
+const traceResolver = new MaestroTraceResolver(config);
+const versionResolver = new SolutionVersionResolver(config);
+
+async function resolveTraceContext({ instanceId, folderKey, agentId }) {
+  const { traceId } = await traceResolver.resolve(instanceId, folderKey);
+  const solutionVersion = await versionResolver.resolve(/* ... */);
+  return { traceId, spanId: "", agentId, agentVersion: "", solutionVersion };
+}
+```
+
+See the `vs-platform-services` package for the full resolver API.
