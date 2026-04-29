@@ -86,7 +86,6 @@ function createActivityNode(
     return {
       ...node,
       parentId: options.parentId,
-      extent: 'parent',
     };
   }
 

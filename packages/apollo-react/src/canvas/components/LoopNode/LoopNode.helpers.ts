@@ -33,7 +33,7 @@ export function resolveContainerHandleGroups(
   groups: ResolvedHandleGroup[]
 ): ContainerHandleGroup[] {
   return groups.map((group) => {
-    const boundary = group.boundary === 'inner' ? 'inner' : 'outer';
+    const boundary = group.boundary ?? 'outer';
     const position = group.position as Position;
 
     return {

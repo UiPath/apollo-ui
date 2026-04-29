@@ -133,6 +133,9 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
       const nodeData = currentPreviewNode.data?.useSmartHandles
         ? { ...baseNodeData, useSmartHandles: true }
         : baseNodeData;
+      const previewNodeScope = currentPreviewNode.parentId
+        ? { parentId: currentPreviewNode.parentId, extent: currentPreviewNode.extent }
+        : {};
 
       // Create new node at preview position
       const newNode: Node = {
@@ -141,8 +144,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
         position: currentPreviewNode.position,
         selected: true,
         data: nodeData,
-        parentId: currentPreviewNode.parentId,
-        extent: currentPreviewNode.extent,
+        ...previewNodeScope,
       };
       // Get the manifest for the new node type to find its default handles
       const newNodeManifest = registry?.getManifest(nodeItem.data.type);
