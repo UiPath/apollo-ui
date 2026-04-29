@@ -1,4 +1,4 @@
-import type { StreamChunk } from "@tanstack/ai";
+import { EventType, type StreamChunk } from "@tanstack/ai";
 import type { UIMessage } from "@tanstack/ai-client";
 import { EventSourceParserStream } from "eventsource-parser/stream";
 import { z } from "zod/v4";
@@ -119,7 +119,7 @@ function* handleToolCallDelta(
     if (fn?.arguments && existing) {
       existing.arguments += fn.arguments;
       yield {
-        type: "TOOL_CALL_ARGS" as const,
+        type: EventType.TOOL_CALL_ARGS,
         toolCallId: existing.id,
         delta: fn.arguments,
         timestamp: Date.now(),
@@ -128,19 +128,20 @@ function* handleToolCallDelta(
     return;
   }
 
-  const id = tc.id ?? "";
+  const id = tc.id ?? crypto.randomUUID();
   const name = fn?.name ?? "";
   toolCalls.set(idx, { id, name, arguments: fn?.arguments ?? "" });
   yield {
-    type: "TOOL_CALL_START" as const,
+    type: EventType.TOOL_CALL_START,
     toolCallId: id,
+    toolCallName: name,
     toolName: name,
     parentMessageId,
     timestamp: Date.now(),
   };
   if (fn?.arguments) {
     yield {
-      type: "TOOL_CALL_ARGS" as const,
+      type: EventType.TOOL_CALL_ARGS,
       toolCallId: id,
       delta: fn.arguments,
       timestamp: Date.now(),
@@ -153,10 +154,11 @@ async function* toStreamChunks(
 ): AsyncIterable<StreamChunk> {
   const messageId = crypto.randomUUID();
   const runId = crypto.randomUUID();
+  const threadId = crypto.randomUUID();
 
-  yield { type: "RUN_STARTED", runId, timestamp: Date.now() };
+  yield { type: EventType.RUN_STARTED, runId, threadId, timestamp: Date.now() };
   yield {
-    type: "TEXT_MESSAGE_START",
+    type: EventType.TEXT_MESSAGE_START,
     messageId,
     role: "assistant",
     timestamp: Date.now(),
@@ -197,7 +199,7 @@ async function* toStreamChunks(
 
     if (delta?.content) {
       yield {
-        type: "TEXT_MESSAGE_CONTENT" as const,
+        type: EventType.TEXT_MESSAGE_CONTENT,
         messageId,
         delta: delta.content,
         timestamp: Date.now(),
@@ -214,8 +216,9 @@ async function* toStreamChunks(
   // Close open tool calls and trigger client-side execution
   for (const [, tc] of toolCalls) {
     yield {
-      type: "TOOL_CALL_END" as const,
+      type: EventType.TOOL_CALL_END,
       toolCallId: tc.id,
+      toolCallName: tc.name,
       toolName: tc.name,
       timestamp: Date.now(),
     };
@@ -226,7 +229,7 @@ async function* toStreamChunks(
       /* empty */
     }
     yield {
-      type: "CUSTOM" as const,
+      type: EventType.CUSTOM,
       name: "tool-input-available",
       value: {
         toolCallId: tc.id,
@@ -236,10 +239,15 @@ async function* toStreamChunks(
       timestamp: Date.now(),
     };
   }
-  yield { type: "TEXT_MESSAGE_END", messageId, timestamp: Date.now() };
   yield {
-    type: "RUN_FINISHED",
+    type: EventType.TEXT_MESSAGE_END,
+    messageId,
+    timestamp: Date.now(),
+  };
+  yield {
+    type: EventType.RUN_FINISHED,
     runId,
+    threadId,
     timestamp: Date.now(),
     finishReason: finishReason === "tool_calls" ? "tool_calls" : "stop",
   };

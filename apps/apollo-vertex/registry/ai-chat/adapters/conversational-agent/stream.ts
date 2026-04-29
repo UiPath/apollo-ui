@@ -1,4 +1,4 @@
-import type { StreamChunk } from "@tanstack/ai";
+import { EventType, type StreamChunk } from "@tanstack/ai";
 import type { SessionStream } from "@uipath/uipath-typescript/conversational-agent";
 import { MessageRole } from "@uipath/uipath-typescript/conversational-agent";
 
@@ -62,9 +62,15 @@ export function bridgeExchange(
 ): AsyncIterable<StreamChunk> {
   const queue = createStreamQueue();
   const runId = crypto.randomUUID();
+  const threadId = crypto.randomUUID();
   const cleanups: Array<() => void> = [];
 
-  queue.push({ type: "RUN_STARTED", runId, timestamp: Date.now() });
+  queue.push({
+    type: EventType.RUN_STARTED,
+    runId,
+    threadId,
+    timestamp: Date.now(),
+  });
 
   const exchange = session.startExchange();
 
@@ -79,7 +85,7 @@ export function bridgeExchange(
     const messageId = crypto.randomUUID();
 
     queue.push({
-      type: "TEXT_MESSAGE_START",
+      type: EventType.TEXT_MESSAGE_START,
       messageId,
       role: "assistant",
       timestamp: Date.now(),
@@ -90,7 +96,7 @@ export function bridgeExchange(
 
       part.onChunk((chunk) => {
         queue.push({
-          type: "TEXT_MESSAGE_CONTENT",
+          type: EventType.TEXT_MESSAGE_CONTENT,
           messageId,
           delta: chunk.data ?? "",
           timestamp: Date.now(),
@@ -100,7 +106,7 @@ export function bridgeExchange(
 
     msg.onMessageEnd(() => {
       queue.push({
-        type: "TEXT_MESSAGE_END",
+        type: EventType.TEXT_MESSAGE_END,
         messageId,
         timestamp: Date.now(),
       });
@@ -109,8 +115,9 @@ export function bridgeExchange(
 
   exchange.onExchangeEnd(() => {
     queue.push({
-      type: "RUN_FINISHED",
+      type: EventType.RUN_FINISHED,
       runId,
+      threadId,
       finishReason: "stop",
       timestamp: Date.now(),
     });
@@ -120,9 +127,9 @@ export function bridgeExchange(
 
   exchange.onErrorStart((err) => {
     queue.push({
-      type: "RUN_ERROR",
+      type: EventType.RUN_ERROR,
       runId,
-      error: { message: err.message ?? "Exchange error" },
+      message: err.message ?? "Exchange error",
       timestamp: Date.now(),
     });
     finishRun();
@@ -132,9 +139,9 @@ export function bridgeExchange(
   cleanups.push(
     session.onErrorStart((err) => {
       queue.push({
-        type: "RUN_ERROR",
+        type: EventType.RUN_ERROR,
         runId,
-        error: { message: err.message ?? "Session error" },
+        message: err.message ?? "Session error",
         timestamp: Date.now(),
       });
       finishRun();
@@ -158,8 +165,9 @@ export function bridgeExchange(
     const onAbort = () => {
       exchange.sendExchangeEnd();
       queue.push({
-        type: "RUN_FINISHED",
+        type: EventType.RUN_FINISHED,
         runId,
+        threadId,
         finishReason: "stop",
         timestamp: Date.now(),
       });
