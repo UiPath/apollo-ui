@@ -1470,5 +1470,91 @@ describe('Toolbox', () => {
       expect(screen.getByText('Real Child')).toBeInTheDocument();
       expect(screen.getAllByTestId('list-item-skeleton')).toHaveLength(3);
     });
+
+    it('skips skeleton sentinels when navigating via arrow keys', async () => {
+      // Skeletons are presentational — keyboard nav must land on the real
+      // item, not on placeholder rows. Without the fix, ArrowDown would set
+      // the active descendant to a skeleton row.
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      render(
+        <Toolbox
+          {...defaultProps}
+          initialItems={[
+            {
+              id: 'parent',
+              name: 'Loading Parent',
+              data: {},
+              children: [{ id: 'real-child', name: 'Real Child', data: {} }],
+              childrenLoading: true,
+            } as ListItem,
+          ]}
+        />
+      );
+      await timedUser.click(screen.getByText('Loading Parent'));
+      // Wait past the forward-transition timeout so the new level has stably
+      // rendered and the search bar is back in focus.
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      await timedUser.keyboard('{ArrowDown}');
+
+      const activeItem = document.querySelector('[aria-selected="true"]');
+      expect(activeItem).toHaveAttribute('id', 'toolbox-item-real-child');
+
+      vi.useRealTimers();
+    });
+
+    it('does not call onItemSelect or onItemHover for skeleton clicks/hovers', async () => {
+      const onItemSelect = vi.fn();
+      const onItemHover = vi.fn();
+      const items: ListItem[] = [
+        {
+          id: 'parent',
+          name: 'Loading Parent',
+          data: {},
+          children: [],
+          childrenLoading: true,
+        },
+      ];
+
+      render(
+        <Toolbox
+          {...defaultProps}
+          initialItems={items}
+          onItemSelect={onItemSelect}
+          onItemHover={onItemHover}
+        />
+      );
+      await user.click(screen.getByText('Loading Parent'));
+
+      const skeletonRows = screen.getAllByTestId('list-item-skeleton');
+      // Click the skeleton's parent <button> (the row), not the inner div.
+      const firstRow = skeletonRows[0]!.parentElement!;
+      await user.click(firstRow);
+      await user.hover(firstRow);
+
+      expect(onItemSelect).not.toHaveBeenCalled();
+      expect(onItemHover).not.toHaveBeenCalled();
+    });
+
+    it('suppresses skeletons during search', async () => {
+      const items: ListItem[] = [
+        {
+          id: 'parent',
+          name: 'Loading Parent',
+          data: {},
+          children: [{ id: 'child', name: 'Real Child', data: {} }],
+          childrenLoading: true,
+        },
+      ];
+
+      render(<Toolbox {...defaultProps} initialItems={items} />);
+      await user.click(screen.getByText('Loading Parent'));
+      expect(screen.getAllByTestId('list-item-skeleton').length).toBeGreaterThan(0);
+
+      await user.type(screen.getByPlaceholderText('Search'), 'Real');
+      expect(screen.queryByTestId('list-item-skeleton')).not.toBeInTheDocument();
+    });
   });
 });
