@@ -1,4 +1,9 @@
-import type { AnyClientTool, ModelMessage, StreamChunk } from "@tanstack/ai";
+import {
+  type AnyClientTool,
+  EventType,
+  type ModelMessage,
+  type StreamChunk,
+} from "@tanstack/ai";
 import type {
   ConnectConnectionAdapter,
   ToolCallPart,
@@ -47,18 +52,24 @@ function shouldSkipFollowUp(
 async function* emptyStream(): AsyncIterable<StreamChunk> {
   await Promise.resolve();
   const runId = crypto.randomUUID();
+  const threadId = crypto.randomUUID();
   const messageId = crypto.randomUUID();
-  yield { type: "RUN_STARTED", runId, timestamp: Date.now() };
+  yield { type: EventType.RUN_STARTED, runId, threadId, timestamp: Date.now() };
   yield {
-    type: "TEXT_MESSAGE_START",
+    type: EventType.TEXT_MESSAGE_START,
     messageId,
     role: "assistant",
     timestamp: Date.now(),
   };
-  yield { type: "TEXT_MESSAGE_END", messageId, timestamp: Date.now() };
   yield {
-    type: "RUN_FINISHED",
+    type: EventType.TEXT_MESSAGE_END,
+    messageId,
+    timestamp: Date.now(),
+  };
+  yield {
+    type: EventType.RUN_FINISHED,
     runId,
+    threadId,
     timestamp: Date.now(),
     finishReason: "stop",
   };
