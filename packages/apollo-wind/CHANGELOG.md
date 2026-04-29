@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.9.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.8.0...@uipath/apollo-wind@2.9.0) (2026-04-29)
+
+### Features
+
+* **apollo-wind:** proportional switch for dense form rows (size="sm") ([44250b7](https://github.com/uipath/apollo-ui/commit/44250b791962597c801b872cb37eff4f17d811be))
+
 ## [@uipath/apollo-wind-v2.8.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.7.1...@uipath/apollo-wind@2.8.0) (2026-04-28)
 
 ### Features
