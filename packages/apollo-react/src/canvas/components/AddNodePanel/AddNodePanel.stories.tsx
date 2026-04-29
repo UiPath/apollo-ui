@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel, Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAddNodeOnConnectEnd, useCanvasEvent } from '../../hooks';
 import {
   createNode,
@@ -413,6 +413,192 @@ export const NodePanelRegistryItems: Story = {
       <AddNodePanel {...args} />
     </StandalonePanelWrapper>
   ),
+};
+
+// ============================================================================
+// childrenLoading demos
+// ============================================================================
+
+const RPA_TOOL_PUBLISHED_ITEMS: ListItem<NodeItemData>[] = [
+  {
+    id: 'rpa-1',
+    name: 'invoice-extractor',
+    icon: { name: 'rpa' },
+    data: { type: 'rpa', category: 'RPA' },
+    description: '(Shared) extracts invoice data from PDFs',
+    section: 'Published',
+  },
+  {
+    id: 'rpa-2',
+    name: 'employee-onboarding',
+    icon: { name: 'rpa' },
+    data: { type: 'rpa', category: 'RPA' },
+    description: '(Shared) onboarding workflow',
+    section: 'Published',
+  },
+  {
+    id: 'rpa-3',
+    name: 'finance-reporter',
+    icon: { name: 'rpa' },
+    data: { type: 'rpa', category: 'RPA' },
+    description: '(Shared) monthly finance report',
+    section: 'Published',
+  },
+];
+
+const RPA_TOOL_IN_SOLUTION_ITEM: ListItem<NodeItemData> = {
+  id: 'rpa-local',
+  name: 'RPA Workflow',
+  icon: { name: 'rpa' },
+  data: { type: 'rpa', category: 'RPA' },
+  section: 'In this solution',
+};
+
+const RPA_TOOL_CREATE_NEW_ITEM: ListItem<NodeItemData> = {
+  id: 'create-new-rpa',
+  name: 'Create new RPA workflow',
+  icon: { name: 'plus' },
+  data: { type: 'create-new-rpa', category: 'RPA' },
+};
+
+const CHILDREN_LOADING_DEFAULT_ITEMS: ListItem<NodeItemData>[] = [
+  {
+    id: 'rpa-tool-default',
+    name: 'RPA workflow',
+    icon: { name: 'rpa' },
+    data: { type: 'rpa-category', category: 'RPA' },
+    children: [RPA_TOOL_CREATE_NEW_ITEM],
+    childrenLoading: true,
+  },
+];
+
+const CHILDREN_LOADING_SECTIONS_ITEMS: ListItem<NodeItemData>[] = [
+  {
+    id: 'rpa-tool-sections',
+    name: 'RPA workflow',
+    icon: { name: 'rpa' },
+    data: { type: 'rpa-category', category: 'RPA' },
+    // The user already has one solution-local item; orchestrator-backed
+    // "Published" content is still streaming, so we render its header
+    // pre-emptively + 3 skeletons. Once items arrive they slot under the
+    // same header without layout shift.
+    children: [RPA_TOOL_CREATE_NEW_ITEM, RPA_TOOL_IN_SOLUTION_ITEM],
+    childrenLoading: { sections: [{ name: 'Published', count: 3 }] },
+  },
+];
+
+/**
+ * Wrapper that flips `childrenLoading` to false and adds real items after
+ * `delayMs` to simulate a streaming source resolving.
+ */
+function StreamingChildrenLoadingStory({ delayMs }: { delayMs: number }) {
+  const [resolved, setResolved] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setResolved(true), delayMs);
+    return () => clearTimeout(timer);
+  }, [delayMs]);
+
+  const items: ListItem<NodeItemData>[] = useMemo(
+    () => [
+      {
+        id: 'rpa-tool-streaming',
+        name: 'RPA workflow',
+        icon: { name: 'rpa' },
+        data: { type: 'rpa-category', category: 'RPA' },
+        children: resolved
+          ? [RPA_TOOL_CREATE_NEW_ITEM, RPA_TOOL_IN_SOLUTION_ITEM, ...RPA_TOOL_PUBLISHED_ITEMS]
+          : [RPA_TOOL_CREATE_NEW_ITEM, RPA_TOOL_IN_SOLUTION_ITEM],
+        childrenLoading: resolved ? undefined : { sections: [{ name: 'Published', count: 3 }] },
+      },
+    ],
+    [resolved]
+  );
+
+  return (
+    <StandalonePanelWrapper>
+      <AddNodePanel
+        items={items}
+        onNodeSelect={(node) => console.log('Selected:', node)}
+        onClose={() => console.log('Closed')}
+      />
+    </StandalonePanelWrapper>
+  );
+}
+
+export const NodePanelChildrenLoadingDefault: Story = {
+  name: 'childrenLoading: default skeletons',
+  parameters: {
+    docs: {
+      description: {
+        story: [
+          'Drill into "RPA workflow" to see the default 3 skeleton rows.',
+          '',
+          "The category sets `childrenLoading: true` to opt into Apollo's built-in",
+          "skeleton placeholder. The skeleton mirrors a real row's geometry —",
+          '32×32 icon + name + description — so the layout stays stable when real',
+          'items take over. Top-level rows are not dimmed.',
+        ].join('\n'),
+      },
+    },
+  },
+  args: {
+    items: CHILDREN_LOADING_DEFAULT_ITEMS,
+    onNodeSelect: (node) => console.log('Selected node:', node),
+    onClose: () => console.log('Closed selector'),
+  },
+  render: (args) => (
+    <StandalonePanelWrapper>
+      <AddNodePanel {...args} />
+    </StandalonePanelWrapper>
+  ),
+};
+
+export const NodePanelChildrenLoadingSections: Story = {
+  name: 'childrenLoading: preemptive section headers',
+  parameters: {
+    docs: {
+      description: {
+        story: [
+          'Drill into "RPA workflow" to see the "Published" section header pre-rendered',
+          'with skeleton rows beneath it, while a separate "In this solution" item is',
+          'already loaded above.',
+          '',
+          'Use `childrenLoading: { sections: [...] }` when you already know the final',
+          'section structure. Real items with a matching `section` slot under the same',
+          'header so the layout does not shift when content arrives.',
+        ].join('\n'),
+      },
+    },
+  },
+  args: {
+    items: CHILDREN_LOADING_SECTIONS_ITEMS,
+    onNodeSelect: (node) => console.log('Selected node:', node),
+    onClose: () => console.log('Closed selector'),
+  },
+  render: (args) => (
+    <StandalonePanelWrapper>
+      <AddNodePanel {...args} />
+    </StandalonePanelWrapper>
+  ),
+};
+
+export const NodePanelChildrenLoadingStreaming: Story = {
+  name: 'childrenLoading: streaming → real content',
+  parameters: {
+    docs: {
+      description: {
+        story: [
+          'Demonstrates the layout-stability promise. Drill into "RPA workflow"',
+          'while the source is still loading — you see the "Published" section',
+          'header + 3 skeletons. After ~3 seconds, real items replace the',
+          'skeletons under the same header. The "Create new" row, "In this',
+          'solution" item, and "Published" header all stay put.',
+        ].join('\n'),
+      },
+    },
+  },
+  render: () => <StreamingChildrenLoadingStory delayMs={3000} />,
 };
 
 export const NodePanelScrollPreservation: Story = {

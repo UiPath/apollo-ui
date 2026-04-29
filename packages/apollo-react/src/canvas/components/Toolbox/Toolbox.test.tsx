@@ -1406,4 +1406,69 @@ describe('Toolbox', () => {
       expect(screen.getByText('Category A')).toBeInTheDocument();
     });
   });
+
+  describe('childrenLoading', () => {
+    let user: UserEvent;
+
+    beforeEach(() => {
+      user = userEvent.setup();
+    });
+
+    it('renders skeletons when drilling into an item with childrenLoading=true and empty children', async () => {
+      const items: ListItem[] = [
+        {
+          id: 'parent',
+          name: 'Loading Parent',
+          data: {},
+          children: [],
+          childrenLoading: true,
+        },
+      ];
+
+      render(<Toolbox {...defaultProps} initialItems={items} />);
+      await user.click(screen.getByText('Loading Parent'));
+
+      expect(screen.getAllByTestId('list-item-skeleton')).toHaveLength(3);
+      expect(screen.queryByText('No nodes found')).not.toBeInTheDocument();
+    });
+
+    it('renders preemptive section headers when childrenLoading provides sections', async () => {
+      const items: ListItem[] = [
+        {
+          id: 'parent',
+          name: 'Loading Parent',
+          data: {},
+          children: [],
+          childrenLoading: { sections: [{ name: 'Published', count: 2 }] },
+        },
+      ];
+
+      render(<Toolbox {...defaultProps} initialItems={items} />);
+      await user.click(screen.getByText('Loading Parent'));
+
+      expect(screen.getByText('Published')).toBeInTheDocument();
+      expect(screen.getAllByTestId('list-item-skeleton')).toHaveLength(2);
+    });
+
+    it('appends skeletons after partially-loaded children to signal "more on the way"', async () => {
+      // Multi-source categories load progressively — Apollo keeps showing
+      // skeletons as long as the parent flags `childrenLoading`, so the user
+      // knows additional items are still arriving.
+      const items: ListItem[] = [
+        {
+          id: 'parent',
+          name: 'Loading Parent',
+          data: {},
+          children: [{ id: 'child', name: 'Real Child', data: {} }],
+          childrenLoading: true,
+        },
+      ];
+
+      render(<Toolbox {...defaultProps} initialItems={items} />);
+      await user.click(screen.getByText('Loading Parent'));
+
+      expect(screen.getByText('Real Child')).toBeInTheDocument();
+      expect(screen.getAllByTestId('list-item-skeleton')).toHaveLength(3);
+    });
+  });
 });

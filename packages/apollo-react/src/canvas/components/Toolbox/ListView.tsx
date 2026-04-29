@@ -22,6 +22,22 @@ export interface ListItemIcon {
   Component?: React.ComponentType;
 }
 
+/**
+ * Configuration for the skeleton placeholder shown when an item is drilled
+ * into and its children are still loading.
+ */
+export type ChildrenLoadingSpec = {
+  /** Number of skeleton rows to render when no `sections` are provided. Defaults to 3. */
+  count?: number;
+  /**
+   * Pre-render section headers + skeleton rows under each. Once real items
+   * arrive with a matching `section`, they slot under the same header so the
+   * layout doesn't shift. Use this when you already know the final section
+   * structure (e.g. "Published", "In this solution").
+   */
+  sections?: { name: string; count?: number }[];
+};
+
 export type ListItem<T = any> = {
   id: string;
   name: string;
@@ -32,6 +48,14 @@ export type ListItem<T = any> = {
   color?: string;
   colorDark?: string;
   children?: ListItem<T>[] | ((id: string, name: string) => Promise<ListItem<T>[]>);
+  /**
+   * When this item is drilled into and `children` resolves to an empty array,
+   * render skeleton placeholder rows instead of the empty-state message.
+   * Pass `true` for the default (3 rows) or a {@link ChildrenLoadingSpec} for
+   * customization. Skeletons disappear once `children` updates to a non-empty
+   * array.
+   */
+  childrenLoading?: boolean | ChildrenLoadingSpec;
 };
 
 export type RenderItem<T extends ListItem> =
@@ -112,14 +136,14 @@ const ListViewRow = memo(
 
     const handleButtonClick = useCallback(() => {
       const clickTarget = renderedItems[index];
-      if (clickTarget?.type === 'item') {
+      if (clickTarget?.type === 'item' && !isSkeletonItem(clickTarget.item)) {
         onItemClick(clickTarget.item, index);
       }
     }, [onItemClick, renderedItems, index]);
 
     const handleButtonHover = useCallback(() => {
       const hoverTarget = renderedItems[index];
-      if (hoverTarget?.type === 'item') {
+      if (hoverTarget?.type === 'item' && !isSkeletonItem(hoverTarget.item)) {
         onItemHover?.(hoverTarget.item);
       }
     }, [onItemHover, renderedItems, index]);
@@ -133,6 +157,17 @@ const ListViewRow = memo(
     }
 
     const item = renderItem.item;
+
+    // Skeleton sentinels render as the placeholder bar, never as a clickable
+    // row. They can't appear in `activeIndex` because Toolbox's keyboard
+    // navigation skips items injected by ListView itself.
+    if (isSkeletonItem(item)) {
+      return (
+        <div style={style}>
+          <ListItemSkeleton />
+        </div>
+      );
+    }
     const bgColor = isDarkMode ? (item.colorDark ?? item.color) : item.color;
 
     const isActive = index === activeIndex;
@@ -196,6 +231,64 @@ interface ListViewProps<T extends ListItem> {
   emptyStateIcon?: string;
   isLoading?: boolean;
   enableSections?: boolean;
+  /**
+   * Render skeleton placeholder rows when `items` is empty, independent of
+   * `isLoading`. Accepts the same shape as {@link ListItem.childrenLoading}.
+   * Use this when you want to show "more on the way" without disabling the
+   * rest of the panel (which `isLoading` does via the `.loading` row class).
+   */
+  loadingSkeleton?: boolean | ChildrenLoadingSpec;
+}
+
+/**
+ * Skeleton row used for the {@link ListItem.childrenLoading} drill-in path
+ * and the legacy `isLoading && items.length === 0` empty-state. Mirrors a
+ * real row's geometry — 32×32 icon + name + description — so the layout
+ * stays stable when real items take over.
+ */
+const ListItemSkeleton = () => (
+  <div
+    className="flex items-center gap-2.5 h-8 px-2"
+    role="presentation"
+    aria-hidden="true"
+    data-testid="list-item-skeleton"
+  >
+    <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
+    <div className="flex-1 space-y-1.5 min-w-0">
+      <Skeleton className="h-3.5 w-1/3" />
+      <Skeleton className="h-3 w-2/3" />
+    </div>
+  </div>
+);
+
+// Internal id prefix used to mark skeleton sentinel items injected by
+// `ListView`. Consumers must not produce ids with this prefix.
+const SKELETON_ID_PREFIX = '__listview_skeleton__';
+const isSkeletonItem = (item: ListItem): boolean => item.id.startsWith(SKELETON_ID_PREFIX);
+
+/**
+ * Build the synthetic skeleton ListItem entries that get appended to the
+ * caller's `items` while `loadingSkeleton` is active. These flow through the
+ * normal section-grouping pipeline so real items with a matching `section`
+ * end up under the same header — and inserting them as ListItems means
+ * react-window virtualizes them just like any other row.
+ */
+function buildSkeletonItems(spec: boolean | ChildrenLoadingSpec): ListItem[] {
+  const config: ChildrenLoadingSpec = typeof spec === 'object' ? spec : {};
+  const defaultCount = config.count ?? 3;
+  const make = (id: string, section?: string): ListItem => ({
+    id: `${SKELETON_ID_PREFIX}${id}`,
+    name: '',
+    data: {},
+    ...(section ? { section } : {}),
+  });
+
+  if (config.sections && config.sections.length > 0) {
+    return config.sections.flatMap((s) =>
+      Array.from({ length: s.count ?? defaultCount }, (_, i) => make(`${s.name}-${i}`, s.name))
+    );
+  }
+  return Array.from({ length: defaultCount }, (_, i) => make(`${i}`));
 }
 
 const ListViewInner = forwardRef(function ListView<T extends ListItem>(
@@ -210,14 +303,29 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
     emptyStateIcon = 'search-x',
     isLoading = false,
     enableSections = true,
+    loadingSkeleton,
   }: ListViewProps<T>,
   ref: React.Ref<ListViewHandle<T>>
 ) {
   const { isDarkMode } = useCanvasTheme();
 
+  // Merge skeleton sentinel rows with the caller's items so they flow through
+  // the normal section-grouping + virtualization pipeline. `loadingSkeleton`
+  // is the opt-in per-drill-in path; the legacy `isLoading && items.length
+  // === 0` behaviour is preserved by falling through to a `true` spec.
+  const activeSkeleton = loadingSkeleton ?? (isLoading && items.length === 0 ? true : null);
+  const skeletonItems = useMemo(
+    () => (activeSkeleton ? buildSkeletonItems(activeSkeleton) : []),
+    [activeSkeleton]
+  );
+  const allItems = useMemo(
+    () => (skeletonItems.length > 0 ? [...items, ...skeletonItems] : items),
+    [items, skeletonItems]
+  );
+
   const renderedItems = useMemo(
-    () => buildRenderedItems(items, enableSections),
-    [items, enableSections]
+    () => buildRenderedItems(allItems, enableSections),
+    [allItems, enableSections]
   );
 
   useImperativeHandle(ref, () => ({ renderedItems }), [renderedItems]);
@@ -227,19 +335,8 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
     [renderedItems, activeIndex, isLoading, isDarkMode, onItemClick, onItemHover]
   );
 
-  // Only show skeleton loaders when loading and no items exist
-  if (isLoading && items.length === 0) {
-    return (
-      <Column gap={8}>
-        {[...Array(3)].map((_, index) => (
-          <Skeleton className="h-8 w-full" key={index} />
-        ))}
-      </Column>
-    );
-  }
-
-  // Show empty state if no items and explicitly requested
-  if (items.length === 0) {
+  // Show empty state if neither real items nor skeletons would render.
+  if (allItems.length === 0) {
     return (
       <Column align="center" justify="center" flex={1} gap={10} style={{ minHeight: '250px' }}>
         <CanvasIcon icon={emptyStateIcon} size={48} color="var(--canvas-foreground-de-emp)" />
