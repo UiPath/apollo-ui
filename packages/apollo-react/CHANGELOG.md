@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.16.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.16.0...@uipath/apollo-react@4.16.1) (2026-04-29)
+
+### Bug Fixes
+
+* **apollo-react:** do not render tooltip with empty content [MST-9144] ([6c31954](https://github.com/UiPath/apollo-ui/commit/6c31954b9780c73e36520abd3c6d616e8be42c3f))
+
 ## [@uipath/apollo-react-v4.16.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.15.1...@uipath/apollo-react@4.16.0) (2026-04-29)
 
 ### Features
