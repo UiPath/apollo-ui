@@ -872,6 +872,20 @@
       "files": [{ "path": "registry/empty/empty.tsx", "type": "registry:ui" }]
     },
     {
+      "name": "feedback-vote-widget",
+      "type": "registry:ui",
+      "title": "Feedback Vote Widget",
+      "description": "A thumbs up/down feedback control with an optional comment textarea, designed for the UiPath Platform Feedback API.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@uipath/button", "@uipath/textarea"],
+      "files": [
+        {
+          "path": "registry/feedback-vote-widget/feedback-vote-widget.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "field",
       "type": "registry:ui",
       "title": "Field",
