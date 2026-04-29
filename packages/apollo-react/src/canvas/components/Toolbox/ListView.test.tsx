@@ -48,6 +48,92 @@ describe('ListView', () => {
     });
   });
 
+  describe('loadingSkeleton', () => {
+    it('should render the default 3 skeleton rows when loadingSkeleton=true and items is empty', () => {
+      render(<ListView {...defaultProps} items={[]} loadingSkeleton={true} />);
+
+      expect(screen.getAllByTestId('list-item-skeleton')).toHaveLength(3);
+      expect(screen.queryByText('No items found')).not.toBeInTheDocument();
+    });
+
+    it('should respect a custom skeleton count', () => {
+      render(<ListView {...defaultProps} items={[]} loadingSkeleton={{ count: 5 }} />);
+
+      expect(screen.getAllByTestId('list-item-skeleton')).toHaveLength(5);
+    });
+
+    it('should render section headers + per-section skeletons when sections are provided', () => {
+      render(
+        <ListView
+          {...defaultProps}
+          items={[]}
+          loadingSkeleton={{
+            sections: [
+              { name: 'Published', count: 2 },
+              { name: 'In this solution', count: 1 },
+            ],
+          }}
+        />
+      );
+
+      expect(screen.getByText('Published')).toBeInTheDocument();
+      expect(screen.getByText('In this solution')).toBeInTheDocument();
+      expect(screen.getAllByTestId('list-item-skeleton')).toHaveLength(3);
+    });
+
+    it('should append skeletons after real items while loadingSkeleton is active', () => {
+      // The whole point of `loadingSkeleton` is "more on the way" — skeletons
+      // must keep rendering even after some content has loaded.
+      const items: ListItem[] = [{ id: 'item-1', name: 'Item 1', data: {} }];
+
+      render(<ListView {...defaultProps} items={items} loadingSkeleton={true} />);
+
+      expect(screen.getByText('Item 1')).toBeInTheDocument();
+      expect(screen.getAllByTestId('list-item-skeleton')).toHaveLength(3);
+    });
+
+    it('should drop skeletons once loadingSkeleton is cleared', () => {
+      const items: ListItem[] = [{ id: 'item-1', name: 'Item 1', data: {} }];
+
+      const { rerender } = render(
+        <ListView {...defaultProps} items={items} loadingSkeleton={true} />
+      );
+      expect(screen.getAllByTestId('list-item-skeleton')).toHaveLength(3);
+
+      rerender(<ListView {...defaultProps} items={items} loadingSkeleton={undefined} />);
+      expect(screen.queryByTestId('list-item-skeleton')).not.toBeInTheDocument();
+      expect(screen.getByText('Item 1')).toBeInTheDocument();
+    });
+
+    it('should not apply the .loading row class while loadingSkeleton is active with items', () => {
+      // `loadingSkeleton` is independent of `isLoading`; it only swaps the
+      // empty-state for skeletons and must not dim/disable other rows.
+      const items: ListItem[] = [{ id: 'item-1', name: 'Item 1', data: {} }];
+
+      render(<ListView {...defaultProps} items={items} loadingSkeleton={true} />);
+
+      const option = screen.getByRole('option');
+      expect(option).not.toHaveClass('loading');
+      expect(option).not.toBeDisabled();
+    });
+
+    it('should prefer loadingSkeleton over isLoading for the empty state when both are set', () => {
+      // Sections-aware skeleton wins over the legacy 3-row default so consumers
+      // can opt into preemptive headers without having to gate isLoading.
+      render(
+        <ListView
+          {...defaultProps}
+          items={[]}
+          isLoading={true}
+          loadingSkeleton={{ sections: [{ name: 'Published', count: 1 }] }}
+        />
+      );
+
+      expect(screen.getByText('Published')).toBeInTheDocument();
+      expect(screen.getAllByTestId('list-item-skeleton')).toHaveLength(1);
+    });
+  });
+
   describe('Item rendering', () => {
     it('should render basic item with name and icon', () => {
       const items: ListItem[] = [

@@ -624,6 +624,9 @@ export function Toolbox<T>({
               onItemHover={onItemHover}
               onScroll={handleListScroll}
               enableSections={!isSearching}
+              // Suppress skeletons while searching — the user expects
+              // search results, not a "more on the way" hint.
+              loadingSkeleton={isSearching ? undefined : currentParentItem?.childrenLoading}
             />
           </AnimatedContent>
         </AnimatedContainer>
