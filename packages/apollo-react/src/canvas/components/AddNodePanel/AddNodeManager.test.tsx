@@ -121,6 +121,31 @@ describe('AddNodeManager', () => {
     });
   });
 
+  it('preserves preview parent scope when replacing a loop child preview', () => {
+    const parentedPreviewNode: Node = {
+      ...previewNode,
+      parentId: 'loop-1',
+      extent: 'parent',
+    };
+    mockNodes = [existingNode, parentedPreviewNode];
+    mockPreviewNodeReturn.mockReturnValue({
+      previewNode: parentedPreviewNode,
+      previewNodeConnectionInfo: connectionInfo,
+    });
+
+    render(<AddNodeManager customPanel={TestPanel} />);
+
+    screen.getByTestId('select-node').click();
+
+    const addedNode = mockNodes.find((n) => n.id === 'test-node-1234567890');
+    expect(addedNode).toMatchObject({
+      id: 'test-node-1234567890',
+      parentId: 'loop-1',
+      extent: 'parent',
+      position: parentedPreviewNode.position,
+    });
+  });
+
   it('applies onBeforeNodeAdded transforms when node is added as source', () => {
     const onBeforeNodeAdded = vi.fn((node: Node, edges: Edge[]) => ({
       newNode: {

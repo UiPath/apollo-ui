@@ -1,16 +1,15 @@
 import { Handle, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
-import { GRID_SPACING } from '../../constants';
 import type { HandleConfigurationSpecificPosition } from '../../schema/node-definition/handle';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import { cx } from '../../utils/CssUtil';
 import {
-  calculateGridAlignedHandlePositions,
-  HANDLE_CROSS_AXIS_SIZE_PX,
-  HANDLE_EDGE_COVERAGE_RATIO,
-  pixelToPercent,
-} from './ButtonHandleStyleUtils';
-import { HandleButton, type HandleButtonPortal, HandleHoverBridge } from './HandleButton';
+  getHandleActionPortal,
+  getInwardHandleLayout,
+  type InwardHandleLayout,
+} from './ButtonHandleLayoutUtils';
+import { calculateGridAlignedHandlePositions, pixelToPercent } from './ButtonHandleStyleUtils';
+import { HandleButton, HandleHoverBridge } from './HandleButton';
 import { HandleLabel } from './HandleLabel';
 import { HandleNotch, type HandleType } from './HandleNotch';
 import { useButtonHandleSizeAndPosition } from './useButtonHandleSizeAndPosition';
@@ -22,14 +21,6 @@ export interface HandleActionEvent {
   position: Position;
   originalEvent: React.MouseEvent;
 }
-
-const INWARD_HANDLE_ANCHOR_SIZE_PX = GRID_SPACING;
-const INWARD_HANDLE_ANCHOR_RADIUS_PX = INWARD_HANDLE_ANCHOR_SIZE_PX / 2;
-const INWARD_NOTCH_OVERLAP_PX = {
-  artifact: 5,
-  input: 4,
-  output: 6,
-} as const;
 
 type ButtonHandleProps = {
   id: string;
@@ -190,11 +181,7 @@ const ButtonHandleBase = ({
               ? 'cursor-crosshair! pointer-events-auto! opacity-100'
               : 'cursor-default! pointer-events-none! opacity-0'
           )}
-          style={{
-            ...layout.anchorStyle,
-            width: INWARD_HANDLE_ANCHOR_SIZE_PX,
-            height: INWARD_HANDLE_ANCHOR_SIZE_PX,
-          }}
+          style={layout.anchorStyle}
         />
         {showActionButton ? (
           <HandleButton
@@ -281,71 +268,6 @@ const ButtonHandleBase = ({
 
 export const ButtonHandle = memo(ButtonHandleBase);
 
-function getHandleActionPortal({
-  nodeId,
-  position,
-  positionPercent,
-  total,
-  nodeWidth,
-  nodeHeight,
-}: {
-  nodeId: string;
-  position: Position;
-  positionPercent: number;
-  total: number;
-  nodeWidth?: number;
-  nodeHeight?: number;
-}): HandleButtonPortal | undefined {
-  if (!nodeWidth || !nodeHeight) {
-    return undefined;
-  }
-
-  const edgeCoverageRatio = HANDLE_EDGE_COVERAGE_RATIO / total;
-  const horizontalWidth = nodeWidth * edgeCoverageRatio;
-  const verticalHeight = nodeHeight * edgeCoverageRatio;
-  const x = nodeWidth * (positionPercent / 100);
-  const y = nodeHeight * (positionPercent / 100);
-
-  switch (position) {
-    case Position.Top:
-      return {
-        nodeId,
-        left: x,
-        top: 0,
-        width: horizontalWidth,
-        height: HANDLE_CROSS_AXIS_SIZE_PX,
-        transform: 'translate(-50%, -50%)',
-      };
-    case Position.Bottom:
-      return {
-        nodeId,
-        left: x,
-        top: nodeHeight - HANDLE_CROSS_AXIS_SIZE_PX,
-        width: horizontalWidth,
-        height: HANDLE_CROSS_AXIS_SIZE_PX,
-        transform: 'translate(-50%, 50%)',
-      };
-    case Position.Left:
-      return {
-        nodeId,
-        left: 0,
-        top: y,
-        width: HANDLE_CROSS_AXIS_SIZE_PX,
-        height: verticalHeight,
-        transform: 'translate(-50%, -50%)',
-      };
-    case Position.Right:
-      return {
-        nodeId,
-        left: nodeWidth - HANDLE_CROSS_AXIS_SIZE_PX,
-        top: y,
-        width: HANDLE_CROSS_AXIS_SIZE_PX,
-        height: verticalHeight,
-        transform: 'translate(50%, -50%)',
-      };
-  }
-}
-
 function InwardHandleContent({
   handleType,
   isVertical,
@@ -397,64 +319,6 @@ function InwardHandleContent({
       {notchElement}
     </div>
   );
-}
-
-type InwardHandleLayout = {
-  rootTransform: string;
-  contentDirectionClassName: string;
-  notchStyle: React.CSSProperties;
-  anchorStyle: React.CSSProperties;
-};
-
-function getInwardHandleLayout(position: Position, handleType: HandleType): InwardHandleLayout {
-  const notchOverlap = -INWARD_NOTCH_OVERLAP_PX[handleType];
-
-  switch (position) {
-    case Position.Left:
-      return {
-        rootTransform: 'translate(0, -50%)',
-        contentDirectionClassName: 'flex-row',
-        notchStyle: { marginLeft: notchOverlap },
-        anchorStyle: {
-          left: `calc(100% - ${INWARD_HANDLE_ANCHOR_RADIUS_PX}px)`,
-          top: '50%',
-          transform: 'translateY(-50%)',
-        },
-      };
-    case Position.Right:
-      return {
-        rootTransform: 'translate(0, -50%)',
-        contentDirectionClassName: 'flex-row-reverse',
-        notchStyle: { marginRight: notchOverlap },
-        anchorStyle: {
-          left: -INWARD_HANDLE_ANCHOR_RADIUS_PX,
-          top: '50%',
-          transform: 'translateY(-50%)',
-        },
-      };
-    case Position.Top:
-      return {
-        rootTransform: 'translate(-50%, 0)',
-        contentDirectionClassName: 'flex-col',
-        notchStyle: { marginTop: notchOverlap },
-        anchorStyle: {
-          left: '50%',
-          top: `calc(100% - ${INWARD_HANDLE_ANCHOR_RADIUS_PX}px)`,
-          transform: 'translateX(-50%)',
-        },
-      };
-    case Position.Bottom:
-      return {
-        rootTransform: 'translate(-50%, 0)',
-        contentDirectionClassName: 'flex-col-reverse',
-        notchStyle: { marginBottom: notchOverlap },
-        anchorStyle: {
-          left: '50%',
-          top: -INWARD_HANDLE_ANCHOR_RADIUS_PX,
-          transform: 'translateX(-50%)',
-        },
-      };
-  }
 }
 
 export interface ButtonHandleConfig {
