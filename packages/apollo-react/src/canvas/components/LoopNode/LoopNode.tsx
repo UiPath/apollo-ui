@@ -294,11 +294,17 @@ function LoopNodeComponent(props: LoopNodeProps) {
       <ResizeCornerIndicators visible={showResizeControls} />
       {showResizeControls ? <ResizeControls onResize={handleResize} /> : null}
       <Header title={displayTitle} icon={displayIcon} loading={isLoading} isParallel={isParallel} />
-      <BodyFrame
-        isEmpty={showEmptyStateButton}
-        isLoading={isLoading}
-        onAddFirstChild={handleEmptyClick}
-      />
+      <BodyFrame isEmpty={showEmptyStateButton} isLoading={isLoading} />
+      {showEmptyStateButton ? (
+        <div
+          className={cn(
+            'pointer-events-none absolute left-1/2 top-1/2',
+            '-translate-x-1/2 -translate-y-1/2'
+          )}
+        >
+          <EmptyState onAddFirstChild={handleEmptyClick} />
+        </div>
+      ) : null}
       {toolbarConfig && (
         <NodeToolbar
           nodeId={id}
@@ -391,29 +397,19 @@ function EmptyState({ onAddFirstChild }: { onAddFirstChild: () => void }) {
   );
 }
 
-function BodyFrame({
-  isEmpty,
-  isLoading,
-  onAddFirstChild,
-}: {
-  isEmpty?: boolean;
-  isLoading?: boolean;
-  onAddFirstChild: () => void;
-}) {
+function BodyFrame({ isEmpty, isLoading }: { isEmpty?: boolean; isLoading?: boolean }) {
   return (
     <div
       data-testid="loop-body-frame"
       data-empty={isEmpty ? 'true' : 'false'}
       className={cn(
         'relative m-2.5 flex flex-1 rounded-xl border-[1.5px] border-dashed border-border-subtle bg-transparent',
-        'pointer-events-none',
-        isEmpty && 'items-center justify-center'
+        'pointer-events-none'
       )}
     >
       {isLoading ? (
         <div className="m-6 h-14 w-full animate-pulse rounded-[18px] bg-(--canvas-background-overlay)" />
       ) : null}
-      {isEmpty ? <EmptyState onAddFirstChild={onAddFirstChild} /> : null}
     </div>
   );
 }
