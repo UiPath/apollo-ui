@@ -25,6 +25,76 @@ describe('ListView', () => {
       expect(screen.getByText('Custom empty message')).toBeInTheDocument();
     });
 
+    it('should call renderEmptyState and render its result when items are empty', () => {
+      const renderEmptyState = vi.fn(() => (
+        <div data-testid="custom-empty">Bring your own empty state</div>
+      ));
+      render(<ListView {...defaultProps} items={[]} renderEmptyState={renderEmptyState} />);
+
+      expect(renderEmptyState).toHaveBeenCalledTimes(1);
+      expect(screen.getByTestId('custom-empty')).toBeInTheDocument();
+    });
+
+    it('should let renderEmptyState replace the default icon + message', () => {
+      render(
+        <ListView
+          {...defaultProps}
+          items={[]}
+          emptyStateMessage="Default message"
+          renderEmptyState={() => <div>Custom render wins</div>}
+        />
+      );
+
+      expect(screen.getByText('Custom render wins')).toBeInTheDocument();
+      expect(screen.queryByText('Default message')).not.toBeInTheDocument();
+    });
+
+    it('should not call renderEmptyState when items are present', () => {
+      const renderEmptyState = vi.fn(() => <div>Should not render</div>);
+      const items: ListItem[] = [{ id: 'a', name: 'A', data: {} }];
+
+      render(<ListView {...defaultProps} items={items} renderEmptyState={renderEmptyState} />);
+
+      expect(renderEmptyState).not.toHaveBeenCalled();
+      expect(screen.queryByText('Should not render')).not.toBeInTheDocument();
+    });
+
+    it('should not call renderEmptyState while isLoading produces skeleton rows', () => {
+      const renderEmptyState = vi.fn(() => <div>Should not render</div>);
+
+      render(
+        <ListView
+          {...defaultProps}
+          items={[]}
+          isLoading={true}
+          renderEmptyState={renderEmptyState}
+        />
+      );
+
+      // isLoading + empty items → 3 default skeletons render → renderedItems is
+      // non-empty → renderEmptyState is bypassed.
+      expect(renderEmptyState).not.toHaveBeenCalled();
+      expect(screen.queryByText('Should not render')).not.toBeInTheDocument();
+      expect(screen.getAllByTestId('list-item-skeleton')).toHaveLength(3);
+    });
+
+    it('should not call renderEmptyState while loadingSkeleton produces rows', () => {
+      const renderEmptyState = vi.fn(() => <div>Should not render</div>);
+
+      render(
+        <ListView
+          {...defaultProps}
+          items={[]}
+          loadingSkeleton={true}
+          renderEmptyState={renderEmptyState}
+        />
+      );
+
+      expect(renderEmptyState).not.toHaveBeenCalled();
+      expect(screen.queryByText('Should not render')).not.toBeInTheDocument();
+      expect(screen.getAllByTestId('list-item-skeleton')).toHaveLength(3);
+    });
+
     it('should show loading spinner when loading with no items', () => {
       render(<ListView {...defaultProps} items={[]} isLoading={true} />);
 
