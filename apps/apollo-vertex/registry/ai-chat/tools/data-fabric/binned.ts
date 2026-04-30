@@ -3,6 +3,7 @@ import type {
   NumericOrDatetimeField,
 } from "@uipath/apollo-dashboarding";
 import { z } from "zod";
+import { fail, ok, type ResolverResult } from "./resolver-result";
 import {
   type Entity,
   type EntityField,
@@ -130,13 +131,26 @@ export function resolveSingleBinnedDimension(
   entity: Entity,
   dimension: string,
   allowed: ReadonlyArray<BinnedDimensionType>,
-): ResolvedDimension | null {
+): ResolverResult<ResolvedDimension> {
   const field = entity.fields.find((f) => f.name === dimension);
-  if (!field) return null;
+  if (!field) {
+    return fail({
+      reason: "unknown_field_in_entity",
+      field: dimension,
+      entity: entity.name,
+    });
+  }
   const type = mapFieldType(field.dataType);
-  if (type !== "numeric" && type !== "datetime") return null;
-  if (!allowed.includes(type)) return null;
-  return { id: field.name, type };
+  if (!(type === "numeric" || type === "datetime") || !allowed.includes(type)) {
+    return fail({
+      reason: "wrong_dimension_type_in_entity",
+      field: dimension,
+      entity: entity.name,
+      actual: field.dataType,
+      expected: allowed.join(" or "),
+    });
+  }
+  return ok({ id: field.name, type });
 }
 
 export function resolveMultiBinnedDimension(
@@ -144,44 +158,80 @@ export function resolveMultiBinnedDimension(
   dimension: string,
   qualifiedFields: Map<string, EntityField>,
   allowed: ReadonlyArray<BinnedDimensionType>,
-): ResolvedDimension | null {
+): ResolverResult<ResolvedDimension> {
   const qualified = dimension.includes(".")
     ? dimension
     : `${primaryEntity}.${dimension}`;
   const field = qualifiedFields.get(qualified);
-  if (!field) return null;
+  if (!field) {
+    return fail({
+      reason: "unknown_field_in_joined",
+      field: qualified,
+    });
+  }
   const type = mapFieldType(field.dataType);
-  if (type !== "numeric" && type !== "datetime") return null;
-  if (!allowed.includes(type)) return null;
-  return { id: qualified, type };
+  if (!(type === "numeric" || type === "datetime") || !allowed.includes(type)) {
+    return fail({
+      reason: "wrong_dimension_type_in_joined",
+      field: qualified,
+      actual: field.dataType,
+      expected: allowed.join(" or "),
+    });
+  }
+  return ok({ id: qualified, type });
 }
 
 export function resolveSingleBinnedMetric(
   entity: Entity,
   metric: MetricInput | undefined,
-): ResolvedMetric | null {
+): ResolverResult<ResolvedMetric> {
   if (!metric || metric.aggregation === "COUNT") {
     const userField =
       metric?.field && entity.fields.some((f) => f.name === metric.field)
         ? metric.field
         : null;
     const field = userField ?? pickCountField(entity);
-    if (!field) return null;
-    return {
+    if (!field) {
+      return fail({
+        reason: "no_countable_in_entity",
+        entity: entity.name,
+      });
+    }
+    return ok({
       field,
       aggregation: "COUNT",
       display: userField ? `Count of ${userField}` : "Count",
-    };
+    });
   }
 
-  if (!metric.field) return null;
+  if (!metric.field) {
+    return fail({
+      reason: "missing_metric_field",
+      aggregation: metric.aggregation,
+    });
+  }
   const field = entity.fields.find((f) => f.name === metric.field);
-  if (!field || field.dataType !== "number") return null;
-  return {
+  if (!field) {
+    return fail({
+      reason: "unknown_field_in_entity",
+      field: metric.field,
+      entity: entity.name,
+    });
+  }
+  if (field.dataType !== "number") {
+    return fail({
+      reason: "wrong_metric_type_in_entity",
+      field: metric.field,
+      entity: entity.name,
+      actual: field.dataType,
+      aggregation: metric.aggregation,
+    });
+  }
+  return ok({
     field: field.name,
     aggregation: metric.aggregation,
     display: `${formatAggregation(metric.aggregation)} of ${field.name}`,
-  };
+  });
 }
 
 // Drop the entity prefix from a qualified `EntityName.Field` reference for use
@@ -196,7 +246,7 @@ export function resolveMultiBinnedMetric(
   primaryEntity: string,
   metric: MetricInput | undefined,
   qualifiedFields: Map<string, EntityField>,
-): ResolvedMetric | null {
+): ResolverResult<ResolvedMetric> {
   if (!metric || metric.aggregation === "COUNT") {
     let userField: string | null = null;
     if (metric?.field) {
@@ -207,25 +257,48 @@ export function resolveMultiBinnedMetric(
     }
     const field =
       userField ?? pickCountFieldQualified(primaryEntity, qualifiedFields);
-    if (!field) return null;
-    return {
+    if (!field) {
+      return fail({
+        reason: "no_countable_in_joined",
+        primary: primaryEntity,
+      });
+    }
+    return ok({
       field,
       aggregation: "COUNT",
       display: userField
         ? `Count of ${unqualifiedDisplay(userField)}`
         : "Count",
-    };
+    });
   }
 
-  if (!metric.field) return null;
+  if (!metric.field) {
+    return fail({
+      reason: "missing_metric_field",
+      aggregation: metric.aggregation,
+    });
+  }
   const qualified = metric.field.includes(".")
     ? metric.field
     : `${primaryEntity}.${metric.field}`;
   const field = qualifiedFields.get(qualified);
-  if (!field || field.dataType !== "number") return null;
-  return {
+  if (!field) {
+    return fail({
+      reason: "unknown_field_in_joined",
+      field: qualified,
+    });
+  }
+  if (field.dataType !== "number") {
+    return fail({
+      reason: "wrong_metric_type_in_joined",
+      field: qualified,
+      actual: field.dataType,
+      aggregation: metric.aggregation,
+    });
+  }
+  return ok({
     field: qualified,
     aggregation: metric.aggregation,
     display: `${formatAggregation(metric.aggregation)} of ${unqualifiedDisplay(qualified)}`,
-  };
+  });
 }

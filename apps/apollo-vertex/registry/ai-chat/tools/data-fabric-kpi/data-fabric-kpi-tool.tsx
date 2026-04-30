@@ -5,7 +5,7 @@ import { dataFabricAdapter } from "@uipath/apollo-dashboarding";
 import { DateTime } from "luxon";
 import { z } from "zod";
 import { KpiChartCard } from "../../charts/kpi-chart-card";
-import { NoDataMessage } from "../../charts/no-data-message";
+import { ToolResolutionError } from "../../charts/tool-resolution-error";
 import {
   buildMetricEntry,
   metricSchema,
@@ -87,7 +87,11 @@ ${generateEntityFieldsDocs(context.entities)}`;
 
     const entity = context.entities[entityName];
     if (!entity) {
-      return <NoDataMessage />;
+      return (
+        <ToolResolutionError
+          failure={{ reason: "unknown_entity", entity: entityName }}
+        />
+      );
     }
 
     const qualifiedFields = isMultiEntity
@@ -101,11 +105,11 @@ ${generateEntityFieldsDocs(context.entities)}`;
       ? resolveMultiBinnedMetric(entityName, metric, qualifiedFields)
       : resolveSingleBinnedMetric(entity, metric);
 
-    if (!resolvedMetric) {
-      return <NoDataMessage />;
+    if (!resolvedMetric.ok) {
+      return <ToolResolutionError failure={resolvedMetric} />;
     }
 
-    const metricEntry = buildMetricEntry(resolvedMetric);
+    const metricEntry = buildMetricEntry(resolvedMetric.value);
 
     const dataModel = {
       id: entityName,

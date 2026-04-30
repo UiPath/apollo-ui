@@ -5,7 +5,7 @@ import { dataFabricAdapter } from "@uipath/apollo-dashboarding";
 import { DateTime } from "luxon";
 import { z } from "zod";
 import { LineChartCard } from "../../charts/line-chart-card";
-import { NoDataMessage } from "../../charts/no-data-message";
+import { ToolResolutionError } from "../../charts/tool-resolution-error";
 import {
   buildBinnedDataModel,
   metricSchema,
@@ -95,7 +95,11 @@ ${generateEntityFieldsDocs(context.entities)}`;
 
     const entity = context.entities[entityName];
     if (!entity) {
-      return <NoDataMessage />;
+      return (
+        <ToolResolutionError
+          failure={{ reason: "unknown_entity", entity: entityName }}
+        />
+      );
     }
 
     const qualifiedFields = isMultiEntity
@@ -114,19 +118,23 @@ ${generateEntityFieldsDocs(context.entities)}`;
         )
       : resolveSingleBinnedDimension(entity, dimension, LINE_DIMENSION_TYPES);
 
+    if (!resolvedDimension.ok) {
+      return <ToolResolutionError failure={resolvedDimension} />;
+    }
+
     const resolvedMetric = qualifiedFields
       ? resolveMultiBinnedMetric(entityName, metric, qualifiedFields)
       : resolveSingleBinnedMetric(entity, metric);
 
-    if (!resolvedDimension || !resolvedMetric) {
-      return <NoDataMessage />;
+    if (!resolvedMetric.ok) {
+      return <ToolResolutionError failure={resolvedMetric} />;
     }
 
     const dataModel = buildBinnedDataModel({
       id: entityName,
-      dimension: resolvedDimension.id,
-      dimensionType: resolvedDimension.type,
-      metric: resolvedMetric,
+      dimension: resolvedDimension.value.id,
+      dimensionType: resolvedDimension.value.type,
+      metric: resolvedMetric.value,
     });
 
     const normalizedFilters = qualifiedFields
@@ -144,7 +152,7 @@ ${generateEntityFieldsDocs(context.entities)}`;
       id,
       name: entityName,
       type: "line" as const,
-      dimensions: [resolvedDimension.id],
+      dimensions: [resolvedDimension.value.id],
       metrics: [dataModel.metrics[0]?.id ?? ""],
       filters: normalizedFilters,
       ...(qualifiedFields &&
