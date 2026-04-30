@@ -112,6 +112,59 @@ describe('placeContainerNode first-child placement', () => {
     expect(result?.position.y).toBe(112);
   });
 
+  it('pushes top-level siblings below a container down when nested growth makes the container taller', () => {
+    // ContainerA sits at the top with a top-level NodeB directly beneath it.
+    // Adding a tall child inside ContainerA forces vertical growth — NodeB
+    // must shift down so it stays clear of the container's new bottom edge.
+    const containerNode: Node = {
+      id: 'container-a',
+      type: 'loop',
+      position: { x: 0, y: 0 },
+      style: { width: DEFAULT_CONTAINER_MIN_WIDTH, height: DEFAULT_CONTAINER_MIN_HEIGHT },
+      data: {},
+    };
+    const siblingBelow: Node = {
+      id: 'node-b',
+      type: 'task',
+      position: { x: 96, y: 280 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+    const insertedNode: Node = {
+      id: 'inner-container',
+      type: 'loop',
+      parentId: 'container-a',
+      extent: 'parent',
+      position: { x: 0, y: 0 },
+      style: { width: 320, height: 320 },
+      data: {},
+    };
+    const placement: ContainerPlacement = {
+      containerId: 'container-a',
+      sourceNodeId: 'container-a',
+      targetNodeId: 'container-a',
+      mode: 'first-child',
+    };
+
+    const placed = placeContainerNode({
+      nodes: [containerNode, siblingBelow, insertedNode],
+      insertedNode,
+      placement,
+      edges: [],
+      getNodeDimensions: (node) => getNodeDimensions(node),
+    });
+
+    const grownContainer = placed.find((node) => node.id === 'container-a');
+    const containerHeight =
+      (grownContainer?.style?.height as number | undefined) ?? DEFAULT_CONTAINER_MIN_HEIGHT;
+    const containerBottom = (grownContainer?.position.y ?? 0) + containerHeight;
+
+    const movedSibling = placed.find((node) => node.id === 'node-b');
+    expect(movedSibling?.position.y).toBeGreaterThanOrEqual(containerBottom);
+    // Original X is preserved — vertical growth shouldn't push horizontally.
+    expect(movedSibling?.position.x).toBe(96);
+  });
+
   it('clamps to safeArea.y when the container is too short for container-center placement', () => {
     // 220-tall container: container-center child y = 110 - 48 = 62, but the
     // body's safeArea starts at y=96 (header + padding). Clamp keeps the

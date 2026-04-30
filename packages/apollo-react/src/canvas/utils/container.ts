@@ -116,7 +116,12 @@ interface NextNodeContext {
   nodeId: string;
   edges: Edge[];
   nodesById: Map<string, Node>;
-  containerId: string;
+  /**
+   * Parent ID for the chain's scope. Sibling nodes share this parentId.
+   * Undefined for top-level (root) scope, or set to a container's id when
+   * walking children of that container.
+   */
+  parentId: string | undefined;
 }
 
 type NextNodeResolver = (context: NextNodeContext) => string | null | undefined;
@@ -583,92 +588,119 @@ function isPreviewGraphEdge(edge: Edge): boolean {
   return edge.source === PREVIEW_NODE_ID || edge.target === PREVIEW_NODE_ID;
 }
 
-function getDefaultNextContainerSequenceNodeId({
-  nodeId,
-  edges,
-  nodesById,
-  containerId,
-  isSequenceEdge,
-}: NextNodeContext & {
-  isSequenceEdge?: SequenceEdgePredicate;
-}): string | null {
-  const localOutgoingEdges = edges.filter((edge) => {
-    if (isPreviewGraphEdge(edge) || edge.source !== nodeId) {
-      return false;
-    }
-
-    if (isSequenceEdge && !isSequenceEdge(edge)) {
-      return false;
-    }
-
-    const targetNode = nodesById.get(edge.target);
-    return edge.target === containerId || targetNode?.parentId === containerId;
-  });
-
-  // Ambiguous branches are left untouched because there is no safe linear
-  // sequence to shift.
-  return localOutgoingEdges.length === 1 ? localOutgoingEdges[0]!.target : null;
-}
-
 // -----------------------------------------------------------------------------
 // Sequence traversal
 // -----------------------------------------------------------------------------
 
-function collectDownstreamNodes({
-  targetNodeId,
-  containerId,
+/**
+ * Pre-buckets non-preview edges by source for O(1) chain-step lookup.
+ *
+ * Edges are kept when their target is a sibling in the chain's scope (matching
+ * `parentId`) or, when `parentId` is a string, the parent itself — this lets
+ * container-internal chains terminate cleanly when a child wires back to its
+ * container's continue handle.
+ */
+function bucketInScopeEdgesBySource({
+  edges,
+  nodesById,
+  parentId,
+  isSequenceEdge,
+}: {
+  edges: Edge[];
+  nodesById: Map<string, Node>;
+  parentId: string | undefined;
+  isSequenceEdge?: SequenceEdgePredicate;
+}): Map<string, Edge[]> {
+  const bySource = new Map<string, Edge[]>();
+  for (const edge of edges) {
+    if (isPreviewGraphEdge(edge)) continue;
+    if (isSequenceEdge && !isSequenceEdge(edge)) continue;
+
+    const targetIsParent = parentId !== undefined && edge.target === parentId;
+    const targetIsSibling = nodesById.get(edge.target)?.parentId === parentId;
+    if (!targetIsParent && !targetIsSibling) continue;
+
+    const bucket = bySource.get(edge.source);
+    if (bucket) {
+      bucket.push(edge);
+    } else {
+      bySource.set(edge.source, [edge]);
+    }
+  }
+  return bySource;
+}
+
+/**
+ * Walks one linear sibling chain downstream from `startNodeId`, following
+ * single in-scope outgoing edges. Used to find the set of nodes that should
+ * rigidly shift right when a wider node is inserted upstream.
+ *
+ * Scope is set by `parentId`:
+ *   - `undefined` → top-level (root) chain.
+ *   - container id → walk children of that container; an edge from a child
+ *     back to the container itself counts as in-scope (so an exact-1 outgoing
+ *     match on a loop-back terminates the walk cleanly).
+ *
+ * Stop conditions: cycles, the current node leaving `parentId` scope, dead
+ * ends, in-scope branches (>1 outgoing), and (for container scope) an edge
+ * that would walk into the container itself.
+ *
+ * Edges leaving the parent scope without targeting it are ignored entirely —
+ * they are not siblings, so they do not need to shift.
+ */
+export function collectLinearDownstreamSiblings({
+  startNodeId,
+  parentId,
   nodes,
   edges,
   isSequenceEdge,
   getNextNodeId,
 }: {
-  targetNodeId: string | undefined;
-  containerId: string;
+  startNodeId: string | undefined;
+  parentId: string | undefined;
   nodes: Node[];
   edges: Edge[];
   isSequenceEdge?: SequenceEdgePredicate;
   getNextNodeId?: NextNodeResolver;
 }): string[] {
-  if (!targetNodeId || targetNodeId === containerId) {
-    return [];
-  }
+  if (!startNodeId || startNodeId === parentId) return [];
 
   const nodesById = new Map(nodes.map((node) => [node.id, node]));
+  const inScopeEdgesBySource = bucketInScopeEdgesBySource({
+    edges,
+    nodesById,
+    parentId,
+    isSequenceEdge,
+  });
+
   const collectedIds: string[] = [];
   const visitedIds = new Set<string>();
-  let currentNodeId = targetNodeId;
+  let currentNodeId: string = startNodeId;
 
-  // Follow one local sequence chain and stop on cycles or exits from the
-  // container. This keeps downstream shifts scoped to the edited sequence.
   while (!visitedIds.has(currentNodeId)) {
     const currentNode = nodesById.get(currentNodeId);
-    if (!currentNode || currentNode.parentId !== containerId) {
-      break;
-    }
+    if (!currentNode || currentNode.parentId !== parentId) break;
 
     collectedIds.push(currentNodeId);
     visitedIds.add(currentNodeId);
 
-    const nextNodeId: string | null | undefined =
-      getNextNodeId?.({
-        nodeId: currentNodeId,
-        edges,
-        nodesById,
-        containerId,
-      }) ??
-      getDefaultNextContainerSequenceNodeId({
-        nodeId: currentNodeId,
-        edges,
-        nodesById,
-        containerId,
-        isSequenceEdge,
-      });
-
-    if (!nextNodeId || nextNodeId === containerId) {
-      break;
+    let next: string | null | undefined = getNextNodeId
+      ? getNextNodeId({
+          nodeId: currentNodeId,
+          edges,
+          nodesById,
+          parentId,
+        })
+      : undefined;
+    if (next === undefined) {
+      const outgoing: Edge[] = inScopeEdgesBySource.get(currentNodeId) ?? [];
+      next = outgoing.length === 1 ? outgoing[0]!.target : null;
     }
 
-    currentNodeId = nextNodeId;
+    // Container-scope walks terminate when the next step would re-enter the
+    // parent itself (a child wiring back to the container).
+    if (!next || next === parentId) break;
+    currentNodeId = next;
   }
 
   return collectedIds;
@@ -1031,16 +1063,23 @@ function pushSiblingsAfterContainerGrowth({
   let shifted = false;
   let nextNodes = nodes;
 
+  // For each container that grew, push siblings outward — right when width
+  // grew, down when height grew. Both directions are evaluated in the same
+  // pass so a sibling that's both right-of and below-of a doubly-growing
+  // container is visited once.
   for (const change of sortContainerSizeChanges(changes, nextNodes)) {
     const widthDelta = change.nextSize.width - change.previousSize.width;
-    if (widthDelta <= 0) {
-      continue;
-    }
+    const heightDelta = change.nextSize.height - change.previousSize.height;
+    if (widthDelta <= 0 && heightDelta <= 0) continue;
 
     const containerNode = nextNodes.find((node) => node.id === change.containerId)!;
-
     const oldRight = containerNode.position.x + change.previousSize.width;
     const newRight = containerNode.position.x + change.nextSize.width;
+    const oldBottom = containerNode.position.y + change.previousSize.height;
+    const newBottom = containerNode.position.y + change.nextSize.height;
+    const containerLeft = containerNode.position.x;
+    const containerRight =
+      containerNode.position.x + Math.max(change.previousSize.width, change.nextSize.width);
     const containerTop = containerNode.position.y;
     const containerBottom =
       containerNode.position.y + Math.max(change.previousSize.height, change.nextSize.height);
@@ -1051,32 +1090,42 @@ function pushSiblingsAfterContainerGrowth({
       }
 
       const nodeSize = getNodeDimensions(node);
-      const isRightSibling = node.position.x >= oldRight;
-      // Only siblings that sit to the right and overlap the container's vertical
-      // band can be visually covered by the new width.
-      const verticallyOverlaps = rangesOverlap(
-        node.position.y,
-        node.position.y + nodeSize.height,
-        containerTop,
-        containerBottom
-      );
+      let nextX = node.position.x;
+      let nextY = node.position.y;
 
-      if (!isRightSibling || !verticallyOverlaps) {
-        return node;
+      // Width grew: only siblings that sit to the right and overlap the
+      // container's vertical band can be visually covered by the new width.
+      if (widthDelta > 0 && node.position.x >= oldRight) {
+        const verticallyOverlaps = rangesOverlap(
+          node.position.y,
+          node.position.y + nodeSize.height,
+          containerTop,
+          containerBottom
+        );
+        if (verticallyOverlaps) {
+          nextX = Math.max(node.position.x + widthDelta, snapUpToGrid(newRight + gap));
+        }
       }
 
-      const nextX = Math.max(node.position.x + widthDelta, snapUpToGrid(newRight + gap));
-      if (nextX === node.position.x) {
-        return node;
+      // Height grew: mirror logic along Y. Sibling must sit below and
+      // horizontally overlap the container's column.
+      if (heightDelta > 0 && node.position.y >= oldBottom) {
+        const horizontallyOverlaps = rangesOverlap(
+          node.position.x,
+          node.position.x + nodeSize.width,
+          containerLeft,
+          containerRight
+        );
+        if (horizontallyOverlaps) {
+          nextY = Math.max(node.position.y + heightDelta, snapUpToGrid(newBottom + gap));
+        }
       }
 
+      if (nextX === node.position.x && nextY === node.position.y) return node;
       shifted = true;
       return {
         ...node,
-        position: {
-          ...node.position,
-          x: nextX,
-        },
+        position: { x: nextX, y: nextY },
       };
     });
   }
@@ -1135,23 +1184,17 @@ function fitContainersAndPushSiblings({
  * Reads and validates container placement metadata from a preview node.
  * Returns null when the preview is not scoped to the recorded container.
  */
-export function getContainerPlacement({
-  previewNode,
-  isContainerId,
-}: {
-  previewNode: Pick<Node, 'data' | 'parentId'>;
-  isContainerId?: (containerId: string) => boolean;
-}): ContainerPlacement | null {
+export function getContainerPlacement(
+  previewNode: Pick<Node, 'data' | 'parentId'>
+): ContainerPlacement | null {
   const placement = previewNode.data?.[PLACEMENT_DATA_KEY] as ContainerPlacement | undefined;
-  if (!placement) {
-    return null;
-  }
+  if (!placement) return null;
 
   if (previewNode.parentId && placement.containerId !== previewNode.parentId) {
     return null;
   }
 
-  return isContainerId && !isContainerId(placement.containerId) ? null : placement;
+  return placement;
 }
 
 /**
@@ -1220,9 +1263,9 @@ export function placeContainerNode({
   const idsToShift = new Set(
     downstreamNodeIds ??
       (edges
-        ? collectDownstreamNodes({
-            targetNodeId: placement.targetNodeId,
-            containerId: placement.containerId,
+        ? collectLinearDownstreamSiblings({
+            startNodeId: placement.targetNodeId,
+            parentId: placement.containerId,
             nodes,
             edges,
           })

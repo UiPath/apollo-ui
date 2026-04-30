@@ -7,6 +7,7 @@ import type { NodeManifest } from '../../schema';
 import { resolveCollisions } from '../../utils';
 import { getExpandedSize } from '../../utils/collapse';
 import {
+  collectLinearDownstreamSiblings,
   getContainerFitGeometry,
   getContainerPlacement,
   getContainerSafeArea,
@@ -15,7 +16,6 @@ import {
   type NodeDimensions,
   placeContainerNode,
 } from '../../utils/container';
-import { isPreviewEdge } from '../../utils/createPreviewNode';
 import { snapUpToGrid } from '../../utils/NodeUtils';
 
 /**
@@ -160,70 +160,6 @@ function resolveScopedCollisions(
 }
 
 /**
- * Walks one linear sibling chain downstream from `startNodeId`, following
- * single outgoing edges that stay within the same parent scope.
- *
- * Stop conditions:
- *   - Cycles (already-visited node).
- *   - The current node leaves the target parent scope.
- *   - The current node has 0 or >1 in-scope outgoing edges (dead-end or
- *     in-scope branch — generic collision resolution handles ambiguous cases).
- *
- * Edges whose target sits outside `parentId` (e.g., a child wiring back to its
- * container's continue handle, or any cross-scope link) are filtered out
- * before the count, since the off-scope target isn't a sibling that needs to
- * shift. They don't terminate the walk on their own — only the in-scope edge
- * count matters.
- *
- * Used to find the set of nodes that should rigidly shift right when a wider
- * node is inserted upstream.
- */
-function collectLinearDownstreamChain({
-  startNodeId,
-  parentId,
-  nodes,
-  edges,
-}: {
-  startNodeId: string;
-  parentId: string | undefined;
-  nodes: Node[];
-  edges: Edge[];
-}): string[] {
-  const nodesById = new Map(nodes.map((n) => [n.id, n]));
-  // Pre-bucket edges by source so the chain walk is O(chainLength) instead of
-  // O(chainLength × edgeCount). Filters here exclude preview edges and
-  // off-scope targets up front so the per-step check is just a length read.
-  const inScopeEdgesBySource = new Map<string, Edge[]>();
-  for (const edge of edges) {
-    if (isPreviewEdge(edge)) continue;
-    if (nodesById.get(edge.target)?.parentId !== parentId) continue;
-    const bucket = inScopeEdgesBySource.get(edge.source);
-    if (bucket) {
-      bucket.push(edge);
-    } else {
-      inScopeEdgesBySource.set(edge.source, [edge]);
-    }
-  }
-
-  const collected: string[] = [];
-  const visited = new Set<string>();
-  let currentId: string | null = startNodeId;
-
-  while (currentId && !visited.has(currentId)) {
-    const current = nodesById.get(currentId);
-    if (!current || current.parentId !== parentId) break;
-
-    collected.push(currentId);
-    visited.add(currentId);
-
-    const outgoing: Edge[] = inScopeEdgesBySource.get(currentId) ?? [];
-    currentId = outgoing.length === 1 ? outgoing[0]!.target : null;
-  }
-
-  return collected;
-}
-
-/**
  * For top-level edge insertions (preview replaced an existing edge but is not
  * scoped to a container), keeps the row layout intact regardless of the
  * inserted node's shape:
@@ -280,7 +216,7 @@ function shiftForEdgeInsertion({
   const chainIds =
     downstreamShift > 0
       ? new Set(
-          collectLinearDownstreamChain({
+          collectLinearDownstreamSiblings({
             startNodeId: targetNode.id,
             parentId: insertedNode.parentId,
             nodes,
@@ -331,7 +267,7 @@ export function placeAddedNode({
   ignoredNodeTypes?: string[];
 }): AddNodePlacementResult {
   const getDimensions = (node: Node) => getManifestAwareNodeDimensions(registry, node);
-  const placement = getContainerPlacement({ previewNode });
+  const placement = getContainerPlacement(previewNode);
 
   if (placement) {
     const containerNode = nodes.find((node) => node.id === placement.containerId);
