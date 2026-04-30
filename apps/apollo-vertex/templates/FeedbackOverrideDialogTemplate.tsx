@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,10 +24,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 
 const OVERRIDE_REASONS = [
-  { value: "incorrect_information", label: "Incorrect information" },
-  { value: "missing_information", label: "Missing information" },
-  { value: "formatting", label: "Formatting / clarity" },
-  { value: "other", label: "Other" },
+  { value: "incorrect_information", labelKey: "feedback_reason_incorrect" },
+  { value: "missing_information", labelKey: "feedback_reason_missing" },
+  { value: "formatting", labelKey: "feedback_reason_formatting" },
+  { value: "other", labelKey: "feedback_reason_other" },
 ] as const;
 
 type OverrideReason = (typeof OVERRIDE_REASONS)[number]["value"];
@@ -53,6 +54,7 @@ export function FeedbackOverrideDialogTemplate({
   sectionLabel = "Cardiology",
   onSubmit,
 }: FeedbackOverrideDialogTemplateProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [content, setContent] = useState(originalContent);
   const [reason, setReason] = useState<OverrideReason | "">("");
@@ -73,20 +75,23 @@ export function FeedbackOverrideDialogTemplate({
     <div className="flex items-center justify-center p-12">
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline">Override section</Button>
+          <Button variant="outline">{t("feedback_override_section")}</Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-lg">
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>Override {sectionLabel}</DialogTitle>
+              <DialogTitle>
+                {t("feedback_override_dialog_title", { section: sectionLabel })}
+              </DialogTitle>
               <DialogDescription>
-                Edit the AI-generated content and tell us why. Your feedback
-                helps the agent improve.
+                {t("feedback_override_dialog_description")}
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-4 py-4">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="override-content">Corrected content</Label>
+                <Label htmlFor="override-content">
+                  {t("feedback_corrected_content")}
+                </Label>
                 <Textarea
                   id="override-content"
                   value={content}
@@ -96,7 +101,9 @@ export function FeedbackOverrideDialogTemplate({
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="override-reason">Reason</Label>
+                <Label htmlFor="override-reason">
+                  {t("feedback_reason_label")}
+                </Label>
                 <Select
                   value={reason}
                   onValueChange={(v) => {
@@ -105,12 +112,14 @@ export function FeedbackOverrideDialogTemplate({
                   required
                 >
                   <SelectTrigger id="override-reason">
-                    <SelectValue placeholder="Select a reason" />
+                    <SelectValue
+                      placeholder={t("feedback_select_reason_placeholder")}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {OVERRIDE_REASONS.map((r) => (
                       <SelectItem key={r.value} value={r.value}>
-                        {r.label}
+                        {t(r.labelKey)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -118,14 +127,16 @@ export function FeedbackOverrideDialogTemplate({
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="agent-feedback">
-                  Feedback to the agent{" "}
-                  <span className="text-muted-foreground">(optional)</span>
+                  {t("feedback_to_agent_label")}{" "}
+                  <span className="text-muted-foreground">
+                    ({t("optional")})
+                  </span>
                 </Label>
                 <Textarea
                   id="agent-feedback"
                   value={agentFeedback}
                   onChange={(e) => setAgentFeedback(e.target.value)}
-                  placeholder="What should the agent have done differently?"
+                  placeholder={t("feedback_to_agent_placeholder")}
                   rows={3}
                 />
               </div>
@@ -136,10 +147,10 @@ export function FeedbackOverrideDialogTemplate({
                 variant="ghost"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {t("cancel")}
               </Button>
               <Button type="submit" disabled={!reason}>
-                Save override
+                {t("feedback_save_override")}
               </Button>
             </DialogFooter>
           </form>
