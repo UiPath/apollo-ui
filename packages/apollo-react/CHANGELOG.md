@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v4.18.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.17.0...@uipath/apollo-react@4.18.0) (2026-04-30)
+
+### Features
+
+* **apollo-react:** support auto expansion of loop container [MST-9193] ([80e05c0](https://github.com/UiPath/apollo-ui/commit/80e05c04b8814aa7f5d1eba36b30902617d98e2a))
+
+### Bug Fixes
+
+* **apollo-react:** address comments ([f343eb3](https://github.com/UiPath/apollo-ui/commit/f343eb3a400d8ee5eba2e763756029276e462bd2))
+
 ## [@uipath/apollo-react-v4.17.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.16.1...@uipath/apollo-react@4.17.0) (2026-04-30)
 
 ### Features
