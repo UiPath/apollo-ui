@@ -19,6 +19,7 @@ A composable AI chat UI component for Apollo Vertex. Built with React, TypeScrip
 - **Data Fabric Table Tool** — Display entity data as filterable tables with list, search, and range filters, and multi-entity joins
 - **Data Fabric Distribution Tool** — Render histogram charts for numeric or datetime fields with optional aggregations, filters, and joins
 - **Data Fabric Line Chart Tool** — Render time-series line charts over a datetime field with optional aggregations, filters, and joins
+- **Data Fabric Multi-Line Chart Tool** — Compare two metrics on a shared datetime axis, each with its own Y axis, totals label, and join support
 - **Suggestion Buttons** — Interactive choice buttons rendered from tool results
 
 ## Installation
@@ -324,9 +325,58 @@ const lineTool = createDataFabricLineTool({
 - **Line** — trend / time-series questions: *"orders over time"*, *"revenue trend by month"*, *"growth across quarters"*. Always datetime on the X axis.
 - **Distribution** — histogram-style requests: *"distribution of order amount"*, *"histogram of X"*, numeric value-range binning. Either numeric or datetime dimension.
 
+For comparing **two or more metrics** on the same time axis, use [`data_fabric_multi_line`](#data-fabric-multi-line-chart-tool) instead.
+
 ### Metric, filters, and joins
 
 Metric, filter, and join semantics are identical to the distribution tool. Omit `metric` for `COUNT`, or pass `{ aggregation, field }` for `SUM` / `AVG` / `MIN` / `MAX` of a numeric field. When joins are present, `dimension` and `metric.field` must use qualified `EntityName.FieldName` names.
+
+---
+
+## Data Fabric Multi-Line Chart Tool
+
+The `data_fabric_multi_line` tool renders two lines on a shared datetime X axis. The first metric uses the left Y axis (and gets its own color and totals label at the top); the second uses the right Y axis. Exactly two metrics — pass three and the tool call is rejected.
+
+```tsx
+import {
+  createDataFabricMultiLineTool,
+  dataFabricMultiLineClient,
+} from '@/components/ui/ai-chat/tools/data-fabric-multi-line';
+
+const multiLineTool = createDataFabricMultiLineTool({
+  entities,           // Record<string, Entity> — entity metadata with field names and types
+  accessToken,        // Bearer token for Data Fabric API
+  dataFabricBaseUrl,  // Base URL for Data Fabric proxy
+});
+
+// Use dataFabricMultiLineClient in your tools array, multiLineTool.toolPrompt in your
+// system prompt, and multiLineTool.renderMultiLine(part.output, part.id) in your parts loop.
+```
+
+### Metrics
+
+Pass an array of exactly two metrics with distinct `(aggregation, field)` pairs. Each entry uses the same shape as the line tool — `{ aggregation: "COUNT" }` for record counts (optional `field`), or `{ aggregation, field }` for `SUM` / `AVG` / `MIN` / `MAX` of a numeric field. Schema validation rejects duplicate `(aggregation, field)` pairs before the chart is rendered. If duplicates only emerge after field resolution (e.g., a `COUNT` with an explicit `field` that resolves to the same primary key as a default `COUNT`), the chart shows its no-data state instead. Order matters: the first metric gets the left axis and primary color; put the metric you want to emphasize first.
+
+```json
+{
+  "entityName": "Order",
+  "dimension": "OrderDate",
+  "metrics": [
+    { "aggregation": "COUNT" },
+    { "aggregation": "SUM", "field": "Total" }
+  ]
+}
+```
+
+### When to use multi-line vs line
+
+- **Multi-line** — comparing two metrics on the same time axis: *"orders count and revenue over time"*, *"min vs max price by month"*.
+- **Line** — a single metric over time. Don't use multi-line for a single metric.
+- For 3+ metrics, render multiple charts (one per metric, or pair them) — the underlying chart only has two Y axes.
+
+### Filters and joins
+
+Identical to the line tool. Filter and join schemas are shared, and qualified `EntityName.FieldName` names are required for the dimension and every metric `field` when joins are present.
 
 ---
 
