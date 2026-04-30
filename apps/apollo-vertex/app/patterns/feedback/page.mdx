@@ -8,9 +8,28 @@ Patterns for collecting and displaying user feedback on AI-generated content, in
 This page documents the two main flows:
 
 1. **Submit** — Users vote on AI output (👍/👎) or override sections with a reason. Maps to `PlatformFeedbackClient.submit()`.
-2. **Read** — A dashboard lists collected feedback with filters, KPIs, and expandable rows. Maps to `PlatformFeedbackClient.listByAgent()`.
+2. **Read** — A dashboard lists collected feedback with filters, KPIs, and expandable rows. Maps to `PlatformFeedbackClient.getByAgentId()`.
 
 For the standalone vote control, see [Feedback Vote Widget](/patterns/feedback-vote-widget). Triage and severity classification are out of scope for this page — they're a separate workflow.
+
+> The submit + read examples below assume a shared per-vertical `TCustom` and `TComment` shape. The library is generic over both — what's shown is one concrete pattern.
+
+```tsx
+// Per-vertical types — define once, reuse across submit and read.
+type MyCustom = {
+  sectionName: string;
+  overrideReason?: string;
+  aiProducedFields: {
+    aiSeverity: "Critical" | "High" | "Medium" | "Low" | null;
+    aiTriaged: boolean;
+  };
+};
+
+type MyComment = {
+  text: string;          // free-form user text
+  feedbackToAgent?: string;
+};
+```
 
 ---
 
@@ -35,30 +54,39 @@ This template is a reference composition — copy [`FeedbackOverrideDialogTempla
 ### Submit handler shape
 
 ```tsx
-import { client } from "./feedback-client"; // your PlatformFeedbackClient<TCustom, TComment>
+import type { FeedbackDraft } from "@uipath/vs-feedback";
+import { client } from "./feedback-client"; // your PlatformFeedbackClient<MyCustom, MyComment>
 import { resolveTraceContext } from "./trace-context";
 
 async function handleOverrideSubmit(args: {
   overriddenContent: string;
   reason: OverrideReason;
   agentFeedback: string;
+  sectionName: string;
+  maestroInstanceId: string;
 }) {
-  await client.submit({
+  const { traceId } = await resolveTraceContext(args.maestroInstanceId);
+
+  const draft: FeedbackDraft<MyCustom, MyComment> = {
+    traceId,
+    spanId: "", // Feedback API auto-resolves the root span (LLMOPS-2310)
     isPositive: false,
-    comment: JSON.stringify({
-      after: args.overriddenContent,
-      feedbackToAgent: args.agentFeedback,
-    }),
-    metadata: {
-      // your TCustom — typically section/entity IDs and the override reason
+    customFields: {
+      sectionName: args.sectionName,
       overrideReason: args.reason,
+      aiProducedFields: { aiSeverity: null, aiTriaged: false },
     },
-    traceContext: await resolveTraceContext({ instanceId, folderKey, agentId }),
-  });
+    comment: {
+      text: args.overriddenContent,
+      feedbackToAgent: args.agentFeedback,
+    },
+  };
+
+  await client.submit(draft);
 }
 ```
 
-The `comment` JSON shape is defined by your vertical's `TComment` type — what's shown above is one common pattern.
+The mapper passed to `PlatformFeedbackClient` is responsible for stringifying `customFields` and `comment` into the wire format — submit handlers stay typed end-to-end.
 
 ---
 
@@ -70,7 +98,7 @@ Once feedback is collected, render it in a filterable, expandable dashboard. The
   <FeedbackDashboardTemplate />
 </div>
 
-Copy [`FeedbackDashboardTemplate.tsx`](https://github.com/UiPath/apollo-ui/blob/main/apps/apollo-vertex/templates/FeedbackDashboardTemplate.tsx) and replace the static `data` array with a fetch from `client.listByAgent()`.
+Copy [`FeedbackDashboardTemplate.tsx`](https://github.com/UiPath/apollo-ui/blob/main/apps/apollo-vertex/templates/FeedbackDashboardTemplate.tsx) and replace the static `data` array with a fetch from `client.getByAgentId()`.
 
 ### Components used
 
@@ -78,38 +106,48 @@ Copy [`FeedbackDashboardTemplate.tsx`](https://github.com/UiPath/apollo-ui/blob/
 - [Data Table](/patterns/data-table) — the row list with sorting, filtering, and expandable rows
 - [Badge](/components/badge) — severity tags
 
+The metric card and data table aren't bundled into the `feedback-vote-widget` install — pull them separately:
+
+```bash
+npx shadcn@latest add @uipath/metric-card @uipath/data-table
+```
+
 ### Fetching from the Platform Feedback API
 
-`@uipath/vs-feedback` exposes `client.listByAgent()`, returning `PlatformFeedbackRecord<TCustom, TComment>[]`. Adapt to the table's row shape with a small mapper:
+`@uipath/vs-feedback` exposes `client.getByAgentId(timeRange)`, returning `PlatformFeedbackRecord<TCustom, TComment>[]`. The client's configured `agentId` and `timeRange` (epoch milliseconds) are the only inputs — no per-call agentId is needed. Adapt to the table's row shape with a small mapper:
 
 ```tsx
 import { useQuery } from "@tanstack/react-query";
 import { client } from "./feedback-client";
 
-function useFeedbackData(agentId: string) {
+const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
+
+function useFeedbackData() {
   return useQuery({
-    queryKey: ["feedback", agentId],
+    queryKey: ["feedback"],
     queryFn: async () => {
-      const records = await client.listByAgent({
-        agentId,
-        startTime: /* 30 days ago */,
-        endTime: new Date(),
+      const records = await client.getByAgentId({
+        startTime: Date.now() - ONE_MONTH_MS,
+        endTime: Date.now(),
       });
       return records.map(adaptToFeedbackRow);
     },
+    staleTime: 60_000, // matches the lib's internal cache TTL
   });
 }
 
-function adaptToFeedbackRow(record: PlatformFeedbackRecord<MyCustom, MyComment>): FeedbackRow {
+function adaptToFeedbackRow(
+  record: PlatformFeedbackRecord<MyCustom, MyComment>,
+): FeedbackRow {
   return {
     id: record.id,
-    isPositive: record.isPositive ?? false,
+    isPositive: record.isPositive,
     section: record.metadata.customFields.sectionName,
-    user: record.userEmail,
+    user: record.userEmail ?? "",
     reason: record.metadata.customFields.overrideReason ?? "—",
-    severity: record.metadata.customFields.aiProducedFields.aiSeverity ?? null,
+    severity: record.metadata.customFields.aiProducedFields.aiSeverity,
     createdAt: record.createdAt,
-    comment: record.comment.text ?? "",
+    comment: record.comment.text,
     agentFeedback: record.comment.feedbackToAgent ?? "",
   };
 }
@@ -133,14 +171,16 @@ import {
   SolutionVersionResolver,
 } from "@uipath/vs-platform-services";
 
-const traceResolver = new MaestroTraceResolver(config);
-const versionResolver = new SolutionVersionResolver(config);
+const traceResolver = new MaestroTraceResolver(traceConfig);
+const versionResolver = new SolutionVersionResolver(versionConfig);
 
-async function resolveTraceContext({ instanceId, folderKey, agentId }) {
-  const { traceId } = await traceResolver.resolve(instanceId, folderKey);
-  const solutionVersion = await versionResolver.resolve(/* ... */);
-  return { traceId, spanId: "", agentId, agentVersion: "", solutionVersion };
+async function resolveTraceContext(maestroInstanceId: string) {
+  // PIMS InstanceId → real OTEL trace id (the API needs the OTEL one).
+  const traceId = await traceResolver.resolveOtelTraceId(maestroInstanceId);
+  // Informational; returns null on failure rather than throwing.
+  const solutionVersion = await versionResolver.resolveVersion("MySolution");
+  return { traceId, solutionVersion: solutionVersion ?? "" };
 }
 ```
 
-See the `vs-platform-services` package for the full resolver API.
+The Feedback API auto-resolves the root span when `spanId` is `""` (LLMOPS-2310) — drafts pass `spanId: ""` and let the platform fill it in. See the `vs-platform-services` package for the full resolver API.
