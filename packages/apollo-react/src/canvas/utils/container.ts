@@ -409,10 +409,23 @@ function rangesOverlap(startA: number, endA: number, startB: number, endB: numbe
   return startA < endB && endA > startB;
 }
 
-function centerInSafeArea(safeArea: ContainerSafeArea, nodeSize: NodeDimensions): XYPosition {
+/**
+ * Centers a child horizontally inside the container's body but vertically on
+ * the container's geometric mid-line, so the child sits on the same rail as
+ * the inner source handle (which renders at `top: 50%` of the container).
+ * Falls back to `safeArea.y` when the container is too short for the rail
+ * placement to fit inside the body.
+ */
+function centerOnContainerRail(
+  containerSize: NodeDimensions,
+  safeArea: ContainerSafeArea,
+  nodeSize: NodeDimensions
+): XYPosition {
+  const railY = snapToGrid(containerSize.height / 2 - nodeSize.height / 2);
+  const maxY = safeArea.y + Math.max(0, safeArea.height - nodeSize.height);
   return {
     x: Math.max(safeArea.x, snapToGrid(safeArea.x + (safeArea.width - nodeSize.width) / 2)),
-    y: Math.max(safeArea.y, snapToGrid(safeArea.y + (safeArea.height - nodeSize.height) / 2)),
+    y: clamp(railY, safeArea.y, maxY),
   };
 }
 
@@ -1176,7 +1189,11 @@ export function placeContainerNode({
     placement.mode === 'first-child'
       ? {
           ...insertedNode,
-          position: centerInSafeArea(resolvedSafeArea, insertedSize),
+          position: centerOnContainerRail(
+            resolveNodeDimensions(containerNode),
+            resolvedSafeArea,
+            insertedSize
+          ),
         }
       : {
           ...insertedNode,

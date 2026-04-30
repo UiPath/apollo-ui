@@ -1,5 +1,5 @@
 import type { ReactFlowInstance } from '@uipath/apollo-react/canvas/xyflow/react';
-import type { ContainerPlacement } from '../../utils/container';
+import { type ContainerPlacement, getNodeDimensions } from '../../utils/container';
 import { showPreviewGraph } from '../../utils/createPreviewGraph';
 import { getAbsolutePosition, snapToGrid } from '../../utils/NodeUtils';
 import {
@@ -24,9 +24,13 @@ export function showCenteredContainerPreview({
   const allNodes = reactFlowInstance.getNodes();
   const containerAbsolutePosition = getAbsolutePosition(containerNode, allNodes);
   const relativeCenter = getContainerRelativeBodyCenter(containerNode);
+  const containerSize = getNodeDimensions(containerNode);
+  // Y aligns with the inner source handle's rail (50% of container height) so
+  // the preview shows on the same row as the Start handle and the empty-state
+  // button. X stays at the body's horizontal center.
   const previewCenter = {
     x: snapToGrid(containerAbsolutePosition.x + relativeCenter.x),
-    y: snapToGrid(containerAbsolutePosition.y + relativeCenter.y),
+    y: snapToGrid(containerAbsolutePosition.y + containerSize.height / 2),
   };
   const placement: ContainerPlacement = {
     containerId,
