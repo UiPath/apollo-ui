@@ -67,45 +67,80 @@ export type ListItem<T = any> = {
 
 export type RenderItem<T extends ListItem> =
   | { type: 'section'; sectionName: string }
-  | { type: 'item'; item: T };
+  | { type: 'item'; item: T }
+  | { type: 'skeleton' };
+
+const DEFAULT_SKELETON_COUNT = 3;
 
 export function buildRenderedItems<T extends ListItem>(
   items: T[],
-  enableSections: boolean
+  enableSections: boolean,
+  loadingSkeleton?: boolean | ChildrenLoadingSpec
 ): RenderItem<T>[] {
   const result: RenderItem<T>[] = [];
+  const skeletonConfig: ChildrenLoadingSpec | undefined =
+    typeof loadingSkeleton === 'object'
+      ? loadingSkeleton
+      : loadingSkeleton
+        ? {}
+        : undefined;
+  const baseSkeletonCount = skeletonConfig?.count ?? DEFAULT_SKELETON_COUNT;
 
-  if (items.length === 0) return result;
+  // Skeletons are emitted as `{ type: 'skeleton' }` so they're a distinct
+  // shape from real items. That keeps clicks / hovers / keyboard nav (which
+  // all filter on `type === 'item'`) auto-skipping them without per-row
+  // sentinel checks.
+  const pushSkeletons = (count: number) => {
+    for (let i = 0; i < count; i++) result.push({ type: 'skeleton' });
+  };
 
   if (!enableSections) {
-    // if sections are disabled, return all items as is
-    for (const item of items) {
-      result.push({ type: 'item', item });
-    }
+    for (const item of items) result.push({ type: 'item', item });
+    if (skeletonConfig && !skeletonConfig.sections) pushSkeletons(baseSkeletonCount);
     return result;
   }
 
   const [itemsWithSection, itemsWithoutSection] = partition(items, (item) => !!item.section);
 
-  // process items without sections first
-  for (const item of itemsWithoutSection) {
-    result.push({ type: 'item', item });
-  }
+  // Items without a section render at the top.
+  for (const item of itemsWithoutSection) result.push({ type: 'item', item });
 
-  // return early if no items with sections
-  if (itemsWithSection.length === 0) {
-    return result;
-  }
-
-  // process items with sections next
-  const sections = Array.from(new Set(itemsWithSection.map((item) => item.section)));
-
-  for (const section of sections) {
-    result.push({ type: 'section', sectionName: section as string });
-
-    for (const item of itemsWithSection.filter((item) => item.section === section)) {
-      result.push({ type: 'item', item });
+  // Build the union of section names from real items + preemptive skeleton
+  // sections, preserving insertion order. Real-item sections come first to
+  // match the existing behaviour.
+  const sectionNames: string[] = [];
+  const seenSections = new Set<string>();
+  for (const item of itemsWithSection) {
+    const name = item.section as string;
+    if (!seenSections.has(name)) {
+      seenSections.add(name);
+      sectionNames.push(name);
     }
+  }
+  if (skeletonConfig?.sections) {
+    for (const s of skeletonConfig.sections) {
+      if (!seenSections.has(s.name)) {
+        seenSections.add(s.name);
+        sectionNames.push(s.name);
+      }
+    }
+  }
+
+  for (const sectionName of sectionNames) {
+    result.push({ type: 'section', sectionName });
+    for (const item of itemsWithSection) {
+      if (item.section === sectionName) result.push({ type: 'item', item });
+    }
+    const skeletonForSection = skeletonConfig?.sections?.find((s) => s.name === sectionName);
+    if (skeletonForSection) {
+      pushSkeletons(skeletonForSection.count ?? baseSkeletonCount);
+    }
+  }
+
+  // Skeletons without sections trail the list. Suppressed when the spec uses
+  // `sections` (those skeletons are already emitted under their headers).
+  if (skeletonConfig && !skeletonConfig.sections) {
+    pushSkeletons(baseSkeletonCount);
   }
 
   return result;
@@ -143,16 +178,12 @@ const ListViewRow = memo(
 
     const handleButtonClick = useCallback(() => {
       const clickTarget = renderedItems[index];
-      if (clickTarget?.type === 'item' && !isSkeletonItem(clickTarget.item)) {
-        onItemClick(clickTarget.item, index);
-      }
+      if (clickTarget?.type === 'item') onItemClick(clickTarget.item, index);
     }, [onItemClick, renderedItems, index]);
 
     const handleButtonHover = useCallback(() => {
       const hoverTarget = renderedItems[index];
-      if (hoverTarget?.type === 'item' && !isSkeletonItem(hoverTarget.item)) {
-        onItemHover?.(hoverTarget.item);
-      }
+      if (hoverTarget?.type === 'item') onItemHover?.(hoverTarget.item);
     }, [onItemHover, renderedItems, index]);
 
     if (renderItem.type === 'section') {
@@ -163,18 +194,15 @@ const ListViewRow = memo(
       );
     }
 
-    const item = renderItem.item;
-
-    // Skeleton sentinels render as the placeholder bar, never as a clickable
-    // row. Toolbox's keyboard nav also skips them via the exported
-    // `isSkeletonItem` helper, so they never become the active descendant.
-    if (isSkeletonItem(item)) {
+    if (renderItem.type === 'skeleton') {
       return (
         <div style={style}>
           <ListItemSkeleton />
         </div>
       );
     }
+
+    const item = renderItem.item;
     const bgColor = isDarkMode ? (item.colorDark ?? item.color) : item.color;
 
     const isActive = index === activeIndex;
@@ -255,64 +283,18 @@ interface ListViewProps<T extends ListItem> {
  */
 const ListItemSkeleton = () => (
   <div
-    className="flex items-center gap-2.5 h-8 px-2"
+    className="flex items-center gap-2.5 h-8"
     role="presentation"
     aria-hidden="true"
     data-testid="list-item-skeleton"
   >
-    <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
+    <Skeleton className="h-8 w-8 shrink-0 rounded-lg" />
     <div className="flex-1 space-y-1.5 min-w-0">
       <Skeleton className="h-3.5 w-1/3" />
       <Skeleton className="h-3 w-2/3" />
     </div>
   </div>
 );
-
-// Skeleton sentinel items are tracked by reference in this `WeakSet`, not by
-// an id prefix. This keeps the marker entirely internal — consumers can't
-// collide with it from their own `id` strings — and entries auto-expire when
-// the items become unreferenced.
-const skeletonItemRegistry = new WeakSet<ListItem>();
-
-/**
- * True for skeleton sentinel rows produced by {@link ListView} (via the
- * `loadingSkeleton` prop or `ListItem.childrenLoading`). Exposed so callers
- * such as `Toolbox`'s keyboard navigation can skip these presentational rows.
- */
-export function isSkeletonItem(item: ListItem): boolean {
-  return skeletonItemRegistry.has(item);
-}
-
-/**
- * Build the synthetic skeleton ListItem entries that get appended to the
- * caller's `items` while `loadingSkeleton` is active. These flow through the
- * normal section-grouping pipeline so real items with a matching `section`
- * end up under the same header — and inserting them as ListItems means
- * react-window virtualizes them just like any other row.
- */
-function buildSkeletonItems(spec: boolean | ChildrenLoadingSpec): ListItem[] {
-  const config: ChildrenLoadingSpec = typeof spec === 'object' ? spec : {};
-  const defaultCount = config.count ?? 3;
-  const make = (id: string, section?: string): ListItem => {
-    const item: ListItem = {
-      id,
-      name: '',
-      data: {},
-      ...(section ? { section } : {}),
-    };
-    skeletonItemRegistry.add(item);
-    return item;
-  };
-
-  if (config.sections && config.sections.length > 0) {
-    return config.sections.flatMap((s) =>
-      Array.from({ length: s.count ?? defaultCount }, (_, i) =>
-        make(`__listview_skeleton__${s.name}-${i}`, s.name)
-      )
-    );
-  }
-  return Array.from({ length: defaultCount }, (_, i) => make(`__listview_skeleton__${i}`));
-}
 
 const ListViewInner = forwardRef(function ListView<T extends ListItem>(
   {
@@ -332,27 +314,14 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
 ) {
   const { isDarkMode } = useCanvasTheme();
 
-  // Merge skeleton sentinel rows with the caller's items so they flow through
-  // the normal section-grouping + virtualization pipeline. `loadingSkeleton`
-  // is the opt-in per-drill-in path; the legacy `isLoading && items.length
-  // === 0` behaviour is preserved by falling through to a `true` spec.
-  const activeSkeleton = loadingSkeleton ?? (isLoading && items.length === 0 ? true : null);
-  // Skeletons are synthesized as plain `ListItem`s with `data: {}` and an
-  // internal id prefix. Casting to `T[]` is sound because `ListViewRow`
-  // short-circuits skeleton sentinels before reading any consumer-shaped data
-  // (handled by `isSkeletonItem`).
-  const skeletonItems = useMemo<T[]>(
-    () => (activeSkeleton ? (buildSkeletonItems(activeSkeleton) as T[]) : []),
-    [activeSkeleton]
-  );
-  const allItems = useMemo<T[]>(
-    () => (skeletonItems.length > 0 ? [...items, ...skeletonItems] : items),
-    [items, skeletonItems]
-  );
+  // The legacy `isLoading && items.length === 0` empty-state path is preserved
+  // by falling through to a `true` spec, which `buildRenderedItems` turns into
+  // 3 default skeleton rows.
+  const activeSkeleton = loadingSkeleton ?? (isLoading && items.length === 0 ? true : undefined);
 
   const renderedItems = useMemo(
-    () => buildRenderedItems(allItems, enableSections),
-    [allItems, enableSections]
+    () => buildRenderedItems(items, enableSections, activeSkeleton),
+    [items, enableSections, activeSkeleton]
   );
 
   useImperativeHandle(ref, () => ({ renderedItems }), [renderedItems]);
@@ -362,8 +331,9 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
     [renderedItems, activeIndex, isLoading, isDarkMode, onItemClick, onItemHover]
   );
 
-  // Show empty state if neither real items nor skeletons would render.
-  if (allItems.length === 0) {
+  // Show empty state when nothing would render — neither real items nor
+  // skeleton placeholders.
+  if (renderedItems.length === 0) {
     return (
       <Column align="center" justify="center" flex={1} gap={10} style={{ minHeight: '250px' }}>
         <CanvasIcon icon={emptyStateIcon} size={48} color="var(--canvas-foreground-de-emp)" />
@@ -378,7 +348,7 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
       role="listbox"
       // Signal "list is being updated" to assistive tech while skeleton
       // sentinels are rendered in place of real items.
-      aria-busy={skeletonItems.length > 0 || undefined}
+      aria-busy={activeSkeleton ? true : undefined}
       listRef={listRef}
       rowProps={rowProps}
       rowComponent={ListViewRow}
