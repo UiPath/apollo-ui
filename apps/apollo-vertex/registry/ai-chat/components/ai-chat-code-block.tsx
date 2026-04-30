@@ -57,6 +57,7 @@ const DARK_HLJS_STYLE = `
 }
 `;
 
+import { useClipboard } from "@mantine/hooks";
 import hljs from "highlight.js/lib/core";
 import bash from "highlight.js/lib/languages/bash";
 import css from "highlight.js/lib/languages/css";
@@ -67,12 +68,14 @@ import sql from "highlight.js/lib/languages/sql";
 import typescript from "highlight.js/lib/languages/typescript";
 import xml from "highlight.js/lib/languages/xml";
 import { Check, Copy } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 hljs.registerLanguage("javascript", javascript);
 hljs.registerLanguage("js", javascript);
@@ -91,16 +94,14 @@ hljs.registerLanguage("html", xml);
 hljs.registerLanguage("xml", xml);
 hljs.registerLanguage("sql", sql);
 
-const COPY_LABEL = "Copy code";
-const COPIED_LABEL = "Copied!";
-
 interface AiChatCodeBlockProps {
   children: string;
   language?: string;
 }
 
 export function AiChatCodeBlock({ children, language }: AiChatCodeBlockProps) {
-  const [copied, setCopied] = useState(false);
+  const { t } = useTranslation();
+  const { copied, error, copy } = useClipboard({ timeout: 2000 });
   const codeRef = useRef<HTMLElement>(null);
 
   const highlightedHtml =
@@ -114,13 +115,11 @@ export function AiChatCodeBlock({ children, language }: AiChatCodeBlockProps) {
     }
   }, [highlightedHtml]);
 
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(children);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const copyLabel = copied ? COPIED_LABEL : COPY_LABEL;
+  const copyLabel = copied
+    ? t("copied")
+    : error
+      ? t("copy_failed")
+      : t("copy_code");
 
   return (
     <>
@@ -136,10 +135,13 @@ export function AiChatCodeBlock({ children, language }: AiChatCodeBlockProps) {
             <TooltipTrigger asChild>
               <button
                 type="button"
-                onClick={() => {
-                  void handleCopy();
-                }}
-                className="ml-auto size-6 inline-flex items-center justify-center rounded-md opacity-0 group-hover/codeblock:opacity-100 transition-opacity hover:bg-ai-chat-border"
+                onClick={() => copy(children)}
+                className={cn(
+                  "ml-auto size-6 inline-flex items-center justify-center rounded-md transition-opacity hover:bg-ai-chat-border",
+                  copied
+                    ? "opacity-100"
+                    : "opacity-0 group-hover/codeblock:opacity-100",
+                )}
                 aria-label={copyLabel}
               >
                 {copied ? (

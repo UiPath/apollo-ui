@@ -180,6 +180,7 @@
           "ai-chat-ring": "oklch(0.64 0.115 208)",
           "ai-chat-muted": "oklch(0.955 0.006 260)",
           "ai-chat-muted-foreground": "oklch(0.50 0.020 260)",
+          "ai-chat-brand-gradient": "linear-gradient(97.73deg, #5D4ED0 8.79%, #1076A0 91.48%)",
           "ai-gradient": "linear-gradient(100.64deg, rgb(238, 224, 255) 8.29%, rgb(207, 217, 255) 88.73%)",
           "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
           "ai-gradient-start": "#6C5AEF",
@@ -268,6 +269,7 @@
           "ai-chat-ring": "oklch(0.69 0.112 207)",
           "ai-chat-muted": "oklch(0.26 0.030 258)",
           "ai-chat-muted-foreground": "oklch(0.65 0.020 258)",
+          "ai-chat-brand-gradient": "linear-gradient(97.73deg, #9485F5 8.79%, #69C7DD 91.48%)",
           "ai-gradient": "linear-gradient(98.69deg, rgb(108, 90, 239) 8.79%, rgb(105, 199, 221) 91.48%)",
           "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
           "ai-gradient-start": "#6C5AEF",
@@ -309,6 +311,7 @@
       "description": "A composable AI chat UI component for TanStack AI with AgentHub adapter, markdown rendering, suggestion buttons, and error display",
       "dependencies": [
         "@mantine/hooks@^9.0.0",
+        "@radix-ui/react-tooltip@^1.2.8",
         "@tanstack/ai@0.14.0",
         "@tanstack/ai-client@0.8.0",
         "@tanstack/ai-react@0.8.0",
@@ -328,8 +331,10 @@
       ],
       "registryDependencies": [
         "@uipath/alert-dialog",
+        "@uipath/button",
         "@uipath/card",
         "@uipath/dropdown-menu",
+        "@uipath/textarea",
         "@uipath/tooltip"
       ],
       "files": [
@@ -390,6 +395,11 @@
           "target": "components/ui/ai-chat/hooks/use-sticky-scroll.ts"
         },
         {
+          "path": "registry/ai-chat/util/get-ai-chat-message-props.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/util/get-ai-chat-message-props.ts"
+        },
+        {
           "path": "registry/ai-chat/components/ai-chat.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat.tsx"
@@ -428,6 +438,21 @@
           "path": "registry/ai-chat/components/ai-chat-suggestions.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-suggestions.tsx"
+        },
+        {
+          "path": "registry/ai-chat/types.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/types.ts"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-header.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-header.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-message-actions.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-message-actions.tsx"
         },
         {
           "path": "registry/ai-chat/components/ai-chat-thinking.tsx",

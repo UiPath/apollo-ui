@@ -1,25 +1,78 @@
 "use client";
 
-import type { UIMessage } from "@tanstack/ai-client";
-import { Sparkles } from "lucide-react";
-import type { ReactNode } from "react";
+import type { TextPart, UIMessage } from "@tanstack/ai-client";
+import { motion } from "framer-motion";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import type { MessageFeedbackType } from "../types";
 import { AiChatMarkdown } from "./ai-chat-markdown";
+import { AiChatMessageActions } from "./ai-chat-message-actions";
+
+// Quick, subtle entrance — fade + 8px slide up. Quartic ease-out for a soft settle.
+const ENTRANCE_INITIAL = { opacity: 0, y: 8 };
+const ENTRANCE_ANIMATE = { opacity: 1, y: 0 };
+const ENTRANCE_TRANSITION = {
+  duration: 0.22,
+  ease: [0.22, 1, 0.36, 1] as const,
+};
+
+function focusAndScrollEditTextarea(el: HTMLTextAreaElement | null) {
+  if (!el) return;
+  el.select();
+  requestAnimationFrame(() => {
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+}
 
 interface AiChatMessageProps {
   message: UIMessage;
-  assistantName?: string;
   children?: ReactNode;
+  /** Whether this message is currently being streamed */
+  isStreaming?: boolean;
+  showActionsAlwaysVisible?: boolean;
+  /** Current feedback for this message — drives the thumbs-up/down pressed state. */
+  feedback?: MessageFeedbackType | null;
+  onFeedback?: (type: MessageFeedbackType) => void;
+  onRegenerate?: () => void;
+  onEditMessage?: (content: string) => void;
+}
+
+function getDisplayText(message: UIMessage): string {
+  return message.parts
+    .filter((p): p is TextPart => p.type === "text")
+    .map((p) => p.content)
+    .join("");
 }
 
 export function AiChatMessage({
   message,
-  assistantName,
   children,
+  isStreaming = false,
+  showActionsAlwaysVisible = false,
+  feedback,
+  onFeedback,
+  onRegenerate,
+  onEditMessage,
 }: AiChatMessageProps) {
   const { t } = useTranslation();
   const isUser = message.role === "user";
-  const displayName = assistantName ?? t("ai_assistant");
+  const displayContent = getDisplayText(message);
+
+  const [editValue, setEditValue] = useState<string | null>(null);
+  const isEditing = editValue !== null;
+
+  const startEditing = () => setEditValue(displayContent);
+  const cancelEditing = () => setEditValue(null);
+  const handleSave = () => {
+    if (editValue === null) return;
+    const trimmed = editValue.trim();
+    if (trimmed && trimmed !== displayContent) {
+      onEditMessage?.(trimmed);
+    }
+    setEditValue(null);
+  };
 
   const hasToolOutputs = message.parts.some(
     (p) => p.type === "tool-call" && p.output != null,
@@ -27,44 +80,106 @@ export function AiChatMessage({
   const hasContent =
     hasToolOutputs || message.parts.some((p) => p.type === "text" && p.content);
 
-  if (!isUser && !hasContent) {
-    return null;
-  }
-
-  const text = message.parts
-    .filter((p) => p.type === "text")
-    .map((p) => p.content)
-    .join("");
+  if (!isUser && !hasContent) return null;
 
   if (isUser) {
     return (
-      <div className="flex w-full justify-end">
-        <div className="max-w-[80%] px-4 py-3 text-sm rounded-lg border border-border bg-muted/50">
-          {text && <p className="whitespace-pre-wrap">{text}</p>}
-        </div>
-      </div>
+      <motion.div
+        className="flex w-full justify-end"
+        initial={ENTRANCE_INITIAL}
+        animate={ENTRANCE_ANIMATE}
+        transition={ENTRANCE_TRANSITION}
+      >
+        {isEditing ? (
+          <div className="flex flex-col items-end gap-2 w-[80%]">
+            <Textarea
+              ref={focusAndScrollEditTextarea}
+              autoFocus
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSave();
+                }
+                if (e.key === "Escape") cancelEditing();
+              }}
+              className="rounded-2xl rounded-br-md bg-ai-chat-bubble-user text-ai-chat-bubble-user-foreground border-2 border-primary/40 min-h-15 px-4 py-2 text-sm leading-6"
+              rows={3}
+            />
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={cancelEditing}
+              >
+                {t("cancel")}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleSave}
+                disabled={
+                  !editValue.trim() || editValue.trim() === displayContent
+                }
+              >
+                {t("save_and_rerun")}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="group/message flex flex-col items-end gap-1 max-w-[80%]">
+            <div className="px-4 py-2 text-sm leading-6 rounded-2xl rounded-br-md bg-ai-chat-bubble-user text-ai-chat-bubble-user-foreground">
+              {displayContent && (
+                <p className="whitespace-pre-wrap">{displayContent}</p>
+              )}
+            </div>
+            <AiChatMessageActions
+              content={displayContent}
+              messageRole="user"
+              {...(onEditMessage ? { onEdit: startEditing } : {})}
+            />
+          </div>
+        )}
+      </motion.div>
     );
   }
 
   return (
-    <div className="flex w-full justify-start gap-3">
-      <div className="size-8 flex items-center justify-center flex-shrink-0 rounded-full bg-primary">
-        <Sparkles
-          className="size-4 text-primary-foreground"
-          aria-hidden="true"
-        />
-      </div>
-      <div className="flex flex-col gap-1 min-w-0 flex-1">
-        <span className="text-xs text-muted-foreground font-medium">
-          {displayName}
-        </span>
-        {text && (
-          <div className="max-w-[85%] w-fit">
-            <AiChatMarkdown>{text}</AiChatMarkdown>
+    <motion.div
+      className="flex w-full justify-start"
+      initial={ENTRANCE_INITIAL}
+      animate={ENTRANCE_ANIMATE}
+      transition={ENTRANCE_TRANSITION}
+    >
+      {/* Column fills available width so chart/tool outputs (which size off
+          parent width) can stretch. Only the markdown bubble is capped. */}
+      <div className="group/message flex flex-col gap-3 flex-1 min-w-0">
+        {displayContent && (
+          <div className="max-w-[85%]">
+            <AiChatMarkdown>{displayContent}</AiChatMarkdown>
           </div>
         )}
-        {children}
+        {children && <div className="mt-2 flex flex-col gap-2">{children}</div>}
+
+        {!isStreaming && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <AiChatMessageActions
+              content={displayContent}
+              messageRole="assistant"
+              isLatest={showActionsAlwaysVisible}
+              feedback={feedback}
+              onFeedback={onFeedback}
+              onRegenerate={onRegenerate}
+            />
+          </motion.div>
+        )}
       </div>
-    </div>
+    </motion.div>
   );
 }

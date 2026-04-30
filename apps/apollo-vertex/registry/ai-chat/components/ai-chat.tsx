@@ -1,35 +1,14 @@
 "use client";
 
 import type { TextPart, UIMessage } from "@tanstack/ai-client";
-import {
-  AlertCircle,
-  ArrowDown,
-  MoreHorizontal,
-  RefreshCw,
-} from "lucide-react";
+import { AlertCircle, ArrowDown, RefreshCw } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import { useStickyScroll } from "../hooks/use-sticky-scroll";
+import { AiChatHeader } from "./ai-chat-header";
 import { AiChatInput, type AiChatInputHandle } from "./ai-chat-input";
 import { AiChatLoading } from "./ai-chat-loading";
-import { AutopilotGradientIcon } from "./icons/autopilot-gradient";
 
 export interface AiChatProps {
   messages: UIMessage[];
@@ -48,7 +27,6 @@ export interface AiChatProps {
   /** Called when the user clicks a suggestion in the empty state */
   onSuggestionClick?: (suggestion: string) => void;
   placeholder?: string;
-  showClearButton?: boolean;
   error?: Error | null;
 }
 
@@ -67,7 +45,6 @@ export function AiChat({
   suggestions,
   onSuggestionClick,
   placeholder,
-  showClearButton = true,
   error,
 }: AiChatProps) {
   const { t } = useTranslation();
@@ -78,40 +55,19 @@ export function AiChat({
   const displayName = assistantName ?? t("ai_assistant");
 
   const queuedMessageRef = useRef<string | null>(null);
-  const [conversationCopied, setConversationCopied] = useState(false);
-  const [conversationCopyError, setConversationCopyError] = useState(false);
-  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleCopyConversation = async () => {
-    const text = messages
-      .map((m) => {
-        const content = m.parts
-          .filter((p): p is TextPart => p.type === "text")
-          .map((p) => p.content)
-          .join("");
-        if (!content) return null;
-        const label = m.role === "user" ? "You" : displayName;
-        return `${label}: ${content}`;
-      })
-      .filter(Boolean)
-      .join("\n\n");
-
-    try {
-      await navigator.clipboard.writeText(text);
-      setConversationCopied(true);
-      setConversationCopyError(false);
-    } catch {
-      setConversationCopied(false);
-      setConversationCopyError(true);
-    }
-
-    if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
-    copiedTimerRef.current = setTimeout(() => {
-      setConversationCopied(false);
-      setConversationCopyError(false);
-      copiedTimerRef.current = null;
-    }, 2000);
-  };
+  const conversationText = messages
+    .map((m) => {
+      const content = m.parts
+        .filter((p): p is TextPart => p.type === "text")
+        .map((p) => p.content)
+        .join("");
+      if (!content) return null;
+      const label = m.role === "user" ? t("you") : displayName;
+      return `${label}: ${content}`;
+    })
+    .filter(Boolean)
+    .join("\n\n");
 
   const handleSubmit = () => {
     if (!input.trim()) return;
@@ -159,82 +115,21 @@ export function AiChat({
     </div>
   );
 
-  const copyConversationLabel = conversationCopyError
-    ? t("copy_conversation_failed")
-    : conversationCopied
-      ? t("copied")
-      : t("copy_conversation");
+  const defaultHeader = title && (
+    <AiChatHeader
+      title={title}
+      hasMessages={messages.length > 0}
+      conversationText={conversationText}
+      onClearChat={onClearChat}
+    />
+  );
 
   return (
     <div
       className="flex flex-col h-full max-w-[680px] mx-auto bg-transparent text-ai-chat-foreground overflow-hidden"
       data-slot="ai-chat"
     >
-      {header ??
-        (title && (
-          <div className="relative z-10 py-3 px-4 flex items-center justify-between gap-2 bg-background">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <AutopilotGradientIcon
-                size={21}
-                className="flex-shrink-0"
-                aria-hidden="true"
-              />
-              <span className="text-sm font-bold tracking-tight bg-clip-text text-transparent truncate pt-[2px] [background-image:linear-gradient(97.73deg,#5D4ED0_8.79%,#1076A0_91.48%)] dark:[background-image:linear-gradient(97.73deg,#9485F5_8.79%,#69C7DD_91.48%)]">
-                {title}
-              </span>
-            </div>
-            {messages.length > 0 && (
-              <AlertDialog>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      className="size-7 inline-flex items-center justify-center rounded-md hover:bg-ai-chat-muted transition-colors flex-shrink-0"
-                      aria-label={t("more_options")}
-                    >
-                      <MoreHorizontal
-                        className="size-4 text-ai-chat-muted-foreground"
-                        aria-hidden="true"
-                      />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => {
-                        void handleCopyConversation();
-                      }}
-                    >
-                      {copyConversationLabel}
-                    </DropdownMenuItem>
-                    {onClearChat && showClearButton && (
-                      <AlertDialogTrigger asChild>
-                        <DropdownMenuItem>
-                          {t("new_conversation")}
-                        </DropdownMenuItem>
-                      </AlertDialogTrigger>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      {t("new_conversation_confirm_title")}
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      {t("new_conversation_confirm_description")}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => onClearChat?.()}>
-                      {t("new_conversation")}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-          </div>
-        ))}
+      {header ?? defaultHeader}
 
       {messages.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center min-h-0">
@@ -255,10 +150,12 @@ export function AiChat({
             {suggestions && suggestions.length > 0 && (
               <div className="mt-4 px-4 flex flex-wrap justify-center gap-2">
                 {suggestions.map((suggestion) => (
-                  <button
+                  <Button
                     key={suggestion}
                     type="button"
-                    className="py-2 px-4 text-xs font-semibold rounded-full border border-input bg-background text-foreground hover:bg-muted transition-colors"
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full text-xs font-semibold"
                     onClick={() => {
                       if (onSuggestionClick) {
                         onSuggestionClick(suggestion);
@@ -268,7 +165,7 @@ export function AiChat({
                     }}
                   >
                     {suggestion}
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}
@@ -295,20 +192,21 @@ export function AiChat({
           >
             <div ref={contentRef} className="space-y-1">
               {children}
-
               {showLoadingIndicator && <AiChatLoading />}
             </div>
           </div>
 
           {!isStuck && (
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="icon-sm"
               onClick={scrollToBottom}
               aria-label={t("scroll_to_bottom")}
-              className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center size-8 rounded-full border border-ai-chat-border bg-ai-chat shadow-md hover:bg-ai-chat-muted"
+              className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 size-8 rounded-full border-ai-chat-border bg-ai-chat shadow-md hover:bg-ai-chat-muted"
             >
               <ArrowDown className="size-4" />
-            </button>
+            </Button>
           )}
         </div>
       )}
@@ -317,20 +215,22 @@ export function AiChat({
         <div
           role="alert"
           aria-live="assertive"
-          className="relative z-0 mx-4 -mb-6 flex items-center gap-2 rounded-t-lg bg-destructive/10 px-[23px] pt-3 pb-6 text-sm text-destructive"
+          className="relative z-0 mx-4 -mb-6 flex items-center gap-2 rounded-t-lg bg-destructive/10 px-6 pt-3 pb-6 text-sm text-destructive"
         >
-          <AlertCircle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
-          <span className="flex-1">{error.message}</span>
+          <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
+          <span className="flex-1 break-words">{error.message}</span>
           {onRetry && (
-            <button
+            <Button
               type="button"
+              variant="link"
+              size="sm"
               onClick={onRetry}
-              className="flex-shrink-0 inline-flex items-center gap-1 text-xs font-medium hover:underline"
+              className="shrink-0 h-auto p-0 text-xs font-medium text-destructive"
               aria-label={t("retry")}
             >
               <RefreshCw className="size-3" aria-hidden="true" />
               {t("retry")}
-            </button>
+            </Button>
           )}
         </div>
       )}
