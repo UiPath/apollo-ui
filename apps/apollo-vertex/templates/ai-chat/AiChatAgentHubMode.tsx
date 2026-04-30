@@ -19,6 +19,10 @@ import {
   dataFabricDistributionClient,
 } from "@/registry/ai-chat/tools/data-fabric-distribution";
 import {
+  createDataFabricKpiTool,
+  dataFabricKpiClient,
+} from "@/registry/ai-chat/tools/data-fabric-kpi";
+import {
   createDataFabricLineTool,
   dataFabricLineClient,
 } from "@/registry/ai-chat/tools/data-fabric-line";
@@ -78,21 +82,29 @@ function AgentHubChatInner({
     dataFabricBaseUrl,
   });
 
+  const kpiTool = createDataFabricKpiTool({
+    entities,
+    accessToken,
+    dataFabricBaseUrl,
+  });
+
   const tools = clientTools(
     presentChoicesClient,
     dataFabricTableClient,
     dataFabricDistributionClient,
     dataFabricLineClient,
     dataFabricMultiLineClient,
+    dataFabricKpiClient,
   );
 
   const chartToolSteering = [
     "When the user asks about Data Fabric data, pick the chart tool that best fits the request:",
     '- "data_fabric_table" — list/show records, view fields side by side.',
+    '- "data_fabric_kpi" — single-number / scalar questions ("how many orders", "total revenue", "average invoice amount", "max order total"). No dimension or breakdown.',
     '- "data_fabric_line" — single-metric trend / time-series questions ("orders over time", "revenue by month", "growth across quarters").',
     '- "data_fabric_multi_line" — compare EXACTLY TWO metrics on a shared time axis ("orders count and revenue over time", "min vs max price by month"). The chart only supports two Y axes; for 3+ metrics render multiple charts.',
     '- "data_fabric_distribution" — histogram-style requests ("distribution of X", "histogram of X", numeric value-range binning).',
-    "If two tools could both answer, prefer the more specific one: multi-line beats line when the user names 2+ metrics; line beats distribution for explicit time-series phrasing.",
+    "If two tools could both answer, prefer the more specific one: multi-line beats line when the user names 2+ metrics; line beats distribution for explicit time-series phrasing; kpi beats line/distribution when the user wants a single value with no breakdown.",
   ].join("\n");
 
   const systemPrompt = [
@@ -103,6 +115,7 @@ function AgentHubChatInner({
     distributionTool.toolPrompt,
     lineTool.toolPrompt,
     multiLineTool.toolPrompt,
+    kpiTool.toolPrompt,
   ].join("\n\n");
 
   const connection = createAgentHubConnection({
@@ -168,6 +181,14 @@ function AgentHubChatInner({
               return (
                 <Suspense key={part.id}>
                   {multiLineTool.renderMultiLine(part.output, part.id)}
+                </Suspense>
+              );
+            }
+
+            if (part.name === "data_fabric_kpi") {
+              return (
+                <Suspense key={part.id}>
+                  {kpiTool.renderKpi(part.output, part.id)}
                 </Suspense>
               );
             }

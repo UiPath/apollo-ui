@@ -31,7 +31,7 @@ interface BuildBinnedDataModelInput {
 // the chart's `r[alias]` lookup. Sanitize the alias by replacing dots, so
 // the server respects what we send. The `field` reference still needs to
 // be qualified for the server to resolve the correct entity.
-function buildMetricEntry(metric: BuildBinnedDataModelInput["metric"]) {
+export function buildMetricEntry(metric: ResolvedMetric) {
   const aliasField = metric.field.replaceAll(".", "_");
   return {
     id: `${metric.aggregation.toLowerCase()}_${aliasField}`,

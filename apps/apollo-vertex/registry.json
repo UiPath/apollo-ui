@@ -389,6 +389,11 @@
           "target": "components/ui/ai-chat/charts/multi-line-chart-card.tsx"
         },
         {
+          "path": "registry/ai-chat/charts/kpi-chart-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/kpi-chart-card.tsx"
+        },
+        {
           "path": "registry/ai-chat/tools/choices/choices-tool.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/tools/choices/choices-tool.tsx"
@@ -452,6 +457,16 @@
           "path": "registry/ai-chat/tools/data-fabric-multi-line/index.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric-multi-line/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-kpi/data-fabric-kpi-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/data-fabric-kpi/data-fabric-kpi-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-kpi/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric-kpi/index.ts"
         }
       ]
     },
