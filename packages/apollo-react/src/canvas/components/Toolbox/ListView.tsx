@@ -256,6 +256,14 @@ interface ListViewProps<T extends ListItem> {
   onScroll?: React.UIEventHandler<HTMLDivElement>;
   emptyStateMessage?: string;
   emptyStateIcon?: string;
+  /**
+   * Custom render for the empty state. When provided, fully replaces the
+   * default Column + icon + message layout — `emptyStateIcon` and
+   * `emptyStateMessage` are ignored. Loading paths still take precedence:
+   * the prop is not invoked while `isLoading` or `loadingSkeleton` produce
+   * placeholder rows.
+   */
+  renderEmptyState?: () => React.ReactElement | null;
   isLoading?: boolean;
   enableSections?: boolean;
   /**
@@ -298,6 +306,7 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
     onScroll,
     emptyStateMessage = 'No items found',
     emptyStateIcon = 'search-x',
+    renderEmptyState,
     isLoading = false,
     enableSections = true,
     loadingSkeleton,
@@ -324,8 +333,10 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
   );
 
   // Show empty state when nothing would render — neither real items nor
-  // skeleton placeholders.
+  // skeleton placeholders. Loading-driven paths above keep `renderedItems`
+  // non-empty (skeleton rows), so renderEmptyState is naturally bypassed.
   if (renderedItems.length === 0) {
+    if (renderEmptyState) return renderEmptyState();
     return (
       <Column align="center" justify="center" flex={1} gap={10} style={{ minHeight: '250px' }}>
         <CanvasIcon icon={emptyStateIcon} size={48} color="var(--canvas-foreground-de-emp)" />

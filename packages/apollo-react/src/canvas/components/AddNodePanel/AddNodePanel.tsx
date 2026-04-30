@@ -20,6 +20,7 @@ export const AddNodePanel = memo(function AddNodePanel({
   items,
   title,
   loading,
+  renderEmptyState,
 }: AddNodePanelProps) {
   const registry = useOptionalNodeTypeRegistry();
   const { previewNodeConnectionInfo } = usePreviewNode();
@@ -85,6 +86,7 @@ export const AddNodePanel = memo(function AddNodePanel({
       onSearch={handleSearch}
       onClose={onClose}
       onItemHover={onNodeHover}
+      renderEmptyState={renderEmptyState}
     />
   );
 });

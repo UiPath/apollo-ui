@@ -255,6 +255,62 @@ describe('Toolbox', () => {
     });
   });
 
+  describe('renderEmptyState', () => {
+    let user: UserEvent;
+
+    beforeEach(() => {
+      user = userEvent.setup();
+    });
+
+    it('invokes renderEmptyState with currentCategory=undefined at the root level when there are no items', () => {
+      const renderEmptyState = vi.fn(() => <div data-testid="custom-empty">empty</div>);
+      render(<Toolbox {...defaultProps} initialItems={[]} renderEmptyState={renderEmptyState} />);
+
+      expect(screen.getByTestId('custom-empty')).toBeInTheDocument();
+      expect(renderEmptyState).toHaveBeenLastCalledWith({ currentCategory: undefined });
+    });
+
+    it('invokes renderEmptyState with the drilled-in category when its children list is empty', async () => {
+      const itemsWithEmptyCategory: ListItem[] = [
+        { id: 'cat-1', name: 'Empty category', data: {}, icon: { name: 'folder' }, children: [] },
+      ];
+      const renderEmptyState = vi.fn(({ currentCategory }: { currentCategory?: ListItem }) => (
+        <div data-testid="custom-empty">in: {currentCategory?.id ?? 'root'}</div>
+      ));
+      render(
+        <Toolbox
+          {...defaultProps}
+          initialItems={itemsWithEmptyCategory}
+          renderEmptyState={renderEmptyState}
+        />
+      );
+
+      // Drill into the empty category
+      await user.click(screen.getByText('Empty category'));
+
+      expect(screen.getByTestId('custom-empty')).toHaveTextContent('in: cat-1');
+      expect(renderEmptyState).toHaveBeenLastCalledWith({
+        currentCategory: expect.objectContaining({ id: 'cat-1' }),
+      });
+    });
+
+    it('falls back to the built-in empty message during search even when renderEmptyState is provided', async () => {
+      const renderEmptyState = vi.fn(() => <div data-testid="custom-empty">should not show</div>);
+      render(<Toolbox {...defaultProps} renderEmptyState={renderEmptyState} />);
+
+      await user.type(screen.getByPlaceholderText('Search'), 'NonExistent');
+
+      expect(screen.getByText('No matching nodes found')).toBeInTheDocument();
+      expect(screen.queryByTestId('custom-empty')).not.toBeInTheDocument();
+    });
+
+    it('falls back to the built-in empty message when renderEmptyState is not provided', () => {
+      render(<Toolbox {...defaultProps} initialItems={[]} />);
+
+      expect(screen.getByText('No nodes found')).toBeInTheDocument();
+    });
+  });
+
   describe('Keyboard shortcuts', () => {
     let user: UserEvent;
 

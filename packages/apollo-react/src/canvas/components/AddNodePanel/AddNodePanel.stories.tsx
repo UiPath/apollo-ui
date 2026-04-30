@@ -11,7 +11,7 @@ import {
   withCanvasProviders,
 } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
-import type { CanvasHandleActionEvent } from '../../utils';
+import { CanvasIcon, type CanvasHandleActionEvent } from '../../utils';
 import { BaseCanvas } from '../BaseCanvas';
 import type { BaseNodeData } from '../BaseNode';
 import { CanvasPositionControls } from '../CanvasPositionControls';
@@ -195,15 +195,24 @@ function createInitialNodes(): Node<BaseNodeData>[] {
 
 /**
  * Standalone panel wrapper component.
+ *
+ * `paddingTop` overrides the default 40px top offset — useful in stories that
+ * also render a top-anchored `StoryInfoPanel` and need to clear it.
  */
-function StandalonePanelWrapper({ children }: { children: React.ReactNode }) {
+function StandalonePanelWrapper({
+  children,
+  paddingTop = '200px',
+}: {
+  children: React.ReactNode;
+  paddingTop?: string;
+}) {
   return (
     <div
       style={{
         height: '100vh',
         width: '100vw',
         backgroundColor: 'var(--color-background-secondary)',
-        paddingTop: '40px',
+        paddingTop,
       }}
     >
       <div
@@ -579,6 +588,167 @@ export const NodePanelRegistryItems: Story = {
     <StandalonePanelWrapper>
       <AddNodePanel {...args} />
     </StandalonePanelWrapper>
+  ),
+};
+
+// ============================================================================
+// renderEmptyState demos
+// ============================================================================
+
+/**
+ * Render-prop that branches on `currentCategory` so the same story can
+ * demonstrate both "no nodes registered" (root-level empty) and
+ * "category is empty" (after drilling into an empty category) UX paths.
+ * Search-empty cases are handled by Toolbox's built-in fallback — this
+ * renderer is *not* invoked during search.
+ */
+const renderCustomEmptyState = ({
+  currentCategory,
+}: {
+  currentCategory?: ListItem<NodeItemData>;
+}) => {
+  if (currentCategory) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+          padding: 24,
+          minHeight: 250,
+          textAlign: 'center',
+        }}
+      >
+        <CanvasIcon icon="folder-open" size={28} color="var(--canvas-foreground-de-emp)" />
+        <div style={{ fontWeight: 600, fontSize: 13 }}>{currentCategory.name} is empty</div>
+        <div style={{ fontSize: 12, color: 'var(--canvas-foreground-de-emp)' }}>
+          Add a node to this category to get started.
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 12,
+        padding: 24,
+        minHeight: 250,
+        textAlign: 'center',
+      }}
+    >
+      <CanvasIcon icon="package-open" size={28} color="var(--canvas-foreground-de-emp)" />
+      <div style={{ fontWeight: 600, fontSize: 13 }}>No nodes registered</div>
+      <div style={{ fontSize: 12, color: 'var(--canvas-foreground-de-emp)' }}>
+        Connect a node provider to start adding nodes.
+      </div>
+      <button
+        type="button"
+        style={{
+          padding: '6px 12px',
+          borderRadius: 6,
+          backgroundColor: 'var(--canvas-accent)',
+          color: 'var(--canvas-accent-foreground)',
+          border: 'none',
+          fontSize: 12,
+          cursor: 'pointer',
+        }}
+      >
+        Connect provider
+      </button>
+    </div>
+  );
+};
+
+export const NodePanelEmptyStateNoNodes: Story = {
+  name: 'renderEmptyState — no nodes registered',
+  parameters: {
+    docs: {
+      description: {
+        story: [
+          'Demonstrates the root-level branch of `renderEmptyState`. The panel is',
+          'given an empty `items` array, so the render prop is invoked with',
+          '`currentCategory: undefined`. The host app renders an onboarding CTA',
+          'in place of the built-in "No nodes found" message.',
+        ].join(' '),
+      },
+    },
+  },
+  args: {
+    items: [],
+    onNodeSelect: (node) => console.log('Selected node:', node),
+    onClose: () => console.log('Closed selector'),
+    renderEmptyState: renderCustomEmptyState,
+  },
+  render: (args) => (
+    <>
+      <StoryInfoPanel
+        title="renderEmptyState — no nodes"
+        description={
+          'AddNodePanel was given an empty `items` array, so `renderEmptyState` is ' +
+          'called with `currentCategory: undefined`. The custom render replaces the ' +
+          'built-in "No nodes found" message — useful for onboarding CTAs in apps that ' +
+          'have no nodes registered yet.'
+        }
+      />
+      <StandalonePanelWrapper>
+        <AddNodePanel {...args} />
+      </StandalonePanelWrapper>
+    </>
+  ),
+};
+
+const EMPTY_CATEGORY_ITEMS: ListItem<NodeItemData>[] = [
+  {
+    id: 'empty-category',
+    name: 'Empty category',
+    icon: { name: 'folder' },
+    data: { type: 'empty-category' },
+    children: [],
+  },
+];
+
+export const NodePanelEmptyStateInCategory: Story = {
+  name: 'renderEmptyState — drilled into empty category',
+  parameters: {
+    docs: {
+      description: {
+        story: [
+          'Demonstrates the per-category branch of `renderEmptyState`. The panel',
+          'has a single category with no children. Click the category to drill in —',
+          'the render prop is invoked with `currentCategory` set to the drilled-in',
+          'item, letting the host show category-specific empty UI.',
+        ].join(' '),
+      },
+    },
+  },
+  args: {
+    items: EMPTY_CATEGORY_ITEMS,
+    onNodeSelect: (node) => console.log('Selected node:', node),
+    onClose: () => console.log('Closed selector'),
+    renderEmptyState: renderCustomEmptyState,
+  },
+  render: (args) => (
+    <>
+      <StoryInfoPanel
+        title="renderEmptyState — drilled-in category"
+        description={
+          'Click "Empty category" to drill in. `renderEmptyState` is invoked with ' +
+          '`currentCategory` set to that item, so the renderer can show category-' +
+          'specific empty UI (e.g. a CTA tied to the category). Search-empty cases ' +
+          'still use the built-in "No nodes found" fallback — this renderer never ' +
+          'fires during search.'
+        }
+      />
+      <StandalonePanelWrapper>
+        <AddNodePanel {...args} />
+      </StandalonePanelWrapper>
+    </>
   ),
 };
 

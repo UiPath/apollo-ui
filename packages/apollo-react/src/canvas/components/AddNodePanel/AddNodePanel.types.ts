@@ -1,4 +1,4 @@
-import type { ListItem } from '../Toolbox';
+import type { ListItem, ToolboxEmptyStateRenderer } from '../Toolbox';
 
 export interface NodeItemData {
   type: string;
@@ -22,4 +22,11 @@ export interface AddNodePanelProps {
    */
   items?: ListItem[];
   loading?: boolean;
+  /**
+   * Custom render for the empty-state body. Invoked only when the user has
+   * navigated into a category (or is at the root) and the list is empty —
+   * not during search. Receives the currently-selected category as context.
+   * When provided, replaces the built-in icon + message empty state.
+   */
+  renderEmptyState?: ToolboxEmptyStateRenderer<NodeItemData>;
 }

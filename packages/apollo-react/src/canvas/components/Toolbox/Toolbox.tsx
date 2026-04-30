@@ -51,6 +51,17 @@ function findItemById<T>(items: ListItem<T>[], id: string): ListItem<T> | null {
   return null;
 }
 
+/**
+ * Render-prop signature for `renderEmptyState`. The `ctx` bag carries
+ * caller-relevant state — currently the category the user has drilled into
+ * (or `undefined` at the root level). The renderer is only invoked when the
+ * user is *not* searching; search-empty states fall back to the built-in UI.
+ * Kept as an object so future fields can be added without breaking call sites.
+ */
+export type ToolboxEmptyStateRenderer<T = any> = (ctx: {
+  currentCategory?: ListItem<T>;
+}) => React.ReactElement | null;
+
 export type ToolboxSearchHandler<T = any> = (
   query: string,
   isTopLevelSearch: boolean,
@@ -75,6 +86,13 @@ export interface ToolboxProps<T> {
    * appear after the visual separator.
    */
   quickActions?: ToolboxQuickAction[];
+  /**
+   * Custom render for the empty-state body. Invoked only when the user has
+   * navigated into a category (or is at the root) and the list is empty —
+   * not during search. Receives the currently-selected category as context.
+   * When provided, replaces the built-in icon + message empty state.
+   */
+  renderEmptyState?: ToolboxEmptyStateRenderer<T>;
 }
 
 function getNextSelectableIndex(
@@ -135,6 +153,7 @@ export function Toolbox<T>({
   fullWidth = false,
   fullHeight = false,
   quickActions,
+  renderEmptyState,
 }: ToolboxProps<T>) {
   const [items, setItems] = useState<ListItem<T>[]>(initialItems);
   const [search, setSearch] = useState('');
@@ -173,6 +192,18 @@ export function Toolbox<T>({
   }, []);
 
   const isSearching = useMemo(() => search.length > 0, [search]);
+
+  // Adapts the Toolbox-level `(ctx) => ReactNode` signature to ListView's
+  // no-arg form. We deliberately skip the user renderer while searching so
+  // the built-in "No nodes found" empty state handles search-empty cases —
+  // category-specific renderers are meaningful only at category drill-in.
+  const wrappedRenderEmptyState = useMemo(
+    () =>
+      renderEmptyState && !isSearching
+        ? () => renderEmptyState({ currentCategory: currentParentItem ?? undefined })
+        : undefined,
+    [renderEmptyState, isSearching, currentParentItem]
+  );
 
   const displayedItems = useMemo(
     () => (isSearching && !isSearchingInitialItems ? searchedItems : items),
@@ -633,6 +664,7 @@ export function Toolbox<T>({
               activeIndex={activeIndex}
               listRef={listRef}
               emptyStateMessage={isSearching ? 'No matching nodes found' : 'No nodes found'}
+              renderEmptyState={wrappedRenderEmptyState}
               onItemClick={handleItemSelect}
               onItemHover={onItemHover}
               onScroll={handleListScroll}

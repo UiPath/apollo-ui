@@ -16,7 +16,13 @@ vi.mock('../../hooks', () => ({
 
 // Mock Toolbox to test only AddNodePanel's data transformation logic
 vi.mock('../Toolbox', () => ({
-  Toolbox: ({ title, initialItems, onClose, onItemSelect }: ToolboxProps<NodeItemData>) => (
+  Toolbox: ({
+    title,
+    initialItems,
+    onClose,
+    onItemSelect,
+    renderEmptyState,
+  }: ToolboxProps<NodeItemData>) => (
     <div data-testid="toolbox-mock">
       <div data-testid="toolbox-title">{title}</div>
       <div data-testid="toolbox-items">{JSON.stringify(initialItems)}</div>
@@ -30,6 +36,12 @@ vi.mock('../Toolbox', () => ({
       >
         Select First
       </button>
+      {/* Match real Toolbox: only invoke renderEmptyState when there are no items. */}
+      {renderEmptyState && initialItems.length === 0 && (
+        <div data-testid="toolbox-empty-state">
+          {renderEmptyState({ currentCategory: undefined })}
+        </div>
+      )}
     </div>
   ),
 }));
@@ -227,6 +239,32 @@ describe('AddNodePanel', () => {
     // Should only have 1 category (agents), empty category should be filtered out
     expect(items).toHaveLength(1);
     expect(items[0].id).toBe('agent-node');
+  });
+
+  it('should forward renderEmptyState through to Toolbox when items are empty', () => {
+    const renderEmptyState = vi.fn(() => <div data-testid="custom-empty">empty</div>);
+
+    // Pass items={[]} so the (gated) mock path invokes renderEmptyState — same
+    // behavior as the real Toolbox, which only calls the prop when ListView
+    // would render the empty state.
+    render(<AddNodePanel {...defaultProps} items={[]} renderEmptyState={renderEmptyState} />);
+
+    expect(screen.getByTestId('toolbox-empty-state')).toBeInTheDocument();
+    expect(screen.getByTestId('custom-empty')).toHaveTextContent('empty');
+    expect(renderEmptyState).toHaveBeenCalledWith({ currentCategory: undefined });
+  });
+
+  it('should not invoke renderEmptyState when items are present', () => {
+    const renderEmptyState = vi.fn(() => <div data-testid="custom-empty">should not render</div>);
+
+    render(
+      <NodeRegistryProvider manifest={mockManifest}>
+        <AddNodePanel {...defaultProps} renderEmptyState={renderEmptyState} />
+      </NodeRegistryProvider>
+    );
+
+    expect(screen.queryByTestId('toolbox-empty-state')).not.toBeInTheDocument();
+    expect(renderEmptyState).not.toHaveBeenCalled();
   });
 
   it('should support custom nodeOptions instead of registry', () => {
