@@ -3,13 +3,15 @@
 import { clientTools } from "@tanstack/ai-client";
 import { useChat } from "@tanstack/ai-react";
 import { Entities } from "@uipath/uipath-typescript/entities";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createAgentHubConnection } from "@/registry/ai-chat/adapters/agenthub/adapter";
 import { AiChat } from "@/registry/ai-chat/components/ai-chat";
 import { AiChatEmptyState } from "@/registry/ai-chat/components/ai-chat-empty-state";
 import { AiChatMessage } from "@/registry/ai-chat/components/ai-chat-message";
 import { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
+import type { MessageFeedbackType } from "@/registry/ai-chat/types";
+import { getAiChatMessageProps } from "@/registry/ai-chat/util/get-ai-chat-message-props";
 import {
   CHOICES_TOOL_PROMPT,
   presentChoicesClient,
@@ -145,7 +147,16 @@ function AgentHubChatInner({
     tools,
   });
 
-  const { messages, sendMessage, isLoading, stop, clear, error } = useChat({
+  const {
+    messages,
+    sendMessage,
+    reload,
+    isLoading,
+    status,
+    stop,
+    clear,
+    error,
+  } = useChat({
     connection,
     tools,
   });
@@ -156,6 +167,22 @@ function AgentHubChatInner({
       icon={<AutopilotGradientIcon size={48} aria-hidden="true" />}
     />
   );
+
+  const [feedback, setFeedback] = useState<Record<string, MessageFeedbackType>>(
+    {},
+  );
+
+  const messageProps = getAiChatMessageProps({
+    messages,
+    status,
+    onFeedback: (messageId, type) => {
+      // Demo: wire to your analytics / feedback endpoint.
+      setFeedback((prev) => ({ ...prev, [messageId]: type }));
+    },
+    getFeedback: (messageId) => feedback[messageId] ?? null,
+    onRegenerate: () => void reload(),
+    onEditMessage: (_messageId, content) => void sendMessage(content),
+  });
 
   return (
     <AiChat
@@ -177,11 +204,7 @@ function AgentHubChatInner({
       error={error ?? null}
     >
       {messages.map((message) => (
-        <AiChatMessage
-          key={message.id}
-          message={message}
-          assistantName="Autopilot"
-        >
+        <AiChatMessage key={message.id} {...messageProps(message)}>
           {message.parts.map((part) => {
             if (part.type !== "tool-call" || !part.output) return null;
 
