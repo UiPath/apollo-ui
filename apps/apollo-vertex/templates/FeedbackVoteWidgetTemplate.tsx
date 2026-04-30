@@ -4,8 +4,17 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { FeedbackVoteWidget } from "@/components/ui/feedback-vote-widget";
+import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
 
 export function FeedbackVoteWidgetTemplate() {
+  return (
+    <LocaleProvider>
+      <FeedbackVoteWidgetTemplateContent />
+    </LocaleProvider>
+  );
+}
+
+function FeedbackVoteWidgetTemplateContent() {
   const { t } = useTranslation();
   const [vote, setVote] = useState<"up" | "down" | null>(null);
   const [comment, setComment] = useState("");

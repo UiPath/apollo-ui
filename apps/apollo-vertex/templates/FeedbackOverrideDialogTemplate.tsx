@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
 
 const OVERRIDE_REASONS = [
   { value: "incorrect_information", labelKey: "feedback_reason_incorrect" },
@@ -49,7 +50,17 @@ interface FeedbackOverrideDialogTemplateProps {
   }) => void;
 }
 
-export function FeedbackOverrideDialogTemplate({
+export function FeedbackOverrideDialogTemplate(
+  props: FeedbackOverrideDialogTemplateProps,
+) {
+  return (
+    <LocaleProvider>
+      <FeedbackOverrideDialogTemplateContent {...props} />
+    </LocaleProvider>
+  );
+}
+
+function FeedbackOverrideDialogTemplateContent({
   originalContent = "Patient presents with chest pain radiating to the left arm. ECG shows ST elevation in leads II, III, and aVF.",
   sectionLabel = "Cardiology",
   onSubmit,

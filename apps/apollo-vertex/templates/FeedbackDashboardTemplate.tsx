@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
 import { MetricCard } from "@/components/ui/metric-card";
+import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
 import { useDataTable } from "@/registry/use-data-table/useDataTable";
 
 type Severity = "Critical" | "High" | "Medium" | "Low";
@@ -284,7 +285,15 @@ function FeedbackDashboardTemplateContent() {
   );
 }
 
-export const FeedbackDashboardTemplate = dynamic(
+const FeedbackDashboardTemplateInner = dynamic(
   () => Promise.resolve(FeedbackDashboardTemplateContent),
   { ssr: false },
 );
+
+export function FeedbackDashboardTemplate() {
+  return (
+    <LocaleProvider>
+      <FeedbackDashboardTemplateInner />
+    </LocaleProvider>
+  );
+}
