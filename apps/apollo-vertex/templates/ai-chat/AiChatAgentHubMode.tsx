@@ -23,6 +23,10 @@ import {
   dataFabricLineClient,
 } from "@/registry/ai-chat/tools/data-fabric-line";
 import {
+  createDataFabricMultiLineTool,
+  dataFabricMultiLineClient,
+} from "@/registry/ai-chat/tools/data-fabric-multi-line";
+import {
   createDataFabricTableTool,
   dataFabricTableClient,
 } from "@/registry/ai-chat/tools/data-fabric-table";
@@ -68,19 +72,27 @@ function AgentHubChatInner({
     dataFabricBaseUrl,
   });
 
+  const multiLineTool = createDataFabricMultiLineTool({
+    entities,
+    accessToken,
+    dataFabricBaseUrl,
+  });
+
   const tools = clientTools(
     presentChoicesClient,
     dataFabricTableClient,
     dataFabricDistributionClient,
     dataFabricLineClient,
+    dataFabricMultiLineClient,
   );
 
   const chartToolSteering = [
     "When the user asks about Data Fabric data, pick the chart tool that best fits the request:",
     '- "data_fabric_table" — list/show records, view fields side by side.',
-    '- "data_fabric_line" — trend / time-series questions ("orders over time", "revenue by month", "growth across quarters").',
+    '- "data_fabric_line" — single-metric trend / time-series questions ("orders over time", "revenue by month", "growth across quarters").',
+    '- "data_fabric_multi_line" — compare EXACTLY TWO metrics on a shared time axis ("orders count and revenue over time", "min vs max price by month"). The chart only supports two Y axes; for 3+ metrics render multiple charts.',
     '- "data_fabric_distribution" — histogram-style requests ("distribution of X", "histogram of X", numeric value-range binning).',
-    "If two tools could both answer, prefer the more specific one (line beats distribution for explicit time-series phrasing).",
+    "If two tools could both answer, prefer the more specific one: multi-line beats line when the user names 2+ metrics; line beats distribution for explicit time-series phrasing.",
   ].join("\n");
 
   const systemPrompt = [
@@ -90,6 +102,7 @@ function AgentHubChatInner({
     tableTool.toolPrompt,
     distributionTool.toolPrompt,
     lineTool.toolPrompt,
+    multiLineTool.toolPrompt,
   ].join("\n\n");
 
   const connection = createAgentHubConnection({
@@ -147,6 +160,14 @@ function AgentHubChatInner({
               return (
                 <Suspense key={part.id}>
                   {lineTool.renderLine(part.output, part.id)}
+                </Suspense>
+              );
+            }
+
+            if (part.name === "data_fabric_multi_line") {
+              return (
+                <Suspense key={part.id}>
+                  {multiLineTool.renderMultiLine(part.output, part.id)}
                 </Suspense>
               );
             }

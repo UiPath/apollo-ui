@@ -26,29 +26,51 @@ interface BuildBinnedDataModelInput {
   };
 }
 
+// Data Fabric rewrites aliases that contain dots (qualified field paths)
+// into a canonical `<FUNCTION>_<field>` form when joins are used, breaking
+// the chart's `r[alias]` lookup. Sanitize the alias by replacing dots, so
+// the server respects what we send. The `field` reference still needs to
+// be qualified for the server to resolve the correct entity.
+function buildMetricEntry(metric: BuildBinnedDataModelInput["metric"]) {
+  const aliasField = metric.field.replaceAll(".", "_");
+  return {
+    id: `${metric.aggregation.toLowerCase()}_${aliasField}`,
+    display: metric.display,
+    aggregation: metric.aggregation,
+    field: metric.field,
+  };
+}
+
 export function buildBinnedDataModel({
   id,
   dimension,
   dimensionType,
   metric,
 }: BuildBinnedDataModelInput): ChartDataModel<NumericOrDatetimeField> {
-  // Data Fabric rewrites aliases that contain dots (qualified field paths)
-  // into a canonical `<FUNCTION>_<field>` form when joins are used, breaking
-  // the chart's `r[alias]` lookup. Sanitize the alias by replacing dots, so
-  // the server respects what we send. The `field` reference still needs to
-  // be qualified for the server to resolve the correct entity.
-  const aliasField = metric.field.replaceAll(".", "_");
   return {
     id,
     dimensions: [{ id: dimension, type: dimensionType }],
-    metrics: [
-      {
-        id: `${metric.aggregation.toLowerCase()}_${aliasField}`,
-        display: metric.display,
-        aggregation: metric.aggregation,
-        field: metric.field,
-      },
-    ],
+    metrics: [buildMetricEntry(metric)],
+  };
+}
+
+interface BuildMultiBinnedDataModelInput {
+  id: string;
+  dimension: string;
+  dimensionType: BinnedDimensionType;
+  metrics: ResolvedMetric[];
+}
+
+export function buildMultiBinnedDataModel({
+  id,
+  dimension,
+  dimensionType,
+  metrics,
+}: BuildMultiBinnedDataModelInput): ChartDataModel<NumericOrDatetimeField> {
+  return {
+    id,
+    dimensions: [{ id: dimension, type: dimensionType }],
+    metrics: metrics.map((m) => buildMetricEntry(m)),
   };
 }
 
@@ -139,12 +161,17 @@ export function resolveSingleBinnedMetric(
   metric: MetricInput | undefined,
 ): ResolvedMetric | null {
   if (!metric || metric.aggregation === "COUNT") {
-    const field =
+    const userField =
       metric?.field && entity.fields.some((f) => f.name === metric.field)
         ? metric.field
-        : pickCountField(entity);
+        : null;
+    const field = userField ?? pickCountField(entity);
     if (!field) return null;
-    return { field, aggregation: "COUNT", display: "Count" };
+    return {
+      field,
+      aggregation: "COUNT",
+      display: userField ? `Count of ${userField}` : "Count",
+    };
   }
 
   if (!metric.field) return null;
@@ -157,22 +184,37 @@ export function resolveSingleBinnedMetric(
   };
 }
 
+// Drop the entity prefix from a qualified `EntityName.Field` reference for use
+// in human-facing labels (chart legend, totals title, tooltip). The qualified
+// form is still required as the `field` for server-side resolution; only the
+// display string is shortened, since the entity is implicit in the chart.
+function unqualifiedDisplay(qualified: string): string {
+  return qualified.split(".").at(-1) ?? qualified;
+}
+
 export function resolveMultiBinnedMetric(
   primaryEntity: string,
   metric: MetricInput | undefined,
   qualifiedFields: Map<string, EntityField>,
 ): ResolvedMetric | null {
   if (!metric || metric.aggregation === "COUNT") {
-    let field: string | null = null;
+    let userField: string | null = null;
     if (metric?.field) {
       const qualified = metric.field.includes(".")
         ? metric.field
         : `${primaryEntity}.${metric.field}`;
-      if (qualifiedFields.has(qualified)) field = qualified;
+      if (qualifiedFields.has(qualified)) userField = qualified;
     }
-    field ??= pickCountFieldQualified(primaryEntity, qualifiedFields);
+    const field =
+      userField ?? pickCountFieldQualified(primaryEntity, qualifiedFields);
     if (!field) return null;
-    return { field, aggregation: "COUNT", display: "Count" };
+    return {
+      field,
+      aggregation: "COUNT",
+      display: userField
+        ? `Count of ${unqualifiedDisplay(userField)}`
+        : "Count",
+    };
   }
 
   if (!metric.field) return null;
@@ -184,6 +226,6 @@ export function resolveMultiBinnedMetric(
   return {
     field: qualified,
     aggregation: metric.aggregation,
-    display: `${formatAggregation(metric.aggregation)} of ${qualified}`,
+    display: `${formatAggregation(metric.aggregation)} of ${unqualifiedDisplay(qualified)}`,
   };
 }
