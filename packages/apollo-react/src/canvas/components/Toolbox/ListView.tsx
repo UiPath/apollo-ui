@@ -79,11 +79,7 @@ export function buildRenderedItems<T extends ListItem>(
 ): RenderItem<T>[] {
   const result: RenderItem<T>[] = [];
   const skeletonConfig: ChildrenLoadingSpec | undefined =
-    typeof loadingSkeleton === 'object'
-      ? loadingSkeleton
-      : loadingSkeleton
-        ? {}
-        : undefined;
+    typeof loadingSkeleton === 'object' ? loadingSkeleton : loadingSkeleton ? {} : undefined;
   const baseSkeletonCount = skeletonConfig?.count ?? DEFAULT_SKELETON_COUNT;
 
   // Skeletons are emitted as `{ type: 'skeleton' }` so they're a distinct
