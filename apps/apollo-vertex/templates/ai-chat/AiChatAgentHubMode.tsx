@@ -7,7 +7,9 @@ import { Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { createAgentHubConnection } from "@/registry/ai-chat/adapters/agenthub/adapter";
 import { AiChat } from "@/registry/ai-chat/components/ai-chat";
+import { AiChatEmptyState } from "@/registry/ai-chat/components/ai-chat-empty-state";
 import { AiChatMessage } from "@/registry/ai-chat/components/ai-chat-message";
+import { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
 import {
   CHOICES_TOOL_PROMPT,
   presentChoicesClient,
@@ -55,7 +57,6 @@ function AgentHubChatInner({
   entities,
 }: AgentHubChatInnerProps) {
   const { t } = useTranslation();
-
   const dataFabricBaseUrl = `/api/datafabric/${orgTenant.orgName}/${orgTenant.tenantName}/datafabric_/api`;
 
   const tableTool = createDataFabricTableTool({
@@ -131,6 +132,13 @@ function AgentHubChatInner({
     tools,
   });
 
+  const emptyState = (
+    <AiChatEmptyState
+      description={t("autopilot_empty_description")}
+      icon={<AutopilotGradientIcon size={48} aria-hidden="true" />}
+    />
+  );
+
   return (
     <AiChat
       messages={messages}
@@ -140,15 +148,21 @@ function AgentHubChatInner({
       }}
       onStop={stop}
       onClearChat={clear}
-      title={t("ai_assistant")}
-      assistantName={t("assistant")}
+      title="Autopilot"
+      assistantName="Autopilot"
+      emptyState={emptyState}
+      suggestions={[
+        t("shell_suggestion_recent_runs"),
+        t("shell_suggestion_failing_processes"),
+        t("shell_suggestion_summarize_queue"),
+      ]}
       error={error ?? null}
     >
       {messages.map((message) => (
         <AiChatMessage
           key={message.id}
           message={message}
-          assistantName={t("assistant")}
+          assistantName="Autopilot"
         >
           {message.parts.map((part) => {
             if (part.type !== "tool-call" || !part.output) return null;
