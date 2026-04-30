@@ -380,6 +380,52 @@ Identical to the line tool. Filter and join schemas are shared, and qualified `E
 
 ---
 
+## Data Fabric KPI Tool
+
+The `data_fabric_kpi` tool renders a single scalar value — one aggregated metric across an entity, with no dimension or breakdown. It shares the metric, filter, and join system with the other Data Fabric chart tools.
+
+```tsx
+import {
+  createDataFabricKpiTool,
+  dataFabricKpiClient,
+} from '@/components/ui/ai-chat/tools/data-fabric-kpi';
+
+const kpiTool = createDataFabricKpiTool({
+  entities,           // Record<string, Entity> — entity metadata with field names and types
+  accessToken,        // Bearer token for Data Fabric API
+  dataFabricBaseUrl,  // Base URL for Data Fabric proxy
+});
+
+// Use dataFabricKpiClient in your tools array, kpiTool.toolPrompt in your
+// system prompt, and kpiTool.renderKpi(part.output, part.id) in your parts loop.
+```
+
+### When to use KPI vs other chart tools
+
+- **KPI** — single-number questions: *"how many orders are open"*, *"total revenue"*, *"average invoice amount"*, *"max order total"*. No dimension or breakdown.
+- **Line / Distribution** — when the user wants the value sliced across a time or value axis (*"over time"*, *"by month"*, *"distribution of"*).
+- **Table** — when the user wants individual records.
+
+### Metric
+
+Omit `metric` entirely for the default `COUNT` of records. To plot an aggregated numeric field, pass `{ aggregation, field }`:
+
+- `COUNT` — total record count (default; `field` optional, picks the primary key).
+- `SUM`, `AVG`, `MIN`, `MAX` — applied to a numeric `field`.
+
+```json
+{
+  "entityName": "Order",
+  "metric": { "aggregation": "SUM", "field": "Total" }
+}
+```
+
+### Filters and joins
+
+Filter and join schemas are shared with the other Data Fabric tools (including the datetime range filter). When joins are present, the `metric.field` and any filter fields must use qualified `EntityName.FieldName` names.
+
+---
+
 ## Suggestion Buttons
 
 The `presentChoices` tool renders interactive suggestion buttons. Define the tool with a Zod schema, and render choices inline in the parts loop:
