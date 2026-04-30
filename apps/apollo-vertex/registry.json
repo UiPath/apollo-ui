@@ -321,6 +321,7 @@
         "lucide-react",
         "luxon",
         "react-i18next",
+        "highlight.js",
         "react-markdown",
         "remark-gfm",
         "framer-motion"
@@ -396,6 +397,11 @@
           "path": "registry/ai-chat/components/ai-chat-markdown.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-markdown.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-code-block.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-code-block.tsx"
         },
         {
           "path": "registry/ai-chat/components/ai-chat-message.tsx",
