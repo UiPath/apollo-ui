@@ -243,13 +243,27 @@ export type HandleContext = {
 };
 
 /**
+ * Resolves the manifest-level boundary ('outer' | 'inner') for a given handle
+ * id. Container nodes flip inner-handle Handle components to the opposite side
+ * via `connectionPosition`, so multiple visual rails collapse onto the same
+ * React Flow `Position`. Pass this to `resolveHandleContext` so the peer count
+ * only includes handles that visually share an edge with the queried handle.
+ */
+export type HandleBoundaryResolver = (handleId: string) => 'outer' | 'inner' | undefined;
+
+export interface ResolveHandleContextOptions {
+  boundaryOf?: HandleBoundaryResolver;
+}
+
+/**
  * Resolves handle context (anchor coordinates, peer index, peer count) for a
  * given handle on an internal node. Returns undefined if the handle isn't found.
  */
 export function resolveHandleContext(
   internalNode: InternalNode,
   handleId: string,
-  handlePosition: Position
+  handlePosition: Position,
+  options?: ResolveHandleContextOptions
 ): HandleContext | undefined {
   const allHandles = [
     ...(internalNode.internals.handleBounds?.source ?? []),
@@ -258,14 +272,41 @@ export function resolveHandleContext(
   const matchedHandle = allHandles.find((h) => h.id === handleId);
   if (!matchedHandle) return undefined;
 
+  const peers = filterRailPeers(allHandles, handleId, handlePosition, options?.boundaryOf);
+
   return {
     anchor: {
       x: internalNode.internals.positionAbsolute.x + matchedHandle.x + matchedHandle.width / 2,
       y: internalNode.internals.positionAbsolute.y + matchedHandle.y + matchedHandle.height / 2,
     },
-    index: getHandleIndex(handleId, handlePosition, allHandles),
-    count: allHandles.filter((h) => h.position === handlePosition).length,
+    index: getHandleIndex(handleId, handlePosition, peers),
+    count: peers.length,
   };
+}
+
+/**
+ * Filters handles to those sharing the same visual rail as the queried handle:
+ * matching React Flow position, and (when a boundary resolver is provided) the
+ * same manifest boundary. Without a resolver, falls back to position-only
+ * matching to preserve legacy behavior.
+ */
+function filterRailPeers(
+  allHandles: Handle[],
+  handleId: string,
+  handlePosition: Position,
+  boundaryOf: HandleBoundaryResolver | undefined
+): Handle[] {
+  const samePosition = allHandles.filter((h) => h.position === handlePosition);
+  if (!boundaryOf) return samePosition;
+
+  const targetBoundary = boundaryOf(handleId);
+  if (targetBoundary === undefined) return samePosition;
+
+  return samePosition.filter((h) => {
+    if (!h.id) return false;
+    const peerBoundary = boundaryOf(h.id);
+    return peerBoundary === undefined || peerBoundary === targetBoundary;
+  });
 }
 
 /**

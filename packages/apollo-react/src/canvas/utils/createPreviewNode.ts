@@ -9,6 +9,7 @@ import { getNodeDimensions } from './container';
 import {
   getAbsolutePosition,
   getNonOverlappingPositionForDirection,
+  type HandleBoundaryResolver,
   type HandleContext,
   resolveHandleContext,
 } from './NodeUtils';
@@ -228,28 +229,73 @@ function calculateAutoPosition(
   );
 }
 
+export interface CreatePreviewNodeOptions {
+  /** ID of the node the preview originates from. */
+  sourceNodeId: string;
+  /** ID of the handle the preview connects to. */
+  sourceHandleId: string;
+  /** React Flow instance for reading nodes/edges and handle bounds. */
+  reactFlowInstance: ReactFlowInstance;
+  /**
+   * Optional explicit anchor for the preview. When provided, auto-positioning
+   * is skipped and `positionMode` decides whether the value is treated as a
+   * drop point (`'drop'`) or as the preview's center (`'center'`).
+   */
+  position?: { x: number; y: number };
+  /** Extra data merged into the preview node. */
+  data?: Record<string, unknown>;
+  /**
+   * Whether the clicked handle is a `'source'` or `'target'`. Determines
+   * which side of the preview points back at the source node.
+   * @default 'source'
+   */
+  sourceHandleType?: 'source' | 'target';
+  /**
+   * Size used for the preview node. Defaults to a square node of
+   * `DEFAULT_NODE_SIZE`.
+   */
+  previewNodeSize?: { width: number; height: number };
+  /** Side of the source the preview should appear on. @default Position.Right */
+  handlePosition?: Position;
+  /** Node types to ignore during overlap detection (e.g., sticky notes). */
+  ignoredNodeTypes?: string[];
+  /**
+   * Interpretation of `position`: `'drop'` places the preview adjacent to the
+   * point; `'center'` centers the preview on the point.
+   * @default 'drop'
+   */
+  positionMode?: PreviewNodePositionMode;
+  /**
+   * Manifest-aware boundary resolver for the source node's handles. Lets the
+   * peer-count math distinguish outer handles from inner handles flipped to
+   * the opposite side via `connectionPosition`, so previews stay anchored to
+   * the clicked handle's actual rail.
+   */
+  sourceBoundaryOf?: HandleBoundaryResolver;
+}
+
 /**
  * Creates the preview node and primary preview edge for Add Node flows. The
  * preview can be placed from a drop coordinate, centered at an absolute point,
  * or auto-positioned from the clicked handle when no position is provided.
- *
- * @param ignoredNodeTypes Optional array of node types to ignore when calculating overlap (e.g., ["stickyNote"])
  */
 export function createPreviewNode(
-  sourceNodeId: string,
-  sourceHandleId: string,
-  reactFlowInstance: ReactFlowInstance,
-  position?: { x: number; y: number },
-  data?: Record<string, unknown>,
-  sourceHandleType: 'source' | 'target' = 'source',
-  previewNodeSize: { width: number; height: number } = {
-    width: DEFAULT_NODE_SIZE,
-    height: DEFAULT_NODE_SIZE,
-  },
-  handlePosition: Position = Position.Right,
-  ignoredNodeTypes: string[] = [],
-  positionMode: PreviewNodePositionMode = 'drop'
+  options: CreatePreviewNodeOptions
 ): { node: Node; edge: Edge } | null {
+  const {
+    sourceNodeId,
+    sourceHandleId,
+    reactFlowInstance,
+    position,
+    data,
+    sourceHandleType = 'source',
+    previewNodeSize = { width: DEFAULT_NODE_SIZE, height: DEFAULT_NODE_SIZE },
+    handlePosition = Position.Right,
+    ignoredNodeTypes = [],
+    positionMode = 'drop',
+    sourceBoundaryOf,
+  } = options;
+
   const sourceNode = reactFlowInstance.getNode(sourceNodeId);
   if (!sourceNode) {
     console.warn(`Source node ${sourceNodeId} not found`);
@@ -266,7 +312,9 @@ export function createPreviewNode(
   const internalNode =
     position === undefined ? reactFlowInstance.getInternalNode(sourceNodeId) : undefined;
   const handle = internalNode
-    ? resolveHandleContext(internalNode, sourceHandleId, handlePosition)
+    ? resolveHandleContext(internalNode, sourceHandleId, handlePosition, {
+        boundaryOf: sourceBoundaryOf,
+      })
     : undefined;
 
   const nodePosition = position
