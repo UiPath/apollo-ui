@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v4.17.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.16.1...@uipath/apollo-react@4.17.0) (2026-04-30)
+
+### Features
+
+* **apollo-react:** add ListItem.childrenLoading skeleton API [MST-9224] ([fd1b993](https://github.com/UiPath/apollo-ui/commit/fd1b99369b789f10e1ab4a34fd63c0d9512dd7f3))
+
+### Bug Fixes
+
+* **apollo-react:** address PR review — keyboard nav, a11y, internal marker [MST-9224] ([015e2f7](https://github.com/UiPath/apollo-ui/commit/015e2f71b6291d3e8d6866b73cdf780149fe7067))
+
 ## [@uipath/apollo-react-v4.16.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.16.0...@uipath/apollo-react@4.16.1) (2026-04-29)
 
 ### Bug Fixes
