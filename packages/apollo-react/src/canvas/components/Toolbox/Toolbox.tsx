@@ -10,13 +10,7 @@ import {
   TOOLBOX_WIDTH,
 } from '../../constants';
 import { Header } from './Header';
-import {
-  isSkeletonItem,
-  type ListItem,
-  ListView,
-  type ListViewHandle,
-  type RenderItem,
-} from './ListView';
+import { type ListItem, ListView, type ListViewHandle, type RenderItem } from './ListView';
 import { SearchBox } from './SearchBox';
 import { AnimatedContainer, AnimatedContent } from './Toolbox.styles';
 
@@ -75,10 +69,6 @@ export interface ToolboxProps<T> {
   onSearch?: ToolboxSearchHandler<T>;
 }
 
-function isSelectable(rendered: RenderItem<ListItem> | undefined): boolean {
-  return rendered?.type === 'item' && !isSkeletonItem(rendered.item);
-}
-
 function getNextSelectableIndex(
   renderedItems: RenderItem<ListItem>[],
   currentIndex: number,
@@ -87,7 +77,7 @@ function getNextSelectableIndex(
   const numericDirection = direction === 'up' ? -1 : 1;
   let next = currentIndex + numericDirection;
   while (next >= 0 && next < renderedItems.length) {
-    if (isSelectable(renderedItems[next])) return next;
+    if (renderedItems[next]?.type === 'item') return next;
     next += numericDirection;
   }
   return SEARCH_BAR_INDEX;
@@ -95,14 +85,14 @@ function getNextSelectableIndex(
 
 function getFirstSelectableIndex(renderedItems: RenderItem<ListItem>[]): number {
   for (let i = 0; i < renderedItems.length; i++) {
-    if (isSelectable(renderedItems[i])) return i;
+    if (renderedItems[i]?.type === 'item') return i;
   }
   return SEARCH_BAR_INDEX;
 }
 
 function getLastSelectableIndex(renderedItems: RenderItem<ListItem>[]): number {
   for (let i = renderedItems.length - 1; i >= 0; i--) {
-    if (isSelectable(renderedItems[i])) return i;
+    if (renderedItems[i]?.type === 'item') return i;
   }
   return SEARCH_BAR_INDEX;
 }
