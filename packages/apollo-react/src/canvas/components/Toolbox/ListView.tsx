@@ -101,33 +101,29 @@ export function buildRenderedItems<T extends ListItem>(
   // Items without a section render at the top.
   for (const item of itemsWithoutSection) result.push({ type: 'item', item });
 
-  // Build the union of section names from real items + preemptive skeleton
-  // sections, preserving insertion order. Real-item sections come first to
-  // match the existing behaviour.
-  const sectionNames: string[] = [];
-  const seenSections = new Set<string>();
+  // Group items by section in one pass; insertion order is preserved by Map.
+  const itemsBySection = new Map<string, T[]>();
   for (const item of itemsWithSection) {
     const name = item.section as string;
-    if (!seenSections.has(name)) {
-      seenSections.add(name);
-      sectionNames.push(name);
-    }
+    const bucket = itemsBySection.get(name);
+    if (bucket) bucket.push(item);
+    else itemsBySection.set(name, [item]);
   }
-  if (skeletonConfig?.sections) {
-    for (const s of skeletonConfig.sections) {
-      if (!seenSections.has(s.name)) {
-        seenSections.add(s.name);
-        sectionNames.push(s.name);
-      }
-    }
+
+  // Map skeleton sections for O(1) lookup, then build the final section order
+  // — real-item sections first, then any skeleton-only sections appended.
+  const skeletonBySection = new Map(skeletonConfig?.sections?.map((s) => [s.name, s]) ?? []);
+  const sectionNames = [...itemsBySection.keys()];
+  for (const s of skeletonConfig?.sections ?? []) {
+    if (!itemsBySection.has(s.name)) sectionNames.push(s.name);
   }
 
   for (const sectionName of sectionNames) {
     result.push({ type: 'section', sectionName });
-    for (const item of itemsWithSection) {
-      if (item.section === sectionName) result.push({ type: 'item', item });
+    for (const item of itemsBySection.get(sectionName) ?? []) {
+      result.push({ type: 'item', item });
     }
-    const skeletonForSection = skeletonConfig?.sections?.find((s) => s.name === sectionName);
+    const skeletonForSection = skeletonBySection.get(sectionName);
     if (skeletonForSection) {
       pushSkeletons(skeletonForSection.count ?? baseSkeletonCount);
     }
