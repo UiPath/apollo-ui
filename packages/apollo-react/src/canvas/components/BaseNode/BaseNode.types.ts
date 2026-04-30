@@ -7,6 +7,12 @@ export type FooterVariant = 'none' | 'button' | 'single' | 'double';
 export interface BaseNodeData extends Record<string, unknown> {
   display?: {
     label?: string;
+    /**
+     * Canvas-side label override. Independent of `label`, which serves the panel /
+     * properties view. When set, takes precedence over `manifest.canvasLabel`,
+     * `instance.label`, and `manifest.label` for the canvas chip.
+     */
+    canvasLabel?: string;
     subLabel?: string;
     shape?: NodeShape;
     color?: string;

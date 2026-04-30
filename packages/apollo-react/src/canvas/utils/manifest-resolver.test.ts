@@ -52,6 +52,62 @@ describe('resolveDisplay', () => {
     );
     expect(result.shape).toBe('circle');
   });
+
+  it('uses manifest canvasLabel for canvas label when no instance override', () => {
+    const result = resolveDisplay({
+      label: 'Send Outlook Email',
+      canvasLabel: 'Send Email',
+      icon: 'mail',
+    });
+    expect(result.label).toBe('Send Email');
+    expect(result.canvasLabel).toBe('Send Email');
+  });
+
+  it('falls back to manifest label when canvasLabel is not defined', () => {
+    const result = resolveDisplay({ label: 'Decision', icon: 'git-branch' });
+    expect(result.label).toBe('Decision');
+  });
+
+  it('lets instance.label override manifest.canvasLabel — user renames win', () => {
+    // The properties-panel rename surface writes to instance.display.label. It
+    // must beat manifest.canvasLabel so the rename actually shows on the chip.
+    // Consumers that auto-bake instance.label at creation must skip that bake
+    // when the manifest declares canvasLabel — otherwise the bake would always
+    // pose as a "user rename" and shadow canvasLabel.
+    const result = resolveDisplay(
+      { label: 'Send Outlook Email', canvasLabel: 'Send Email', icon: 'mail' },
+      { display: { label: 'Notify ops team' } }
+    );
+    expect(result.label).toBe('Notify ops team');
+    expect(result.canvasLabel).toBe('Send Email');
+  });
+
+  it('falls back to instance.label when no canvasLabel exists at either level', () => {
+    const result = resolveDisplay(
+      { label: 'Decision', icon: 'git-branch' },
+      { display: { label: 'Check if admin' } }
+    );
+    expect(result.label).toBe('Check if admin');
+  });
+
+  it('lets instance.canvasLabel override manifest.canvasLabel', () => {
+    // Explicit canvas-side override on the instance — used when the user
+    // renames the canvas chip and we want that rename to persist.
+    const result = resolveDisplay(
+      { label: 'Send Outlook Email', canvasLabel: 'Send Email', icon: 'mail' },
+      { display: { canvasLabel: 'Notify Ops' } }
+    );
+    expect(result.canvasLabel).toBe('Notify Ops');
+    expect(result.label).toBe('Notify Ops');
+  });
+
+  it('prefers instance.canvasLabel over instance.label and manifest values', () => {
+    const result = resolveDisplay(
+      { label: 'Send Outlook Email', canvasLabel: 'Send Email', icon: 'mail' },
+      { display: { canvasLabel: 'Notify Ops', label: 'Some panel label' } }
+    );
+    expect(result.label).toBe('Notify Ops');
+  });
 });
 
 // ============================================================================

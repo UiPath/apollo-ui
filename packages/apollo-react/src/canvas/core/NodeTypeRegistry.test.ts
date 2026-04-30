@@ -364,9 +364,12 @@ describe('NodeTypeRegistry', () => {
       expect(data.display!.icon).toBe('trigger');
     });
 
-    it('should use manifest label when no label provided', () => {
+    it('should not seed display.label from manifest when no label provided', () => {
+      // resolveDisplay() derives the rendered label from manifest.canvasLabel ?? manifest.label,
+      // so leaving instance.label unset lets manifest changes propagate at render time.
       const data = registry.createDefaultData('trigger');
-      expect(data.display!.label).toBe('Trigger');
+      expect(data.display!.label).toBeUndefined();
+      expect(data.display!.icon).toBe('trigger');
     });
 
     it('should handle non-existent node types gracefully', () => {
