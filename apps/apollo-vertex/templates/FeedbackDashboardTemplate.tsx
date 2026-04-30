@@ -2,6 +2,7 @@
 
 import type { ColumnDef, ExpandedState } from "@tanstack/react-table";
 import { ChevronRightIcon, ThumbsDown, ThumbsUp } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -193,7 +194,7 @@ function FeedbackRowDetail({ row }: { row: FeedbackRow }) {
   );
 }
 
-export function FeedbackDashboardTemplate() {
+function FeedbackDashboardTemplateContent() {
   const [expanded, setExpanded] = useState<ExpandedState>({});
 
   const total = data.length;
@@ -234,3 +235,8 @@ export function FeedbackDashboardTemplate() {
     </div>
   );
 }
+
+export const FeedbackDashboardTemplate = dynamic(
+  () => Promise.resolve(FeedbackDashboardTemplateContent),
+  { ssr: false },
+);
