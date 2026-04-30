@@ -62,7 +62,9 @@ export function useEdgeToolbarState({
   // Handle adding a node at the current mouse position along the edge
   const handleAddNodeOnEdge = useCallback(
     (position: { x: number; y: number }) => {
-      const originalEdge = reactFlow.getEdges().find((edge) => edge.id === edgeId)!;
+      const originalEdge = reactFlow.getEdges().find((edge) => edge.id === edgeId);
+      if (!originalEdge) return;
+
       const sourceEndpoint = {
         nodeId: source,
         handleId: sourceHandleId ?? DEFAULT_SOURCE_HANDLE_ID,

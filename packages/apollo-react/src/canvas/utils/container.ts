@@ -320,7 +320,9 @@ export function ensureContainersFitChildren(
   );
 
   for (const containerId of orderedContainerIds) {
-    const containerNode = nextNodes.find((node) => node.id === containerId)!;
+    const containerNode = nextNodes.find((node) => node.id === containerId);
+    if (!containerNode) continue;
+
     const geometry = resolveContainerFitGeometry?.(containerNode);
     if (!geometry) continue;
 
@@ -539,7 +541,7 @@ export function getContainerNodeForEdge(
   }
 
   if (sourceNode.parentId && sourceNode.parentId === targetNode.parentId) {
-    return nodes.find((node) => node.id === sourceNode.parentId)!;
+    return nodes.find((node) => node.id === sourceNode.parentId) ?? null;
   }
 
   return null;
@@ -621,11 +623,11 @@ function collectDownstreamNodes({
   const nodesById = new Map(nodes.map((node) => [node.id, node]));
   const collectedIds: string[] = [];
   const visitedIds = new Set<string>();
-  let currentNodeId: string | undefined = targetNodeId;
+  let currentNodeId = targetNodeId;
 
   // Follow one local sequence chain and stop on cycles or exits from the
   // container. This keeps downstream shifts scoped to the edited sequence.
-  while (currentNodeId && !visitedIds.has(currentNodeId)) {
+  while (!visitedIds.has(currentNodeId)) {
     const currentNode = nodesById.get(currentNodeId);
     if (!currentNode || currentNode.parentId !== containerId) {
       break;

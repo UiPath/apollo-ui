@@ -302,6 +302,23 @@ describe('useEdgeToolbarState', () => {
       });
     });
 
+    it('should not create a preview when the edge is no longer in the store', () => {
+      mockReactFlowInstance.getEdges.mockReturnValue([]);
+
+      const { result } = renderHook(() =>
+        useEdgeToolbarState({
+          ...defaultProps,
+          isHovered: true,
+        })
+      );
+
+      act(() => {
+        result.current.config.actions[0]?.onAction('edge-1', { x: 150, y: 100 });
+      });
+
+      expect(showPreviewGraph).not.toHaveBeenCalled();
+    });
+
     it('should keep non-container edge insertion on the original drop placement path', () => {
       const sourceNode = {
         id: 'node-1',
