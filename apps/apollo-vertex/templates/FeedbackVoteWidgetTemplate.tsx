@@ -12,13 +12,20 @@ export function FeedbackVoteWidgetTemplate() {
     <div className="flex flex-col gap-8 p-8">
       <div className="flex flex-col gap-2">
         <p className="text-sm text-muted-foreground">Default — buttons only</p>
-        <FeedbackVoteWidget value={vote} onVoteChange={setVote} />
+        <FeedbackVoteWidget
+          value={vote}
+          onVoteChange={setVote}
+          upLabel="Vote up"
+          downLabel="Vote down"
+        />
       </div>
       <div className="flex flex-col gap-2">
         <p className="text-sm text-muted-foreground">With comment textarea</p>
         <FeedbackVoteWidget
           value={vote}
           onVoteChange={setVote}
+          upLabel="Vote up"
+          downLabel="Vote down"
           showComment
           comment={comment}
           onCommentChange={setComment}
@@ -27,11 +34,23 @@ export function FeedbackVoteWidgetTemplate() {
       </div>
       <div className="flex flex-col gap-2">
         <p className="text-sm text-muted-foreground">Small size</p>
-        <FeedbackVoteWidget value={vote} onVoteChange={setVote} size="sm" />
+        <FeedbackVoteWidget
+          value={vote}
+          onVoteChange={setVote}
+          upLabel="Vote up"
+          downLabel="Vote down"
+          size="sm"
+        />
       </div>
       <div className="flex flex-col gap-2">
         <p className="text-sm text-muted-foreground">Disabled</p>
-        <FeedbackVoteWidget value="up" disabled />
+        <FeedbackVoteWidget
+          value="up"
+          onVoteChange={setVote}
+          upLabel="Vote up"
+          downLabel="Vote down"
+          disabled
+        />
       </div>
     </div>
   );
