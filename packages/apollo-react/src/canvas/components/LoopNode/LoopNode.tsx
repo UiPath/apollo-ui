@@ -7,11 +7,16 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { cn } from '@uipath/apollo-wind';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { DEFAULT_CONTAINER_HEIGHT, DEFAULT_CONTAINER_WIDTH } from '../../constants';
 import { useOptionalNodeTypeRegistry } from '../../core';
 import { useElementValidationStatus, useNodeExecutionState } from '../../hooks';
 import type { SuggestionType } from '../../types';
 import { resolveAdornments } from '../../utils/adornment-resolver';
+import {
+  DEFAULT_CONTAINER_HEIGHT,
+  DEFAULT_CONTAINER_MIN_HEIGHT,
+  DEFAULT_CONTAINER_MIN_WIDTH,
+  DEFAULT_CONTAINER_WIDTH,
+} from '../../utils/container';
 import { CanvasIcon } from '../../utils/icon-registry';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
 import { selectIsConnecting, snapToGrid } from '../../utils/NodeUtils';
@@ -26,15 +31,11 @@ import { MissingManifestNode } from '../BaseNode/BaseNodeMissingManifest';
 import type { HandleActionEvent } from '../ButtonHandle';
 import { ButtonHandles } from '../ButtonHandle';
 import { NodeToolbar } from '../Toolbar';
-import {
-  DEFAULT_CONTAINER_MIN_HEIGHT,
-  DEFAULT_CONTAINER_MIN_WIDTH,
-  DEFAULT_LOOP_ICON,
-  DEFAULT_LOOP_TITLE,
-} from './LoopNode.constants';
 import { type ContainerHandleGroup, resolveContainerHandleGroups } from './LoopNode.helpers';
 import type { LoopNodeProps } from './LoopNode.types';
 
+const DEFAULT_LOOP_ICON = 'repeat';
+const DEFAULT_LOOP_TITLE = 'Loop';
 const EMPTY_DATA: Record<string, unknown> = {};
 
 const RESIZE_CONTROLS = [
@@ -225,7 +226,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
 
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
-  const handleOuterHandleAction = useCallback((_event: HandleActionEvent) => {
+  const handleHandleAction = useCallback((_event: HandleActionEvent) => {
     setIsHovered(false);
   }, []);
 
@@ -318,7 +319,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
         nodeWidth={containerWidth}
         nodeHeight={containerHeight}
         connectedHandleIds={connectedHandleIds}
-        onOuterHandleAction={handleOuterHandleAction}
+        onHandleAction={handleHandleAction}
       />
     </div>
   );
@@ -471,7 +472,7 @@ type SharedHandleGroupProps = {
   nodeWidth: number;
   nodeHeight: number;
   connectedHandleIds: ReadonlySet<string>;
-  onOuterHandleAction: (event: HandleActionEvent) => void;
+  onHandleAction: (event: HandleActionEvent) => void;
 };
 
 type HandleGroupsProps = SharedHandleGroupProps & {
@@ -509,25 +510,32 @@ function HandleGroup({
   nodeWidth,
   nodeHeight,
   connectedHandleIds,
-  onOuterHandleAction,
+  onHandleAction,
 }: HandleGroupProps) {
   const groupVisible = shouldShowHandles && (group.visible ?? true);
   const position = group.position as Position;
   const enhancedHandles = useMemo(
     () =>
       group.handles.map((handle) => {
-        const isInnerSourceHandle = group.boundary === 'inner' && handle.type === 'source';
-        const shouldResetHoverOnAction =
-          group.boundary === 'outer' && handle.type === 'source' && handle.showButton;
+        const showHandle = connectedHandleIds.has(handle.id) || groupVisible;
+
+        if (group.boundary === 'inner') {
+          return {
+            ...handle,
+            showHandle,
+            showButton: false,
+            onAction: undefined,
+          };
+        }
 
         return {
           ...handle,
-          showHandle: connectedHandleIds.has(handle.id) || groupVisible,
-          showButton: isInnerSourceHandle ? false : handle.showButton,
-          onAction: handle.onAction ?? (shouldResetHoverOnAction ? onOuterHandleAction : undefined),
+          showHandle,
+          showButton: handle.showButton,
+          onAction: handle.onAction ?? onHandleAction,
         };
       }),
-    [group.boundary, group.handles, connectedHandleIds, groupVisible, onOuterHandleAction]
+    [group.boundary, group.handles, connectedHandleIds, groupVisible, onHandleAction]
   );
 
   return (

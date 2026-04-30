@@ -156,10 +156,18 @@ function DefaultStory() {
     []
   );
 
-  const { canvasProps } = useCanvasStory({
+  const { canvasProps, nodeTypeRegistry } = useCanvasStory({
     initialNodes,
     initialEdges,
   });
+
+  const loopPreviewOptions = useMemo(
+    () => ({
+      getManifestForNode: (node: Node) =>
+        node.type ? nodeTypeRegistry.getManifest(node.type) : undefined,
+    }),
+    [nodeTypeRegistry]
+  );
 
   const handleHandleAction = useCallback(
     (event: CanvasHandleActionEvent) => {
@@ -171,10 +179,12 @@ function DefaultStory() {
         handleId,
         reactFlow,
         position as Position,
-        handleType === 'input' ? 'target' : 'source'
+        handleType === 'input' ? 'target' : 'source',
+        [],
+        loopPreviewOptions
       );
     },
-    [reactFlow]
+    [loopPreviewOptions, reactFlow]
   );
 
   useCanvasEvent('handle:action', handleHandleAction);

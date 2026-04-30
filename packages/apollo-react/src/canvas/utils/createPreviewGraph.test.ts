@@ -52,13 +52,17 @@ describe('createPreviewGraph', () => {
     });
 
     const preview = createPreviewGraph({
-      sourceNodeId: sourceNode.id,
-      sourceHandleId: 'source-output',
+      source: {
+        nodeId: sourceNode.id,
+        handleId: 'source-output',
+      },
       reactFlowInstance,
       position: { x: 200, y: 100 },
       handlePosition: Position.Right,
-      targetNodeId: targetNode.id,
-      targetHandleId: 'target-input',
+      target: {
+        nodeId: targetNode.id,
+        handleId: 'target-input',
+      },
       trailingEdgeId: 'preview-to-target',
     });
 
@@ -92,8 +96,10 @@ describe('createPreviewGraph', () => {
     });
 
     const preview = createPreviewGraph({
-      sourceNodeId: sourceNode.id,
-      sourceHandleId: 'source-output',
+      source: {
+        nodeId: sourceNode.id,
+        handleId: 'source-output',
+      },
       reactFlowInstance,
       position: { x: 240, y: 170 },
       positionMode: 'center',
@@ -130,8 +136,10 @@ describe('createPreviewGraph', () => {
     });
 
     const preview = createPreviewGraph({
-      sourceNodeId: childNode.id,
-      sourceHandleId: 'output',
+      source: {
+        nodeId: childNode.id,
+        handleId: 'output',
+      },
       reactFlowInstance,
       handlePosition: Position.Right,
     });
@@ -144,7 +152,7 @@ describe('createPreviewGraph', () => {
     expect(preview?.node.position.x).toBeGreaterThan(childNode.position.x);
   });
 
-  it('filters removed edges only when the preview graph is applied', () => {
+  it('filters original edges only when the preview graph is applied', () => {
     vi.useFakeTimers();
 
     const replacedEdge: Edge = {
@@ -165,16 +173,21 @@ describe('createPreviewGraph', () => {
     });
 
     const preview = createPreviewGraph({
-      sourceNodeId: sourceNode.id,
-      sourceHandleId: 'source-output',
+      source: {
+        nodeId: sourceNode.id,
+        handleId: 'source-output',
+      },
       reactFlowInstance,
       position: { x: 200, y: 100 },
       handlePosition: Position.Right,
-      targetNodeId: targetNode.id,
-      targetHandleId: 'target-input',
-      removedEdgeIds: [replacedEdge.id],
+      data: { originalEdge: replacedEdge },
+      target: {
+        nodeId: targetNode.id,
+        handleId: 'target-input',
+      },
     });
 
+    expect(preview?.node.data?.originalEdge).toEqual(replacedEdge);
     expect(reactFlowInstance.getEdges()).toEqual([replacedEdge, retainedEdge]);
 
     applyPreviewGraphToReactFlow(preview!, reactFlowInstance);

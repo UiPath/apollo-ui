@@ -38,8 +38,10 @@ export function useAddNodeOnConnectEnd(ignoredNodeTypes: string[] = EMPTY_IGNORE
       const flowDropPosition = reactFlowInstance.screenToFlowPosition(clientPosition);
 
       showPreviewGraph({
-        sourceNodeId: connectionState.fromNode.id,
-        sourceHandleId: connectionState.fromHandle.id ?? 'output',
+        source: {
+          nodeId: connectionState.fromNode.id,
+          handleId: connectionState.fromHandle.id ?? 'output',
+        },
         reactFlowInstance,
         position: flowDropPosition,
         sourceHandleType: connectionState.fromHandle.type,

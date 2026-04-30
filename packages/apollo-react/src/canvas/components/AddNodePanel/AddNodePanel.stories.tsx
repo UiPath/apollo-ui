@@ -231,7 +231,7 @@ function StandalonePanelWrapper({ children }: { children: React.ReactNode }) {
  */
 function PreviewSelectionStory() {
   const initialNodes = useMemo(() => createInitialNodes(), []);
-  const { canvasProps } = useCanvasStory({
+  const { canvasProps, nodeTypeRegistry } = useCanvasStory({
     initialNodes,
     initialEdges: [
       {
@@ -256,7 +256,12 @@ function PreviewSelectionStory() {
         handleId,
         reactFlowInstance,
         position as Position,
-        sourceHandleType
+        sourceHandleType,
+        [],
+        {
+          getManifestForNode: (node) =>
+            node.type ? nodeTypeRegistry.getManifest(node.type) : undefined,
+        }
       );
     }
   });
@@ -316,7 +321,7 @@ function AllSidesStory() {
     ],
     []
   );
-  const { canvasProps } = useCanvasStory({ initialNodes });
+  const { canvasProps, nodeTypeRegistry } = useCanvasStory({ initialNodes });
 
   const reactFlowInstance = useReactFlow();
   useCanvasEvent('handle:action', (event: CanvasHandleActionEvent) => {
@@ -330,7 +335,12 @@ function AllSidesStory() {
         handleId,
         reactFlowInstance,
         position as Position,
-        sourceHandleType
+        sourceHandleType,
+        [],
+        {
+          getManifestForNode: (node) =>
+            node.type ? nodeTypeRegistry.getManifest(node.type) : undefined,
+        }
       );
     }
   });

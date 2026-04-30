@@ -5,6 +5,7 @@ import {
   type ReactFlowInstance,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { DEFAULT_NODE_SIZE, GRID_SPACING, PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../constants';
+import { getNodeDimensions } from './container';
 import {
   getAbsolutePosition,
   getNonOverlappingPositionForDirection,
@@ -131,17 +132,27 @@ function calculateAutoPosition(
   const sourceAbsolutePosition = sourceNode.parentId
     ? getAbsolutePosition(sourceNode, existingNodes)
     : sourceNode.position;
-  const sourceWidth = sourceNode.measured?.width ?? 0;
-  const sourceHeight = sourceNode.measured?.height ?? 0;
+  const sourceSize = getNodeDimensions(sourceNode);
   // Use exact handle position when available, fall back to node center
-  const anchorX = handle?.anchor.x ?? sourceAbsolutePosition.x + sourceWidth / 2;
-  const anchorY = handle?.anchor.y ?? sourceAbsolutePosition.y + sourceHeight / 2;
+  const anchorX = handle?.anchor.x ?? sourceAbsolutePosition.x + sourceSize.width / 2;
+  const anchorY = handle?.anchor.y ?? sourceAbsolutePosition.y + sourceSize.height / 2;
+  const ignoredNodeIds = new Set<string>();
+  let parentId = sourceNode.parentId;
 
-  // Prepare nodes with absolute positions for overlap detection
-  const nodesWithAbsolutePositions = existingNodes.map((node) => ({
-    ...node,
-    position: node.parentId ? getAbsolutePosition(node, existingNodes) : node.position,
-  }));
+  while (parentId) {
+    ignoredNodeIds.add(parentId);
+    parentId = existingNodes.find((node) => node.id === parentId)?.parentId;
+  }
+
+  // Prepare nodes with absolute positions for overlap detection.
+  // Parent containers are ignored for child previews so they do not push the
+  // preview away from the scoped canvas it belongs to.
+  const nodesWithAbsolutePositions = existingNodes
+    .filter((node) => node.id !== PREVIEW_NODE_ID && !ignoredNodeIds.has(node.id))
+    .map((node) => ({
+      ...node,
+      position: node.parentId ? getAbsolutePosition(node, existingNodes) : node.position,
+    }));
 
   let initialPosition: { x: number; y: number };
   let direction: 'left' | 'right' | 'top' | 'bottom';
@@ -158,7 +169,7 @@ function calculateAutoPosition(
     case Position.Right:
       // Spread vertically when multiple handles share the right side.
       initialPosition = {
-        x: sourceAbsolutePosition.x + sourceWidth + offset,
+        x: sourceAbsolutePosition.x + sourceSize.width + offset,
         y:
           anchorY -
           previewNodeSize.height / 2 +
@@ -184,25 +195,25 @@ function calculateAutoPosition(
           anchorX -
           previewNodeSize.width / 2 +
           computeSpreadOffset(handle, previewNodeSize.width / 2),
-        y: sourceAbsolutePosition.y + sourceHeight + offset,
+        y: sourceAbsolutePosition.y + sourceSize.height + offset,
       };
       direction = 'bottom';
       break;
     default:
       // Fallback to right-side behavior
       initialPosition = {
-        x: sourceAbsolutePosition.x + sourceWidth + offset,
+        x: sourceAbsolutePosition.x + sourceSize.width + offset,
         y: anchorY - previewNodeSize.height / 2,
       };
       direction = 'right';
   }
 
   // Overflow toward the closest perpendicular edge of the source node:
-  // for top/bottom handles, left of center → shift left, right of center → shift right;
-  // for left/right handles, above center → shift up, below center → shift down.
+  // for top/bottom handles, left of center -> shift left, right of center -> shift right;
+  // for left/right handles, above center -> shift up, below center -> shift down.
   const overflowDirection = {
-    x: anchorX >= sourceAbsolutePosition.x + sourceWidth / 2 ? 'right' : 'left',
-    y: anchorY >= sourceAbsolutePosition.y + sourceHeight / 2 ? 'down' : 'up',
+    x: anchorX >= sourceAbsolutePosition.x + sourceSize.width / 2 ? 'right' : 'left',
+    y: anchorY >= sourceAbsolutePosition.y + sourceSize.height / 2 ? 'down' : 'up',
   } as { x: 'left' | 'right'; y: 'up' | 'down' };
 
   // Find non-overlapping position
@@ -218,8 +229,9 @@ function calculateAutoPosition(
 }
 
 /**
- * Creates a preview node and edge at a specific position or calculated position
- * This is the single source of truth for preview node creation
+ * Creates the preview node and primary preview edge for Add Node flows. The
+ * preview can be placed from a drop coordinate, centered at an absolute point,
+ * or auto-positioned from the clicked handle when no position is provided.
  *
  * @param ignoredNodeTypes Optional array of node types to ignore when calculating overlap (e.g., ["stickyNote"])
  */

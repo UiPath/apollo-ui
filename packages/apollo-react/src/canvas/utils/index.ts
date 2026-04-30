@@ -6,6 +6,7 @@ export * from './coded-agents/d3-layout';
 export * from './coded-agents/mermaid-parser';
 export * from './collapse';
 export * from './constraint-validator';
+export * from './container';
 export * from './createPreviewGraph';
 export * from './createPreviewNode';
 export * from './export-canvas';

@@ -94,11 +94,25 @@ export const snapToGrid = (value: number): number => {
   return Math.round(value / GRID_SPACING) * GRID_SPACING;
 };
 
+export const snapUpToGrid = (value: number): number => {
+  return Math.ceil(value / GRID_SPACING) * GRID_SPACING;
+};
+
+export const snapDownToGrid = (value: number): number => {
+  return Math.floor(value / GRID_SPACING) * GRID_SPACING;
+};
+
+export const clamp = (value: number, min: number, max: number): number => {
+  return Math.min(Math.max(value, min), max);
+};
+
 export type CollisionAlgorithmOptions = {
   maxIterations?: number;
   overlapThreshold?: number;
   margin?: number;
   ignoredNodeTypes?: string[];
+  /** Allows callers to resolve manifest-aware sizes before collision math runs. */
+  getNodeSize?: (node: Node) => { width: number; height: number };
 };
 
 export type CollisionAlgorithm = (nodes: Node[], options?: CollisionAlgorithmOptions) => Node[];
@@ -112,16 +126,24 @@ type Box = {
   node: Node;
 };
 
-function getBoxesFromNodes(nodes: Node[], margin: number = 0): Box[] {
+function getBoxesFromNodes(
+  nodes: Node[],
+  margin: number = 0,
+  getNodeSize?: (node: Node) => { width: number; height: number }
+): Box[] {
   const boxes: Box[] = new Array(nodes.length);
 
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i]!;
+    const nodeSize = getNodeSize?.(node) ?? {
+      width: node.width ?? node.measured?.width ?? DEFAULT_NODE_SIZE,
+      height: node.height ?? node.measured?.height ?? DEFAULT_NODE_SIZE,
+    };
     boxes[i] = {
       x: node.position.x - margin,
       y: node.position.y - margin,
-      width: (node.width ?? node.measured?.width ?? DEFAULT_NODE_SIZE) + margin * 2,
-      height: (node.height ?? node.measured?.height ?? DEFAULT_NODE_SIZE) + margin * 2,
+      width: nodeSize.width + margin * 2,
+      height: nodeSize.height + margin * 2,
       node,
       moved: false,
     };
@@ -130,15 +152,25 @@ function getBoxesFromNodes(nodes: Node[], margin: number = 0): Box[] {
   return boxes;
 }
 
+/**
+ * Moves overlapping nodes apart on the smallest overlap axis while
+ * preserving original order and leaving ignored node types untouched.
+ */
 export const resolveCollisions: CollisionAlgorithm = (
   nodes,
-  { maxIterations = 50, overlapThreshold = 0, margin = GRID_SPACING * 2, ignoredNodeTypes } = {}
+  {
+    maxIterations = 50,
+    overlapThreshold = 0,
+    margin = GRID_SPACING * 2,
+    ignoredNodeTypes,
+    getNodeSize,
+  } = {}
 ) => {
   const ignoredSet = new Set(ignoredNodeTypes);
   const collisionNodes =
     ignoredSet.size > 0 ? nodes.filter((n) => !ignoredSet.has(n.type ?? '')) : nodes;
 
-  const boxes = getBoxesFromNodes(collisionNodes, margin);
+  const boxes = getBoxesFromNodes(collisionNodes, margin, getNodeSize);
   for (let iter = 0; iter < maxIterations; iter++) {
     let moved = false;
 

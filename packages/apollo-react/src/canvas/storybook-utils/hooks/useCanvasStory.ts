@@ -10,8 +10,9 @@ import { useCallback, useMemo } from 'react';
 import { AddNodePreview } from '../../components';
 import { BaseNode } from '../../components/BaseNode/BaseNode';
 import { SequenceEdge } from '../../components/Edges';
-import { isContainerNodeManifest, LoopCanvasNode } from '../../components/LoopNode';
+import { LoopCanvasNode } from '../../components/LoopNode';
 import { useNodeTypeRegistry } from '../../core';
+import { isContainerNodeManifest } from '../../utils';
 
 /**
  * Options for the useCanvasStory hook.

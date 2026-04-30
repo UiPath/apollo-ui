@@ -1,4 +1,5 @@
 import type { ReactFlowInstance } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { ContainerPlacement } from '../../utils/container';
 import { showPreviewGraph } from '../../utils/createPreviewGraph';
 import { getAbsolutePosition, snapToGrid } from '../../utils/NodeUtils';
 import {
@@ -27,16 +28,27 @@ export function showCenteredContainerPreview({
     x: snapToGrid(containerAbsolutePosition.x + relativeCenter.x),
     y: snapToGrid(containerAbsolutePosition.y + relativeCenter.y),
   };
+  const placement: ContainerPlacement = {
+    containerId,
+    sourceNodeId: containerId,
+    targetNodeId: containerId,
+    mode: 'first-child',
+  };
 
   showPreviewGraph({
-    sourceNodeId: containerId,
-    sourceHandleId: previewHandles.sourceHandleId,
+    source: {
+      nodeId: containerId,
+      handleId: previewHandles.sourceHandleId,
+    },
     reactFlowInstance,
     position: previewCenter,
     positionMode: 'center',
     handlePosition: previewHandles.sourceHandlePosition,
-    targetNodeId: containerId,
-    targetHandleId: previewHandles.targetHandleId,
+    target: {
+      nodeId: containerId,
+      handleId: previewHandles.targetHandleId,
+    },
+    data: { placement },
     containerId,
     trailingEdgeId,
   });
