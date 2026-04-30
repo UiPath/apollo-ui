@@ -4,8 +4,8 @@ import { toolDefinition } from "@tanstack/ai";
 import { dataFabricAdapter } from "@uipath/apollo-dashboarding";
 import { DateTime } from "luxon";
 import { z } from "zod";
-import { NoDataMessage } from "../../charts/no-data-message";
 import { TableChartCard } from "../../charts/table-chart-card";
+import { ToolResolutionError } from "../../charts/tool-resolution-error";
 import type { DataFabricToolContext, Entity } from "../data-fabric/shared";
 import {
   buildMultiEntityDataModel,
@@ -141,7 +141,11 @@ ${generateEntityFieldsDocs(context.entities)}`;
 
     const entity = context.entities[entityName];
     if (!entity) {
-      return <NoDataMessage />;
+      return (
+        <ToolResolutionError
+          failure={{ reason: "unknown_entity", entity: entityName }}
+        />
+      );
     }
 
     const result = isMultiEntity
@@ -149,7 +153,15 @@ ${generateEntityFieldsDocs(context.entities)}`;
       : buildSingleEntityResult(entity, dimensions);
 
     if (result.validDimensions.length === 0) {
-      return <NoDataMessage />;
+      return (
+        <ToolResolutionError
+          failure={{
+            reason: "table_no_valid_fields",
+            entity: entityName,
+            fields: dimensions.join(", "),
+          }}
+        />
+      );
     }
 
     const normalizedFilters =

@@ -374,6 +374,11 @@
           "target": "components/ui/ai-chat/charts/no-data-message.tsx"
         },
         {
+          "path": "registry/ai-chat/charts/tool-resolution-error.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/tool-resolution-error.tsx"
+        },
+        {
           "path": "registry/ai-chat/charts/distribution-chart-card.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/charts/distribution-chart-card.tsx"
@@ -412,6 +417,11 @@
           "path": "registry/ai-chat/tools/data-fabric/binned.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric/binned.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric/resolver-result.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric/resolver-result.ts"
         },
         {
           "path": "registry/ai-chat/tools/data-fabric/index.ts",

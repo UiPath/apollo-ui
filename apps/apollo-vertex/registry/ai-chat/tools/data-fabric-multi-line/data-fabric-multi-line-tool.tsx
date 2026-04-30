@@ -5,7 +5,7 @@ import { dataFabricAdapter } from "@uipath/apollo-dashboarding";
 import { DateTime } from "luxon";
 import { z } from "zod";
 import { MultiLineChartCard } from "../../charts/multi-line-chart-card";
-import { NoDataMessage } from "../../charts/no-data-message";
+import { ToolResolutionError } from "../../charts/tool-resolution-error";
 import {
   buildMultiBinnedDataModel,
   metricSchema,
@@ -15,6 +15,7 @@ import {
   resolveSingleBinnedDimension,
   resolveSingleBinnedMetric,
 } from "../data-fabric/binned";
+import type { ResolverFailure } from "../data-fabric/resolver-result";
 import {
   collectQualifiedFields,
   type DataFabricToolContext,
@@ -134,7 +135,11 @@ ${generateEntityFieldsDocs(context.entities)}`;
 
     const entity = context.entities[entityName];
     if (!entity) {
-      return <NoDataMessage />;
+      return (
+        <ToolResolutionError
+          failure={{ reason: "unknown_entity", entity: entityName }}
+        />
+      );
     }
 
     const qualifiedFields = isMultiEntity
@@ -157,28 +162,42 @@ ${generateEntityFieldsDocs(context.entities)}`;
           MULTI_LINE_DIMENSION_TYPES,
         );
 
-    if (!resolvedDimension) {
-      return <NoDataMessage />;
+    if (!resolvedDimension.ok) {
+      return <ToolResolutionError failure={resolvedDimension} />;
     }
 
-    const resolvedMetrics = metrics
-      .map((metric) =>
-        qualifiedFields
-          ? resolveMultiBinnedMetric(entityName, metric, qualifiedFields)
-          : resolveSingleBinnedMetric(entity, metric),
-      )
-      .filter((m): m is ResolvedMetric => m !== null);
+    const resolvedMetrics: ResolvedMetric[] = [];
+    const metricFailures: ResolverFailure[] = [];
+    for (const metric of metrics) {
+      const result = qualifiedFields
+        ? resolveMultiBinnedMetric(entityName, metric, qualifiedFields)
+        : resolveSingleBinnedMetric(entity, metric);
+      if (result.ok) {
+        resolvedMetrics.push(result.value);
+      } else {
+        const { ok: _ok, ...failure } = result;
+        metricFailures.push(failure);
+      }
+    }
 
     const uniqueMetrics = dedupeMetrics(resolvedMetrics);
 
     if (uniqueMetrics.length < 2) {
-      return <NoDataMessage />;
+      const firstFailure = metricFailures[0];
+      if (firstFailure) {
+        return <ToolResolutionError failure={firstFailure} />;
+      }
+      return (
+        <ToolResolutionError
+          failure={{ reason: "multi_line_too_few_metrics" }}
+        />
+      );
     }
 
     const dataModel = buildMultiBinnedDataModel({
       id: entityName,
-      dimension: resolvedDimension.id,
-      dimensionType: resolvedDimension.type,
+      dimension: resolvedDimension.value.id,
+      dimensionType: resolvedDimension.value.type,
       metrics: uniqueMetrics,
     });
 
@@ -197,7 +216,7 @@ ${generateEntityFieldsDocs(context.entities)}`;
       id,
       name: entityName,
       type: "multi_line" as const,
-      dimensions: [resolvedDimension.id],
+      dimensions: [resolvedDimension.value.id],
       metrics: dataModel.metrics.map((m) => m.id),
       filters: normalizedFilters,
       ...(qualifiedFields &&
