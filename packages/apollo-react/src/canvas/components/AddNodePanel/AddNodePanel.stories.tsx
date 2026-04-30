@@ -18,7 +18,7 @@ import { CanvasPositionControls } from '../CanvasPositionControls';
 import type { ListItem } from '../Toolbox';
 import { AddNodePanel } from '.';
 import { AddNodeManager } from './AddNodeManager';
-import type { NodeItemData } from './AddNodePanel.types';
+import type { AddNodePanelProps, NodeItemData } from './AddNodePanel.types';
 import { createAddNodePreview } from './createAddNodePreview';
 
 // ============================================================================
@@ -359,6 +359,137 @@ function AllSidesStory() {
   );
 }
 
+/**
+ * Curated items mapping each shape (container, rectangle, square, circle) to a
+ * concrete registry node type so picking one materializes a real node with the
+ * matching geometry.
+ */
+const SHAPE_TEST_ITEMS: ListItem<NodeItemData>[] = [
+  {
+    id: 'shape-container',
+    name: 'Container — For Each',
+    icon: { name: 'repeat' },
+    data: { type: 'uipath.control-flow.foreach', category: 'Shapes' },
+    description: 'Container shape — wraps child nodes (uipath.control-flow.foreach)',
+  },
+  {
+    id: 'shape-rectangle',
+    name: 'Rectangle — Agent',
+    icon: { name: 'agent' },
+    data: { type: 'uipath.agent', category: 'Shapes' },
+    description: 'Rectangle shape — wider node body (uipath.agent)',
+  },
+  {
+    id: 'shape-square',
+    name: 'Square — API Workflow',
+    icon: { name: 'api' },
+    data: { type: 'uipath.api-workflow', category: 'Shapes' },
+    description: 'Square shape — compact node body (uipath.api-workflow)',
+  },
+  {
+    id: 'shape-circle',
+    name: 'Circle — Terminate',
+    icon: { name: 'octagon' },
+    data: { type: 'uipath.control-flow.terminate', category: 'Shapes' },
+    description: 'Circle shape — small round node (uipath.control-flow.terminate)',
+  },
+];
+
+/**
+ * Filters the static shape items by query so search inside this story only
+ * resolves to the four shape options (instead of falling back to the registry).
+ */
+async function searchShapeItems(query: string): Promise<ListItem<NodeItemData>[]> {
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) return SHAPE_TEST_ITEMS;
+  return SHAPE_TEST_ITEMS.filter((item) => {
+    const haystack = [item.name, item.description ?? '', item.data.type, item.data.category ?? '']
+      .join(' ')
+      .toLowerCase();
+    return haystack.includes(normalized);
+  });
+}
+
+/**
+ * Custom panel that always presents the four shape options, regardless of
+ * connection-constraint filtering. Used to exercise shape geometry/rendering.
+ */
+function ShapeTestPanel(props: AddNodePanelProps) {
+  return (
+    <AddNodePanel
+      {...props}
+      title="Add node by shape"
+      items={SHAPE_TEST_ITEMS}
+      onSearch={searchShapeItems}
+    />
+  );
+}
+
+/**
+ * Story for testing all available node shapes (container, rectangle, square, circle).
+ *
+ * Click + on the Action node's right handle, then pick any of the four shape
+ * options to verify the materialized node renders with the correct geometry.
+ */
+function AllShapesStory() {
+  const initialNodes = useMemo(() => createInitialNodes(), []);
+  const { canvasProps, nodeTypeRegistry } = useCanvasStory({
+    initialNodes,
+    initialEdges: [
+      {
+        id: 'e-trigger-action-1',
+        source: 'trigger',
+        target: 'action-1',
+        sourceHandle: 'output',
+        targetHandle: 'input',
+      },
+    ],
+  });
+
+  const reactFlowInstance = useReactFlow();
+  useCanvasEvent('handle:action', (event: CanvasHandleActionEvent) => {
+    if (!reactFlowInstance) return;
+
+    const { handleId, nodeId, position, handleType } = event;
+    if (handleId && nodeId) {
+      const sourceHandleType = handleType === 'input' ? 'target' : 'source';
+      createAddNodePreview(
+        nodeId,
+        handleId,
+        reactFlowInstance,
+        position as Position,
+        sourceHandleType,
+        [],
+        {
+          getManifestForNode: (node) =>
+            node.type ? nodeTypeRegistry.getManifest(node.type) : undefined,
+        }
+      );
+    }
+  });
+
+  const handleAddNodeOnConnectEnd = useAddNodeOnConnectEnd();
+
+  return (
+    <BaseCanvas
+      {...canvasProps}
+      onConnectEnd={handleAddNodeOnConnectEnd}
+      deleteKeyCode={['Backspace', 'Delete']}
+      mode="design"
+      defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+    >
+      <AddNodeManager customPanel={ShapeTestPanel} />
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="Add node — all shapes"
+        description="Click + on the Action node, then pick container, rectangle, square, or circle to verify shape rendering."
+      />
+    </BaseCanvas>
+  );
+}
+
 // ============================================================================
 // Exported Stories
 // ============================================================================
@@ -371,6 +502,32 @@ export const PreviewSelection: Story = {
 export const HandlesOnAllSides: Story = {
   name: 'Add node on all sides',
   render: () => <AllSidesStory />,
+};
+
+export const AllShapes: Story = {
+  name: 'Add node — all shapes',
+  parameters: {
+    docs: {
+      description: {
+        story: [
+          'Exercises every shape supported by the canvas: **container**,',
+          '**rectangle**, **square**, and **circle**.',
+          '',
+          'Click the **+** button on the Action node, and the panel will show',
+          'one item per shape, each wired to a real registry node type:',
+          '',
+          '- Container → `uipath.control-flow.foreach`',
+          '- Rectangle → `uipath.agent`',
+          '- Square → `uipath.api-workflow`',
+          '- Circle → `uipath.control-flow.terminate`',
+          '',
+          'Selecting an item materializes a node with the corresponding shape',
+          'so you can visually verify geometry, sizing, and connection layout.',
+        ].join('\n'),
+      },
+    },
+  },
+  render: () => <AllShapesStory />,
 };
 
 export const NodePanelStaticItems: Story = {

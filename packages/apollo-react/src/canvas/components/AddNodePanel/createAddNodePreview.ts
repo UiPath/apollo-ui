@@ -1,5 +1,7 @@
 import { Position, type ReactFlowInstance } from '@uipath/apollo-react/canvas/xyflow/react';
 import { showPreviewGraph } from '../../utils/createPreviewGraph';
+import { resolveHandles } from '../../utils/manifest-resolver';
+import type { HandleBoundaryResolver } from '../../utils/NodeUtils';
 import {
   type ContainerPreviewManifestResolver,
   resolveContainerAddNodePreview,
@@ -7,6 +9,44 @@ import {
 
 export interface AddNodePreviewOptions {
   getManifestForNode?: ContainerPreviewManifestResolver;
+}
+
+/**
+ * Builds a boundary resolver for the clicked source node's handles.
+ *
+ * Container nodes flip inner handles to the opposite side via
+ * `connectionPosition`, which collapses outer + inner-flipped handles onto the
+ * same React Flow `position`. Without a boundary resolver, peer-count math
+ * (`computeSpreadOffset`) would treat them as siblings and shift the preview
+ * away from the clicked handle's anchor. Returning a (handleId → boundary) map
+ * lets `resolveHandleContext` filter peers to only those visually sharing a
+ * rail.
+ */
+function buildSourceBoundaryResolver(
+  sourceNodeId: string,
+  reactFlowInstance: ReactFlowInstance,
+  getManifestForNode: ContainerPreviewManifestResolver
+): HandleBoundaryResolver | undefined {
+  const sourceNode = reactFlowInstance.getNode(sourceNodeId);
+  if (!sourceNode) return undefined;
+
+  const manifest = getManifestForNode(sourceNode);
+  if (!manifest?.handleConfiguration) return undefined;
+
+  const resolvedGroups = resolveHandles(manifest.handleConfiguration, {
+    ...sourceNode.data,
+    nodeId: sourceNode.id,
+  });
+
+  const handleToBoundary = new Map<string, 'outer' | 'inner'>();
+  for (const group of resolvedGroups) {
+    const boundary = (group.boundary ?? 'outer') as 'outer' | 'inner';
+    for (const handle of group.handles) {
+      handleToBoundary.set(handle.id, boundary);
+    }
+  }
+
+  return (handleId) => handleToBoundary.get(handleId);
 }
 
 /**
@@ -42,6 +82,9 @@ export function createAddNodePreview(
         getManifestForNode: options.getManifestForNode,
       })
     : null;
+  const sourceBoundaryOf = options.getManifestForNode
+    ? buildSourceBoundaryResolver(sourceNodeId, reactFlowInstance, options.getManifestForNode)
+    : undefined;
 
   showPreviewGraph({
     source,
@@ -49,6 +92,7 @@ export function createAddNodePreview(
     sourceHandleType,
     handlePosition,
     ignoredNodeTypes,
+    sourceBoundaryOf,
     ...(overrides ?? {}),
   });
 }

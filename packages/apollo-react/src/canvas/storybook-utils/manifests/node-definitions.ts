@@ -698,6 +698,10 @@ export const allNodeManifests: NodeManifest[] = [
             label: "{agentName || 'Agent'}",
             type: 'source',
             handleType: 'output',
+            // Artifact handles (memory, tools, escalation, context) appear in
+            // earlier groups, so without this flag `getDefaultHandle` would
+            // pick `memory` as the agent's outgoing handle.
+            isDefaultForType: true,
             constraints: {
               forbiddenTargetCategories: ['trigger'],
             },

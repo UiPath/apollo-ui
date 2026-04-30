@@ -12,7 +12,7 @@ import {
   PREVIEW_EDGE_STYLE,
   type PreviewNodePositionMode,
 } from './createPreviewNode';
-import { getAbsolutePosition } from './NodeUtils';
+import { getAbsolutePosition, type HandleBoundaryResolver } from './NodeUtils';
 
 /** Preview node plus the temporary edges that should be rendered with it. */
 export interface PreviewGraph {
@@ -44,6 +44,13 @@ export interface CreatePreviewGraphOptions {
   containerId?: string;
   trailingEdgeId?: string;
   trailingEdgeStyle?: CSSProperties;
+  /**
+   * Manifest-aware boundary resolver for the source node's handles. Used so
+   * the preview's auto-position math counts only handles that share a visual
+   * rail with the clicked one — important for container nodes where inner
+   * handles are flipped to the opposite side via `connectionPosition`.
+   */
+  sourceBoundaryOf?: HandleBoundaryResolver;
 }
 
 export type PreviewGraphOverrides = Partial<
@@ -117,10 +124,11 @@ function createPreviewNodeForGraph({
   handlePosition,
   ignoredNodeTypes,
   positionMode,
+  sourceBoundaryOf,
 }: CreatePreviewGraphOptions) {
-  return createPreviewNode(
-    source.nodeId,
-    source.handleId ?? DEFAULT_SOURCE_HANDLE_ID,
+  return createPreviewNode({
+    sourceNodeId: source.nodeId,
+    sourceHandleId: source.handleId ?? DEFAULT_SOURCE_HANDLE_ID,
     reactFlowInstance,
     position,
     data,
@@ -128,8 +136,9 @@ function createPreviewNodeForGraph({
     previewNodeSize,
     handlePosition,
     ignoredNodeTypes,
-    positionMode
-  );
+    positionMode,
+    sourceBoundaryOf,
+  });
 }
 
 function createTrailingPreviewEdge({
