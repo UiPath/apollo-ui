@@ -1,3 +1,12 @@
+## [@uipath/apollo-react-v4.18.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.18.0...@uipath/apollo-react@4.18.1) (2026-04-30)
+
+### Bug Fixes
+
+* **apollo-react:** center node created from output of container node ([b07e715](https://github.com/UiPath/apollo-ui/commit/b07e715fbfb6b4763e1957f236d05f00f210cf31))
+* **apollo-react:** center nodes created in container ([af0e770](https://github.com/UiPath/apollo-ui/commit/af0e77000985da40727e855ed1b6f3dd6d8eb8d3))
+* **apollo-react:** dedupe code, add y push as well for nodes bellow ([4d6669c](https://github.com/UiPath/apollo-ui/commit/4d6669cee7a6567dbd9c7c10c134434a794f4470))
+* **apollo-react:** properly shift nodes when inserting in between ([c41aa71](https://github.com/UiPath/apollo-ui/commit/c41aa71893100e056c7462efc17430ea3e7d7844))
+
 ## [@uipath/apollo-react-v4.18.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.17.0...@uipath/apollo-react@4.18.0) (2026-04-30)
 
 ### Features
