@@ -1,7 +1,0 @@
-export const DEFAULT_LOOP_ICON = 'repeat';
-export const DEFAULT_LOOP_TITLE = 'Loop';
-export const DEFAULT_CONTAINER_HEADER_HEIGHT_PX = 40;
-
-export const DEFAULT_CONTAINER_MIN_WIDTH = 400;
-export const DEFAULT_CONTAINER_MIN_HEIGHT = 220;
-export const CONTAINER_FRAME_INSET_PX = 10;

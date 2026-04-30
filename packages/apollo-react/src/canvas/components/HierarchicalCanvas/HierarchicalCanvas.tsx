@@ -14,6 +14,7 @@ import {
   type OnSelectionChangeFunc,
   type OnSelectionChangeParams,
   Panel,
+  type Position,
   type ReactFlowInstance,
   type Viewport,
 } from '@uipath/apollo-react/canvas/xyflow/react';
@@ -24,6 +25,7 @@ import { PREVIEW_NODE_ID } from '../../constants';
 import { Breadcrumb } from '../../controls';
 import { useNodeManifests } from '../../core';
 import { useAddNodeOnConnectEnd } from '../../hooks/useAddNodeOnConnectEnd';
+import { useCanvasEvent } from '../../hooks/useCanvasEvents';
 import type { ToolbarActionEvent } from '../../schema/toolbar';
 import { animatedViewportManager } from '../../stores/animatedViewportManager';
 import {
@@ -47,16 +49,18 @@ import {
 import { viewportManager } from '../../stores/viewportManager';
 import { DefaultCanvasTranslations } from '../../types';
 import type { CanvasLevel } from '../../types/canvas.types';
+import { type CanvasHandleActionEvent, isContainerNodeManifest } from '../../utils';
 import { isPreviewEdge } from '../../utils/createPreviewNode';
 import { CanvasIcon } from '../../utils/icon-registry';
 import { prefersReducedMotion } from '../../utils/transitions';
 import { AddNodeManager } from '../AddNodePanel/AddNodeManager';
 import { AddNodePreview } from '../AddNodePanel/AddNodePreview';
+import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
 import { BaseCanvas, type BaseCanvasRef } from '../BaseCanvas';
 import { BaseNode } from '../BaseNode';
 import { BlankCanvasNode } from '../BlankCanvasNode';
 import { CanvasPositionControls } from '../CanvasPositionControls';
-import { isContainerNodeManifest, LoopCanvasNode } from '../LoopNode';
+import { LoopCanvasNode } from '../LoopNode';
 import { MiniCanvasNavigator } from '../MiniCanvasNavigator';
 
 interface HierarchicalCanvasProps {
@@ -122,6 +126,10 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
 
   // Build node types mapping from manifests and defaults.
   const nodeManifests = useNodeManifests();
+  const nodeManifestByType = useMemo(
+    () => new Map(nodeManifests.map((manifest) => [manifest.nodeType, manifest])),
+    [nodeManifests]
+  );
   const nodeTypes = useMemo(() => {
     return nodeManifests.reduce(
       (acc, manifest) => {
@@ -131,6 +139,10 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
       { ...DEFAULT_NODE_TYPES } as NodeTypes
     );
   }, [nodeManifests]);
+  const getManifestForNode = useCallback(
+    (node: Node) => (node.type ? nodeManifestByType.get(node.type) : undefined),
+    [nodeManifestByType]
+  );
 
   // Optimized selectors to prevent unnecessary re-renders
   const currentCanvas = useCanvasStore(selectCurrentCanvas);
@@ -158,6 +170,25 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
   }, [currentPath]);
 
   const addNodeOnConnectEnd = useAddNodeOnConnectEnd();
+
+  // Keep handle-button add-node behavior in the canvas so it works without the controls wrapper.
+  const handleAddNodePreviewAction = useCallback(
+    (event: CanvasHandleActionEvent) => {
+      if (!reactFlowInstance) return;
+
+      createAddNodePreview(
+        event.nodeId,
+        event.handleId,
+        reactFlowInstance,
+        event.position as Position,
+        event.handleType === 'input' ? 'target' : 'source',
+        [],
+        { getManifestForNode }
+      );
+    },
+    [reactFlowInstance, getManifestForNode]
+  );
+  useCanvasEvent('handle:action', handleAddNodePreviewAction);
 
   // Track if we've initialized to prevent re-initialization
   const hasInitialized = useRef(false);

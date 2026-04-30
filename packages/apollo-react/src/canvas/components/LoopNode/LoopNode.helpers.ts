@@ -1,11 +1,20 @@
-import { type Node, Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { DEFAULT_CONTAINER_HEIGHT, DEFAULT_CONTAINER_WIDTH } from '../../constants';
+import {
+  type Node,
+  Position,
+  type ReactFlowInstance,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import type { NodeManifest } from '../../schema/node-definition';
+import {
+  CONTAINER_FRAME_INSET_PX,
+  getContainerSafeArea,
+  isContainerNodeManifest,
+  resolveContainerPreview,
+} from '../../utils/container';
+import type { PreviewEndpoint, PreviewGraphOverrides } from '../../utils/createPreviewGraph';
 import { getOppositePosition } from '../../utils/createPreviewNode';
 import type { ResolutionContext, ResolvedHandleGroup } from '../../utils/manifest-resolver';
 import { resolveHandles } from '../../utils/manifest-resolver';
 import { snapToGrid } from '../../utils/NodeUtils';
-import { CONTAINER_FRAME_INSET_PX, DEFAULT_CONTAINER_HEADER_HEIGHT_PX } from './LoopNode.constants';
 
 export type ContainerHandleBoundary = 'outer' | 'inner';
 export type ContainerHandleGroup = ResolvedHandleGroup & {
@@ -19,16 +28,15 @@ export interface ContainerPreviewConnectionHandles {
   targetHandleId: string;
 }
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
-}
+export type ContainerPreviewManifestResolver = (
+  node: Node
+) => Pick<NodeManifest, 'display' | 'handleConfiguration'> | undefined;
 
-export function isContainerNodeManifest(
-  manifest: Pick<NodeManifest, 'display'> | undefined
-): boolean {
-  return manifest?.display.shape === 'container';
-}
-
+/**
+ * Normalizes manifest handle groups for container rendering. Inner handles are
+ * inset from the frame and expose their connection position on the opposite side
+ * because edges visually connect from inside the container body.
+ */
 export function resolveContainerHandleGroups(
   groups: ResolvedHandleGroup[]
 ): ContainerHandleGroup[] {
@@ -46,42 +54,19 @@ export function resolveContainerHandleGroups(
   });
 }
 
-export function getContainerBodyCenter({
-  width,
-  height,
-  headerHeight,
-}: {
-  width: number;
-  height: number;
-  headerHeight: number;
-}) {
-  const clampedHeaderHeight = clamp(headerHeight, 0, height);
-
-  return {
-    x: clamp(snapToGrid(width / 2), 0, width),
-    y: clamp(snapToGrid(clampedHeaderHeight + (height - clampedHeaderHeight) / 2), 0, height),
-  };
-}
-
+/**
+ * Returns the center of the container's child-safe body area in local
+ * coordinates. Used to place empty-state affordances and first children.
+ */
 export function getContainerRelativeBodyCenter(
   containerNode: Pick<Node, 'width' | 'height' | 'measured' | 'style'>
 ) {
-  const width = readNumericDimension(
-    containerNode.width,
-    containerNode.measured?.width,
-    containerNode.style?.width
-  );
-  const height = readNumericDimension(
-    containerNode.height,
-    containerNode.measured?.height,
-    containerNode.style?.height
-  );
+  const safeArea = getContainerSafeArea(containerNode);
 
-  return getContainerBodyCenter({
-    width: width ?? DEFAULT_CONTAINER_WIDTH,
-    height: height ?? DEFAULT_CONTAINER_HEIGHT,
-    headerHeight: DEFAULT_CONTAINER_HEADER_HEIGHT_PX,
-  });
+  return {
+    x: snapToGrid(safeArea.x + safeArea.width / 2),
+    y: snapToGrid(safeArea.y + safeArea.height / 2),
+  };
 }
 
 function insetInnerGroup(group: ResolvedHandleGroup) {
@@ -101,18 +86,11 @@ function insetInnerGroup(group: ResolvedHandleGroup) {
   }
 }
 
-function readNumericDimension(...values: Array<number | string | undefined>): number | undefined {
-  for (const value of values) {
-    if (typeof value === 'number') return value;
-    if (typeof value === 'string') {
-      const parsedValue = Number.parseFloat(value);
-      if (Number.isFinite(parsedValue)) return parsedValue;
-    }
-  }
-
-  return undefined;
-}
-
+/**
+ * Finds the visible inner source/target handle pair used by container preview
+ * edges. Returns null when the manifest cannot support a child continuation
+ * preview.
+ */
 export function resolveContainerPreviewConnectionHandles(
   manifest: Pick<NodeManifest, 'handleConfiguration'> | undefined,
   context: ResolutionContext
@@ -146,4 +124,46 @@ function pickPreferredInnerHandle(
   }
 
   return null;
+}
+
+/**
+ * Produces preview-graph overrides for Add Node operations that interact with a
+ * loop/container node.
+ */
+export function resolveContainerAddNodePreview({
+  source,
+  sourceHandleType,
+  reactFlowInstance,
+  getManifestForNode,
+}: {
+  source: PreviewEndpoint;
+  sourceHandleType: 'source' | 'target';
+  reactFlowInstance: ReactFlowInstance;
+  getManifestForNode: ContainerPreviewManifestResolver;
+}): PreviewGraphOverrides | null {
+  return resolveContainerPreview({
+    source,
+    sourceHandleType,
+    reactFlowInstance,
+    isContainerNode: (node) => isContainerNodeManifest(getManifestForNode(node)),
+    getContainerSafeArea,
+    getContainerContinuationTarget: ({ containerNode }) => {
+      // Appending from a child reconnects to the container's inner target handle
+      // so the preview edge shows the continuation back into the container.
+      const previewHandles = resolveContainerPreviewConnectionHandles(
+        getManifestForNode(containerNode),
+        {
+          ...containerNode.data,
+          nodeId: containerNode.id,
+        }
+      );
+
+      return previewHandles
+        ? {
+            nodeId: containerNode.id,
+            handleId: previewHandles.targetHandleId,
+          }
+        : null;
+    },
+  });
 }

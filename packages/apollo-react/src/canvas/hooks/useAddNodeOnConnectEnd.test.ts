@@ -96,8 +96,10 @@ describe('useAddNodeOnConnectEnd', () => {
 
     expect(mockReactFlowInstance.screenToFlowPosition).toHaveBeenCalledWith({ x: 200, y: 200 });
     expect(mockShowPreviewGraph).toHaveBeenCalledWith({
-      sourceNodeId: 'node-1',
-      sourceHandleId: 'mock-output',
+      source: {
+        nodeId: 'node-1',
+        handleId: 'mock-output',
+      },
       reactFlowInstance: mockReactFlowInstance,
       position: mockFlowPosition,
       sourceHandleType: 'source',
@@ -129,8 +131,10 @@ describe('useAddNodeOnConnectEnd', () => {
 
     expect(mockShowPreviewGraph).toHaveBeenCalledWith(
       expect.objectContaining({
-        sourceNodeId: 'node-1',
-        sourceHandleId: 'output',
+        source: {
+          nodeId: 'node-1',
+          handleId: 'output',
+        },
         reactFlowInstance: mockReactFlowInstance,
         position: expect.any(Object),
         sourceHandleType: 'source',

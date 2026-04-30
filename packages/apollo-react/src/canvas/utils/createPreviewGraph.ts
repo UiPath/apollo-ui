@@ -4,6 +4,7 @@ import type {
   Position,
   ReactFlowInstance,
 } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { CSSProperties } from 'react';
 import { DEFAULT_SOURCE_HANDLE_ID, PREVIEW_NODE_ID } from '../constants';
 import {
   createPreviewNode,
@@ -13,16 +14,26 @@ import {
 } from './createPreviewNode';
 import { getAbsolutePosition } from './NodeUtils';
 
+/** Preview node plus the temporary edges that should be rendered with it. */
 export interface PreviewGraph {
   node: Node;
   edges: Edge[];
-  removedEdgeIds?: string[];
 }
 
+/** Node/handle pair used for preview graph endpoints. */
+export interface PreviewEndpoint {
+  nodeId: string;
+  handleId?: string | null;
+}
+
+/**
+ * Options for building a preview graph. The primary edge is always created; the
+ * optional target creates a trailing preview edge from the preview node onward.
+ */
 export interface CreatePreviewGraphOptions {
-  sourceNodeId: string;
-  sourceHandleId: string;
   reactFlowInstance: ReactFlowInstance;
+  source: PreviewEndpoint;
+  target?: PreviewEndpoint;
   position?: { x: number; y: number };
   data?: Record<string, unknown>;
   sourceHandleType?: 'source' | 'target';
@@ -30,13 +41,23 @@ export interface CreatePreviewGraphOptions {
   handlePosition?: Position;
   ignoredNodeTypes?: string[];
   positionMode?: PreviewNodePositionMode;
-  targetNodeId?: string;
-  targetHandleId?: string | null;
   containerId?: string;
-  removedEdgeIds?: string[];
   trailingEdgeId?: string;
-  trailingEdgeStyle?: Edge['style'];
+  trailingEdgeStyle?: CSSProperties;
 }
+
+export type PreviewGraphOverrides = Partial<
+  Pick<
+    CreatePreviewGraphOptions,
+    | 'containerId'
+    | 'data'
+    | 'position'
+    | 'positionMode'
+    | 'target'
+    | 'trailingEdgeId'
+    | 'trailingEdgeStyle'
+  >
+>;
 
 function inferPreviewContainerId(sourceNode: Node, targetNode?: Node): string | undefined {
   if (!targetNode) {
@@ -58,16 +79,16 @@ function inferPreviewContainerId(sourceNode: Node, targetNode?: Node): string | 
   return undefined;
 }
 
+/**
+ * Converts an absolute preview position into container-local coordinates and
+ * constrains the preview to the container parent.
+ */
 export function reparentPreviewNodeToContainer(
   previewNode: Node,
   containerId: string,
   reactFlowInstance: ReactFlowInstance
-): Node | null {
-  const containerNode = reactFlowInstance.getNode(containerId);
-  if (!containerNode) {
-    return null;
-  }
-
+): Node {
+  const containerNode = reactFlowInstance.getNode(containerId)!;
   const containerAbsolutePosition = getAbsolutePosition(
     containerNode,
     reactFlowInstance.getNodes()
@@ -85,8 +106,7 @@ export function reparentPreviewNodeToContainer(
 }
 
 function createPreviewNodeForGraph({
-  sourceNodeId,
-  sourceHandleId,
+  source,
   reactFlowInstance,
   position,
   data,
@@ -97,8 +117,8 @@ function createPreviewNodeForGraph({
   positionMode,
 }: CreatePreviewGraphOptions) {
   return createPreviewNode(
-    sourceNodeId,
-    sourceHandleId,
+    source.nodeId,
+    source.handleId ?? DEFAULT_SOURCE_HANDLE_ID,
     reactFlowInstance,
     position,
     data,
@@ -111,43 +131,44 @@ function createPreviewNodeForGraph({
 }
 
 function createTrailingPreviewEdge({
-  targetNodeId,
-  targetHandleId,
+  target,
   trailingEdgeId,
   trailingEdgeStyle = PREVIEW_EDGE_STYLE,
-}: Pick<
-  CreatePreviewGraphOptions,
-  'targetNodeId' | 'targetHandleId' | 'trailingEdgeId' | 'trailingEdgeStyle'
->): Edge | null {
-  if (!targetNodeId) return null;
+}: {
+  target?: PreviewEndpoint;
+  trailingEdgeId?: string;
+  trailingEdgeStyle?: CSSProperties;
+}): Edge | null {
+  if (!target) return null;
 
   return {
-    id: trailingEdgeId ?? `${PREVIEW_NODE_ID}-${targetNodeId}`,
+    id: trailingEdgeId ?? `${PREVIEW_NODE_ID}-${target.nodeId}`,
     source: PREVIEW_NODE_ID,
     sourceHandle: DEFAULT_SOURCE_HANDLE_ID,
-    target: targetNodeId,
-    targetHandle: targetHandleId,
+    target: target.nodeId,
+    targetHandle: target.handleId,
     type: 'default',
     style: trailingEdgeStyle,
   };
 }
 
+/**
+ * Creates a preview node and its temporary edge(s), optionally scoped to a
+ * container. Container previews use this to show both the incoming and outgoing
+ * side of an insertion before the node is materialized.
+ */
 export function createPreviewGraph(options: CreatePreviewGraphOptions): PreviewGraph | null {
-  const { reactFlowInstance, targetNodeId, containerId, removedEdgeIds, sourceNodeId } = options;
+  const { reactFlowInstance, target, containerId, source } = options;
 
   const preview = createPreviewNodeForGraph(options);
   if (!preview) return null;
 
-  const sourceNode = reactFlowInstance.getNode(sourceNodeId);
-  if (!sourceNode) return null;
-
-  const targetNode = targetNodeId ? reactFlowInstance.getNode(targetNodeId) : undefined;
+  const sourceNode = reactFlowInstance.getNode(source.nodeId)!;
+  const targetNode = target ? reactFlowInstance.getNode(target.nodeId) : undefined;
   const resolvedContainerId = containerId ?? inferPreviewContainerId(sourceNode, targetNode);
   const finalPreviewNode = resolvedContainerId
     ? reparentPreviewNodeToContainer(preview.node, resolvedContainerId, reactFlowInstance)
     : preview.node;
-
-  if (!finalPreviewNode) return null;
 
   const trailingEdge = createTrailingPreviewEdge(options);
   const edges = trailingEdge ? [preview.edge, trailingEdge] : [preview.edge];
@@ -155,7 +176,6 @@ export function createPreviewGraph(options: CreatePreviewGraphOptions): PreviewG
   return {
     node: finalPreviewNode,
     edges,
-    removedEdgeIds,
   };
 }
 
@@ -181,7 +201,7 @@ export function applyPreviewGraphToReactFlow(
   preview: PreviewGraph,
   reactFlowInstance: ReactFlowInstance
 ): void {
-  const removedEdgeIds = new Set(preview.removedEdgeIds ?? []);
+  const originalEdge = preview.node.data?.originalEdge as Edge | undefined;
 
   setTimeout(() => {
     reactFlowInstance.setNodes((nodes) => [
@@ -192,7 +212,7 @@ export function applyPreviewGraphToReactFlow(
     ]);
 
     reactFlowInstance.setEdges((edges) => [
-      ...edges.filter((edge) => !isPreviewEdge(edge) && !removedEdgeIds.has(edge.id)),
+      ...edges.filter((edge) => !isPreviewEdge(edge) && edge.id !== originalEdge?.id),
       ...preview.edges,
     ]);
   }, 0);

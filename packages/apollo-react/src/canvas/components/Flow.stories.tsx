@@ -320,8 +320,10 @@ function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
       const customData = sourceNode?.data?.useSmartHandles ? { useSmartHandles: true } : undefined;
 
       showPreviewGraph({
-        sourceNodeId: nodeId,
-        sourceHandleId: handleId,
+        source: {
+          nodeId,
+          handleId,
+        },
         reactFlowInstance,
         data: customData,
         sourceHandleType,

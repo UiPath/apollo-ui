@@ -1,9 +1,11 @@
-import { type Edge, type Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import { type Node, type Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useMemo } from 'react';
 import { DEFAULT_SOURCE_HANDLE_ID } from '../../../constants';
+import { useOptionalNodeTypeRegistry } from '../../../core';
 import { showPreviewGraph } from '../../../utils/createPreviewGraph';
 import { isPreviewEdge } from '../../../utils/createPreviewNode';
 import { useBaseCanvasMode } from '../../BaseCanvas/BaseCanvasModeProvider';
+import { resolveContainerAddNodePreview } from '../../LoopNode/LoopNode.helpers';
 import type { EdgeToolbarConfig, EdgeToolbarPositionData } from './EdgeToolbar.types';
 import { useEdgeToolbarPositioning } from './useEdgeToolbarPositioning';
 
@@ -40,8 +42,13 @@ export function useEdgeToolbarState({
   ignoredNodeTypes,
 }: UseEdgeToolbarStateProps): EdgeToolbarState {
   const reactFlow = useReactFlow();
+  const registry = useOptionalNodeTypeRegistry();
   const { mode } = useBaseCanvasMode();
   const isDesignMode = mode === 'design';
+  const getManifestForNode = useCallback(
+    (node: Node) => (node.type ? registry?.getManifest(node.type) : undefined),
+    [registry]
+  );
 
   const previewEdge = isPreviewEdge({ id: edgeId, source, target });
 
@@ -55,28 +62,34 @@ export function useEdgeToolbarState({
   // Handle adding a node at the current mouse position along the edge
   const handleAddNodeOnEdge = useCallback(
     (position: { x: number; y: number }) => {
-      // Store original edge to restore if preview is cancelled
-      const originalEdge: Edge = {
-        id: edgeId,
-        source,
-        sourceHandle: sourceHandleId,
-        target,
-        targetHandle: targetHandleId,
-        type: 'default',
+      const originalEdge = reactFlow.getEdges().find((edge) => edge.id === edgeId)!;
+      const sourceEndpoint = {
+        nodeId: source,
+        handleId: sourceHandleId ?? DEFAULT_SOURCE_HANDLE_ID,
       };
+      const containerOverrides = registry
+        ? resolveContainerAddNodePreview({
+            source: sourceEndpoint,
+            sourceHandleType: 'source',
+            reactFlowInstance: reactFlow,
+            getManifestForNode,
+          })
+        : null;
 
       showPreviewGraph({
-        sourceNodeId: source,
-        sourceHandleId: sourceHandleId ?? DEFAULT_SOURCE_HANDLE_ID,
+        source: sourceEndpoint,
         reactFlowInstance: reactFlow,
-        position, // Drop position at mouse cursor
-        data: { originalEdge }, // Pass original edge to restore if cancelled
+        position,
+        positionMode: 'drop',
+        data: { originalEdge },
         sourceHandleType: 'source', // Source handle type
         handlePosition: sourcePosition,
         ignoredNodeTypes: ignoredNodeTypes ?? [],
-        targetNodeId: target,
-        targetHandleId,
-        removedEdgeIds: [edgeId],
+        target: {
+          nodeId: target,
+          handleId: targetHandleId,
+        },
+        ...(containerOverrides ?? {}),
       });
     },
     [
@@ -84,6 +97,8 @@ export function useEdgeToolbarState({
       source,
       sourceHandleId,
       reactFlow,
+      registry,
+      getManifestForNode,
       target,
       targetHandleId,
       edgeId,

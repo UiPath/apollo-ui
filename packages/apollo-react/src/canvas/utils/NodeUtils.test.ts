@@ -678,5 +678,41 @@ describe('NodeUtils', () => {
       expect(node1!.position).not.toEqual({ x: 100, y: 100 });
       expect(node2!.position).not.toEqual({ x: 100, y: 100 });
     });
+
+    it('should use caller-provided node sizes during collision resolution', () => {
+      const nodes: Node[] = [
+        {
+          id: 'wide-node',
+          position: { x: 100, y: 100 },
+          data: {},
+        },
+        {
+          id: 'second-node',
+          position: { x: 220, y: 100 },
+          width: 40,
+          height: 40,
+          data: {},
+        },
+      ];
+
+      const result = resolveCollisions(nodes, {
+        getNodeSize: (node) =>
+          node.id === 'wide-node'
+            ? { width: 160, height: 40 }
+            : {
+                width: node.width ?? 40,
+                height: node.height ?? 40,
+              },
+      });
+
+      expect(result.find((node) => node.id === 'wide-node')?.position).not.toEqual({
+        x: 100,
+        y: 100,
+      });
+      expect(result.find((node) => node.id === 'second-node')?.position).not.toEqual({
+        x: 220,
+        y: 100,
+      });
+    });
   });
 });

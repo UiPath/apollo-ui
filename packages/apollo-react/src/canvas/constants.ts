@@ -5,10 +5,6 @@ export const DEFAULT_NODE_SIZE = 96; // px
 
 export const GRID_SPACING = 16;
 
-/** Default intrinsic size for container nodes (grid-aligned). */
-export const DEFAULT_CONTAINER_WIDTH = GRID_SPACING * 35; // 560px
-export const DEFAULT_CONTAINER_HEIGHT = GRID_SPACING * 20; // 320px
-
 /** Canvas viewport width below which compact layout is used. */
 export const CANVAS_COMPACT_BREAKPOINT = 600;
 

@@ -5,8 +5,8 @@
  * These helpers ensure consistent behavior across the codebase.
  */
 
-import { DEFAULT_CONTAINER_HEIGHT, DEFAULT_CONTAINER_WIDTH } from '../constants';
 import type { NodeShape } from '../schema/node-definition';
+import { DEFAULT_CONTAINER_HEIGHT, DEFAULT_CONTAINER_WIDTH } from './container';
 
 /**
  * Default dimension for collapsed nodes when no measured dimensions are available.
