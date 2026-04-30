@@ -204,9 +204,13 @@ export class NodeTypeRegistry {
       };
     }
 
-    // Build default display from manifest
+    // Omit `label` and `canvasLabel` unless caller supplied them — resolveDisplay()
+    // derives the canvas chip from instance.canvasLabel ?? instance.label ??
+    // manifest.canvasLabel ?? manifest.label, so leaving the instance side
+    // empty lets the manifest win on the chip while still allowing user renames
+    // (which write to instance.label) to take precedence later.
     const display: InstanceDisplayConfig = {
-      label: label || manifest.display.label,
+      ...(label ? { label } : {}),
       icon: manifest.display.icon,
       shape: manifest.display.shape,
       color: manifest.display.color,

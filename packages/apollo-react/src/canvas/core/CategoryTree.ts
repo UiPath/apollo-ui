@@ -308,8 +308,8 @@ export class CategoryTree {
    * Filter the tree by search term using combination search.
    *
    * The search term is split into words. A node matches if every word matches
-   * at least one searchable attribute: node label, type, description, tags,
-   * or ancestor category names.
+   * at least one searchable attribute: node label, display.canvasLabel, type,
+   * description, tags, or ancestor category names.
    *
    * This allows queries like "Outlook Email" to match a node named "Archive Email"
    * inside a "Microsoft Outlook 365" category.
@@ -333,6 +333,7 @@ export class CategoryTree {
     const matchesAllWords = (node: NodeManifest, ancestorCategoryNames: string[]): boolean => {
       const searchableTexts = [
         node.display.label.toLowerCase(),
+        ...(node.display.canvasLabel ? [node.display.canvasLabel.toLowerCase()] : []),
         node.nodeType.toLowerCase(),
         ...(node.description ? [node.description.toLowerCase()] : []),
         ...(node.tags

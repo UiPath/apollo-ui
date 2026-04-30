@@ -29,6 +29,12 @@ export const typeVersionKeySchema = z
 export const displayConfigSchema = z
   .object({
     label: z.string().optional(),
+    /**
+     * Canvas-side label override. Independent of `label`, which serves the panel /
+     * properties view. When set, takes precedence over `manifest.canvasLabel`,
+     * `instance.label`, and `manifest.label` for the canvas chip.
+     */
+    canvasLabel: z.string().optional(),
     subLabel: z.any().optional(), // Can be string or React.ReactNode
     shape: nodeShapeSchema.optional(),
     background: z.string().optional(),

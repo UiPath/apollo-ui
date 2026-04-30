@@ -108,9 +108,29 @@ export function resolveDisplay(
   const collapsedShape = getCollapsedShape(shape);
   const expandedShape = manifestDisplay.shape;
 
+  // Resolve the canvas chip label.
+  //
+  // Order: instance.canvasLabel > instance.label > manifest.canvasLabel > manifest.label.
+  //
+  // - `instance.canvasLabel` is the explicit canvas-side override — top priority.
+  // - `instance.label` is the user-facing rename surface (properties panel /
+  //   inline edit). It must beat `manifest.canvasLabel` so a user rename
+  //   actually appears on the chip.
+  // - `manifest.canvasLabel` is the manifest's canvas-side default; consumers
+  //   relying on it must avoid auto-baking `instance.label` at creation time
+  //   (otherwise the auto-baked value would shadow this default).
+  // - `manifest.label` is the panel-side identity; final fallback.
+  const resolvedLabel =
+    context?.display?.canvasLabel ??
+    context?.display?.label ??
+    manifestDisplay.canvasLabel ??
+    manifestDisplay.label;
+
   return {
     ...manifestDisplay,
     ...context?.display,
+    label: resolvedLabel,
+    canvasLabel: context?.display?.canvasLabel ?? manifestDisplay.canvasLabel,
     shape: isCollapsed ? collapsedShape : expandedShape,
   };
 }

@@ -900,6 +900,146 @@ export const StackedTreatment: Story = {
   render: () => <StackedTreatmentStory />,
 };
 
+// ============================================================================
+// canvasLabel Resolution Story
+// ============================================================================
+
+/**
+ * Story-only manifest with two node types: one declaring both `label` (palette)
+ * and `canvasLabel` (canvas), one declaring only `label`. Used to demo the
+ * precedence in `resolveDisplay`:
+ * instance.canvasLabel > instance.label > manifest.canvasLabel > manifest.label.
+ */
+const canvasLabelManifest: { nodes: NodeManifest[]; categories: CategoryManifest[] } = {
+  categories: [
+    ...allCategoryManifests,
+    {
+      id: 'communications',
+      name: 'Communications',
+      sortOrder: 99,
+      color: '#3b82f6',
+      colorDark: '#60a5fa',
+      icon: 'agent',
+      tags: [],
+    },
+  ],
+  nodes: [
+    ...allNodeManifests,
+    {
+      nodeType: 'uipath.send-outlook-email',
+      version: '1.0.0',
+      category: 'communications',
+      tags: ['email', 'outlook'],
+      sortOrder: 1,
+      display: {
+        label: 'Send Outlook 365 Email',
+        canvasLabel: 'Send Email',
+        icon: 'agent',
+        shape: 'rectangle',
+      },
+      handleConfiguration: [
+        { position: 'left', handles: [{ id: 'input', type: 'target', handleType: 'input' }] },
+        { position: 'right', handles: [{ id: 'output', type: 'source', handleType: 'output' }] },
+      ],
+    },
+    {
+      nodeType: 'uipath.long-decision',
+      version: '1.0.0',
+      category: 'communications',
+      tags: ['decision'],
+      sortOrder: 2,
+      display: {
+        label: 'Long Decision Without canvasLabel',
+        icon: 'agent',
+        shape: 'rectangle',
+      },
+      handleConfiguration: [
+        { position: 'left', handles: [{ id: 'input', type: 'target', handleType: 'input' }] },
+        { position: 'right', handles: [{ id: 'output', type: 'source', handleType: 'output' }] },
+      ],
+    },
+  ],
+};
+
+function CanvasLabelStory() {
+  const initialNodes = useMemo<Node<BaseNodeData>[]>(
+    () => [
+      createNode({
+        id: 'with-canvaslabel',
+        type: 'uipath.send-outlook-email',
+        position: { x: 96, y: 160 },
+        data: {
+          nodeType: 'uipath.send-outlook-email',
+          version: '1.0.0',
+          display: { shape: 'rectangle', subLabel: 'manifest.canvasLabel wins' },
+        },
+      }),
+      createNode({
+        id: 'without-canvaslabel',
+        type: 'uipath.long-decision',
+        position: { x: 96, y: 320 },
+        data: {
+          nodeType: 'uipath.long-decision',
+          version: '1.0.0',
+          display: {
+            shape: 'rectangle',
+            subLabel: 'falls back to manifest.label since canvasLabel is not defined',
+          },
+        },
+      }),
+      createNode({
+        id: 'instance-rename',
+        type: 'uipath.send-outlook-email',
+        position: { x: 96, y: 480 },
+        data: {
+          nodeType: 'uipath.send-outlook-email',
+          version: '1.0.0',
+          display: {
+            shape: 'rectangle',
+            canvasLabel: 'Notify Ops Team',
+            subLabel: 'instance.canvasLabel overrides manifest.canvasLabel',
+          },
+        },
+      }),
+    ],
+    []
+  );
+  const { canvasProps } = useCanvasStory({ initialNodes });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="canvasLabel resolution"
+        description={
+          'Three instances of the same canvas, exercising the precedence ' +
+          'instance.canvasLabel > instance.label > manifest.canvasLabel > ' +
+          'manifest.label resolved by resolveDisplay(). Top: manifest declares ' +
+          'both label ("Send Outlook 365 Email") and canvasLabel ("Send Email") ' +
+          '— canvas renders the short canvasLabel. Middle: manifest declares ' +
+          'only label — canvas falls back to it. Bottom: instance.canvasLabel ' +
+          'is set to "Notify Ops Team" — explicit canvas-side override beats ' +
+          'manifest.canvasLabel.'
+        }
+      />
+    </BaseCanvas>
+  );
+}
+
+export const CanvasLabel: Story = {
+  name: 'canvasLabel resolution',
+  decorators: [
+    (Story) => (
+      <NodeRegistryProvider manifest={canvasLabelManifest}>
+        <Story />
+      </NodeRegistryProvider>
+    ),
+  ],
+  render: () => <CanvasLabelStory />,
+};
+
 export const ValidationStates: Story = {
   name: 'Validation States',
   decorators: [

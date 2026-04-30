@@ -2,8 +2,12 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel, Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useEffect, useMemo, useState } from 'react';
+import { NodeRegistryProvider } from '../../core';
 import { useAddNodeOnConnectEnd, useCanvasEvent } from '../../hooks';
+import type { CategoryManifest, NodeManifest } from '../../schema';
 import {
+  allCategoryManifests,
+  allNodeManifests,
   createNode,
   NodePositions,
   StoryInfoPanel,
@@ -750,6 +754,117 @@ export const NodePanelEmptyStateInCategory: Story = {
       </StandalonePanelWrapper>
     </>
   ),
+};
+
+// ============================================================================
+// Search by canvasLabel
+// ============================================================================
+
+/**
+ * Story-local manifest registering a node whose only "outlook"-related token
+ * lives on `display.canvasLabel`. Used to verify that CategoryTree.filterBySearch
+ * indexes canvasLabel — typing "outlook" in the panel search must surface the
+ * node even though `display.label` doesn't contain that token.
+ */
+const canvasLabelSearchManifest: { nodes: NodeManifest[]; categories: CategoryManifest[] } = {
+  categories: [
+    ...allCategoryManifests,
+    {
+      id: 'communications',
+      name: 'Communications',
+      sortOrder: 99,
+      color: '#3b82f6',
+      colorDark: '#60a5fa',
+      icon: 'agent',
+      tags: [],
+    },
+  ],
+  nodes: [
+    ...allNodeManifests,
+    {
+      nodeType: 'uipath.send-corporate-mail',
+      version: '1.0.0',
+      category: 'communications',
+      tags: [],
+      sortOrder: 1,
+      description: 'Dispatch an email through the corporate mail provider.',
+      display: {
+        label: 'Send Email',
+        canvasLabel: 'Outlook',
+        icon: 'agent',
+        shape: 'rectangle',
+      },
+      handleConfiguration: [
+        { position: 'left', handles: [{ id: 'input', type: 'target', handleType: 'input' }] },
+        { position: 'right', handles: [{ id: 'output', type: 'source', handleType: 'output' }] },
+      ],
+    },
+  ],
+};
+
+function CanvasLabelSearchStory() {
+  const initialNodes = useMemo(
+    () => [
+      createNode({
+        id: 'trigger',
+        type: 'uipath.manual-trigger',
+        position: NodePositions.row2col1,
+        display: { label: 'Manual trigger' },
+      }),
+    ],
+    []
+  );
+  const { canvasProps } = useCanvasStory({ initialNodes });
+
+  const reactFlowInstance = useReactFlow();
+
+  useCanvasEvent('handle:action', (event: CanvasHandleActionEvent) => {
+    if (!reactFlowInstance) return;
+
+    const { handleId, nodeId, position, handleType } = event;
+    if (handleId && nodeId) {
+      const sourceHandleType = handleType === 'input' ? 'target' : 'source';
+      createAddNodePreview(
+        nodeId,
+        handleId,
+        reactFlowInstance,
+        position as Position,
+        sourceHandleType
+      );
+    }
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design" defaultViewport={{ x: 0, y: 0, zoom: 1 }}>
+      <AddNodeManager />
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="Search by 'canvasLabel'"
+        description={
+          'Click the + handle on the trigger node to open the Add node panel. ' +
+          'The story-local manifest registers a "Send Email" node whose only ' +
+          '"outlook" token lives on display.canvasLabel — its label, description, ' +
+          'tags and nodeType deliberately exclude that word. Type "outlook" into ' +
+          'the search and the node still surfaces because CategoryTree.filterBySearch ' +
+          'now indexes canvasLabel.'
+        }
+      />
+    </BaseCanvas>
+  );
+}
+
+export const NodePanelSearchByCanvasLabel: Story = {
+  name: 'Search by canvasLabel',
+  decorators: [
+    (Story) => (
+      <NodeRegistryProvider manifest={canvasLabelSearchManifest}>
+        <Story />
+      </NodeRegistryProvider>
+    ),
+  ],
+  render: () => <CanvasLabelSearchStory />,
 };
 
 // ============================================================================

@@ -510,6 +510,63 @@ describe('CategoryTree', () => {
 
       expect(filesCategory?.nodes).toHaveLength(2);
     });
+
+    it('should filter nodes by canvasLabel when only canvasLabel matches', () => {
+      const categories = createMockCategories();
+      const nodes: NodeManifest[] = [
+        ...createMockNodes(),
+        {
+          nodeType: 'send-outlook-email',
+          category: 'automation.email',
+          version: '1.0.0',
+          display: {
+            label: 'Send Outlook 365 Message',
+            canvasLabel: 'Outlook',
+            icon: 'mail',
+          },
+          description: 'Dispatch a message via Outlook 365',
+          sortOrder: 5,
+          handleConfiguration: [],
+          tags: [],
+        },
+      ];
+      const tree = new CategoryTree(categories, nodes);
+
+      const filtered = tree.filterBySearch('outlook');
+      const emailCategory = filtered.findCategory('automation.email');
+
+      expect(emailCategory?.nodes).toHaveLength(1);
+      expect(emailCategory?.nodes[0]?.nodeType).toBe('send-outlook-email');
+    });
+
+    it('should match multi-word search across label and canvasLabel', () => {
+      const categories = createMockCategories();
+      const nodes: NodeManifest[] = [
+        ...createMockNodes(),
+        {
+          nodeType: 'send-outlook-email',
+          category: 'automation.email',
+          version: '1.0.0',
+          display: {
+            label: 'Send Outlook 365 Message',
+            canvasLabel: 'Quick Send',
+            icon: 'mail',
+          },
+          description: 'Dispatch a message via Outlook 365',
+          sortOrder: 5,
+          handleConfiguration: [],
+          tags: [],
+        },
+      ];
+      const tree = new CategoryTree(categories, nodes);
+
+      // "outlook" matches label, "quick" matches canvasLabel
+      const filtered = tree.filterBySearch('outlook quick');
+      const emailCategory = filtered.findCategory('automation.email');
+
+      expect(emailCategory?.nodes).toHaveLength(1);
+      expect(emailCategory?.nodes[0]?.nodeType).toBe('send-outlook-email');
+    });
   });
 
   describe('filterByConnections', () => {

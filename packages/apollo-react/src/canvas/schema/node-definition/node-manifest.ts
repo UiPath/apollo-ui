@@ -29,6 +29,9 @@ export const nodeDisplayManifestSchema = z.object({
   /** Human-readable display name */
   label: z.string().min(1),
 
+  /** Short label rendered on the node when it appears on the canvas. Falls back to `label` when omitted. */
+  canvasLabel: z.string().min(1).optional(),
+
   /** Description of what the node does */
   description: z.string().optional(),
 
