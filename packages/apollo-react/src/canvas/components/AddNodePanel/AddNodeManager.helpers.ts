@@ -173,7 +173,15 @@ export function placeAddedNode({
   const placement = getContainerPlacement({ previewNode });
 
   if (placement) {
-    const containerNode = nodes.find((node) => node.id === placement.containerId)!;
+    const containerNode = nodes.find((node) => node.id === placement.containerId);
+
+    if (!containerNode) {
+      return resolveScopedCollisions(nodes, insertedNode, {
+        ignoredNodeTypes,
+        getNodeSize: getDimensions,
+      });
+    }
+
     const containerManifest = getManifestForNode(registry, containerNode);
 
     if (!isContainerNodeManifest(containerManifest)) {

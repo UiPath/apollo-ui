@@ -87,8 +87,10 @@ export function reparentPreviewNodeToContainer(
   previewNode: Node,
   containerId: string,
   reactFlowInstance: ReactFlowInstance
-): Node {
-  const containerNode = reactFlowInstance.getNode(containerId)!;
+): Node | null {
+  const containerNode = reactFlowInstance.getNode(containerId);
+  if (!containerNode) return null;
+
   const containerAbsolutePosition = getAbsolutePosition(
     containerNode,
     reactFlowInstance.getNodes()
@@ -169,6 +171,7 @@ export function createPreviewGraph(options: CreatePreviewGraphOptions): PreviewG
   const finalPreviewNode = resolvedContainerId
     ? reparentPreviewNodeToContainer(preview.node, resolvedContainerId, reactFlowInstance)
     : preview.node;
+  if (!finalPreviewNode) return null;
 
   const trailingEdge = createTrailingPreviewEdge(options);
   const edges = trailingEdge ? [preview.edge, trailingEdge] : [preview.edge];
