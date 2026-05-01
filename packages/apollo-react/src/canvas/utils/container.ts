@@ -337,6 +337,7 @@ export function ensureContainersFitChildren(
     let leadingShiftX = 0;
     let leadingShiftY = 0;
     const childrenToFit: Array<{ node: Node; size: NodeDimensions }> = [];
+    const childIdsToShift = new Set<string>();
 
     for (const childNode of nextNodes) {
       // Transient, hidden, and ignored children should not force a persisted
@@ -352,6 +353,7 @@ export function ensureContainersFitChildren(
 
       const childSize = resolveNodeDimensions(childNode);
       childrenToFit.push({ node: childNode, size: childSize });
+      childIdsToShift.add(childNode.id);
 
       if (padding.left !== undefined) {
         leadingShiftX = Math.max(leadingShiftX, padding.left - childNode.position.x);
@@ -392,12 +394,14 @@ export function ensureContainersFitChildren(
       continue;
     }
 
+    const shouldShiftChildren = leadingShiftX !== 0 || leadingShiftY !== 0;
+
     nextNodes = nextNodes.map((node) => {
       if (node.id === containerId) {
         return withNodeDimensions(node, nextSize);
       }
 
-      if (node.parentId === containerId && node.id !== PREVIEW_NODE_ID) {
+      if (shouldShiftChildren && childIdsToShift.has(node.id)) {
         return {
           ...node,
           position: {

@@ -75,7 +75,16 @@ function createContainerRegistry(): NodeTypeRegistry {
         : {
             nodeType,
             display: { label: 'Task', shape: 'square' },
-            handleConfiguration: [],
+            handleConfiguration: [
+              {
+                position: 'left',
+                handles: [{ id: 'input', type: 'target', handleType: 'input' }],
+              },
+              {
+                position: 'right',
+                handles: [{ id: 'output', type: 'source', handleType: 'output' }],
+              },
+            ],
           }
     ),
   } as unknown as NodeTypeRegistry;
