@@ -1,4 +1,3 @@
-import styled from '@emotion/styled';
 import { Button } from '@uipath/apollo-wind';
 import { memo, type MouseEvent, type ReactNode } from 'react';
 import { TOOLBOX_PADDING_X } from '../../constants';
@@ -18,26 +17,6 @@ export type ToolboxQuickAction = {
 interface QuickActionsRowProps {
   actions: ToolboxQuickAction[];
 }
-
-const Container = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  min-height: 44px;
-  padding: 0 ${TOOLBOX_PADDING_X}px 8px;
-  margin: 0 -${TOOLBOX_PADDING_X}px;
-  border-bottom: 1px solid var(--canvas-border-de-emp);
-  flex-shrink: 0;
-`;
-
-const Separator = styled.div`
-  width: 1px;
-  align-self: stretch;
-  margin: 0 4px;
-  background: var(--canvas-border-de-emp);
-  flex-shrink: 0;
-`;
 
 function QuickActionButton({ action, wide }: { action: ToolboxQuickAction; wide?: boolean }) {
   return (
@@ -67,16 +46,23 @@ export const QuickActionsRow = memo(function QuickActionsRow({ actions }: QuickA
   const trailing = actions.filter((a) => a.trailing);
 
   return (
-    <Container data-testid="toolbox-quick-actions">
+    <div
+      className="flex items-center justify-center gap-3 min-h-11 pb-2 border-b border-border shrink-0"
+      style={{ paddingInline: TOOLBOX_PADDING_X, marginInline: -TOOLBOX_PADDING_X }}
+      data-testid="toolbox-quick-actions"
+    >
       {leading.map((action) => (
         <QuickActionButton key={action.id} action={action} />
       ))}
       {trailing.length > 0 && leading.length > 0 && (
-        <Separator data-testid="toolbox-quick-actions-separator" />
+        <div
+          className="w-px self-stretch mx-1 bg-border shrink-0"
+          data-testid="toolbox-quick-actions-separator"
+        />
       )}
       {trailing.map((action) => (
         <QuickActionButton key={action.id} action={action} wide />
       ))}
-    </Container>
+    </div>
   );
 });
