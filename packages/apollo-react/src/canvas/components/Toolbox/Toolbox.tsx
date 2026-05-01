@@ -11,6 +11,7 @@ import {
 } from '../../constants';
 import { Header } from './Header';
 import { type ListItem, ListView, type ListViewHandle, type RenderItem } from './ListView';
+import { QuickActionsRow, type ToolboxQuickAction } from './QuickActionsRow';
 import { SearchBox } from './SearchBox';
 import { AnimatedContainer, AnimatedContent } from './Toolbox.styles';
 
@@ -67,6 +68,13 @@ export interface ToolboxProps<T> {
   onItemHover?: (item: ListItem<T>) => void;
   onBack?: () => void;
   onSearch?: ToolboxSearchHandler<T>;
+  /**
+   * Optional row of icon shortcuts rendered above the title. Apollo controls
+   * the visuals so the strip stays consistent across consumers; pass the
+   * leading actions plain and set `trailing: true` on actions that should
+   * appear after the visual separator.
+   */
+  quickActions?: ToolboxQuickAction[];
 }
 
 function getNextSelectableIndex(
@@ -126,6 +134,7 @@ export function Toolbox<T>({
   loading,
   fullWidth = false,
   fullHeight = false,
+  quickActions,
 }: ToolboxProps<T>) {
   const [items, setItems] = useState<ListItem<T>[]>(initialItems);
   const [search, setSearch] = useState('');
@@ -596,6 +605,7 @@ export function Toolbox<T>({
         w={fullWidth ? '100%' : TOOLBOX_WIDTH}
         h={fullHeight ? '100%' : TOOLBOX_HEIGHT}
       >
+        {quickActions && quickActions.length > 0 && <QuickActionsRow actions={quickActions} />}
         <Header
           title={currentParentItem?.name || title}
           onBack={handleBackTransition}
