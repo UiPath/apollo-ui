@@ -221,16 +221,16 @@ export const Sizes = {
 export const WithText = {
   args: {},
   render: () => (
-    <div className="flex items-center gap-2 rounded-md border p-1">
+    <div className="flex items-center gap-2 rounded-md border p-1 future:rounded-lg">
       <ButtonGroupText>Page</ButtonGroupText>
       <ButtonGroup>
-        <Button variant="ghost" size="sm">
+        <Button variant="outline" size="sm">
           1
         </Button>
-        <Button variant="ghost" size="sm">
+        <Button variant="outline" size="sm">
           2
         </Button>
-        <Button variant="ghost" size="sm">
+        <Button variant="outline" size="sm">
           3
         </Button>
       </ButtonGroup>
@@ -258,19 +258,9 @@ export const CanvasModeToolbar = {
   args: {},
   render: () => (
     <div className="flex items-center gap-1 rounded-lg border bg-background p-1">
-      <ToggleGroup type="single" defaultValue="build" className="gap-0">
-        <ToggleGroupItem
-          value="build"
-          className="h-8 rounded-md px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-        >
-          Build
-        </ToggleGroupItem>
-        <ToggleGroupItem
-          value="evaluate"
-          className="h-8 rounded-md px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-        >
-          Evaluate
-        </ToggleGroupItem>
+      <ToggleGroup type="single" defaultValue="build" size="sm">
+        <ToggleGroupItem value="build">Build</ToggleGroupItem>
+        <ToggleGroupItem value="evaluate">Evaluate</ToggleGroupItem>
       </ToggleGroup>
 
       <Separator orientation="vertical" className="mx-1 h-6" />
@@ -295,7 +285,7 @@ export const CanvasPublishToolbar = {
   args: {},
   render: () => (
     <div className="flex items-center gap-3 rounded-lg border bg-background p-1 pl-3">
-      <Label htmlFor="toolbar-active" className="text-sm font-medium">
+      <Label htmlFor="toolbar-active" className="text-sm font-medium future:text-muted-foreground">
         Active
       </Label>
       <Switch id="toolbar-active" />

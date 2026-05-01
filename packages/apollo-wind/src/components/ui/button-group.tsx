@@ -18,8 +18,8 @@ const ButtonGroup = React.forwardRef<HTMLDivElement, ButtonGroupProps>(
         className={cn(
           'inline-flex',
           orientation === 'horizontal'
-            ? '[&>button]:rounded-none [&>button]:border-r-0 [&>button:first-child]:rounded-l-md [&>button:last-child]:rounded-r-md [&>button:last-child]:border-r'
-            : 'flex-col [&>button]:rounded-none [&>button]:border-b-0 [&>button:first-child]:rounded-t-md [&>button:last-child]:rounded-b-md [&>button:last-child]:border-b',
+            ? '[&>button]:rounded-none [&>button]:border-r-0 [&>button:first-child]:rounded-l-md [&>button:last-child]:rounded-r-md [&>button:last-child]:border-r future:[&>button:first-child]:rounded-l-lg future:[&>button:last-child]:rounded-r-lg'
+            : 'flex-col [&>button]:rounded-none [&>button]:border-b-0 [&>button:first-child]:rounded-t-md [&>button:last-child]:rounded-b-md [&>button:last-child]:border-b future:[&>button:first-child]:rounded-t-lg future:[&>button:last-child]:rounded-b-lg',
           className
         )}
         {...props}
