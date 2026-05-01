@@ -103,7 +103,7 @@ const THEME_CONFIG: Record<CodeBlockTheme, ThemeConfig> = {
   // ── Future dark — VS Code Dark+ for a modern zinc feel ───────────────────
   'future-dark': {
     prismStyle: vscDarkPlus,
-    bg: '#18181b',
+    bg: 'var(--surface-raised)',
     headerBg: '#09090b',
     labelColor: '#a1a1aa',
     iconColor: '#71717a',
@@ -112,7 +112,7 @@ const THEME_CONFIG: Record<CodeBlockTheme, ThemeConfig> = {
   // ── Future light — VS Code Light for a clean zinc-50 feel ────────────────
   'future-light': {
     prismStyle: vs,
-    bg: '#fafafa',
+    bg: 'var(--surface-raised)',
     headerBg: '#f4f4f5',
     labelColor: '#52525b',
     iconColor: '#71717a',
@@ -272,13 +272,16 @@ export function CodeBlock({
 
   return (
     <div
-      className={cn('overflow-hidden rounded-lg border border-border font-mono text-sm', className)}
+      className={cn(
+        'overflow-hidden rounded-lg border border-border future:border-border-subtle font-mono text-sm',
+        className
+      )}
       style={{ background: config.bg }}
     >
       {/* ── Header ─────────────────────────────────────────────── */}
       {showHeader && (
         <div
-          className="flex items-center justify-between px-4 py-2 border-b border-border"
+          className="flex items-center justify-between px-4 py-2 border-b border-border future:border-border-subtle"
           style={{ background: config.headerBg }}
         >
           <span className="text-xs font-medium" style={{ color: config.labelColor }}>
@@ -309,6 +312,7 @@ export function CodeBlock({
         wrapLongLines={wrapLines}
         customStyle={{
           margin: 0,
+          border: 'none',
           borderRadius: 0,
           background: 'transparent',
           padding: '1rem',
