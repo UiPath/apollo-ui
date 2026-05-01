@@ -393,14 +393,6 @@ const SHAPE_TEST_ITEMS: ListItem<NodeItemData>[] = [
     data: { type: 'uipath.control-flow.terminate', category: 'Shapes' },
     description: 'Circle shape — small round node (uipath.control-flow.terminate)',
   },
-  {
-    id: 'shape-loop',
-    name: 'Loop — While',
-    icon: { name: 'repeat' },
-    data: { type: 'uipath.control-flow.while', category: 'Shapes' },
-    description:
-      'Loop shape — square node with input/loopBack target rail (uipath.control-flow.while)',
-  },
 ];
 
 /**
@@ -438,25 +430,9 @@ function ShapeTestPanel(props: AddNodePanelProps) {
  *
  * Click + on the Action node's right handle, then pick any of the four shape
  * options to verify the materialized node renders with the correct geometry.
- *
- * The While loop fixture in the bottom row exposes a self-loop edge
- * (`body` → `loopBack`) so that inserting a node onto a self-loop edge can be
- * exercised — the inserted node should sit between the loop's source and
- * loopBack handles without dragging the loop node sideways.
  */
 function AllShapesStory() {
-  const initialNodes = useMemo(
-    () => [
-      ...createInitialNodes(),
-      createNode({
-        id: 'while-loop',
-        type: 'uipath.control-flow.while',
-        position: NodePositions.row3col2,
-        display: { label: 'While loop' },
-      }),
-    ],
-    []
-  );
+  const initialNodes = useMemo(() => createInitialNodes(), []);
   const { canvasProps, nodeTypeRegistry } = useCanvasStory({
     initialNodes,
     initialEdges: [
@@ -466,13 +442,6 @@ function AllShapesStory() {
         target: 'action-1',
         sourceHandle: 'output',
         targetHandle: 'input',
-      },
-      {
-        id: 'e-while-loopback',
-        source: 'while-loop',
-        target: 'while-loop',
-        sourceHandle: 'body',
-        targetHandle: 'loopBack',
       },
     ],
   });
@@ -514,8 +483,8 @@ function AllShapesStory() {
         <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
       <StoryInfoPanel
-        title="Add node panel with all shapes"
-        description="Click + on the Action or While-loop self-loop edge, then pick container, rectangle, square, or circle to verify shape rendering and self-loop insertion."
+        title="Add node — all shapes"
+        description="Click + on the Action node, then pick container, rectangle, square, or circle to verify shape rendering."
       />
     </BaseCanvas>
   );
@@ -536,7 +505,7 @@ export const HandlesOnAllSides: Story = {
 };
 
 export const AllShapes: Story = {
-  name: 'Add node panel with all shapes',
+  name: 'Add node — all shapes',
   parameters: {
     docs: {
       description: {
@@ -551,16 +520,9 @@ export const AllShapes: Story = {
           '- Rectangle → `uipath.agent`',
           '- Square → `uipath.api-workflow`',
           '- Circle → `uipath.control-flow.terminate`',
-          '- Loop → `uipath.control-flow.while` (square node with a loopBack target handle)',
           '',
           'Selecting an item materializes a node with the corresponding shape',
           'so you can visually verify geometry, sizing, and connection layout.',
-          '',
-          'The bottom row hosts a While loop with a pre-wired self-loop edge',
-          '(`body` → `loopBack`). Clicking **+** on that edge and inserting a',
-          'shape exercises the self-loop insertion path: the inserted node',
-          'should land between the source and loopBack handles without',
-          'shifting the loop node sideways.',
         ].join('\n'),
       },
     },
