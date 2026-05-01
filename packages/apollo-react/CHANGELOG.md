@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v4.18.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.18.2...@uipath/apollo-react@4.18.3) (2026-05-01)
+
+### Bug Fixes
+
+* **apollo-react:** address loop resource review gaps ([57bc2da](https://github.com/UiPath/apollo-ui/commit/57bc2da85c73e6d02aa7b601c2900c8ead9bc0b7))
+* **apollo-react:** fix loop resource attachment fitting ([31db8f9](https://github.com/UiPath/apollo-ui/commit/31db8f965e3bedfce53b58f5fbd77ed575bcb3be))
+
 ## [@uipath/apollo-react-v4.18.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.18.1...@uipath/apollo-react@4.18.2) (2026-05-01)
 
 ### Bug Fixes
