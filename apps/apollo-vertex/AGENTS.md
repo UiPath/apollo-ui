@@ -159,6 +159,12 @@ the package is unmaintained, or the dependency cost outweighs the benefit.
 - Prefer semantic color tokens (`bg-primary`, `text-muted-foreground`)
 - Use CSS variables for theming: `var(--color-*)`
 
+### Translation Keys
+
+User-facing strings are looked up via `useTranslation()` from `react-i18next` against flat keys in `locales/*.json` (one file per locale). Use a translation key whenever a string is rendered to the user — labels, placeholders, button text, aria labels, etc.
+
+**Only edit `locales/en.json`.** Add new keys there in alphabetical order. Do not touch the other locale files — the localization team syncs translations into them as a separate workflow. PRs that modify non-English locales will be sent back.
+
 ### Error Handling
 - Use TypeScript's strict null checks
 - Handle loading and error states explicitly in UI
