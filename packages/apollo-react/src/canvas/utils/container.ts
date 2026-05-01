@@ -1271,9 +1271,27 @@ export function placeContainerNode({
           })
         : fallbackTargetIds)
   );
+  // The upstream source must never shift, even when it appears in the
+  // chain via a cycle (Loop V1 body→…→loopBack chains among children).
+  if (placement.sourceNodeId) {
+    idsToShift.delete(placement.sourceNodeId);
+  }
+  // Back-edge detection (siblings only): when source is visually at or
+  // past target on the x axis, the original edge points backward in flow
+  // (a loopback). Skip the shift; getInsertedPosition places the inserted
+  // node past source, and the chain extends rightward naturally.
+  // Container.start edges (source = container itself) live in a different
+  // coord space and are always forward.
+  const sourceNode = placement.sourceNodeId ? nodesById.get(placement.sourceNodeId) : undefined;
+  const sourceIsContainer = placement.sourceNodeId === placement.containerId;
+  const isBackEdge =
+    !sourceIsContainer &&
+    sourceNode !== undefined &&
+    targetNode !== undefined &&
+    sourceNode.position.x >= targetNode.position.x;
   const requiredTargetLeft = positionedNode.position.x + insertedSize.width + gap;
   const downstreamShift =
-    targetNode && targetNode.position.x < requiredTargetLeft
+    !isBackEdge && targetNode && targetNode.position.x < requiredTargetLeft
       ? snapUpToGrid(requiredTargetLeft - targetNode.position.x)
       : 0;
   const positionedNodes = nodes.map((node) => {

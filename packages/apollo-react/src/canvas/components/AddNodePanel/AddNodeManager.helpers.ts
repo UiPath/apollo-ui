@@ -208,9 +208,21 @@ function shiftForEdgeInsertion({
   }
 
   // Step 2: shift the downstream chain.
+  // Back-edge detection: when source is visually at or past target on the
+  // x axis, the original edge points backward in flow (a loopback). The
+  // inserted node already lives past source via Step 1; shifting target
+  // right would push the loop's start further from the cycle and produce
+  // a backward-wrapping body edge. Forward edges (source.x < target.x)
+  // continue to shift normally, including in cycles where the body chain
+  // is the part being inserted on (the source still stays via the
+  // chainIds.delete below, but the rest of the chain shifts right).
+  const isBackEdge =
+    sourceNode !== undefined &&
+    sourceNode.parentId === insertedNode.parentId &&
+    sourceNode.position.x >= targetNode.position.x;
   const requiredTargetLeft = insertedX + insertedSize.width + TOP_LEVEL_INSERTION_GAP_PX;
   const downstreamShift =
-    targetNode.position.x < requiredTargetLeft
+    !isBackEdge && targetNode.position.x < requiredTargetLeft
       ? snapUpToGrid(requiredTargetLeft - targetNode.position.x)
       : 0;
   const chainIds =
@@ -224,9 +236,14 @@ function shiftForEdgeInsertion({
           })
         )
       : new Set<string>();
+  // The upstream source must never shift, even when it appears in the
+  // chain via a cycle (Loop V1 body→…→loopBack chains). Removing it from
+  // the shift set lets the rest of the linear chain expand right while
+  // the loop's start stays anchored.
+  chainIds.delete(originalEdge.source);
 
   const insertedXChanged = insertedX !== insertedNode.position.x;
-  if (!insertedXChanged && downstreamShift === 0) return null;
+  if (!insertedXChanged && chainIds.size === 0) return null;
 
   const updatedInsertedNode: Node = insertedXChanged
     ? { ...insertedNode, position: { x: insertedX, y: insertedNode.position.y } }
