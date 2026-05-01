@@ -105,6 +105,98 @@ describe('resolveContainerAddNodePreview', () => {
     expect(previewOverrides).toBeNull();
   });
 
+  it('keeps unresolved handles on the generic attachment path inside containers', () => {
+    const agentNode: Node = {
+      id: 'agent-1',
+      type: 'agent',
+      parentId: loopNode.id,
+      position: { x: 240, y: 112 },
+      measured: { width: 288, height: 96 },
+      data: {},
+    };
+    const reactFlowInstance = createReactFlowInstance({
+      nodes: [loopNode, agentNode],
+    });
+
+    const previewOverrides = resolveContainerAddNodePreview({
+      source: { nodeId: agentNode.id, handleId: 'runtime-tools' },
+      sourceHandleType: 'source',
+      reactFlowInstance,
+      getManifestForNode,
+    });
+
+    expect(previewOverrides).toBeNull();
+  });
+
+  it('uses per-instance handle configuration when classifying clicked handles', () => {
+    const taskNode: Node = {
+      id: 'task-1',
+      type: 'task',
+      parentId: loopNode.id,
+      position: { x: 240, y: 112 },
+      measured: { width: 96, height: 96 },
+      data: {
+        handleConfigurations: [
+          {
+            position: 'right',
+            handles: [{ id: 'runtime-output', type: 'source', handleType: 'output' }],
+          },
+        ],
+      },
+    };
+    const reactFlowInstance = createReactFlowInstance({
+      nodes: [loopNode, taskNode],
+    });
+
+    const previewOverrides = resolveContainerAddNodePreview({
+      source: { nodeId: taskNode.id, handleId: 'runtime-output' },
+      sourceHandleType: 'source',
+      reactFlowInstance,
+      getManifestForNode,
+    });
+
+    expect(previewOverrides).toMatchObject({
+      containerId: loopNode.id,
+      target: {
+        nodeId: loopNode.id,
+        handleId: 'continue',
+      },
+      data: {
+        placement: {
+          containerId: loopNode.id,
+          sourceNodeId: taskNode.id,
+          targetNodeId: loopNode.id,
+          mode: 'sequence',
+        },
+      },
+    });
+  });
+
+  it('treats an empty per-instance handle configuration as an explicit override', () => {
+    const taskNode: Node = {
+      id: 'task-1',
+      type: 'task',
+      parentId: loopNode.id,
+      position: { x: 240, y: 112 },
+      measured: { width: 96, height: 96 },
+      data: {
+        handleConfigurations: [],
+      },
+    };
+    const reactFlowInstance = createReactFlowInstance({
+      nodes: [loopNode, taskNode],
+    });
+
+    const previewOverrides = resolveContainerAddNodePreview({
+      source: { nodeId: taskNode.id, handleId: 'output' },
+      sourceHandleType: 'source',
+      reactFlowInstance,
+      getManifestForNode,
+    });
+
+    expect(previewOverrides).toBeNull();
+  });
+
   it('continues to append workflow output handles to the container continuation', () => {
     const taskNode: Node = {
       id: 'task-1',

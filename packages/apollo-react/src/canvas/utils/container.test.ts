@@ -66,6 +66,7 @@ describe('container sizing', () => {
     expect(result.nodes.find((node) => node.id === containerNode.id)).toMatchObject({
       style: { width: 720, height: 384 },
     });
+    expect(result.nodes.find((node) => node.id === childNode.id)).toBe(childNode);
   });
 
   it('shifts children down and grows when a child starts above the safe area', () => {
@@ -213,6 +214,74 @@ describe('container sizing', () => {
     expect(result.changes).toEqual([]);
     expect(result.nodes.find((node) => node.id === containerNode.id)).toMatchObject({
       style: { width: 560, height: 320 },
+    });
+    expect(result.nodes.find((node) => node.id === PREVIEW_NODE_ID)?.position).toEqual({
+      x: 0,
+      y: 0,
+    });
+    expect(result.nodes.find((node) => node.id === 'hidden-child')?.position).toEqual({
+      x: 0,
+      y: 0,
+    });
+    expect(result.nodes.find((node) => node.id === 'ignored-child')?.position).toEqual({
+      x: 0,
+      y: 0,
+    });
+  });
+
+  it('does not shift preview, hidden, or ignored children when applying leading padding', () => {
+    const containerNode: Node = {
+      id: 'loop-1',
+      type: 'loop',
+      position: { x: 0, y: 0 },
+      style: { width: 560, height: 320 },
+      data: {},
+    };
+    const topChild: Node = {
+      id: 'top-child',
+      type: 'task',
+      parentId: containerNode.id,
+      position: { x: 144, y: 32 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+    const previewChild: Node = {
+      id: PREVIEW_NODE_ID,
+      type: 'preview',
+      parentId: containerNode.id,
+      position: { x: 0, y: 0 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+    const hiddenChild: Node = {
+      id: 'hidden-child',
+      type: 'task',
+      parentId: containerNode.id,
+      hidden: true,
+      position: { x: 0, y: 0 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+    const ignoredChild: Node = {
+      id: 'ignored-child',
+      type: 'stickyNote',
+      parentId: containerNode.id,
+      position: { x: 0, y: 0 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+
+    const result = ensureContainersFitChildren(
+      [containerNode, topChild, previewChild, hiddenChild, ignoredChild],
+      {
+        getContainerFitGeometry: () => getContainerFitGeometry(),
+        ignoredNodeTypes: ['stickyNote'],
+      }
+    );
+
+    expect(result.nodes.find((node) => node.id === 'top-child')?.position).toEqual({
+      x: 144,
+      y: 96,
     });
     expect(result.nodes.find((node) => node.id === PREVIEW_NODE_ID)?.position).toEqual({
       x: 0,

@@ -3,7 +3,7 @@ import {
   Position,
   type ReactFlowInstance,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import type { NodeManifest } from '../../schema/node-definition';
+import type { HandleGroupManifest, NodeManifest } from '../../schema/node-definition';
 import {
   CONTAINER_FRAME_INSET_PX,
   getContainerSafeArea,
@@ -141,9 +141,14 @@ function resolveClickedHandleType({
   if (!sourceNode) return undefined;
 
   const sourceManifest = getManifestForNode(sourceNode);
-  if (!sourceManifest) return undefined;
+  const dataHandleConfiguration = (sourceNode.data as Record<string, unknown>)
+    ?.handleConfigurations;
+  const handleConfiguration = Array.isArray(dataHandleConfiguration)
+    ? (dataHandleConfiguration as HandleGroupManifest[])
+    : sourceManifest?.handleConfiguration;
+  if (!handleConfiguration) return undefined;
 
-  const sourceHandles = resolveHandles(sourceManifest.handleConfiguration, {
+  const sourceHandles = resolveHandles(handleConfiguration, {
     ...sourceNode.data,
     nodeId: sourceNode.id,
   });
@@ -178,9 +183,9 @@ export function resolveContainerAddNodePreview({
   });
 
   // Container sequence insertion is reserved for workflow outputs. Resource
-  // handles (artifact/input semantics) keep the generic attachment preview,
+  // handles and unresolved runtime handles keep the generic attachment preview,
   // scoped by the source node's parent container when one exists.
-  if (clickedHandleType && clickedHandleType !== 'output') {
+  if (clickedHandleType !== 'output') {
     return null;
   }
 
