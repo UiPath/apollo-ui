@@ -7,7 +7,9 @@ import type { NodeManifest } from '../../schema';
 import { resolveCollisions } from '../../utils';
 import { getExpandedSize } from '../../utils/collapse';
 import {
+  CONTAINER_SEQUENCE_GAP_PX,
   collectLinearDownstreamSiblings,
+  fitContainersAndPushSiblings,
   getContainerFitGeometry,
   getContainerPlacement,
   getContainerSafeArea,
@@ -316,6 +318,7 @@ export function placeAddedNode({
         isContainerNodeManifest(getManifestForNode(registry, node))
           ? getContainerFitGeometry()
           : null,
+      ignoredNodeTypes,
     });
 
     return {
@@ -332,8 +335,35 @@ export function placeAddedNode({
     getNodeSize: getDimensions,
   });
 
-  return resolveScopedCollisions(shifted?.nodes ?? nodes, shifted?.insertedNode ?? insertedNode, {
+  const placementResult = resolveScopedCollisions(
+    shifted?.nodes ?? nodes,
+    shifted?.insertedNode ?? insertedNode,
+    {
+      ignoredNodeTypes,
+      getNodeSize: getDimensions,
+    }
+  );
+
+  if (!placementResult.insertedNode.parentId) {
+    return placementResult;
+  }
+
+  const fittedNodes = fitContainersAndPushSiblings({
+    nodes: placementResult.nodes,
+    containerIds: [placementResult.insertedNode.parentId],
+    getContainerFitGeometry: (node) =>
+      isContainerNodeManifest(getManifestForNode(registry, node))
+        ? getContainerFitGeometry()
+        : null,
+    getNodeDimensions: getDimensions,
     ignoredNodeTypes,
-    getNodeSize: getDimensions,
+    gap: CONTAINER_SEQUENCE_GAP_PX,
   });
+
+  return {
+    nodes: fittedNodes,
+    insertedNode:
+      fittedNodes.find((node) => node.id === placementResult.insertedNode.id) ??
+      placementResult.insertedNode,
+  };
 }

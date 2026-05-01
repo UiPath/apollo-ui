@@ -31,14 +31,16 @@ export interface NodeDimensions {
 
 /**
  * Sizing rules used when a container needs to grow around its children.
- * Padding is trailing-only because child positions are already relative to the
- * container's top-left corner.
+ * Leading padding shifts children into the safe area before size is computed;
+ * trailing padding reserves room after the children.
  */
 export interface ContainerFitGeometry {
   minWidth: number;
   minHeight: number;
   padding?: {
+    left?: number;
     right?: number;
+    top?: number;
     bottom?: number;
   };
 }
@@ -223,10 +225,7 @@ export function getContainerFitGeometry(): ContainerFitGeometry {
   return {
     minWidth: DEFAULT_CONTAINER_MIN_WIDTH,
     minHeight: DEFAULT_CONTAINER_MIN_HEIGHT,
-    padding: {
-      right: padding.right,
-      bottom: padding.bottom,
-    },
+    padding,
   };
 }
 
@@ -335,6 +334,9 @@ export function ensureContainersFitChildren(
     const padding = geometry.padding ?? {};
     let requiredWidth = geometry.minWidth;
     let requiredHeight = geometry.minHeight;
+    let leadingShiftX = 0;
+    let leadingShiftY = 0;
+    const childrenToFit: Array<{ node: Node; size: NodeDimensions }> = [];
 
     for (const childNode of nextNodes) {
       // Transient, hidden, and ignored children should not force a persisted
@@ -349,34 +351,72 @@ export function ensureContainersFitChildren(
       }
 
       const childSize = resolveNodeDimensions(childNode);
+      childrenToFit.push({ node: childNode, size: childSize });
+
+      if (padding.left !== undefined) {
+        leadingShiftX = Math.max(leadingShiftX, padding.left - childNode.position.x);
+      }
+      if (padding.top !== undefined) {
+        leadingShiftY = Math.max(leadingShiftY, padding.top - childNode.position.y);
+      }
+    }
+
+    leadingShiftX = leadingShiftX > 0 ? snapUpToGrid(leadingShiftX) : 0;
+    leadingShiftY = leadingShiftY > 0 ? snapUpToGrid(leadingShiftY) : 0;
+
+    for (const { node: childNode, size: childSize } of childrenToFit) {
       requiredWidth = Math.max(
         requiredWidth,
-        childNode.position.x + childSize.width + (padding.right ?? 0)
+        childNode.position.x + leadingShiftX + childSize.width + (padding.right ?? 0)
       );
       requiredHeight = Math.max(
         requiredHeight,
-        childNode.position.y + childSize.height + (padding.bottom ?? 0)
+        childNode.position.y + leadingShiftY + childSize.height + (padding.bottom ?? 0)
       );
     }
+
+    requiredWidth = Math.max(requiredWidth, currentSize.width + leadingShiftX);
+    requiredHeight = Math.max(requiredHeight, currentSize.height + leadingShiftY);
 
     const nextSize = {
       width: Math.max(currentSize.width, snapUpToGrid(requiredWidth)),
       height: Math.max(currentSize.height, snapUpToGrid(requiredHeight)),
     };
 
-    if (nextSize.width === currentSize.width && nextSize.height === currentSize.height) {
+    if (
+      nextSize.width === currentSize.width &&
+      nextSize.height === currentSize.height &&
+      leadingShiftX === 0 &&
+      leadingShiftY === 0
+    ) {
       continue;
     }
 
-    nextNodes = nextNodes.map((node) =>
-      node.id === containerId ? withNodeDimensions(node, nextSize) : node
-    );
-    nodesById.set(containerId, nextNodes.find((node) => node.id === containerId)!);
-    changes.push({
-      containerId,
-      previousSize: currentSize,
-      nextSize,
+    nextNodes = nextNodes.map((node) => {
+      if (node.id === containerId) {
+        return withNodeDimensions(node, nextSize);
+      }
+
+      if (node.parentId === containerId && node.id !== PREVIEW_NODE_ID) {
+        return {
+          ...node,
+          position: {
+            x: node.position.x + leadingShiftX,
+            y: node.position.y + leadingShiftY,
+          },
+        };
+      }
+
+      return node;
     });
+    nodesById.set(containerId, nextNodes.find((node) => node.id === containerId)!);
+    if (nextSize.width !== currentSize.width || nextSize.height !== currentSize.height) {
+      changes.push({
+        containerId,
+        previousSize: currentSize,
+        nextSize,
+      });
+    }
   }
 
   return { nodes: nextNodes, changes };
@@ -1133,17 +1173,19 @@ function pushSiblingsAfterContainerGrowth({
   return { nodes: nextNodes, shifted };
 }
 
-function fitContainersAndPushSiblings({
+export function fitContainersAndPushSiblings({
   nodes,
   containerIds,
   getContainerFitGeometry,
   getNodeDimensions,
+  ignoredNodeTypes,
   gap,
 }: {
   nodes: Node[];
   containerIds: Iterable<string>;
   getContainerFitGeometry: (containerNode: Node) => ContainerFitGeometry | null | undefined;
   getNodeDimensions: (node: Node) => NodeDimensions;
+  ignoredNodeTypes?: string[];
   gap: number;
 }): Node[] {
   let nextNodes = nodes;
@@ -1156,6 +1198,7 @@ function fitContainersAndPushSiblings({
       containerIds,
       getContainerFitGeometry,
       getNodeDimensions,
+      ignoredNodeTypes,
       includeAncestors: true,
     });
 
@@ -1211,6 +1254,7 @@ export function placeContainerNode({
   getNodeDimensions: resolveNodeDimensions = getNodeDimensions,
   gap = CONTAINER_SEQUENCE_GAP_PX,
   downstreamNodeIds,
+  ignoredNodeTypes,
   edges,
 }: {
   nodes: Node[];
@@ -1221,6 +1265,7 @@ export function placeContainerNode({
   getNodeDimensions?: (node: Node) => NodeDimensions;
   gap?: number;
   downstreamNodeIds?: Iterable<string>;
+  ignoredNodeTypes?: string[];
   edges?: Edge[];
 }): Node[] {
   const containerNode = nodes.find((node) => node.id === placement.containerId)!;
@@ -1314,6 +1359,7 @@ export function placeContainerNode({
     containerIds: [placement.containerId],
     getContainerFitGeometry: resolveContainerFitGeometry,
     getNodeDimensions: resolveNodeDimensions,
+    ignoredNodeTypes,
     gap,
   });
 }
