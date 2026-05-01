@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.10.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.9.0...@uipath/apollo-wind@2.10.0) (2026-05-01)
+
+### Features
+
+* **apollo-wind:** apply Future theme styling to Checkbox and CodeBlock ([c576920](https://github.com/uipath/apollo-ui/commit/c576920301f856b9711c23672b44e19267ee407a))
+
 ## [@uipath/apollo-wind-v2.9.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.8.0...@uipath/apollo-wind@2.9.0) (2026-04-29)
 
 ### Features
