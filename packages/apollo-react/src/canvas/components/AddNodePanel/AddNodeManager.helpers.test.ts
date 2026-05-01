@@ -215,6 +215,129 @@ describe('placeAddedNode', () => {
       expect(placedAction?.position).toEqual({ x: 480, y: 96 });
     });
 
+    it('does not shift the source node when inserting onto a self-loop edge', () => {
+      // Reproduces the Loop V1 loopback regression: the original edge is a
+      // self-loop (source === target, e.g. Loop("output") → Loop("loopBack")),
+      // so shifting the "downstream chain" would move the source away from
+      // the inserted node and produce a backward-wrapping edge.
+      const registry = buildRegistry({
+        loop: { shape: 'square' },
+        rectangle: { shape: 'rectangle' },
+      });
+      const loop: Node = {
+        id: 'loop',
+        type: 'loop',
+        position: { x: 96, y: 96 },
+        measured: { width: 96, height: 96 },
+        data: {},
+      };
+      const selfLoopEdge: Edge = {
+        id: 'e-loop-self',
+        source: 'loop',
+        target: 'loop',
+        sourceHandle: 'output',
+        targetHandle: 'loopBack',
+      };
+      const previewNode: Node = {
+        id: PREVIEW_NODE_ID,
+        type: 'preview',
+        position: { x: 240, y: 96 },
+        width: 96,
+        height: 96,
+        data: { originalEdge: selfLoopEdge },
+      };
+      const insertedNode: Node = {
+        id: 'inserted',
+        type: 'rectangle',
+        position: { x: 240, y: 96 },
+        data: {},
+      };
+
+      const { nodes } = placeAddedNode({
+        nodes: [loop, insertedNode],
+        edges: [selfLoopEdge],
+        previewNode,
+        insertedNode,
+        registry,
+      });
+
+      const placedLoop = nodes.find((n) => n.id === 'loop');
+      // The Loop is both source and target of the original edge — it must
+      // not be treated as a downstream chain to shift.
+      expect(placedLoop?.position).toEqual({ x: 96, y: 96 });
+    });
+
+    it('does not shift the source when the chain cycles back through it', () => {
+      // Reproduces the second-insertion regression on a loopBack chain:
+      // After a node has been inserted onto the self-loop, the resulting graph
+      // is `loop body → child → loop loopBack`. Inserting again onto
+      // `loop body → child` walks from the target (child) along the cycle
+      // (child → loop), so the loop ends up in chainIds. Without this guard,
+      // the loop is shifted right alongside the child, producing the broken
+      // backward-wrapping body edge.
+      const registry = buildRegistry({
+        loop: { shape: 'square' },
+        rectangle: { shape: 'rectangle' },
+      });
+      const loop: Node = {
+        id: 'loop',
+        type: 'loop',
+        position: { x: 96, y: 96 },
+        measured: { width: 96, height: 96 },
+        data: {},
+      };
+      const child: Node = {
+        id: 'child',
+        type: 'rectangle',
+        position: { x: 672, y: 96 },
+        measured: { width: 288, height: 96 },
+        data: {},
+      };
+      const bodyEdge: Edge = {
+        id: 'e-loop-child',
+        source: 'loop',
+        target: 'child',
+        sourceHandle: 'body',
+        targetHandle: 'input',
+      };
+      const loopBackEdge: Edge = {
+        id: 'e-child-loop',
+        source: 'child',
+        target: 'loop',
+        sourceHandle: 'output',
+        targetHandle: 'loopBack',
+      };
+      const previewNode: Node = {
+        id: PREVIEW_NODE_ID,
+        type: 'preview',
+        position: { x: 288, y: 96 },
+        width: 96,
+        height: 96,
+        data: { originalEdge: bodyEdge },
+      };
+      const insertedNode: Node = {
+        id: 'inserted',
+        type: 'rectangle',
+        position: { x: 288, y: 96 },
+        data: {},
+      };
+
+      const { nodes } = placeAddedNode({
+        nodes: [loop, child, insertedNode],
+        edges: [bodyEdge, loopBackEdge],
+        previewNode,
+        insertedNode,
+        registry,
+      });
+
+      const placedLoop = nodes.find((n) => n.id === 'loop');
+      // Loop is the upstream source — it must not move even though the chain
+      // walk cycles back through it. Other position adjustments are decided
+      // by the generic collision resolver (matching pre-PR behavior for
+      // cyclic edges) and aren't part of this contract.
+      expect(placedLoop?.position).toEqual({ x: 96, y: 96 });
+    });
+
     it('does not shift any chain when no originalEdge metadata is present', () => {
       const registry = buildRegistry({
         'square-source': { shape: 'square' },
