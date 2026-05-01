@@ -52,7 +52,10 @@ export function Combobox({
           role="combobox"
           aria-expanded={open}
           aria-label={selectedItem ? selectedItem.label : placeholder}
-          className={cn('w-[280px] justify-between', className)}
+          className={cn(
+            'w-[280px] justify-between future:rounded-xl future:border-0 future:bg-surface-raised future:hover:bg-surface-overlay future:font-normal future:text-muted-foreground',
+            className
+          )}
           disabled={disabled}
         >
           {selectedItem ? selectedItem.label : placeholder}
