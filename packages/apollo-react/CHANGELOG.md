@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.18.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.18.1...@uipath/apollo-react@4.18.2) (2026-05-01)
+
+### Bug Fixes
+
+* **apollo-react:** loop back node positioning ([82ba6db](https://github.com/UiPath/apollo-ui/commit/82ba6db974e63fe7ffa08f69c7fd432b7720edd1))
+
 ## [@uipath/apollo-react-v4.18.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.18.0...@uipath/apollo-react@4.18.1) (2026-04-30)
 
 ### Bug Fixes
