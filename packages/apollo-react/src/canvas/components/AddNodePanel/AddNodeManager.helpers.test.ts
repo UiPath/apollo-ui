@@ -377,4 +377,270 @@ describe('placeAddedNode', () => {
       expect(placedAction?.position).toBeDefined();
     });
   });
+
+  describe('non-container placement', () => {
+    it('leaves top-level generic additions unchanged when there is no collision', () => {
+      const registry = buildRegistry({
+        resource: { shape: 'circle' },
+        task: { shape: 'square' },
+      });
+      const task: Node = {
+        id: 'task',
+        type: 'task',
+        position: { x: 96, y: 96 },
+        measured: { width: 96, height: 96 },
+        data: {},
+      };
+      const previewNode: Node = {
+        id: PREVIEW_NODE_ID,
+        type: 'preview',
+        position: { x: 320, y: 240 },
+        width: 96,
+        height: 96,
+        data: {},
+      };
+      const insertedNode: Node = {
+        id: 'resource',
+        type: 'resource',
+        position: { x: 320, y: 240 },
+        data: {},
+      };
+
+      const { nodes, insertedNode: placedInsertedNode } = placeAddedNode({
+        nodes: [task, insertedNode],
+        edges: [],
+        previewNode,
+        insertedNode,
+        registry,
+      });
+
+      expect(placedInsertedNode.parentId).toBeUndefined();
+      expect(placedInsertedNode.position).toEqual({ x: 320, y: 240 });
+      expect(nodes.find((node) => node.id === 'task')?.position).toEqual({ x: 96, y: 96 });
+    });
+  });
+
+  describe('generic parented insertion', () => {
+    it('grows a container vertically around an attached child', () => {
+      const registry = buildRegistry({
+        loop: { shape: 'container' },
+        resource: { shape: 'circle' },
+      });
+      const loop: Node = {
+        id: 'loop',
+        type: 'loop',
+        position: { x: 0, y: 0 },
+        style: { width: 560, height: 320 },
+        data: {},
+      };
+      const previewNode: Node = {
+        id: PREVIEW_NODE_ID,
+        type: 'preview',
+        parentId: 'loop',
+        extent: 'parent',
+        position: { x: 240, y: 300 },
+        width: 96,
+        height: 96,
+        data: {},
+      };
+      const insertedNode: Node = {
+        id: 'resource',
+        type: 'resource',
+        parentId: 'loop',
+        extent: 'parent',
+        position: { x: 240, y: 300 },
+        data: {},
+      };
+
+      const { nodes, insertedNode: placedInsertedNode } = placeAddedNode({
+        nodes: [loop, insertedNode],
+        edges: [],
+        previewNode,
+        insertedNode,
+        registry,
+      });
+
+      const loopHeight = nodes.find((node) => node.id === 'loop')?.style?.height as
+        | number
+        | undefined;
+
+      expect(placedInsertedNode.parentId).toBe('loop');
+      expect(loopHeight).toBeGreaterThan(320);
+      expect(loopHeight).toBeGreaterThanOrEqual(placedInsertedNode.position.y + 96);
+    });
+
+    it('grows a container when an attached child is added above the safe area', () => {
+      const registry = buildRegistry({
+        agent: { shape: 'rectangle' },
+        loop: { shape: 'container' },
+        resource: { shape: 'circle' },
+      });
+      const loop: Node = {
+        id: 'loop',
+        type: 'loop',
+        position: { x: 0, y: 0 },
+        style: { width: 560, height: 320 },
+        data: {},
+      };
+      const agent: Node = {
+        id: 'agent',
+        type: 'agent',
+        parentId: 'loop',
+        extent: 'parent',
+        position: { x: 240, y: 112 },
+        measured: { width: 288, height: 96 },
+        data: {},
+      };
+      const previewNode: Node = {
+        id: PREVIEW_NODE_ID,
+        type: 'preview',
+        parentId: 'loop',
+        extent: 'parent',
+        position: { x: 240, y: 32 },
+        width: 96,
+        height: 96,
+        data: {},
+      };
+      const insertedNode: Node = {
+        id: 'resource',
+        type: 'resource',
+        parentId: 'loop',
+        extent: 'parent',
+        position: { x: 240, y: 32 },
+        data: {},
+      };
+
+      const { nodes, insertedNode: placedInsertedNode } = placeAddedNode({
+        nodes: [loop, agent, insertedNode],
+        edges: [],
+        previewNode,
+        insertedNode,
+        registry,
+      });
+
+      const loopHeight = nodes.find((node) => node.id === 'loop')?.style?.height as
+        | number
+        | undefined;
+      const placedAgent = nodes.find((node) => node.id === 'agent');
+
+      expect(placedInsertedNode.parentId).toBe('loop');
+      expect(placedInsertedNode.position.y).toBeGreaterThanOrEqual(96);
+      expect(placedAgent?.position.y).toBeGreaterThan(112);
+      expect(loopHeight).toBeGreaterThan(320);
+    });
+
+    it('does not resize a parent that is not a container manifest', () => {
+      const registry = buildRegistry({
+        group: { shape: 'square' },
+        resource: { shape: 'circle' },
+      });
+      const group: Node = {
+        id: 'group',
+        type: 'group',
+        position: { x: 0, y: 0 },
+        style: { width: 320, height: 220 },
+        data: {},
+      };
+      const siblingBelow: Node = {
+        id: 'sibling-below',
+        type: 'resource',
+        position: { x: 0, y: 260 },
+        measured: { width: 96, height: 96 },
+        data: {},
+      };
+      const previewNode: Node = {
+        id: PREVIEW_NODE_ID,
+        type: 'preview',
+        parentId: 'group',
+        extent: 'parent',
+        position: { x: 300, y: 240 },
+        width: 96,
+        height: 96,
+        data: {},
+      };
+      const insertedNode: Node = {
+        id: 'resource',
+        type: 'resource',
+        parentId: 'group',
+        extent: 'parent',
+        position: { x: 300, y: 240 },
+        data: {},
+      };
+
+      const { nodes } = placeAddedNode({
+        nodes: [group, siblingBelow, insertedNode],
+        edges: [],
+        previewNode,
+        insertedNode,
+        registry,
+      });
+
+      expect(nodes.find((node) => node.id === 'group')).toMatchObject({
+        style: { width: 320, height: 220 },
+      });
+      expect(nodes.find((node) => node.id === 'sibling-below')?.position).toEqual({
+        x: 0,
+        y: 260,
+      });
+    });
+
+    it('does not fit containers around ignored node types', () => {
+      const registry = buildRegistry({
+        loop: { shape: 'container' },
+        resource: { shape: 'circle' },
+        stickyNote: { shape: 'square' },
+      });
+      const loop: Node = {
+        id: 'loop',
+        type: 'loop',
+        position: { x: 0, y: 0 },
+        style: { width: 560, height: 320 },
+        data: {},
+      };
+      const ignoredStickyNote: Node = {
+        id: 'sticky-note',
+        type: 'stickyNote',
+        parentId: 'loop',
+        extent: 'parent',
+        position: { x: 0, y: 0 },
+        measured: { width: 96, height: 96 },
+        data: {},
+      };
+      const previewNode: Node = {
+        id: PREVIEW_NODE_ID,
+        type: 'preview',
+        parentId: 'loop',
+        extent: 'parent',
+        position: { x: 240, y: 112 },
+        width: 96,
+        height: 96,
+        data: {},
+      };
+      const insertedNode: Node = {
+        id: 'resource',
+        type: 'resource',
+        parentId: 'loop',
+        extent: 'parent',
+        position: { x: 240, y: 112 },
+        data: {},
+      };
+
+      const { nodes } = placeAddedNode({
+        nodes: [loop, ignoredStickyNote, insertedNode],
+        edges: [],
+        previewNode,
+        insertedNode,
+        registry,
+        ignoredNodeTypes: ['stickyNote'],
+      });
+
+      expect(nodes.find((node) => node.id === 'loop')).toMatchObject({
+        style: { width: 560, height: 320 },
+      });
+      expect(nodes.find((node) => node.id === 'sticky-note')?.position).toEqual({
+        x: 0,
+        y: 0,
+      });
+    });
+  });
 });

@@ -1,5 +1,6 @@
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it } from 'vitest';
+import { PREVIEW_NODE_ID } from '../constants';
 import {
   type ContainerPlacement,
   DEFAULT_CONTAINER_MIN_HEIGHT,
@@ -30,7 +31,7 @@ describe('container sizing', () => {
     expect(getContainerFitGeometry()).toMatchObject({
       minWidth: DEFAULT_CONTAINER_MIN_WIDTH,
       minHeight: DEFAULT_CONTAINER_MIN_HEIGHT,
-      padding: { right: 144, bottom: 48 },
+      padding: { left: 144, right: 144, top: 96, bottom: 48 },
     });
   });
 
@@ -64,6 +65,214 @@ describe('container sizing', () => {
     ]);
     expect(result.nodes.find((node) => node.id === containerNode.id)).toMatchObject({
       style: { width: 720, height: 384 },
+    });
+  });
+
+  it('shifts children down and grows when a child starts above the safe area', () => {
+    const containerNode: Node = {
+      id: 'loop-1',
+      type: 'loop',
+      position: { x: 0, y: 0 },
+      style: { width: 704, height: 320 },
+      data: {},
+    };
+    const topChild: Node = {
+      id: 'top-child',
+      type: 'task',
+      parentId: containerNode.id,
+      position: { x: 240, y: 32 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+    const bodyChild: Node = {
+      id: 'body-child',
+      type: 'task',
+      parentId: containerNode.id,
+      position: { x: 384, y: 112 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+
+    const result = ensureContainersFitChildren([containerNode, topChild, bodyChild], {
+      getContainerFitGeometry: () => getContainerFitGeometry(),
+    });
+
+    expect(result.changes).toEqual([
+      expect.objectContaining({
+        containerId: containerNode.id,
+        previousSize: { width: 704, height: 320 },
+        nextSize: { width: 704, height: 384 },
+      }),
+    ]);
+    expect(result.nodes.find((node) => node.id === 'top-child')?.position).toEqual({
+      x: 240,
+      y: 96,
+    });
+    expect(result.nodes.find((node) => node.id === 'body-child')?.position).toEqual({
+      x: 384,
+      y: 176,
+    });
+  });
+
+  it('shifts children right and grows when a child starts left of the safe area', () => {
+    const containerNode: Node = {
+      id: 'loop-1',
+      type: 'loop',
+      position: { x: 0, y: 0 },
+      style: { width: 560, height: 320 },
+      data: {},
+    };
+    const leftChild: Node = {
+      id: 'left-child',
+      type: 'task',
+      parentId: containerNode.id,
+      position: { x: 96, y: 112 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+    const bodyChild: Node = {
+      id: 'body-child',
+      type: 'task',
+      parentId: containerNode.id,
+      position: { x: 240, y: 112 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+
+    const result = ensureContainersFitChildren([containerNode, leftChild, bodyChild], {
+      getContainerFitGeometry: () => getContainerFitGeometry(),
+    });
+
+    expect(result.changes).toEqual([
+      expect.objectContaining({
+        containerId: containerNode.id,
+        previousSize: { width: 560, height: 320 },
+        nextSize: { width: 608, height: 320 },
+      }),
+    ]);
+    expect(result.nodes.find((node) => node.id === 'left-child')?.position).toEqual({
+      x: 144,
+      y: 112,
+    });
+    expect(result.nodes.find((node) => node.id === 'body-child')?.position).toEqual({
+      x: 288,
+      y: 112,
+    });
+  });
+
+  it('ignores preview, hidden, and ignored child types when fitting', () => {
+    const containerNode: Node = {
+      id: 'loop-1',
+      type: 'loop',
+      position: { x: 0, y: 0 },
+      style: { width: 560, height: 320 },
+      data: {},
+    };
+    const bodyChild: Node = {
+      id: 'body-child',
+      type: 'task',
+      parentId: containerNode.id,
+      position: { x: 144, y: 112 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+    const previewChild: Node = {
+      id: PREVIEW_NODE_ID,
+      type: 'preview',
+      parentId: containerNode.id,
+      position: { x: 0, y: 0 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+    const hiddenChild: Node = {
+      id: 'hidden-child',
+      type: 'task',
+      parentId: containerNode.id,
+      hidden: true,
+      position: { x: 0, y: 0 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+    const ignoredChild: Node = {
+      id: 'ignored-child',
+      type: 'stickyNote',
+      parentId: containerNode.id,
+      position: { x: 0, y: 0 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+
+    const result = ensureContainersFitChildren(
+      [containerNode, bodyChild, previewChild, hiddenChild, ignoredChild],
+      {
+        getContainerFitGeometry: () => getContainerFitGeometry(),
+        ignoredNodeTypes: ['stickyNote'],
+      }
+    );
+
+    expect(result.changes).toEqual([]);
+    expect(result.nodes.find((node) => node.id === containerNode.id)).toMatchObject({
+      style: { width: 560, height: 320 },
+    });
+    expect(result.nodes.find((node) => node.id === PREVIEW_NODE_ID)?.position).toEqual({
+      x: 0,
+      y: 0,
+    });
+    expect(result.nodes.find((node) => node.id === 'hidden-child')?.position).toEqual({
+      x: 0,
+      y: 0,
+    });
+    expect(result.nodes.find((node) => node.id === 'ignored-child')?.position).toEqual({
+      x: 0,
+      y: 0,
+    });
+  });
+
+  it('fits ancestors after a nested container grows from leading padding', () => {
+    const outerContainer: Node = {
+      id: 'outer',
+      type: 'loop',
+      position: { x: 0, y: 0 },
+      style: { width: 704, height: 320 },
+      data: {},
+    };
+    const innerContainer: Node = {
+      id: 'inner',
+      type: 'loop',
+      parentId: outerContainer.id,
+      extent: 'parent',
+      position: { x: 144, y: 32 },
+      style: { width: 400, height: 224 },
+      data: {},
+    };
+    const innerChild: Node = {
+      id: 'inner-child',
+      type: 'task',
+      parentId: innerContainer.id,
+      extent: 'parent',
+      position: { x: 144, y: 0 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+
+    const result = ensureContainersFitChildren([outerContainer, innerContainer, innerChild], {
+      containerIds: [innerContainer.id],
+      getContainerFitGeometry: () => getContainerFitGeometry(),
+    });
+
+    expect(result.nodes.find((node) => node.id === 'inner-child')?.position).toEqual({
+      x: 144,
+      y: 96,
+    });
+    expect(result.nodes.find((node) => node.id === 'inner')?.position).toEqual({
+      x: 144,
+      y: 96,
+    });
+    expect(result.nodes.find((node) => node.id === 'inner')).toMatchObject({
+      style: { width: 400, height: 320 },
+    });
+    expect(result.nodes.find((node) => node.id === 'outer')).toMatchObject({
+      style: { width: 704, height: 464 },
     });
   });
 });

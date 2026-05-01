@@ -152,6 +152,72 @@ describe('createPreviewGraph', () => {
     expect(preview?.node.position.x).toBeGreaterThan(childNode.position.x);
   });
 
+  it('keeps child attachment previews in the parent container on the clicked handle side', () => {
+    const containerNode: Node = {
+      id: 'loop-node',
+      type: 'loop',
+      position: { x: 100, y: 50 },
+      data: {},
+    };
+    const agentNode: Node = {
+      id: 'agent-node',
+      type: 'agent',
+      parentId: containerNode.id,
+      position: { x: 240, y: 120 },
+      measured: { width: 288, height: 96 },
+      data: {},
+    };
+    const reactFlowInstance = createReactFlowInstance({
+      nodes: [containerNode, agentNode],
+    });
+
+    const bottomPreview = createPreviewGraph({
+      source: {
+        nodeId: agentNode.id,
+        handleId: 'tools',
+      },
+      reactFlowInstance,
+      handlePosition: Position.Bottom,
+    });
+
+    expect(bottomPreview?.node).toMatchObject({
+      id: PREVIEW_NODE_ID,
+      parentId: containerNode.id,
+      extent: 'parent',
+    });
+    expect(bottomPreview?.node.position.y).toBeGreaterThan(agentNode.position.y + 96);
+    expect(bottomPreview?.edges).toHaveLength(1);
+    expect(bottomPreview?.edges[0]).toMatchObject({
+      source: agentNode.id,
+      sourceHandle: 'tools',
+      target: PREVIEW_NODE_ID,
+      targetHandle: 'input',
+    });
+
+    const topPreview = createPreviewGraph({
+      source: {
+        nodeId: agentNode.id,
+        handleId: 'memory',
+      },
+      reactFlowInstance,
+      handlePosition: Position.Top,
+    });
+
+    expect(topPreview?.node).toMatchObject({
+      id: PREVIEW_NODE_ID,
+      parentId: containerNode.id,
+      extent: 'parent',
+    });
+    expect(topPreview?.node.position.y).toBeLessThan(agentNode.position.y);
+    expect(topPreview?.edges).toHaveLength(1);
+    expect(topPreview?.edges[0]).toMatchObject({
+      source: agentNode.id,
+      sourceHandle: 'memory',
+      target: PREVIEW_NODE_ID,
+      targetHandle: 'input',
+    });
+  });
+
   it('filters original edges only when the preview graph is applied', () => {
     vi.useFakeTimers();
 

@@ -126,6 +126,36 @@ function pickPreferredInnerHandle(
   return null;
 }
 
+function resolveClickedHandleType({
+  source,
+  reactFlowInstance,
+  getManifestForNode,
+}: {
+  source: PreviewEndpoint;
+  reactFlowInstance: ReactFlowInstance;
+  getManifestForNode: ContainerPreviewManifestResolver;
+}): string | undefined {
+  if (!source.handleId) return undefined;
+
+  const sourceNode = reactFlowInstance.getNode(source.nodeId);
+  if (!sourceNode) return undefined;
+
+  const sourceManifest = getManifestForNode(sourceNode);
+  if (!sourceManifest) return undefined;
+
+  const sourceHandles = resolveHandles(sourceManifest.handleConfiguration, {
+    ...sourceNode.data,
+    nodeId: sourceNode.id,
+  });
+
+  for (const group of sourceHandles) {
+    const handle = group.handles.find((candidate) => candidate.id === source.handleId);
+    if (handle) return handle.handleType;
+  }
+
+  return undefined;
+}
+
 /**
  * Produces preview-graph overrides for Add Node operations that interact with a
  * loop/container node.
@@ -141,6 +171,19 @@ export function resolveContainerAddNodePreview({
   reactFlowInstance: ReactFlowInstance;
   getManifestForNode: ContainerPreviewManifestResolver;
 }): PreviewGraphOverrides | null {
+  const clickedHandleType = resolveClickedHandleType({
+    source,
+    reactFlowInstance,
+    getManifestForNode,
+  });
+
+  // Container sequence insertion is reserved for workflow outputs. Resource
+  // handles (artifact/input semantics) keep the generic attachment preview,
+  // scoped by the source node's parent container when one exists.
+  if (clickedHandleType && clickedHandleType !== 'output') {
+    return null;
+  }
+
   return resolveContainerPreview({
     source,
     sourceHandleType,
