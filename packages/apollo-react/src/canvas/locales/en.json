@@ -4,5 +4,7 @@
   "sticky-note.formatting.strikethrough": "Strikethrough ({strikethroughShortcut})",
   "sticky-note.formatting.bullet-list": "Bullet list",
   "sticky-note.formatting.numbered-list": "Numbered list",
-  "sticky-note.formatting.toolbar": "Text formatting"
+  "sticky-note.formatting.toolbar": "Text formatting",
+  "stage-node.add-task": "Add task",
+  "stage-node.replace-task": "Replace task"
 }
