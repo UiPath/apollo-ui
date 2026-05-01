@@ -270,11 +270,10 @@ describe('placeContainerNode cyclic edges', () => {
     // Reproduces the third-insertion regression: a Loop V1-style child inside
     // a For Each container has both a self-loop body chain (output → … →
     // loopBack) AND a parent-loopBack edge (success → container.loopBack)
-    // created by createLoopBackEdgesForNewLoop. The branching at the loop's
-    // outgoing handles makes the linear chain walk terminate after one node,
-    // so a chainIds-membership cycle check misses the cycle. Detection has
-    // to be reachability-based: target=loop reaches source=n2 via
-    // loop.output → n2, making this a back-edge insertion.
+    // created by createLoopBackEdgesForNewLoop. The original edge here is
+    // n2 → inner-loop (a back-edge in the body chain), so the x-position
+    // check (`source.x >= target.x`) skips the shift, keeping the loop
+    // anchored at its original x while the inserted node lives past n2.
     const containerNode: Node = {
       id: 'outer',
       type: 'foreach',
@@ -358,11 +357,12 @@ describe('placeContainerNode cyclic edges', () => {
   });
 
   it('still shifts the chain on a plain forward insert when target wires back to container.continue', () => {
-    // Regression: BFS reachability must NOT traverse through the parent
-    // container. In a normal For Each chain `start → n1 → n2 → continue`,
-    // BFS from n2 follows `n2 → container.continue` and would otherwise
-    // hop container → container.start → n1, falsely reporting a cycle and
-    // skipping the shift.
+    // Regression: a child wiring back to `container.continue` is a normal
+    // forward chain in a For Each, not a back-edge. The shift must apply
+    // when the original edge is a sibling→sibling forward edge — even
+    // though the chain walk from the target reaches `outer` via the
+    // continue back-edge. The x-position check (`source.x < target.x`)
+    // correctly classifies n1 → n2 as forward and shifts n2 right.
     const containerNode: Node = {
       id: 'outer',
       type: 'foreach',
