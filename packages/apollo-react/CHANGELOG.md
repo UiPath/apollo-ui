@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.19.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.18.3...@uipath/apollo-react@4.19.0) (2026-05-01)
+
+### Features
+
+* **apollo-react:** add Toolbox quickActions slot ([59f0ffb](https://github.com/UiPath/apollo-ui/commit/59f0ffbde2364dcf637138f090f9faacebe8366e))
+
 ## [@uipath/apollo-react-v4.18.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.18.2...@uipath/apollo-react@4.18.3) (2026-05-01)
 
 ### Bug Fixes
