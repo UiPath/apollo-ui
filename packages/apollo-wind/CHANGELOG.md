@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.11.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.10.0...@uipath/apollo-wind@2.11.0) (2026-05-02)
+
+### Features
+
+* **apollo-wind:** apply Future theme styling to Combobox and MultiSelect ([d9911eb](https://github.com/uipath/apollo-ui/commit/d9911ebfec17292027f7f8b217ebefd6e8210b4c))
+
 ## [@uipath/apollo-wind-v2.10.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.9.0...@uipath/apollo-wind@2.10.0) (2026-05-01)
 
 ### Features
