@@ -71,6 +71,12 @@ const nodeTypesWithCallbacks = {
   stickyNote: StickyNoteWithCallbacks,
 };
 
+const ReadOnlyStickyNote = (props: any) => <StickyNoteNode {...props} readOnly />;
+
+const nodeTypesReadOnly = {
+  stickyNote: ReadOnlyStickyNote,
+};
+
 function createStickyNote(
   id: string,
   color: StickyNoteColor,
@@ -424,7 +430,7 @@ function WithCallbacksStory() {
         'sticky-test-1',
         'yellow',
         '**Test Callbacks!**\n\n1. Double-click to edit content\n2. Click the color button to change color\n3. Drag corners to resize\n\nOpen the browser console to see logs! 🔍',
-        { x: 480, y: 480 },
+        { x: 480, y: 240 },
         { width: 320, height: 320 }
       ),
     ],
@@ -434,6 +440,34 @@ function WithCallbacksStory() {
   const { canvasProps } = useCanvasStory({
     initialNodes,
     additionalNodeTypes: nodeTypesWithCallbacks,
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+function ReadOnlyStory() {
+  const initialNodes = useMemo<Node<StickyNoteData>[]>(
+    () => [
+      createStickyNote(
+        'sticky-readonly-yellow',
+        'yellow',
+        '**Read-only sticky note**\n\nDouble-click does nothing, no toolbar appears, and corners are not resizable.\n\nLinks like [docs](https://example.com) still work.',
+        { x: 480, y: 240 },
+        { width: 300, height: 300 }
+      ),
+    ],
+    []
+  );
+
+  const { canvasProps } = useCanvasStory({
+    initialNodes,
+    additionalNodeTypes: nodeTypesReadOnly,
   });
 
   return (
@@ -459,4 +493,8 @@ export const WithBaseNodes: Story = {
 
 export const WithCallbacks: Story = {
   render: () => <WithCallbacksStory />,
+};
+
+export const ReadOnly: Story = {
+  render: () => <ReadOnlyStory />,
 };

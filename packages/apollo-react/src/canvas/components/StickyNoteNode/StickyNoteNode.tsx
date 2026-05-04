@@ -42,6 +42,7 @@ export interface StickyNoteNodeProps extends NodeProps {
   data: StickyNoteData;
   placeholder?: string;
   renderPlaceholderOnSelect?: boolean;
+  readOnly?: boolean;
   onContentChange?: (content: string) => void;
   onColorChange?: (color: StickyNoteColor) => void;
   onResize?: (width: number, height: number) => void;
@@ -57,12 +58,13 @@ const StickyNoteNodeComponent = ({
   dragging,
   placeholder = 'Add text',
   renderPlaceholderOnSelect = false,
+  readOnly = false,
   onContentChange,
   onColorChange,
   onResize,
 }: StickyNoteNodeProps) => {
   const { updateNodeData, deleteElements } = useReactFlow();
-  const [isEditing, setIsEditing] = useState(data.autoFocus ?? false);
+  const [isEditing, setIsEditing] = useState(!readOnly && (data.autoFocus ?? false));
   const [isResizing, setIsResizing] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [localContent, setLocalContent] = useState(data.content || '');
@@ -92,10 +94,10 @@ const StickyNoteNodeComponent = ({
       textAreaRef.current.select();
     }
     // Clear autoFocus from data after initial focus to prevent re-focusing on re-renders
-    if (data.autoFocus) {
+    if (!readOnly && data.autoFocus) {
       updateNodeData(id, { autoFocus: false });
     }
-  }, [isEditing, data.autoFocus, id, updateNodeData]);
+  }, [isEditing, data.autoFocus, id, updateNodeData, readOnly]);
 
   useEffect(() => {
     if (!selected || isResizing) {
@@ -103,8 +105,15 @@ const StickyNoteNodeComponent = ({
     }
   }, [selected, isResizing]);
 
+  useEffect(() => {
+    if (readOnly) {
+      setIsEditing(false);
+      setLocalContent(data.content || '');
+    }
+  }, [readOnly, data.content]);
+
   const handleDoubleClick = useCallback(() => {
-    if (isEditing) return;
+    if (readOnly || isEditing) return;
     setIsEditing(true);
     setTimeout(() => {
       if (textAreaRef.current) {
@@ -112,15 +121,16 @@ const StickyNoteNodeComponent = ({
         textAreaRef.current.select();
       }
     }, 0);
-  }, [isEditing]);
+  }, [isEditing, readOnly]);
 
   const handleBlur = useCallback(() => {
     setIsEditing(false);
+    if (readOnly) return;
     if (localContent !== data.content) {
       onContentChange?.(localContent);
       updateNodeData(id, { content: localContent });
     }
-  }, [id, localContent, data.content, updateNodeData, onContentChange]);
+  }, [id, localContent, data.content, updateNodeData, onContentChange, readOnly]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setLocalContent(e.target.value);
@@ -208,6 +218,7 @@ const StickyNoteNodeComponent = ({
 
   // Handle edit button click
   const handleEditClick = useCallback(() => {
+    if (readOnly) return;
     setIsEditing(true);
     setTimeout(() => {
       if (textAreaRef.current) {
@@ -215,7 +226,7 @@ const StickyNoteNodeComponent = ({
         textAreaRef.current.select();
       }
     }, 0);
-  }, []);
+  }, [readOnly]);
 
   const handleDelete = useCallback(() => {
     deleteElements({ nodes: [{ id }] });
@@ -291,53 +302,57 @@ const StickyNoteNodeComponent = ({
     <>
       <Global styles={stickyNoteGlobalStyles} />
       <StickyNoteWrapper>
-        {/* Top-left resize control */}
-        <NodeResizeControl
-          style={{ background: 'transparent', border: 'none', zIndex: RESIZE_CONTROL_Z_INDEX }}
-          position="top-left"
-          minWidth={minWidth}
-          minHeight={minHeight}
-          onResizeStart={handleResizeStart}
-          onResizeEnd={handleResizeEnd}
-        >
-          <ResizeHandle selected={selected} cursor="nwse-resize" />
-        </NodeResizeControl>
+        {!readOnly && (
+          <>
+            {/* Top-left resize control */}
+            <NodeResizeControl
+              style={{ background: 'transparent', border: 'none', zIndex: RESIZE_CONTROL_Z_INDEX }}
+              position="top-left"
+              minWidth={minWidth}
+              minHeight={minHeight}
+              onResizeStart={handleResizeStart}
+              onResizeEnd={handleResizeEnd}
+            >
+              <ResizeHandle selected={selected} cursor="nwse-resize" />
+            </NodeResizeControl>
 
-        {/* Top-right resize control */}
-        <NodeResizeControl
-          style={{ background: 'transparent', border: 'none', zIndex: RESIZE_CONTROL_Z_INDEX }}
-          position="top-right"
-          minWidth={minWidth}
-          minHeight={minHeight}
-          onResizeStart={handleResizeStart}
-          onResizeEnd={handleResizeEnd}
-        >
-          <ResizeHandle selected={selected} cursor="nesw-resize" />
-        </NodeResizeControl>
+            {/* Top-right resize control */}
+            <NodeResizeControl
+              style={{ background: 'transparent', border: 'none', zIndex: RESIZE_CONTROL_Z_INDEX }}
+              position="top-right"
+              minWidth={minWidth}
+              minHeight={minHeight}
+              onResizeStart={handleResizeStart}
+              onResizeEnd={handleResizeEnd}
+            >
+              <ResizeHandle selected={selected} cursor="nesw-resize" />
+            </NodeResizeControl>
 
-        {/* Bottom-left resize control */}
-        <NodeResizeControl
-          style={{ background: 'transparent', border: 'none', zIndex: RESIZE_CONTROL_Z_INDEX }}
-          position="bottom-left"
-          minWidth={minWidth}
-          minHeight={minHeight}
-          onResizeStart={handleResizeStart}
-          onResizeEnd={handleResizeEnd}
-        >
-          <ResizeHandle selected={selected} cursor="nesw-resize" />
-        </NodeResizeControl>
+            {/* Bottom-left resize control */}
+            <NodeResizeControl
+              style={{ background: 'transparent', border: 'none', zIndex: RESIZE_CONTROL_Z_INDEX }}
+              position="bottom-left"
+              minWidth={minWidth}
+              minHeight={minHeight}
+              onResizeStart={handleResizeStart}
+              onResizeEnd={handleResizeEnd}
+            >
+              <ResizeHandle selected={selected} cursor="nesw-resize" />
+            </NodeResizeControl>
 
-        {/* Bottom-right resize control */}
-        <NodeResizeControl
-          style={{ background: 'transparent', border: 'none', zIndex: RESIZE_CONTROL_Z_INDEX }}
-          position="bottom-right"
-          minWidth={minWidth}
-          minHeight={minHeight}
-          onResizeStart={handleResizeStart}
-          onResizeEnd={handleResizeEnd}
-        >
-          <ResizeHandle selected={selected} cursor="nwse-resize" />
-        </NodeResizeControl>
+            {/* Bottom-right resize control */}
+            <NodeResizeControl
+              style={{ background: 'transparent', border: 'none', zIndex: RESIZE_CONTROL_Z_INDEX }}
+              position="bottom-right"
+              minWidth={minWidth}
+              minHeight={minHeight}
+              onResizeStart={handleResizeStart}
+              onResizeEnd={handleResizeEnd}
+            >
+              <ResizeHandle selected={selected} cursor="nwse-resize" />
+            </NodeResizeControl>
+          </>
+        )}
 
         <StickyNoteContainer
           backgroundColor={colorWithAlpha}
@@ -346,8 +361,8 @@ const StickyNoteNodeComponent = ({
           selected={selected}
           onDoubleClick={handleDoubleClick}
         >
-          <TopCornerIndicators selected={selected} />
-          <BottomCornerIndicators selected={selected} />
+          <TopCornerIndicators visible={selected && !readOnly} />
+          <BottomCornerIndicators visible={selected && !readOnly} />
           {isEditing ? (
             <ApI18nProvider component="canvas">
               <FormattingToolbar
@@ -394,11 +409,11 @@ const StickyNoteNodeComponent = ({
           )}
         </StickyNoteContainer>
 
-        {selected && !dragging && !isResizing && (
+        {!readOnly && selected && !dragging && !isResizing && (
           <NodeToolbar nodeId={id} config={toolbarConfig} expanded={true} />
         )}
         <AnimatePresence>
-          {selected && !dragging && !isResizing && isColorPickerOpen && (
+          {!readOnly && selected && !dragging && !isResizing && isColorPickerOpen && (
             <div
               style={{
                 position: 'absolute',
