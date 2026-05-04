@@ -31,11 +31,15 @@ export interface ResolutionContext extends Record<string, unknown> {
 
 /**
  * Resolved display configuration (manifest defaults + instance overrides)
- * Uses DisplayConfig structure to allow any string values for flexibility
+ * Uses DisplayConfig structure to allow any string values for flexibility.
+ *
+ * `icon` is optional: missing icons are rendered by callers as an initials
+ * badge derived from `label`. Callers should not coerce missing values to
+ * placeholder strings — that breaks the badge fallback.
  */
 export type ResolvedDisplay = InstanceDisplayConfig & {
   label: string;
-  icon: string;
+  icon?: string;
   description?: string;
   iconColor?: string;
   labelTooltip?: string;
@@ -95,8 +99,9 @@ export function resolveDisplay(
   context?: ResolutionContext
 ): ResolvedDisplay {
   if (!manifestDisplay) {
+    // No icon supplied — BaseNode renders an initials badge derived from the
+    // label as the universal "no icon" fallback.
     return {
-      icon: 'circle-question-mark',
       shape: 'square' as const,
       label: context?.display?.label || 'Unknown Node',
     } as ResolvedDisplay;
@@ -132,9 +137,6 @@ export function resolveDisplay(
     label: resolvedLabel,
     canvasLabel: context?.display?.canvasLabel ?? manifestDisplay.canvasLabel,
     shape: isCollapsed ? collapsedShape : expandedShape,
-    // Manifest schema allows `display.icon` to be omitted; mirror the
-    // missing-manifest fallback above so ResolvedDisplay.icon stays a string.
-    icon: context?.display?.icon ?? manifestDisplay.icon ?? 'circle-question-mark',
   };
 }
 

@@ -36,6 +36,7 @@ import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
 import type { HandleActionEvent } from '../ButtonHandle/ButtonHandle';
 import { SmartHandle, SmartHandleProvider } from '../ButtonHandle/SmartHandle';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
+import { InitialsBadge } from '../shared/InitialsBadge';
 import { NodeToolbar } from '../Toolbar';
 import type {
   BaseNodeData,
@@ -178,7 +179,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // stacked layer to signal they stand in for more than themselves.
   const isStacked = Boolean(manifest?.drillable || data?.isCollapsed);
 
-  // Icon resolution: component prop takes precedence, then icon string from display
+  // Icon resolution: component prop > icon string > initials badge fallback
   const Icon = useMemo(() => {
     // Priority 1: Component prop (e.g., dynamic tool icon)
     if (iconComponent !== undefined) {
@@ -186,9 +187,22 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     }
 
     // Priority 2: Icon string (registry lookup)
-    const IconComponent = getIcon(display.icon);
-    return IconComponent ? <IconComponent /> : null;
-  }, [iconComponent, display.icon]);
+    if (display.icon) {
+      const IconComponent = getIcon(display.icon);
+      return IconComponent ? <IconComponent /> : null;
+    }
+
+    // Priority 3: Initials badge from the node's label — same fallback the
+    // canvas ListView uses, so missing icons render consistently across
+    // surfaces (toolbox rows, drilled-in pickers, and on-canvas nodes).
+    return (
+      <InitialsBadge
+        name={display.label}
+        size="var(--icon-size)"
+        data-testid="base-node-initials-badge"
+      />
+    );
+  }, [iconComponent, display.icon, display.label]);
 
   // Resolve handles: context override > data override > manifest default
   const handleConfigurations = useMemo((): HandleGroupManifest[] => {
