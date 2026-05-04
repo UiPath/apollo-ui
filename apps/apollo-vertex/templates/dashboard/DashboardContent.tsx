@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -9,24 +10,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AutopilotInsight } from "./AutopilotInsight";
+import { DashboardDataProvider } from "./DashboardDataProvider";
 import { DashboardGlow } from "./DashboardGlow";
+import { useDashboardData } from "./dashboard-data-context";
 import {
+  type CardConfig,
   cardBgStyle,
   defaultDarkCards,
   defaultDarkGlow,
   defaultLayout,
-  type CardConfig,
   type GlowConfig,
   type LayoutConfig,
 } from "./glow-config";
-import { GlowDevControls } from "./GlowDevControls";
 import { InsightGrid } from "./InsightGrid";
-import { DashboardLoading } from "./DashboardLoading";
 import { PromptBar } from "./PromptBar";
-import { AutopilotInsight } from "./AutopilotInsight";
-import { useDashboardData } from "./dashboard-data-context";
-import { DashboardDataProvider } from "./DashboardDataProvider";
 
 type LayoutType = "executive" | "operational" | "analytics";
 
@@ -76,12 +74,12 @@ function ExecutiveLayout({
             <CardHeader className="!p-0 !gap-2">
               <img
                 src="/Autopilot_dark.svg"
-                alt="Autopilot"
+                alt="AI Assistant"
                 className="size-5 block dark:hidden"
               />
               <img
                 src="/Autopilot_light.svg"
-                alt="Autopilot"
+                alt="AI Assistant"
                 className="size-5 hidden dark:block"
               />
               <CardTitle className="text-sm font-bold tracking-tight">
@@ -168,7 +166,6 @@ function DashboardContentInner() {
   const [darkGlow, setDarkGlow] = useState<GlowConfig>(defaultDarkGlow);
   const [darkCards, setDarkCards] = useState<CardConfig>(defaultDarkCards);
   const [layoutCfg, setLayoutCfg] = useState<LayoutConfig>(defaultLayout);
-  const [replayCount] = useState(0);
   const [autopilotOpen, setAutopilotOpen] = useState(false);
   const [autopilotSource, setAutopilotSource] = useState("");
   const [autopilotActiveIdx, setAutopilotActiveIdx] = useState<number | null>(
@@ -194,105 +191,95 @@ function DashboardContentInner() {
   };
 
   return (
-    <DashboardLoading triggerReplay={replayCount}>
+    <div
+      className={`relative h-full ${viewMode === "stacked" ? "overflow-x-hidden" : "overflow-hidden"}`}
+      style={
+        layoutCfg.containerBg === "none"
+          ? {}
+          : { backgroundColor: `var(--${layoutCfg.containerBg})` }
+      }
+    >
+      <DashboardGlow darkConfig={darkGlow} />
       <div
-        className={`relative h-full ${viewMode === "stacked" ? "overflow-x-hidden" : "overflow-hidden"}`}
-        style={
-          layoutCfg.containerBg === "none"
-            ? {}
-            : { backgroundColor: `var(--${layoutCfg.containerBg})` }
-        }
+        ref={containerRef}
+        className="@container flex flex-col gap-4 relative z-10 h-full"
+        style={{ padding: layoutCfg.padding }}
       >
-        <DashboardGlow darkConfig={darkGlow} />
-        <GlowDevControls
-          glowConfig={darkGlow}
-          onGlowChange={setDarkGlow}
-          cardConfig={darkCards}
-          onCardChange={setDarkCards}
-          layoutConfig={layoutCfg}
-          onLayoutChange={setLayoutCfg}
-        />
-        <div
-          ref={containerRef}
-          className="@container flex flex-col gap-4 relative z-10 h-full"
-          style={{ padding: layoutCfg.padding }}
-        >
-          {/* Header — stays in place */}
-          <div className="flex flex-col @[500px]:flex-row @[500px]:items-center @[500px]:justify-between gap-4">
-            <div>
-              <h1 className="text-xs tracking-tight">
-                <span className="font-bold">{data.brandName}</span>{" "}
-                {data.brandLine}
-              </h1>
-              <p className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                {data.dashboardTitle}
-                <Badge variant="secondary" status="info">
-                  {data.badgeText}
-                </Badge>
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Select defaultValue="30">
-                <SelectTrigger className="h-9 w-auto text-xs font-medium">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7">Last 7 days</SelectItem>
-                  <SelectItem value="14">Last 14 days</SelectItem>
-                  <SelectItem value="30">Last 30 days</SelectItem>
-                  <SelectItem value="90">Last 90 days</SelectItem>
-                  <SelectItem value="365">Last 12 months</SelectItem>
-                </SelectContent>
-              </Select>
-              <button
-                type="button"
-                className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
-              >
-                Primary action
-              </button>
-            </div>
+        {/* Header — stays in place */}
+        <div className="flex flex-col @[500px]:flex-row @[500px]:items-center @[500px]:justify-between gap-4">
+          <div>
+            <h1 className="text-xs tracking-tight">
+              <span className="font-bold">{data.brandName}</span>{" "}
+              {data.brandLine}
+            </h1>
+            <p className="text-2xl font-bold tracking-tight flex items-center gap-2">
+              {data.dashboardTitle}
+              <Badge variant="secondary" status="info">
+                {data.badgeText}
+              </Badge>
+            </p>
           </div>
+          <div className="flex items-center gap-2">
+            <Select defaultValue="30">
+              <SelectTrigger className="h-9 w-auto text-xs font-medium">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7">Last 7 days</SelectItem>
+                <SelectItem value="14">Last 14 days</SelectItem>
+                <SelectItem value="30">Last 30 days</SelectItem>
+                <SelectItem value="90">Last 90 days</SelectItem>
+                <SelectItem value="365">Last 12 months</SelectItem>
+              </SelectContent>
+            </Select>
+            <button
+              type="button"
+              className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
+            >
+              Primary action
+            </button>
+          </div>
+        </div>
 
-          {/* Layout content */}
-          <div className="flex-1 min-h-0 relative">
-            {/* Dashboard cards — shifts left for autopilot */}
-            <div
-              className="h-full transition-transform duration-500 ease-in-out"
-              style={{
-                transform: autopilotOpen ? "translateX(-50%)" : "translateX(0)",
-              }}
-            >
-              {layout === "executive" && (
-                <ExecutiveLayout
-                  cards={darkCards}
-                  layout={layoutCfg}
-                  viewMode={viewMode}
-                  onAutopilotOpen={handleAutopilotOpen}
-                  autopilotActiveIdx={autopilotActiveIdx}
-                />
-              )}
-              {layout === "operational" && <OperationalLayout />}
-              {layout === "analytics" && <AnalyticsLayout />}
-            </div>
-            {/* Autopilot panel — slides in from right */}
-            <div
-              className="absolute top-0 bottom-0 right-0 transition-all duration-500 ease-in-out z-20"
-              style={{
-                width: "50%",
-                transform: autopilotOpen ? "translateX(0)" : "translateX(105%)",
-              }}
-            >
-              <div className="h-full pl-1">
-                <AutopilotInsight
-                  onClose={handleAutopilotClose}
-                  sourceCardTitle={autopilotSource}
-                />
-              </div>
+        {/* Layout content */}
+        <div className="flex-1 min-h-0 relative">
+          {/* Dashboard cards — shifts left for autopilot */}
+          <div
+            className="h-full transition-transform duration-500 ease-in-out"
+            style={{
+              transform: autopilotOpen ? "translateX(-50%)" : "translateX(0)",
+            }}
+          >
+            {layout === "executive" && (
+              <ExecutiveLayout
+                cards={darkCards}
+                layout={layoutCfg}
+                viewMode={viewMode}
+                onAutopilotOpen={handleAutopilotOpen}
+                autopilotActiveIdx={autopilotActiveIdx}
+              />
+            )}
+            {layout === "operational" && <OperationalLayout />}
+            {layout === "analytics" && <AnalyticsLayout />}
+          </div>
+          {/* Autopilot panel — slides in from right */}
+          <div
+            className="absolute top-0 bottom-0 right-0 transition-all duration-500 ease-in-out z-20"
+            style={{
+              width: "50%",
+              transform: autopilotOpen ? "translateX(0)" : "translateX(105%)",
+            }}
+          >
+            <div className="h-full pl-1">
+              <AutopilotInsight
+                onClose={handleAutopilotClose}
+                sourceCardTitle={autopilotSource}
+              />
             </div>
           </div>
         </div>
       </div>
-    </DashboardLoading>
+    </div>
   );
 }
 

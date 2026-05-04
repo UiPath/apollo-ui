@@ -41,16 +41,16 @@ export function AutopilotInsight({
         <div className="flex items-center gap-2">
           <img
             src="/Autopilot_dark.svg"
-            alt="Autopilot"
+            alt="AI Assistant"
             className="size-5 block dark:hidden"
           />
           <img
             src="/Autopilot_light.svg"
-            alt="Autopilot"
+            alt="AI Assistant"
             className="size-5 hidden dark:block"
           />
           <CardTitle className="text-sm font-bold tracking-tight">
-            Autopilot Insight
+            AI Assistant
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground">
@@ -63,7 +63,7 @@ export function AutopilotInsight({
         <div className="flex-1 border border-dashed border-muted-foreground/15 bg-muted/30 rounded-lg flex items-center justify-center">
           <div className="text-center">
             <p className="text-sm text-muted-foreground/60">
-              Autopilot response area
+              AI Assistant response area
             </p>
             <p className="text-xs text-muted-foreground/40 mt-1">
               Chat UX content will appear here

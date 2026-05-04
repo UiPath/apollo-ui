@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { MessagesSquare, Minimize2 } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { cardBgStyle, type CardConfig } from "./glow-config";
 import { useDashboardData } from "./dashboard-data-context";
+import { type CardConfig, cardBgStyle } from "./glow-config";
 
 export function PromptBar({
   shared,
@@ -51,16 +51,16 @@ export function PromptBar({
             <div className="flex items-center gap-2">
               <img
                 src="/Autopilot_dark.svg"
-                alt="Autopilot"
+                alt="AI Assistant"
                 className="size-4 block dark:hidden"
               />
               <img
                 src="/Autopilot_light.svg"
-                alt="Autopilot"
+                alt="AI Assistant"
                 className="size-4 hidden dark:block"
               />
               <span className="text-sm font-bold tracking-tight">
-                Autopilot
+                AI Assistant
               </span>
             </div>
             {onCollapse && (

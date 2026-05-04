@@ -8,20 +8,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  cardBgStyle,
-  getInsightCardClasses,
-  type CardConfig,
-  type InsightCardConfig,
-} from "./glow-config";
-import { InsightCardBody } from "./insight-card-renderers";
 import { useDashboardData } from "./dashboard-data-context";
 import { type DrilldownTab, drilldownTabs } from "./drilldown-tabs";
 import {
-  DrilldownTabContent,
   AutopilotPrompts,
+  DrilldownTabContent,
 } from "./ExpandedInsightContent";
+import {
+  type CardConfig,
+  cardBgStyle,
+  getInsightCardClasses,
+  type InsightCardConfig,
+} from "./glow-config";
 import type { ExpandPhase } from "./InsightGrid";
+import { InsightCardBody } from "./insight-card-renderers";
 
 interface InsightCardInnerProps {
   cfg: InsightCardConfig;
@@ -108,19 +108,19 @@ export function InsightCardInner({
                   {isAutopilotActive ? (
                     <img
                       src="/Autopilot_light.svg"
-                      alt="Autopilot"
+                      alt="AI Assistant"
                       className="size-4"
                     />
                   ) : (
                     <>
                       <img
                         src="/Autopilot_dark.svg"
-                        alt="Autopilot"
+                        alt="AI Assistant"
                         className="size-4 block dark:hidden"
                       />
                       <img
                         src="/Autopilot_light.svg"
-                        alt="Autopilot"
+                        alt="AI Assistant"
                         className="size-4 hidden dark:block"
                       />
                     </>
