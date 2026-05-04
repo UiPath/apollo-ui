@@ -56,8 +56,15 @@ export const categoryManifestSchema = z.object({
   /** Dark mode color/gradient */
   colorDark: z.string().min(1).optional(),
 
-  /** Icon identifier */
-  icon: z.string().min(1),
+  /**
+   * Icon identifier or absolute URL.
+   *
+   * Optional: when omitted, the canvas ListView falls back to an initials
+   * badge derived from `name`. Sources that can't reliably supply an icon
+   * (e.g. typecache packages where `svgIconUrl` is absent) should leave
+   * this unset rather than emitting an empty string.
+   */
+  icon: z.string().min(1).optional(),
 
   /** Tags for search and filtering */
   tags: z.array(z.string()),
