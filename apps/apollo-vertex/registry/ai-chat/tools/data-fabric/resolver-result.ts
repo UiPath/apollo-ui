@@ -51,6 +51,7 @@ export type ToolResolutionFailure =
   | { reason: "unknown_entity"; entity: string }
   | { reason: "table_no_valid_fields"; entity: string; fields: string }
   | { reason: "multi_line_too_few_metrics" }
+  | { reason: "insights_table_no_valid_fields"; source: string; fields: string }
   | ResolverFailure;
 
 export type ResolverResult<T> =

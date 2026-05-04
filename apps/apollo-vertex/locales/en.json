@@ -60,6 +60,7 @@
   "how_can_i_help_you": "How can I help you?",
   "import": "Import",
   "info": "Info",
+  "insights_table_no_valid_fields": "None of the requested field IDs exist in the \"{{source}}\" Insights schema: {{fields}}.",
   "japanese": "Japanese",
   "korean": "Korean",
   "language": "Language",

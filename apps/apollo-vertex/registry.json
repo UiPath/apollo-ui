@@ -556,6 +556,26 @@
           "path": "registry/ai-chat/tools/data-fabric-kpi/index.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric-kpi/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/insights/shared.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/insights/shared.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/insights/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/insights/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/insights-table/insights-table-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/insights-table/insights-table-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/insights-table/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/insights-table/index.ts"
         }
       ]
     },
