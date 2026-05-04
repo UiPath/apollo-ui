@@ -14,4 +14,8 @@ export interface NodeToolbarProps {
   expanded: boolean;
   /** When true, forcefully hides all toolbar actions including pinned items */
   hidden?: boolean;
+  /** When true, push the toolbar further from the node to clear handle buttons. */
+  offsetToolbar?: boolean;
+  /** Render the toolbar in the node overlay layer instead of inside the node wrapper. */
+  portalToNodeOverlay?: boolean;
 }

@@ -1,10 +1,12 @@
-import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { InternalNode, Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it } from 'vitest';
 import { GRID_SPACING, PREVIEW_NODE_ID } from '../constants';
 import {
   getAbsolutePosition,
   getNonOverlappingPositionForDirection,
   resolveCollisions,
+  resolveHandleContext,
 } from './NodeUtils';
 
 describe('NodeUtils', () => {
@@ -677,6 +679,134 @@ describe('NodeUtils', () => {
       // Nodes should be moved apart
       expect(node1!.position).not.toEqual({ x: 100, y: 100 });
       expect(node2!.position).not.toEqual({ x: 100, y: 100 });
+    });
+
+    it('should use caller-provided node sizes during collision resolution', () => {
+      const nodes: Node[] = [
+        {
+          id: 'wide-node',
+          position: { x: 100, y: 100 },
+          data: {},
+        },
+        {
+          id: 'second-node',
+          position: { x: 220, y: 100 },
+          width: 40,
+          height: 40,
+          data: {},
+        },
+      ];
+
+      const result = resolveCollisions(nodes, {
+        getNodeSize: (node) =>
+          node.id === 'wide-node'
+            ? { width: 160, height: 40 }
+            : {
+                width: node.width ?? 40,
+                height: node.height ?? 40,
+              },
+      });
+
+      expect(result.find((node) => node.id === 'wide-node')?.position).not.toEqual({
+        x: 100,
+        y: 100,
+      });
+      expect(result.find((node) => node.id === 'second-node')?.position).not.toEqual({
+        x: 220,
+        y: 100,
+      });
+    });
+  });
+
+  describe('resolveHandleContext', () => {
+    type TestHandleSpec = {
+      id: string;
+      type: 'source' | 'target';
+      position: Position;
+      x: number;
+      y: number;
+    };
+
+    function makeInternalNode(
+      handles: TestHandleSpec[],
+      positionAbsolute: { x: number; y: number } = { x: 0, y: 0 }
+    ): InternalNode {
+      const sources = handles.filter((h) => h.type === 'source');
+      const targets = handles.filter((h) => h.type === 'target');
+      const toBound = (h: TestHandleSpec) => ({
+        id: h.id,
+        nodeId: 'n',
+        x: h.x,
+        y: h.y,
+        position: h.position,
+        type: h.type,
+        width: 8,
+        height: 8,
+      });
+      return {
+        internals: {
+          positionAbsolute,
+          handleBounds: {
+            source: sources.map(toBound),
+            target: targets.map(toBound),
+          },
+        },
+      } as unknown as InternalNode;
+    }
+
+    // Container layout: success on outer-right, start inner-left flipped to right
+    // (Handle component renders at opposite side via connectionPosition).
+    // Both report `position: Right` to React Flow but live on different visual rails.
+    const containerHandles: TestHandleSpec[] = [
+      { id: 'success', type: 'source', position: Position.Right, x: 700, y: 160 },
+      { id: 'start', type: 'source', position: Position.Right, x: 80, y: 160 },
+      { id: 'continue', type: 'target', position: Position.Left, x: 624, y: 104 },
+      { id: 'break', type: 'target', position: Position.Left, x: 624, y: 216 },
+      { id: 'input', type: 'target', position: Position.Left, x: 0, y: 160 },
+    ];
+
+    it('counts every handle with the same React Flow position when no boundaryOf is provided', () => {
+      const internalNode = makeInternalNode(containerHandles);
+
+      const ctx = resolveHandleContext(internalNode, 'success', Position.Right);
+
+      // Without boundary awareness, success and the inner-flipped start both
+      // count as right-side peers — count is 2.
+      expect(ctx?.count).toBe(2);
+    });
+
+    it('filters peer count by boundary so flipped inner handles are excluded', () => {
+      const internalNode = makeInternalNode(containerHandles);
+      const boundaryOf = (handleId: string): 'outer' | 'inner' | undefined => {
+        if (handleId === 'success' || handleId === 'input') return 'outer';
+        if (handleId === 'start' || handleId === 'continue' || handleId === 'break') {
+          return 'inner';
+        }
+        return undefined;
+      };
+
+      const ctx = resolveHandleContext(internalNode, 'success', Position.Right, {
+        boundaryOf,
+      });
+
+      // success is the only handle on the outer-right rail.
+      expect(ctx).toMatchObject({ count: 1, index: 0 });
+    });
+
+    it('groups two outer-right peers as count=2 with boundary-aware filtering', () => {
+      // Branching node: two source handles share the outer-right rail.
+      const branchingHandles: TestHandleSpec[] = [
+        { id: 'output-1', type: 'source', position: Position.Right, x: 96, y: 32 },
+        { id: 'output-2', type: 'source', position: Position.Right, x: 96, y: 64 },
+      ];
+      const internalNode = makeInternalNode(branchingHandles);
+      const boundaryOf = () => 'outer' as const;
+
+      const ctx = resolveHandleContext(internalNode, 'output-1', Position.Right, {
+        boundaryOf,
+      });
+
+      expect(ctx).toMatchObject({ count: 2, index: 0 });
     });
   });
 });

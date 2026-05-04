@@ -1,3 +1,127 @@
+## [@uipath/apollo-react-v4.20.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.19.0...@uipath/apollo-react@4.20.0) (2026-05-04)
+
+### Features
+
+* **apollo-react:** add readOnly state to stickyNote [MST-9331] ([0e9f96f](https://github.com/UiPath/apollo-ui/commit/0e9f96fa0f321440c4dcf435586fd7b747b93847))
+
+## [@uipath/apollo-react-v4.19.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.18.3...@uipath/apollo-react@4.19.0) (2026-05-01)
+
+### Features
+
+* **apollo-react:** add Toolbox quickActions slot ([59f0ffb](https://github.com/UiPath/apollo-ui/commit/59f0ffbde2364dcf637138f090f9faacebe8366e))
+
+## [@uipath/apollo-react-v4.18.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.18.2...@uipath/apollo-react@4.18.3) (2026-05-01)
+
+### Bug Fixes
+
+* **apollo-react:** address loop resource review gaps ([57bc2da](https://github.com/UiPath/apollo-ui/commit/57bc2da85c73e6d02aa7b601c2900c8ead9bc0b7))
+* **apollo-react:** fix loop resource attachment fitting ([31db8f9](https://github.com/UiPath/apollo-ui/commit/31db8f965e3bedfce53b58f5fbd77ed575bcb3be))
+
+## [@uipath/apollo-react-v4.18.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.18.1...@uipath/apollo-react@4.18.2) (2026-05-01)
+
+### Bug Fixes
+
+* **apollo-react:** loop back node positioning ([82ba6db](https://github.com/UiPath/apollo-ui/commit/82ba6db974e63fe7ffa08f69c7fd432b7720edd1))
+
+## [@uipath/apollo-react-v4.18.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.18.0...@uipath/apollo-react@4.18.1) (2026-04-30)
+
+### Bug Fixes
+
+* **apollo-react:** center node created from output of container node ([b07e715](https://github.com/UiPath/apollo-ui/commit/b07e715fbfb6b4763e1957f236d05f00f210cf31))
+* **apollo-react:** center nodes created in container ([af0e770](https://github.com/UiPath/apollo-ui/commit/af0e77000985da40727e855ed1b6f3dd6d8eb8d3))
+* **apollo-react:** dedupe code, add y push as well for nodes bellow ([4d6669c](https://github.com/UiPath/apollo-ui/commit/4d6669cee7a6567dbd9c7c10c134434a794f4470))
+* **apollo-react:** properly shift nodes when inserting in between ([c41aa71](https://github.com/UiPath/apollo-ui/commit/c41aa71893100e056c7462efc17430ea3e7d7844))
+
+## [@uipath/apollo-react-v4.18.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.17.0...@uipath/apollo-react@4.18.0) (2026-04-30)
+
+### Features
+
+* **apollo-react:** support auto expansion of loop container [MST-9193] ([80e05c0](https://github.com/UiPath/apollo-ui/commit/80e05c04b8814aa7f5d1eba36b30902617d98e2a))
+
+### Bug Fixes
+
+* **apollo-react:** address comments ([f343eb3](https://github.com/UiPath/apollo-ui/commit/f343eb3a400d8ee5eba2e763756029276e462bd2))
+
+## [@uipath/apollo-react-v4.17.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.16.1...@uipath/apollo-react@4.17.0) (2026-04-30)
+
+### Features
+
+* **apollo-react:** add ListItem.childrenLoading skeleton API [MST-9224] ([fd1b993](https://github.com/UiPath/apollo-ui/commit/fd1b99369b789f10e1ab4a34fd63c0d9512dd7f3))
+
+### Bug Fixes
+
+* **apollo-react:** address PR review — keyboard nav, a11y, internal marker [MST-9224] ([015e2f7](https://github.com/UiPath/apollo-ui/commit/015e2f71b6291d3e8d6866b73cdf780149fe7067))
+
+## [@uipath/apollo-react-v4.16.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.16.0...@uipath/apollo-react@4.16.1) (2026-04-29)
+
+### Bug Fixes
+
+* **apollo-react:** do not render tooltip with empty content [MST-9144] ([6c31954](https://github.com/UiPath/apollo-ui/commit/6c31954b9780c73e36520abd3c6d616e8be42c3f))
+
+## [@uipath/apollo-react-v4.16.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.15.1...@uipath/apollo-react@4.16.0) (2026-04-29)
+
+### Features
+
+* **apollo-react:** add loop node [MST-8596] ([7624d02](https://github.com/UiPath/apollo-ui/commit/7624d02bdbd8153360f5060898b8167a993ff74b))
+
+### Bug Fixes
+
+* **apollo-react:** address review comments ([7db2ef9](https://github.com/UiPath/apollo-ui/commit/7db2ef905b0ee4eb929aed9ee50ad503144ef202))
+* **apollo-react:** update styling to match prototype ([89552d7](https://github.com/UiPath/apollo-ui/commit/89552d76b7cf22d402eb63139f74a0aa31dfe5ca))
+
+## [@uipath/apollo-react-v4.15.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.15.0...@uipath/apollo-react@4.15.1) (2026-04-28)
+
+### Bug Fixes
+
+* **apollo-react:** disable add task button while task is loading [MST-8019][MST-8171] ([1474c13](https://github.com/UiPath/apollo-ui/commit/1474c13e28f200ea068b73fe27efce8dc642dce8))
+
+## [@uipath/apollo-react-v4.15.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.14.1...@uipath/apollo-react@4.15.0) (2026-04-27)
+
+### Features
+
+* **apollo-react:** parameterize sequence edge [AG-1080] ([b5a7e97](https://github.com/UiPath/apollo-ui/commit/b5a7e972375aac1819cf7b115c359544658f7efc))
+
+## [@uipath/apollo-react-v4.14.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.14.0...@uipath/apollo-react@4.14.1) (2026-04-24)
+
+### Bug Fixes
+
+* **apollo-react:** change case NotExecuted to be hourglass ([70c2004](https://github.com/UiPath/apollo-ui/commit/70c2004141b8dced75c1ae945cf4e4e9fbf7f12e))
+
+## [@uipath/apollo-react-v4.14.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.13.1...@uipath/apollo-react@4.14.0) (2026-04-24)
+
+### Features
+
+* **apollo-react:** add STT dictate and voice interaction buttons [JAR-9545] ([50ebb16](https://github.com/UiPath/apollo-ui/commit/50ebb1648384888a373bfcd5987c3cf78b77c972)), closes [UiPath/apollo-design-system#5094](https://github.com/UiPath/apollo-design-system/issues/5094)
+
+### Bug Fixes
+
+* **apollo-react:** address Copilot review feedback on STT/voice buttons ([c0137d6](https://github.com/UiPath/apollo-ui/commit/c0137d64c09b226b5bb3d041211369437e2fcb51))
+
+## [@uipath/apollo-react-v4.13.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.13.0...@uipath/apollo-react@4.13.1) (2026-04-23)
+
+### Bug Fixes
+
+* **apollo-react:** handle and toolbar consistency [MST-8974] ([cd9a34a](https://github.com/UiPath/apollo-ui/commit/cd9a34a0674b3e1fd208f8fb36043860ddb4c445))
+
+## [@uipath/apollo-react-v4.13.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.12.2...@uipath/apollo-react@4.13.0) (2026-04-23)
+
+### Features
+
+* **apollo-react:** stacked node visual treatment [MST-8373] ([792ebc1](https://github.com/UiPath/apollo-ui/commit/792ebc1f480eebfdb885e1b876bb305bb0bdabad))
+
+## [@uipath/apollo-react-v4.12.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.12.1...@uipath/apollo-react@4.12.2) (2026-04-22)
+
+### Bug Fixes
+
+* **apollo-react:** stage node task menu options not respecting index properly ([703993c](https://github.com/UiPath/apollo-ui/commit/703993ccce0d4d744af6f8e13fa67258d5deb9a8))
+* **apollo-react:** test fix ([b7c3bb7](https://github.com/UiPath/apollo-ui/commit/b7c3bb70a1ffa588d3ab60c843b101d257f87be3))
+
+## [@uipath/apollo-react-v4.12.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.12.0...@uipath/apollo-react@4.12.1) (2026-04-21)
+
+### Bug Fixes
+
+* **apollo-react:** implement scroll position preservation across navigation branches ([b95c15b](https://github.com/UiPath/apollo-ui/commit/b95c15b508c9d0ed6d4b2e9b82a9b96f57e7eaa9))
+
 ## [@uipath/apollo-react-v4.12.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.11.0...@uipath/apollo-react@4.12.0) (2026-04-21)
 
 ### Features

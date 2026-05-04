@@ -13,6 +13,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { NodeRegistryProvider } from '../../core';
 import type { CategoryManifest, NodeManifest } from '../../schema';
 import {
+  allCategoryManifests,
+  allNodeManifests,
   createNode,
   StoryInfoPanel,
   useCanvasStory,
@@ -782,6 +784,120 @@ export const Adornments: Story = {
     }),
   ],
   render: () => <AdornmentsStory />,
+};
+
+// ============================================================================
+// Stacked Treatment Story (drillable / collapsed)
+// ============================================================================
+
+/**
+ * Story-only manifest registering a drillable agent type, so we can demo the
+ * `drillable` branch of the stacked treatment without touching the shared
+ * default manifests.
+ */
+const stackedManifest: { nodes: NodeManifest[]; categories: CategoryManifest[] } = {
+  categories: [
+    ...allCategoryManifests,
+    {
+      id: 'agents',
+      name: 'Agents',
+      sortOrder: 1,
+      color: '#7c3aed',
+      colorDark: '#8b5cf6',
+      icon: 'robot',
+      tags: [],
+    },
+  ],
+  nodes: [
+    ...allNodeManifests,
+    {
+      nodeType: 'uipath.agent.drillable',
+      version: '1.0.0',
+      category: 'agents',
+      tags: ['agent'],
+      sortOrder: 1,
+      drillable: true,
+      display: {
+        label: 'Drillable Agent',
+        icon: 'agent',
+        shape: 'square',
+      },
+      handleConfiguration: [
+        {
+          position: 'left',
+          handles: [{ id: 'input', type: 'target', handleType: 'input' }],
+        },
+        {
+          position: 'right',
+          handles: [{ id: 'output', type: 'source', handleType: 'output' }],
+        },
+      ],
+    },
+  ],
+};
+
+function StackedTreatmentStory() {
+  const initialNodes = useMemo<Node<BaseNodeData>[]>(
+    () => [
+      createNode({
+        id: 'plain',
+        type: 'uipath.blank-node',
+        position: { x: 96, y: 200 },
+        data: {
+          nodeType: 'uipath.blank-node',
+          version: '1.0.0',
+          display: { label: 'Plain', subLabel: 'No treatment', shape: 'square' },
+        },
+      }),
+      createNode({
+        id: 'drillable',
+        type: 'uipath.agent.drillable',
+        position: { x: 320, y: 200 },
+        data: {
+          nodeType: 'uipath.agent.drillable',
+          version: '1.0.0',
+          display: { label: 'Drillable', subLabel: 'manifest.drillable', shape: 'square' },
+        },
+      }),
+      createNode({
+        id: 'collapsed',
+        type: 'uipath.blank-node',
+        position: { x: 544, y: 200 },
+        data: {
+          nodeType: 'uipath.blank-node',
+          version: '1.0.0',
+          display: { label: 'Collapsed', subLabel: 'data.isCollapsed', shape: 'square' },
+          isCollapsed: true,
+        },
+      }),
+    ],
+    []
+  );
+  const { canvasProps } = useCanvasStory({ initialNodes });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="Stacked Treatment"
+        description="Drillable (manifest) and collapsed (instance data) nodes render a decorative stacked layer behind the card. The effect is purely visual — node dimensions and hit area are unchanged."
+      />
+    </BaseCanvas>
+  );
+}
+
+export const StackedTreatment: Story = {
+  name: 'Stacked Treatment',
+  decorators: [
+    (Story) => (
+      <NodeRegistryProvider manifest={stackedManifest}>
+        <Story />
+      </NodeRegistryProvider>
+    ),
+  ],
+  render: () => <StackedTreatmentStory />,
 };
 
 export const ValidationStates: Story = {

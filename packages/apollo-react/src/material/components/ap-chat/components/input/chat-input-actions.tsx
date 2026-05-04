@@ -6,13 +6,15 @@ import React from 'react';
 
 import { ApTypography } from '../../../ap-typography';
 import { useAttachments } from '../../providers/attachements-provider';
+import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
 import { useError } from '../../providers/error-provider';
 import { usePicker } from '../../providers/picker-provider';
+import { AutopilotChatEvent } from '../../service';
 import { parseFiles } from '../../utils/file-reader';
-import { AutopilotChatAudio } from '../audio/chat-audio';
 import { AutopilotChatActionButton } from '../common/action-button';
 import { VisuallyHidden } from '../common/shared-controls';
+import { AlwaysOnVoiceButton, VoiceButtonContainer } from './always-on-voice-button';
 import { AutopilotChatAgentModeSelector } from './chat-input-agent-mode-selector';
 import { AutopilotChatInputModelPicker } from './chat-input-model-picker';
 import { ResourceTriggerButton } from './chat-input-resource-trigger';
@@ -46,21 +48,54 @@ const SubmitButtonContainer = styled('div')(() => ({
 interface AutopilotChatInputActionsProps {
   handleSubmit: (event: React.MouseEvent) => void;
   disableSubmit: boolean;
+  /**
+   * True when the user has nothing to submit (no text, no attachments). Drives the
+   * send↔voice-interaction swap independently of `disableSubmit`, which also goes
+   * true during attachment-loading / skeleton states.
+   */
+  isInputEmpty?: boolean;
   waitingResponse: boolean;
   onResourceTriggerClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  onVoiceInteractionChange?: (isActive: boolean) => void;
+  isVoiceInteractionActive?: boolean;
 }
 
 function AutopilotChatInputActionsComponent({
   handleSubmit,
   disableSubmit,
+  isInputEmpty,
   waitingResponse,
   onResourceTriggerClick,
+  onVoiceInteractionChange,
+  isVoiceInteractionActive,
 }: AutopilotChatInputActionsProps) {
   const { _ } = useLingui();
+  const chatService = useChatService();
   const { addAttachments } = useAttachments();
   const { setError } = useError();
   const { disabledFeatures, allowedAttachments } = useChatState();
   const { models, agentModes } = usePicker();
+
+  // Seed from the service getter so a remount while STT is already active shows the
+  // active visual immediately, without waiting for the next SetSpeechToTextState event.
+  const [isSpeechToTextActive, setIsSpeechToTextActive] = React.useState(
+    () => chatService?.isSpeechToTextActive ?? false
+  );
+  React.useEffect(() => {
+    if (!chatService) {
+      return;
+    }
+    // Re-sync after mount in case the service state changed between `useState` init
+    // and the effect running.
+    setIsSpeechToTextActive(chatService.isSpeechToTextActive);
+    return chatService.on(AutopilotChatEvent.SetSpeechToTextState, (isActive: boolean) => {
+      setIsSpeechToTextActive(isActive);
+    });
+  }, [chatService]);
+
+  const handleSpeechToTextClick = React.useCallback(() => {
+    chatService?.publishSpeechToTextToggle();
+  }, [chatService]);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -150,6 +185,14 @@ function AutopilotChatInputActionsComponent({
     return parts.join('. ');
   }, [allowedAttachments, acceptedExtensions, _]);
 
+  // Show voice interaction button when audioStreaming is enabled and either voice
+  // is already active, or the input is genuinely empty (no text, no attachments).
+  // Keyed off `isInputEmpty` — not `disableSubmit` — so transient disables from
+  // attachment-loading / skeleton don't flip the send button to voice.
+  const showVoice =
+    disabledFeatures.audioStreaming === false &&
+    (isVoiceInteractionActive || (!!isInputEmpty && !waitingResponse));
+
   // Calculate if we should use icons based on how many features are enabled
   const hasMultipleFeatures =
     [!disabledFeatures.attachments, models.length > 0, (agentModes?.length ?? 0) > 0].filter(
@@ -158,7 +201,9 @@ function AutopilotChatInputActionsComponent({
 
   return (
     <InputActionsContainer>
-      <InputActionsGroup>
+      {/* visibility:hidden (not display:none) keeps the left group's layout footprint so the
+          right group (stop button) stays anchored to the right edge during voice interaction. */}
+      <InputActionsGroup style={isVoiceInteractionActive ? { visibility: 'hidden' } : undefined}>
         {!disabledFeatures.attachments && (
           <>
             <input
@@ -259,30 +304,53 @@ function AutopilotChatInputActionsComponent({
       </InputActionsGroup>
 
       <InputActionsGroup>
-        {!disabledFeatures.audio && <AutopilotChatAudio />}
-        <SubmitButtonContainer>
-          <AutopilotChatActionButton
-            iconName={waitingResponse ? 'stop' : 'arrow_upward'}
-            tooltip={
-              waitingResponse
-                ? _(msg({ id: 'autopilot-chat.input.actions.stop', message: `Stop` }))
-                : _(msg({ id: 'autopilot-chat.input.actions.send', message: `Send` }))
-            }
-            overrideColor={
-              disableSubmit ? 'var(--color-foreground-disable)' : 'var(--color-background)'
-            }
-            variant={waitingResponse ? 'normal' : 'outlined'}
-            preventHover={true}
-            disabled={disableSubmit}
-            onClick={handleSubmit}
-            data-testid="autopilot-chat-submit-button"
-            ariaLabel={
-              waitingResponse
-                ? _(msg({ id: 'autopilot-chat.input.actions.stop', message: `Stop` }))
-                : _(msg({ id: 'autopilot-chat.input.actions.send', message: `Send` }))
-            }
+        {!isVoiceInteractionActive && !disabledFeatures.audio && (
+          <VoiceButtonContainer active={isSpeechToTextActive}>
+            <AutopilotChatActionButton
+              iconName="mic"
+              onClick={handleSpeechToTextClick}
+              tooltipPlacement="top"
+              tooltip={_(msg({ id: 'autopilot-chat.input.actions.dictate', message: `Dictate` }))}
+              overrideColor={isSpeechToTextActive ? 'var(--color-background)' : undefined}
+              data-testid="autopilot-chat-stt-button"
+              ariaLabel={_(msg({ id: 'autopilot-chat.input.actions.dictate', message: `Dictate` }))}
+              ariaPressed={isSpeechToTextActive}
+            />
+          </VoiceButtonContainer>
+        )}
+        {showVoice && (
+          <AlwaysOnVoiceButton
+            disabled={isSpeechToTextActive}
+            onActiveChange={onVoiceInteractionChange}
           />
-        </SubmitButtonContainer>
+        )}
+        {!showVoice && (
+          <SubmitButtonContainer>
+            <AutopilotChatActionButton
+              iconName={waitingResponse ? 'stop' : 'arrow_upward'}
+              tooltip={
+                waitingResponse
+                  ? _(msg({ id: 'autopilot-chat.input.actions.stop', message: `Stop` }))
+                  : _(msg({ id: 'autopilot-chat.input.actions.send', message: `Send` }))
+              }
+              overrideColor={
+                disableSubmit ? 'var(--color-foreground-disable)' : 'var(--color-background)'
+              }
+              variant={waitingResponse ? 'normal' : 'outlined'}
+              preventHover={true}
+              disabled={disableSubmit}
+              // STT auto-stop-on-submit lives inside `handleSubmit` (see chat-input.tsx)
+              // so the keyboard-Enter path gets the same behavior as this click path.
+              onClick={handleSubmit}
+              data-testid="autopilot-chat-submit-button"
+              ariaLabel={
+                waitingResponse
+                  ? _(msg({ id: 'autopilot-chat.input.actions.stop', message: `Stop` }))
+                  : _(msg({ id: 'autopilot-chat.input.actions.send', message: `Send` }))
+              }
+            />
+          </SubmitButtonContainer>
+        )}
       </InputActionsGroup>
     </InputActionsContainer>
   );

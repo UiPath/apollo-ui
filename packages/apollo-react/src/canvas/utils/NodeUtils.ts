@@ -3,9 +3,17 @@ import {
   type InternalNode,
   type Node,
   Position,
+  type ReactFlowState,
   type XYPosition,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { DEFAULT_NODE_SIZE, GRID_SPACING, PREVIEW_NODE_ID } from '../constants';
+
+// Use `connection.inProgress` rather than `connectionClickStartHandle`.
+// `connectionClickStartHandle` is set by click-to-connect and only cleared when
+// the user clicks a second handle — clicking the pane does NOT clear it, so it
+// can get stuck and cause all handles across all nodes to stay visible.
+// `connection.inProgress` accurately reflects an active drag-to-connect gesture.
+export const selectIsConnecting = (state: ReactFlowState) => !!state.connection.inProgress;
 
 /**
  * Calculates the absolute position of a node, taking into account its parent nodes.
@@ -86,11 +94,25 @@ export const snapToGrid = (value: number): number => {
   return Math.round(value / GRID_SPACING) * GRID_SPACING;
 };
 
+export const snapUpToGrid = (value: number): number => {
+  return Math.ceil(value / GRID_SPACING) * GRID_SPACING;
+};
+
+export const snapDownToGrid = (value: number): number => {
+  return Math.floor(value / GRID_SPACING) * GRID_SPACING;
+};
+
+export const clamp = (value: number, min: number, max: number): number => {
+  return Math.min(Math.max(value, min), max);
+};
+
 export type CollisionAlgorithmOptions = {
   maxIterations?: number;
   overlapThreshold?: number;
   margin?: number;
   ignoredNodeTypes?: string[];
+  /** Allows callers to resolve manifest-aware sizes before collision math runs. */
+  getNodeSize?: (node: Node) => { width: number; height: number };
 };
 
 export type CollisionAlgorithm = (nodes: Node[], options?: CollisionAlgorithmOptions) => Node[];
@@ -104,16 +126,24 @@ type Box = {
   node: Node;
 };
 
-function getBoxesFromNodes(nodes: Node[], margin: number = 0): Box[] {
+function getBoxesFromNodes(
+  nodes: Node[],
+  margin: number = 0,
+  getNodeSize?: (node: Node) => { width: number; height: number }
+): Box[] {
   const boxes: Box[] = new Array(nodes.length);
 
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i]!;
+    const nodeSize = getNodeSize?.(node) ?? {
+      width: node.width ?? node.measured?.width ?? DEFAULT_NODE_SIZE,
+      height: node.height ?? node.measured?.height ?? DEFAULT_NODE_SIZE,
+    };
     boxes[i] = {
       x: node.position.x - margin,
       y: node.position.y - margin,
-      width: (node.width ?? node.measured?.width ?? DEFAULT_NODE_SIZE) + margin * 2,
-      height: (node.height ?? node.measured?.height ?? DEFAULT_NODE_SIZE) + margin * 2,
+      width: nodeSize.width + margin * 2,
+      height: nodeSize.height + margin * 2,
       node,
       moved: false,
     };
@@ -122,15 +152,25 @@ function getBoxesFromNodes(nodes: Node[], margin: number = 0): Box[] {
   return boxes;
 }
 
+/**
+ * Moves overlapping nodes apart on the smallest overlap axis while
+ * preserving original order and leaving ignored node types untouched.
+ */
 export const resolveCollisions: CollisionAlgorithm = (
   nodes,
-  { maxIterations = 50, overlapThreshold = 0, margin = GRID_SPACING * 2, ignoredNodeTypes } = {}
+  {
+    maxIterations = 50,
+    overlapThreshold = 0,
+    margin = GRID_SPACING * 2,
+    ignoredNodeTypes,
+    getNodeSize,
+  } = {}
 ) => {
   const ignoredSet = new Set(ignoredNodeTypes);
   const collisionNodes =
     ignoredSet.size > 0 ? nodes.filter((n) => !ignoredSet.has(n.type ?? '')) : nodes;
 
-  const boxes = getBoxesFromNodes(collisionNodes, margin);
+  const boxes = getBoxesFromNodes(collisionNodes, margin, getNodeSize);
   for (let iter = 0; iter < maxIterations; iter++) {
     let moved = false;
 
@@ -203,13 +243,27 @@ export type HandleContext = {
 };
 
 /**
+ * Resolves the manifest-level boundary ('outer' | 'inner') for a given handle
+ * id. Container nodes flip inner-handle Handle components to the opposite side
+ * via `connectionPosition`, so multiple visual rails collapse onto the same
+ * React Flow `Position`. Pass this to `resolveHandleContext` so the peer count
+ * only includes handles that visually share an edge with the queried handle.
+ */
+export type HandleBoundaryResolver = (handleId: string) => 'outer' | 'inner' | undefined;
+
+export interface ResolveHandleContextOptions {
+  boundaryOf?: HandleBoundaryResolver;
+}
+
+/**
  * Resolves handle context (anchor coordinates, peer index, peer count) for a
  * given handle on an internal node. Returns undefined if the handle isn't found.
  */
 export function resolveHandleContext(
   internalNode: InternalNode,
   handleId: string,
-  handlePosition: Position
+  handlePosition: Position,
+  options?: ResolveHandleContextOptions
 ): HandleContext | undefined {
   const allHandles = [
     ...(internalNode.internals.handleBounds?.source ?? []),
@@ -218,14 +272,41 @@ export function resolveHandleContext(
   const matchedHandle = allHandles.find((h) => h.id === handleId);
   if (!matchedHandle) return undefined;
 
+  const peers = filterRailPeers(allHandles, handleId, handlePosition, options?.boundaryOf);
+
   return {
     anchor: {
       x: internalNode.internals.positionAbsolute.x + matchedHandle.x + matchedHandle.width / 2,
       y: internalNode.internals.positionAbsolute.y + matchedHandle.y + matchedHandle.height / 2,
     },
-    index: getHandleIndex(handleId, handlePosition, allHandles),
-    count: allHandles.filter((h) => h.position === handlePosition).length,
+    index: getHandleIndex(handleId, handlePosition, peers),
+    count: peers.length,
   };
+}
+
+/**
+ * Filters handles to those sharing the same visual rail as the queried handle:
+ * matching React Flow position, and (when a boundary resolver is provided) the
+ * same manifest boundary. Without a resolver, falls back to position-only
+ * matching to preserve legacy behavior.
+ */
+function filterRailPeers(
+  allHandles: Handle[],
+  handleId: string,
+  handlePosition: Position,
+  boundaryOf: HandleBoundaryResolver | undefined
+): Handle[] {
+  const samePosition = allHandles.filter((h) => h.position === handlePosition);
+  if (!boundaryOf) return samePosition;
+
+  const targetBoundary = boundaryOf(handleId);
+  if (targetBoundary === undefined) return samePosition;
+
+  return samePosition.filter((h) => {
+    if (!h.id) return false;
+    const peerBoundary = boundaryOf(h.id);
+    return peerBoundary === undefined || peerBoundary === targetBoundary;
+  });
 }
 
 /**

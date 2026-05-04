@@ -1,5 +1,5 @@
 import type { Meta } from '@storybook/react-vite';
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, ColumnSizingState, SortingState, VisibilityState } from '@tanstack/react-table';
 import {
   Archive,
   ChevronDown,
@@ -24,6 +24,7 @@ import {
 } from './alert-dialog';
 import { Badge } from './badge';
 import { Button } from './button';
+import { Checkbox } from './checkbox';
 import { DataTable, DataTableColumnHeader, DataTableSelectColumn } from './data-table';
 import {
   DropdownMenu,
@@ -69,7 +70,7 @@ const sampleUsers: User[] = [
   {
     id: '1',
     name: 'John Doe',
-    email: 'john@example.com',
+    email: 'john.doe@uipath.com',
     role: 'Admin',
     status: 'active',
     department: 'Engineering',
@@ -78,7 +79,7 @@ const sampleUsers: User[] = [
   {
     id: '2',
     name: 'Jane Smith',
-    email: 'jane@example.com',
+    email: 'jane.smith@gmail.com',
     role: 'User',
     status: 'active',
     department: 'Design',
@@ -87,7 +88,7 @@ const sampleUsers: User[] = [
   {
     id: '3',
     name: 'Bob Johnson',
-    email: 'bob@example.com',
+    email: 'bob.j@outlook.com',
     role: 'User',
     status: 'inactive',
     department: 'Marketing',
@@ -96,7 +97,7 @@ const sampleUsers: User[] = [
   {
     id: '4',
     name: 'Alice Williams',
-    email: 'alice@example.com',
+    email: 'alice@uipath.com',
     role: 'Manager',
     status: 'active',
     department: 'Engineering',
@@ -105,7 +106,7 @@ const sampleUsers: User[] = [
   {
     id: '5',
     name: 'Charlie Brown',
-    email: 'charlie@example.com',
+    email: 'charlie.brown@yahoo.com',
     role: 'User',
     status: 'pending',
     department: 'Sales',
@@ -114,7 +115,7 @@ const sampleUsers: User[] = [
   {
     id: '6',
     name: 'Diana Prince',
-    email: 'diana@example.com',
+    email: 'diana.prince@proton.me',
     role: 'Admin',
     status: 'active',
     department: 'Engineering',
@@ -123,7 +124,7 @@ const sampleUsers: User[] = [
   {
     id: '7',
     name: 'Eve Anderson',
-    email: 'eve@example.com',
+    email: 'eve@hey.com',
     role: 'User',
     status: 'inactive',
     department: 'Design',
@@ -132,7 +133,7 @@ const sampleUsers: User[] = [
   {
     id: '8',
     name: 'Frank Miller',
-    email: 'frank@example.com',
+    email: 'frank.miller@fastmail.com',
     role: 'Manager',
     status: 'active',
     department: 'Product',
@@ -141,7 +142,7 @@ const sampleUsers: User[] = [
   {
     id: '9',
     name: 'Grace Lee',
-    email: 'grace@example.com',
+    email: 'grace.lee@uipath.com',
     role: 'User',
     status: 'active',
     department: 'Engineering',
@@ -150,7 +151,7 @@ const sampleUsers: User[] = [
   {
     id: '10',
     name: 'Henry Davis',
-    email: 'henry@example.com',
+    email: 'henry@icloud.com',
     role: 'User',
     status: 'pending',
     department: 'Marketing',
@@ -159,7 +160,7 @@ const sampleUsers: User[] = [
   {
     id: '11',
     name: 'Ivy Wilson',
-    email: 'ivy@example.com',
+    email: 'ivy.w@hotmail.com',
     role: 'Admin',
     status: 'active',
     department: 'Product',
@@ -168,7 +169,7 @@ const sampleUsers: User[] = [
   {
     id: '12',
     name: 'Jack Taylor',
-    email: 'jack@example.com',
+    email: 'jack.taylor@gmail.com',
     role: 'User',
     status: 'inactive',
     department: 'Sales',
@@ -648,7 +649,7 @@ function FilteringAndSearchExample() {
   const filterDropdowns = (
     <>
       <Select value={statusFilter} onValueChange={setStatusFilter}>
-        <SelectTrigger className="h-8 w-[140px]">
+        <SelectTrigger aria-label="Filter by status" className="h-8 w-[140px]">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -659,7 +660,7 @@ function FilteringAndSearchExample() {
         </SelectContent>
       </Select>
       <Select value={roleFilter} onValueChange={setRoleFilter}>
-        <SelectTrigger className="h-8 w-[140px]">
+        <SelectTrigger aria-label="Filter by role" className="h-8 w-[140px]">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -670,7 +671,7 @@ function FilteringAndSearchExample() {
         </SelectContent>
       </Select>
       <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-        <SelectTrigger className="h-8 w-[160px]">
+        <SelectTrigger aria-label="Filter by department" className="h-8 w-[160px]">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -699,9 +700,10 @@ function FilteringAndSearchExample() {
               <button
                 type="button"
                 onClick={f.clear}
+                aria-label={`Remove filter: ${f.label}`}
                 className="ml-0.5 rounded-sm hover:bg-muted-foreground/20"
               >
-                <X className="h-3 w-3" />
+                <X className="h-3 w-3" aria-hidden="true" />
               </button>
             </Badge>
           ))}
@@ -713,8 +715,16 @@ function FilteringAndSearchExample() {
       <DataTable
         columns={sortableColumns}
         data={filtered}
-        searchKey="name"
-        searchPlaceholder="Search by name..."
+        globalFilterFn={(row, query) => {
+          const q = query.toLowerCase();
+          return (
+            row.name.toLowerCase().includes(q) ||
+            row.email.toLowerCase().includes(q) ||
+            row.role.toLowerCase().includes(q) ||
+            row.department.toLowerCase().includes(q)
+          );
+        }}
+        searchPlaceholder="Search name, email, role, or department..."
         showColumnToggle={false}
         toolbarContent={filterDropdowns}
       />
@@ -1061,6 +1071,178 @@ export const Density = {
 };
 
 // ============================================================================
+// Scrolling & Resizing
+// ============================================================================
+
+const manyUsers: User[] = Array.from({ length: 40 }, (_, i) => {
+  const base = sampleUsers[i % sampleUsers.length];
+  return { ...base, id: `sticky-${i + 1}`, name: `${base.name} ${i + 1}` };
+});
+
+function StickyHeaderExample() {
+  const columns: ColumnDef<User>[] = [
+    {
+      accessorKey: 'name',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
+    },
+    {
+      accessorKey: 'email',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
+    },
+    {
+      accessorKey: 'role',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Role" />,
+    },
+    {
+      accessorKey: 'department',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Department" />,
+    },
+    {
+      accessorKey: 'status',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
+      cell: ({ row }) => statusBadge(row.getValue('status')),
+    },
+  ];
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm text-muted-foreground">
+        Scroll the table body — the column headers stay pinned. The scrollbar is confined to the
+        body region via <code>maxBodyHeight</code>, so it doesn't run up next to the header row.
+      </p>
+      <DataTable
+        columns={columns}
+        data={manyUsers}
+        maxBodyHeight="24rem"
+        showPagination={false}
+        showColumnToggle={false}
+      />
+    </div>
+  );
+}
+
+export const StickyHeader = {
+  name: 'Sticky Header',
+  render: () => <StickyHeaderExample />,
+};
+
+type ResizableRow = User & {
+  team: string;
+  manager: string;
+  location: string;
+  lastActive: string;
+  employeeId: string;
+};
+
+const teams = ['Platform', 'Growth', 'Data', 'Insights', 'Runtime'];
+const managers = ['Pat Jenkins', 'Sam Okonkwo', 'Riley Kim', 'Morgan Chen', 'Alex Petrov'];
+const locations = ['Bucharest', 'Seattle', 'Bengaluru', 'London', 'New York', 'Tokyo'];
+
+const resizableSampleRows: ResizableRow[] = sampleUsers.map((u, i) => ({
+  ...u,
+  team: teams[i % teams.length],
+  manager: managers[i % managers.length],
+  location: locations[i % locations.length],
+  lastActive: `2026-04-${String(10 + (i % 14)).padStart(2, '0')} 14:32`,
+  employeeId: `EMP-${String(10000 + i)}`,
+}));
+
+function ResizableNarrowColumnsExample() {
+  const columns: ColumnDef<ResizableRow>[] = [
+    {
+      accessorKey: 'name',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Full contact name" />,
+      size: 160,
+      minSize: 60,
+    },
+    {
+      accessorKey: 'email',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Primary email address" />
+      ),
+      size: 170,
+      minSize: 60,
+    },
+    {
+      accessorKey: 'role',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Role" />,
+      size: 110,
+      minSize: 60,
+    },
+    {
+      accessorKey: 'department',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Department assignment" />
+      ),
+      size: 150,
+      minSize: 60,
+    },
+    {
+      accessorKey: 'team',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Team" />,
+      size: 110,
+      minSize: 60,
+    },
+    {
+      accessorKey: 'manager',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Direct manager" />,
+      size: 140,
+      minSize: 60,
+    },
+    {
+      accessorKey: 'location',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Office location" />,
+      size: 140,
+      minSize: 60,
+    },
+    {
+      accessorKey: 'joined',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Date joined" />,
+      size: 120,
+      minSize: 60,
+    },
+    {
+      accessorKey: 'lastActive',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Last activity timestamp" />
+      ),
+      size: 170,
+      minSize: 60,
+    },
+    {
+      accessorKey: 'status',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
+      cell: ({ row }) => statusBadge(row.getValue('status')),
+      size: 100,
+      minSize: 60,
+    },
+  ];
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm text-muted-foreground">
+        Ten columns sized to fill a typical canvas. Long titles start narrower than their text so
+        the ellipsis is visible immediately. Drag any column divider to resize — the handle
+        brightens and thickens on hover and during drag, and narrowing further keeps each label
+        cleanly truncated without bleeding into the next column.
+      </p>
+      <DataTable
+        columns={columns}
+        data={resizableSampleRows}
+        resizable
+        showPagination={false}
+        showColumnToggle={false}
+      />
+    </div>
+  );
+}
+
+export const ResizableNarrowColumns = {
+  name: 'Resizable Narrow Columns',
+  render: () => <ResizableNarrowColumnsExample />,
+};
+
+// ============================================================================
 // Examples
 // ============================================================================
 
@@ -1231,6 +1413,220 @@ function FullFeaturedExample() {
     </>
   );
 }
+
+// ============================================================================
+// Persistent View (controlled state + localStorage)
+// ============================================================================
+
+function useLocalStorageState<T>(
+  key: string,
+  initial: T
+): [T, (next: T | ((prev: T) => T)) => void] {
+  const [value, setValue] = React.useState<T>(() => {
+    if (typeof window === 'undefined') return initial;
+    try {
+      const raw = window.localStorage.getItem(key);
+      return raw ? (JSON.parse(raw) as T) : initial;
+    } catch {
+      return initial;
+    }
+  });
+
+  const setAndStore = React.useCallback(
+    (next: T | ((prev: T) => T)) => {
+      setValue((prev) => {
+        const resolved = typeof next === 'function' ? (next as (p: T) => T)(prev) : next;
+        try {
+          window.localStorage.setItem(key, JSON.stringify(resolved));
+        } catch {
+          /* ignore storage failures */
+        }
+        return resolved;
+      });
+    },
+    [key]
+  );
+
+  return [value, setAndStore];
+}
+
+function PersistentViewExample() {
+  const [sorting, setSorting] = useLocalStorageState<SortingState>(
+    'apollo.datatable.demo.sorting',
+    []
+  );
+  const [columnSizing, setColumnSizing] = useLocalStorageState<ColumnSizingState>(
+    'apollo.datatable.demo.columnSizing',
+    {}
+  );
+  const [columnVisibility, setColumnVisibility] = useLocalStorageState<VisibilityState>(
+    'apollo.datatable.demo.columnVisibility',
+    {}
+  );
+
+  // Last column gets `enableResizing: false` so its resize handle (which sits at -right-1
+  // and extends 4px past the column edge) doesn't push the table into horizontal overflow.
+  const persistentColumns: ColumnDef<User>[] = React.useMemo(
+    () =>
+      sortableColumns.map((col, i) =>
+        i === sortableColumns.length - 1 ? { ...col, enableResizing: false } : col
+      ),
+    []
+  );
+
+  const reset = () => {
+    setSorting([]);
+    setColumnSizing({});
+    setColumnVisibility({});
+  };
+
+  return (
+    <div className="space-y-2 [&_table]:!w-full">
+      <div className="flex items-start justify-between gap-4">
+        <p className="text-sm text-muted-foreground">
+          Sort by clicking column headers, drag column edges to resize, or hide columns from the
+          toggle. Refresh the page — your view is still there. Click <strong>Reset view</strong> to
+          clear saved state.
+        </p>
+        <Button variant="outline" size="sm" onClick={reset}>
+          Reset view
+        </Button>
+      </div>
+      <DataTable
+        columns={persistentColumns}
+        data={sampleUsers}
+        resizable
+        sorting={sorting}
+        onSortingChange={setSorting}
+        columnSizing={columnSizing}
+        onColumnSizingChange={setColumnSizing}
+        columnVisibility={columnVisibility}
+        onColumnVisibilityChange={setColumnVisibility}
+      />
+    </div>
+  );
+}
+
+export const PersistentView = {
+  name: 'Persistent view',
+  render: () => <PersistentViewExample />,
+};
+
+// ============================================================================
+// Wrapped Content (allowWrap)
+// ============================================================================
+
+type UserWithJson = User & {
+  input: string;
+  output: string;
+  evaluator: string;
+  duration: string;
+};
+
+const usersWithJson: UserWithJson[] = sampleUsers.slice(0, 4).map((u, i) => ({
+  ...u,
+  input: JSON.stringify(
+    {
+      user_id: u.id,
+      role: u.role,
+      department: u.department,
+      status: u.status,
+      preferences: { theme: 'dark', notifications: true },
+    },
+    null,
+    2
+  ),
+  output: JSON.stringify(
+    {
+      result: i % 2 === 0 ? 'success' : 'partial',
+      score: 0.87 - i * 0.05,
+      categories: ['quality', 'relevance'],
+      metadata: { latency_ms: 120 + i * 30, model: 'gpt-4o' },
+    },
+    null,
+    2
+  ),
+  evaluator: ['exact-match', 'semantic', 'rubric', 'human-review'][i],
+  duration: `${1.2 + i * 0.4}s`,
+}));
+
+function WrappedContentExample() {
+  const [allowWrap, setAllowWrap] = React.useState(false);
+
+  const columns: ColumnDef<UserWithJson>[] = React.useMemo(() => {
+    const renderJson = (value: string) =>
+      allowWrap ? (
+        <pre className="text-xs font-mono whitespace-pre-wrap">{value}</pre>
+      ) : (
+        <span className="text-xs font-mono">{value}</span>
+      );
+
+    return [
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        size: 130,
+        enableResizing: false,
+      },
+      {
+        accessorKey: 'evaluator',
+        header: 'Evaluator',
+        size: 130,
+        enableResizing: false,
+      },
+      {
+        accessorKey: 'input',
+        header: 'Input',
+        size: 270,
+        minSize: 100,
+        cell: ({ row }) => renderJson(row.original.input),
+      },
+      {
+        accessorKey: 'output',
+        header: 'Output',
+        size: 270,
+        minSize: 100,
+        cell: ({ row }) => renderJson(row.original.output),
+      },
+      {
+        accessorKey: 'status',
+        header: 'Status',
+        size: 110,
+        enableResizing: false,
+        cell: ({ row }) => statusBadge(row.getValue('status')),
+      },
+    ];
+  }, [allowWrap]);
+
+  return (
+    <div className="space-y-4 [&_table]:!w-full">
+      <div className="flex items-center gap-2">
+        <Checkbox
+          id="allow-wrap-toggle"
+          checked={allowWrap}
+          onCheckedChange={(value) => setAllowWrap(!!value)}
+        />
+        <Label htmlFor="allow-wrap-toggle" className="text-sm">
+          Enable <code>allowWrap</code> — let cells render multi-line content instead of truncating.
+          Drag the edges of <strong>Input</strong> and <strong>Output</strong> to resize.
+        </Label>
+      </div>
+      <DataTable
+        columns={columns}
+        data={usersWithJson}
+        allowWrap={allowWrap}
+        resizable
+        showColumnToggle={false}
+        showPagination={false}
+      />
+    </div>
+  );
+}
+
+export const WrappedContent = {
+  name: 'Multi-line cell content',
+  render: () => <WrappedContentExample />,
+};
 
 export const Examples = {
   name: 'Examples',

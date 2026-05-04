@@ -3,16 +3,21 @@ import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import type { HandleConfigurationSpecificPosition } from '../../schema/node-definition/handle';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import { cx } from '../../utils/CssUtil';
+import {
+  getHandleActionPortal,
+  getInwardHandleLayout,
+  type InwardHandleLayout,
+} from './ButtonHandleLayoutUtils';
 import { calculateGridAlignedHandlePositions, pixelToPercent } from './ButtonHandleStyleUtils';
 import { HandleButton, HandleHoverBridge } from './HandleButton';
 import { HandleLabel } from './HandleLabel';
-import { HandleNotch } from './HandleNotch';
+import { HandleNotch, type HandleType } from './HandleNotch';
 import { useButtonHandleSizeAndPosition } from './useButtonHandleSizeAndPosition';
 
 export interface HandleActionEvent {
   handleId: string;
   nodeId: string;
-  handleType: 'artifact' | 'input' | 'output';
+  handleType: HandleType;
   position: Position;
   originalEvent: React.MouseEvent;
 }
@@ -22,7 +27,10 @@ type ButtonHandleProps = {
   nodeId: string;
   type: 'source' | 'target';
   position: Position;
-  handleType: 'artifact' | 'input' | 'output';
+  // Defaults to `position`. Loop/container handles can render on one side while
+  // React Flow anchors the edge on another side.
+  connectionPosition?: Position;
+  handleType: HandleType;
   label?: string;
   labelIcon?: React.ReactNode;
   labelBackgroundColor?: string;
@@ -36,6 +44,7 @@ type ButtonHandleProps = {
   customPositionAndOffsets?: HandleConfigurationSpecificPosition;
   nodeWidth?: number;
   nodeHeight?: number;
+  portalAction?: boolean;
 };
 
 const ButtonHandleBase = ({
@@ -43,10 +52,11 @@ const ButtonHandleBase = ({
   nodeId,
   type,
   position,
+  connectionPosition = position,
   handleType,
   label,
   labelIcon,
-  labelBackgroundColor = 'var(--canvas-background-secondary)',
+  labelBackgroundColor,
   visible = true,
   showButton = true,
   selected = false,
@@ -57,6 +67,7 @@ const ButtonHandleBase = ({
   customPositionAndOffsets,
   nodeWidth,
   nodeHeight,
+  portalAction = false,
 }: ButtonHandleProps) => {
   const handleRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -87,7 +98,7 @@ const ButtonHandleBase = ({
         handleId: id,
         nodeId,
         handleType,
-        position,
+        position: connectionPosition,
         originalEvent: event,
       };
 
@@ -99,15 +110,16 @@ const ButtonHandleBase = ({
         handleId: id,
         nodeId,
         handleType,
-        position,
+        position: connectionPosition,
         // timestamp: Date.now(), // Optional - uncomment if you need timing info
       });
     },
-    [id, nodeId, handleType, position, onAction]
+    [connectionPosition, id, nodeId, handleType, onAction]
   );
 
   const markAsHovered = useCallback(() => setIsHovered(true), []);
   const unmarkAsHovered = useCallback(() => setIsHovered(false), []);
+  const showActionButton = !!onAction && type === 'source';
 
   const {
     width: handleWidth,
@@ -123,6 +135,78 @@ const ButtonHandleBase = ({
     numHandles: total,
     customPositionAndOffsets,
   });
+
+  if (connectionPosition !== position) {
+    const layout = getInwardHandleLayout(position, handleType);
+
+    return (
+      <div
+        className={cx(
+          'absolute flex overflow-visible',
+          visible ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+        )}
+        style={{
+          top,
+          bottom,
+          left,
+          right,
+          transform: layout.rootTransform,
+        }}
+        onMouseEnter={markAsHovered}
+        onMouseLeave={unmarkAsHovered}
+        onMouseDown={unmarkAsHovered}
+      >
+        <InwardHandleContent
+          handleType={handleType}
+          isVertical={isVertical}
+          selected={selected}
+          hovered={isHovered}
+          showNotch={showNotches}
+          label={label}
+          labelIcon={labelIcon}
+          labelBackgroundColor={labelBackgroundColor}
+          layout={layout}
+        />
+        <Handle
+          ref={handleRef}
+          type={type}
+          position={connectionPosition}
+          id={id}
+          onMouseEnter={markAsHovered}
+          onMouseLeave={unmarkAsHovered}
+          onMouseDown={unmarkAsHovered}
+          className={cx(
+            'absolute! z-20 flex! items-center! justify-center! overflow-visible! border-0! rounded-none! bg-transparent!',
+            visible
+              ? 'cursor-crosshair! pointer-events-auto! opacity-100'
+              : 'cursor-default! pointer-events-none! opacity-0'
+          )}
+          style={layout.anchorStyle}
+        />
+        {showActionButton ? (
+          <HandleButton
+            visible={showButton}
+            labelVisible={visible}
+            position={connectionPosition}
+            onAction={handleButtonClick}
+            handleRef={handleRef}
+          />
+        ) : null}
+      </div>
+    );
+  }
+
+  const portal =
+    showActionButton && portalAction && !customPositionAndOffsets
+      ? getHandleActionPortal({
+          nodeId,
+          position,
+          positionPercent,
+          total,
+          nodeWidth,
+          nodeHeight,
+        })
+      : undefined;
 
   return (
     <Handle
@@ -156,7 +240,7 @@ const ButtonHandleBase = ({
         hovered={isHovered}
         showNotch={showNotches}
       />
-      {onAction && type === 'source' ? (
+      {showActionButton ? (
         <HandleButton
           visible={showButton}
           labelVisible={visible}
@@ -166,6 +250,7 @@ const ButtonHandleBase = ({
           label={label}
           labelIcon={labelIcon}
           labelBackgroundColor={labelBackgroundColor}
+          portal={portal}
         />
       ) : (
         label && (
@@ -183,11 +268,64 @@ const ButtonHandleBase = ({
 
 export const ButtonHandle = memo(ButtonHandleBase);
 
+function InwardHandleContent({
+  handleType,
+  isVertical,
+  selected,
+  hovered,
+  showNotch,
+  label,
+  labelIcon,
+  labelBackgroundColor,
+  layout,
+}: {
+  handleType: HandleType;
+  isVertical: boolean;
+  selected: boolean;
+  hovered: boolean;
+  showNotch?: boolean;
+  label?: string;
+  labelIcon?: React.ReactNode;
+  labelBackgroundColor?: string;
+  layout: InwardHandleLayout;
+}) {
+  const labelElement = label ? (
+    <div
+      className={cx(
+        'pointer-events-none flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border-subtle bg-transparent px-2 py-0.5',
+        'text-xs font-medium leading-4 text-foreground-muted'
+      )}
+      style={labelBackgroundColor ? { backgroundColor: labelBackgroundColor } : undefined}
+    >
+      {labelIcon}
+      <span>{label}</span>
+    </div>
+  ) : null;
+  const notchElement = (
+    <span className="relative z-10 flex shrink-0" style={layout.notchStyle}>
+      <HandleNotch
+        handleType={handleType}
+        isVertical={isVertical}
+        selected={selected}
+        hovered={hovered}
+        showNotch={showNotch}
+      />
+    </span>
+  );
+
+  return (
+    <div className={cx('flex items-center', layout.contentDirectionClassName)}>
+      {labelElement}
+      {notchElement}
+    </div>
+  );
+}
+
 export interface ButtonHandleConfig {
   /** Is of type string but `ButtonHandleId` should be used for reserved ids */
   id: string;
   type: 'source' | 'target';
-  handleType: 'artifact' | 'input' | 'output';
+  handleType: HandleType;
   label?: string;
   labelIcon?: React.ReactNode;
   showButton?: boolean;
@@ -204,6 +342,7 @@ const ButtonHandlesBase = ({
   nodeId,
   handles,
   position,
+  connectionPosition = position,
   selected = false,
   hovered = false,
   visible = true,
@@ -214,10 +353,12 @@ const ButtonHandlesBase = ({
     showAddButton && (selected || hovered),
   nodeWidth,
   nodeHeight,
+  portalActions = false,
 }: {
   nodeId: string;
   handles: ButtonHandleConfig[];
   position: Position;
+  connectionPosition?: Position;
   selected?: boolean;
   hovered?: boolean;
   visible?: boolean;
@@ -226,6 +367,8 @@ const ButtonHandlesBase = ({
   customPositionAndOffsets?: HandleConfigurationSpecificPosition;
   nodeWidth?: number;
   nodeHeight?: number;
+  /** Render source handle affordances (button and label) in the node overlay layer. */
+  portalActions?: boolean;
 
   /**
    * Allows for consumers to control the predicate for showing the add button from the props that's passed in
@@ -252,35 +395,44 @@ const ButtonHandlesBase = ({
   // group-level visibility (hover/selection state) is handled via opacity.
   const visibleHandles = handles.filter((h) => h.visible ?? true);
 
-  // Show the hover bridge when any source handle in this group has an onAction callback
+  // Show the hover bridge when any source handle in this group has an onAction callback.
   const hasSourceButtons = visibleHandles.some((h) => h.type === 'source' && h.onAction);
 
   return (
     <>
-      <HandleHoverBridge position={position} visible={hasSourceButtons && finalSelected} />
-      {visibleHandles.map((handle, index) => (
-        <ButtonHandle
-          key={handle.id}
-          id={handle.id}
-          nodeId={nodeId}
-          type={handle.type}
-          position={position}
-          handleType={handle.handleType}
-          label={handle.label}
-          labelIcon={handle.labelIcon}
-          labelBackgroundColor={handle.labelBackgroundColor}
-          index={index}
-          total={visibleHandles.length}
-          selected={selected}
-          visible={handle.showHandle ?? visible}
-          showButton={finalSelected && (handle.showHandle ?? visible) && handle.showButton}
-          onAction={handle.onAction}
-          showNotches={showNotches}
-          customPositionAndOffsets={customPositionAndOffsets}
-          nodeWidth={nodeWidth}
-          nodeHeight={nodeHeight}
-        />
-      ))}
+      <HandleHoverBridge
+        position={connectionPosition}
+        visible={hasSourceButtons && finalSelected}
+      />
+      {visibleHandles.map((handle, index) => {
+        const handleVisible = handle.showHandle ?? visible;
+
+        return (
+          <ButtonHandle
+            key={handle.id}
+            id={handle.id}
+            nodeId={nodeId}
+            type={handle.type}
+            position={position}
+            connectionPosition={connectionPosition}
+            handleType={handle.handleType}
+            label={handle.label}
+            labelIcon={handle.labelIcon}
+            labelBackgroundColor={handle.labelBackgroundColor}
+            index={index}
+            total={visibleHandles.length}
+            selected={selected}
+            visible={handleVisible}
+            showButton={finalSelected && handleVisible && handle.showButton}
+            onAction={handle.onAction}
+            showNotches={showNotches}
+            customPositionAndOffsets={customPositionAndOffsets}
+            nodeWidth={nodeWidth}
+            nodeHeight={nodeHeight}
+            portalAction={portalActions && handle.type === 'source'}
+          />
+        );
+      })}
     </>
   );
 };

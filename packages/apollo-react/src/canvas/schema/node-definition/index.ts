@@ -3,6 +3,7 @@ export { categoryManifestSchema } from './category-manifest';
 export type { ConnectionConstraint, HandleTarget } from './constraints';
 // Re-export types
 export type {
+  HandleBoundary,
   HandleCategory,
   HandleGroupManifest,
   HandleGroupOverride,
@@ -12,6 +13,7 @@ export type {
 } from './handle';
 // Re-export schemas
 export {
+  handleBoundarySchema,
   handleGroupManifestSchema,
   handleGroupOverrideSchema,
   handleManifestSchema,
@@ -28,6 +30,6 @@ export type {
 export {
   nodeDisplayManifestSchema,
   nodeManifestSchema,
-  nodeShapeSchema,
   nodeRuntimeConstraintsManifestSchema,
+  nodeShapeSchema,
 } from './node-manifest';

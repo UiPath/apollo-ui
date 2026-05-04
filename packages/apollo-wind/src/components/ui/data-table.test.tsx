@@ -28,6 +28,17 @@ const columns: ColumnDef<TestData>[] = [
   },
 ];
 
+const sortableColumns: ColumnDef<TestData>[] = [
+  {
+    accessorKey: 'name',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
+  },
+  {
+    accessorKey: 'email',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
+  },
+];
+
 describe('DataTable', () => {
   describe('rendering', () => {
     it('renders table with data', () => {
@@ -211,5 +222,178 @@ describe('DataTableSelectColumn', () => {
     const columnsWithSelect = [DataTableSelectColumn<TestData>(), ...columns];
     render(<DataTable columns={columnsWithSelect} data={mockData} />);
     expect(screen.getAllByLabelText('Select row')).toHaveLength(3);
+  });
+});
+
+describe('DataTable globalFilterFn', () => {
+  it('renders search input and filters across multiple fields', async () => {
+    const user = userEvent.setup();
+    render(
+      <DataTable
+        columns={columns}
+        data={mockData}
+        globalFilterFn={(row, q) =>
+          row.name.toLowerCase().includes(q.toLowerCase()) ||
+          row.email.toLowerCase().includes(q.toLowerCase())
+        }
+        searchPlaceholder="Search all..."
+      />
+    );
+
+    const input = screen.getByPlaceholderText('Search all...');
+    // Match by name only
+    await user.type(input, 'jane');
+    await waitFor(() => {
+      expect(screen.queryByText('John Doe')).not.toBeInTheDocument();
+      expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+    });
+
+    // Clear and match by email substring
+    await user.clear(input);
+    await user.type(input, 'bob@');
+    await waitFor(() => {
+      expect(screen.getByText('Bob Wilson')).toBeInTheDocument();
+      expect(screen.queryByText('John Doe')).not.toBeInTheDocument();
+    });
+  });
+
+  it('takes precedence over searchKey when both are provided', () => {
+    render(
+      <DataTable
+        columns={columns}
+        data={mockData}
+        searchKey="name"
+        globalFilterFn={() => true}
+        searchPlaceholder="Global search"
+      />
+    );
+    expect(screen.getByPlaceholderText('Global search')).toBeInTheDocument();
+  });
+
+  it('has no accessibility violations with globalFilterFn', async () => {
+    const { container } = render(
+      <DataTable
+        columns={columns}
+        data={mockData}
+        globalFilterFn={(row, q) => row.name.toLowerCase().includes(q.toLowerCase())}
+      />
+    );
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
+});
+
+describe('DataTable allowWrap', () => {
+  it('drops the truncate class from body cells when enabled', () => {
+    render(<DataTable columns={columns} data={mockData} allowWrap />);
+    const cell = screen.getByText('John Doe').closest('td');
+    expect(cell).not.toBeNull();
+    expect(cell).not.toHaveClass('truncate');
+  });
+
+  it('keeps truncate on body cells by default', () => {
+    render(<DataTable columns={columns} data={mockData} />);
+    const cell = screen.getByText('John Doe').closest('td');
+    expect(cell).toHaveClass('truncate');
+  });
+
+  it('has no accessibility violations with allowWrap enabled', async () => {
+    const { container } = render(<DataTable columns={columns} data={mockData} allowWrap />);
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
+});
+
+describe('DataTable controlled state', () => {
+  it('invokes onSortingChange when a sortable header is clicked', async () => {
+    const user = userEvent.setup();
+    const onSortingChange = vi.fn();
+    render(
+      <DataTable
+        columns={sortableColumns}
+        data={mockData}
+        sorting={[]}
+        onSortingChange={onSortingChange}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: /name/i }));
+    expect(onSortingChange).toHaveBeenCalled();
+  });
+
+  it('forwards a TanStack updater function to onSortingChange (OnChangeFn contract)', async () => {
+    const user = userEvent.setup();
+    const onSortingChange = vi.fn();
+    render(
+      <DataTable
+        columns={sortableColumns}
+        data={mockData}
+        sorting={[]}
+        onSortingChange={onSortingChange}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: /name/i }));
+
+    // Cursor's refactor forwards the updater verbatim instead of resolving to a value.
+    // Asserting we received a function (not an array) locks in that contract.
+    expect(onSortingChange).toHaveBeenCalledWith(expect.any(Function));
+
+    const updater = onSortingChange.mock.calls[0][0] as (prev: unknown) => unknown;
+    expect(updater([])).toEqual([{ id: 'name', desc: false }]);
+  });
+
+  it('applies initialSorting when sorting is uncontrolled', () => {
+    render(
+      <DataTable
+        columns={columns}
+        data={mockData}
+        initialSorting={[{ id: 'name', desc: false }]}
+        showPagination={false}
+      />
+    );
+
+    // Alphabetical: Bob Wilson, Jane Smith, John Doe
+    const [, firstRow, secondRow, thirdRow] = screen.getAllByRole('row');
+    expect(firstRow).toHaveTextContent('Bob Wilson');
+    expect(secondRow).toHaveTextContent('Jane Smith');
+    expect(thirdRow).toHaveTextContent('John Doe');
+  });
+
+  it('runs in controlled mode for columnVisibility', () => {
+    const onColumnVisibilityChange = vi.fn();
+    render(
+      <DataTable
+        columns={columns}
+        data={mockData}
+        columnVisibility={{ email: false }}
+        onColumnVisibilityChange={onColumnVisibilityChange}
+      />
+    );
+    // With email hidden, the column header should not render
+    expect(screen.queryByText('Email')).not.toBeInTheDocument();
+    expect(screen.getByText('Name')).toBeInTheDocument();
+  });
+
+  it('applies controlled columnSizing to the matching column header', () => {
+    render(<DataTable columns={columns} data={mockData} resizable columnSizing={{ name: 200 }} />);
+
+    const nameHeader = screen.getByText('Name').closest('th');
+    expect(nameHeader).toHaveStyle({ width: '200px' });
+  });
+
+  it('has no accessibility violations with controlled state', async () => {
+    const { container } = render(
+      <DataTable
+        columns={columns}
+        data={mockData}
+        sorting={[{ id: 'name', desc: false }]}
+        onSortingChange={vi.fn()}
+        columnVisibility={{}}
+        onColumnVisibilityChange={vi.fn()}
+      />
+    );
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
   });
 });

@@ -10,7 +10,9 @@ import { useCallback, useMemo } from 'react';
 import { AddNodePreview } from '../../components';
 import { BaseNode } from '../../components/BaseNode/BaseNode';
 import { SequenceEdge } from '../../components/Edges';
+import { LoopCanvasNode } from '../../components/LoopNode';
 import { useNodeTypeRegistry } from '../../core';
+import { isContainerNodeManifest } from '../../utils';
 
 /**
  * Options for the useCanvasStory hook.
@@ -126,9 +128,9 @@ export function useCanvasStory(options: UseCanvasStoryOptions): UseCanvasStoryRe
   );
 
   const nodeTypes = useMemo(() => {
-    const types = nodeTypeRegistry.getAllNodeTypes().reduce(
-      (acc, nodeType) => {
-        acc[nodeType] = nodeComponent;
+    const types = nodeTypeRegistry.getAllManifests().reduce(
+      (acc, manifest) => {
+        acc[manifest.nodeType] = isContainerNodeManifest(manifest) ? LoopCanvasNode : nodeComponent;
         return acc;
       },
       {
@@ -188,9 +190,9 @@ export function useNodeTypesFromRegistry(nodeComponent: NodeTypes[string] = Base
   const nodeTypeRegistry = useNodeTypeRegistry();
 
   return useMemo(() => {
-    return nodeTypeRegistry.getAllNodeTypes().reduce(
-      (acc, nodeType) => {
-        acc[nodeType] = nodeComponent;
+    return nodeTypeRegistry.getAllManifests().reduce(
+      (acc, manifest) => {
+        acc[manifest.nodeType] = isContainerNodeManifest(manifest) ? LoopCanvasNode : nodeComponent;
         return acc;
       },
       { default: nodeComponent } as NodeTypes

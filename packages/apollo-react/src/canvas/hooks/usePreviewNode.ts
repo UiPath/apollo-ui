@@ -10,6 +10,7 @@ import { shallow } from 'zustand/shallow';
 import { PREVIEW_NODE_ID } from '../constants';
 import { useOptionalNodeTypeRegistry } from '../core';
 import type { HandleManifest, NodeManifest } from '../schema/node-definition';
+import { isPreviewEdge } from '../utils/createPreviewNode';
 
 /**
  * Information about an existing node connected to the preview node.
@@ -41,15 +42,13 @@ const previewNodeSelectedSelector = (state: ReactFlowState) => {
 // Selector to track edges connected to preview node
 // Returns minimal edge data to avoid unnecessary re-renders
 const edgesConnectedToPreviewSelector = (state: ReactFlowState): Edge[] => {
-  return state.edges
-    .filter((edge) => edge.source === PREVIEW_NODE_ID || edge.target === PREVIEW_NODE_ID)
-    .map((edge) => ({
-      id: edge.id,
-      source: edge.source,
-      target: edge.target,
-      sourceHandle: edge.sourceHandle,
-      targetHandle: edge.targetHandle,
-    }));
+  return state.edges.filter(isPreviewEdge).map((edge) => ({
+    id: edge.id,
+    source: edge.source,
+    target: edge.target,
+    sourceHandle: edge.sourceHandle,
+    targetHandle: edge.targetHandle,
+  }));
 };
 
 interface UsePreviewNodeResult {

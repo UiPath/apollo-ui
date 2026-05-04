@@ -100,7 +100,15 @@
       "picomatch": ">=4.0.4",
       "flatted": ">=3.4.2",
       "@xmldom/xmldom": ">=0.9.9",
-      "hono": ">=4.12.14"
+      "hono": ">=4.12.14",
+      "@types/react": "^19.2.6"
+    },
+    "packageExtensions": {
+      "@tanstack/ai": {
+        "dependencies": {
+          "@standard-schema/spec": "^1.1.0"
+        }
+      }
     }
   }
 }

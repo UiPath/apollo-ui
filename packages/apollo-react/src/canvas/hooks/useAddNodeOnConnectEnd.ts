@@ -1,8 +1,17 @@
 import { type OnConnectEnd, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback } from 'react';
-import { applyPreviewToReactFlow, createPreviewNode } from '../utils';
+import { showPreviewGraph } from '../utils';
 
 const EMPTY_IGNORED_NODE_TYPES: string[] = [];
+
+function getClientPosition(event: MouseEvent | TouchEvent): { x: number; y: number } | null {
+  if ('clientX' in event) {
+    return { x: event.clientX, y: event.clientY };
+  }
+
+  const touch = event.changedTouches?.[0] ?? event.touches?.[0];
+  return touch ? { x: touch.clientX, y: touch.clientY } : null;
+}
 
 /**
  * Use this hook to get a callback that adds a preview node when a connection ends on an empty space.
@@ -22,47 +31,23 @@ export function useAddNodeOnConnectEnd(ignoredNodeTypes: string[] = EMPTY_IGNORE
       ) {
         return;
       }
-      // Calculate the position in flow coordinates
-      let clientX: number;
-      let clientY: number;
 
-      if ('clientX' in event) {
-        clientX = event.clientX;
-        clientY = event.clientY;
-      } else {
-        const touchEvent = event as TouchEvent;
-        if (touchEvent.changedTouches?.[0]) {
-          const touch = touchEvent.changedTouches[0];
-          clientX = touch.clientX;
-          clientY = touch.clientY;
-        } else if (touchEvent.touches?.[0]) {
-          const touch = touchEvent.touches[0];
-          clientX = touch.clientX;
-          clientY = touch.clientY;
-        } else {
-          return;
-        }
-      }
+      const clientPosition = getClientPosition(event);
+      if (!clientPosition) return;
 
-      const flowDropPosition = reactFlowInstance.screenToFlowPosition({
-        x: clientX,
-        y: clientY,
-      });
+      const flowDropPosition = reactFlowInstance.screenToFlowPosition(clientPosition);
 
-      const preview = createPreviewNode(
-        connectionState.fromNode.id,
-        connectionState.fromHandle.id ?? 'output',
+      showPreviewGraph({
+        source: {
+          nodeId: connectionState.fromNode.id,
+          handleId: connectionState.fromHandle.id ?? 'output',
+        },
         reactFlowInstance,
-        flowDropPosition,
-        undefined,
-        connectionState.fromHandle.type,
-        undefined, // Use default preview node size
-        connectionState.fromHandle.position,
-        ignoredNodeTypes
-      );
-      if (preview) {
-        applyPreviewToReactFlow(preview, reactFlowInstance);
-      }
+        position: flowDropPosition,
+        sourceHandleType: connectionState.fromHandle.type,
+        handlePosition: connectionState.fromHandle.position,
+        ignoredNodeTypes,
+      });
     },
     [reactFlowInstance, ignoredNodeTypes]
   );

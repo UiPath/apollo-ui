@@ -11,6 +11,7 @@ import {
 } from '../../constants';
 import { Header } from './Header';
 import { type ListItem, ListView, type ListViewHandle, type RenderItem } from './ListView';
+import { QuickActionsRow, type ToolboxQuickAction } from './QuickActionsRow';
 import { SearchBox } from './SearchBox';
 import { AnimatedContainer, AnimatedContent } from './Toolbox.styles';
 
@@ -67,6 +68,13 @@ export interface ToolboxProps<T> {
   onItemHover?: (item: ListItem<T>) => void;
   onBack?: () => void;
   onSearch?: ToolboxSearchHandler<T>;
+  /**
+   * Optional row of icon shortcuts rendered above the title. Apollo controls
+   * the visuals so the strip stays consistent across consumers; pass the
+   * leading actions plain and set `trailing: true` on actions that should
+   * appear after the visual separator.
+   */
+  quickActions?: ToolboxQuickAction[];
 }
 
 function getNextSelectableIndex(
@@ -126,11 +134,15 @@ export function Toolbox<T>({
   loading,
   fullWidth = false,
   fullHeight = false,
+  quickActions,
 }: ToolboxProps<T>) {
   const [items, setItems] = useState<ListItem<T>[]>(initialItems);
   const [search, setSearch] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
-  const [childrenLoading, setChildrenLoading] = useState(false);
+  // True only while we're awaiting an async `item.children(...)` resolver.
+  // Distinct from the public `ListItem.childrenLoading` API field, which
+  // signals to ListView that an item should render skeleton placeholders.
+  const [awaitingChildren, setAwaitingChildren] = useState(false);
   const [isSearchingInitialItems, setIsSearchingInitialItems] = useState(true);
   const [searchedItems, setSearchedItems] = useState<ListItem<T>[]>([]);
   const [currentParentItem, setCurrentParentItem] = useState<ListItem<T> | null>(null);
@@ -141,6 +153,7 @@ export function Toolbox<T>({
     items: ListItem<T>[];
     parentItem: ListItem<T> | null;
     activeIndex: number;
+    scrollTop: number;
   }>();
 
   const [activeIndex, setActiveIndex] = useState(SEARCH_BAR_INDEX);
@@ -153,6 +166,11 @@ export function Toolbox<T>({
   const listViewRef = useRef<ListViewHandle<ListItem<T>>>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const clearButtonRef = useRef<HTMLButtonElement>(null);
+  const lastScrollTopRef = useRef(0);
+
+  const handleListScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    lastScrollTopRef.current = e.currentTarget.scrollTop;
+  }, []);
 
   const isSearching = useMemo(() => search.length > 0, [search]);
 
@@ -252,10 +270,24 @@ export function Toolbox<T>({
     setIsSearchingInitialItems(true);
 
     const restoredIndex = previousState?.data.activeIndex ?? SEARCH_BAR_INDEX;
-    navigateToIndex(restoredIndex);
+    const restoredScrollTop = previousState?.data.scrollTop ?? 0;
+
+    setActiveIndex(restoredIndex);
+    searchInputRef.current?.focus();
+
+    // Restore exact scroll offset after the new items have mounted.
+    // element.scrollTop works against react-window@2's imperative handle, which
+    // exposes the outer scroll container but no scrollToOffset method.
+    requestAnimationFrame(() => {
+      const element = listRef.current?.element;
+      if (element) {
+        element.scrollTop = restoredScrollTop;
+      }
+      lastScrollTopRef.current = restoredScrollTop;
+    });
 
     onBack?.();
-  }, [navigationStack, onBack, startTransition, navigateToIndex]);
+  }, [navigationStack, onBack, startTransition, listRef]);
 
   const handleItemSelect = useCallback(
     async (item: ListItem<T>, index?: number) => {
@@ -263,26 +295,39 @@ export function Toolbox<T>({
         onItemSelect(item);
         return;
       }
-      setChildrenLoading(true);
+      setAwaitingChildren(true);
       const nestedItems =
         typeof item.children === 'function'
           ? await item.children(item.id, item.name)
           : item.children;
       const savedIndex = isSearching ? SEARCH_BAR_INDEX : (index ?? activeIndex);
+      // Do not leak search-time scroll into the branch memory; mirrors the
+      // activeIndex guard above.
+      const savedScrollTop = isSearching ? 0 : lastScrollTopRef.current;
       navigationStack.push({
         title: currentParentItem?.name || title,
         data: {
           items,
           parentItem: currentParentItem,
           activeIndex: savedIndex,
+          scrollTop: savedScrollTop,
         },
       });
       setItems(nestedItems);
       setCurrentParentItem(item);
       clearSearch();
       setActiveIndex(SEARCH_BAR_INDEX);
+      // First entry into a branch: explicitly start at the top rather than
+      // relying on the virtualizer remount implicitly landing at 0.
+      requestAnimationFrame(() => {
+        const element = listRef.current?.element;
+        if (element) {
+          element.scrollTop = 0;
+        }
+        lastScrollTopRef.current = 0;
+      });
       startTransition('forward');
-      setChildrenLoading(false);
+      setAwaitingChildren(false);
     },
     [
       navigationStack,
@@ -294,6 +339,7 @@ export function Toolbox<T>({
       clearSearch,
       startTransition,
       onItemSelect,
+      listRef,
     ]
   );
 
@@ -342,6 +388,7 @@ export function Toolbox<T>({
             items: newInitialItems,
             parentItem: null,
             activeIndex: stackItem.data.activeIndex,
+            scrollTop: stackItem.data.scrollTop,
           },
         };
       }
@@ -360,6 +407,7 @@ export function Toolbox<T>({
           items: updatedItems,
           parentItem: updatedParentItem,
           activeIndex: stackItem.data.activeIndex,
+          scrollTop: stackItem.data.scrollTop,
         },
       };
     });
@@ -503,6 +551,15 @@ export function Toolbox<T>({
     ]
   );
 
+  // Discard the navigation stack before handing control back to the caller so
+  // re-opening the panel starts fresh. Unmount already clears state, but an
+  // explicit clear guards against future consumers keeping the panel mounted
+  // and toggling visibility via onClose.
+  const handleClose = useCallback(() => {
+    navigationStack.clear();
+    onClose();
+  }, [navigationStack, onClose]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -513,14 +570,14 @@ export function Toolbox<T>({
         } else if (navigationStack.canGoBack) {
           handleBackTransition();
         } else {
-          onClose();
+          handleClose();
         }
       }
     };
 
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        onClose();
+        handleClose();
       }
     };
 
@@ -533,7 +590,7 @@ export function Toolbox<T>({
   }, [
     isSearching,
     navigationStack.canGoBack,
-    onClose,
+    handleClose,
     clearSearch,
     startTransition,
     handleBackTransition,
@@ -548,6 +605,7 @@ export function Toolbox<T>({
         w={fullWidth ? '100%' : TOOLBOX_WIDTH}
         h={fullHeight ? '100%' : TOOLBOX_HEIGHT}
       >
+        {quickActions && quickActions.length > 0 && <QuickActionsRow actions={quickActions} />}
         <Header
           title={currentParentItem?.name || title}
           onBack={handleBackTransition}
@@ -570,14 +628,18 @@ export function Toolbox<T>({
           <AnimatedContent entering={isTransitioning} direction={animationDirection}>
             <ListView
               ref={listViewRef}
-              isLoading={childrenLoading || searchLoading || loading}
+              isLoading={awaitingChildren || searchLoading || loading}
               items={displayedItems}
               activeIndex={activeIndex}
               listRef={listRef}
               emptyStateMessage={isSearching ? 'No matching nodes found' : 'No nodes found'}
               onItemClick={handleItemSelect}
               onItemHover={onItemHover}
+              onScroll={handleListScroll}
               enableSections={!isSearching}
+              // Suppress skeletons while searching — the user expects
+              // search results, not a "more on the way" hint.
+              loadingSkeleton={isSearching ? undefined : currentParentItem?.childrenLoading}
             />
           </AnimatedContent>
         </AnimatedContainer>

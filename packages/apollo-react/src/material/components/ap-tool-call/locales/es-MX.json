@@ -2,7 +2,7 @@
   "tool-call.running": "Ejecutando {toolName}…",
   "tool-call.ran": "Se ejecutó {toolName} ({duration}s)",
   "tool-call.input": "Entrada",
-  "tool-call.execution": "Ejecución",
+  "tool-call.traces": "Seguimientos",
   "tool-call.escalation": "Escalación",
   "tool-call.errors": "Errores",
   "tool-call.output": "Salida"

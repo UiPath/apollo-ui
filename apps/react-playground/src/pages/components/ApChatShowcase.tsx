@@ -61,7 +61,8 @@ export function ApChatShowcase() {
 		history: true,
 		settings: true,
 		attachments: true,
-		audio: true,
+		audio: false, // STT dictate (mic) button - disabled by default
+		audioStreaming: false, // Always-on voice interaction button - disabled by default
 		htmlPreview: true,
 		headerSeparator: false, // Disabled by default (like HTML)
 		fullHeight: false, // Disabled by default
@@ -387,6 +388,7 @@ export function ApChatShowcase() {
 					settings: !features.settings,
 					attachments: !features.attachments,
 					audio: !features.audio,
+					audioStreaming: !features.audioStreaming,
 					htmlPreview: !features.htmlPreview,
 					headerSeparator: !features.headerSeparator,
 					fullHeight: !features.fullHeight,
@@ -541,6 +543,160 @@ export function ApChatShowcase() {
 			}),
 		);
 
+		// Fake STT consumer — the chat only owns UI state; a real consumer would start
+		// a recognizer (e.g. Azure Speech SDK) and feed transcripts back via setPrompt().
+		// For the showcase we simulate it: while active, stream a canned phrase word-by-word.
+		const fakeSttPhrases = [
+			"How do I schedule an unattended robot to run every weekday at 9 AM",
+			"Show me the last ten failed jobs and group them by process name",
+			"Can you walk me through setting up Document Understanding for invoices",
+		];
+		let sttPhraseIndex = 0;
+		let sttDictationInterval: ReturnType<typeof setInterval> | null = null;
+		unsubscribes.push(
+			service.on(AutopilotChatEvent.SpeechToTextToggle, (isActive: unknown) => {
+				console.log("[STT] toggle:", isActive);
+				// The button already reflects the active state — `publishSpeechToTextToggle`
+				// fired `SetSpeechToTextState` before this handler ran. A real consumer that
+				// owns a recognizer should call `service.setSpeechToTextState(false)` here if
+				// its recognizer fails to start, to revert the UI. This fake recognizer can't
+				// fail, so we just drive the transcript simulation.
+				if (isActive) {
+					const phrase =
+						fakeSttPhrases[sttPhraseIndex % fakeSttPhrases.length] ?? "";
+					sttPhraseIndex++;
+					const words = phrase.split(" ");
+					let wordIndex = 0;
+					let transcript = "";
+					sttDictationInterval = setInterval(() => {
+						if (wordIndex < words.length) {
+							transcript += (wordIndex === 0 ? "" : " ") + words[wordIndex];
+							service.setPrompt(transcript);
+							wordIndex++;
+						} else if (sttDictationInterval) {
+							clearInterval(sttDictationInterval);
+							sttDictationInterval = null;
+						}
+					}, 150);
+				} else if (sttDictationInterval) {
+					clearInterval(sttDictationInterval);
+					sttDictationInterval = null;
+				}
+			}),
+		);
+		unsubscribes.push(() => {
+			if (sttDictationInterval) {
+				clearInterval(sttDictationInterval);
+				sttDictationInterval = null;
+			}
+		});
+
+		// Fake voice-interaction consumer — logs InputStream payloads and streams a canned
+		// assistant reply on activityStart. A real consumer would forward mediaChunks to a
+		// model and feed audio responses back via chatService.sendOutputStreamEvent(...).
+		const fakeVoiceUserTurns = [
+			"How do I debug a workflow in UiPath Studio?",
+			"Can you suggest a retry strategy for flaky selectors?",
+			"What is the difference between Attended and Unattended automations?",
+		];
+		const fakeVoiceAssistantReplies = [
+			"Start by enabling **Debug mode** in UiPath Studio and setting breakpoints on the activities you want to inspect. Use **Step Into** to walk through each action, and open the **Locals** panel to watch variables change.",
+			"Wrap the click/type activity in a **Retry Scope** with 3-5 attempts and a short delay (500ms-2s). Pair it with a **Check App State** condition so the retry fires only when the expected element is missing.",
+			"**Attended** automations run on a user's machine alongside them. **Unattended** automations run on dedicated VMs without any user present; they're scheduled or queue-driven and scale across a robot fleet.",
+		];
+		let voiceTurnIndex = 0;
+		let voicePendingTimeouts: Array<ReturnType<typeof setTimeout>> = [];
+		let voicePendingInterval: ReturnType<typeof setInterval> | null = null;
+		let voiceActiveStreamId: string | null = null;
+		const clearVoicePending = () => {
+			for (const id of voicePendingTimeouts) {
+				clearTimeout(id);
+			}
+			voicePendingTimeouts = [];
+			if (voicePendingInterval) {
+				clearInterval(voicePendingInterval);
+				voicePendingInterval = null;
+			}
+		};
+		unsubscribes.push(
+			service.on(AutopilotChatEvent.InputStream, (event: unknown) => {
+				// biome-ignore lint/suspicious/noExplicitAny: InputStream event shape
+				const ev = event as any;
+				if (ev.activityStart) {
+					console.log("[voice] activityStart", ev.activityStart);
+					const userContent =
+						fakeVoiceUserTurns[voiceTurnIndex % fakeVoiceUserTurns.length] ??
+						"";
+					const assistantContent =
+						fakeVoiceAssistantReplies[
+							voiceTurnIndex % fakeVoiceAssistantReplies.length
+						] ?? "";
+					voiceTurnIndex++;
+					voiceActiveStreamId = `voice-stream-${voiceTurnIndex}`;
+
+					voicePendingTimeouts.push(
+						setTimeout(() => {
+							service.sendRequest({ content: userContent });
+							voicePendingTimeouts.push(
+								setTimeout(() => {
+									const words = assistantContent.split(" ");
+									const streamId = voiceActiveStreamId ?? undefined;
+									let wordIndex = 0;
+									voicePendingInterval = setInterval(() => {
+										if (wordIndex < words.length) {
+											service.sendResponse({
+												id: streamId,
+												content:
+													(words[wordIndex] ?? "") +
+													(wordIndex < words.length - 1 ? " " : ""),
+												stream: true,
+												created_at: new Date().toISOString(),
+												widget: "apollo-markdown-renderer",
+											});
+											wordIndex++;
+										} else {
+											if (voicePendingInterval) {
+												clearInterval(voicePendingInterval);
+												voicePendingInterval = null;
+											}
+											service.sendResponse({
+												id: streamId,
+												content: "",
+												stream: true,
+												done: true,
+												created_at: new Date().toISOString(),
+												widget: "apollo-markdown-renderer",
+											});
+										}
+									}, 80);
+								}, 400),
+							);
+						}, 600),
+					);
+				}
+				if (ev.mediaChunks) {
+					console.log("[voice] mediaChunks", ev.mediaChunks.length);
+				}
+				if (ev.activityEnd) {
+					console.log("[voice] activityEnd", ev.activityEnd);
+					const wasStreaming = voicePendingInterval !== null;
+					clearVoicePending();
+					if (wasStreaming && voiceActiveStreamId) {
+						service.sendResponse({
+							id: voiceActiveStreamId,
+							content: "",
+							stream: true,
+							done: true,
+							created_at: new Date().toISOString(),
+							widget: "apollo-markdown-renderer",
+						});
+					}
+					voiceActiveStreamId = null;
+				}
+			}),
+		);
+		unsubscribes.push(() => clearVoicePending());
+
 		// Listen for custom header action clicks
 		unsubscribes.push(
 			// biome-ignore lint/suspicious/noExplicitAny: Event not in enum
@@ -620,6 +776,7 @@ export function ApChatShowcase() {
 		createSettingsRenderer,
 		features.attachments,
 		features.audio,
+		features.audioStreaming,
 		features.close,
 		features.copy,
 		features.feedback,
@@ -657,6 +814,7 @@ export function ApChatShowcase() {
 					settings: !features.settings,
 					attachments: !features.attachments,
 					audio: !features.audio,
+					audioStreaming: !features.audioStreaming,
 					htmlPreview: !features.htmlPreview,
 					headerSeparator: !features.headerSeparator,
 					fullHeight: !features.fullHeight,
@@ -1813,7 +1971,15 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
 							checked={features.audio}
 							onChange={() => toggleFeature("audio")}
 						/>
-						Audio
+						STT Dictate
+					</Checkbox>
+					<Checkbox>
+						<input
+							type="checkbox"
+							checked={features.audioStreaming}
+							onChange={() => toggleFeature("audioStreaming")}
+						/>
+						Voice Interaction
 					</Checkbox>
 					<Checkbox>
 						<input

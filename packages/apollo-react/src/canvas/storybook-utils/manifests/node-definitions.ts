@@ -229,6 +229,7 @@ export const allNodeManifests: NodeManifest[] = [
     display: {
       label: 'For Each',
       icon: 'repeat',
+      shape: 'container',
     },
     handleConfiguration: [
       {
@@ -240,15 +241,39 @@ export const allNodeManifests: NodeManifest[] = [
         handles: [
           {
             id: 'success',
-            label: 'Completed',
+            label: 'Success',
             type: 'source',
             handleType: 'output',
           },
+        ],
+      },
+      {
+        position: 'left',
+        boundary: 'inner',
+        handles: [
           {
-            id: 'body',
-            label: 'Body',
+            id: 'start',
+            label: 'Start',
             type: 'source',
             handleType: 'output',
+          },
+        ],
+      },
+      {
+        position: 'right',
+        boundary: 'inner',
+        handles: [
+          {
+            id: 'continue',
+            label: 'Continue',
+            type: 'target',
+            handleType: 'input',
+          },
+          {
+            id: 'break',
+            label: 'Break',
+            type: 'target',
+            handleType: 'input',
           },
         ],
       },
@@ -673,6 +698,10 @@ export const allNodeManifests: NodeManifest[] = [
             label: "{agentName || 'Agent'}",
             type: 'source',
             handleType: 'output',
+            // Artifact handles (memory, tools, escalation, context) appear in
+            // earlier groups, so without this flag `getDefaultHandle` would
+            // pick `memory` as the agent's outgoing handle.
+            isDefaultForType: true,
             constraints: {
               forbiddenTargetCategories: ['trigger'],
             },

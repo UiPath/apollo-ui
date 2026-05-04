@@ -1,8 +1,11 @@
-import { type Edge, type Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import { type Node, type Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useMemo } from 'react';
-import { PREVIEW_NODE_ID } from '../../../constants';
-import { applyPreviewToReactFlow, createPreviewNode } from '../../../utils/createPreviewNode';
+import { DEFAULT_SOURCE_HANDLE_ID } from '../../../constants';
+import { useOptionalNodeTypeRegistry } from '../../../core';
+import { showPreviewGraph } from '../../../utils/createPreviewGraph';
+import { isPreviewEdge } from '../../../utils/createPreviewNode';
 import { useBaseCanvasMode } from '../../BaseCanvas/BaseCanvasModeProvider';
+import { resolveContainerAddNodePreview } from '../../LoopNode/LoopNode.helpers';
 import type { EdgeToolbarConfig, EdgeToolbarPositionData } from './EdgeToolbar.types';
 import { useEdgeToolbarPositioning } from './useEdgeToolbarPositioning';
 
@@ -39,70 +42,65 @@ export function useEdgeToolbarState({
   ignoredNodeTypes,
 }: UseEdgeToolbarStateProps): EdgeToolbarState {
   const reactFlow = useReactFlow();
+  const registry = useOptionalNodeTypeRegistry();
   const { mode } = useBaseCanvasMode();
   const isDesignMode = mode === 'design';
+  const getManifestForNode = useCallback(
+    (node: Node) => (node.type ? registry?.getManifest(node.type) : undefined),
+    [registry]
+  );
 
-  const isPreviewEdge = source === PREVIEW_NODE_ID || target === PREVIEW_NODE_ID;
+  const previewEdge = isPreviewEdge({ id: edgeId, source, target });
 
   // Only track mouse position when hovering and in design mode (not on preview edges)
   const { positionData, handleMouseMoveOnPath } = useEdgeToolbarPositioning({
     pathElementRef,
-    isEnabled: isHovered && isDesignMode && !isPreviewEdge,
+    isEnabled: isHovered && isDesignMode && !previewEdge,
     targetPosition,
   });
 
   // Handle adding a node at the current mouse position along the edge
   const handleAddNodeOnEdge = useCallback(
     (position: { x: number; y: number }) => {
-      // Store original edge to restore if preview is cancelled
-      const originalEdge: Edge = {
-        id: edgeId,
-        source,
-        sourceHandle: sourceHandleId,
-        target,
-        targetHandle: targetHandleId,
-        type: 'default',
+      const originalEdge = reactFlow.getEdges().find((edge) => edge.id === edgeId);
+      if (!originalEdge) return;
+
+      const sourceEndpoint = {
+        nodeId: source,
+        handleId: sourceHandleId ?? DEFAULT_SOURCE_HANDLE_ID,
       };
+      const containerOverrides = registry
+        ? resolveContainerAddNodePreview({
+            source: sourceEndpoint,
+            sourceHandleType: 'source',
+            reactFlowInstance: reactFlow,
+            getManifestForNode,
+          })
+        : null;
 
-      // Use createPreviewNode utility to create preview node with proper positioning
-      const preview = createPreviewNode(
-        source,
-        sourceHandleId || 'output',
-        reactFlow,
-        position, // Drop position at mouse cursor
-        { originalEdge }, // Pass original edge to restore if cancelled
-        'source', // Source handle type
-        undefined, // Use default node size
-        sourcePosition,
-        ignoredNodeTypes
-      );
-
-      if (!preview) return;
-
-      // Create second edge from preview to target
-      const secondEdge: Edge = {
-        id: `${PREVIEW_NODE_ID}-${target}`,
-        source: PREVIEW_NODE_ID,
-        sourceHandle: 'output',
-        target,
-        targetHandle: targetHandleId,
-        type: 'default',
-      };
-
-      // Apply preview (adds preview node and first edge: source → preview)
-      applyPreviewToReactFlow(preview, reactFlow);
-
-      // Remove original edge and add second edge (preview → target)
-      reactFlow.setEdges((edges) => [
-        ...edges.filter((e) => e.id !== edgeId).map((e) => ({ ...e, selected: false })),
-        secondEdge,
-      ]);
+      showPreviewGraph({
+        source: sourceEndpoint,
+        reactFlowInstance: reactFlow,
+        position,
+        positionMode: 'drop',
+        data: { originalEdge },
+        sourceHandleType: 'source', // Source handle type
+        handlePosition: sourcePosition,
+        ignoredNodeTypes: ignoredNodeTypes ?? [],
+        target: {
+          nodeId: target,
+          handleId: targetHandleId,
+        },
+        ...(containerOverrides ?? {}),
+      });
     },
     [
       sourcePosition,
       source,
       sourceHandleId,
       reactFlow,
+      registry,
+      getManifestForNode,
       target,
       targetHandleId,
       edgeId,
@@ -129,7 +127,7 @@ export function useEdgeToolbarState({
   );
 
   // Show toolbar when hovering, in design mode, have a valid mouse position, and not a preview edge
-  const showToolbar = isHovered && isDesignMode && positionData !== null && !isPreviewEdge;
+  const showToolbar = isHovered && isDesignMode && positionData !== null && !previewEdge;
 
   return {
     showToolbar,

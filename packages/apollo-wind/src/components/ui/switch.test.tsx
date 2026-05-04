@@ -124,4 +124,33 @@ describe('Switch', () => {
     await user.click(switchElement);
     expect(switchElement).toHaveAttribute('data-state', 'unchecked');
   });
+
+  describe('size variants', () => {
+    it('renders default size when size prop is not provided', () => {
+      render(<Switch aria-label="Toggle" />);
+      const switchElement = screen.getByRole('switch');
+      expect(switchElement).toHaveClass('h-6', 'w-11');
+    });
+
+    it('renders sm size when size="sm"', () => {
+      render(<Switch size="sm" aria-label="Toggle" />);
+      const switchElement = screen.getByRole('switch');
+      expect(switchElement).toHaveClass('h-5', 'w-9');
+      expect(switchElement).not.toHaveClass('h-6', 'w-11');
+    });
+
+    it('renders sm thumb when size="sm"', () => {
+      render(<Switch size="sm" aria-label="Toggle" />);
+      const thumb = screen.getByRole('switch').firstElementChild;
+      expect(thumb).toHaveClass('h-4', 'w-4');
+    });
+
+    it('has no accessibility violations at sm size', async () => {
+      const { container } = render(
+        <Switch size="sm" aria-label="Enable case-sensitive matching" />
+      );
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+  });
 });

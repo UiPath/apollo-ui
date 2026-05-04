@@ -145,11 +145,25 @@ export type { ButtonProps };
 - **Utilities**: camelCase (`cn`, `formatDate`)
 - **CSS variables**: kebab-case (`--color-primary`, `--spacing-md`)
 
+### Hooks
+
+Before implementing a custom hook, check whether a well-maintained, widely-used
+package already provides it. Prefer adopting a battle-tested implementation
+over writing one from scratch — it saves maintenance, edge-case handling, and
+test surface. Only implement a hook locally when no suitable package exists,
+the package is unmaintained, or the dependency cost outweighs the benefit.
+
 ### Tailwind CSS
 - Use Tailwind utility classes directly in JSX
 - Use `cn()` to merge conditional classes
 - Prefer semantic color tokens (`bg-primary`, `text-muted-foreground`)
 - Use CSS variables for theming: `var(--color-*)`
+
+### Translation Keys
+
+User-facing strings are looked up via `useTranslation()` from `react-i18next` against flat keys in `locales/*.json` (one file per locale). Use a translation key whenever a string is rendered to the user — labels, placeholders, button text, aria labels, etc.
+
+**Only edit `locales/en.json`.** Add new keys there in alphabetical order. Do not touch the other locale files — the localization team syncs translations into them as a separate workflow. PRs that modify non-English locales will be sent back.
 
 ### Error Handling
 - Use TypeScript's strict null checks

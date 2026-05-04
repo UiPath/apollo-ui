@@ -1,5 +1,14 @@
-import type { ModelMessage } from "@tanstack/ai";
-import type { ConnectConnectionAdapter, UIMessage } from "@tanstack/ai-client";
+import {
+  type AnyClientTool,
+  EventType,
+  type ModelMessage,
+  type StreamChunk,
+} from "@tanstack/ai";
+import type {
+  ConnectConnectionAdapter,
+  ToolCallPart,
+  UIMessage,
+} from "@tanstack/ai-client";
 import { fetchAgentHubStream } from "./stream";
 import type { AgentHubAdapterConfig } from "./types";
 
@@ -12,9 +21,65 @@ function isUIMessages(
   return first != null && "parts" in first;
 }
 
+function collectSkipFollowUpToolNames(
+  tools: ReadonlyArray<AnyClientTool> | undefined,
+): Set<string> {
+  return new Set(
+    (tools ?? [])
+      .filter((t) => t.metadata?.skipFollowUp === true)
+      .map((t) => t.name),
+  );
+}
+
+function shouldSkipFollowUp(
+  messages: UIMessage[],
+  skipFollowUpToolNames: Set<string>,
+): boolean {
+  const last = messages.at(-1);
+  if (!last || last.role !== "assistant") return false;
+
+  const toolCalls = last.parts.filter(
+    (p): p is ToolCallPart => p.type === "tool-call",
+  );
+  return (
+    toolCalls.length > 0 &&
+    toolCalls.every(
+      (tc) => tc.output != null && skipFollowUpToolNames.has(tc.name),
+    )
+  );
+}
+
+async function* emptyStream(): AsyncIterable<StreamChunk> {
+  await Promise.resolve();
+  const runId = crypto.randomUUID();
+  const threadId = crypto.randomUUID();
+  const messageId = crypto.randomUUID();
+  yield { type: EventType.RUN_STARTED, runId, threadId, timestamp: Date.now() };
+  yield {
+    type: EventType.TEXT_MESSAGE_START,
+    messageId,
+    role: "assistant",
+    timestamp: Date.now(),
+  };
+  yield {
+    type: EventType.TEXT_MESSAGE_END,
+    messageId,
+    timestamp: Date.now(),
+  };
+  yield {
+    type: EventType.RUN_FINISHED,
+    runId,
+    threadId,
+    timestamp: Date.now(),
+    finishReason: "stop",
+  };
+}
+
 export function createAgentHubConnection(
   config: AgentHubAdapterConfig,
 ): ConnectConnectionAdapter {
+  const skipFollowUpToolNames = collectSkipFollowUpToolNames(config.tools);
+
   return {
     connect(messages, _data, abortSignal) {
       if (messages.length === 0) {
@@ -25,6 +90,11 @@ export function createAgentHubConnection(
           "AgentHub adapter requires UIMessages, received ModelMessages",
         );
       }
+
+      if (shouldSkipFollowUp(messages, skipFollowUpToolNames)) {
+        return emptyStream();
+      }
+
       return fetchAgentHubStream(config, messages, abortSignal);
     },
   };

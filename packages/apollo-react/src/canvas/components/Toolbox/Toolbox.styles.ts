@@ -33,7 +33,7 @@ export const AnimatedContainer = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  min-height: 300px;
+  min-height: 200px;
 `;
 
 export const AnimatedContent = styled.div<{ entering?: boolean; direction?: 'forward' | 'back' }>`
@@ -41,7 +41,7 @@ export const AnimatedContent = styled.div<{ entering?: boolean; direction?: 'for
   display: flex;
   flex-direction: column;
   animation: ${(props) => (props.entering ? `slideIn-${props.direction}` : 'none')} 0.15s ease-out;
-  min-height: 300px;
+  min-height: 200px;
 
   @keyframes slideIn-forward {
     from {

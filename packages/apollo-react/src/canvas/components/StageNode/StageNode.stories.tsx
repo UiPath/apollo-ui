@@ -1744,32 +1744,11 @@ const AddTaskLoadingStory = () => {
     [setEdges]
   );
 
-  // Mark the stage read-only while tasks are loading so DnD is disabled mid-add
-  const nodesWithReadOnly = useMemo(
-    () =>
-      nodes.map((node) => {
-        const data = node.data as Record<string, any>;
-        const isLoading = ((data.loadingTaskIds as Set<string> | undefined)?.size ?? 0) > 0;
-        const existingIsReadOnly = Boolean(data.stageDetails?.isReadOnly);
-        return {
-          ...node,
-          data: {
-            ...data,
-            stageDetails: {
-              ...data.stageDetails,
-              isReadOnly: existingIsReadOnly || isLoading,
-            },
-          },
-        };
-      }),
-    [nodes]
-  );
-
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       <ReactFlowProvider>
         <BaseCanvas
-          nodes={nodesWithReadOnly}
+          nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}

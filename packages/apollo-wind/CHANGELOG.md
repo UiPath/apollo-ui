@@ -1,3 +1,36 @@
+## [@uipath/apollo-wind-v2.11.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.10.0...@uipath/apollo-wind@2.11.0) (2026-05-02)
+
+### Features
+
+* **apollo-wind:** apply Future theme styling to Combobox and MultiSelect ([d9911eb](https://github.com/uipath/apollo-ui/commit/d9911ebfec17292027f7f8b217ebefd6e8210b4c))
+
+## [@uipath/apollo-wind-v2.10.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.9.0...@uipath/apollo-wind@2.10.0) (2026-05-01)
+
+### Features
+
+* **apollo-wind:** apply Future theme styling to Checkbox and CodeBlock ([c576920](https://github.com/uipath/apollo-ui/commit/c576920301f856b9711c23672b44e19267ee407a))
+
+## [@uipath/apollo-wind-v2.9.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.8.0...@uipath/apollo-wind@2.9.0) (2026-04-29)
+
+### Features
+
+* **apollo-wind:** proportional switch for dense form rows (size="sm") ([44250b7](https://github.com/uipath/apollo-ui/commit/44250b791962597c801b872cb37eff4f17d811be))
+
+## [@uipath/apollo-wind-v2.8.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.7.1...@uipath/apollo-wind@2.8.0) (2026-04-28)
+
+### Features
+
+* **apollo-wind:** controllable DataTable state + multi-field search ([e71efea](https://github.com/uipath/apollo-ui/commit/e71efea72f686c0c13c884ac9895a82dcd6ae385))
+
+## [@uipath/apollo-wind-v2.7.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.7.0...@uipath/apollo-wind@2.7.1) (2026-04-27)
+
+### Bug Fixes
+
+* **apollo-wind:** add title tooltips to truncated cells and column headers ([42127de](https://github.com/uipath/apollo-ui/commit/42127de025029f643aadc32f66f1482816f1e42f))
+* **apollo-wind:** apply biome format fixes ([745643d](https://github.com/uipath/apollo-ui/commit/745643dc83810dc059687de4890ace1e6a780781))
+* **apollo-wind:** DataTable headers stay put, resize feels grabbable, body scrolls independently ([bebb9a1](https://github.com/uipath/apollo-ui/commit/bebb9a1af29fb18a750711a7cd8227cdc8e9d9bb))
+* **apollo-wind:** show title tooltip only when text is actually truncated ([2fef533](https://github.com/uipath/apollo-ui/commit/2fef5331403fedca194db89e6b2c357b4cd91bbf))
+
 ## [@uipath/apollo-wind-v2.7.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.6.0...@uipath/apollo-wind@2.7.0) (2026-04-21)
 
 ### Features

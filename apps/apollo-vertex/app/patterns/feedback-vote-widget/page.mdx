@@ -1,0 +1,138 @@
+import { FeedbackVoteWidgetTemplate } from '@/templates/FeedbackVoteWidgetTemplate';
+
+# Feedback Vote Widget
+
+A thumbs up / thumbs down control with an optional comment textarea. Designed to capture user sentiment on AI-generated content and integrate with the UiPath Platform Feedback API via [`@uipath/vs-feedback`](https://github.com/UiPath/vertical-solutions).
+
+<div className="not-prose my-8 rounded-lg border overflow-hidden bg-gradient-to-br from-muted/40 via-background to-muted/40 dark:from-muted/20 dark:via-background dark:to-muted/20">
+  <FeedbackVoteWidgetTemplate />
+</div>
+
+## Features
+
+- **Two-state vote** — Thumbs up / down, with `aria-pressed` reflecting the current selection
+- **Optional comment** — Toggle a textarea below the vote buttons for free-form feedback
+- **Controlled** — Pass `value` + `onVoteChange` (and `comment` + `onCommentChange` when `showComment` is true)
+- **Accessible labels are required** — `upLabel` / `downLabel` (and `commentPlaceholder` when applicable) must be provided so consumers can plug in their own translated strings
+- **Sizes** — `default` and `sm`
+- **Composes existing primitives** — Built on [Button](/components/button) and [Textarea](/components/textarea)
+- **Test hook** — Each vote button carries `data-vote="up"` / `data-vote="down"` for E2E selectors
+
+## Installation
+
+Apollo Vertex components are published to a custom shadcn registry under the `@uipath` namespace. Register the namespace once in your project's `components.json`:
+
+```json
+{
+  "registries": {
+    "@uipath": "https://apollo-vertex.vercel.app/r/{name}.json"
+  }
+}
+```
+
+Then install the component:
+
+```bash
+npx shadcn@latest add @uipath/feedback-vote-widget
+```
+
+### Dependencies
+
+This component depends on the following registry components:
+
+- [Button](/components/button)
+- [Textarea](/components/textarea)
+
+## Usage
+
+### Basic
+
+```tsx
+"use client";
+
+import * as React from "react";
+import { FeedbackVoteWidget } from "@/components/ui/feedback-vote-widget";
+
+export function MyFeedback() {
+  const [vote, setVote] = React.useState<"up" | "down" | null>(null);
+  return (
+    <FeedbackVoteWidget
+      value={vote}
+      onVoteChange={setVote}
+      upLabel="Vote up"
+      downLabel="Vote down"
+    />
+  );
+}
+```
+
+The labels above are inline strings for clarity — in a real app source them from your i18n library (`t("feedback.voteUp")` etc.) so the widget reflects the user's locale.
+
+### With comment
+
+```tsx
+const [vote, setVote] = React.useState<"up" | "down" | null>(null);
+const [comment, setComment] = React.useState("");
+
+<FeedbackVoteWidget
+  value={vote}
+  onVoteChange={setVote}
+  upLabel="Vote up"
+  downLabel="Vote down"
+  showComment
+  comment={comment}
+  onCommentChange={setComment}
+  commentPlaceholder="What could the AI have done better?"
+/>
+```
+
+When `showComment` is `true`, `comment`, `onCommentChange`, and `commentPlaceholder` become required (enforced via the props' discriminated union). When omitted or `false`, the comment-related props can't be passed at all — the type system prevents inconsistent states.
+
+### Wiring to the Platform Feedback API
+
+Use `@uipath/vs-feedback`'s `PlatformFeedbackClient` to submit. The vote becomes `FeedbackDraft.isPositive`; the comment goes into the typed `comment` field — your mapper stringifies it on the wire.
+
+```tsx
+import type { FeedbackDraft } from "@uipath/vs-feedback";
+import { client } from "./feedback-client"; // your PlatformFeedbackClient<MyCustom, MyComment>
+import { resolveTraceContext } from "./trace-context";
+
+async function handleSubmit(args: {
+  vote: "up" | "down";
+  comment: string;
+  maestroInstanceId: string;
+  sectionName: string;
+}) {
+  const { traceId } = await resolveTraceContext(args.maestroInstanceId);
+
+  const draft: FeedbackDraft<MyCustom, MyComment> = {
+    traceId,
+    spanId: "", // Feedback API auto-resolves the root span (LLMOPS-2310)
+    isPositive: args.vote === "up",
+    customFields: {
+      sectionName: args.sectionName,
+      aiProducedFields: { aiSeverity: null, aiTriaged: false },
+    },
+    comment: { text: args.comment },
+  };
+
+  await client.submit(draft);
+}
+```
+
+## API Reference
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `value` | `"up" \| "down" \| null` | yes | — | Current vote state. `null` = no vote yet. |
+| `onVoteChange` | `(vote: "up" \| "down") => void` | yes | — | Called when a vote button is clicked |
+| `upLabel` | `string` | yes | — | Accessible label for the up-vote button (translated) |
+| `downLabel` | `string` | yes | — | Accessible label for the down-vote button (translated) |
+| `showComment` | `boolean` | no | `false` | Render the comment textarea below the buttons |
+| `comment` | `string` | when `showComment` | — | Textarea value (controlled) |
+| `onCommentChange` | `(value: string) => void` | when `showComment` | — | Called when the textarea changes |
+| `commentPlaceholder` | `string` | when `showComment` | — | Placeholder for the textarea (translated) |
+| `disabled` | `boolean` | no | `false` | Disables vote buttons and the textarea |
+| `size` | `"default" \| "sm"` | no | `"default"` | Visual size of the vote buttons |
+
+The widget owns its layout and does not accept `className` or other div props — wrap it in your own container if you need to position it.

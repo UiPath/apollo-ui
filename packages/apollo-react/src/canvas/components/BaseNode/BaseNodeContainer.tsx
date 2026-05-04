@@ -34,6 +34,7 @@ export const getStatusBorder = (
 interface BaseContainerProps {
   isSelected?: boolean;
   isHovered?: boolean;
+  isStacked?: boolean;
   shape?: NodeShape;
   interactionState?: string;
   executionStatus?: ElementStatusValues;
@@ -48,6 +49,7 @@ interface BaseContainerProps {
 export const BaseContainer = ({
   isSelected,
   isHovered,
+  isStacked,
   shape,
   interactionState,
   executionStatus,
@@ -76,9 +78,14 @@ export const BaseContainer = ({
         isHovered && 'shadow-(--canvas-node-shadow-hover) border-border-hover',
         isSelected && 'outline outline-2 outline-foreground-accent-muted',
         interactionState === 'disabled' && 'opacity-50 cursor-not-allowed',
-        interactionState === 'drag' && 'cursor-grabbing shadow-(--canvas-node-shadow-lifted)'
+        interactionState === 'drag' && 'cursor-grabbing shadow-(--canvas-node-shadow-lifted)',
+        // Decorative stacked layer for drillable / collapsed nodes. Purely visual:
+        // a ::before pseudo inherits the container's radius/size, sits behind at
+        // -z-10, and is offset down so only a thin arc peeks out below the card.
+        isStacked &&
+          'before:content-[""] before:absolute before:inset-x-0 before:top-0 before:h-full before:rounded-[inherit] before:bg-surface-overlay before:border before:border-brand before:translate-y-[6px] before:-z-10 before:pointer-events-none'
       ),
-    [shape, hasFooter, activeStatus, isSelected, isHovered, interactionState]
+    [shape, hasFooter, activeStatus, isSelected, isHovered, isStacked, interactionState]
   );
 
   return (
@@ -88,6 +95,7 @@ export const BaseContainer = ({
       data-interaction-state={interactionState}
       data-validation-status={validationStatus}
       data-suggestion-type={suggestionType}
+      data-stacked={isStacked || undefined}
       className={className}
       style={background ? { background } : undefined}
       aria-busy={loading || undefined}

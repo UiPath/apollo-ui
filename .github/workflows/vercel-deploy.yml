@@ -187,9 +187,21 @@ jobs:
           ERROR_MSG=""
           DEPLOY_URL=""
           set +e  # Don't exit on error
-          DEPLOY_OUTPUT=$(vercel deploy --token $VERCEL_TOKEN --yes ${{ steps.vars.outputs.prod_flag }} 2>&1)
+          DEPLOY_OUTPUT=$(vercel deploy --token "$VERCEL_TOKEN" --yes \
+            --build-env GH_NPM_REGISTRY_TOKEN="$GH_NPM_REGISTRY_TOKEN" \
+            ${{ steps.vars.outputs.prod_flag }} 2>&1)
           DEPLOY_EXIT_CODE=$?
           set -e
+
+          # Defensive: redact known secrets from captured output before any
+          # downstream consumer (step summary, PR comment, logs) sees it.
+          # GH Actions masks secrets in live runner logs, but masking does not
+          # extend to values we re-emit through outputs or external APIs.
+          for __secret in "$GH_NPM_REGISTRY_TOKEN" "$VERCEL_TOKEN" "$VERCEL_ORG_ID"; do
+            if [ -n "$__secret" ]; then
+              DEPLOY_OUTPUT="${DEPLOY_OUTPUT//$__secret/***}"
+            fi
+          done
 
           if [ $DEPLOY_EXIT_CODE -eq 0 ]; then
             # Extract or construct the deployment URL
@@ -228,6 +240,7 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
           CI: true
           NODE_ENV: production
 

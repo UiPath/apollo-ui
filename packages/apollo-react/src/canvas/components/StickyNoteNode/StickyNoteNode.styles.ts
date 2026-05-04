@@ -245,11 +245,11 @@ export const ResizeHandle = styled.div<{ selected?: boolean; cursor?: string }>`
   pointer-events: auto;
 `;
 
-export const TopCornerIndicators = styled.div<{ selected?: boolean }>`
+export const TopCornerIndicators = styled.div<{ visible?: boolean }>`
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: ${(props) => (props.selected ? 1 : 0)};
+  opacity: ${(props) => (props.visible ? 1 : 0)};
 
   /* Top-left corner */
   &::before {
@@ -278,11 +278,11 @@ export const TopCornerIndicators = styled.div<{ selected?: boolean }>`
   }
 `;
 
-export const BottomCornerIndicators = styled.div<{ selected?: boolean }>`
+export const BottomCornerIndicators = styled.div<{ visible?: boolean }>`
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: ${(props) => (props.selected ? 1 : 0)};
+  opacity: ${(props) => (props.visible ? 1 : 0)};
 
   /* Bottom-left corner */
   &::before {

@@ -26,6 +26,18 @@ export const WithLabel = {
   ),
 };
 
+export const Small = {
+  args: {},
+  render: () => (
+    <Row gap={2} align="center">
+      <Switch id="case-sensitive" size="sm" />
+      <Label htmlFor="case-sensitive" className="text-sm">
+        Case sensitive
+      </Label>
+    </Row>
+  ),
+};
+
 export const Disabled = {
   args: {},
   render: () => (

@@ -315,19 +315,41 @@ vi.mock('sanitize-html', () => ({
 }));
 
 // Mock react-window
-vi.mock('react-window', () => ({
-  List: ({
+vi.mock('react-window', () => {
+  const List = ({
     rowCount,
     rowProps,
     rowComponent: RowComponent,
+    listRef,
+    ...rest
   }: {
     rowCount: number;
     rowProps: object;
     rowComponent: (props: { index: number }) => ReactElement;
-  }) =>
-    React.createElement(
+    listRef?: React.RefObject<unknown> | ((api: unknown) => void) | null;
+    [key: string]: unknown;
+  }) => {
+    const innerRef = React.useRef<HTMLDivElement | null>(null);
+    const setRef = React.useCallback(
+      (node: HTMLDivElement | null) => {
+        innerRef.current = node;
+        const api = {
+          get element() {
+            return node;
+          },
+          scrollToRow: () => {},
+        };
+        if (typeof listRef === 'function') {
+          listRef(api);
+        } else if (listRef && typeof listRef === 'object') {
+          (listRef as { current: unknown }).current = api;
+        }
+      },
+      [listRef]
+    );
+    return React.createElement(
       'div',
-      { 'data-testid': 'virtualized-list' },
+      { 'data-testid': 'virtualized-list', ref: setRef, ...rest },
       Array.from({ length: rowCount }).map((_, index) =>
         React.createElement(
           'div',
@@ -339,9 +361,13 @@ vi.mock('react-window', () => ({
           })
         )
       )
-    ),
-  useListRef: () => React.useRef(null),
-}));
+    );
+  };
+  return {
+    List,
+    useListRef: () => React.useRef(null),
+  };
+});
 
 // Mock @mui/x-tree-view to avoid ESM directory import issues
 vi.mock('@mui/x-tree-view', () => ({

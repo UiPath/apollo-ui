@@ -73,8 +73,9 @@ interface DataTableProps<TData, TValue> {
   onRowSelectionChange?: OnChangeFn<RowSelectionState>;
   globalFilter: string;
   onGlobalFilterChange: OnChangeFn<string>;
-  pagination: PaginationState;
-  onPaginationChange: OnChangeFn<PaginationState>;
+  pagination?: PaginationState;
+  onPaginationChange?: OnChangeFn<PaginationState>;
+  getRowId?: (originalRow: TData, index: number, parent?: Row<TData>) => string;
   globalFilterFn?: FilterFn<TData>;
   enableSearch?: boolean;
   enableViewOptions?: boolean;
@@ -109,6 +110,7 @@ function DataTable<TData, TValue>({
   onGlobalFilterChange,
   pagination,
   onPaginationChange,
+  getRowId,
   globalFilterFn,
   enableSearch = true,
   enableViewOptions = true,
@@ -125,11 +127,13 @@ function DataTable<TData, TValue>({
   const { t } = useTranslation();
 
   const isRowSelectionEnabled = !!(rowSelection && onRowSelectionChange);
+  const isPaginationEnabled = !!(pagination && onPaginationChange);
 
-  const resetPageIndex = () =>
-    onPaginationChange((prev) =>
+  const resetPageIndex = () => {
+    onPaginationChange?.((prev) =>
       prev.pageIndex === 0 ? prev : { ...prev, pageIndex: 0 },
     );
+  };
 
   const table = useReactTableCompat({
     data,
@@ -146,10 +150,13 @@ function DataTable<TData, TValue>({
       onGlobalFilterChange(updater);
       resetPageIndex();
     },
-    onPaginationChange,
+    ...(isPaginationEnabled && {
+      onPaginationChange,
+      getPaginationRowModel: getPaginationRowModel(),
+    }),
     ...(onExpandedChange ? { onExpandedChange } : {}),
+    ...(getRowId ? { getRowId } : {}),
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     ...(renderExpandedRow
@@ -167,9 +174,9 @@ function DataTable<TData, TValue>({
       columnFilters,
       columnVisibility,
       columnOrder,
-      ...(isRowSelectionEnabled && { rowSelection }),
       globalFilter,
-      pagination,
+      ...(isRowSelectionEnabled && { rowSelection }),
+      ...(isPaginationEnabled && { pagination }),
       ...(expanded ? { expanded } : {}),
     },
   });
@@ -353,7 +360,7 @@ function DataTable<TData, TValue>({
           canScrollRight={canScrollRight}
         />
       </div>
-      <DataTablePagination table={table} />
+      {isPaginationEnabled && <DataTablePagination table={table} />}
     </div>
   );
 }

@@ -1,8 +1,8 @@
 {
-  "sticky-note.formatting.bold": "",
-  "sticky-note.formatting.italic": "",
-  "sticky-note.formatting.strikethrough": "",
-  "sticky-note.formatting.bullet-list": "",
-  "sticky-note.formatting.numbered-list": "",
-  "sticky-note.formatting.toolbar": ""
+  "sticky-note.formatting.bold": "Gras ({boldShortcut})",
+  "sticky-note.formatting.italic": "Italique ({italicShortcut})",
+  "sticky-note.formatting.strikethrough": "Barré ({strikethroughShortcut})",
+  "sticky-note.formatting.bullet-list": "Liste à puces",
+  "sticky-note.formatting.numbered-list": "Liste numérotée",
+  "sticky-note.formatting.toolbar": "Mise en forme du texte"
 }

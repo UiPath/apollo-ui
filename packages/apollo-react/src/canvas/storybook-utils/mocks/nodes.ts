@@ -5,6 +5,12 @@ import type { HandleGroupManifest, NodeShape } from '../../schema/node-definitio
 
 /**
  * Common node positions for grid layouts.
+ *
+ * All values are multiples of GRID_SPACING (16) so initial layouts land on
+ * the canvas grid. Snap-aware downstream code (preview placement, edge
+ * routing via `useEdgePath`, container child centering) assumes the starting
+ * nodes are already grid-aligned — even single-pixel drift here cascades
+ * into kinked edges and off-center materialization.
  */
 export const NodePositions = {
   /** First row, first column */
@@ -14,17 +20,17 @@ export const NodePositions = {
   /** First row, third column */
   row1col3: { x: 480, y: 96 },
   /** Second row, first column */
-  row2col1: { x: 96, y: 255 },
+  row2col1: { x: 96, y: 256 },
   /** Second row, second column */
-  row2col2: { x: 288, y: 255 },
+  row2col2: { x: 288, y: 256 },
   /** Second row, third column */
-  row2col3: { x: 480, y: 255 },
+  row2col3: { x: 480, y: 256 },
   /** Third row, first column */
-  row3col1: { x: 96, y: 414 },
+  row3col1: { x: 96, y: 416 },
   /** Third row, second column */
-  row3col2: { x: 288, y: 414 },
+  row3col2: { x: 288, y: 416 },
   /** Third row, third column */
-  row3col3: { x: 480, y: 414 },
+  row3col3: { x: 480, y: 416 },
 } as const;
 
 /**

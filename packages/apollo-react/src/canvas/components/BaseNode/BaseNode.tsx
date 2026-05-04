@@ -1,4 +1,4 @@
-import type { Node, NodeProps, ReactFlowState } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   Position,
   useReactFlow,
@@ -27,6 +27,7 @@ import type { HandleGroupManifest } from '../../schema/node-definition';
 import { resolveAdornments } from '../../utils/adornment-resolver';
 import { getIcon } from '../../utils/icon-registry';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
+import { selectIsConnecting } from '../../utils/NodeUtils';
 import { resolveToolbar } from '../../utils/toolbar-resolver';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
 import { useCanvasTheme } from '../BaseCanvas/CanvasThemeContext';
@@ -48,13 +49,6 @@ import { BaseContainer } from './BaseNodeContainer';
 import { BaseInnerShape } from './BaseNodeInnerShape';
 import { MissingManifestNode } from './BaseNodeMissingManifest';
 import { NodeLabel } from './NodeLabel';
-
-// Use `connection.inProgress` rather than `connectionClickStartHandle`.
-// `connectionClickStartHandle` is set by click-to-connect and only cleared when
-// the user clicks a second handle — clicking the pane does NOT clear it, so it
-// can get stuck and cause all handles across all nodes to stay visible.
-// `connection.inProgress` accurately reflects an active drag-to-connect gesture.
-const selectIsConnecting = (state: ReactFlowState) => !!state.connection.inProgress;
 
 const getContainerWidth = (shape: NodeShape | undefined, width: number | undefined) => {
   const defaultWidth = shape === 'rectangle' ? DEFAULT_RECTANGLE_NODE_WIDTH : DEFAULT_NODE_SIZE;
@@ -87,7 +81,7 @@ const getContainerHeight = (
 };
 
 const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
-  const { type, data, selected, id, dragging, width, height } = props;
+  const { type, data, selected, id, dragging, width, height, parentId } = props;
 
   // Read runtime configuration from context (provided by parent node components)
   const {
@@ -180,6 +174,10 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     [manifest, data, id]
   );
 
+  // Drillable (manifest) or collapsed (instance data) nodes render a decorative
+  // stacked layer to signal they stand in for more than themselves.
+  const isStacked = Boolean(manifest?.drillable || data?.isCollapsed);
+
   // Icon resolution: component prop takes precedence, then icon string from display
   const Icon = useMemo(() => {
     // Priority 1: Component prop (e.g., dynamic tool icon)
@@ -256,10 +254,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // Compute height: max of base height (user-specified or measured) and handle minimum.
   // baseHeightRef is updated above from external height changes; handle inflation
   // is computed from the current handleConfigurations.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: height updates baseHeightRef above and intentionally retriggers this memo.
   const computedHeight = useMemo(() => {
-    // 2.5 grid units between handles to allow space for button handles and notches
-    const handleSpacing = 2.5 * GRID_SPACING;
-
     const leftHandles = handleConfigurations
       .filter((config) => config.position === Position.Left && config.visible !== false)
       .reduce(
@@ -276,13 +272,14 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
     const leftRightHandles = Math.max(leftHandles, rightHandles);
 
-    return Math.max(baseHeightRef.current, leftRightHandles * handleSpacing);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- height is not read directly but triggers recalculation after baseHeightRef is updated above
+    // Each handle gets a 2-grid-space lane (32px), plus 2-grid-space padding at top + bottom of node.
+    const minNodeHeight = (leftRightHandles * 2 + 2) * GRID_SPACING;
+    return Math.max(baseHeightRef.current, minNodeHeight);
   }, [handleConfigurations, height]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: handle configuration changes require React Flow handle recalculation.
   useEffect(() => {
     updateNodeInternals(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional when handle configurations change so it recalculates edge positions
   }, [handleConfigurations, id, updateNodeInternals]);
 
   // Sync computed height to node when it differs from React Flow's current value
@@ -393,9 +390,22 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   }, [disabled, dragging, selected, isHovered, isFocused]);
 
   const shouldShowHandles = useMemo(
-    () => isConnecting || selected || isHovered,
-    [isConnecting, selected, isHovered]
+    () => (isConnecting || selected || isHovered) && !dragging,
+    [isConnecting, selected, isHovered, dragging]
   );
+
+  const toolbarPosition = toolbarConfig?.position ?? (toolbarConfig ? Position.Top : undefined);
+
+  // True when handle buttons at the toolbar's position would collide with it.
+  const hasHandleButtonsAtToolbar = useMemo(() => {
+    if (!toolbarPosition || !handleConfigurations?.length) return false;
+    return handleConfigurations.some(
+      (config) =>
+        config.position === toolbarPosition &&
+        config.visible !== false &&
+        config.handles.some((h) => h.type === 'source' && h.showButton !== false)
+    );
+  }, [toolbarPosition, handleConfigurations]);
 
   const hasVisibleBottomHandles = useMemo(() => {
     if (
@@ -472,11 +482,12 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     nodeId: id,
     selected: selected ?? false,
     hovered: isHovered,
-    showAddButton: mode === 'design' && !multipleNodesSelected && !isConnecting,
+    showAddButton: mode === 'design' && !multipleNodesSelected && !isConnecting && !dragging,
     showNotches,
     nodeWidth: width,
     nodeHeight: height,
     shouldShowAddButtonFn,
+    portalActions: !!parentId,
   });
 
   // Generate SmartHandle elements from handle configurations (opt-in)
@@ -584,6 +595,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         shape={displayShape}
         isSelected={selected}
         isHovered={isHovered}
+        isStacked={isStacked}
         interactionState={interactionState}
         executionStatus={executionStatus}
         validationStatus={validationState?.validationStatus}
@@ -641,8 +653,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           <NodeToolbar
             nodeId={id}
             config={toolbarConfig}
-            expanded={selected}
+            expanded={selected || isHovered}
             hidden={dragging || multipleNodesSelected}
+            offsetToolbar={hasHandleButtonsAtToolbar}
           />
         )}
       </BaseContainer>

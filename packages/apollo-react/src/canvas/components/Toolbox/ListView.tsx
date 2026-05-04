@@ -22,6 +22,29 @@ export interface ListItemIcon {
   Component?: React.ComponentType;
 }
 
+/**
+ * Configuration for the skeleton placeholder shown when an item is drilled
+ * into and its children are still loading.
+ *
+ * For best perf, callers passing this as an object should memoize it —
+ * passing a fresh object each render rebuilds the skeleton items and
+ * cascades through the row virtualizer.
+ */
+export type ChildrenLoadingSpec = {
+  /**
+   * Number of skeleton rows. When `sections` is set, this is the per-section
+   * default for any section that omits its own `count`. Defaults to 3.
+   */
+  count?: number;
+  /**
+   * Pre-render section headers + skeleton rows under each. Once real items
+   * arrive with a matching `section`, they slot under the same header so the
+   * layout doesn't shift. Each section's `count` overrides the top-level
+   * `count` (or the built-in default of 3).
+   */
+  sections?: { name: string; count?: number }[];
+};
+
 export type ListItem<T = any> = {
   id: string;
   name: string;
@@ -32,49 +55,84 @@ export type ListItem<T = any> = {
   color?: string;
   colorDark?: string;
   children?: ListItem<T>[] | ((id: string, name: string) => Promise<ListItem<T>[]>);
+  /**
+   * When this item is drilled into and `children` resolves to an empty array,
+   * render skeleton placeholder rows instead of the empty-state message.
+   * Pass `true` for the default (3 rows) or a {@link ChildrenLoadingSpec} for
+   * customization. Skeletons disappear once `children` updates to a non-empty
+   * array.
+   */
+  childrenLoading?: boolean | ChildrenLoadingSpec;
 };
 
 export type RenderItem<T extends ListItem> =
   | { type: 'section'; sectionName: string }
-  | { type: 'item'; item: T };
+  | { type: 'item'; item: T }
+  | { type: 'skeleton' };
+
+const DEFAULT_SKELETON_COUNT = 3;
 
 export function buildRenderedItems<T extends ListItem>(
   items: T[],
-  enableSections: boolean
+  enableSections: boolean,
+  loadingSkeleton?: boolean | ChildrenLoadingSpec
 ): RenderItem<T>[] {
   const result: RenderItem<T>[] = [];
+  const skeletonConfig: ChildrenLoadingSpec | undefined =
+    typeof loadingSkeleton === 'object' ? loadingSkeleton : loadingSkeleton ? {} : undefined;
+  const baseSkeletonCount = skeletonConfig?.count ?? DEFAULT_SKELETON_COUNT;
 
-  if (items.length === 0) return result;
+  // Skeletons are emitted as `{ type: 'skeleton' }` so they're a distinct
+  // shape from real items. That keeps clicks / hovers / keyboard nav (which
+  // all filter on `type === 'item'`) auto-skipping them without per-row
+  // sentinel checks.
+  const pushSkeletons = (count: number) => {
+    for (let i = 0; i < count; i++) result.push({ type: 'skeleton' });
+  };
 
   if (!enableSections) {
-    // if sections are disabled, return all items as is
-    for (const item of items) {
-      result.push({ type: 'item', item });
-    }
+    for (const item of items) result.push({ type: 'item', item });
+    if (skeletonConfig && !skeletonConfig.sections) pushSkeletons(baseSkeletonCount);
     return result;
   }
 
   const [itemsWithSection, itemsWithoutSection] = partition(items, (item) => !!item.section);
 
-  // process items without sections first
-  for (const item of itemsWithoutSection) {
-    result.push({ type: 'item', item });
+  // Items without a section render at the top.
+  for (const item of itemsWithoutSection) result.push({ type: 'item', item });
+
+  // Group items by section in one pass; insertion order is preserved by Map.
+  const itemsBySection = new Map<string, T[]>();
+  for (const item of itemsWithSection) {
+    const name = item.section as string;
+    const bucket = itemsBySection.get(name);
+    if (bucket) bucket.push(item);
+    else itemsBySection.set(name, [item]);
   }
 
-  // return early if no items with sections
-  if (itemsWithSection.length === 0) {
-    return result;
+  // Map skeleton sections for O(1) lookup, then build the final section order
+  // — real-item sections first, then any skeleton-only sections appended.
+  const skeletonBySection = new Map(skeletonConfig?.sections?.map((s) => [s.name, s]) ?? []);
+  const sectionNames = [...itemsBySection.keys()];
+  for (const s of skeletonConfig?.sections ?? []) {
+    if (!itemsBySection.has(s.name)) sectionNames.push(s.name);
   }
 
-  // process items with sections next
-  const sections = Array.from(new Set(itemsWithSection.map((item) => item.section)));
-
-  for (const section of sections) {
-    result.push({ type: 'section', sectionName: section as string });
-
-    for (const item of itemsWithSection.filter((item) => item.section === section)) {
+  for (const sectionName of sectionNames) {
+    result.push({ type: 'section', sectionName });
+    for (const item of itemsBySection.get(sectionName) ?? []) {
       result.push({ type: 'item', item });
     }
+    const skeletonForSection = skeletonBySection.get(sectionName);
+    if (skeletonForSection) {
+      pushSkeletons(skeletonForSection.count ?? baseSkeletonCount);
+    }
+  }
+
+  // Skeletons without sections trail the list. Suppressed when the spec uses
+  // `sections` (those skeletons are already emitted under their headers).
+  if (skeletonConfig && !skeletonConfig.sections) {
+    pushSkeletons(baseSkeletonCount);
   }
 
   return result;
@@ -112,16 +170,12 @@ const ListViewRow = memo(
 
     const handleButtonClick = useCallback(() => {
       const clickTarget = renderedItems[index];
-      if (clickTarget?.type === 'item') {
-        onItemClick(clickTarget.item, index);
-      }
+      if (clickTarget?.type === 'item') onItemClick(clickTarget.item, index);
     }, [onItemClick, renderedItems, index]);
 
     const handleButtonHover = useCallback(() => {
       const hoverTarget = renderedItems[index];
-      if (hoverTarget?.type === 'item') {
-        onItemHover?.(hoverTarget.item);
-      }
+      if (hoverTarget?.type === 'item') onItemHover?.(hoverTarget.item);
     }, [onItemHover, renderedItems, index]);
 
     if (renderItem.type === 'section') {
@@ -129,6 +183,14 @@ const ListViewRow = memo(
         <SectionHeader {...ariaAttributes} style={style}>
           <span className="text-xs">{renderItem.sectionName}</span>
         </SectionHeader>
+      );
+    }
+
+    if (renderItem.type === 'skeleton') {
+      return (
+        <div style={style}>
+          <ListItemSkeleton />
+        </div>
       );
     }
 
@@ -191,11 +253,40 @@ interface ListViewProps<T extends ListItem> {
   listRef?: React.RefObject<ListImperativeAPI | null>;
   onItemClick: (item: T, index: number) => void;
   onItemHover?: (item: T) => void;
+  onScroll?: React.UIEventHandler<HTMLDivElement>;
   emptyStateMessage?: string;
   emptyStateIcon?: string;
   isLoading?: boolean;
   enableSections?: boolean;
+  /**
+   * Render skeleton placeholder rows when `items` is empty, independent of
+   * `isLoading`. Accepts the same shape as {@link ListItem.childrenLoading}.
+   * Use this when you want to show "more on the way" without disabling the
+   * rest of the panel (which `isLoading` does via the `.loading` row class).
+   */
+  loadingSkeleton?: boolean | ChildrenLoadingSpec;
 }
+
+/**
+ * Skeleton row used for the {@link ListItem.childrenLoading} drill-in path
+ * and the legacy `isLoading && items.length === 0` empty-state. Mirrors a
+ * real row's geometry — 32×32 icon + name + description — so the layout
+ * stays stable when real items take over.
+ */
+const ListItemSkeleton = () => (
+  <div
+    className="flex items-center gap-2.5 h-8"
+    role="presentation"
+    aria-hidden="true"
+    data-testid="list-item-skeleton"
+  >
+    <Skeleton className="h-8 w-8 shrink-0 rounded-lg" />
+    <div className="flex-1 space-y-1.5 min-w-0">
+      <Skeleton className="h-3.5 w-1/3" />
+      <Skeleton className="h-3 w-2/3" />
+    </div>
+  </div>
+);
 
 const ListViewInner = forwardRef(function ListView<T extends ListItem>(
   {
@@ -204,18 +295,25 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
     listRef,
     onItemClick,
     onItemHover,
+    onScroll,
     emptyStateMessage = 'No items found',
     emptyStateIcon = 'search-x',
     isLoading = false,
     enableSections = true,
+    loadingSkeleton,
   }: ListViewProps<T>,
   ref: React.Ref<ListViewHandle<T>>
 ) {
   const { isDarkMode } = useCanvasTheme();
 
+  // The legacy `isLoading && items.length === 0` empty-state path is preserved
+  // by falling through to a `true` spec, which `buildRenderedItems` turns into
+  // 3 default skeleton rows.
+  const activeSkeleton = loadingSkeleton ?? (isLoading && items.length === 0 ? true : undefined);
+
   const renderedItems = useMemo(
-    () => buildRenderedItems(items, enableSections),
-    [items, enableSections]
+    () => buildRenderedItems(items, enableSections, activeSkeleton),
+    [items, enableSections, activeSkeleton]
   );
 
   useImperativeHandle(ref, () => ({ renderedItems }), [renderedItems]);
@@ -225,19 +323,9 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
     [renderedItems, activeIndex, isLoading, isDarkMode, onItemClick, onItemHover]
   );
 
-  // Only show skeleton loaders when loading and no items exist
-  if (isLoading && items.length === 0) {
-    return (
-      <Column gap={8}>
-        {[...Array(3)].map((_, index) => (
-          <Skeleton className="h-8 w-full" key={index} />
-        ))}
-      </Column>
-    );
-  }
-
-  // Show empty state if no items and explicitly requested
-  if (items.length === 0) {
+  // Show empty state when nothing would render — neither real items nor
+  // skeleton placeholders.
+  if (renderedItems.length === 0) {
     return (
       <Column align="center" justify="center" flex={1} gap={10} style={{ minHeight: '250px' }}>
         <CanvasIcon icon={emptyStateIcon} size={48} color="var(--canvas-foreground-de-emp)" />
@@ -250,12 +338,16 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
     <StyledList
       id="toolbox-listbox"
       role="listbox"
+      // Signal "list is being updated" to assistive tech while skeleton
+      // sentinels are rendered in place of real items.
+      aria-busy={activeSkeleton ? true : undefined}
       listRef={listRef}
       rowProps={rowProps}
       rowComponent={ListViewRow}
       rowCount={renderedItems.length}
       rowHeight={40}
       overscanCount={20}
+      onScroll={onScroll}
     />
   );
 });

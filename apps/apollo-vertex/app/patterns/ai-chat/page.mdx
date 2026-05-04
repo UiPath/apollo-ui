@@ -1,11 +1,11 @@
-import { AiChatTemplate } from '@/templates/AiChatTemplate';
+import { AiChatTemplateLazy } from '@/templates/AiChatTemplateLazy';
 
 # AI Chat
 
-A composable AI chat UI component for Apollo Vertex. Built with React, TypeScript, and Tailwind CSS. Designed to work with [TanStack AI](https://tanstack.com/ai) — you bring `useChat` and a connection adapter, the component handles the chrome (scroll, input, loading, suggestions, errors) while you control how messages and tool calls render.
+A composable AI chat UI component for Apollo Vertex. Built with React, TypeScript, and Tailwind CSS. Designed to work with [TanStack AI](https://tanstack.com/ai)
 
-<div className="not-prose my-8">
-  <AiChatTemplate />
+<div className="not-prose my-8 h-[70vh] min-h-[500px] max-h-[900px] flex w-full flex-col">
+  <AiChatTemplateLazy />
 </div>
 
 ## Features
@@ -14,17 +14,33 @@ A composable AI chat UI component for Apollo Vertex. Built with React, TypeScrip
 - **Composable** — `AiChat` is the shell, `AiChatMessage` renders messages, you iterate parts and render tools inline
 - **Type-Safe Tool Rendering** — Check `part.name` in the parts loop and TypeScript narrows `part.output` automatically
 - **AgentHub Adapter** — Built-in adapter for the UiPath AgentHub normalized LLM endpoint (OpenAI + Anthropic models)
+- **Conversational Agent Adapter** — Built-in adapter for a deployed UiPath Conversational Agent, with session management
 - **Markdown Rendering** — Renders assistant responses with GitHub Flavored Markdown
+- **Data Fabric Table Tool** — Display entity data as filterable tables with list, search, and range filters, and multi-entity joins
+- **Data Fabric Distribution Tool** — Render histogram charts for numeric or datetime fields with optional aggregations, filters, and joins
+- **Data Fabric Line Chart Tool** — Render time-series line charts over a datetime field with optional aggregations, filters, and joins
+- **Data Fabric Multi-Line Chart Tool** — Compare two metrics on a shared datetime axis, each with its own Y axis, totals label, and join support
 - **Suggestion Buttons** — Interactive choice buttons rendered from tool results
-- **Error Display** — Inline error banner for API and network errors
-- **i18n Support** — Built-in internationalization via react-i18next
-- **Accessible** — WCAG 2.1 compliant with keyboard navigation and ARIA live regions
 
 ## Installation
+
+Apollo Vertex components are published to a custom shadcn registry under the `@uipath` namespace. Before running the `add` command, register the namespace once in your project's `components.json` so shadcn knows where to fetch from (otherwise the CLI will prompt you for a registry URL):
+
+```json
+{
+  "registries": {
+    "@uipath": "https://apollo-vertex.vercel.app/r/{name}.json"
+  }
+}
+```
+
+Then install the component:
 
 ```bash
 npx shadcn@latest add @uipath/ai-chat
 ```
+
+> This `registries` setup is a one-time configuration per project — every `@uipath/*` component on this site uses the same alias.
 
 ## Quick Start
 
@@ -148,59 +164,296 @@ The `model.vendor` field controls wire-format differences:
 
 ---
 
-## Suggestion Buttons
+## Conversational Agent Adapter
 
-Return a choices object as a tool result content to render interactive suggestion buttons. Buttons disappear after the user sends another message.
+The built-in adapter for a deployed **UiPath Conversational Agent**. It opens a session against the agent, forwards the latest user message, and bridges the agent's streaming response back into TanStack AI `StreamChunk` events.
 
-> **Try it out** — type *"give me some choices"* in the demo above to see suggestion buttons in action. The demo uses the `presentChoices` example tool defined in `examples/choices-tool.ts`.
+```tsx
+import { useChat } from '@tanstack/ai-react';
+import { UiPath } from '@uipath/uipath-typescript/core';
+import {
+  createConversationalAgentConnection,
+  type ConversationalAgentAdapterConfig,
+} from '@/components/ui/ai-chat/adapters/conversational-agent/adapter';
 
-The choices format:
+const sdk = new UiPath({ /* baseUrl, accessToken, ... */ });
+
+const connection = createConversationalAgentConnection({
+  sdk,
+  agentId,   // number — the deployed agent id
+  folderId,  // number — the folder the agent lives in
+});
+
+const { messages, sendMessage, isLoading, stop, clear, error } = useChat({
+  connection,
+});
+
+// Dispose the session when the connection is no longer needed
+useEffect(() => () => connection.dispose(), [connection]);
+```
+
+Notes:
+- The adapter manages a single session per connection — call `connection.dispose()` when unmounting, or key the component by agent id so a new connection is created on switch.
+- Tools are driven by the agent itself, not by the client — the `tools` option is not used with this adapter.
+- Only the latest user message is sent per turn; prior history is tracked on the agent server-side.
+
+---
+
+## Data Fabric Table Tool
+
+The `data_fabric_table` tool renders entity data as interactive tables powered by `@uipath/apollo-dashboarding`. It supports server-side **filtering** — list filters, text search, and numeric ranges — so users can ask for filtered views directly in the chat.
+
+```tsx
+import {
+  createDataFabricTableTool,
+  dataFabricTableClient,
+} from '@/components/ui/ai-chat/tools/data-fabric-table';
+
+const tableTool = createDataFabricTableTool({
+  entities,           // Record<string, Entity> — entity metadata with field names and types
+  accessToken,        // Bearer token for Data Fabric API
+  dataFabricBaseUrl,  // Base URL for Data Fabric proxy
+});
+
+// Use dataFabricTableClient in your tools array, tableTool.toolPrompt in your system prompt,
+// and tableTool.renderTable(part.output, part.id) in your parts loop.
+```
+
+### Filter types
+
+The LLM can pass filters based on the user's request:
+
+- **List filter** — match or exclude specific values: `"show invoices where Status is Pending"`
+- **Search filter** — text pattern matching (contains, startsWith, endsWith): `"find customers starting with A"`
+- **Range filter (numeric)** — numeric min/max: `"show orders over $200"`
+- **Range filter (datetime)** — ISO 8601 min/max: `"show orders from the last 30 days"`. The tool prompt is given today's date so the LLM can resolve relative phrases into absolute ISO dates before calling the tool.
+
+Filters are passed through the table configuration to `@uipath/apollo-dashboarding`, which translates them to Data Fabric query filters server-side.
+
+### Multi-entity joins
+
+The tool can combine data from related entities via the `joins` argument. The `entityName` field is the primary entity, and each join supplies the entity to attach and an `on` clause with `EntityName.FieldName` references:
+
 ```json
 {
-  "type": "choices",
-  "prompt": "How would you like to proceed?",
-  "options": [
-    { "id": "approve", "label": "Approve Document", "recommended": true },
-    { "id": "reject", "label": "Reject Document" }
+  "entityName": "Invoice",
+  "dimensions": ["Invoice.Number", "Invoice.Total", "Customer.Name"],
+  "joins": [
+    {
+      "type": "LEFT",
+      "entity": "Customer",
+      "on": { "left": "Invoice.CustomerId", "right": "Customer.Id" }
+    }
   ]
 }
 ```
 
-Handle selection explicitly or let the default behavior send `option.label` as a message:
+When joins are present, dimensions and filter fields must use qualified `EntityName.FieldName` names (using the exact entity names from the Entity Reference — never aliases). The join condition goes in `joins[].on`; don't also add it as a filter.
+
+---
+
+## Data Fabric Distribution Tool
+
+The `data_fabric_distribution` tool renders a histogram from a Data Fabric entity by binning a single numeric or datetime field. It shares the filter and join system with the table tool, and adds an optional aggregation metric.
 
 ```tsx
-<AiChat
-  messages={messages}
-  isLoading={isLoading}
-  onSendMessage={(text) => sendMessage(text)}
-  onStop={stop}
-  onChoiceSelect={(option) => {
-    sendMessage(option.value ?? option.label);
-  }}
->
-  {messages.map((message) => (
-    <AiChatMessage key={message.id} message={message} />
-  ))}
-</AiChat>
+import {
+  createDataFabricDistributionTool,
+  dataFabricDistributionClient,
+} from '@/components/ui/ai-chat/tools/data-fabric-distribution';
+
+const distributionTool = createDataFabricDistributionTool({
+  entities,           // Record<string, Entity> — entity metadata with field names and types
+  accessToken,        // Bearer token for Data Fabric API
+  dataFabricBaseUrl,  // Base URL for Data Fabric proxy
+});
+
+// Use dataFabricDistributionClient in your tools array, distributionTool.toolPrompt in your
+// system prompt, and distributionTool.renderDistribution(part.output, part.id) in your parts loop.
 ```
 
-## Error Display
+### Dimension
 
-Pass an `Error` object to show an inline error banner:
+The `dimension` is the field used for binning and must be **numeric** or **datetime**:
+
+- Datetime dimensions bin by time (e.g. orders per month).
+- Numeric dimensions bin by value range.
+
+### Metric
+
+Omit `metric` entirely for the default `COUNT` of records per bin. To plot an aggregated numeric field, pass `{ aggregation, field }`:
+
+- `COUNT` — records per bin (default; `field` optional, picks the primary key).
+- `SUM`, `AVG`, `MIN`, `MAX` — applied to a numeric `field`.
+
+```json
+{
+  "entityName": "Order",
+  "dimension": "OrderDate",
+  "metric": { "aggregation": "SUM", "field": "Total" }
+}
+```
+
+### Filters and joins
+
+Filters and joins use the same schemas as the table tool (including the new datetime range filter). When joins are present, the `dimension` and `metric.field` must use qualified `EntityName.FieldName` names.
+
+---
+
+## Data Fabric Line Chart Tool
+
+The `data_fabric_line` tool renders a line chart from a Data Fabric entity, plotting a metric over a **datetime** dimension. It shares the metric, filter, and join system with the distribution tool — the only constraint is that the dimension must be a datetime field.
 
 ```tsx
-<AiChat
-  messages={messages}
-  isLoading={isLoading}
-  onSendMessage={(text) => sendMessage(text)}
-  onStop={stop}
-  error={error}
->
-  {messages.map((message) => (
-    <AiChatMessage key={message.id} message={message} />
-  ))}
-</AiChat>
+import {
+  createDataFabricLineTool,
+  dataFabricLineClient,
+} from '@/components/ui/ai-chat/tools/data-fabric-line';
+
+const lineTool = createDataFabricLineTool({
+  entities,           // Record<string, Entity> — entity metadata with field names and types
+  accessToken,        // Bearer token for Data Fabric API
+  dataFabricBaseUrl,  // Base URL for Data Fabric proxy
+});
+
+// Use dataFabricLineClient in your tools array, lineTool.toolPrompt in your
+// system prompt, and lineTool.renderLine(part.output, part.id) in your parts loop.
 ```
+
+### When to use line vs distribution
+
+- **Line** — trend / time-series questions: *"orders over time"*, *"revenue trend by month"*, *"growth across quarters"*. Always datetime on the X axis.
+- **Distribution** — histogram-style requests: *"distribution of order amount"*, *"histogram of X"*, numeric value-range binning. Either numeric or datetime dimension.
+
+For comparing **two or more metrics** on the same time axis, use [`data_fabric_multi_line`](#data-fabric-multi-line-chart-tool) instead.
+
+### Metric, filters, and joins
+
+Metric, filter, and join semantics are identical to the distribution tool. Omit `metric` for `COUNT`, or pass `{ aggregation, field }` for `SUM` / `AVG` / `MIN` / `MAX` of a numeric field. When joins are present, `dimension` and `metric.field` must use qualified `EntityName.FieldName` names.
+
+---
+
+## Data Fabric Multi-Line Chart Tool
+
+The `data_fabric_multi_line` tool renders two lines on a shared datetime X axis. The first metric uses the left Y axis (and gets its own color and totals label at the top); the second uses the right Y axis. Exactly two metrics — pass three and the tool call is rejected.
+
+```tsx
+import {
+  createDataFabricMultiLineTool,
+  dataFabricMultiLineClient,
+} from '@/components/ui/ai-chat/tools/data-fabric-multi-line';
+
+const multiLineTool = createDataFabricMultiLineTool({
+  entities,           // Record<string, Entity> — entity metadata with field names and types
+  accessToken,        // Bearer token for Data Fabric API
+  dataFabricBaseUrl,  // Base URL for Data Fabric proxy
+});
+
+// Use dataFabricMultiLineClient in your tools array, multiLineTool.toolPrompt in your
+// system prompt, and multiLineTool.renderMultiLine(part.output, part.id) in your parts loop.
+```
+
+### Metrics
+
+Pass an array of exactly two metrics with distinct `(aggregation, field)` pairs. Each entry uses the same shape as the line tool — `{ aggregation: "COUNT" }` for record counts (optional `field`), or `{ aggregation, field }` for `SUM` / `AVG` / `MIN` / `MAX` of a numeric field. Schema validation rejects duplicate `(aggregation, field)` pairs before the chart is rendered. If duplicates only emerge after field resolution (e.g., a `COUNT` with an explicit `field` that resolves to the same primary key as a default `COUNT`), the chart shows its no-data state instead. Order matters: the first metric gets the left axis and primary color; put the metric you want to emphasize first.
+
+```json
+{
+  "entityName": "Order",
+  "dimension": "OrderDate",
+  "metrics": [
+    { "aggregation": "COUNT" },
+    { "aggregation": "SUM", "field": "Total" }
+  ]
+}
+```
+
+### When to use multi-line vs line
+
+- **Multi-line** — comparing two metrics on the same time axis: *"orders count and revenue over time"*, *"min vs max price by month"*.
+- **Line** — a single metric over time. Don't use multi-line for a single metric.
+- For 3+ metrics, render multiple charts (one per metric, or pair them) — the underlying chart only has two Y axes.
+
+### Filters and joins
+
+Identical to the line tool. Filter and join schemas are shared, and qualified `EntityName.FieldName` names are required for the dimension and every metric `field` when joins are present.
+
+---
+
+## Data Fabric KPI Tool
+
+The `data_fabric_kpi` tool renders a single scalar value — one aggregated metric across an entity, with no dimension or breakdown. It shares the metric, filter, and join system with the other Data Fabric chart tools.
+
+```tsx
+import {
+  createDataFabricKpiTool,
+  dataFabricKpiClient,
+} from '@/components/ui/ai-chat/tools/data-fabric-kpi';
+
+const kpiTool = createDataFabricKpiTool({
+  entities,           // Record<string, Entity> — entity metadata with field names and types
+  accessToken,        // Bearer token for Data Fabric API
+  dataFabricBaseUrl,  // Base URL for Data Fabric proxy
+});
+
+// Use dataFabricKpiClient in your tools array, kpiTool.toolPrompt in your
+// system prompt, and kpiTool.renderKpi(part.output, part.id) in your parts loop.
+```
+
+### When to use KPI vs other chart tools
+
+- **KPI** — single-number questions: *"how many orders are open"*, *"total revenue"*, *"average invoice amount"*, *"max order total"*. No dimension or breakdown.
+- **Line / Distribution** — when the user wants the value sliced across a time or value axis (*"over time"*, *"by month"*, *"distribution of"*).
+- **Table** — when the user wants individual records.
+
+### Metric
+
+Omit `metric` entirely for the default `COUNT` of records. To plot an aggregated numeric field, pass `{ aggregation, field }`:
+
+- `COUNT` — total record count (default; `field` optional, picks the primary key).
+- `SUM`, `AVG`, `MIN`, `MAX` — applied to a numeric `field`.
+
+```json
+{
+  "entityName": "Order",
+  "metric": { "aggregation": "SUM", "field": "Total" }
+}
+```
+
+### Filters and joins
+
+Filter and join schemas are shared with the other Data Fabric tools (including the datetime range filter). When joins are present, the `metric.field` and any filter fields must use qualified `EntityName.FieldName` names.
+
+---
+
+## Suggestion Buttons
+
+The `presentChoices` tool renders interactive suggestion buttons. Define the tool with a Zod schema, and render choices inline in the parts loop:
+
+```tsx
+import {
+  presentChoicesClient,
+  renderChoices,
+  CHOICES_TOOL_PROMPT,
+} from '@/components/ui/ai-chat/tools/choices';
+
+// Add presentChoicesClient to your tools array and CHOICES_TOOL_PROMPT to your system prompt.
+
+// In your parts loop:
+{message.parts.map((part) => {
+  if (part.type === 'tool-call' && part.name === 'presentChoices' && part.output) {
+    return (
+      <div key={part.id}>
+        {renderChoices(part.output, { onAction: (text) => sendMessage(text) })}
+      </div>
+    );
+  }
+  return null;
+})}
+```
+
+> **Try it out** — type *"give me some choices"* in the demo above to see suggestion buttons in action.
+
 
 ---
 
@@ -218,7 +471,6 @@ Chat shell component. Handles layout, scroll, input, loading indicator, suggesti
 | `onStop` | `() => void` | required | Stop/abort handler |
 | `children` | `ReactNode` | — | Message list (typically `messages.map(...)`) |
 | `onClearChat` | `() => void` | — | Clear handler |
-| `onChoiceSelect` | `(option: ChoiceOption) => void` | — | Suggestion button handler (default: sends `option.label`) |
 | `assistantName` | `string` | `"AI Assistant"` | Assistant display name |
 | `title` | `string` | — | Chat title in the header |
 | `emptyState` | `ReactNode` | — | Custom empty state |

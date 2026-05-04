@@ -66,7 +66,21 @@
           "color-sidebar-accent-foreground": "var(--sidebar-accent-foreground)",
           "color-sidebar-border": "var(--sidebar-border)",
           "color-sidebar-ring": "var(--sidebar-ring)",
-          "font-sans": "var(--font-sans)"
+          "font-sans": "var(--font-sans)",
+          "color-ai-chat": "var(--ai-chat)",
+          "color-ai-chat-foreground": "var(--ai-chat-foreground)",
+          "color-ai-chat-accent": "var(--ai-chat-accent)",
+          "color-ai-chat-accent-foreground": "var(--ai-chat-accent-foreground)",
+          "color-ai-chat-bubble-user": "var(--ai-chat-bubble-user)",
+          "color-ai-chat-bubble-user-foreground": "var(--ai-chat-bubble-user-foreground)",
+          "color-ai-chat-bubble-assistant": "var(--ai-chat-bubble-assistant)",
+          "color-ai-chat-bubble-assistant-foreground": "var(--ai-chat-bubble-assistant-foreground)",
+          "color-ai-chat-border": "var(--ai-chat-border)",
+          "color-ai-chat-input": "var(--ai-chat-input)",
+          "color-ai-chat-input-foreground": "var(--ai-chat-input-foreground)",
+          "color-ai-chat-ring": "var(--ai-chat-ring)",
+          "color-ai-chat-muted": "var(--ai-chat-muted)",
+          "color-ai-chat-muted-foreground": "var(--ai-chat-muted-foreground)"
         },
         "light": {
           "background": "oklch(1 0 89.8800)",
@@ -152,7 +166,24 @@
           "--info-fg": "oklch(0.49 0.12 210)",
           "--success-fg": "oklch(0.46 0.10 152)",
           "--destructive-fg": "oklch(0.50 0.14 18)",
-          "ai-gradient": "linear-gradient(100.64deg, rgb(238, 224, 255) 8.29%, rgb(207, 217, 255) 88.73%)"
+          "ai-chat": "oklch(0.985 0.002 260)",
+          "ai-chat-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-chat-accent": "oklch(0.64 0.115 208)",
+          "ai-chat-accent-foreground": "oklch(1 0 0)",
+          "ai-chat-bubble-user": "oklch(0.955 0.008 252)",
+          "ai-chat-bubble-user-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-chat-bubble-assistant": "oklch(0.96 0.020 275)",
+          "ai-chat-bubble-assistant-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-chat-border": "oklch(0.92 0.008 260)",
+          "ai-chat-input": "oklch(0.975 0.004 260)",
+          "ai-chat-input-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-chat-ring": "oklch(0.64 0.115 208)",
+          "ai-chat-muted": "oklch(0.955 0.006 260)",
+          "ai-chat-muted-foreground": "oklch(0.50 0.020 260)",
+          "ai-gradient": "linear-gradient(100.64deg, rgb(238, 224, 255) 8.29%, rgb(207, 217, 255) 88.73%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
+          "ai-gradient-start": "#6C5AEF",
+          "ai-gradient-end": "#69C7DD"
         },
         "dark": {
           "background": "oklch(0.2100 0.0300 258.5000)",
@@ -223,7 +254,24 @@
           "shadow-2xl": "0 0px 12px 0px hsl(0 0% 0% / 0.25)",
           "tracking-normal": "0em",
           "spacing": "0.25rem",
-          "ai-gradient": "linear-gradient(98.69deg, rgb(108, 90, 239) 8.79%, rgb(105, 199, 221) 91.48%)"
+          "ai-chat": "oklch(0.19 0.025 260)",
+          "ai-chat-foreground": "oklch(0.95 0.010 225)",
+          "ai-chat-accent": "oklch(0.69 0.112 207)",
+          "ai-chat-accent-foreground": "oklch(0.1660 0.0283 203.34)",
+          "ai-chat-bubble-user": "oklch(0.28 0.035 255)",
+          "ai-chat-bubble-user-foreground": "oklch(0.95 0.010 225)",
+          "ai-chat-bubble-assistant": "oklch(0.25 0.030 270)",
+          "ai-chat-bubble-assistant-foreground": "oklch(0.95 0.010 225)",
+          "ai-chat-border": "oklch(0.30 0.040 258)",
+          "ai-chat-input": "oklch(0.22 0.030 258)",
+          "ai-chat-input-foreground": "oklch(0.95 0.010 225)",
+          "ai-chat-ring": "oklch(0.69 0.112 207)",
+          "ai-chat-muted": "oklch(0.26 0.030 258)",
+          "ai-chat-muted-foreground": "oklch(0.65 0.020 258)",
+          "ai-gradient": "linear-gradient(98.69deg, rgb(108, 90, 239) 8.79%, rgb(105, 199, 221) 91.48%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
+          "ai-gradient-start": "#6C5AEF",
+          "ai-gradient-end": "#69C7DD"
         }
       }
     },
@@ -261,29 +309,29 @@
       "description": "A composable AI chat UI component for TanStack AI with AgentHub adapter, markdown rendering, suggestion buttons, and error display",
       "dependencies": [
         "@mantine/hooks@^9.0.0",
-        "@tanstack/ai@^0.8.1",
-        "@tanstack/ai-client@0.7.2",
-        "@tanstack/ai-react@0.7.2",
-        "@uipath/uipath-typescript@^1.2.1",
+        "@tanstack/ai@0.14.0",
+        "@tanstack/ai-client@0.8.0",
+        "@tanstack/ai-react@0.8.0",
+        "@tanstack/react-query@^5.90.0",
+        "@types/luxon",
+        "@uipath/apollo-dashboarding@0.0.61",
+        "@uipath/uipath-typescript@^1.3.1",
         "eventsource-parser@^3.0.6",
         "zod",
         "lucide-react",
+        "luxon",
         "react-i18next",
         "react-markdown",
-        "remark-gfm"
+        "remark-gfm",
+        "framer-motion"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "@uipath/alert-dialog",
+        "@uipath/card",
+        "@uipath/dropdown-menu",
+        "@uipath/tooltip"
+      ],
       "files": [
-        {
-          "path": "registry/ai-chat/types.ts",
-          "type": "registry:lib",
-          "target": "components/ui/ai-chat/types.ts"
-        },
-        {
-          "path": "registry/ai-chat/utils/ai-chat-utils.ts",
-          "type": "registry:lib",
-          "target": "components/ui/ai-chat/utils/ai-chat-utils.ts"
-        },
         {
           "path": "registry/ai-chat/adapters/agenthub/types.ts",
           "type": "registry:lib",
@@ -365,9 +413,149 @@
           "target": "components/ui/ai-chat/components/ai-chat-input.tsx"
         },
         {
+          "path": "registry/ai-chat/components/ai-chat-input-glow.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-input-glow.tsx"
+        },
+        {
           "path": "registry/ai-chat/components/ai-chat-suggestions.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-suggestions.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-thinking.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-thinking.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-empty-state.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-empty-state.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/icons/autopilot.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/icons/autopilot.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/icons/autopilot-gradient.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/icons/autopilot-gradient.tsx"
+        },
+        {
+          "path": "registry/ai-chat/charts/table-chart-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/table-chart-card.tsx"
+        },
+        {
+          "path": "registry/ai-chat/charts/no-data-message.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/no-data-message.tsx"
+        },
+        {
+          "path": "registry/ai-chat/charts/tool-resolution-error.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/tool-resolution-error.tsx"
+        },
+        {
+          "path": "registry/ai-chat/charts/distribution-chart-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/distribution-chart-card.tsx"
+        },
+        {
+          "path": "registry/ai-chat/charts/line-chart-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/line-chart-card.tsx"
+        },
+        {
+          "path": "registry/ai-chat/charts/multi-line-chart-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/multi-line-chart-card.tsx"
+        },
+        {
+          "path": "registry/ai-chat/charts/kpi-chart-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/kpi-chart-card.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/choices/choices-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/choices/choices-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/choices/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/choices/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric/shared.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric/shared.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric/binned.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric/binned.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric/resolver-result.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric/resolver-result.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-table/data-fabric-table-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/data-fabric-table/data-fabric-table-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-table/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric-table/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-distribution/data-fabric-distribution-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/data-fabric-distribution/data-fabric-distribution-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-distribution/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric-distribution/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-line/data-fabric-line-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/data-fabric-line/data-fabric-line-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-line/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric-line/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-multi-line/data-fabric-multi-line-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/data-fabric-multi-line/data-fabric-multi-line-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-multi-line/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric-multi-line/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-kpi/data-fabric-kpi-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/data-fabric-kpi/data-fabric-kpi-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-kpi/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric-kpi/index.ts"
         }
       ]
     },
@@ -682,6 +870,20 @@
       "title": "Empty",
       "description": "An empty state component for when there's no data to display.",
       "files": [{ "path": "registry/empty/empty.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "feedback-vote-widget",
+      "type": "registry:ui",
+      "title": "Feedback Vote Widget",
+      "description": "A thumbs up/down feedback control with an optional comment textarea, designed for the UiPath Platform Feedback API.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@uipath/button", "@uipath/textarea"],
+      "files": [
+        {
+          "path": "registry/feedback-vote-widget/feedback-vote-widget.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "field",
@@ -1062,7 +1264,20 @@
         {
           "path": "registry/shell/shell-user-profile-menu-items.tsx",
           "type": "registry:ui"
-        }
+        },
+        {
+          "path": "registry/shell/group-membership-guard.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/use-group-members.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/use-is-group-member.ts",
+          "type": "registry:ui"
+        },
+        { "path": "lib/identity-service.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -1146,6 +1361,7 @@
       "dependencies": [
         "@radix-ui/react-slot",
         "class-variance-authority",
+        "framer-motion",
         "lucide-react",
         "react-i18next"
       ],

@@ -885,27 +885,37 @@ describe('ButtonHandleStyleUtils', () => {
     });
 
     it('should calculate equidistant positions for 3 handles', () => {
-      // 3 handles, gridSize=8: ideal=96/4=24, rounded=24, span=48, start=(96-48)/2=24
-      // Positions: 24, 48, 72
-      expect(calculateGridAlignedHandlePositions(96, 3)).toEqual([24, 48, 72]);
+      // 3 handles, gridSize=16: ideal=96/4=24, rounded=32, span=64, start=(96-64)/2=16
+      // Positions: 16, 48, 80
+      expect(calculateGridAlignedHandlePositions(96, 3)).toEqual([16, 48, 80]);
     });
 
     it('should calculate equidistant positions for 4 handles', () => {
-      // 4 handles, gridSize=8: ideal=96/5=19.2, rounded=16, span=48, start=(96-48)/2=24
-      // Positions: 24, 40, 56, 72 (symmetric around 48)
+      // 4 handles, gridSize=16: ideal=96/5=19.2, rounded=16, start=24.
+      // Spacing is already at gridSize so parity fix cannot bump down further.
+      // In practice BaseNode auto-grows so 4 handles never fit in 96px.
       expect(calculateGridAlignedHandlePositions(96, 4)).toEqual([24, 40, 56, 72]);
     });
 
     it('should work with larger node sizes', () => {
-      // 160px, 3 handles, gridSize=8: ideal=40, rounded=40, span=80, start=40
-      // Positions: 40, 80, 120
-      expect(calculateGridAlignedHandlePositions(160, 3)).toEqual([40, 80, 120]);
+      // 160px, 3 handles, gridSize=16: ideal=40, rounded=48, span=96, start=32
+      // Positions: 32, 80, 128
+      expect(calculateGridAlignedHandlePositions(160, 3)).toEqual([32, 80, 128]);
+    });
+
+    it('should fix parity when fewer handles share a taller node', () => {
+      // 160px node (driven by 3 handles on the other side), 2 handles on this side.
+      // ideal=53.33, rounded=48, start=56 (off-grid).
+      // Parity fix bumps spacing down to 32: span=32, start=64.
+      // Positions: 64, 96 — both on 16px grid, handles stay inward
+      expect(calculateGridAlignedHandlePositions(160, 2)).toEqual([64, 96]);
     });
 
     it('should use custom grid size', () => {
-      // 100px, 2 handles, gridSize=10: ideal=100/3≈33.33, rounded=30, span=30, start=35
-      // Positions: 35, 65 (symmetric around 50)
-      expect(calculateGridAlignedHandlePositions(100, 2, 10)).toEqual([35, 65]);
+      // 100px, 2 handles, gridSize=10: ideal=33.33, rounded=30, start=35 (off-grid).
+      // Parity fix bumps spacing down to 20: span=20, start=40.
+      // Positions: 40, 60 (symmetric around 50)
+      expect(calculateGridAlignedHandlePositions(100, 2, 10)).toEqual([40, 60]);
     });
 
     it('should calculate equidistant positions for 5 handles', () => {
@@ -914,13 +924,11 @@ describe('ButtonHandleStyleUtils', () => {
       expect(calculateGridAlignedHandlePositions(96, 5)).toEqual([16, 32, 48, 64, 80]);
     });
 
-    it('should distribute even handle counts symmetrically when spacing is an odd multiple of gridSize', () => {
-      // 80px, 6 handles, gridSize=8: ideal=80/7≈11.43, rounded=8, span=40, start=20.
-      // Positions: 20, 28, 36, 44, 52, 60. Midpoint = (20+60)/2 = 40 = nodeSize/2 ✓
-      // Regression: per-position snapping (Math.round, half-up) used to shift the
-      // entire row to [24, 32, 40, 48, 56, 64] (midpoint 44, drift +4).
+    it('should distribute even handle counts symmetrically', () => {
+      // 80px, 6 handles, gridSize=16: ideal=80/7≈11.43, rounded=16, span=80, start=0.
+      // Positions: 0, 16, 32, 48, 64, 80. Midpoint = (0+80)/2 = 40 = nodeSize/2 ✓
       const positions = calculateGridAlignedHandlePositions(80, 6);
-      expect(positions).toEqual([20, 28, 36, 44, 52, 60]);
+      expect(positions).toEqual([0, 16, 32, 48, 64, 80]);
       expect((positions[0] + positions[positions.length - 1]) / 2).toBe(40);
     });
 

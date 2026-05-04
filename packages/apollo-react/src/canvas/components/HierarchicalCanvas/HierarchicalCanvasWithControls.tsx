@@ -1,12 +1,7 @@
-import {
-  type Node,
-  Panel,
-  ReactFlowProvider,
-  useReactFlow,
-} from '@uipath/apollo-react/canvas/xyflow/react';
+import { type Node, Panel, ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Button } from '@uipath/apollo-wind';
 import type React from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { NodeRegistryProvider } from '../../core';
 import type { CategoryManifest } from '../../schema/node-definition';
 import type { NodeManifest } from '../../schema/node-definition/node-manifest';
@@ -20,9 +15,7 @@ import {
   useCanvasStore,
 } from '../../stores/canvasStore';
 import type { CanvasLevel } from '../../types/canvas.types';
-import { canvasEventBus } from '../../utils/CanvasEventBus';
 import { CanvasIcon } from '../../utils/icon-registry';
-import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
 import { HierarchicalCanvas } from './HierarchicalCanvas';
 
 // Demo canvas data for Storybook testing
@@ -301,8 +294,6 @@ const CanvasWithControlsContent: React.FC<CanvasWithControlsContentProps> = ({
   onCanvasesChange,
   onPathChange,
 }) => {
-  const reactFlowInstance = useReactFlow();
-
   // Use stable selectors to avoid "getSnapshot should be cached" errors
   const currentCanvas = useCanvasStore(selectCurrentCanvas);
   const currentPathLength = useCanvasStore(selectCurrentPathLength);
@@ -310,20 +301,6 @@ const CanvasWithControlsContent: React.FC<CanvasWithControlsContentProps> = ({
   const removeNode = useCanvasStore(selectRemoveNode);
   const removeEdge = useCanvasStore(selectRemoveEdge);
   const updateNodes = useCanvasStore(selectUpdateNodes);
-
-  // Listen for handle action events and create preview
-  useEffect(() => {
-    const handleAction = (event: { nodeId: string; handleId: string }) => {
-      if (reactFlowInstance) {
-        createAddNodePreview(event.nodeId, event.handleId, reactFlowInstance);
-      }
-    };
-
-    canvasEventBus.on('handle:action', handleAction);
-    return () => {
-      canvasEventBus.off('handle:action', handleAction);
-    };
-  }, [reactFlowInstance]);
 
   const handleAddNode = useCallback(
     (nodeType: string) => {

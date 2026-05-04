@@ -18,7 +18,7 @@ const pageHeaderVariants = cva("", {
   variants: {
     size: {
       default: [
-        "flex flex-wrap items-center gap-4 py-4 px-6 min-h-[92px]",
+        "flex flex-wrap items-center gap-4 py-4 px-4 sm:px-6 lg:px-8 min-h-[92px] transition-[padding] duration-300 ease-in-out",
         "@3xl:grid @3xl:grid-cols-[1fr_auto] @3xl:py-0",
         "@3xl:has-[[data-slot=page-header-content]]:grid-cols-[3fr_6fr_3fr]",
       ].join(" "),
@@ -110,7 +110,7 @@ function PageHeaderTitleGroup({
 }
 
 const pageHeaderTitleVariants = cva(
-  "font-bold text-foreground w-full min-w-[80px] truncate",
+  "font-bold text-foreground w-full min-w-[80px] truncate transition-[font-size,line-height,letter-spacing] duration-300 ease-in-out",
   {
     variants: {
       size: {

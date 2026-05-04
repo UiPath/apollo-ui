@@ -23,7 +23,9 @@ export const WithLabel = {
   render: () => (
     <Row gap={2} align="center">
       <Checkbox id="terms" />
-      <Label htmlFor="terms">Accept terms and conditions</Label>
+      <Label htmlFor="terms" className="future:text-foreground future:font-normal">
+        Accept terms and conditions
+      </Label>
     </Row>
   ),
 } satisfies Story;
@@ -38,7 +40,9 @@ export const Disabled = {
   render: () => (
     <Row gap={2} align="center">
       <Checkbox id="disabled" disabled />
-      <Label htmlFor="disabled">Disabled checkbox</Label>
+      <Label htmlFor="disabled" className="future:font-normal future:text-foreground">
+        Disabled checkbox
+      </Label>
     </Row>
   ),
 } satisfies Story;
@@ -47,7 +51,9 @@ export const DisabledChecked = {
   render: () => (
     <Row gap={2} align="center">
       <Checkbox id="disabled-checked" disabled defaultChecked />
-      <Label htmlFor="disabled-checked">Disabled and checked</Label>
+      <Label htmlFor="disabled-checked" className="future:font-normal future:text-foreground">
+        Disabled and checked
+      </Label>
     </Row>
   ),
 } satisfies Story;
@@ -57,7 +63,9 @@ export const WithDescription = {
     <Column gap={2}>
       <Row gap={2} align="center">
         <Checkbox id="marketing" />
-        <Label htmlFor="marketing">Marketing emails</Label>
+        <Label htmlFor="marketing" className="future:font-normal future:text-foreground">
+          Marketing emails
+        </Label>
       </Row>
       <p className="text-sm text-muted-foreground pl-6">
         Receive emails about new products, features, and more.
@@ -73,19 +81,27 @@ export const Group = {
       <Column gap={2}>
         <Row gap={2} align="center">
           <Checkbox id="all" defaultChecked />
-          <Label htmlFor="all">All notifications</Label>
+          <Label htmlFor="all" className="future:font-normal future:text-foreground">
+            All notifications
+          </Label>
         </Row>
         <Row gap={2} align="center">
           <Checkbox id="email" defaultChecked />
-          <Label htmlFor="email">Email notifications</Label>
+          <Label htmlFor="email" className="future:font-normal future:text-foreground">
+            Email notifications
+          </Label>
         </Row>
         <Row gap={2} align="center">
           <Checkbox id="push" />
-          <Label htmlFor="push">Push notifications</Label>
+          <Label htmlFor="push" className="future:font-normal future:text-foreground">
+            Push notifications
+          </Label>
         </Row>
         <Row gap={2} align="center">
           <Checkbox id="sms" />
-          <Label htmlFor="sms">SMS notifications</Label>
+          <Label htmlFor="sms" className="future:font-normal future:text-foreground">
+            SMS notifications
+          </Label>
         </Row>
       </Column>
     </Column>

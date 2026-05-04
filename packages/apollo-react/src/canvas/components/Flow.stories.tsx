@@ -14,7 +14,7 @@ import {
   withCanvasProviders,
 } from '../storybook-utils';
 import type { CanvasHandleActionEvent } from '../utils';
-import { applyPreviewToReactFlow, createPreviewNode } from '../utils/createPreviewNode';
+import { showPreviewGraph } from '../utils/createPreviewGraph';
 import { AddNodeManager, AddNodePanel } from './AddNodePanel';
 import { BaseCanvas } from './BaseCanvas';
 import type { BaseNodeData } from './BaseNode/BaseNode.types';
@@ -319,21 +319,17 @@ function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
       const sourceNode = reactFlowInstance.getNode(nodeId);
       const customData = sourceNode?.data?.useSmartHandles ? { useSmartHandles: true } : undefined;
 
-      const preview = createPreviewNode(
-        nodeId,
-        handleId,
+      showPreviewGraph({
+        source: {
+          nodeId,
+          handleId,
+        },
         reactFlowInstance,
-        undefined, // No drop position - use auto-placement
-        customData,
+        data: customData,
         sourceHandleType,
-        undefined, // Use default preview node size
-        position as Position,
-        ['stickyNote'] // Ignore sticky notes when calculating overlap
-      );
-
-      if (preview) {
-        applyPreviewToReactFlow(preview, reactFlowInstance);
-      }
+        handlePosition: position as Position,
+        ignoredNodeTypes: ['stickyNote'],
+      });
     }
   });
 

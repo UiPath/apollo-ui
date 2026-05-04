@@ -4,59 +4,113 @@ import type { NodeMenuAction, NodeMenuItem } from '../NodeContextMenu';
 
 // TODO: Add translation for the menu items
 
-export const getContextMenuItems = (
-  isParallelGroup: boolean,
-  groupIndex: number,
-  tasksLength: number,
-  taskIndex: number,
-  _taskGroupLength: number,
-  isAboveParallel: boolean,
-  isBelowParallel: boolean,
+export const getContextMenuItems = ({
+  isParallelGroup,
+  groupIndex,
+  tasksLength,
+  groupIndexInAllTasks,
+  taskIndexInAllTasks,
+  isAboveParallel,
+  isBelowParallel,
+  reGroupTaskFunction,
+  hideParallelOptions = false,
+}: {
+  isParallelGroup: boolean;
+  groupIndex: number;
+  tasksLength: number;
+  groupIndexInAllTasks: number;
+  taskIndexInAllTasks: number;
+  isAboveParallel: boolean;
+  isBelowParallel: boolean;
   reGroupTaskFunction: (
     groupModificationType: GroupModificationType,
     groupIndex: number,
     taskIndex: number
-  ) => void,
-  hideParallelOptions = false
-): NodeMenuItem[] => {
+  ) => void;
+  hideParallelOptions?: boolean;
+}): NodeMenuItem[] => {
   const CONTEXT_MENU_ITEMS = {
     MOVE_UP: getMenuItem('move-up', 'Move up', () =>
-      reGroupTaskFunction(GroupModificationType.TASK_GROUP_UP, groupIndex, taskIndex)
+      reGroupTaskFunction(
+        GroupModificationType.TASK_GROUP_UP,
+        groupIndexInAllTasks,
+        taskIndexInAllTasks
+      )
     ),
     MOVE_DOWN: getMenuItem('move-down', 'Move down', () =>
-      reGroupTaskFunction(GroupModificationType.TASK_GROUP_DOWN, groupIndex, taskIndex)
+      reGroupTaskFunction(
+        GroupModificationType.TASK_GROUP_DOWN,
+        groupIndexInAllTasks,
+        taskIndexInAllTasks
+      )
     ),
     UNGROUP_ALL: getMenuItem('ungroup', 'Ungroup parallel tasks', () =>
-      reGroupTaskFunction(GroupModificationType.UNGROUP_ALL_TASKS, groupIndex, taskIndex)
+      reGroupTaskFunction(
+        GroupModificationType.UNGROUP_ALL_TASKS,
+        groupIndexInAllTasks,
+        taskIndexInAllTasks
+      )
     ),
     SPLIT_TASK: getMenuItem('split', 'Remove from parallel group', () =>
-      reGroupTaskFunction(GroupModificationType.SPLIT_GROUP, groupIndex, taskIndex)
+      reGroupTaskFunction(
+        GroupModificationType.SPLIT_GROUP,
+        groupIndexInAllTasks,
+        taskIndexInAllTasks
+      )
     ),
     REMOVE_GROUP: getMenuItem('remove-group', 'Remove group from stage', () =>
-      reGroupTaskFunction(GroupModificationType.REMOVE_GROUP, groupIndex, taskIndex)
+      reGroupTaskFunction(
+        GroupModificationType.REMOVE_GROUP,
+        groupIndexInAllTasks,
+        taskIndexInAllTasks
+      )
     ),
     REMOVE_TASK: getMenuItem('remove-task', 'Delete task', () =>
-      reGroupTaskFunction(GroupModificationType.REMOVE_TASK, groupIndex, taskIndex)
+      reGroupTaskFunction(
+        GroupModificationType.REMOVE_TASK,
+        groupIndexInAllTasks,
+        taskIndexInAllTasks
+      )
     ),
     CREATE_PARALLEL_GROUP_ABOVE: getMenuItem(
       'group-with-up',
       'Create parallel group with task above',
-      () => reGroupTaskFunction(GroupModificationType.MERGE_GROUP_UP, groupIndex, taskIndex)
+      () =>
+        reGroupTaskFunction(
+          GroupModificationType.MERGE_GROUP_UP,
+          groupIndexInAllTasks,
+          taskIndexInAllTasks
+        )
     ),
     CREATE_PARALLEL_GROUP_BELOW: getMenuItem(
       'group-with-down',
       'Create parallel group with task below',
-      () => reGroupTaskFunction(GroupModificationType.MERGE_GROUP_DOWN, groupIndex, taskIndex)
+      () =>
+        reGroupTaskFunction(
+          GroupModificationType.MERGE_GROUP_DOWN,
+          groupIndexInAllTasks,
+          taskIndexInAllTasks
+        )
     ),
     ADD_TO_PARALLEL_GROUP_ABOVE: getMenuItem(
       'add-to-group-with-up',
       'Add task to parallel group above',
-      () => reGroupTaskFunction(GroupModificationType.MERGE_GROUP_UP, groupIndex, taskIndex)
+      () =>
+        reGroupTaskFunction(
+          GroupModificationType.MERGE_GROUP_UP,
+          groupIndexInAllTasks,
+          taskIndexInAllTasks
+        )
     ),
     ADD_TO_PARALLEL_GROUP_BELOW: getMenuItem(
       'add-to-group-with-down',
       'Add task to parallel group below',
-      () => reGroupTaskFunction(GroupModificationType.MERGE_GROUP_DOWN, groupIndex, taskIndex)
+      () =>
+        reGroupTaskFunction(
+          GroupModificationType.MERGE_GROUP_DOWN,
+          groupIndexInAllTasks,
+          taskIndexInAllTasks
+        )
     ),
     DIVIDER: getDivider(),
   };

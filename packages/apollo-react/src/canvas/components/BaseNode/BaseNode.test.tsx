@@ -4,10 +4,21 @@ import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { BaseNodeData } from './BaseNode.types';
 
+const DEFAULT_MANIFEST = {
+  display: { label: 'Test Node', shape: 'square', icon: 'test-icon' },
+  handleConfiguration: [],
+} as const;
+
 // Hoisted mocks — available inside vi.mock factories
-const { mockUpdateNode, mockHandleConfigs } = vi.hoisted(() => ({
+const { mockUpdateNode, mockHandleConfigs, mockManifest } = vi.hoisted(() => ({
   mockUpdateNode: vi.fn(),
   mockHandleConfigs: { current: undefined as HandleGroupManifest[] | undefined },
+  mockManifest: {
+    current: {
+      display: { label: 'Test Node', shape: 'square', icon: 'test-icon' },
+      handleConfiguration: [],
+    } as Record<string, unknown>,
+  },
 }));
 
 // xyflow is globally mocked in canvas-mocks.ts; extend with test-specific overrides.
@@ -25,10 +36,7 @@ vi.mock('../../hooks', () => ({
 
 vi.mock('../../core', () => ({
   useNodeTypeRegistry: () => ({
-    getManifest: () => ({
-      display: { label: 'Test Node', shape: 'square', icon: 'test-icon' },
-      handleConfiguration: [],
-    }),
+    getManifest: () => mockManifest.current,
   }),
 }));
 
@@ -115,6 +123,7 @@ describe('BaseNode', () => {
   afterEach(() => {
     mockUpdateNode.mockClear();
     mockHandleConfigs.current = undefined;
+    mockManifest.current = { ...DEFAULT_MANIFEST };
   });
 
   describe('Height computation', () => {
@@ -172,19 +181,19 @@ describe('BaseNode', () => {
     });
 
     it('shrinks back to user-provided height after handle removal', () => {
-      // User height=200, 8 handles need 320px
+      // User height=200, 8 handles need 288px
       mockHandleConfigs.current = makeHandles(Position.Left, 8);
       const { rerender } = render(<BaseNode {...defaultProps} height={200} />);
-      expect(mockUpdateNode).toHaveBeenCalledWith('test-node', { height: 320 });
+      expect(mockUpdateNode).toHaveBeenCalledWith('test-node', { height: 288 });
 
       // Simulate React Flow updating height
       mockUpdateNode.mockClear();
-      rerender(<BaseNode {...defaultProps} height={320} data={{}} />);
+      rerender(<BaseNode {...defaultProps} height={288} data={{}} />);
 
       // Remove handles — should return to 200, not DEFAULT_NODE_SIZE (96)
       mockHandleConfigs.current = [];
       mockUpdateNode.mockClear();
-      rerender(<BaseNode {...defaultProps} height={320} data={{}} />);
+      rerender(<BaseNode {...defaultProps} height={288} data={{}} />);
       expect(mockUpdateNode).toHaveBeenCalledWith('test-node', { height: 200 });
     });
 
@@ -222,6 +231,24 @@ describe('BaseNode', () => {
 
       expect(screen.getByTestId('skeleton-icon')).toBeInTheDocument();
       expect(screen.getByText('Test Node')).toBeInTheDocument();
+    });
+  });
+
+  describe('Stacked treatment', () => {
+    it('sets data-stacked when manifest.drillable is true', () => {
+      mockManifest.current = { ...DEFAULT_MANIFEST, drillable: true };
+      render(<BaseNode {...defaultProps} />);
+      expect(screen.getByTestId('base-container')).toHaveAttribute('data-stacked', 'true');
+    });
+
+    it('sets data-stacked when data.isCollapsed is true', () => {
+      render(<BaseNode {...defaultProps} data={{ isCollapsed: true }} />);
+      expect(screen.getByTestId('base-container')).toHaveAttribute('data-stacked', 'true');
+    });
+
+    it('omits data-stacked when neither drillable nor collapsed', () => {
+      render(<BaseNode {...defaultProps} />);
+      expect(screen.getByTestId('base-container')).not.toHaveAttribute('data-stacked');
     });
   });
 });

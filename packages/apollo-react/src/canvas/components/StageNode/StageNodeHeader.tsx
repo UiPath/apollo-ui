@@ -6,6 +6,7 @@ import { EntryConditionIcon, ExitConditionIcon, ReturnToOriginIcon } from '../..
 import { CanvasIcon } from '../../utils/icon-registry';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
+import { getExecutionStatusColor } from '../ExecutionStatusIcon/ExecutionStatusIcon';
 import {
   StageChip,
   StageHeader,
@@ -45,7 +46,10 @@ const StageNodeHeaderInner = ({
     onTaskAdd,
     onAddTaskFromToolbox,
     onStageTitleChange,
+    loadingTaskIds,
   } = props;
+
+  const isAddTaskDisabled = (loadingTaskIds?.size ?? 0) > 0;
 
   const icon = stageDetails?.icon;
   const statusLabel = execution?.stageStatus?.label;
@@ -175,7 +179,15 @@ const StageNodeHeaderInner = ({
         {status && (
           <CanvasTooltip content={statusLabel} placement="top">
             <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={statusLabel}>
-              <ExecutionStatusIcon status={status} size={20} />
+              {status === 'NotExecuted' ? (
+                <CanvasIcon
+                  icon="hourglass"
+                  size={20}
+                  color={getExecutionStatusColor('NotExecuted')}
+                />
+              ) : (
+                <ExecutionStatusIcon status={status} size={20} />
+              )}
             </Button>
           </CanvasTooltip>
         )}
@@ -187,6 +199,7 @@ const StageNodeHeaderInner = ({
               className="h-6 w-6"
               onClick={handleTaskAddClick}
               aria-label={addTaskLabel}
+              disabled={isAddTaskDisabled}
             >
               <CanvasIcon icon="plus" size={20} />
             </Button>

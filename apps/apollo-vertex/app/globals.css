@@ -7,6 +7,8 @@
 /* Design tokens — generated from registry.json > apollo-vertex-theme */
 @import "./theme.generated.css";
 
+@source "../node_modules/@uipath/apollo-dashboarding";
+
 @custom-variant dark (&:is(.dark *)); /* or nextra-theme-blog/style.css */
 
 :root {

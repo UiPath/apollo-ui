@@ -1,7 +1,8 @@
-import { Check, ChevronsUpDown, X } from 'lucide-react';
+import { ChevronsUpDown, X } from 'lucide-react';
 import * as React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Command,
   CommandEmpty,
@@ -73,7 +74,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
               aria-expanded={open}
               aria-label={selected.length > 0 ? `${selected.length} items selected` : placeholder}
               className={cn(
-                'w-full justify-between',
+                'w-full justify-between future:rounded-xl future:border-0 future:bg-surface-raised future:hover:bg-surface-overlay future:font-normal future:text-muted-foreground',
                 selected.length > 0 ? 'h-auto min-h-10' : 'h-10'
               )}
               disabled={disabled}
@@ -139,18 +140,13 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
                           }
                         }}
                         disabled={isDisabled}
-                        className={cn(isDisabled && 'opacity-50 cursor-not-allowed')}
+                        className={cn('group', isDisabled && 'opacity-50 cursor-not-allowed')}
                       >
-                        <div
-                          className={cn(
-                            'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
-                            isSelected
-                              ? 'bg-primary text-primary-foreground'
-                              : 'opacity-50 [&_svg]:invisible'
-                          )}
-                        >
-                          <Check className="h-4 w-4" />
-                        </div>
+                        <Checkbox
+                          checked={isSelected}
+                          className="mr-2 pointer-events-none group-hover:border-muted-foreground"
+                          tabIndex={-1}
+                        />
                         <span>{option.label}</span>
                       </CommandItem>
                     );

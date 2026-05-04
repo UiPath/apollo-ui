@@ -5,10 +5,11 @@ import { useCallback, useEffect, useRef } from 'react';
 import { FLOATING_CANVAS_PANEL_OFFSET, PREVIEW_NODE_ID } from '../../constants';
 import { useOptionalNodeTypeRegistry } from '../../core';
 import { usePreviewNode } from '../../hooks/usePreviewNode';
-import { resolveCollisions } from '../../utils';
+import { isPreviewEdge } from '../../utils/createPreviewNode';
 import type { BaseNodeData } from '../BaseNode';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import type { ListItem } from '../Toolbox';
+import { alignNodeToPreview, getOriginalEdge, placeAddedNode } from './AddNodeManager.helpers';
 import { AddNodePanel } from './AddNodePanel';
 import type { NodeItemData } from './AddNodePanel.types';
 
@@ -81,20 +82,19 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
       // Clean up preview node and all preview edges if they still exist
       reactFlowInstance.setNodes((nodes) => nodes.filter((n) => n.id !== PREVIEW_NODE_ID));
       reactFlowInstance.setEdges((edges) => {
-        const filteredEdges = edges.filter(
-          (e) => e.source !== PREVIEW_NODE_ID && e.target !== PREVIEW_NODE_ID
-        );
+        const filteredEdges = edges.filter((edge) => !isPreviewEdge(edge));
         // Restore original edge if it exists
-        return restoreEdgesRef.current
+        const restoredEdges = restoreEdgesRef.current
           ? [...filteredEdges, ...restoreEdgesRef.current]
           : filteredEdges;
+        restoreEdgesRef.current = null;
+        return restoredEdges;
       });
     } else if (previewNode && !restoreEdgesRef.current) {
       // Preview node just got selected
       // Store original edge(s) to restore later
-      restoreEdgesRef.current = previewNode.data.originalEdge
-        ? [previewNode.data.originalEdge as Edge]
-        : null;
+      const originalEdge = getOriginalEdge(previewNode);
+      restoreEdgesRef.current = originalEdge ? [originalEdge] : null;
     }
     lastPreviewNodeRef.current = previewNode || null;
   }, [previewNode, reactFlowInstance]);
@@ -133,21 +133,30 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
       const nodeData = currentPreviewNode.data?.useSmartHandles
         ? { ...baseNodeData, useSmartHandles: true }
         : baseNodeData;
-
-      // Create new node at preview position
-      const newNode: Node = {
-        id: newNodeId,
-        type: nodeItem.data.type,
-        position: currentPreviewNode.position,
-        selected: true,
-        data: nodeData,
-      };
+      const previewNodeScope = currentPreviewNode.parentId
+        ? { parentId: currentPreviewNode.parentId, extent: currentPreviewNode.extent }
+        : {};
       // Get the manifest for the new node type to find its default handles
       const newNodeManifest = registry?.getManifest(nodeItem.data.type);
 
+      // Create new node at preview position
+      const newNode = alignNodeToPreview(
+        {
+          id: newNodeId,
+          type: nodeItem.data.type,
+          position: currentPreviewNode.position,
+          selected: true,
+          data: nodeData,
+          ...previewNodeScope,
+        },
+        currentPreviewNode,
+        previewNodeConnectionInfo,
+        newNodeManifest
+      );
+
       // Create edges for all connections
       const newEdges: Edge[] = [];
-      const previewEdgeIds: string[] = [];
+      const previewEdgeIds = new Set<string>();
 
       for (const connectionInfoItem of previewNodeConnectionInfo) {
         // Get the default handle for the new node based on connection direction
@@ -177,7 +186,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
           ...edgeSourceTargetData,
           type: 'default',
         });
-        previewEdgeIds.push(connectionInfoItem.previewEdgeId);
+        previewEdgeIds.add(connectionInfoItem.previewEdgeId);
       }
 
       const { newNode: finalNode, newEdges: finalEdges } = onBeforeNodeAdded?.(
@@ -187,39 +196,52 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
         newNode,
         newEdges,
       };
+      const placementEdges = reactFlowInstance.getEdges();
 
       // Replace preview node with actual node and resolve collisions
+      let placedNode = finalNode;
       reactFlowInstance.setNodes((nodes) => {
         const newNodes = [
           ...nodes.filter((n) => n.id !== PREVIEW_NODE_ID).map((n) => ({ ...n, selected: false })),
           finalNode,
         ];
-        return resolveCollisions(newNodes, { ignoredNodeTypes });
+        const placement = placeAddedNode({
+          nodes: newNodes,
+          edges: placementEdges,
+          previewNode: currentPreviewNode,
+          insertedNode: finalNode,
+          registry,
+          ignoredNodeTypes,
+        });
+        placedNode = placement.insertedNode;
+        return placement.nodes;
       });
 
       // Replace all preview edges with actual edges
       reactFlowInstance.setEdges((edges) => [
-        ...edges.filter((e) => !previewEdgeIds.includes(e.id)),
+        ...edges.filter((edge) => !previewEdgeIds.has(edge.id) && !isPreviewEdge(edge)),
         ...finalEdges,
       ]);
+      restoreEdgesRef.current = null;
 
       // Call onNodeAdded for the first connection (for backwards compatibility)
       const [firstConnection] = previewNodeConnectionInfo;
       if (firstConnection) {
-        const firstEdgeSourceHandle = firstConnection.addNewNodeAsSource
-          ? newNodeManifest && registry?.getDefaultHandle(newNodeManifest.nodeType, 'source')?.id
-          : firstConnection.existingHandleId;
+        const firstMaterializedEdge = finalEdges.find(
+          (edge) => edge.source === placedNode.id || edge.target === placedNode.id
+        );
         const firstEdgeData = firstConnection.addNewNodeAsSource
-          ? { source: finalNode.id, sourceHandle: firstEdgeSourceHandle ?? 'output' }
+          ? {
+              source: placedNode.id,
+              sourceHandle: firstMaterializedEdge?.sourceHandle ?? 'output',
+            }
           : {
               source: firstConnection.existingNodeId,
               sourceHandle: firstConnection.existingHandleId,
             };
-        onNodeAdded?.(firstEdgeData.source, firstEdgeData.sourceHandle, finalNode);
+        onNodeAdded?.(firstEdgeData.source, firstEdgeData.sourceHandle, placedNode);
       }
-      // No need to restore edges once we have added the new node.
-      restoreEdgesRef.current = null;
-      handleClose();
+      lastPreviewNodeRef.current = null;
     },
     [
       previewNodeConnectionInfo,
@@ -229,7 +251,6 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
       onBeforeNodeAdded,
       onNodeAdded,
       ignoredNodeTypes,
-      handleClose,
     ]
   );
 

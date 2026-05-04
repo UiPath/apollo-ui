@@ -2,12 +2,14 @@ import { Spacing } from '@uipath/apollo-core';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { Button } from '@uipath/apollo-wind';
 import { CSSProperties, memo, RefObject, useCallback, useMemo } from 'react';
+import { GroupModificationType } from '../../utils';
 import { useStageTasksByGroups } from './hooks/useStageTasksByGroups';
 import { StageContent } from './StageNode.styles';
 import type { StageNodeProps, StageTaskItem, TaskStateReference } from './StageNode.types';
 import { StageNodeAdhocTaskGroups } from './StageNodeAdhocTaskGroups';
 import { StageNodeEventDrivenTaskGroups } from './StageNodeEventDrivenTaskGroups';
 import { StageNodeSequentialTaskGroups } from './StageNodeSequentialTaskGroups';
+import { getMenuItem } from './StageNodeTaskUtilities';
 
 const StageNodeAllTaskGroupsInner = ({
   props,
@@ -74,6 +76,68 @@ const StageNodeAllTaskGroupsInner = ({
     [onTaskClick, setSelectedNodeId, id]
   );
 
+  const generateReplaceTaskMenuItemForTask = useCallback(
+    (taskId: string, isParallel: boolean) => {
+      if (!onReplaceTaskFromToolbox) {
+        return undefined;
+      }
+
+      let groupIndex: number | undefined;
+      let taskIndex: number | undefined;
+      for (const [allTasksGroupIndex, group] of allTasks.entries()) {
+        for (const [allTasksTaskIndex, task] of group.entries()) {
+          if (task.id === taskId) {
+            groupIndex = allTasksGroupIndex;
+            taskIndex = allTasksTaskIndex;
+            break;
+          }
+        }
+      }
+      if (groupIndex === undefined || taskIndex === undefined) {
+        return undefined;
+      }
+
+      return getMenuItem('replace-task', 'Replace task', () => {
+        taskStateReference.current = {
+          isParallel,
+          groupIndex,
+          taskIndex,
+        };
+        onTaskClick?.(taskId);
+        setIsReplacingTask(true);
+      });
+    },
+    [onReplaceTaskFromToolbox, allTasks, onTaskClick, setIsReplacingTask, taskStateReference]
+  );
+
+  const generateDeleteTaskMenuItemForTask = useCallback(
+    (taskId: string) => {
+      if (!onTaskGroupModification) {
+        return undefined;
+      }
+
+      let groupIndex: number | undefined;
+      let taskIndex: number | undefined;
+      for (const [allTasksGroupIndex, group] of allTasks.entries()) {
+        for (const [allTasksTaskIndex, task] of group.entries()) {
+          if (task.id === taskId) {
+            groupIndex = allTasksGroupIndex;
+            taskIndex = allTasksTaskIndex;
+            break;
+          }
+        }
+      }
+      if (groupIndex === undefined || taskIndex === undefined) {
+        return undefined;
+      }
+
+      return getMenuItem('remove-task', 'Delete task', () =>
+        onTaskGroupModification(GroupModificationType.REMOVE_TASK, groupIndex, taskIndex)
+      );
+    },
+    [allTasks, onTaskGroupModification]
+  );
+
   return (
     <StageContent>
       {sequentialTaskGroups.length === 0 &&
@@ -97,35 +161,35 @@ const StageNodeAllTaskGroupsInner = ({
             isReadOnly={isReadOnly}
             selectedTaskId={selectedTaskId}
             taskWidthStyle={taskWidthStyle}
-            taskStateReference={taskStateReference}
             hasContextMenu={hasContextMenu}
             handleTaskClick={handleTaskClick}
-            setIsReplacingTask={setIsReplacingTask}
             handleReorderSequentialTasks={handleReorderSequentialTasks}
+            allTasks={allTasks}
+            generateReplaceTaskMenuItemForTask={generateReplaceTaskMenuItemForTask}
           />
           <StageNodeEventDrivenTaskGroups
             props={props}
             eventDrivenTasks={eventDrivenTasks}
             isReadOnly={isReadOnly}
             selectedTaskId={selectedTaskId}
-            taskStateReference={taskStateReference}
             marginTop={sequentialTaskGroups.length > 0 ? Spacing.SpacingS : '0px'}
             handleTaskClick={handleTaskClick}
-            setIsReplacingTask={setIsReplacingTask}
+            generateReplaceTaskMenuItemForTask={generateReplaceTaskMenuItemForTask}
+            generateDeleteTaskMenuItemForTask={generateDeleteTaskMenuItemForTask}
           />
           <StageNodeAdhocTaskGroups
             props={props}
             adhocTasks={adhocTasks}
             isReadOnly={isReadOnly}
             selectedTaskId={selectedTaskId}
-            taskStateReference={taskStateReference}
             marginTop={
               sequentialTaskGroups.length > 0 || eventDrivenTaskGroups.length > 0
                 ? Spacing.SpacingS
                 : '0px'
             }
             handleTaskClick={handleTaskClick}
-            setIsReplacingTask={setIsReplacingTask}
+            generateReplaceTaskMenuItemForTask={generateReplaceTaskMenuItemForTask}
+            generateDeleteTaskMenuItemForTask={generateDeleteTaskMenuItemForTask}
           />
         </Column>
       )}

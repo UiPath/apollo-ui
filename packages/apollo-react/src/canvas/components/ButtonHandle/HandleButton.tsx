@@ -2,7 +2,9 @@ import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useCallback, useEffect, useRef } from 'react';
 import { cx } from '../../utils/CssUtil';
+import { NodeViewportOverlay } from '../NodeViewportOverlay';
 import { CanvasInlineButton } from './CanvasInlineButton';
+import { LABEL_SHADOW_STYLE } from './HandleLabel';
 
 const BUTTON_POSITION: Record<Position, string> = {
   [Position.Top]: 'flex-col-reverse bottom-full left-1/2 -translate-x-1/2',
@@ -11,6 +13,16 @@ const BUTTON_POSITION: Record<Position, string> = {
   [Position.Right]: 'flex-row left-full top-1/2 -translate-y-1/2',
 };
 const DRAG_THRESHOLD = 5; // px — movement before a click becomes a drag
+
+export type HandleButtonPortal = {
+  nodeId: string;
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  transform: string;
+};
+
 /**
  * HandleButton — the "+" button on source handles (apollo-wind Button)
  *  Click → fires onAction.
@@ -29,6 +41,7 @@ export const HandleButton = memo(
     label,
     labelIcon,
     labelBackgroundColor,
+    portal,
   }: {
     visible?: boolean;
     labelVisible?: boolean;
@@ -38,6 +51,7 @@ export const HandleButton = memo(
     label?: string;
     labelIcon?: React.ReactNode;
     labelBackgroundColor?: string;
+    portal?: HandleButtonPortal;
   }) => {
     const didDragRef = useRef(false);
     const teardownRef = useRef<(() => void) | null>(null);
@@ -86,6 +100,16 @@ export const HandleButton = memo(
               clientY: rect.top + rect.height / 2,
             })
           );
+          // Clear the source node's hover state so handles hide after the
+          // connection drag ends.  Dragging from the notch fires mouseleave
+          // naturally; here it doesn't because the pointer originated on the
+          // button.  A synthetic mouseout bubbles up to BaseNode's onMouseLeave.
+          handleEl.dispatchEvent(
+            new MouseEvent('mouseout', {
+              bubbles: true,
+              relatedTarget: document.body,
+            })
+          );
         }
       };
 
@@ -102,12 +126,9 @@ export const HandleButton = memo(
       teardownRef.current = cleanup;
     }, []);
 
-    return (
+    const content = (
       <div
-        className={cx(
-          'absolute flex items-center gap-1 pointer-events-none',
-          BUTTON_POSITION[position]
-        )}
+        className={cx('absolute flex items-center pointer-events-none', BUTTON_POSITION[position])}
       >
         {visible && (
           <CanvasInlineButton
@@ -127,6 +148,18 @@ export const HandleButton = memo(
         )}
       </div>
     );
+
+    if (portal) {
+      const { nodeId, ...anchor } = portal;
+
+      return (
+        <NodeViewportOverlay nodeId={nodeId} anchor={anchor} layer="nodeHandleAffordance">
+          {content}
+        </NodeViewportOverlay>
+      );
+    }
+
+    return content;
   }
 );
 
@@ -143,14 +176,19 @@ const InlineLabel = ({
 }) => (
   <div
     className={cx(
-      'px-1.5 py-0.5 rounded-sm whitespace-nowrap select-none transition-opacity duration-250',
+      'px-1.5 py-0.5 rounded-sm whitespace-nowrap select-none transition-opacity duration-250 z-10',
       visible ? 'opacity-100' : 'opacity-0'
     )}
     style={backgroundColor ? { backgroundColor } : undefined}
   >
     <Row align="center" gap={4}>
       {labelIcon}
-      <span className="text-xs font-bold text-foreground-muted">{label}</span>
+      <span
+        className="text-xs font-bold text-foreground-muted"
+        style={backgroundColor ? undefined : LABEL_SHADOW_STYLE}
+      >
+        {label}
+      </span>
     </Row>
   </div>
 );
@@ -170,7 +208,7 @@ export const HandleHoverBridge = memo(
     if (!visible) return null;
     const isVertical = position === Position.Top || position === Position.Bottom;
     return (
-      <div className={cx(BRIDGE_BASE, BRIDGE_POSITION[position], isVertical ? 'h-14' : 'w-14')} />
+      <div className={cx(BRIDGE_BASE, BRIDGE_POSITION[position], isVertical ? 'h-15' : 'w-15')} />
     );
   }
 );

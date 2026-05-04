@@ -1237,4 +1237,324 @@ describe('Toolbox', () => {
       expect(screen.getByText('Child 3')).toBeInTheDocument();
     });
   });
+
+  describe('Scroll position preservation', () => {
+    const scrollableItems: ListItem[] = [
+      {
+        id: 'category-a',
+        name: 'Category A',
+        data: {},
+        icon: { name: 'folder' },
+        children: Array.from({ length: 20 }, (_, i) => ({
+          id: `a-child-${i}`,
+          name: `A Child ${i}`,
+          data: {},
+          icon: { name: 'file' },
+        })),
+      },
+      {
+        id: 'category-b',
+        name: 'Category B',
+        data: {},
+        icon: { name: 'folder' },
+        children: [
+          {
+            id: 'b-sub',
+            name: 'B Subcategory',
+            data: {},
+            icon: { name: 'folder' },
+            children: [
+              { id: 'b-grandchild', name: 'B Grandchild', data: {}, icon: { name: 'file' } },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const getListContainer = () => screen.getByRole('listbox') as HTMLDivElement;
+
+    const scrollList = (top: number) => {
+      const el = getListContainer();
+      el.scrollTop = top;
+      el.dispatchEvent(new Event('scroll'));
+    };
+
+    it('restores the exact scrollTop on back navigation', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      render(<Toolbox {...defaultProps} initialItems={scrollableItems} />);
+
+      // Scroll the root list to 240.
+      act(() => scrollList(240));
+
+      // Enter Category A.
+      await timedUser.click(screen.getByText('Category A'));
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      // Fresh entry: child list is at top.
+      expect(getListContainer().scrollTop).toBe(0);
+
+      // Scroll the child list so we can tell whether we restore the parent's position.
+      act(() => scrollList(80));
+
+      // Back out.
+      await timedUser.click(screen.getByRole('button', { name: /back/i }));
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      expect(getListContainer().scrollTop).toBe(240);
+
+      vi.useRealTimers();
+    });
+
+    it('scrolls to top when entering a branch for the first time', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      render(<Toolbox {...defaultProps} initialItems={scrollableItems} />);
+
+      act(() => scrollList(320));
+
+      await timedUser.click(screen.getByText('Category B'));
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      expect(getListContainer().scrollTop).toBe(0);
+
+      vi.useRealTimers();
+    });
+
+    it('restores independent scroll positions through multiple levels', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      render(<Toolbox {...defaultProps} initialItems={scrollableItems} />);
+
+      // Root scrolled to 150.
+      act(() => scrollList(150));
+
+      // Push into Category B.
+      await timedUser.click(screen.getByText('Category B'));
+      await act(() => vi.advanceTimersByTimeAsync(200));
+      expect(getListContainer().scrollTop).toBe(0);
+      act(() => scrollList(60));
+
+      // Push into B Subcategory.
+      await timedUser.click(screen.getByText('B Subcategory'));
+      await act(() => vi.advanceTimersByTimeAsync(200));
+      expect(getListContainer().scrollTop).toBe(0);
+
+      // Back to B — restores 60.
+      await timedUser.click(screen.getByRole('button', { name: /back/i }));
+      await act(() => vi.advanceTimersByTimeAsync(200));
+      expect(getListContainer().scrollTop).toBe(60);
+
+      // Back to root — restores 150.
+      await timedUser.click(screen.getByRole('button', { name: /back/i }));
+      await act(() => vi.advanceTimersByTimeAsync(200));
+      expect(getListContainer().scrollTop).toBe(150);
+
+      vi.useRealTimers();
+    });
+
+    it('does not record scrollTop captured during an active search', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      const categoryA = scrollableItems[0]!;
+      const onSearch = vi.fn().mockResolvedValue([categoryA]);
+
+      render(<Toolbox {...defaultProps} initialItems={scrollableItems} onSearch={onSearch} />);
+
+      // Open search and let search-result scroll happen.
+      const searchInput = screen.getByPlaceholderText('Search');
+      await timedUser.type(searchInput, 'cat');
+      await act(() => vi.advanceTimersByTimeAsync(200));
+      act(() => scrollList(500));
+
+      // Push into Category A from search results.
+      await timedUser.click(screen.getByText('Category A'));
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      // Back out — should restore to 0 (search-time scroll is not stored).
+      await timedUser.click(screen.getByRole('button', { name: /back/i }));
+      await act(() => vi.advanceTimersByTimeAsync(200));
+      expect(getListContainer().scrollTop).toBe(0);
+
+      vi.useRealTimers();
+    });
+
+    it('clears the navigation stack on close', async () => {
+      const onClose = vi.fn();
+      const { unmount } = render(
+        <Toolbox {...defaultProps} initialItems={scrollableItems} onClose={onClose} />
+      );
+
+      await userEvent.setup().click(screen.getByText('Category A'));
+      expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument();
+
+      // Escape at the root would close — but we're nested, so Escape goes back.
+      // Trigger close via click-outside instead.
+      await userEvent.setup().click(document.body);
+      expect(onClose).toHaveBeenCalled();
+
+      unmount();
+
+      // Re-mount: stack state is a brand-new instance; no back button is shown
+      // and the root list renders from scratch.
+      render(<Toolbox {...defaultProps} initialItems={scrollableItems} onClose={onClose} />);
+      expect(screen.queryByRole('button', { name: /back/i })).not.toBeInTheDocument();
+      expect(screen.getByText('Category A')).toBeInTheDocument();
+    });
+  });
+
+  describe('childrenLoading', () => {
+    let user: UserEvent;
+
+    beforeEach(() => {
+      user = userEvent.setup();
+    });
+
+    it('renders skeletons when drilling into an item with childrenLoading=true and empty children', async () => {
+      const items: ListItem[] = [
+        {
+          id: 'parent',
+          name: 'Loading Parent',
+          data: {},
+          children: [],
+          childrenLoading: true,
+        },
+      ];
+
+      render(<Toolbox {...defaultProps} initialItems={items} />);
+      await user.click(screen.getByText('Loading Parent'));
+
+      expect(screen.getAllByTestId('list-item-skeleton')).toHaveLength(3);
+      expect(screen.queryByText('No nodes found')).not.toBeInTheDocument();
+    });
+
+    it('renders preemptive section headers when childrenLoading provides sections', async () => {
+      const items: ListItem[] = [
+        {
+          id: 'parent',
+          name: 'Loading Parent',
+          data: {},
+          children: [],
+          childrenLoading: { sections: [{ name: 'Published', count: 2 }] },
+        },
+      ];
+
+      render(<Toolbox {...defaultProps} initialItems={items} />);
+      await user.click(screen.getByText('Loading Parent'));
+
+      expect(screen.getByText('Published')).toBeInTheDocument();
+      expect(screen.getAllByTestId('list-item-skeleton')).toHaveLength(2);
+    });
+
+    it('appends skeletons after partially-loaded children to signal "more on the way"', async () => {
+      // Multi-source categories load progressively — Apollo keeps showing
+      // skeletons as long as the parent flags `childrenLoading`, so the user
+      // knows additional items are still arriving.
+      const items: ListItem[] = [
+        {
+          id: 'parent',
+          name: 'Loading Parent',
+          data: {},
+          children: [{ id: 'child', name: 'Real Child', data: {} }],
+          childrenLoading: true,
+        },
+      ];
+
+      render(<Toolbox {...defaultProps} initialItems={items} />);
+      await user.click(screen.getByText('Loading Parent'));
+
+      expect(screen.getByText('Real Child')).toBeInTheDocument();
+      expect(screen.getAllByTestId('list-item-skeleton')).toHaveLength(3);
+    });
+
+    it('skips skeleton sentinels when navigating via arrow keys', async () => {
+      // Skeletons are presentational — keyboard nav must land on the real
+      // item, not on placeholder rows. Without the fix, ArrowDown would set
+      // the active descendant to a skeleton row.
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      render(
+        <Toolbox
+          {...defaultProps}
+          initialItems={[
+            {
+              id: 'parent',
+              name: 'Loading Parent',
+              data: {},
+              children: [{ id: 'real-child', name: 'Real Child', data: {} }],
+              childrenLoading: true,
+            } as ListItem,
+          ]}
+        />
+      );
+      await timedUser.click(screen.getByText('Loading Parent'));
+      // Wait past the forward-transition timeout so the new level has stably
+      // rendered and the search bar is back in focus.
+      await act(() => vi.advanceTimersByTimeAsync(200));
+
+      await timedUser.keyboard('{ArrowDown}');
+
+      const activeItem = document.querySelector('[aria-selected="true"]');
+      expect(activeItem).toHaveAttribute('id', 'toolbox-item-real-child');
+
+      vi.useRealTimers();
+    });
+
+    it('does not call onItemSelect or onItemHover for skeleton clicks/hovers', async () => {
+      const onItemSelect = vi.fn();
+      const onItemHover = vi.fn();
+      const items: ListItem[] = [
+        {
+          id: 'parent',
+          name: 'Loading Parent',
+          data: {},
+          children: [],
+          childrenLoading: true,
+        },
+      ];
+
+      render(
+        <Toolbox
+          {...defaultProps}
+          initialItems={items}
+          onItemSelect={onItemSelect}
+          onItemHover={onItemHover}
+        />
+      );
+      await user.click(screen.getByText('Loading Parent'));
+
+      const skeletonRows = screen.getAllByTestId('list-item-skeleton');
+      // Click the skeleton's parent <button> (the row), not the inner div.
+      const firstRow = skeletonRows[0]!.parentElement!;
+      await user.click(firstRow);
+      await user.hover(firstRow);
+
+      expect(onItemSelect).not.toHaveBeenCalled();
+      expect(onItemHover).not.toHaveBeenCalled();
+    });
+
+    it('suppresses skeletons during search', async () => {
+      const items: ListItem[] = [
+        {
+          id: 'parent',
+          name: 'Loading Parent',
+          data: {},
+          children: [{ id: 'child', name: 'Real Child', data: {} }],
+          childrenLoading: true,
+        },
+      ];
+
+      render(<Toolbox {...defaultProps} initialItems={items} />);
+      await user.click(screen.getByText('Loading Parent'));
+      expect(screen.getAllByTestId('list-item-skeleton').length).toBeGreaterThan(0);
+
+      await user.type(screen.getByPlaceholderText('Search'), 'Real');
+      expect(screen.queryByTestId('list-item-skeleton')).not.toBeInTheDocument();
+    });
+  });
 });
