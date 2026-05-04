@@ -55,28 +55,6 @@ export const IconContainer = styled.div<{ bgColor?: string }>`
   z-index: -1;
 `;
 
-/**
- * Fallback badge rendered inside {@link IconContainer} when a {@link ListItem}
- * has no icon source (no `url`, `name`, or `Component`). Displays a single
- * uppercase character — typically the first letter of the item's name — on a
- * solid brand circle. Mirrors UiPath StudioWeb's `<ui-package-icon>` fallback.
- */
-export const InitialsBadge = styled.span`
-  display: flex;
-  width: 24px;
-  height: 24px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: var(--canvas-primary);
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 1;
-  text-transform: uppercase;
-  user-select: none;
-`;
-
 export const StyledList = styled(List)`
   &::-webkit-scrollbar {
     width: 6px;

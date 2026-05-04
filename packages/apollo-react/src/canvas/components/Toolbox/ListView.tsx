@@ -5,13 +5,8 @@ import { forwardRef, memo, useCallback, useImperativeHandle, useMemo } from 'rea
 import type { ListImperativeAPI, RowComponentProps } from 'react-window';
 import { useCanvasTheme } from '../BaseCanvas/CanvasThemeContext';
 import { CanvasTooltip } from '../CanvasTooltip';
-import {
-  IconContainer,
-  InitialsBadge,
-  ListItemButton,
-  SectionHeader,
-  StyledList,
-} from './ListView.styles';
+import { InitialsBadge } from '../shared/InitialsBadge';
+import { IconContainer, ListItemButton, SectionHeader, StyledList } from './ListView.styles';
 
 export interface ListItemIcon {
   /**
@@ -77,17 +72,6 @@ export type RenderItem<T extends ListItem> =
   | { type: 'skeleton' };
 
 const DEFAULT_SKELETON_COUNT = 3;
-
-/**
- * First user-perceived character of a name, used by the initials fallback
- * when a list item has no icon source. Code-point aware so emoji and
- * non-BMP characters survive without a split surrogate pair.
- */
-function getInitial(name: string): string {
-  const trimmed = name.trim();
-  if (!trimmed) return '?';
-  return [...trimmed][0] ?? '?';
-}
 
 export function buildRenderedItems<T extends ListItem>(
   items: T[],
@@ -240,9 +224,7 @@ const ListViewRow = memo(
           {item.icon?.name && <CanvasIcon icon={item.icon.name} size={24} />}
           {item.icon?.Component && <item.icon.Component />}
           {!item.icon?.url && !item.icon?.name && !item.icon?.Component && (
-            <InitialsBadge aria-hidden="true" data-testid="list-item-initials-badge">
-              {getInitial(item.name)}
-            </InitialsBadge>
+            <InitialsBadge name={item.name} data-testid="list-item-initials-badge" />
           )}
         </IconContainerMemoized>
         <Column flex={1} overflow="hidden">

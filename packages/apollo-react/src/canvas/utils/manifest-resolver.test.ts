@@ -13,9 +13,11 @@ import {
 // ============================================================================
 
 describe('resolveDisplay', () => {
-  it('returns fallback when no manifest display is provided', () => {
+  it('returns fallback shape and label when no manifest display is provided', () => {
+    // `icon` is intentionally left undefined — BaseNode renders an initials
+    // badge derived from the label as the universal "no icon" fallback.
     const result = resolveDisplay(undefined);
-    expect(result.icon).toBe('circle-question-mark');
+    expect(result.icon).toBeUndefined();
     expect(result.shape).toBe('square');
     expect(result.label).toBe('Unknown Node');
   });
