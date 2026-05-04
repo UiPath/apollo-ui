@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.22.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.21.0...@uipath/apollo-react@4.22.0) (2026-05-04)
+
+### Features
+
+* **apollo-react:** add canvasLabel for canvas display, distinct from palette label ([1feaeb0](https://github.com/UiPath/apollo-ui/commit/1feaeb0ffc00b7858aa386541dfdc2729a2ffaa7))
+
 ## [@uipath/apollo-react-v4.21.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.20.0...@uipath/apollo-react@4.21.0) (2026-05-04)
 
 ### Features
