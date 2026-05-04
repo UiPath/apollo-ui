@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.20.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.19.0...@uipath/apollo-react@4.20.0) (2026-05-04)
+
+### Features
+
+* **apollo-react:** add readOnly state to stickyNote [MST-9331] ([0e9f96f](https://github.com/UiPath/apollo-ui/commit/0e9f96fa0f321440c4dcf435586fd7b747b93847))
+
 ## [@uipath/apollo-react-v4.19.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.18.3...@uipath/apollo-react@4.19.0) (2026-05-01)
 
 ### Features
