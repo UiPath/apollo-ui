@@ -112,6 +112,9 @@ export function resolveDisplay(
     ...manifestDisplay,
     ...context?.display,
     shape: isCollapsed ? collapsedShape : expandedShape,
+    // Manifest schema allows `display.icon` to be omitted; mirror the
+    // missing-manifest fallback above so ResolvedDisplay.icon stays a string.
+    icon: context?.display?.icon ?? manifestDisplay.icon ?? 'circle-question-mark',
   };
 }
 
