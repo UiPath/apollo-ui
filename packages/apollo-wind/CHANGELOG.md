@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.13.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.12.0...@uipath/apollo-wind@2.13.0) (2026-05-04)
+
+### Features
+
+* **apollo-wind:** update ButtonGroup and ToggleGroup for Future themes ([b15a3bb](https://github.com/uipath/apollo-ui/commit/b15a3bba3c7dedb9e3e36e27a19444dbae5b5934))
+
 ## [@uipath/apollo-wind-v2.12.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.11.0...@uipath/apollo-wind@2.12.0) (2026-05-04)
 
 ### Features
