@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.21.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.20.0...@uipath/apollo-react@4.21.0) (2026-05-04)
+
+### Features
+
+* **apollo-react:** add renderEmptyState prop to ListView/Toolbox/AddNodePanel ([9370eeb](https://github.com/UiPath/apollo-ui/commit/9370eeb279efb13fa4238d53de74a7bb87a760a9))
+
 ## [@uipath/apollo-react-v4.20.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.19.0...@uipath/apollo-react@4.20.0) (2026-05-04)
 
 ### Features
