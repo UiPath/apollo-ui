@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.12.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.11.0...@uipath/apollo-wind@2.12.0) (2026-05-04)
+
+### Features
+
+* **apollo-wind:** add proposed token additions inline to Future Colors story ([5791917](https://github.com/uipath/apollo-ui/commit/5791917bf574620575e236cbf3d08adfb14281e8))
+
 ## [@uipath/apollo-wind-v2.11.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.10.0...@uipath/apollo-wind@2.11.0) (2026-05-02)
 
 ### Features
