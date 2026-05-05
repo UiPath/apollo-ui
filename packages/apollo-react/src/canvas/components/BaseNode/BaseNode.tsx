@@ -179,25 +179,15 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // stacked layer to signal they stand in for more than themselves.
   const isStacked = Boolean(manifest?.drillable || data?.isCollapsed);
 
-  // Icon resolution: component prop > icon string > initials badge fallback
+  // Icon resolution: component prop > icon string > initials badge fallback.
   const Icon = useMemo(() => {
-    // Priority 1: Component prop (e.g., dynamic tool icon)
     if (iconComponent !== undefined) {
       return iconComponent;
     }
-
-    // Priority 2: Icon string (registry lookup)
     if (display.icon) {
       const IconComponent = getIcon(display.icon);
       return IconComponent ? <IconComponent /> : null;
     }
-
-    // Priority 3: Initials badge from the node's label — same fallback the
-    // canvas ListView uses, so missing icons render consistently across
-    // surfaces (toolbox rows, drilled-in pickers, and on-canvas nodes).
-    // No `data-testid` — multiple BaseNodes on canvas would collide on a
-    // shared selector; consumer tests should query through the parent
-    // node's testid or by accessibility tree.
     return <InitialsBadge name={display.label} size="var(--icon-size)" />;
   }, [iconComponent, display.icon, display.label]);
 

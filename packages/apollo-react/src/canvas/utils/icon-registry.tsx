@@ -60,16 +60,11 @@ function isValidUrl(input: string): boolean {
 }
 
 /**
- * Get an icon component by its identifier
- * Supports:
- * - UIPath icons (e.g., "uipath.agent")
- * - Any Lucide icon by kebab-case name (e.g., "arrow-right", "file-text", "play")
- *
- * Returns the generic Box fallback when `iconId` is missing or unrecognized so
- * callers don't have to guard each access. Manifest schemas now allow
- * `display.icon` to be omitted; this keeps the registry's contract honest.
+ * Get an icon component by its identifier. Supports UIPath icons
+ * (e.g. "uipath.agent") and Lucide kebab-case names (e.g. "arrow-right").
+ * Falls back to the Box icon when `iconId` is missing or unrecognized.
  */
-export function getIcon(iconId: string | undefined): IconComponent {
+export function getIcon(iconId?: string): IconComponent {
   if (!iconId) {
     const BoxIcon = icons.Box;
     return ({ w, h, color }) => <BoxIcon width={w ?? 24} height={h ?? 24} color={color} />;
