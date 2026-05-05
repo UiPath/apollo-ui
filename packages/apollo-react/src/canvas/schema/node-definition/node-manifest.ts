@@ -35,14 +35,7 @@ export const nodeDisplayManifestSchema = z.object({
   /** Description of what the node does */
   description: z.string().optional(),
 
-  /**
-   * Icon identifier (e.g. "timer", "uipath.decision") or absolute URL.
-   *
-   * Optional: when omitted, the canvas ListView falls back to an initials
-   * badge derived from `label`. Sources that can't reliably supply an icon
-   * (e.g. typecache packages where `svgIconUrl` is absent) should leave
-   * this unset rather than emitting an empty string.
-   */
+  /** Icon identifier (e.g. "timer", "uipath.decision") or absolute URL. Omit (don't pass `''`) to fall back to an initials badge derived from `label`. */
   icon: z.string().min(1).optional(),
 
   /** Shape of the node */

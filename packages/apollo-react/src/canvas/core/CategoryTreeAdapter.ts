@@ -40,10 +40,7 @@ export class CategoryTreeAdapter {
         category: node.category,
         version: node.version,
       },
-      // Omit `icon` entirely when the manifest has none — IconContainer
-      // renders an InitialsBadge fallback when no icon source is provided.
-      // Emitting `{ name: undefined }` would carry a non-empty wrapper
-      // through to the renderer that no consumer can usefully read.
+      // Omit `icon` when missing so IconContainer renders the InitialsBadge fallback.
       ...(node.display.icon ? { icon: { name: node.display.icon } } : {}),
       color: node.display.iconBackground,
       colorDark: node.display.iconBackgroundDark,
@@ -69,8 +66,6 @@ export class CategoryTreeAdapter {
           continue;
         }
 
-        // Create category ListItem (omit icon when missing — see node-mapping
-        // path above for rationale).
         const categoryItem: ListItem = {
           id: category.id,
           name: category.name,

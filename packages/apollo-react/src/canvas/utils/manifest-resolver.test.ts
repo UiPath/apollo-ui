@@ -14,10 +14,7 @@ import {
 
 describe('resolveDisplay', () => {
   it('returns fallback shape and label when no manifest display is provided', () => {
-    // `icon` is the empty-string sentinel — falsy, so BaseNode's
-    // `if (display.icon)` truthy check falls through to the InitialsBadge
-    // fallback. Kept as a non-optional `string` so external consumers don't
-    // need a TS migration to read `display.icon`.
+    // `icon: ''` is the sentinel — falsy so `if (display.icon)` truthy checks fall through to the InitialsBadge fallback.
     const result = resolveDisplay(undefined);
     expect(result.icon).toBe('');
     expect(result.shape).toBe('square');
