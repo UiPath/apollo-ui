@@ -26,6 +26,7 @@ const DraggableTaskComponent = ({
   isDragDisabled,
   projectedDepth,
   isTaskLoading,
+  isReadOnly,
 }: DraggableTaskProps) => {
   const zoom = useStore((s) => s.transform[2]);
   const taskRef = useRef<HTMLDivElement>(null);
@@ -96,7 +97,7 @@ const DraggableTaskComponent = ({
       onClick={handleClick}
       {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
     >
-      <TaskContent task={task} taskExecution={taskExecution} />
+      <TaskContent task={task} taskExecution={taskExecution} isReadOnly={isReadOnly} />
 
       <StageTaskEntryConditionIcon task={task} />
       {getContextMenuItems && (

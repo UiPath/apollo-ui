@@ -106,10 +106,11 @@ export interface TaskContentProps {
   taskExecution?: StageTaskExecution;
   isDragging?: boolean;
   onTaskPlay?: (taskId: string) => Promise<void>;
+  isReadOnly?: boolean;
 }
 
 export const TaskContent = memo(
-  ({ task, taskExecution, isDragging, onTaskPlay }: TaskContentProps) => {
+  ({ task, taskExecution, isDragging, onTaskPlay, isReadOnly }: TaskContentProps) => {
     const hasExecutionStatus = !!taskExecution?.status;
     const hasSecondRowContent =
       taskExecution &&
@@ -117,79 +118,77 @@ export const TaskContent = memo(
     const showPlayButtonSmall = onTaskPlay && hasExecutionStatus;
 
     return (
-      <>
-        <Column
-          flex={1}
-          style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-          gap={Padding.PadXs}
-        >
-          <Row align="center" justify="space-between">
-            {/* disable tooltip when dragging to avoid tooltip flickering */}
-            <Row
-              gap={Spacing.SpacingXs}
-              align="center"
-              style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+      <Column
+        flex={1}
+        style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        gap={Padding.PadXs}
+      >
+        <Row align="center" justify="space-between">
+          {/* disable tooltip when dragging to avoid tooltip flickering */}
+          <Row
+            gap={Spacing.SpacingXs}
+            align="center"
+            style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+          >
+            <StageTaskIcon>{task.icon ?? <ProcessCanvasIcon />}</StageTaskIcon>
+            <CanvasTooltip
+              content={task.label}
+              placement="top"
+              smartTooltip
+              {...(isDragging && { isOpen: false })}
             >
-              <StageTaskIcon>{task.icon ?? <ProcessCanvasIcon />}</StageTaskIcon>
-              <CanvasTooltip
-                content={task.label}
-                placement="top"
-                smartTooltip
-                {...(isDragging && { isOpen: false })}
-              >
-                <span className="text-sm truncate">{task.label}</span>
-              </CanvasTooltip>
-            </Row>
-            <Row align="center" gap={Spacing.SpacingXs} style={{ flexShrink: 0 }}>
-              {hasExecutionStatus &&
-                (taskExecution.message ? (
-                  <CanvasTooltip content={taskExecution.message} placement="top">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      aria-label={taskExecution.message}
-                    >
-                      <ExecutionStatusIcon status={taskExecution.status} />
-                    </Button>
-                  </CanvasTooltip>
-                ) : (
-                  <ExecutionStatusIcon status={taskExecution.status} />
-                ))}
-              {showPlayButtonSmall && !hasSecondRowContent && (
-                <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} small />
+              <span className="text-sm truncate">{task.label}</span>
+            </CanvasTooltip>
+          </Row>
+          <Row align="center" gap={Spacing.SpacingXs} style={{ flexShrink: 0 }}>
+            {hasExecutionStatus &&
+              (taskExecution.message ? (
+                <CanvasTooltip content={taskExecution.message} placement="top">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    aria-label={taskExecution.message}
+                  >
+                    <ExecutionStatusIcon status={taskExecution.status} />
+                  </Button>
+                </CanvasTooltip>
+              ) : (
+                !isReadOnly && <ExecutionStatusIcon status={taskExecution.status} />
+              ))}
+            {showPlayButtonSmall && !hasSecondRowContent && (
+              <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} small />
+            )}
+            {onTaskPlay && !hasExecutionStatus && (
+              <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} />
+            )}
+          </Row>
+        </Row>
+        {taskExecution && hasSecondRowContent && (
+          <Row align="center" justify="space-between">
+            <Row gap={'2px'}>
+              {taskExecution?.duration && (
+                <span className="text-xs text-foreground-muted">{taskExecution.duration}</span>
               )}
-              {onTaskPlay && !hasExecutionStatus && (
-                <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} />
+              {taskExecution?.retryDuration && (
+                <StageTaskRetryDuration status={taskExecution.badgeStatus ?? 'warning'}>
+                  <span className="text-xs">{`(+${taskExecution.retryDuration})`}</span>
+                </StageTaskRetryDuration>
+              )}
+            </Row>
+            <Row align="center" gap={Spacing.SpacingXs}>
+              {taskExecution?.badge && (
+                <Badge variant={taskExecution.badgeStatus}>
+                  {generateBadgeText(taskExecution) ?? ''}
+                </Badge>
+              )}
+              {showPlayButtonSmall && (
+                <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} small />
               )}
             </Row>
           </Row>
-          {taskExecution && hasSecondRowContent && (
-            <Row align="center" justify="space-between">
-              <Row gap={'2px'}>
-                {taskExecution?.duration && (
-                  <span className="text-xs text-foreground-muted">{taskExecution.duration}</span>
-                )}
-                {taskExecution?.retryDuration && (
-                  <StageTaskRetryDuration status={taskExecution.badgeStatus ?? 'warning'}>
-                    <span className="text-xs">{`(+${taskExecution.retryDuration})`}</span>
-                  </StageTaskRetryDuration>
-                )}
-              </Row>
-              <Row align="center" gap={Spacing.SpacingXs}>
-                {taskExecution?.badge && (
-                  <Badge variant={taskExecution.badgeStatus}>
-                    {generateBadgeText(taskExecution) ?? ''}
-                  </Badge>
-                )}
-                {showPlayButtonSmall && (
-                  <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} small />
-                )}
-              </Row>
-            </Row>
-          )}
-        </Column>
-      </>
+        )}
+      </Column>
     );
   }
 );
