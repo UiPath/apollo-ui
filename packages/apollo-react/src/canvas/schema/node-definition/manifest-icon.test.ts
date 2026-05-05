@@ -29,15 +29,26 @@ describe('manifest schemas — optional icon', () => {
 
   it('parses a node manifest with a non-empty display.icon', () => {
     expect(() =>
-      nodeManifestSchema.parse({ ...baseNodeManifest, display: { label: 'Test Node', icon: 'star' } })
+      nodeManifestSchema.parse({
+        ...baseNodeManifest,
+        display: { label: 'Test Node', icon: 'star' },
+      })
     ).not.toThrow();
   });
 
   it('rejects a node manifest with an empty display.icon string', () => {
     // Empty strings should not be serialized — callers must omit the field.
-    expect(() =>
-      nodeManifestSchema.parse({ ...baseNodeManifest, display: { label: 'Test Node', icon: '' } })
-    ).toThrow();
+    // Assert on the issue path so a different validation failure can't masquerade as a pass.
+    const result = nodeManifestSchema.safeParse({
+      ...baseNodeManifest,
+      display: { label: 'Test Node', icon: '' },
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find((i) => i.path[i.path.length - 1] === 'icon');
+      expect(issue).toBeDefined();
+      expect(issue?.path).toEqual(expect.arrayContaining(['display', 'icon']));
+    }
   });
 
   it('parses a category manifest without icon', () => {
@@ -45,10 +56,17 @@ describe('manifest schemas — optional icon', () => {
   });
 
   it('parses a category manifest with a non-empty icon', () => {
-    expect(() => categoryManifestSchema.parse({ ...baseCategoryManifest, icon: 'unplug' })).not.toThrow();
+    expect(() =>
+      categoryManifestSchema.parse({ ...baseCategoryManifest, icon: 'unplug' })
+    ).not.toThrow();
   });
 
   it('rejects a category manifest with an empty icon string', () => {
-    expect(() => categoryManifestSchema.parse({ ...baseCategoryManifest, icon: '' })).toThrow();
+    const result = categoryManifestSchema.safeParse({ ...baseCategoryManifest, icon: '' });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find((i) => i.path[i.path.length - 1] === 'icon');
+      expect(issue).toBeDefined();
+    }
   });
 });

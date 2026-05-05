@@ -33,13 +33,17 @@ export interface ResolutionContext extends Record<string, unknown> {
  * Resolved display configuration (manifest defaults + instance overrides)
  * Uses DisplayConfig structure to allow any string values for flexibility.
  *
- * `icon` is optional: missing icons are rendered by callers as an initials
- * badge derived from `label`. Callers should not coerce missing values to
- * placeholder strings — that breaks the badge fallback.
+ * `icon` is always a string (kept non-optional for backwards compatibility
+ * with existing consumers). When the source manifest has no icon, the
+ * resolver returns the empty-string sentinel `''` — falsy, so existing
+ * `if (display.icon)` truthy checks correctly fall through to the
+ * `InitialsBadge` fallback rendered by `BaseNode` and `IconContainer`.
+ * Callers must not pre-fill placeholder strings (e.g. `'circle-question-mark'`)
+ * — that defeats the badge fallback.
  */
 export type ResolvedDisplay = InstanceDisplayConfig & {
   label: string;
-  icon?: string;
+  icon: string;
   description?: string;
   iconColor?: string;
   labelTooltip?: string;
@@ -99,9 +103,11 @@ export function resolveDisplay(
   context?: ResolutionContext
 ): ResolvedDisplay {
   if (!manifestDisplay) {
-    // No icon supplied — BaseNode renders an initials badge derived from the
-    // label as the universal "no icon" fallback.
+    // No manifest — BaseNode renders an initials badge derived from the
+    // label as the universal "no icon" fallback. Use the empty-string
+    // sentinel so `if (display.icon)` truthy checks fall through.
     return {
+      icon: '',
       shape: 'square' as const,
       label: context?.display?.label || 'Unknown Node',
     } as ResolvedDisplay;
@@ -136,6 +142,7 @@ export function resolveDisplay(
     ...context?.display,
     label: resolvedLabel,
     canvasLabel: context?.display?.canvasLabel ?? manifestDisplay.canvasLabel,
+    icon: context?.display?.icon ?? manifestDisplay.icon ?? '',
     shape: isCollapsed ? collapsedShape : expandedShape,
   };
 }

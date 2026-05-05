@@ -195,13 +195,10 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     // Priority 3: Initials badge from the node's label — same fallback the
     // canvas ListView uses, so missing icons render consistently across
     // surfaces (toolbox rows, drilled-in pickers, and on-canvas nodes).
-    return (
-      <InitialsBadge
-        name={display.label}
-        size="var(--icon-size)"
-        data-testid="base-node-initials-badge"
-      />
-    );
+    // No `data-testid` — multiple BaseNodes on canvas would collide on a
+    // shared selector; consumer tests should query through the parent
+    // node's testid or by accessibility tree.
+    return <InitialsBadge name={display.label} size="var(--icon-size)" />;
   }, [iconComponent, display.icon, display.label]);
 
   // Resolve handles: context override > data override > manifest default

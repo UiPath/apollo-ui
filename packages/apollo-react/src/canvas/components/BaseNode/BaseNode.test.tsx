@@ -251,4 +251,36 @@ describe('BaseNode', () => {
       expect(screen.getByTestId('base-container')).not.toHaveAttribute('data-stacked');
     });
   });
+
+  // Initials badge fallback (Priority 3 in BaseNode's icon resolution): when
+  // neither `iconComponent` nor `display.icon` is supplied, render the
+  // shared InitialsBadge derived from `display.label` so missing icons look
+  // consistent with the canvas ListView's same fallback.
+  //
+  // Note: the resolveDisplay mock above pre-fills `icon: 'test-icon'`, so
+  // tests must explicitly pass an empty-string sentinel to model the
+  // "no icon" path that resolveDisplay produces in reality (option-b
+  // sentinel — see manifest-resolver.ts).
+  describe('Initials badge fallback', () => {
+    it('renders the initials badge when display.icon is the empty-string sentinel', () => {
+      mockManifest.current = {
+        ...DEFAULT_MANIFEST,
+        display: { label: 'Microsoft Foundry', shape: 'square', icon: '' },
+      };
+      render(<BaseNode {...defaultProps} />);
+      // The badge renders aria-hidden with the first character of the label.
+      const badge = screen.getByText('M', { selector: '[aria-hidden="true"]' });
+      expect(badge).toBeInTheDocument();
+    });
+
+    it('does not render the initials badge when display.icon is provided', () => {
+      mockManifest.current = {
+        ...DEFAULT_MANIFEST,
+        display: { label: 'Microsoft Foundry', shape: 'square', icon: 'star' },
+      };
+      render(<BaseNode {...defaultProps} />);
+      // No aria-hidden 'M' span — the registered icon takes the slot.
+      expect(screen.queryByText('M', { selector: '[aria-hidden="true"]' })).not.toBeInTheDocument();
+    });
+  });
 });
