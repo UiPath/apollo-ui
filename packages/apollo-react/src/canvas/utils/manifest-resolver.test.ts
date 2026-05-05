@@ -14,12 +14,19 @@ import {
 
 describe('resolveDisplay', () => {
   it('returns fallback shape and label when no manifest display is provided', () => {
-    // `icon` is intentionally left undefined — BaseNode renders an initials
-    // badge derived from the label as the universal "no icon" fallback.
+    // `icon` is the empty-string sentinel — falsy, so BaseNode's
+    // `if (display.icon)` truthy check falls through to the InitialsBadge
+    // fallback. Kept as a non-optional `string` so external consumers don't
+    // need a TS migration to read `display.icon`.
     const result = resolveDisplay(undefined);
-    expect(result.icon).toBeUndefined();
+    expect(result.icon).toBe('');
     expect(result.shape).toBe('square');
     expect(result.label).toBe('Unknown Node');
+  });
+
+  it('coalesces missing manifest icon to the empty-string sentinel', () => {
+    const result = resolveDisplay({ label: 'Foo', shape: 'square' });
+    expect(result.icon).toBe('');
   });
 
   it('uses context display label when no manifest display', () => {
