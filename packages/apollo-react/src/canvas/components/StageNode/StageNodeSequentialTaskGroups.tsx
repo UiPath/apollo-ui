@@ -220,6 +220,7 @@ export const StageNodeSequentialTaskGroups = ({
                           !isReadOnly && {
                             getContextMenuItems: buildContextMenuItems,
                           })}
+                        isReadOnly={isReadOnly}
                       />
                     );
                   })}
