@@ -127,17 +127,17 @@ function createShapeStatusGrid(): Node<BaseNodeData>[] {
     })
   );
 
-  // Manifest present but `display.icon` omitted: also falls back to InitialsBadge.
+  // Manifest present but `display.icon` omitted: falls back to InitialsBadge.
   nodes.push(
     createNode({
       id: `no-icon-node`,
-      type: 'uipath.blank-node',
+      type: 'uipath.no-icon-node',
       position: {
         x: GRID_CONFIG.startX + GRID_CONFIG.gapX,
         y: GRID_CONFIG.startY + (STATUSES.length + 1) * GRID_CONFIG.gapY,
       },
       data: {
-        nodeType: 'uipath.blank-node',
+        nodeType: 'uipath.no-icon-node',
         version: '1.0.0',
         display: { label: 'Microsoft Azure AI Foundry', shape: 'square', subLabel: 'No icon' },
       },
