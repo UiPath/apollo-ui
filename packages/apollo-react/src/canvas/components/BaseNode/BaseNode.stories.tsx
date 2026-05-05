@@ -110,7 +110,7 @@ function createShapeStatusGrid(): Node<BaseNodeData>[] {
     );
   });
 
-  // Add a node with a non-existent manifest to demonstrate missing node display
+  // Manifest missing entirely: BaseNode falls back to InitialsBadge from `label`.
   nodes.push(
     createNode({
       id: `unknown-node`,
@@ -123,6 +123,23 @@ function createShapeStatusGrid(): Node<BaseNodeData>[] {
         nodeType: 'uipath.unknown-node',
         version: '1.0.0',
         display: { label: 'Unknown Node', shape: 'square', subLabel: 'Missing manifest' },
+      },
+    })
+  );
+
+  // Manifest present but `display.icon` omitted: also falls back to InitialsBadge.
+  nodes.push(
+    createNode({
+      id: `no-icon-node`,
+      type: 'uipath.blank-node',
+      position: {
+        x: GRID_CONFIG.startX + GRID_CONFIG.gapX,
+        y: GRID_CONFIG.startY + (STATUSES.length + 1) * GRID_CONFIG.gapY,
+      },
+      data: {
+        nodeType: 'uipath.blank-node',
+        version: '1.0.0',
+        display: { label: 'Microsoft Azure AI Foundry', shape: 'square', subLabel: 'No icon' },
       },
     })
   );

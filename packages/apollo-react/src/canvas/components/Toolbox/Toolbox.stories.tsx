@@ -89,3 +89,19 @@ export const WithQuickActions: Story = {
     ] satisfies ToolboxQuickAction[],
   },
 };
+
+/** Items without `icon.url`/`icon.name`/`icon.Component` render an initials badge derived from `name`. */
+export const WithInitialsFallback: Story = {
+  args: {
+    title: 'Add element',
+    initialItems: [
+      { id: 'foundry', name: 'Microsoft Azure AI Foundry', data: {} },
+      { id: 'vertex', name: 'Google Vertex', data: {} },
+      { id: 'agentforce', name: 'Salesforce Agentforce', data: {} },
+      { id: 'snowflake', name: 'Snowflake Cortex', data: {} },
+      { id: 'mixed', name: 'Has Icon', icon: { name: 'star' }, data: {} },
+    ] satisfies ListItem[],
+    onClose: () => {},
+    onItemSelect: () => {},
+  },
+};
