@@ -139,7 +139,11 @@ function createShapeStatusGrid(): Node<BaseNodeData>[] {
       data: {
         nodeType: 'uipath.no-icon-node',
         version: '1.0.0',
-        display: { label: 'Microsoft Azure AI Foundry', shape: 'square', subLabel: 'No icon' },
+        display: {
+          label: 'Missing Icon',
+          shape: 'square',
+          subLabel: 'Fallback to icon w/ first letter',
+        },
       },
     })
   );
