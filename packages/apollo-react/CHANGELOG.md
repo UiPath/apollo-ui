@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v4.22.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.22.0...@uipath/apollo-react@4.22.1) (2026-05-05)
+
+### Bug Fixes
+
+* **apollo-react:** cursor type of sticky note in readOnly [MST-9331] ([6e8d218](https://github.com/UiPath/apollo-ui/commit/6e8d218310aa52185e929f868cd9d2ceb7c7f8b5))
+* **apollo-react:** cursor type of sticky note in readOnly [MST-9331]# ([3b30f99](https://github.com/UiPath/apollo-ui/commit/3b30f997aecb9cc0a9f7a6d10e4708aa38c5d16f))
+
 ## [@uipath/apollo-react-v4.22.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.21.0...@uipath/apollo-react@4.22.0) (2026-05-04)
 
 ### Features
