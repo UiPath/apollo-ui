@@ -75,7 +75,26 @@ apollo-ui/
 - Prefer composition over inheritance
 - Keep components focused and single-purpose
 - Follow existing patterns in the codebase
-- Material UI components wrapped with `Ap*` prefix
+- **No new Emotion or MUI usage in `apollo-react`** — see Styling Standards below
+
+### Styling Standards (apollo-react)
+
+The `apollo-react` package is migrating from Emotion/MUI to Tailwind CSS + `apollo-wind`. **All new code must use Tailwind patterns.**
+
+**Block PRs that introduce:**
+- New imports from `@emotion/styled`, `@emotion/react`, or usage of `styled.*` / `css` helpers
+- New `*.styles.ts` files
+- New `@mui/material/*` component imports for building UI (existing MUI theme overrides in `theme/` are exempt)
+- New usage of `Ap*` components from `@uipath/apollo-react` (these are MUI wrappers — use `apollo-wind` components instead)
+
+**Flag for migration when:**
+- A PR significantly modifies an existing file that uses styled-components or MUI — recommend migrating the touched component to Tailwind as part of the change
+
+**Approved patterns:**
+- Tailwind utility classes as static literal strings in JSX
+- `cn()` from `@uipath/apollo-wind` for conflicting class overrides
+- CSS custom properties (`style` prop) for dynamic dimensions
+- Existing MUI theme overrides in `packages/apollo-react/src/theme/` (maintenance only)
 
 ### Testing Requirements
 
@@ -156,6 +175,7 @@ When providing suggestions or reviewing code:
 - TypeScript errors
 - Missing tests for critical library functionality
 - Incorrect use of design tokens
+- New Emotion styled-components or MUI component usage in apollo-react (use Tailwind instead)
 
 **Don't block on:**
 - Minor style/formatting (Biome handles this)
@@ -179,6 +199,7 @@ When creating new components, verify:
 - [ ] Has unit tests (if in packages/ or web-packages/)
 - [ ] Has visual regression tests
 - [ ] Documented in package README
+- [ ] No new `@emotion/styled`, `@emotion/react`, or `@mui/material` imports (use Tailwind + apollo-wind)
 
 ## Available Resources
 

@@ -35,7 +35,7 @@ Create a clear summary of:
 
 ### Step 3: Launch Parallel Reviews
 
-Launch TWO agents in parallel using a single message with multiple Task tool calls:
+Launch THREE agents in parallel using a single message with multiple Task tool calls:
 
 **Agent 1: General Code Review Agent**
 
@@ -98,9 +98,45 @@ For each issue found:
 Return your findings in a structured format."
 ```
 
+**Agent 3: Styled/MUI Migration Guardian**
+
+```
+Prompt: "Review the following code changes specifically for violations of the apollo-react styling standards.
+
+Review Scope: [insert scope]
+
+Changes Summary:
+[insert summary]
+
+## Rules
+
+The apollo-react package is migrating from Emotion/MUI to Tailwind CSS + apollo-wind. No new Emotion or MUI usage is allowed.
+
+Please check for:
+
+1. **New styled/MUI imports (CRITICAL)** — Any new imports from `@emotion/styled`, `@emotion/react`, usage of `styled.*` or `css` helpers, or new `@mui/material/*` component imports that did not exist before the change. Existing MUI theme overrides in `packages/apollo-react/src/theme/` are exempt.
+2. **New Ap* component usage (CRITICAL)** — Any new usage of `Ap*` components imported from `@uipath/apollo-react` (e.g., `ApButton`, `ApTextField`). These are MUI wrappers. New code should use `apollo-wind` components instead.
+3. **New *.styles.ts files (CRITICAL)** — Any newly created styles files using Emotion patterns.
+4. **Significant edits to existing styled/MUI components (MAJOR)** — If a file that uses styled-components or MUI patterns was substantially modified (more than a trivial one-line prop addition), recommend migrating the touched component to Tailwind. Reference the `/migrate-canvas-styled-to-tailwind` skill and the reference files in `packages/apollo-react/src/canvas/components/BaseNode/` for migration patterns.
+
+## Approved patterns
+- Tailwind utility classes as static literal strings in JSX
+- `cn()` from `@uipath/apollo-wind` for conflicting class overrides
+- CSS custom properties (style prop) for dynamic dimensions
+- Existing MUI theme overrides in `packages/apollo-react/src/theme/` (maintenance only)
+
+For each issue found:
+- Severity: critical/major
+- File and line reference
+- Description of the violation
+- Suggested migration approach
+
+Return your findings in a structured format."
+```
+
 ### Step 4: Agent Permissions
 
-Both agents have access to:
+All agents have access to:
 
 - Read tool (to read any file)
 - Glob tool (to find files)
@@ -111,10 +147,10 @@ Both agents have access to:
 
 ### Step 5: Critical Analysis of Review Comments
 
-After both agents complete their reviews:
+After all agents complete their reviews:
 
-1. **Collect all findings** from both agents
-2. **Deduplicate** - If both agents found the same issue, merge into one
+1. **Collect all findings** from all agents
+2. **Deduplicate** - If multiple agents found the same issue, merge into one
 3. **Validate severity** - Think critically about each severity rating:
    - Is this truly critical/major/minor?
    - Does it actually need fixing or is it subjective?
@@ -191,4 +227,4 @@ I can fix [list categories that can be auto-fixed, e.g., 'formatting issues', 'i
 User: `/review`
 Assistant: [Asks for scope selection]
 User: [Selects "Last commit"]
-Assistant: [Gathers changes, launches both agents in parallel, waits for results, analyzes findings, presents comprehensive report]
+Assistant: [Gathers changes, launches agents in parallel, waits for results, analyzes findings, presents comprehensive report]
