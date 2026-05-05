@@ -56,7 +56,7 @@ export const StickyNoteContainer = styled.div<{
   backgroundColor: string;
   isEditing: boolean;
   selected?: boolean;
-  readOnly?: boolean;
+  isReadOnly?: boolean;
 }>`
   width: 100%;
   height: 100%;
@@ -66,7 +66,7 @@ export const StickyNoteContainer = styled.div<{
   padding: ${(props) => (props.isEditing ? '8px' : '16px')} 16px 16px 16px;
   display: flex;
   flex-direction: column;
-  cursor: ${(props) => (props.readOnly ? 'pointer' : props.isEditing ? 'text' : 'move')};
+  cursor: ${(props) => (props.isReadOnly ? 'pointer' : props.isEditing ? 'text' : 'move')};
   position: relative;
   /* Ensure resize handles are clickable */
   pointer-events: auto;
