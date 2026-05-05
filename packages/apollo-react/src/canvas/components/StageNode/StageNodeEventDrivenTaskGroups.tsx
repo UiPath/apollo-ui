@@ -71,6 +71,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
               taskExecution={taskExecution}
               isSelected={selectedTaskId === task.id}
               onTaskClick={handleTaskClick}
+              isReadOnly={isReadOnly}
               isTaskLoading={loadingTaskIds?.has(task.id)}
               {...((onTaskGroupModification || onReplaceTaskFromToolbox) &&
                 !isReadOnly && {

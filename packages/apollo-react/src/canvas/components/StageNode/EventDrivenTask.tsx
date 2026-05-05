@@ -13,6 +13,7 @@ interface EventDrivenTaskItemProps {
   getContextMenuItems?: () => NodeMenuItem[];
   onTaskClick: (e: React.MouseEvent, taskId: string) => void;
   isTaskLoading?: boolean;
+  isReadOnly?: boolean;
 }
 
 const EventDrivenTaskItemComponent = ({
@@ -22,6 +23,7 @@ const EventDrivenTaskItemComponent = ({
   getContextMenuItems,
   onTaskClick,
   isTaskLoading,
+  isReadOnly,
 }: EventDrivenTaskItemProps) => {
   const taskRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<TaskMenuHandle>(null);
@@ -48,7 +50,7 @@ const EventDrivenTaskItemComponent = ({
     >
       <TaskContent task={task} taskExecution={taskExecution} />
 
-      <StageTaskEntryConditionIcon task={task} />
+      <StageTaskEntryConditionIcon task={task} isReadOnly={isReadOnly} />
       {getContextMenuItems && (
         <TaskMenu
           ref={menuRef}

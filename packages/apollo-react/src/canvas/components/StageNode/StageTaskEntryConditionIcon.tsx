@@ -2,8 +2,14 @@ import { EntryConditionIcon } from '../../icons';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { StageTaskItem } from './StageNode.types';
 
-export const StageTaskEntryConditionIcon = ({ task }: { task: StageTaskItem }) => {
-  if (!task.hasEntryCondition) {
+export const StageTaskEntryConditionIcon = ({
+  task,
+  isReadOnly,
+}: {
+  task: StageTaskItem;
+  isReadOnly?: boolean;
+}) => {
+  if (!task.hasEntryCondition || isReadOnly) {
     return null;
   }
   return (

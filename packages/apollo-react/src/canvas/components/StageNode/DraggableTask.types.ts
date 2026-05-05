@@ -14,4 +14,5 @@ export interface DraggableTaskProps {
   isDragDisabled?: boolean;
   projectedDepth?: number;
   isTaskLoading?: boolean;
+  isReadOnly?: boolean;
 }

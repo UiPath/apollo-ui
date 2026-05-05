@@ -215,6 +215,7 @@ export const StageNodeSequentialTaskGroups = ({
                           task.id === activeDragId && projected ? projected.depth : undefined
                         }
                         isDragDisabled={!onTaskReorder || isReadOnly}
+                        isReadOnly={isReadOnly}
                         isTaskLoading={loadingTaskIds?.has(task.id)}
                         {...(hasContextMenu &&
                           !isReadOnly && {
