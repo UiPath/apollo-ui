@@ -1,3 +1,10 @@
+## [@uipath/apollo-wind-v2.14.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.13.0...@uipath/apollo-wind@2.14.0) (2026-05-05)
+
+### Features
+
+* **apollo-wind:** expand apollo-writing skill with full guidelines and content patterns ([24aeb41](https://github.com/uipath/apollo-ui/commit/24aeb419a61ddf636d86bf15c616e156357a58d6))
+* **apollo-wind:** update apollo-writing skill description in Storybook ([363ec34](https://github.com/uipath/apollo-ui/commit/363ec343e4c09bf2d255e11747bb2efbc9d976b5))
+
 ## [@uipath/apollo-wind-v2.13.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.12.0...@uipath/apollo-wind@2.13.0) (2026-05-04)
 
 ### Features
