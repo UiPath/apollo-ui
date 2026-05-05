@@ -36,11 +36,11 @@ export const RESIZE_CONTROL_Z_INDEX = 100;
 export const stickyNoteGlobalStyles = css`
   /* Override React Flow's elevateNodesOnSelect behavior for sticky notes */
   /* Edges have z-index: 0, so we use STICKY_NOTE_BELOW_EDGE_Z_INDEX to ensure sticky notes are below edges */
-  .react-flow__node[data-id^='sticky-'] {
+  .react-flow .react-flow__node[data-id^='sticky-'] {
     z-index: ${STICKY_NOTE_BELOW_EDGE_Z_INDEX} !important;
   }
 
-  .react-flow__node.selected[data-id^='sticky-'] {
+  .react-flow .react-flow__node.selected[data-id^='sticky-'] {
     z-index: ${STICKY_NOTE_BELOW_EDGE_Z_INDEX} !important;
   }
 `;
@@ -56,6 +56,7 @@ export const StickyNoteContainer = styled.div<{
   backgroundColor: string;
   isEditing: boolean;
   selected?: boolean;
+  readOnly?: boolean;
 }>`
   width: 100%;
   height: 100%;
@@ -65,7 +66,7 @@ export const StickyNoteContainer = styled.div<{
   padding: ${(props) => (props.isEditing ? '8px' : '16px')} 16px 16px 16px;
   display: flex;
   flex-direction: column;
-  cursor: ${(props) => (props.isEditing ? 'text' : 'move')};
+  cursor: ${(props) => (props.readOnly ? 'pointer' : props.isEditing ? 'text' : 'move')};
   position: relative;
   /* Ensure resize handles are clickable */
   pointer-events: auto;

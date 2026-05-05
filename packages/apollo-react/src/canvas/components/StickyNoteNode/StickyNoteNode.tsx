@@ -359,6 +359,7 @@ const StickyNoteNodeComponent = ({
           borderColor={color}
           isEditing={isEditing}
           selected={selected}
+          readOnly={readOnly}
           onDoubleClick={handleDoubleClick}
         >
           <TopCornerIndicators visible={selected && !readOnly} />
