@@ -47,6 +47,24 @@ Use a **fixup/rebase workflow** to keep commits clean and meaningful.
 - **Force push feature branches**: After rebasing, use `git push --force-with-lease` to update the remote branch.
 - **Each commit should be meaningful**: A commit should represent a complete, logical change — not a partial fix or correction.
 
+### Styling Standards — apollo-react
+
+**No new `styled-components` (Emotion) or direct MUI component usage in `apollo-react`.**
+
+The package is actively migrating from Emotion (`@emotion/styled`, `@emotion/react`) and raw MUI components to **Tailwind CSS classes via `apollo-wind`**. All new code must follow the new patterns:
+
+- **Do not** import from `@emotion/styled`, `@emotion/react`, or use `styled.*` / `css` helpers
+- **Do not** create new `*.styles.ts` files
+- **Do not** introduce new MUI component imports (`@mui/material/*`) for building UI — existing MUI theme overrides in `theme/` are exempt
+- **Do not** use `Ap*` components from `@uipath/apollo-react` (these are MUI wrappers) — use `apollo-wind` components instead
+- **Do** use Tailwind utility classes (static literal strings in JSX)
+- **Do** use `cn()` from `@uipath/apollo-wind` only when classes conflict/override
+- **Do** use CSS custom properties for dynamic dimensions (Pattern B from migration guide)
+
+When **significantly editing** an existing component that uses styled/MUI patterns, migrate that component to Tailwind as part of the change. Use the `/migrate-canvas-styled-to-tailwind` skill for guidance.
+
+For the full migration patterns and reference examples, see `.claude/skills/migrate-canvas-styled-to-tailwind/SKILL.md`.
+
 ---
 
 # Apollo v.4 Design System Architecture
@@ -80,7 +98,7 @@ This is the **UiPath/apollo-ui** public repository - the open-source design syst
 
 ### Framework Support
 
-- **React**: Primary component library with Material UI theming
+- **React**: Primary component library with Material UI theming (Material is legacy — migrating to Tailwind/apollo-wind)
 - **Web Components**: Cross-framework components using standard web APIs
 - **Tailwind CSS + shadcn/ui**: Modern styling approach (apollo-wind package)
 
@@ -143,7 +161,7 @@ apollo-ui/
 #### `apollo-react`
 
 - **Purpose**: React component library with Material UI theming
-- **Dependencies**: React, Material UI, apollo-core
+- **Dependencies**: React, Material UI (legacy; new code uses Tailwind via apollo-wind), apollo-core
 - **Structure**:
   ```
   apollo-react/
