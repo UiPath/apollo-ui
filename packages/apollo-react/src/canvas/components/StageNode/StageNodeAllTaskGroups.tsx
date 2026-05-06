@@ -145,15 +145,20 @@ const StageNodeAllTaskGroupsInner = ({
       eventDrivenTaskGroups.length === 0 ? (
         <Column py={2}>
           {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly ? (
-            <Button variant="link" onClick={handleTaskAddClick} style={{ maxWidth: 'fit-content' }}>
+            <Button
+              variant="link"
+              size="sm"
+              onClick={handleTaskAddClick}
+              style={{ maxWidth: 'fit-content', padding: 0 }}
+            >
               {defaultContent}
             </Button>
           ) : (
-            <span className="text-xs text-foreground-muted">{defaultContent}</span>
+            <span className="text-xs text-foreground-muted h-9">{defaultContent}</span>
           )}
         </Column>
       ) : (
-        <Column>
+        <Column py={2}>
           <StageNodeSequentialTaskGroups
             props={props}
             sequentialTaskGroups={sequentialTaskGroups}
