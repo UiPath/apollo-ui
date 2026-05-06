@@ -99,6 +99,7 @@ interface ContainerPreviewContext {
 
 interface ContainerPreviewOptions {
   isContainerNode?: (node: Node) => boolean;
+  replacedEdge?: Edge;
   getContainerSafeArea?: (containerNode: Node) => ContainerSafeArea | undefined;
   getContainerContinuationTarget?: (context: {
     containerNode: Node;
@@ -759,6 +760,7 @@ function resolveInsertPreview({
   sourceHandleType,
   reactFlowInstance,
   isContainerNode,
+  replacedEdge: exactReplacedEdge,
   getContainerSafeArea,
   previewNodeSize,
   gap,
@@ -766,24 +768,30 @@ function resolveInsertPreview({
 }: ContainerPreviewContext &
   Pick<
     ContainerPreviewOptions,
-    'isContainerNode' | 'getContainerSafeArea' | 'previewNodeSize' | 'gap' | 'getNodeDimensions'
+    | 'isContainerNode'
+    | 'replacedEdge'
+    | 'getContainerSafeArea'
+    | 'previewNodeSize'
+    | 'gap'
+    | 'getNodeDimensions'
   >): PreviewGraphOverrides | null {
   if (sourceHandleType !== 'source' || !source.handleId) {
     return null;
   }
 
-  const replacedEdge = getSingleOutgoingEdge(
-    source.nodeId,
-    source.handleId,
-    reactFlowInstance.getEdges()
-  );
+  const replacedEdge =
+    exactReplacedEdge ??
+    getSingleOutgoingEdge(source.nodeId, source.handleId, reactFlowInstance.getEdges());
 
   if (!replacedEdge) {
     return null;
   }
 
-  const sourceNode = reactFlowInstance.getNode(replacedEdge.source)!;
-  const targetNode = reactFlowInstance.getNode(replacedEdge.target)!;
+  const sourceNode = reactFlowInstance.getNode(replacedEdge.source);
+  const targetNode = reactFlowInstance.getNode(replacedEdge.target);
+  if (!sourceNode || !targetNode) {
+    return null;
+  }
   const nodes = reactFlowInstance.getNodes();
 
   const containerNode = getContainerNodeForEdge(sourceNode, targetNode, nodes);

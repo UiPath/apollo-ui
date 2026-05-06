@@ -379,7 +379,7 @@ describe('useEdgeToolbarState', () => {
       expect(vi.mocked(showPreviewGraph).mock.calls[0]?.[0]).not.toHaveProperty('containerId');
     });
 
-    it('should use container sequence placement for edge insertion between container children', () => {
+    it('should use exact edge placement for container insertion when the source handle has multiple outgoing edges', () => {
       const containerNode: Node = {
         id: 'loop-1',
         type: 'loop',
@@ -403,11 +403,27 @@ describe('useEdgeToolbarState', () => {
         measured: { width: 96, height: 96 },
         data: {},
       };
-      const nodes = [containerNode, sourceNode, targetNode];
+      const otherTargetNode: Node = {
+        id: 'node-3',
+        type: 'task',
+        position: { x: 480, y: 240 },
+        parentId: containerNode.id,
+        measured: { width: 96, height: 96 },
+        data: {},
+      };
+      const otherEdge: Edge = {
+        id: 'edge-2',
+        source: sourceNode.id,
+        sourceHandle: 'output',
+        target: otherTargetNode.id,
+        targetHandle: 'input',
+      };
+      const nodes = [containerNode, sourceNode, targetNode, otherTargetNode];
       mockReactFlowInstance.getNode.mockImplementation((id: string) =>
         nodes.find((node) => node.id === id)
       );
       mockReactFlowInstance.getNodes.mockReturnValue(nodes);
+      mockReactFlowInstance.getEdges.mockReturnValue([originalEdge, otherEdge]);
 
       const { result } = renderHook(
         () =>
