@@ -34,7 +34,7 @@ import { CanvasPositionControls } from '../CanvasPositionControls';
 // ============================================================================
 
 const meta: Meta = {
-  title: 'Canvas/Edges',
+  title: 'Components/Edges',
   parameters: { layout: 'fullscreen' },
   decorators: [withCanvasProviders()],
 };

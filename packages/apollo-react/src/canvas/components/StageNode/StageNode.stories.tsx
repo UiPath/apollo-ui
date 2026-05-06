@@ -80,7 +80,7 @@ const DefaultCanvasDecorator = ({
 };
 
 const meta: Meta<StageNodeProps> = {
-  title: 'Canvas/StageNode',
+  title: 'Components/StageNode',
   component: StageNode,
   parameters: {
     layout: 'fullscreen',

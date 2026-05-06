@@ -20,7 +20,7 @@ import { NodePropertiesPanel } from './NodePropertiesPanel';
 // ============================================================================
 
 const meta: Meta<typeof NodePropertiesPanel> = {
-  title: 'Canvas/NodePropertiesPanel',
+  title: 'Components/NodePropertiesPanel',
   component: NodePropertiesPanel,
   parameters: { layout: 'fullscreen' },
   decorators: [withCanvasProviders()],

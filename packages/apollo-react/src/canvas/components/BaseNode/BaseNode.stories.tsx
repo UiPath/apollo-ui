@@ -32,7 +32,7 @@ import type { BaseNodeData } from './BaseNode.types';
 // ============================================================================
 
 const meta: Meta<BaseNodeData> = {
-  title: 'Canvas/BaseNode',
+  title: 'Components/BaseNode',
   parameters: {
     layout: 'fullscreen',
   },

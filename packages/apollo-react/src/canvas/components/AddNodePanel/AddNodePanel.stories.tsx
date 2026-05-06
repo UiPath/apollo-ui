@@ -30,7 +30,7 @@ import { createAddNodePreview } from './createAddNodePreview';
 // ============================================================================
 
 const meta: Meta<typeof AddNodePanel> = {
-  title: 'Canvas/AddNodePanel',
+  title: 'Components/AddNodePanel',
   component: AddNodePanel,
   parameters: {
     layout: 'fullscreen',
