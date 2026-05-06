@@ -2,6 +2,7 @@ export * from './ExecutionStatusContext';
 export * from './ToolbarActionContext';
 export * from './useAddNodeOnConnectEnd';
 export * from './useCanvasEvents';
+export * from './useCanvasNodeLayout';
 export * from './useEdgePath';
 export * from './useExportCanvas';
 export * from './useNavigationState';

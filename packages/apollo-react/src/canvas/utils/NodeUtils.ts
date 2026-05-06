@@ -112,7 +112,7 @@ export type CollisionAlgorithmOptions = {
   margin?: number;
   ignoredNodeTypes?: string[];
   /** Allows callers to resolve manifest-aware sizes before collision math runs. */
-  getNodeSize?: (node: Node) => { width: number; height: number };
+  getNodeDimensions?: (node: Node) => { width: number; height: number };
 };
 
 export type CollisionAlgorithm = (nodes: Node[], options?: CollisionAlgorithmOptions) => Node[];
@@ -129,13 +129,13 @@ type Box = {
 function getBoxesFromNodes(
   nodes: Node[],
   margin: number = 0,
-  getNodeSize?: (node: Node) => { width: number; height: number }
+  getNodeDimensions?: (node: Node) => { width: number; height: number }
 ): Box[] {
   const boxes: Box[] = new Array(nodes.length);
 
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i]!;
-    const nodeSize = getNodeSize?.(node) ?? {
+    const nodeSize = getNodeDimensions?.(node) ?? {
       width: node.width ?? node.measured?.width ?? DEFAULT_NODE_SIZE,
       height: node.height ?? node.measured?.height ?? DEFAULT_NODE_SIZE,
     };
@@ -163,14 +163,14 @@ export const resolveCollisions: CollisionAlgorithm = (
     overlapThreshold = 0,
     margin = GRID_SPACING * 2,
     ignoredNodeTypes,
-    getNodeSize,
+    getNodeDimensions,
   } = {}
 ) => {
   const ignoredSet = new Set(ignoredNodeTypes);
   const collisionNodes =
     ignoredSet.size > 0 ? nodes.filter((n) => !ignoredSet.has(n.type ?? '')) : nodes;
 
-  const boxes = getBoxesFromNodes(collisionNodes, margin, getNodeSize);
+  const boxes = getBoxesFromNodes(collisionNodes, margin, getNodeDimensions);
   for (let iter = 0; iter < maxIterations; iter++) {
     let moved = false;
 

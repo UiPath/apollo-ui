@@ -1,4 +1,5 @@
 import {
+  type Edge,
   type Node,
   Position,
   type ReactFlowInstance,
@@ -126,7 +127,7 @@ function pickPreferredInnerHandle(
   return null;
 }
 
-function resolveClickedHandleType({
+function resolveClickedHandle({
   source,
   reactFlowInstance,
   getManifestForNode,
@@ -134,7 +135,7 @@ function resolveClickedHandleType({
   source: PreviewEndpoint;
   reactFlowInstance: ReactFlowInstance;
   getManifestForNode: ContainerPreviewManifestResolver;
-}): string | undefined {
+}): { boundary: ContainerHandleBoundary; handleType?: string } | undefined {
   if (!source.handleId) return undefined;
 
   const sourceNode = reactFlowInstance.getNode(source.nodeId);
@@ -155,7 +156,12 @@ function resolveClickedHandleType({
 
   for (const group of sourceHandles) {
     const handle = group.handles.find((candidate) => candidate.id === source.handleId);
-    if (handle) return handle.handleType;
+    if (handle) {
+      return {
+        boundary: (group.boundary ?? 'outer') as ContainerHandleBoundary,
+        handleType: handle.handleType,
+      };
+    }
   }
 
   return undefined;
@@ -170,13 +176,15 @@ export function resolveContainerAddNodePreview({
   sourceHandleType,
   reactFlowInstance,
   getManifestForNode,
+  replacedEdge,
 }: {
   source: PreviewEndpoint;
   sourceHandleType: 'source' | 'target';
   reactFlowInstance: ReactFlowInstance;
   getManifestForNode: ContainerPreviewManifestResolver;
+  replacedEdge?: Edge;
 }): PreviewGraphOverrides | null {
-  const clickedHandleType = resolveClickedHandleType({
+  const clickedHandle = resolveClickedHandle({
     source,
     reactFlowInstance,
     getManifestForNode,
@@ -185,7 +193,14 @@ export function resolveContainerAddNodePreview({
   // Container sequence insertion is reserved for workflow outputs. Resource
   // handles and unresolved runtime handles keep the generic attachment preview,
   // scoped by the source node's parent container when one exists.
-  if (clickedHandleType !== 'output') {
+  if (clickedHandle?.handleType !== 'output') {
+    return null;
+  }
+
+  const sourceNode = reactFlowInstance.getNode(source.nodeId);
+  const sourceIsContainer =
+    sourceNode !== undefined && isContainerNodeManifest(getManifestForNode(sourceNode));
+  if (sourceIsContainer && clickedHandle.boundary !== 'inner') {
     return null;
   }
 
@@ -193,6 +208,7 @@ export function resolveContainerAddNodePreview({
     source,
     sourceHandleType,
     reactFlowInstance,
+    replacedEdge,
     isContainerNode: (node) => isContainerNodeManifest(getManifestForNode(node)),
     getContainerSafeArea,
     getContainerContinuationTarget: ({ containerNode }) => {
@@ -214,4 +230,31 @@ export function resolveContainerAddNodePreview({
         : null;
     },
   });
+}
+
+/**
+ * Connect-end drags from a container's own inner handle should keep the
+ * user's drop position and the preview should be parented.
+ */
+export function getInnerHandleContainerId({
+  source,
+  reactFlowInstance,
+  getManifestForNode,
+}: {
+  source: PreviewEndpoint;
+  reactFlowInstance: ReactFlowInstance;
+  getManifestForNode: ContainerPreviewManifestResolver;
+}): string | undefined {
+  const sourceNode = reactFlowInstance.getNode(source.nodeId);
+  if (!sourceNode || !isContainerNodeManifest(getManifestForNode(sourceNode))) {
+    return undefined;
+  }
+
+  const clickedHandle = resolveClickedHandle({
+    source,
+    reactFlowInstance,
+    getManifestForNode,
+  });
+
+  return clickedHandle?.boundary === 'inner' ? sourceNode.id : undefined;
 }

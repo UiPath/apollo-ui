@@ -698,7 +698,7 @@ describe('NodeUtils', () => {
       ];
 
       const result = resolveCollisions(nodes, {
-        getNodeSize: (node) =>
+        getNodeDimensions: (node) =>
           node.id === 'wide-node'
             ? { width: 160, height: 40 }
             : {

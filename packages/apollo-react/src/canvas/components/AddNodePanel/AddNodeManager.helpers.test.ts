@@ -1,22 +1,22 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it } from 'vitest';
 import { PREVIEW_NODE_ID } from '../../constants';
-import type { NodeTypeRegistry } from '../../core';
-import type { NodeManifest, NodeShape } from '../../schema/node-definition';
+import type { NodeLayout } from '../../hooks/useCanvasNodeLayout';
+import type { NodeShape } from '../../schema/node-definition';
+import { getExpandedSize } from '../../utils/collapse';
+import { getContainerFitGeometry, getNodeDimensions } from '../../utils/container';
 import { placeAddedNode } from './AddNodeManager.helpers';
 
-function buildRegistry(manifestsByType: Record<string, { shape?: NodeShape }>): NodeTypeRegistry {
-  const get = (nodeType: string): NodeManifest | undefined => {
-    const entry = manifestsByType[nodeType];
-    if (!entry) return undefined;
-    return {
-      nodeType,
-      version: '1',
-      display: { label: nodeType, ...(entry.shape ? { shape: entry.shape } : {}) },
-      handleConfiguration: [],
-    } as NodeManifest;
+function buildLayout(manifestsByType: Record<string, { shape?: NodeShape }>): NodeLayout {
+  const getShape = (nodeType: string | undefined): NodeShape | undefined =>
+    nodeType ? manifestsByType[nodeType]?.shape : undefined;
+
+  return {
+    getNodeDimensions: (node) => getNodeDimensions(node, getExpandedSize(getShape(node.type))),
+    isContainerNode: (node) => getShape(node.type) === 'container',
+    getContainerFitGeometry: (node) =>
+      getShape(node.type) === 'container' ? getContainerFitGeometry() : null,
   };
-  return { getManifest: get } as unknown as NodeTypeRegistry;
 }
 
 const ORIGINAL_EDGE: Edge = {
@@ -54,7 +54,7 @@ describe('placeAddedNode', () => {
     };
 
     it('shifts the downstream chain right when inserting a wider rectangle', () => {
-      const registry = buildRegistry({
+      const layout = buildLayout({
         'square-source': { shape: 'square' },
         'square-target': { shape: 'square' },
         rectangle: { shape: 'rectangle' },
@@ -73,7 +73,7 @@ describe('placeAddedNode', () => {
         edges: [ORIGINAL_EDGE],
         previewNode,
         insertedNode,
-        registry,
+        layout,
       });
 
       const placedAction = nodes.find((n) => n.id === 'action');
@@ -93,7 +93,7 @@ describe('placeAddedNode', () => {
     });
 
     it('shifts the downstream chain right when inserting a container shape', () => {
-      const registry = buildRegistry({
+      const layout = buildLayout({
         'square-source': { shape: 'square' },
         'square-target': { shape: 'square' },
         loop: { shape: 'container' },
@@ -111,7 +111,7 @@ describe('placeAddedNode', () => {
         edges: [ORIGINAL_EDGE],
         previewNode,
         insertedNode,
-        registry,
+        layout,
       });
 
       const placedAction = nodes.find((n) => n.id === 'action');
@@ -126,7 +126,7 @@ describe('placeAddedNode', () => {
     });
 
     it('cascades the shift through a multi-node downstream chain', () => {
-      const registry = buildRegistry({
+      const layout = buildLayout({
         'square-source': { shape: 'square' },
         'square-target': { shape: 'square' },
         rectangle: { shape: 'rectangle' },
@@ -163,7 +163,7 @@ describe('placeAddedNode', () => {
         edges,
         previewNode,
         insertedNode,
-        registry,
+        layout,
       });
 
       const placedAction = nodes.find((n) => n.id === 'action')!;
@@ -184,7 +184,7 @@ describe('placeAddedNode', () => {
     });
 
     it('does not shift the chain when the inserted node already fits', () => {
-      const registry = buildRegistry({
+      const layout = buildLayout({
         'square-source': { shape: 'square' },
         'square-target': { shape: 'square' },
         square: { shape: 'square' },
@@ -207,7 +207,7 @@ describe('placeAddedNode', () => {
         edges: [{ ...ORIGINAL_EDGE, target: 'action' }],
         previewNode,
         insertedNode,
-        registry,
+        layout,
       });
 
       const placedAction = nodes.find((n) => n.id === 'action');
@@ -220,7 +220,7 @@ describe('placeAddedNode', () => {
       // self-loop (source === target, e.g. Loop("output") → Loop("loopBack")),
       // so shifting the "downstream chain" would move the source away from
       // the inserted node and produce a backward-wrapping edge.
-      const registry = buildRegistry({
+      const layout = buildLayout({
         loop: { shape: 'square' },
         rectangle: { shape: 'rectangle' },
       });
@@ -258,7 +258,7 @@ describe('placeAddedNode', () => {
         edges: [selfLoopEdge],
         previewNode,
         insertedNode,
-        registry,
+        layout,
       });
 
       const placedLoop = nodes.find((n) => n.id === 'loop');
@@ -275,7 +275,7 @@ describe('placeAddedNode', () => {
       // (child → loop), so the loop ends up in chainIds. Without this guard,
       // the loop is shifted right alongside the child, producing the broken
       // backward-wrapping body edge.
-      const registry = buildRegistry({
+      const layout = buildLayout({
         loop: { shape: 'square' },
         rectangle: { shape: 'rectangle' },
       });
@@ -327,7 +327,7 @@ describe('placeAddedNode', () => {
         edges: [bodyEdge, loopBackEdge],
         previewNode,
         insertedNode,
-        registry,
+        layout,
       });
 
       const placedLoop = nodes.find((n) => n.id === 'loop');
@@ -339,7 +339,7 @@ describe('placeAddedNode', () => {
     });
 
     it('does not shift any chain when no originalEdge metadata is present', () => {
-      const registry = buildRegistry({
+      const layout = buildLayout({
         'square-source': { shape: 'square' },
         'square-target': { shape: 'square' },
         rectangle: { shape: 'rectangle' },
@@ -366,7 +366,7 @@ describe('placeAddedNode', () => {
         edges: [ORIGINAL_EDGE],
         previewNode,
         insertedNode,
-        registry,
+        layout,
       });
 
       const placedAction = nodes.find((n) => n.id === 'action');
@@ -380,7 +380,7 @@ describe('placeAddedNode', () => {
 
   describe('non-container placement', () => {
     it('leaves top-level generic additions unchanged when there is no collision', () => {
-      const registry = buildRegistry({
+      const layout = buildLayout({
         resource: { shape: 'circle' },
         task: { shape: 'square' },
       });
@@ -411,7 +411,7 @@ describe('placeAddedNode', () => {
         edges: [],
         previewNode,
         insertedNode,
-        registry,
+        layout,
       });
 
       expect(placedInsertedNode.parentId).toBeUndefined();
@@ -422,7 +422,7 @@ describe('placeAddedNode', () => {
 
   describe('generic parented insertion', () => {
     it('grows a container vertically around an attached child', () => {
-      const registry = buildRegistry({
+      const layout = buildLayout({
         loop: { shape: 'container' },
         resource: { shape: 'circle' },
       });
@@ -457,7 +457,7 @@ describe('placeAddedNode', () => {
         edges: [],
         previewNode,
         insertedNode,
-        registry,
+        layout,
       });
 
       const loopHeight = nodes.find((node) => node.id === 'loop')?.style?.height as
@@ -470,7 +470,7 @@ describe('placeAddedNode', () => {
     });
 
     it('grows a container when an attached child is added above the safe area', () => {
-      const registry = buildRegistry({
+      const layout = buildLayout({
         agent: { shape: 'rectangle' },
         loop: { shape: 'container' },
         resource: { shape: 'circle' },
@@ -515,7 +515,7 @@ describe('placeAddedNode', () => {
         edges: [],
         previewNode,
         insertedNode,
-        registry,
+        layout,
       });
 
       const loopHeight = nodes.find((node) => node.id === 'loop')?.style?.height as
@@ -530,7 +530,7 @@ describe('placeAddedNode', () => {
     });
 
     it('does not resize a parent that is not a container manifest', () => {
-      const registry = buildRegistry({
+      const layout = buildLayout({
         group: { shape: 'square' },
         resource: { shape: 'circle' },
       });
@@ -572,7 +572,7 @@ describe('placeAddedNode', () => {
         edges: [],
         previewNode,
         insertedNode,
-        registry,
+        layout,
       });
 
       expect(nodes.find((node) => node.id === 'group')).toMatchObject({
@@ -585,7 +585,7 @@ describe('placeAddedNode', () => {
     });
 
     it('does not fit containers around ignored node types', () => {
-      const registry = buildRegistry({
+      const layout = buildLayout({
         loop: { shape: 'container' },
         resource: { shape: 'circle' },
         stickyNote: { shape: 'square' },
@@ -630,7 +630,7 @@ describe('placeAddedNode', () => {
         edges: [],
         previewNode,
         insertedNode,
-        registry,
+        layout,
         ignoredNodeTypes: ['stickyNote'],
       });
 

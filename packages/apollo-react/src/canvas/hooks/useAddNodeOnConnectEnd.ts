@@ -1,6 +1,8 @@
 import { type OnConnectEnd, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback } from 'react';
+import { getInnerHandleContainerId } from '../components/LoopNode/LoopNode.helpers';
 import { showPreviewGraph } from '../utils';
+import { useNodeManifestResolver } from './useCanvasNodeLayout';
 
 const EMPTY_IGNORED_NODE_TYPES: string[] = [];
 
@@ -20,6 +22,7 @@ function getClientPosition(event: MouseEvent | TouchEvent): { x: number; y: numb
  */
 export function useAddNodeOnConnectEnd(ignoredNodeTypes: string[] = EMPTY_IGNORED_NODE_TYPES) {
   const reactFlowInstance = useReactFlow();
+  const getManifestForNode = useNodeManifestResolver();
 
   return useCallback<OnConnectEnd>(
     (event, connectionState) => {
@@ -36,19 +39,26 @@ export function useAddNodeOnConnectEnd(ignoredNodeTypes: string[] = EMPTY_IGNORE
       if (!clientPosition) return;
 
       const flowDropPosition = reactFlowInstance.screenToFlowPosition(clientPosition);
+      const source = {
+        nodeId: connectionState.fromNode.id,
+        handleId: connectionState.fromHandle.id ?? 'output',
+      };
+      const containerId = getInnerHandleContainerId({
+        source,
+        reactFlowInstance,
+        getManifestForNode,
+      });
 
       showPreviewGraph({
-        source: {
-          nodeId: connectionState.fromNode.id,
-          handleId: connectionState.fromHandle.id ?? 'output',
-        },
+        source,
         reactFlowInstance,
         position: flowDropPosition,
         sourceHandleType: connectionState.fromHandle.type,
         handlePosition: connectionState.fromHandle.position,
         ignoredNodeTypes,
+        ...(containerId ? { containerId } : {}),
       });
     },
-    [reactFlowInstance, ignoredNodeTypes]
+    [reactFlowInstance, getManifestForNode, ignoredNodeTypes]
   );
 }
