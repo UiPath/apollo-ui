@@ -2,7 +2,7 @@
 
 import { AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { ToolResolutionFailure } from "../tools/data-fabric/resolver-result";
+import type { ToolResolutionFailure } from "../tools/data-fabric/util/resolver-result";
 
 export interface ToolResolutionErrorProps {
   failure: ToolResolutionFailure;

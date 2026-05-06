@@ -8,7 +8,7 @@ import {
 import type {
   Entity,
   EntityField,
-} from "@/registry/ai-chat/tools/data-fabric/shared";
+} from "@/registry/ai-chat/tools/data-fabric/util/entities";
 
 interface UseDataFabricEntitiesOptions {
   entities: Entities;

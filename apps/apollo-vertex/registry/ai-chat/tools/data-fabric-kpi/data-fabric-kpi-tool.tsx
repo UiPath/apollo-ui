@@ -9,17 +9,16 @@ import { ToolResolutionError } from "../../charts/tool-resolution-error";
 import {
   buildMetricEntry,
   metricSchema,
-  resolveMultiBinnedMetric,
-  resolveSingleBinnedMetric,
-} from "../data-fabric/binned";
+  resolveMultiMetric,
+  resolveSingleMetric,
+} from "../data-fabric/util/chart-helpers";
 import {
   collectQualifiedFields,
   type DataFabricToolContext,
-  filterSchema,
   generateEntityFieldsDocs,
-  joinSchema,
-  resolveFilters,
-} from "../data-fabric/shared";
+} from "../data-fabric/util/entities";
+import { filterSchema, resolveFilters } from "../data-fabric/util/filters";
+import { joinSchema } from "../data-fabric/util/joins";
 
 const dataFabricKpiInput = z.object({
   entityName: z.string().describe("Data Fabric entity name to query"),
@@ -102,8 +101,8 @@ ${generateEntityFieldsDocs(context.entities)}`;
       : null;
 
     const resolvedMetric = qualifiedFields
-      ? resolveMultiBinnedMetric(entityName, metric, qualifiedFields)
-      : resolveSingleBinnedMetric(entity, metric);
+      ? resolveMultiMetric(entityName, metric, qualifiedFields)
+      : resolveSingleMetric(entity, metric);
 
     if (!resolvedMetric.ok) {
       return <ToolResolutionError failure={resolvedMetric} />;

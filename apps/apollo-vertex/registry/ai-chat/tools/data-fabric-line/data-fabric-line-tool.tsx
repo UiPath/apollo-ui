@@ -7,21 +7,20 @@ import { z } from "zod";
 import { LineChartCard } from "../../charts/line-chart-card";
 import { ToolResolutionError } from "../../charts/tool-resolution-error";
 import {
-  buildBinnedDataModel,
+  buildDataModel,
   metricSchema,
-  resolveMultiBinnedDimension,
-  resolveMultiBinnedMetric,
-  resolveSingleBinnedDimension,
-  resolveSingleBinnedMetric,
-} from "../data-fabric/binned";
+  resolveMultiDimension,
+  resolveMultiMetric,
+  resolveSingleDimension,
+  resolveSingleMetric,
+} from "../data-fabric/util/chart-helpers";
 import {
   collectQualifiedFields,
   type DataFabricToolContext,
-  filterSchema,
   generateEntityFieldsDocs,
-  joinSchema,
-  resolveFilters,
-} from "../data-fabric/shared";
+} from "../data-fabric/util/entities";
+import { filterSchema, resolveFilters } from "../data-fabric/util/filters";
+import { joinSchema } from "../data-fabric/util/joins";
 
 const LINE_DIMENSION_TYPES = ["datetime"] as const;
 
@@ -110,27 +109,27 @@ ${generateEntityFieldsDocs(context.entities)}`;
       : null;
 
     const resolvedDimension = qualifiedFields
-      ? resolveMultiBinnedDimension(
+      ? resolveMultiDimension(
           entityName,
           dimension,
           qualifiedFields,
           LINE_DIMENSION_TYPES,
         )
-      : resolveSingleBinnedDimension(entity, dimension, LINE_DIMENSION_TYPES);
+      : resolveSingleDimension(entity, dimension, LINE_DIMENSION_TYPES);
 
     if (!resolvedDimension.ok) {
       return <ToolResolutionError failure={resolvedDimension} />;
     }
 
     const resolvedMetric = qualifiedFields
-      ? resolveMultiBinnedMetric(entityName, metric, qualifiedFields)
-      : resolveSingleBinnedMetric(entity, metric);
+      ? resolveMultiMetric(entityName, metric, qualifiedFields)
+      : resolveSingleMetric(entity, metric);
 
     if (!resolvedMetric.ok) {
       return <ToolResolutionError failure={resolvedMetric} />;
     }
 
-    const dataModel = buildBinnedDataModel({
+    const dataModel = buildDataModel({
       id: entityName,
       dimension: resolvedDimension.value.id,
       dimensionType: resolvedDimension.value.type,

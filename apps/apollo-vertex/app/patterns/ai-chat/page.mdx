@@ -18,8 +18,10 @@ A composable AI chat UI component for Apollo Vertex. Built with React, TypeScrip
 - **Markdown Rendering** — Renders assistant responses with GitHub Flavored Markdown
 - **Data Fabric Table Tool** — Display entity data as filterable tables with list, search, and range filters, and multi-entity joins
 - **Data Fabric Distribution Tool** — Render histogram charts for numeric or datetime fields with optional aggregations, filters, and joins
+- **Data Fabric Bar Chart Tool** — Render bar charts that break one or more metrics down by a categorical (string) dimension, with optional aggregations, filters, joins, and grouped bars when multiple metrics are passed
 - **Data Fabric Line Chart Tool** — Render time-series line charts over a datetime field with optional aggregations, filters, and joins
 - **Data Fabric Multi-Line Chart Tool** — Compare two metrics on a shared datetime axis, each with its own Y axis, totals label, and join support
+- **Data Fabric KPI Tool** — Render a single scalar metric (count, sum, average, min, max) with optional filters and joins
 - **Suggestion Buttons** — Interactive choice buttons rendered from tool results
 
 ## Installation
@@ -297,6 +299,62 @@ Omit `metric` entirely for the default `COUNT` of records per bin. To plot an ag
 ### Filters and joins
 
 Filters and joins use the same schemas as the table tool (including the new datetime range filter). When joins are present, the `dimension` and `metric.field` must use qualified `EntityName.FieldName` names.
+
+---
+
+## Data Fabric Bar Chart Tool
+
+The `data_fabric_bar` tool renders a bar chart from a Data Fabric entity, breaking one or more metrics down by a categorical (string) dimension. With a single metric, each category gets one bar. With multiple metrics, each category gets a grouped cluster — one bar per metric. It shares the metric, filter, and join system with the other Data Fabric chart tools.
+
+```tsx
+import {
+  createDataFabricBarTool,
+  dataFabricBarClient,
+} from '@/components/ui/ai-chat/tools/data-fabric-bar';
+
+const barTool = createDataFabricBarTool({
+  entities,           // Record<string, Entity> — entity metadata with field names and types
+  accessToken,        // Bearer token for Data Fabric API
+  dataFabricBaseUrl,  // Base URL for Data Fabric proxy
+});
+
+// Use dataFabricBarClient in your tools array, barTool.toolPrompt in your
+// system prompt, and barTool.renderBar(part.output, part.id) in your parts loop.
+```
+
+### When to use bar vs distribution vs line
+
+- **Bar** — categorical breakdown by a string field: *"orders by status"*, *"revenue by category"*, *"count by region"*. One bar per discrete value, or grouped bars when comparing multiple metrics across categories.
+- **Distribution** — histogram-style requests over numeric/datetime values: *"distribution of order amount"*, *"histogram of X"*.
+- **Line** — single-metric trends over a datetime axis: *"orders over time"*, *"revenue by month"*.
+
+### Dimension
+
+The `dimension` must be a **string** field. Numeric or datetime fields belong on a distribution or line chart.
+
+### Metrics
+
+Pass `metrics` as an array of metric specs. Omit it entirely for the default single `COUNT` of records per category.
+
+- `COUNT` — records per category (default; `field` optional, picks the primary key).
+- `SUM`, `AVG`, `MIN`, `MAX` — applied to a numeric `field`.
+
+With multiple metrics, the chart renders grouped bars — one cluster per dimension value, one bar per metric. Schema validation rejects duplicate `(aggregation, field)` pairs before the chart is rendered.
+
+```json
+{
+  "entityName": "Order",
+  "dimension": "Status",
+  "metrics": [
+    { "aggregation": "COUNT" },
+    { "aggregation": "SUM", "field": "Total" }
+  ]
+}
+```
+
+### Filters and joins
+
+Filter and join semantics are identical to the other Data Fabric tools. When joins are present, `dimension` and every metric `field` must use qualified `EntityName.FieldName` names.
 
 ---
 
