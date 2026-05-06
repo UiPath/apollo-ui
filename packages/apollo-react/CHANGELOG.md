@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.22.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.22.2...@uipath/apollo-react@4.22.3) (2026-05-06)
+
+### Bug Fixes
+
+* **apollo-react:** scope loop inner handle drops ([f505906](https://github.com/UiPath/apollo-ui/commit/f5059064efa6c0abbc3671e2bac1cbd5d7033652))
+
 ## [@uipath/apollo-react-v4.22.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.22.1...@uipath/apollo-react@4.22.2) (2026-05-06)
 
 ### Bug Fixes
