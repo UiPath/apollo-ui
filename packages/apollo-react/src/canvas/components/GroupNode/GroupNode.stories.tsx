@@ -19,7 +19,7 @@ import { GroupNodeConfigProvider } from './GroupNodeConfigContext';
 // ============================================================================
 
 const meta: Meta = {
-  title: 'Canvas/GroupNode',
+  title: 'Components/GroupNode',
   parameters: { layout: 'fullscreen' },
   decorators: [withCanvasProviders()],
 };

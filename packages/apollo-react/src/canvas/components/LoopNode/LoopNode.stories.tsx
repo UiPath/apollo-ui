@@ -21,7 +21,7 @@ import { CanvasPositionControls } from '../CanvasPositionControls';
 import type { LoopNodeData } from './LoopNode.types';
 
 const meta: Meta = {
-  title: 'Canvas/LoopNode',
+  title: 'Components/LoopNode',
   parameters: { layout: 'fullscreen' },
   decorators: [withCanvasProviders()],
 };

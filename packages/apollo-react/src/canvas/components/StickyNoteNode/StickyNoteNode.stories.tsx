@@ -14,7 +14,7 @@ import type { StickyNoteColor, StickyNoteData } from './StickyNoteNode.types';
 // ============================================================================
 
 const meta: Meta = {
-  title: 'Canvas/StickyNoteNode',
+  title: 'Components/StickyNoteNode',
   parameters: { layout: 'fullscreen' },
   decorators: [withCanvasProviders()],
 };
