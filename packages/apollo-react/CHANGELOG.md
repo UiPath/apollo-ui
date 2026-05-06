@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v4.22.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.22.1...@uipath/apollo-react@4.22.2) (2026-05-06)
+
+### Bug Fixes
+
+* **apollo-react:** pass through readonly ([d26805f](https://github.com/UiPath/apollo-ui/commit/d26805fac3ac02861535b87c14f8185a7bff0180))
+* **apollo-react:** realign stage node with 16px grid ([0b09a4e](https://github.com/UiPath/apollo-ui/commit/0b09a4e7b89898218282bb1f3ea7dc4664363c0a))
+
 ## [@uipath/apollo-react-v4.22.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.22.0...@uipath/apollo-react@4.22.1) (2026-05-05)
 
 ### Bug Fixes
