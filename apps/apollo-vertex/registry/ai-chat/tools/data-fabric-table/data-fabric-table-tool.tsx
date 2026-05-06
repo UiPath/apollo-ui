@@ -6,17 +6,19 @@ import { DateTime } from "luxon";
 import { z } from "zod";
 import { TableChartCard } from "../../charts/table-chart-card";
 import { ToolResolutionError } from "../../charts/tool-resolution-error";
-import type { DataFabricToolContext, Entity } from "../data-fabric/shared";
+import {
+  collectQualifiedFields,
+  type DataFabricToolContext,
+  type Entity,
+  generateEntityFieldsDocs,
+} from "../data-fabric/util/entities";
+import { filterSchema, resolveFilters } from "../data-fabric/util/filters";
+import { joinSchema } from "../data-fabric/util/joins";
 import {
   buildMultiEntityDataModel,
   buildTableDataModel,
-  collectQualifiedFields,
-  filterSchema,
-  generateEntityFieldsDocs,
-  joinSchema,
-  resolveFilters,
   validateDimensions,
-} from "../data-fabric/shared";
+} from "./table-data-model";
 
 const dataFabricTableInput = z.object({
   entityName: z.string().describe("Data Fabric entity name to query"),

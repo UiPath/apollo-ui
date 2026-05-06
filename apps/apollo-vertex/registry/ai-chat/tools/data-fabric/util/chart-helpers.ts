@@ -1,31 +1,20 @@
 import type {
   ChartDataModel,
-  NumericOrDatetimeField,
+  DataModelField,
 } from "@uipath/apollo-dashboarding";
 import { z } from "zod";
-import { fail, ok, type ResolverResult } from "./resolver-result";
 import {
   type Entity,
   type EntityField,
   mapFieldType,
   pickCountField,
   pickCountFieldQualified,
-} from "./shared";
+} from "./entities";
+import { fail, ok, type ResolverResult } from "./resolver-result";
 
-export type BinnedAggregation = "COUNT" | "SUM" | "AVG" | "MIN" | "MAX";
+export type Aggregation = "COUNT" | "SUM" | "AVG" | "MIN" | "MAX";
 
-export type BinnedDimensionType = "numeric" | "datetime";
-
-interface BuildBinnedDataModelInput {
-  id: string;
-  dimension: string;
-  dimensionType: BinnedDimensionType;
-  metric: {
-    aggregation: BinnedAggregation;
-    field: string;
-    display: string;
-  };
-}
+export type DimensionType = "string" | "numeric" | "boolean" | "datetime";
 
 // Data Fabric rewrites aliases that contain dots (qualified field paths)
 // into a canonical `<FUNCTION>_<field>` form when joins are used, breaking
@@ -42,12 +31,19 @@ export function buildMetricEntry(metric: ResolvedMetric) {
   };
 }
 
-export function buildBinnedDataModel({
+interface BuildDataModelInput<T extends DimensionType> {
+  id: string;
+  dimension: string;
+  dimensionType: T;
+  metric: ResolvedMetric;
+}
+
+export function buildDataModel<T extends DimensionType>({
   id,
   dimension,
   dimensionType,
   metric,
-}: BuildBinnedDataModelInput): ChartDataModel<NumericOrDatetimeField> {
+}: BuildDataModelInput<T>): ChartDataModel<DataModelField & { type: T }> {
   return {
     id,
     dimensions: [{ id: dimension, type: dimensionType }],
@@ -55,19 +51,21 @@ export function buildBinnedDataModel({
   };
 }
 
-interface BuildMultiBinnedDataModelInput {
+interface BuildMultiMetricDataModelInput<T extends DimensionType> {
   id: string;
   dimension: string;
-  dimensionType: BinnedDimensionType;
+  dimensionType: T;
   metrics: ResolvedMetric[];
 }
 
-export function buildMultiBinnedDataModel({
+export function buildMultiMetricDataModel<T extends DimensionType>({
   id,
   dimension,
   dimensionType,
   metrics,
-}: BuildMultiBinnedDataModelInput): ChartDataModel<NumericOrDatetimeField> {
+}: BuildMultiMetricDataModelInput<T>): ChartDataModel<
+  DataModelField & { type: T }
+> {
   return {
     id,
     dimensions: [{ id: dimension, type: dimensionType }],
@@ -101,7 +99,7 @@ export const metricSchema = z
 
 export type MetricInput = z.infer<typeof metricSchema>;
 
-export function formatAggregation(aggregation: BinnedAggregation): string {
+export function formatAggregation(aggregation: Aggregation): string {
   switch (aggregation) {
     case "COUNT":
       return "Count";
@@ -116,22 +114,39 @@ export function formatAggregation(aggregation: BinnedAggregation): string {
   }
 }
 
-export interface ResolvedDimension {
+export interface ResolvedDimension<T extends DimensionType = DimensionType> {
   id: string;
-  type: BinnedDimensionType;
+  type: T;
 }
 
 export interface ResolvedMetric {
   field: string;
-  aggregation: BinnedAggregation;
+  aggregation: Aggregation;
   display: string;
 }
 
-export function resolveSingleBinnedDimension(
+export function dedupeMetrics(metrics: ResolvedMetric[]): ResolvedMetric[] {
+  const seen = new Set<string>();
+  return metrics.filter((m) => {
+    const key = `${m.aggregation}|${m.field}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function isAllowedDimensionType<T extends DimensionType>(
+  value: DimensionType,
+  allowed: ReadonlyArray<T>,
+): value is T {
+  return (allowed as readonly DimensionType[]).includes(value);
+}
+
+export function resolveSingleDimension<T extends DimensionType>(
   entity: Entity,
   dimension: string,
-  allowed: ReadonlyArray<BinnedDimensionType>,
-): ResolverResult<ResolvedDimension> {
+  allowed: ReadonlyArray<T>,
+): ResolverResult<ResolvedDimension<T>> {
   const field = entity.fields.find((f) => f.name === dimension);
   if (!field) {
     return fail({
@@ -141,7 +156,7 @@ export function resolveSingleBinnedDimension(
     });
   }
   const type = mapFieldType(field.dataType);
-  if (!(type === "numeric" || type === "datetime") || !allowed.includes(type)) {
+  if (!isAllowedDimensionType(type, allowed)) {
     return fail({
       reason: "wrong_dimension_type_in_entity",
       field: dimension,
@@ -153,12 +168,12 @@ export function resolveSingleBinnedDimension(
   return ok({ id: field.name, type });
 }
 
-export function resolveMultiBinnedDimension(
+export function resolveMultiDimension<T extends DimensionType>(
   primaryEntity: string,
   dimension: string,
   qualifiedFields: Map<string, EntityField>,
-  allowed: ReadonlyArray<BinnedDimensionType>,
-): ResolverResult<ResolvedDimension> {
+  allowed: ReadonlyArray<T>,
+): ResolverResult<ResolvedDimension<T>> {
   const qualified = dimension.includes(".")
     ? dimension
     : `${primaryEntity}.${dimension}`;
@@ -170,7 +185,7 @@ export function resolveMultiBinnedDimension(
     });
   }
   const type = mapFieldType(field.dataType);
-  if (!(type === "numeric" || type === "datetime") || !allowed.includes(type)) {
+  if (!isAllowedDimensionType(type, allowed)) {
     return fail({
       reason: "wrong_dimension_type_in_joined",
       field: qualified,
@@ -181,7 +196,7 @@ export function resolveMultiBinnedDimension(
   return ok({ id: qualified, type });
 }
 
-export function resolveSingleBinnedMetric(
+export function resolveSingleMetric(
   entity: Entity,
   metric: MetricInput | undefined,
 ): ResolverResult<ResolvedMetric> {
@@ -242,7 +257,7 @@ function unqualifiedDisplay(qualified: string): string {
   return qualified.split(".").at(-1) ?? qualified;
 }
 
-export function resolveMultiBinnedMetric(
+export function resolveMultiMetric(
   primaryEntity: string,
   metric: MetricInput | undefined,
   qualifiedFields: Map<string, EntityField>,

@@ -15,7 +15,11 @@ import {
   presentChoicesClient,
   renderChoices,
 } from "@/registry/ai-chat/tools/choices";
-import type { Entity } from "@/registry/ai-chat/tools/data-fabric/shared";
+import type { Entity } from "@/registry/ai-chat/tools/data-fabric/util/entities";
+import {
+  createDataFabricBarTool,
+  dataFabricBarClient,
+} from "@/registry/ai-chat/tools/data-fabric-bar";
 import {
   createDataFabricDistributionTool,
   dataFabricDistributionClient,
@@ -71,6 +75,12 @@ function AgentHubChatInner({
     dataFabricBaseUrl,
   });
 
+  const barTool = createDataFabricBarTool({
+    entities,
+    accessToken,
+    dataFabricBaseUrl,
+  });
+
   const lineTool = createDataFabricLineTool({
     entities,
     accessToken,
@@ -93,6 +103,7 @@ function AgentHubChatInner({
     presentChoicesClient,
     dataFabricTableClient,
     dataFabricDistributionClient,
+    dataFabricBarClient,
     dataFabricLineClient,
     dataFabricMultiLineClient,
     dataFabricKpiClient,
@@ -105,7 +116,13 @@ function AgentHubChatInner({
     '- "data_fabric_line" — single-metric trend / time-series questions ("orders over time", "revenue by month", "growth across quarters").',
     '- "data_fabric_multi_line" — compare EXACTLY TWO metrics on a shared time axis ("orders count and revenue over time", "min vs max price by month"). The chart only supports two Y axes; for 3+ metrics render multiple charts.',
     '- "data_fabric_distribution" — histogram-style requests ("distribution of X", "histogram of X", numeric value-range binning).',
-    "If two tools could both answer, prefer the more specific one: multi-line beats line when the user names 2+ metrics; line beats distribution for explicit time-series phrasing; kpi beats line/distribution when the user wants a single value with no breakdown.",
+    '- "data_fabric_bar" — categorical breakdown / "by <category>" questions where the dimension is a string field ("orders by status", "revenue by category", "count by region"). Supports a single metric (one bar per category) or any number of metrics (grouped bars per category — 2, 3, 4+ all valid).',
+    "Disambiguation — pick by the dimension first, not by metric count:",
+    '- Compare/show N metrics by a STRING field → "data_fabric_bar". Bar has no metric-count limit; never ask the user to drop metrics. Examples: "compare count, total, and average Amount by Status", "min vs max Amount by CustomerName".',
+    '- Compare exactly two metrics on a DATETIME axis → "data_fabric_multi_line". 3+ metrics on a datetime axis → render multiple line charts.',
+    '- Single-metric trend on a DATETIME axis → "data_fabric_line".',
+    '- Numeric/datetime value-range binning → "data_fabric_distribution".',
+    '- Single scalar with no breakdown → "data_fabric_kpi".',
   ].join("\n");
 
   const systemPrompt = [
@@ -114,6 +131,7 @@ function AgentHubChatInner({
     chartToolSteering,
     tableTool.toolPrompt,
     distributionTool.toolPrompt,
+    barTool.toolPrompt,
     lineTool.toolPrompt,
     multiLineTool.toolPrompt,
     kpiTool.toolPrompt,
@@ -179,6 +197,14 @@ function AgentHubChatInner({
               return (
                 <Suspense key={part.id}>
                   {distributionTool.renderDistribution(part.output, part.id)}
+                </Suspense>
+              );
+            }
+
+            if (part.name === "data_fabric_bar") {
+              return (
+                <Suspense key={part.id}>
+                  {barTool.renderBar(part.output, part.id)}
                 </Suspense>
               );
             }

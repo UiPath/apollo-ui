@@ -4,11 +4,13 @@ import { toolDefinition } from "@tanstack/ai";
 import { dataFabricAdapter } from "@uipath/apollo-dashboarding";
 import { DateTime } from "luxon";
 import { z } from "zod";
-import { MultiLineChartCard } from "../../charts/multi-line-chart-card";
+import { assert } from "@/lib/asserts/assert";
+import { BarChartCard } from "../../charts/bar-chart-card";
 import { ToolResolutionError } from "../../charts/tool-resolution-error";
 import {
   buildMultiMetricDataModel,
   dedupeMetrics,
+  type MetricInput,
   metricSchema,
   type ResolvedMetric,
   resolveMultiDimension,
@@ -25,19 +27,18 @@ import { filterSchema, resolveFilters } from "../data-fabric/util/filters";
 import { joinSchema } from "../data-fabric/util/joins";
 import type { ResolverFailure } from "../data-fabric/util/resolver-result";
 
-const MULTI_LINE_DIMENSION_TYPES = ["datetime"] as const;
+const BAR_DIMENSION_TYPES = ["string"] as const;
 
-const dataFabricMultiLineInput = z.object({
+const dataFabricBarInput = z.object({
   entityName: z.string().describe("Data Fabric entity name to query"),
   dimension: z
     .string()
     .describe(
-      "Datetime field name to bin the time axis by. When joining, use EntityName.Field format.",
+      "Categorical (string) field name to break the metrics down by — one bar (or grouped cluster, with multiple metrics) per distinct value. When joining, use EntityName.Field format.",
     ),
   metrics: z
     .array(metricSchema)
-    .min(2)
-    .max(2)
+    .min(1)
     .refine(
       (metrics) => {
         const keys = new Set(
@@ -47,11 +48,12 @@ const dataFabricMultiLineInput = z.object({
       },
       {
         message:
-          "Metrics must have distinct (aggregation, field) pairs — pick two different metrics to compare.",
+          "Metrics must have distinct (aggregation, field) pairs — pick distinct metrics.",
       },
     )
+    .optional()
     .describe(
-      "Exactly two metrics with distinct (aggregation, field) pairs, plotted as separate lines on a shared time axis. The first metric uses the left Y axis; the second uses the right.",
+      "One or more metrics to plot. With one metric, each category gets one bar. With multiple metrics, each category gets a grouped cluster (one bar per metric). Omit entirely for the default single COUNT of records per category.",
     ),
   filters: z
     .array(filterSchema)
@@ -65,43 +67,37 @@ const dataFabricMultiLineInput = z.object({
     ),
 });
 
-const dataFabricMultiLineDef = toolDefinition({
-  name: "data_fabric_multi_line",
+const dataFabricBarDef = toolDefinition({
+  name: "data_fabric_bar",
   description:
-    "Render a multi-line chart from a Data Fabric entity, plotting exactly two metrics over a datetime dimension on a shared X axis (one per Y axis: left and right). Use when the user wants to compare two metrics over time.",
-  inputSchema: dataFabricMultiLineInput,
-  outputSchema: dataFabricMultiLineInput,
+    "Render a bar chart from a Data Fabric entity, breaking one or more metrics down by a categorical (string) dimension. With multiple metrics, renders grouped bars (one cluster per category). Supports optional metrics (default single COUNT), filters, and joins.",
+  inputSchema: dataFabricBarInput,
+  outputSchema: dataFabricBarInput,
   metadata: { skipFollowUp: true },
 });
 
-export const dataFabricMultiLineClient = dataFabricMultiLineDef.client(
-  (input) => input,
-);
+export const dataFabricBarClient = dataFabricBarDef.client((input) => input);
 
-type MultiLineInput = z.infer<typeof dataFabricMultiLineInput>;
+type BarInput = z.infer<typeof dataFabricBarInput>;
 
-export function createDataFabricMultiLineTool(context: DataFabricToolContext) {
+export function createDataFabricBarTool(context: DataFabricToolContext) {
   const today = DateTime.now().toISODate();
-  const toolPrompt = `You have a "data_fabric_multi_line" tool.
-Use it to render a multi-line chart that plots EXACTLY TWO metrics over time on a shared datetime X axis.
-
-## When to use multi-line vs line
-- Use "data_fabric_multi_line" when the user asks to compare two metrics on the same time axis (e.g. "orders count and revenue over time", "min vs max price by month", "sum of A and sum of B per quarter").
-- Use "data_fabric_line" when there is only ONE metric to plot. Do NOT call multi-line with a single metric.
-- The chart only supports 2 metrics: the FIRST metric uses the LEFT Y axis (and its color/totals label), the SECOND uses the RIGHT. If the user asks to compare 3+ metrics, ask them to pick the two most important and offer to render the others in follow-up charts — do NOT pass more than 2.
+  const toolPrompt = `You have a "data_fabric_bar" tool.
+Use it to render a bar chart that breaks one or more metrics down by a categorical (string) dimension. With one metric, each category gets one bar. With multiple metrics, each category gets a grouped cluster (one bar per metric).
 
 ## Dimension
-- Pass exactly one "dimension" — a datetime field name on the chosen entity (see Entity Reference). The field MUST be a datetime field; do NOT use this tool with a numeric or string dimension.
-- When the user explicitly names a field (e.g. "<metric_a> and <metric_b> over EntityName.Field"), use EXACTLY that field as the dimension.
-- If the user-named field is not a datetime field, do NOT call this tool. Reply explaining that line charts require a datetime field, and list the candidate datetime fields on that entity.
+- Pass exactly one "dimension" — a field name. It MUST be a string field on the chosen entity (see Entity Reference). Bar charts are for discrete categories; numeric/datetime fields belong on a distribution or line chart instead.
+- When the user explicitly names a field (e.g. "<metric> by EntityName.Field" or "breakdown by <field>"), use EXACTLY that field as the dimension. Do not substitute a different field — even when joins are involved.
+- If the user-named field is not a string field, do NOT call this tool. For numeric or datetime fields use "data_fabric_distribution" (histogram) or "data_fabric_line" (time series) respectively, and reply explaining the substitution.
+- Joins exist mainly to FILTER by a joined entity's attribute or to break down by a categorical field that lives on a joined entity.
 
 ## Metrics
-- Pass an array of EXACTLY TWO metrics with distinct (aggregation, field) pairs. Each entry follows the same shape as the line tool:
+- Omit "metrics" entirely for the default single COUNT of records per category.
+- Pass an array of one or more metrics for grouped bars. Each metric becomes one bar within each category cluster. There is **no upper limit** — three, four, or more metrics all render as additional bars in the same cluster. Do NOT push back on the user or ask them to pick fewer; pass every metric they named.
   - For COUNT, pass { aggregation: "COUNT" } — "field" is optional and defaults to the entity primary key.
   - For SUM/AVG/MIN/MAX, pass { aggregation, field } where "field" is a numeric field on the chosen entity.
-- Pick only metrics the user asked to compare. Do not invent extra metrics.
-- Two metrics with the same (aggregation, field) pair are duplicates and the tool call will be REJECTED at validation. Make sure the two metrics differ in either aggregation, field, or both.
-- Order matters: put the metric you want emphasized (or with the larger scale) first, since it gets the left axis and the primary color.
+- Use a single metric for "<metric> by <category>" requests. Use multiple metrics whenever the user asks to compare values per category (e.g. "compare orders count, total revenue, and average revenue by status").
+- Metrics with the same (aggregation, field) pair are duplicates and the tool call will be REJECTED at validation. Make sure each metric differs in aggregation, field, or both.
 
 ## Filters
 You can optionally pass filters to narrow results. Available filter types:
@@ -112,14 +108,14 @@ You can optionally pass filters to narrow results. Available filter types:
 Only add filters when the user asks to filter, search, or narrow results.
 
 ## Multi-Entity Joins
-To bin a datetime field that lives on a joined entity, or to aggregate a numeric field from a joined entity, add "joins" to link related entities. The entityName field is the primary entity.
+To break down by a categorical field that lives on a joined entity, or to aggregate a numeric field from a joined entity, add "joins" to link related entities. The entityName field is the primary entity.
 When using joins, use qualified field names everywhere: "EntityName.FieldName" (using the EXACT entity names from the Entity Reference, never abbreviations or aliases).
 Only use joins when the user explicitly asks to combine data from multiple entities.
 
 ## Entity Reference
 ${generateEntityFieldsDocs(context.entities)}`;
 
-  function renderMultiLine(output: MultiLineInput, id: string) {
+  function renderBar(output: BarInput, id: string) {
     const { entityName, dimension, metrics, filters, joins } = output;
     const isMultiEntity = joins != null && joins.length > 0;
 
@@ -144,20 +140,26 @@ ${generateEntityFieldsDocs(context.entities)}`;
           entityName,
           dimension,
           qualifiedFields,
-          MULTI_LINE_DIMENSION_TYPES,
+          BAR_DIMENSION_TYPES,
         )
-      : resolveSingleDimension(entity, dimension, MULTI_LINE_DIMENSION_TYPES);
+      : resolveSingleDimension(entity, dimension, BAR_DIMENSION_TYPES);
 
     if (!resolvedDimension.ok) {
       return <ToolResolutionError failure={resolvedDimension} />;
     }
 
+    const resolveOne = (input?: MetricInput) =>
+      qualifiedFields
+        ? resolveMultiMetric(entityName, input, qualifiedFields)
+        : resolveSingleMetric(entity, input);
+
+    const resolutions = metrics?.length
+      ? metrics.map((m) => resolveOne(m))
+      : [resolveOne()];
+
     const resolvedMetrics: ResolvedMetric[] = [];
     const metricFailures: ResolverFailure[] = [];
-    for (const metric of metrics) {
-      const result = qualifiedFields
-        ? resolveMultiMetric(entityName, metric, qualifiedFields)
-        : resolveSingleMetric(entity, metric);
+    for (const result of resolutions) {
       if (result.ok) {
         resolvedMetrics.push(result.value);
       } else {
@@ -168,16 +170,13 @@ ${generateEntityFieldsDocs(context.entities)}`;
 
     const uniqueMetrics = dedupeMetrics(resolvedMetrics);
 
-    if (uniqueMetrics.length < 2) {
+    if (uniqueMetrics.length === 0) {
       const firstFailure = metricFailures[0];
-      if (firstFailure) {
-        return <ToolResolutionError failure={firstFailure} />;
-      }
-      return (
-        <ToolResolutionError
-          failure={{ reason: "multi_line_too_few_metrics" }}
-        />
+      assert(
+        firstFailure != null,
+        "bar tool: empty resolved metrics but no recorded failures",
       );
+      return <ToolResolutionError failure={firstFailure} />;
     }
 
     const dataModel = buildMultiMetricDataModel({
@@ -201,11 +200,11 @@ ${generateEntityFieldsDocs(context.entities)}`;
     const configuration = {
       id,
       name: entityName,
-      type: "multi_line" as const,
+      type: "bar" as const,
       dimensions: [resolvedDimension.value.id],
       metrics: dataModel.metrics.map((m) => m.id),
       filters: normalizedFilters,
-      ...(qualifiedFields &&
+      ...(isMultiEntity &&
         joins && {
           from: { entity: entityName, alias: entityName },
           joins: joins.map((j) => ({ ...j, alias: j.entity })),
@@ -219,7 +218,7 @@ ${generateEntityFieldsDocs(context.entities)}`;
     });
 
     return (
-      <MultiLineChartCard
+      <BarChartCard
         configuration={configuration}
         dataModel={dataModel}
         dataAdapter={adapter}
@@ -227,5 +226,5 @@ ${generateEntityFieldsDocs(context.entities)}`;
     );
   }
 
-  return { toolPrompt, renderMultiLine };
+  return { toolPrompt, renderBar };
 }
