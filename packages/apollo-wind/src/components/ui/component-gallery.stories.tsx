@@ -156,9 +156,15 @@ const components: ComponentInfo[] = [
     category: Category.Core,
     preview: (
       <ButtonGroup>
-        <Button size="sm" variant="outline">Left</Button>
-        <Button size="sm" variant="outline">Mid</Button>
-        <Button size="sm" variant="outline">Right</Button>
+        <Button size="sm" variant="outline">
+          Left
+        </Button>
+        <Button size="sm" variant="outline">
+          Mid
+        </Button>
+        <Button size="sm" variant="outline">
+          Right
+        </Button>
       </ButtonGroup>
     ),
   },
@@ -203,7 +209,12 @@ const components: ComponentInfo[] = [
     storyPath: 'wind-components-core-code-block--docs',
     category: Category.Core,
     preview: (
-      <CodeBlock language="tsx" showLineNumbers={false} showCopyButton={false} className="text-[10px] w-full">
+      <CodeBlock
+        language="tsx"
+        showLineNumbers={false}
+        showCopyButton={false}
+        className="text-[10px] w-full"
+      >
         {'const x = <Button />'}
       </CodeBlock>
     ),
@@ -215,7 +226,10 @@ const components: ComponentInfo[] = [
     category: Category.Core,
     preview: (
       <Combobox
-        items={[{ value: 'opt1', label: 'Option 1' }, { value: 'opt2', label: 'Option 2' }]}
+        items={[
+          { value: 'opt1', label: 'Option 1' },
+          { value: 'opt2', label: 'Option 2' },
+        ]}
         placeholder="Select option..."
       />
     ),
@@ -415,7 +429,10 @@ const components: ComponentInfo[] = [
     category: Category.Core,
     preview: (
       <MultiSelect
-        options={[{ value: 'a', label: 'Option A' }, { value: 'b', label: 'Option B' }]}
+        options={[
+          { value: 'a', label: 'Option A' },
+          { value: 'b', label: 'Option B' },
+        ]}
         selected={[]}
         onChange={() => {}}
         placeholder="Select items..."
@@ -468,11 +485,15 @@ const components: ComponentInfo[] = [
       <RadioGroup defaultValue="option1" className="gap-2">
         <div className="flex items-center gap-2">
           <RadioGroupItem value="option1" id="rg-preview-1" />
-          <Label htmlFor="rg-preview-1" className="text-xs font-normal">Option 1</Label>
+          <Label htmlFor="rg-preview-1" className="text-xs font-normal">
+            Option 1
+          </Label>
         </div>
         <div className="flex items-center gap-2">
           <RadioGroupItem value="option2" id="rg-preview-2" />
-          <Label htmlFor="rg-preview-2" className="text-xs font-normal">Option 2</Label>
+          <Label htmlFor="rg-preview-2" className="text-xs font-normal">
+            Option 2
+          </Label>
         </div>
       </RadioGroup>
     ),
@@ -665,9 +686,7 @@ const components: ComponentInfo[] = [
     description: 'Multi-line text input',
     storyPath: 'wind-components-core-textarea--docs',
     category: Category.Core,
-    preview: (
-      <Textarea placeholder="Type here..." className="h-16 text-xs resize-none w-full" />
-    ),
+    preview: <Textarea placeholder="Type here..." className="h-16 text-xs resize-none w-full" />,
   },
   {
     name: 'Toggle',
@@ -676,7 +695,9 @@ const components: ComponentInfo[] = [
     category: Category.Core,
     preview: (
       <div className="flex gap-2">
-        <Toggle variant="outline" defaultPressed>On</Toggle>
+        <Toggle variant="outline" defaultPressed>
+          On
+        </Toggle>
         <Toggle variant="outline">Off</Toggle>
       </div>
     ),
