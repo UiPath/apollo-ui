@@ -69,6 +69,14 @@ export interface ContainerSizeChange {
   nextSize: NodeDimensions;
 }
 
+/** Side-specific minimum sizes that prevent manual container resizing from clipping children. */
+export interface ContainerResizeMinimums {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
 /** Result of fitting one or more containers to their visible children. */
 export interface EnsureContainersFitChildrenResult {
   nodes: Node[];
@@ -227,6 +235,84 @@ export function getContainerFitGeometry(): ContainerFitGeometry {
     minWidth: DEFAULT_CONTAINER_MIN_WIDTH,
     minHeight: DEFAULT_CONTAINER_MIN_HEIGHT,
     padding,
+  };
+}
+
+function resolveResizeMinimum(minSize: number, requiredSize: number): number {
+  return Math.max(minSize, snapUpToGrid(requiredSize));
+}
+
+/** Returns side-specific minimum sizes for shrinking a container around visible direct children. */
+export function getContainerResizeMinimums(
+  containerNode: Pick<Node, 'id' | 'width' | 'height' | 'measured' | 'style'>,
+  nodes: Node[],
+  {
+    minWidth = DEFAULT_CONTAINER_MIN_WIDTH,
+    minHeight = DEFAULT_CONTAINER_MIN_HEIGHT,
+    getNodeDimensions: resolveNodeDimensions = getNodeDimensions,
+    ignoredNodeTypes = [],
+  }: {
+    minWidth?: number;
+    minHeight?: number;
+    getNodeDimensions?: (node: Node) => NodeDimensions;
+    ignoredNodeTypes?: string[];
+  } = {}
+): ContainerResizeMinimums {
+  const currentSize = getNodeDimensions(containerNode, {
+    width: DEFAULT_CONTAINER_WIDTH,
+    height: DEFAULT_CONTAINER_HEIGHT,
+  });
+  const padding = getContainerSafeArea(containerNode, currentSize).padding ?? {};
+  const ignoredTypes = new Set(ignoredNodeTypes);
+  let childBounds: { left: number; right: number; top: number; bottom: number } | undefined;
+
+  for (const childNode of nodes) {
+    if (
+      childNode.id === PREVIEW_NODE_ID ||
+      childNode.hidden ||
+      childNode.parentId !== containerNode.id ||
+      ignoredTypes.has(childNode.type ?? '')
+    ) {
+      continue;
+    }
+
+    const childSize = resolveNodeDimensions(childNode);
+    const nextBounds = {
+      left: childNode.position.x,
+      right: childNode.position.x + childSize.width,
+      top: childNode.position.y,
+      bottom: childNode.position.y + childSize.height,
+    };
+
+    childBounds = childBounds
+      ? {
+          left: Math.min(childBounds.left, nextBounds.left),
+          right: Math.max(childBounds.right, nextBounds.right),
+          top: Math.min(childBounds.top, nextBounds.top),
+          bottom: Math.max(childBounds.bottom, nextBounds.bottom),
+        }
+      : nextBounds;
+  }
+
+  if (!childBounds) {
+    return {
+      left: minWidth,
+      right: minWidth,
+      top: minHeight,
+      bottom: minHeight,
+    };
+  }
+
+  const leftEdgeLimit = currentSize.width - childBounds.left + (padding.left ?? 0);
+  const topEdgeLimit = currentSize.height - childBounds.top + (padding.top ?? 0);
+  const rightEdgeLimit = childBounds.right + (padding.right ?? 0);
+  const bottomEdgeLimit = childBounds.bottom + (padding.bottom ?? 0);
+
+  return {
+    left: resolveResizeMinimum(minWidth, leftEdgeLimit),
+    right: resolveResizeMinimum(minWidth, rightEdgeLimit),
+    top: resolveResizeMinimum(minHeight, topEdgeLimit),
+    bottom: resolveResizeMinimum(minHeight, bottomEdgeLimit),
   };
 }
 
