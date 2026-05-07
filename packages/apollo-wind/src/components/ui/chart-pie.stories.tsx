@@ -10,6 +10,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { chartTheme } from './chart-palette';
 
 const meta = {
   title: 'Components/Charts/Pie Chart',
@@ -34,11 +35,11 @@ const donutData = [
 
 const donutConfig = {
   visitors: { label: 'Visitors' },
-  chrome: { label: 'Chrome', theme: { dark: '#22d3ee', light: '#0891b2' } },
-  safari: { label: 'Safari', theme: { dark: '#818cf8', light: '#4f46e5' } },
-  firefox: { label: 'Firefox', theme: { dark: '#34d399', light: '#059669' } },
-  edge: { label: 'Edge', theme: { dark: '#fbbf24', light: '#d97706' } },
-  other: { label: 'Other', theme: { dark: '#fb7185', light: '#e11d48' } },
+  chrome: { label: 'Chrome', theme: chartTheme[1] },
+  safari: { label: 'Safari', theme: chartTheme[2] },
+  firefox: { label: 'Firefox', theme: chartTheme[3] },
+  edge: { label: 'Edge', theme: chartTheme[4] },
+  other: { label: 'Other', theme: chartTheme[5] },
 } satisfies ChartConfig;
 
 function DonutChart() {
@@ -119,10 +120,10 @@ const simpleData = [
 
 const simpleConfig = {
   value: { label: 'Traffic' },
-  direct: { label: 'Direct', theme: { dark: '#22d3ee', light: '#0891b2' } },
-  organic: { label: 'Organic', theme: { dark: '#34d399', light: '#059669' } },
-  referral: { label: 'Referral', theme: { dark: '#fbbf24', light: '#d97706' } },
-  social: { label: 'Social', theme: { dark: '#fb7185', light: '#e11d48' } },
+  direct: { label: 'Direct', theme: chartTheme[1] },
+  organic: { label: 'Organic', theme: chartTheme[3] },
+  referral: { label: 'Referral', theme: chartTheme[4] },
+  social: { label: 'Social', theme: chartTheme[5] },
 } satisfies ChartConfig;
 
 export const Simple: Story = {

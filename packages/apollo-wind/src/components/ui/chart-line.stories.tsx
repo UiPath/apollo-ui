@@ -10,6 +10,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { chartTheme } from './chart-palette';
 
 const meta = {
   title: 'Components/Charts/Line Chart',
@@ -34,9 +35,9 @@ const multiData = [
 ];
 
 const multiConfig = {
-  desktop: { label: 'Desktop', theme: { dark: '#22d3ee', light: '#0891b2' } },
-  mobile: { label: 'Mobile', theme: { dark: '#818cf8', light: '#4f46e5' } },
-  tablet: { label: 'Tablet', theme: { dark: '#34d399', light: '#059669' } },
+  desktop: { label: 'Desktop', theme: chartTheme[1] },
+  mobile: { label: 'Mobile', theme: chartTheme[2] },
+  tablet: { label: 'Tablet', theme: chartTheme[3] },
 } satisfies ChartConfig;
 
 export const MultiLine: Story = {
@@ -101,8 +102,8 @@ const curvedData = [
 ];
 
 const curvedConfig = {
-  revenue: { label: 'Revenue', theme: { dark: '#fbbf24', light: '#d97706' } },
-  profit: { label: 'Profit', theme: { dark: '#34d399', light: '#059669' } },
+  revenue: { label: 'Revenue', theme: chartTheme[4] },
+  profit: { label: 'Profit', theme: chartTheme[3] },
 } satisfies ChartConfig;
 
 export const Curved: Story = {

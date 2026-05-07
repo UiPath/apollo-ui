@@ -10,6 +10,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { chartTheme } from './chart-palette';
 
 const meta = {
   title: 'Components/Charts/Radial Chart',
@@ -33,10 +34,10 @@ const barData = [
 
 const barConfig = {
   visitors: { label: 'Visitors' },
-  chrome: { label: 'Chrome', theme: { dark: '#22d3ee', light: '#0891b2' } },
-  safari: { label: 'Safari', theme: { dark: '#818cf8', light: '#4f46e5' } },
-  firefox: { label: 'Firefox', theme: { dark: '#34d399', light: '#059669' } },
-  edge: { label: 'Edge', theme: { dark: '#fbbf24', light: '#d97706' } },
+  chrome: { label: 'Chrome', theme: chartTheme[1] },
+  safari: { label: 'Safari', theme: chartTheme[2] },
+  firefox: { label: 'Firefox', theme: chartTheme[3] },
+  edge: { label: 'Edge', theme: chartTheme[4] },
 } satisfies ChartConfig;
 
 export const Bar: Story = {
@@ -82,7 +83,7 @@ const GAUGE_VALUE = 72;
 const gaugeData = [{ name: 'progress', value: GAUGE_VALUE, fill: 'var(--color-progress)' }];
 
 const gaugeConfig = {
-  progress: { label: 'Completion', theme: { dark: '#22d3ee', light: '#0891b2' } },
+  progress: { label: 'Completion', theme: chartTheme[1] },
 } satisfies ChartConfig;
 
 export const Gauge: Story = {

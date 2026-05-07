@@ -8,6 +8,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { chartTheme } from './chart-palette';
 
 const meta = {
   title: 'Components/Charts/Tooltips',
@@ -32,8 +33,8 @@ const data = [
 // ============================================================================
 
 const dotConfig = {
-  revenue: { label: 'Revenue', theme: { dark: '#34d399', light: '#059669' } },
-  expenses: { label: 'Expenses', theme: { dark: '#fb7185', light: '#e11d48' } },
+  revenue: { label: 'Revenue', theme: chartTheme[3] },
+  expenses: { label: 'Expenses', theme: chartTheme[5] },
 } satisfies ChartConfig;
 
 export const DotIndicator: Story = {
@@ -65,8 +66,8 @@ export const DotIndicator: Story = {
 // ============================================================================
 
 const lineConfig = {
-  revenue: { label: 'Revenue', theme: { dark: '#22d3ee', light: '#0891b2' } },
-  expenses: { label: 'Expenses', theme: { dark: '#fbbf24', light: '#d97706' } },
+  revenue: { label: 'Revenue', theme: chartTheme[1] },
+  expenses: { label: 'Expenses', theme: chartTheme[4] },
 } satisfies ChartConfig;
 
 export const LineIndicator: Story = {
@@ -98,8 +99,8 @@ export const LineIndicator: Story = {
 // ============================================================================
 
 const dashedConfig = {
-  revenue: { label: 'Revenue', theme: { dark: '#a78bfa', light: '#7c3aed' } },
-  expenses: { label: 'Expenses', theme: { dark: '#38bdf8', light: '#0284c7' } },
+  revenue: { label: 'Revenue', theme: chartTheme[2] },
+  expenses: { label: 'Expenses', theme: chartTheme[5] },
 } satisfies ChartConfig;
 
 export const DashedIndicator: Story = {

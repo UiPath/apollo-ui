@@ -10,6 +10,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { chartTheme } from './chart-palette';
 
 const meta = {
   title: 'Components/Charts/Area Chart',
@@ -34,8 +35,8 @@ const stackedData = [
 ];
 
 const stackedConfig = {
-  desktop: { label: 'Desktop', theme: { dark: '#22d3ee', light: '#0891b2' } },
-  mobile: { label: 'Mobile', theme: { dark: '#818cf8', light: '#4f46e5' } },
+  desktop: { label: 'Desktop', theme: chartTheme[1] },
+  mobile: { label: 'Mobile', theme: chartTheme[2] },
 } satisfies ChartConfig;
 
 export const Stacked: Story = {
@@ -102,8 +103,8 @@ const stepData = [
 ];
 
 const stepConfig = {
-  pageViews: { label: 'Page views', theme: { dark: '#34d399', light: '#059669' } },
-  sessions: { label: 'Sessions', theme: { dark: '#fbbf24', light: '#d97706' } },
+  pageViews: { label: 'Page views', theme: chartTheme[1] },
+  sessions: { label: 'Sessions', theme: chartTheme[4] },
 } satisfies ChartConfig;
 
 export const Step: Story = {

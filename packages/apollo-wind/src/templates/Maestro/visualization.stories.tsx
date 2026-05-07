@@ -52,17 +52,57 @@ type Story = StoryObj<typeof meta>;
 // ============================================================================
 
 const palette = {
-  cyan: { dark: '#22d3ee', light: '#0891b2' },
-  indigo: { dark: '#818cf8', light: '#4f46e5' },
-  emerald: { dark: '#34d399', light: '#059669' },
-  amber: { dark: '#fbbf24', light: '#d97706' },
-  rose: { dark: '#fb7185', light: '#e11d48' },
-  violet: { dark: '#a78bfa', light: '#7c3aed' },
-  sky: { dark: '#38bdf8', light: '#0284c7' },
+  cyan: {
+    light: '#38c6f4',
+    dark: '#44cffc',
+    'future-light': 'var(--chart-1)',
+    'future-dark': 'var(--chart-1)',
+  },
+  indigo: {
+    light: '#42a1ff',
+    dark: '#42a1ff',
+    'future-light': 'var(--chart-2)',
+    'future-dark': 'var(--chart-2)',
+  },
+  emerald: {
+    light: '#6eb84a',
+    dark: '#74c94b',
+    'future-light': 'var(--chart-3)',
+    'future-dark': 'var(--chart-3)',
+  },
+  amber: {
+    light: '#ffb40e',
+    dark: '#ffbb27',
+    'future-light': 'var(--chart-4)',
+    'future-dark': 'var(--chart-4)',
+  },
+  rose: {
+    light: '#ed145b',
+    dark: '#f25a8c',
+    'future-light': 'var(--chart-5)',
+    'future-dark': 'var(--chart-5)',
+  },
+  violet: {
+    light: '#42a1ff',
+    dark: '#42a1ff',
+    'future-light': 'var(--chart-2)',
+    'future-dark': 'var(--chart-2)',
+  },
+  sky: {
+    light: '#38c6f4',
+    dark: '#44cffc',
+    'future-light': 'var(--chart-1)',
+    'future-dark': 'var(--chart-1)',
+  },
 } as const;
 
 function themed(key: keyof typeof palette) {
-  return { dark: palette[key].dark, light: palette[key].light };
+  return {
+    light: palette[key].light,
+    dark: palette[key].dark,
+    'future-light': palette[key]['future-light'],
+    'future-dark': palette[key]['future-dark'],
+  };
 }
 
 // ============================================================================

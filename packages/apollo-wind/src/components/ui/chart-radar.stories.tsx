@@ -10,6 +10,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { chartTheme } from './chart-palette';
 
 const meta = {
   title: 'Components/Charts/Radar Chart',
@@ -34,8 +35,8 @@ const multiData = [
 ];
 
 const multiConfig = {
-  desktop: { label: 'Desktop', theme: { dark: '#22d3ee', light: '#0891b2' } },
-  mobile: { label: 'Mobile', theme: { dark: '#818cf8', light: '#4f46e5' } },
+  desktop: { label: 'Desktop', theme: chartTheme[1] },
+  mobile: { label: 'Mobile', theme: chartTheme[2] },
 } satisfies ChartConfig;
 
 export const MultiSeries: Story = {
@@ -87,7 +88,7 @@ const dotsData = [
 ];
 
 const dotsConfig = {
-  level: { label: 'Proficiency', theme: { dark: '#34d399', light: '#059669' } },
+  level: { label: 'Proficiency', theme: chartTheme[3] },
 } satisfies ChartConfig;
 
 export const Dots: Story = {

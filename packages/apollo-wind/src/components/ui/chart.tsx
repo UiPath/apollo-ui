@@ -4,10 +4,13 @@ import * as RechartsPrimitive from 'recharts';
 import { cn } from '@/lib';
 
 // Format: { THEME_NAME: CSS_SELECTOR }
-// Matches ALL light themes and ALL dark themes using :is() selector
+// Core and Future themes are split so each can use their own color tokens.
+// wireframe/vertex/canvas are dark-adjacent and inherit core dark colors.
 const THEMES = {
-  light: ':is(.light, .light-hc, .future-light)',
-  dark: ':is(.dark, .dark-hc, .future-dark, .wireframe, .vertex, .canvas)',
+  light: ':is(.light, .light-hc)',
+  dark: ':is(.dark, .dark-hc, .wireframe, .vertex, .canvas)',
+  'future-light': '.future-light',
+  'future-dark': '.future-dark',
 } as const;
 
 export type ChartConfig = {
