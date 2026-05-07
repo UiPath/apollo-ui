@@ -28,14 +28,4 @@
   body {
     @apply bg-background text-foreground;
   }
-  a {
-    color: var(--primary);
-    text-decoration: none;
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-  .dark a {
-    color: var(--primary-400);
-  }
 }
