@@ -7,6 +7,7 @@ import "nextra-theme-docs/style.css";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
+import { SidebarHoverPrefetch } from "./_components/sidebar-hover-prefetch";
 import { ThemeSwitcher } from "./_components/theme-switcher";
 import { ThemeWrapper } from "./_components/theme-wrapper";
 
@@ -89,6 +90,7 @@ export default async function RootLayout({
       </Head>
       <body>
         <Analytics />
+        <SidebarHoverPrefetch />
         <ThemeWrapper>
           <Layout
             sidebar={{
