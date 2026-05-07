@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.23.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.23.0...@uipath/apollo-react@4.23.1) (2026-05-07)
+
+### Bug Fixes
+
+* **apollo-react:** exclude sticky notes from hover z-index override ([d0b655c](https://github.com/UiPath/apollo-ui/commit/d0b655c693345668a2131636bec2aaf6c52c6520))
+
 ## [@uipath/apollo-react-v4.23.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.22.3...@uipath/apollo-react@4.23.0) (2026-05-07)
 
 ### Features
