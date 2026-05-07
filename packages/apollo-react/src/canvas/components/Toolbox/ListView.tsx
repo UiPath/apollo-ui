@@ -5,6 +5,7 @@ import { forwardRef, memo, useCallback, useImperativeHandle, useMemo } from 'rea
 import type { ListImperativeAPI, RowComponentProps } from 'react-window';
 import { useCanvasTheme } from '../BaseCanvas/CanvasThemeContext';
 import { CanvasTooltip } from '../CanvasTooltip';
+import { InitialsBadge } from '../shared/InitialsBadge';
 import { IconContainer, ListItemButton, SectionHeader, StyledList } from './ListView.styles';
 
 export interface ListItemIcon {
@@ -222,6 +223,9 @@ const ListViewRow = memo(
           )}
           {item.icon?.name && <CanvasIcon icon={item.icon.name} size={24} />}
           {item.icon?.Component && <item.icon.Component />}
+          {!item.icon?.url && !item.icon?.name && !item.icon?.Component && (
+            <InitialsBadge name={item.name} data-testid="list-item-initials-badge" />
+          )}
         </IconContainerMemoized>
         <Column flex={1} overflow="hidden">
           <CanvasTooltip content={item.name} placement="right" smartTooltip>

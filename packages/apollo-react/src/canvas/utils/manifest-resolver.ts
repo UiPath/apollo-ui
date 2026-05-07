@@ -30,8 +30,12 @@ export interface ResolutionContext extends Record<string, unknown> {
 }
 
 /**
- * Resolved display configuration (manifest defaults + instance overrides)
- * Uses DisplayConfig structure to allow any string values for flexibility
+ * Resolved display configuration (manifest defaults + instance overrides).
+ *
+ * `icon` is always a string for back-compat. Missing icons resolve to `''`
+ * (falsy) so `if (display.icon)` truthy checks fall through to the
+ * `InitialsBadge` fallback in `BaseNode` and `IconContainer`. Callers must
+ * not pre-fill placeholder strings — that defeats the fallback.
  */
 export type ResolvedDisplay = InstanceDisplayConfig & {
   label: string;
@@ -96,7 +100,7 @@ export function resolveDisplay(
 ): ResolvedDisplay {
   if (!manifestDisplay) {
     return {
-      icon: 'circle-question-mark',
+      icon: '',
       shape: 'square' as const,
       label: context?.display?.label || 'Unknown Node',
     } as ResolvedDisplay;
@@ -131,6 +135,7 @@ export function resolveDisplay(
     ...context?.display,
     label: resolvedLabel,
     canvasLabel: context?.display?.canvasLabel ?? manifestDisplay.canvasLabel,
+    icon: context?.display?.icon ?? manifestDisplay.icon ?? '',
     shape: isCollapsed ? collapsedShape : expandedShape,
   };
 }

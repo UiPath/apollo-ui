@@ -40,7 +40,8 @@ export class CategoryTreeAdapter {
         category: node.category,
         version: node.version,
       },
-      icon: { name: node.display.icon },
+      // Omit `icon` when missing so IconContainer renders the InitialsBadge fallback.
+      ...(node.display.icon ? { icon: { name: node.display.icon } } : {}),
       color: node.display.iconBackground,
       colorDark: node.display.iconBackgroundDark,
     });
@@ -65,12 +66,11 @@ export class CategoryTreeAdapter {
           continue;
         }
 
-        // Create category ListItem
         const categoryItem: ListItem = {
           id: category.id,
           name: category.name,
           data: null,
-          icon: { name: category.icon },
+          ...(category.icon ? { icon: { name: category.icon } } : {}),
           color: category.color,
           colorDark: category.colorDark,
           children,

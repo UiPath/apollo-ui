@@ -13,11 +13,17 @@ import {
 // ============================================================================
 
 describe('resolveDisplay', () => {
-  it('returns fallback when no manifest display is provided', () => {
+  it('returns fallback shape and label when no manifest display is provided', () => {
+    // `icon: ''` is the sentinel — falsy so `if (display.icon)` truthy checks fall through to the InitialsBadge fallback.
     const result = resolveDisplay(undefined);
-    expect(result.icon).toBe('circle-question-mark');
+    expect(result.icon).toBe('');
     expect(result.shape).toBe('square');
     expect(result.label).toBe('Unknown Node');
+  });
+
+  it('coalesces missing manifest icon to the empty-string sentinel', () => {
+    const result = resolveDisplay({ label: 'Foo', shape: 'square' });
+    expect(result.icon).toBe('');
   });
 
   it('uses context display label when no manifest display', () => {
