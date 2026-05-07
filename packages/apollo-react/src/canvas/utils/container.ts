@@ -107,6 +107,7 @@ interface ContainerPreviewContext {
 
 interface ContainerPreviewOptions {
   isContainerNode?: (node: Node) => boolean;
+  allowedContainerId?: string;
   replacedEdge?: Edge;
   getContainerSafeArea?: (containerNode: Node) => ContainerSafeArea | undefined;
   getContainerContinuationTarget?: (context: {
@@ -846,6 +847,7 @@ function resolveInsertPreview({
   sourceHandleType,
   reactFlowInstance,
   isContainerNode,
+  allowedContainerId,
   replacedEdge: exactReplacedEdge,
   getContainerSafeArea,
   previewNodeSize,
@@ -855,6 +857,7 @@ function resolveInsertPreview({
   Pick<
     ContainerPreviewOptions,
     | 'isContainerNode'
+    | 'allowedContainerId'
     | 'replacedEdge'
     | 'getContainerSafeArea'
     | 'previewNodeSize'
@@ -882,6 +885,9 @@ function resolveInsertPreview({
 
   const containerNode = getContainerNodeForEdge(sourceNode, targetNode, nodes);
   if (!containerNode) {
+    return null;
+  }
+  if (allowedContainerId && containerNode.id !== allowedContainerId) {
     return null;
   }
   if (isContainerNode && !isContainerNode(containerNode)) {
@@ -945,6 +951,9 @@ function resolveAppendPreview({
 
   const nodes = reactFlowInstance.getNodes();
   const containerNode = nodes.find((node) => node.id === sourceNode.parentId)!;
+  if (options.allowedContainerId && containerNode.id !== options.allowedContainerId) {
+    return null;
+  }
   if (options.isContainerNode && !options.isContainerNode(containerNode)) {
     return null;
   }

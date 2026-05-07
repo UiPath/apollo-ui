@@ -325,6 +325,99 @@ describe('resolveContainerAddNodePreview', () => {
     expect(previewOverrides).toBeNull();
   });
 
+  it('uses the parent container sequence for nested container outer outputs', () => {
+    const innerLoopNode: Node = {
+      id: 'inner-loop',
+      type: 'loop',
+      parentId: loopNode.id,
+      position: { x: 160, y: 112 },
+      style: { width: 560, height: 320 },
+      data: {},
+    };
+    const targetNode: Node = {
+      id: 'task-1',
+      type: 'task',
+      parentId: loopNode.id,
+      position: { x: 800, y: 112 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+    const existingEdge: Edge = {
+      id: 'inner-loop-task-1',
+      source: innerLoopNode.id,
+      sourceHandle: 'done',
+      target: targetNode.id,
+      targetHandle: 'input',
+    };
+    const reactFlowInstance = createReactFlowInstance({
+      nodes: [loopNode, innerLoopNode, targetNode],
+      edges: [existingEdge],
+    });
+
+    const previewOverrides = resolveContainerAddNodePreview({
+      source: { nodeId: innerLoopNode.id, handleId: 'done' },
+      sourceHandleType: 'source',
+      reactFlowInstance,
+      getManifestForNode,
+    });
+
+    expect(previewOverrides).toMatchObject({
+      containerId: loopNode.id,
+      positionMode: 'center',
+      target: {
+        nodeId: targetNode.id,
+        handleId: 'input',
+      },
+      data: {
+        originalEdge: existingEdge,
+        placement: {
+          containerId: loopNode.id,
+          sourceNodeId: innerLoopNode.id,
+          targetNodeId: targetNode.id,
+          mode: 'sequence',
+        },
+      },
+    });
+  });
+
+  it('appends nested container outer outputs through the parent container continuation', () => {
+    const innerLoopNode: Node = {
+      id: 'inner-loop',
+      type: 'loop',
+      parentId: loopNode.id,
+      position: { x: 160, y: 112 },
+      style: { width: 560, height: 320 },
+      data: {},
+    };
+    const reactFlowInstance = createReactFlowInstance({
+      nodes: [loopNode, innerLoopNode],
+    });
+
+    const previewOverrides = resolveContainerAddNodePreview({
+      source: { nodeId: innerLoopNode.id, handleId: 'done' },
+      sourceHandleType: 'source',
+      reactFlowInstance,
+      getManifestForNode,
+    });
+
+    expect(previewOverrides).toMatchObject({
+      containerId: loopNode.id,
+      positionMode: 'center',
+      target: {
+        nodeId: loopNode.id,
+        handleId: 'continue',
+      },
+      data: {
+        placement: {
+          containerId: loopNode.id,
+          sourceNodeId: innerLoopNode.id,
+          targetNodeId: loopNode.id,
+          mode: 'sequence',
+        },
+      },
+    });
+  });
+
   it('continues to insert from an occupied container inner source handle', () => {
     const childNode: Node = {
       id: 'task-1',
