@@ -88,7 +88,7 @@ describe('container sizing', () => {
     });
   });
 
-  it('allows resize minimums to exceed current size when children already cross the body', () => {
+  it('caps resize minimums at the current size when children already cross the body', () => {
     const containerNode: Node = {
       id: 'loop-1',
       type: 'loop',
@@ -106,8 +106,31 @@ describe('container sizing', () => {
     };
 
     expect(getContainerResizeMinimums(containerNode, [containerNode, childNode])).toMatchObject({
-      left: 608,
-      top: 352,
+      left: 560,
+      top: 320,
+    });
+  });
+
+  it('does not return resize minimums below the defaults when the current size is already smaller', () => {
+    const containerNode: Node = {
+      id: 'loop-1',
+      type: 'loop',
+      position: { x: 0, y: 0 },
+      style: { width: 320, height: 160 },
+      data: {},
+    };
+    const childNode: Node = {
+      id: 'child-1',
+      type: 'task',
+      parentId: containerNode.id,
+      position: { x: 96, y: 64 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+
+    expect(getContainerResizeMinimums(containerNode, [containerNode, childNode])).toMatchObject({
+      left: DEFAULT_CONTAINER_MIN_WIDTH,
+      top: DEFAULT_CONTAINER_MIN_HEIGHT,
     });
   });
 

@@ -238,8 +238,10 @@ export function getContainerFitGeometry(): ContainerFitGeometry {
   };
 }
 
-function resolveResizeMinimum(minSize: number, requiredSize: number): number {
-  return Math.max(minSize, snapUpToGrid(requiredSize));
+function resolveResizeMinimum(minSize: number, currentSize: number, requiredSize: number): number {
+  const requiredMinimum = Math.max(minSize, snapUpToGrid(requiredSize));
+  const currentResizeFloor = Math.max(minSize, currentSize);
+  return Math.min(currentResizeFloor, requiredMinimum);
 }
 
 /** Returns side-specific minimum sizes for shrinking a container around visible direct children. */
@@ -249,12 +251,10 @@ export function getContainerResizeMinimums(
   {
     minWidth = DEFAULT_CONTAINER_MIN_WIDTH,
     minHeight = DEFAULT_CONTAINER_MIN_HEIGHT,
-    getNodeDimensions: resolveNodeDimensions = getNodeDimensions,
     ignoredNodeTypes = [],
   }: {
     minWidth?: number;
     minHeight?: number;
-    getNodeDimensions?: (node: Node) => NodeDimensions;
     ignoredNodeTypes?: string[];
   } = {}
 ): ContainerResizeMinimums {
@@ -276,7 +276,7 @@ export function getContainerResizeMinimums(
       continue;
     }
 
-    const childSize = resolveNodeDimensions(childNode);
+    const childSize = getNodeDimensions(childNode);
     const nextBounds = {
       left: childNode.position.x,
       right: childNode.position.x + childSize.width,
@@ -309,10 +309,10 @@ export function getContainerResizeMinimums(
   const bottomEdgeLimit = childBounds.bottom + (padding.bottom ?? 0);
 
   return {
-    left: resolveResizeMinimum(minWidth, leftEdgeLimit),
-    right: resolveResizeMinimum(minWidth, rightEdgeLimit),
-    top: resolveResizeMinimum(minHeight, topEdgeLimit),
-    bottom: resolveResizeMinimum(minHeight, bottomEdgeLimit),
+    left: resolveResizeMinimum(minWidth, currentSize.width, leftEdgeLimit),
+    right: resolveResizeMinimum(minWidth, currentSize.width, rightEdgeLimit),
+    top: resolveResizeMinimum(minHeight, currentSize.height, topEdgeLimit),
+    bottom: resolveResizeMinimum(minHeight, currentSize.height, bottomEdgeLimit),
   };
 }
 

@@ -113,12 +113,22 @@ function useHasChildNodes(id: string, enabled: boolean): boolean {
 function useContainerResizeMinimums(
   id: string,
   width: number,
-  height: number
+  height: number,
+  enabled: boolean
 ): ContainerResizeMinimums {
   return useStore(
     useCallback(
-      (state: ReactFlowState) => getContainerResizeMinimums({ id, width, height }, state.nodes),
-      [height, id, width]
+      (state: ReactFlowState) => {
+        if (!enabled) {
+          return DEFAULT_RESIZE_MINIMUMS;
+        }
+
+        return getContainerResizeMinimums(
+          { id, width, height },
+          Array.from(state.parentLookup.get(id)?.values() ?? [])
+        );
+      },
+      [enabled, height, id, width]
     ),
     shallow
   );
@@ -215,7 +225,13 @@ function LoopNodeComponent(props: LoopNodeProps) {
   const isDropTarget = resolvedData.isDropTarget === true;
   const containerWidth = width || DEFAULT_CONTAINER_WIDTH;
   const containerHeight = height || DEFAULT_CONTAINER_HEIGHT;
-  const resizeMinimums = useContainerResizeMinimums(id, containerWidth, containerHeight);
+  const showResizeControls = selected && !dragging && isDesignMode;
+  const resizeMinimums = useContainerResizeMinimums(
+    id,
+    containerWidth,
+    containerHeight,
+    showResizeControls
+  );
   const nodeSizeStyle = {
     width: containerWidth,
     height: containerHeight,
@@ -273,7 +289,6 @@ function LoopNodeComponent(props: LoopNodeProps) {
   const shouldShowHandles = (isConnecting || selected || isHovered) && !dragging;
 
   const showHandleAddButtons = isDesignMode && !multipleNodesSelected && !isConnecting && !dragging;
-  const showResizeControls = selected && !dragging && isDesignMode;
   const showEmptyStateButton = isDesignMode && !hasChildNodes && !!onAddFirstChild;
 
   const interactionState = resolveInteractionState(dragging, selected, isHovered);
