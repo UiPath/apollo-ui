@@ -101,11 +101,11 @@ export const WithForm = {
   render: () => (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline">Edit Profile</Button>
+        <Button variant="outline">Edit profile</Button>
       </SheetTrigger>
       <SheetContent className="flex flex-col">
         <SheetHeader>
-          <SheetTitle>Edit Profile</SheetTitle>
+          <SheetTitle>Edit profile</SheetTitle>
           <SheetDescription>
             Update your personal information. Click save when you're done.
           </SheetDescription>
@@ -132,7 +132,7 @@ export const WithForm = {
           <SheetClose asChild>
             <Button variant="outline">Cancel</Button>
           </SheetClose>
-          <Button>Save Changes</Button>
+          <Button>Save changes</Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>
