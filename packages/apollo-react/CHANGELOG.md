@@ -1,3 +1,16 @@
+## [@uipath/apollo-react-v4.23.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.22.3...@uipath/apollo-react@4.23.0) (2026-05-07)
+
+### Features
+
+* **apollo-react:** export InitialsBadge from canvas barrel ([fe430ea](https://github.com/UiPath/apollo-ui/commit/fe430ea6375d4be5c144c25cb0d449320a8fcde7))
+* **apollo-react:** make manifest display.icon and category.icon optional ([8dacaa0](https://github.com/UiPath/apollo-ui/commit/8dacaa0e27d424fb5db44486b341ff412328598c))
+* **apollo-react:** render initials fallback when ListItem has no icon ([7f80ae2](https://github.com/UiPath/apollo-ui/commit/7f80ae2891ed1f21742b5586047ad82d27045cd8))
+* **apollo-react:** use the initials fallback for canvas nodes too ([2f91c81](https://github.com/UiPath/apollo-ui/commit/2f91c813554f200a417ed8006e55ae37af77b4d9))
+
+### Bug Fixes
+
+* **apollo-react:** point Default story's no-icon demo at a real iconless manifest ([e340d29](https://github.com/UiPath/apollo-ui/commit/e340d292e40207eb093982038ee3e16907aafc15))
+
 ## [@uipath/apollo-react-v4.22.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.22.2...@uipath/apollo-react@4.22.3) (2026-05-06)
 
 ### Bug Fixes
