@@ -7,15 +7,18 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { cn } from '@uipath/apollo-wind';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { shallow } from 'zustand/shallow';
 import { useOptionalNodeTypeRegistry } from '../../core';
 import { useElementValidationStatus, useNodeExecutionState } from '../../hooks';
 import type { SuggestionType } from '../../types';
 import { resolveAdornments } from '../../utils/adornment-resolver';
 import {
+  type ContainerResizeMinimums,
   DEFAULT_CONTAINER_HEIGHT,
   DEFAULT_CONTAINER_MIN_HEIGHT,
   DEFAULT_CONTAINER_MIN_WIDTH,
   DEFAULT_CONTAINER_WIDTH,
+  getContainerResizeMinimums,
 } from '../../utils/container';
 import { CanvasIcon } from '../../utils/icon-registry';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
@@ -39,20 +42,42 @@ const DEFAULT_LOOP_TITLE = 'Loop';
 const EMPTY_DATA: Record<string, unknown> = {};
 
 const RESIZE_CONTROLS = [
-  { position: 'top-left', cursor: 'nwse-resize', indicatorClassName: 'top-[-4px] left-[-4px]' },
-  { position: 'top-right', cursor: 'nesw-resize', indicatorClassName: 'top-[-4px] right-[-4px]' },
+  {
+    position: 'top-left',
+    widthSide: 'left',
+    heightSide: 'top',
+    cursor: 'nwse-resize',
+    indicatorClassName: 'top-[-4px] left-[-4px]',
+  },
+  {
+    position: 'top-right',
+    widthSide: 'right',
+    heightSide: 'top',
+    cursor: 'nesw-resize',
+    indicatorClassName: 'top-[-4px] right-[-4px]',
+  },
   {
     position: 'bottom-left',
+    widthSide: 'left',
+    heightSide: 'bottom',
     cursor: 'nesw-resize',
     indicatorClassName: 'bottom-[-4px] left-[-4px]',
   },
   {
     position: 'bottom-right',
+    widthSide: 'right',
+    heightSide: 'bottom',
     cursor: 'nwse-resize',
     indicatorClassName: 'bottom-[-4px] right-[-4px]',
   },
 ] as const;
 const RESIZE_CONTROL_STYLE = { background: 'transparent', border: 'none', zIndex: 100 } as const;
+const DEFAULT_RESIZE_MINIMUMS: ContainerResizeMinimums = {
+  left: DEFAULT_CONTAINER_MIN_WIDTH,
+  right: DEFAULT_CONTAINER_MIN_WIDTH,
+  top: DEFAULT_CONTAINER_MIN_HEIGHT,
+  bottom: DEFAULT_CONTAINER_MIN_HEIGHT,
+};
 
 const ADORNMENT_SLOT_POSITIONS = ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'] as const;
 const ADORNMENT_SLOT_SHAPES: Record<
@@ -82,6 +107,20 @@ function useHasChildNodes(id: string, enabled: boolean): boolean {
       (state: ReactFlowState) => !enabled || state.nodes.some((node) => node.parentId === id),
       [id, enabled]
     )
+  );
+}
+
+function useContainerResizeMinimums(
+  id: string,
+  width: number,
+  height: number
+): ContainerResizeMinimums {
+  return useStore(
+    useCallback(
+      (state: ReactFlowState) => getContainerResizeMinimums({ id, width, height }, state.nodes),
+      [height, id, width]
+    ),
+    shallow
   );
 }
 
@@ -176,6 +215,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
   const isDropTarget = resolvedData.isDropTarget === true;
   const containerWidth = width || DEFAULT_CONTAINER_WIDTH;
   const containerHeight = height || DEFAULT_CONTAINER_HEIGHT;
+  const resizeMinimums = useContainerResizeMinimums(id, containerWidth, containerHeight);
   const nodeSizeStyle = {
     width: containerWidth,
     height: containerHeight,
@@ -292,7 +332,9 @@ function LoopNodeComponent(props: LoopNodeProps) {
         ) : null
       )}
       <ResizeCornerIndicators visible={showResizeControls} />
-      {showResizeControls ? <ResizeControls onResize={handleResize} /> : null}
+      {showResizeControls ? (
+        <ResizeControls minimums={resizeMinimums} onResize={handleResize} />
+      ) : null}
       <Header title={displayTitle} icon={displayIcon} loading={isLoading} isParallel={isParallel} />
       <BodyFrame isEmpty={showEmptyStateButton} isLoading={isLoading} />
       {showEmptyStateButton ? (
@@ -415,19 +457,21 @@ function BodyFrame({ isEmpty, isLoading }: { isEmpty?: boolean; isLoading?: bool
 }
 
 function ResizeControls({
+  minimums = DEFAULT_RESIZE_MINIMUMS,
   onResize,
 }: {
+  minimums?: ContainerResizeMinimums;
   onResize: (_event: unknown, params: { width: number; height: number }) => void;
 }) {
   return (
     <>
-      {RESIZE_CONTROLS.map(({ position, cursor }) => (
+      {RESIZE_CONTROLS.map(({ position, widthSide, heightSide, cursor }) => (
         <NodeResizeControl
           key={position}
           style={RESIZE_CONTROL_STYLE}
           position={position}
-          minWidth={DEFAULT_CONTAINER_MIN_WIDTH}
-          minHeight={DEFAULT_CONTAINER_MIN_HEIGHT}
+          minWidth={minimums[widthSide]}
+          minHeight={minimums[heightSide]}
           onResize={onResize}
         >
           <div
