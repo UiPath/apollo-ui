@@ -36,7 +36,7 @@ export const WithLabel = {
 
     return (
       <div className="w-[400px] space-y-2">
-        <Label>Upload Documents</Label>
+        <Label>Upload documents</Label>
         <FileUpload onFilesChange={setFiles} />
       </div>
     );

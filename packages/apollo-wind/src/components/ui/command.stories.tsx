@@ -211,7 +211,7 @@ export const CommandWithShortcuts = {
           </CommandItem>
           <CommandItem>
             <Plus className="mr-2 h-4 w-4" />
-            <span>New File</span>
+            <span>New file</span>
             <CommandShortcut>⌘N</CommandShortcut>
           </CommandItem>
           <CommandItem>
@@ -322,7 +322,7 @@ export const CommandPaletteUsage = {
               </CommandItem>
               <CommandItem>
                 <Moon className="mr-2 h-4 w-4" />
-                <span>Dark Mode</span>
+                <span>Dark mode</span>
               </CommandItem>
             </CommandGroup>
           </CommandList>
