@@ -217,11 +217,15 @@ export function FileUpload({
         role="group"
         aria-label="File upload area"
         className={cn(
+          // Base styles (all themes)
           'relative flex flex-col items-center justify-center w-full h-32 px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors',
+          // Future Dark / Future Light overrides
+          'future:rounded-xl',
           isDragging
             ? 'border-primary bg-primary/5'
-            : 'border-input bg-background hover:bg-accent/50',
-          disabled && 'opacity-50 cursor-not-allowed hover:bg-background'
+            : 'border-input bg-background hover:bg-accent/50 future:border-border future:bg-surface-raised future:hover:bg-surface-overlay',
+          disabled &&
+            'opacity-50 cursor-not-allowed hover:bg-background future:hover:bg-surface-raised'
         )}
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
@@ -267,8 +271,10 @@ export function FileUpload({
               <div
                 key={index}
                 className={cn(
-                  'flex flex-col p-3 rounded-md',
-                  fileError ? 'bg-destructive/10 border border-destructive/20' : 'bg-accent/50'
+                  'flex flex-col p-3 rounded-md future:rounded-xl',
+                  fileError
+                    ? 'bg-destructive/10 border border-destructive/20'
+                    : 'bg-accent/50 future:bg-surface-raised'
                 )}
               >
                 <div className="flex items-center justify-between">
