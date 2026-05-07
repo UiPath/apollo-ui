@@ -182,7 +182,7 @@ export const Examples = {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Stay on page</AlertDialogCancel>
-            <AlertDialogAction>Leave Without Saving</AlertDialogAction>
+            <AlertDialogAction>Leave without saving</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
