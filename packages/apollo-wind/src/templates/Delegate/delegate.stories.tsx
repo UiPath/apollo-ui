@@ -304,7 +304,7 @@ function SettingsContent() {
           <div className="mx-auto max-w-2xl">
             {/* Page header */}
             <div className="mb-8">
-              <h1 className="text-2xl font-semibold text-foreground">Manage Profile</h1>
+              <h1 className="text-2xl font-semibold text-foreground">Manage profile</h1>
               <p className="mt-1 text-sm text-foreground-muted">
                 Update your profile information and preferences.
               </p>
@@ -313,7 +313,7 @@ function SettingsContent() {
             <div className="flex flex-col gap-8">
               {/* Profile Image */}
               <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium text-foreground">Profile Image</span>
+                <span className="text-sm font-medium text-foreground">Profile image</span>
                 <div className="flex items-center gap-4">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-overlay">
                     <User className="h-7 w-7 text-foreground-muted" />
@@ -323,7 +323,7 @@ function SettingsContent() {
                     className="flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-foreground-muted transition-colors hover:border-border-hover hover:text-foreground"
                   >
                     <Upload className="h-4 w-4" />
-                    Select Image
+                    Select image
                   </button>
                 </div>
               </div>
@@ -334,7 +334,7 @@ function SettingsContent() {
               {/* Your Name */}
               <div className="flex flex-col gap-2">
                 <label htmlFor="profile-name" className="text-sm font-medium text-foreground">
-                  Your Name
+                  Your name
                 </label>
                 <Input
                   id="profile-name"
@@ -346,7 +346,7 @@ function SettingsContent() {
               {/* Your Email */}
               <div className="flex flex-col gap-2">
                 <label htmlFor="profile-email" className="text-sm font-medium text-foreground">
-                  Your Email
+                  Your email
                 </label>
                 <Input
                   id="profile-email"
@@ -371,7 +371,7 @@ function SettingsContent() {
                   id="profile-language"
                   className="h-10 max-w-md appearance-none rounded-md border border-border bg-surface-overlay px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                 >
-                  <option>Select Language</option>
+                  <option>Select language</option>
                   <option>English</option>
                   <option>Spanish</option>
                   <option>French</option>
@@ -385,7 +385,7 @@ function SettingsContent() {
 
               {/* Theme Settings */}
               <div className="flex flex-col gap-3">
-                <span className="text-sm font-medium text-foreground">Theme Settings</span>
+                <span className="text-sm font-medium text-foreground">Theme settings</span>
                 <p className="text-sm text-foreground-muted">
                   Choose your preferred theme for the interface.
                 </p>

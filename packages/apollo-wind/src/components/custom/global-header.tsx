@@ -92,8 +92,8 @@ function HeaderIconButton({
 
 function NotificationsDropdown({ themeClass }: { themeClass: string }) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+    <Popover>
+      <PopoverTrigger asChild>
         <button
           type="button"
           className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:text-foreground"
@@ -101,41 +101,56 @@ function NotificationsDropdown({ themeClass }: { themeClass: string }) {
         >
           <Bell className="h-5 w-5" />
         </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
+      </PopoverTrigger>
+      <PopoverContent
         align="end"
         sideOffset={8}
-        className={cn(themeClass, 'w-72 border-border bg-surface-overlay')}
+        className={cn(themeClass, 'w-72 border-border bg-surface-overlay p-0')}
       >
         <div className="px-3 py-2">
           <p className="text-sm font-semibold text-foreground">Notifications</p>
         </div>
-        <DropdownMenuSeparator className="bg-border-subtle" />
-        <DropdownMenuItem className="flex items-start gap-3 px-3 py-2.5 text-foreground-muted focus:bg-surface-hover focus:text-foreground">
-          <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-foreground" />
-          <div className="flex flex-col gap-0.5">
-            <span className="text-sm font-medium text-foreground">System update available</span>
-            <span className="text-xs text-foreground-muted">A new version is ready to install</span>
-          </div>
-        </DropdownMenuItem>
-        <DropdownMenuItem className="flex items-start gap-3 px-3 py-2.5 text-foreground-muted focus:bg-surface-hover focus:text-foreground">
-          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
-          <div className="flex flex-col gap-0.5">
-            <span className="text-sm font-medium text-foreground">Flow completed</span>
-            <span className="text-xs text-foreground-muted">
-              Invoice processing finished successfully
-            </span>
-          </div>
-        </DropdownMenuItem>
-        <DropdownMenuItem className="flex items-start gap-3 px-3 py-2.5 text-foreground-muted focus:bg-surface-hover focus:text-foreground">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
-          <div className="flex flex-col gap-0.5">
-            <span className="text-sm font-medium text-foreground">Action required</span>
-            <span className="text-xs text-foreground-muted">Review pending approval requests</span>
-          </div>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        <div className="h-px bg-border-subtle" />
+        <div className="flex flex-col py-1">
+          <button
+            type="button"
+            className="flex items-start gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface-hover"
+          >
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-foreground" />
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-medium text-foreground">System update available</span>
+              <span className="text-xs text-foreground-muted">
+                A new version is ready to install
+              </span>
+            </div>
+          </button>
+          <button
+            type="button"
+            className="flex items-start gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface-hover"
+          >
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-medium text-foreground">Flow completed</span>
+              <span className="text-xs text-foreground-muted">
+                Invoice processing finished successfully
+              </span>
+            </div>
+          </button>
+          <button
+            type="button"
+            className="flex items-start gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface-hover"
+          >
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-medium text-foreground">Action required</span>
+              <span className="text-xs text-foreground-muted">
+                Review pending approval requests
+              </span>
+            </div>
+          </button>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 
