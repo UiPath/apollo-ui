@@ -1,3 +1,11 @@
+## [@uipath/apollo-wind-v2.15.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.14.0...@uipath/apollo-wind@2.15.0) (2026-05-07)
+
+### Features
+
+* **apollo-wind:** apply future theme overrides to FileUpload ([cc2de28](https://github.com/uipath/apollo-ui/commit/cc2de28c2bc368a71a94d7f2e001883b9da9cafb))
+* **apollo-wind:** apply future theme overrides to Pagination ([60bc105](https://github.com/uipath/apollo-ui/commit/60bc10551395ea640ad83d76471f00d7a69e9e19))
+* **apollo-wind:** apply future theme overrides to Textarea ([12d2a9f](https://github.com/uipath/apollo-ui/commit/12d2a9f1a59c20500622c146af6ce3e7603ecea5))
+
 ## [@uipath/apollo-wind-v2.14.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.13.0...@uipath/apollo-wind@2.14.0) (2026-05-05)
 
 ### Features
