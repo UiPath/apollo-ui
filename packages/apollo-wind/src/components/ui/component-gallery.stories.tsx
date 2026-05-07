@@ -1,5 +1,21 @@
 import type { Meta } from '@storybook/react-vite';
 import { useState, useMemo } from 'react';
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  PolarAngleAxis,
+  PolarGrid,
+  Radar,
+  RadarChart,
+  RadialBar,
+  RadialBarChart,
+} from 'recharts';
 import { Card, CardDescription, CardHeader, CardTitle } from './card';
 import { Badge } from './badge';
 import { Button } from './button';
@@ -16,6 +32,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './
 import { Tabs, TabsList, TabsTrigger } from './tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './table';
 import { Calendar } from './calendar';
+import { type ChartConfig, ChartContainer } from './chart';
 import { Search } from 'lucide-react';
 
 const meta = {
@@ -34,6 +51,7 @@ enum Category {
   Navigation = 'Navigation',
   Overlays = 'Overlays',
   Feedback = 'Feedback',
+  Charts = 'Charts',
 }
 
 const CATEGORY_ORDER: Category[] = [
@@ -43,7 +61,62 @@ const CATEGORY_ORDER: Category[] = [
   Category.Navigation,
   Category.Overlays,
   Category.Feedback,
+  Category.Charts,
 ];
+
+// ============================================================================
+// Mini chart data + configs (for gallery previews)
+// ============================================================================
+
+const miniSparkData = [
+  { x: 'A', a: 30, b: 20 },
+  { x: 'B', a: 55, b: 35 },
+  { x: 'C', a: 40, b: 50 },
+  { x: 'D', a: 70, b: 30 },
+  { x: 'E', a: 50, b: 60 },
+];
+
+const miniPieData = [
+  { name: 'a', value: 40, fill: '#22d3ee' },
+  { name: 'b', value: 30, fill: '#818cf8' },
+  { name: 'c', value: 20, fill: '#34d399' },
+  { name: 'd', value: 10, fill: '#fbbf24' },
+];
+
+const miniRadarData = [
+  { m: 'A', v: 80 },
+  { m: 'B', v: 65 },
+  { m: 'C', v: 90 },
+  { m: 'D', v: 75 },
+  { m: 'E', v: 85 },
+];
+
+const miniRadialData = [
+  { name: 'a', value: 80, fill: '#22d3ee' },
+  { name: 'b', value: 60, fill: '#818cf8' },
+  { name: 'c', value: 40, fill: '#34d399' },
+];
+
+const miniDualConfig = {
+  a: { color: '#22d3ee' },
+  b: { color: '#818cf8' },
+} satisfies ChartConfig;
+
+const miniSingleConfig = {
+  a: { color: '#22d3ee' },
+} satisfies ChartConfig;
+
+const miniPieConfig = {
+  value: { color: '#22d3ee' },
+} satisfies ChartConfig;
+
+const miniRadarConfig = {
+  v: { color: '#22d3ee' },
+} satisfies ChartConfig;
+
+const miniRadialConfig = {
+  value: { color: '#22d3ee' },
+} satisfies ChartConfig;
 
 interface ComponentInfo {
   name: string;
@@ -657,6 +730,133 @@ const components: ComponentInfo[] = [
       </Button>
     ),
   },
+  // ============================================================================
+  // Charts
+  // ============================================================================
+  {
+    name: 'Area Chart',
+    description: 'Stacked and step area charts',
+    storyPath: 'components-charts-area-chart--docs',
+    category: Category.Charts,
+    preview: (
+      <ChartContainer config={miniDualConfig} className="aspect-auto h-14 w-full">
+        <AreaChart data={miniSparkData} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+          <Area
+            dataKey="b"
+            type="natural"
+            fill="#818cf8"
+            fillOpacity={0.25}
+            stroke="#818cf8"
+            strokeWidth={1.5}
+          />
+          <Area
+            dataKey="a"
+            type="natural"
+            fill="#22d3ee"
+            fillOpacity={0.3}
+            stroke="#22d3ee"
+            strokeWidth={1.5}
+          />
+        </AreaChart>
+      </ChartContainer>
+    ),
+  },
+  {
+    name: 'Bar Chart',
+    description: 'Vertical, horizontal, and interactive bars',
+    storyPath: 'components-charts-bar-chart--docs',
+    category: Category.Charts,
+    preview: (
+      <ChartContainer config={miniDualConfig} className="aspect-auto h-14 w-full">
+        <BarChart data={miniSparkData} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+          <Bar dataKey="a" fill="#22d3ee" radius={2} />
+          <Bar dataKey="b" fill="#818cf8" radius={2} />
+        </BarChart>
+      </ChartContainer>
+    ),
+  },
+  {
+    name: 'Line Chart',
+    description: 'Multi-line and curved line charts',
+    storyPath: 'components-charts-line-chart--docs',
+    category: Category.Charts,
+    preview: (
+      <ChartContainer config={miniDualConfig} className="aspect-auto h-14 w-full">
+        <LineChart data={miniSparkData} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+          <Line dataKey="a" type="natural" stroke="#22d3ee" strokeWidth={2} dot={false} />
+          <Line dataKey="b" type="natural" stroke="#818cf8" strokeWidth={2} dot={false} />
+        </LineChart>
+      </ChartContainer>
+    ),
+  },
+  {
+    name: 'Pie Chart',
+    description: 'Donut and simple pie charts',
+    storyPath: 'components-charts-pie-chart--docs',
+    category: Category.Charts,
+    preview: (
+      <ChartContainer config={miniPieConfig} className="aspect-square h-16 mx-auto">
+        <PieChart>
+          <Pie
+            data={miniPieData}
+            dataKey="value"
+            nameKey="name"
+            innerRadius={18}
+            outerRadius={30}
+            strokeWidth={0}
+          />
+        </PieChart>
+      </ChartContainer>
+    ),
+  },
+  {
+    name: 'Radar Chart',
+    description: 'Multi-series and dot radar charts',
+    storyPath: 'components-charts-radar-chart--docs',
+    category: Category.Charts,
+    preview: (
+      <ChartContainer config={miniRadarConfig} className="aspect-square h-16 mx-auto">
+        <RadarChart data={miniRadarData} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+          <PolarGrid />
+          <PolarAngleAxis dataKey="m" tick={false} />
+          <Radar dataKey="v" fill="#22d3ee" fillOpacity={0.4} stroke="#22d3ee" strokeWidth={1.5} />
+        </RadarChart>
+      </ChartContainer>
+    ),
+  },
+  {
+    name: 'Radial Chart',
+    description: 'Radial bar and gauge charts',
+    storyPath: 'components-charts-radial-chart--docs',
+    category: Category.Charts,
+    preview: (
+      <ChartContainer config={miniRadialConfig} className="aspect-square h-16 mx-auto">
+        <RadialBarChart
+          data={miniRadialData}
+          startAngle={-90}
+          endAngle={270}
+          innerRadius={8}
+          outerRadius={28}
+          margin={{ top: 4, right: 4, bottom: 4, left: 4 }}
+        >
+          <RadialBar dataKey="value" background />
+        </RadialBarChart>
+      </ChartContainer>
+    ),
+  },
+  {
+    name: 'Tooltips',
+    description: 'Dot, line, and dashed tooltip styles',
+    storyPath: 'components-charts-tooltips--docs',
+    category: Category.Charts,
+    preview: (
+      <ChartContainer config={miniSingleConfig} className="aspect-auto h-14 w-full">
+        <BarChart data={miniSparkData} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+          <Bar dataKey="a" fill="#22d3ee" radius={2} />
+        </BarChart>
+      </ChartContainer>
+    ),
+  },
 ];
 
 function ComponentGallery() {
@@ -682,6 +882,7 @@ function ComponentGallery() {
       [Category.Navigation]: [],
       [Category.Overlays]: [],
       [Category.Feedback]: [],
+      [Category.Charts]: [],
     };
     filteredComponents.forEach((component) => {
       grouped[component.category].push(component);
@@ -702,7 +903,7 @@ function ComponentGallery() {
               </h1>
               <p className="mt-2 text-lg text-muted-foreground max-w-2xl">
                 Explore the collection of {components.length} beautifully crafted, accessible
-                components built with React and Tailwind CSS.
+                components and charts built with React and Tailwind CSS.
               </p>
             </div>
 
