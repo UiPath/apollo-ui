@@ -494,6 +494,12 @@ body.future-dark, .future-dark {
   --chart-3: var(--color-emerald-400);
   --chart-4: var(--color-amber-400);
   --chart-5: var(--color-rose-400);
+  /* Bridge apollo-core chart token names → future chart vars */
+  --color-chart-light-blue: var(--chart-1);
+  --color-chart-blue-secondary: var(--chart-2);
+  --color-chart-green: var(--chart-3);
+  --color-chart-yellow: var(--chart-4);
+  --color-chart-pink: var(--chart-5);
 
   /* ── shadcn aliases — maps to standard names for shadcn component compat ── */
   --background: var(--surface);
@@ -661,6 +667,12 @@ body.future-light, .future-light {
   --chart-3: var(--color-emerald-600);
   --chart-4: var(--color-amber-600);
   --chart-5: var(--color-rose-600);
+  /* Bridge apollo-core chart token names → future chart vars */
+  --color-chart-light-blue: var(--chart-1);
+  --color-chart-blue-secondary: var(--chart-2);
+  --color-chart-green: var(--chart-3);
+  --color-chart-yellow: var(--chart-4);
+  --color-chart-pink: var(--chart-5);
 
   /* ── shadcn aliases ──────────────────────────────────────────────────── */
   --background: var(--surface);
