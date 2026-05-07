@@ -38,8 +38,11 @@
  * neighboring node wrappers or connected edge SVGs. This intentionally clears
  * React Flow's selected-node z-index bump (+1000) and connection-line z-index (1001).
  * React Flow sets z-index inline, so `!important` is required to override it.
+ *
+ * Excluded node prefixes (must stay below edges regardless of hover):
+ *   - sticky-  (sticky notes)
  */
-.react-flow__node:not(.parent):hover {
+.react-flow__node:not(.parent):not([data-id^='sticky-']):hover {
   z-index: 1002 !important;
 }
 
