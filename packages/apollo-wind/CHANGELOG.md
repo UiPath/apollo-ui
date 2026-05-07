@@ -1,3 +1,10 @@
+## [@uipath/apollo-wind-v2.15.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.15.0...@uipath/apollo-wind@2.15.1) (2026-05-07)
+
+### Bug Fixes
+
+* **storybook:** apply sentence case to story UI copy in Wind components ([12dd0f4](https://github.com/uipath/apollo-ui/commit/12dd0f44ab66c253954a7ef9046fa4f920c650fb))
+* **storybook:** fix missed sentence case in alert-dialog story ([a466207](https://github.com/uipath/apollo-ui/commit/a466207c7d492b8086208e2ac00ea23c2b07bb3a))
+
 ## [@uipath/apollo-wind-v2.15.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.14.0...@uipath/apollo-wind@2.15.0) (2026-05-07)
 
 ### Features
