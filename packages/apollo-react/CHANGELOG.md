@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v4.23.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.23.1...@uipath/apollo-react@4.23.2) (2026-05-07)
+
+### Bug Fixes
+
+* **apollo-react:** address review comments ([a033551](https://github.com/UiPath/apollo-ui/commit/a03355121ad75bd88995f0ab3273f5fcae096e0b))
+* **apollo-react:** constrain loop resize to body bounds ([970bfad](https://github.com/UiPath/apollo-ui/commit/970bfad1caed0c57052e5b6d6913c44f14db3cd7))
+
 ## [@uipath/apollo-react-v4.23.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.23.0...@uipath/apollo-react@4.23.1) (2026-05-07)
 
 ### Bug Fixes
