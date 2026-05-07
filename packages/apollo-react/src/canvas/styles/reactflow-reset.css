@@ -42,7 +42,7 @@
  * Excluded node prefixes (must stay below edges regardless of hover):
  *   - sticky-  (sticky notes)
  */
-.react-flow__node:not(.parent):not([data-id^='sticky-']):hover {
+.react-flow__node:not(.parent):not([data-id^="sticky-"]):hover {
   z-index: 1002 !important;
 }
 
