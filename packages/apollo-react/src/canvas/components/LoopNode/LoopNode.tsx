@@ -10,6 +10,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { shallow } from 'zustand/shallow';
 import { useOptionalNodeTypeRegistry } from '../../core';
 import { useElementValidationStatus, useNodeExecutionState } from '../../hooks';
+import type { HandleGroupManifest } from '../../schema/node-definition';
 import type { SuggestionType } from '../../types';
 import { resolveAdornments } from '../../utils/adornment-resolver';
 import {
@@ -154,6 +155,18 @@ function useContainerNodeInternalsRefresh(
   }, [id, handleGroups, updateNodeInternals, width, height]);
 }
 
+/** Match BaseNode priority: data override, then manifest defaults. */
+function resolveLoopHandleConfigurations(
+  manifestHandleConfigurations: HandleGroupManifest[] | undefined,
+  data: Record<string, unknown>
+): HandleGroupManifest[] {
+  if (Array.isArray(data.handleConfigurations)) {
+    return data.handleConfigurations as HandleGroupManifest[];
+  }
+
+  return manifestHandleConfigurations ?? [];
+}
+
 function LoopNodeComponent(props: LoopNodeProps) {
   const {
     id,
@@ -255,10 +268,13 @@ function LoopNodeComponent(props: LoopNodeProps) {
     [adornmentsProp, statusContext]
   );
 
-  const resolvedHandleGroups = useMemo(
-    () => (manifest ? resolveHandles(manifest.handleConfiguration, resolvedData) : []),
-    [manifest, resolvedData]
-  );
+  const resolvedHandleGroups = useMemo(() => {
+    const handleConfigurations = resolveLoopHandleConfigurations(
+      manifest?.handleConfiguration,
+      resolvedData
+    );
+    return resolveHandles(handleConfigurations, { ...resolvedData, nodeId: id });
+  }, [manifest?.handleConfiguration, id, resolvedData]);
   const containerHandleGroups = useMemo(
     () => resolveContainerHandleGroups(resolvedHandleGroups),
     [resolvedHandleGroups]

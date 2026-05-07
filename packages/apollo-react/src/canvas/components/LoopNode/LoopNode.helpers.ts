@@ -200,7 +200,10 @@ export function resolveContainerAddNodePreview({
   const sourceNode = reactFlowInstance.getNode(source.nodeId);
   const sourceIsContainer =
     sourceNode !== undefined && isContainerNodeManifest(getManifestForNode(sourceNode));
-  if (sourceIsContainer && clickedHandle.boundary !== 'inner') {
+  const allowedContainerId =
+    sourceIsContainer && clickedHandle.boundary !== 'inner' ? sourceNode?.parentId : undefined;
+
+  if (sourceIsContainer && clickedHandle.boundary !== 'inner' && !allowedContainerId) {
     return null;
   }
 
@@ -209,6 +212,7 @@ export function resolveContainerAddNodePreview({
     sourceHandleType,
     reactFlowInstance,
     replacedEdge,
+    allowedContainerId,
     isContainerNode: (node) => isContainerNodeManifest(getManifestForNode(node)),
     getContainerSafeArea,
     getContainerContinuationTarget: ({ containerNode }) => {
