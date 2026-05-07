@@ -81,6 +81,7 @@ const preview: Preview = {
             'Layout',
             'Navigation',
             'Overlays',
+            'Charts',
             [
               'UiPath',
               [
