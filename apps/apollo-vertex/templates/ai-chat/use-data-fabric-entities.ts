@@ -5,6 +5,7 @@ import {
   type EntityGetResponse,
   type FieldMetaData,
 } from "@uipath/uipath-typescript/entities";
+import { STALE_TIME_MS } from "@/lib/constants";
 import type {
   Entity,
   EntityField,
@@ -75,6 +76,6 @@ export function useDataFabricEntities({
     queryKey: ["data-fabric-entities", tenantId],
     queryFn: () => fetchEntities(entities),
     enabled,
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE_TIME_MS,
   });
 }
