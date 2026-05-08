@@ -150,3 +150,62 @@ function App() {
   );
 }
 ```
+
+## Resolving group ids by role
+
+`GroupMembershipGuard` and `useIsGroupMember` need group ids, but applications
+typically reason in terms of roles whose backing group names are known ahead of
+time. `useGroupId` looks up a group id by name through a single Identity API
+call (`{baseUrl}/{orgName}/identity_/api/Group/{orgId}`) and caches the result
+for five minutes. It is a suspense-driven hook, so call it inside a `Suspense`
+boundary.
+
+A default `Role` enum ships alongside the hook with two members — `ADMIN` and
+`BUSINESS_USER`. Replace it with your own `string` enum if you need different
+roles; the hook is generic over `Role extends string` and accepts any
+`Record<Role, string>` mapping role to group name.
+
+```tsx
+import { Suspense } from 'react';
+import { GroupMembershipGuard } from '@/components/ui/shell/group-membership-guard';
+import { Role } from '@/components/ui/shell/shell-roles';
+import { useGroupId } from '@/components/ui/shell/use-group-id';
+
+const ROLE_GROUP_MAP: Record<Role, string> = {
+  [Role.ADMIN]: 'apollo-admins',
+  [Role.BUSINESS_USER]: 'apollo-business-users',
+};
+
+const IDENTITY_SCOPE = {
+  baseUrl: 'https://staging.uipath.com',
+  orgName: 'your-org',
+  orgId: 'your-org-id',
+};
+
+function AdminArea({ children }: { children: React.ReactNode }) {
+  const adminGroupId = useGroupId({
+    role: Role.ADMIN,
+    roleGroupMap: ROLE_GROUP_MAP,
+    ...IDENTITY_SCOPE,
+  });
+
+  return (
+    <GroupMembershipGuard {...IDENTITY_SCOPE} groupIds={[adminGroupId]}>
+      {children}
+    </GroupMembershipGuard>
+  );
+}
+
+function App() {
+  return (
+    <Suspense fallback={<div>Loading…</div>}>
+      <AdminArea>
+        <YourApp />
+      </AdminArea>
+    </Suspense>
+  );
+}
+```
+
+`useGroupId` throws if no group with the configured name exists in the
+organization — surface this through the nearest error boundary.

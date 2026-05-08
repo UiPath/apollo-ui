@@ -6,11 +6,18 @@ export interface GroupMember {
   email: string;
 }
 
-export interface FetchGroupMembersOptions {
+interface OrgScope {
   baseUrl: string;
   orgName: string;
   orgId: string;
+}
+
+export interface FetchGroupMembersOptions extends OrgScope {
   groupId: string;
+}
+
+export interface FetchGroupIdByNameOptions extends OrgScope {
+  groupName: string;
 }
 
 const IdentityGroupMemberSchema = z.object({
@@ -24,11 +31,19 @@ const IdentityGroupMemberSchema = z.object({
   source: z.string().nullish(),
 });
 
-const GroupResponseSchema = z.object({
+const GroupSchema = z.object({
   id: z.string(),
   name: z.string(),
+});
+
+const GroupWithMembersSchema = GroupSchema.extend({
   members: z.array(IdentityGroupMemberSchema),
 });
+
+const GroupListSchema = z.array(GroupSchema);
+
+const getGroupListEndpoint = ({ baseUrl, orgName, orgId }: OrgScope) =>
+  `${baseUrl}/${orgName}/identity_/api/Group/${orgId}`;
 
 const getGroupEndpoint = ({
   baseUrl,
@@ -36,16 +51,16 @@ const getGroupEndpoint = ({
   orgId,
   groupId,
 }: FetchGroupMembersOptions) =>
-  `${baseUrl}/${orgName}/identity_/api/Group/${orgId}/${groupId}`;
+  `${getGroupListEndpoint({ baseUrl, orgName, orgId })}/${groupId}`;
 
 const getSortName = (displayName: string): string =>
   displayName.split(" ").pop() ?? displayName;
 
-export const fetchGroupMembers = async (
+const authedJsonFetch = async (
+  url: string,
   accessToken: string,
-  options: FetchGroupMembersOptions,
-): Promise<GroupMember[]> => {
-  const response = await fetch(getGroupEndpoint(options), {
+): Promise<unknown> => {
+  const response = await fetch(url, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -54,10 +69,19 @@ export const fetchGroupMembers = async (
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch group members: ${response.status}`);
+    throw new Error(`Identity API request failed: ${response.status}`);
   }
 
-  const group = GroupResponseSchema.parse(await response.json());
+  return response.json();
+};
+
+export const fetchGroupMembers = async (
+  accessToken: string,
+  options: FetchGroupMembersOptions,
+): Promise<GroupMember[]> => {
+  const group = GroupWithMembersSchema.parse(
+    await authedJsonFetch(getGroupEndpoint(options), accessToken),
+  );
 
   return group.members
     .filter((member) => member.objectType === "DirectoryUser")
@@ -67,4 +91,23 @@ export const fetchGroupMembers = async (
       email: member.email,
     }))
     .toSorted((a, b) => getSortName(a.name).localeCompare(getSortName(b.name)));
+};
+
+export const fetchGroupIdByName = async (
+  accessToken: string,
+  { baseUrl, orgName, orgId, groupName }: FetchGroupIdByNameOptions,
+): Promise<string> => {
+  const groups = GroupListSchema.parse(
+    await authedJsonFetch(
+      getGroupListEndpoint({ baseUrl, orgName, orgId }),
+      accessToken,
+    ),
+  );
+
+  const group = groups.find((candidate) => candidate.name === groupName);
+  if (!group) {
+    throw new Error(`Group "${groupName}" not found in organization ${orgId}`);
+  }
+
+  return group.id;
 };
