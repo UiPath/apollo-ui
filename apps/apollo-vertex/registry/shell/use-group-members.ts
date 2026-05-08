@@ -4,6 +4,7 @@ import {
   type FetchGroupMembersOptions,
 } from "@/lib/identity-service";
 import { useAuth } from "./shell-auth-provider";
+import { STALE_TIME_MS } from "./shell-constants";
 
 export const groupMembersQueryOptions = (
   accessToken: string | null,
@@ -23,7 +24,7 @@ export const groupMembersQueryOptions = (
     }
     return fetchGroupMembers(accessToken, options);
   },
-  staleTime: 5 * 60 * 1000,
+  staleTime: STALE_TIME_MS,
 });
 
 export const useGroupMembers = (options: FetchGroupMembersOptions) => {
