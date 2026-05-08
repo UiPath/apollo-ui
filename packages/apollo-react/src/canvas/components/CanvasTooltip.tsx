@@ -143,7 +143,7 @@ export function CanvasTooltip({
     <Tooltip open={effectiveOpen} onOpenChange={handleOpenChange} delayDuration={delay ? 700 : 200}>
       <TooltipTrigger asChild>{triggerWithHandlers}</TooltipTrigger>
       <TooltipPortal>
-        <TooltipContent side={placement} className="max-w-xs break-words">
+        <TooltipContent side={placement} className="z-1200 max-w-xs break-words">
           {content}
         </TooltipContent>
       </TooltipPortal>
