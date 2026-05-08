@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.24.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.24.0...@uipath/apollo-react@4.24.1) (2026-05-08)
+
+### Bug Fixes
+
+* **apollo-react:** remove readonly for seq task + add condition icon ([b9234d2](https://github.com/UiPath/apollo-ui/commit/b9234d2e1c1780c3132db2829f1062c9686a0bfd))
+
 ## [@uipath/apollo-react-v4.24.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.23.3...@uipath/apollo-react@4.24.0) (2026-05-08)
 
 ### Features
