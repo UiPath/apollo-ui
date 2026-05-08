@@ -1,3 +1,14 @@
+## [@uipath/apollo-wind-v2.16.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.15.1...@uipath/apollo-wind@2.16.0) (2026-05-08)
+
+### Features
+
+* **apollo-wind:** overhaul component gallery page ([c014a24](https://github.com/uipath/apollo-ui/commit/c014a2405e24833cb295f9e7974359944298b105))
+
+### Bug Fixes
+
+* **apollo-wind:** apply biome formatting to component gallery ([e4d5861](https://github.com/uipath/apollo-ui/commit/e4d586122e6ee18e8929807ef9587f29c6ca0b42))
+* **storybook:** update templates and global header for consistency ([0f52cd2](https://github.com/uipath/apollo-ui/commit/0f52cd2157d3e351df34a8a7e05d3f8ecf0545db))
+
 ## [@uipath/apollo-wind-v2.15.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.15.0...@uipath/apollo-wind@2.15.1) (2026-05-07)
 
 ### Bug Fixes
