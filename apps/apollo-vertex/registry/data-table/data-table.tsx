@@ -129,6 +129,12 @@ function DataTable<TData, TValue>({
   const isRowSelectionEnabled = !!(rowSelection && onRowSelectionChange);
   const isPaginationEnabled = !!(pagination && onPaginationChange);
 
+  // Distinguish a click from a drag-select. A pure click can still register a
+  // 1–2px Range due to mouse drift, so we only suppress onRowClick when the
+  // pointer actually moved beyond a small threshold AND a Range exists.
+  // https://github.com/mui/mui-x/issues/1172
+  const pressOriginRef = React.useRef<{ x: number; y: number } | null>(null);
+
   const resetPageIndex = () => {
     onPaginationChange?.((prev) =>
       prev.pageIndex === 0 ? prev : { ...prev, pageIndex: 0 },
@@ -289,7 +295,24 @@ function DataTable<TData, TValue>({
                       getRowClassName?.(row.original),
                     )}
                     {...(onRowClick && {
-                      onClick: () => onRowClick(row.original),
+                      onMouseDown: (e: React.MouseEvent) => {
+                        pressOriginRef.current = {
+                          x: e.clientX,
+                          y: e.clientY,
+                        };
+                      },
+                      onClick: (e: React.MouseEvent<HTMLTableRowElement>) => {
+                        const origin = pressOriginRef.current;
+                        pressOriginRef.current = null;
+                        const moved =
+                          !!origin &&
+                          (Math.abs(e.clientX - origin.x) > 5 ||
+                            Math.abs(e.clientY - origin.y) > 5);
+                        if (moved && window.getSelection()?.type === "Range") {
+                          return;
+                        }
+                        onRowClick(row.original);
+                      },
                     })}
                   >
                     {row.getVisibleCells().map((cell) => (

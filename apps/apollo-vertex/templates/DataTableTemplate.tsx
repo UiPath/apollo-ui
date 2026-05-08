@@ -310,8 +310,15 @@ function DataTableTemplateContent() {
     <div className="p-4">
       <DataTable
         {...tableState}
+        getRowId={(payment) => payment.id}
         expanded={expanded}
         onExpandedChange={setExpanded}
+        onRowClick={(payment) =>
+          setExpanded((prev) => {
+            if (prev === true) return { [payment.id]: false };
+            return { ...prev, [payment.id]: !prev[payment.id] };
+          })
+        }
         renderExpandedRow={(row) => {
           const payment = row.original;
           return (
