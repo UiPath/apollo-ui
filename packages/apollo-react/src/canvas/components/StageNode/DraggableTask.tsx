@@ -10,7 +10,6 @@ import {
   StageTaskDragPlaceholderWrapper,
   StageTaskWrapper,
 } from './StageNode.styles';
-import { StageTaskEntryConditionIcon } from './StageTaskEntryConditionIcon';
 import { TaskContent } from './TaskContent';
 import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
 
@@ -26,7 +25,6 @@ const DraggableTaskComponent = ({
   isDragDisabled,
   projectedDepth,
   isTaskLoading,
-  isReadOnly,
 }: DraggableTaskProps) => {
   const zoom = useStore((s) => s.transform[2]);
   const taskRef = useRef<HTMLDivElement>(null);
@@ -97,9 +95,8 @@ const DraggableTaskComponent = ({
       onClick={handleClick}
       {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
     >
-      <TaskContent task={task} taskExecution={taskExecution} isReadOnly={isReadOnly} />
+      <TaskContent task={task} taskExecution={taskExecution} />
 
-      <StageTaskEntryConditionIcon task={task} />
       {getContextMenuItems && (
         <TaskMenu
           ref={menuRef}

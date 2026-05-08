@@ -1798,6 +1798,7 @@ export const AdhocTasks: Story = {
                   label: 'Ad hoc - KYC Check',
                   icon: <VerificationIcon />,
                   isAdhoc: true,
+                  hasEntryCondition: true,
                 },
               ],
               [
@@ -1887,12 +1888,14 @@ export const AdhocTasks: Story = {
                   label: 'Ad hoc - Verify Address',
                   icon: <VerificationIcon />,
                   isAdhoc: true,
+                  hasEntryCondition: true,
                 },
                 {
                   id: '2',
                   label: 'Ad hoc - Verify Identity',
                   icon: <VerificationIcon />,
                   isAdhoc: true,
+                  hasEntryCondition: true,
                 },
               ],
               [
@@ -1901,6 +1904,7 @@ export const AdhocTasks: Story = {
                   label: 'Ad hoc - Bkgd Check',
                   icon: <VerificationIcon />,
                   isAdhoc: true,
+                  hasEntryCondition: true,
                 },
               ],
               [
@@ -1911,7 +1915,14 @@ export const AdhocTasks: Story = {
                   isAdhoc: true,
                 },
               ],
-              [{ id: '5', label: 'Regular Processing', icon: <ProcessIcon /> }],
+              [
+                {
+                  id: '5',
+                  label: 'Regular Processing',
+                  icon: <ProcessIcon />,
+                  hasEntryCondition: true,
+                },
+              ],
             ],
           },
           execution: {
@@ -2167,6 +2178,7 @@ export const TasksBySection: Story = {
                   label: 'Ad hoc - Verify Address',
                   icon: <VerificationIcon />,
                   taskGroupType: 'adhoc',
+                  hasEntryCondition: true,
                 },
               ],
               [

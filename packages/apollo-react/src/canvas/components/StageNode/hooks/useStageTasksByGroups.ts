@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { StageTaskItem } from '../StageNode.types';
+import type { StageTaskItem } from '../StageNode.types';
 
 export const useStageTasksByGroups = (allTasks: StageTaskItem[][]) => {
   const sequentialTaskGroups = useMemo(

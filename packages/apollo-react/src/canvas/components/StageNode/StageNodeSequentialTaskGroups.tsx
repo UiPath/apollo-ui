@@ -13,7 +13,7 @@ import {
 } from '@dnd-kit/sortable';
 import { Spacing } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
-import { CSSProperties, useCallback, useMemo } from 'react';
+import { type CSSProperties, useCallback, useMemo } from 'react';
 import {
   GroupModificationType,
   moveGroupDown,
@@ -220,7 +220,6 @@ export const StageNodeSequentialTaskGroups = ({
                           !isReadOnly && {
                             getContextMenuItems: buildContextMenuItems,
                           })}
-                        isReadOnly={isReadOnly}
                       />
                     );
                   })}

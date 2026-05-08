@@ -1,8 +1,14 @@
 import { EntryConditionIcon } from '../../icons';
 import { CanvasTooltip } from '../CanvasTooltip';
-import { StageTaskItem } from './StageNode.types';
+import type { StageTaskItem } from './StageNode.types';
 
-export const StageTaskEntryConditionIcon = ({ task }: { task: StageTaskItem }) => {
+export const StageTaskEntryConditionIcon = ({
+  task,
+  small,
+}: {
+  task: StageTaskItem;
+  small?: boolean;
+}) => {
   if (!task.hasEntryCondition) {
     return null;
   }
@@ -12,11 +18,12 @@ export const StageTaskEntryConditionIcon = ({ task }: { task: StageTaskItem }) =
         style={{
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'center',
           color: 'var(--color-icon-default)',
           flexShrink: 0,
         }}
       >
-        <EntryConditionIcon w={20} h={20} />
+        <EntryConditionIcon w={small ? 16 : 20} h={small ? 16 : 20} />
       </span>
     </CanvasTooltip>
   );

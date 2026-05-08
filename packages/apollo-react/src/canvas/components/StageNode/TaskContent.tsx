@@ -8,6 +8,7 @@ import { CanvasTooltip } from '../CanvasTooltip';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import { StageTaskIcon, StageTaskRetryDuration } from './StageNode.styles';
 import type { StageTaskExecution, StageTaskItem } from './StageNode.types';
+import { StageTaskEntryConditionIcon } from './StageTaskEntryConditionIcon';
 
 const ProcessCanvasIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -106,11 +107,10 @@ export interface TaskContentProps {
   taskExecution?: StageTaskExecution;
   isDragging?: boolean;
   onTaskPlay?: (taskId: string) => Promise<void>;
-  isReadOnly?: boolean;
 }
 
 export const TaskContent = memo(
-  ({ task, taskExecution, isDragging, onTaskPlay, isReadOnly }: TaskContentProps) => {
+  ({ task, taskExecution, isDragging, onTaskPlay }: TaskContentProps) => {
     const hasExecutionStatus = !!taskExecution?.status;
     const hasSecondRowContent =
       taskExecution &&
@@ -147,15 +147,18 @@ export const TaskContent = memo(
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6"
+                    className="h-4 w-4"
                     aria-label={taskExecution.message}
                   >
                     <ExecutionStatusIcon status={taskExecution.status} />
                   </Button>
                 </CanvasTooltip>
               ) : (
-                !isReadOnly && <ExecutionStatusIcon status={taskExecution.status} />
+                <ExecutionStatusIcon status={taskExecution.status} />
               ))}
+            {!hasSecondRowContent && (
+              <StageTaskEntryConditionIcon task={task} small={!!hasExecutionStatus} />
+            )}
             {showPlayButtonSmall && !hasSecondRowContent && (
               <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} small />
             )}
@@ -182,6 +185,7 @@ export const TaskContent = memo(
                   {generateBadgeText(taskExecution) ?? ''}
                 </Badge>
               )}
+              <StageTaskEntryConditionIcon task={task} small />
               {showPlayButtonSmall && (
                 <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} small />
               )}
