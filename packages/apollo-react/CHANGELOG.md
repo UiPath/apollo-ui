@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.24.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.23.3...@uipath/apollo-react@4.24.0) (2026-05-08)
+
+### Features
+
+* **storybook:** add Canvas all-components gallery page (Phase 2) ([37490bb](https://github.com/UiPath/apollo-ui/commit/37490bb6529d289a5d85d097c01e2e8201bdad79))
+
 ## [@uipath/apollo-react-v4.23.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.23.2...@uipath/apollo-react@4.23.3) (2026-05-08)
 
 ### Bug Fixes
