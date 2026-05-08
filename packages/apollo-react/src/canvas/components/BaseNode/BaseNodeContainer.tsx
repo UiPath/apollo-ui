@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import type { NodeShape } from '../../schema';
 import type { SuggestionType } from '../../types';
 import type { ElementStatusValues } from '../../types/execution';
-import { ValidationErrorSeverity } from '../../types/validation';
+import type { ValidationErrorSeverity } from '../../types/validation';
 
 export const getStatusBorder = (
   status?: ElementStatusValues | ValidationErrorSeverity | SuggestionType

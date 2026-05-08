@@ -89,7 +89,7 @@ vi.mock('./NodeLabel', () => ({
   NodeLabel: ({ label }: { label?: string }) => <div data-testid="node-label">{label}</div>,
 }));
 
-import { HandleGroupManifest } from '../../schema';
+import type { HandleGroupManifest } from '../../schema';
 import { BaseNode } from './BaseNode';
 
 const defaultProps: NodeProps<Node<BaseNodeData>> = {

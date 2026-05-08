@@ -1,7 +1,7 @@
 import { Spacing } from '@uipath/apollo-core';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { Button } from '@uipath/apollo-wind';
-import { CSSProperties, memo, RefObject, useCallback, useMemo } from 'react';
+import { type CSSProperties, memo, type RefObject, useCallback, useMemo } from 'react';
 import { GroupModificationType } from '../../utils';
 import { useStageTasksByGroups } from './hooks/useStageTasksByGroups';
 import { StageContent } from './StageNode.styles';

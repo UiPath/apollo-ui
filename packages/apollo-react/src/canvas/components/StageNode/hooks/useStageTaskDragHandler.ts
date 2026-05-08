@@ -1,7 +1,7 @@
-import { DragEndEvent, DragMoveEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core';
+import type { DragEndEvent, DragMoveEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core';
 import { useStoreApi } from '@xyflow/react';
 import { useCallback, useMemo, useState } from 'react';
-import { StageTaskGroup, StageTaskItem } from '../StageNode.types';
+import type { StageTaskGroup, StageTaskItem } from '../StageNode.types';
 import { flattenTasks, getProjection, reorderTasks } from '../StageNode.utils';
 
 export const useStageTaskDragHandler = ({
