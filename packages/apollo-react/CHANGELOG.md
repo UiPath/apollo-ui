@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v4.23.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.23.2...@uipath/apollo-react@4.23.3) (2026-05-08)
+
+### Bug Fixes
+
+* **apollo-react:** add story demo ([46029b8](https://github.com/UiPath/apollo-ui/commit/46029b8add3c56551716d67dd2830169cd1d8efe))
+* **apollo-react:** support nested loop outer handle insertion ([43298c1](https://github.com/UiPath/apollo-ui/commit/43298c1ebf95bc3fdf2ba4e8b33e811f3c873948))
+
 ## [@uipath/apollo-react-v4.23.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.23.1...@uipath/apollo-react@4.23.2) (2026-05-07)
 
 ### Bug Fixes
