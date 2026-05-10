@@ -256,8 +256,8 @@
     "@types/sanitize-html": "^2.16.0",
     "@types/webpack-bundle-analyzer": "^4.7.0",
     "@vitejs/plugin-react": "^4.7.0",
-    "@vitest/coverage-v8": "^4.1.0",
-    "@vitest/ui": "^4.1.0",
+    "@vitest/coverage-v8": "^4.1.5",
+    "@vitest/ui": "^4.1.5",
     "esbuild": "^0.27.0",
     "glob": "^13.0.0",
     "happy-dom": "^20.0.0",
@@ -266,7 +266,7 @@
     "typescript": "^5.9.3",
     "use-sync-external-store": "^1.2.0",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^4.1.0",
+    "vitest": "^4.1.5",
     "webpack-bundle-analyzer": "^5.0.1"
   }
 }
