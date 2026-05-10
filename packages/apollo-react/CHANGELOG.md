@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.24.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.24.1...@uipath/apollo-react@4.24.2) (2026-05-10)
+
+### Bug Fixes
+
+* **repo:** security vulnerabilities ([100aaa5](https://github.com/UiPath/apollo-ui/commit/100aaa5ade673e3003e5b9800f3e72ef962e4bc1))
+
 ## [@uipath/apollo-react-v4.24.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.24.0...@uipath/apollo-react@4.24.1) (2026-05-08)
 
 ### Bug Fixes
