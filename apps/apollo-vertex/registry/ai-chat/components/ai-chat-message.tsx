@@ -6,17 +6,17 @@ import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  ENTRANCE_ANIMATE,
+  ENTRANCE_EASE,
+  ENTRANCE_INITIAL,
+} from "../animations";
 import type { MessageFeedbackType } from "../types";
 import { AiChatMarkdown } from "./ai-chat-markdown";
 import { AiChatMessageActions } from "./ai-chat-message-actions";
 
 // Quick, subtle entrance — fade + 8px slide up. Quartic ease-out for a soft settle.
-const ENTRANCE_INITIAL = { opacity: 0, y: 8 };
-const ENTRANCE_ANIMATE = { opacity: 1, y: 0 };
-const ENTRANCE_TRANSITION = {
-  duration: 0.22,
-  ease: [0.22, 1, 0.36, 1] as const,
-};
+const ENTRANCE_TRANSITION = { duration: 0.22, ease: ENTRANCE_EASE };
 
 function focusAndScrollEditTextarea(el: HTMLTextAreaElement | null) {
   if (!el) return;
@@ -29,10 +29,8 @@ function focusAndScrollEditTextarea(el: HTMLTextAreaElement | null) {
 interface AiChatMessageProps {
   message: UIMessage;
   children?: ReactNode;
-  /** Whether this message is currently being streamed */
-  isStreaming?: boolean;
+  hideActions?: boolean;
   showActionsAlwaysVisible?: boolean;
-  /** Current feedback for this message — drives the thumbs-up/down pressed state. */
   feedback?: MessageFeedbackType | null;
   onFeedback?: (type: MessageFeedbackType) => void;
   onRegenerate?: () => void;
@@ -49,7 +47,7 @@ function getDisplayText(message: UIMessage): string {
 export function AiChatMessage({
   message,
   children,
-  isStreaming = false,
+  hideActions = false,
   showActionsAlwaysVisible = false,
   feedback,
   onFeedback,
@@ -163,11 +161,11 @@ export function AiChatMessage({
         )}
         {children && <div className="mt-2 flex flex-col gap-2">{children}</div>}
 
-        {!isStreaming && (
+        {!hideActions && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.2, ease: ENTRANCE_EASE }}
           >
             <AiChatMessageActions
               content={displayContent}
