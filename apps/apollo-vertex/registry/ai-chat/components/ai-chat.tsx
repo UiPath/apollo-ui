@@ -1,43 +1,76 @@
 "use client";
 
-import type { TextPart, UIMessage } from "@tanstack/ai-client";
+import type {
+  AnyClientTool,
+  ChatClientState,
+  TextPart,
+  ToolCallPart,
+  UIMessage,
+} from "@tanstack/ai-client";
 import { AlertCircle, ArrowDown, RefreshCw } from "lucide-react";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { Fragment, type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useStickyScroll } from "../hooks/use-sticky-scroll";
+import type { MessageFeedbackType } from "../types";
 import { AiChatHeader } from "./ai-chat-header";
 import { AiChatInput, type AiChatInputHandle } from "./ai-chat-input";
 import { AiChatLoading } from "./ai-chat-loading";
+import { AiChatMessage } from "./ai-chat-message";
 
-export interface AiChatProps {
-  messages: UIMessage[];
-  isLoading: boolean;
+// Mirrors TanStack's own `= any` default for `UIMessage<TTools>` / `ToolCallPart<TTools>`;
+// their conditional types detect the default and fall back to untyped tool parts.
+// biome-ignore lint/suspicious/noExplicitAny: matches upstream TanStack AI generic default
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DefaultTools = any;
+
+export interface AiChatProps<
+  TTools extends ReadonlyArray<AnyClientTool> = DefaultTools,
+> {
+  messages: UIMessage<TTools>[];
+  status: ChatClientState;
   onSendMessage: (content: string) => void;
   onStop: () => void;
   onClearChat?: () => void;
   onRetry?: () => void;
-  children?: ReactNode;
+  onFeedback?: (messageId: string, type: MessageFeedbackType) => void;
+  getFeedback?: (messageId: string) => MessageFeedbackType | null | undefined;
+  onRegenerate?: () => void;
+  onEditMessage?: (messageId: string, content: string) => void;
+  renderToolPart?: (part: ToolCallPart<TTools>) => ReactNode;
   assistantName?: string;
   title?: string;
   header?: ReactNode;
   emptyState?: ReactNode;
-  /** Quick-start suggestions shown below the input in the empty state */
   suggestions?: string[];
-  /** Called when the user clicks a suggestion in the empty state */
   onSuggestionClick?: (suggestion: string) => void;
   placeholder?: string;
   error?: Error | null;
 }
 
-export function AiChat({
+function isVisibleAssistant(m: UIMessage): boolean {
+  if (m.role !== "assistant") return false;
+  return m.parts.some(
+    (p) =>
+      (p.type === "tool-call" && p.output != null) ||
+      (p.type === "text" && p.content),
+  );
+}
+
+export function AiChat<
+  TTools extends ReadonlyArray<AnyClientTool> = DefaultTools,
+>({
   messages,
-  isLoading,
+  status,
   onSendMessage,
   onStop,
   onClearChat,
   onRetry,
-  children,
+  onFeedback,
+  getFeedback,
+  onRegenerate,
+  onEditMessage,
+  renderToolPart,
   assistantName,
   title,
   header,
@@ -46,13 +79,14 @@ export function AiChat({
   onSuggestionClick,
   placeholder,
   error,
-}: AiChatProps) {
+}: AiChatProps<TTools>) {
   const { t } = useTranslation();
   const [input, setInput] = useState("");
   const { scrollRef, contentRef, isStuck, scrollToBottom } = useStickyScroll();
   const inputRef = useRef<AiChatInputHandle>(null);
 
   const displayName = assistantName ?? t("ai_assistant");
+  const isInFlight = status === "submitted" || status === "streaming";
 
   const queuedMessageRef = useRef<string | null>(null);
 
@@ -71,7 +105,7 @@ export function AiChat({
 
   const handleSubmit = () => {
     if (!input.trim()) return;
-    if (isLoading) {
+    if (isInFlight) {
       queuedMessageRef.current = input.trim();
       setInput("");
       return;
@@ -81,9 +115,9 @@ export function AiChat({
     scrollToBottom();
   };
 
-  const wasLoadingRef = useRef(false);
+  const wasInFlightRef = useRef(false);
   useEffect(() => {
-    if (wasLoadingRef.current && !isLoading) {
+    if (wasInFlightRef.current && !isInFlight) {
       if (queuedMessageRef.current) {
         const queued = queuedMessageRef.current;
         queuedMessageRef.current = null;
@@ -93,14 +127,18 @@ export function AiChat({
         inputRef.current?.focus();
       }
     }
-    wasLoadingRef.current = isLoading;
-  }, [isLoading, onSendMessage, scrollToBottom]);
+    wasInFlightRef.current = isInFlight;
+  }, [isInFlight, onSendMessage, scrollToBottom]);
 
   const lastMessage = messages.at(-1);
+  const lastMessageId = lastMessage?.id ?? null;
   const lastAssistantHasText =
     lastMessage?.role === "assistant" &&
     lastMessage.parts.some((p) => p.type === "text" && p.content);
-  const showLoadingIndicator = isLoading && !lastAssistantHasText;
+  const showLoadingIndicator = isInFlight && !lastAssistantHasText;
+
+  const latestVisibleAssistantId =
+    messages.findLast((m) => isVisibleAssistant(m))?.id ?? null;
 
   const defaultEmptyState = (
     <div className="flex flex-col items-center justify-center h-full text-center">
@@ -143,7 +181,7 @@ export function AiChat({
               onChange={setInput}
               onSubmit={handleSubmit}
               onStop={onStop}
-              isLoading={isLoading}
+              isLoading={isInFlight}
               placeholder={placeholder}
               hasMessages={false}
             />
@@ -187,11 +225,53 @@ export function AiChat({
             aria-label={t("chat_messages")}
             aria-live="polite"
             aria-atomic="false"
-            aria-busy={isLoading}
+            aria-busy={isInFlight}
             className="h-full overflow-y-auto py-4 pl-10 pr-10"
           >
             <div ref={contentRef} className="space-y-1">
-              {children}
+              {messages.map((message) => {
+                const isLatestVisibleAssistant =
+                  message.role === "assistant" &&
+                  message.id === latestVisibleAssistantId;
+                const hideActions =
+                  isInFlight &&
+                  message.role === "assistant" &&
+                  message.id === lastMessageId;
+
+                return (
+                  <AiChatMessage
+                    key={message.id}
+                    message={message}
+                    hideActions={hideActions}
+                    showActionsAlwaysVisible={
+                      !isInFlight && isLatestVisibleAssistant
+                    }
+                    {...(getFeedback
+                      ? { feedback: getFeedback(message.id) ?? null }
+                      : {})}
+                    {...(onFeedback
+                      ? {
+                          onFeedback: (type) => onFeedback(message.id, type),
+                        }
+                      : {})}
+                    {...(onRegenerate ? { onRegenerate } : {})}
+                    {...(onEditMessage && !isInFlight
+                      ? {
+                          onEditMessage: (content) =>
+                            onEditMessage(message.id, content),
+                        }
+                      : {})}
+                  >
+                    {renderToolPart &&
+                      message.parts.map((part) => {
+                        if (part.type !== "tool-call") return null;
+                        const rendered = renderToolPart(part);
+                        if (rendered == null) return null;
+                        return <Fragment key={part.id}>{rendered}</Fragment>;
+                      })}
+                  </AiChatMessage>
+                );
+              })}
               {showLoadingIndicator && <AiChatLoading />}
             </div>
           </div>
@@ -243,7 +323,7 @@ export function AiChat({
             onChange={setInput}
             onSubmit={handleSubmit}
             onStop={onStop}
-            isLoading={isLoading}
+            isLoading={isInFlight}
             placeholder={placeholder}
             hasMessages
           />

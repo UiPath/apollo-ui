@@ -11,8 +11,8 @@ A composable AI chat UI component for Apollo Vertex. Built with React, TypeScrip
 ## Features
 
 - **TanStack AI Integration** — Works with `useChat` from `@tanstack/ai-react` and `UIMessage` types
-- **Composable** — `AiChat` is the shell, `AiChatMessage` renders messages, `getAiChatMessageProps` wires per-message data
-- **Type-Safe Tool Rendering** — Check `part.name` in the parts loop and TypeScript narrows `part.output` automatically
+- **One-prop wiring** — Pass `messages` and `status` from `useChat`; the component owns the message loop, scroll, and per-message action wiring
+- **Type-Safe Tool Rendering** — Pass a `renderToolPart` callback; TypeScript narrows `part.output` automatically when you check `part.name`
 - **AgentHub Adapter** — Built-in adapter for the UiPath AgentHub normalized LLM endpoint (OpenAI + Anthropic models)
 - **Conversational Agent Adapter** — Built-in adapter for a deployed UiPath Conversational Agent, with session management
 - **Markdown Rendering** — Renders assistant responses with GitHub Flavored Markdown
@@ -49,8 +49,6 @@ npx shadcn@latest add @uipath/ai-chat
 ```tsx
 import { useChat } from '@tanstack/ai-react';
 import { AiChat } from '@/components/ui/ai-chat/components/ai-chat';
-import { AiChatMessage } from '@/components/ui/ai-chat/components/ai-chat-message';
-import { getAiChatMessageProps } from '@/components/ui/ai-chat/util/get-ai-chat-message-props';
 import { createAgentHubConnection } from '@/components/ui/ai-chat/adapters/agenthub/adapter';
 
 function BasicChat() {
@@ -61,42 +59,34 @@ function BasicChat() {
     systemPrompt: 'You are a helpful assistant.',
   });
 
-  const { messages, sendMessage, isLoading, status, stop, clear, error } = useChat({
+  const { messages, sendMessage, status, stop, clear, error } = useChat({
     connection,
   });
-
-  const messageProps = getAiChatMessageProps({ messages, status });
 
   return (
     <AiChat
       messages={messages}
-      isLoading={isLoading}
+      status={status}
       onSendMessage={(text) => sendMessage(text)}
       onStop={stop}
       onClearChat={clear}
       error={error}
       title="AI Assistant"
-    >
-      {messages.map((message) => (
-        <AiChatMessage key={message.id} {...messageProps(message)} />
-      ))}
-    </AiChat>
+    />
   );
 }
 ```
 
 ## Tool Rendering
 
-Render tool output inline as `AiChatMessage` children. Define tools with `toolDefinition`, pass the input through as output in your client tool, then check `part.name` in the parts loop. TypeScript narrows `part.output` automatically.
+Define tools with `toolDefinition`, pass the input through as output in your client tool, then provide a `renderToolPart` callback to `<AiChat>`. The part is already narrowed to tool-call parts; check `part.name` and TypeScript narrows `part.output` to the right tool's output type automatically.
 
 ```tsx
 import { z } from 'zod';
 import { toolDefinition } from '@tanstack/ai';
 import { clientTools } from '@tanstack/ai-client';
-import { stream, useChat } from '@tanstack/ai-react';
+import { useChat } from '@tanstack/ai-react';
 import { AiChat } from '@/components/ui/ai-chat/components/ai-chat';
-import { AiChatMessage } from '@/components/ui/ai-chat/components/ai-chat-message';
-import { getAiChatMessageProps } from '@/components/ui/ai-chat/util/get-ai-chat-message-props';
 
 // 1. Define tools — output passes input through for rendering
 const showResultsInput = z.object({
@@ -114,58 +104,56 @@ const showResultsDef = toolDefinition({
 const showResults = showResultsDef.client((input) => input);
 const toolDefs = clientTools(showResults);
 
-// 2. Wire it up — render tool output as children of each AiChatMessage
+// 2. Wire it up — return tool output from renderToolPart
 function ChatWithTools() {
-  const { messages, sendMessage, isLoading, status, stop } = useChat({
+  const { messages, sendMessage, status, stop } = useChat({
     connection,
     tools: toolDefs,
   });
 
-  const messageProps = getAiChatMessageProps({ messages, status });
-
   return (
     <AiChat
       messages={messages}
-      isLoading={isLoading}
+      status={status}
       onSendMessage={(text) => sendMessage(text)}
       onStop={stop}
-    >
-      {messages.map((message) => (
-        <AiChatMessage key={message.id} {...messageProps(message)}>
-          {message.parts.map((part) => {
-            // TypeScript narrows part.output when you check part.name
-            if (part.type === 'tool-call' && part.name === 'show_results' && part.output) {
-              return <ResultsTable key={part.id} entity={part.output.entityName} columns={part.output.columns} />;
-            }
-            return null;
-          })}
-        </AiChatMessage>
-      ))}
-    </AiChat>
+      renderToolPart={(part) => {
+        // TypeScript narrows part.output when you check part.name
+        if (part.name === 'show_results' && part.output) {
+          return <ResultsTable entity={part.output.entityName} columns={part.output.columns} />;
+        }
+        return null;
+      }}
+    />
   );
 }
 ```
 
+`<AiChat>` keys each rendered part by `part.id`, so you don't need to add `key` yourself.
+
 ## Message Actions
 
-Each message can show inline actions — copy, thumbs-up/down feedback, regenerate, and edit. Pass the optional callbacks to `getAiChatMessageProps`; it wires them to the right messages (assistant for feedback/regenerate, user for edit) and the action row appears automatically.
+Each message can show inline actions — copy, thumbs-up/down feedback, regenerate, and edit. Pass the optional callbacks directly to `<AiChat>`; it wires them to the right messages (assistant for feedback/regenerate, user for edit) and the action row appears automatically.
 
 ```tsx
-const { messages, sendMessage, reload, status } = useChat({ connection });
+const { messages, sendMessage, reload, status, stop } = useChat({ connection });
 
-const messageProps = getAiChatMessageProps({
-  messages,
-  status,
-  onFeedback: (messageId, type) => {
+<AiChat
+  messages={messages}
+  status={status}
+  onSendMessage={(text) => sendMessage(text)}
+  onStop={stop}
+  onFeedback={(messageId, type) => {
     // type: 'positive' | 'negative' — send to your analytics / feedback endpoint
     void recordFeedback({ messageId, type });
-  },
-  onRegenerate: () => void reload(),
-  onEditMessage: (_messageId, content) => {
+  }}
+  getFeedback={(messageId) => feedbackById[messageId] ?? null}
+  onRegenerate={() => void reload()}
+  onEditMessage={(_messageId, content) => {
     // Re-runs the conversation with the edited user message
     void sendMessage(content);
-  },
-});
+  }}
+/>
 ```
 
 Copy is always available and needs no wiring. Feedback and edit only render when their callbacks are supplied.
@@ -216,7 +204,7 @@ const connection = createConversationalAgentConnection({
   folderId,  // number — the folder the agent lives in
 });
 
-const { messages, sendMessage, isLoading, stop, clear, error } = useChat({
+const { messages, sendMessage, status, stop, clear, error } = useChat({
   connection,
 });
 
@@ -248,7 +236,7 @@ const tableTool = createDataFabricTableTool({
 });
 
 // Use dataFabricTableClient in your tools array, tableTool.toolPrompt in your system prompt,
-// and tableTool.renderTable(part.output, part.id) in your parts loop.
+// and tableTool.renderTable(part.output, part.id) in your renderToolPart callback.
 ```
 
 ### Filter types
@@ -301,7 +289,7 @@ const distributionTool = createDataFabricDistributionTool({
 });
 
 // Use dataFabricDistributionClient in your tools array, distributionTool.toolPrompt in your
-// system prompt, and distributionTool.renderDistribution(part.output, part.id) in your parts loop.
+// system prompt, and distributionTool.renderDistribution(part.output, part.id) in your renderToolPart callback.
 ```
 
 ### Dimension
@@ -349,7 +337,7 @@ const barTool = createDataFabricBarTool({
 });
 
 // Use dataFabricBarClient in your tools array, barTool.toolPrompt in your
-// system prompt, and barTool.renderBar(part.output, part.id) in your parts loop.
+// system prompt, and barTool.renderBar(part.output, part.id) in your renderToolPart callback.
 ```
 
 ### When to use bar vs distribution vs line
@@ -405,7 +393,7 @@ const lineTool = createDataFabricLineTool({
 });
 
 // Use dataFabricLineClient in your tools array, lineTool.toolPrompt in your
-// system prompt, and lineTool.renderLine(part.output, part.id) in your parts loop.
+// system prompt, and lineTool.renderLine(part.output, part.id) in your renderToolPart callback.
 ```
 
 ### When to use line vs distribution
@@ -438,7 +426,7 @@ const multiLineTool = createDataFabricMultiLineTool({
 });
 
 // Use dataFabricMultiLineClient in your tools array, multiLineTool.toolPrompt in your
-// system prompt, and multiLineTool.renderMultiLine(part.output, part.id) in your parts loop.
+// system prompt, and multiLineTool.renderMultiLine(part.output, part.id) in your renderToolPart callback.
 ```
 
 ### Metrics
@@ -485,7 +473,7 @@ const kpiTool = createDataFabricKpiTool({
 });
 
 // Use dataFabricKpiClient in your tools array, kpiTool.toolPrompt in your
-// system prompt, and kpiTool.renderKpi(part.output, part.id) in your parts loop.
+// system prompt, and kpiTool.renderKpi(part.output, part.id) in your renderToolPart callback.
 ```
 
 ### When to use KPI vs other chart tools
@@ -516,7 +504,7 @@ Filter and join schemas are shared with the other Data Fabric tools (including t
 
 ## Suggestion Buttons
 
-The `presentChoices` tool renders interactive suggestion buttons. Define the tool with a Zod schema, and render choices inline in the parts loop:
+The `presentChoices` tool renders interactive suggestion buttons. Define the tool with a Zod schema, and render choices from `renderToolPart`:
 
 ```tsx
 import {
@@ -527,17 +515,20 @@ import {
 
 // Add presentChoicesClient to your tools array and CHOICES_TOOL_PROMPT to your system prompt.
 
-// In your parts loop:
-{message.parts.map((part) => {
-  if (part.type === 'tool-call' && part.name === 'presentChoices' && part.output) {
-    return (
-      <div key={part.id}>
-        {renderChoices(part.output, { onAction: (text) => sendMessage(text) })}
-      </div>
-    );
-  }
-  return null;
-})}
+<AiChat
+  messages={messages}
+  status={status}
+  onSendMessage={(text) => sendMessage(text)}
+  onStop={stop}
+  renderToolPart={(part) => {
+    if (part.name === 'presentChoices' && part.output) {
+      return renderChoices(part.output, {
+        onAction: (text) => sendMessage(text),
+      });
+    }
+    return null;
+  }}
+/>
 ```
 
 > **Try it out** — type *"give me some choices"* in the demo above to see suggestion buttons in action.
@@ -549,17 +540,21 @@ import {
 
 ### `<AiChat>`
 
-Chat shell component. Handles layout, scroll, input, loading indicator, suggestions, and errors. Render messages as children — typically `messages.map((m) => <AiChatMessage key={m.id} {...messageProps(m)} />)`.
+Chat shell component. Owns the message loop, scroll, input, loading indicator, suggestions, errors, and per-message action wiring. Generic over the connection's tools (`AiChat<TTools>`) — pass `UIMessage<TTools>[]` straight from `useChat` and `renderToolPart` gets typed narrowing on `part.name`/`part.output`.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `messages` | `UIMessage[]` | required | Messages from `useChat` |
-| `isLoading` | `boolean` | required | Loading state from `useChat` |
+| `messages` | `UIMessage<TTools>[]` | required | Messages from `useChat` |
+| `status` | `'ready' \| 'submitted' \| 'streaming' \| 'error'` | required | Chat lifecycle state from `useChat` |
 | `onSendMessage` | `(content: string) => void` | required | Send handler |
 | `onStop` | `() => void` | required | Stop/abort handler |
-| `children` | `ReactNode` | — | Rendered messages (typically `messages.map(...)`) |
+| `renderToolPart` | `(part: ToolCallPart<TTools>) => ReactNode` | — | Render tool output for an assistant message. Check `part.name` to narrow `part.output` |
 | `onClearChat` | `() => void` | — | Shows a "New conversation" item in the header dropdown when provided |
 | `onRetry` | `() => void` | — | Retry handler shown next to the inline error banner |
+| `onFeedback` | `(messageId: string, type: 'positive' \| 'negative') => void` | — | Thumbs-up/down callback. Feedback buttons only render when provided |
+| `getFeedback` | `(messageId: string) => 'positive' \| 'negative' \| null \| undefined` | — | Resolves the saved feedback for a message — drives the pressed state |
+| `onRegenerate` | `() => void` | — | Regenerate the last assistant response |
+| `onEditMessage` | `(messageId: string, content: string) => void` | — | Save an edited user message. Edit affordance only renders when provided |
 | `assistantName` | `string` | `"AI Assistant"` | Label used for the assistant in copied conversation text |
 | `title` | `string` | — | Chat title in the header |
 | `header` | `ReactNode` | — | Custom header — replaces the default `<AiChatHeader>` |
@@ -568,49 +563,6 @@ Chat shell component. Handles layout, scroll, input, loading indicator, suggesti
 | `onSuggestionClick` | `(suggestion: string) => void` | — | Called when a suggestion is clicked (defaults to sending it as a message) |
 | `placeholder` | `string` | — | Input placeholder |
 | `error` | `Error \| null` | — | Inline error banner |
-
-### `<AiChatMessage>`
-
-Renders a single message bubble. Spread the output of `getAiChatMessageProps(message)` to wire up streaming, visibility, and action callbacks. Tool output and inline UI can be passed as children — they render below the markdown bubble inside the assistant column.
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `message` | `UIMessage` | required | The message to render |
-| `children` | `ReactNode` | — | Tool output rendered inside the assistant column |
-| `isStreaming` | `boolean` | `false` | Hides the action row while the message is being streamed |
-| `showActionsAlwaysVisible` | `boolean` | `false` | Keeps the action row visible (used for the latest assistant message); other messages reveal actions on hover/focus |
-| `feedback` | `'positive' \| 'negative' \| null` | — | Current feedback — renders thumbs-up/down in a pressed state |
-| `onFeedback` | `(type: 'positive' \| 'negative') => void` | — | Thumbs-up/down handler. Feedback buttons only render when provided |
-| `onRegenerate` | `() => void` | — | Regenerate handler. Only shown on the latest assistant message |
-| `onEditMessage` | `(content: string) => void` | — | Save handler for user-message edits. Edit affordance only renders when provided |
-
-### `getAiChatMessageProps`
-
-Plain helper (not a hook) that returns a per-message props factory for `<AiChatMessage>`. Computes streaming/visibility flags and binds id-aware callbacks so consumers can spread the result directly. The returned shape is `AiChatMessageBoundProps` — exported from `types.ts` for consumers who want to wrap or extend it.
-
-```tsx
-const messageProps = getAiChatMessageProps({
-  messages,
-  status,
-  onFeedback,        // (messageId, type) => void
-  getFeedback,       // (messageId) => 'positive' | 'negative' | null
-  onRegenerate,      // () => void
-  onEditMessage,     // (messageId, content) => void
-});
-
-{messages.map((m) => (
-  <AiChatMessage key={m.id} {...messageProps(m)} />
-))}
-```
-
-| Option | Type | Description |
-|--------|------|-------------|
-| `messages` | `UIMessage[]` | Messages from `useChat` |
-| `status` | `'ready' \| 'submitted' \| 'streaming' \| 'error'` | Chat lifecycle state from `useChat` |
-| `onFeedback` | `(messageId: string, type: 'positive' \| 'negative') => void` | Thumbs-up/down callback |
-| `getFeedback` | `(messageId: string) => 'positive' \| 'negative' \| null \| undefined` | Resolves the saved feedback for a message — drives the thumbs-up/down pressed state |
-| `onRegenerate` | `() => void` | Regenerate the last assistant response |
-| `onEditMessage` | `(messageId: string, content: string) => void` | Save an edited user message |
 
 ### `AgentHubAdapterConfig`
 

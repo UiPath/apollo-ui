@@ -395,9 +395,9 @@
           "target": "components/ui/ai-chat/hooks/use-sticky-scroll.ts"
         },
         {
-          "path": "registry/ai-chat/util/get-ai-chat-message-props.ts",
+          "path": "registry/ai-chat/animations.ts",
           "type": "registry:lib",
-          "target": "components/ui/ai-chat/util/get-ai-chat-message-props.ts"
+          "target": "components/ui/ai-chat/animations.ts"
         },
         {
           "path": "registry/ai-chat/components/ai-chat.tsx",

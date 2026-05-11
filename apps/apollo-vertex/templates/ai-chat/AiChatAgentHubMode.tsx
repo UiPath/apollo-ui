@@ -8,10 +8,7 @@ import { useTranslation } from "react-i18next";
 import { createAgentHubConnection } from "@/registry/ai-chat/adapters/agenthub/adapter";
 import { AiChat } from "@/registry/ai-chat/components/ai-chat";
 import { AiChatEmptyState } from "@/registry/ai-chat/components/ai-chat-empty-state";
-import { AiChatMessage } from "@/registry/ai-chat/components/ai-chat-message";
 import { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
-import type { MessageFeedbackType } from "@/registry/ai-chat/types";
-import { getAiChatMessageProps } from "@/registry/ai-chat/util/get-ai-chat-message-props";
 import {
   CHOICES_TOOL_PROMPT,
   presentChoicesClient,
@@ -42,6 +39,7 @@ import {
   createDataFabricTableTool,
   dataFabricTableClient,
 } from "@/registry/ai-chat/tools/data-fabric-table";
+import type { MessageFeedbackType } from "@/registry/ai-chat/types";
 import { DataFabricGate } from "./AiChatDataFabricGate";
 import type { OrgTenantInfo } from "./AiChatLoginGate";
 import { createUiPathSdk } from "./ai-chat-example-utils";
@@ -147,19 +145,12 @@ function AgentHubChatInner({
     tools,
   });
 
-  const {
-    messages,
-    sendMessage,
-    reload,
-    isLoading,
-    status,
-    stop,
-    clear,
-    error,
-  } = useChat({
-    connection,
-    tools,
-  });
+  const { messages, sendMessage, reload, status, stop, clear, error } = useChat(
+    {
+      connection,
+      tools,
+    },
+  );
 
   const emptyState = (
     <AiChatEmptyState
@@ -172,27 +163,70 @@ function AgentHubChatInner({
     {},
   );
 
-  const messageProps = getAiChatMessageProps({
-    messages,
-    status,
-    onFeedback: (messageId, type) => {
-      // Demo: wire to your analytics / feedback endpoint.
-      setFeedback((prev) => ({ ...prev, [messageId]: type }));
-    },
-    getFeedback: (messageId) => feedback[messageId] ?? null,
-    onRegenerate: () => void reload(),
-    onEditMessage: (_messageId, content) => void sendMessage(content),
-  });
-
   return (
     <AiChat
       messages={messages}
-      isLoading={isLoading}
+      status={status}
       onSendMessage={(text) => {
         void sendMessage(text);
       }}
       onStop={stop}
       onClearChat={clear}
+      onFeedback={(messageId, type) => {
+        setFeedback((prev) => ({ ...prev, [messageId]: type }));
+      }}
+      getFeedback={(messageId) => feedback[messageId] ?? null}
+      onRegenerate={() => void reload()}
+      onEditMessage={(_messageId, content) => void sendMessage(content)}
+      renderToolPart={(part) => {
+        if (!part.output) return null;
+
+        if (part.name === "data_fabric_table") {
+          return (
+            <Suspense>{tableTool.renderTable(part.output, part.id)}</Suspense>
+          );
+        }
+
+        if (part.name === "data_fabric_distribution") {
+          return (
+            <Suspense>
+              {distributionTool.renderDistribution(part.output, part.id)}
+            </Suspense>
+          );
+        }
+
+        if (part.name === "data_fabric_bar") {
+          return <Suspense>{barTool.renderBar(part.output, part.id)}</Suspense>;
+        }
+
+        if (part.name === "data_fabric_line") {
+          return (
+            <Suspense>{lineTool.renderLine(part.output, part.id)}</Suspense>
+          );
+        }
+
+        if (part.name === "data_fabric_multi_line") {
+          return (
+            <Suspense>
+              {multiLineTool.renderMultiLine(part.output, part.id)}
+            </Suspense>
+          );
+        }
+
+        if (part.name === "data_fabric_kpi") {
+          return <Suspense>{kpiTool.renderKpi(part.output, part.id)}</Suspense>;
+        }
+
+        if (part.name === "presentChoices") {
+          return renderChoices(part.output, {
+            onAction: (text) => {
+              void sendMessage(text);
+            },
+          });
+        }
+
+        return null;
+      }}
       title="Autopilot"
       assistantName="Autopilot"
       emptyState={emptyState}
@@ -202,77 +236,7 @@ function AgentHubChatInner({
         t("shell_suggestion_summarize_queue"),
       ]}
       error={error ?? null}
-    >
-      {messages.map((message) => (
-        <AiChatMessage key={message.id} {...messageProps(message)}>
-          {message.parts.map((part) => {
-            if (part.type !== "tool-call" || !part.output) return null;
-
-            if (part.name === "data_fabric_table") {
-              return (
-                <Suspense key={part.id}>
-                  {tableTool.renderTable(part.output, part.id)}
-                </Suspense>
-              );
-            }
-
-            if (part.name === "data_fabric_distribution") {
-              return (
-                <Suspense key={part.id}>
-                  {distributionTool.renderDistribution(part.output, part.id)}
-                </Suspense>
-              );
-            }
-
-            if (part.name === "data_fabric_bar") {
-              return (
-                <Suspense key={part.id}>
-                  {barTool.renderBar(part.output, part.id)}
-                </Suspense>
-              );
-            }
-
-            if (part.name === "data_fabric_line") {
-              return (
-                <Suspense key={part.id}>
-                  {lineTool.renderLine(part.output, part.id)}
-                </Suspense>
-              );
-            }
-
-            if (part.name === "data_fabric_multi_line") {
-              return (
-                <Suspense key={part.id}>
-                  {multiLineTool.renderMultiLine(part.output, part.id)}
-                </Suspense>
-              );
-            }
-
-            if (part.name === "data_fabric_kpi") {
-              return (
-                <Suspense key={part.id}>
-                  {kpiTool.renderKpi(part.output, part.id)}
-                </Suspense>
-              );
-            }
-
-            if (part.name === "presentChoices") {
-              return (
-                <div key={part.id}>
-                  {renderChoices(part.output, {
-                    onAction: (text) => {
-                      void sendMessage(text);
-                    },
-                  })}
-                </div>
-              );
-            }
-
-            return null;
-          })}
-        </AiChatMessage>
-      ))}
-    </AiChat>
+    />
   );
 }
 

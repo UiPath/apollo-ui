@@ -9,8 +9,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createConversationalAgentConnection } from "@/registry/ai-chat/adapters/conversational-agent/adapter";
 import { AiChat } from "@/registry/ai-chat/components/ai-chat";
-import { AiChatMessage } from "@/registry/ai-chat/components/ai-chat-message";
-import { getAiChatMessageProps } from "@/registry/ai-chat/util/get-ai-chat-message-props";
 import { AgentPicker } from "./AiChatAgentPicker";
 import type { OrgTenantInfo } from "./AiChatLoginGate";
 import { AICHAT_STORAGE_KEYS, createUiPathSdk } from "./ai-chat-example-utils";
@@ -40,17 +38,14 @@ function ConversationalAgentChatInner({
     };
   }, [connection]);
 
-  const { messages, sendMessage, isLoading, status, stop, clear, error } =
-    useChat({
-      connection,
-    });
-
-  const messageProps = getAiChatMessageProps({ messages, status });
+  const { messages, sendMessage, status, stop, clear, error } = useChat({
+    connection,
+  });
 
   return (
     <AiChat
       messages={messages}
-      isLoading={isLoading}
+      status={status}
       onSendMessage={(text) => {
         void sendMessage(text);
       }}
@@ -59,11 +54,7 @@ function ConversationalAgentChatInner({
       title={title}
       assistantName={assistantName}
       error={error ?? null}
-    >
-      {messages.map((message) => (
-        <AiChatMessage key={message.id} {...messageProps(message)} />
-      ))}
-    </AiChat>
+    />
   );
 }
 
