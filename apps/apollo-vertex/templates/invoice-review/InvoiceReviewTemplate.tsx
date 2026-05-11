@@ -7,12 +7,11 @@ import {
   createRoute,
   createRouter,
 } from "@tanstack/react-router";
+import type { ColumnDef, FilterFn } from "@tanstack/react-table";
 import {
   ArrowUp,
   Check,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Clock,
   FileText,
   Loader2,
@@ -22,20 +21,24 @@ import {
   Sparkle,
   X,
 } from "lucide-react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { toast } from "sonner";
-import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { Toaster } from "@/registry/sonner/sonner";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   DataTable,
   DataTableColumnHeader,
   dataTableFacetedFilterFn,
   dataTableGlobalFilterFn,
 } from "@/components/ui/data-table";
-import type { ColumnDef, FilterFn } from "@tanstack/react-table";
 import { FilterDropdown } from "@/components/ui/filter-dropdown";
 import { MetricCard } from "@/components/ui/metric-card";
 import {
@@ -51,7 +54,9 @@ import {
   PageHeaderTitleGroup,
 } from "@/components/ui/page-header";
 import { ApolloShell } from "@/components/ui/shell";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { Toaster } from "@/registry/sonner/sonner";
 import { useDataTable } from "@/registry/use-data-table/useDataTable";
 
 // ── Data ─────────────────────────────────────────────────────────────────────
@@ -61,7 +66,7 @@ interface Invoice {
   vendor: string;
   amount: string;
   tag?: string;
-  tagType?: "red" | "amber";
+  tagType?: "error" | "warning" | "info";
   score: number;
   status?: "done";
   dueGroup: "today" | "tomorrow" | "auto";
@@ -75,7 +80,12 @@ type ExceptionType =
   | "missing-po"
   | "new-vendor"
   | "none";
-type InvoiceStatus = "pending-review" | "in-review" | "approved" | "rejected";
+type InvoiceStatus =
+  | "pending-review"
+  | "in-review"
+  | "approved"
+  | "rejected"
+  | "sent-for-approval";
 
 interface InvoiceTableRow {
   id: string;
@@ -107,7 +117,7 @@ interface InvoiceDetailData {
   vat: string;
   description: string;
   exceptionTag: string;
-  exceptionTagStatus: "error" | "warning";
+  exceptionTagStatus: "error" | "warning" | "info";
   exceptionHeadline: string;
   exceptionMetrics: { label: string; value: string; cls: string }[];
   exceptionBody: string;
@@ -160,7 +170,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     exceptionMetrics: [
       { label: "Invoiced", value: "$694.39", cls: "text-foreground" },
       { label: "PO agreed", value: "$689.55", cls: "text-foreground" },
-      { label: "Difference", value: "-$4.84", cls: "text-[#E24B4A]" },
+      { label: "Difference", value: "-$4.84", cls: "text-[#C0392B]" },
     ],
     exceptionBody:
       "Supplier agreed to discounted price per PO note — invoice reflects original price. Request a corrected invoice from ACME Industrial before approving.",
@@ -302,8 +312,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     exceptionHeadline: "Facility supplies submitted without purchase order",
     exceptionMetrics: [
       { label: "Invoiced", value: "$12,240", cls: "text-foreground" },
-      { label: "Matched POs", value: "0", cls: "text-[#E24B4A]" },
-      { label: "Action needed", value: "Required", cls: "text-[#E24B4A]" },
+      { label: "POs matched", value: "0", cls: "text-[#C0392B]" },
     ],
     exceptionBody:
       "No purchase order found matching this invoice. Contact the facilities manager to confirm whether supplies were ordered, or reject and request a PO-backed resubmission.",
@@ -382,7 +391,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
       "Strategic advisory services for Q4 2025 product roadmap review and stakeholder alignment workshops, delivered by NorthStar LLC.",
     exceptionTag: "High value",
     exceptionTagStatus: "warning",
-    exceptionHeadline: "Consulting services invoice above GBP threshold",
+    exceptionHeadline: "Consulting services invoice exceeds approval threshold",
     exceptionMetrics: [
       { label: "Invoiced", value: "£8,750", cls: "text-foreground" },
       { label: "Threshold", value: "£5,000", cls: "text-foreground" },
@@ -448,7 +457,7 @@ const invoicesReview: Invoice[] = [
     vendor: "ACME Industrial",
     amount: "$694",
     tag: "Price mismatch",
-    tagType: "red",
+    tagType: "error",
     score: 3,
     dueGroup: "today",
   },
@@ -457,7 +466,7 @@ const invoicesReview: Invoice[] = [
     vendor: "Prime Office Solutions",
     amount: "$65,800",
     tag: "High value",
-    tagType: "amber",
+    tagType: "warning",
     score: 4,
     dueGroup: "today",
   },
@@ -466,7 +475,7 @@ const invoicesReview: Invoice[] = [
     vendor: "Acme Supply Co.",
     amount: "$12,240",
     tag: "No PO match",
-    tagType: "red",
+    tagType: "error",
     score: 2,
     dueGroup: "today",
   },
@@ -475,7 +484,7 @@ const invoicesReview: Invoice[] = [
     vendor: "NorthStar LLC",
     amount: "£8,750",
     tag: "High value",
-    tagType: "amber",
+    tagType: "warning",
     score: 4,
     dueGroup: "today",
   },
@@ -484,7 +493,7 @@ const invoicesReview: Invoice[] = [
     vendor: "Vertex Supplies Inc.",
     amount: "$3,180",
     tag: "Duplicate flag",
-    tagType: "red",
+    tagType: "warning",
     score: 3,
     dueGroup: "tomorrow",
   },
@@ -493,7 +502,7 @@ const invoicesReview: Invoice[] = [
     vendor: "Meridian Group",
     amount: "€22,500",
     tag: "High value",
-    tagType: "amber",
+    tagType: "warning",
     score: 4,
     dueGroup: "tomorrow",
   },
@@ -502,7 +511,7 @@ const invoicesReview: Invoice[] = [
     vendor: "Crestwood Co.",
     amount: "$940",
     tag: "Missing PO",
-    tagType: "red",
+    tagType: "error",
     score: 2,
     dueGroup: "tomorrow",
   },
@@ -511,7 +520,7 @@ const invoicesReview: Invoice[] = [
     vendor: "Folio Systems",
     amount: "$7,620",
     tag: "New vendor",
-    tagType: "amber",
+    tagType: "info",
     score: 4,
     dueGroup: "tomorrow",
   },
@@ -884,14 +893,14 @@ function formatAmount(
 
 const exceptionBadgeMap: Record<
   ExceptionType,
-  { label: string; status: "error" | "warning" | null }
+  { label: string; status: "error" | "warning" | "info" | null }
 > = {
   "price-mismatch": { label: "Price mismatch", status: "error" },
   "high-value": { label: "High value", status: "warning" },
   "no-po-match": { label: "No PO match", status: "error" },
-  duplicate: { label: "Duplicate", status: "error" },
+  duplicate: { label: "Duplicate", status: "warning" },
   "missing-po": { label: "Missing PO", status: "error" },
-  "new-vendor": { label: "New vendor", status: "warning" },
+  "new-vendor": { label: "New vendor", status: "info" },
   none: { label: "—", status: null },
 };
 
@@ -903,6 +912,7 @@ const statusBadgeMap: Record<
   "in-review": { label: "In review", status: "info" },
   approved: { label: "Approved", status: "success" },
   rejected: { label: "Rejected", status: "error" },
+  "sent-for-approval": { label: "Sent for approval", status: "info" },
 };
 
 const timeFilterOptions = [
@@ -928,6 +938,15 @@ const statusFilterOptions = [
   { label: "Approved", value: "approved" },
   { label: "Rejected", value: "rejected" },
 ];
+
+const exceptionPriority: Partial<Record<ExceptionType, number>> = {
+  "no-po-match": 2,
+  "missing-po": 2,
+  duplicate: 2,
+  "price-mismatch": 1,
+  "high-value": 1,
+  "new-vendor": 1,
+};
 
 const invoiceColumns: ColumnDef<InvoiceTableRow>[] = [
   {
@@ -964,11 +983,16 @@ const invoiceColumns: ColumnDef<InvoiceTableRow>[] = [
     cell: ({ row }) => {
       const iso = row.getValue<string>("dueDate");
       const date = new Date(`${iso}T00:00:00`);
-      return new Intl.DateTimeFormat("en-US", {
+      const formatted = new Intl.DateTimeFormat("en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
       }).format(date);
+      return (
+        <span className="tabular-nums text-[13px] text-muted-foreground">
+          {formatted}
+        </span>
+      );
     },
   },
   {
@@ -982,24 +1006,11 @@ const invoiceColumns: ColumnDef<InvoiceTableRow>[] = [
       const ex = row.getValue<ExceptionType>("exception");
       const map = exceptionBadgeMap[ex];
       if (map.status === null)
-        return <span className="text-muted-foreground">—</span>;
+        return <span className="text-[13px] text-muted-foreground">5/5</span>;
       return (
         <Badge variant="secondary" status={map.status}>
           {map.label}
         </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "score",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Score" />
-    ),
-    cell: ({ row }) => {
-      const score = row.getValue<number>("score");
-      const failed = score <= 2 ? 1 : 0;
-      return (
-        <ScoreBar passed={score} failed={failed} skipped={5 - score - failed} />
       );
     },
   },
@@ -1132,7 +1143,6 @@ const LIST_COLUMN_ORDER = [
   "amount",
   "dueDate",
   "exception",
-  "score",
   "status",
 ];
 const LIST_VISIBLE_COLUMNS = [
@@ -1146,10 +1156,20 @@ const LIST_VISIBLE_COLUMNS = [
 
 function InvoiceListView({ onRowClick }: { onRowClick: (id: string) => void }) {
   const [timeRange, setTimeRange] = useState("30d");
+
+  const sortedData = useMemo(() => {
+    return [...invoiceTableData].sort((a, b) => {
+      const pa = exceptionPriority[a.exception] ?? 0;
+      const pb = exceptionPriority[b.exception] ?? 0;
+      if (pa !== pb) return pb - pa;
+      return a.score - b.score;
+    });
+  }, []);
+
   const tableState = useDataTable({
-    data: invoiceTableData,
+    data: sortedData,
     columns: invoiceColumns,
-    storageKey: "invoice-review-list-v3",
+    storageKey: "invoice-review-list-v6",
     defaultColumnOrder: LIST_COLUMN_ORDER,
     defaultVisibleColumns: LIST_VISIBLE_COLUMNS,
   });
@@ -1215,6 +1235,7 @@ function InvoiceListView({ onRowClick }: { onRowClick: (id: string) => void }) {
           {...tableState}
           globalFilterFn={typedGlobalFilterFn}
           onRowClick={(row) => onRowClick(row.id)}
+          getRowClassName={(row) => (row.score === 5 ? "opacity-[0.35]" : "")}
           toolbarContent={(table) => (
             <>
               <FilterDropdown
@@ -1247,7 +1268,7 @@ function NavSectionLabel({
   first?: boolean;
 }) {
   return (
-    <div className={cn("px-6 pb-2", first ? "pt-3" : "pt-5")}>
+    <div className={cn("px-6 pb-2", first ? "pt-4" : "pt-5")}>
       <span className="block text-xs font-medium text-muted-foreground">
         {label}
         {count !== undefined && <span className="ml-1">({count})</span>}
@@ -1269,11 +1290,13 @@ function NavInvoiceItem({
 
   const dotColor = isAuto
     ? "bg-[#97C459]"
-    : invoice.tagType === "red"
+    : invoice.tagType === "error"
       ? "bg-[#E24B4A]"
-      : invoice.tagType === "amber"
+      : invoice.tagType === "warning"
         ? "bg-[#EF9F27]"
-        : "bg-muted-foreground";
+        : invoice.tagType === "info"
+          ? "bg-[#5B8EF0]"
+          : "bg-muted-foreground";
 
   return (
     <button
@@ -1283,7 +1306,7 @@ function NavInvoiceItem({
     >
       <div
         className={cn(
-          "mx-6 px-[14px] py-3 rounded-md transition-colors",
+          "mx-6 px-[14px] py-[13px] rounded-md transition-colors",
           "bg-white/55 dark:bg-white/[0.055]",
           "backdrop-blur-sm",
           "shadow-[0_2px_16px_2px_rgba(0,0,0,0.05),inset_0_1px_0_0_rgba(255,255,255,0.6)]",
@@ -1301,7 +1324,7 @@ function NavInvoiceItem({
             {invoice.amount}
           </span>
         </div>
-        <div className="mt-[4px] flex items-center justify-between gap-2">
+        <div className="mt-[5px] flex items-center justify-between gap-2">
           {(invoice.tag || isAuto) && (
             <div className="flex items-center gap-1 shrink-0">
               <div className={cn("size-1.5 rounded-full shrink-0", dotColor)} />
@@ -1318,7 +1341,6 @@ function NavInvoiceItem({
     </button>
   );
 }
-
 
 function LeftNav({
   activeId,
@@ -1337,40 +1359,22 @@ function LeftNav({
     <div className="h-full w-[336px] flex flex-col shrink-0 overflow-hidden relative">
       <div
         className="absolute inset-0 pointer-events-none z-10"
-        style={{ boxShadow: "inset -1px 0 0 0 color-mix(in srgb, var(--color-border) 50%, transparent)" }}
+        style={{
+          boxShadow:
+            "inset -1px 0 0 0 color-mix(in srgb, var(--color-border) 50%, transparent)",
+        }}
       />
-      <div className="px-6 min-h-[92px] flex items-center gap-2 shrink-0 border-b border-border">
-        <span className="text-sm font-semibold">My queue</span>
-        <Badge variant="secondary">{invoicesReview.length}</Badge>
-        <div className="ml-auto flex items-center gap-1">
-          {(["A", "B", "C"] as Variant[]).map((v) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => onVariantChange(v)}
-              className={cn(
-                "size-6 rounded text-[11px] font-medium transition-colors flex items-center justify-center",
-                variant === v
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted",
-              )}
-            >
-              {v}
-            </button>
-          ))}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onBack}
-            className="size-7 ml-1"
-          >
-            <ChevronRight className="size-4" />
-          </Button>
-        </div>
+      <div className="px-6 py-5 flex items-center shrink-0">
+        <span className="text-sm">
+          <span className="font-semibold">My queue</span>
+          <span className="text-muted-foreground font-normal">
+            {" "}
+            · {invoicesReview.length} invoices
+          </span>
+        </span>
       </div>
 
-
-      <div className="flex-1 overflow-y-auto custom-scrollbar [mask-image:linear-gradient(to_bottom,black_calc(100%_-_80px),transparent_100%)]">
+      <div className="flex-1 overflow-y-auto custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent_0,black_24px,black_calc(100%_-_80px),transparent_100%)]">
         <NavSectionLabel
           label="Due today"
           count={dueTodayInvoices.length}
@@ -1483,6 +1487,7 @@ type ActivityBarProps = {
   expanded: boolean;
   onToggle: () => void;
   emailSent: boolean;
+  minimal?: boolean;
 };
 
 // A — Status Badge pills + labelled expand
@@ -1574,7 +1579,12 @@ function ActivityBarB({ expanded, onToggle }: ActivityBarProps) {
 }
 
 // C — Inline named check steps with dots, responsive condensing
-function ActivityBarC({ expanded, onToggle, emailSent }: ActivityBarProps) {
+function ActivityBarC({
+  expanded,
+  onToggle,
+  emailSent,
+  minimal,
+}: ActivityBarProps) {
   const barRef = useRef<HTMLDivElement>(null);
   const [barWidth, setBarWidth] = useState(9999);
 
@@ -1589,7 +1599,7 @@ function ActivityBarC({ expanded, onToggle, emailSent }: ActivityBarProps) {
   }, []);
 
   const showFull = barWidth > 640;
-  const showMeta = barWidth > 480;
+  const showMeta = !minimal && barWidth > 480;
 
   const baseChecks = [
     { label: "Extracted", status: "pass" as const },
@@ -1608,13 +1618,18 @@ function ActivityBarC({ expanded, onToggle, emailSent }: ActivityBarProps) {
   return (
     <div
       ref={barRef}
-      role="button"
-      tabIndex={0}
-      onClick={onToggle}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") onToggle();
-      }}
-      className="flex-1 flex items-center gap-3 px-4 sm:px-6 lg:px-8 hover:bg-muted/40 transition-colors text-left min-w-0 cursor-default"
+      {...(!minimal && {
+        role: "button" as const,
+        tabIndex: 0,
+        onClick: onToggle,
+        onKeyDown: (e: React.KeyboardEvent) => {
+          if (e.key === "Enter" || e.key === " ") onToggle();
+        },
+      })}
+      className={cn(
+        "flex-1 flex items-center gap-3 px-4 sm:px-6 lg:px-8 transition-colors text-left min-w-0 cursor-default",
+        !minimal && "hover:bg-muted/40",
+      )}
     >
       {showFull ? (
         <div className="flex items-center gap-2 shrink-0">
@@ -1626,7 +1641,8 @@ function ActivityBarC({ expanded, onToggle, emailSent }: ActivityBarProps) {
                   check.status === "pass" && "bg-success",
                   check.status === "fail" && "bg-destructive",
                   check.status === "actioned" && "bg-primary",
-                  check.status === "skip" && "border border-muted-foreground/40",
+                  check.status === "skip" &&
+                    "border border-muted-foreground/40",
                 )}
               />
               <span
@@ -1663,7 +1679,9 @@ function ActivityBarC({ expanded, onToggle, emailSent }: ActivityBarProps) {
         </div>
       )}
 
-      {showMeta && <div className="w-px h-3 bg-border shrink-0" />}
+      {showMeta && (
+        <div className="w-px h-3 bg-border dark:bg-[#333] shrink-0" />
+      )}
       {showMeta && (
         <>
           <div className="flex items-center -space-x-0.5 shrink-0">
@@ -1675,15 +1693,17 @@ function ActivityBarC({ expanded, onToggle, emailSent }: ActivityBarProps) {
         </>
       )}
 
-      <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground shrink-0">
-        <span>{expanded ? "Hide" : "View"} activity</span>
-        <ChevronDown
-          className={cn(
-            "size-3 transition-transform duration-150",
-            expanded && "rotate-180",
-          )}
-        />
-      </div>
+      {!minimal && (
+        <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+          <span>{expanded ? "Hide" : "View"} activity</span>
+          <ChevronDown
+            className={cn(
+              "size-3 transition-transform duration-150",
+              expanded && "rotate-180",
+            )}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -2090,9 +2110,16 @@ function EmailComposer({
   );
 }
 
-function ActionBlock({ onPrimaryAction, variant }: { onPrimaryAction: () => void; variant: Variant }) {
+function ActionBlock({
+  onPrimaryAction,
+  variant,
+}: {
+  onPrimaryAction: () => void;
+  variant: Variant;
+}) {
   const { exceptionPrimaryAction, exceptionSecondaryAction } =
     useInvoiceDetail();
+  const isApproveAction = exceptionSecondaryAction === "Approve";
   const [drafting, setDrafting] = useState(false);
 
   const isApprovalType =
@@ -2116,7 +2143,10 @@ function ActionBlock({ onPrimaryAction, variant }: { onPrimaryAction: () => void
         variant="default"
         disabled={drafting}
         onClick={handlePrimary}
-        className={cn(variant === 'C' && 'bg-primary text-primary-foreground hover:bg-primary/90 border-0')}
+        className={cn(
+          variant === "C" &&
+            "bg-primary dark:text-gray-900 hover:bg-primary/90 border-0",
+        )}
       >
         {drafting ? (
           <>
@@ -2128,8 +2158,15 @@ function ActionBlock({ onPrimaryAction, variant }: { onPrimaryAction: () => void
         )}
       </Button>
       <Button
-        variant="secondary"
-      >{exceptionSecondaryAction}</Button>
+        variant={isApproveAction ? "ghost" : "secondary"}
+        className={cn(
+          isApproveAction
+            ? "bg-transparent border-0 shadow-none text-[13px] text-[#666] hover:bg-transparent hover:text-[#999]"
+            : "dark:bg-transparent dark:[border-width:1.5px] dark:border-[#555] dark:text-[#CCC] dark:hover:bg-white/5",
+        )}
+      >
+        {exceptionSecondaryAction}
+      </Button>
     </div>
   );
 }
@@ -2141,32 +2178,24 @@ const AGENT_SUGGESTIONS = [
 ];
 
 function AgentInputBar() {
-  const [agentQuery, setAgentQuery] = useState('');
+  const [agentQuery, setAgentQuery] = useState("");
   const [agentFocused, setAgentFocused] = useState(false);
 
   return (
-    <div className="shrink-0 border-t border-border px-4 sm:px-6 lg:px-8 pt-[10px] pb-5">
-      <div className="flex gap-2 mb-3">
-        {AGENT_SUGGESTIONS.map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => setAgentQuery(s)}
-            className="py-[6px] px-[14px] text-[13px] font-normal rounded-full border border-[#E5E5E5] bg-transparent text-[#333] hover:bg-muted/50 transition-colors whitespace-nowrap"
-          >
-            {s}
-          </button>
-        ))}
-      </div>
+    <div className="shrink-0 px-4 sm:px-6 lg:px-8 pt-[6px] pb-5">
       <div
         className="flex items-center gap-2 rounded-[10px] transition-shadow"
         style={{
-          border: agentFocused ? '2px solid transparent' : '2px solid var(--input)',
+          border: agentFocused
+            ? "2px solid transparent"
+            : "2px solid var(--input)",
           background: agentFocused
-            ? 'linear-gradient(var(--background), var(--background)) padding-box, linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%) border-box'
+            ? "linear-gradient(var(--background), var(--background)) padding-box, linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%) border-box"
             : undefined,
-          boxShadow: agentFocused ? '0 0 0 3px color-mix(in oklch, var(--muted-foreground) 10%, transparent)' : undefined,
-          padding: '8px 8px 8px 14px',
+          boxShadow: agentFocused
+            ? "0 0 0 3px color-mix(in oklch, var(--muted-foreground) 10%, transparent)"
+            : undefined,
+          padding: "8px 8px 8px 14px",
         }}
       >
         <input
@@ -2181,11 +2210,16 @@ function AgentInputBar() {
         <button
           type="button"
           disabled={!agentQuery.trim()}
-          onClick={() => setAgentQuery('')}
+          onClick={() => setAgentQuery("")}
           className="shrink-0 size-9 rounded-lg flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-          style={{ background: agentFocused ? '#1a1a1a' : '#F0F0F0' }}
+          style={{ background: agentFocused ? "#1a1a1a" : "#F0F0F0" }}
         >
-          <ArrowUp className={cn("size-[18px] transition-colors", agentFocused ? "text-white" : "text-[#555]")} />
+          <ArrowUp
+            className={cn(
+              "size-[18px] transition-colors",
+              agentFocused ? "text-white" : "text-[#555]",
+            )}
+          />
         </button>
       </div>
     </div>
@@ -2209,19 +2243,35 @@ function ExceptionBlock({
   return (
     <div>
       <div className="flex items-center gap-2 mb-5">
-        <Badge variant="outline" status={exceptionTagStatus === "error" ? "error" : "warning"}>
+        <Badge variant="secondary" status={exceptionTagStatus}>
           {exceptionTag}
         </Badge>
       </div>
-      <h2 className="text-[32px] font-bold leading-[1.1] tracking-tight text-foreground max-w-[600px] mb-5">
+      <h2
+        className="font-bold leading-[1.2] tracking-tight text-foreground w-full mb-5 overflow-hidden line-clamp-2"
+        style={{
+          fontSize: exceptionHeadline.length > 50 ? "28px" : "32px",
+          textWrap: "balance",
+          maxWidth: "22ch",
+        }}
+      >
         {exceptionHeadline}
       </h2>
-      {variant === 'C' ? (
-        <div className="grid grid-cols-3 divide-x divide-border rounded-[6px] bg-muted/20 max-w-[480px] mb-5 [&>div:first-child]:pl-0">
+      {variant === "C" ? (
+        <div className="grid grid-cols-3 divide-x divide-border rounded-[6px] max-w-[480px] mb-5 [&>div:first-child]:pl-0">
           {exceptionMetrics.map((m) => (
-            <div key={m.label} className="px-6 py-5 flex flex-col gap-1.5">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{m.label}</span>
-              <span className={cn('text-[28px] font-semibold tracking-tight leading-none', m.cls)}>{m.value}</span>
+            <div key={m.label} className="px-6 py-[18px] flex flex-col gap-1.5">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground truncate">
+                {m.label}
+              </span>
+              <span
+                className={cn(
+                  "text-[30px] font-semibold tracking-tight leading-none whitespace-nowrap",
+                  m.cls,
+                )}
+              >
+                {m.value}
+              </span>
             </div>
           ))}
         </div>
@@ -2243,13 +2293,12 @@ function ExceptionBlock({
           </p>
         </>
       )}
-      {variant === 'C' && (
-        <p className="text-[14px] text-muted-foreground leading-[1.7] max-w-[500px] mb-6">
+      {variant === "C" && (
+        <p className="text-[14px] text-muted-foreground leading-[1.7] max-w-[540px] mb-7">
           {exceptionBody}
         </p>
       )}
       <ActionBlock onPrimaryAction={onContactSupplier} variant={variant} />
-
     </div>
   );
 }
@@ -2389,7 +2438,9 @@ function AwaitingResponseBlock({
       {/* Actions */}
       <div className="flex flex-wrap items-center gap-2 pt-1">
         <Button variant="default">Mark resolved</Button>
-        <Button variant="secondary" onClick={onFollowUp}>Send follow-up</Button>
+        <Button variant="secondary" onClick={onFollowUp}>
+          Send follow-up
+        </Button>
         <Button
           variant="ghost"
           className="text-destructive hover:text-destructive hover:bg-destructive/10"
@@ -2416,7 +2467,9 @@ function InlineRow({
 }) {
   return (
     <div className="flex items-start justify-between gap-3 py-1.5">
-      <p className="text-xs text-muted-foreground shrink-0 pt-px leading-[1.6]">{label}</p>
+      <p className="text-xs text-muted-foreground shrink-0 pt-px leading-[1.6]">
+        {label}
+      </p>
       <div className="text-right">
         <p
           className={cn(
@@ -2443,7 +2496,7 @@ function SectionCard({
 }) {
   return (
     <div className="rounded-lg bg-muted/20 overflow-hidden">
-      <p className="text-[11px] font-semibold text-foreground px-3 pt-3 pb-2">
+      <p className="text-[11px] font-semibold text-foreground dark:text-white/70 px-3 pt-3 pb-2">
         {title}
       </p>
       <div className="px-3 pb-1">{children}</div>
@@ -2456,7 +2509,7 @@ function DetailsTab() {
 
   return (
     <div className="flex-1 overflow-y-auto custom-scrollbar">
-      <div className="px-5 pt-5 pb-8 space-y-5">
+      <div className="pl-5 pr-8 pt-5 pb-8 space-y-5">
         <SectionCard title="Invoice">
           <InlineRow label="Document date" value={d.documentDateFormatted} />
           <InlineRow label="Due date" value={d.dueFormatted} />
@@ -2480,7 +2533,7 @@ function DetailsTab() {
 function LinesTab() {
   const { lines, linesTotal, linesAlert } = useInvoiceDetail();
   return (
-    <div className="px-4 pt-5 pb-8 space-y-3">
+    <div className="pl-4 pr-8 pt-5 pb-8 space-y-3">
       {lines.map((line) => (
         <SectionCard key={line.description} title={line.description}>
           <InlineRow label="Qty" value={String(line.qty)} />
@@ -2780,75 +2833,103 @@ function CommsTab({
   );
 }
 
-
 function ActivityTab({ sentEmails }: { sentEmails: SentEmail[] }) {
   type Entry =
-    | { kind: 'check'; label: string; desc: string; status: 'pass' | 'fail' | 'skip' }
-    | { kind: 'log'; text: string; time: string; chip: 'ai-pass' | 'ai-fail' | 'user' }
-    | { kind: 'email'; email: SentEmail }
-    | { kind: 'pending' };
+    | {
+        kind: "check";
+        label: string;
+        desc: string;
+        status: "pass" | "fail" | "skip";
+      }
+    | {
+        kind: "log";
+        text: string;
+        time: string;
+        chip: "ai-pass" | "ai-fail" | "user";
+      }
+    | { kind: "email"; email: SentEmail }
+    | { kind: "pending" };
 
   const entries: Entry[] = [
-    ...activityChecks.map((c) => ({ kind: 'check' as const, ...c })),
-    ...activityLog.map((r) => ({ kind: 'log' as const, ...r })),
-    ...sentEmails.map((e) => ({ kind: 'email' as const, email: e })),
-    ...(sentEmails.length === 0 ? [{ kind: 'pending' as const }] : []),
+    ...activityChecks.map((c) => ({ kind: "check" as const, ...c })),
+    ...activityLog.map((r) => ({ kind: "log" as const, ...r })),
+    ...sentEmails.map((e) => ({ kind: "email" as const, email: e })),
+    ...(sentEmails.length === 0 ? [{ kind: "pending" as const }] : []),
   ].reverse();
 
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4">
+    <div className="flex-1 overflow-y-auto custom-scrollbar pl-4 pr-8 py-4">
       <div className="space-y-0">
         {entries.map((entry, i) => {
           const isLast = i === entries.length - 1;
-          const isPending = entry.kind === 'pending';
+          const isPending = entry.kind === "pending";
 
           const dot =
-            entry.kind === 'check' ? (
+            entry.kind === "check" ? (
               <div
                 className={cn(
-                  'size-2 rounded-full mt-[5px] shrink-0',
-                  entry.status === 'pass' && 'bg-success',
-                  entry.status === 'fail' && 'bg-destructive',
-                  entry.status === 'skip' && 'bg-border',
+                  "size-2 rounded-full mt-[5px] shrink-0",
+                  entry.status === "pass" && "bg-success",
+                  entry.status === "fail" && "bg-destructive",
+                  entry.status === "skip" && "bg-border",
                 )}
               />
-            ) : entry.kind === 'log' ? (
+            ) : entry.kind === "log" ? (
               <div className="mt-[2px] shrink-0">
                 <AvatarChip type={entry.chip} />
               </div>
-            ) : entry.kind === 'email' ? (
+            ) : entry.kind === "email" ? (
               <Mail className="size-3 text-primary mt-[5px] shrink-0" />
             ) : (
               <div className="size-[10px] rounded-full border border-dashed border-muted-foreground/40 mt-[5px] shrink-0" />
             );
 
           const content =
-            entry.kind === 'check' ? (
+            entry.kind === "check" ? (
               <div className="pb-3">
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className={cn('text-[13px] font-semibold leading-snug', entry.status === 'fail' ? 'text-destructive' : 'text-foreground')}>
+                  <span
+                    className={cn(
+                      "text-[13px] font-semibold leading-snug",
+                      entry.status === "fail"
+                        ? "text-destructive"
+                        : "text-foreground",
+                    )}
+                  >
                     {entry.label}
                   </span>
                 </div>
-                <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{entry.desc}</p>
+                <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                  {entry.desc}
+                </p>
               </div>
-            ) : entry.kind === 'log' ? (
+            ) : entry.kind === "log" ? (
               <div className="pb-3">
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-[13px] font-semibold text-foreground leading-snug">{entry.text}</span>
-                  <span className="text-[11px] text-muted-foreground shrink-0">{entry.time}</span>
+                  <span className="text-[13px] font-semibold text-foreground leading-snug">
+                    {entry.text}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground shrink-0">
+                    {entry.time}
+                  </span>
                 </div>
               </div>
-            ) : entry.kind === 'email' ? (
+            ) : entry.kind === "email" ? (
               <div className="pb-3">
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-[13px] font-semibold text-foreground leading-snug">Email sent</span>
+                  <span className="text-[13px] font-semibold text-foreground leading-snug">
+                    Email sent
+                  </span>
                 </div>
-                <p className="text-[11px] text-muted-foreground mt-0.5 truncate">To: {entry.email.to}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                  To: {entry.email.to}
+                </p>
               </div>
             ) : (
               <div className="pb-3">
-                <span className="text-[13px] text-muted-foreground leading-snug">Awaiting decision</span>
+                <span className="text-[13px] text-muted-foreground leading-snug">
+                  Awaiting decision
+                </span>
               </div>
             );
 
@@ -2856,12 +2937,300 @@ function ActivityTab({ sentEmails }: { sentEmails: SentEmail[] }) {
             <div key={i} className="flex gap-3">
               <div className="flex flex-col items-center w-5 shrink-0">
                 {dot}
-                {!isLast && <div className="w-px flex-1 min-h-[8px] bg-border/60 my-1" />}
+                {!isLast && (
+                  <div className="w-px flex-1 min-h-[8px] bg-border/60 my-1" />
+                )}
               </div>
               <div className="flex-1 min-w-0">{content}</div>
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+function DetailsCombinedTab() {
+  const d = useInvoiceDetail();
+  const labelCls =
+    "text-[10px] tracking-wide text-muted-foreground font-medium leading-none mb-0.5";
+  const valueCls = "text-[13px] text-foreground leading-[1.6]";
+  const rowCls = "flex flex-col py-2.5 border-b border-border last:border-0";
+
+  return (
+    <div className="flex-1 overflow-y-auto custom-scrollbar">
+      <div className="pl-5 pr-8 pt-5 pb-8 space-y-6">
+        {/* Section A — metadata */}
+        <div>
+          <p className="text-[10px] tracking-wide text-muted-foreground font-semibold mb-3">
+            Invoice
+          </p>
+          <div className="divide-y divide-border">
+            <div className={rowCls}>
+              <span className={labelCls}>Document date</span>
+              <span className={valueCls}>{d.documentDateFormatted}</span>
+            </div>
+            <div className={rowCls}>
+              <span className={labelCls}>Due date</span>
+              <span className={valueCls}>{d.dueFormatted}</span>
+            </div>
+            <div className={rowCls}>
+              <span className={labelCls}>Payment terms</span>
+              <span className={valueCls}>{d.paymentTerms}</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p className="text-[10px] tracking-wide text-muted-foreground font-semibold mb-3">
+            Parties
+          </p>
+          <div className="divide-y divide-border">
+            <div className={rowCls}>
+              <span className={labelCls}>Vendor</span>
+              <span className={valueCls}>{d.vendor}</span>
+              {d.vendorEmail && (
+                <span className="text-[12px] text-muted-foreground">
+                  {d.vendorEmail}
+                </span>
+              )}
+            </div>
+            <div className={rowCls}>
+              <span className={labelCls}>Purchase order</span>
+              <span className={valueCls}>{d.po}</span>
+            </div>
+            <div className={rowCls}>
+              <span className={labelCls}>Bill to</span>
+              <span className={valueCls}>{d.billTo}</span>
+              {d.billAddress && (
+                <span className="text-[12px] text-muted-foreground">
+                  {d.billAddress}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p className="text-[10px] tracking-wide text-muted-foreground font-semibold mb-3">
+            Reference
+          </p>
+          <div className="divide-y divide-border">
+            <div className={rowCls}>
+              <span className={labelCls}>Currency</span>
+              <span className={valueCls}>{d.currency}</span>
+            </div>
+            <div className={rowCls}>
+              <span className={labelCls}>Assignee</span>
+              <span className={valueCls}>{d.assignee}</span>
+            </div>
+            {d.vat !== "—" && (
+              <div className={rowCls}>
+                <span className={labelCls}>VAT number</span>
+                <span className={valueCls}>{d.vat}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Section B — line items */}
+        <div>
+          <p className="text-[10px] tracking-wide text-muted-foreground font-semibold mb-3">
+            Line items
+          </p>
+          <div className="divide-y divide-border">
+            {d.lines.map((line) => (
+              <div key={line.description} className="py-2.5">
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <span className="text-[13px] text-foreground leading-snug flex-1">
+                    {line.description}
+                  </span>
+                  {line.flag && (
+                    <span className="text-[11px] px-1.5 py-0.5 rounded-full border border-destructive/60 text-destructive shrink-0 leading-none">
+                      {line.flag}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-4 text-[12px] text-muted-foreground">
+                  <span>Qty {line.qty}</span>
+                  <span
+                    className={cn(
+                      line.flagStatus === "error" && "text-destructive",
+                      line.flagStatus === "warning" && "text-warning",
+                    )}
+                  >
+                    {line.amount}
+                  </span>
+                  {line.agreed && <span>PO {line.agreed}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-between pt-3 text-[13px] font-semibold text-foreground">
+            <span>Total</span>
+            <span>{d.linesTotal}</span>
+          </div>
+          {d.linesAlert && (
+            <p className="mt-2 text-[12px] text-destructive/80 leading-snug">
+              {d.linesAlert.text}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ActivityTabC() {
+  type TimelineItem = {
+    label: string;
+    time?: string;
+    desc?: string;
+    indicator: "pending" | "user" | "ai-warn" | "ai-pass";
+  };
+
+  const items: TimelineItem[] = [
+    { label: "Awaiting decision", indicator: "pending" },
+    {
+      label: "Assigned & opened",
+      time: "9:14 AM",
+      desc: "AJ",
+      indicator: "user",
+    },
+    {
+      label: "Agent escalated",
+      time: "9:12 AM",
+      desc: "Price exceeds PO — manual review required",
+      indicator: "ai-warn",
+    },
+    {
+      label: "Agent reviewed",
+      time: "9:10 AM",
+      desc: "PO matched · Terms verified",
+      indicator: "ai-pass",
+    },
+    {
+      label: "Data extracted",
+      time: "9:08 AM",
+      desc: "Invoice parsed successfully",
+      indicator: "ai-pass",
+    },
+  ];
+
+  return (
+    <div className="flex-1 overflow-y-auto custom-scrollbar">
+      <div className="pl-5 pr-8 pt-5 pb-5">
+        {items.map((item, i) => {
+          const isLast = i === items.length - 1;
+
+          const dot =
+            item.indicator === "pending" ? (
+              <div className="size-4 rounded-full border border-dashed border-muted-foreground/40 shrink-0" />
+            ) : item.indicator === "user" ? (
+              <div className="size-4 rounded-full bg-muted-foreground shrink-0 flex items-center justify-center">
+                <div className="size-1.5 rounded-full bg-background" />
+              </div>
+            ) : item.indicator === "ai-warn" ? (
+              <div className="size-4 rounded-full bg-amber-500/20 border border-amber-500/40 shrink-0 flex items-center justify-center">
+                <div className="size-1.5 rounded-full bg-amber-500" />
+              </div>
+            ) : (
+              <div className="size-4 rounded-full bg-emerald-500/20 border border-emerald-500/40 shrink-0 flex items-center justify-center">
+                <div className="size-1.5 rounded-full bg-emerald-500" />
+              </div>
+            );
+
+          return (
+            <div key={i} className="flex gap-3">
+              <div className="flex flex-col items-center w-4 shrink-0">
+                {dot}
+                {!isLast && (
+                  <div className="w-px flex-1 min-h-[10px] bg-border my-1" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0 pb-[32px]">
+                <div className="flex items-baseline justify-between gap-2">
+                  <p
+                    className={cn(
+                      "text-[13px] leading-snug font-medium",
+                      item.indicator === "pending"
+                        ? "text-muted-foreground italic"
+                        : "text-foreground",
+                    )}
+                  >
+                    {item.label}
+                  </p>
+                  {item.time && (
+                    <span className="text-[11px] text-muted-foreground shrink-0">
+                      {item.time}
+                    </span>
+                  )}
+                </div>
+                {item.desc && (
+                  <p className="text-[12px] text-muted-foreground leading-[1.5] mt-1">
+                    {item.desc}
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function AskFooter() {
+  const [query, setQuery] = useState("");
+  const [focused, setFocused] = useState(false);
+
+  return (
+    <div className="shrink-0" style={{ padding: "14px 20px" }}>
+      <div className="flex gap-1.5 flex-wrap">
+        {AGENT_SUGGESTIONS.map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => setQuery(s)}
+            className="text-[11px] text-muted-foreground bg-transparent border border-border rounded-full hover:bg-accent hover:text-accent-foreground transition-colors leading-none cursor-pointer"
+            style={{ padding: "4px 11px" }}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+      <div
+        className="flex items-center gap-2 rounded-[10px] transition-shadow"
+        style={{
+          marginTop: "16px",
+          border: focused ? "2px solid transparent" : "2px solid var(--input)",
+          background: focused
+            ? "linear-gradient(var(--background), var(--background)) padding-box, linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%) border-box"
+            : undefined,
+          boxShadow: focused
+            ? "0 0 0 3px color-mix(in oklch, var(--muted-foreground) 10%, transparent)"
+            : undefined,
+          padding: "7px 7px 7px 13px",
+        }}
+      >
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholder="Ask about this invoice…"
+          className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 outline-none min-w-0"
+        />
+        <button
+          type="button"
+          disabled={!query.trim()}
+          onClick={() => setQuery("")}
+          className="flex-shrink-0 size-9 rounded-lg flex items-center justify-center text-white disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+          style={{ background: "var(--ai-gradient-strong)" }}
+        >
+          <ArrowUp className="size-5" />
+        </button>
       </div>
     </div>
   );
@@ -2885,12 +3254,21 @@ function RightPanel({
   variant: Variant;
 }) {
   const showComms = sentEmails.length > 0;
-  const staticTabs = ["details", "lines", "source"] as const;
-  const tabOrder: RightTab[] = [
-    ...(variant === "B" ? (["activity"] as const) : []),
-    ...(showComms ? (["comms"] as const) : []),
-    ...staticTabs,
-  ];
+  const tabOrder: RightTab[] =
+    variant === "C"
+      ? [
+          "activity",
+          ...(showComms ? (["comms"] as const) : []),
+          "details",
+          "source",
+        ]
+      : [
+          ...(variant === "B" ? (["activity"] as const) : []),
+          ...(showComms ? (["comms"] as const) : []),
+          "details",
+          "lines",
+          "source",
+        ];
 
   return (
     <div
@@ -2924,9 +3302,15 @@ function RightPanel({
         ))}
       </div>
       <div className="flex-1 flex flex-col overflow-hidden">
-        {tab === "activity" && <ActivityTab sentEmails={sentEmails} />}
-        {tab === "details" && <DetailsTab />}
-        {tab === "lines" && (
+        {tab === "activity" &&
+          (variant === "C" ? (
+            <ActivityTabC />
+          ) : (
+            <ActivityTab sentEmails={sentEmails} />
+          ))}
+        {tab === "details" &&
+          (variant === "C" ? <DetailsCombinedTab /> : <DetailsTab />)}
+        {tab === "lines" && variant !== "C" && (
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <LinesTab />
           </div>
@@ -2955,11 +3339,11 @@ function InvoiceDetailPane({
     (detailDataMap["INV-GRN-001"] as InvoiceDetailData);
   const [summaryExpanded, setSummaryExpanded] = useState(false);
   const [rightTab, setRightTab] = useState<RightTab>(
-    variant === "B" ? "activity" : "details",
+    variant === "B" || variant === "C" ? "activity" : "details",
   );
 
   useEffect(() => {
-    setRightTab(variant === "B" ? "activity" : "details");
+    setRightTab(variant === "B" || variant === "C" ? "activity" : "details");
   }, [variant]);
   const [emailOpen, setEmailOpen] = useState(false);
   const [sentEmails, setSentEmails] = useState<SentEmail[]>([]);
@@ -3005,20 +3389,23 @@ function InvoiceDetailPane({
                     expanded={summaryExpanded}
                     onToggle={() => setSummaryExpanded((v) => !v)}
                     emailSent={sentEmails.length > 0}
+                    minimal={variant === "C"}
                   />
                 </div>
-                <div
-                  className={cn(
-                    "overflow-hidden transition-all duration-200",
-                    summaryExpanded
-                      ? "max-h-[600px] opacity-100"
-                      : "max-h-0 opacity-0",
-                  )}
-                >
-                  <div className="px-4 sm:px-6 lg:px-8 py-5">
-                    <AISummaryExpanded sentEmails={sentEmails} />
+                {variant !== "C" && (
+                  <div
+                    className={cn(
+                      "overflow-hidden transition-all duration-200",
+                      summaryExpanded
+                        ? "max-h-[600px] opacity-100"
+                        : "max-h-0 opacity-0",
+                    )}
+                  >
+                    <div className="px-4 sm:px-6 lg:px-8 py-5">
+                      <AISummaryExpanded sentEmails={sentEmails} />
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
             <div className="flex flex-col flex-1 overflow-hidden">
@@ -3040,14 +3427,17 @@ function InvoiceDetailPane({
                   />
                 </div>
               ) : (
-                <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-7 pb-2 custom-scrollbar">
+                <div
+                  className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-6 custom-scrollbar"
+                  style={{ paddingBottom: variant === "C" ? "136px" : "20px" }}
+                >
                   <ExceptionBlock
                     onContactSupplier={() => setEmailOpen(true)}
                     variant={variant}
                   />
                 </div>
               )}
-              {variant === 'C' && <AgentInputBar />}
+              {variant === "C" && <AskFooter />}
             </div>
           </div>
           <div
@@ -3079,7 +3469,7 @@ function InvoiceReviewContent() {
   const [activeInvoiceId, setActiveInvoiceId] = useState("INV-GRN-001");
   const [contentKey, setContentKey] = useState("INV-GRN-001");
   const [contentExiting, setContentExiting] = useState(false);
-  const [variant, setVariant] = useState<Variant>("A");
+  const [variant, setVariant] = useState<Variant>("C");
 
   useEffect(() => {
     const style = document.createElement("style");
@@ -3188,7 +3578,10 @@ function InvoiceReviewContent() {
                   contentExiting && "inv-between-exit",
                 )}
               >
-                <InvoiceDetailPane activeInvoiceId={contentKey} variant={variant} />
+                <InvoiceDetailPane
+                  activeInvoiceId={contentKey}
+                  variant={variant}
+                />
               </div>
             ) : (
               <DetailSkeleton />
