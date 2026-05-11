@@ -1,0 +1,214 @@
+import { WelcomeModalPreview, PopoverStepPreview } from './onboarding-tour-joyride-static-previews';
+import { OnboardingTourJoyrideDemoTrigger } from './onboarding-tour-joyride-demo';
+
+# Onboarding tour (Joyride)
+
+A guided onboarding tour system powered by [React Joyride](https://docs.react-joyride.com/) with a custom Apollo Vertex–styled tooltip, welcome modals, and step-by-step navigation. Consumers define their own tour steps and point them at app-specific elements via CSS selectors.
+
+<div className="not-prose my-6">
+  <OnboardingTourJoyrideDemoTrigger />
+</div>
+
+## Welcome modal
+
+Use the `type: 'modal'` step to show a full-screen centered modal — ideal for welcome screens, success states, or intro steps.
+
+<div className="not-prose my-8">
+  <WelcomeModalPreview />
+</div>
+
+## Step popover
+
+The default step type renders a card-style popover with progress bars, navigation, and an optional tip section.
+
+<div className="not-prose my-8">
+  <PopoverStepPreview />
+</div>
+
+## Features
+
+<div id="tour-features">
+
+- **Spotlight overlay**: Highlights target elements with a cutout in a dimmed overlay (via React Joyride)
+- **Popover cards**: Step-by-step cards with progress bars, title, body, tips, and navigation
+- **Welcome modal**: Full-screen modal variant for intro/success steps with optional images
+- **CSS selector targeting**: Target elements by CSS selector — no wrapper components needed
+- **Smooth transitions**: Native React rendering of the tooltip animates cleanly between steps
+- **Conditional steps**: Gate steps on conditions with type-safe generics
+- **Keyboard navigation**: Escape to skip the tour, focus trap via React Joyride
+- **Persistence**: Tracks completed tours in localStorage so they don't repeat
+- **Dark mode**: Automatically adapts overlay color to the current theme
+
+</div>
+
+## Installation
+
+<div id="tour-install">
+
+```bash
+npx shadcn@latest add @uipath/onboarding-tour-joyride
+```
+
+</div>
+
+## Usage
+
+### 1. Define your tour
+
+```tsx
+import type { TourDefinition } from "@/components/ui/onboarding-tour-joyride";
+
+const myTour: TourDefinition = {
+  id: "my-onboarding-tour",
+  steps: [
+    {
+      id: "welcome",
+      type: "modal",
+      title: "Welcome!",
+      body: "Let us show you around your new workspace.",
+      tip: "This tour will only show once.",
+      nextLabel: "Let's go",
+      image: "/assets/welcome.png", // optional
+    },
+    {
+      id: "sidebar",
+      selector: "[data-sidebar]",
+      title: "Navigation",
+      body: "Use the sidebar to move between sections.",
+      placement: "right",
+    },
+    {
+      id: "search",
+      selector: "#search-bar",
+      title: "Quick search",
+      body: "Find anything across your workspace.",
+      placement: "bottom",
+      tip: "Try pressing Cmd+K for a shortcut.",
+    },
+  ],
+};
+```
+
+### 2. Set up the provider
+
+Wrap your app (or a section of it) with `OnboardingTourProvider`:
+
+```tsx
+import {
+  OnboardingTourProvider,
+} from "@/components/ui/onboarding-tour-joyride";
+
+function App() {
+  return (
+    <OnboardingTourProvider tours={[myTour]}>
+      <YourApp />
+    </OnboardingTourProvider>
+  );
+}
+```
+
+### 3. Start the tour
+
+```tsx
+import { useOnboardingTour, isTourCompleted } from "@/components/ui/onboarding-tour-joyride";
+
+function WelcomeBanner() {
+  const { startTour } = useOnboardingTour();
+
+  if (isTourCompleted("my-onboarding-tour")) return null;
+
+  return (
+    <button onClick={() => startTour("my-onboarding-tour")}>
+      Take a tour
+    </button>
+  );
+}
+```
+
+## Type-safe conditional steps
+
+Use generics to make condition keys type-safe. The `waitFor` property gates steps on conditions set via `setCondition`:
+
+```tsx
+type MyConditions = "profile-saved" | "data-loaded";
+
+const tour: TourDefinition<MyConditions> = {
+  id: "conditional-tour",
+  steps: [
+    {
+      id: "intro",
+      selector: "#intro-section",
+      title: "Getting started",
+      body: "First, let's set up your profile.",
+      placement: "right",
+    },
+    {
+      id: "results",
+      selector: "#results-panel",
+      title: "Your results",
+      body: "Here's what we found.",
+      placement: "left",
+      waitFor: "profile-saved", // type-safe — must be a MyConditions key
+    },
+  ],
+};
+
+// In your component:
+const { setCondition } = useOnboardingTour<MyConditions>();
+
+async function handleSaveProfile(formData: FormData) {
+  await saveProfile(formData);
+  setCondition("profile-saved", true); // type-safe
+}
+```
+
+## Resetting a tour
+
+Import `resetTourState` to clear completion state so a tour can be shown again:
+
+```tsx
+import { resetTourState } from "@/components/ui/onboarding-tour-joyride";
+
+function SettingsPage() {
+  return (
+    <button onClick={() => resetTourState("my-onboarding-tour")}>
+      Replay onboarding tour
+    </button>
+  );
+}
+```
+
+## Step types
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | Unique step identifier |
+| `selector` | `string` | CSS selector for the target element. Omit for centered/modal steps. |
+| `title` | `string` | Step title |
+| `body` | `ReactNode` | Step body content |
+| `tip` | `string` | Optional tip shown with a lightbulb icon |
+| `placement` | `'top' \| 'bottom' \| 'left' \| 'right'` | Popover position relative to target |
+| `type` | `'popover' \| 'modal'` | Render as popover card (default) or welcome modal |
+| `image` | `string` | Image URL for modal-type steps |
+| `waitFor` | `TCondition` | Type-safe condition key that must be true before step can be reached |
+| `nextLabel` | `string` | Custom label for the Next button |
+| `onEnter` | `() => void` | Callback when step becomes active |
+
+## Components
+
+| Component | Description |
+|-----------|-------------|
+| `OnboardingTourProvider` | Context provider — wrap your app with this. Accepts `tours` and optional `initialConditions`. |
+| `OnboardingTourJoyridePopover` | Joyride `tooltipComponent` that renders the step card. |
+| `OnboardingTourJoyridePopoverCard` | Standalone popover card (useful for previews or custom renderers). |
+| `OnboardingTourJoyrideWelcomeModal` | The welcome/success modal (portal + focus trap via Radix Dialog). |
+| `OnboardingTourJoyrideWelcomeModalCard` | Standalone modal card (useful for previews). |
+
+## API
+
+| Export | Description |
+|--------|-------------|
+| `useOnboardingTour<TCondition>()` | Access tour actions: `startTour`, `setCondition`. Must be inside `OnboardingTourProvider`. |
+| `isTourCompleted(tourId)` | Check whether a tour has been completed. |
+| `markTourCompleted(tourId)` | Manually mark a tour as completed. |
+| `resetTourState(tourId)` | Clear completion state so the tour can be shown again. |
