@@ -1360,6 +1360,10 @@
         {
           "path": "registry/use-data-table/usePersistedSorting.ts",
           "type": "registry:hook"
+        },
+        {
+          "path": "registry/use-data-table/usePersistedPageSize.ts",
+          "type": "registry:hook"
         }
       ]
     },
