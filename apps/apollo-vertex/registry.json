@@ -1614,7 +1614,7 @@
         "lucide-react",
         "react-i18next"
       ],
-      "registryDependencies": ["button", "popover", "calendar"],
+      "registryDependencies": ["button", "popover", "@uipath/calendar"],
       "files": [
         {
           "path": "registry/date-picker/date-picker.tsx",
