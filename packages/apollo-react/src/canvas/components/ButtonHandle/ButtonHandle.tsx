@@ -292,7 +292,7 @@ function InwardHandleContent({
   const labelElement = label ? (
     <div
       className={cx(
-        'pointer-events-none flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border-subtle bg-transparent px-2 py-0.5',
+        'pointer-events-none flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-surface px-2 py-0.5',
         'text-xs font-medium leading-4 text-foreground-muted'
       )}
       style={labelBackgroundColor ? { backgroundColor: labelBackgroundColor } : undefined}
