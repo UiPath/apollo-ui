@@ -1,0 +1,53 @@
+# Inline text editor
+
+An inline edit displays a custom input component that switches between reading and editing on the same page.
+
+## Usage
+
+Inline editing provides a way of editing content while remaining on the same page — without navigating to a pop-up, dialog, or new page. Users click on text to edit it instantly without moving away from the current view.
+
+Inline text edit is typically placed in:
+
+- Page titles
+- Headers
+- Control names and labels
+- Activity, process, and project names
+
+## Anatomy
+
+| Element | Description |
+|---|---|
+| **Toggle** | Indicates the edit action (pencil icon) |
+| **Form elements** | Text input or text area for editing |
+
+## Appearance
+
+The inline text editor's width may vary, but it must never exceed 50% of the total page width. The space around the editor and other elements should always be rounded to a number divisible by 4.
+
+## States
+
+Inline edit starts in **read view** by default. Users must click into the field to start editing.
+
+| State | Description |
+|---|---|
+| **Reading** | Default state; displays the current value |
+| **Hover** | Shows the edit affordance on hover |
+| **Editing** | Active input state |
+
+## Truncation
+
+**When editing:** The beginning of the string gets truncated if the component width reaches 50% of the page width as the user types.
+
+**When reading:** The end of the string gets truncated if it exceeds 50% of the page width.
+
+## Size
+
+- **Large (40px)**: the most commonly used height
+- **Normal (32px)**: for contexts where a smaller editor is appropriate
+
+## Guidelines
+
+**Don't:**
+- Increase font size to 36px (h1) or more
+- Decrease font size to 12px (xs) or less
+- Replace the edit icon — the filled "pencil" icon is the established edit indicator

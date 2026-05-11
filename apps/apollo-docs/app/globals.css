@@ -2,7 +2,7 @@
 @import '@uipath/apollo-wind/styles.css';
 
 /* Nextra docs theme */
-@import 'nextra-theme-docs/style.css';
+@import '../node_modules/nextra-theme-docs/dist/style.css';
 
 /*
  * Map future-dark tokens onto .dark (Nextra's dark mode class)

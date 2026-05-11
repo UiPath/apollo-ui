@@ -1,0 +1,52 @@
+# Progress bar
+
+The progress bar provides visual feedback that data is being processed.
+
+## Usage
+
+Progress bars indicate that an action is being processed. They inform users that their request is in progress, providing reassurance even though they do not reveal details about the back-end process.
+
+Common use cases include create, update, or delete operations involving significant data processing. Inline loading progress bars can appear within a table, after clicking a button, or inside a modal.
+
+## Anatomy
+
+| Element | Description |
+|---|---|
+| **Completion indicator** | The filled portion showing progress |
+| **Track** | The background bar showing total capacity |
+| **Completion label** | (Optional) Text showing the percentage or status |
+
+## Variants
+
+| Size | Height | Best for |
+|---|---|---|
+| **Tall** | 8px | Larger containers or full-width pages |
+| **Short** | 4px | Compact use cases (cards, side panels, tables) |
+
+## Progress mode
+
+**Determinate** indicators display how long an operation will take.
+
+## Behavior
+
+Progress bar can be used with or without a label. When inline loading temporarily replaces content, it should appear in the same spot as the replaced content, maintaining the same alignment.
+
+## Themes
+
+Supports both **light** and **dark** themes.
+
+## When to use
+
+- For short, non-instant actions where users expect immediate feedback
+- When retrieving or refreshing small amounts of data
+
+## When not to use
+
+- Don't use for full-page loads — use skeleton loaders instead
+- Don't show multiple inline loaders at once (unless during initial page load)
+- Don't use linear progress bars for indeterminate loading — use circular spinners instead
+
+## Related
+
+- [Progress spinner](/components/progress-spinner)
+- [Loading experiences](/patterns/loading-experiences)

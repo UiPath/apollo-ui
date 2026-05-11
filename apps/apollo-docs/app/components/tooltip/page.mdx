@@ -1,0 +1,66 @@
+# Tooltip
+
+Tooltips are containers that temporarily display short, contextual text. They are typically activated when a user hovers over or focuses on an icon or other trigger.
+
+## Usage
+
+Tooltips provide supplementary, non-essential information. Use them sparingly to enhance clarity without cluttering the interface.
+
+Use a tooltip to:
+
+- Describe an icon button
+- Provide additional context or explanation for an element
+- Show the full text of truncated content (e.g., a long email address in a list)
+
+Do not use tooltips for:
+
+- Information that is critical to task completion — place it on the page instead
+- Error or status messages
+- Long passages of text
+- Images or interactive content
+
+## Anatomy
+
+| Element | Description |
+|---|---|
+| **Container** | The bounding box for the tooltip content |
+| **Label** | The text content of the tooltip |
+| **Keyboard shortcut** | (Optional) Displays a keyboard shortcut alongside the label |
+
+## Placement
+
+Tooltips can be placed to the top, bottom, left, or right of their trigger element.
+
+- Tooltips appear above all other content on the Z-axis except the cursor
+- No arrow is used; instead, the tooltip appears no more than 8px from the trigger element
+- Position tooltips so it is clear which element they describe
+- Avoid covering content that the tooltip is related to
+
+## Guidelines
+
+- Maximum width: 288px
+- Limit tooltip text to 2 lines; listed items with 1–2 words per line may exceed this
+- Do not repeat the copy of the triggering element — this adds no value
+- Support both mouse hover and keyboard focus for activation
+- Do not place interactive elements inside a tooltip
+
+## Accessibility
+
+- Tooltips must be activatable and dismissible via both pointer and keyboard
+- Do not auto-dismiss or time out the tooltip
+- Avoid obscuring critical content with tooltip placement
+- Tooltips must contain only static, text-based content
+- Do not place essential information inside a tooltip
+
+WCAG 2.2 reference: [1.4.13 Content on Hover or Focus](https://www.w3.org/WAI/WCAG22/Understanding/content-on-hover-or-focus.html)
+
+## Content
+
+- Use sentence case
+- Icon button tooltips should be one or two words
+- Keep content succinct and relevant
+
+## Related
+
+- [Popover](/components/popover)
+- [Icon button](/components/icon-button)

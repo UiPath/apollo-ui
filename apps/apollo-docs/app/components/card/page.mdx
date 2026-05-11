@@ -1,0 +1,64 @@
+# Card
+
+The card is a flexible and extensible content container used to organize and display content about a single subject.
+
+## Usage
+
+Cards are modular and versatile components designed to present a wide range of content and related actions focused on a single topic or object. They offer a structured yet flexible way to surface key information and guide users toward more profound engagement.
+
+Cards are not meant for inline editing. They serve as compact summaries that spark curiosity, provide clarity, and encourage interaction — often as a gateway to a more detailed view.
+
+Use cards when you need to:
+
+- Combine multiple content types—like text, media, and actions—into a unified layout
+- Group related details into a scannable and accessible format
+- Provide a quick overview that hints at more in-depth information
+- Display diverse items in a consistent, easy-to-browse pattern
+
+## Anatomy
+
+The only required element of a card is the container. The rest of the layout may vary based on the content.
+
+| Element | Description |
+|---|---|
+| **Badge** | (Optional) Used to show status or type |
+| **Sub text** | (Optional) Complements the badge |
+| **Icon** | (Optional) An action or image |
+| **Title** | Describes the card content (required) |
+| **Subtitle** | (Optional) Complements the card title |
+| **Content area** | (Optional) Other components can be used in this area |
+
+## Card structure
+
+The card header always comes first, followed by the card content.
+
+**Header elements:**
+- Status bar: badge, sub-description, and button
+- Title bar: card title, card subtitle, and icon (all optional except title)
+
+**Card content** supports multiple tiers (content area, information bar, footer), each customizable based on design needs.
+
+## Supported variations
+
+| Variation | Card architecture |
+|---|---|
+| Simple | Header + Content |
+| Complex | Header + Content + Footer |
+| Action enabled | Header + Content + Info bar + Footer |
+| Overflow enabled | Header + Content + Info bar + Footer |
+| Icons enabled | Header + Content + Info bar + Footer |
+
+## Guidelines
+
+**Do:**
+- Use cards as an entry point to an app, template, or project
+- Organize cards intentionally by grouping related cards in sections
+- Add page filters for large collections of cards
+- Enable hover states when the footer contains no actions
+
+**Don't:**
+- Use cards as decoration only
+- Use cards as a replacement for standard navigation
+- Rely on scrolling — consider a data grid instead for complex information
+- Overload a card with more than two actions
+- Use a hover state when an action button is present in the footer

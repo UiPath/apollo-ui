@@ -1,0 +1,38 @@
+# Progress spinner
+
+A progress spinner is an inline loading animation that indicates an action is in progress but does not communicate how long the activity will take to complete.
+
+## Usage
+
+Use the progress spinner for inline loading states where content is being fetched or an action is being processed in a short, bounded amount of time.
+
+Common use cases:
+
+- Inline loading within a component or section
+- Fetching data that takes a short amount of time
+- Tiny inline actions such as submitting a form field
+
+For processes that complete in under 300ms, consider omitting the loading state entirely to avoid visual flicker.
+
+## Anatomy
+
+| Element | Description |
+|---|---|
+| **Spinner** | The animated circular indicator |
+
+## When to use
+
+- For short, non-instant actions where users expect immediate feedback
+- When retrieving or refreshing small amounts of data
+
+## When not to use
+
+- Don't use for full-page loads — use skeleton loaders instead
+- Don't show multiple inline spinners at once unless during initial page load
+- Don't use circular spinners for determinate progress — use a progress bar instead
+
+## Related
+
+- [Progress bar](/components/progress-bar)
+- [Skeleton loader](/components/skeleton-loader)
+- [Loading experiences](/patterns/loading-experiences)

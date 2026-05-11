@@ -1,0 +1,48 @@
+# Skeleton loader
+
+Skeleton loaders are visual placeholders that represent the structure of content while it is loading. They are used exclusively for full-page loads.
+
+## Usage
+
+Use skeleton loaders for container-based components where the layout structure is known before the data arrives. They reduce perceived wait time by giving users a preview of the page structure.
+
+Appropriate use cases:
+
+- Tiles
+- Lists
+- Data grids
+- Cards
+
+Do not use skeleton loaders for action components (buttons, inputs, etc.).
+
+## Anatomy
+
+Skeleton shapes represent the silhouettes of the content they will replace:
+
+| Shape | Description |
+|---|---|
+| **Circle** | Placeholder for avatar or icon |
+| **Rectangle** | Placeholder for text blocks, images, or cards; uses 4px corner radius |
+
+All skeleton shapes use a **wave animation** to indicate active loading.
+
+### Sub-components
+
+| Sub-component | Description |
+|---|---|
+| **Skeleton item** | A single placeholder element |
+| **Skeleton text** | A placeholder for a line or block of text |
+| **Skeleton card** | A full card-shaped placeholder |
+| **Skeleton grid** | A grid of placeholder items |
+
+## Guidelines
+
+- When the number of rows is unknown, default to displaying 3 skeleton rows
+- Do not add too much visual detail — skeleton loaders should suggest structure, not replicate it exactly
+- Use only for full-page loads, not inline or partial content updates
+
+## Related
+
+- [Progress spinner](/components/progress-spinner)
+- [Progress bar](/components/progress-bar)
+- [Loading experiences](/patterns/loading-experiences)

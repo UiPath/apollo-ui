@@ -1,8 +1,10 @@
 export default {
   index: { display: 'hidden' },
   introduction: 'Overview',
-  theme: 'Theme',
+  content: 'UX writing',
   components: 'Components',
+  patterns: 'Patterns',
+  theme: 'Theme',
   templates: 'Templates',
   forms: 'Forms',
   canvas: 'Canvas',

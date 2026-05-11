@@ -1,0 +1,32 @@
+# Notifications
+
+Notifications are short messages used to communicate system feedback, status changes, or helpful context to users.
+
+UiPath supports two notification variants: **Toast** and **Inline**. For full usage guidelines, see [Alert](/components/alert).
+
+## Overview
+
+| Variant | Best for |
+|---|---|
+| **Toast** | Quick, non-blocking feedback after user actions (e.g., *Saved successfully*). Auto-dismisses after 5 seconds. |
+| **Inline** | Contextual feedback tied to a specific UI element or form. Persists until resolved or dismissed. |
+
+## Status types
+
+| Status | Color | Usage |
+|---|---|---|
+| **Info** | Blue | FYIs and general updates |
+| **Success** | Green | Confirmation of completed tasks |
+| **Warning** | Yellow | Possible issues or unintended consequences |
+| **Error** | Red | Failures, blockers, or critical issues |
+
+## Content guidelines
+
+- Title: Short and clear; don't end with a period
+- Body: Max 2 lines; support the title without repeating it
+- CTA link: Maximum one per notification, at the end only; one to two words
+
+## Related
+
+- [Alert](/components/alert)
+- [Toast](/components/toast)

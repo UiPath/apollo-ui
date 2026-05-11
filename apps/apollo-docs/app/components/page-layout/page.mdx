@@ -1,0 +1,58 @@
+# Page layout
+
+The page layout component is a high-level layout template that defines the structural framework for building consistent pages across the application.
+
+## Usage
+
+The page layout organizes key interface regions — such as headers, panels, and content areas — using a systematic layout grid and spacing rules.
+
+Use the page layout component to quickly scaffold new pages with a standardized layout. It ensures consistency, alignment, and scalability across products.
+
+For detailed application-level layout patterns, see [Application layouts](/patterns/application-layouts).
+
+## Anatomy
+
+| Element | Description |
+|---|---|
+| **Global header** | The topmost navigation and brand area, persistent across all pages |
+| **Sub header** | A secondary header beneath the global header for navigation within sections |
+| **Page header** | The main title area for the page, optionally with actions or breadcrumbs |
+| **Left panel** | Optional side panel for navigation, filters, or tools |
+| **Right panel** | Optional side panel for contextual tools or detail views |
+| **Content grid** | The layout grid applied to the main content area |
+
+## Component architecture
+
+All elements adhere to:
+- The design system's layout grid for consistent alignment
+- The global spacing system for consistent padding, margins, and gutters
+
+## Responsive states
+
+The page layout supports the following breakpoints: 768, 1024, 1440, and 1920.
+
+## When to use
+
+**Option 1: Using the page layout component**
+- Good for inserting content into designated slot areas with consistent spacing
+
+**Option 2: Detaching the instance**
+- Good for exploring unfinished approaches or custom layouts while still following spacing system guidelines
+
+## Do's and don'ts
+
+**Do:**
+- Use the page layout as a starting point for new screens
+- Place content into the page slot area to maintain structural hierarchy
+- Follow layout grid and spacing guidelines throughout
+
+**Don't:**
+- Bypass grid and spacing rules when customizing
+- Place unrelated navigation elements outside designated areas
+- Remove structural elements like the global header unless creating a modal or embedded view
+
+## Related
+
+- [Global header](/components/global-header)
+- [Panel](/components/panel)
+- [Slot](/components/slot)

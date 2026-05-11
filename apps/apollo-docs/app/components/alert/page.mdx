@@ -1,0 +1,89 @@
+# Alert
+
+Notifications are short messages used to communicate system feedback, status changes, or helpful context to users. They are designed to be accessible and visually distinct, providing clarity without disrupting user flow.
+
+UiPath supports two variants: **Toast** and **Inline**.
+
+## Usage
+
+Use notifications to inform users of important status changes and updates. While notifications are effective, they can be disruptive and should be used sparingly and with intention.
+
+**Task-generated notifications** are initiated in response to user action. They give direct, immediate feedback and should be related to the user's action. Best delivered via Toast (for success or light feedback) or Inline (for errors or validation).
+
+**System-generated notifications** are initiated by the application independently of user action. They provide updates on background system status. Typically displayed using the Inline variant.
+
+## Toast variant
+
+Toasts are time-based non-modal messages used for quick feedback after user actions.
+
+Use Toast notifications when:
+
+- You're confirming a successful or completed action (e.g., *Project published*, *Saved successfully*)
+- The feedback is short and non-blocking
+- No user action is required
+- You want to surface passive updates without interrupting the workflow
+
+**Placement:** Toast notifications appear in the **top-right corner** of the screen and auto-dismiss after 5 seconds. Users can dismiss manually via the X button.
+
+Never use Toasts for errors that block progress or require user intervention. Use Inline for that.
+
+## Inline variant
+
+Inline notifications appear near specific UI elements, such as form fields, buttons, or sections of a page.
+
+Use Inline notifications when:
+
+- Feedback needs to remain visible in context, especially for validation errors, warnings, or task-specific updates
+- Feedback is tied to a specific task or UI element (e.g., below a form)
+- The message relates to the current state of the workflow or form
+
+**Placement:** Inline notifications appear inline with the content, near the relevant UI element. They persist until the user resolves the issue or dismisses the message.
+
+### Dismissible vs. persistent
+
+| Variant | Auto-dismiss | User-dismissible | Persistent |
+|---|---|---|---|
+| **Toast** | Yes (5s default) | Yes | No |
+| **Inline** | No | Optional | Yes |
+
+| Make Inline dismissible if: | Keep Inline persistent if: |
+|---|---|
+| The message is low priority. The user has already acknowledged the content. Dismissing it improves focus. | The message indicates an error that must be resolved. The system requires user input. The message provides important context users may need repeatedly. |
+
+## Status
+
+| Status | Usage | Color |
+|---|---|---|
+| **Info** | FYIs and general updates | Blue |
+| **Success** | Confirmation of completed tasks | Green |
+| **Warning** | Possible issues or unintended consequences | Yellow |
+| **Error** | Failures, blockers, or critical issues | Red |
+
+Note: Inline notifications should only use **success** or **error** statuses when tied to a user-initiated action. For persistent guidance or background alerts, use **info** or **warning**.
+
+## High vs. low contrast
+
+- Use **high contrast** for critical or high-urgency information where immediate attention is required (e.g., error, auth issue).
+- Use **low contrast** for non-disruptive or routine feedback (e.g., success, info).
+- Do not mix contrast levels within the same variant.
+
+## Content guidelines
+
+### Title
+
+- Keep it short and clear; explain the most important piece of information
+- Don't end the title with a period
+- For error messages, tell users what stopped or can't be done
+
+### Body text
+
+- Be concise; max 2 lines
+- Use to support the title — don't repeat or paraphrase it
+- Explain how to resolve the issue, including next steps
+- If the message needs more than 2 lines, use a short summary followed by a **View more** link
+
+### CTA link
+
+- Maximum one link per notification, placed at the end only
+- Keep labels concise; limit to one or two words
+- Only include if absolutely necessary — don't drive users away from the experience

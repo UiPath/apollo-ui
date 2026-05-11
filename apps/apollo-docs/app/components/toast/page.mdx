@@ -1,0 +1,82 @@
+# Toast
+
+Toasts are short, non-modal notifications used to provide quick, lightweight feedback after a user action. They appear in the top-right corner of the screen and disappear automatically after a few seconds.
+
+## Usage
+
+### When to use
+
+- Confirming a successful or completed action (e.g., "Project published," "Item saved successfully")
+- When the feedback is short, low-friction, and non-blocking
+- When no user action is required to continue
+- When surfacing passive updates without interrupting the workflow
+- When the message is directly tied to a user-initiated action
+
+### When not to use
+
+- Errors that block progress
+- Situations requiring user input or follow-up
+- Persistent context or guidance
+- Form validation
+
+Use an [Alert](/components/alert) for those cases.
+
+## Anatomy
+
+| Element | Description |
+|---|---|
+| **Status icon** | Visual indicator of the notification type |
+| **Title** | Short, clear summary of the notification |
+| **Body text** | (Optional) Additional detail supporting the title |
+| **CTA link** | (Optional) A single actionable link |
+| **Dismiss button** | Allows users to close the toast manually |
+
+## Placement
+
+Toasts appear in the **top-right corner** of the screen. They auto-dismiss after 5 seconds. Users can manually dismiss them earlier via the dismiss button.
+
+## Statuses
+
+| Status | Usage | Color |
+|---|---|---|
+| **Info** | FYIs and general updates | Blue |
+| **Success** | Confirmation of completed tasks | Green |
+| **Warning** | Possible issues or unintended consequences | Yellow |
+| **Error** | Failures, blockers, or critical issues | Red |
+
+## Contrast
+
+High and low contrast styling can be applied to support different levels of urgency.
+
+- Use **high contrast** for critical or high-urgency information requiring immediate attention (e.g., auth issues)
+- Use **low contrast** for non-disruptive or routine feedback (e.g., success, info)
+- Do not mix contrast levels within the same variant
+- When in doubt, default to low contrast
+
+## Content guidelines
+
+### Title
+
+- Keep it short and clear — explain the most important piece of information
+- For errors, describe what stopped or cannot be done (e.g., "Connection failed")
+- Do not end the title with a period
+
+### Body text
+
+- Be concise; maximum 2 lines
+- Use body text to support the title — do not repeat or paraphrase it
+- For errors, explain how to resolve the issue or include next steps
+- If more than 2 lines are needed, use a short summary with a **View more** link to a detailed modal or page
+- Never truncate actionable or critical content
+
+### CTA link
+
+- Use only when absolutely necessary
+- Maximum one link per toast
+- Link must appear at the end of the notification; it cannot appear within the body text
+- Keep labels concise: one or two words
+
+## Related
+
+- [Alert](/components/alert)
+- [Notifications](/components/notifications)

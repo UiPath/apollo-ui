@@ -1,0 +1,102 @@
+# Panel experiences
+
+Panels are a core UI shell element. They provide contextually based content to support task completion and are anchored to the edges of the application UI.
+
+For component-level specifications, see [Panel](/components/panel).
+
+## Panel types
+
+### Panel
+
+- Appears on the **right side only**
+- Has an expanded state only (no collapse)
+- Opened and closed via a close icon
+- Suitable for any contextual content
+
+**Sizes:** 300px (default) or 440px (special use case)
+
+**Breakpoint behavior:**
+
+| Breakpoint | Panel behavior |
+|---|---|
+| 1920+ | Right: Displayed |
+| 1440+ | Right: Displayed |
+| 1024+ | Right: Collapsed |
+| 768+ | Right: Collapsed |
+| 320+ | Right: Collapsed |
+
+### Panel with chevron
+
+- Appears on the **left or right side**
+- Supports **expanded and collapsed** states
+- Commonly used for menus and list components
+
+**Sizes:** 300px (default) or 440px (special use case)
+
+**Breakpoint behavior:**
+
+| Breakpoint | Left panel | Right panel |
+|---|---|---|
+| 1920+ | Expanded | Expanded |
+| 1440+ | Expanded | Expanded |
+| 1024+ | Expanded | Collapsed |
+| 768+ | Collapsed | Collapsed |
+| 320+ | Collapsed | Collapsed |
+
+### Panel with launcher
+
+- Appears on the **left or right side**
+- Supports **expanded and collapsed** states
+- Collapsed state shows product icons that launch specific panels
+- Commonly used for workspace editing environments
+
+**Sizes:** 300px (default) or 440px (special use case)
+
+**Breakpoint behavior:** Same as panel with chevron.
+
+## Resize behavior
+
+| Panel size | Minimum width | Maximum width |
+|---|---|---|
+| **Panel 300** | 300px | 520px |
+| **Panel 440** | 400px | 600px |
+| **Collapsed** | Fixed | Fixed |
+
+Users can hover over the panel edge to reveal a drag handle and resize the panel.
+
+## Spacing
+
+Panel margins use 24px on sides and 16px vertically.
+
+## Responsive guidance
+
+When content space becomes narrow (due to zoom or multiple open panels):
+
+- If content space < 1024px: hide secondary panels
+- If content space < 768px: collapse main panel (chevron)
+- If content space < 320px: switch to full-screen drawer overlay
+
+## Do's and don'ts
+
+**Do:**
+- Display one panel on each side (left and right) at most
+- Use the drawer component when additional contextual content is needed beyond what a panel can hold
+
+**Don't:**
+- Display double panels on the same side — this is never permitted
+
+## Panel vs. drawer vs. modal
+
+| Component | Purpose |
+|---|---|
+| **Panel** | Contextual content associated with current actions |
+| **Drawer** | Adding new or informational content |
+| **Modal** | Focusing the user exclusively on a single task |
+
+## Related
+
+- [Panel](/components/panel)
+- [Drawer](/components/drawer)
+- [Modal](/components/modal)
+- [Page layout](/components/page-layout)
+- [Application layouts](/patterns/application-layouts)

@@ -1,0 +1,39 @@
+# Waffle menu
+
+The waffle menu is the core product navigation for UiPath, triggered from the global header. It provides centralized navigation across the UiPath product suite.
+
+> **Note:** The previous "Left panel" component has been renamed the "Waffle menu" in the current system framework.
+
+## Usage
+
+With the many products in the UiPath suite, the waffle menu provides a structured approach for all products to integrate into a unified web navigation experience.
+
+## Anatomy
+
+| Element | Description |
+|---|---|
+| **Waffle icon** | The trigger in the global header that opens the menu |
+| **Favorites section** | Pinned or frequently used products |
+| **Menu section** | Primary product navigation links |
+| **More section** | Expandable list of additional products |
+| **Status badge** | Indicates a product's availability or status |
+| **Favorite icon** | Allows users to pin or unpin a product to the Favorites section |
+
+## Behavior
+
+The waffle menu is collapsed by default and fixed to the left side of the layout, below the global header.
+
+### Popover (expanded state)
+
+Clicking the waffle icon in the global header opens the menu as a popover overlay. The popover sits above the interface and remains visible until the user clicks elsewhere in the UI. The underlying workspace is not disturbed.
+
+### Collapsed vs expanded
+
+The "More" section can be expanded to show additional products or collapsed to save space.
+
+## Related
+
+- [Page layout](/components/page-layout)
+- [Panel](/components/panel)
+- [Global header](/components/global-header)
+- [Navigation types](/patterns/navigation-types)

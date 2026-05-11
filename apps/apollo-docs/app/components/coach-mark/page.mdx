@@ -1,0 +1,34 @@
+# Coach mark
+
+Coach marks are temporary messages that educate users through new or unfamiliar product experiences. They're chained into a sequence to form a tour.
+
+> UiPath uses the Pendo.io platform for guides. Review the [Pendo usage guidelines](https://uipath.atlassian.net/wiki/spaces/CLD/pages/86829237745/Pendo+usage+guidelines+and+examples) for more information.
+
+## Usage
+
+Coach marks are used in a tour when the primary action of one coach mark leads to the display of another. They can be chained into a sequence to form a walkthrough — a hands-on interactive tour guiding users through a series of onboarding steps.
+
+Each coach mark includes a triangle pointing to the targeted UI element. Light theme and dark theme coach marks share the same color tokens and shouldn't be altered.
+
+## Anatomy
+
+| Element | Description |
+|---|---|
+| **Container** | Defines the boundary of each coach mark; all elements are wrapped in it |
+| **Close button** | Closes the container |
+| **Header** | Concise descriptive title; two line maximum |
+| **Content** | Body text — at least a few words, no more than a few sentences |
+| **Step indicator** | (Optional) Shows progress through the tour. If used, apply consistently across all steps. |
+| **Footer bar** | Includes button(s) and the optional step indicator |
+
+## Guidelines
+
+Choose a width spacious enough for all content. Default and maximum width is 400px.
+
+### Use a consistent width
+
+Within a tour, keep the width consistent across each coach mark.
+
+### Button pairing
+
+When two or more buttons are used, widths should be equal, based on the longest text label.

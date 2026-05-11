@@ -1,0 +1,89 @@
+# Alert popup
+
+Alert popups provide high-visibility, disruptive messaging that requires the user's attention before they can continue.
+
+## Usage
+
+Use alert popups sparingly and only for information that is critical, time-sensitive, or requires explicit user acknowledgement or a decision. Alert popups are modal and block interaction with the underlying UI until dismissed.
+
+### When to use
+
+Use an alert popup when:
+
+- The system must interrupt the user to prevent data loss, highlight a critical issue, or require a decision
+- The message influences the user's ability to continue their task
+- A choice or confirmation is required (i.e., primary and secondary buttons)
+
+**Do not use when:**
+
+- The user can safely continue without taking action → Use inline alerts
+- The message is an FYI that does not block workflow → Use toast notifications
+- You are guiding users through setup or optional steps → Use banners or inline help
+
+## Anatomy
+
+| Element | Description |
+|---|---|
+| **Alert icon** | Visual representation of the semantic type of message |
+| **Alert header** | Short title describing the situation |
+| **Close button** | Closes the notification |
+| **Body text** | Content that relays the intent of the message |
+| **Action buttons** | Primary and secondary actions for the user to take |
+
+## Interaction and behavior
+
+- The popup appears centered in the viewport with a dimmed background
+- Users must either take an action or intentionally dismiss it
+- Avoid more than two buttons
+- Button labels should be action-driven (e.g., *Continue*, *Retry*, *Delete file*)
+
+## Content guidelines
+
+- Be brief: max ~2 lines for title and 2–4 lines for body
+- Explain why the popup exists using direct language and active voice
+- Specify impact ("Your edits will be lost")
+- Avoid blame ("You …") in warning/error content
+- If destructive, explicitly state what will be deleted or irreversible
+
+## Variants
+
+### Informational
+
+Use for neutral or helpful information the user should acknowledge, but which does not indicate success, risk, or error. Examples: policy changes, session expiration reminders, required disclosures.
+
+**Tone:** Neutral, helpful, non-urgent.
+
+### Success
+
+Use when the user successfully completed an important step that warrants explicit confirmation or a next choice. Examples: completing a setup flow, confirming an action that unlocks the next step.
+
+**Tone:** Positive, forward-moving.
+
+### Warning
+
+Use when the user is at risk of negative consequences but still has the option to proceed. Examples: leaving a page with unsaved changes, approaching storage limits.
+
+**Tone:** Calm, factual, consequences-focused.
+
+### Error
+
+Use when something has failed, is broken, or prevents progress. Examples: system failures, missing required inputs, failed automation.
+
+**Tone:** Clear, direct, non-technical when possible. Explain what happened and how to recover.
+
+### Delete (destructive)
+
+Used exclusively for destructive or irreversible actions. Examples: deleting workflows, assets, resources, or data.
+
+**Tone:** Clear, serious, unambiguous.
+
+Messages must include:
+- Object name (e.g., "Workflow 'Monthly Report'")
+- Scope of impact
+- A clear irreversible statement when applicable
+
+## Button behavior
+
+- The **primary action button** (blue, right-aligned) is reserved for the recommended or irreversible action
+- The **secondary action button** (white, left-aligned) provides the safer alternative or exit path (e.g., *Cancel*)
+- For the **Delete** variant, always use a **destructive red primary button** to clearly signal irreversible impact

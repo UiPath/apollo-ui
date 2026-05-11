@@ -1,0 +1,55 @@
+# Date picker
+
+The date picker component allows users to select date and/or time from a visual calendar or dropdown.
+
+## Usage
+
+Date pickers are used when users need to select a date, time, or both from a structured UI. Common use cases include setting deadlines, scheduling events, filtering data ranges, or capturing form inputs with temporal values.
+
+## Anatomy
+
+The date picker component combines a text input with a popup calendar menu.
+
+| Element | Description |
+|---|---|
+| **Label** | Describes the purpose of the field |
+| **Text input** | An input field where the user can manually type a date |
+| **Calendar button** | Opens the calendar popup menu |
+| **Year selector** | Allows switching between years |
+| **Month navigation** | Previous and next month arrow buttons |
+| **Calendar menu** | Shows days within the defined month and year |
+
+## Variants
+
+### Date picker
+
+A standalone input field that, when clicked, opens a calendar popup for date selection. Use for forms or when users need to select dates by day or year.
+
+### Time picker
+
+A standalone input field that, when clicked, opens a dropdown list of time options (e.g., hourly or half-hourly). Use when time-based information is required.
+
+### Date picker group
+
+A combined view of both the date picker and time picker components, placed side by side for selecting date and time in one interaction. Use in forms and horizontal layouts.
+
+## Do's and don'ts
+
+**Do:**
+- Use labels and placeholders to indicate required input formats
+- Provide keyboard and screen reader accessibility
+- Use clear validation for incorrect or incomplete inputs
+- Pre-populate with logical default values when appropriate (e.g., current date)
+- Allow manual text input if your use case supports it
+
+**Don't:**
+- Show both the date and time picker unless both are needed
+- Use a calendar-only view for selecting far-future or past years — use a year selector
+- Rely solely on placeholder text to describe the expected input
+- Overload the dropdown with too many time options; limit to common intervals
+
+## Accessibility
+
+- **Label:** Communicates the purpose of the date field. If the date is for a specific purpose (e.g., start date), include that in the label. (WCAG 2.4.6)
+- **Keyboard:** The date picker must be fully operable via keyboard for users who rely on assistive technology. (WCAG 2.1.1)
+- **Error text:** Provide meaningful error messages that explain the required format, not just "Invalid date." (WCAG 3.3.3)

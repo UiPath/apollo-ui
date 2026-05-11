@@ -1,0 +1,51 @@
+# Panel
+
+A panel is a container component used to display contextual information, tools, or controls alongside the main content area. It can appear on the left or right of the interface and is commonly used in dashboard layouts, editors, and workspace views.
+
+## Usage
+
+Panels provide access to supporting content or actions without navigating away from the primary workflow. Common use cases include filters, configuration options, detail views, or asset browsers.
+
+For patterns guidance, see [Panel experiences](/patterns/panel-experiences).
+
+## Anatomy
+
+| Element | Description |
+|---|---|
+| **Panel container** | The bounding area of the panel |
+| **Chevron** | (Optional) Toggle for expanding and collapsing the panel |
+
+## Behavior
+
+| Type | Behavior |
+|---|---|
+| **Panel** | Has only an expanded state. Available in 300px and 440px sizes. |
+| **Panel with chevron** | Supports expand and collapse states. Can be resized via drag interaction. |
+
+The chevron can be turned on or off based on the specific use case. It is typically positioned at the panel edge to aid user discoverability. A divider appears only when content scrolls under the panel header.
+
+## States
+
+| Category | States |
+|---|---|
+| **Collapsed** | Left collapsed, Right collapsed |
+| **Expanded** | Left 300px, Left 440px, Right 300px, Right 440px |
+| **Drag** | Left 300px drag, Left 440px drag, Right 300px drag, Right 440px drag |
+
+## Do's and don'ts
+
+**Do:**
+- Use panels for secondary content that enhances the primary workflow
+- Provide clear chevron affordances when collapsibility is needed
+- Allow resizing within a reasonable range (e.g., 300–440px)
+- Ensure panels are keyboard and screen reader accessible
+
+**Don't:**
+- Overload the panel with too much information
+- Use panels for primary navigation or core content
+- Hide important functionality behind collapsed panels without visual cues
+
+## Related
+
+- [Page layout](/components/page-layout)
+- [Global header](/components/global-header)

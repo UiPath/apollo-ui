@@ -1,0 +1,47 @@
+# Rich-text editor
+
+The rich-text editor is a WYSIWYG input that allows users to write and format text content.
+
+## Usage
+
+Use the rich-text editor when users need to author formatted content such as descriptions, notes, or messages. It provides inline formatting controls without requiring knowledge of markup syntax.
+
+## Anatomy
+
+| Element | Description |
+|---|---|
+| **Toolbar** | Contains formatting controls grouped by function |
+| **Text area** | The editable content region where users type |
+
+### Toolbar sections
+
+| Section | Controls |
+|---|---|
+| **Text formatting** | Bold, italic, underline, strikethrough |
+| **Paragraph formatting** | Numbered list, bulleted list |
+| **Insert content** | Link, image, code |
+
+### Toolbar specifications
+
+- Default toolbar height: 40px
+- Icon button size: 24px
+- Gap between icon buttons: 12px
+
+## States
+
+| State | Description |
+|---|---|
+| **Default** | Editor is visible but not focused |
+| **Focused** | Editor has keyboard focus; ready for input |
+| **Filled** | Editor contains formatted content |
+| **Error** | Validation has failed; error state is shown |
+| **Disabled** | Editor is present but not interactive |
+
+## Accessibility
+
+The rich-text editor must be keyboard operable. All toolbar actions and text area interactions must be reachable and usable without a mouse, in compliance with WCAG 2.1.1 (Keyboard).
+
+## Related
+
+- [Inline text editor](/components/inline-text-editor)
+- [Text input](/components/text-input)

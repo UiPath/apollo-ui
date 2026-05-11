@@ -1,0 +1,45 @@
+# Loading experiences
+
+Loading patterns are used when data may take a significant amount of time to appear. Loading animations reassure users that something is happening and can make wait times feel shorter.
+
+If a page or UI element loads in under one second, skip the animation — it will not make a noticeable difference.
+
+## Full-page loading pattern
+
+Full-page loads use a two-step sequence:
+
+### Step 1 — Skeleton loader
+
+Skeleton loaders provide a visual placeholder that mimics the page layout, giving users a sense of what is coming while content is still loading. A subtle wave animation signals that the system is actively working.
+
+**Usage:**
+
+- Always appears alongside the global header
+- Mimics the general structure and key UI elements of the page
+- Banners and images do not use the wave animation — use progressive image loading instead
+- Use skeleton states for container-based components (tiles, structured lists) and data-heavy components (tables, cards)
+- Skip decorative elements like icons, dividers, and non-essential visuals
+- Do not apply skeleton states to toasts, overflow menus, dropdowns, modals, or spinners — though elements *inside* those components (e.g., a table in a modal) can use skeleton states
+- As content loads, replace skeleton elements progressively in the order content is fetched — skeletons should never block partial content loads
+
+### Step 2 — Progress bar
+
+A determinate progress bar appears above the global header to communicate overall loading status.
+
+**Usage:**
+
+- Only shown alongside the skeleton loader if the system can estimate time remaining
+- Begins at 10% and progresses to 100% as skeletons are replaced with real content
+- Disappears once loading is complete and is replaced by the tenant's color bar
+
+## Guidelines
+
+- Use the full-screen loader only for full-page loading scenarios
+- Do not display any other UI elements or animations alongside the full-screen loader
+
+## Related
+
+- [Portal page loader](/components/portal-page-loader)
+- [Progress spinner](/components/progress-spinner)
+- [Progress bar](/components/progress-bar)
+- [Skeleton loader](/components/skeleton-loader)

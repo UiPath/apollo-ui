@@ -1,0 +1,27 @@
+# Error pages
+
+Error pages are displayed when an HTTP request results in an error response. They communicate what went wrong and, where possible, guide the user toward a resolution.
+
+## Overview
+
+Error pages are the result of an HTTP status code — the server's three-digit response to the browser's request. Each error page should clearly explain the situation and offer a path forward.
+
+## Error scenarios
+
+| Error | Name | Description |
+|---|---|---|
+| **400** | Bad request | The request was invalid or malformed — typically caused by missing parameters or incorrect formatting |
+| **401** | Unauthorized | The user does not have access; may be a transient issue — retry is recommended |
+| **403** | No permissions | The user lacks permissions for the page or product |
+| **404** | Page not available | The page no longer exists or the URL is incorrect |
+| **500** | Server error | An unexpected server-side error; recommend retrying or reporting if it persists |
+| **503** | System under maintenance | The system is temporarily unavailable due to maintenance |
+| **End of browser support** | — | Informs the user that support for their current browser is ending; they can continue using it until it is fully phased out |
+| **Browser not supported** | — | The user is accessing UiPath Automation Cloud from an unsupported browser |
+| **IP restricted** | — | The user's IP address is restricted by their organization's administrator |
+| **Provisioning page** | — | Shown during initial application setup; not an error state |
+
+## Related
+
+- [Alert](/components/alert)
+- [Interaction states](/patterns/interaction-states)

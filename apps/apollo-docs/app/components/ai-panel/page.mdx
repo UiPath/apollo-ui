@@ -1,0 +1,87 @@
+# AI panel
+
+The AI panel is a modular UI component that enables users to interact with an AI assistant (e.g., Autopilot) through natural language input, contextual enhancements, and structured tools. It supports a wide range of assistant-driven experiences and is designed for use in side-by-side views, immersive layouts, and embedded panels.
+
+## Usage
+
+Use the AI panel component only within an AI assistant or Autopilot context. It is not intended for general messaging or notification use.
+
+**Layout considerations:**
+
+- Always include the full response component to preserve proper spacing.
+- Maintain 70pt padding at the bottom of the conversation thread for consistent scroll behavior.
+- Works in both side panel and full-screen experiences.
+
+## Anatomy
+
+The AI panel is made up of 5 elements:
+
+| Element | Description |
+|---|---|
+| **Header** | Provides navigation controls such as history access, new chat creation, and panel toggling. Icon alignment depends on layout (left in immersive, right in side-by-side). |
+| **Prompt input** | The primary input field where users type prompts. Includes submit, attach, and dynamic behavior states. Anchored at the panel footer. |
+| **Context tags** | Inline chips representing contextual attachments (e.g., files, personas). Appear above the input and support overflow handling. |
+| **Variable picker** | Inline selector triggered by typing `@` or `/`. Allows insertion of structured references into prompts. |
+| **Chat thread** | Displays the back-and-forth between the user and the AI assistant. Supports markdown, inline code, tool views, source lists, and secondary actions. |
+
+## Supported views
+
+| View | Behavior |
+|---|---|
+| **Side-by-side** | Appears as a persistent panel alongside core content. Ideal for multitasking workflows. |
+| **Immersive** | Expands to fill the full screen. Designed for focused interactions or creation tasks. |
+| **Embedded (planned)** | Will support inline usage inside tools, scoped to a specific task or context. |
+
+## Header
+
+The header anchors the AI panel and gives users access to navigation and session tools.
+
+- History icon opens past conversations
+- New chat icon clears the current session
+- Panel control icon closes the panel or opens settings, depending on layout
+- In side-by-side view, the icon hides the panel; in immersive view, it opens Settings
+- Icons are right-aligned in side-by-side view and left-aligned in immersive view
+
+A divider appears only when chat content scrolls under the header.
+
+## Prompt input
+
+The prompt input is the main entry point for interacting with the AI assistant.
+
+**Specifications:**
+
+- Always center-aligned horizontally in the footer of the panel
+- Do not use this input field outside the context of the AI panel
+- Minimum width: 440pt
+- Maximum width: 800pt (side-by-side) / 960pt (immersive)
+- Maximum height: 40% of viewport
+- Input launches in focused state with a disabled send button
+- Footer must always include the disclaimer: *"Autopilot can make mistakes. Please double check the responses."*
+
+**Controls and actions:**
+
+- Place context or input-enhancing actions on the left
+- Place execution actions (submit/stop) on the right
+- Do not include more than three actions per side without design review
+- Overflow menus are not supported
+
+## Context tags
+
+Context tags are small labels that appear above the input field to represent contextual metadata such as attached files, personas, or references.
+
+**Specifications:**
+
+- Width: 360px; max height: 296px
+- Shows 5 recents, loads up to 25 items
+- Can be added via drag and drop or the Attach (+) button
+- Maximum 2 lines of tags shown; overflow handled with "+X more"
+
+## Variable picker
+
+The variable picker allows users to add structured inputs inside a prompt, such as people, files, or dates. Triggered by typing `@` (for people/agents) or `/` (for files/folders).
+
+**Specifications:**
+
+- Fixed width: 360px; max height: 296px
+- Shows top 5 most recently used items, loads up to 25 results
+- Backspace deletes the full variable chip

@@ -1,0 +1,36 @@
+# Node
+
+Nodes are a core building block of the canvas used to represent an action, process, or entity. Each node provides both visual context (icon, label, and status) and functional affordances (handles, edges, and interactive states) that define how it connects, configures, and behaves within the canvas.
+
+## Usage
+
+Use a node when you need to:
+
+- Represent a **discrete step or object** within a process or workflow (e.g., process stage, field group, or automation trigger)
+- Display **contextual information** such as name, ID, or type that users can recognize at a glance
+- Enable **connections or transitions** between related elements via edges or connectors
+
+**Do not use nodes for:**
+- Simple static information displays (use cards or list items instead)
+- Inline or textual representations of relationships (use tables or key-value pairs)
+- UI constructs where the user doesn't need to manipulate, connect, or configure items
+
+## Anatomy
+
+| Element | Description |
+|---|---|
+| **Header** | Displays the node title or type (e.g., *Application*, *Processing*, *Local fields*) |
+| **Secondary header** | (Optional) Provides additional context such as SLA, owner, or trigger |
+| **Body area** | Contains key elements like process lists, field sets, or connections |
+| **Affordances** | Handles or connectors for linking to other nodes |
+| **Status/indicator** | (Optional) Displays node state (e.g., running, success, error) |
+| **Icon** | Visually identifies the node category (e.g., UiPath logo, field icon) |
+
+## Variants
+
+| Variant | Description | Example use |
+|---|---|---|
+| **Field node** | Represents data or metadata local to a process. Displays fields and identifiers. | Process configuration, variable mapping |
+| **Process node** (planned) | Represents a stage in a workflow. Includes processes, triggers, and SLAs. | Case management |
+| **Decision node** (planned) | Represents conditional logic or branching. | Workflow logic visualization |
+| **Action node** (planned) | Represents a direct system or user action. | Triggering automation or tasks |

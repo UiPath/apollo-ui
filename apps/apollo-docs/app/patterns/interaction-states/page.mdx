@@ -1,0 +1,69 @@
+# Interaction states
+
+Interaction states are visual styles that communicate the status of an interactive component or element to the user.
+
+## States
+
+### Default
+
+The default state is what users see when they first encounter an element. It is the element's resting appearance when it is not being interacted with.
+
+### Hover
+
+The hover state is activated when the user moves their cursor over an element without clicking it. Visual changes typically include color adjustments, underlines (for links), or highlighting to indicate interactivity.
+
+**Hover vs. focus:**
+
+- **Focus states** are mouse-agnostic — an element can be focused without the mouse being nearby, such as when navigating with a keyboard.
+- **Focus states** activate an element so it is ready to receive input. For a text input, hover only emphasizes the field visually; focus both emphasizes it and activates it for data entry.
+- **Hover states** are triggered by the mouse's position and do not exist when no mouse is present.
+
+### Pressed
+
+The pressed (active) state is triggered when the user clicks or taps an element. It typically involves a visual change simulating the element being pressed, giving immediate feedback that the action has been recognized.
+
+### Focus
+
+The focus state occurs when an element receives keyboard focus. It is indicated by a visible outline or border — typically with 1px of space between the component edge and the outline to ensure visibility.
+
+A UI can have only one focused element at a time. Focus can be set:
+1. Programmatically by a developer as a default starting point
+2. By keyboard navigation
+3. By clicking with a mouse
+
+### Disabled
+
+The disabled state indicates that an element is temporarily or permanently non-interactive. It prevents user interaction and signals that an action is unavailable. Displaying a disabled state can help users understand what interactions become possible once conditions are met.
+
+Disabled elements are not keyboard-focusable and do not need to meet visual contrast requirements.
+
+### Selected
+
+The selected state applies to elements that can be toggled or chosen, such as checkboxes or radio buttons. It indicates that the element has been actively chosen or is in an "on" state.
+
+### Error
+
+The error state is displayed when a user submits a form or interacts with an element incorrectly. It signals an issue requiring attention, often accompanied by an error message. Visual indicators may include red borders, icons, or highlighted fields.
+
+### Read-only
+
+The read-only state is used when the content of an element is relevant to the user but cannot be edited. Unlike disabled elements, read-only elements remain keyboard-navigable so users can review and copy values.
+
+Read-only content must always be accessible to screen readers.
+
+## Guidelines
+
+- Always include interaction states — they are essential visual feedback
+- Only one element should be in focus at any given time
+
+## Accessibility
+
+When considering keyboard accessibility, distinguish between navigation and operation:
+- **Navigable**: The element can be reached by keyboard (read-only elements are navigable)
+- **Operable**: The element can be manipulated or altered (disabled and read-only elements are not operable)
+
+## Related
+
+- [Button](/components/button)
+- [Text input](/components/text-input)
+- [Checkbox](/components/checkbox)
