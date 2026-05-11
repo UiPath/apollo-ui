@@ -3,13 +3,13 @@
 import type {
   ColumnDef,
   ColumnFiltersState,
-  PaginationState,
   RowSelectionState,
 } from "@tanstack/react-table";
 import { useState } from "react";
 
 import { useColumnVisibility } from "./useColumnVisibility";
 import { usePersistedColumnOrder } from "./usePersistedColumnOrder";
+import { usePersistedPageSize } from "./usePersistedPageSize";
 import { usePersistedSorting } from "./usePersistedSorting";
 
 export interface UseDataTableOptions<TData> {
@@ -53,9 +53,8 @@ export function useDataTable<TData>({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [globalFilter, setGlobalFilter] = useState("");
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 10,
+  const { pagination, onPaginationChange } = usePersistedPageSize({
+    storageKey,
   });
 
   return {
@@ -75,6 +74,6 @@ export function useDataTable<TData>({
     globalFilter,
     onGlobalFilterChange: setGlobalFilter,
     pagination,
-    onPaginationChange: setPagination,
+    onPaginationChange,
   };
 }
