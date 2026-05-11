@@ -2,14 +2,21 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import {
   type Edge,
   type Node,
+  type NodeProps,
   Panel,
   Position,
   useReactFlow,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAddNodeOnConnectEnd, useCanvasEvent } from '../../hooks';
-import { createNode, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
+import {
+  createNode,
+  StoryInfoPanel,
+  useCanvasStory,
+  withCanvasProviders,
+} from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
+import { ElementStatusValues } from '../../types/execution';
 import type { CanvasHandleActionEvent } from '../../utils';
 import { removePreviewFromReactFlow } from '../../utils/createPreviewNode';
 import { snapToGrid } from '../../utils/NodeUtils';
@@ -18,6 +25,7 @@ import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
 import { BaseCanvas } from '../BaseCanvas';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
+import { LoopNode } from './LoopNode';
 import type { LoopNodeData } from './LoopNode.types';
 
 const meta: Meta = {
@@ -100,13 +108,24 @@ interface AutoPreviewSource {
   position?: Position;
 }
 
+interface StoryInfo {
+  title: string;
+  description: string;
+}
+
 interface LoopCanvasStoryProps {
   initialNodes: Node[];
   initialEdges: Edge[];
   autoPreviewSource?: AutoPreviewSource;
+  storyInfo: StoryInfo;
 }
 
-function LoopCanvasStory({ initialNodes, initialEdges, autoPreviewSource }: LoopCanvasStoryProps) {
+function LoopCanvasStory({
+  initialNodes,
+  initialEdges,
+  autoPreviewSource,
+  storyInfo,
+}: LoopCanvasStoryProps) {
   const reactFlow = useReactFlow();
   const handleAddNodeOnConnectEnd = useAddNodeOnConnectEnd();
   const autoPreviewedRef = useRef(false);
@@ -183,6 +202,7 @@ function LoopCanvasStory({ initialNodes, initialEdges, autoPreviewSource }: Loop
       <Panel position="bottom-right">
         <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
+      <StoryInfoPanel title={storyInfo.title} description={storyInfo.description} />
     </BaseCanvas>
   );
 }
@@ -248,7 +268,17 @@ function DefaultStory() {
     []
   );
 
-  return <LoopCanvasStory initialNodes={initialNodes} initialEdges={initialEdges} />;
+  return (
+    <LoopCanvasStory
+      initialNodes={initialNodes}
+      initialEdges={initialEdges}
+      storyInfo={{
+        title: 'Loop Node',
+        description:
+          'Default loop container with inner start/continue handles, an outer success handle, child nodes, and insertion affordances.',
+      }}
+    />
+  );
 }
 
 function NestedOuterOutputInsertStory() {
@@ -354,6 +384,11 @@ function NestedOuterOutputInsertStory() {
         handleId: STORY_LOOP_SUCCESS_HANDLE_ID,
         position: Position.Right,
       }}
+      storyInfo={{
+        title: 'Nested Loop Insert',
+        description:
+          'Nested loop scenario showing insertion from an inner loop output into an existing outer-loop path.',
+      }}
     />
   );
 }
@@ -441,7 +476,167 @@ function NestedOuterOutputAppendStory() {
         handleId: STORY_LOOP_SUCCESS_HANDLE_ID,
         position: Position.Right,
       }}
+      storyInfo={{
+        title: 'Nested Loop Append',
+        description:
+          'Nested loop scenario showing append behavior from an inner loop output while preserving parent loop containment.',
+      }}
     />
+  );
+}
+
+type LoopExecutionNodeData = LoopNodeData & {
+  initialIndex: number;
+  total: number;
+  interactive?: boolean;
+};
+
+const LOOP_EXECUTION_SIZE = { width: 520, height: 280 };
+const LOOP_EXECUTION_GRID = {
+  startX: 80,
+  startY: 80,
+  gapX: 640,
+  gapY: 360,
+} as const;
+
+const LOOP_EXECUTION_CASES: {
+  id: string;
+  label: string;
+  status: ElementStatusValues;
+  initialIndex: number;
+  total: number;
+  parallel?: boolean;
+  interactive?: boolean;
+}[] = [
+  {
+    id: 'loop-completed',
+    label: 'Completed loop',
+    status: ElementStatusValues.Completed,
+    initialIndex: 2,
+    total: 3,
+  },
+  {
+    id: 'loop-running',
+    label: 'Running loop',
+    status: ElementStatusValues.InProgress,
+    initialIndex: 1,
+    total: 3,
+  },
+  {
+    id: 'loop-paused',
+    label: 'Paused loop',
+    status: ElementStatusValues.Paused,
+    initialIndex: 1,
+    total: 4,
+  },
+  {
+    id: 'loop-failed',
+    label: 'Failed loop',
+    status: ElementStatusValues.Failed,
+    initialIndex: 0,
+    total: 3,
+  },
+  {
+    id: 'loop-cancelled',
+    label: 'Cancelled',
+    status: ElementStatusValues.Cancelled,
+    initialIndex: 2,
+    total: 5,
+  },
+  {
+    id: 'loop-parallel',
+    label: 'Parallel loop',
+    status: ElementStatusValues.Completed,
+    initialIndex: 2,
+    total: 3,
+    parallel: true,
+  },
+  {
+    id: 'loop-label-only',
+    label: 'Label only',
+    status: ElementStatusValues.Completed,
+    initialIndex: 1,
+    total: 3,
+    interactive: false,
+  },
+  {
+    id: 'loop-clamped',
+    label: 'Clamped active index',
+    status: ElementStatusValues.Completed,
+    initialIndex: 99,
+    total: 3,
+  },
+];
+
+const LOOP_EXECUTION_STATUS = new Map(LOOP_EXECUTION_CASES.map(({ id, status }) => [id, status]));
+
+function createExecutionStateGrid(): Node<LoopExecutionNodeData>[] {
+  return LOOP_EXECUTION_CASES.map(
+    ({ id, label, initialIndex, total, parallel, interactive }, index) => {
+      const colIndex = index % 2;
+      const rowIndex = Math.floor(index / 2);
+
+      return {
+        id,
+        type: LOOP_TYPE,
+        position: {
+          x: LOOP_EXECUTION_GRID.startX + colIndex * LOOP_EXECUTION_GRID.gapX,
+          y: LOOP_EXECUTION_GRID.startY + rowIndex * LOOP_EXECUTION_GRID.gapY,
+        },
+        data: {
+          display: { label, shape: 'container' },
+          parallel,
+          initialIndex,
+          total,
+          interactive,
+        },
+        style: LOOP_EXECUTION_SIZE,
+      };
+    }
+  );
+}
+
+function LoopExecutionCanvasNode(props: NodeProps<Node<LoopExecutionNodeData>>) {
+  const { data } = props;
+  const [activeIndex, setActiveIndex] = useState(data.initialIndex);
+
+  useEffect(() => {
+    setActiveIndex(data.initialIndex);
+  }, [data.initialIndex]);
+
+  return (
+    <LoopNode
+      {...props}
+      iterationState={{
+        activeIndex,
+        total: data.total,
+        onActiveIndexChange: data.interactive === false ? undefined : setActiveIndex,
+      }}
+    />
+  );
+}
+
+const LOOP_EXECUTION_NODE_TYPES = {
+  [LOOP_TYPE]: LoopExecutionCanvasNode,
+};
+
+function ExecutionStatesStory() {
+  const initialNodes = useMemo(() => createExecutionStateGrid(), []);
+  const { canvasProps } = useCanvasStory({
+    initialNodes,
+    additionalNodeTypes: LOOP_EXECUTION_NODE_TYPES,
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="Loop Execution States"
+        description="Grid showing loop status border treatment, iteration navigation, clamped index handling, label-only navigation, and sequential/parallel badges."
+      />
+    </BaseCanvas>
   );
 }
 
@@ -455,4 +650,19 @@ export const NestedOuterOutputInsert: Story = {
 
 export const NestedOuterOutputAppend: Story = {
   render: () => <NestedOuterOutputAppendStory />,
+};
+
+export const ExecutionStates: Story = {
+  decorators: [
+    withCanvasProviders({
+      executionState: {
+        getNodeExecutionState: (nodeId: string) => LOOP_EXECUTION_STATUS.get(nodeId),
+        getEdgeExecutionState: () => undefined,
+      },
+      validationState: {
+        getElementValidationState: () => undefined,
+      },
+    }),
+  ],
+  render: () => <ExecutionStatesStory />,
 };

@@ -35,8 +35,9 @@ import { MissingManifestNode } from '../BaseNode/BaseNodeMissingManifest';
 import type { HandleActionEvent } from '../ButtonHandle';
 import { ButtonHandles } from '../ButtonHandle';
 import { NodeToolbar } from '../Toolbar';
+import { IterationNavigator } from './IterationNavigator';
 import { type ContainerHandleGroup, resolveContainerHandleGroups } from './LoopNode.helpers';
-import type { LoopNodeProps } from './LoopNode.types';
+import type { LoopIterationState, LoopNodeProps } from './LoopNode.types';
 
 const DEFAULT_LOOP_ICON = 'repeat';
 const DEFAULT_LOOP_TITLE = 'Loop';
@@ -182,6 +183,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
     adornments: adornmentsProp,
     executionStatusOverride,
     suggestionType: suggestionTypeProp,
+    iterationState: iterationStateProp,
   } = props;
   const nodeTypeRegistry = useOptionalNodeTypeRegistry();
   const [isHovered, setIsHovered] = useState(false);
@@ -341,7 +343,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
       className={cn(
         'group/loop-shell relative box-border flex h-full w-full flex-col overflow-visible rounded-[20px] border bg-transparent',
         'transition-[border-color,box-shadow,opacity] shadow-(--canvas-node-shadow-rest)',
-        'border-border-subtle',
+        'border-border',
         getStatusBorder(suggestionType ?? validationState?.validationStatus ?? executionStatus),
         isHovered && 'shadow-(--canvas-node-shadow-hover) border-border-hover',
         selected && 'outline outline-2 outline-foreground-accent-muted',
@@ -366,7 +368,13 @@ function LoopNodeComponent(props: LoopNodeProps) {
       {showResizeControls ? (
         <ResizeControls minimums={resizeMinimums} onResize={handleResize} />
       ) : null}
-      <Header title={displayTitle} icon={displayIcon} loading={isLoading} isParallel={isParallel} />
+      <Header
+        title={displayTitle}
+        icon={displayIcon}
+        loading={isLoading}
+        isParallel={isParallel}
+        iterationState={iterationStateProp}
+      />
       <BodyFrame isEmpty={showEmptyStateButton} isLoading={isLoading} />
       {showEmptyStateButton ? (
         <div
@@ -411,11 +419,13 @@ function Header({
   icon,
   loading,
   isParallel,
+  iterationState,
 }: {
   title: string;
   icon?: string;
   loading: boolean;
   isParallel: boolean;
+  iterationState?: LoopIterationState;
 }) {
   const titleContent = loading ? (
     <div className="h-5 w-28 animate-pulse rounded bg-(--canvas-background-overlay)" />
@@ -433,19 +443,26 @@ function Header({
 
   return (
     <div
-      className="flex shrink-0 cursor-grab items-center justify-between gap-2.5 px-3.5 pt-2.5 text-foreground active:cursor-grabbing"
+      className={cn(
+        'flex shrink-0 cursor-grab items-center justify-between gap-2.5 rounded-t-[18px]',
+        '-mb-2.5 bg-surface-overlay px-3.5 pb-2.5 pt-2.5 text-foreground',
+        'active:cursor-grabbing'
+      )}
       data-testid="loop-node-header"
     >
       <div className="flex min-w-0 items-center gap-2.5">
         {iconContent}
         {titleContent}
       </div>
-      <span className="flex shrink-0 items-center gap-1 rounded-full border border-border-subtle bg-transparent px-2.5 py-0.5 text-[11px] font-semibold leading-4 text-foreground">
-        <span className={cn('flex shrink-0', isParallel && 'rotate-90')} aria-hidden>
-          <CanvasIcon icon="align-justify" size={11} />
+      <div className="flex shrink-0 items-center gap-2">
+        {iterationState ? <IterationNavigator iterationState={iterationState} /> : null}
+        <span className="flex h-6 shrink-0 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-[11px] font-semibold leading-4 text-foreground shadow-sm">
+          <span className={cn('flex shrink-0', isParallel && 'rotate-90')} aria-hidden>
+            <CanvasIcon icon="align-justify" size={11} />
+          </span>
+          {isParallel ? 'Parallel' : 'Sequential'}
         </span>
-        {isParallel ? 'Parallel' : 'Sequential'}
-      </span>
+      </div>
     </div>
   );
 }
@@ -476,7 +493,8 @@ function BodyFrame({ isEmpty, isLoading }: { isEmpty?: boolean; isLoading?: bool
       data-testid="loop-body-frame"
       data-empty={isEmpty ? 'true' : 'false'}
       className={cn(
-        'relative m-2.5 flex flex-1 rounded-xl border-[1.5px] border-dashed border-border-subtle bg-transparent',
+        'relative m-2.5 flex flex-1 rounded-xl border-[1.5px] border-dashed border-border bg-transparent',
+        'shadow-[0_0_0_10px_var(--surface-overlay)]',
         'pointer-events-none'
       )}
     >
