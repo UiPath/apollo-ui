@@ -1,15 +1,26 @@
-# Global Owners
-# * @UiPath/Apollo @UiPath/portal-members           # commented out until remaining owners are added. 
+# Global owner — applies to anything not matched by a more specific rule below.
+* @UiPath/Apollo
+
+# Security-sensitive paths — require @UiPath/Apollo review for any change.
+/.github/                @UiPath/Apollo
+/.npmrc                  @UiPath/Apollo
+/.gitignore              @UiPath/Apollo
+/.gitattributes          @UiPath/Apollo
+/CODEOWNERS              @UiPath/Apollo
+/SECURITY.md             @UiPath/Apollo
+/package.json            @UiPath/Apollo
+/pnpm-lock.yaml          @UiPath/Apollo
+/scripts/                @UiPath/Apollo
 
 # Packages
-packages/apollo-core @UiPath/Apollo
-packages/apollo-react @UiPath/Apollo
-packages/apollo-wind
+/packages/apollo-core/   @UiPath/Apollo
+/packages/apollo-react/  @UiPath/Apollo
+/packages/apollo-wind/   @UiPath/Apollo
 
 # apps
-apps/apollo-vertex @UiPath/team-frontendhoven
-apps/react-playground @UiPath/Apollo
-apps/storybook
+/apps/apollo-vertex/     @UiPath/team-frontendhoven
+/apps/react-playground/  @UiPath/Apollo
+/apps/storybook/         @UiPath/Apollo
 
 # web-packages
-web-packages/ap-chat
+/web-packages/ap-chat/   @UiPath/Apollo

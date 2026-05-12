@@ -4,16 +4,35 @@ on: [pull_request]
 
 permissions:
   contents: read
-  pull-requests: write
-
-env:
-  GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
-  NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
 jobs:
+  vulnerability-review:
+    name: Vulnerability & advisory review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    # The dependency-review-action requires a pull_request event with the base ref available.
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Dependency Review
+        # Scans added/changed deps against GitHub Advisory Database. Fails on high+ severity by default.
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
+
   dependency-review:
     name: Dependencies license check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -30,6 +49,8 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
+        env:
+          GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
         run: pnpm install --frozen-lockfile
 
       - name: Check licenses

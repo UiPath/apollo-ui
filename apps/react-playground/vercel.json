@@ -1,6 +1,6 @@
 {
 	"buildCommand": "cd ../.. && pnpm turbo build --filter=react-playground",
-	"installCommand": "cd ../.. && pnpm install",
+	"installCommand": "cd ../.. && pnpm install --frozen-lockfile",
 	"outputDirectory": "dist",
 	"framework": null,
 	"ignoreCommand": "git diff HEAD^ HEAD --quiet . && git diff HEAD^ HEAD --quiet ../../packages",

@@ -14,19 +14,19 @@ if [ -z "$GH_NPM_REGISTRY_TOKEN" ]; then
   exit 1
 fi
 
-PUBLISH_ARGS="$@"
-
 echo "📦 Publishing to npm..."
+# --provenance links the build to its GitHub Actions source; requires id-token: write in the workflow.
+# Only supported on registry.npmjs.org, not on GitHub Packages.
 NPM_AUTH_TOKEN="$NPM_AUTH_TOKEN" \
   NODE_AUTH_TOKEN="$NPM_AUTH_TOKEN" \
-  pnpm publish $PUBLISH_ARGS --@uipath:registry=https://registry.npmjs.org
+  pnpm publish "$@" --provenance --@uipath:registry=https://registry.npmjs.org
 
 echo "✓ Published to npm"
 echo ""
 echo "📦 Publishing to GitHub Package Registry..."
 NPM_AUTH_TOKEN="$GH_NPM_REGISTRY_TOKEN" \
   NODE_AUTH_TOKEN="$GH_NPM_REGISTRY_TOKEN" \
-  pnpm publish $PUBLISH_ARGS --@uipath:registry=https://npm.pkg.github.com
+  pnpm publish "$@" --@uipath:registry=https://npm.pkg.github.com
 
 echo "✓ Published to GitHub Package Registry"
 echo ""

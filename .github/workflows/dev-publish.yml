@@ -139,7 +139,7 @@ jobs:
   cleanup:
     name: Cleanup ${{ matrix.package_version }}
     needs: detect-changes
-    if: needs.detect-changes.outputs.has_previous == 'true'
+    if: needs.detect-changes.outputs.has_previous == 'true' && github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -179,7 +179,7 @@ jobs:
   update-comment-publishing:
     name: Update Comment - Publishing
     needs: [detect-changes, cleanup]
-    if: always() && needs.detect-changes.outputs.has_label == 'true' && needs.detect-changes.outputs.has_changes == 'true'
+    if: always() && needs.detect-changes.outputs.has_label == 'true' && needs.detect-changes.outputs.has_changes == 'true' && github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -214,7 +214,7 @@ jobs:
   publish:
     name: Publish ${{ matrix.package }}
     needs: [detect-changes, cleanup, update-comment-publishing]
-    if: always() && needs.detect-changes.outputs.has_label == 'true' && needs.detect-changes.outputs.has_changes == 'true'
+    if: always() && needs.detect-changes.outputs.has_label == 'true' && needs.detect-changes.outputs.has_changes == 'true' && github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -294,7 +294,7 @@ jobs:
   update-comment-cleanup:
     name: Update Comment - Cleanup Only
     needs: [detect-changes, cleanup]
-    if: always() && needs.detect-changes.outputs.has_previous == 'true' && needs.detect-changes.outputs.has_label == 'false'
+    if: always() && needs.detect-changes.outputs.has_previous == 'true' && needs.detect-changes.outputs.has_label == 'false' && github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
     permissions:
       contents: read
