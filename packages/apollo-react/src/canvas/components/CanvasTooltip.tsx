@@ -120,6 +120,9 @@ export function CanvasTooltip({
     [smartTooltip, truncationDetection.check]
   );
 
+  const isEmptyContent =
+    content == null || content === false || (typeof content === 'string' && content.trim() === '');
+
   // Priority ordering matches ApTooltip: isOpen > hide > smartTooltip
   const isTooltipHidden = useMemo(() => {
     if (isOpen != null) return !isOpen;
@@ -128,16 +131,9 @@ export function CanvasTooltip({
     return false;
   }, [isOpen, hide, smartTooltip, isTruncated]);
 
-  const effectiveOpen = isTooltipHidden ? false : (isOpen ?? hoverOpen);
+  const effectiveOpen = isEmptyContent || isTooltipHidden ? false : (isOpen ?? hoverOpen);
 
   const hasProvider = useContext(HasTooltipProviderContext);
-
-  const isEmptyContent =
-    content == null || content === false || (typeof content === 'string' && content.trim() === '');
-
-  if (isEmptyContent) {
-    return children;
-  }
 
   const tooltip = (
     <Tooltip open={effectiveOpen} onOpenChange={handleOpenChange} delayDuration={delay ? 700 : 200}>
