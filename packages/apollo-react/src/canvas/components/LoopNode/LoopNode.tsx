@@ -8,6 +8,7 @@ import {
 import { cn } from '@uipath/apollo-wind';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { shallow } from 'zustand/shallow';
+import { NODE_BADGE_INSET_SQUARE, NODE_BADGE_SIZE } from '../../constants';
 import { useOptionalNodeTypeRegistry } from '../../core';
 import { useElementValidationStatus, useNodeExecutionState } from '../../hooks';
 import type { HandleGroupManifest } from '../../schema/node-definition';
@@ -42,6 +43,9 @@ import type { LoopIterationState, LoopNodeProps } from './LoopNode.types';
 const DEFAULT_LOOP_ICON = 'repeat';
 const DEFAULT_LOOP_TITLE = 'Loop';
 const EMPTY_DATA: Record<string, unknown> = {};
+const LOOP_HEADER_ADORNMENT_GAP = 8;
+const LOOP_HEADER_ADORNMENT_PADDING =
+  NODE_BADGE_INSET_SQUARE + NODE_BADGE_SIZE + LOOP_HEADER_ADORNMENT_GAP;
 
 const RESIZE_CONTROLS = [
   {
@@ -269,6 +273,8 @@ function LoopNodeComponent(props: LoopNodeProps) {
     }),
     [adornmentsProp, statusContext]
   );
+  const hasTopLeftAdornment = !!adornments.topLeft;
+  const hasTopRightAdornment = !!adornments.topRight;
 
   const resolvedHandleGroups = useMemo(() => {
     const handleConfigurations = resolveLoopHandleConfigurations(
@@ -374,6 +380,8 @@ function LoopNodeComponent(props: LoopNodeProps) {
         loading={isLoading}
         isParallel={isParallel}
         iterationState={iterationStateProp}
+        hasTopLeftAdornment={hasTopLeftAdornment}
+        hasTopRightAdornment={hasTopRightAdornment}
       />
       <BodyFrame isEmpty={showEmptyStateButton} isLoading={isLoading} />
       {showEmptyStateButton ? (
@@ -420,12 +428,16 @@ function Header({
   loading,
   isParallel,
   iterationState,
+  hasTopLeftAdornment,
+  hasTopRightAdornment,
 }: {
   title: string;
   icon?: string;
   loading: boolean;
   isParallel: boolean;
   iterationState?: LoopIterationState;
+  hasTopLeftAdornment: boolean;
+  hasTopRightAdornment: boolean;
 }) {
   const titleContent = loading ? (
     <div className="h-5 w-28 animate-pulse rounded bg-(--canvas-background-overlay)" />
@@ -441,6 +453,14 @@ function Header({
     </span>
   ) : null;
 
+  const headerStyle =
+    hasTopLeftAdornment || hasTopRightAdornment
+      ? {
+          paddingLeft: hasTopLeftAdornment ? LOOP_HEADER_ADORNMENT_PADDING : undefined,
+          paddingRight: hasTopRightAdornment ? LOOP_HEADER_ADORNMENT_PADDING : undefined,
+        }
+      : undefined;
+
   return (
     <div
       className={cn(
@@ -448,6 +468,7 @@ function Header({
         '-mb-2.5 bg-surface-overlay px-3.5 pb-2.5 pt-2.5 text-foreground',
         'active:cursor-grabbing'
       )}
+      style={headerStyle}
       data-testid="loop-node-header"
     >
       <div className="flex min-w-0 items-center gap-2.5">
