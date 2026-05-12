@@ -14,8 +14,24 @@ import {
   StageTitleContainer,
   StageTitleInput,
 } from './StageNode.styles';
-import type { StageNodeProps, StageStatus } from './StageNode.types';
+import type { StageNodeProps, StageSlaStatus, StageStatus } from './StageNode.types';
 import { StageHeaderChipType } from './StageNode.types';
+
+const SLA_STATUS_CONFIG: Record<
+  Exclude<StageSlaStatus, 'ok'>,
+  { icon: string; iconColor: string; textClass: string }
+> = {
+  warning: {
+    icon: 'triangle-alert',
+    iconColor: 'var(--canvas-warning-icon)',
+    textClass: 'text-[color:var(--canvas-warning-text)]',
+  },
+  overdue: {
+    icon: 'circle-alert',
+    iconColor: 'var(--canvas-error-icon)',
+    textClass: 'text-[color:var(--canvas-error-text)]',
+  },
+};
 
 const CHIP_ICONS: Record<StageHeaderChipType, React.ReactElement> = {
   [StageHeaderChipType.Entry]: <EntryConditionIcon w={Icon.IconXs} h={Icon.IconXs} />,
@@ -54,6 +70,9 @@ const StageNodeHeaderInner = ({
   const icon = stageDetails?.icon;
   const statusLabel = execution?.stageStatus?.label;
   const stageDuration = execution?.stageStatus?.duration;
+  const slaText = execution?.stageStatus?.slaText;
+  const slaStatus = execution?.stageStatus?.slaStatus;
+  const slaIndicator = slaStatus && slaStatus !== 'ok' ? SLA_STATUS_CONFIG[slaStatus] : undefined;
 
   const isStageTitleEditable = !!onStageTitleChange && !isReadOnly;
 
@@ -145,6 +164,21 @@ const StageNodeHeaderInner = ({
             </CanvasTooltip>
           </span>
           {stageDuration && <span className="text-xs text-foreground-muted">{stageDuration}</span>}
+          {slaText && (
+            <span
+              className={cn(
+                'inline-flex items-center gap-1 text-xs',
+                slaIndicator ? slaIndicator.textClass : 'text-foreground-muted'
+              )}
+              data-testid={`stage-sla-${id}`}
+              data-sla-status={slaStatus ?? 'ok'}
+            >
+              {slaIndicator && (
+                <CanvasIcon icon={slaIndicator.icon} size={16} color={slaIndicator.iconColor} />
+              )}
+              {slaText}
+            </span>
+          )}
           {stageDetails.headerChips && stageDetails.headerChips.length > 0 && (
             <StageHeaderChipsRow>
               {stageDetails.headerChips.map((chip) => {

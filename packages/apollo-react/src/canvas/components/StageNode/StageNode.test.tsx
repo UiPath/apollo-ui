@@ -848,6 +848,106 @@ describe('StageNode - ReadOnly Mode', () => {
   });
 });
 
+describe('StageNode - SLA Indicator', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const getSlaIndicator = () => screen.getByTestId('stage-sla-stage-1');
+
+  it('does not render the SLA indicator when slaText is undefined', () => {
+    renderStageNode({
+      execution: { stageStatus: {}, taskStatus: {} },
+    });
+
+    expect(screen.queryByTestId('stage-sla-stage-1')).not.toBeInTheDocument();
+  });
+
+  it('does not render the SLA indicator when only duration is provided', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: { duration: 'Duration: 1h 30m' },
+        taskStatus: {},
+      },
+    });
+
+    expect(screen.queryByTestId('stage-sla-stage-1')).not.toBeInTheDocument();
+  });
+
+  it('renders slaText without an icon when slaStatus is omitted', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: { slaText: 'SLA: 10 days remaining' },
+        taskStatus: {},
+      },
+    });
+
+    const indicator = getSlaIndicator();
+    expect(indicator).toHaveTextContent('SLA: 10 days remaining');
+    expect(indicator).toHaveAttribute('data-sla-status', 'ok');
+    expect(indicator.querySelector('svg')).toBeNull();
+  });
+
+  it('renders slaText without an icon when slaStatus is "ok"', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: { slaText: 'SLA: 10 days remaining', slaStatus: 'ok' },
+        taskStatus: {},
+      },
+    });
+
+    const indicator = getSlaIndicator();
+    expect(indicator).toHaveAttribute('data-sla-status', 'ok');
+    expect(indicator.querySelector('svg')).toBeNull();
+  });
+
+  it('renders a warning icon and text when slaStatus is "warning"', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: { slaText: 'SLA: 1 day remaining', slaStatus: 'warning' },
+        taskStatus: {},
+      },
+    });
+
+    const indicator = getSlaIndicator();
+    expect(indicator).toHaveTextContent('SLA: 1 day remaining');
+    expect(indicator).toHaveAttribute('data-sla-status', 'warning');
+    expect(indicator.querySelector('svg')).not.toBeNull();
+  });
+
+  it('renders an error icon and text when slaStatus is "overdue"', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: { slaText: 'SLA: 1 day overdue', slaStatus: 'overdue' },
+        taskStatus: {},
+      },
+    });
+
+    const indicator = getSlaIndicator();
+    expect(indicator).toHaveTextContent('SLA: 1 day overdue');
+    expect(indicator).toHaveAttribute('data-sla-status', 'overdue');
+    expect(indicator.querySelector('svg')).not.toBeNull();
+  });
+
+  it('renders both duration and slaText as independent lines when both are provided', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: {
+          duration: 'Duration: 1h 30m',
+          slaText: 'SLA: 1 day remaining',
+          slaStatus: 'warning',
+        },
+        taskStatus: {},
+      },
+    });
+
+    expect(screen.getByText('Duration: 1h 30m')).toBeInTheDocument();
+    const indicator = getSlaIndicator();
+    expect(indicator).toHaveTextContent('SLA: 1 day remaining');
+    expect(indicator).toHaveAttribute('data-sla-status', 'warning');
+  });
+});
+
 describe('StageNode - Header Chips', () => {
   beforeEach(() => {
     vi.clearAllMocks();
