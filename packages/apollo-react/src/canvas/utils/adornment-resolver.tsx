@@ -118,7 +118,7 @@ const getDefaultAdornments = (context: NodeStatusContext): NodeAdornments => {
       return (
         <ValidationWarningIndicator message={context.validationState?.validationError?.message} />
       );
-    return <ExecutionStatusIndicator status={status} count={count} />;
+    return undefined;
   };
 
   return {
