@@ -874,7 +874,7 @@ describe('StageNode - SLA Indicator', () => {
     expect(screen.queryByTestId('stage-sla-stage-1')).not.toBeInTheDocument();
   });
 
-  it('renders slaText without an icon when slaStatus is omitted', () => {
+  it('renders slaText without an icon when slaIcon is omitted', () => {
     renderStageNode({
       execution: {
         stageStatus: { slaText: 'SLA: 10 days remaining' },
@@ -884,48 +884,35 @@ describe('StageNode - SLA Indicator', () => {
 
     const indicator = getSlaIndicator();
     expect(indicator).toHaveTextContent('SLA: 10 days remaining');
-    expect(indicator).toHaveAttribute('data-sla-status', 'ok');
+    expect(indicator).not.toHaveAttribute('data-sla-icon');
     expect(indicator.querySelector('svg')).toBeNull();
   });
 
-  it('renders slaText without an icon when slaStatus is "ok"', () => {
+  it('renders a warning icon and text when slaIcon is "warning"', () => {
     renderStageNode({
       execution: {
-        stageStatus: { slaText: 'SLA: 10 days remaining', slaStatus: 'ok' },
-        taskStatus: {},
-      },
-    });
-
-    const indicator = getSlaIndicator();
-    expect(indicator).toHaveAttribute('data-sla-status', 'ok');
-    expect(indicator.querySelector('svg')).toBeNull();
-  });
-
-  it('renders a warning icon and text when slaStatus is "warning"', () => {
-    renderStageNode({
-      execution: {
-        stageStatus: { slaText: 'SLA: 1 day remaining', slaStatus: 'warning' },
+        stageStatus: { slaText: 'SLA: 1 day remaining', slaIcon: 'warning' },
         taskStatus: {},
       },
     });
 
     const indicator = getSlaIndicator();
     expect(indicator).toHaveTextContent('SLA: 1 day remaining');
-    expect(indicator).toHaveAttribute('data-sla-status', 'warning');
+    expect(indicator).toHaveAttribute('data-sla-icon', 'warning');
     expect(indicator.querySelector('svg')).not.toBeNull();
   });
 
-  it('renders an error icon and text when slaStatus is "overdue"', () => {
+  it('renders an error icon and text when slaIcon is "error"', () => {
     renderStageNode({
       execution: {
-        stageStatus: { slaText: 'SLA: 1 day overdue', slaStatus: 'overdue' },
+        stageStatus: { slaText: 'SLA: 1 day overdue', slaIcon: 'error' },
         taskStatus: {},
       },
     });
 
     const indicator = getSlaIndicator();
     expect(indicator).toHaveTextContent('SLA: 1 day overdue');
-    expect(indicator).toHaveAttribute('data-sla-status', 'overdue');
+    expect(indicator).toHaveAttribute('data-sla-icon', 'error');
     expect(indicator.querySelector('svg')).not.toBeNull();
   });
 
@@ -935,7 +922,7 @@ describe('StageNode - SLA Indicator', () => {
         stageStatus: {
           duration: 'Duration: 1h 30m',
           slaText: 'SLA: 1 day remaining',
-          slaStatus: 'warning',
+          slaIcon: 'warning',
         },
         taskStatus: {},
       },
@@ -944,7 +931,7 @@ describe('StageNode - SLA Indicator', () => {
     expect(screen.getByText('Duration: 1h 30m')).toBeInTheDocument();
     const indicator = getSlaIndicator();
     expect(indicator).toHaveTextContent('SLA: 1 day remaining');
-    expect(indicator).toHaveAttribute('data-sla-status', 'warning');
+    expect(indicator).toHaveAttribute('data-sla-icon', 'warning');
   });
 });
 

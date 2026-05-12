@@ -14,18 +14,15 @@ import {
   StageTitleContainer,
   StageTitleInput,
 } from './StageNode.styles';
-import type { StageNodeProps, StageSlaStatus, StageStatus } from './StageNode.types';
+import type { StageNodeProps, StageSlaIcon, StageStatus } from './StageNode.types';
 import { StageHeaderChipType } from './StageNode.types';
 
-const SLA_STATUS_CONFIG: Record<
-  Exclude<StageSlaStatus, 'ok'>,
-  { icon: string; iconColor: string }
-> = {
+const SLA_ICON_CONFIG: Record<StageSlaIcon, { icon: string; iconColor: string }> = {
   warning: {
     icon: 'triangle-alert',
     iconColor: 'var(--canvas-warning-icon)',
   },
-  overdue: {
+  error: {
     icon: 'circle-alert',
     iconColor: 'var(--canvas-error-icon)',
   },
@@ -69,8 +66,8 @@ const StageNodeHeaderInner = ({
   const statusLabel = execution?.stageStatus?.label;
   const stageDuration = execution?.stageStatus?.duration;
   const slaText = execution?.stageStatus?.slaText;
-  const slaStatus = execution?.stageStatus?.slaStatus;
-  const slaIndicator = slaStatus && slaStatus !== 'ok' ? SLA_STATUS_CONFIG[slaStatus] : undefined;
+  const slaIcon = execution?.stageStatus?.slaIcon;
+  const slaIndicator = slaIcon ? SLA_ICON_CONFIG[slaIcon] : undefined;
 
   const isStageTitleEditable = !!onStageTitleChange && !isReadOnly;
 
@@ -166,7 +163,7 @@ const StageNodeHeaderInner = ({
             <span
               className="inline-flex items-center gap-1 text-xs text-foreground-muted"
               data-testid={`stage-sla-${id}`}
-              data-sla-status={slaStatus ?? 'ok'}
+              data-sla-icon={slaIcon}
             >
               {slaIndicator && (
                 <CanvasIcon icon={slaIndicator.icon} size={16} color={slaIndicator.iconColor} />
