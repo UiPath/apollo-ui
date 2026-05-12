@@ -135,7 +135,7 @@ const StageNodeHeaderInner = ({
           <span
             className={cn('text-sm', !isStageTitleEditing && 'font-bold', 'flex-1 min-w-0 py-0.5')}
           >
-            <CanvasTooltip content={label} placement="top" delay>
+            <CanvasTooltip content={label} placement="top" hide={isStageTitleEditing} delay>
               <StageTitleContainer isEditing={isStageTitleEditing}>
                 <StageTitleInput
                   name="Stage Title"
