@@ -49,6 +49,7 @@ export function ExecutionStatusIcon({
   status?:
     | 'InProgress'
     | 'Cancelled'
+    | 'UserCancelled'
     | 'Completed'
     | 'Paused'
     | 'Failed'
@@ -80,6 +81,7 @@ export function ExecutionStatusIcon({
       case 'Terminated':
         return <CanvasIcon icon="circle-x" size={size} color={color} />;
       case 'Cancelled':
+      case 'UserCancelled':
         return <CanvasIcon icon="circle-stop" size={size} color={color} />;
       case 'NotExecuted':
         return <CanvasIcon icon="circle-dashed" size={size} color={color} />;
