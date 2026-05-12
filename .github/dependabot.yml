@@ -1,0 +1,100 @@
+version: 2
+updates:
+  # npm / pnpm workspace dependencies (root + all workspaces auto-discovered)
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Los_Angeles
+      cooldown:
+        default-days: 7
+    open-pull-requests-limit: 10
+    versioning-strategy: increase-if-necessary
+    labels:
+      - dependencies
+    commit-message:
+      prefix: chore(deps)
+      prefix-development: chore(deps-dev)
+      include: scope
+    groups:
+      # Routine non-major updates bundled by dependency-type.
+      # Majors fall through and open individual PRs unless captured by a major-only group below.
+      production-minor-patch:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+      development-minor-patch:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+
+      # Majors that MUST move together across the family (one PR per family).
+      mui-major:
+        patterns:
+          - "@mui/*"
+          - "@emotion/*"
+        update-types:
+          - major
+      lingui-major:
+        patterns:
+          - "@lingui/*"
+        update-types:
+          - major
+      tiptap-major:
+        patterns:
+          - "@tiptap/*"
+        update-types:
+          - major
+      storybook-major:
+        patterns:
+          - "storybook"
+          - "@storybook/*"
+        update-types:
+          - major
+      radix-ui-major:
+        patterns:
+          - "@radix-ui/*"
+        update-types:
+          - major
+      tanstack-major:
+        patterns:
+          - "@tanstack/*"
+        update-types:
+          - major
+
+      # Bundle security PRs (otherwise each alert opens an individual PR).
+      security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  # GitHub Actions — pinned by SHA, so updates come through as SHA bumps with tag-comment hints.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Los_Angeles
+      cooldown:
+        default-days: 7
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - github-actions
+    commit-message:
+      prefix: chore(ci)
+      include: scope
+    groups:
+      actions-minor-patch:
+        update-types:
+          - minor
+          - patch
+      security:
+        applies-to: security-updates
+        patterns:
+          - "*"

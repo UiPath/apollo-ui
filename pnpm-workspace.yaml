@@ -3,6 +3,15 @@ packages:
   - 'web-packages/*'
   - 'apps/*'
 
+# Supply-chain hardening
+# 14-day quarantine on newly-published packages (minutes; 14d × 1440)
+minimumReleaseAge: 20160
+# Exempt our own scope so freshly-released @uipath/* packages can be consumed immediately
+minimumReleaseAgeExclude:
+  - '@uipath/*'
+# Refuse transitive git/tarball deps (pnpm 11 default; explicit on 10.x)
+blockExoticSubdeps: true
+
 # dompurify XSS - FIXME: no patch available yet
 auditConfig:
   ignoreGhsas:

@@ -36,7 +36,22 @@ playwright-report/
 
 # Environment variables
 .env
-.env*.local
+.env.*
+!.env.example
+
+# Credentials / keys
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+
+# Deployment platforms
+.netlify/
+
+# Claude local settings (token-bearing)
+.claude/settings.local.json
+.claude/*.local.*
 
 # IDE
 .idea/
