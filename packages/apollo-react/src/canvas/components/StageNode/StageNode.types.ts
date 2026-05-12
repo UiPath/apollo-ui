@@ -18,7 +18,7 @@ enum ElementStatusValues {
 export type StageStatus = `${ElementStatusValues}`;
 export type StageTaskStatus = `${ElementStatusValues}`;
 
-export type StageSlaStatus = 'ok' | 'warning' | 'overdue';
+export type StageSlaIcon = 'warning' | 'error';
 
 export interface StageTaskItem {
   id: string;
@@ -69,7 +69,7 @@ export interface StageNodeBaseProps {
       label?: string;
       duration?: string;
       slaText?: string;
-      slaStatus?: StageSlaStatus;
+      slaIcon?: StageSlaIcon;
     };
     taskStatus: Record<string, StageTaskExecution>;
   };
