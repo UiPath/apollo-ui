@@ -19,17 +19,15 @@ import { StageHeaderChipType } from './StageNode.types';
 
 const SLA_STATUS_CONFIG: Record<
   Exclude<StageSlaStatus, 'ok'>,
-  { icon: string; iconColor: string; textClass: string }
+  { icon: string; iconColor: string }
 > = {
   warning: {
     icon: 'triangle-alert',
     iconColor: 'var(--canvas-warning-icon)',
-    textClass: 'text-[color:var(--canvas-warning-text)]',
   },
   overdue: {
     icon: 'circle-alert',
     iconColor: 'var(--canvas-error-icon)',
-    textClass: 'text-[color:var(--canvas-error-text)]',
   },
 };
 
@@ -166,10 +164,7 @@ const StageNodeHeaderInner = ({
           {stageDuration && <span className="text-xs text-foreground-muted">{stageDuration}</span>}
           {slaText && (
             <span
-              className={cn(
-                'inline-flex items-center gap-1 text-xs',
-                slaIndicator ? slaIndicator.textClass : 'text-foreground-muted'
-              )}
+              className="inline-flex items-center gap-1 text-xs text-foreground-muted"
               data-testid={`stage-sla-${id}`}
               data-sla-status={slaStatus ?? 'ok'}
             >
