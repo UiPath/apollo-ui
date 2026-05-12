@@ -1215,7 +1215,9 @@
         "@tanstack/react-router",
         "pkce-challenge",
         "sonner",
-        "@mantine/hooks@^9.0.0"
+        "@mantine/hooks@^9.0.0",
+        "@tanstack/react-db",
+        "@uipath/vs-core@^1.2.2"
       ],
       "registryDependencies": [
         "button",
@@ -1307,6 +1309,10 @@
           "type": "registry:ui"
         },
         {
+          "path": "registry/shell/group-membership-screens.tsx",
+          "type": "registry:ui"
+        },
+        {
           "path": "registry/shell/use-group-members.ts",
           "type": "registry:ui"
         },
@@ -1321,8 +1327,7 @@
         {
           "path": "registry/shell/shell-roles.ts",
           "type": "registry:ui"
-        },
-        { "path": "lib/identity-service.ts", "type": "registry:lib" }
+        }
       ]
     },
     {
@@ -1383,7 +1388,7 @@
       "dependencies": [
         "@tanstack/react-table",
         "@tanstack/react-db",
-        "@uipath/vs-core"
+        "@uipath/vs-core@^1.2.2"
       ],
       "registryDependencies": ["@uipath/use-data-table", "@uipath/data-table"],
       "files": [

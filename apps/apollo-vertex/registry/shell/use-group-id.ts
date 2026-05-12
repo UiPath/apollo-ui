@@ -1,41 +1,27 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { fetchGroupIdByName } from "@/lib/identity-service";
-import { useAuth } from "./shell-auth-provider";
-import { STALE_TIME_MS } from "./shell-constants";
+import { useLiveQuery } from "@tanstack/react-db";
+import { type Group, useSolution } from "@uipath/vs-core";
 
 export interface UseGroupIdOptions<Role extends string> {
   role: Role;
   roleGroupMap: Record<Role, string>;
-  baseUrl: string;
-  orgName: string;
-  orgId: string;
+}
+
+export interface UseGroupIdResult {
+  groupId: string | null;
+  isLoading: boolean;
 }
 
 export const useGroupId = <Role extends string>({
   role,
   roleGroupMap,
-  baseUrl,
-  orgName,
-  orgId,
-}: UseGroupIdOptions<Role>): string => {
-  const { accessToken } = useAuth();
+}: UseGroupIdOptions<Role>): UseGroupIdResult => {
+  const solution = useSolution();
   const groupName = roleGroupMap[role];
 
-  const { data } = useSuspenseQuery({
-    queryKey: ["identity", "group-id-by-name", orgId, groupName],
-    queryFn: () => {
-      if (accessToken == null) {
-        throw new Error("accessToken is required");
-      }
-      return fetchGroupIdByName(accessToken, {
-        baseUrl,
-        orgName,
-        orgId,
-        groupName,
-      });
-    },
-    staleTime: STALE_TIME_MS,
-  });
+  const { data, isLoading } = useLiveQuery<Group>((q) =>
+    q.from({ groups: solution?.api.collections.identity.groups }),
+  );
 
-  return data;
+  const group = data?.find((g) => g.name === groupName);
+  return { groupId: group?.id ?? null, isLoading };
 };
