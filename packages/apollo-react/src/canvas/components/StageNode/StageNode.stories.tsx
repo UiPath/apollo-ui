@@ -567,6 +567,111 @@ export const ExecutionStatus: Story = {
   },
 };
 
+export const SLAStates: Story = {
+  name: 'SLA States',
+  parameters: {
+    nodes: [
+      {
+        id: '0',
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Stage 1',
+            isReadOnly: true,
+            tasks: [],
+          },
+          execution: {
+            stageStatus: {
+              slaText: 'SLA: None',
+            },
+            taskStatus: {},
+          },
+        },
+      },
+      {
+        id: '1',
+        type: 'stage',
+        position: { x: 400, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Closing',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'eSign envelope', icon: <DocumentIcon /> }],
+              [{ id: '3', label: 'Review closing docs', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'InProgress',
+              label: 'In progress',
+              slaText: 'SLA: 10 days remaining',
+              slaStatus: 'ok',
+            },
+            taskStatus: {},
+          },
+        },
+      },
+      {
+        id: '2',
+        type: 'stage',
+        position: { x: 752, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Closing',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'eSign envelope', icon: <DocumentIcon /> }],
+              [{ id: '3', label: 'Review closing docs', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'InProgress',
+              label: 'In progress',
+              slaText: 'SLA: 1 day remaining',
+              slaStatus: 'warning',
+            },
+            taskStatus: {},
+          },
+        },
+      },
+      {
+        id: '3',
+        type: 'stage',
+        position: { x: 1104, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Closing',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'eSign envelope', icon: <DocumentIcon /> }],
+              [{ id: '3', label: 'Review closing docs', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'InProgress',
+              label: 'In progress',
+              slaText: 'SLA: 1 day overdue',
+              slaStatus: 'overdue',
+            },
+            taskStatus: {},
+          },
+        },
+      },
+    ],
+  },
+};
+
 export const InteractiveTaskManagement: Story = {
   name: 'Interactive Task Management',
   parameters: {
