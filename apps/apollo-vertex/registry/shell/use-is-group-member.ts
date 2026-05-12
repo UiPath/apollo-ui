@@ -1,39 +1,36 @@
-import { useSuspenseQueries } from "@tanstack/react-query";
+import { useLiveQuery } from "@tanstack/react-db";
+import { type GroupMember, useSolution } from "@uipath/vs-core";
 import { useAuth } from "./shell-auth-provider";
-import { groupMembersQueryOptions } from "./use-group-members";
 
 export interface UseIsGroupMemberOptions {
-  baseUrl: string;
-  orgName: string;
-  orgId: string;
   groupIds: string[];
 }
 
-export const useIsGroupMember = ({
-  baseUrl,
-  orgName,
-  orgId,
-  groupIds,
-}: UseIsGroupMemberOptions): boolean => {
-  const { user, accessToken } = useAuth();
+export interface UseIsGroupMemberResult {
+  isMember: boolean;
+  isLoading: boolean;
+}
 
-  const results = useSuspenseQueries({
-    queries: groupIds.map((groupId) =>
-      groupMembersQueryOptions(accessToken, {
-        baseUrl,
-        orgName,
-        orgId,
-        groupId,
-      }),
-    ),
-  });
+export const useIsGroupMember = ({
+  groupIds,
+}: UseIsGroupMemberOptions): UseIsGroupMemberResult => {
+  const { user } = useAuth();
+  const solution = useSolution();
+
+  const { data, isLoading } = useLiveQuery<GroupMember>((q) =>
+    q.from({ members: solution?.api.collections.identity.groupMembers }),
+  );
 
   if (!user) {
-    return false;
+    return { isMember: false, isLoading };
   }
 
   const userEmail = user.email.toLowerCase();
-  return results.some((result) =>
-    result.data.some((member) => member.email.toLowerCase() === userEmail),
+  const isMember = (data ?? []).some(
+    (member) =>
+      groupIds.includes(member.groupId) &&
+      member.email.toLowerCase() === userEmail,
   );
+
+  return { isMember, isLoading };
 };

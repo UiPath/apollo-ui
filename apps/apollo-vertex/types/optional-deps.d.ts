@@ -42,10 +42,27 @@ declare module "@uipath/proteus-client" {
 }
 
 declare module "@uipath/vs-core" {
+  export interface Group {
+    id: string;
+    name: string;
+  }
+
+  export interface GroupMember {
+    id: string;
+    groupId: string;
+    userId: string;
+    name: string;
+    email: string;
+  }
+
   export function useSolution(): {
     api: {
       collections: {
         entities: Record<string, unknown>;
+        identity: {
+          groups: unknown;
+          groupMembers: unknown;
+        };
       };
     };
   } | null;
