@@ -35,6 +35,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -462,6 +463,74 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
       "Total: £8,750.00",
     ],
   },
+  "INV-48209": {
+    id: "INV-48209",
+    vendor: "Folio Systems",
+    vendorEmail: "ar@foliosystems.com",
+    amount: "$7,620.00 USD",
+    currency: "USD",
+    dueDate: "2026-05-15",
+    dueFormatted: "May 15, 2026",
+    documentDateFormatted: "May 7, 2026",
+    po: "PO-820044891",
+    paymentTerms: "Net 30 · USD",
+    billTo: "UiPath Inc.",
+    billAddress: "2 Tower Place, South San Francisco, CA 94080",
+    assignee: "Alex Johnson",
+    assigneeInitials: "AJ",
+    vat: "N/A",
+    description:
+      "Software licensing and implementation services for Folio Systems document management platform, Q2 2026.",
+    exceptionTag: "New vendor",
+    exceptionTagStatus: "info",
+    exceptionHeadline: "First invoice from unverified vendor",
+    exceptionMetrics: [
+      { label: "Invoiced", value: "$7,620", cls: "text-foreground" },
+      { label: "PO matched", value: "1", cls: "text-foreground" },
+    ],
+    exceptionBody:
+      "Folio Systems is not in the approved vendor master. PO-820044891 was located and amounts match exactly. Approve to add vendor to master list and process payment, or reject to request procurement sign-off first.",
+    exceptionPrimaryAction: "Approve",
+    exceptionSecondaryAction: "Reject invoice",
+    lines: [
+      {
+        description: "Document management platform license (annual)",
+        qty: 1,
+        amount: "$5,400.00",
+      },
+      {
+        description: "Implementation & onboarding services",
+        qty: 12,
+        amount: "$2,220.00",
+      },
+    ],
+    linesTotal: "$7,620.00",
+    sourceFilename: "INV-48209.pdf",
+    sourceLines: [
+      "INVOICE",
+      "Invoice #: INV-48209",
+      "Date: May 7, 2026",
+      "Due: May 15, 2026",
+      "---",
+      "From:",
+      "Folio Systems",
+      "800 Technology Drive",
+      "Austin, TX 78701",
+      "---",
+      "Bill To:",
+      "UiPath Inc.",
+      "2 Tower Place",
+      "South San Francisco, CA 94080",
+      "---",
+      "PO: PO-820044891",
+      "---",
+      "Items:",
+      "Document mgmt license × 1 · $5,400.00",
+      "Implementation services × 12 · $2,220.00",
+      "---",
+      "Total: $7,620.00",
+    ],
+  },
 };
 
 const InvoiceDetailContext = createContext<InvoiceDetailData>(
@@ -682,11 +751,11 @@ const invoiceTableData: InvoiceTableRow[] = [
     vendor: "Folio Systems",
     amount: 7620,
     currency: "USD",
-    dueDate: "2026-05-07",
+    dueDate: "2026-05-15",
     exception: "new-vendor",
     score: 4,
-    status: "in-review",
-    assignee: "Maria Chen",
+    status: "pending-review",
+    assignee: "Alex Johnson",
   },
   {
     id: "INV-22045",
@@ -863,11 +932,15 @@ const BETWEEN_INVOICE_STYLES = `
     animation: inv-glow-in 800ms ease-out 540ms both;
   }
   @keyframes fadeSlideIn {
-    from { opacity: 0; transform: translateY(-6px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { transform: translateY(-6px); }
+    to   { transform: translateY(0); }
   }
   .entry-new {
-    animation: fadeSlideIn 300ms ease forwards;
+    animation: fadeSlideIn 250ms ease forwards;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
   .ai-panel-glow {
     background: linear-gradient(
@@ -1463,28 +1536,46 @@ function NavInvoiceItem({
   invoice,
   isActive,
   onClick,
+  completion,
 }: {
   invoice: Invoice;
   isActive: boolean;
   onClick: () => void;
+  completion?: CompletionRecord;
 }) {
   const isAuto = invoice.status === "done";
+  const isCompleted = !!completion;
 
-  const dotColor = isAuto
-    ? "bg-[#97C459]"
-    : invoice.tagType === "error"
-      ? "bg-[#E24B4A]"
-      : invoice.tagType === "warning"
-        ? "bg-[#EF9F27]"
-        : invoice.tagType === "info"
-          ? "bg-[#5B8EF0]"
-          : "bg-muted-foreground";
+  const dotColor = isCompleted
+    ? completion.type === "approved"
+      ? "bg-[#97C459]"
+      : "bg-[#E24B4A]"
+    : isAuto
+      ? "bg-[#97C459]"
+      : invoice.tagType === "error"
+        ? "bg-[#E24B4A]"
+        : invoice.tagType === "warning"
+          ? "bg-[#EF9F27]"
+          : invoice.tagType === "info"
+            ? "bg-[#5B8EF0]"
+            : "bg-muted-foreground";
+
+  const tagLabel = isCompleted
+    ? completion.type === "approved"
+      ? "Approved"
+      : "Rejected"
+    : isAuto
+      ? "Done"
+      : invoice.tag;
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={cn("w-full text-left group", isAuto && "opacity-40")}
+      className={cn(
+        "w-full text-left group",
+        (isAuto || isCompleted) && "opacity-40",
+      )}
     >
       <div
         className={cn(
@@ -1507,12 +1598,10 @@ function NavInvoiceItem({
           </span>
         </div>
         <div className="mt-[5px] flex items-center justify-between gap-2">
-          {(invoice.tag || isAuto) && (
+          {(invoice.tag || isAuto || isCompleted) && (
             <div className="flex items-center gap-1 shrink-0">
               <div className={cn("size-1.5 rounded-full shrink-0", dotColor)} />
-              <span className="text-xs text-muted-foreground">
-                {isAuto ? "Done" : invoice.tag}
-              </span>
+              <span className="text-xs text-muted-foreground">{tagLabel}</span>
             </div>
           )}
           <span className="text-xs text-muted-foreground ml-auto">
@@ -1530,12 +1619,14 @@ function LeftNav({
   onBack,
   variant,
   onVariantChange,
+  completionMap,
 }: {
   activeId: string;
   onInvoiceClick: (id: string) => void;
   onBack: () => void;
   variant: Variant;
   onVariantChange: (v: Variant) => void;
+  completionMap: Record<string, CompletionRecord>;
 }) {
   return (
     <div className="h-full w-[336px] flex flex-col shrink-0 overflow-hidden relative">
@@ -1577,6 +1668,7 @@ function LeftNav({
               invoice={inv}
               isActive={inv.id === activeId}
               onClick={() => onInvoiceClick(inv.id)}
+              completion={completionMap[inv.id]}
             />
           ))}
         </div>
@@ -1596,6 +1688,7 @@ function LeftNav({
                 invoice={inv}
                 isActive={inv.id === activeId}
                 onClick={() => onInvoiceClick(inv.id)}
+                completion={completionMap[inv.id]}
               />
             ))}
         </div>
@@ -1621,9 +1714,11 @@ function LeftNav({
 function TopBar({
   emailSent,
   flagged,
+  completion,
 }: {
   emailSent: boolean;
   flagged: boolean;
+  completion?: CompletionRecord;
 }) {
   const d = useInvoiceDetail();
   return (
@@ -1654,30 +1749,29 @@ function TopBar({
         </PageHeaderField>
         <PageHeaderField>
           <PageHeaderFieldLabel>Status</PageHeaderFieldLabel>
-          <PageHeaderFieldValue
-            className={cn(
-              "flex items-center gap-1 transition-colors duration-300",
-              flagged
-                ? ""
-                : emailSent
-                  ? "text-primary"
-                  : "text-muted-foreground",
-            )}
-          >
-            {flagged ? (
+          <PageHeaderFieldValue className="flex items-center gap-1 transition-colors duration-300">
+            {completion?.type === "approved" ? (
+              <Badge status="success" variant="secondary">
+                Approved
+              </Badge>
+            ) : completion?.type === "rejected" ? (
+              <Badge status="error" variant="secondary">
+                Rejected
+              </Badge>
+            ) : flagged ? (
               <Badge status="warning" variant="secondary">
                 Flagged
               </Badge>
             ) : emailSent ? (
-              <>
+              <span className="text-primary flex items-center gap-1">
                 <Mail className="size-3.5 shrink-0" />
                 Supplier contacted
-              </>
+              </span>
             ) : (
-              <>
+              <span className="text-muted-foreground flex items-center gap-1">
                 <Clock className="size-3.5 shrink-0" />
                 Awaiting decision
-              </>
+              </span>
             )}
           </PageHeaderFieldValue>
         </PageHeaderField>
@@ -2324,22 +2418,125 @@ function EmailComposer({
   );
 }
 
+// ── AnimatedCheck ─────────────────────────────────────────────────────────────
+
+function AnimatedCheck({ size = 40 }: { size?: number }) {
+  const r = (size - 4) / 2;
+  const cx = size / 2;
+  const cy = size / 2;
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ display: "block" }}
+    >
+      <motion.circle
+        cx={cx}
+        cy={cy}
+        r={r}
+        strokeWidth="2"
+        fill="none"
+        style={{ stroke: "var(--success)" }}
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+      />
+      <motion.path
+        d={`M ${cx - r * 0.38} ${cy} l ${r * 0.3} ${r * 0.3} l ${r * 0.5} ${-r * 0.5}`}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{ stroke: "var(--success)" }}
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: 0.3, ease: "easeInOut", delay: 0.35 }}
+      />
+    </svg>
+  );
+}
+
+// ── UpNextCard ────────────────────────────────────────────────────────────────
+
+function UpNextCard({
+  nextInvoice,
+  onNext,
+  onBack,
+}: {
+  nextInvoice: Invoice | null;
+  onNext: () => void;
+  onBack: () => void;
+}) {
+  if (!nextInvoice) return null;
+  return (
+    <div>
+      <Card className="mt-0">
+        <CardContent className="p-3 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+              Up next
+            </p>
+            <p className="text-sm font-medium">
+              {nextInvoice.id} · {nextInvoice.vendor}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {nextInvoice.tag ?? "No exception"} · {nextInvoice.amount} · Due{" "}
+              {nextInvoice.dueGroup === "today"
+                ? "today"
+                : nextInvoice.dueGroup === "tomorrow"
+                  ? "tomorrow"
+                  : "soon"}
+            </p>
+          </div>
+          <Button variant="default" size="sm" onClick={onNext}>
+            Next
+            <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+          </Button>
+        </CardContent>
+      </Card>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="mt-2 text-muted-foreground"
+        onClick={onBack}
+      >
+        ← Back to queue
+      </Button>
+    </div>
+  );
+}
+
+// ── ActionBlock ───────────────────────────────────────────────────────────────
+
 function ActionBlock({
   onPrimaryAction,
   emailButtonState = "default",
   variant,
   onFlag,
   onUnflag,
+  onApprove,
+  onReject,
 }: {
   onPrimaryAction: () => void;
   emailButtonState?: "default" | "draft-open" | "sent";
   variant: Variant;
   onFlag: (reason: string) => void;
   onUnflag: () => void;
+  onApprove?: () => void;
+  onReject?: (reason: string) => void;
 }) {
-  const { exceptionPrimaryAction, exceptionSecondaryAction } =
-    useInvoiceDetail();
+  const {
+    exceptionPrimaryAction,
+    exceptionSecondaryAction,
+    id,
+    vendor,
+    amount,
+  } = useInvoiceDetail();
+  const isApproveMode = exceptionPrimaryAction === "Approve";
   const isApproveAction = exceptionSecondaryAction === "Approve";
+  const hasRejectAction = exceptionSecondaryAction === "Reject invoice";
   const [drafting, setDrafting] = useState(false);
   const [flagOpen, setFlagOpen] = useState(false);
   const [flagReason, setFlagReason] = useState<FlagReason>(
@@ -2347,6 +2544,12 @@ function ActionBlock({
   );
   const [flagNote, setFlagNote] = useState("");
   const [flagConfirmed, setFlagConfirmed] = useState<string | null>(null);
+
+  // Reject dialog state
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectReason, setRejectReason] =
+    useState<RejectReason>("Incorrect price");
+  const [rejectNote, setRejectNote] = useState("");
 
   const isApprovalType =
     exceptionPrimaryAction.toLowerCase().includes("approval") ||
@@ -2376,116 +2579,186 @@ function ActionBlock({
     onUnflag();
   }
 
+  function handleRejectSubmit() {
+    setRejectOpen(false);
+    onReject?.(rejectReason);
+  }
+
   return (
     <div>
-      <div className="flex items-center gap-2">
-        {emailButtonState === "draft-open" ? (
-          <Button
-            variant="outline"
-            className="text-muted-foreground transition-all duration-150"
-            onClick={() => onPrimaryAction()}
-          >
-            <Mail className="mr-2 h-4 w-4" />
-            Email draft open…
-          </Button>
-        ) : emailButtonState === "sent" ? (
-          <Button
-            variant="outline"
-            disabled
-            className="text-muted-foreground transition-all duration-150"
-          >
-            <Check className="mr-2 h-4 w-4" />
-            Email sent
-          </Button>
-        ) : (
-          <Button
-            variant="default"
-            disabled={drafting}
-            onClick={handlePrimary}
-            className={cn(
-              "transition-all duration-150",
-              variant === "C" &&
-                "bg-primary dark:text-gray-900 hover:bg-primary/90 border-0",
-            )}
-          >
-            {drafting ? (
-              <>
-                <Loader2 className="size-3.5 animate-spin" />
-                Drafting…
-              </>
-            ) : (
-              exceptionPrimaryAction
-            )}
-          </Button>
-        )}
-        <Button
-          variant={isApproveAction ? "ghost" : "secondary"}
-          className={cn(
-            isApproveAction
-              ? "bg-transparent border-0 shadow-none text-[13px] text-[#666] hover:bg-transparent hover:text-[#999]"
-              : "dark:bg-transparent dark:[border-width:1.5px] dark:border-[#555] dark:text-[#CCC] dark:hover:bg-white/5",
+      {!flagConfirmed && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Primary action button */}
+          {isApproveMode ? (
+            <Button variant="default" onClick={() => onApprove?.()}>
+              Approve
+            </Button>
+          ) : emailButtonState === "draft-open" ? (
+            <Button
+              variant="outline"
+              className="text-muted-foreground transition-all duration-150"
+              onClick={() => onPrimaryAction()}
+            >
+              <Mail className="mr-2 h-4 w-4" />
+              Email draft open…
+            </Button>
+          ) : emailButtonState === "sent" ? (
+            <Button
+              variant="outline"
+              disabled
+              className="text-muted-foreground transition-all duration-150"
+            >
+              <Check className="mr-2 h-4 w-4" />
+              Email sent
+            </Button>
+          ) : (
+            <Button
+              variant="default"
+              disabled={drafting}
+              onClick={handlePrimary}
+              className={cn(
+                "transition-all duration-150",
+                variant === "C" &&
+                  "bg-primary dark:text-gray-900 hover:bg-primary/90 border-0",
+              )}
+            >
+              {drafting ? (
+                <>
+                  <Loader2 className="size-3.5 animate-spin" />
+                  Drafting…
+                </>
+              ) : (
+                exceptionPrimaryAction
+              )}
+            </Button>
           )}
-        >
-          {exceptionSecondaryAction}
-        </Button>
-        {!flagConfirmed && (
-          <Dialog open={flagOpen} onOpenChange={setFlagOpen}>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                className="dark:[border-width:1.5px] dark:border-[#555] dark:text-[#CCC] dark:hover:bg-white/5"
-              >
-                <Flag className="mr-1.5 h-3.5 w-3.5" />
-                Flag
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Flag for follow-up</DialogTitle>
-                <DialogDescription>
-                  Park this invoice with a reason. It will stay in your queue
-                  until resolved.
-                </DialogDescription>
-              </DialogHeader>
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">Reason</p>
-                <div className="flex flex-wrap gap-2">
-                  {FLAG_REASONS.map((r) => (
-                    <Button
-                      key={r}
-                      type="button"
-                      variant={flagReason === r ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setFlagReason(r)}
-                    >
-                      {r}
-                    </Button>
-                  ))}
+
+          {/* Secondary action button */}
+          {hasRejectAction ? (
+            <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline">Reject invoice</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Reject invoice</DialogTitle>
+                  <DialogDescription>
+                    {id} · {vendor} · {amount}
+                    <br />
+                    This will notify the vendor and update the invoice status to
+                    rejected.
+                  </DialogDescription>
+                </DialogHeader>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Reason for rejection
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {REJECT_REASONS.map((r) => (
+                      <Button
+                        key={r}
+                        type="button"
+                        variant={rejectReason === r ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setRejectReason(r)}
+                      >
+                        {r}
+                      </Button>
+                    ))}
+                  </div>
+                  <Textarea
+                    placeholder="Add a note for the vendor (optional)…"
+                    rows={2}
+                    className="text-sm mt-3"
+                    value={rejectNote}
+                    onChange={(e) => setRejectNote(e.target.value)}
+                  />
                 </div>
-                <Textarea
-                  placeholder="Add a note (optional)…"
-                  rows={3}
-                  className="text-sm mt-3"
-                  value={flagNote}
-                  onChange={(e) => setFlagNote(e.target.value)}
-                />
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setFlagOpen(false)}
-                >
-                  Cancel
+                <DialogFooter>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setRejectOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleRejectSubmit}
+                  >
+                    Reject invoice
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          ) : (
+            <Button variant={isApproveAction ? "ghost" : "secondary"}>
+              {exceptionSecondaryAction}
+            </Button>
+          )}
+
+          {/* Flag button */}
+          {!flagConfirmed && (
+            <Dialog open={flagOpen} onOpenChange={setFlagOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Flag className="mr-1.5 h-3.5 w-3.5" />
+                  Flag
                 </Button>
-                <Button variant="default" size="sm" onClick={handleFlagSubmit}>
-                  Flag invoice
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        )}
-      </div>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Flag for follow-up</DialogTitle>
+                  <DialogDescription>
+                    Park this invoice with a reason. It will stay in your queue
+                    until resolved.
+                  </DialogDescription>
+                </DialogHeader>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Reason</p>
+                  <div className="flex flex-wrap gap-2">
+                    {FLAG_REASONS.map((r) => (
+                      <Button
+                        key={r}
+                        type="button"
+                        variant={flagReason === r ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setFlagReason(r)}
+                      >
+                        {r}
+                      </Button>
+                    ))}
+                  </div>
+                  <Textarea
+                    placeholder="Add a note (optional)…"
+                    rows={3}
+                    className="text-sm mt-3"
+                    value={flagNote}
+                    onChange={(e) => setFlagNote(e.target.value)}
+                  />
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setFlagOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={handleFlagSubmit}
+                  >
+                    Flag invoice
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
+      )}
 
       {flagConfirmed && (
         <>
@@ -2577,12 +2850,20 @@ function ExceptionBlock({
   variant,
   onFlag,
   onUnflag,
+  onApprove,
+  onReject,
+  dimContent = false,
+  hideActions = false,
 }: {
   onContactSupplier: () => void;
   emailButtonState?: "default" | "draft-open" | "sent";
   variant: Variant;
   onFlag: (reason: string) => void;
   onUnflag: () => void;
+  onApprove?: () => void;
+  onReject?: (reason: string) => void;
+  dimContent?: boolean;
+  hideActions?: boolean;
 }) {
   const {
     exceptionTag,
@@ -2594,66 +2875,78 @@ function ExceptionBlock({
   return (
     <div>
       <div className="flex items-center gap-2 mb-5">
-        <Badge status={exceptionTagStatus}>{exceptionTag}</Badge>
+        <Badge status={exceptionTagStatus} variant="secondary">{exceptionTag}</Badge>
       </div>
-      <h2
-        className="font-bold leading-[1.2] tracking-tight text-foreground w-full mb-5 overflow-hidden line-clamp-2"
-        style={{
-          fontSize: exceptionHeadline.length > 50 ? "28px" : "32px",
-          textWrap: "balance",
-          maxWidth: "22ch",
-        }}
-      >
-        {exceptionHeadline}
-      </h2>
-      {variant === "C" ? (
-        <div className="grid grid-cols-3 divide-x divide-border rounded-[6px] max-w-[480px] mb-5 [&>div:first-child]:pl-0">
-          {exceptionMetrics.map((m) => (
-            <div key={m.label} className="px-6 py-[18px] flex flex-col gap-1.5">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground truncate">
-                {m.label}
-              </span>
-              <span
-                className={cn(
-                  "text-[30px] font-semibold tracking-tight leading-none whitespace-nowrap",
-                  m.cls,
-                )}
+      <div className={cn(dimContent && "opacity-60 pointer-events-none")}>
+        <h2
+          className="font-bold leading-[1.2] tracking-tight text-foreground w-full mb-5 overflow-hidden line-clamp-2"
+          style={{
+            fontSize: exceptionHeadline.length > 50 ? "28px" : "32px",
+            textWrap: "balance",
+            maxWidth: "22ch",
+          }}
+        >
+          {exceptionHeadline}
+        </h2>
+        {variant === "C" ? (
+          <div className="grid grid-cols-3 divide-x divide-border rounded-[6px] max-w-[480px] mb-5 [&>div:first-child]:pl-0">
+            {exceptionMetrics.map((m) => (
+              <div
+                key={m.label}
+                className="px-6 py-[18px] flex flex-col gap-1.5"
               >
-                {m.value}
-              </span>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <>
-          <p className="text-sm leading-relaxed mb-1 max-w-[480px]">
-            {exceptionMetrics.map((m, i) => (
-              <span key={m.label}>
-                {i > 0 && (
-                  <span className="text-muted-foreground"> &nbsp;·&nbsp; </span>
-                )}
-                <span className="text-muted-foreground">{m.label} </span>
-                <span className={cn("font-semibold", m.cls)}>{m.value}</span>
-              </span>
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground truncate">
+                  {m.label}
+                </span>
+                <span
+                  className={cn(
+                    "text-[30px] font-semibold tracking-tight leading-none whitespace-nowrap",
+                    m.cls,
+                  )}
+                >
+                  {m.value}
+                </span>
+              </div>
             ))}
-          </p>
-          <p className="text-sm text-muted-foreground leading-relaxed max-w-[480px] mt-4 mb-8">
+          </div>
+        ) : (
+          <>
+            <p className="text-sm leading-relaxed mb-1 max-w-[480px]">
+              {exceptionMetrics.map((m, i) => (
+                <span key={m.label}>
+                  {i > 0 && (
+                    <span className="text-muted-foreground">
+                      {" "}
+                      &nbsp;·&nbsp;{" "}
+                    </span>
+                  )}
+                  <span className="text-muted-foreground">{m.label} </span>
+                  <span className={cn("font-semibold", m.cls)}>{m.value}</span>
+                </span>
+              ))}
+            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-[480px] mt-4 mb-8">
+              {exceptionBody}
+            </p>
+          </>
+        )}
+        {variant === "C" && (
+          <p className="text-[14px] text-muted-foreground leading-[1.7] max-w-[540px] mb-7">
             {exceptionBody}
           </p>
-        </>
+        )}
+      </div>
+      {!hideActions && (
+        <ActionBlock
+          onPrimaryAction={onContactSupplier}
+          emailButtonState={emailButtonState}
+          variant={variant}
+          onFlag={onFlag}
+          onUnflag={onUnflag}
+          onApprove={onApprove}
+          onReject={onReject}
+        />
       )}
-      {variant === "C" && (
-        <p className="text-[14px] text-muted-foreground leading-[1.7] max-w-[540px] mb-7">
-          {exceptionBody}
-        </p>
-      )}
-      <ActionBlock
-        onPrimaryAction={onContactSupplier}
-        emailButtonState={emailButtonState}
-        variant={variant}
-        onFlag={onFlag}
-        onUnflag={onUnflag}
-      />
     </div>
   );
 }
@@ -3456,6 +3749,22 @@ const FLAG_REASONS = [
 ] as const;
 type FlagReason = (typeof FLAG_REASONS)[number];
 
+const REJECT_REASONS = [
+  "Incorrect price",
+  "Wrong vendor",
+  "Duplicate invoice",
+  "No PO found",
+  "Other",
+] as const;
+type RejectReason = (typeof REJECT_REASONS)[number];
+
+type CompletionRecord = {
+  type: "approved" | "rejected";
+  reason?: string;
+  time: string;
+  by: string;
+};
+
 // ── ActivityTabC ───────────────────────────────────────────────────────────────
 
 function ActivityTabC({
@@ -4080,9 +4389,29 @@ function RightPanel({
 function InvoiceDetailPane({
   activeInvoiceId,
   variant,
+  completion,
+  onComplete,
+  onUndoComplete,
+  nextInvoice,
+  onNextInvoice,
+  onBack,
+  totalInQueue,
+  completedCount,
+  approvedCount,
+  rejectedCount,
 }: {
   activeInvoiceId: string;
   variant: Variant;
+  completion?: CompletionRecord;
+  onComplete: (type: "approved" | "rejected", reason?: string) => void;
+  onUndoComplete: () => void;
+  nextInvoice: Invoice | null;
+  onNextInvoice: () => void;
+  onBack: () => void;
+  totalInQueue: number;
+  completedCount: number;
+  approvedCount: number;
+  rejectedCount: number;
 }) {
   const data =
     detailDataMap[activeInvoiceId] ??
@@ -4106,6 +4435,87 @@ function InvoiceDetailPane({
   const [emailEverOpened, setEmailEverOpened] = useState(false);
   const [emailGlowReady, setEmailGlowReady] = useState(false);
   const [emailDraftKey, setEmailDraftKey] = useState(0);
+  const [justCompleted, setJustCompleted] = useState<CompletionRecord | null>(
+    null,
+  );
+  const approveEntryIdRef = useRef<string | null>(null);
+
+  function handleApprove() {
+    const time = new Date().toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    const record: CompletionRecord = {
+      type: "approved",
+      time,
+      by: data.assignee,
+    };
+    const entryId = `approved-${Date.now()}`;
+    approveEntryIdRef.current = entryId;
+    setJustCompleted(record);
+    onComplete("approved");
+    setExtraTimelineEntries((prev) => [
+      {
+        id: entryId,
+        label: "Approved",
+        time,
+        desc: "Invoice sent for payment processing.",
+        indicator: "user",
+      },
+      ...prev,
+    ]);
+    if (!nextInvoice) {
+      toast.success("All caught up", {
+        description: "No more invoices pending review.",
+        duration: 4000,
+      });
+    } else {
+      toast.success("Invoice approved", {
+        description: `${data.id} · ${data.vendor}`,
+        action: { label: "Undo", onClick: handleUndoApproval },
+        duration: 5000,
+      });
+    }
+  }
+
+  function handleUndoApproval() {
+    setJustCompleted(null);
+    onUndoComplete();
+    if (approveEntryIdRef.current) {
+      const id = approveEntryIdRef.current;
+      setExtraTimelineEntries((prev) => prev.filter((e) => e.id !== id));
+      approveEntryIdRef.current = null;
+    }
+  }
+
+  function handleReject(reason: string) {
+    const time = new Date().toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    const record: CompletionRecord = {
+      type: "rejected",
+      reason,
+      time,
+      by: data.assignee,
+    };
+    setJustCompleted(record);
+    onComplete("rejected", reason);
+    setExtraTimelineEntries((prev) => [
+      {
+        id: `rejected-${Date.now()}`,
+        label: "Rejected",
+        time,
+        desc: `Reason: ${reason}`,
+        indicator: "user",
+      },
+      ...prev,
+    ]);
+    toast.error("Invoice rejected", {
+      description: `${data.id} · Reason: ${reason}`,
+      duration: 5000,
+    });
+  }
 
   function openEmailTab() {
     setEmailTabOpen(true);
@@ -4191,7 +4601,11 @@ function InvoiceDetailPane({
           className="shrink-0 inv-between-enter"
           style={{ animationDelay: "60ms" }}
         >
-          <TopBar emailSent={sentEmails.length > 0} flagged={flagged} />
+          <TopBar
+            emailSent={sentEmails.length > 0}
+            flagged={flagged}
+            completion={justCompleted ?? completion}
+          />
         </div>
         <div className="relative flex flex-1 overflow-hidden">
           <div
@@ -4199,7 +4613,150 @@ function InvoiceDetailPane({
             style={{ animationDelay: "130ms" }}
           >
             <div className="flex flex-col flex-1 overflow-hidden">
-              {viewingEmail ? (
+              {/* Returning to a previously completed invoice */}
+              {!justCompleted && completion ? (
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                  <div
+                    className="flex flex-col items-center text-center py-12 px-8"
+                    style={{
+                      opacity: 0,
+                      animation: "fadeIn 200ms ease forwards",
+                    }}
+                  >
+                    <AnimatedCheck size={56} />
+                    <div className="mt-6 flex flex-col items-center gap-4">
+                      <div>
+                        <h2 className="text-xl font-medium">
+                          Invoice reviewed
+                        </h2>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {completion.type === "approved"
+                            ? "Sent for payment processing."
+                            : "Removed from your review queue."}
+                        </p>
+                      </div>
+                      {(approvedCount > 0 || rejectedCount > 0) && (
+                        <div className="flex gap-2 flex-wrap justify-center">
+                          {approvedCount > 0 && (
+                            <Badge status="success" variant="secondary">
+                              {approvedCount} approved this session
+                            </Badge>
+                          )}
+                          {rejectedCount > 0 && (
+                            <Badge status="error" variant="secondary">
+                              {rejectedCount} rejected this session
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        {completion.type === "approved"
+                          ? `Approved by ${completion.by} · ${completion.time}`
+                          : `Rejected by ${completion.by} · ${completion.time} · Reason: ${completion.reason}`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : justCompleted && !nextInvoice ? (
+                /* Queue cleared — replaces center content entirely */
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                  <div className="flex flex-col items-center text-center py-12 px-8">
+                    <AnimatedCheck size={56} />
+                    <div
+                      className="mt-6 flex flex-col items-center gap-4"
+                      style={{
+                        opacity: 0,
+                        animation: "fadeIn 300ms ease 600ms forwards",
+                      }}
+                    >
+                      <div>
+                        <h2 className="text-xl font-medium">All caught up</h2>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          No invoices pending your review.
+                        </p>
+                      </div>
+                      {(approvedCount > 0 || rejectedCount > 0) && (
+                        <div className="flex gap-2 flex-wrap justify-center">
+                          {approvedCount > 0 && (
+                            <Badge status="success" variant="secondary">
+                              {approvedCount} approved this session
+                            </Badge>
+                          )}
+                          {rejectedCount > 0 && (
+                            <Badge status="error" variant="secondary">
+                              {rejectedCount} rejected this session
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        {justCompleted.type === "approved"
+                          ? `Approved · ${data.id} · ${data.vendor}`
+                          : `Rejected · ${data.id} · Reason: ${justCompleted.reason}`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : justCompleted ? (
+                /* Just completed — alert + up next card */
+                <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 custom-scrollbar">
+                  {justCompleted.type === "approved" && (
+                    <div
+                      style={{
+                        opacity: 0,
+                        animation: "fadeIn 150ms ease forwards",
+                      }}
+                    >
+                      <AnimatedCheck size={40} />
+                    </div>
+                  )}
+                  <div
+                    className={justCompleted.type === "approved" ? "mt-4" : ""}
+                    style={{
+                      opacity: 0,
+                      animation: "fadeIn 300ms ease 250ms forwards",
+                    }}
+                  >
+                    {justCompleted.type === "approved" ? (
+                      <Alert
+                        status="default"
+                        visual="outline"
+                        className="border-success [&>svg]:text-success"
+                      >
+                        <Check className="h-4 w-4" />
+                        <AlertTitle className="text-sm font-medium">
+                          Invoice approved
+                        </AlertTitle>
+                        <AlertDescription className="text-xs text-muted-foreground">
+                          {data.id} · {data.vendor} · {data.amount} — sent for
+                          payment processing.
+                          <br />
+                          {completedCount} of {totalInQueue} invoices reviewed
+                        </AlertDescription>
+                      </Alert>
+                    ) : (
+                      <Alert status="error" visual="outline">
+                        <X className="h-4 w-4" />
+                        <AlertTitle className="text-sm font-medium">
+                          Invoice rejected
+                        </AlertTitle>
+                        <AlertDescription className="text-xs text-muted-foreground">
+                          {data.id} · {data.vendor} · Reason:{" "}
+                          {justCompleted.reason}
+                          <br />
+                          Vendor will be notified. Removed from your queue.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    <Separator className="my-4" />
+                    <UpNextCard
+                      nextInvoice={nextInvoice}
+                      onNext={onNextInvoice}
+                      onBack={onBack}
+                    />
+                  </div>
+                </div>
+              ) : viewingEmail ? (
                 <EmailViewer
                   email={viewingEmail}
                   onClose={() => setViewingEmail(null)}
@@ -4228,10 +4785,15 @@ function InvoiceDetailPane({
                     variant={variant}
                     onFlag={handleFlag}
                     onUnflag={handleUnflag}
+                    onApprove={handleApprove}
+                    onReject={handleReject}
+                    dimContent={flagged}
                   />
                 </div>
               )}
-              {variant === "C" && <AskFooter />}
+              {variant === "C" && !justCompleted && !completion && !flagged && (
+                <AskFooter />
+              )}
             </div>
           </div>
           <div
@@ -4283,6 +4845,9 @@ function InvoiceReviewContent() {
   const [contentKey, setContentKey] = useState("INV-GRN-001");
   const [contentExiting, setContentExiting] = useState(false);
   const [variant, setVariant] = useState<Variant>("C");
+  const [completionMap, setCompletionMap] = useState<
+    Record<string, CompletionRecord>
+  >({});
 
   useEffect(() => {
     const style = document.createElement("style");
@@ -4317,6 +4882,45 @@ function InvoiceReviewContent() {
       setContentKey(id);
     }, 220);
   }
+
+  function handleComplete(type: "approved" | "rejected", reason?: string) {
+    const now = new Date();
+    const time = now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const data = detailDataMap[activeInvoiceId];
+    const record: CompletionRecord = {
+      type,
+      reason,
+      time,
+      by: data?.assignee ?? "You",
+    };
+    setCompletionMap((prev) => ({ ...prev, [activeInvoiceId]: record }));
+  }
+
+  function handleUndoComplete() {
+    setCompletionMap((prev) => {
+      const next = { ...prev };
+      delete next[activeInvoiceId];
+      return next;
+    });
+  }
+
+  const approvedCount = Object.values(completionMap).filter(
+    (r) => r.type === "approved",
+  ).length;
+  const rejectedCount = Object.values(completionMap).filter(
+    (r) => r.type === "rejected",
+  ).length;
+
+  const activeIndex = invoicesReview.findIndex(
+    (inv) => inv.id === activeInvoiceId,
+  );
+  const nextInvoice =
+    invoicesReview
+      .slice(activeIndex + 1)
+      .find((inv) => !completionMap[inv.id]) ?? null;
 
   const isDetail = phase !== "list";
 
@@ -4381,6 +4985,7 @@ function InvoiceReviewContent() {
               onBack={handleBack}
               variant={variant}
               onVariantChange={setVariant}
+              completionMap={completionMap}
             />
           </div>
         </div>
@@ -4399,6 +5004,18 @@ function InvoiceReviewContent() {
                 <InvoiceDetailPane
                   activeInvoiceId={contentKey}
                   variant={variant}
+                  completion={completionMap[contentKey]}
+                  onComplete={handleComplete}
+                  onUndoComplete={handleUndoComplete}
+                  nextInvoice={nextInvoice}
+                  onNextInvoice={() => {
+                    if (nextInvoice) handleNavInvoiceClick(nextInvoice.id);
+                  }}
+                  onBack={handleBack}
+                  totalInQueue={invoicesReview.length}
+                  completedCount={Object.keys(completionMap).length}
+                  approvedCount={approvedCount}
+                  rejectedCount={rejectedCount}
                 />
               </div>
             ) : (
