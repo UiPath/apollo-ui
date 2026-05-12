@@ -1,24 +1,30 @@
 "use client";
 
 import {
-  RouterContextProvider,
   createMemoryHistory,
   createRootRoute,
   createRoute,
   createRouter,
+  RouterContextProvider,
 } from "@tanstack/react-router";
 import type { ColumnDef, FilterFn } from "@tanstack/react-table";
 import {
+  ArrowRight,
   ArrowUp,
   Check,
   ChevronDown,
   Clock,
+  ExternalLink,
   FileText,
+  Flag,
   Loader2,
   Mail,
+  Play,
+  Plus,
   RefreshCw,
   Settings2,
   Sparkle,
+  TriangleAlert,
   X,
 } from "lucide-react";
 import {
@@ -30,9 +36,10 @@ import {
   useState,
 } from "react";
 import { toast } from "sonner";
-import { Alert, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   DataTable,
   DataTableColumnHeader,
@@ -53,9 +60,20 @@ import {
   PageHeaderTitle,
   PageHeaderTitleGroup,
 } from "@/components/ui/page-header";
+import { Separator } from "@/components/ui/separator";
 import { ApolloShell } from "@/components/ui/shell";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/registry/dialog/dialog";
 import { Toaster } from "@/registry/sonner/sonner";
 import { useDataTable } from "@/registry/use-data-table/useDataTable";
 
@@ -804,7 +822,7 @@ const invoiceTableData: InvoiceTableRow[] = [
   },
 ];
 
-type RightTab = "details" | "lines" | "source" | "comms" | "activity";
+type RightTab = "details" | "lines" | "source" | "comms" | "activity" | "email";
 type Variant = "A" | "B" | "C";
 
 const BETWEEN_INVOICE_STYLES = `
@@ -843,6 +861,27 @@ const BETWEEN_INVOICE_STYLES = `
   }
   .inv-glow-in {
     animation: inv-glow-in 800ms ease-out 540ms both;
+  }
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .entry-new {
+    animation: fadeSlideIn 300ms ease forwards;
+  }
+  .ai-panel-glow {
+    background: linear-gradient(
+      to left,
+      oklch(0.68 0.18 285 / 0.04) 0%,
+      transparent 100%
+    );
+  }
+  .dark .ai-panel-glow {
+    background: linear-gradient(
+      to left,
+      oklch(0.68 0.18 285 / 0.06) 0%,
+      transparent 100%
+    );
   }
 `;
 
@@ -988,11 +1027,7 @@ const invoiceColumns: ColumnDef<InvoiceTableRow>[] = [
         day: "numeric",
         year: "numeric",
       }).format(date);
-      return (
-        <span className="tabular-nums text-[13px] text-muted-foreground">
-          {formatted}
-        </span>
-      );
+      return <span className="tabular-nums">{formatted}</span>;
     },
   },
   {
@@ -1154,8 +1189,16 @@ const LIST_VISIBLE_COLUMNS = [
   "status",
 ];
 
+type CardFilterKey =
+  | "due-today"
+  | "pending-review"
+  | "exceptions"
+  | "auto-approved"
+  | null;
+
 function InvoiceListView({ onRowClick }: { onRowClick: (id: string) => void }) {
   const [timeRange, setTimeRange] = useState("30d");
+  const [cardFilter, setCardFilter] = useState<CardFilterKey>(null);
 
   const sortedData = useMemo(() => {
     return [...invoiceTableData].sort((a, b) => {
@@ -1166,15 +1209,38 @@ function InvoiceListView({ onRowClick }: { onRowClick: (id: string) => void }) {
     });
   }, []);
 
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+  const todayISO = today.toISOString().slice(0, 10);
+
+  const filteredData = useMemo(() => {
+    switch (cardFilter) {
+      case "due-today":
+        return sortedData.filter((r) => r.dueDate <= todayISO);
+      case "pending-review":
+        return sortedData.filter(
+          (r) => r.status === "pending-review" || r.status === "in-review",
+        );
+      case "exceptions":
+        return sortedData.filter((r) => r.exception !== "none");
+      case "auto-approved":
+        return sortedData.filter((r) => r.status === "approved");
+      default:
+        return sortedData;
+    }
+  }, [sortedData, cardFilter, todayISO]);
+
   const tableState = useDataTable({
-    data: sortedData,
+    data: filteredData,
     columns: invoiceColumns,
     storageKey: "invoice-review-list-v6",
     defaultColumnOrder: LIST_COLUMN_ORDER,
     defaultVisibleColumns: LIST_VISIBLE_COLUMNS,
   });
 
-  const todayISO = new Date().toISOString().slice(0, 10);
   const pendingCount = invoiceTableData.filter(
     (r) => r.status === "pending-review" || r.status === "in-review",
   ).length;
@@ -1185,25 +1251,31 @@ function InvoiceListView({ onRowClick }: { onRowClick: (id: string) => void }) {
     (r) => r.exception !== "none",
   ).length;
   const autoCount = invoicesAuto.length;
+
   // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- filterFn is Row<RowData> but compatible at runtime
   const typedGlobalFilterFn =
     dataTableGlobalFilterFn as FilterFn<InvoiceTableRow>;
 
+  function getUrgencyClass(row: InvoiceTableRow): string {
+    if (row.score === 5) return "opacity-40";
+    return "";
+  }
+
+  function toggleCard(key: NonNullable<CardFilterKey>) {
+    setCardFilter((prev) => (prev === key ? null : key));
+    tableState.onPaginationChange((prev) => ({ ...prev, pageIndex: 0 }));
+  }
+
   return (
     <div className="h-full overflow-y-auto">
       <PageHeader>
-        <PageHeaderNav>
-          <PageHeaderTitle>Invoices</PageHeaderTitle>
+        <PageHeaderNav className="items-baseline">
+          <PageHeaderTitle className="w-auto">Invoices</PageHeaderTitle>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+            Updated 1 minute ago
+          </span>
         </PageHeaderNav>
         <PageHeaderActions>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Refresh"
-            className="size-9"
-          >
-            <RefreshCw className="size-4" />
-          </Button>
           <FilterDropdown
             title="Time"
             options={timeFilterOptions}
@@ -1213,29 +1285,139 @@ function InvoiceListView({ onRowClick }: { onRowClick: (id: string) => void }) {
               if (typeof v === "string") setTimeRange(v);
             }}
           />
-          <Button>Upload Invoice</Button>
+          <Button variant="secondary">Upload Invoice</Button>
+          <Button
+            onClick={() => {
+              const first = sortedData[0];
+              if (first) onRowClick(first.id);
+            }}
+          >
+            <Play className="mr-1.5 h-3.5 w-3.5" />
+            Start review
+          </Button>
         </PageHeaderActions>
       </PageHeader>
       <div className="px-4 sm:px-6 lg:px-8 pb-8">
-        <div className="grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-12 gap-4 mb-8">
-          <div className="col-span-2 sm:col-span-4 lg:col-span-3">
-            <MetricCard label="Pending review" value={pendingCount} />
-          </div>
-          <div className="col-span-2 sm:col-span-4 lg:col-span-3">
-            <MetricCard label="Due today" value={dueTodayCount} />
-          </div>
-          <div className="col-span-2 sm:col-span-4 lg:col-span-3">
-            <MetricCard label="Exceptions flagged" value={exceptCount} />
-          </div>
-          <div className="col-span-2 sm:col-span-4 lg:col-span-3">
-            <MetricCard label="Auto-approved" value={autoCount} />
-          </div>
+        {/* Four metric cards */}
+        <div className="grid grid-cols-4 gap-3 mb-6">
+          {/* Due today */}
+          <Card
+            variant="glass"
+            className={cn(
+              "cursor-pointer transition-all",
+              cardFilter === "due-today" && "border-2 border-destructive",
+            )}
+            onClick={() => toggleCard("due-today")}
+          >
+            <CardContent className="px-5 pt-4 pb-4">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">Due today</p>
+                {cardFilter === "due-today" && (
+                  <p className="text-xs text-muted-foreground cursor-pointer">
+                    ✕ Clear
+                  </p>
+                )}
+              </div>
+              <p className="text-3xl font-medium text-destructive mt-1">
+                {dueTodayCount}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                of {invoiceTableData.length} total
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Pending review */}
+          <Card
+            variant="glass"
+            className={cn(
+              "cursor-pointer transition-all",
+              cardFilter === "pending-review" && "border-2 border-warning",
+            )}
+            onClick={() => toggleCard("pending-review")}
+          >
+            <CardContent className="px-5 pt-4 pb-4">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">Pending review</p>
+                {cardFilter === "pending-review" && (
+                  <p className="text-xs text-muted-foreground cursor-pointer">
+                    ✕ Clear
+                  </p>
+                )}
+              </div>
+              <p className="text-3xl font-medium text-warning mt-1">
+                {pendingCount}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                need a decision
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Exceptions flagged */}
+          <Card
+            variant="glass"
+            className={cn(
+              "cursor-pointer transition-all",
+              cardFilter === "exceptions" && "border-2 border-foreground",
+            )}
+            onClick={() => toggleCard("exceptions")}
+          >
+            <CardContent className="px-5 pt-4 pb-4">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">
+                  Exceptions flagged
+                </p>
+                {cardFilter === "exceptions" && (
+                  <p className="text-xs text-muted-foreground cursor-pointer">
+                    ✕ Clear
+                  </p>
+                )}
+              </div>
+              <p className="text-3xl font-medium text-foreground mt-1">
+                {exceptCount}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                agent identified
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Auto-approved */}
+          <Card
+            variant="glass"
+            className={cn(
+              "cursor-pointer transition-all",
+              cardFilter === "auto-approved"
+                ? "border-2 border-foreground"
+                : "opacity-50",
+            )}
+            onClick={() => toggleCard("auto-approved")}
+          >
+            <CardContent className="px-5 pt-4 pb-4">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">Auto-approved</p>
+                {cardFilter === "auto-approved" && (
+                  <p className="text-xs text-muted-foreground cursor-pointer">
+                    ✕ Clear
+                  </p>
+                )}
+              </div>
+              <p className="text-3xl font-medium text-muted-foreground mt-1">
+                {autoCount}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                no action needed
+              </p>
+            </CardContent>
+          </Card>
         </div>
+
         <DataTable
           {...tableState}
           globalFilterFn={typedGlobalFilterFn}
           onRowClick={(row) => onRowClick(row.id)}
-          getRowClassName={(row) => (row.score === 5 ? "opacity-[0.35]" : "")}
+          getRowClassName={getUrgencyClass}
           toolbarContent={(table) => (
             <>
               <FilterDropdown
@@ -1364,14 +1546,22 @@ function LeftNav({
             "inset -1px 0 0 0 color-mix(in srgb, var(--color-border) 50%, transparent)",
         }}
       />
-      <div className="px-6 py-5 flex items-center shrink-0">
-        <span className="text-sm">
+      <div className="px-6 pt-9 pb-5 shrink-0 flex items-baseline justify-between">
+        <span className="text-base">
           <span className="font-semibold">My queue</span>
-          <span className="text-muted-foreground font-normal">
+          <span className="text-sm text-muted-foreground font-normal">
             {" "}
             · {invoicesReview.length} invoices
           </span>
         </span>
+        <button
+          type="button"
+          onClick={onBack}
+          className="text-[11px] text-muted-foreground hover:underline cursor-pointer flex items-center gap-0.5 shrink-0"
+        >
+          All invoices
+          <ArrowRight className="size-3" />
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent_0,black_24px,black_calc(100%_-_80px),transparent_100%)]">
@@ -1428,13 +1618,24 @@ function LeftNav({
 
 // ── TopBar ────────────────────────────────────────────────────────────────────
 
-function TopBar({ emailSent }: { emailSent: boolean }) {
+function TopBar({
+  emailSent,
+  flagged,
+}: {
+  emailSent: boolean;
+  flagged: boolean;
+}) {
   const d = useInvoiceDetail();
   return (
     <PageHeader bordered className="@3xl:!grid-cols-[auto_1fr]">
       <PageHeaderNav>
         <PageHeaderTitleGroup>
-          <PageHeaderTitle as="h2">{d.id}</PageHeaderTitle>
+          <PageHeaderTitle as="h2">
+            <span className="group inline-flex items-center gap-1 cursor-pointer">
+              <span className="group-hover:underline">{d.id}</span>
+              <ExternalLink className="size-3.5 shrink-0 text-foreground opacity-0 -translate-x-1 transition-all duration-200 group-hover:opacity-60 group-hover:translate-x-0" />
+            </span>
+          </PageHeaderTitle>
           <PageHeaderDescription>{d.vendor}</PageHeaderDescription>
         </PageHeaderTitleGroup>
       </PageHeaderNav>
@@ -1456,15 +1657,28 @@ function TopBar({ emailSent }: { emailSent: boolean }) {
           <PageHeaderFieldValue
             className={cn(
               "flex items-center gap-1 transition-colors duration-300",
-              emailSent ? "text-primary" : "text-muted-foreground",
+              flagged
+                ? ""
+                : emailSent
+                  ? "text-primary"
+                  : "text-muted-foreground",
             )}
           >
-            {emailSent ? (
-              <Mail className="size-3.5 shrink-0" />
+            {flagged ? (
+              <Badge status="warning" variant="secondary">
+                Flagged
+              </Badge>
+            ) : emailSent ? (
+              <>
+                <Mail className="size-3.5 shrink-0" />
+                Supplier contacted
+              </>
             ) : (
-              <Clock className="size-3.5 shrink-0" />
+              <>
+                <Clock className="size-3.5 shrink-0" />
+                Awaiting decision
+              </>
             )}
-            {emailSent ? "Supplier contacted" : "Awaiting decision"}
           </PageHeaderFieldValue>
         </PageHeaderField>
         <PageHeaderField>
@@ -2112,15 +2326,27 @@ function EmailComposer({
 
 function ActionBlock({
   onPrimaryAction,
+  emailButtonState = "default",
   variant,
+  onFlag,
+  onUnflag,
 }: {
   onPrimaryAction: () => void;
+  emailButtonState?: "default" | "draft-open" | "sent";
   variant: Variant;
+  onFlag: (reason: string) => void;
+  onUnflag: () => void;
 }) {
   const { exceptionPrimaryAction, exceptionSecondaryAction } =
     useInvoiceDetail();
   const isApproveAction = exceptionSecondaryAction === "Approve";
   const [drafting, setDrafting] = useState(false);
+  const [flagOpen, setFlagOpen] = useState(false);
+  const [flagReason, setFlagReason] = useState<FlagReason>(
+    "Awaiting supplier response",
+  );
+  const [flagNote, setFlagNote] = useState("");
+  const [flagConfirmed, setFlagConfirmed] = useState<string | null>(null);
 
   const isApprovalType =
     exceptionPrimaryAction.toLowerCase().includes("approval") ||
@@ -2137,36 +2363,155 @@ function ActionBlock({
     );
   }
 
+  function handleFlagSubmit() {
+    setFlagOpen(false);
+    setFlagConfirmed(flagReason);
+    onFlag(flagReason);
+  }
+
+  function handleUndo() {
+    setFlagConfirmed(null);
+    setFlagNote("");
+    setFlagReason("Awaiting supplier response");
+    onUnflag();
+  }
+
   return (
-    <div className="flex items-center gap-2">
-      <Button
-        variant="default"
-        disabled={drafting}
-        onClick={handlePrimary}
-        className={cn(
-          variant === "C" &&
-            "bg-primary dark:text-gray-900 hover:bg-primary/90 border-0",
-        )}
-      >
-        {drafting ? (
-          <>
-            <Loader2 className="size-3.5 animate-spin" />
-            Drafting…
-          </>
+    <div>
+      <div className="flex items-center gap-2">
+        {emailButtonState === "draft-open" ? (
+          <Button
+            variant="outline"
+            className="text-muted-foreground transition-all duration-150"
+            onClick={() => onPrimaryAction()}
+          >
+            <Mail className="mr-2 h-4 w-4" />
+            Email draft open…
+          </Button>
+        ) : emailButtonState === "sent" ? (
+          <Button
+            variant="outline"
+            disabled
+            className="text-muted-foreground transition-all duration-150"
+          >
+            <Check className="mr-2 h-4 w-4" />
+            Email sent
+          </Button>
         ) : (
-          exceptionPrimaryAction
+          <Button
+            variant="default"
+            disabled={drafting}
+            onClick={handlePrimary}
+            className={cn(
+              "transition-all duration-150",
+              variant === "C" &&
+                "bg-primary dark:text-gray-900 hover:bg-primary/90 border-0",
+            )}
+          >
+            {drafting ? (
+              <>
+                <Loader2 className="size-3.5 animate-spin" />
+                Drafting…
+              </>
+            ) : (
+              exceptionPrimaryAction
+            )}
+          </Button>
         )}
-      </Button>
-      <Button
-        variant={isApproveAction ? "ghost" : "secondary"}
-        className={cn(
-          isApproveAction
-            ? "bg-transparent border-0 shadow-none text-[13px] text-[#666] hover:bg-transparent hover:text-[#999]"
-            : "dark:bg-transparent dark:[border-width:1.5px] dark:border-[#555] dark:text-[#CCC] dark:hover:bg-white/5",
+        <Button
+          variant={isApproveAction ? "ghost" : "secondary"}
+          className={cn(
+            isApproveAction
+              ? "bg-transparent border-0 shadow-none text-[13px] text-[#666] hover:bg-transparent hover:text-[#999]"
+              : "dark:bg-transparent dark:[border-width:1.5px] dark:border-[#555] dark:text-[#CCC] dark:hover:bg-white/5",
+          )}
+        >
+          {exceptionSecondaryAction}
+        </Button>
+        {!flagConfirmed && (
+          <Dialog open={flagOpen} onOpenChange={setFlagOpen}>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="dark:[border-width:1.5px] dark:border-[#555] dark:text-[#CCC] dark:hover:bg-white/5"
+              >
+                <Flag className="mr-1.5 h-3.5 w-3.5" />
+                Flag
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Flag for follow-up</DialogTitle>
+                <DialogDescription>
+                  Park this invoice with a reason. It will stay in your queue
+                  until resolved.
+                </DialogDescription>
+              </DialogHeader>
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">Reason</p>
+                <div className="flex flex-wrap gap-2">
+                  {FLAG_REASONS.map((r) => (
+                    <Button
+                      key={r}
+                      type="button"
+                      variant={flagReason === r ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setFlagReason(r)}
+                    >
+                      {r}
+                    </Button>
+                  ))}
+                </div>
+                <Textarea
+                  placeholder="Add a note (optional)…"
+                  rows={3}
+                  className="text-sm mt-3"
+                  value={flagNote}
+                  onChange={(e) => setFlagNote(e.target.value)}
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setFlagOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button variant="default" size="sm" onClick={handleFlagSubmit}>
+                  Flag invoice
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         )}
-      >
-        {exceptionSecondaryAction}
-      </Button>
+      </div>
+
+      {flagConfirmed && (
+        <>
+          <Alert
+            status="warning"
+            visual="tinted"
+            className="mt-3 bg-warning/30 dark:bg-warning/30"
+          >
+            <Flag className="h-4 w-4" />
+            <AlertTitle className="text-sm font-medium">
+              Flagged — {flagConfirmed}
+            </AlertTitle>
+            <AlertDescription className="text-xs">
+              Parked in your queue. Activity updated.
+            </AlertDescription>
+          </Alert>
+          <Button
+            variant="link"
+            size="sm"
+            className="px-0"
+            onClick={handleUndo}
+          >
+            Undo
+          </Button>
+        </>
+      )}
     </div>
   );
 }
@@ -2228,10 +2573,16 @@ function AgentInputBar() {
 
 function ExceptionBlock({
   onContactSupplier,
+  emailButtonState = "default",
   variant,
+  onFlag,
+  onUnflag,
 }: {
   onContactSupplier: () => void;
+  emailButtonState?: "default" | "draft-open" | "sent";
   variant: Variant;
+  onFlag: (reason: string) => void;
+  onUnflag: () => void;
 }) {
   const {
     exceptionTag,
@@ -2243,9 +2594,7 @@ function ExceptionBlock({
   return (
     <div>
       <div className="flex items-center gap-2 mb-5">
-        <Badge variant="secondary" status={exceptionTagStatus}>
-          {exceptionTag}
-        </Badge>
+        <Badge status={exceptionTagStatus}>{exceptionTag}</Badge>
       </div>
       <h2
         className="font-bold leading-[1.2] tracking-tight text-foreground w-full mb-5 overflow-hidden line-clamp-2"
@@ -2298,7 +2647,13 @@ function ExceptionBlock({
           {exceptionBody}
         </p>
       )}
-      <ActionBlock onPrimaryAction={onContactSupplier} variant={variant} />
+      <ActionBlock
+        onPrimaryAction={onContactSupplier}
+        emailButtonState={emailButtonState}
+        variant={variant}
+        onFlag={onFlag}
+        onUnflag={onUnflag}
+      />
     </div>
   );
 }
@@ -3081,35 +3436,74 @@ function DetailsCombinedTab() {
   );
 }
 
-function ActivityTabC() {
-  type TimelineItem = {
-    label: string;
-    time?: string;
-    desc?: string;
-    indicator: "pending" | "user" | "ai-warn" | "ai-pass";
-  };
+// ── Timeline shared types ──────────────────────────────────────────────────────
 
-  const items: TimelineItem[] = [
-    { label: "Awaiting decision", indicator: "pending" },
+type TimelineEntry = {
+  id: string;
+  label: string;
+  time?: string;
+  desc?: string;
+  indicator: "pending" | "user" | "ai-warn" | "ai-pass";
+  noteContent?: string;
+  kind?: "flag" | "note";
+};
+
+const FLAG_REASONS = [
+  "Awaiting supplier response",
+  "Escalating to manager",
+  "PO in progress",
+  "Needs more info",
+] as const;
+type FlagReason = (typeof FLAG_REASONS)[number];
+
+// ── ActivityTabC ───────────────────────────────────────────────────────────────
+
+function ActivityTabC({
+  extraEntries = [],
+  onAddNote,
+}: {
+  extraEntries?: TimelineEntry[];
+  onAddNote: (note: string) => void;
+}) {
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteText, setNoteText] = useState("");
+  const prevExtraRef = useRef<TimelineEntry[]>([]);
+  const [newEntryIds, setNewEntryIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const prevIds = new Set(prevExtraRef.current.map((e) => e.id));
+    const added = extraEntries
+      .filter((e) => !prevIds.has(e.id))
+      .map((e) => e.id);
+    if (added.length > 0) setNewEntryIds(new Set(added));
+    prevExtraRef.current = extraEntries;
+  }, [extraEntries]);
+
+  const staticItems: TimelineEntry[] = [
+    { id: "static-0", label: "Awaiting decision", indicator: "pending" },
     {
+      id: "static-1",
       label: "Assigned & opened",
       time: "9:14 AM",
       desc: "AJ",
       indicator: "user",
     },
     {
+      id: "static-2",
       label: "Agent escalated",
       time: "9:12 AM",
       desc: "Price exceeds PO — manual review required",
       indicator: "ai-warn",
     },
     {
+      id: "static-3",
       label: "Agent reviewed",
       time: "9:10 AM",
       desc: "PO matched · Terms verified",
       indicator: "ai-pass",
     },
     {
+      id: "static-4",
       label: "Data extracted",
       time: "9:08 AM",
       desc: "Invoice parsed successfully",
@@ -3117,33 +3511,56 @@ function ActivityTabC() {
     },
   ];
 
+  const allItems = [...extraEntries, ...staticItems];
+
+  function renderDot(indicator: TimelineEntry["indicator"]) {
+    if (indicator === "pending")
+      return (
+        <div className="size-4 rounded-full border border-dashed border-muted-foreground/40 shrink-0" />
+      );
+    if (indicator === "user")
+      return (
+        <div className="size-4 rounded-full bg-muted-foreground shrink-0 flex items-center justify-center">
+          <span className="text-[7px] font-bold text-white leading-none">
+            AJ
+          </span>
+        </div>
+      );
+    if (indicator === "ai-warn")
+      return (
+        <div className="size-4 rounded-full bg-amber-500/20 border border-amber-500/40 shrink-0 flex items-center justify-center">
+          <div className="size-1.5 rounded-full bg-amber-500" />
+        </div>
+      );
+    return (
+      <div className="size-4 rounded-full bg-emerald-500/20 border border-emerald-500/40 shrink-0 flex items-center justify-center">
+        <div className="size-1.5 rounded-full bg-emerald-500" />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar">
-      <div className="pl-5 pr-8 pt-5 pb-5">
-        {items.map((item, i) => {
-          const isLast = i === items.length - 1;
-
-          const dot =
-            item.indicator === "pending" ? (
-              <div className="size-4 rounded-full border border-dashed border-muted-foreground/40 shrink-0" />
-            ) : item.indicator === "user" ? (
-              <div className="size-4 rounded-full bg-muted-foreground shrink-0 flex items-center justify-center">
-                <div className="size-1.5 rounded-full bg-background" />
-              </div>
-            ) : item.indicator === "ai-warn" ? (
-              <div className="size-4 rounded-full bg-amber-500/20 border border-amber-500/40 shrink-0 flex items-center justify-center">
-                <div className="size-1.5 rounded-full bg-amber-500" />
-              </div>
-            ) : (
-              <div className="size-4 rounded-full bg-emerald-500/20 border border-emerald-500/40 shrink-0 flex items-center justify-center">
-                <div className="size-1.5 rounded-full bg-emerald-500" />
-              </div>
-            );
-
+    <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+      <div className="pl-5 pr-8 pt-5 pb-3 flex-1">
+        {allItems.map((item, i) => {
+          const isLast = i === allItems.length - 1;
           return (
-            <div key={i} className="flex gap-3">
+            <div
+              key={item.id}
+              className={cn(
+                "flex gap-3",
+                newEntryIds.has(item.id) && "entry-new",
+              )}
+              onAnimationEnd={() =>
+                setNewEntryIds((prev) => {
+                  const next = new Set(prev);
+                  next.delete(item.id);
+                  return next;
+                })
+              }
+            >
               <div className="flex flex-col items-center w-4 shrink-0">
-                {dot}
+                {renderDot(item.indicator)}
                 {!isLast && (
                   <div className="w-px flex-1 min-h-[10px] bg-border my-1" />
                 )}
@@ -3166,15 +3583,69 @@ function ActivityTabC() {
                     </span>
                   )}
                 </div>
-                {item.desc && (
+                {item.noteContent ? (
+                  <div className="mt-1 pl-2 border-l-2 border-border bg-muted rounded-sm p-2">
+                    <p className="text-sm text-muted-foreground italic">
+                      {item.noteContent}
+                    </p>
+                  </div>
+                ) : item.desc ? (
                   <p className="text-[12px] text-muted-foreground leading-[1.5] mt-1">
                     {item.desc}
                   </p>
-                )}
+                ) : null}
               </div>
             </div>
           );
         })}
+      </div>
+      <div className="pl-5 pr-8 pb-4 shrink-0">
+        <Separator className="mb-3" />
+        {noteOpen ? (
+          <>
+            <Textarea
+              placeholder="Record your thinking…"
+              rows={2}
+              className="text-sm mt-1.5"
+              autoFocus
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+            />
+            <div className="mt-1.5 flex justify-end gap-1.5">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setNoteText("");
+                  setNoteOpen(false);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => {
+                  if (noteText.trim()) onAddNote(noteText.trim());
+                  setNoteText("");
+                  setNoteOpen(false);
+                }}
+              >
+                Save
+              </Button>
+            </div>
+          </>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start text-muted-foreground"
+            onClick={() => setNoteOpen(true)}
+          >
+            <Plus className="mr-1.5 size-3.5" />
+            Add note
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -3236,6 +3707,236 @@ function AskFooter() {
   );
 }
 
+function EmailPanelTab({
+  onSend,
+  onDiscard,
+}: {
+  onSend: (email: SentEmail) => void;
+  onDiscard: () => void;
+}) {
+  const data = useInvoiceDetail();
+  const [to, setTo] = useState(data.vendorEmail);
+  const [cc, setCc] = useState("");
+  const [showCc, setShowCc] = useState(false);
+  const [subject, setSubject] = useState(
+    `Invoice correction request — Invoice ${data.id}`,
+  );
+  const [body, setBody] = useState(() => generateDraftBody(data));
+  const [sendPhase, setSendPhase] = useState<"idle" | "sending" | "sent">(
+    "idle",
+  );
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setIsLoading(false), 700);
+    return () => clearTimeout(t);
+  }, []);
+
+  function handleSendClick() {
+    setSendPhase("sending");
+    setTimeout(() => {
+      setSendPhase("sent");
+      setTimeout(() => {
+        onSend({ to, cc, subject, body, sentAt: "just now" });
+      }, 600);
+    }, 600);
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col h-full">
+        {/* Header skeleton */}
+        <div className="px-4 pt-4 pb-3 shrink-0">
+          <Skeleton className="h-4 w-40 mb-2" />
+          <Skeleton className="h-3 w-56" />
+        </div>
+        <Separator />
+
+        {/* Fields skeleton */}
+        <div className="px-4 py-2.5 shrink-0 space-y-3 border-b border-border">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-3 w-8 shrink-0" />
+            <Skeleton className="h-6 flex-1 rounded-md" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-3 w-12 shrink-0" />
+            <Skeleton className="h-6 flex-1 rounded-md" />
+          </div>
+        </div>
+
+        {/* AI rewrite skeleton */}
+        <div className="flex items-center gap-2 px-4 py-2 border-b border-border shrink-0 bg-muted/20">
+          <Skeleton className="h-3 w-3 rounded-full shrink-0" />
+          <Skeleton className="h-3 w-14 shrink-0" />
+          {[48, 40, 36, 36].map((w, i) => (
+            <Skeleton
+              key={i}
+              className={`h-5 w-${w === 48 ? "20" : w === 40 ? "16" : "14"} rounded-full shrink-0`}
+            />
+          ))}
+        </div>
+
+        {/* Body skeleton */}
+        <div className="flex-1 p-3">
+          <div className="w-full h-full rounded-lg border border-border bg-muted/20 p-3 space-y-2.5">
+            <Skeleton className="h-3 w-36" />
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-3 w-4/5" />
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-3 w-3/4" />
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-3 w-2/3" />
+          </div>
+        </div>
+
+        {/* Footer skeleton */}
+        <div
+          className="flex items-center justify-end gap-2 px-4 shrink-0"
+          style={{ height: "80px" }}
+        >
+          <Skeleton className="h-8 w-16 rounded-md" />
+          <Skeleton className="h-8 w-24 rounded-md" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    // Change 1: 1px gradient border wrapping the entire email content area
+    <div
+      className="flex flex-col h-full animate-in fade-in duration-300"
+      style={{
+        background:
+          "linear-gradient(135deg, hsl(var(--primary) / 0.25), hsl(262 83% 58% / 0.20))",
+        padding: "1px",
+      }}
+    >
+      <div
+        className="flex flex-col flex-1 overflow-hidden"
+        style={{ background: "hsl(var(--card))" }}
+      >
+        {/* Header */}
+        <div className="px-4 pt-4 pb-3 shrink-0">
+          <p className="text-sm font-semibold">Email to {data.vendor}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Pre-filled from invoice data. Review before sending.
+          </p>
+        </div>
+        <Separator />
+
+        {/* Fields */}
+        <div className="px-4 py-2.5 shrink-0 space-y-2 border-b border-border">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground w-12 shrink-0">
+              To
+            </span>
+            <input
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              className="flex-1 bg-muted/30 rounded-md px-2 py-1 text-xs border border-border focus:outline-none focus:ring-1 focus:ring-ring min-w-0"
+            />
+            {!showCc && (
+              <button
+                type="button"
+                onClick={() => setShowCc(true)}
+                className="text-xs text-primary hover:underline shrink-0"
+              >
+                + CC
+              </button>
+            )}
+          </div>
+          {showCc && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground w-12 shrink-0">
+                CC
+              </span>
+              <input
+                value={cc}
+                onChange={(e) => setCc(e.target.value)}
+                placeholder="Add CC…"
+                className="flex-1 bg-muted/30 rounded-md px-2 py-1 text-xs border border-border focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/40 min-w-0"
+              />
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground w-12 shrink-0">
+              Subject
+            </span>
+            <input
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className="flex-1 bg-muted/30 rounded-md px-2 py-1 text-xs border border-border focus:outline-none focus:ring-1 focus:ring-ring min-w-0"
+            />
+          </div>
+        </div>
+
+        {/* AI rewrite — Change 3: icon only (text-primary), no label text */}
+        <div className="flex items-center gap-1.5 px-4 py-2 border-b border-border shrink-0 flex-wrap bg-muted/20">
+          <Sparkle className="size-3 text-primary shrink-0" />
+          {AI_REWRITES.map((action) => (
+            <button
+              key={action}
+              type="button"
+              className="text-[11px] px-2 py-0.5 rounded-full border border-border bg-background hover:bg-muted transition-colors text-muted-foreground hover:text-foreground shrink-0"
+            >
+              {action}
+            </button>
+          ))}
+        </div>
+
+        {/* Body — Change 4: gradient wrapper gives top edge a faint teal wash */}
+        <div className="flex-1 overflow-hidden p-3">
+          <div
+            className="w-full h-full rounded-lg p-px"
+            style={{
+              background:
+                "linear-gradient(180deg, hsl(var(--primary) / 0.1) 0%, transparent 40%)",
+            }}
+          >
+            <textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              className="w-full h-full resize-none bg-card rounded-lg p-3 text-xs leading-relaxed focus:outline-none focus:ring-1 focus:ring-ring custom-scrollbar"
+            />
+          </div>
+        </div>
+
+        {/* Footer — height matches AskFooter's below-chips section (16+50+14=80px) */}
+        <div
+          className="flex items-center justify-end gap-2 px-4 shrink-0"
+          style={{ height: "80px" }}
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={sendPhase !== "idle"}
+            onClick={onDiscard}
+          >
+            Discard
+          </Button>
+          {/* Change 5: sparkle icon on Send — completing AI-drafted content */}
+          <Button
+            variant={sendPhase === "sent" ? "success" : "default"}
+            size="sm"
+            disabled={sendPhase !== "idle"}
+            onClick={handleSendClick}
+          >
+            {sendPhase === "idle" && <Sparkle className="size-3.5" />}
+            {sendPhase === "sending" && (
+              <Loader2 className="size-3.5 animate-spin" />
+            )}
+            {sendPhase === "sent" && <Check className="size-3.5" />}
+            {sendPhase === "idle" && "Send Email"}
+            {sendPhase === "sending" && "Sending…"}
+            {sendPhase === "sent" && "Sent!"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function RightPanel({
   tab,
   onTabChange,
@@ -3243,7 +3944,15 @@ function RightPanel({
   commsIsNew,
   onCommsViewed,
   onEmailClick,
+  onEmailSend,
+  onEmailClose,
+  onEmailDiscard,
+  emailTabOpen,
+  emailEverOpened,
+  emailDraftKey,
   variant,
+  extraTimelineEntries,
+  onAddNote,
 }: {
   tab: RightTab;
   onTabChange: (tab: RightTab) => void;
@@ -3251,16 +3960,24 @@ function RightPanel({
   commsIsNew: boolean;
   onCommsViewed: () => void;
   onEmailClick: (email: SentEmail) => void;
+  onEmailSend: (email: SentEmail) => void;
+  onEmailClose: () => void;
+  onEmailDiscard: () => void;
+  emailTabOpen: boolean;
+  emailEverOpened: boolean;
+  emailDraftKey: number;
   variant: Variant;
+  extraTimelineEntries: TimelineEntry[];
+  onAddNote: (note: string) => void;
 }) {
   const showComms = sentEmails.length > 0;
   const tabOrder: RightTab[] =
     variant === "C"
       ? [
           "activity",
-          ...(showComms ? (["comms"] as const) : []),
           "details",
           "source",
+          ...(emailTabOpen ? (["email"] as const) : []),
         ]
       : [
           ...(variant === "B" ? (["activity"] as const) : []),
@@ -3272,7 +3989,10 @@ function RightPanel({
 
   return (
     <div
-      className="border-l border-border flex flex-col shrink-0 overflow-hidden h-full"
+      className={cn(
+        "border-l border-border flex flex-col shrink-0 overflow-hidden h-full transition-colors duration-300",
+        emailTabOpen && "bg-background",
+      )}
       style={{
         width: tab === "source" ? "560px" : "384px",
         transition: "width 250ms cubic-bezier(0.4, 0, 0.2, 1)",
@@ -3288,13 +4008,26 @@ function RightPanel({
               if (t === "comms") onCommsViewed();
             }}
             className={cn(
-              "relative flex-1 py-3 text-xs font-medium transition-colors capitalize",
+              "relative flex-1 py-3 text-xs font-medium transition-colors capitalize flex items-center justify-center gap-1",
               tab === t
                 ? "text-foreground border-b-2 border-foreground -mb-px"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
-            {t.charAt(0).toUpperCase() + t.slice(1)}
+            {t === "email" ? "Email" : t.charAt(0).toUpperCase() + t.slice(1)}
+            {t === "email" && (
+              <span
+                role="button"
+                aria-label="Close email draft"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEmailClose();
+                }}
+                className="ml-0.5 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="h-3 w-3" />
+              </span>
+            )}
             {t === "comms" && commsIsNew && (
               <span className="absolute top-2 right-2 size-1.5 rounded-full bg-primary" />
             )}
@@ -3304,7 +4037,10 @@ function RightPanel({
       <div className="flex-1 flex flex-col overflow-hidden">
         {tab === "activity" &&
           (variant === "C" ? (
-            <ActivityTabC />
+            <ActivityTabC
+              extraEntries={extraTimelineEntries}
+              onAddNote={onAddNote}
+            />
           ) : (
             <ActivityTab sentEmails={sentEmails} />
           ))}
@@ -3318,6 +4054,20 @@ function RightPanel({
         {tab === "source" && <SourceTab />}
         {tab === "comms" && (
           <CommsTab sentEmails={sentEmails} onEmailClick={onEmailClick} />
+        )}
+        {emailEverOpened && (
+          <div
+            className={cn(
+              "flex-1 flex flex-col overflow-hidden",
+              tab !== "email" && "hidden",
+            )}
+          >
+            <EmailPanelTab
+              key={emailDraftKey}
+              onSend={onEmailSend}
+              onDiscard={onEmailDiscard}
+            />
+          </div>
         )}
       </div>
     </div>
@@ -3345,22 +4095,93 @@ function InvoiceDetailPane({
   useEffect(() => {
     setRightTab(variant === "B" || variant === "C" ? "activity" : "details");
   }, [variant]);
-  const [emailOpen, setEmailOpen] = useState(false);
   const [sentEmails, setSentEmails] = useState<SentEmail[]>([]);
   const [commsIsNew, setCommsIsNew] = useState(false);
   const [viewingEmail, setViewingEmail] = useState<SentEmail | null>(null);
+  const [flagged, setFlagged] = useState(false);
+  const [extraTimelineEntries, setExtraTimelineEntries] = useState<
+    TimelineEntry[]
+  >([]);
+  const [emailTabOpen, setEmailTabOpen] = useState(false);
+  const [emailEverOpened, setEmailEverOpened] = useState(false);
+  const [emailGlowReady, setEmailGlowReady] = useState(false);
+  const [emailDraftKey, setEmailDraftKey] = useState(0);
+
+  function openEmailTab() {
+    setEmailTabOpen(true);
+    setEmailEverOpened(true);
+    setRightTab("email");
+    setTimeout(() => setEmailGlowReady(true), 700);
+  }
+
+  function closeEmailTab() {
+    setEmailTabOpen(false);
+    setRightTab("activity");
+  }
+
+  function discardEmailDraft() {
+    setEmailTabOpen(false);
+    setEmailEverOpened(false);
+    setEmailGlowReady(false);
+    setEmailDraftKey((k) => k + 1);
+    setRightTab("activity");
+  }
 
   function handleSend(email: SentEmail) {
     setSentEmails((prev) => [...prev, email]);
     setCommsIsNew(true);
-    setEmailOpen(false);
-    setRightTab("comms");
+    setEmailTabOpen(false);
+    setEmailEverOpened(false);
+    setEmailGlowReady(false);
+    setRightTab("activity");
     toast.success("Email sent", { description: `To ${email.to}` });
   }
 
   function handleEmailClick(email: SentEmail) {
     setViewingEmail(email);
     setRightTab("comms");
+  }
+
+  function handleFlag(reason: string) {
+    setFlagged(true);
+    const time = new Date().toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    setExtraTimelineEntries((prev) => [
+      {
+        id: `flag-${Date.now()}`,
+        label: "Flagged for follow-up",
+        time,
+        desc: reason,
+        indicator: "user",
+        kind: "flag",
+      },
+      ...prev,
+    ]);
+  }
+
+  function handleUnflag() {
+    setFlagged(false);
+    setExtraTimelineEntries((prev) => prev.filter((e) => e.kind !== "flag"));
+  }
+
+  function handleAddNote(note: string) {
+    const time = new Date().toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    setExtraTimelineEntries((prev) => [
+      {
+        id: `note-${Date.now()}`,
+        label: "Note added",
+        time,
+        indicator: "user",
+        noteContent: note,
+        kind: "note",
+      },
+      ...prev,
+    ]);
   }
 
   return (
@@ -3370,51 +4191,15 @@ function InvoiceDetailPane({
           className="shrink-0 inv-between-enter"
           style={{ animationDelay: "60ms" }}
         >
-          <TopBar emailSent={sentEmails.length > 0} />
+          <TopBar emailSent={sentEmails.length > 0} flagged={flagged} />
         </div>
-        <div className="flex flex-1 overflow-hidden">
+        <div className="relative flex flex-1 overflow-hidden">
           <div
             className="flex flex-col flex-1 overflow-hidden inv-between-enter"
             style={{ animationDelay: "130ms" }}
           >
-            {(variant === "A" || variant === "C") && (
-              <div
-                className={cn(
-                  "shrink-0 transition-colors duration-200 border-b border-border",
-                  summaryExpanded && "bg-card",
-                )}
-              >
-                <div className="flex h-10">
-                  <AISummaryBar
-                    expanded={summaryExpanded}
-                    onToggle={() => setSummaryExpanded((v) => !v)}
-                    emailSent={sentEmails.length > 0}
-                    minimal={variant === "C"}
-                  />
-                </div>
-                {variant !== "C" && (
-                  <div
-                    className={cn(
-                      "overflow-hidden transition-all duration-200",
-                      summaryExpanded
-                        ? "max-h-[600px] opacity-100"
-                        : "max-h-0 opacity-0",
-                    )}
-                  >
-                    <div className="px-4 sm:px-6 lg:px-8 py-5">
-                      <AISummaryExpanded sentEmails={sentEmails} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
             <div className="flex flex-col flex-1 overflow-hidden">
-              {emailOpen ? (
-                <EmailComposer
-                  onClose={() => setEmailOpen(false)}
-                  onSend={handleSend}
-                />
-              ) : viewingEmail ? (
+              {viewingEmail ? (
                 <EmailViewer
                   email={viewingEmail}
                   onClose={() => setViewingEmail(null)}
@@ -3423,17 +4208,26 @@ function InvoiceDetailPane({
                 <div className="h-full overflow-y-auto px-4 sm:px-6 lg:px-8 pt-7 pb-6 custom-scrollbar">
                   <AwaitingResponseBlock
                     sentEmails={sentEmails}
-                    onFollowUp={() => setEmailOpen(true)}
+                    onFollowUp={openEmailTab}
                   />
                 </div>
               ) : (
                 <div
-                  className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-6 custom-scrollbar"
+                  className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-8 custom-scrollbar"
                   style={{ paddingBottom: variant === "C" ? "136px" : "20px" }}
                 >
                   <ExceptionBlock
-                    onContactSupplier={() => setEmailOpen(true)}
+                    onContactSupplier={openEmailTab}
+                    emailButtonState={
+                      sentEmails.length > 0
+                        ? "sent"
+                        : emailTabOpen
+                          ? "draft-open"
+                          : "default"
+                    }
                     variant={variant}
+                    onFlag={handleFlag}
+                    onUnflag={handleUnflag}
                   />
                 </div>
               )}
@@ -3451,9 +4245,28 @@ function InvoiceDetailPane({
               commsIsNew={commsIsNew}
               onCommsViewed={() => setCommsIsNew(false)}
               onEmailClick={handleEmailClick}
+              onEmailSend={handleSend}
+              onEmailClose={closeEmailTab}
+              onEmailDiscard={discardEmailDraft}
+              emailTabOpen={emailTabOpen}
+              emailEverOpened={emailEverOpened}
+              emailDraftKey={emailDraftKey}
               variant={variant}
+              extraTimelineEntries={extraTimelineEntries}
+              onAddNote={handleAddNote}
             />
           </div>
+          {/* AI glow — fades in after skeleton finishes (emailGlowReady) */}
+          {emailEverOpened && (
+            <div
+              aria-hidden="true"
+              className={cn(
+                "ai-panel-glow absolute inset-y-0 pointer-events-none select-none transition-opacity duration-500",
+                emailGlowReady ? "opacity-100" : "opacity-0",
+              )}
+              style={{ right: "384px", width: "80px" }}
+            />
+          )}
         </div>
       </>
     </InvoiceDetailContext.Provider>
@@ -3511,6 +4324,11 @@ function InvoiceReviewContent() {
     <ApolloShell
       companyName="UiPath"
       productName="Invoice Processing"
+      companyLogo={{
+        url: "/UiPath.svg",
+        darkUrl: "/UiPath_dark.svg",
+        alt: "UiPath",
+      }}
       navItems={[
         { path: "/invoice-review", label: "invoices", icon: FileText },
         { path: "/settings", label: "settings", icon: Settings2 },
