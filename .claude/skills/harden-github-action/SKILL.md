@@ -34,34 +34,53 @@ Do **not** use this skill for:
 
 ## Rules Reference
 
-### 1. Permissions — Deny-All Default
+### 1. Permissions — Scope Write Permissions to Jobs, Not Workflows
 
-Every workflow **must** begin with an explicit permissions block that denies everything:
+**The actual security boundary:** supply-chain-critical write permissions must never appear at workflow level. Everything else is a matter of hygiene.
+
+#### Permissions safe at workflow level (read-only, no supply-chain risk)
+`contents: read` · `pull-requests: read` · `issues: read` · `packages: read` · `checks: read` · `actions: read`
+
+These cannot modify code, publish packages, or compromise infrastructure. `contents: read` at workflow level is the GitHub/OpenSSF-recommended baseline.
+
+#### Permissions that must be job-scoped
+
+| Permission | Why |
+|---|---|
+| `contents: write` | Can push commits, create releases — direct code tampering |
+| `packages: write` | Can publish to registries — supply-chain critical |
+| `id-token: write` | OIDC token for cloud auth / npm provenance — impersonation risk |
+| `deployments: write` | Can trigger production deployments |
+| `pull-requests: write` | Can merge PRs, bypass branch protections |
+| `statuses: write` | Can fake commit status checks (bypass CI gates) |
+| `issues: write` | Can close/modify issues (low direct risk but keep scoped) |
+| `checks: write` | Can fake CI check results |
+| `security-events: write` | Can upload SARIF; acceptable at workflow level only for a dedicated security-scanning workflow |
+
+#### Pattern
 
 ```yaml
-permissions: {}  # deny-all default; jobs grant only what they need
-```
+# Workflow containing any write-capable job → deny-all + per-job grants
+permissions: {}
 
-Each job then grants only the minimum required:
-
-```yaml
 jobs:
   lint:
     permissions:
-      contents: read          # checkout
-  comment:
-    permissions:
       contents: read
-      pull-requests: write    # PR comment
-      issues: write
   release:
     permissions:
-      contents: write         # push version bump commit
+      contents: write         # push version bump
       packages: write         # publish to GHP
-      id-token: write         # npm provenance (OIDC)
+      id-token: write         # npm provenance — ONLY on publish job, nowhere else
 ```
 
-**`id-token: write` is only valid on the job that publishes to npm with provenance.** Do not add it to other jobs.
+```yaml
+# Purely read-only workflow → workflow-level contents: read is fine
+permissions:
+  contents: read
+```
+
+**Never use** `permissions: write-all` or `permissions: read-all`.
 
 ---
 
@@ -269,15 +288,17 @@ When upgrading the Vercel CLI, update both the install command and the cache key
 **When blocked by `minimumReleaseAge`:**
 
 1. Identify the blocking package from the error message.
-2. Add it to `minimumReleaseAgeExclude` in `pnpm-workspace.yaml` with a comment:
+2. Add it to `minimumReleaseAgeExclude` in `pnpm-workspace.yaml`. **The version number is required in the comment** — the `prune-release-age-exemptions.yml` workflow reads it to decide when to remove the entry:
 
 ```yaml
 # pnpm-workspace.yaml
 minimumReleaseAgeExclude:
-  - some-package  # exempted YYYY-MM-DD: too new when added; auto-pruned after 14 days
+  - some-package  # 1.2.3 — reason it was added (too new when pnpm add ran)
 ```
 
-3. The weekly `prune-release-age-exemptions.yml` workflow will open a PR to remove it automatically once it ages out.
+The format is `# <version> — <reason>`. Without the version, the prune workflow skips the entry and it will never be auto-removed.
+
+3. The weekly `prune-release-age-exemptions.yml` workflow will open a PR to remove it automatically once that version ages past 14 days.
 
 **When adding many packages at once** (multiple are blocking):
 ```bash
@@ -351,10 +372,12 @@ jobs:
 Use this checklist when reviewing or hardening any workflow file.
 
 ### Permissions
-- [ ] Workflow has `permissions: {}` deny-all at the top level
+- [ ] No supply-chain-critical write scope (`contents: write`, `packages: write`, `id-token: write`, `deployments: write`, `statuses: write`) at workflow level
+- [ ] Workflows with any write-capable job use `permissions: {}` at workflow level
+- [ ] Read-only workflows have at least `permissions: contents: read` at workflow level (or `{}`)
 - [ ] Each job lists only the permissions it genuinely needs
 - [ ] `id-token: write` appears only on the npm-publish job (provenance)
-- [ ] No job has `permissions: write-all` or `permissions: read-all`
+- [ ] No workflow uses `permissions: write-all` or `permissions: read-all`
 
 ### Action Pinning
 - [ ] Every third-party `uses:` is pinned to a full 40-character SHA
@@ -402,7 +425,7 @@ Use this checklist when reviewing or hardening any workflow file.
 ### Vercel Deploy (if applicable)
 - [ ] Vercel CLI pinned to exact version: `npm install -g vercel@X.Y.Z`
 - [ ] Cache key includes CLI version: `${{ runner.os }}-vercel-cli-X.Y.Z`
-- [ ] `permissions: {}` at workflow level
+- [ ] `permissions: {}` at workflow level (has write-capable jobs)
 
 ### Security Scanning
 - [ ] The new workflow will be scanned by zizmor (automatic via `security-scan.yml`)
@@ -415,7 +438,8 @@ Use this checklist when reviewing or hardening any workflow file.
 | Mistake | Correct Pattern |
 |---------|----------------|
 | `uses: actions/checkout@v4` | Pin to full SHA with `# v4` comment |
-| Missing `permissions: {}` at workflow level | Always add deny-all default |
+| Write scope at workflow level (`contents: write`, `packages: write`, etc.) | Move to the specific job; use `permissions: {}` at workflow level |
+| Missing `permissions:` block entirely on a workflow with write jobs | Add `permissions: {}` + per-job grants |
 | `persist-credentials: true` on read-only jobs | `persist-credentials: false` unless job pushes |
 | `env: NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}` at job level | Move to the specific `env:` block of the step that needs it |
 | `pnpm dlx tsx scripts/foo.ts` | `pnpm exec tsx scripts/foo.ts` (tsx is in devDependencies) |

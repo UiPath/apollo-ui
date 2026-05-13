@@ -46,8 +46,10 @@ jobs:
           git push origin "$BRANCH"
 
           # Build a markdown list of removed packages
+          # shellcheck disable=SC2016
           PACKAGES_MD=$(echo "$REMOVABLE" | tr ',' '\n' | sed 's/.*/* `&`/')
 
+          # shellcheck disable=SC2016
           gh pr create \
             --title "chore(repo): prune stale minimumReleaseAge exemptions" \
             --body "$(printf '## Summary\n\nThe following packages were in \`minimumReleaseAgeExclude\` in \`pnpm-workspace.yaml\` because their latest release was too new at the time. Their latest versions are now older than the 14-day quarantine and no longer need an exemption.\n\n%s\n\n_Automated by the [Prune Release Age Exemptions](%s/%s/actions/workflows/prune-release-age-exemptions.yml) workflow._' "$PACKAGES_MD" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY")" \

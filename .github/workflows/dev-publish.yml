@@ -1,8 +1,7 @@
 name: Dev Publish
 
-permissions:
-  contents: read
-  pull-requests: read
+# Deny-all default; jobs grant the minimum they need.
+permissions: {}
 
 on:
   pull_request:
@@ -24,6 +23,9 @@ jobs:
   detect-changes:
     name: Detect Changed Packages
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
     outputs:
       has_label: ${{ steps.check-label.outputs.has_label }}
       packages: ${{ steps.changed.outputs.packages }}
@@ -45,10 +47,10 @@ jobs:
           LABELS_JSON: ${{ toJSON(github.event.pull_request.labels.*.name) }}
         run: |
           if echo "$LABELS_JSON" | jq -e 'index("dev-packages")' > /dev/null; then
-            echo "has_label=true" >> $GITHUB_OUTPUT
+            echo "has_label=true" >> "$GITHUB_OUTPUT"
             echo "✓ dev-packages label is present"
           else
-            echo "has_label=false" >> $GITHUB_OUTPUT
+            echo "has_label=false" >> "$GITHUB_OUTPUT"
             echo "ℹ️ dev-packages label not present - will cleanup only"
           fi
 
@@ -62,23 +64,31 @@ jobs:
             --jq '[.[] | select(.body | contains("<!-- dev-packages-comment -->")) | select(.user.type == "Bot" or .user.login == "github-actions[bot]") | .body][0]' 2>/dev/null) || true
 
           if [ -z "$COMMENT" ]; then
-            echo "has_previous=false" >> $GITHUB_OUTPUT
-            echo "packages=" >> $GITHUB_OUTPUT
+            {
+              echo "has_previous=false"
+              echo "packages="
+            } >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           # Extract all package@version from comment (table format)
           # Matches: | `@uipath/package@version-pr123.sha` | status | timestamp |
-          PUBLISHED=$(echo "$COMMENT" | grep -oE '\| `@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+(\.[a-z0-9]+)?`' | sed 's/^| `//' | sed 's/`$//' | sort -u)
+          # Backticks in the grep pattern are literal regex chars, not command substitution.
+          # shellcheck disable=SC2016
+          PUBLISHED=$(echo "$COMMENT" | grep -oE '\| `@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+(\.[a-z0-9]+)?`' | sed 's/^| `//' | sed "s/\`\$//" | sort -u)
 
           if [ -z "$PUBLISHED" ]; then
-            echo "has_previous=false" >> $GITHUB_OUTPUT
-            echo "packages=" >> $GITHUB_OUTPUT
+            {
+              echo "has_previous=false"
+              echo "packages="
+            } >> "$GITHUB_OUTPUT"
           else
-            echo "has_previous=true" >> $GITHUB_OUTPUT
-            echo "packages<<EOF" >> $GITHUB_OUTPUT
-            echo "$PUBLISHED" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            {
+              echo "has_previous=true"
+              echo "packages<<EOF"
+              echo "$PUBLISHED"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
             echo "Found previous versions: $PUBLISHED"
           fi
 
@@ -91,13 +101,13 @@ jobs:
           # Convert newline-separated package@version list to JSON array
           # Use -Rsc: Raw input, Slurp mode, Compact output (single line)
           MATRIX_JSON=$(echo "$PACKAGES" | jq -Rsc 'split("\n") | map(select(length > 0))')
-          echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+          echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
           echo "Previous matrix: $MATRIX_JSON"
 
       - name: Get changed packages
         id: changed
         run: |
-          CHANGED_FILES=$(git diff --name-only origin/${BASE_REF}...HEAD)
+          CHANGED_FILES=$(git diff --name-only "origin/${BASE_REF}...HEAD")
           PACKAGES=""
 
           for pkg_dir in packages/* web-packages/*; do
@@ -117,11 +127,15 @@ jobs:
 
           PACKAGES=$(echo "$PACKAGES" | xargs)
           if [ -z "$PACKAGES" ]; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-            echo "packages=" >> $GITHUB_OUTPUT
+            {
+              echo "has_changes=false"
+              echo "packages="
+            } >> "$GITHUB_OUTPUT"
           else
-            echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
-            echo "has_changes=true" >> $GITHUB_OUTPUT
+            {
+              echo "packages=$PACKAGES"
+              echo "has_changes=true"
+            } >> "$GITHUB_OUTPUT"
           fi
           echo "Changed packages: $PACKAGES"
 
@@ -132,7 +146,7 @@ jobs:
           # Convert space-separated list to compact JSON array
           PACKAGES="${{ steps.changed.outputs.packages }}"
           MATRIX_JSON=$(echo "$PACKAGES" | jq -Rc 'split(" ") | map(select(length > 0))')
-          echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+          echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
           echo "Matrix: $MATRIX_JSON"
 
   cleanup:
@@ -140,6 +154,8 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.has_previous == 'true' && github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -179,7 +195,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
       issues: write
     steps:
       - name: Checkout code
@@ -209,7 +224,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
       issues: write
     strategy:
       fail-fast: false # Continue even if one package fails
@@ -262,11 +276,15 @@ jobs:
           fi
 
           if pnpm publish:dev "$PACKAGE" "$SUFFIX"; then
-            echo "full_version=$PACKAGE@$version-$SUFFIX" >> $GITHUB_OUTPUT
-            echo "status=success" >> $GITHUB_OUTPUT
+            {
+              echo "full_version=$PACKAGE@$version-$SUFFIX"
+              echo "status=success"
+            } >> "$GITHUB_OUTPUT"
           else
-            echo "full_version=$PACKAGE@$version-$SUFFIX" >> $GITHUB_OUTPUT
-            echo "status=failure" >> $GITHUB_OUTPUT
+            {
+              echo "full_version=$PACKAGE@$version-$SUFFIX"
+              echo "status=failure"
+            } >> "$GITHUB_OUTPUT"
             exit 1
           fi
 
@@ -286,7 +304,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
       issues: write
     steps:
       - name: Update PR comment with cleanup status

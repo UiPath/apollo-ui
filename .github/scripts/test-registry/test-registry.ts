@@ -19,7 +19,9 @@ function testComponent(component: string, baseAppPath: string): TestResult {
       filter: (src) => !src.includes('node_modules'),
     });
 
-    // Install dependencies in the temp directory
+    // Install dependencies in the temp directory.
+    // No --frozen-lockfile: the shadcn-initialised app has no committed lockfile by design —
+    // this test simulates a fresh consumer install to verify components resolve correctly.
     execFileSync('pnpm', ['install'], {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],

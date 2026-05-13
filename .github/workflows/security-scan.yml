@@ -14,15 +14,17 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
-  security-events: write
-  actions: read
+# Deny-all default; jobs grant the minimum they need.
+permissions: {}
 
 jobs:
   zizmor:
     name: Zizmor Security Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
 
     steps:
       - name: Checkout code
@@ -43,6 +45,8 @@ jobs:
   actionlint:
     name: Actionlint Workflow Syntax Check
     runs-on: ubuntu-latest
+    # github-pr-check reporter only surfaces results in PR context; skip on push.
+    if: github.event_name == 'pull_request'
     permissions:
       contents: read
       checks: write

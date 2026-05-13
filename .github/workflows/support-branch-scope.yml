@@ -9,15 +9,17 @@ concurrency:
   group: support-scope-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
-  pull-requests: write
-  issues: write
+# Deny-all default; the check-scope job grants only what it needs.
+permissions: {}
 
 jobs:
   check-scope:
     name: Check package scope
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: write
     steps:
       - name: Extract package from branch name
         id: parse
@@ -60,13 +62,15 @@ jobs:
       - name: Get changed files
         id: changes
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
           CHANGED=$(gh pr diff "$PR_URL" --name-only)
-          echo "files<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$CHANGED" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          {
+            echo "files<<EOF"
+            echo "$CHANGED"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Check scope
         id: scope
@@ -88,10 +92,12 @@ jobs:
           done <<< "$CHANGED_FILES"
 
           if [ -n "$OUT_OF_SCOPE" ]; then
-            echo "status=fail" >> "$GITHUB_OUTPUT"
-            echo "files<<EOF" >> "$GITHUB_OUTPUT"
-            echo -e "$OUT_OF_SCOPE" >> "$GITHUB_OUTPUT"
-            echo "EOF" >> "$GITHUB_OUTPUT"
+            {
+              echo "status=fail"
+              echo "files<<EOF"
+              echo -e "$OUT_OF_SCOPE"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
           else
             echo "status=pass" >> "$GITHUB_OUTPUT"
           fi
