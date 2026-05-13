@@ -2,8 +2,7 @@ name: Dependency Review
 
 on: [pull_request]
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   vulnerability-review:
@@ -30,6 +29,7 @@ jobs:
   dependency-review:
     name: Dependencies license check
     runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == false
     permissions:
       contents: read
       issues: write
@@ -46,7 +46,7 @@ jobs:
 
       - name: Check licenses
         id: check
-        run: npx -y tsx scripts/check-licenses.ts
+        run: pnpm exec tsx scripts/check-licenses.ts
         continue-on-error: true
 
       - name: Post or update PR comment

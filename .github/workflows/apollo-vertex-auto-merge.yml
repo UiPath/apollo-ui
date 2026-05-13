@@ -10,6 +10,9 @@ on:
         paths:
             - "apps/apollo-vertex/**"
 
+# Deny-all default; the enable-auto-merge job grants only what it needs.
+permissions: {}
+
 jobs:
     enable-auto-merge:
         # Never auto-merge a fork PR. Fork PRs require human review regardless of file scope —

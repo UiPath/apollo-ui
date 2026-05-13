@@ -37,7 +37,7 @@ jobs:
   prepare:
     name: Prepare
     needs: detect-changes
-    if: needs.detect-changes.outputs.has_vertex_changes == 'true'
+    if: needs.detect-changes.outputs.has_vertex_changes == 'true' && github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.matrix.outputs.result }}
@@ -74,13 +74,13 @@ jobs:
           echo "result=${MATRIX}" >> "${GITHUB_OUTPUT}"
 
       - name: Create base shadcn app
-        run: cd ${{ runner.temp }} && pnpx shadcn@latest init --preset a0 --template next --name minimal-app
+        run: cd ${{ runner.temp }} && pnpm dlx shadcn@4.4.0 init --preset a0 --template next --name minimal-app
 
       - name: Configure @uipath registry
         working-directory: ${{ runner.temp }}/minimal-app
         env:
           REGISTRY_URL: http://localhost:3000
-        run: pnpx tsx ${{ github.workspace }}/.github/scripts/test-registry/configure-registry.ts
+        run: ${{ github.workspace }}/node_modules/.bin/tsx ${{ github.workspace }}/.github/scripts/test-registry/configure-registry.ts
 
       - name: Copy locales into base app
         run: cp -r apps/apollo-vertex/locales ${{ runner.temp }}/minimal-app/locales
@@ -105,7 +105,7 @@ jobs:
   test-components:
     name: Test batch ${{ matrix.batch_index }}
     needs: [detect-changes, prepare]
-    if: needs.detect-changes.outputs.has_vertex_changes == 'true'
+    if: needs.detect-changes.outputs.has_vertex_changes == 'true' && github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -115,6 +115,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
+          persist-credentials: false
           sparse-checkout: |
             .github/scripts/test-registry
             package.json
@@ -143,14 +144,14 @@ jobs:
           path: ${{ runner.temp }}/serve-dir/r
 
       - name: Start registry server
-        run: npx -y serve ${{ runner.temp }}/serve-dir -p 3000 &
+        run: pnpm dlx serve@14.2.6 ${{ runner.temp }}/serve-dir -p 3000 &
 
       - name: Test registry components
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
           COMPONENTS: ${{ matrix.components }}
           BASE_APP_PATH: ${{ runner.temp }}/base-app
-        run: pnpx tsx ${{ github.workspace }}/.github/scripts/test-registry/test-registry.ts
+        run: pnpm dlx tsx@4.20.6 ${{ github.workspace }}/.github/scripts/test-registry/test-registry.ts
 
   registry-check:
     name: Apollo Vertex Registry Check
@@ -162,6 +163,10 @@ jobs:
         run: |
           if [ "${{ needs.detect-changes.outputs.has_vertex_changes }}" != "true" ]; then
             echo "No relevant changes detected — skipping registry check"
+            exit 0
+          fi
+          if [ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]; then
+            echo "Fork PR — registry check skipped (secrets not available)"
             exit 0
           fi
           if [ "${{ needs.test-components.result }}" != "success" ]; then

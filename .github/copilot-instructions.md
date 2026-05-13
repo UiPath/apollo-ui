@@ -49,145 +49,267 @@ apollo-ui/
 - All packages depend on `apollo-core` (design tokens)
 - Web components depend on framework packages
 
-## Coding Guidelines
+## General Guidelines
 
-### Naming Conventions
+- **Think critically**: When asked "does this make sense?" or given a plan, analyze it before agreeing. Push back on mistakes.
+- **Plan before acting**: For major changes (refactors, new features, behavior changes), propose what you'll change and why before writing code.
+- **Do not gold-plate**: Complete the task; do not add unrequested features, files, or abstractions.
+- **No documentation files**: Do not create `*.md` files unless the user explicitly requests them.
 
-**React Components:**
-- Prefix: `Ap*` (e.g., `ApButton`, `ApTextField`, `ApCard`)
-- File naming: PascalCase (e.g., `ApButton.tsx`)
+---
 
-**Files:**
-- Components: PascalCase (`ApButton.tsx`)
-- Utilities: camelCase (`formatDate.ts`)
-- Tests: `*.test.ts` or `*.spec.ts`
-- Stories: `*.stories.tsx`
+## GitHub Actions Security
 
-**TypeScript:**
-- Strict mode enabled - use proper types, avoid `any`
-- Prefer type inference where clear
-- Use generics for reusable components
-- Export types alongside implementations
+Flag these issues immediately when editing or reviewing any `.github/workflows/*.yml` or `.github/actions/*/action.yml` file.
 
-### Component Patterns
+### Permissions — Deny-All Default
 
-- Use design tokens from `apollo-core` (never hardcode colors/spacing)
-- Prefer composition over inheritance
-- Keep components focused and single-purpose
-- Follow existing patterns in the codebase
-- **No new Emotion or MUI usage in `apollo-react`** — see Styling Standards below
+Every workflow **must** have `permissions: {}` at the workflow level. Each job grants only what it needs.
 
-### Styling Standards (apollo-react)
+```yaml
+# Required at top of every workflow
+permissions: {}
 
-The `apollo-react` package is migrating from Emotion/MUI to Tailwind CSS + `apollo-wind`. **All new code must use Tailwind patterns.**
+# Each job grants minimum needed, e.g.:
+jobs:
+  my-job:
+    permissions:
+      contents: read
+      pull-requests: write
+```
+
+Flag: missing `permissions:` block at workflow level, or `permissions: write-all` / `permissions: read-all`.
+
+`id-token: write` is valid only on the job that publishes to npm with OIDC provenance. Flag it on any other job.
+
+### Action Pinning — Full Commit SHA Required
+
+All third-party `uses:` must be pinned to a full 40-character SHA with a human-readable version comment.
+
+```yaml
+# Correct
+uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+# Wrong — flag these
+uses: actions/checkout@v4
+uses: actions/checkout@latest
+uses: actions/checkout@main
+```
+
+Known-good SHAs in use in this repo:
+
+| Action | SHA | Version |
+|--------|-----|---------|
+| `actions/checkout` | `34e114876b0b11c390a56381ad16ebd13914f8d5` | v4 |
+| `actions/setup-node` | `49933ea5288caeca8642d1e84afbd3f7d6820020` | v4 |
+| `actions/cache` | `0057852bfaa89a56745cba8c7296529d2fc39830` | v4 |
+| `actions/upload-artifact` | `ea165f8d65b6e75b540449e92b4886f43607fa02` | v4 |
+| `actions/github-script` | `f28e40c7f34bde8b3046d885e986cb6290c5673b` | v7 |
+| `pnpm/action-setup` | `b906affcce14559ad1aafd4ab0e942779e9f58b1` | v4 |
+
+First-party composite actions (`./.github/actions/*`) are referenced by path — no SHA needed.
+
+### Checkout — `persist-credentials: false`
+
+Always set `persist-credentials: false` on `actions/checkout` unless the job explicitly pushes commits (e.g., the release job).
+
+```yaml
+# Correct for read-only jobs
+- uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+  with:
+    persist-credentials: false
+
+# Release job exception — must document with zizmor suppress comment
+# zizmor: ignore[artipacked]
+# Credentials needed for semantic-release to push version bumps
+- uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+  with:
+    token: ${{ secrets.RELEASE_TOKEN }}
+```
+
+Flag: `actions/checkout` without `persist-credentials: false` on jobs that do not push.
+
+### Secrets — Step-Scoped Only
+
+Never put secrets in workflow-level or job-level `env:` blocks. Always scope to the specific step that needs them.
+
+```yaml
+# Wrong — flag this
+env:
+  NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
+# Correct
+- name: Publish
+  env:
+    NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+  run: pnpm publish:dev ...
+```
+
+Flag: `${{ secrets.* }}` appearing in a workflow-level or job-level `env:` block.
+
+### Fork PR Protection
+
+Any job that uses secrets, publishes packages, or modifies shared state must include a fork guard:
+
+```yaml
+if: github.event.pull_request.head.repo.fork == false
+```
+
+Also flag: use of `pull_request_target` event for PR-triggered workflows — this passes repo secrets to untrusted fork code. Use `pull_request` instead.
+
+### Install Pattern — Use Composite Action
+
+Always use `./.github/actions/install-node-deps` instead of manually setting up pnpm and Node.
+
+```yaml
+# Correct
+- uses: ./.github/actions/install-node-deps
+  with:
+    registry-token: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+
+# Wrong — flag manual setup when the composite action suffices
+- uses: pnpm/action-setup@...
+- uses: actions/setup-node@...
+- run: pnpm install
+```
+
+Never run `pnpm install` without `--frozen-lockfile` in CI.
+
+Flag: `pnpm dlx`, `pnpx`, or `npx -y` for packages that are already in `devDependencies` — use `pnpm exec` instead.
+
+### Turborepo Cache — Branch-Isolated Key
+
+The cache key must include `github.ref_name` for branch isolation:
+
+```yaml
+# Correct
+key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
+restore-keys: |
+  ${{ runner.os }}-turbo-${{ github.ref_name }}-
+
+# Wrong — missing ref_name causes branches to share cache
+key: ${{ runner.os }}-turbo-${{ github.sha }}
+```
+
+### Artifacts — Coverage Only, Short Retention
+
+Do not upload `dist/`, `.turbo/`, or build outputs in failure artifacts. Only upload `coverage/`.
+
+```yaml
+# Correct
+- name: Upload Failure Artifacts
+  if: failure()
+  uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+  with:
+    path: coverage/       # NOT dist/ or .turbo/
+    retention-days: 3     # failure artifacts
+```
+
+Success coverage artifacts: `retention-days: 7`. Failure artifacts: `retention-days: 3`.
+
+---
+
+## pnpm / Node
+
+- Always use `pnpm install --frozen-lockfile` in CI. The composite action handles this.
+- Use `pnpm exec <tool>` for CLI tools already in `devDependencies`. Never `pnpm dlx` / `pnpx` / `npx -y` for them.
+- `pnpm install --frozen-lockfile` is unaffected by `minimumReleaseAge` (it never re-resolves). `pnpm add` re-resolves and may fail if locked packages were published within the 14-day quarantine.
+- When `pnpm add` is blocked by `minimumReleaseAge`, add the offending package to `minimumReleaseAgeExclude` in `pnpm-workspace.yaml` with a comment. The weekly `prune-release-age-exemptions.yml` workflow removes it automatically after 14 days.
+- Pin the Vercel CLI to an exact version: `npm install -g vercel@X.Y.Z` — never `@latest`.
+
+---
+
+## TypeScript / React Patterns (apollo-react)
+
+### No New Styled-Components or MUI
+
+The `apollo-react` package is migrating from Emotion/MUI to Tailwind CSS + `apollo-wind`. All new code must use Tailwind.
 
 **Block PRs that introduce:**
 - New imports from `@emotion/styled`, `@emotion/react`, or usage of `styled.*` / `css` helpers
 - New `*.styles.ts` files
 - New `@mui/material/*` component imports for building UI (existing MUI theme overrides in `theme/` are exempt)
-- New usage of `Ap*` components from `@uipath/apollo-react` (these are MUI wrappers — use `apollo-wind` components instead)
+- New `Ap*` components from `@uipath/apollo-react` used to build other components (these are MUI wrappers — use `apollo-wind` components instead)
 
 **Flag for migration when:**
 - A PR significantly modifies an existing file that uses styled-components or MUI — recommend migrating the touched component to Tailwind as part of the change
 
 **Approved patterns:**
 - Tailwind utility classes as static literal strings in JSX
-- `cn()` from `@uipath/apollo-wind` for conflicting class overrides
+- `cn()` from `@uipath/apollo-wind` only when classes conflict or need overrides
 - CSS custom properties (`style` prop) for dynamic dimensions
 - Existing MUI theme overrides in `packages/apollo-react/src/theme/` (maintenance only)
 
+### Naming Conventions
+
+- React components: `Ap*` prefix (e.g., `ApButton`, `ApTextField`)
+- Files: PascalCase for components, camelCase for utilities
+- Tests: `*.test.ts` / `*.spec.ts`
+- Stories: `*.stories.tsx`
+
+### TypeScript
+
+- Strict mode enabled — use proper types, avoid `any`
+- Export types alongside implementations
+- Use generics for reusable components
+
+---
+
+## Build-Time vs Runtime Security
+
+**Build-time scripts** (`packages/*/scripts/*.ts`) run in trusted CI. Path operations on repository files, processing trusted Figma exports, and recursive directory traversal are acceptable. Do not flag theoretical issues in this context.
+
+**Runtime code** (components, hooks, utilities) runs in user applications. Flag: missing input validation, XSS, prototype pollution, unsafe dependencies with known CVEs, template injection.
+
+---
+
+## Code Review Approach
+
+**Block on:**
+- Missing `permissions: {}` at workflow level
+- Unpinned third-party actions (`@v4`, `@latest`, branch tags)
+- Missing `persist-credentials: false` on read-only checkouts
+- Secrets in workflow or job-level `env:` blocks
+- `pnpm dlx` / `npx -y` for packages in devDependencies
+- Missing `--frozen-lockfile` on `pnpm install` in CI
+- Missing fork guard on jobs that use secrets or publish
+- New Emotion styled-components or MUI component usage in `apollo-react`
+- Breaking changes to public APIs
+- Security vulnerabilities in runtime code
+- TypeScript errors
+- Missing tests in `packages/` or `web-packages/`
+
+**Do not block on:**
+- Minor style/formatting (Biome handles this)
+- Theoretical security issues in build-time scripts
+- Missing tests in `apps/` (Storybook, playgrounds)
+- Minor optimizations
+
+---
+
+## Coding Guidelines
+
+### Component Patterns
+
+- Use design tokens from `apollo-core` (never hardcode colors/spacing)
+- Prefer composition over inheritance
+- Keep components focused and single-purpose
+
 ### Testing Requirements
 
-**Required (Library Code):**
-- All code in `packages/` and `web-packages/`
+- Required for all code in `packages/` and `web-packages/`
 - Unit tests for utilities and hooks
 - Component tests for critical UI behavior
 - Visual regression tests for components
-
-**NOT Required (Demo Code):**
-- Code in `apps/` folder (Storybook, playgrounds)
-- Showcase/demo applications
+- NOT required for `apps/` (demo apps, Storybook)
 
 ### Documentation
 
 - JSDoc comments for public APIs
 - Storybook stories for all components
-- README.md in each package with usage examples
+- README in each package with usage examples
 
-## Build-Time vs Runtime Security Model
-
-**This is critical for security reviews:**
-
-### Build-Time Scripts (`packages/*/scripts/*.ts`)
-✅ **Safe/Acceptable:**
-- Run in trusted CI/CD environment with repository files
-- Process trusted sources (Figma exports, repository structure)
-- Path operations on repository files
-- Processing files from `src/icons/svg/` (trusted design team exports)
-- String operations on folder names from repository structure
-- Missing input validation for build-time configuration
-- Recursive directory traversal with depth limits
-- File system operations in `scripts/` folders
-
-### Runtime Code (Components, Hooks, Utilities)
-⚠️ **Requires Strict Security:**
-- Runs in user applications
-- Validate all user inputs
-- Sanitize data before rendering
-- Prevent XSS, prototype pollution, injection attacks
-- Missing input validation on user-facing APIs is a security issue
-
-### Context-Specific Patterns
-- `new Function()` in library config: OK (developer-defined, not user input)
-- SVG processing in build scripts: OK (trusted Figma source)
-- `innerHTML` in dev.ts: OK (dev-only file with static markup)
-- Regex patterns for internal file matching: OK (build-time only)
-
-## What to Flag as Security Issues
-
-**Flag these ONLY in runtime code:**
-- Secrets/credentials in code or configs
-- XSS vulnerabilities in React components
-- Prototype pollution in runtime utilities
-- Missing input validation on user-facing APIs
-- Unsafe dependencies with known CVEs
-- Template injection in user-controlled content
-
-**DO NOT flag in build scripts:**
-- Theoretical security issues in trusted build-time contexts
-- Path operations on repository files
-- File processing from known trusted sources
-
-## Code Review Approach
-
-When providing suggestions or reviewing code:
-
-1. **Summary**: Brief overview of what's being done
-2. **Code Quality**: Critical issues with structure, patterns, or best practices
-3. **Security**: Real security concerns (distinguish build-time vs runtime)
-4. **Type Safety**: TypeScript errors or type issues
-5. **Testing**: Missing tests for library code (NOT required for apps/)
-6. **Performance**: Significant performance implications
-
-**Focus on blocking issues** - things that prevent safe merging:
-- Breaking changes to public APIs
-- Security vulnerabilities in runtime code
-- TypeScript errors
-- Missing tests for critical library functionality
-- Incorrect use of design tokens
-- New Emotion styled-components or MUI component usage in apollo-react (use Tailwind instead)
-
-**Don't block on:**
-- Minor style/formatting (Biome handles this)
-- Theoretical security in build scripts
-- Missing tests in playground apps
-- Minor optimizations
-
-**Be pragmatic:**
-- Approve when functionally correct and secure
-- Build-time scripts != runtime code
-- Test library code, not demos
-- Trust the tools (Biome, TypeScript)
+---
 
 ## Component Checklist
 
@@ -196,33 +318,21 @@ When creating new components, verify:
 - [ ] Uses tokens from `apollo-core`
 - [ ] Includes TypeScript types
 - [ ] Has Storybook story
-- [ ] Has unit tests (if in packages/ or web-packages/)
+- [ ] Has unit tests (if in `packages/` or `web-packages/`)
 - [ ] Has visual regression tests
 - [ ] Documented in package README
 - [ ] No new `@emotion/styled`, `@emotion/react`, or `@mui/material` imports (use Tailwind + apollo-wind)
 
-## Available Resources
+---
 
-**Scripts (from root):**
-- `pnpm build` - Build all packages
-- `pnpm dev` - Run all packages in dev mode
-- `pnpm test` - Run all tests
-- `pnpm lint` - Lint all packages
-- `pnpm storybook:dev` - Run Storybook
-- `pnpm format` - Format with Biome
+## Available Scripts (from root)
 
-**Package-specific:**
-- `pnpm build:packages` - Build only packages/
-- `pnpm dev:react-playground` - Run React playground
-- `pnpm test:visual` - Visual regression tests
-
-**Release:**
-- `pnpm release` - Release packages (semantic-release)
-
-## Key Principles
-
-1. **Context matters**: Build-time scripts != runtime code
-2. **Pragmatic over perfect**: Functional and secure > style nitpicks
-3. **Test what matters**: Library code needs tests, demos don't
-4. **Trust the tools**: Biome handles formatting, TypeScript handles types
-5. **Design tokens first**: Use apollo-core tokens, never hardcode
+- `pnpm build` — Build all packages
+- `pnpm dev` — Run all packages in dev mode
+- `pnpm test` — Run all tests
+- `pnpm lint` — Lint all packages
+- `pnpm storybook:dev` — Run Storybook
+- `pnpm format` — Format with Biome
+- `pnpm build:packages` — Build only packages/
+- `pnpm test:visual` — Visual regression tests
+- `pnpm release` — Release packages (semantic-release)

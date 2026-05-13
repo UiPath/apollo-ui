@@ -80,9 +80,7 @@ jobs:
             [ -z "$file" ] && continue
 
             case "$file" in
-              pnpm-lock.yaml) continue ;;
-              .npmrc) continue ;;
-              .github/*) continue ;;
+              pnpm-lock.yaml) continue ;;  # legitimate when bumping deps inside PKG_DIR
               ${PKG_DIR}/*) continue ;;
             esac
 
