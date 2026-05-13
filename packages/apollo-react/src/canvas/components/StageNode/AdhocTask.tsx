@@ -44,6 +44,7 @@ const AdhocTaskItemComponent = ({
       data-testid={`stage-task-${task.id}`}
       selected={isSelected}
       status={taskExecution?.status}
+      isPlaceholder={task.isPlaceholder}
       onClick={handleClick}
       {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
     >

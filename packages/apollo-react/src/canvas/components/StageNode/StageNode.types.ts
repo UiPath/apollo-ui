@@ -25,6 +25,7 @@ export interface StageTaskItem {
   label: string;
   icon?: React.ReactElement;
   isAdhoc?: boolean;
+  isPlaceholder?: boolean;
   taskGroupType?: 'sequential' | 'event-driven' | 'adhoc';
   hasEntryCondition?: boolean;
 }

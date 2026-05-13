@@ -92,6 +92,7 @@ const DraggableTaskComponent = ({
       status={taskExecution?.status}
       isParallel={isParallel}
       isDragEnabled={!isDragDisabled}
+      isPlaceholder={task.isPlaceholder}
       onClick={handleClick}
       {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
     >
