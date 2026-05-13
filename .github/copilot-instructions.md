@@ -62,25 +62,44 @@ apollo-ui/
 
 Flag these issues immediately when editing or reviewing any `.github/workflows/*.yml` or `.github/actions/*/action.yml` file.
 
-### Permissions — Deny-All Default
+### Permissions
 
-Every workflow **must** have `permissions: {}` at the workflow level. Each job grants only what it needs.
+**Safe at workflow level** (read-only, no supply-chain risk):
+`contents: read`, `pull-requests: read`, `issues: read`, `packages: read`, `checks: read`, `actions: read`
+
+**Must be job-scoped** — never at workflow level:
+| Permission | Risk |
+|---|---|
+| `contents: write` | Can push code / create releases |
+| `packages: write` | Can publish to registries — supply chain critical |
+| `id-token: write` | OIDC token; can impersonate workflow to cloud providers |
+| `deployments: write` | Can trigger production deployments |
+| `pull-requests: write` | Can merge PRs, bypass branch protections |
+| `statuses: write` | Can fake commit status checks |
+| `issues: write` | Can close/modify issues |
+| `checks: write` | Can fake CI check results |
+| `security-events: write` | Can upload SARIF; keep job-scoped unless the whole workflow is a dedicated security scanner |
+
+**Pattern:**
+- Workflows with any write-capable job → `permissions: {}` at workflow level + explicit per-job grants
+- Purely read-only workflows → `permissions: contents: read` at workflow level is sufficient
 
 ```yaml
-# Required at top of every workflow
+# Workflow with mixed jobs — deny-all + per-job grants
 permissions: {}
 
-# Each job grants minimum needed, e.g.:
 jobs:
-  my-job:
+  lint:
     permissions:
       contents: read
-      pull-requests: write
+  publish:
+    permissions:
+      contents: write   # push version bump
+      packages: write   # publish to GHP
+      id-token: write   # npm provenance — only ever on the publish job
 ```
 
-Flag: missing `permissions:` block at workflow level, or `permissions: write-all` / `permissions: read-all`.
-
-`id-token: write` is valid only on the job that publishes to npm with OIDC provenance. Flag it on any other job.
+Flag: missing `permissions:` block, `write-all`, `read-all`, or any of the must-be-job-scoped permissions at workflow level.
 
 ### Action Pinning — Full Commit SHA Required
 
@@ -214,7 +233,17 @@ Success coverage artifacts: `retention-days: 7`. Failure artifacts: `retention-d
 - Always use `pnpm install --frozen-lockfile` in CI. The composite action handles this.
 - Use `pnpm exec <tool>` for CLI tools already in `devDependencies`. Never `pnpm dlx` / `pnpx` / `npx -y` for them.
 - `pnpm install --frozen-lockfile` is unaffected by `minimumReleaseAge` (it never re-resolves). `pnpm add` re-resolves and may fail if locked packages were published within the 14-day quarantine.
-- When `pnpm add` is blocked by `minimumReleaseAge`, add the offending package to `minimumReleaseAgeExclude` in `pnpm-workspace.yaml` with a comment. The weekly `prune-release-age-exemptions.yml` workflow removes it automatically after 14 days.
+- When `pnpm add` is blocked by `minimumReleaseAge`, add the offending package to `minimumReleaseAgeExclude` in `pnpm-workspace.yaml`. **The version must be in the comment** — the prune workflow reads it to know when to remove the entry. Format: `- 'pkg'  # 1.2.3 — reason`. Flag any entry that is missing the version.
+
+```yaml
+# ✅ correct
+minimumReleaseAgeExclude:
+  - 'next'  # 16.2.6 — locked version too new when added
+
+# ❌ missing version — prune workflow will never remove this
+minimumReleaseAgeExclude:
+  - 'next'  # too new when added
+```
 - Pin the Vercel CLI to an exact version: `npm install -g vercel@X.Y.Z` — never `@latest`.
 
 ---
@@ -266,7 +295,7 @@ The `apollo-react` package is migrating from Emotion/MUI to Tailwind CSS + `apol
 ## Code Review Approach
 
 **Block on:**
-- Missing `permissions: {}` at workflow level
+- Missing `permissions: {}` (or a maximally restrictive scope like `contents: read`) at workflow level
 - Unpinned third-party actions (`@v4`, `@latest`, branch tags)
 - Missing `persist-credentials: false` on read-only checkouts
 - Secrets in workflow or job-level `env:` blocks

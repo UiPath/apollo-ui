@@ -50,7 +50,7 @@ jobs:
         continue-on-error: true
 
       - name: Post or update PR comment
-        if: "!github.event.pull_request.head.repo.fork"
+        if: github.event.pull_request.head.repo.fork == false
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         with:
           script: |

@@ -18,7 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
     permissions:
-      pull-requests: write
       issues: write
 
     steps:
@@ -94,7 +93,6 @@ jobs:
     continue-on-error: true
     permissions:
       contents: read
-      pull-requests: write
       issues: write
     strategy:
       matrix:
@@ -121,22 +119,6 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: |
-          echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Setup pnpm cache
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
-        with:
-          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
       - name: Cache Vercel CLI
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
@@ -152,9 +134,9 @@ jobs:
         id: vars
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            echo "prod_flag=" >> $GITHUB_OUTPUT
+            echo "prod_flag=" >> "$GITHUB_OUTPUT"
           else
-            echo "prod_flag=--prod" >> $GITHUB_OUTPUT
+            echo "prod_flag=--prod" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Set Vercel Project ID
@@ -163,19 +145,19 @@ jobs:
           # Map matrix secret name to actual secret value
           case "${{ matrix.vercel_project_id_secret }}" in
             VERCEL_PROJECT_ID_CANVAS)
-              echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_CANVAS }}" >> $GITHUB_ENV
+              echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_CANVAS }}" >> "$GITHUB_ENV"
               ;;
             VERCEL_PROJECT_ID_DOCS)
-              echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_DOCS }}" >> $GITHUB_ENV
+              echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_DOCS }}" >> "$GITHUB_ENV"
               ;;
             VERCEL_PROJECT_ID_LANDING)
-              echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_LANDING }}" >> $GITHUB_ENV
+              echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_LANDING }}" >> "$GITHUB_ENV"
               ;;
             VERCEL_PROJECT_ID_UI_REACT)
-              echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_UI_REACT }}" >> $GITHUB_ENV
+              echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_UI_REACT }}" >> "$GITHUB_ENV"
               ;;
             VERCEL_PROJECT_ID_VERTEX)
-              echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_VERTEX }}" >> $GITHUB_ENV
+              echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_VERTEX }}" >> "$GITHUB_ENV"
               ;;
             *)
               echo "Error: Unknown vercel_project_id_secret value '${{ matrix.vercel_project_id_secret }}'. Please update the case statement in .github/workflows/vercel-deploy.yml." >&2
@@ -192,9 +174,9 @@ jobs:
           ERROR_MSG=""
           DEPLOY_URL=""
           set +e  # Don't exit on error
-          DEPLOY_OUTPUT=$(vercel deploy --token "$VERCEL_TOKEN" --yes \
-            --build-env GH_NPM_REGISTRY_TOKEN="$GH_NPM_REGISTRY_TOKEN" \
-            ${{ steps.vars.outputs.prod_flag }} 2>&1)
+          VERCEL_ARGS=(deploy --token "$VERCEL_TOKEN" --yes --build-env GH_NPM_REGISTRY_TOKEN="$GH_NPM_REGISTRY_TOKEN")
+          [[ -n "$PROD_FLAG" ]] && VERCEL_ARGS+=("$PROD_FLAG")
+          DEPLOY_OUTPUT=$(vercel "${VERCEL_ARGS[@]}" 2>&1)
           DEPLOY_EXIT_CODE=$?
           set -e
 
@@ -208,9 +190,9 @@ jobs:
             fi
           done
 
-          if [ $DEPLOY_EXIT_CODE -eq 0 ]; then
+          if [ "$DEPLOY_EXIT_CODE" -eq 0 ]; then
             # Extract or construct the deployment URL
-            if [ "${{ steps.vars.outputs.prod_flag }}" == "--prod" ]; then
+            if [ "$PROD_FLAG" == "--prod" ]; then
               # For production: use the clean production URL format
               DEPLOY_URL="https://${{ matrix.project_name }}.vercel.app"
             else
@@ -224,25 +206,30 @@ jobs:
               fi
             fi
 
-            echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
-            echo "project=${{ matrix.project_name }}" >> $GITHUB_OUTPUT
-            echo "error_message=" >> $GITHUB_OUTPUT
-            echo "✅ Deployed ${{ matrix.project_name }} to $DEPLOY_URL" >> $GITHUB_STEP_SUMMARY
+            {
+              echo "url=$DEPLOY_URL"
+              echo "project=${{ matrix.project_name }}"
+              echo "error_message="
+            } >> "$GITHUB_OUTPUT"
+            echo "✅ Deployed ${{ matrix.project_name }} to $DEPLOY_URL" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "url=" >> $GITHUB_OUTPUT
-            echo "project=${{ matrix.project_name }}" >> $GITHUB_OUTPUT
+            {
+              echo "url="
+              echo "project=${{ matrix.project_name }}"
+            } >> "$GITHUB_OUTPUT"
             ERROR_MSG=$(echo "$DEPLOY_OUTPUT" | tail -n 5 | tr '\n' ' ')
 
             # Truncate error message if too long (max 500 chars for output safety)
-            if [ ${#ERROR_MSG} -gt 500 ]; then
+            if [ "${#ERROR_MSG}" -gt 500 ]; then
               ERROR_MSG="${ERROR_MSG:0:500}..."
             fi
 
-            echo "error_message=$ERROR_MSG" >> $GITHUB_OUTPUT
-            echo "❌ Failed to deploy ${{ matrix.project_name }}: $ERROR_MSG" >> $GITHUB_STEP_SUMMARY
+            echo "error_message=$ERROR_MSG" >> "$GITHUB_OUTPUT"
+            echo "❌ Failed to deploy ${{ matrix.project_name }}: $ERROR_MSG" >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
         env:
+          PROD_FLAG: ${{ steps.vars.outputs.prod_flag }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}

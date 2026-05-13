@@ -4,12 +4,15 @@ on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
 
+permissions:
+  contents: read
+
 jobs:
   commitlint:
     name: Validate Commit Messages
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    # GH_NPM_REGISTRY_TOKEN is unavailable on fork PRs — skip rather than fail with 401.
+    if: github.event.pull_request.head.repo.fork == false
     steps:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -27,4 +30,4 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: npx commitlint --from "${BASE_SHA}" --to "${HEAD_SHA}" --verbose
+        run: pnpm exec commitlint --from "${BASE_SHA}" --to "${HEAD_SHA}" --verbose

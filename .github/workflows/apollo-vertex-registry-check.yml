@@ -39,6 +39,8 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.has_vertex_changes == 'true' && github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       matrix: ${{ steps.matrix.outputs.result }}
     steps:
@@ -107,6 +109,8 @@ jobs:
     needs: [detect-changes, prepare]
     if: needs.detect-changes.outputs.has_vertex_changes == 'true' && github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -158,6 +162,8 @@ jobs:
     needs: [detect-changes, test-components]
     if: always()
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Check results
         run: |

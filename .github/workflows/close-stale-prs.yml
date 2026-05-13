@@ -14,14 +14,16 @@ concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
 
-permissions:
-  contents: read
-  pull-requests: write
+# Deny-all default; the close-stale job grants only what it needs.
+permissions: {}
 
 jobs:
   close-stale:
     name: Close stale PRs
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     timeout-minutes: 10
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
