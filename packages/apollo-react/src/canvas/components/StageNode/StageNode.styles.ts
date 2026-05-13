@@ -173,6 +173,7 @@ export const StageTask = styled.div<{
   selected?: boolean;
   isParallel?: boolean;
   isDragEnabled?: boolean;
+  isPlaceholder?: boolean;
 }>`
   position: relative;
   display: flex;
@@ -180,7 +181,8 @@ export const StageTask = styled.div<{
   gap: ${Spacing.SpacingXs};
   padding: ${Padding.PadS} ${Padding.PadM};
   background: var(--canvas-background);
-  border: 1px solid var(--canvas-border-de-emp);
+  border: 1px ${({ isPlaceholder }) => (isPlaceholder ? 'dashed' : 'solid')}
+    var(--canvas-border-de-emp);
   border-radius: ${Spacing.SpacingXs};
   color: var(--canvas-foreground);
   transition: all 0.2s ease;

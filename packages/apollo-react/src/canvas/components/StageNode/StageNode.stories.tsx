@@ -2207,6 +2207,7 @@ export const TasksBySection: Story = {
                   label: 'Parallel task 1',
                   icon: <DocumentIcon />,
                   taskGroupType: 'sequential',
+                  isPlaceholder: true,
                 },
                 {
                   id: '4',
@@ -2253,6 +2254,7 @@ export const TasksBySection: Story = {
                   label: 'Ad hoc - Risk Assessment',
                   icon: <VerificationIcon />,
                   taskGroupType: 'adhoc',
+                  isPlaceholder: true,
                 },
               ],
               [
@@ -2310,6 +2312,7 @@ export const TasksBySection: Story = {
                   icon: <VerificationIcon />,
                   taskGroupType: 'event-driven',
                   hasEntryCondition: true,
+                  isPlaceholder: true,
                 },
               ],
               [
@@ -2369,6 +2372,7 @@ export const TasksBySection: Story = {
                   icon: <VerificationIcon />,
                   taskGroupType: 'adhoc',
                   hasEntryCondition: true,
+                  isPlaceholder: true,
                 },
               ],
               [
