@@ -8,8 +8,6 @@ on:
       - 'support/**'
 
 env:
-  GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
-  NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
   TURBO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: 1
 
@@ -43,7 +41,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           COMMENT=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
-            --jq '[.[] | select(.body | contains("<!-- dev-packages-comment -->")) | .body][0]' 2>/dev/null) || true
+            --jq '[.[] | select(.body | contains("<!-- dev-packages-comment -->")) | select(.user.type == "Bot" or .user.login == "github-actions[bot]") | .body][0]' 2>/dev/null) || true
 
           if [ -z "$COMMENT" ]; then
             echo "No dev packages comment found"
@@ -64,6 +62,8 @@ jobs:
         if: steps.packages.outputs.packages != ''
         env:
           PACKAGES: ${{ steps.packages.outputs.packages }}
+          GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: |
           echo "Cleaning up dev packages..."
           echo ""

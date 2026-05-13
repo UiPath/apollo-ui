@@ -93,6 +93,11 @@
     }
   },
   "pnpm": {
+    "onlyBuiltDependencies": [
+      "@biomejs/biome",
+      "esbuild",
+      "sharp"
+    ],
     "overrides": {
       "minimatch": "^10.2.5",
       "lodash": "^4.18.1",

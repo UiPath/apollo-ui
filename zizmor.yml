@@ -4,3 +4,9 @@ rules:
       # Credentials needed for semantic-release to push version bumps
       # No artifacts uploaded in this workflow - safe to persist credentials
       - .github/workflows/release.yml
+  dependabot-cooldown:
+    ignore:
+      # The `cooldown` field is not part of the Dependabot v2 schema — GitHub rejects it.
+      # Supply-chain quarantine is enforced by pnpm's minimumReleaseAge + CODEOWNERS on
+      # pnpm-lock.yaml instead. Suppress this rule repo-wide.
+      - .github/dependabot.yml

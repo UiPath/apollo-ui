@@ -141,9 +141,9 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-vercel-cli
+          key: ${{ runner.os }}-vercel-cli-53.4.0
           restore-keys: |
-            ${{ runner.os }}-vercel-cli
+            ${{ runner.os }}-vercel-cli-53.4.0
 
       - name: Install Vercel CLI
         run: npm install -g vercel@53.4.0

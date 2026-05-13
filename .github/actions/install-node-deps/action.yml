@@ -21,9 +21,11 @@ runs:
       with:
         node-version: ${{ inputs.node-version }}
         cache: pnpm
+        registry-url: "https://npm.pkg.github.com"
+        scope: "@uipath"
 
     - name: Install dependencies
       shell: bash
       env:
-        GH_NPM_REGISTRY_TOKEN: ${{ inputs.registry-token }}
+        NODE_AUTH_TOKEN: ${{ inputs.registry-token }}
       run: pnpm install --frozen-lockfile

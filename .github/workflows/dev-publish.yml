@@ -12,8 +12,6 @@ on:
       - 'support/**'
 
 env:
-  GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
-  NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
   TURBO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: 1
   BASE_REF: ${{ github.event.pull_request.base.ref }}
@@ -39,6 +37,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Check for dev-packages label
         id: check-label
@@ -60,7 +59,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           COMMENT=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
-            --jq '[.[] | select(.body | contains("<!-- dev-packages-comment -->")) | .body][0]' 2>/dev/null) || true
+            --jq '[.[] | select(.body | contains("<!-- dev-packages-comment -->")) | select(.user.type == "Bot" or .user.login == "github-actions[bot]") | .body][0]' 2>/dev/null) || true
 
           if [ -z "$COMMENT" ]; then
             echo "has_previous=false" >> $GITHUB_OUTPUT
@@ -148,6 +147,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
@@ -157,6 +158,8 @@ jobs:
       - name: Cleanup previous version
         env:
           PACKAGE_VERSION: ${{ matrix.package_version }}
+          GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: |
           if ! [[ "$PACKAGE_VERSION" =~ ^@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+(\.[a-z0-9]+)?$ ]]; then
             echo "::error::Invalid package version format: $PACKAGE_VERSION"
@@ -181,6 +184,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
@@ -213,6 +218,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
@@ -229,6 +236,8 @@ jobs:
         env:
           PACKAGE: ${{ matrix.package }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: |
           SHORT_SHA="${GITHUB_SHA:0:7}"
           SUFFIX="pr${PR_NUMBER}.${SHORT_SHA}"

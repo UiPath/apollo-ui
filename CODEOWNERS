@@ -10,6 +10,7 @@
 /SECURITY.md             @UiPath/Apollo
 /package.json            @UiPath/Apollo
 /pnpm-lock.yaml          @UiPath/Apollo
+/pnpm-workspace.yaml     @UiPath/Apollo
 /scripts/                @UiPath/Apollo
 
 # Packages
@@ -18,7 +19,7 @@
 /packages/apollo-wind/   @UiPath/Apollo
 
 # apps
-/apps/apollo-vertex/     @UiPath/team-frontendhoven
+/apps/apollo-vertex/     @UiPath/team-frontendhoven @UiPath/Apollo
 /apps/react-playground/  @UiPath/Apollo
 /apps/storybook/         @UiPath/Apollo
 

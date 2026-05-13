@@ -1,0 +1,56 @@
+name: Prune minimumReleaseAge Exemptions
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # Monday 09:00 UTC
+  workflow_dispatch:
+
+# Deny-all default; the prune job grants only what it needs.
+permissions: {}
+
+jobs:
+  prune:
+    name: Remove stale exemptions
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        # persist-credentials kept (default true) so the job can push the cleanup branch.
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Check exemption ages
+        id: check
+        run: node .github/scripts/check-release-age-exemptions.mjs
+
+      - name: Open PR to remove stale exemptions
+        if: steps.check.outputs.count != '' && steps.check.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REMOVABLE: ${{ steps.check.outputs.removable }}
+        run: |
+          BRANCH="chore/prune-release-age-exemptions-$(date +%Y%m%d)"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add pnpm-workspace.yaml
+          git commit -m "chore(repo): prune stale minimumReleaseAge exemptions"
+          git push origin "$BRANCH"
+
+          # Build a markdown list of removed packages
+          PACKAGES_MD=$(echo "$REMOVABLE" | tr ',' '\n' | sed 's/.*/* `&`/')
+
+          gh pr create \
+            --title "chore(repo): prune stale minimumReleaseAge exemptions" \
+            --body "$(printf '## Summary\n\nThe following packages were in \`minimumReleaseAgeExclude\` in \`pnpm-workspace.yaml\` because their latest release was too new at the time. Their latest versions are now older than the 14-day quarantine and no longer need an exemption.\n\n%s\n\n_Automated by the [Prune Release Age Exemptions](%s/%s/actions/workflows/prune-release-age-exemptions.yml) workflow._' "$PACKAGES_MD" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY")" \
+            --base main \
+            --head "$BRANCH" \
+            --label "dependencies"
