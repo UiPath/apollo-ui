@@ -132,7 +132,9 @@ const StageNodeHeaderInner = ({
       <div className="flex items-start justify-between gap-1">
         <Row gap={Spacing.SpacingMicro} align="center" flex={1} minW={0}>
           {icon}
-          <span className={cn('text-sm', !isStageTitleEditing && 'font-bold', 'flex-1 min-w-0 py-0.5')}>
+          <span
+            className={cn('text-sm', !isStageTitleEditing && 'font-bold', 'flex-1 min-w-0 py-0.5')}
+          >
             <CanvasTooltip content={label} placement="top" delay>
               <StageTitleContainer isEditing={isStageTitleEditing}>
                 <StageTitleInput
