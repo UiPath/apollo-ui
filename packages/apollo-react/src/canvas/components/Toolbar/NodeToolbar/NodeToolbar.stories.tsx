@@ -217,10 +217,8 @@ function DefaultStory() {
         >
           <Column mt={12} gap={12}>
             <Column gap={4}>
-              <span className="text-sm" style={{ fontWeight: 600 }}>
-                Position:
-              </span>
-              <Row gap={4} style={{ flexWrap: 'wrap' }}>
+              <span className="text-sm font-semibold">Position:</span>
+              <Row gap={4} wrap="wrap">
                 {POSITION_OPTIONS.map((value) => (
                   <Button
                     key={value}
@@ -234,10 +232,8 @@ function DefaultStory() {
               </Row>
             </Column>
             <Column gap={4}>
-              <span className="text-sm" style={{ fontWeight: 600 }}>
-                Align:
-              </span>
-              <Row gap={4} style={{ flexWrap: 'wrap' }}>
+              <span className="text-sm font-semibold">Align:</span>
+              <Row gap={4} wrap="wrap">
                 {ALIGN_OPTIONS.map((value) => (
                   <Button
                     key={value}
@@ -299,6 +295,77 @@ function OverflowMenuStory() {
   );
 }
 
+function SingleActionStory() {
+  const initialNodes = useMemo(() => createToolbarNodes(), []);
+  const { canvasProps } = useCanvasStory({ initialNodes });
+
+  const [position, setPosition] = useState<ToolbarPosition>('top');
+  const [align, setAlign] = useState<ToolbarAlign>('center');
+
+  const overrideConfig = useMemo(
+    () => ({
+      toolbarConfig: {
+        actions: [
+          { id: 'breakpoint', icon: 'circle', label: 'Toggle breakpoint', onAction: () => {} },
+        ],
+        position,
+        align,
+      } satisfies NodeToolbarConfig,
+    }),
+    [position, align]
+  );
+
+  return (
+    <BaseNodeOverrideConfigProvider value={overrideConfig}>
+      <BaseCanvas {...canvasProps} mode="design">
+        <StoryInfoPanel
+          title="Single-action Toolbar"
+          description="Toolbar with only one action (mirrors debug mode's breakpoint-only state). The container should shrink to fit the single icon — no empty padding on the main axis."
+          collapsible
+          defaultCollapsed={false}
+          position="top-right"
+        >
+          <Column mt={12} gap={12}>
+            <Column gap={4}>
+              <span className="text-sm font-semibold">Position:</span>
+              <Row gap={4} wrap="wrap">
+                {POSITION_OPTIONS.map((value) => (
+                  <Button
+                    key={value}
+                    size="sm"
+                    variant={position === value ? 'default' : 'secondary'}
+                    onClick={() => setPosition(value)}
+                  >
+                    {value}
+                  </Button>
+                ))}
+              </Row>
+            </Column>
+            <Column gap={4}>
+              <span className="text-sm font-semibold">Align:</span>
+              <Row gap={4} wrap="wrap">
+                {ALIGN_OPTIONS.map((value) => (
+                  <Button
+                    key={value}
+                    size="sm"
+                    variant={align === value ? 'default' : 'secondary'}
+                    onClick={() => setAlign(value)}
+                  >
+                    {value}
+                  </Button>
+                ))}
+              </Row>
+            </Column>
+          </Column>
+        </StoryInfoPanel>
+        <Panel position="bottom-right">
+          <CanvasPositionControls translations={DefaultCanvasTranslations} />
+        </Panel>
+      </BaseCanvas>
+    </BaseNodeOverrideConfigProvider>
+  );
+}
+
 function CustomToolbarStory() {
   const initialNodes = useMemo(
     () => [
@@ -346,6 +413,11 @@ export const Default: Story = {
 export const OverflowMenu: Story = {
   name: 'Toolbar with Overflow Menu',
   render: () => <OverflowMenuStory />,
+};
+
+export const SingleAction: Story = {
+  name: 'Single-action Toolbar',
+  render: () => <SingleActionStory />,
 };
 
 export const CustomToolbarExtensions: Story = {
