@@ -2761,29 +2761,26 @@ function ActionBlock({
       )}
 
       {flagConfirmed && (
-        <>
-          <Alert
-            status="warning"
-            visual="tinted"
-            className="mt-3 bg-warning/30 dark:bg-warning/30"
-          >
-            <Flag className="h-4 w-4" />
-            <AlertTitle className="text-sm font-medium">
-              Flagged — {flagConfirmed}
-            </AlertTitle>
-            <AlertDescription className="text-xs">
-              Parked in your queue. Activity updated.
-            </AlertDescription>
-          </Alert>
-          <Button
-            variant="link"
-            size="sm"
-            className="px-0"
-            onClick={handleUndo}
-          >
-            Undo
-          </Button>
-        </>
+        <Alert
+          status="warning"
+          visual="tinted"
+          className="mt-3 bg-warning/30 dark:bg-warning/30"
+        >
+          <Flag className="h-4 w-4" />
+          <div className="col-start-2 flex items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-medium leading-none tracking-tight">
+                Flagged — {flagConfirmed}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Parked in your queue. Activity updated.
+              </p>
+            </div>
+            <Button variant="secondary" size="sm" onClick={handleUndo} className="shrink-0">
+              Undo
+            </Button>
+          </div>
+        </Alert>
       )}
     </div>
   );
@@ -3128,7 +3125,7 @@ function InlineRow({
           {value}
         </p>
         {sub && (
-          <p className="text-[11px] text-muted-foreground mt-0.5">{sub}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>
         )}
       </div>
     </div>
@@ -3156,23 +3153,70 @@ function DetailsTab() {
   const d = useInvoiceDetail();
 
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar">
-      <div className="pl-5 pr-8 pt-5 pb-8 space-y-5">
-        <SectionCard title="Invoice">
-          <InlineRow label="Document date" value={d.documentDateFormatted} />
-          <InlineRow label="Due date" value={d.dueFormatted} />
-          <InlineRow label="Payment terms" value={d.paymentTerms} />
-        </SectionCard>
-        <SectionCard title="Parties">
-          <InlineRow label="Vendor" value={d.vendor} sub={d.vendorEmail} />
-          <InlineRow label="Purchase order" value={d.po} />
-          <InlineRow label="Bill to" value={d.billTo} sub={d.billAddress} />
-        </SectionCard>
-        <SectionCard title="Reference">
-          <InlineRow label="Currency" value={d.currency} />
-          <InlineRow label="Assignee" value={d.assignee} />
-          {d.vat !== "—" && <InlineRow label="VAT number" value={d.vat} />}
-        </SectionCard>
+    <div className="flex-1 overflow-y-auto custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent_0,black_24px,black_calc(100%_-_64px),transparent_100%)]">
+      <div className="px-5 pt-5 pb-16 space-y-0">
+        <p className="text-xs font-medium text-muted-foreground mb-1">
+          Invoice
+        </p>
+
+        <div className="flex justify-between items-baseline py-1">
+          <span className="text-xs text-muted-foreground">Document date</span>
+          <span className="text-xs font-medium text-right">{d.documentDateFormatted}</span>
+        </div>
+        <div className="flex justify-between items-baseline py-1">
+          <span className="text-xs text-muted-foreground">Due date</span>
+          <span className="text-xs font-medium text-right">{d.dueFormatted}</span>
+        </div>
+        <div className="flex justify-between items-baseline py-1">
+          <span className="text-xs text-muted-foreground">Payment terms</span>
+          <span className="text-xs font-medium text-right">{d.paymentTerms}</span>
+        </div>
+
+        <Separator className="my-3" />
+
+        <p className="text-xs font-medium text-muted-foreground mb-1">
+          Parties
+        </p>
+
+        <div className="flex justify-between items-start py-1">
+          <span className="text-xs text-muted-foreground flex-shrink-0">Vendor</span>
+          <div className="text-right ml-2">
+            <div className="text-xs font-medium">{d.vendor}</div>
+            <div className="text-xs text-muted-foreground">{d.vendorEmail}</div>
+          </div>
+        </div>
+        <div className="flex justify-between items-baseline py-1">
+          <span className="text-xs text-muted-foreground">Purchase order</span>
+          <span className="text-xs font-medium text-right">{d.po}</span>
+        </div>
+        <div className="flex justify-between items-start py-1">
+          <span className="text-xs text-muted-foreground flex-shrink-0">Bill to</span>
+          <div className="text-right ml-2">
+            <div className="text-xs font-medium">{d.billTo}</div>
+            <div className="text-xs text-muted-foreground">{d.billAddress}</div>
+          </div>
+        </div>
+
+        <Separator className="my-3" />
+
+        <p className="text-xs font-medium text-muted-foreground mb-1">
+          Reference
+        </p>
+
+        <div className="flex justify-between items-baseline py-1">
+          <span className="text-xs text-muted-foreground">Currency</span>
+          <span className="text-xs font-medium text-right">{d.currency}</span>
+        </div>
+        <div className="flex justify-between items-baseline py-1">
+          <span className="text-xs text-muted-foreground">Assignee</span>
+          <span className="text-xs font-medium text-right">{d.assignee}</span>
+        </div>
+        {d.vat !== "—" && (
+          <div className="flex justify-between items-baseline py-1">
+            <span className="text-xs text-muted-foreground">VAT number</span>
+            <span className="text-xs font-medium text-right">{d.vat}</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -3600,86 +3644,76 @@ function ActivityTab({ sentEmails }: { sentEmails: SentEmail[] }) {
 
 function DetailsCombinedTab() {
   const d = useInvoiceDetail();
-  const labelCls =
-    "text-[10px] tracking-wide text-muted-foreground font-medium leading-none mb-0.5";
-  const valueCls = "text-[13px] text-foreground leading-[1.6]";
-  const rowCls = "flex flex-col py-2.5 border-b border-border last:border-0";
 
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar">
-      <div className="pl-5 pr-8 pt-5 pb-8 space-y-6">
+    <div className="flex-1 overflow-y-auto custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent_0,black_24px,black_calc(100%_-_64px),transparent_100%)]">
+      <div className="px-5 pt-5 pb-16 space-y-0">
         {/* Section A — metadata */}
-        <div>
-          <p className="text-[10px] tracking-wide text-muted-foreground font-semibold mb-3">
-            Invoice
-          </p>
-          <div className="divide-y divide-border">
-            <div className={rowCls}>
-              <span className={labelCls}>Document date</span>
-              <span className={valueCls}>{d.documentDateFormatted}</span>
-            </div>
-            <div className={rowCls}>
-              <span className={labelCls}>Due date</span>
-              <span className={valueCls}>{d.dueFormatted}</span>
-            </div>
-            <div className={rowCls}>
-              <span className={labelCls}>Payment terms</span>
-              <span className={valueCls}>{d.paymentTerms}</span>
-            </div>
-          </div>
+        <p className="text-xs font-medium text-muted-foreground mb-1">
+          Invoice
+        </p>
+        <div className="flex justify-between items-baseline py-1">
+          <span className="text-xs text-muted-foreground">Document date</span>
+          <span className="text-xs font-medium text-right">{d.documentDateFormatted}</span>
+        </div>
+        <div className="flex justify-between items-baseline py-1">
+          <span className="text-xs text-muted-foreground">Due date</span>
+          <span className="text-xs font-medium text-right">{d.dueFormatted}</span>
+        </div>
+        <div className="flex justify-between items-baseline py-1">
+          <span className="text-xs text-muted-foreground">Payment terms</span>
+          <span className="text-xs font-medium text-right">{d.paymentTerms}</span>
         </div>
 
-        <div>
-          <p className="text-[10px] tracking-wide text-muted-foreground font-semibold mb-3">
-            Parties
-          </p>
-          <div className="divide-y divide-border">
-            <div className={rowCls}>
-              <span className={labelCls}>Vendor</span>
-              <span className={valueCls}>{d.vendor}</span>
-              {d.vendorEmail && (
-                <span className="text-[12px] text-muted-foreground">
-                  {d.vendorEmail}
-                </span>
-              )}
-            </div>
-            <div className={rowCls}>
-              <span className={labelCls}>Purchase order</span>
-              <span className={valueCls}>{d.po}</span>
-            </div>
-            <div className={rowCls}>
-              <span className={labelCls}>Bill to</span>
-              <span className={valueCls}>{d.billTo}</span>
-              {d.billAddress && (
-                <span className="text-[12px] text-muted-foreground">
-                  {d.billAddress}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
+        <Separator className="my-3" />
 
-        <div>
-          <p className="text-[10px] tracking-wide text-muted-foreground font-semibold mb-3">
-            Reference
-          </p>
-          <div className="divide-y divide-border">
-            <div className={rowCls}>
-              <span className={labelCls}>Currency</span>
-              <span className={valueCls}>{d.currency}</span>
-            </div>
-            <div className={rowCls}>
-              <span className={labelCls}>Assignee</span>
-              <span className={valueCls}>{d.assignee}</span>
-            </div>
-            {d.vat !== "—" && (
-              <div className={rowCls}>
-                <span className={labelCls}>VAT number</span>
-                <span className={valueCls}>{d.vat}</span>
-              </div>
+        <p className="text-xs font-medium text-muted-foreground mb-1">
+          Parties
+        </p>
+        <div className="flex justify-between items-start py-1">
+          <span className="text-xs text-muted-foreground flex-shrink-0">Vendor</span>
+          <div className="text-right ml-2">
+            <div className="text-xs font-medium">{d.vendor}</div>
+            {d.vendorEmail && (
+              <div className="text-xs text-muted-foreground">{d.vendorEmail}</div>
             )}
           </div>
         </div>
+        <div className="flex justify-between items-baseline py-1">
+          <span className="text-xs text-muted-foreground">Purchase order</span>
+          <span className="text-xs font-medium text-right">{d.po}</span>
+        </div>
+        <div className="flex justify-between items-start py-1">
+          <span className="text-xs text-muted-foreground flex-shrink-0">Bill to</span>
+          <div className="text-right ml-2">
+            <div className="text-xs font-medium">{d.billTo}</div>
+            {d.billAddress && (
+              <div className="text-xs text-muted-foreground">{d.billAddress}</div>
+            )}
+          </div>
+        </div>
+
+        <Separator className="my-3" />
+
+        <p className="text-xs font-medium text-muted-foreground mb-1">
+          Reference
+        </p>
+        <div className="flex justify-between items-baseline py-1">
+          <span className="text-xs text-muted-foreground">Currency</span>
+          <span className="text-xs font-medium text-right">{d.currency}</span>
+        </div>
+        <div className="flex justify-between items-baseline py-1">
+          <span className="text-xs text-muted-foreground">Assignee</span>
+          <span className="text-xs font-medium text-right">{d.assignee}</span>
+        </div>
+        {d.vat !== "—" && (
+          <div className="flex justify-between items-baseline py-1">
+            <span className="text-xs text-muted-foreground">VAT number</span>
+            <span className="text-xs font-medium text-right">{d.vat}</span>
+          </div>
+        )}
+
+        <Separator className="my-3" />
 
         {/* Section B — line items */}
         <div>
@@ -3774,7 +3808,7 @@ function ActivityTabC({
   extraEntries?: TimelineEntry[];
   onAddNote: (note: string) => void;
 }) {
-  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteState, setNoteState] = useState<"default" | "input">("default");
   const [noteText, setNoteText] = useState("");
   const prevExtraRef = useRef<TimelineEntry[]>([]);
   const [newEntryIds, setNewEntryIds] = useState<Set<string>>(new Set());
@@ -3909,51 +3943,61 @@ function ActivityTabC({
         })}
       </div>
       <div className="pl-5 pr-8 pb-4 shrink-0">
-        <Separator className="mb-3" />
-        {noteOpen ? (
-          <>
-            <Textarea
-              placeholder="Record your thinking…"
-              rows={2}
-              className="text-sm mt-1.5"
-              autoFocus
-              value={noteText}
-              onChange={(e) => setNoteText(e.target.value)}
-            />
-            <div className="mt-1.5 flex justify-end gap-1.5">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setNoteText("");
-                  setNoteOpen(false);
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => {
-                  if (noteText.trim()) onAddNote(noteText.trim());
-                  setNoteText("");
-                  setNoteOpen(false);
-                }}
-              >
-                Save
-              </Button>
+        <Separator className="mb-1" />
+        {noteState === "input" ? (
+          <div className="flex gap-2.5 px-3 py-2 items-start">
+            <div
+              className="w-6 h-6 rounded-full flex-shrink-0 mt-0.5 bg-gradient-to-br from-[#7C6AF5] to-[#5B8EF0] flex items-center justify-center text-white font-semibold"
+              style={{ fontSize: "9px" }}
+            >
+              AJ
             </div>
-          </>
+            <div className="flex-1 flex flex-col gap-1.5">
+              <Textarea
+                placeholder="Add a note to this invoice…"
+                className="text-xs min-h-[72px] resize-none"
+                autoFocus
+                value={noteText}
+                onChange={(e) => setNoteText(e.target.value)}
+              />
+              <div className="flex justify-end gap-1.5">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setNoteState("default");
+                    setNoteText("");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  disabled={!noteText.trim()}
+                  onClick={() => {
+                    if (noteText.trim()) onAddNote(noteText.trim());
+                    setNoteState("default");
+                    setNoteText("");
+                  }}
+                >
+                  Save note
+                </Button>
+              </div>
+            </div>
+          </div>
         ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start text-muted-foreground"
-            onClick={() => setNoteOpen(true)}
+          <div
+            className="flex items-center gap-2.5 px-3 py-2 cursor-pointer group"
+            onClick={() => setNoteState("input")}
           >
-            <Plus className="mr-1.5 size-3.5" />
-            Add note
-          </Button>
+            <div className="w-6 h-6 rounded-full border border-dashed border-border flex items-center justify-center flex-shrink-0 group-hover:border-muted-foreground transition-colors">
+              <Plus className="h-3 w-3 text-muted-foreground" />
+            </div>
+            <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
+              Add a note…
+            </span>
+          </div>
         )}
       </div>
     </div>
