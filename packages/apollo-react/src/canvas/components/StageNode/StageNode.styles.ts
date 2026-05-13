@@ -69,7 +69,7 @@ export const StageContainer = styled.div<{
 export const StageHeader = styled.div<{ isException?: boolean }>`
   position: relative;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   padding: ${Spacing.SpacingS} ${Spacing.SpacingBase};
   border-bottom: solid 1px var(--canvas-border-de-emp);
   background: ${(props) => (props.isException ? 'var(--color-background-secondary)' : 'var(--canvas-background)')};

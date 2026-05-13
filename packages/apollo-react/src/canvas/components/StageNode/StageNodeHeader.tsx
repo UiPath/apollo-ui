@@ -1,5 +1,5 @@
 import { Icon, Padding, Spacing } from '@uipath/apollo-core';
-import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
+import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { Button, cn } from '@uipath/apollo-wind';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { EntryConditionIcon, ExitConditionIcon, ReturnToOriginIcon } from '../../icons';
@@ -7,13 +7,7 @@ import { CanvasIcon } from '../../utils/icon-registry';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import { getExecutionStatusColor } from '../ExecutionStatusIcon/ExecutionStatusIcon';
-import {
-  StageChip,
-  StageHeader,
-  StageHeaderChipsRow,
-  StageTitleContainer,
-  StageTitleInput,
-} from './StageNode.styles';
+import { StageChip, StageHeader, StageTitleContainer, StageTitleInput } from './StageNode.styles';
 import type { StageNodeProps, StageSlaIcon, StageStatus } from './StageNode.types';
 import { StageHeaderChipType } from './StageNode.types';
 
@@ -135,10 +129,10 @@ const StageNodeHeaderInner = ({
 
   return (
     <StageHeader isException={isException} data-testid={`stage-header-${id}`}>
-      <Row gap={Spacing.SpacingMicro} align="center" flex={1} minW={0}>
-        {icon}
-        <Column py={2} flex={1} minW={0}>
-          <span className={cn('text-sm', !isStageTitleEditing && 'font-bold')}>
+      <div className="flex items-start justify-between gap-1">
+        <Row gap={Spacing.SpacingMicro} align="center" flex={1} minW={0}>
+          {icon}
+          <span className={cn('text-sm', !isStageTitleEditing && 'font-bold', 'flex-1 min-w-0 py-0.5')}>
             <CanvasTooltip content={label} placement="top" delay>
               <StageTitleContainer isEditing={isStageTitleEditing}>
                 <StageTitleInput
@@ -158,7 +152,41 @@ const StageNodeHeaderInner = ({
               </StageTitleContainer>
             </CanvasTooltip>
           </span>
-          {stageDuration && <span className="text-xs text-foreground-muted">{stageDuration}</span>}
+        </Row>
+        <Row gap={Spacing.SpacingMicro} align="start" py={Padding.PadS}>
+          {status && (
+            <CanvasTooltip content={statusLabel} placement="top">
+              <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={statusLabel}>
+                {status === 'NotExecuted' ? (
+                  <CanvasIcon
+                    icon="hourglass"
+                    size={20}
+                    color={getExecutionStatusColor('NotExecuted')}
+                  />
+                ) : (
+                  <ExecutionStatusIcon status={status} size={20} />
+                )}
+              </Button>
+            </CanvasTooltip>
+          )}
+          {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly && (
+            <CanvasTooltip content={addTaskLabel} placement="top">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={handleTaskAddClick}
+                aria-label={addTaskLabel}
+                disabled={isAddTaskDisabled}
+              >
+                <CanvasIcon icon="plus" size={20} />
+              </Button>
+            </CanvasTooltip>
+          )}
+        </Row>
+      </div>
+      {(slaText || (stageDetails.headerChips && stageDetails.headerChips.length > 0)) && (
+        <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
           {slaText && (
             <span
               className="inline-flex items-center gap-1 text-xs text-foreground-muted"
@@ -172,7 +200,7 @@ const StageNodeHeaderInner = ({
             </span>
           )}
           {stageDetails.headerChips && stageDetails.headerChips.length > 0 && (
-            <StageHeaderChipsRow>
+            <div className="flex flex-wrap items-center gap-1">
               {stageDetails.headerChips.map((chip) => {
                 const button = (
                   <StageChip
@@ -197,41 +225,11 @@ const StageNodeHeaderInner = ({
                 }
                 return button;
               })}
-            </StageHeaderChipsRow>
+            </div>
           )}
-        </Column>
-      </Row>
-      <Row gap={Spacing.SpacingMicro} align="start" py={Padding.PadS}>
-        {status && (
-          <CanvasTooltip content={statusLabel} placement="top">
-            <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={statusLabel}>
-              {status === 'NotExecuted' ? (
-                <CanvasIcon
-                  icon="hourglass"
-                  size={20}
-                  color={getExecutionStatusColor('NotExecuted')}
-                />
-              ) : (
-                <ExecutionStatusIcon status={status} size={20} />
-              )}
-            </Button>
-          </CanvasTooltip>
-        )}
-        {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly && (
-          <CanvasTooltip content={addTaskLabel} placement="top">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6"
-              onClick={handleTaskAddClick}
-              aria-label={addTaskLabel}
-              disabled={isAddTaskDisabled}
-            >
-              <CanvasIcon icon="plus" size={20} />
-            </Button>
-          </CanvasTooltip>
-        )}
-      </Row>
+        </div>
+      )}
+      {stageDuration && <span className="mt-1 text-xs text-foreground-muted">{stageDuration}</span>}
     </StageHeader>
   );
 };
