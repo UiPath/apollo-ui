@@ -50,7 +50,7 @@ jobs:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@45cbd0c69e560cd9e7cd7f8c32362050c9b7ded2 # v4.32.2
+        uses: github/codeql-action/init@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
@@ -58,14 +58,14 @@ jobs:
 
       - name: Perform CodeQL Analysis
         id: analyze
-        uses: github/codeql-action/analyze@45cbd0c69e560cd9e7cd7f8c32362050c9b7ded2 # v4.32.2
+        uses: github/codeql-action/analyze@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
         with:
           category: /language:${{ matrix.language }}
           output: sarif-results
 
       - name: Dismiss suppressed alerts
         if: github.ref == 'refs/heads/main' && matrix.language == 'javascript-typescript'
-        uses: advanced-security/dismiss-alerts@3478381bd53e9f9a9ea1c23bd25ef0ec236e0d06 # v2
+        uses: advanced-security/dismiss-alerts@046d6b48d2e43cf563f96f67332c47c432eff83e # v2.0.2
         with:
           sarif-id: ${{ steps.analyze.outputs['sarif-id'] }}
           sarif-file: sarif-results/javascript.sarif
