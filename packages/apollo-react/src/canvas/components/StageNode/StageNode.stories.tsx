@@ -188,7 +188,7 @@ export const Default: Story = {
           },
           execution: {
             stageStatus: {
-              duration: 'SLA: None',
+              slaText: 'SLA: None',
             },
           },
           onTaskAdd: () => {
@@ -212,7 +212,7 @@ export const Default: Story = {
           },
           execution: {
             stageStatus: {
-              duration: 'SLA: None',
+              slaText: 'SLA: None',
             },
           },
           onAddTaskFromToolbox: (taskItem: ListItem) => {
@@ -391,7 +391,7 @@ export const ExecutionStatus: Story = {
           execution: {
             stageStatus: {
               status: 'Completed',
-              duration: 'SLA: 4h',
+              slaText: 'SLA: 4h',
             },
             taskStatus: {
               '1': { status: 'Completed', label: 'KYC and AML Checks', duration: '2h 15m' },
@@ -427,7 +427,7 @@ export const ExecutionStatus: Story = {
           execution: {
             stageStatus: {
               status: 'Completed',
-              duration: 'SLA: 6h 15m',
+              slaText: 'SLA: 6h 15m',
             },
             taskStatus: {
               '1': {
@@ -480,7 +480,7 @@ export const ExecutionStatus: Story = {
             stageStatus: {
               status: 'InProgress',
               label: 'In progress',
-              duration: 'SLA: 2h 15m',
+              slaText: 'SLA: 2h 15m',
             },
             taskStatus: {
               '1': { status: 'Completed', label: 'Report Ordering', duration: '2h 15m' },
@@ -2119,7 +2119,7 @@ export const AdhocTasks: Story = {
             stageStatus: {
               status: 'InProgress',
               label: 'In progress',
-              duration: 'SLA: 3h 45m',
+              slaText: 'SLA: 3h 45m',
             },
             taskStatus: {
               '1': {
@@ -2395,7 +2395,7 @@ export const TasksBySection: Story = {
             stageStatus: {
               status: 'InProgress',
               label: 'In progress',
-              duration: 'SLA: 3h 45m',
+              slaText: 'SLA: 3h 45m',
             },
             taskStatus: {
               '1': {
@@ -2634,7 +2634,7 @@ export const WithRulesTags: Story = {
             ],
           },
           execution: {
-            stageStatus: { status: 'Completed', label: 'Completed', duration: 'SLA: 4h' },
+            stageStatus: { status: 'Completed', label: 'Completed', slaText: 'SLA: 4h' },
           },
         },
       },
@@ -2667,7 +2667,7 @@ export const WithRulesTags: Story = {
             ],
           },
           execution: {
-            stageStatus: { status: 'InProgress', label: 'In progress', duration: 'SLA: 2h' },
+            stageStatus: { status: 'InProgress', label: 'In progress', slaText: 'SLA: 2h' },
           },
         },
       },
