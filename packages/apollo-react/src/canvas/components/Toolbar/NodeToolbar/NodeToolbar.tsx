@@ -11,9 +11,9 @@ import { useToolbarState } from './useToolbarState';
 
 const POSITIONER_BASE_CLASS = 'absolute flex pointer-events-none z-10';
 
-// Container enforces a 40px cross-axis (`min-h-10 min-w-10`) in every
-// orientation, so the same offset produces a consistent ~12px gap on every
-// side: 40 (toolbar) + 12 (gap) = 52.
+// Container has a 40px cross-axis minimum (see CONTAINER_DIRECTION_CLASS), so
+// this offset produces a consistent ~12px gap on every side: 40 + 12 = 52.
+// Main-axis is content-driven, letting a single-action toolbar shrink to fit.
 // `--toolbar-offset` (default 0) adds extra displacement to clear handle buttons.
 const POSITIONER_POSITION_CLASS: Record<'top' | 'bottom' | 'left' | 'right', string> = {
   top: 'top-[calc(-52px-var(--toolbar-offset,0px))] left-0 right-0 flex-row',
@@ -32,15 +32,15 @@ const POSITIONER_ALIGN_CLASS: Record<'start' | 'center' | 'end', string> = {
 };
 
 const CONTAINER_BASE_CLASS =
-  'flex items-center gap-1 p-1 min-h-10 min-w-10 shrink-0 bg-(--canvas-background-raised) ' +
+  'flex items-center gap-1 p-1 shrink-0 bg-(--canvas-background-raised) ' +
   'border border-(--canvas-background-overlay) rounded-xl shadow-[0_2px_6px_rgba(0,0,0,0.08)] ' +
   'pointer-events-auto';
 
 const CONTAINER_DIRECTION_CLASS: Record<'top' | 'bottom' | 'left' | 'right', string> = {
-  top: 'flex-row',
-  bottom: 'flex-row',
-  left: 'flex-col',
-  right: 'flex-col',
+  top: 'flex-row min-h-10',
+  bottom: 'flex-row min-h-10',
+  left: 'flex-col min-w-10',
+  right: 'flex-col min-w-10',
 };
 
 const SEPARATOR_BASE_CLASS = 'flex-[0_0_auto] bg-(--canvas-background-overlay) self-center';
