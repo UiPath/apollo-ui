@@ -85,9 +85,10 @@ jobs:
           else
             {
               echo "has_previous=true"
-              echo "packages<<EOF"
+              DELIM="PKGS_$(openssl rand -hex 8)"
+              echo "packages<<${DELIM}"
               echo "$PUBLISHED"
-              echo "EOF"
+              echo "${DELIM}"
             } >> "$GITHUB_OUTPUT"
             echo "Found previous versions: $PUBLISHED"
           fi
@@ -142,9 +143,10 @@ jobs:
       - name: Create matrix
         id: matrix
         if: steps.changed.outputs.has_changes == 'true'
+        env:
+          PACKAGES: ${{ steps.changed.outputs.packages }}
         run: |
           # Convert space-separated list to compact JSON array
-          PACKAGES="${{ steps.changed.outputs.packages }}"
           MATRIX_JSON=$(echo "$PACKAGES" | jq -Rc 'split(" ") | map(select(length > 0))')
           echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
           echo "Matrix: $MATRIX_JSON"

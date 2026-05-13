@@ -18,8 +18,9 @@ jobs:
 
     steps:
       - name: Checkout
-        # persist-credentials kept (default true) so the job can push the cleanup branch.
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -40,6 +41,8 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Inject write credentials only at push time — not during the node script above.
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git checkout -b "$BRANCH"
           git add pnpm-workspace.yaml
           git commit -m "chore(repo): prune stale minimumReleaseAge exemptions"

@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Post initial deployment status
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             const identifier = '<!-- vercel-deployments-comment -->';
@@ -123,9 +123,10 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-vercel-cli-53.4.0
+          key: ${{ runner.os }}-vercel-cli-53.4.0-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-vercel-cli-53.4.0
+            ${{ runner.os }}-vercel-cli-53.4.0-${{ github.ref_name }}-
+            ${{ runner.os }}-vercel-cli-53.4.0-
 
       - name: Install Vercel CLI
         run: npm install -g vercel@53.4.0
@@ -243,7 +244,7 @@ jobs:
           DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
           DEPLOY_URL: ${{ steps.deploy.outputs.url }}
           ERROR_MESSAGE: ${{ steps.deploy.outputs.error_message }}
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             const identifier = '<!-- vercel-deployments-comment -->';

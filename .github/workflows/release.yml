@@ -28,13 +28,11 @@ jobs:
       id-token: write
 
     steps:
-      # zizmor: ignore[artipacked]
-      # Credentials needed for semantic-release to push version bumps; no artifacts uploaded in this workflow
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.RELEASE_TOKEN }}
+          persist-credentials: false
 
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
@@ -55,24 +53,36 @@ jobs:
       - name: Run tests
         run: pnpm test
 
-      - name: Setup git user
+      - name: Setup git user and credentials
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           git config --global user.name "semantic-release-bot"
           git config --global user.email "semantic-release-bot@users.noreply.github.com"
+          # Inject write credentials only after build + test complete.
+          # RELEASE_TOKEN is not in .git/config during pnpm build or pnpm test above.
+          git remote set-url origin "https://x-access-token:${RELEASE_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
           GH_NPM_REGISTRY_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           HUSKY: 0
         run: pnpm release
 
+      - name: Generate and attest SBOM
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        with:
+          subject-path: |
+            packages/apollo-core/dist
+            packages/apollo-react/dist
+            packages/apollo-wind/dist
+            web-packages/ap-chat/dist
+          sbom-format: spdx-json
+
       - name: Commit changelogs and package updates
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             # Get list of changed packages
