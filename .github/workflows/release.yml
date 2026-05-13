@@ -72,15 +72,43 @@ jobs:
           HUSKY: 0
         run: pnpm release
 
-      - name: Generate and attest SBOM
+      - name: Generate per-package SBOMs
+        run: |
+          pnpm --filter @uipath/apollo-core  sbom --sbom-format cyclonedx --prod > sbom-apollo-core.cyclonedx.json
+          pnpm --filter @uipath/apollo-react sbom --sbom-format cyclonedx --prod > sbom-apollo-react.cyclonedx.json
+          pnpm --filter @uipath/apollo-wind  sbom --sbom-format cyclonedx --prod > sbom-apollo-wind.cyclonedx.json
+          pnpm --filter '@uipath/ap-chat'    sbom --sbom-format cyclonedx --prod > sbom-ap-chat.cyclonedx.json
+
+      - name: Attest SBOM — apollo-core
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
-          subject-path: |
-            packages/apollo-core/dist
-            packages/apollo-react/dist
-            packages/apollo-wind/dist
-            web-packages/ap-chat/dist
-          sbom-format: spdx-json
+          subject-path: packages/apollo-core/dist
+          sbom-path: sbom-apollo-core.cyclonedx.json
+
+      - name: Attest SBOM — apollo-react
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        with:
+          subject-path: packages/apollo-react/dist
+          sbom-path: sbom-apollo-react.cyclonedx.json
+
+      - name: Attest SBOM — apollo-wind
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        with:
+          subject-path: packages/apollo-wind/dist
+          sbom-path: sbom-apollo-wind.cyclonedx.json
+
+      - name: Attest SBOM — ap-chat
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        with:
+          subject-path: web-packages/ap-chat/dist
+          sbom-path: sbom-ap-chat.cyclonedx.json
+
+      - name: Upload SBOMs as release artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: sbom-${{ github.sha }}
+          path: sbom-*.cyclonedx.json
+          retention-days: 90
 
       - name: Commit changelogs and package updates
         run: |
