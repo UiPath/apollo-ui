@@ -16,7 +16,7 @@ Thank you for your interest in contributing to the Apollo Design System! This do
 ### Prerequisites
 
 - Node.js >= 22
-- pnpm >= 10
+- pnpm >= 11
 
 ### Getting Started
 

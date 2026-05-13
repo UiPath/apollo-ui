@@ -22,7 +22,7 @@ Do **not** use this skill for:
 
 ## Repo Context
 
-- **Package manager**: pnpm 10.x
+- **Package manager**: pnpm 11.x
 - **Node version**: 22
 - **Workspaces**: Turborepo monorepo (`packages/`, `web-packages/`, `apps/`)
 - **Dual registry**: npm public + GitHub Packages (`@uipath` scope at `https://npm.pkg.github.com`)

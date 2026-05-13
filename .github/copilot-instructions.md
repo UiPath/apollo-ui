@@ -13,7 +13,7 @@ apps/            # storybook, react-playground — NO TESTS NEEDED
 .github/         # workflows, actions, scripts
 ```
 
-All packages depend on `apollo-core`. Node ≥ 22, pnpm ≥ 10. Build: Rslib/Rsbuild (packages), Vite (Storybook).
+All packages depend on `apollo-core`. Node ≥ 22, pnpm ≥ 11. Build: Rslib/Rsbuild (packages), Vite (Storybook).
 
 ## General Guidelines
 
