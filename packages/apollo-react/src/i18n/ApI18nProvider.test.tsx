@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApI18nProvider, SUPPORTED_LOCALES, useApI18n } from './ApI18nProvider';
+import { ApLocaleProvider } from './ApLocaleProvider';
 import { getAllPreImportedLocales } from './locale-registry';
 
 // Test message catalogs - pre-loaded directly into i18n for testing
@@ -81,6 +82,48 @@ describe('ApI18nProvider', () => {
     });
 
     it('should default to English when locale not specified', () => {
+      render(
+        <ApI18nProvider component="material/components/ap-chat">
+          <div data-testid="child">Content</div>
+        </ApI18nProvider>
+      );
+
+      expect(screen.getByTestId('child')).toBeInTheDocument();
+      expect(i18n.locale).toBe('en');
+    });
+
+    it('should use locale from ApLocaleProvider when no locale prop is given', () => {
+      i18n.load('es', testMessages.es);
+
+      render(
+        <ApLocaleProvider locale="es">
+          <ApI18nProvider component="material/components/ap-chat">
+            <div data-testid="child">Content</div>
+          </ApI18nProvider>
+        </ApLocaleProvider>
+      );
+
+      expect(screen.getByTestId('child')).toBeInTheDocument();
+      expect(i18n.locale).toBe('es');
+    });
+
+    it('should prefer explicit locale prop over ApLocaleProvider context', () => {
+      i18n.load('fr', testMessages.fr);
+      i18n.load('es', testMessages.es);
+
+      render(
+        <ApLocaleProvider locale="es">
+          <ApI18nProvider component="material/components/ap-chat" locale="fr">
+            <div data-testid="child">Content</div>
+          </ApI18nProvider>
+        </ApLocaleProvider>
+      );
+
+      expect(screen.getByTestId('child')).toBeInTheDocument();
+      expect(i18n.locale).toBe('fr');
+    });
+
+    it('should fall back to English when neither prop nor context is provided', () => {
       render(
         <ApI18nProvider component="material/components/ap-chat">
           <div data-testid="child">Content</div>
