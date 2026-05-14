@@ -17,7 +17,20 @@
 import { execFileSync } from 'node:child_process';
 import { findPackageInfo, getAllPackageNames } from './package-utils.js';
 
+const FETCH_TIMEOUT_MS = 30_000;
+
+function fetchWithTimeout(url: string, options: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
 async function unpublishFromGitHub(packageName: string, version: string): Promise<boolean> {
+  if (!/^@uipath\/[a-z0-9-]+$/.test(packageName)) {
+    console.error(`Invalid package name: ${packageName}`);
+    return false;
+  }
+
   const token = process.env.GH_NPM_REGISTRY_TOKEN;
   if (!token) {
     console.error('Error: GH_NPM_REGISTRY_TOKEN environment variable is required for GitHub Package Registry.');
@@ -32,7 +45,7 @@ async function unpublishFromGitHub(packageName: string, version: string): Promis
     const apiUrl = `https://api.github.com/orgs/UiPath/packages/npm/${encodeURIComponent(packageNameWithoutScope)}/versions`;
 
     // Get all versions to find the one we want to delete
-    const versionsResponse = await fetch(apiUrl, {
+    const versionsResponse = await fetchWithTimeout(apiUrl, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/vnd.github+json',
@@ -58,7 +71,7 @@ async function unpublishFromGitHub(packageName: string, version: string): Promis
     }
 
     // Delete the specific version
-    const deleteResponse = await fetch(`${apiUrl}/${targetVersion.id}`, {
+    const deleteResponse = await fetchWithTimeout(`${apiUrl}/${targetVersion.id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -101,7 +114,7 @@ async function unpublishFromRegistry(
   console.log(`\nProcessing ${registryName}...`);
 
   // Validate package name and version to prevent injection
-  const packageRegex = /^@[\w-]+\/[\w-]+$/;
+  const packageRegex = /^@uipath\/[a-z0-9-]+$/;
   const versionRegex = /^[\w.-]+$/;
 
   if (!packageRegex.test(packageName)) {
@@ -119,7 +132,7 @@ async function unpublishFromRegistry(
 
     // First, check if package version exists on the registry
     const encodedPackageName = encodeURIComponent(packageName);
-    const checkResponse = await fetch(
+    const checkResponse = await fetchWithTimeout(
       `${registry}/${encodedPackageName}/${version}`,
       {
         headers: {
@@ -279,6 +292,11 @@ async function main() {
   }
 
   const [packageName, suffixOrVersion] = args as [string, string];
+
+  if (!/^@uipath\/[a-z0-9-]+$/.test(packageName)) {
+    console.error(`Error: Invalid package name "${packageName}". Must be @uipath/<name> (lowercase, hyphens only).`);
+    process.exit(1);
+  }
 
   // Determine if suffixOrVersion is a full version or just a suffix
   // Full version: starts with digits in semver pattern (e.g., "3.19.3-test")

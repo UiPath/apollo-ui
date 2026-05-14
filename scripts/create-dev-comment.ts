@@ -61,7 +61,7 @@ function main() {
   try {
     const result = execFileSync(
       'gh',
-      ['api', `repos/${owner}/${repoName}/issues/${prNumber}/comments`, '--jq', `([.[] | select(.body | contains("${IDENTIFIER}")) | .id][0] // empty)`],
+      ['api', `repos/${owner}/${repoName}/issues/${prNumber}/comments`, '--jq', `([.[] | select((.user.type == "Bot" or .user.login == "github-actions[bot]") and (.body | contains("${IDENTIFIER}"))) | .id][0] // empty)`],
       { encoding: 'utf8', env: { ...process.env, GH_TOKEN: token } }
     );
     commentId = result.trim() || null;

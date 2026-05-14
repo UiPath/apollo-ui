@@ -53,7 +53,7 @@ async function main() {
       // Get current comment (using GH_TOKEN from env)
       const commentJson = execFileSync(
         'gh',
-        ['api', `repos/${owner}/${repoName}/issues/${prNumber}/comments`, '--jq', `([.[] | select(.body | contains("${IDENTIFIER}"))] | .[0]) // empty`],
+        ['api', `repos/${owner}/${repoName}/issues/${prNumber}/comments`, '--jq', `([.[] | select((.user.type == "Bot" or .user.login == "github-actions[bot]") and (.body | contains("${IDENTIFIER}")))] | .[0]) // empty`],
         { encoding: 'utf8', env: { ...process.env, GH_TOKEN: token } }
       ).trim();
 

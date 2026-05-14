@@ -16,9 +16,12 @@ updates:
       prefix: chore(deps)
       prefix-development: chore(deps-dev)
       include: scope
+    # Major version bumps handled manually — Dependabot only opens minor/patch PRs.
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
     groups:
-      # Routine non-major updates bundled by dependency-type.
-      # Majors fall through and open individual PRs unless captured by a major-only group below.
       production-minor-patch:
         dependency-type: production
         update-types:
@@ -30,40 +33,6 @@ updates:
           - minor
           - patch
 
-      # Majors that MUST move together across the family (one PR per family).
-      mui-major:
-        patterns:
-          - "@mui/*"
-          - "@emotion/*"
-        update-types:
-          - major
-      lingui-major:
-        patterns:
-          - "@lingui/*"
-        update-types:
-          - major
-      tiptap-major:
-        patterns:
-          - "@tiptap/*"
-        update-types:
-          - major
-      storybook-major:
-        patterns:
-          - "storybook"
-          - "@storybook/*"
-        update-types:
-          - major
-      radix-ui-major:
-        patterns:
-          - "@radix-ui/*"
-        update-types:
-          - major
-      tanstack-major:
-        patterns:
-          - "@tanstack/*"
-        update-types:
-          - major
-
       # Bundle security PRs (otherwise each alert opens an individual PR).
       security:
         applies-to: security-updates
@@ -71,6 +40,8 @@ updates:
           - "*"
 
   # GitHub Actions — pinned by SHA, so updates come through as SHA bumps with tag-comment hints.
+  # Major version bumps are ignored here — handle manually one major at a time to avoid
+  # skipping intermediate releases and missing breaking changes or security fixes.
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -85,6 +56,10 @@ updates:
     commit-message:
       prefix: chore(ci)
       include: scope
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
     groups:
       actions-minor-patch:
         update-types:

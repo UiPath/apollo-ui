@@ -82,7 +82,7 @@ jobs:
         working-directory: ${{ runner.temp }}/minimal-app
         env:
           REGISTRY_URL: http://localhost:3000
-        run: ${{ github.workspace }}/node_modules/.bin/tsx ${{ github.workspace }}/.github/scripts/test-registry/configure-registry.ts
+        run: $GITHUB_WORKSPACE/node_modules/.bin/tsx $GITHUB_WORKSPACE/.github/scripts/test-registry/configure-registry.ts
 
       - name: Copy locales into base app
         run: cp -r apps/apollo-vertex/locales ${{ runner.temp }}/minimal-app/locales
