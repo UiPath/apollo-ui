@@ -60,6 +60,7 @@ echo "✓ Published to npm"
 echo ""
 echo "📦 Publishing to GitHub Package Registry..."
 NPM_AUTH_TOKEN="" \
+  NPM_TOKEN="" \
   NODE_AUTH_TOKEN="$GH_NPM_REGISTRY_TOKEN" \
   pnpm publish "${filtered_args[@]}" --tag "$TAG" --@uipath:registry=https://npm.pkg.github.com
 

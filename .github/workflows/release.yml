@@ -27,6 +27,7 @@ jobs:
       contents: write
       packages: write
       id-token: write
+      attestations: write
 
     steps:
       - name: Checkout code
@@ -73,42 +74,63 @@ jobs:
           HUSKY: 0
         run: pnpm release
 
+      - name: Commit changelogs and package updates
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            # Get list of changed packages
+            CHANGED_PACKAGES=$(git diff --name-only | grep 'packages/\|web-packages/' | cut -d'/' -f2 | sort -u | tr '\n' ', ' | sed 's/,$//')
+
+            git add --all
+            git commit -m "chore(release): version bump [skip ci]" -m "Packages: $CHANGED_PACKAGES"
+
+            if ! git push; then
+              echo "::error::Failed to push version bump commit"
+              echo "This may indicate a conflict or permission issue"
+              exit 1
+            fi
+            echo "✓ Pushed version bump commit"
+          else
+            echo "No changes to commit"
+          fi
+          # Remove write credentials — push is complete and later steps don't need them
+          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+
       - name: Generate per-package SBOMs
         run: |
-          pnpm --filter @uipath/apollo-core  sbom --sbom-format cyclonedx --prod > sbom-apollo-core.cyclonedx.json
-          pnpm --filter @uipath/apollo-react sbom --sbom-format cyclonedx --prod > sbom-apollo-react.cyclonedx.json
-          pnpm --filter @uipath/apollo-wind  sbom --sbom-format cyclonedx --prod > sbom-apollo-wind.cyclonedx.json
-          pnpm --filter '@uipath/ap-chat'    sbom --sbom-format cyclonedx --prod > sbom-ap-chat.cyclonedx.json
+          pnpm --filter @uipath/apollo-core  sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-apollo-core.cyclonedx.json"
+          pnpm --filter @uipath/apollo-react sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-apollo-react.cyclonedx.json"
+          pnpm --filter @uipath/apollo-wind  sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-apollo-wind.cyclonedx.json"
+          pnpm --filter '@uipath/ap-chat'    sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-ap-chat.cyclonedx.json"
 
       - name: Attest SBOM — apollo-core
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
           subject-path: packages/apollo-core/dist
-          sbom-path: sbom-apollo-core.cyclonedx.json
+          sbom-path: ${{ runner.temp }}/sbom-apollo-core.cyclonedx.json
 
       - name: Attest SBOM — apollo-react
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
           subject-path: packages/apollo-react/dist
-          sbom-path: sbom-apollo-react.cyclonedx.json
+          sbom-path: ${{ runner.temp }}/sbom-apollo-react.cyclonedx.json
 
       - name: Attest SBOM — apollo-wind
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
           subject-path: packages/apollo-wind/dist
-          sbom-path: sbom-apollo-wind.cyclonedx.json
+          sbom-path: ${{ runner.temp }}/sbom-apollo-wind.cyclonedx.json
 
       - name: Attest SBOM — ap-chat
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
           subject-path: web-packages/ap-chat/dist
-          sbom-path: sbom-ap-chat.cyclonedx.json
+          sbom-path: ${{ runner.temp }}/sbom-ap-chat.cyclonedx.json
 
       - name: Upload SBOMs as release artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: sbom-${{ github.sha }}
-          path: sbom-*.cyclonedx.json
+          path: ${{ runner.temp }}/sbom-*.cyclonedx.json
           retention-days: 90
 
       # Build provenance attestation — covers GHP consumers, who cannot use npm's --provenance
@@ -133,22 +155,3 @@ jobs:
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
           subject-path: web-packages/ap-chat/dist
-
-      - name: Commit changelogs and package updates
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            # Get list of changed packages
-            CHANGED_PACKAGES=$(git diff --name-only | grep 'packages/\|web-packages/' | cut -d'/' -f2 | sort -u | tr '\n' ', ' | sed 's/,$//')
-
-            git add --all
-            git commit -m "chore(release): version bump [skip ci]" -m "Packages: $CHANGED_PACKAGES"
-
-            if ! git push; then
-              echo "::error::Failed to push version bump commit"
-              echo "This may indicate a conflict or permission issue"
-              exit 1
-            fi
-            echo "✓ Pushed version bump commit"
-          else
-            echo "No changes to commit"
-          fi

@@ -192,6 +192,7 @@ Note: `@tanstack/*` packages have a confirmed supply chain incident history (May
   - 'pkg'  # too new                                      # ❌ missing version, prune workflow won't remove it
   ```
 - Vercel CLI: always `npm install -g vercel@X.Y.Z` — never `@latest`.
+- **pnpm 11 breaking change ([pnpm/pnpm#11536](https://github.com/pnpm/pnpm/issues/11536)):** pnpm 11 silently ignores the entire `pnpm.*` block in `package.json` (overrides, packageExtensions, onlyBuiltDependencies, etc.). All pnpm configuration must live in `pnpm-workspace.yaml`. Never add `pnpm.overrides` or `pnpm.packageExtensions` to `package.json` — they will be silently ignored with no warning.
 
 ---
 

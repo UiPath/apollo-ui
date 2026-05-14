@@ -73,7 +73,7 @@
   },
   "engines": {
     "node": ">=22",
-    "pnpm": ">=10"
+    "pnpm": ">=11"
   },
   "packageManager": "pnpm@11.1.1",
   "lint-staged": {
@@ -90,22 +90,6 @@
   "config": {
     "commitizen": {
       "path": "@commitlint/cz-commitlint"
-    }
-  },
-  "pnpm": {
-    "overrides": {
-      "minimatch": "^10.2.5",
-      "lodash": "^4.18.1",
-      "tmp": "^0.2.5",
-      "picomatch": ">=4.0.4",
-      "postcss": "^8.5.14"
-    },
-    "packageExtensions": {
-      "@tanstack/ai": {
-        "dependencies": {
-          "@standard-schema/spec": "^1.1.0"
-        }
-      }
     }
   }
 }
