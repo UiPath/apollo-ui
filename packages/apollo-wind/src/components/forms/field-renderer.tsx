@@ -660,9 +660,7 @@ function SliderField({ field, formField, error, disabled, required }: SliderFiel
     <FormField>
       <div className="flex justify-between">
         <FormLabel required={required}>{field.label}</FormLabel>
-        <span className="text-sm text-muted-foreground">
-          {displayValue as React.ReactNode}
-        </span>
+        <span className="text-sm text-muted-foreground">{displayValue as React.ReactNode}</span>
       </div>
       <Slider
         value={[(displayValue as number) ?? field.min ?? 0]}
