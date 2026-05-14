@@ -925,16 +925,22 @@ function AnatomyStory() {
             <div className="rounded-xl border border-border bg-surface p-6" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">Live demo</div>
               <div className="flex items-center justify-center py-3">
-                <IterationNavigatorV2
-                  state={{
-                    activeIndex: demoIndex,
-                    total: DEMO_TOTAL,
-                    onActiveIndexChange: (i) => { setDemoIsAll(false); setDemoIndex(i); },
-                    isAll: demoIsAll,
-                    onAllChange: setDemoIsAll,
-                    iterationStatuses: DEMO_ITERATION_STATUSES,
-                  }}
-                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <IterationNavigatorV2
+                    state={{
+                      activeIndex: demoIndex,
+                      total: DEMO_TOTAL,
+                      onActiveIndexChange: (i) => { setDemoIsAll(false); setDemoIndex(i); },
+                      isAll: demoIsAll,
+                      onAllChange: setDemoIsAll,
+                      iterationStatuses: DEMO_ITERATION_STATUSES,
+                    }}
+                  />
+                  {/* 1px progress strip sits directly below the picker */}
+                  <div style={{ height: 1, overflow: 'hidden', borderRadius: 1, backgroundColor: 'rgba(128,128,128,0.12)' }}>
+                    <div style={{ width: '50%', height: '100%', backgroundColor: '#ef4444', transition: 'width 0.2s ease' }} />
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -966,14 +972,14 @@ function AnatomyStory() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <h3 className="text-sm font-semibold">Iteration Progress Strip</h3>
             <p className="text-sm text-foreground-muted">
-              A 3 px bar at the bottom edge of the loop header shows how many iterations have
-              reached a terminal state (Completed, Failed, or Cancelled) as a fraction of the
-              total. The fill turns red when any iteration has failed; green otherwise.
+              A 1 px line directly under the iteration picker showing how many iterations have
+              reached a terminal state (Completed, Failed, or Cancelled) as a fraction of total.
+              Turns red if any iteration failed; green otherwise.
             </p>
 
             <div className="rounded-xl border border-border bg-surface p-6" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">Strip states</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }} className="py-1">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} className="py-1">
                 {([
                   { label: '0 / 8 — not started',              pct: 0,     hasFailed: false },
                   { label: '3 / 8 — in progress',              pct: 3 / 8, hasFailed: false },
@@ -982,12 +988,11 @@ function AnatomyStory() {
                 ] as const).map(({ label, pct, hasFailed }) => (
                   <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     <div className="text-xs text-foreground-muted">{label}</div>
-                    <div style={{ height: 6, backgroundColor: 'rgba(128,128,128,0.15)', borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{ height: 2, backgroundColor: 'rgba(128,128,128,0.15)', borderRadius: 1, overflow: 'hidden' }}>
                       <div style={{
                         width: `${pct * 100}%`,
                         height: '100%',
                         backgroundColor: hasFailed ? '#ef4444' : pct > 0 ? '#22c55e' : 'transparent',
-                        borderRadius: 3,
                       }} />
                     </div>
                   </div>
@@ -1364,7 +1369,7 @@ function LoopExecutionCanvasNodeV2(props: NodeProps<Node<LoopExecutionNodeDataV2
     <div style={{ position: 'relative' }}>
       {/* Render LoopNode without its native iterator — we overlay V2 nav instead */}
       <LoopNode {...props} iterationState={undefined} />
-      {/* V2 navigator absolutely positioned into the header right-side area */}
+      {/* V2 navigator + progress strip, stacked in a column under the same anchor */}
       <div
         style={{
           position: 'absolute',
@@ -1372,37 +1377,28 @@ function LoopExecutionCanvasNodeV2(props: NodeProps<Node<LoopExecutionNodeDataV2
           right: V2_OVERLAY_RIGHT,
           zIndex: 10,
           pointerEvents: 'none',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 3,
         }}
       >
         <div style={{ pointerEvents: 'auto' }}>
           <IterationNavigatorV2 state={iterationState} />
         </div>
+        {/* 1px strip — same width as the picker, sits directly below it */}
+        {progressInfo && (
+          <div style={{ height: 1, overflow: 'hidden', borderRadius: 1, backgroundColor: 'rgba(128,128,128,0.12)' }}>
+            <div
+              style={{
+                width: `${progressInfo.pct * 100}%`,
+                height: '100%',
+                backgroundColor: progressInfo.hasFailed ? '#ef4444' : '#22c55e',
+                transition: 'width 0.2s ease',
+              }}
+            />
+          </div>
+        )}
       </div>
-      {/* Iteration progress strip — 1px hairline at bottom edge of header */}
-      {progressInfo && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 42,
-            left: 1,
-            right: 1,
-            height: 1,
-            backgroundColor: 'rgba(128,128,128,0.12)',
-            overflow: 'hidden',
-            pointerEvents: 'none',
-            zIndex: 5,
-          }}
-        >
-          <div
-            style={{
-              width: `${progressInfo.pct * 100}%`,
-              height: '100%',
-              backgroundColor: progressInfo.hasFailed ? '#ef4444' : '#22c55e',
-              transition: 'width 0.2s ease',
-            }}
-          />
-        </div>
-      )}
     </div>
   );
 }
