@@ -975,22 +975,22 @@ function AnatomyStory() {
             </div>
           </div>
 
-          {/* Subsection: Option A */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold">Option A — Compound Picker</h3>
-                <span className="rounded-full bg-surface-overlay px-2 py-0.5 text-[10px] font-semibold text-foreground-muted">current proposal</span>
-              </div>
-              <p className="text-sm text-foreground-muted">
-                "All" as a separate chip alongside a compound picker with first / prev / next / last
-                buttons and a click-to-edit fraction. All controls visible at all times.
-              </p>
-            </div>
+          {/* Side-by-side comparison */}
+          <div className="grid grid-cols-2 gap-6">
 
-            <div className="rounded-xl border border-border bg-surface p-6" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">Live demo</div>
-              <div className="flex items-center justify-center py-3">
+            {/* Column A */}
+            <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-6">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-semibold">Option A</h3>
+                  <span className="rounded-full bg-surface-overlay px-2 py-0.5 text-[10px] font-semibold text-foreground-muted">current proposal</span>
+                </div>
+                <p className="text-xs leading-relaxed text-foreground-muted">
+                  "All" as a separate chip alongside a compound picker with first / prev / next /
+                  last buttons. All controls visible at all times.
+                </p>
+              </div>
+              <div className="flex flex-1 items-center justify-center rounded-lg border border-border bg-surface-overlay py-6">
                 <IterationNavigatorV2
                   state={{
                     activeIndex: demoIndex,
@@ -1002,8 +1002,75 @@ function AnatomyStory() {
                   }}
                 />
               </div>
+              <p className="text-[11px] leading-relaxed text-foreground-muted">
+                <strong className="text-foreground">Compound Picker</strong> — separate chip
+                for All, four navigation buttons, click-to-type fraction.
+              </p>
             </div>
 
+            {/* Column B */}
+            <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-6">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-semibold">Option B</h3>
+                  <span className="rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-semibold text-blue-500">proposal</span>
+                </div>
+                <p className="text-xs leading-relaxed text-foreground-muted">
+                  "All" becomes the left segment of a single pill. First and last jump buttons
+                  removed — click-to-type handles large jumps.
+                </p>
+              </div>
+              <div className="flex flex-1 items-center justify-center rounded-lg border border-border bg-surface-overlay py-6">
+                <IterationNavigatorPill
+                  state={{
+                    activeIndex: demoIndexB,
+                    total: DEMO_TOTAL,
+                    onActiveIndexChange: (i) => { setDemoIsAllB(false); setDemoIndexB(i); },
+                    isAll: demoIsAllB,
+                    onAllChange: setDemoIsAllB,
+                    iterationStatuses: DEMO_ITERATION_STATUSES,
+                  }}
+                />
+              </div>
+              <p className="text-[11px] leading-relaxed text-foreground-muted">
+                <strong className="text-foreground">Unified Segmented Pill</strong> — one
+                cohesive control, lower visual weight, All integrated as a segment.
+              </p>
+            </div>
+
+          </div>
+
+          {/* Tradeoff comparison table — full width */}
+          <div className="overflow-hidden rounded-xl border border-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-surface-overlay">
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Aspect</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Option A</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Option B</th>
+                </tr>
+              </thead>
+              <tbody>
+                {([
+                  { aspect: '"All" placement',   a: 'Separate chip',             b: 'Left segment of pill' },
+                  { aspect: 'First / last jump', a: '|◄ and ►| buttons',         b: 'Removed — use click-to-type' },
+                  { aspect: 'Element count',     a: '3 elements + ⊕',            b: '1 pill + ⊕' },
+                  { aspect: 'Discoverability',   a: 'High — all controls shown', b: 'Medium — no first/last shortcut' },
+                  { aspect: 'Visual weight',     a: 'Higher',                    b: 'Lower' },
+                ] as const).map(({ aspect, a, b }, i, arr) => (
+                  <tr key={aspect} className={i < arr.length - 1 ? 'border-b border-border' : ''}>
+                    <td className="px-4 py-3 text-xs font-medium text-foreground">{aspect}</td>
+                    <td className="px-4 py-3 text-xs text-foreground-muted">{a}</td>
+                    <td className="px-4 py-3 text-xs text-foreground-muted">{b}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Option A control reference */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <h3 className="text-sm font-semibold">Option A — Control Reference</h3>
             <div className="overflow-hidden rounded-xl border border-border">
               <table className="w-full text-sm">
                 <thead>
@@ -1016,70 +1083,9 @@ function AnatomyStory() {
                 <tbody>
                   {PICKER_DOCS.map(({ ctrl, label, desc }, i) => (
                     <tr key={ctrl} className={i < PICKER_DOCS.length - 1 ? 'border-b border-border' : ''}>
-                      <td className="px-4 py-3">
-                        <code className="font-mono text-xs font-semibold">{ctrl}</code>
-                      </td>
+                      <td className="px-4 py-3"><code className="font-mono text-xs font-semibold">{ctrl}</code></td>
                       <td className="px-4 py-3 text-xs font-medium text-foreground">{label}</td>
                       <td className="px-4 py-3 text-xs text-foreground-muted">{desc}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Subsection: Option B */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold">Option B — Unified Segmented Pill</h3>
-                <span className="rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-semibold text-blue-500">proposal</span>
-              </div>
-              <p className="text-sm text-foreground-muted">
-                "All" becomes the left segment of a single pill, divided from the navigation by a
-                hairline. First and last jump buttons are removed — the click-to-edit fraction
-                handles large jumps. Fewer elements, one cohesive control.
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-border bg-surface p-6" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">Live demo</div>
-              <div className="flex items-center justify-center py-3">
-                <IterationNavigatorPill
-                  state={{
-                    activeIndex: demoIndexB,
-                    total: DEMO_TOTAL,
-                    onActiveIndexChange: (i) => { setDemoIsAllB(false); setDemoIndexB(i); },
-                    isAll: demoIsAllB,
-                    onAllChange: setDemoIsAllB,
-                    iterationStatuses: DEMO_ITERATION_STATUSES,
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* A vs B comparison */}
-            <div className="overflow-hidden rounded-xl border border-border">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border bg-surface-overlay">
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Aspect</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Option A</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Option B</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {([
-                    { aspect: '"All" placement',    a: 'Separate chip',            b: 'Left segment of pill' },
-                    { aspect: 'First / last jump',  a: '|◄ and ►| buttons',        b: 'Removed — use click-to-type' },
-                    { aspect: 'Element count',      a: '3 elements + ⊕',           b: '1 pill + ⊕' },
-                    { aspect: 'Discoverability',    a: 'High — all controls shown', b: 'Medium — no first/last shortcut' },
-                    { aspect: 'Visual weight',      a: 'Higher',                   b: 'Lower' },
-                  ] as const).map(({ aspect, a, b }, i, arr) => (
-                    <tr key={aspect} className={i < arr.length - 1 ? 'border-b border-border' : ''}>
-                      <td className="px-4 py-3 text-xs font-medium text-foreground">{aspect}</td>
-                      <td className="px-4 py-3 text-xs text-foreground-muted">{a}</td>
-                      <td className="px-4 py-3 text-xs text-foreground-muted">{b}</td>
                     </tr>
                   ))}
                 </tbody>
