@@ -1,5 +1,5 @@
 import { CanvasIcon, ExecutionStatusIcon } from '@uipath/apollo-react/canvas';
-import { memo } from 'react';
+import { createContext, memo, useContext } from 'react';
 import type { NodeAdornments, NodeStatusContext } from '../components';
 import { CanvasTooltip } from '../components/CanvasTooltip';
 import { getExecutionStatusColor } from '../components/ExecutionStatusIcon/ExecutionStatusIcon';
@@ -57,7 +57,7 @@ function ExecutionStatusIndicatorInternal({ status, count }: { status?: string; 
   );
 }
 
-function SquareDashedIndicator() {
+export function SquareDashedIndicator() {
   return (
     <CanvasTooltip content="Node output is mocked" placement="bottom">
       <span style={{ display: 'inline-flex' }}>
@@ -142,4 +142,21 @@ export function resolveAdornments(
 ) {
   // TODO: for now, always return default adornments
   return getDefaultAdornments(context, options);
+}
+
+// ---------------------------------------------------------------------------
+// Optional per-story resolver override
+// When AdornmentResolverProvider wraps a story, BaseNode uses that resolver
+// instead of the default resolveAdornments. The original BaseNode story never
+// wraps with this provider, so it is completely unaffected.
+// ---------------------------------------------------------------------------
+
+type AdornmentResolverFn = (context: NodeStatusContext) => NodeAdornments;
+
+const AdornmentResolverContext = createContext<AdornmentResolverFn | null>(null);
+
+export const AdornmentResolverProvider = AdornmentResolverContext.Provider;
+
+export function useAdornmentResolver(): AdornmentResolverFn {
+  return useContext(AdornmentResolverContext) ?? resolveAdornments;
 }

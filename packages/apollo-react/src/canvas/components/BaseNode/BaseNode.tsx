@@ -24,7 +24,7 @@ import { useNodeTypeRegistry } from '../../core';
 import { useElementValidationStatus, useNodeExecutionState } from '../../hooks';
 import type { NodeShape } from '../../schema';
 import type { HandleGroupManifest } from '../../schema/node-definition';
-import { resolveAdornments } from '../../utils/adornment-resolver';
+import { useAdornmentResolver } from '../../utils/adornment-resolver';
 import { getIcon } from '../../utils/icon-registry';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
 import { selectIsConnecting } from '../../utils/NodeUtils';
@@ -241,7 +241,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     return manifest ? resolveToolbar(manifest, statusContext) : undefined;
   }, [toolbarConfigProp, manifest, statusContext]);
 
-  // Adornments resolution: use default resolver, then override with props if provided
+  // Adornments resolution: use default resolver, then override with props if provided.
+  // The resolver can be swapped per-story via AdornmentResolverProvider (V2 prototype use).
+  const resolveAdornments = useAdornmentResolver();
   const adornments: NodeAdornments = useMemo(() => {
     const adornmentsFromProps = adornmentsProp ?? {};
     const adornmentsFromResolver = resolveAdornments(statusContext);
@@ -250,7 +252,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
       ...adornmentsFromResolver,
       ...adornmentsFromProps,
     };
-  }, [adornmentsProp, statusContext]);
+  }, [adornmentsProp, resolveAdornments, statusContext]);
 
   // Compute height: max of base height (user-specified or measured) and handle minimum.
   // baseHeightRef is updated above from external height changes; handle inflation

@@ -15,11 +15,23 @@ import {
   withCanvasProviders,
 } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
-import type { ValidationErrorSeverity } from '../../types/validation';
+import { ValidationErrorSeverity } from '../../types/validation';
+import {
+  AdornmentResolverProvider,
+  BreakpointIndicator,
+  ExecutionStartPointIndicator,
+  ExecutionStatusIndicator,
+  SquareDashedIndicator,
+  ValidationErrorIndicator,
+  ValidationWarningIndicator,
+} from '../../utils/adornment-resolver';
+import { CanvasIcon } from '../../utils/icon-registry';
+import { CanvasTooltip } from '../CanvasTooltip';
+import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
+import type { BaseNodeData, NodeAdornments, NodeStatusContext } from './BaseNode.types';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { NodeInspector } from '../NodeInspector';
-import type { BaseNodeData } from './BaseNode.types';
 
 // ============================================================================
 // Meta Configuration
@@ -566,8 +578,291 @@ function DynamicHandlesStory() {
 }
 
 // ============================================================================
+// Anatomy Story — full-page documentation layout
+// ============================================================================
+
+const SHAPE_DOCS = [
+  {
+    label: 'Circle',
+    icon: 'repeat',
+    usage: 'Trigger / start nodes',
+    code: 'shape: "circle"',
+    borderRadius: '50%',
+    size: { width: 64, height: 64 },
+  },
+  {
+    label: 'Square',
+    icon: 'agent',
+    usage: 'Standard action nodes',
+    code: 'shape: "square"',
+    borderRadius: 16,
+    size: { width: 64, height: 64 },
+  },
+  {
+    label: 'Rectangle',
+    icon: 'agent',
+    usage: 'Agent / wide nodes',
+    code: 'shape: "rectangle"',
+    borderRadius: 16,
+    size: { width: 96, height: 64 },
+  },
+] as const;
+
+const SLOT_DOCS = [
+  { slot: 'topLeft',     dot: 'bg-red-500',     rule: 'Breakpoint',                    detail: 'Debug mode — pauses execution at this node.' },
+  { slot: 'topRight',    dot: 'bg-emerald-500',  rule: 'Status › Validation error › Warning', detail: 'First matching state wins. Clears when execution ends.' },
+  { slot: 'bottomLeft',  dot: 'bg-blue-500',     rule: 'Execution start point',         detail: 'Marks the entry node for the current run.' },
+  { slot: 'bottomRight', dot: 'bg-amber-500',    rule: 'Loop count (> 1) › Output pinned', detail: 'Loop count takes priority when both are active.' },
+] as const;
+
+function AnatomyStory() {
+  return (
+    <div className="min-h-screen overflow-y-auto px-8 py-12 text-foreground">
+      <div className="mx-auto max-w-4xl" style={{ display: 'flex', flexDirection: 'column', gap: 48 }}>
+
+        {/* ── Page header ── */}
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">BaseNode Anatomy</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-foreground-muted">
+            BaseNode renders in three shapes. Four 20×20 px adornment slots sit at each corner of the
+            node — each with a defined priority chain that determines what content to show.
+          </p>
+        </div>
+
+        <div className="h-px bg-border" />
+
+        {/* ── Shapes ── */}
+        <section style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div>
+            <h2 className="text-base font-semibold">Shapes</h2>
+            <p className="mt-1 text-sm text-foreground-muted">
+              Controlled by <code className="rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-xs">display.shape</code> on
+              the node data or manifest. All shapes share the same slot anatomy.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            {SHAPE_DOCS.map(({ label, icon, usage, code, borderRadius, size }) => (
+              <div
+                key={label}
+                className="flex flex-col items-center gap-4 rounded-xl border border-border bg-surface p-6"
+              >
+                <div
+                  className="flex shrink-0 items-center justify-center bg-surface-overlay border border-border"
+                  style={{ ...size, borderRadius }}
+                >
+                  <CanvasIcon icon={icon} size={28} color="var(--color-foreground-de-emp)" />
+                </div>
+                <div className="text-center">
+                  <div className="text-sm font-semibold">{label}</div>
+                  <div className="mt-0.5 text-xs text-foreground-muted">{usage}</div>
+                </div>
+                <code className="rounded bg-surface-overlay px-2 py-0.5 font-mono text-[11px] text-foreground-muted">
+                  {code}
+                </code>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <div className="h-px bg-border" />
+
+        {/* ── Adornment Slots ── */}
+        <section style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <div>
+            <h2 className="text-base font-semibold">Adornment Slots</h2>
+            <p className="mt-1 text-sm text-foreground-muted">
+              Four 20×20 px slots, inset 6 px from each corner. Each slot runs its priority chain and
+              renders the first matching condition.
+            </p>
+          </div>
+
+          {/* Diagram */}
+          <div className="flex justify-center rounded-xl border border-border bg-surface px-12 py-10">
+            <div className="flex items-center gap-10">
+              {/* Left labels */}
+              <div className="flex flex-col gap-10">
+                {SLOT_DOCS.filter((_, i) => i % 2 === 0).map(({ slot, dot, rule }) => (
+                  <div key={slot} className="flex items-center justify-end gap-2.5">
+                    <div className="text-right">
+                      <div className="font-mono text-xs font-semibold">{slot}</div>
+                      <div className="text-[11px] text-foreground-muted">{rule}</div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="h-px w-6 bg-border" />
+                      <div className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot}`} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Node mock at 96×96 — actual CSS from BaseNode */}
+              <div className="relative shrink-0" style={{ width: 96, height: 96 }}>
+                <div
+                  className="flex h-full w-full items-center justify-center border border-border bg-surface-overlay"
+                  style={{ borderRadius: 32 }}
+                >
+                  <div
+                    className="flex items-center justify-center bg-surface"
+                    style={{ width: 80, height: 80, borderRadius: 24 }}
+                  >
+                    <CanvasIcon icon="agent" size={40} color="var(--color-foreground-de-emp)" />
+                  </div>
+                </div>
+                <div className="absolute flex items-center justify-center" style={{ top: 6, left: 6, width: 20, height: 20 }}>
+                  <BreakpointIndicator />
+                </div>
+                <div className="absolute flex items-center justify-center" style={{ top: 6, right: 6, width: 20, height: 20 }}>
+                  <ExecutionStatusIcon status="Completed" />
+                </div>
+                <div className="absolute flex items-center justify-center" style={{ bottom: 6, left: 6, width: 20, height: 20 }}>
+                  <ExecutionStartPointIndicator />
+                </div>
+                <div className="absolute" style={{ bottom: 6, right: 6, width: 20, height: 20 }}>
+                  <LoopCountPill count={3} />
+                </div>
+              </div>
+
+              {/* Right labels */}
+              <div className="flex flex-col gap-10">
+                {SLOT_DOCS.filter((_, i) => i % 2 !== 0).map(({ slot, dot, rule }) => (
+                  <div key={slot} className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-1">
+                      <div className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot}`} />
+                      <div className="h-px w-6 bg-border" />
+                    </div>
+                    <div>
+                      <div className="font-mono text-xs font-semibold">{slot}</div>
+                      <div className="text-[11px] text-foreground-muted">{rule}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Reference table */}
+          <div className="overflow-hidden rounded-xl border border-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-surface-overlay">
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Slot</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Priority chain</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {SLOT_DOCS.map(({ slot, dot, rule, detail }, i) => (
+                  <tr key={slot} className={i < SLOT_DOCS.length - 1 ? 'border-b border-border' : ''}>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <div className={`h-2 w-2 shrink-0 rounded-full ${dot}`} />
+                        <code className="font-mono text-xs font-semibold">{slot}</code>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-foreground">{rule}</td>
+                    <td className="px-4 py-3 text-xs text-foreground-muted">{detail}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <div className="h-px bg-border" />
+
+        {/* ── V2 Iterations ── */}
+        <section style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+          <div>
+            <h2 className="text-base font-semibold">V2 Iterations</h2>
+            <p className="mt-1 text-sm text-foreground-muted">
+              Improvements introduced in the V2 prototype. All changes are scoped to BaseNode V2
+              only — the original BaseNode story is unaffected.
+            </p>
+          </div>
+
+          {/* Subsection: Loop Count Pill */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <h3 className="text-sm font-semibold">Loop Count Badge</h3>
+            <p className="text-sm text-foreground-muted">
+              The <code className="rounded bg-surface-overlay px-1 font-mono text-xs">↻ N</code> badge
+              shows how many times this node has executed. For a node inside a loop, N equals the
+              number of loop iterations completed — it increments by 1 after each iteration.
+              The badge only appears when N &gt; 1.
+            </p>
+
+            {/* V1 vs V2 comparison */}
+            <div className="rounded-xl border border-border bg-surface p-6">
+              <div className="flex items-start gap-12">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">V1 — count inline</div>
+                  <div className="flex items-center gap-1">
+                    <span className="pr-0.5 text-sm font-semibold" style={{ color: 'var(--color-foreground-emp)' }}>3</span>
+                    <ExecutionStatusIcon status="Completed" />
+                  </div>
+                  <p className="text-[11px] leading-tight text-foreground-muted">Count prefixes the status icon. Both pieces of information share one slot.</p>
+                </div>
+
+                <div className="self-stretch w-px bg-border" />
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">V2 — dedicated slots</div>
+                  <div className="flex items-end gap-4">
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                      <ExecutionStatusIcon status="Completed" />
+                      <span className="text-[10px] text-foreground-muted">topRight</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                      <LoopCountPill count={3} />
+                      <span className="text-[10px] text-foreground-muted">bottomRight</span>
+                    </div>
+                  </div>
+                  <p className="text-[11px] leading-tight text-foreground-muted">Status and count each occupy their own corner slot — both visible simultaneously.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Reference table */}
+            <div className="overflow-hidden rounded-xl border border-border">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-surface-overlay">
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Property</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {([
+                    { prop: 'Badge',            value: '↻ repeat icon + count number' },
+                    { prop: 'Slot',             value: 'bottomRight adornment' },
+                    { prop: 'Visible when',     value: 'count > 1' },
+                    { prop: 'What N means',     value: 'Times this node has run — one per completed loop iteration' },
+                    { prop: 'Tooltip',          value: '"Executed N times"' },
+                    { prop: 'Priority',         value: 'Overrides the output-pinned badge when both are active' },
+                  ] as const).map(({ prop, value }, i, arr) => (
+                    <tr key={prop} className={i < arr.length - 1 ? 'border-b border-border' : ''}>
+                      <td className="px-4 py-3"><code className="font-mono text-xs font-semibold">{prop}</code></td>
+                      <td className="px-4 py-3 text-xs text-foreground-muted">{value}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // Exported Stories
 // ============================================================================
+
+export const Anatomy: Story = {
+  name: 'Anatomy',
+  render: () => <AnatomyStory />,
+};
 
 export const Default: Story = {
   name: 'Default',
@@ -651,6 +946,219 @@ function ValidationStatesStory() {
 }
 
 // ============================================================================
+// Option B: Loop Count Pill (V2 prototype — does not affect original BaseNode)
+// ============================================================================
+
+function LoopCountPill({ count }: { count: number }) {
+  return (
+    <CanvasTooltip content={`Executed ${count} times`} placement="bottom">
+      <div
+        className="flex items-center gap-0.5 px-1.5 rounded-full border border-border bg-surface-overlay shadow-sm whitespace-nowrap"
+        style={{ height: 16 }}
+      >
+        <CanvasIcon icon="repeat-2" size={10} color="var(--color-foreground-emp)" />
+        <span
+          className="text-[10px] font-semibold leading-none"
+          style={{ color: 'var(--color-foreground-emp)' }}
+        >
+          {count}
+        </span>
+      </div>
+    </CanvasTooltip>
+  );
+}
+
+// Custom resolver for V2: moves the loop count out of the status icon (top-right)
+// into a dedicated pill slot (bottom-right), leaving the status icon uncluttered.
+function resolveAdornmentsV2(context: NodeStatusContext): NodeAdornments {
+  const executionState = context.executionState;
+
+  const status = typeof executionState === 'object' ? executionState?.status : executionState;
+  const count = typeof executionState === 'object' ? executionState.count : undefined;
+  const hasBreakpoint = typeof executionState === 'object' && executionState?.debug;
+  const isExecutionStartPoint =
+    typeof executionState === 'object' && executionState?.isExecutionStartPoint;
+  const isOutputPinned = typeof executionState === 'object' && executionState?.isOutputPinned;
+
+  const hasValidationError =
+    context.validationState?.validationStatus === ValidationErrorSeverity.ERROR ||
+    context.validationState?.validationStatus === ValidationErrorSeverity.CRITICAL;
+  const hasValidationWarning =
+    context.validationState?.validationStatus === ValidationErrorSeverity.WARNING;
+
+  const getTopRight = () => {
+    if (status && status !== 'None') return <ExecutionStatusIndicator status={status} />;
+    if (hasValidationError)
+      return (
+        <ValidationErrorIndicator message={context.validationState?.validationError?.message} />
+      );
+    if (hasValidationWarning)
+      return (
+        <ValidationWarningIndicator message={context.validationState?.validationError?.message} />
+      );
+    return undefined;
+  };
+
+  const hasLoopCount = count !== undefined && count > 1;
+
+  return {
+    topLeft: hasBreakpoint ? <BreakpointIndicator /> : undefined,
+    topRight: getTopRight(),
+    bottomLeft: isExecutionStartPoint ? <ExecutionStartPointIndicator /> : undefined,
+    // Loop count takes priority over output-pinned when both are present
+    bottomRight: hasLoopCount ? (
+      <LoopCountPill count={count} />
+    ) : isOutputPinned ? (
+      <SquareDashedIndicator />
+    ) : undefined,
+  };
+}
+
+// ============================================================================
+// Node Anatomy Diagram
+// ============================================================================
+
+const SLOT_LEGEND = [
+  {
+    label: 'topLeft',
+    dot: 'bg-red-500',
+    rule: 'Breakpoint',
+    detail: 'Debug mode only — pauses execution at this node.',
+    side: 'left',
+  },
+  {
+    label: 'topRight',
+    dot: 'bg-emerald-500',
+    rule: 'Status › Validation error › Warning',
+    detail: 'First matching state wins. Clears when execution ends.',
+    side: 'right',
+  },
+  {
+    label: 'bottomLeft',
+    dot: 'bg-blue-500',
+    rule: 'Execution start point',
+    detail: 'Marks the entry node for the current run.',
+    side: 'left',
+  },
+  {
+    label: 'bottomRight',
+    dot: 'bg-amber-500',
+    rule: 'Loop count (> 1) › Output pinned',
+    detail: 'Loop count takes priority when both are active.',
+    side: 'right',
+  },
+] as const;
+
+function NodeAnatomyDiagram() {
+  const leftSlots = SLOT_LEGEND.filter((s) => s.side === 'left');
+  const rightSlots = SLOT_LEGEND.filter((s) => s.side === 'right');
+
+  return (
+    <Column gap={20} style={{ marginTop: 16 }}>
+      {/* Diagram: labels flanking the real node mock */}
+      <div className="flex items-stretch gap-3">
+        {/* Left labels — aligned to top and bottom of node */}
+        <div className="flex flex-col justify-between flex-1">
+          {leftSlots.map(({ label, dot, rule }) => (
+            <div key={label} className="flex items-center justify-end gap-2">
+              <Column gap={0.5} align="flex-end">
+                <span className="text-xs font-mono font-semibold leading-tight">{label}</span>
+                <span className="text-xs text-foreground-muted leading-tight text-right">{rule}</span>
+              </Column>
+              <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${dot}`} />
+            </div>
+          ))}
+        </div>
+
+        {/* The node — uses exact BaseNode styles at 96 × 96 px */}
+        <div className="relative shrink-0" style={{ width: 96, height: 96 }}>
+          {/* Outer container */}
+          <div
+            className="w-full h-full bg-surface-overlay border border-border flex items-center justify-center"
+            style={{ borderRadius: 32 }}
+          >
+            {/* Inner shape */}
+            <div
+              className="bg-surface flex items-center justify-center"
+              style={{ width: 80, height: 80, borderRadius: 24 }}
+            >
+              <CanvasIcon icon="agent" size={40} color="var(--color-foreground-de-emp)" />
+            </div>
+          </div>
+
+          {/* topLeft — Breakpoint */}
+          <div
+            className="absolute flex items-center justify-center"
+            style={{ width: 20, height: 20, top: 6, left: 6 }}
+          >
+            <div className="w-4 h-4 rounded-full bg-red-500 border border-red-600 shadow-sm" />
+          </div>
+
+          {/* topRight — Execution status (Completed) */}
+          <div
+            className="absolute flex items-center justify-center"
+            style={{ width: 20, height: 20, top: 6, right: 6 }}
+          >
+            <ExecutionStatusIcon status="Completed" />
+          </div>
+
+          {/* bottomLeft — Start point */}
+          <div
+            className="absolute flex items-center justify-center"
+            style={{ width: 20, height: 20, bottom: 6, left: 6 }}
+          >
+            <div className="w-4 h-4 rounded-full bg-blue-500 border border-blue-600 shadow-sm" />
+          </div>
+
+          {/* bottomRight — Loop count pill */}
+          <div
+            className="absolute flex items-center justify-center"
+            style={{ width: 20, height: 20, bottom: 6, right: 6 }}
+          >
+            <LoopCountPill count={3} />
+          </div>
+        </div>
+
+        {/* Right labels */}
+        <div className="flex flex-col justify-between flex-1">
+          {rightSlots.map(({ label, dot, rule }) => (
+            <div key={label} className="flex items-center gap-2">
+              <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${dot}`} />
+              <Column gap={0.5}>
+                <span className="text-xs font-mono font-semibold leading-tight">{label}</span>
+                <span className="text-xs text-foreground-muted leading-tight">{rule}</span>
+              </Column>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <p className="text-xs text-foreground-muted text-center">
+        Each slot is 20 × 20 px, inset 6 px from the node corner.
+      </p>
+
+      <div className="border-t border-border" />
+
+      {/* Full slot details */}
+      <Column gap={12}>
+        {SLOT_LEGEND.map(({ label, dot, rule, detail }) => (
+          <div key={label} className="flex items-start gap-3">
+            <div className={`w-2.5 h-2.5 rounded-full mt-1 shrink-0 ${dot}`} />
+            <Column gap={1}>
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <span className="text-xs font-mono font-semibold">{label}</span>
+                <span className="text-xs text-foreground">{rule}</span>
+              </div>
+              <span className="text-xs text-foreground-muted">{detail}</span>
+            </Column>
+          </div>
+        ))}
+      </Column>
+    </Column>
+  );
+}
+
+// ============================================================================
 // Adornments Story
 // ============================================================================
 
@@ -723,6 +1231,42 @@ function getAdornmentExecutionState(key: string) {
   }
 }
 
+const ADORNMENT_DESCRIPTIONS: { label: string; description: string }[] = [
+  {
+    label: 'Breakpoint',
+    description: 'Pauses execution at this node during a debug run.',
+  },
+  {
+    label: 'Status: Completed',
+    description: 'Node finished executing successfully.',
+  },
+  {
+    label: 'Status: In Progress',
+    description: 'Node is actively running.',
+  },
+  {
+    label: 'Status: Failed',
+    description: 'Node encountered an error during execution.',
+  },
+  {
+    label: 'Start Point',
+    description: 'Entry point for the current execution run.',
+  },
+  {
+    label: 'Square Dashed',
+    description: 'Output is pinned — result saved for later reference.',
+  },
+  {
+    label: 'All Adornments',
+    description: 'All four corners populated at the same time.',
+  },
+  {
+    label: 'Multi-execution',
+    description:
+      'Loop pill in the bottom-right corner: repeat icon + count. Separate from the execution status icon (top-right) so both are visible at once.',
+  },
+];
+
 function AdornmentsStory() {
   const initialNodes = useMemo(() => createAdornmentGrid(), []);
   const { canvasProps } = useCanvasStory({ initialNodes });
@@ -734,8 +1278,18 @@ function AdornmentsStory() {
       </Panel>
       <StoryInfoPanel
         title="Adornments"
-        description="Grid showing all adornment types across shapes."
-      />
+        description="Each row demonstrates one adornment slot. See the Anatomy story for slot positions and priority rules."
+        collapsible
+      >
+        <Column gap={10} style={{ marginTop: 12 }}>
+          {ADORNMENT_DESCRIPTIONS.map(({ label, description }) => (
+            <Column key={label} gap={1}>
+              <span className="text-sm font-semibold">{label}</span>
+              <span className="text-xs text-foreground-muted">{description}</span>
+            </Column>
+          ))}
+        </Column>
+      </StoryInfoPanel>
     </BaseCanvas>
   );
 }
@@ -743,6 +1297,11 @@ function AdornmentsStory() {
 export const Adornments: Story = {
   name: 'Adornments',
   decorators: [
+    (Story) => (
+      <AdornmentResolverProvider value={resolveAdornmentsV2}>
+        <Story />
+      </AdornmentResolverProvider>
+    ),
     withCanvasProviders({
       executionState: {
         getNodeExecutionState: (nodeId: string) => {

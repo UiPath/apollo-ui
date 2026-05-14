@@ -165,7 +165,7 @@ const preview: Preview = {
             '*',
           ],
           'Canvas',
-          ['Components', ['All Components', 'BaseNode', 'BaseNode V2', '*'], '*'],
+          ['Components', ['All Components', 'BaseNode', 'BaseNode V2', ['Anatomy', '*'], 'LoopNode', 'LoopNode V2', ['Anatomy', '*'], '*'], '*'],
         ],
       },
     },
