@@ -21,6 +21,7 @@ export default defineConfig({
       dts: {
         build: true,
         distPath: './dist',
+        abortOnError: false,
       },
       bundle: false,
     },

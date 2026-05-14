@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@mui/material": "^5.18.0",
-    "@uipath/ap-chat": "workspace:*",
     "@uipath/apollo-core": "workspace:*",
     "@uipath/apollo-react": "workspace:*",
     "@uipath/apollo-wind": "workspace:*",

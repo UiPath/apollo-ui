@@ -30,7 +30,10 @@ export default defineConfig({
         },
         externals,
       },
-      dts: true,
+      dts: {
+        build: true,
+        abortOnError: false,
+      },
       bundle: false,
     },
     {

@@ -113,6 +113,7 @@ const config: StorybookConfig = {
       plugins: [...(config.plugins || []), tailwindcss()],
       resolve: {
         ...config.resolve,
+        extensions: ['.tsx', '.ts', '.mts', '.jsx', '.js', '.mjs', '.json'],
         alias: mergeAlias(config.resolve?.alias, [
           // ── Apollo Wind → source for HMR ──
           { find: '@', replacement: apolloWindSrc },
