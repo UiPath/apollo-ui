@@ -1722,6 +1722,81 @@ function ExecutionStatesV2Story() {
   );
 }
 
+// ============================================================================
+// Loop Node V2 Demo — nested layout with live V2 compound picker
+// Based on NestedOuterOutputAppend, loop nodes carry V2 execution data.
+// ============================================================================
+
+const V2_DEMO_LOOP_STATUS = new Map<string, ElementStatusValues>([
+  ['outer-loop', ElementStatusValues.InProgress],
+  ['inner-loop', ElementStatusValues.Completed],
+]);
+
+const V2_DEMO_ITERATION_STATUSES = new Map<string, Map<number, string>>([
+  ['outer-loop', new Map<number, string>([[0, 'Completed'], [1, 'InProgress']])],
+  ['inner-loop', new Map<number, string>([[0, 'Completed'], [1, 'Completed'], [2, 'Completed']])],
+]);
+
+function LoopNodeV2DemoStory() {
+  const initialNodes = useMemo<Node[]>(() => [
+    createActivityNode('ingress', 'Load records', { x: 32, y: 272 }),
+    {
+      id: 'outer-loop',
+      type: LOOP_TYPE,
+      position: snapPoint({ x: 224, y: 96 }),
+      data: {
+        display: { label: 'For Each claim', shape: 'container' as const },
+        initialIndex: 1,
+        total: 5,
+        iterationStatuses: V2_DEMO_ITERATION_STATUSES.get('outer-loop'),
+        status: ElementStatusValues.InProgress,
+      },
+      style: snapSize({ width: 896, height: 448 }),
+    },
+    {
+      id: 'inner-loop',
+      type: LOOP_TYPE,
+      position: snapPoint({ x: 160, y: 112 }),
+      parentId: 'outer-loop',
+      data: {
+        display: { label: 'For Each attachment', shape: 'container' as const },
+        initialIndex: 2,
+        total: 3,
+        iterationStatuses: V2_DEMO_ITERATION_STATUSES.get('inner-loop'),
+        status: ElementStatusValues.Completed,
+      },
+      style: snapSize({ width: 544, height: 304 }),
+    },
+    createActivityNode('inner-child', 'Classify attachment', { x: 176, y: 112 }, { parentId: 'inner-loop' }),
+    createActivityNode('egress', 'Publish results', { x: 1216, y: 272 }),
+  ], []);
+
+  const initialEdges = useMemo<Edge[]>(() => [
+    { id: 'ingress-outer',    source: 'ingress',     sourceHandle: 'output',                       target: 'outer-loop',  targetHandle: 'input' },
+    { id: 'outer-inner',      source: 'outer-loop',  sourceHandle: STORY_LOOP_START_HANDLE_ID,     target: 'inner-loop',  targetHandle: 'input' },
+    { id: 'inner-child-edge', source: 'inner-loop',  sourceHandle: STORY_LOOP_START_HANDLE_ID,     target: 'inner-child', targetHandle: 'input' },
+    { id: 'child-inner-edge', source: 'inner-child', sourceHandle: 'output',                       target: 'inner-loop',  targetHandle: STORY_LOOP_CONTINUE_HANDLE_ID },
+    { id: 'outer-egress',     source: 'outer-loop',  sourceHandle: STORY_LOOP_SUCCESS_HANDLE_ID,   target: 'egress',      targetHandle: 'input' },
+  ], []);
+
+  const { canvasProps } = useCanvasStory({
+    initialNodes,
+    additionalNodeTypes: LOOP_EXECUTION_NODE_TYPES_V2,
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="Loop Node V2 Demo"
+        description="Nested loop with the V2 compound iteration picker. Outer loop is in progress (iteration 2 of 5); inner loop completed all 3 iterations. Interact with the pickers to navigate iterations."
+      />
+    </BaseCanvas>
+  );
+}
+
 export const Anatomy: Story = {
   name: 'Anatomy',
   render: () => <AnatomyStory />,
@@ -1768,4 +1843,20 @@ export const ExecutionStatesV2: Story = {
     }),
   ],
   render: () => <ExecutionStatesV2Story />,
+};
+
+export const LoopNodeV2Demo: Story = {
+  name: 'Loop Node V2 Demo',
+  decorators: [
+    withCanvasProviders({
+      executionState: {
+        getNodeExecutionState: (nodeId: string) => V2_DEMO_LOOP_STATUS.get(nodeId),
+        getEdgeExecutionState: () => undefined,
+      },
+      validationState: {
+        getElementValidationState: () => undefined,
+      },
+    }),
+  ],
+  render: () => <LoopNodeV2DemoStory />,
 };
