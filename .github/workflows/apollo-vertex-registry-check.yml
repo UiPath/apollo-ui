@@ -76,13 +76,17 @@ jobs:
           echo "result=${MATRIX}" >> "${GITHUB_OUTPUT}"
 
       - name: Create base shadcn app
-        run: cd ${{ runner.temp }} && pnpm dlx shadcn@4.4.0 init --preset a0 --template next --name minimal-app
+        run: |
+          cp .github/scripts/test-registry/pnpm-workspace-registry-test.yaml "$RUNNER_TEMP/pnpm-workspace.yaml"
+          cd "$RUNNER_TEMP" && pnpm dlx shadcn@4.4.0 init --preset a0 --template next --name minimal-app
 
       - name: Configure @uipath registry
         working-directory: ${{ runner.temp }}/minimal-app
         env:
           REGISTRY_URL: http://localhost:3000
-        run: $GITHUB_WORKSPACE/node_modules/.bin/tsx $GITHUB_WORKSPACE/.github/scripts/test-registry/configure-registry.ts
+        run: |
+          # shellcheck disable=SC2086
+          $GITHUB_WORKSPACE/node_modules/.bin/tsx $GITHUB_WORKSPACE/.github/scripts/test-registry/configure-registry.ts
 
       - name: Copy locales into base app
         run: cp -r apps/apollo-vertex/locales ${{ runner.temp }}/minimal-app/locales
@@ -122,6 +126,7 @@ jobs:
           persist-credentials: false
           sparse-checkout: |
             .github/scripts/test-registry
+            apps/apollo-vertex/types/optional-deps.d.ts
             package.json
             pnpm-lock.yaml
 
@@ -149,6 +154,9 @@ jobs:
 
       - name: Start registry server
         run: pnpm dlx serve@14.2.6 ${{ runner.temp }}/serve-dir -p 3000 &
+
+      - name: Stage optional-deps shim
+        run: cp apps/apollo-vertex/types/optional-deps.d.ts .github/scripts/test-registry/optional-deps.d.ts
 
       - name: Test registry components
         env:

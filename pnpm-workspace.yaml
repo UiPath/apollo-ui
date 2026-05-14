@@ -10,32 +10,52 @@ strictPeerDependencies: false
 # Supply-chain hardening
 # 14-day quarantine on newly-published packages (minutes; 14d × 1440)
 minimumReleaseAge: 20160
-# pnpm 11.0.4 made ERR_PNPM_MISSING_TIME a hard error when registry metadata lacks the `time`
-# field (pnpm/pnpm#11238, unfixed). Setting false restores pnpm 10 behaviour: missing-time
-# packages are warned and skipped rather than failing the install.
-minimumReleaseAgeStrict: false
 # Exempt packages whose latest release is too new to satisfy the quarantine.
 # The weekly `prune-release-age-exemptions` workflow auto-PRs removal of entries once aged.
 #
 # Format: - 'pkg'  # <version> — <reason>
 # The version is required — the prune script uses it to decide when to remove the entry.
+# FIXME: Until https://github.com/pnpm/pnpm/issues/11238 is fixed we need the additional exclusions
 minimumReleaseAgeExclude:
-  - '@uipath/*'       # permanent — own scope, always installable immediately
-  - 'postcss'         # 8.5.14 — security override in pnpm.overrides
-  - 'mermaid'         # 11.15.0 — GHSA-v2wj-7wpq-c8vv backport patch
-  - 'next'                      # 16.2.6 — locked version too new
-  - '@next/swc-darwin-arm64'   # 16.2.6 — co-published with next, optional platform binary
-  - '@next/swc-darwin-x64'     # 16.2.6 — co-published with next, optional platform binary
-  - '@next/swc-linux-arm64-gnu'  # 16.2.6 — co-published with next, optional platform binary
-  - '@next/swc-linux-arm64-musl' # 16.2.6 — co-published with next, optional platform binary
-  - '@next/swc-linux-x64-gnu'  # 16.2.6 — co-published with next, optional platform binary
-  - '@next/swc-linux-x64-musl' # 16.2.6 — co-published with next, optional platform binary
-  - '@next/swc-win32-arm64-msvc' # 16.2.6 — co-published with next, optional platform binary
-  - '@next/swc-win32-x64-msvc' # 16.2.6 — co-published with next, optional platform binary
-  - 'fs-extra'        # 11.3.5 — locked version too new
-  - '@babel/parser'   # 7.29.3 — locked version too new
+  - '@uipath/*'              # permanent — own scope, always installable immediately
+  - '@mui/system'            # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - 'eslint'                 # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - '@microsoft/*'           # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - '@stencil/core'          # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - 'lexical'                # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - '@lexical/*'             # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - '@fluentui/react-focus'  # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - 'intl-messageformat'     # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - '@formatjs/*'            # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - 'postcss'                     # 8.5.14 — security override in pnpm.overrides
+  - 'mermaid'                     # 11.15.0 — GHSA-v2wj-7wpq-c8vv backport patch
+  - 'next'                        # 16.2.6 — locked version too new
+  - '@next/swc-darwin-arm64'      # 16.2.6 — co-published with next, optional platform binary
+  - '@next/swc-darwin-x64'        # 16.2.6 — co-published with next, optional platform binary
+  - '@next/swc-linux-arm64-gnu'   # 16.2.6 — co-published with next, optional platform binary
+  - '@next/swc-linux-arm64-musl'  # 16.2.6 — co-published with next, optional platform binary
+  - '@next/swc-linux-x64-gnu'     # 16.2.6 — co-published with next, optional platform binary
+  - '@next/swc-linux-x64-musl'    # 16.2.6 — co-published with next, optional platform binary
+  - '@next/swc-win32-arm64-msvc'  # 16.2.6 — co-published with next, optional platform binary
+  - '@next/swc-win32-x64-msvc'    # 16.2.6 — co-published with next, optional platform binary
+  - 'fs-extra'                    # 11.3.5 — locked version too new
+  - '@babel/parser'               # 7.29.3 — locked version too new
 # Refuse transitive git/tarball deps (pnpm 11 default; kept explicit for clarity)
 blockExoticSubdeps: true
+
+# Dependency version overrides (moved from package.json#pnpm — pnpm 11 ignores that field, pnpm/pnpm#11536)
+overrides:
+  minimatch: "^10.2.5"
+  lodash: "^4.18.1"
+  tmp: "^0.2.5"
+  picomatch: ">=4.0.4"
+  postcss: "^8.5.14"
+
+# packageExtensions (moved from package.json#pnpm for the same reason)
+packageExtensions:
+  "@tanstack/ai":
+    dependencies:
+      "@standard-schema/spec": "^1.1.0"
 
 # dompurify XSS - FIXME: no patch available yet
 auditConfig:
