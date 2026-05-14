@@ -138,6 +138,10 @@ const StageNodeHeaderInner = ({
             <CanvasTooltip content={label} placement="top" delay>
               <StageTitleContainer isEditing={isStageTitleEditing}>
                 <StageTitleInput
+                  // `nodrag` prevents xyflow from interpreting drag-select
+                  // (highlighting text) inside the editable title as a node
+                  // drag, which would otherwise move the entire stage block.
+                  className="nodrag"
                   name="Stage Title"
                   isStageTitleEditable={isStageTitleEditable}
                   value={label}
