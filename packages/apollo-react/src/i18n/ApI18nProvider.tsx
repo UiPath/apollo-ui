@@ -2,6 +2,7 @@ import { i18n } from '@lingui/core';
 import { I18nProvider } from '@lingui/react';
 import { type ReactNode, useCallback, useEffect } from 'react';
 
+import { useApLocale } from './ApLocaleProvider';
 import { getAllPreImportedLocales } from './locale-registry';
 
 export const SUPPORTED_LOCALES = [
@@ -59,7 +60,8 @@ export interface ApI18nProviderProps {
  * ```
  */
 export function ApI18nProvider({ component, locale: propLocale, children }: ApI18nProviderProps) {
-  const locale = propLocale || 'en';
+  const contextLocale = useApLocale();
+  const locale = propLocale || contextLocale || 'en';
 
   const loadAndActivate = useCallback(() => {
     const preImportedLocales = getAllPreImportedLocales(component);
