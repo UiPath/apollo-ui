@@ -64,7 +64,7 @@ const StickyNoteNodeComponent = ({
   onResize,
 }: StickyNoteNodeProps) => {
   const { updateNodeData, deleteElements } = useReactFlow();
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(true);
   const [isResizing, setIsResizing] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [localContent, setLocalContent] = useState(data.content || '');
@@ -107,14 +107,14 @@ const StickyNoteNodeComponent = ({
 
   useEffect(() => {
     if (readOnly) {
-      setIsEditing(false);
+      setIsEditing(true);
       setLocalContent(data.content || '');
     }
   }, [readOnly, data.content]);
 
   const handleDoubleClick = useCallback(() => {
     if (readOnly || isEditing) return;
-    setIsEditing(false);
+    setIsEditing(true);
     setTimeout(() => {
       if (textAreaRef.current) {
         textAreaRef.current.focus();
@@ -124,7 +124,7 @@ const StickyNoteNodeComponent = ({
   }, [isEditing, readOnly]);
 
   const handleBlur = useCallback(() => {
-    setIsEditing(false);
+    setIsEditing(true);
     if (readOnly) return;
     if (localContent !== data.content) {
       onContentChange?.(localContent);
@@ -163,7 +163,7 @@ const StickyNoteNodeComponent = ({
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === 'Escape') {
-        setIsEditing(false);
+        setIsEditing(true);
         setLocalContent(data.content || '');
         textAreaRef.current?.blur();
         return;
@@ -219,7 +219,7 @@ const StickyNoteNodeComponent = ({
   // Handle edit button click
   const handleEditClick = useCallback(() => {
     if (readOnly) return;
-    setIsEditing(false);
+    setIsEditing(true);
     setTimeout(() => {
       if (textAreaRef.current) {
         textAreaRef.current.focus();
@@ -364,7 +364,7 @@ const StickyNoteNodeComponent = ({
         >
           <TopCornerIndicators visible={selected && !readOnly} />
           <BottomCornerIndicators visible={selected && !readOnly} />
-          {isEditing ? (
+          {true ? (
             <ApI18nProvider component="canvas">
               <FormattingToolbar
                 textAreaRef={textAreaRef}
