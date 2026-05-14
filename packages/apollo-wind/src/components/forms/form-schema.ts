@@ -221,10 +221,27 @@ export interface SwitchFieldMetadata extends BaseFieldMetadata {
   type: 'switch';
 }
 
+/**
+ * Reference to another form field's value, used to drive a numeric property
+ * (e.g. a slider's `max`) at render time.
+ */
+export interface FieldRef {
+  /** Form field path to watch (react-hook-form name). */
+  fromField: string;
+  /** Used when the watched value is missing or not a finite positive number. */
+  fallback?: number;
+}
+
 export interface SliderFieldMetadata extends BaseFieldMetadata {
   type: 'slider';
   min?: number;
   max?: number;
+  /**
+   * Dynamic upper bound sourced from another form field. Takes precedence
+   * over `max` when present. The watched field's value is used as the slider's
+   * `max` when it's a finite positive number; otherwise `fallback` is used.
+   */
+  maxRef?: FieldRef;
   step?: number;
 }
 
