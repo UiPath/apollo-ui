@@ -650,7 +650,7 @@ const LOOP_SLOT_DOCS = [
   { slot: 'topLeft',     dot: 'bg-red-500',    rule: 'Breakpoint',                         detail: 'Debug mode — pauses execution at this node.' },
   { slot: 'topRight',    dot: 'bg-emerald-500', rule: 'Status › Validation error › Warning', detail: 'First matching state wins.' },
   { slot: 'bottomLeft',  dot: 'bg-blue-500',   rule: 'Execution start point',               detail: 'Marks the entry node for the current run.' },
-  { slot: 'bottomRight', dot: 'bg-amber-500',  rule: 'Loop count (> 1) › Output pinned',    detail: 'Loop count takes priority when both are active.' },
+  { slot: 'bottomRight', dot: 'bg-amber-500',  rule: 'Output pinned',                        detail: 'Shown when the node output is mocked/pinned. LoopNode does not carry a loop count badge — that appears on child nodes.' },
 ] as const;
 
 const LOOP_HANDLE_DOCS = [
@@ -753,14 +753,73 @@ function AnatomyStory() {
         <div className="h-px bg-border" />
 
         {/* ── Adornment Slots ── */}
-        <section style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <section style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           <div>
             <h2 className="text-base font-semibold">Adornment Slots</h2>
             <p className="mt-1 text-sm text-foreground-muted">
-              LoopNode uses the same four 20×20 px corner slots as BaseNode, positioned on the outer
-              container. Priority rules are identical — see BaseNode V2 → Anatomy for the diagram.
+              Four 20×20 px slots at each corner of the outer container. Slots are only visible
+              when execution, debug, or validation state is active — they are hidden at rest.
             </p>
           </div>
+
+          {/* Diagram */}
+          <div className="flex justify-center rounded-xl border border-border bg-surface px-12 py-10">
+            <div className="flex items-center gap-10">
+
+              {/* Left labels — topLeft, bottomLeft */}
+              <div className="flex flex-col gap-10">
+                {LOOP_SLOT_DOCS.filter((_, i) => i % 2 === 0).map(({ slot, dot, rule }) => (
+                  <div key={slot} className="flex items-center justify-end gap-2.5">
+                    <div className="text-right">
+                      <div className="font-mono text-xs font-semibold">{slot}</div>
+                      <div className="text-[11px] text-foreground-muted">{rule}</div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="h-px w-6 bg-border" />
+                      <div className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot}`} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* LoopNode mock */}
+              <div className="relative shrink-0" style={{ width: 280, height: 110 }}>
+                <div className="absolute inset-0 border border-border bg-transparent" style={{ borderRadius: 20 }}>
+                  <div
+                    className="flex items-center gap-2 bg-surface-overlay px-3.5"
+                    style={{ borderRadius: '18px 18px 0 0', marginBottom: -10, paddingTop: 8, paddingBottom: 8 }}
+                  >
+                    <CanvasIcon icon="repeat" size={13} />
+                    <span className="text-[11px] font-semibold">For Each item</span>
+                  </div>
+                  <div className="mx-2.5 mt-4 rounded-xl border border-dashed border-border" style={{ height: 44 }} />
+                </div>
+                {/* Corner slot indicators */}
+                <div className={`absolute rounded-full ${LOOP_SLOT_DOCS[0].dot}`} style={{ top: 6, left: 6, width: 14, height: 14 }} />
+                <div className={`absolute rounded-full ${LOOP_SLOT_DOCS[1].dot}`} style={{ top: 6, right: 6, width: 14, height: 14 }} />
+                <div className={`absolute rounded-full ${LOOP_SLOT_DOCS[2].dot}`} style={{ bottom: 6, left: 6, width: 14, height: 14 }} />
+                <div className={`absolute rounded-full ${LOOP_SLOT_DOCS[3].dot}`} style={{ bottom: 6, right: 6, width: 14, height: 14 }} />
+              </div>
+
+              {/* Right labels — topRight, bottomRight */}
+              <div className="flex flex-col gap-10">
+                {LOOP_SLOT_DOCS.filter((_, i) => i % 2 !== 0).map(({ slot, dot, rule }) => (
+                  <div key={slot} className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-1">
+                      <div className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot}`} />
+                      <div className="h-px w-6 bg-border" />
+                    </div>
+                    <div>
+                      <div className="font-mono text-xs font-semibold">{slot}</div>
+                      <div className="text-[11px] text-foreground-muted">{rule}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+            </div>
+          </div>
+
           <div className="overflow-hidden rounded-xl border border-border">
             <table className="w-full text-sm">
               <thead>
