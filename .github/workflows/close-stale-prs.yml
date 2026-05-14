@@ -26,13 +26,14 @@ jobs:
       pull-requests: write
     timeout-minutes: 10
     env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_REPO: ${{ github.repository }}
       STALE_DAYS: '14'
       SKIP_LABEL: do-not-close
       DRY_RUN: ${{ inputs.dry_run }}
     steps:
       - name: Close PRs with no commits in 14+ days
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # We roll our own instead of actions/stale because staleness must be
           # measured from the PR's last commit (committer.date). actions/stale

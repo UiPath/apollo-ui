@@ -59,6 +59,7 @@ All `uses:` pinned to a full 40-character SHA with a `# vX` comment. No `@v*`, `
 | `actions/github-script` | `ed597411d8f924073f98dfc5c65a23a2325f34cd` | v8 |
 | `actions/dependency-review-action` | `a1d282b36b6f3519aa1f3fc636f609c47dddb294` | v5.0.0 |
 | `actions/attest-sbom` | `c604332985a26aa8cf1bdc465b92731239ec6b9e` | v4.1.0 |
+| `actions/attest-build-provenance` | `a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32` | v4.1.0 |
 | `pnpm/action-setup` | `b906affcce14559ad1aafd4ab0e942779e9f58b1` | v4 |
 | `zizmorcore/zizmor-action` | `135698455da5c3b3e55f73f4419e481ab68cdd95` | v0.4.1 |
 | `reviewdog/action-actionlint` | `6fb7acc99f4a1008869fa8a0f09cfca740837d9d` | v1.72.0 |
@@ -90,7 +91,9 @@ When any PR touches `.github/workflows/`, `.github/actions/`, `.npmrc`, `pnpm-wo
 **Fork safety**
 - [ ] Every job using secrets or publishing has `if: github.event.pull_request.head.repo.fork == false`
 - [ ] No `pull_request_target` trigger — use `pull_request` (see Supply Chain §3)
+- [ ] No `on: workflow_run` trigger without an explicit `if: github.event.workflow_run.head_repository.full_name == github.repository` guard — same trust-boundary collapse risk as `pull_request_target`
 - [ ] PR comment parsing filters by `select(.user.type == "Bot" or .user.login == "github-actions[bot]")`
+- [ ] Jobs triggered by `workflow_run` that consume artifacts validate attestation via `gh attestation verify` before executing any artifact content
 
 **Install safety**
 - [ ] Every `pnpm install` uses `--frozen-lockfile` — use `./.github/actions/install-node-deps`, never call pnpm directly
@@ -99,8 +102,10 @@ When any PR touches `.github/workflows/`, `.github/actions/`, `.npmrc`, `pnpm-wo
 - [ ] New `minimumReleaseAgeExclude` entries in `pnpm-workspace.yaml` include exact version + reason: `- 'pkg'  # x.y.z — reason`
 
 **Cache**
-- [ ] Cache keys include `github.sha`; Turbo pattern: `${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}`
-- [ ] `restore-keys` scoped to same branch first — never broad enough to match entries from unrelated branches
+- [ ] Turbo cache key: `${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}`; `restore-keys` scoped to same branch — never matches entries from other branches or PR runs
+- [ ] pnpm store cache key (if used): also includes `github.sha`; `restore-keys` scoped to same branch — never broad enough to be written by a fork/PR run and read by a release run
+- [ ] Prefer `actions/cache/restore` (read) + `actions/cache/save` (conditional write) over combined `actions/cache` on release and deploy jobs — combined `actions/cache` post-job saves use a runner-internal token that bypasses `permissions:`
+- [ ] Scheduled workflow jobs (`on: schedule`) do not restore caches under keys that a fork PR could have written
 
 **Injection**
 - [ ] No `${{ github.event.* }}` or `${{ github.head_ref }}` interpolated directly in `run:` — pass through `env:`
@@ -121,7 +126,13 @@ Flag these patterns immediately:
 |---|---|---|
 | **Lockfile drift (shai-hulud)** | `pnpm install` without `--frozen-lockfile`; `npm install` | `install-node-deps` enforces `--frozen-lockfile` |
 | **Day-zero publish via pnpm dlx** | `pnpm dlx pkg` without `@x.y.z`; `npx -y pkg` | All `pnpm dlx` calls version-pinned |
-| **TanStack: `pull_request_target` + cache poison + OIDC extract** | `on: pull_request_target`; broad Turbo `restore-keys` missing `ref_name` | No `pull_request_target`; Turbo cache branch-scoped |
+| **TanStack: `pull_request_target` + pnpm store cache poison + OIDC extract** | `on: pull_request_target`; broad `restore-keys` missing `ref_name`; pnpm store cache writable from fork run | No `pull_request_target`; Turbo + pnpm store cache branch-scoped; `actions/cache` combined save/restore bypasses `permissions:` |
+| **Cache poisoning (pnpm store)** | `actions/cache` write from fork/PR run with restore-key matching release pipeline | pnpm store cache keys include `github.sha`; `restore-keys` scoped to same branch only; prefer separate `cache/restore` + `cache/save` on release jobs |
+| **Published package protocol injection** | `github:`, `file:`, `link:`, or `git+` protocol in `optionalDependencies`/`dependencies` of a new/updated package | Audit lockfile diff; flag any non-registry URL reference in prod deps |
+| **OIDC trusted-publisher scope too broad** | `id-token: write` on a workflow that isn't `release.yml`; npm trusted-publisher not constrained by `job_workflow_ref` | `id-token: write` job-scoped to release job only; verify npmjs.org trusted-publisher settings include `job_workflow_ref` for `release.yml@refs/heads/main` |
+| **`workflow_run` without head-repo guard** | `on: workflow_run` without `if: github.event.workflow_run.head_repository.full_name == github.repository` | No `workflow_run` trigger in repo; add guard if ever introduced |
+| **Maintainer account takeover / burst publish** | Package receives 3+ new versions in a 6-minute window; new maintainer added within last 30 days; unusual publish time | `monitor-npm-publishes.yml` flags version-to-release mismatch; check socket.dev for maintainer changes |
+| **Forged bot commit identity** | Version-bump commit where committer email ≠ `semantic-release-bot@users.noreply.github.com` | Check committer email on release commits; semantic-release-bot identity is fixed in `release.yml` git config step |
 | **Dependency confusion** | `.npmrc` change to `@uipath` registry routing | `@uipath:registry=https://npm.pkg.github.com`; all 4 names claimed on npm.org |
 | **Workflow injection** | `${{ github.event.*.title }}` etc. in `run:` blocks | Pass via `env:` |
 | **Compromised maintainer / day-zero** | Any production dep update without verifying age, changelog, and postinstall scripts | `minimumReleaseAge: 20160` (14d quarantine); `npm audit signatures` |
@@ -157,8 +168,11 @@ When reviewing `release.yml`, `dev-publish.yml`, `dev-cleanup.yml`, or `scripts/
 2. New version was published **more than 14 days ago** — Dependabot bypasses `minimumReleaseAge`, manual check required
 3. Read the changelog between old and new version for anything unexpected
 4. Verify no new or changed `postinstall`/`preinstall` scripts, obfuscated code, or new remote fetch calls introduced in the new version
-5. Check https://socket.dev/npm/package/[package-name] for supply chain signals
+5. Check https://socket.dev/npm/package/[package-name] for supply chain signals — look specifically for recent maintainer additions (last 90 days) and burst-publish patterns
 6. `dependency-review-action` check passed; `Audit Package Signatures` passed if `pnpm-lock.yaml` changed
+7. Confirm the PR was opened by `app/dependabot` (GitHub's verified bot) — verify the PR author badge. A human PR falsely attributing changes to Dependabot is suspicious.
+8. Flag any `github:`, `file:`, `link:`, or `git+` protocol reference appearing in the updated `pnpm-lock.yaml` — legitimate Dependabot PRs only introduce registry versions.
+9. If a package received a new maintainer within the last 90 days AND the new version was published within the last 14 days, hold the PR until the 14-day quarantine window passes even if Dependabot bypassed `minimumReleaseAge`.
 
 Note: `@tanstack/*` packages have a confirmed supply chain incident history (May 2025) — apply extra care, but these checks apply to every production dependency, not just tanstack.
 
@@ -206,6 +220,10 @@ When a PR significantly modifies an existing styled/MUI component, migrate it to
 - `${{ secrets.* }}` in workflow/job-level `env:`
 - `pnpm install` without `--frozen-lockfile`; `pnpm dlx` / `npx -y` without version pin
 - Missing fork guard on secret-using or publishing jobs
+- `on: workflow_run` trigger without `if: github.event.workflow_run.head_repository.full_name == github.repository` guard
+- `optionalDependencies`, `dependencies`, or `devDependencies` containing `github:`, `git+`, `file:`, or `link:` protocol references in a PR that also modifies `pnpm-lock.yaml`
+- Modification to `monitor-npm-publishes.yml` that removes or weakens the alert-on-mismatch logic
+- Literal `EOF` heredoc delimiter in a `run:` step where the output value is attacker-influenced — use `openssl rand -hex 8`
 - New Emotion/MUI usage in `apollo-react`
 - Breaking public API changes
 - Runtime security vulnerabilities (XSS, injection, prototype pollution)

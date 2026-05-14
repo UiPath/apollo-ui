@@ -22,6 +22,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     name: Release and Publish
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: write
       packages: write
@@ -109,6 +110,29 @@ jobs:
           name: sbom-${{ github.sha }}
           path: sbom-*.cyclonedx.json
           retention-days: 90
+
+      # Build provenance attestation — covers GHP consumers, who cannot use npm's --provenance
+      # mechanism (npm.org-only). Verifiable against local dist files or extracted tarball contents:
+      #   gh attestation verify ./extracted-dist-file --owner UiPath
+      - name: Attest build provenance — apollo-core
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-path: packages/apollo-core/dist
+
+      - name: Attest build provenance — apollo-react
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-path: packages/apollo-react/dist
+
+      - name: Attest build provenance — apollo-wind
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-path: packages/apollo-wind/dist
+
+      - name: Attest build provenance — ap-chat
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-path: web-packages/ap-chat/dist
 
       - name: Commit changelogs and package updates
         run: |

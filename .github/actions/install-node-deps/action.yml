@@ -27,5 +27,5 @@ runs:
     - name: Install dependencies
       shell: bash
       env:
-        NODE_AUTH_TOKEN: ${{ inputs.registry-token }}
+        GH_NPM_REGISTRY_TOKEN: ${{ inputs.registry-token }}
       run: pnpm install --frozen-lockfile

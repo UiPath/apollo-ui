@@ -66,10 +66,11 @@ jobs:
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
           CHANGED=$(gh pr diff "$PR_URL" --name-only)
+          DELIM="$(openssl rand -hex 8)"
           {
-            echo "files<<EOF"
+            echo "files<<${DELIM}"
             echo "$CHANGED"
-            echo "EOF"
+            echo "${DELIM}"
           } >> "$GITHUB_OUTPUT"
 
       - name: Check scope
@@ -92,11 +93,12 @@ jobs:
           done <<< "$CHANGED_FILES"
 
           if [ -n "$OUT_OF_SCOPE" ]; then
+            DELIM="$(openssl rand -hex 8)"
             {
               echo "status=fail"
-              echo "files<<EOF"
+              echo "files<<${DELIM}"
               echo -e "$OUT_OF_SCOPE"
-              echo "EOF"
+              echo "${DELIM}"
             } >> "$GITHUB_OUTPUT"
           else
             echo "status=pass" >> "$GITHUB_OUTPUT"

@@ -61,6 +61,11 @@ function main() {
     process.exit(1);
   }
 
+  if (!/^@uipath\/[a-z0-9-]+$/.test(packageName)) {
+    console.error(`Error: Invalid package name "${packageName}". Must be @uipath/<name> (lowercase, hyphens only).`);
+    process.exit(1);
+  }
+
   // Validate suffix (alphanumeric, may contain hyphens and dots, must not start with hyphen/dot)
   if (!/^[a-zA-Z0-9][a-zA-Z0-9.-]*$/.test(suffix)) {
     console.error(
@@ -101,6 +106,7 @@ function main() {
     const publishArgs = ['--no-git-checks', '--access', 'public', '--tag', 'dev'];
 
     if (!skipNpm) {
+      // Publish to npm — explicitly clear GH token so it cannot leak into npm's registry call
       console.log('\n📦 Publishing to npm...');
       execFileSync(
         'pnpm',
@@ -112,12 +118,14 @@ function main() {
             ...process.env,
             NPM_AUTH_TOKEN: npmToken,
             NODE_AUTH_TOKEN: npmToken,
+            GH_NPM_REGISTRY_TOKEN: '',
           },
         }
       );
       console.log('✓ Published to npm');
     }
 
+    // Publish to GitHub Package Registry — clear npm.org token, keep GH token for .npmrc auth
     console.log('\n📦 Publishing to GitHub Package Registry...');
     execFileSync(
       'pnpm',
@@ -127,8 +135,9 @@ function main() {
         stdio: 'inherit',
         env: {
           ...process.env,
-          NPM_AUTH_TOKEN: ghToken,
+          NPM_AUTH_TOKEN: '',
           NODE_AUTH_TOKEN: ghToken,
+          GH_NPM_REGISTRY_TOKEN: ghToken,
         },
       }
     );
