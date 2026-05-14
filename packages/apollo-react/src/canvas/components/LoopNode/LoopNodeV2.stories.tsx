@@ -684,6 +684,8 @@ const DEMO_TOTAL = 8;
 function AnatomyStory() {
   const [demoIndex, setDemoIndex] = useState(0);
   const [demoIsAll, setDemoIsAll] = useState(false);
+  const [demoIndexB, setDemoIndexB] = useState(0);
+  const [demoIsAllB, setDemoIsAllB] = useState(false);
 
   return (
     <div className="min-h-screen overflow-y-auto px-8 py-12 text-foreground">
@@ -973,13 +975,18 @@ function AnatomyStory() {
             </div>
           </div>
 
-          {/* Subsection: Compound Iteration Picker */}
+          {/* Subsection: Option A */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <h3 className="text-sm font-semibold">Compound Iteration Picker</h3>
-            <p className="text-sm text-foreground-muted">
-              Replaces the original single ◄ / ► controls with a compound picker and an "All"
-              aggregate toggle. Try it below.
-            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold">Option A — Compound Picker</h3>
+                <span className="rounded-full bg-surface-overlay px-2 py-0.5 text-[10px] font-semibold text-foreground-muted">current</span>
+              </div>
+              <p className="text-sm text-foreground-muted">
+                "All" as a separate chip alongside a compound picker with first / prev / next / last
+                buttons and a click-to-edit fraction. All controls visible at all times.
+              </p>
+            </div>
 
             <div className="rounded-xl border border-border bg-surface p-6" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">Live demo</div>
@@ -1014,6 +1021,65 @@ function AnatomyStory() {
                       </td>
                       <td className="px-4 py-3 text-xs font-medium text-foreground">{label}</td>
                       <td className="px-4 py-3 text-xs text-foreground-muted">{desc}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Subsection: Option B */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold">Option B — Unified Segmented Pill</h3>
+                <span className="rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-semibold text-blue-500">proposal</span>
+              </div>
+              <p className="text-sm text-foreground-muted">
+                "All" becomes the left segment of a single pill, divided from the navigation by a
+                hairline. First and last jump buttons are removed — the click-to-edit fraction
+                handles large jumps. Fewer elements, one cohesive control.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-surface p-6" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">Live demo</div>
+              <div className="flex items-center justify-center py-3">
+                <IterationNavigatorPill
+                  state={{
+                    activeIndex: demoIndexB,
+                    total: DEMO_TOTAL,
+                    onActiveIndexChange: (i) => { setDemoIsAllB(false); setDemoIndexB(i); },
+                    isAll: demoIsAllB,
+                    onAllChange: setDemoIsAllB,
+                    iterationStatuses: DEMO_ITERATION_STATUSES,
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* A vs B comparison */}
+            <div className="overflow-hidden rounded-xl border border-border">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-surface-overlay">
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Aspect</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Option A</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Option B</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {([
+                    { aspect: '"All" placement',    a: 'Separate chip',            b: 'Left segment of pill' },
+                    { aspect: 'First / last jump',  a: '|◄ and ►| buttons',        b: 'Removed — use click-to-type' },
+                    { aspect: 'Element count',      a: '3 elements + ⊕',           b: '1 pill + ⊕' },
+                    { aspect: 'Discoverability',    a: 'High — all controls shown', b: 'Medium — no first/last shortcut' },
+                    { aspect: 'Visual weight',      a: 'Higher',                   b: 'Lower' },
+                  ] as const).map(({ aspect, a, b }, i, arr) => (
+                    <tr key={aspect} className={i < arr.length - 1 ? 'border-b border-border' : ''}>
+                      <td className="px-4 py-3 text-xs font-medium text-foreground">{aspect}</td>
+                      <td className="px-4 py-3 text-xs text-foreground-muted">{a}</td>
+                      <td className="px-4 py-3 text-xs text-foreground-muted">{b}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1293,6 +1359,228 @@ function IterationNavigatorV2({ state }: { state: LoopIterationStateV2 }) {
       )}
 
       {/* Jump-to-failed — hidden when the loop itself is already in Failed state (adornment covers it) */}
+      {firstFailedIndex !== undefined && !isAll && canInteract && overallStatus !== ElementStatusValues.Failed && (
+        <button
+          type="button"
+          className="nodrag nopan inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-surface shadow-sm transition-colors hover:border-red-400"
+          onClick={handleJumpToFailed}
+          onPointerDown={stopV2Event}
+          onMouseDown={stopV2Event}
+          aria-label="Jump to first failed iteration"
+          title={`Jump to iteration ${firstFailedIndex + 1} (failed)`}
+        >
+          <CanvasIcon icon="crosshair" size={12} color={getIterationStatusColor('Failed')} />
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
+// Option B: Unified Segmented Pill
+// All is the leftmost segment inside a single pill — no first/last jump buttons.
+// Click-to-type on the fraction handles large jumps.
+// ============================================================================
+
+function IterationNavigatorPill({ state }: { state: LoopIterationStateV2 }) {
+  const { activeIndex, total, onActiveIndexChange, disabled, isAll, onAllChange, iterationStatuses, overallStatus } = state;
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const canInteract = !disabled && typeof onActiveIndexChange === 'function';
+  const visibleIndex = activeIndex + 1;
+  const clampToRange = (v: number) => Math.max(1, Math.min(total, v));
+
+  const currentStatus = iterationStatuses?.get(activeIndex);
+  const firstFailedIndex = iterationStatuses
+    ? [...iterationStatuses.entries()].find(([, s]) => s === 'Failed')?.[0]
+    : undefined;
+  const completedCount = iterationStatuses
+    ? [...iterationStatuses.values()].filter(s => s === 'Completed').length
+    : undefined;
+  const failedCount = iterationStatuses
+    ? [...iterationStatuses.values()].filter(s => s === 'Failed').length
+    : 0;
+
+  const handlePrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (canInteract && !isAll && activeIndex > 0) onActiveIndexChange?.(activeIndex - 1);
+  };
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (canInteract && !isAll && activeIndex < total - 1) onActiveIndexChange?.(activeIndex + 1);
+  };
+
+  const toggleAll = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onAllChange(!isAll);
+  };
+
+  const handleJumpToFailed = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (firstFailedIndex !== undefined) onActiveIndexChange?.(firstFailedIndex);
+  };
+
+  const startEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!canInteract || isAll || isEditing) return;
+    setInputValue(String(visibleIndex));
+    setIsEditing(true);
+    requestAnimationFrame(() => inputRef.current?.select());
+  };
+
+  const commitEdit = () => {
+    const parsed = parseInt(inputValue, 10);
+    if (!Number.isNaN(parsed)) onActiveIndexChange?.(clampToRange(parsed) - 1);
+    setIsEditing(false);
+  };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    if (e.key === 'Enter') commitEdit();
+    if (e.key === 'Escape') setIsEditing(false);
+  };
+
+  const canGoPrev = canInteract && !isAll && activeIndex > 0;
+  const canGoNext = canInteract && !isAll && activeIndex < total - 1;
+
+  return (
+    <div
+      className="nodrag nopan pointer-events-auto flex items-center gap-1.5"
+      onPointerDown={stopV2Event}
+      onMouseDown={stopV2Event}
+      onDoubleClick={stopV2Event}
+    >
+      {/* Single unified pill */}
+      <div className="nodrag nopan flex h-6 items-stretch overflow-hidden rounded-full border border-border bg-surface shadow-sm">
+
+        {/* Left segment — All toggle */}
+        <button
+          type="button"
+          onClick={toggleAll}
+          onPointerDown={stopV2Event}
+          onMouseDown={stopV2Event}
+          aria-pressed={isAll}
+          aria-label="Show aggregate across all iterations"
+          className={cn(
+            'nodrag nopan select-none px-2.5 text-[11px] font-semibold leading-none transition-colors',
+            isAll
+              ? 'bg-foreground-accent/15 text-foreground-accent'
+              : 'text-foreground hover:bg-surface-overlay'
+          )}
+        >
+          All
+        </button>
+
+        {/* Divider */}
+        <div className="w-px shrink-0 bg-border" />
+
+        {/* Right segment — aggregate or navigation */}
+        {isAll ? (
+          <button
+            type="button"
+            onClick={toggleAll}
+            onPointerDown={stopV2Event}
+            onMouseDown={stopV2Event}
+            className="nodrag nopan flex items-center gap-1.5 px-2.5 text-[11px] font-semibold leading-none transition-colors hover:bg-surface-overlay"
+            aria-label="Return to individual iteration view"
+            title="Click to return to individual iteration view"
+          >
+            {completedCount !== undefined ? (
+              <>
+                <span style={{ color: getIterationStatusColor('Completed') }}>✓ {completedCount}</span>
+                {failedCount > 0 && (
+                  <span style={{ color: getIterationStatusColor('Failed') }}>✗ {failedCount}</span>
+                )}
+              </>
+            ) : (
+              <>
+                <span aria-hidden className="opacity-60">Σ</span>
+                <span>{total}</span>
+              </>
+            )}
+          </button>
+        ) : (
+          <div className="flex items-stretch">
+            {/* Prev */}
+            <button
+              type="button"
+              className={cn(
+                'nodrag nopan flex w-5 items-center justify-center text-foreground transition-opacity',
+                !canGoPrev ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-surface-overlay'
+              )}
+              disabled={!canGoPrev}
+              aria-label="Previous iteration"
+              onClick={handlePrev}
+              onPointerDown={stopV2Event}
+              onMouseDown={stopV2Event}
+            >
+              <CanvasIcon icon="chevron-left" size={12} />
+            </button>
+
+            {/* Editable fraction with status dot */}
+            <span
+              className={cn(
+                'flex min-w-10 select-none items-center justify-center gap-0.5 px-1 text-[11px] font-semibold leading-none',
+                canInteract && !isEditing && 'cursor-pointer hover:text-foreground-accent'
+              )}
+              onClick={startEdit}
+              title={canInteract ? 'Click to jump to a specific iteration' : undefined}
+            >
+              {isEditing ? (
+                <>
+                  <input
+                    ref={inputRef}
+                    type="number"
+                    min={1}
+                    max={total}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onBlur={commitEdit}
+                    onKeyDown={handleInputKeyDown}
+                    onPointerDown={stopV2Event}
+                    className="w-7 appearance-none bg-transparent text-center text-[11px] font-semibold leading-none outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none border-b border-foreground-accent"
+                  />
+                  <span className="px-0.5 opacity-60">/</span>
+                  <span>{total}</span>
+                </>
+              ) : (
+                <>
+                  {currentStatus && (
+                    <span
+                      className="h-1.5 w-1.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: getIterationStatusColor(currentStatus) }}
+                    />
+                  )}
+                  <span>{visibleIndex}</span>
+                  <span className="px-0.5 opacity-60">/</span>
+                  <span>{total}</span>
+                </>
+              )}
+            </span>
+
+            {/* Next */}
+            <button
+              type="button"
+              className={cn(
+                'nodrag nopan flex w-5 items-center justify-center text-foreground transition-opacity',
+                !canGoNext ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-surface-overlay'
+              )}
+              disabled={!canGoNext}
+              aria-label="Next iteration"
+              onClick={handleNext}
+              onPointerDown={stopV2Event}
+              onMouseDown={stopV2Event}
+            >
+              <CanvasIcon icon="chevron-right" size={12} />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Jump-to-failed shortcut — hidden when loop is globally Failed */}
       {firstFailedIndex !== undefined && !isAll && canInteract && overallStatus !== ElementStatusValues.Failed && (
         <button
           type="button"
