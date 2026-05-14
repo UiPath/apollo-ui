@@ -980,7 +980,7 @@ function AnatomyStory() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-semibold">Option A — Compound Picker</h3>
-                <span className="rounded-full bg-surface-overlay px-2 py-0.5 text-[10px] font-semibold text-foreground-muted">current</span>
+                <span className="rounded-full bg-surface-overlay px-2 py-0.5 text-[10px] font-semibold text-foreground-muted">current proposal</span>
               </div>
               <p className="text-sm text-foreground-muted">
                 "All" as a separate chip alongside a compound picker with first / prev / next / last
