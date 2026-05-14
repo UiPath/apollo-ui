@@ -1723,76 +1723,158 @@ function ExecutionStatesV2Story() {
 }
 
 // ============================================================================
-// Loop Node V2 Demo — nested layout with live V2 compound picker
-// Based on NestedOuterOutputAppend, loop nodes carry V2 execution data.
+// Loop Node V2 Demo — 4-level nested loop, 3 activity nodes per loop
+// Layout: inner loop at top of each body, 3 nodes in a row below.
+// Flow per level: loopN.start → innerLoop → nodeA → nodeB → nodeC → loopN.continue
 // ============================================================================
 
+// Stable reference: triggers fitView on first load without repositioning nodes
+const fitViewOnLoad = async () => {};
+
 const V2_DEMO_LOOP_STATUS = new Map<string, ElementStatusValues>([
-  ['outer-loop', ElementStatusValues.InProgress],
-  ['inner-loop', ElementStatusValues.Completed],
+  ['demo-loop-1', ElementStatusValues.InProgress],
+  ['demo-loop-2', ElementStatusValues.InProgress],
+  ['demo-loop-3', ElementStatusValues.InProgress],
+  ['demo-loop-4', ElementStatusValues.Completed],
 ]);
 
 const V2_DEMO_ITERATION_STATUSES = new Map<string, Map<number, string>>([
-  ['outer-loop', new Map<number, string>([[0, 'Completed'], [1, 'InProgress']])],
-  ['inner-loop', new Map<number, string>([[0, 'Completed'], [1, 'Completed'], [2, 'Completed']])],
+  ['demo-loop-1', new Map<number, string>([[0, 'Completed'], [1, 'InProgress']])],
+  ['demo-loop-2', new Map<number, string>([[0, 'InProgress']])],
+  ['demo-loop-3', new Map<number, string>([[0, 'Completed'], [1, 'InProgress']])],
+  ['demo-loop-4', new Map<number, string>([[0, 'Completed'], [1, 'Completed'], [2, 'Completed']])],
 ]);
 
 function LoopNodeV2DemoStory() {
   const initialNodes = useMemo<Node[]>(() => [
-    createActivityNode('ingress', 'Load records', { x: 32, y: 272 }),
+    // Start + Finish (canvas level)
+    createActivityNode('demo-start',  'Load Data',        { x: 32,   y: 496 }),
+    createActivityNode('demo-finish', 'Generate Report',  { x: 1520, y: 496 }),
+
+    // Loop 1 — For Each Region (outermost, 1200 × 928)
     {
-      id: 'outer-loop',
+      id: 'demo-loop-1',
       type: LOOP_TYPE,
-      position: snapPoint({ x: 224, y: 96 }),
+      position: snapPoint({ x: 224, y: 32 }),
       data: {
-        display: { label: 'For Each claim', shape: 'container' as const },
-        initialIndex: 1,
-        total: 5,
-        iterationStatuses: V2_DEMO_ITERATION_STATUSES.get('outer-loop'),
+        display: { label: 'For Each Region', shape: 'container' as const },
+        initialIndex: 1, total: 8,
+        iterationStatuses: V2_DEMO_ITERATION_STATUSES.get('demo-loop-1'),
         status: ElementStatusValues.InProgress,
       },
-      style: snapSize({ width: 896, height: 448 }),
+      style: snapSize({ width: 1200, height: 928 }),
     },
+
+    // Loop 2 — For Each City (inside Loop 1, 1040 × 688)
     {
-      id: 'inner-loop',
+      id: 'demo-loop-2',
       type: LOOP_TYPE,
-      position: snapPoint({ x: 160, y: 112 }),
-      parentId: 'outer-loop',
+      position: snapPoint({ x: 80, y: 80 }),
+      parentId: 'demo-loop-1',
       data: {
-        display: { label: 'For Each attachment', shape: 'container' as const },
-        initialIndex: 2,
-        total: 3,
-        iterationStatuses: V2_DEMO_ITERATION_STATUSES.get('inner-loop'),
+        display: { label: 'For Each City', shape: 'container' as const },
+        initialIndex: 0, total: 5,
+        iterationStatuses: V2_DEMO_ITERATION_STATUSES.get('demo-loop-2'),
+        status: ElementStatusValues.InProgress,
+      },
+      style: snapSize({ width: 1040, height: 688 }),
+    },
+
+    // Loop 3 — For Each Street (inside Loop 2, 880 × 448)
+    {
+      id: 'demo-loop-3',
+      type: LOOP_TYPE,
+      position: snapPoint({ x: 80, y: 80 }),
+      parentId: 'demo-loop-2',
+      data: {
+        display: { label: 'For Each Street', shape: 'container' as const },
+        initialIndex: 1, total: 3,
+        iterationStatuses: V2_DEMO_ITERATION_STATUSES.get('demo-loop-3'),
+        status: ElementStatusValues.InProgress,
+      },
+      style: snapSize({ width: 880, height: 448 }),
+    },
+
+    // Loop 4 — For Each Property (inside Loop 3, 720 × 208, deepest)
+    {
+      id: 'demo-loop-4',
+      type: LOOP_TYPE,
+      position: snapPoint({ x: 80, y: 80 }),
+      parentId: 'demo-loop-3',
+      data: {
+        display: { label: 'For Each Property', shape: 'container' as const },
+        initialIndex: 2, total: 3,
+        iterationStatuses: V2_DEMO_ITERATION_STATUSES.get('demo-loop-4'),
         status: ElementStatusValues.Completed,
       },
-      style: snapSize({ width: 544, height: 304 }),
+      style: snapSize({ width: 720, height: 208 }),
     },
-    createActivityNode('inner-child', 'Classify attachment', { x: 176, y: 112 }, { parentId: 'inner-loop' }),
-    createActivityNode('egress', 'Publish results', { x: 1216, y: 272 }),
+
+    // Loop 4 nodes (y:96 inside Loop 4)
+    createActivityNode('demo-4a', 'Inspect',  { x: 80,  y: 96 }, { parentId: 'demo-loop-4' }),
+    createActivityNode('demo-4b', 'Assess',   { x: 272, y: 96 }, { parentId: 'demo-loop-4' }),
+    createActivityNode('demo-4c', 'Record',   { x: 464, y: 96 }, { parentId: 'demo-loop-4' }),
+
+    // Loop 3 nodes (y:336 inside Loop 3, below Loop 4 which ends at y:288)
+    createActivityNode('demo-3a', 'Validate Street', { x: 80,  y: 336 }, { parentId: 'demo-loop-3' }),
+    createActivityNode('demo-3b', 'Flag Issues',     { x: 272, y: 336 }, { parentId: 'demo-loop-3' }),
+    createActivityNode('demo-3c', 'Log Report',      { x: 464, y: 336 }, { parentId: 'demo-loop-3' }),
+
+    // Loop 2 nodes (y:576 inside Loop 2, below Loop 3 which ends at y:528)
+    createActivityNode('demo-2a', 'Validate City',  { x: 80,  y: 576 }, { parentId: 'demo-loop-2' }),
+    createActivityNode('demo-2b', 'Aggregate Data', { x: 272, y: 576 }, { parentId: 'demo-loop-2' }),
+    createActivityNode('demo-2c', 'Submit City',    { x: 464, y: 576 }, { parentId: 'demo-loop-2' }),
+
+    // Loop 1 nodes (y:816 inside Loop 1, below Loop 2 which ends at y:768)
+    createActivityNode('demo-1a', 'Compile Region', { x: 80,  y: 816 }, { parentId: 'demo-loop-1' }),
+    createActivityNode('demo-1b', 'Audit Region',   { x: 272, y: 816 }, { parentId: 'demo-loop-1' }),
+    createActivityNode('demo-1c', 'Archive Region', { x: 464, y: 816 }, { parentId: 'demo-loop-1' }),
   ], []);
 
   const initialEdges = useMemo<Edge[]>(() => [
-    { id: 'ingress-outer',    source: 'ingress',     sourceHandle: 'output',                       target: 'outer-loop',  targetHandle: 'input' },
-    { id: 'outer-inner',      source: 'outer-loop',  sourceHandle: STORY_LOOP_START_HANDLE_ID,     target: 'inner-loop',  targetHandle: 'input' },
-    { id: 'inner-child-edge', source: 'inner-loop',  sourceHandle: STORY_LOOP_START_HANDLE_ID,     target: 'inner-child', targetHandle: 'input' },
-    { id: 'child-inner-edge', source: 'inner-child', sourceHandle: 'output',                       target: 'inner-loop',  targetHandle: STORY_LOOP_CONTINUE_HANDLE_ID },
-    { id: 'outer-egress',     source: 'outer-loop',  sourceHandle: STORY_LOOP_SUCCESS_HANDLE_ID,   target: 'egress',      targetHandle: 'input' },
+    // Outer flow
+    { id: 'e-start-l1',  source: 'demo-start',  sourceHandle: 'output',                     target: 'demo-loop-1', targetHandle: 'input' },
+    { id: 'e-l1-finish', source: 'demo-loop-1', sourceHandle: STORY_LOOP_SUCCESS_HANDLE_ID, target: 'demo-finish', targetHandle: 'input' },
+
+    // Loop 1 body: start → loop2 → 1a → 1b → 1c → continue
+    { id: 'e-l1s-l2',   source: 'demo-loop-1', sourceHandle: STORY_LOOP_START_HANDLE_ID,   target: 'demo-loop-2', targetHandle: 'input' },
+    { id: 'e-l2ok-1a',  source: 'demo-loop-2', sourceHandle: STORY_LOOP_SUCCESS_HANDLE_ID, target: 'demo-1a',     targetHandle: 'input' },
+    { id: 'e-1a-1b',    source: 'demo-1a',     sourceHandle: 'output',                     target: 'demo-1b',     targetHandle: 'input' },
+    { id: 'e-1b-1c',    source: 'demo-1b',     sourceHandle: 'output',                     target: 'demo-1c',     targetHandle: 'input' },
+    { id: 'e-1c-l1c',   source: 'demo-1c',     sourceHandle: 'output',                     target: 'demo-loop-1', targetHandle: STORY_LOOP_CONTINUE_HANDLE_ID },
+
+    // Loop 2 body: start → loop3 → 2a → 2b → 2c → continue
+    { id: 'e-l2s-l3',   source: 'demo-loop-2', sourceHandle: STORY_LOOP_START_HANDLE_ID,   target: 'demo-loop-3', targetHandle: 'input' },
+    { id: 'e-l3ok-2a',  source: 'demo-loop-3', sourceHandle: STORY_LOOP_SUCCESS_HANDLE_ID, target: 'demo-2a',     targetHandle: 'input' },
+    { id: 'e-2a-2b',    source: 'demo-2a',     sourceHandle: 'output',                     target: 'demo-2b',     targetHandle: 'input' },
+    { id: 'e-2b-2c',    source: 'demo-2b',     sourceHandle: 'output',                     target: 'demo-2c',     targetHandle: 'input' },
+    { id: 'e-2c-l2c',   source: 'demo-2c',     sourceHandle: 'output',                     target: 'demo-loop-2', targetHandle: STORY_LOOP_CONTINUE_HANDLE_ID },
+
+    // Loop 3 body: start → loop4 → 3a → 3b → 3c → continue
+    { id: 'e-l3s-l4',   source: 'demo-loop-3', sourceHandle: STORY_LOOP_START_HANDLE_ID,   target: 'demo-loop-4', targetHandle: 'input' },
+    { id: 'e-l4ok-3a',  source: 'demo-loop-4', sourceHandle: STORY_LOOP_SUCCESS_HANDLE_ID, target: 'demo-3a',     targetHandle: 'input' },
+    { id: 'e-3a-3b',    source: 'demo-3a',     sourceHandle: 'output',                     target: 'demo-3b',     targetHandle: 'input' },
+    { id: 'e-3b-3c',    source: 'demo-3b',     sourceHandle: 'output',                     target: 'demo-3c',     targetHandle: 'input' },
+    { id: 'e-3c-l3c',   source: 'demo-3c',     sourceHandle: 'output',                     target: 'demo-loop-3', targetHandle: STORY_LOOP_CONTINUE_HANDLE_ID },
+
+    // Loop 4 body: start → 4a → 4b → 4c → continue
+    { id: 'e-l4s-4a',   source: 'demo-loop-4', sourceHandle: STORY_LOOP_START_HANDLE_ID,   target: 'demo-4a',     targetHandle: 'input' },
+    { id: 'e-4a-4b',    source: 'demo-4a',     sourceHandle: 'output',                     target: 'demo-4b',     targetHandle: 'input' },
+    { id: 'e-4b-4c',    source: 'demo-4b',     sourceHandle: 'output',                     target: 'demo-4c',     targetHandle: 'input' },
+    { id: 'e-4c-l4c',   source: 'demo-4c',     sourceHandle: 'output',                     target: 'demo-loop-4', targetHandle: STORY_LOOP_CONTINUE_HANDLE_ID },
   ], []);
 
   const { canvasProps } = useCanvasStory({
     initialNodes,
+    initialEdges,
     additionalNodeTypes: LOOP_EXECUTION_NODE_TYPES_V2,
   });
 
   return (
-    <BaseCanvas {...canvasProps} mode="design">
+    <BaseCanvas {...canvasProps} mode="design" initialAutoLayout={fitViewOnLoad}>
       <Panel position="bottom-right">
         <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
-      <StoryInfoPanel
-        title="Loop Node V2 Demo"
-        description="Nested loop with the V2 compound iteration picker. Outer loop is in progress (iteration 2 of 5); inner loop completed all 3 iterations. Interact with the pickers to navigate iterations."
-      />
     </BaseCanvas>
   );
 }
@@ -1846,7 +1928,7 @@ export const ExecutionStatesV2: Story = {
 };
 
 export const LoopNodeV2Demo: Story = {
-  name: 'Loop Node V2 Demo',
+  name: 'Demo - Option A',
   decorators: [
     withCanvasProviders({
       executionState: {
