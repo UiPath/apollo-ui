@@ -5,10 +5,10 @@ import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyf
 import type { ResizeDragEvent, ResizeParams } from '@uipath/apollo-react/canvas/xyflow/system';
 import { AnimatePresence } from 'motion/react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ApI18nProvider } from '../../../i18n';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
+import { ApI18nProvider } from '../../../i18n';
 import { GRID_SPACING } from '../../constants';
 import type { ToolbarAction } from '../Toolbar';
 import { NodeToolbar } from '../Toolbar';
@@ -64,7 +64,7 @@ const StickyNoteNodeComponent = ({
   onResize,
 }: StickyNoteNodeProps) => {
   const { updateNodeData, deleteElements } = useReactFlow();
-  const [isEditing, setIsEditing] = useState(!readOnly && (data.autoFocus ?? false));
+  const [isEditing, setIsEditing] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [localContent, setLocalContent] = useState(data.content || '');
@@ -114,7 +114,7 @@ const StickyNoteNodeComponent = ({
 
   const handleDoubleClick = useCallback(() => {
     if (readOnly || isEditing) return;
-    setIsEditing(true);
+    setIsEditing(false);
     setTimeout(() => {
       if (textAreaRef.current) {
         textAreaRef.current.focus();
@@ -219,7 +219,7 @@ const StickyNoteNodeComponent = ({
   // Handle edit button click
   const handleEditClick = useCallback(() => {
     if (readOnly) return;
-    setIsEditing(true);
+    setIsEditing(false);
     setTimeout(() => {
       if (textAreaRef.current) {
         textAreaRef.current.focus();
