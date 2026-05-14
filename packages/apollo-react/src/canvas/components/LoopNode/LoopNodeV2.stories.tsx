@@ -668,7 +668,7 @@ const PICKER_DOCS = [
   { ctrl: '►',               label: 'Step forward',    desc: 'Moves one iteration forward. Disabled at the end.' },
   { ctrl: '►|',              label: 'Jump last',       desc: 'Jumps to the final iteration.' },
   { ctrl: 'All',             label: 'All toggle',      desc: 'Collapses into an aggregate view. With status data shows ✓ completed  ✗ failed; otherwise Σ total. Click again to return to individual view.' },
-  { ctrl: '⚠',              label: 'Jump to failed',  desc: 'Visible only when at least one iteration has a Failed status. Jumps directly to the first failed iteration.' },
+  { ctrl: '⊕',              label: 'Jump to failed',  desc: 'Visible only when at least one iteration has a Failed status and the loop itself has not globally failed. Jumps directly to the first failed iteration.' },
 ] as const;
 
 // Demo data for anatomy live demo
@@ -925,22 +925,16 @@ function AnatomyStory() {
             <div className="rounded-xl border border-border bg-surface p-6" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">Live demo</div>
               <div className="flex items-center justify-center py-3">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  <IterationNavigatorV2
-                    state={{
-                      activeIndex: demoIndex,
-                      total: DEMO_TOTAL,
-                      onActiveIndexChange: (i) => { setDemoIsAll(false); setDemoIndex(i); },
-                      isAll: demoIsAll,
-                      onAllChange: setDemoIsAll,
-                      iterationStatuses: DEMO_ITERATION_STATUSES,
-                    }}
-                  />
-                  {/* 1px progress strip sits directly below the picker */}
-                  <div style={{ height: 1, overflow: 'hidden', borderRadius: 1, backgroundColor: 'rgba(128,128,128,0.12)' }}>
-                    <div style={{ width: '50%', height: '100%', backgroundColor: '#ef4444', transition: 'width 0.2s ease' }} />
-                  </div>
-                </div>
+                <IterationNavigatorV2
+                  state={{
+                    activeIndex: demoIndex,
+                    total: DEMO_TOTAL,
+                    onActiveIndexChange: (i) => { setDemoIsAll(false); setDemoIndex(i); },
+                    isAll: demoIsAll,
+                    onAllChange: setDemoIsAll,
+                    iterationStatuses: DEMO_ITERATION_STATUSES,
+                  }}
+                />
               </div>
             </div>
 
@@ -968,39 +962,6 @@ function AnatomyStory() {
             </div>
           </div>
 
-          {/* Subsection: Iteration Progress Strip */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <h3 className="text-sm font-semibold">Iteration Progress Strip</h3>
-            <p className="text-sm text-foreground-muted">
-              A 1 px line directly under the iteration picker showing how many iterations have
-              reached a terminal state (Completed, Failed, or Cancelled) as a fraction of total.
-              Turns red if any iteration failed; green otherwise.
-            </p>
-
-            <div className="rounded-xl border border-border bg-surface p-6" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">Strip states</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} className="py-1">
-                {([
-                  { label: '0 / 8 — not started',              pct: 0,     hasFailed: false },
-                  { label: '3 / 8 — in progress',              pct: 3 / 8, hasFailed: false },
-                  { label: '5 / 8 — partial run with failure', pct: 5 / 8, hasFailed: true  },
-                  { label: '8 / 8 — all iterations complete',  pct: 1,     hasFailed: false },
-                ] as const).map(({ label, pct, hasFailed }) => (
-                  <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <div className="text-xs text-foreground-muted">{label}</div>
-                    <div style={{ height: 2, backgroundColor: 'rgba(128,128,128,0.15)', borderRadius: 1, overflow: 'hidden' }}>
-                      <div style={{
-                        width: `${pct * 100}%`,
-                        height: '100%',
-                        backgroundColor: hasFailed ? '#ef4444' : pct > 0 ? '#22c55e' : 'transparent',
-                      }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
         </section>
 
       </div>
@@ -1023,6 +984,7 @@ interface LoopIterationStateV2 {
   isAll: boolean;
   onAllChange: (isAll: boolean) => void;
   iterationStatuses?: Map<number, string>;
+  overallStatus?: ElementStatusValues;
 }
 
 function stopV2Event(e: React.SyntheticEvent) {
@@ -1071,7 +1033,7 @@ function getIterationStatusColor(status: string | undefined): string {
 }
 
 function IterationNavigatorV2({ state }: { state: LoopIterationStateV2 }) {
-  const { activeIndex, total, onActiveIndexChange, disabled, isAll, onAllChange, iterationStatuses } = state;
+  const { activeIndex, total, onActiveIndexChange, disabled, isAll, onAllChange, iterationStatuses, overallStatus } = state;
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -1178,8 +1140,16 @@ function IterationNavigatorV2({ state }: { state: LoopIterationStateV2 }) {
       </button>
 
       {isAll ? (
-        /* Aggregate badge — richer ✓/✗ breakdown when status data available */
-        <span className="flex h-6 items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 text-[11px] font-semibold leading-4 text-foreground shadow-sm">
+        /* Aggregate badge — clickable to exit All mode */
+        <button
+          type="button"
+          className="nodrag nopan flex h-6 cursor-pointer items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 text-[11px] font-semibold leading-4 text-foreground shadow-sm transition-colors hover:border-foreground-accent/50"
+          onClick={toggleAll}
+          onPointerDown={stopV2Event}
+          onMouseDown={stopV2Event}
+          aria-label="Return to individual iteration view"
+          title="Click to return to individual iteration view"
+        >
           {completedCount !== undefined ? (
             <>
               <span style={{ color: getIterationStatusColor('Completed') }}>✓ {completedCount}</span>
@@ -1193,7 +1163,7 @@ function IterationNavigatorV2({ state }: { state: LoopIterationStateV2 }) {
               <span>{total}</span>
             </>
           )}
-        </span>
+        </button>
       ) : (
         /* Compound picker: |◄ ◄ [index/total] ► ►| */
         <fieldset
@@ -1263,8 +1233,8 @@ function IterationNavigatorV2({ state }: { state: LoopIterationStateV2 }) {
         </fieldset>
       )}
 
-      {/* Jump-to-failed — only visible when a failed iteration exists */}
-      {firstFailedIndex !== undefined && !isAll && canInteract && (
+      {/* Jump-to-failed — hidden when the loop itself is already in Failed state (adornment covers it) */}
+      {firstFailedIndex !== undefined && !isAll && canInteract && overallStatus !== ElementStatusValues.Failed && (
         <button
           type="button"
           className="nodrag nopan inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-surface shadow-sm transition-colors hover:border-red-400"
@@ -1274,7 +1244,7 @@ function IterationNavigatorV2({ state }: { state: LoopIterationStateV2 }) {
           aria-label="Jump to first failed iteration"
           title={`Jump to iteration ${firstFailedIndex + 1} (failed)`}
         >
-          <CanvasIcon icon="circle-alert" size={12} color={getIterationStatusColor('Failed')} />
+          <CanvasIcon icon="crosshair" size={12} color={getIterationStatusColor('Failed')} />
         </button>
       )}
     </div>
@@ -1286,6 +1256,7 @@ type LoopExecutionNodeDataV2 = LoopNodeData & {
   total: number;
   interactive?: boolean;
   iterationStatuses?: Map<number, string>;
+  status?: ElementStatusValues;
 };
 
 // Realistic per-iteration status data for each V2 execution demo node
@@ -1301,7 +1272,7 @@ const LOOP_EXECUTION_ITERATION_STATUSES = new Map<string, Map<number, string>>([
 ]);
 
 function createExecutionStateGridV2(): Node<LoopExecutionNodeDataV2>[] {
-  return LOOP_EXECUTION_CASES.map(({ id, label, initialIndex, total, parallel, interactive }, index) => {
+  return LOOP_EXECUTION_CASES.map(({ id, label, initialIndex, total, parallel, interactive, status }, index) => {
     const colIndex = index % 2;
     const rowIndex = Math.floor(index / 2);
     return {
@@ -1318,6 +1289,7 @@ function createExecutionStateGridV2(): Node<LoopExecutionNodeDataV2>[] {
         total,
         interactive,
         iterationStatuses: LOOP_EXECUTION_ITERATION_STATUSES.get(id),
+        status,
       },
       style: LOOP_EXECUTION_SIZE,
     };
@@ -1326,7 +1298,7 @@ function createExecutionStateGridV2(): Node<LoopExecutionNodeDataV2>[] {
 
 // V2 HEADER_OVERLAY_TOP: aligns with header's pt-2.5 (10px) to vertically center in the h-6 content row
 // V2 HEADER_OVERLAY_RIGHT: clears the Sequential/Parallel badge (~105px) + gap-2 (8px) + px-3.5 (14px)
-const V2_OVERLAY_TOP = 9;
+const V2_OVERLAY_TOP = 10;
 const V2_OVERLAY_RIGHT = 130;
 
 function LoopExecutionCanvasNodeV2(props: NodeProps<Node<LoopExecutionNodeDataV2>>) {
@@ -1341,15 +1313,6 @@ function LoopExecutionCanvasNodeV2(props: NodeProps<Node<LoopExecutionNodeDataV2
     setIsAll(false);
   }, [data.initialIndex, data.total]);
 
-  const progressInfo = useMemo(() => {
-    if (!data.iterationStatuses || data.iterationStatuses.size === 0) return null;
-    const vals = [...data.iterationStatuses.values()];
-    const completed = vals.filter(s => s === 'Completed').length;
-    const failed = vals.filter(s => s === 'Failed').length;
-    const terminated = completed + failed + vals.filter(s => s === 'Cancelled').length;
-    return { pct: terminated / data.total, hasFailed: failed > 0 };
-  }, [data.iterationStatuses, data.total]);
-
   const iterationState: LoopIterationStateV2 = {
     activeIndex,
     total: data.total,
@@ -1363,41 +1326,22 @@ function LoopExecutionCanvasNodeV2(props: NodeProps<Node<LoopExecutionNodeDataV2
     isAll,
     onAllChange: setIsAll,
     iterationStatuses: data.iterationStatuses,
+    overallStatus: data.status,
   };
 
   return (
     <div style={{ position: 'relative' }}>
       {/* Render LoopNode without its native iterator — we overlay V2 nav instead */}
       <LoopNode {...props} iterationState={undefined} />
-      {/* V2 navigator + progress strip, stacked in a column under the same anchor */}
       <div
         style={{
           position: 'absolute',
           top: V2_OVERLAY_TOP,
           right: V2_OVERLAY_RIGHT,
           zIndex: 10,
-          pointerEvents: 'none',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 3,
         }}
       >
-        <div style={{ pointerEvents: 'auto' }}>
-          <IterationNavigatorV2 state={iterationState} />
-        </div>
-        {/* 1px strip — same width as the picker, sits directly below it */}
-        {progressInfo && (
-          <div style={{ height: 1, overflow: 'hidden', borderRadius: 1, backgroundColor: 'rgba(128,128,128,0.12)' }}>
-            <div
-              style={{
-                width: `${progressInfo.pct * 100}%`,
-                height: '100%',
-                backgroundColor: progressInfo.hasFailed ? '#ef4444' : '#22c55e',
-                transition: 'width 0.2s ease',
-              }}
-            />
-          </div>
-        )}
+        <IterationNavigatorV2 state={iterationState} />
       </div>
     </div>
   );
@@ -1421,7 +1365,7 @@ function ExecutionStatesV2Story() {
       </Panel>
       <StoryInfoPanel
         title="Loop Execution States V2"
-        description="Compound picker with per-iteration status dots (●), richer All aggregate (✓ / ✗), jump-to-failed shortcut (⚠), and iteration progress strip at the bottom of the header."
+        description="Compound picker with per-iteration status dots (●), richer All aggregate (✓ / ✗), and jump-to-failed shortcut (crosshair) — hidden when the loop itself is already in a Failed state."
       />
     </BaseCanvas>
   );
