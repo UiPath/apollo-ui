@@ -1746,6 +1746,9 @@ const V2_DEMO_ITERATION_STATUSES = new Map<string, Map<number, string>>([
 ]);
 
 function LoopNodeV2DemoStory() {
+  const reactFlow = useReactFlow();
+  const handleAddNodeOnConnectEnd = useAddNodeOnConnectEnd();
+
   const initialNodes = useMemo<Node[]>(() => [
     // Start + Finish (canvas level)
     createActivityNode('demo-start',  'Load Data',        { x: 32,   y: 496 }),
@@ -1864,14 +1867,53 @@ function LoopNodeV2DemoStory() {
     { id: 'e-4c-l4c',   source: 'demo-4c',     sourceHandle: 'output',                     target: 'demo-loop-4', targetHandle: STORY_LOOP_CONTINUE_HANDLE_ID },
   ], []);
 
-  const { canvasProps } = useCanvasStory({
+  const { canvasProps, nodeTypeRegistry } = useCanvasStory({
     initialNodes,
     initialEdges,
     additionalNodeTypes: LOOP_EXECUTION_NODE_TYPES_V2,
   });
 
+  const loopPreviewOptions = useMemo(
+    () => ({
+      getManifestForNode: (node: Node) =>
+        node.type ? nodeTypeRegistry.getManifest(node.type) : undefined,
+    }),
+    [nodeTypeRegistry]
+  );
+
+  const handleHandleAction = useCallback(
+    (event: CanvasHandleActionEvent) => {
+      const { handleId, nodeId, position, handleType } = event;
+      if (!handleId || !nodeId) return;
+      createAddNodePreview(
+        nodeId,
+        handleId,
+        reactFlow,
+        position as Position,
+        handleType === 'input' ? 'target' : 'source',
+        [],
+        loopPreviewOptions
+      );
+    },
+    [loopPreviewOptions, reactFlow]
+  );
+
+  useCanvasEvent('handle:action', handleHandleAction);
+
+  const handlePaneClick = useCallback(() => {
+    removePreviewFromReactFlow(reactFlow);
+  }, [reactFlow]);
+
   return (
-    <BaseCanvas {...canvasProps} mode="design" initialAutoLayout={fitViewOnLoad}>
+    <BaseCanvas
+      {...canvasProps}
+      mode="design"
+      initialAutoLayout={fitViewOnLoad}
+      deleteKeyCode={['Backspace', 'Delete']}
+      onConnectEnd={handleAddNodeOnConnectEnd}
+      onPaneClick={handlePaneClick}
+    >
+      <AddNodeManager />
       <Panel position="bottom-right">
         <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
