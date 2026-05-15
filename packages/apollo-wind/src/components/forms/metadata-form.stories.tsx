@@ -242,6 +242,65 @@ export const CompactLayout: Story = {
 };
 
 // ============================================================================
+// SLIDER WITH DYNAMIC MAX (maxRef)
+// ============================================================================
+
+const sliderMaxRefSchema: FormSchema = {
+  id: 'slider-max-ref',
+  title: 'Slider with dynamic max',
+  description:
+    "The slider's `max` is bound to the value of the 'Available capacity' field via " +
+    '`maxRef`. Change the number input above to see the slider re-scale (and clamp the ' +
+    'current value if it now exceeds the new max).',
+  sections: [
+    {
+      id: 's1',
+      fields: [
+        {
+          name: 'availableCapacity',
+          type: 'number',
+          label: 'Available capacity (stand-in for e.g. model.maxTokens at runtime)',
+          min: 0,
+          defaultValue: 16384,
+        },
+        {
+          name: 'tokens',
+          type: 'slider',
+          label: 'Token allocation',
+          min: 0,
+          step: 100,
+          maxRef: { fromField: 'availableCapacity', fallback: 1000 },
+          defaultValue: 8000,
+        },
+      ],
+    },
+  ],
+  initialData: { availableCapacity: 16384, tokens: 8000 },
+};
+
+/**
+ * Slider with dynamic max (`maxRef`)
+ *
+ * Demonstrates the new additive `maxRef` option on `SliderFieldMetadata`. The
+ * slider's upper bound is sourced from another form field at render time:
+ *
+ * ```ts
+ * { type: 'slider', maxRef: { fromField: 'availableCapacity', fallback: 1000 } }
+ * ```
+ *
+ * Try lowering the "Available capacity" value below the slider's current value
+ * — the slider both rescales and auto-clamps the form value via `onChange`.
+ */
+export const SliderWithDynamicMax: Story = {
+  args: {
+    schema: sliderMaxRefSchema,
+    onSubmit: async (data) => {
+      console.log('Submitted:', data);
+    },
+  },
+};
+
+// ============================================================================
 // FIELD TYPES SHOWCASE
 // ============================================================================
 
