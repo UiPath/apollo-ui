@@ -632,11 +632,8 @@ interface SliderFieldProps {
 
 function SliderField({ field, formField, error, disabled, required }: SliderFieldProps) {
   const { watch } = useFormContext();
-  // watch() requires a defined name; pass a dummy `__none__` path when
-  // maxRef is absent and ignore the value. react-hook-form returns undefined
-  // for unknown fields, which is what resolveSliderMax expects.
-  const watchedMax = watch(field.maxRef?.fromField ?? '__apolloWindSliderMaxRefNone__');
-  const resolvedMax = resolveSliderMax(field, field.maxRef ? watchedMax : undefined);
+  const watchedMax = field.maxRef ? watch(field.maxRef.fromField) : undefined;
+  const resolvedMax = resolveSliderMax(field, watchedMax);
 
   // Clamp the form value if the resolved max drops below it (e.g. user
   // switched to a model with a lower token cap).
@@ -648,7 +645,7 @@ function SliderField({ field, formField, error, disabled, required }: SliderFiel
     if (typeof v === 'number' && v > resolvedMax) {
       formField.onChange(resolvedMax);
     }
-  }, [resolvedMax, formField]);
+  }, [resolvedMax, formField.value, formField.onChange]);
 
   const displayValue = (() => {
     const v = formField.value;
