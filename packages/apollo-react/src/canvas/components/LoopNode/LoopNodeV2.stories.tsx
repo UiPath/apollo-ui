@@ -19,6 +19,12 @@ import {
 import { DefaultCanvasTranslations } from '../../types';
 import { ElementStatusValues } from '../../types/execution';
 import type { CanvasHandleActionEvent } from '../../utils';
+import {
+  BreakpointIndicator,
+  ExecutionStartPointIndicator,
+  ExecutionStatusIndicator,
+  SquareDashedIndicator,
+} from '../../utils/adornment-resolver';
 import { CanvasIcon } from '../../utils/icon-registry';
 import { removePreviewFromReactFlow } from '../../utils/createPreviewNode';
 import { snapToGrid } from '../../utils/NodeUtils';
@@ -687,6 +693,12 @@ function AnatomyStory() {
   const [demoIndexB, setDemoIndexB] = useState(0);
   const [demoIsAllB, setDemoIsAllB] = useState(true);
 
+  // State for the "in context" adornment demos
+  const [ctxIndex, setCtxIndex] = useState(1);
+  const [ctxIsAll, setCtxIsAll] = useState(false);
+  const [ctxIndexB, setCtxIndexB] = useState(1);
+  const [ctxIsAllB, setCtxIsAllB] = useState(false);
+
   return (
     <div className="min-h-screen overflow-y-auto px-8 py-12 text-foreground">
       <div className="mx-auto max-w-4xl" style={{ display: 'flex', flexDirection: 'column', gap: 48 }}>
@@ -761,65 +773,151 @@ function AnatomyStory() {
             <p className="mt-1 text-sm text-foreground-muted">
               Four 20×20 px slots at each corner of the outer container. Slots are only visible
               when execution, debug, or validation state is active — they are hidden at rest.
+              Two placement options are under consideration.
             </p>
           </div>
 
-          {/* Diagram */}
-          <div className="flex justify-center rounded-xl border border-border bg-surface px-12 py-10">
-            <div className="flex items-center gap-10">
+          {/* Option A / Option B diagram comparison */}
+          <div className="flex flex-col gap-6">
 
-              {/* Left labels — topLeft, bottomLeft */}
-              <div className="flex flex-col gap-10">
-                {LOOP_SLOT_DOCS.filter((_, i) => i % 2 === 0).map(({ slot, dot, rule }) => (
-                  <div key={slot} className="flex items-center justify-end gap-2.5">
-                    <div className="text-right">
-                      <div className="font-mono text-xs font-semibold">{slot}</div>
-                      <div className="text-[11px] text-foreground-muted">{rule}</div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="h-px w-6 bg-border" />
-                      <div className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot}`} />
-                    </div>
-                  </div>
-                ))}
+            {/* Option A — fully inside */}
+            <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-6">
+              <div>
+                <h3 className="text-sm font-semibold">Option A — Inside border</h3>
+                <ul className="mt-1.5 space-y-1 text-[12px]">
+                  <li className="flex items-start gap-1.5"><span className="mt-0.5 text-emerald-500">✓</span><span className="text-foreground-muted">Never overflows node bounds — safe for dense canvas layouts where nodes sit close together.</span></li>
+                  <li className="flex items-start gap-1.5"><span className="mt-0.5 text-emerald-500">✓</span><span className="text-foreground-muted">Predictable hit area — all interactions stay within the node boundary.</span></li>
+                  <li className="flex items-start gap-1.5"><span className="mt-0.5 text-red-400">✗</span><span className="text-foreground-muted">Competes with header content near corners, reducing usable space.</span></li>
+                  <li className="flex items-start gap-1.5"><span className="mt-0.5 text-red-400">✗</span><span className="text-foreground-muted">Badge can visually merge with the node background, reducing contrast.</span></li>
+                </ul>
               </div>
-
-              {/* LoopNode mock */}
-              <div className="relative shrink-0" style={{ width: 280, height: 110 }}>
-                <div className="absolute inset-0 border border-border bg-transparent" style={{ borderRadius: 20 }}>
-                  <div
-                    className="flex items-center gap-2 bg-surface-overlay px-3.5"
-                    style={{ borderRadius: '18px 18px 0 0', marginBottom: -10, paddingTop: 8, paddingBottom: 8 }}
-                  >
-                    <CanvasIcon icon="repeat" size={13} />
-                    <span className="text-[11px] font-semibold">For Each item</span>
+              <div className="flex justify-center py-4">
+                <div className="flex items-center gap-8">
+                  {/* Left callouts */}
+                  <div className="flex flex-col justify-between" style={{ height: 100 }}>
+                    {LOOP_SLOT_DOCS.filter((_, i) => i % 2 === 0).map(({ slot, dot }) => (
+                      <div key={slot} className="flex items-center justify-end gap-2">
+                        <span className="font-mono text-[10px] font-semibold">{slot}</span>
+                        <div className="flex items-center gap-0.5">
+                          <div className="h-px w-5 bg-border" />
+                          <div className={`h-2 w-2 shrink-0 rounded-full ${dot}`} />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="mx-2.5 mt-4 rounded-xl border border-dashed border-border" style={{ height: 44 }} />
+                  {/* Full-header node mock */}
+                  <div className="relative shrink-0" style={{ width: 380, height: 100 }}>
+                    <div className="absolute inset-0 border border-border bg-transparent" style={{ borderRadius: 20 }} />
+                    <div
+                      className="flex items-center justify-between gap-2.5 bg-surface-overlay px-3.5"
+                      style={{ borderRadius: '18px 18px 0 0', paddingTop: 10, paddingBottom: 10, paddingLeft: 34, paddingRight: 34 }}
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <CanvasIcon icon="repeat" size={16} />
+                        <span className="truncate text-[15px] font-semibold leading-5">For Each item</span>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <IterationNavigatorV2 state={{ activeIndex: ctxIndex, total: 8, onActiveIndexChange: (i) => { setCtxIsAll(false); setCtxIndex(i); }, isAll: ctxIsAll, onAllChange: setCtxIsAll, iterationStatuses: new Map([[0,'Completed'],[1,'InProgress']]), overallStatus: undefined }} />
+                        <span className="flex h-6 shrink-0 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-[11px] font-semibold leading-4 shadow-sm">
+                          <CanvasIcon icon="align-justify" size={11} />Sequential
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mx-2.5 mt-3 rounded-xl border border-dashed border-border" style={{ height: 36 }} />
+                    {/* Adornments — inset 6px */}
+                    <div className="absolute flex items-center justify-center" style={{ top: 6, left: 6, width: 20, height: 20 }}><BreakpointIndicator /></div>
+                    <div className="absolute flex items-center justify-center" style={{ top: 6, right: 6, width: 20, height: 20 }}><ExecutionStatusIndicator status="InProgress" /></div>
+                    <div className="absolute flex items-center justify-center" style={{ bottom: 6, left: 6, width: 20, height: 20 }}><ExecutionStartPointIndicator /></div>
+                    <div className="absolute flex items-center justify-center" style={{ bottom: 6, right: 6, width: 20, height: 20 }}><SquareDashedIndicator /></div>
+                  </div>
+                  {/* Right callouts */}
+                  <div className="flex flex-col justify-between" style={{ height: 100 }}>
+                    {LOOP_SLOT_DOCS.filter((_, i) => i % 2 !== 0).map(({ slot, dot }) => (
+                      <div key={slot} className="flex items-center gap-2">
+                        <div className="flex items-center gap-0.5">
+                          <div className={`h-2 w-2 shrink-0 rounded-full ${dot}`} />
+                          <div className="h-px w-5 bg-border" />
+                        </div>
+                        <span className="font-mono text-[10px] font-semibold">{slot}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                {/* Corner slot indicators */}
-                <div className={`absolute rounded-full ${LOOP_SLOT_DOCS[0].dot}`} style={{ top: 6, left: 6, width: 14, height: 14 }} />
-                <div className={`absolute rounded-full ${LOOP_SLOT_DOCS[1].dot}`} style={{ top: 6, right: 6, width: 14, height: 14 }} />
-                <div className={`absolute rounded-full ${LOOP_SLOT_DOCS[2].dot}`} style={{ bottom: 6, left: 6, width: 14, height: 14 }} />
-                <div className={`absolute rounded-full ${LOOP_SLOT_DOCS[3].dot}`} style={{ bottom: 6, right: 6, width: 14, height: 14 }} />
               </div>
-
-              {/* Right labels — topRight, bottomRight */}
-              <div className="flex flex-col gap-10">
-                {LOOP_SLOT_DOCS.filter((_, i) => i % 2 !== 0).map(({ slot, dot, rule }) => (
-                  <div key={slot} className="flex items-center gap-2.5">
-                    <div className="flex items-center gap-1">
-                      <div className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot}`} />
-                      <div className="h-px w-6 bg-border" />
-                    </div>
-                    <div>
-                      <div className="font-mono text-xs font-semibold">{slot}</div>
-                      <div className="text-[11px] text-foreground-muted">{rule}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
             </div>
+
+            {/* Option B — on the border (50/50) */}
+            <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-6">
+              <div>
+                <h3 className="text-sm font-semibold">Option B — On border</h3>
+                <ul className="mt-1.5 space-y-1 text-[12px]">
+                  <li className="flex items-start gap-1.5"><span className="mt-0.5 text-emerald-500">✓</span><span className="text-foreground-muted">Familiar notification badge pattern — immediately recognisable to most users.</span></li>
+                  <li className="flex items-start gap-1.5"><span className="mt-0.5 text-emerald-500">✓</span><span className="text-foreground-muted">Pops clearly against both the node background and the canvas — stronger contrast.</span></li>
+                  <li className="flex items-start gap-1.5"><span className="mt-0.5 text-red-400">✗</span><span className="text-foreground-muted">Extends slightly outside node bounds — may overlap adjacent nodes or edges at tight spacing.</span></li>
+                  <li className="flex items-start gap-1.5"><span className="mt-0.5 text-red-400">✗</span><span className="text-foreground-muted">Canvas layout needs to account for the overflow margin around each node.</span></li>
+                </ul>
+              </div>
+              <div className="flex justify-center py-4">
+                <div className="flex items-center gap-8">
+                  {/* Left callouts */}
+                  <div className="flex flex-col justify-between" style={{ height: 100 }}>
+                    {LOOP_SLOT_DOCS.filter((_, i) => i % 2 === 0).map(({ slot, dot }) => (
+                      <div key={slot} className="flex items-center justify-end gap-2">
+                        <span className="font-mono text-[10px] font-semibold">{slot}</span>
+                        <div className="flex items-center gap-0.5">
+                          <div className="h-px w-5 bg-border" />
+                          <div className={`h-2 w-2 shrink-0 rounded-full ${dot}`} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Full-header node mock */}
+                  <div className="relative shrink-0" style={{ width: 380, height: 100 }}>
+                    <div className="absolute inset-0 border border-border bg-transparent" style={{ borderRadius: 20 }} />
+                    <div
+                      className="flex items-center justify-between gap-2.5 bg-surface-overlay px-3.5"
+                      style={{ borderRadius: '18px 18px 0 0', paddingTop: 10, paddingBottom: 10 }}
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <CanvasIcon icon="repeat" size={16} />
+                        <span className="truncate text-[15px] font-semibold leading-5">For Each item</span>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <IterationNavigatorPill state={{ activeIndex: ctxIndexB, total: 8, onActiveIndexChange: (i) => { setCtxIsAllB(false); setCtxIndexB(i); }, isAll: ctxIsAllB, onAllChange: setCtxIsAllB, iterationStatuses: new Map([[0,'Completed'],[1,'InProgress']]), overallStatus: undefined }} />
+                        <span className="flex h-6 shrink-0 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-[11px] font-semibold leading-4 shadow-sm">
+                          <CanvasIcon icon="align-justify" size={11} />Sequential
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mx-2.5 mt-3 rounded-xl border border-dashed border-border" style={{ height: 36 }} />
+                    {/* Adornments — on border -2px */}
+                    <div className="absolute flex items-center justify-center" style={{ top: -2, left: -2, width: 20, height: 20 }}><BreakpointIndicator /></div>
+                    <div className="absolute flex items-center justify-center" style={{ top: -2, right: -2, width: 20, height: 20 }}><ExecutionStatusIndicator status="InProgress" /></div>
+                    <div className="absolute flex items-center justify-center" style={{ bottom: -2, left: -2, width: 20, height: 20 }}><ExecutionStartPointIndicator /></div>
+                    <div className="absolute flex items-center justify-center" style={{ bottom: -2, right: -2, width: 20, height: 20 }}><SquareDashedIndicator /></div>
+                  </div>
+                  {/* Right callouts */}
+                  <div className="flex flex-col justify-between" style={{ height: 100 }}>
+                    {LOOP_SLOT_DOCS.filter((_, i) => i % 2 !== 0).map(({ slot, dot }) => (
+                      <div key={slot} className="flex items-center gap-2">
+                        <div className="flex items-center gap-0.5">
+                          <div className={`h-2 w-2 shrink-0 rounded-full ${dot}`} />
+                          <div className="h-px w-5 bg-border" />
+                        </div>
+                        <span className="font-mono text-[10px] font-semibold">{slot}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Key trade-off callout */}
+          <div className="rounded-xl border border-border bg-surface-overlay px-5 py-4 text-[12px] text-foreground-muted space-y-2">
+            <p><span className="font-semibold text-foreground">Canvas density — </span>Option A never overflows the node boundary, making it safer when nodes are tightly packed. Option B extends slightly outside, so the canvas layout needs a small reserved margin around each node.</p>
+            <p><span className="font-semibold text-foreground">Header crowding — </span>Option A places the <code className="rounded bg-surface px-1 font-mono text-[10px]">topRight</code> badge inside the header, competing with the iteration picker and Sequential badge for horizontal space (the component compensates with extra padding). Option B moves the badge onto the border, reducing that internal tension and keeping the header content area cleaner — which directly addresses the concern that the header feels full.</p>
           </div>
 
           <div className="overflow-hidden rounded-xl border border-border">

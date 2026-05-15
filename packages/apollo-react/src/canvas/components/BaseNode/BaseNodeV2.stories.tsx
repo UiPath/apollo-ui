@@ -671,73 +671,138 @@ function AnatomyStory() {
           <div>
             <h2 className="text-base font-semibold">Adornment Slots</h2>
             <p className="mt-1 text-sm text-foreground-muted">
-              Four 20×20 px slots, inset 6 px from each corner. Each slot runs its priority chain and
-              renders the first matching condition.
+              Four 20×20 px slots at each corner. Each slot runs its priority chain and renders the
+              first matching condition. Two placement options are under consideration.
             </p>
           </div>
 
-          {/* Diagram */}
-          <div className="flex justify-center rounded-xl border border-border bg-surface px-12 py-10">
-            <div className="flex items-center gap-10">
-              {/* Left labels */}
-              <div className="flex flex-col gap-10">
-                {SLOT_DOCS.filter((_, i) => i % 2 === 0).map(({ slot, dot, rule }) => (
-                  <div key={slot} className="flex items-center justify-end gap-2.5">
-                    <div className="text-right">
-                      <div className="font-mono text-xs font-semibold">{slot}</div>
-                      <div className="text-[11px] text-foreground-muted">{rule}</div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="h-px w-6 bg-border" />
-                      <div className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot}`} />
-                    </div>
-                  </div>
-                ))}
-              </div>
+          {/* Option A / Option B comparison */}
+          <div className="flex flex-col gap-6">
 
-              {/* Node mock at 96×96 — actual CSS from BaseNode */}
-              <div className="relative shrink-0" style={{ width: 96, height: 96 }}>
-                <div
-                  className="flex h-full w-full items-center justify-center border border-border bg-surface-overlay"
-                  style={{ borderRadius: 32 }}
-                >
-                  <div
-                    className="flex items-center justify-center bg-surface"
-                    style={{ width: 80, height: 80, borderRadius: 24 }}
-                  >
-                    <CanvasIcon icon="agent" size={40} color="var(--color-foreground-de-emp)" />
-                  </div>
-                </div>
-                <div className="absolute flex items-center justify-center" style={{ top: 6, left: 6, width: 20, height: 20 }}>
-                  <BreakpointIndicator />
-                </div>
-                <div className="absolute flex items-center justify-center" style={{ top: 6, right: 6, width: 20, height: 20 }}>
-                  <ExecutionStatusIcon status="Completed" />
-                </div>
-                <div className="absolute flex items-center justify-center" style={{ bottom: 6, left: 6, width: 20, height: 20 }}>
-                  <ExecutionStartPointIndicator />
-                </div>
-                <div className="absolute" style={{ bottom: 6, right: 6, width: 20, height: 20 }}>
-                  <LoopCountPill count={3} />
-                </div>
+            {/* Option A — inside border */}
+            <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-6">
+              <div>
+                <h3 className="text-sm font-semibold">Option A — Inside border</h3>
+                <ul className="mt-1.5 space-y-1 text-[12px]">
+                  <li className="flex items-start gap-1.5"><span className="mt-0.5 text-emerald-500">✓</span><span className="text-foreground-muted">Never overflows node bounds — safe for dense canvas layouts where nodes sit close together.</span></li>
+                  <li className="flex items-start gap-1.5"><span className="mt-0.5 text-emerald-500">✓</span><span className="text-foreground-muted">Predictable hit area — all interactions stay within the node boundary.</span></li>
+                  <li className="flex items-start gap-1.5"><span className="mt-0.5 text-red-400">✗</span><span className="text-foreground-muted">Competes with node content near corners, reducing usable space.</span></li>
+                  <li className="flex items-start gap-1.5"><span className="mt-0.5 text-red-400">✗</span><span className="text-foreground-muted">Badge can visually merge with the node background, reducing contrast.</span></li>
+                </ul>
               </div>
-
-              {/* Right labels */}
-              <div className="flex flex-col gap-10">
-                {SLOT_DOCS.filter((_, i) => i % 2 !== 0).map(({ slot, dot, rule }) => (
-                  <div key={slot} className="flex items-center gap-2.5">
-                    <div className="flex items-center gap-1">
-                      <div className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot}`} />
-                      <div className="h-px w-6 bg-border" />
-                    </div>
-                    <div>
-                      <div className="font-mono text-xs font-semibold">{slot}</div>
-                      <div className="text-[11px] text-foreground-muted">{rule}</div>
-                    </div>
+              <div className="flex flex-1 items-center justify-center py-6">
+                <div className="flex items-center gap-10">
+                  {/* Left labels */}
+                  <div className="flex flex-col gap-10">
+                    {SLOT_DOCS.filter((_, i) => i % 2 === 0).map(({ slot, dot, rule }) => (
+                      <div key={slot} className="flex items-center justify-end gap-2.5">
+                        <div className="text-right">
+                          <div className="font-mono text-xs font-semibold">{slot}</div>
+                          <div className="text-[11px] text-foreground-muted">{rule}</div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="h-px w-6 bg-border" />
+                          <div className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot}`} />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                  {/* Node mock — inset 6px */}
+                  <div className="relative shrink-0" style={{ width: 96, height: 96 }}>
+                    <div className="flex h-full w-full items-center justify-center border border-border bg-surface-overlay" style={{ borderRadius: 32 }}>
+                      <div className="flex items-center justify-center bg-surface" style={{ width: 80, height: 80, borderRadius: 24 }}>
+                        <CanvasIcon icon="agent" size={40} color="var(--color-foreground-de-emp)" />
+                      </div>
+                    </div>
+                    <div className="absolute flex items-center justify-center" style={{ top: 6, left: 6, width: 20, height: 20 }}><BreakpointIndicator /></div>
+                    <div className="absolute flex items-center justify-center" style={{ top: 6, right: 6, width: 20, height: 20 }}><ExecutionStatusIcon status="Completed" /></div>
+                    <div className="absolute flex items-center justify-center" style={{ bottom: 6, left: 6, width: 20, height: 20 }}><ExecutionStartPointIndicator /></div>
+                    <div className="absolute" style={{ bottom: 6, right: 6, width: 20, height: 20 }}><LoopCountPill count={3} /></div>
+                  </div>
+                  {/* Right labels */}
+                  <div className="flex flex-col gap-10">
+                    {SLOT_DOCS.filter((_, i) => i % 2 !== 0).map(({ slot, dot, rule }) => (
+                      <div key={slot} className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-1">
+                          <div className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot}`} />
+                          <div className="h-px w-6 bg-border" />
+                        </div>
+                        <div>
+                          <div className="font-mono text-xs font-semibold">{slot}</div>
+                          <div className="text-[11px] text-foreground-muted">{rule}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* Option B — on border (50/50) */}
+            <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-6">
+              <div>
+                <h3 className="text-sm font-semibold">Option B — On border</h3>
+                <ul className="mt-1.5 space-y-1 text-[12px]">
+                  <li className="flex items-start gap-1.5"><span className="mt-0.5 text-emerald-500">✓</span><span className="text-foreground-muted">Familiar notification badge pattern — immediately recognisable to most users.</span></li>
+                  <li className="flex items-start gap-1.5"><span className="mt-0.5 text-emerald-500">✓</span><span className="text-foreground-muted">Pops clearly against both the node background and the canvas — stronger contrast.</span></li>
+                  <li className="flex items-start gap-1.5"><span className="mt-0.5 text-red-400">✗</span><span className="text-foreground-muted">Extends slightly outside node bounds — may overlap adjacent nodes or edges at tight spacing.</span></li>
+                  <li className="flex items-start gap-1.5"><span className="mt-0.5 text-red-400">✗</span><span className="text-foreground-muted">Canvas layout needs to account for the overflow margin around each node.</span></li>
+                </ul>
+              </div>
+              <div className="flex flex-1 items-center justify-center py-6">
+                <div className="flex items-center gap-10">
+                  {/* Left labels */}
+                  <div className="flex flex-col gap-10">
+                    {SLOT_DOCS.filter((_, i) => i % 2 === 0).map(({ slot, dot, rule }) => (
+                      <div key={slot} className="flex items-center justify-end gap-2.5">
+                        <div className="text-right">
+                          <div className="font-mono text-xs font-semibold">{slot}</div>
+                          <div className="text-[11px] text-foreground-muted">{rule}</div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="h-px w-6 bg-border" />
+                          <div className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot}`} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Node mock — on border (-10px = -½ × 20px slot size) */}
+                  <div className="relative shrink-0" style={{ width: 96, height: 96 }}>
+                    <div className="flex h-full w-full items-center justify-center border border-border bg-surface-overlay" style={{ borderRadius: 32 }}>
+                      <div className="flex items-center justify-center bg-surface" style={{ width: 80, height: 80, borderRadius: 24 }}>
+                        <CanvasIcon icon="agent" size={40} color="var(--color-foreground-de-emp)" />
+                      </div>
+                    </div>
+                    <div className="absolute flex items-center justify-center" style={{ top: -1, left: -1, width: 20, height: 20 }}><BreakpointIndicator /></div>
+                    <div className="absolute flex items-center justify-center" style={{ top: -1, right: -1, width: 20, height: 20 }}><ExecutionStatusIcon status="Completed" /></div>
+                    <div className="absolute flex items-center justify-center" style={{ bottom: -1, left: -1, width: 20, height: 20 }}><ExecutionStartPointIndicator /></div>
+                    <div className="absolute" style={{ bottom: -1, right: -1, width: 20, height: 20 }}><LoopCountPill count={3} /></div>
+                  </div>
+                  {/* Right labels */}
+                  <div className="flex flex-col gap-10">
+                    {SLOT_DOCS.filter((_, i) => i % 2 !== 0).map(({ slot, dot, rule }) => (
+                      <div key={slot} className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-1">
+                          <div className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot}`} />
+                          <div className="h-px w-6 bg-border" />
+                        </div>
+                        <div>
+                          <div className="font-mono text-xs font-semibold">{slot}</div>
+                          <div className="text-[11px] text-foreground-muted">{rule}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Key trade-off callout */}
+          <div className="rounded-xl border border-border bg-surface-overlay px-5 py-4 text-[12px] text-foreground-muted">
+            <span className="font-semibold text-foreground">Key trade-off — </span>
+            Option A is the safer choice when canvas nodes are densely packed, since badges never stray outside the node boundary. Option B is more visually distinct and follows a pattern users already recognise from notification systems, but requires the canvas layout to reserve a small overflow margin around each node to avoid clipping into neighbours.
           </div>
 
           {/* Reference table */}
