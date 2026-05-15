@@ -62,8 +62,8 @@ export const StageTitleInput = ({
       <CanvasTooltip content={label} placement="top" hide={isEditing} delay>
         <div
           className={cn(
-            'h-full w-full rounded',
-            isEditing && 'border border-[var(--canvas-border-de-emp)]'
+            'flex min-h-7 w-full items-center rounded',
+            isEditing && 'outline outline-1 -outline-offset-1 outline-[var(--canvas-border-de-emp)]'
           )}
         >
           {isEditing ? (
@@ -85,16 +85,16 @@ export const StageTitleInput = ({
             <button
               type="button"
               className={cn(
-                'nodrag inline-block max-w-full truncate rounded-sm py-1',
+                'nodrag flex w-full min-w-0 items-center self-stretch rounded-sm',
                 'appearance-none border-none bg-transparent p-0 text-left text-sm font-bold',
                 'cursor-text hover:bg-[var(--canvas-background-secondary)]'
               )}
               onClick={() => setIsEditing(true)}
             >
-              {label}
+              <span className="truncate">{label}</span>
             </button>
           ) : (
-            <span className="nodrag inline-block max-w-full truncate rounded-sm py-1">{label}</span>
+            <span className="inline-block max-w-full truncate rounded-sm py-1">{label}</span>
           )}
         </div>
       </CanvasTooltip>
