@@ -59,7 +59,9 @@ export interface ApI18nProviderProps {
  * ```
  */
 export function ApI18nProvider({ component, locale: propLocale, children }: ApI18nProviderProps) {
-  const locale = propLocale || (document.documentElement.lang as SupportedLocale) || 'en';
+  const detectedLang = document.documentElement.lang as SupportedLocale;
+  const fallback = SUPPORTED_LOCALES.includes(detectedLang) ? detectedLang : 'en';
+  const locale = propLocale || fallback;
 
   const loadAndActivate = useCallback(() => {
     const preImportedLocales = getAllPreImportedLocales(component);
