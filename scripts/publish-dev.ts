@@ -2,9 +2,11 @@
 /**
  * Publish a package with a dev version suffix.
  *
- * Usage: pnpm publish:dev <package-name> <suffix>
+ * Usage: pnpm publish:dev [--skip-npm] <package-name> <suffix>
  * Example: pnpm publish:dev @uipath/apollo-react test
- *   -> Publishes @uipath/apollo-react@3.19.3-test
+ *   -> Publishes @uipath/apollo-react@3.19.3-test to npm + GitHub
+ * Example: pnpm publish:dev --skip-npm @uipath/apollo-react test
+ *   -> Publishes @uipath/apollo-react@3.19.3-test to GitHub only
  */
 
 import { execFileSync } from 'node:child_process';
@@ -14,11 +16,30 @@ import { join } from 'node:path';
 import { type PackageJson, findPackagePath, getAllPackageNames } from './package-utils.js';
 
 function main() {
+  const args = process.argv.slice(2);
+  const skipNpm = args.includes('--skip-npm');
+  const positionalArgs = args.filter((arg) => arg !== '--skip-npm');
+
+  if (positionalArgs.length < 2) {
+    console.error('Usage: pnpm publish:dev [--skip-npm] <package-name> <suffix>');
+    console.error('Example: pnpm publish:dev @uipath/apollo-react test');
+    console.error('Example: pnpm publish:dev --skip-npm @uipath/apollo-react test');
+    console.error('\nOptions:');
+    console.error('  --skip-npm  Skip publishing to npm (only publish to GitHub Package Registry)');
+    console.error('\nAvailable packages:');
+    for (const name of getAllPackageNames()) {
+      console.error(`  - ${name}`);
+    }
+    process.exit(1);
+  }
+
+  const [packageName, suffix] = positionalArgs as [string, string];
+
   // Validate authentication tokens are available
   const npmToken = process.env.NPM_AUTH_TOKEN || process.env.NPM_TOKEN;
   const ghToken = process.env.GH_NPM_REGISTRY_TOKEN;
 
-  if (!npmToken) {
+  if (!skipNpm && !npmToken) {
     console.error('Error: NPM_AUTH_TOKEN or NPM_TOKEN environment variable is required.');
     console.error('');
     console.error('To publish to npm.org, you need an npm automation token.');
@@ -26,6 +47,8 @@ function main() {
     console.error('  export NPM_AUTH_TOKEN=your_npm_token_here');
     console.error('');
     console.error('See CONTRIBUTING.md for instructions on creating an npm token.');
+    console.error('');
+    console.error('Tip: Use --skip-npm to publish only to GitHub Package Registry.');
     process.exit(1);
   }
 
@@ -37,20 +60,6 @@ function main() {
     console.error('  export GH_NPM_REGISTRY_TOKEN=your_github_token_here');
     process.exit(1);
   }
-
-  const args = process.argv.slice(2);
-
-  if (args.length < 2) {
-    console.error('Usage: pnpm publish:dev <package-name> <suffix>');
-    console.error('Example: pnpm publish:dev @uipath/apollo-react test');
-    console.error('\nAvailable packages:');
-    for (const name of getAllPackageNames()) {
-      console.error(`  - ${name}`);
-    }
-    process.exit(1);
-  }
-
-  const [packageName, suffix] = args as [string, string];
 
   // Validate suffix (alphanumeric, may contain hyphens and dots, must not start with hyphen/dot)
   if (!/^[a-zA-Z0-9][a-zA-Z0-9.-]*$/.test(suffix)) {
@@ -86,9 +95,8 @@ function main() {
     writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2) + '\n');
     console.log(`Updated version to ${devVersion}`);
 
-    // Publish with 'dev' tag to both registries
-    // Note: Assumes package is already built (run `pnpm build` first)
-    console.log('\nPublishing with tag "dev" to both registries...');
+    const registries = skipNpm ? 'GitHub Package Registry' : 'both registries';
+    console.log(`\nPublishing with tag "dev" to ${registries}...`);
 
     const publishArgs = [
       '--no-git-checks',
@@ -96,28 +104,28 @@ function main() {
       '--tag', 'dev',
     ];
 
-    // Publish to npm
-    console.log('\n📦 Publishing to npm...');
-    execFileSync(
-      'pnpm',
-      [
-        'publish',
-        ...publishArgs,
-        '--@uipath:registry=https://registry.npmjs.org'
-      ],
-      {
-        cwd: packagePath,
-        stdio: 'inherit',
-        env: {
-          ...process.env,
-          NPM_AUTH_TOKEN: npmToken,
-          NODE_AUTH_TOKEN: npmToken,
-        },
-      }
-    );
-    console.log('✓ Published to npm');
+    if (!skipNpm) {
+      console.log('\n📦 Publishing to npm...');
+      execFileSync(
+        'pnpm',
+        [
+          'publish',
+          ...publishArgs,
+          '--@uipath:registry=https://registry.npmjs.org'
+        ],
+        {
+          cwd: packagePath,
+          stdio: 'inherit',
+          env: {
+            ...process.env,
+            NPM_AUTH_TOKEN: npmToken,
+            NODE_AUTH_TOKEN: npmToken,
+          },
+        }
+      );
+      console.log('✓ Published to npm');
+    }
 
-    // Publish to GitHub Package Registry
     console.log('\n📦 Publishing to GitHub Package Registry...');
     execFileSync(
       'pnpm',
@@ -138,7 +146,7 @@ function main() {
     );
     console.log('✓ Published to GitHub Package Registry');
 
-    console.log(`\n✓ Successfully published ${packageName}@${devVersion} to both registries`);
+    console.log(`\n✓ Successfully published ${packageName}@${devVersion} to ${registries}`);
 
   } catch (error) {
     console.error('\n✗ Publish failed');
