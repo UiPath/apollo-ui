@@ -269,7 +269,7 @@ const sliderMaxRefSchema: FormSchema = {
           label: 'Token allocation',
           min: 0,
           step: 100,
-          maxRef: { fromField: 'availableCapacity', fallback: 1000 },
+          maxRef: { fromField: 'availableCapacity', fallback: 16384 },
           defaultValue: 8000,
         },
       ],
