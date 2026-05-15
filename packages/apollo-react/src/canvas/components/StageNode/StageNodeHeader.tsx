@@ -1,15 +1,16 @@
 import { Icon, Padding, Spacing } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
-import { Button, cn } from '@uipath/apollo-wind';
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { Button } from '@uipath/apollo-wind';
+import { memo } from 'react';
 import { EntryConditionIcon, ExitConditionIcon, ReturnToOriginIcon } from '../../icons';
 import { CanvasIcon } from '../../utils/icon-registry';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import { getExecutionStatusColor } from '../ExecutionStatusIcon/ExecutionStatusIcon';
-import { StageChip, StageHeader, StageTitleContainer, StageTitleInput } from './StageNode.styles';
+import { StageChip, StageHeader } from './StageNode.styles';
 import type { StageNodeProps, StageSlaIcon, StageStatus } from './StageNode.types';
 import { StageHeaderChipType } from './StageNode.types';
+import { StageTitleInput } from './StageTitleInput';
 
 const SLA_ICON_CONFIG: Record<StageSlaIcon, { icon: string; iconColor: string }> = {
   warning: {
@@ -63,97 +64,16 @@ const StageNodeHeaderInner = ({
   const slaIcon = execution?.stageStatus?.slaIcon;
   const slaIndicator = slaIcon ? SLA_ICON_CONFIG[slaIcon] : undefined;
 
-  const isStageTitleEditable = !!onStageTitleChange && !isReadOnly;
-
-  const [isStageTitleEditing, setIsStageTitleEditing] = useState(false);
-  const stageTitleRef = useRef<HTMLInputElement>(null);
-
-  const [label, setLabel] = useState(props.stageDetails.label);
-  useEffect(() => {
-    setLabel(props.stageDetails.label);
-  }, [props.stageDetails.label]);
-
-  const handleStageTitleChange = useCallback((e: React.FormEvent<HTMLInputElement>) => {
-    setIsStageTitleEditing(true);
-    setLabel((e.target as HTMLInputElement).value);
-  }, []);
-
-  const handleStageTitleClickToSave = useCallback(
-    (e: React.FocusEvent | MouseEvent) => {
-      if (isStageTitleEditing && !stageTitleRef.current?.contains(e.target as Node)) {
-        setIsStageTitleEditing(false);
-        if (onStageTitleChange) {
-          if (label.trim() === '') setLabel('Untitled Stage');
-          onStageTitleChange(label);
-        }
-      }
-    },
-    [isStageTitleEditing, onStageTitleChange, label]
-  );
-
-  useEffect(() => {
-    if (isStageTitleEditing) {
-      document.addEventListener('click', handleStageTitleClickToSave);
-    }
-    return () => {
-      document.removeEventListener('click', handleStageTitleClickToSave);
-    };
-  }, [handleStageTitleClickToSave, isStageTitleEditing]);
-
-  const handleStageTitleBlurToSave = useCallback(() => {
-    if (isStageTitleEditing) {
-      setIsStageTitleEditing(false);
-      if (onStageTitleChange) {
-        if (label.trim() === '') setLabel('Untitled Stage');
-        onStageTitleChange(label);
-      }
-    }
-  }, [isStageTitleEditing, onStageTitleChange, label]);
-
-  const handleStageTitleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-        setIsStageTitleEditing(false);
-        if (onStageTitleChange) {
-          onStageTitleChange(label);
-        }
-      }
-      // Prevent keyboard events from the title input from bubbling to xyflow
-      // and triggering canvas-level actions like node deletion or copy/paste.
-      if (e.key !== 'Escape') {
-        e.stopPropagation();
-      }
-    },
-    [onStageTitleChange, label]
-  );
-
   return (
     <StageHeader isException={isException} data-testid={`stage-header-${id}`}>
       <div className="flex items-start justify-between gap-1">
         <Row gap={Spacing.SpacingMicro} align="center" flex={1} minW={0}>
           {icon}
-          <span
-            className={cn('text-sm', !isStageTitleEditing && 'font-bold', 'flex-1 min-w-0 py-0.5')}
-          >
-            <CanvasTooltip content={label} placement="top" hide={isStageTitleEditing} delay>
-              <StageTitleContainer isEditing={isStageTitleEditing}>
-                <StageTitleInput
-                  name="Stage Title"
-                  isStageTitleEditable={isStageTitleEditable}
-                  value={label}
-                  ref={stageTitleRef}
-                  isEditing={isStageTitleEditing}
-                  {...(onStageTitleChange && {
-                    onFocus: () => setIsStageTitleEditing(true),
-                    onInput: handleStageTitleChange,
-                    onKeyDown: handleStageTitleKeyDown,
-                    onBlur: handleStageTitleBlurToSave,
-                  })}
-                  readOnly={!isStageTitleEditable}
-                />
-              </StageTitleContainer>
-            </CanvasTooltip>
-          </span>
+          <StageTitleInput
+            label={stageDetails.label}
+            onChange={isReadOnly ? undefined : onStageTitleChange}
+            className="flex-1 min-w-0"
+          />
         </Row>
         <Row gap={Spacing.SpacingMicro} align="start" py={Padding.PadS}>
           {status && (
