@@ -77,42 +77,6 @@ export const StageHeader = styled.div<{ isException?: boolean }>`
   overflow: hidden;
 `;
 
-export const StageTitleContainer = styled.div<{ isEditing?: boolean }>`
-  display: block;
-  border-radius: 4px;
-  height: 100%;
-  width: 100%;
-  box-sizing: border-box;
-  border: ${(props) => (props.isEditing ? '1px solid var(--canvas-border-de-emp)' : 'none')};
-`;
-
-export const StageTitleInput = styled.input<{
-  isEditing?: boolean;
-  isStageTitleEditable?: boolean;
-  value?: string;
-}>`
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  cursor: text;
-  border: none;
-  background: transparent;
-  text-overflow: ellipsis;
-  border-radius: 2px;
-  width: 100%;
-  min-width: 100px;
-  padding: ${Padding.PadS} 0px;
-
-  &:focus {
-    outline: none;
-  }
-
-  &:hover {
-    cursor: ${(props) => (props.isStageTitleEditable ? 'text' : 'pointer')};
-    background: ${(props) => (props.isEditing || props.isStageTitleEditable ? 'var(--canvas-background-secondary)' : 'transparent')};
-  }
-`;
-
 export const StageContent = styled.div`
   padding: 15px ${STAGE_CONTENT_PADDING_X}px ${Spacing.SpacingBase} ${STAGE_CONTENT_PADDING_X}px;
   border-radius: 0 0 ${Spacing.SpacingBase} ${Spacing.SpacingBase};
