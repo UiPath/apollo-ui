@@ -2402,6 +2402,15 @@ export const TasksBySection: Story = {
               slaText: 'SLA: 3h 45m',
             },
             taskStatus: {
+              '1': {
+                status: 'Completed',
+                label: 'Verify Address',
+                duration: '1h 20m',
+                retryDuration: '35m',
+                badge: 'Reworked',
+                badgeStatus: 'warning',
+                retryCount: 2,
+              },
               '2': {
                 status: 'Failed',
                 label: 'Verify Identity',
