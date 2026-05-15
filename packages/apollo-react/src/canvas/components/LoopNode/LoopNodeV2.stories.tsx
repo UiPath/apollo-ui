@@ -685,7 +685,7 @@ function AnatomyStory() {
   const [demoIndex, setDemoIndex] = useState(0);
   const [demoIsAll, setDemoIsAll] = useState(false);
   const [demoIndexB, setDemoIndexB] = useState(0);
-  const [demoIsAllB, setDemoIsAllB] = useState(false);
+  const [demoIsAllB, setDemoIsAllB] = useState(true);
 
   return (
     <div className="min-h-screen overflow-y-auto px-8 py-12 text-foreground">
@@ -1702,6 +1702,55 @@ const LOOP_EXECUTION_NODE_TYPES_V2 = {
   [LOOP_TYPE]: LoopExecutionCanvasNodeV2,
 };
 
+function LoopExecutionCanvasNodePill(props: NodeProps<Node<LoopExecutionNodeDataV2>>) {
+  const { data } = props;
+  const [activeIndex, setActiveIndex] = useState(
+    Math.max(0, Math.min(data.total - 1, data.initialIndex))
+  );
+  const [isAll, setIsAll] = useState(true);
+
+  useEffect(() => {
+    setActiveIndex(Math.max(0, Math.min(data.total - 1, data.initialIndex)));
+    setIsAll(true);
+  }, [data.initialIndex, data.total]);
+
+  const iterationState: LoopIterationStateV2 = {
+    activeIndex,
+    total: data.total,
+    onActiveIndexChange:
+      data.interactive === false
+        ? undefined
+        : (i) => {
+            setIsAll(false);
+            setActiveIndex(i);
+          },
+    isAll,
+    onAllChange: setIsAll,
+    iterationStatuses: data.iterationStatuses,
+    overallStatus: data.status,
+  };
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <LoopNode {...props} iterationState={undefined} />
+      <div
+        style={{
+          position: 'absolute',
+          top: V2_OVERLAY_TOP,
+          right: V2_OVERLAY_RIGHT,
+          zIndex: 10,
+        }}
+      >
+        <IterationNavigatorPill state={iterationState} />
+      </div>
+    </div>
+  );
+}
+
+const LOOP_EXECUTION_NODE_TYPES_PILL = {
+  [LOOP_TYPE]: LoopExecutionCanvasNodePill,
+};
+
 function ExecutionStatesV2Story() {
   const initialNodes = useMemo(() => createExecutionStateGridV2(), []);
   const { canvasProps } = useCanvasStory({
@@ -1870,7 +1919,7 @@ function LoopNodeV2DemoStory() {
   const { canvasProps, nodeTypeRegistry } = useCanvasStory({
     initialNodes,
     initialEdges,
-    additionalNodeTypes: LOOP_EXECUTION_NODE_TYPES_V2,
+    additionalNodeTypes: LOOP_EXECUTION_NODE_TYPES_PILL,
   });
 
   const loopPreviewOptions = useMemo(
@@ -1970,7 +2019,7 @@ export const ExecutionStatesV2: Story = {
 };
 
 export const LoopNodeV2Demo: Story = {
-  name: 'Demo - Option A',
+  name: 'Demo - Option B',
   decorators: [
     withCanvasProviders({
       executionState: {
