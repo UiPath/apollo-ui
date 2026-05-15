@@ -364,6 +364,7 @@ const StickyNoteNodeComponent = ({
           <TopCornerIndicators visible={selected && !readOnly} />
           <BottomCornerIndicators visible={selected && !readOnly} />
           {isEditing ? (
+            <>
               <FormattingToolbar
                 textAreaRef={textAreaRef}
                 borderColor={color}
@@ -382,6 +383,7 @@ const StickyNoteNodeComponent = ({
                 isEditing={isEditing}
                 className="nodrag nowheel"
               />
+            </>
           ) : (
             <StickyNoteMarkdown ref={markdownRef} {...scrollCaptureProps}>
               {localContent ? (
