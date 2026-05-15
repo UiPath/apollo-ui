@@ -13,7 +13,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { type PackageJson, findPackagePath, getAllPackageNames } from './package-utils.js';
+import { findPackagePath, getAllPackageNames, type PackageJson } from './package-utils.js';
 
 function main() {
   const args = process.argv.slice(2);
@@ -95,24 +95,16 @@ function main() {
     writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2) + '\n');
     console.log(`Updated version to ${devVersion}`);
 
-    const registries = skipNpm ? 'GitHub Package Registry' : 'both registries';
+    const registries = skipNpm ? 'GitHub Package Registry' : 'both registries (GitHub, npm)';
     console.log(`\nPublishing with tag "dev" to ${registries}...`);
 
-    const publishArgs = [
-      '--no-git-checks',
-      '--access', 'public',
-      '--tag', 'dev',
-    ];
+    const publishArgs = ['--no-git-checks', '--access', 'public', '--tag', 'dev'];
 
     if (!skipNpm) {
       console.log('\n📦 Publishing to npm...');
       execFileSync(
         'pnpm',
-        [
-          'publish',
-          ...publishArgs,
-          '--@uipath:registry=https://registry.npmjs.org'
-        ],
+        ['publish', ...publishArgs, '--@uipath:registry=https://registry.npmjs.org'],
         {
           cwd: packagePath,
           stdio: 'inherit',
@@ -129,11 +121,7 @@ function main() {
     console.log('\n📦 Publishing to GitHub Package Registry...');
     execFileSync(
       'pnpm',
-      [
-        'publish',
-        ...publishArgs,
-        '--@uipath:registry=https://npm.pkg.github.com'
-      ],
+      ['publish', ...publishArgs, '--@uipath:registry=https://npm.pkg.github.com'],
       {
         cwd: packagePath,
         stdio: 'inherit',
@@ -147,7 +135,6 @@ function main() {
     console.log('✓ Published to GitHub Package Registry');
 
     console.log(`\n✓ Successfully published ${packageName}@${devVersion} to ${registries}`);
-
   } catch (error) {
     console.error('\n✗ Publish failed');
     console.error(error);
