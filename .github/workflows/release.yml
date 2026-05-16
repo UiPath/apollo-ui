@@ -55,22 +55,33 @@ jobs:
       - name: Run tests
         run: pnpm test
 
+      - name: Generate GitHub App token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          app-id: ${{ secrets.RELEASER_APP_ID }}
+          private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-issues: write
+          permission-packages: write
+          permission-pull-requests: write
+
       - name: Setup git user and credentials
         env:
-          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           git config --global user.name "semantic-release-bot"
           git config --global user.email "semantic-release-bot@users.noreply.github.com"
           # Inject write credentials only after build + test complete.
-          # RELEASE_TOKEN is not in .git/config during pnpm build or pnpm test above.
-          git remote set-url origin "https://x-access-token:${RELEASE_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          # App token is not in .git/config during pnpm build or pnpm test above.
+          git remote set-url origin "https://x-access-token:${APP_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
       - name: Release
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-          GH_NPM_REGISTRY_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GH_NPM_REGISTRY_TOKEN: ${{ steps.app-token.outputs.token }}
           HUSKY: 0
         run: pnpm release
 

@@ -173,10 +173,17 @@ jobs:
         with:
           registry-token: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
 
+      - name: Generate GitHub App token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          app-id: ${{ secrets.RELEASER_APP_ID }}
+          private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
+
       - name: Cleanup previous version
         env:
           PACKAGE_VERSION: ${{ matrix.package_version }}
-          GH_NPM_REGISTRY_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GH_NPM_REGISTRY_TOKEN: ${{ steps.app-token.outputs.token }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: |
           if ! [[ "$PACKAGE_VERSION" =~ ^@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+(\.[a-z0-9]+)?$ ]]; then
@@ -242,6 +249,13 @@ jobs:
         with:
           registry-token: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
 
+      - name: Generate GitHub App token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          app-id: ${{ secrets.RELEASER_APP_ID }}
+          private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
+
       - name: Build package
         env:
           PACKAGE: ${{ matrix.package }}
@@ -252,7 +266,7 @@ jobs:
         env:
           PACKAGE: ${{ matrix.package }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          GH_NPM_REGISTRY_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GH_NPM_REGISTRY_TOKEN: ${{ steps.app-token.outputs.token }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: |
           SHORT_SHA="${GITHUB_SHA:0:7}"
