@@ -41,6 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: read
     outputs:
       matrix: ${{ steps.matrix.outputs.result }}
     steps:
@@ -52,7 +53,7 @@ jobs:
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
         with:
-          registry-token: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          registry-token: ${{ github.token }}
 
       - name: Build registry
         run: pnpm --filter apollo-vertex registry:build
@@ -115,6 +116,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: read
     strategy:
       fail-fast: false
       matrix:
@@ -160,7 +162,7 @@ jobs:
 
       - name: Test registry components
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ github.token }}
           COMPONENTS: ${{ matrix.components }}
           BASE_APP_PATH: ${{ runner.temp }}/base-app
         run: pnpm dlx tsx@4.20.6 ${{ github.workspace }}/.github/scripts/test-registry/test-registry.ts

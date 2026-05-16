@@ -226,7 +226,7 @@ All Apollo packages (`@uipath/apollo-*`) are published to **both** registries si
 - **GitHub Package Registry** (`npm.pkg.github.com`) - For internal UiPath users
   - Seamless installation for users with existing `.npmrc` configuration
   - Also hosts private dependencies
-  - Requires: `GH_NPM_REGISTRY_TOKEN` secret for publishing
+  - Requires: GitHub App installation token for publishing (managed by CI)
 
 ### How It Works
 
@@ -250,7 +250,7 @@ npm install @uipath/apollo-react  # Pulls from GitHub automatically
 When code is merged to `main` or a PR is opened:
 1. Package is built and tested
 2. Package is published to **npm** using `NPM_AUTH_TOKEN`
-3. Package is published to **GitHub Package Registry** using `GH_NPM_REGISTRY_TOKEN`
+3. Package is published to **GitHub Package Registry** using a short-lived GitHub App token
 4. Both registries receive identical versions
 
 ## Release Process
@@ -310,8 +310,6 @@ pnpm unpublish:dev @uipath/apollo-react my-feature
 
 **Token Setup (for manual publishing):**
 
-You need **both** tokens to publish manually:
-
 1. **npm token:**
    - Go to [npmjs.com/settings/YOUR_USERNAME/tokens](https://www.npmjs.com/settings/YOUR_USERNAME/tokens)
    - Generate **"Automation"** token with:
@@ -319,9 +317,10 @@ You need **both** tokens to publish manually:
      - ✅ Read and write permissions
    - Export: `export NPM_AUTH_TOKEN=your_npm_token`
 
-2. **GitHub token:**
-   - Go to [github.com/settings/tokens](https://github.com/settings/tokens)
-   - Generate token with `write:packages` scope
+2. **GitHub token** (required until `@uipath/*` packages are made public on GHP):
+   - Go to [github.com/settings/tokens](https://github.com/settings/tokens) → Fine-grained tokens
+   - Set resource owner to **UiPath**, repository access to **UiPath/apollo-ui** only
+   - Permissions: `Packages: Read and write`
    - Export: `export GH_NPM_REGISTRY_TOKEN=your_github_token`
 
 > **Note:** npm only allows unpublishing within 72 hours of publication. After that, packages are automatically deprecated instead.

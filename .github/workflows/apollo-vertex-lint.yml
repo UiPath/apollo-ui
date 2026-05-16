@@ -13,6 +13,7 @@ concurrency:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   lint:
@@ -28,7 +29,7 @@ jobs:
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
         with:
-          registry-token: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          registry-token: ${{ github.token }}
 
       - name: Lint
         run: pnpm --filter apollo-vertex lint

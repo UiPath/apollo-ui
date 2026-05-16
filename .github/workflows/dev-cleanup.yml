@@ -23,6 +23,7 @@ jobs:
     permissions:
       contents: read
       issues: write
+      packages: read
 
     steps:
       - name: Checkout code
@@ -34,7 +35,7 @@ jobs:
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
         with:
-          registry-token: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          registry-token: ${{ github.token }}
 
       - name: Get published packages from PR comment
         id: packages
@@ -72,6 +73,7 @@ jobs:
         with:
           app-id: ${{ secrets.RELEASER_APP_ID }}
           private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
+          permission-packages: write
 
       - name: Cleanup dev packages
         if: steps.packages.outputs.packages != ''

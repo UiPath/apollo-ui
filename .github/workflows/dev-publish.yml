@@ -25,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: read
       issues: read
     outputs:
       has_label: ${{ steps.check-label.outputs.has_label }}
@@ -158,6 +159,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: read
     strategy:
       fail-fast: false
       matrix:
@@ -171,7 +173,7 @@ jobs:
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
         with:
-          registry-token: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          registry-token: ${{ github.token }}
 
       - name: Generate GitHub App token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
@@ -179,6 +181,7 @@ jobs:
         with:
           app-id: ${{ secrets.RELEASER_APP_ID }}
           private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
+          permission-packages: write
 
       - name: Cleanup previous version
         env:
@@ -204,6 +207,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: read
       issues: write
     steps:
       - name: Checkout code
@@ -214,7 +218,7 @@ jobs:
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
         with:
-          registry-token: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          registry-token: ${{ github.token }}
 
       - name: Create initial PR comment
         env:
@@ -233,6 +237,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: read
       issues: write
     strategy:
       fail-fast: false # Continue even if one package fails
@@ -247,7 +252,7 @@ jobs:
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
         with:
-          registry-token: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          registry-token: ${{ github.token }}
 
       - name: Generate GitHub App token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
@@ -255,6 +260,7 @@ jobs:
         with:
           app-id: ${{ secrets.RELEASER_APP_ID }}
           private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
+          permission-packages: write
 
       - name: Build package
         env:
@@ -320,6 +326,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: read
       issues: write
     steps:
       - name: Update PR comment with cleanup status

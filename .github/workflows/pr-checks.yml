@@ -15,12 +15,13 @@ concurrency:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   checks:
     name: ${{ matrix.check }}
     runs-on: ubuntu-latest
-    # GH_NPM_REGISTRY_TOKEN is unavailable on fork PRs — skip rather than fail with 401.
+    # @uipath/* packages on GHP are private — fork PRs cannot install them even with GITHUB_TOKEN.
     # To support external contributors, make @uipath/* packages publicly readable on GHP.
     if: github.event.pull_request.head.repo.fork == false
     strategy:
@@ -46,7 +47,7 @@ jobs:
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
         with:
-          registry-token: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          registry-token: ${{ github.token }}
 
       - name: Cache Turborepo
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
@@ -161,7 +162,7 @@ jobs:
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
         with:
-          registry-token: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          registry-token: ${{ github.token }}
 
       - name: Run Audit All Dependencies
         if: matrix.check == 'Audit All Dependencies'
