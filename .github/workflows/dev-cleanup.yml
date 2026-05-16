@@ -65,11 +65,19 @@ jobs:
           } >> "$GITHUB_OUTPUT"
           echo "Found: $PACKAGES"
 
+      - name: Generate GitHub App token
+        if: steps.packages.outputs.packages != ''
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          app-id: ${{ secrets.RELEASER_APP_ID }}
+          private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
+
       - name: Cleanup dev packages
         if: steps.packages.outputs.packages != ''
         env:
           PACKAGES: ${{ steps.packages.outputs.packages }}
-          GH_NPM_REGISTRY_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GH_NPM_REGISTRY_TOKEN: ${{ steps.app-token.outputs.token }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: |
           echo "Cleaning up dev packages..."
