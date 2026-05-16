@@ -11,7 +11,9 @@ Fix each vulnerability by working through five steps in order. Stop as soon as o
 
 **NEVER change audit-level. NEVER add overrides without exhausting the steps below.**
 
-**Supply-chain rule: any time a third-party package younger than 14 days enters the install — whether it is the patched package itself, a co-published dep, or a parent you bumped — complete the full supply-chain vetting protocol below before committing the change. Permanent exemptions (e.g. `@uipath/*` own-scope packages) are already configured in `pnpm-workspace.yaml` and do not require vetting.**
+**Pre-install gate: Before running any `pnpm install` or `pnpm add`, always complete the full supply-chain vetting protocol below for every third-party package that would enter the install. Use `npm view` to gather all vetting data — it queries the registry without downloading or executing anything and is always safe to run. Do not install first and check later.**
+
+**14-day quarantine: This repo enforces `minimumReleaseAge: 20160` in `pnpm-workspace.yaml`. If a third-party package is younger than 14 days, pnpm will block the install. In that case, supply-chain vetting must still pass before adding an exemption to `minimumReleaseAgeExclude`. First-party packages (e.g. `@uipath/*` own-scope packages) are already configured as permanent exemptions and do not require vetting.**
 
 ---
 
@@ -34,15 +36,21 @@ pnpm ls <vulnerable-package> 2>/dev/null | head -30
 
 If the vulnerable package appears directly in a workspace `package.json`:
 
-1. Bump the version constraint to include the fix (e.g. `^2.17.0` → `^2.17.4`).
-2. Run `pnpm install`.
+### 2a. Vet before touching anything
 
-**14-day quarantine check:** This repo enforces `minimumReleaseAge: 20160` in `pnpm-workspace.yaml`. If `pnpm install` blocks with a "too new" error, the fixed version was published less than 14 days ago. Before adding an exemption, complete the **full supply-chain vetting protocol** in the section below, then add to `minimumReleaseAgeExclude`:
+Complete the **full supply-chain vetting protocol** below for `<vulnerable-package>@<fix-version>`. Do not edit `package.json` or run `pnpm install` until vetting passes.
+
+If the fix version is younger than 14 days, also add to `minimumReleaseAgeExclude` before installing:
 
 ```yaml
 minimumReleaseAgeExclude:
-  - 'package-name'    # <version> — security fix for <CVE/advisory>, vetted <date>
+  - 'package-name'    # <version> — security fix for <CVE/advisory>, vetted <date>: provenance ✓, publisher ✓, tag+diff ✓, integrity ✓
 ```
+
+### 2b. Install (only after vetting passes)
+
+1. Bump the version constraint to include the fix (e.g. `^2.17.0` → `^2.17.4`).
+2. Run `pnpm install`.
 
 ---
 
@@ -62,15 +70,19 @@ npm view <direct-dep>@latest version
 npm view <direct-dep>@latest dependencies.<intermediate-or-vuln-package>
 ```
 
-If a newer version of the direct dep pins a fixed version of the vulnerable package, update it:
+### 3a. Vet before touching anything
+
+Complete the **full supply-chain vetting protocol** below for every package that would enter the install — the updated direct dep and the patched transitive package. Do not edit `package.json` or run `pnpm install` until vetting passes for all of them.
+
+If any is younger than 14 days, add each to `minimumReleaseAgeExclude` before installing.
+
+### 3b. Install (only after vetting passes)
 
 ```bash
 # Edit the version in the relevant package.json, then:
 pnpm install
 pnpm audit  # verify it's gone
 ```
-
-After install, check the publish dates of every newly resolved package (`npm view <pkg>@<version> time --json`). Any package published less than 14 days ago — including the parent you bumped, the patched transitive dep, or any of their co-published deps — requires the full **supply-chain vetting protocol** below before the change can be committed. Add each to `minimumReleaseAgeExclude` only after passing all six checks.
 
 ---
 
@@ -84,11 +96,17 @@ npm view <parent-package>@<locked-version> dependencies.<vulnerable-package>
 # Must output something like "^2.17.0", not "2.17.0"
 ```
 
-If it's a `^` range, temporarily add the vulnerable package as a devDependency at the fixed version, install (which forces pnpm to resolve it fresh), then remove it:
+### 4a. Vet before touching anything
+
+Complete the **full supply-chain vetting protocol** below for `<vulnerable-package>@<fix-version>`. Do not run `pnpm add` until vetting passes.
+
+If the fix version is younger than 14 days, add it to `minimumReleaseAgeExclude` before installing.
+
+### 4b. Install (only after vetting passes)
 
 ```bash
 # 1. Add temporarily
-pnpm add -D <vulnerable-package>@<fixed-version> --filter <workspace-package>
+pnpm add -D <vulnerable-package>@<fix-version> --filter <workspace-package>
 
 # 2. Verify
 pnpm audit
@@ -98,8 +116,6 @@ pnpm remove <vulnerable-package> --filter <workspace-package>
 pnpm audit  # should still be clean
 ```
 
-Before removing the temp devDep, verify the publish date of the resolved version (`npm view <vulnerable-package>@<resolved-version> time --json`). If it was published less than 14 days ago, complete the full **supply-chain vetting protocol** below and add it to `minimumReleaseAgeExclude` before committing.
-
 If the parent uses an exact (non-`^`) version, this trick won't work — skip to Step 5.
 
 ---
@@ -108,19 +124,27 @@ If the parent uses an exact (non-`^`) version, this trick won't work — skip to
 
 Only after confirming Steps 2–4 are not applicable:
 
+### 5a. Vet before touching anything
+
+Complete the **full supply-chain vetting protocol** below for `<vulnerable-package>@<fix-version>`. Do not edit `pnpm-workspace.yaml` or run `pnpm install` until vetting passes.
+
+If the fix version is younger than 14 days, add it to `minimumReleaseAgeExclude` before installing.
+
+### 5b. Install (only after vetting passes)
+
 ```yaml
 # pnpm-workspace.yaml
 overrides:
   <vulnerable-package>: "^<fixed-version>"  # <reason>: <parent>@<ver> pins exact <old-ver>, no parent update available as of <date>
 ```
 
-Then `pnpm install`. Check the publish date of the overridden version (`npm view <vulnerable-package>@<fixed-version> time --json`). If it was published less than 14 days ago, complete the full **supply-chain vetting protocol** below and add it to `minimumReleaseAgeExclude` before committing. Then run the full verify section below.
+Then `pnpm install`. Then run the full verify section below.
 
 ---
 
-## Supply-chain vetting protocol (required for quarantine exemptions)
+## Supply-chain vetting protocol (required for every fix, before any install)
 
-Run ALL of the following checks before adding any package to `minimumReleaseAgeExclude`. Do not skip steps. If any check fails or looks suspicious, stop and report findings instead of proceeding.
+Run ALL of the following checks for each package entering the install. Do not skip steps. If any check fails or looks suspicious, stop and report findings instead of proceeding.
 
 ### 1. Verify npm provenance and signatures
 
@@ -188,7 +212,7 @@ Fetch the advisory URL from `pnpm audit` output directly. Confirm:
 
 ### Vetting result
 
-After completing all six checks, document the result in the `minimumReleaseAgeExclude` comment:
+After completing all six checks, document the result in the commit message or PR description. If a `minimumReleaseAgeExclude` entry is also needed, record it there:
 
 ```yaml
   - 'package-name'    # <version> — <CVE/GHSA>, vetted <date>: provenance ✓, publisher ✓, tag+diff ✓, integrity ✓
@@ -198,7 +222,7 @@ If any check could not be completed (e.g., no GitHub repo, no provenance), note 
 
 ---
 
-## Cleanup after vetting
+## Cleanup after install
 
 After any `pnpm install` that resolves new packages, check for artifact files left behind by npm/pnpm (e.g. package info JSONs written to the repo root):
 
@@ -235,10 +259,11 @@ If `pnpm check:dependencies` fails after a fix, run `pnpm fix:dependencies` to a
 
 | Situation | Action |
 |-----------|--------|
-| Direct dep | Bump version in package.json |
-| New enough to hit 14-day quarantine | Complete full supply-chain vetting protocol, then add to `minimumReleaseAgeExclude` |
-| Transitive, direct parent has minor/patch update with fix | Update the direct parent |
-| Transitive, parent uses `^` range | Temp devDep trick (Step 4) |
-| Transitive, parent uses exact version, no parent update | Override in pnpm-workspace.yaml |
+| Every fix | Complete supply-chain vetting with `npm view` before editing files or installing |
+| Package < 14 days old | Vetting required (as always) + add to `minimumReleaseAgeExclude` after vetting passes |
+| Direct dep | Vet, then bump version in package.json |
+| Transitive, direct parent has minor/patch update with fix | Vet parent + transitive dep, then update the direct parent |
+| Transitive, parent uses `^` range | Vet, then temp devDep trick — Step 4 |
+| Transitive, parent uses exact version, no parent update | Vet, then override in pnpm-workspace.yaml |
 | No patched version exists | Document and monitor |
 | Any supply-chain check fails | Stop — report findings, do not install |
