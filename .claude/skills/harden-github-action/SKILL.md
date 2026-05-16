@@ -95,7 +95,8 @@ uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
 uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
 uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
 uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
 uses: zizmorcore/zizmor-action@135698455da5c3b3e55f73f4419e481ab68cdd95 # v0.4.1
 uses: reviewdog/action-actionlint@6fb7acc99f4a1008869fa8a0f09cfca740837d9d # v1.72.0
 
@@ -134,7 +135,7 @@ Always add `persist-credentials: false` to `actions/checkout` **unless** the job
   uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
   with:
     fetch-depth: 0
-    token: ${{ secrets.RELEASE_TOKEN }}
+    token: ${{ steps.app-token.outputs.token }}
 ```
 
 For jobs that use the default checkout and then push a branch (e.g., `prune-release-age-exemptions.yml`), keep `persist-credentials` at its default (`true`) and document it inline:
@@ -157,7 +158,7 @@ Always use `./.github/actions/install-node-deps` instead of manually setting up 
 - name: Install Node dependencies
   uses: ./.github/actions/install-node-deps
   with:
-    registry-token: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+    registry-token: ${{ github.token }}
 ```
 
 **Never:**
@@ -179,12 +180,12 @@ env:
 # ✅ Correct — step-level env
 - name: Publish package
   env:
-    GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+    GH_NPM_REGISTRY_TOKEN: ${{ steps.app-token.outputs.token }}
     NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
   run: pnpm publish:dev "$PACKAGE" "$SUFFIX"
 ```
 
-**`GH_NPM_REGISTRY_TOKEN`** is handled by the composite install action — do not re-expose it at workflow or job level for the install step. Only expose it at the step level for jobs that genuinely need it beyond install (e.g. `pnpm unpublish:dev` in `dev-cleanup.yml`).
+The GitHub App token (`steps.app-token.outputs.token`) is used for `GH_NPM_REGISTRY_TOKEN` in publish/unpublish steps. `github.token` with `packages: read` at job level is used for install — pass it via the composite action's `registry-token` input. Do not re-expose either at workflow or job level.
 
 ---
 
@@ -351,7 +352,7 @@ jobs:
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
         with:
-          registry-token: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          registry-token: ${{ github.token }}
 
       - name: Cache Turborepo
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
@@ -391,7 +392,7 @@ Use this checklist when reviewing or hardening any workflow file.
 
 ### Install Pattern
 - [ ] All install steps use `./.github/actions/install-node-deps`
-- [ ] `registry-token: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}` is passed to the composite action
+- [ ] `registry-token: ${{ github.token }}` is passed to the composite action (job must have `packages: read`)
 - [ ] Only `registry-token` is passed to the composite action — `registry-url`/`scope` are baked in
 - [ ] No raw `pnpm install` without `--frozen-lockfile`
 - [ ] No `pnpm dlx` / `pnpx` / `npx -y` for packages already in devDependencies — use `pnpm exec`
@@ -399,7 +400,7 @@ Use this checklist when reviewing or hardening any workflow file.
 ### Secrets
 - [ ] No secrets in workflow-level `env:` blocks
 - [ ] No secrets in job-level `env:` blocks (unless unavoidable and documented)
-- [ ] `GH_NPM_REGISTRY_TOKEN` and `NPM_AUTH_TOKEN` appear only in the `env:` of the specific step that needs them
+- [ ] `NPM_AUTH_TOKEN` and GitHub App token appear only in the `env:` of the specific step that needs them
 - [ ] No secrets interpolated directly into `run:` shell strings — always via `env:`
 
 ### Fork PR Protection

@@ -60,6 +60,7 @@ All `uses:` pinned to a full 40-character SHA with a `# vX` comment. No `@v*`, `
 | `actions/dependency-review-action` | `a1d282b36b6f3519aa1f3fc636f609c47dddb294` | v5.0.0 |
 | `actions/attest-sbom` | `c604332985a26aa8cf1bdc465b92731239ec6b9e` | v4.1.0 |
 | `actions/attest-build-provenance` | `a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32` | v4.1.0 |
+| `actions/create-github-app-token` | `bcd2ba49218906704ab6c1aa796996da409d3eb1` | v3.2.0 |
 | `pnpm/action-setup` | `b906affcce14559ad1aafd4ab0e942779e9f58b1` | v4 |
 | `zizmorcore/zizmor-action` | `135698455da5c3b3e55f73f4419e481ab68cdd95` | v0.4.1 |
 | `reviewdog/action-actionlint` | `6fb7acc99f4a1008869fa8a0f09cfca740837d9d` | v1.72.0 |
@@ -97,6 +98,7 @@ When any PR touches `.github/workflows/`, `.github/actions/`, `.npmrc`, `pnpm-wo
 
 **Install safety**
 - [ ] Every `pnpm install` uses `--frozen-lockfile` — use `./.github/actions/install-node-deps`, never call pnpm directly
+- [ ] `registry-token: ${{ github.token }}` is passed to the composite install action (job must have `packages: read`)
 - [ ] No bare `pnpm dlx <pkg>` / `npx -y <pkg>` without exact version pin
 - [ ] Approved pinned `pnpm dlx` versions: `shadcn@4.4.0`, `serve@14.2.6`, `tsx@4.20.6` — changes require same review bar as dependency updates
 - [ ] New `minimumReleaseAgeExclude` entries in `pnpm-workspace.yaml` include exact version + reason: `- 'pkg'  # x.y.z — reason`
@@ -150,7 +152,8 @@ When reviewing `release.yml`, `dev-publish.yml`, `dev-cleanup.yml`, or `scripts/
 - [ ] All publishes scoped to `@uipath/*` only
 - [ ] Dev-publish versions use `x.y.z-prNNN.sha` format
 - [ ] `dev-publish.yml` / `dev-cleanup.yml` cleanup steps validate `^@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+(\.[a-z0-9]+)?$` before `pnpm unpublish:dev`
-- [ ] `RELEASE_TOKEN`, `NPM_AUTH_TOKEN`, `NPM_TOKEN`, `GH_NPM_REGISTRY_TOKEN` step-scoped to the Release step only — not job-level or workflow-level
+- [ ] `NPM_AUTH_TOKEN`, `NPM_TOKEN` step-scoped to the Release step only — not job-level or workflow-level
+- [ ] GitHub App token (`steps.app-token.outputs.token`) step-scoped to the steps that need it — not job-level or workflow-level
 - [ ] `release.yml` checkout uses `persist-credentials: false`; credentials injected via `git remote set-url` only after `pnpm build` + `pnpm test`
 
 ---
