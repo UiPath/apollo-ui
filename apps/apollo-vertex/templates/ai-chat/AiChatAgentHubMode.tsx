@@ -167,8 +167,17 @@ function AgentHubChatInner({
     <AiChat
       messages={messages}
       status={status}
-      onSendMessage={(text) => {
-        void sendMessage(text);
+      onSendMessage={(text, parts) => {
+        if (!parts?.length) {
+          void sendMessage(text);
+          return;
+        }
+        void sendMessage({
+          content: [
+            ...(text ? [{ type: "text" as const, content: text }] : []),
+            ...parts,
+          ],
+        });
       }}
       onStop={stop}
       onClearChat={clear}
@@ -230,6 +239,7 @@ function AgentHubChatInner({
       title="Autopilot"
       assistantName="Autopilot"
       emptyState={emptyState}
+      acceptedFileTypes="image/*"
       suggestions={[
         t("shell_suggestion_recent_runs"),
         t("shell_suggestion_failing_processes"),

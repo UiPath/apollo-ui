@@ -333,6 +333,7 @@
         "@uipath/alert-dialog",
         "@uipath/button",
         "@uipath/card",
+        "@uipath/dialog",
         "@uipath/dropdown-menu",
         "@uipath/textarea",
         "@uipath/tooltip"
@@ -395,9 +396,19 @@
           "target": "components/ui/ai-chat/hooks/use-sticky-scroll.ts"
         },
         {
+          "path": "registry/ai-chat/hooks/use-pending-files.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/hooks/use-pending-files.ts"
+        },
+        {
           "path": "registry/ai-chat/animations.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/animations.ts"
+        },
+        {
+          "path": "registry/ai-chat/content-parts.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/content-parts.ts"
         },
         {
           "path": "registry/ai-chat/components/ai-chat.tsx",
@@ -433,6 +444,16 @@
           "path": "registry/ai-chat/components/ai-chat-input-glow.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-input-glow.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-pending-files.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-pending-files.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-image-preview.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-image-preview.tsx"
         },
         {
           "path": "registry/ai-chat/components/ai-chat-suggestions.tsx",

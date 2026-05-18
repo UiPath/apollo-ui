@@ -23,6 +23,7 @@ A composable AI chat UI component for Apollo Vertex. Built with React, TypeScrip
 - **Data Fabric Multi-Line Chart Tool** — Compare two metrics on a shared datetime axis, each with its own Y axis, totals label, and join support
 - **Data Fabric KPI Tool** — Render a single scalar metric (count, sum, average, min, max) with optional filters and joins
 - **Suggestion Buttons** — Interactive choice buttons rendered from tool results
+- **File Attachments** — Opt-in via `acceptedFileTypes`; users pick files, paste from the clipboard, drag-and-drop onto the chat, preview images in a fullscreen dialog (both in the input chips and in sent message bubbles), and the resulting `ContentPart[]` arrives in the `onSendMessage` callback
 
 ## Installation
 
@@ -157,6 +158,39 @@ const { messages, sendMessage, reload, status, stop } = useChat({ connection });
 ```
 
 Copy is always available and needs no wiring. Feedback and edit only render when their callbacks are supplied.
+
+## File Attachments
+
+Set `acceptedFileTypes` to enable the attachments UI. The paperclip menu, clipboard-paste handling, drag-and-drop onto the chat, the chip list, the in-bubble thumbnails, and the image preview dialog all turn on together; omit the prop and the feature stays off.
+
+Attached files arrive in `onSendMessage` as wire-ready TanStack AI `ContentPart`s — splice them straight into `sendMessage({ content: [...] })` for a multimodal request:
+
+```tsx
+<AiChat
+  messages={messages}
+  status={status}
+  onSendMessage={(text, parts) => {
+    if (!parts?.length) {
+      void sendMessage(text);
+      return;
+    }
+    void sendMessage({
+      content: [
+        ...(text ? [{ type: 'text' as const, content: text }] : []),
+        ...parts,
+      ],
+    });
+  }}
+  onStop={stop}
+  acceptedFileTypes="image/*"
+/>
+```
+
+`acceptedFileTypes` is passed straight to the underlying `<input accept>` — any HTML accept-string works. Files outside the supported set are silently dropped at conversion time (today only `image/*` produces a `ContentPart`):
+
+- `"image/*"` — images only
+
+Attached images render with a clickable thumbnail chip that opens a fullscreen preview (Esc or backdrop click to close), and the same thumbnails appear in the user's message bubble after sending. Clipboard paste — including OS screenshots — attaches files automatically, and dragging files anywhere over the chat container highlights it with a dashed border before accepting the drop.
 
 ## AgentHub Adapter
 
@@ -546,7 +580,7 @@ Chat shell component. Owns the message loop, scroll, input, loading indicator, s
 |------|------|---------|-------------|
 | `messages` | `UIMessage<TTools>[]` | required | Messages from `useChat` |
 | `status` | `'ready' \| 'submitted' \| 'streaming' \| 'error'` | required | Chat lifecycle state from `useChat` |
-| `onSendMessage` | `(content: string) => void` | required | Send handler |
+| `onSendMessage` | `(content: string, parts?: ContentPart[]) => void` | required | Send handler. `parts` is populated when `acceptedFileTypes` is set and the user attached anything. Attachments arrive as TanStack AI `ContentPart`s (currently `ImagePart` only — files outside the supported set are silently dropped) ready to splice into `sendMessage({ content: [...] })` |
 | `onStop` | `() => void` | required | Stop/abort handler |
 | `renderToolPart` | `(part: ToolCallPart<TTools>) => ReactNode` | — | Render tool output for an assistant message. Check `part.name` to narrow `part.output` |
 | `onClearChat` | `() => void` | — | Shows a "New conversation" item in the header dropdown when provided |
@@ -562,6 +596,7 @@ Chat shell component. Owns the message loop, scroll, input, loading indicator, s
 | `suggestions` | `string[]` | — | Quick-start prompts shown below the input in the empty state |
 | `onSuggestionClick` | `(suggestion: string) => void` | — | Called when a suggestion is clicked (defaults to sending it as a message) |
 | `placeholder` | `string` | — | Input placeholder |
+| `acceptedFileTypes` | `string` | — | HTML accept-string for attachments (e.g. `"image/*"`). Setting this enables the paperclip menu, paste handler, drag-and-drop, chip list, in-bubble image thumbnails, and image preview; omit to disable attachments entirely |
 | `error` | `Error \| null` | — | Inline error banner |
 
 ### `AgentHubAdapterConfig`
