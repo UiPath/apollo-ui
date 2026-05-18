@@ -268,7 +268,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
 
   const adornments: NodeAdornments = useMemo(
     () => ({
-      ...resolveAdornments(statusContext),
+      ...resolveAdornments(statusContext, { hideExecutionStatusAdornment: true }),
       ...(adornmentsProp ?? {}),
     }),
     [adornmentsProp, statusContext]

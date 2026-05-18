@@ -1,15 +1,18 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ValidationErrorSeverity } from '../../types/validation';
 import type { LoopNodeData } from './LoopNode.types';
 
-const { mockManifest } = vi.hoisted(() => ({
+const { mockExecutionState, mockManifest, mockValidationState } = vi.hoisted(() => ({
+  mockExecutionState: { current: undefined as unknown },
   mockManifest: {
     current: {
       display: { label: 'Loop', icon: 'repeat', shape: 'container' },
       handleConfiguration: [],
     } as Record<string, unknown>,
   },
+  mockValidationState: { current: undefined as unknown },
 }));
 
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
@@ -33,8 +36,8 @@ vi.mock('../../core', () => ({
 }));
 
 vi.mock('../../hooks', () => ({
-  useNodeExecutionState: () => undefined,
-  useElementValidationStatus: () => undefined,
+  useNodeExecutionState: () => mockExecutionState.current,
+  useElementValidationStatus: () => mockValidationState.current,
 }));
 
 vi.mock('../../utils/icon-registry', () => ({
@@ -83,6 +86,11 @@ function getLoopContainer() {
   return document.querySelector('[data-loop-container]') as HTMLElement;
 }
 
+beforeEach(() => {
+  mockExecutionState.current = undefined;
+  mockValidationState.current = undefined;
+});
+
 describe('LoopNode header adornment spacing', () => {
   it('keeps the default header padding when no adornments are visible', () => {
     const header = renderLoopNode();
@@ -122,6 +130,31 @@ describe('LoopNode header adornment spacing', () => {
     });
 
     expect(header.style.paddingLeft).toBe('34px');
+    expect(header.style.paddingRight).toBe('34px');
+  });
+
+  it('does not reserve right-side header space for execution status adornment', () => {
+    mockExecutionState.current = 'Completed';
+
+    const header = renderLoopNode();
+
+    expect(header.style.paddingRight).toBe('');
+  });
+
+  it('still reserves right-side header space for validation adornment', () => {
+    mockExecutionState.current = 'Completed';
+    mockValidationState.current = {
+      validationStatus: ValidationErrorSeverity.ERROR,
+      validationError: {
+        code: 'REQUIRED',
+        message: 'URL is required',
+        description: 'URL is required',
+        severity: ValidationErrorSeverity.ERROR,
+      },
+    };
+
+    const header = renderLoopNode();
+
     expect(header.style.paddingRight).toBe('34px');
   });
 });
