@@ -89,7 +89,14 @@ export function ValidationWarningIndicator({ message }: { message?: string }) {
   );
 }
 
-const getDefaultAdornments = (context: NodeStatusContext): NodeAdornments => {
+export interface ResolveAdornmentsOptions {
+  hideExecutionStatusAdornment?: boolean;
+}
+
+const getDefaultAdornments = (
+  context: NodeStatusContext,
+  options: ResolveAdornmentsOptions
+): NodeAdornments => {
   const executionState = context.executionState;
 
   const status = typeof executionState === 'object' ? executionState?.status : executionState;
@@ -107,8 +114,8 @@ const getDefaultAdornments = (context: NodeStatusContext): NodeAdornments => {
     context.validationState?.validationStatus === ValidationErrorSeverity.WARNING;
 
   const getTopRight = () => {
-    // An active execution status (anything other than 'None') takes priority
-    if (status && status !== 'None')
+    // An active execution status (anything other than 'None') takes priority when enabled.
+    if (!options.hideExecutionStatusAdornment && status && status !== 'None')
       return <ExecutionStatusIndicator status={status} count={count} />;
     if (hasValidationError)
       return (
@@ -129,7 +136,10 @@ const getDefaultAdornments = (context: NodeStatusContext): NodeAdornments => {
   };
 };
 
-export function resolveAdornments(context: NodeStatusContext) {
+export function resolveAdornments(
+  context: NodeStatusContext,
+  options: ResolveAdornmentsOptions = {}
+) {
   // TODO: for now, always return default adornments
-  return getDefaultAdornments(context);
+  return getDefaultAdornments(context, options);
 }

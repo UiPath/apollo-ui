@@ -39,6 +39,17 @@ describe('resolveAdornments', () => {
     expect((result.topRight as React.ReactElement)?.type).toBe(ExecutionStatusIndicator);
   });
 
+  it('can hide execution status adornment', () => {
+    const result = resolveAdornments(
+      {
+        ...baseContext,
+        executionState: { status: 'Failed', count: 2 },
+      },
+      { hideExecutionStatusAdornment: true }
+    );
+    expect(result.topRight).toBeUndefined();
+  });
+
   // ── Breakpoint (topLeft) ────────────────────────────────
 
   it('shows breakpoint when debug is true', () => {
@@ -172,6 +183,26 @@ describe('resolveAdornments', () => {
       },
     });
     expect((result.topRight as React.ReactElement)?.type).toBe(ExecutionStatusIndicator);
+  });
+
+  it('falls back to validation when execution status adornment is hidden', () => {
+    const result = resolveAdornments(
+      {
+        ...baseContext,
+        executionState: 'Completed',
+        validationState: {
+          validationStatus: ValidationErrorSeverity.ERROR,
+          validationError: {
+            code: 'REQUIRED',
+            message: 'URL is required',
+            description: 'URL is required',
+            severity: ValidationErrorSeverity.ERROR,
+          },
+        },
+      },
+      { hideExecutionStatusAdornment: true }
+    );
+    expect((result.topRight as React.ReactElement)?.type).toBe(ValidationErrorIndicator);
   });
 
   it('validation shown when no execution state', () => {
