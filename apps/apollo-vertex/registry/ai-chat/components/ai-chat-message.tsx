@@ -1,6 +1,8 @@
 "use client";
 
+import type { ImagePart } from "@tanstack/ai";
 import type { TextPart, UIMessage } from "@tanstack/ai-client";
+import { imagePartToUrl } from "../content-parts";
 import { motion } from "framer-motion";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,6 +14,7 @@ import {
   ENTRANCE_INITIAL,
 } from "../animations";
 import type { MessageFeedbackType } from "../types";
+import { AiChatImagePreview } from "./ai-chat-image-preview";
 import { AiChatMarkdown } from "./ai-chat-markdown";
 import { AiChatMessageActions } from "./ai-chat-message-actions";
 
@@ -44,6 +47,10 @@ function getDisplayText(message: UIMessage): string {
     .join("");
 }
 
+function getImageParts(message: UIMessage): ImagePart[] {
+  return message.parts.filter((p): p is ImagePart => p.type === "image");
+}
+
 export function AiChatMessage({
   message,
   children,
@@ -57,9 +64,13 @@ export function AiChatMessage({
   const { t } = useTranslation();
   const isUser = message.role === "user";
   const displayContent = getDisplayText(message);
+  const imageParts = getImageParts(message);
+  const hasText = !!displayContent;
+  const hasImages = imageParts.length > 0;
 
   const [editValue, setEditValue] = useState<string | null>(null);
   const isEditing = editValue !== null;
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const startEditing = () => setEditValue(displayContent);
   const cancelEditing = () => setEditValue(null);
@@ -128,11 +139,38 @@ export function AiChatMessage({
           </div>
         ) : (
           <div className="group/message flex flex-col items-end gap-1 max-w-[80%]">
-            <div className="px-4 py-2 text-sm leading-6 rounded-2xl rounded-br-md bg-ai-chat-bubble-user text-ai-chat-bubble-user-foreground">
-              {displayContent && (
+            {hasImages && (
+              <div className="flex flex-wrap justify-end gap-2">
+                {imageParts.map((part) => {
+                  const url = imagePartToUrl(part);
+                  return (
+                    <Button
+                      key={`${message.id}-${part.source.value.slice(0, 64)}`}
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setPreviewUrl(url)}
+                      aria-label={t("image_preview")}
+                      className="size-10 p-0 rounded-md overflow-hidden border border-border hover:opacity-80"
+                    >
+                      <img
+                        src={url}
+                        alt=""
+                        className="size-full object-cover"
+                      />
+                    </Button>
+                  );
+                })}
+              </div>
+            )}
+            <AiChatImagePreview
+              url={previewUrl}
+              onClose={() => setPreviewUrl(null)}
+            />
+            {hasText && (
+              <div className="px-4 py-2 text-sm leading-6 rounded-2xl rounded-br-md bg-ai-chat-bubble-user text-ai-chat-bubble-user-foreground">
                 <p className="whitespace-pre-wrap">{displayContent}</p>
-              )}
-            </div>
+              </div>
+            )}
             <AiChatMessageActions
               content={displayContent}
               messageRole="user"

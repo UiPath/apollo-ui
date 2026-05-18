@@ -2,17 +2,30 @@
  * Converts TanStack AI messages (UIMessage or ModelMessage) into the
  * AgentHub normalized wire format.
  */
+import type { ImagePart } from "@tanstack/ai";
 import type {
   TextPart,
   ToolCallPart,
   ToolResultPart,
   UIMessage,
 } from "@tanstack/ai-client";
+import { imagePartToUrl } from "../../content-parts";
 import type { AgentHubVendor } from "./types";
+
+type MultimodalPart =
+  | { type: "text"; text: string }
+  | {
+      type: "image_url";
+      image_url: { url: string; detail?: "auto" | "low" | "high" };
+    };
 
 interface NormalizedMessage {
   role: "system" | "user" | "assistant" | "tool";
-  content: string | null | { result: string; call_id: string };
+  content:
+    | string
+    | null
+    | { result: string; call_id: string }
+    | MultimodalPart[];
   tool_calls?: {
     id: string;
     name: string;
@@ -95,6 +108,9 @@ function normalizeMessage(
   isAnthropic: boolean,
 ): NormalizedMessage[] {
   const textParts = msg.parts.filter((p): p is TextPart => p.type === "text");
+  const imageParts = msg.parts.filter(
+    (p): p is ImagePart => p.type === "image",
+  );
   const toolCallParts = msg.parts.filter(
     (p): p is ToolCallPart => p.type === "tool-call",
   );
@@ -115,6 +131,18 @@ function normalizeMessage(
 
   if (toolResultParts.length > 0) {
     return toolResultParts.map((p) => toToolResultMessage(p));
+  }
+
+  if (imageParts.length > 0) {
+    const content: MultimodalPart[] = [];
+    if (textContent) content.push({ type: "text", text: textContent });
+    for (const ip of imageParts) {
+      content.push({
+        type: "image_url",
+        image_url: { url: imagePartToUrl(ip) },
+      });
+    }
+    return [{ role: msg.role, content }];
   }
 
   if (textContent) {

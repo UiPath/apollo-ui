@@ -1,5 +1,6 @@
 "use client";
 
+import type { ContentPart } from "@tanstack/ai";
 import type {
   AnyClientTool,
   ChatClientState,
@@ -8,9 +9,17 @@ import type {
   UIMessage,
 } from "@tanstack/ai-client";
 import { AlertCircle, ArrowDown, RefreshCw } from "lucide-react";
-import { Fragment, type ReactNode, useEffect, useRef, useState } from "react";
+import {
+  type DragEvent,
+  Fragment,
+  type ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useStickyScroll } from "../hooks/use-sticky-scroll";
 import type { MessageFeedbackType } from "../types";
 import { AiChatHeader } from "./ai-chat-header";
@@ -29,7 +38,7 @@ export interface AiChatProps<
 > {
   messages: UIMessage<TTools>[];
   status: ChatClientState;
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string, parts?: ContentPart[]) => void;
   onStop: () => void;
   onClearChat?: () => void;
   onRetry?: () => void;
@@ -45,6 +54,7 @@ export interface AiChatProps<
   suggestions?: string[];
   onSuggestionClick?: (suggestion: string) => void;
   placeholder?: string;
+  acceptedFileTypes?: string;
   error?: Error | null;
 }
 
@@ -78,12 +88,45 @@ export function AiChat<
   suggestions,
   onSuggestionClick,
   placeholder,
+  acceptedFileTypes,
   error,
 }: AiChatProps<TTools>) {
   const { t } = useTranslation();
   const [input, setInput] = useState("");
   const { scrollRef, contentRef, isStuck, scrollToBottom } = useStickyScroll();
   const inputRef = useRef<AiChatInputHandle>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const attachmentsEnabled = !!acceptedFileTypes;
+
+  const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
+    if (!attachmentsEnabled) return;
+    if (!e.dataTransfer.types.includes("Files")) return;
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+    if (!attachmentsEnabled) return;
+    const next = e.relatedTarget;
+    if (next instanceof Node && e.currentTarget.contains(next)) return;
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    if (!attachmentsEnabled) return;
+    if (!e.dataTransfer.types.includes("Files")) return;
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    if (!attachmentsEnabled) return;
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files.length > 0) {
+      inputRef.current?.addFiles(e.dataTransfer.files);
+    }
+  };
 
   const displayName = assistantName ?? t("ai_assistant");
   const isInFlight = status === "submitted" || status === "streaming";
@@ -103,14 +146,15 @@ export function AiChat<
     .filter(Boolean)
     .join("\n\n");
 
-  const handleSubmit = () => {
-    if (!input.trim()) return;
+  const handleSubmit = (parts?: ContentPart[]) => {
+    const text = input.trim();
+    if (!text && !parts?.length) return;
     if (isInFlight) {
-      queuedMessageRef.current = input.trim();
+      queuedMessageRef.current = text;
       setInput("");
       return;
     }
-    onSendMessage(input.trim());
+    onSendMessage(text, parts);
     setInput("");
     scrollToBottom();
   };
@@ -164,8 +208,15 @@ export function AiChat<
 
   return (
     <div
-      className="flex flex-col h-full max-w-[680px] mx-auto bg-transparent text-ai-chat-foreground overflow-hidden"
+      className={cn(
+        "flex flex-col h-full max-w-[680px] mx-auto bg-transparent text-ai-chat-foreground overflow-hidden rounded-lg border-2 border-dashed border-transparent transition-colors",
+        isDragging && "border-primary",
+      )}
       data-slot="ai-chat"
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
     >
       {header ?? defaultHeader}
 
@@ -183,6 +234,7 @@ export function AiChat<
               onStop={onStop}
               isLoading={isInFlight}
               placeholder={placeholder}
+              acceptedFileTypes={acceptedFileTypes}
               hasMessages={false}
             />
             {suggestions && suggestions.length > 0 && (
@@ -325,6 +377,7 @@ export function AiChat<
             onStop={onStop}
             isLoading={isInFlight}
             placeholder={placeholder}
+            acceptedFileTypes={acceptedFileTypes}
             hasMessages
           />
           <div className="pt-2 pb-3 px-4 text-xs leading-normal text-muted-foreground text-center">
