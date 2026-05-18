@@ -316,6 +316,9 @@ function LoopNodeComponent(props: LoopNodeProps) {
   const showEmptyStateButton = isDesignMode && !hasChildNodes && !!onAddFirstChild;
 
   const interactionState = resolveInteractionState(dragging, selected, isHovered);
+  const activeStatus = suggestionType ?? validationState?.validationStatus ?? executionStatus;
+  const statusBorder = getStatusBorder(activeStatus);
+  const hasStatusBorder = statusBorder.length > 0;
 
   if (!manifest) {
     return (
@@ -350,8 +353,9 @@ function LoopNodeComponent(props: LoopNodeProps) {
         'group/loop-shell relative box-border flex h-full w-full flex-col overflow-visible rounded-[20px] border bg-transparent',
         'transition-[border-color,box-shadow,opacity] shadow-(--canvas-node-shadow-rest)',
         'border-border',
-        getStatusBorder(suggestionType ?? validationState?.validationStatus ?? executionStatus),
-        isHovered && 'shadow-(--canvas-node-shadow-hover) border-border-hover',
+        statusBorder,
+        isHovered && 'shadow-(--canvas-node-shadow-hover)',
+        isHovered && !hasStatusBorder && 'border-border-hover',
         selected && 'outline outline-2 outline-foreground-accent-muted',
         isDropTarget && 'bg-surface-hover outline outline-2 outline-brand',
         interactionState === 'drag' && 'cursor-grabbing shadow-(--canvas-node-shadow-lifted)'
