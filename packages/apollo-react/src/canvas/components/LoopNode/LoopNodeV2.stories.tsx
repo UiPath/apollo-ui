@@ -699,6 +699,10 @@ function AnatomyStory() {
   const [ctxIndexB, setCtxIndexB] = useState(1);
   const [ctxIsAllB, setCtxIsAllB] = useState(false);
 
+  // State for the responsive behavior section demos
+  const [respIndex, setRespIndex] = useState(1);
+  const [respIsAll, setRespIsAll] = useState(false);
+
   return (
     <div className="min-h-screen overflow-y-auto px-8 py-12 text-foreground">
       <div className="mx-auto max-w-4xl" style={{ display: 'flex', flexDirection: 'column', gap: 48 }}>
@@ -1191,6 +1195,141 @@ function AnatomyStory() {
 
         </section>
 
+        <div className="h-px bg-border" />
+
+        {/* ── Responsive Behavior ── */}
+        <section style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <div>
+            <h2 className="text-base font-semibold">Responsive Behavior</h2>
+            <p className="mt-1 text-sm text-foreground-muted">
+              The iteration picker adapts to available header width through three size tiers. As a loop
+              node is resized smaller — or deeply nested loops reduce the visible header width — the
+              picker progressively removes controls to remain usable without overflowing.
+            </p>
+            <p className="mt-2 text-sm text-foreground-muted">
+              Note: <code className="rounded bg-surface-overlay px-1 font-mono text-xs">LoopNode.tsx</code>{' '}
+              does not yet implement this logic. These tiers are the intended V2 behavior — to be wired
+              in once the picker approach is approved.
+            </p>
+          </div>
+
+          {/* Breakpoint table */}
+          <div className="overflow-hidden rounded-xl border border-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-surface-overlay">
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Node width</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Size tier</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Controls visible</th>
+                </tr>
+              </thead>
+              <tbody>
+                {([
+                  { width: '≥ 400 px',   tier: 'full',    controls: 'All chip · |◄ ◄ k/N ► ►| · crosshair' },
+                  { width: '260–399 px', tier: 'compact', controls: 'All chip · k/N (click-to-type) · crosshair' },
+                  { width: '< 260 px',   tier: 'minimal', controls: 'k/N count chip only (read-only)' },
+                ] as const).map(({ width, tier, controls }, i, arr) => (
+                  <tr key={tier} className={i < arr.length - 1 ? 'border-b border-border' : ''}>
+                    <td className="px-4 py-3 font-mono text-xs font-semibold">{width}</td>
+                    <td className="px-4 py-3">
+                      <span className={cn(
+                        'rounded px-1.5 py-0.5 font-mono text-[11px]',
+                        tier === 'full'    ? 'bg-emerald-500/10 text-emerald-600' :
+                        tier === 'compact' ? 'bg-amber-500/10 text-amber-600' :
+                                             'bg-blue-500/10 text-blue-600'
+                      )}>{tier}</span>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-foreground-muted">{controls}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Three interactive picker mocks — share a single state so you can compare tiers */}
+          <div className="grid grid-cols-3 gap-4">
+
+            {/* Wide — full */}
+            <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-600">full</span>
+                  <h3 className="text-[12px] font-semibold">Wide — ≥ 400 px</h3>
+                </div>
+                <p className="mt-1 text-[11px] text-foreground-muted">All navigation controls plus first/last jump buttons.</p>
+              </div>
+              <div className="flex items-center justify-center rounded-lg border border-border bg-surface-overlay py-4">
+                <IterationNavigatorPill
+                  size="full"
+                  state={{
+                    activeIndex: respIndex,
+                    total: 8,
+                    onActiveIndexChange: (i) => { setRespIsAll(false); setRespIndex(i); },
+                    isAll: respIsAll,
+                    onAllChange: setRespIsAll,
+                    iterationStatuses: DEMO_ITERATION_STATUSES,
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Medium — compact */}
+            <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="rounded bg-amber-500/10 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-amber-600">compact</span>
+                  <h3 className="text-[12px] font-semibold">Medium — 260–399 px</h3>
+                </div>
+                <p className="mt-1 text-[11px] text-foreground-muted">Arrows removed; click the fraction to jump directly.</p>
+              </div>
+              <div className="flex items-center justify-center rounded-lg border border-border bg-surface-overlay py-4">
+                <IterationNavigatorPill
+                  size="compact"
+                  state={{
+                    activeIndex: respIndex,
+                    total: 8,
+                    onActiveIndexChange: (i) => { setRespIsAll(false); setRespIndex(i); },
+                    isAll: respIsAll,
+                    onAllChange: setRespIsAll,
+                    iterationStatuses: DEMO_ITERATION_STATUSES,
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Narrow — minimal */}
+            <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="rounded bg-blue-500/10 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-blue-600">minimal</span>
+                  <h3 className="text-[12px] font-semibold">Narrow — &lt; 260 px</h3>
+                </div>
+                <p className="mt-1 text-[11px] text-foreground-muted">Count chip only — read-only indicator, no navigation.</p>
+              </div>
+              <div className="flex items-center justify-center rounded-lg border border-border bg-surface-overlay py-4">
+                <IterationNavigatorPill
+                  size="minimal"
+                  state={{
+                    activeIndex: respIndex,
+                    total: 8,
+                    onActiveIndexChange: (i) => { setRespIsAll(false); setRespIndex(i); },
+                    isAll: respIsAll,
+                    onAllChange: setRespIsAll,
+                    iterationStatuses: DEMO_ITERATION_STATUSES,
+                  }}
+                />
+              </div>
+            </div>
+
+          </div>
+
+          <div className="rounded-xl border border-border bg-surface-overlay px-5 py-4 text-[12px] text-foreground-muted space-y-2">
+            <p><span className="font-semibold text-foreground">Why three tiers? — </span>Deeply nested loops reduce the horizontal space available to the iteration picker. Rather than letting the control overflow or truncate awkwardly, we progressively remove less-critical actions: first/last jump buttons go first (replaced by click-to-type), then navigation arrows entirely. The count chip in minimal mode keeps the iteration position visible at a glance without requiring any interaction.</p>
+            <p><span className="font-semibold text-foreground">Implementation note — </span>The size tier is computed from <code className="rounded bg-surface px-1 font-mono text-[10px]">props.width</code> in the canvas node wrapper (<code className="rounded bg-surface px-1 font-mono text-[10px]">LoopExecutionCanvasNodePill</code>). The navigator components themselves are unaware of the canvas — they accept an explicit <code className="rounded bg-surface px-1 font-mono text-[10px]">size</code> prop, keeping them independently testable.</p>
+          </div>
+
+        </section>
+
       </div>
     </div>
   );
@@ -1259,7 +1398,7 @@ function getIterationStatusColor(status: string | undefined): string {
   }
 }
 
-function IterationNavigatorV2({ state }: { state: LoopIterationStateV2 }) {
+function IterationNavigatorV2({ state, size = 'full' }: { state: LoopIterationStateV2; size?: 'full' | 'compact' | 'minimal' }) {
   const { activeIndex, total, onActiveIndexChange, disabled, isAll, onAllChange, iterationStatuses, overallStatus } = state;
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -1341,6 +1480,36 @@ function IterationNavigatorV2({ state }: { state: LoopIterationStateV2 }) {
   const canGoNext = canInteract && !isAll && activeIndex < total - 1;
   const canGoLast = canInteract && !isAll && activeIndex < total - 1;
 
+  if (size === 'minimal') {
+    return (
+      <div
+        className="nodrag nopan pointer-events-auto flex items-center"
+        onPointerDown={stopV2Event}
+        onMouseDown={stopV2Event}
+      >
+        <div className="flex h-6 items-center gap-0.5 rounded-full border border-border bg-surface px-2 text-[11px] font-semibold leading-4 shadow-sm">
+          {isAll ? (
+            completedCount !== undefined ? (
+              <>
+                <span style={{ color: getIterationStatusColor('Completed') }}>✓{completedCount}</span>
+                {failedCount > 0 && <span style={{ color: getIterationStatusColor('Failed') }}> ✗{failedCount}</span>}
+              </>
+            ) : (
+              <><span className="opacity-60">Σ</span><span className="ml-0.5">{total}</span></>
+            )
+          ) : (
+            <>
+              {currentStatus && <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: getIterationStatusColor(currentStatus) }} />}
+              <span>{visibleIndex}</span>
+              <span className="px-0.5 opacity-60">/</span>
+              <span>{total}</span>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="nodrag nopan pointer-events-auto flex items-center gap-1.5"
@@ -1403,9 +1572,11 @@ function IterationNavigatorV2({ state }: { state: LoopIterationStateV2 }) {
             Iteration {visibleIndex} of {total}
           </legend>
 
-          <V2NavButton onClick={handleFirst} disabled={!canGoFirst} ariaLabel="First iteration">
-            <CanvasIcon icon="chevrons-left" size={12} />
-          </V2NavButton>
+          {size === 'full' && (
+            <V2NavButton onClick={handleFirst} disabled={!canGoFirst} ariaLabel="First iteration">
+              <CanvasIcon icon="chevrons-left" size={12} />
+            </V2NavButton>
+          )}
           <V2NavButton onClick={handlePrev} disabled={!canGoPrev} ariaLabel="Previous iteration">
             <CanvasIcon icon="chevron-left" size={12} />
           </V2NavButton>
@@ -1454,9 +1625,11 @@ function IterationNavigatorV2({ state }: { state: LoopIterationStateV2 }) {
           <V2NavButton onClick={handleNext} disabled={!canGoNext} ariaLabel="Next iteration">
             <CanvasIcon icon="chevron-right" size={12} />
           </V2NavButton>
-          <V2NavButton onClick={handleLast} disabled={!canGoLast} ariaLabel="Last iteration">
-            <CanvasIcon icon="chevrons-right" size={12} />
-          </V2NavButton>
+          {size === 'full' && (
+            <V2NavButton onClick={handleLast} disabled={!canGoLast} ariaLabel="Last iteration">
+              <CanvasIcon icon="chevrons-right" size={12} />
+            </V2NavButton>
+          )}
         </fieldset>
       )}
 
@@ -1484,7 +1657,7 @@ function IterationNavigatorV2({ state }: { state: LoopIterationStateV2 }) {
 // Click-to-type on the fraction handles large jumps.
 // ============================================================================
 
-function IterationNavigatorPill({ state }: { state: LoopIterationStateV2 }) {
+function IterationNavigatorPill({ state, size = 'full' }: { state: LoopIterationStateV2; size?: 'full' | 'compact' | 'minimal' }) {
   const { activeIndex, total, onActiveIndexChange, disabled, isAll, onAllChange, iterationStatuses, overallStatus } = state;
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -1548,6 +1721,36 @@ function IterationNavigatorPill({ state }: { state: LoopIterationStateV2 }) {
   const canGoPrev = canInteract && !isAll && activeIndex > 0;
   const canGoNext = canInteract && !isAll && activeIndex < total - 1;
 
+  if (size === 'minimal') {
+    return (
+      <div
+        className="nodrag nopan pointer-events-auto flex items-center"
+        onPointerDown={stopV2Event}
+        onMouseDown={stopV2Event}
+      >
+        <div className="flex h-6 items-center gap-0.5 rounded-full border border-border bg-surface px-2 text-[11px] font-semibold leading-none shadow-sm">
+          {isAll ? (
+            completedCount !== undefined ? (
+              <>
+                <span style={{ color: getIterationStatusColor('Completed') }}>✓{completedCount}</span>
+                {failedCount > 0 && <span style={{ color: getIterationStatusColor('Failed') }}> ✗{failedCount}</span>}
+              </>
+            ) : (
+              <><span className="opacity-60">Σ</span><span className="ml-0.5">{total}</span></>
+            )
+          ) : (
+            <>
+              {currentStatus && <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: getIterationStatusColor(currentStatus) }} />}
+              <span>{visibleIndex}</span>
+              <span className="px-0.5 opacity-60">/</span>
+              <span>{total}</span>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="nodrag nopan pointer-events-auto flex items-center gap-1.5"
@@ -1606,21 +1809,23 @@ function IterationNavigatorPill({ state }: { state: LoopIterationStateV2 }) {
           </button>
         ) : (
           <div className="flex items-stretch">
-            {/* Prev */}
-            <button
-              type="button"
-              className={cn(
-                'nodrag nopan flex w-5 items-center justify-center text-foreground transition-opacity',
-                !canGoPrev ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-surface-overlay'
-              )}
-              disabled={!canGoPrev}
-              aria-label="Previous iteration"
-              onClick={handlePrev}
-              onPointerDown={stopV2Event}
-              onMouseDown={stopV2Event}
-            >
-              <CanvasIcon icon="chevron-left" size={12} />
-            </button>
+            {/* Prev — hidden in compact */}
+            {size === 'full' && (
+              <button
+                type="button"
+                className={cn(
+                  'nodrag nopan flex w-5 items-center justify-center text-foreground transition-opacity',
+                  !canGoPrev ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-surface-overlay'
+                )}
+                disabled={!canGoPrev}
+                aria-label="Previous iteration"
+                onClick={handlePrev}
+                onPointerDown={stopV2Event}
+                onMouseDown={stopV2Event}
+              >
+                <CanvasIcon icon="chevron-left" size={12} />
+              </button>
+            )}
 
             {/* Editable fraction with status dot */}
             <span
@@ -1663,21 +1868,23 @@ function IterationNavigatorPill({ state }: { state: LoopIterationStateV2 }) {
               )}
             </span>
 
-            {/* Next */}
-            <button
-              type="button"
-              className={cn(
-                'nodrag nopan flex w-5 items-center justify-center text-foreground transition-opacity',
-                !canGoNext ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-surface-overlay'
-              )}
-              disabled={!canGoNext}
-              aria-label="Next iteration"
-              onClick={handleNext}
-              onPointerDown={stopV2Event}
-              onMouseDown={stopV2Event}
-            >
-              <CanvasIcon icon="chevron-right" size={12} />
-            </button>
+            {/* Next — hidden in compact */}
+            {size === 'full' && (
+              <button
+                type="button"
+                className={cn(
+                  'nodrag nopan flex w-5 items-center justify-center text-foreground transition-opacity',
+                  !canGoNext ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-surface-overlay'
+                )}
+                disabled={!canGoNext}
+                aria-label="Next iteration"
+                onClick={handleNext}
+                onPointerDown={stopV2Event}
+                onMouseDown={stopV2Event}
+              >
+                <CanvasIcon icon="chevron-right" size={12} />
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -1778,6 +1985,10 @@ function LoopExecutionCanvasNodeV2(props: NodeProps<Node<LoopExecutionNodeDataV2
     overallStatus: data.status,
   };
 
+  const navSize: 'full' | 'compact' | 'minimal' =
+    (props.width ?? 0) >= 400 ? 'full' :
+    (props.width ?? 0) >= 260 ? 'compact' : 'minimal';
+
   return (
     <div style={{ position: 'relative' }}>
       {/* Render LoopNode without its native iterator — we overlay V2 nav instead */}
@@ -1790,7 +2001,7 @@ function LoopExecutionCanvasNodeV2(props: NodeProps<Node<LoopExecutionNodeDataV2
           zIndex: 10,
         }}
       >
-        <IterationNavigatorV2 state={iterationState} />
+        <IterationNavigatorV2 state={iterationState} size={navSize} />
       </div>
     </div>
   );
@@ -1828,6 +2039,10 @@ function LoopExecutionCanvasNodePill(props: NodeProps<Node<LoopExecutionNodeData
     overallStatus: data.status,
   };
 
+  const navSize: 'full' | 'compact' | 'minimal' =
+    (props.width ?? 0) >= 400 ? 'full' :
+    (props.width ?? 0) >= 260 ? 'compact' : 'minimal';
+
   return (
     <div style={{ position: 'relative' }}>
       <LoopNode {...props} iterationState={undefined} />
@@ -1839,7 +2054,7 @@ function LoopExecutionCanvasNodePill(props: NodeProps<Node<LoopExecutionNodeData
           zIndex: 10,
         }}
       >
-        <IterationNavigatorPill state={iterationState} />
+        <IterationNavigatorPill state={iterationState} size={navSize} />
       </div>
     </div>
   );

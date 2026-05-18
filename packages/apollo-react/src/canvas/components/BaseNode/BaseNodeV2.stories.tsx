@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
-import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Button, Input, Label, Slider, Switch } from '@uipath/apollo-wind';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -12,6 +12,7 @@ import {
   createNode,
   StoryInfoPanel,
   useCanvasStory,
+  useNodeTypesFromRegistry,
   withCanvasProviders,
 } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
@@ -915,6 +916,141 @@ function AnatomyStory() {
           </div>
         </section>
 
+        <div className="h-px bg-border" />
+
+        {/* ── Action Needed ── */}
+        <section style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <div>
+            <h2 className="text-base font-semibold">Action Needed</h2>
+            <p className="mt-1 text-sm text-foreground-muted">
+              A new execution state where the node requires human input before the process can
+              continue. Visually borrows from the Pause palette (amber/<code className="rounded bg-surface-overlay px-1 font-mono text-xs">--color-warning-icon</code>) to
+              signal a temporary halt that needs attention rather than an error.
+            </p>
+          </div>
+
+          {/* Visual preview */}
+          <div className="flex flex-col gap-6 rounded-xl border border-border bg-surface p-6">
+
+            <div className="grid grid-cols-2 gap-8">
+
+              {/* Adornment slot */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">Adornment slot — top-right</div>
+                <div className="flex items-center gap-3">
+                  <span
+                    className="flex shrink-0 items-center justify-center rounded-full shadow-sm"
+                    style={{ width: 20, height: 20, backgroundColor: 'var(--color-warning-icon)' }}
+                  >
+                    <CanvasIcon icon="hand" size={12} color="#451a03" />
+                  </span>
+                  <p className="text-xs leading-relaxed text-foreground-muted">
+                    Same corner slot as the standard execution status icon. Amber color matches
+                    Pause — both signal a voluntary stop waiting for intervention.
+                  </p>
+                </div>
+              </div>
+
+              {/* Button */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">Action button — below node</div>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    className="flex shrink-0 items-center gap-1.5 rounded-full bg-amber-400 px-3 py-1 text-[12px] font-semibold text-amber-950 shadow-sm"
+                  >
+                    <CanvasIcon icon="hand" size={12} />
+                    Take Action
+                  </button>
+                  <p className="text-xs leading-relaxed text-foreground-muted">
+                    Floats 8 px below the node. Dark text on amber satisfies WCAG AA contrast.
+                    Clicking opens the action dialog.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Node mock */}
+            <div>
+              <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-foreground-muted">Full appearance — node + adornment + button</div>
+              <div className="flex items-start justify-center gap-16 py-4">
+                {[
+                  { shape: 'circle', borderRadius: '50%', width: 56, height: 56 },
+                  { shape: 'square', borderRadius: 12, width: 56, height: 56 },
+                  { shape: 'rectangle', borderRadius: 12, width: 96, height: 56 },
+                ].map(({ shape, borderRadius, width, height }) => (
+                  <div key={shape} className="flex flex-col items-center gap-2">
+                    <div className="relative" style={{ width, height }}>
+                      {/* Node body */}
+                      <div
+                        className="absolute inset-0 border-2 border-amber-400/50 bg-surface shadow-sm"
+                        style={{ borderRadius }}
+                      />
+                      {/* Node icon placeholder */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="h-4 w-4 rounded bg-foreground-muted/20" />
+                      </div>
+                      {/* Top-right adornment — amber circle with white hand icon */}
+                      <span
+                        className="absolute flex items-center justify-center rounded-full shadow-sm"
+                        style={{ top: -6, right: -6, width: 16, height: 16, backgroundColor: 'var(--color-warning-icon)' }}
+                      >
+                        <CanvasIcon icon="hand" size={10} color="#451a03" />
+                      </span>
+                    </div>
+                    {/* Button below */}
+                    <button
+                      type="button"
+                      className="flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-[11px] font-semibold text-amber-950 shadow-sm"
+                    >
+                      <CanvasIcon icon="hand" size={10} />
+                      Take Action
+                    </button>
+                    <span className="text-[10px] text-foreground-muted">{shape}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+
+          {/* Design notes */}
+          <div className="rounded-xl border border-border bg-surface-overlay px-5 py-4 text-[12px] text-foreground-muted space-y-2">
+            <p><span className="font-semibold text-foreground">Color — </span>Amber reuses <code className="rounded bg-surface px-1 font-mono text-[10px]">--color-warning-icon</code>, matching the Pause state. This creates a visual language: amber = "waiting on something" — either a system pause or a human action.</p>
+            <p><span className="font-semibold text-foreground">Contrast — </span>The action button uses <code className="rounded bg-surface px-1 font-mono text-[10px]">text-amber-950</code> (near-black) on <code className="rounded bg-surface px-1 font-mono text-[10px]">bg-amber-400</code>. This achieves a contrast ratio of ~9:1, well above the WCAG AA threshold of 4.5:1 — resolving the original concern about white text on yellow.</p>
+            <p><span className="font-semibold text-foreground">Button placement — </span>The button floats below the node rather than inside the header to avoid crowding the label and status icon. This also makes it easy to find by eye when scanning a busy canvas — it breaks the node boundary intentionally as a "call to action" affordance.</p>
+          </div>
+
+          {/* Reference table */}
+          <div className="overflow-hidden rounded-xl border border-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-surface-overlay">
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Property</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground-muted">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {([
+                  { prop: 'Icon',             value: 'hand (Lucide) — top-right adornment slot' },
+                  { prop: 'Icon color',       value: 'var(--color-warning-icon) — same as Pause' },
+                  { prop: 'Button bg',        value: 'bg-amber-400' },
+                  { prop: 'Button text',      value: 'text-amber-950 (dark, ~9:1 contrast ratio)' },
+                  { prop: 'Button placement', value: '8 px below node bottom edge, horizontally centered' },
+                  { prop: 'On click',         value: 'Opens action dialog / panel (implementation TBD)' },
+                ] as const).map(({ prop, value }, i, arr) => (
+                  <tr key={prop} className={i < arr.length - 1 ? 'border-b border-border' : ''}>
+                    <td className="px-4 py-3"><code className="font-mono text-xs font-semibold">{prop}</code></td>
+                    <td className="px-4 py-3 text-xs text-foreground-muted">{value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+        </section>
+
       </div>
     </div>
   );
@@ -1033,6 +1169,24 @@ function LoopCountPill({ count }: { count: number }) {
   );
 }
 
+function ActionNeededAdornment() {
+  return (
+    <CanvasTooltip content="Action needed" placement="bottom">
+      <span
+        className="flex items-center justify-center rounded-full shadow-sm"
+        style={{
+          display: 'inline-flex',
+          width: 16,
+          height: 16,
+          backgroundColor: 'var(--color-warning-icon)',
+        }}
+      >
+        <CanvasIcon icon="hand" size={10} color="#451a03" />
+      </span>
+    </CanvasTooltip>
+  );
+}
+
 // Custom resolver for V2: moves the loop count out of the status icon (top-right)
 // into a dedicated pill slot (bottom-right), leaving the status icon uncluttered.
 function resolveAdornmentsV2(context: NodeStatusContext): NodeAdornments {
@@ -1044,6 +1198,10 @@ function resolveAdornmentsV2(context: NodeStatusContext): NodeAdornments {
   const isExecutionStartPoint =
     typeof executionState === 'object' && executionState?.isExecutionStartPoint;
   const isOutputPinned = typeof executionState === 'object' && executionState?.isOutputPinned;
+
+  if (status === 'ActionNeeded') {
+    return { topRight: <ActionNeededAdornment /> };
+  }
 
   const hasValidationError =
     context.validationState?.validationStatus === ValidationErrorSeverity.ERROR ||
@@ -1078,6 +1236,54 @@ function resolveAdornmentsV2(context: NodeStatusContext): NodeAdornments {
     ) : undefined,
   };
 }
+
+function ActionNeededCanvasNode(props: NodeProps<Node<BaseNodeData>>) {
+  // props.height is set by ReactFlow after measurement; DEFAULT_NODE_SIZE = 96 is the safe fallback
+  const nodeHeight = props.height ?? 96;
+  // Get BaseNode via the registry hook to avoid a circular module-initialization dependency.
+  // Importing BaseNode directly here would trigger: BaseNode.tsx → adornment-resolver →
+  // canvas/index.ts → HierarchicalCanvas.tsx (DEFAULT_NODE_TYPES = { default: BaseNode })
+  // while BaseNode.tsx is still evaluating → TDZ crash.
+  const nodeTypes = useNodeTypesFromRegistry();
+  const NodeComponent = nodeTypes.default as React.ComponentType<NodeProps<Node<BaseNodeData>>>;
+  return (
+    <>
+      {/* Override type with data.nodeType so BaseNode resolves the correct manifest (shape/icon) */}
+      <NodeComponent {...props} type={props.data.nodeType as string} />
+      {/* Position relative to ReactFlow's own .react-flow__node wrapper (position:absolute),
+          so top: nodeHeight + 8 lands exactly 8px below the node's bottom edge */}
+      <div
+        className="nodrag nopan pointer-events-auto"
+        style={{
+          position: 'absolute',
+          // NodeLabel renders at nodeHeight+8 (bottom:-8 + translate-y-full) and is ~36px tall
+          // (label line 18px + subLabel line 18px). Add 8px gap → nodeHeight + 52.
+          top: nodeHeight + 52,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 10,
+          whiteSpace: 'nowrap',
+        }}
+      >
+        <button
+          type="button"
+          className="nodrag nopan flex items-center gap-1.5 rounded-full bg-amber-400 px-3 py-1 text-[12px] font-semibold text-amber-950 shadow-sm transition-colors hover:bg-amber-300"
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <CanvasIcon icon="hand" size={12} />
+          Take Action
+        </button>
+      </div>
+    </>
+  );
+}
+
+const ACTION_NEEDED_NODE_TYPES = {
+  'uipath.manual-trigger-action': ActionNeededCanvasNode,
+  'uipath.blank-node-action': ActionNeededCanvasNode,
+  'uipath.agent-action': ActionNeededCanvasNode,
+};
 
 // ============================================================================
 // Node Anatomy Diagram
@@ -1236,6 +1442,7 @@ const ADORNMENT_ROWS = [
   { key: 'square-dashed', label: 'Square Dashed (bottom-right)' },
   { key: 'all', label: 'All Adornments' },
   { key: 'multi-exec', label: 'Multi-execution (count: 5)' },
+  { key: 'action-needed', label: 'Action Needed' },
 ] as const;
 
 function createAdornmentGrid(): Node<BaseNodeData>[] {
@@ -1243,10 +1450,11 @@ function createAdornmentGrid(): Node<BaseNodeData>[] {
 
   ADORNMENT_ROWS.forEach((row, rowIndex) => {
     SHAPES.forEach(({ shape, nodeType }, colIndex) => {
+      const isActionNeeded = row.key === 'action-needed';
       nodes.push(
         createNode({
           id: `adorn-${row.key}-${shape}`,
-          type: nodeType,
+          type: isActionNeeded ? `${nodeType}-action` : nodeType,
           position: {
             x: GRID_CONFIG.startX + colIndex * GRID_CONFIG.gapX,
             y: GRID_CONFIG.startY + rowIndex * GRID_CONFIG.gapY,
@@ -1291,6 +1499,8 @@ function getAdornmentExecutionState(key: string) {
       };
     case 'multi-exec':
       return { status: 'Completed' as const, count: 5 };
+    case 'action-needed':
+      return { status: 'ActionNeeded' as string };
     default:
       return undefined;
   }
@@ -1330,11 +1540,70 @@ const ADORNMENT_DESCRIPTIONS: { label: string; description: string }[] = [
     description:
       'Loop pill in the bottom-right corner: repeat icon + count. Separate from the execution status icon (top-right) so both are visible at once.',
   },
+  {
+    label: 'Action Needed',
+    description: 'Node requires human input before execution can continue. Hand icon (top-right) uses the same warning amber as Pause. A "Take Action" button appears below the node.',
+  },
 ];
+
+// Stable module-scope reference: triggers fitView on first load without repositioning nodes
+const fitViewOnLoad = async () => {};
+
+function ActionNeededStory() {
+  const initialNodes = useMemo<Node<BaseNodeData>[]>(
+    () => [
+      createNode({
+        id: 'action-needed-circle',
+        type: 'uipath.manual-trigger-action',
+        position: { x: 200, y: 200 },
+        data: {
+          nodeType: 'uipath.manual-trigger',
+          version: '1.0.0',
+          display: { label: 'Trigger', subLabel: 'Action Needed', shape: 'circle' },
+        },
+      }),
+      createNode({
+        id: 'action-needed-square',
+        type: 'uipath.blank-node-action',
+        position: { x: 450, y: 200 },
+        data: {
+          nodeType: 'uipath.blank-node',
+          version: '1.0.0',
+          display: { label: 'Task', subLabel: 'Action Needed', shape: 'square' },
+        },
+      }),
+      createNode({
+        id: 'action-needed-rectangle',
+        type: 'uipath.agent-action',
+        position: { x: 700, y: 200 },
+        data: {
+          nodeType: 'uipath.agent',
+          version: '1.0.0',
+          display: { label: 'Agent', subLabel: 'Action Needed', shape: 'rectangle' },
+        },
+      }),
+    ],
+    []
+  );
+
+  const { canvasProps } = useCanvasStory({ initialNodes, additionalNodeTypes: ACTION_NEEDED_NODE_TYPES });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design" initialAutoLayout={fitViewOnLoad}>
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="Action Needed"
+        description="A new execution state where the node requires human input before the process can continue. Amber adornment in the top-right corner + Take Action button below the node."
+      />
+    </BaseCanvas>
+  );
+}
 
 function AdornmentsStory() {
   const initialNodes = useMemo(() => createAdornmentGrid(), []);
-  const { canvasProps } = useCanvasStory({ initialNodes });
+  const { canvasProps } = useCanvasStory({ initialNodes, additionalNodeTypes: ACTION_NEEDED_NODE_TYPES });
 
   return (
     <BaseCanvas {...canvasProps} mode="design">
@@ -1382,6 +1651,27 @@ export const Adornments: Story = {
     }),
   ],
   render: () => <AdornmentsStory />,
+};
+
+export const ActionNeeded: Story = {
+  name: 'Action Needed',
+  decorators: [
+    (Story) => (
+      <AdornmentResolverProvider value={resolveAdornmentsV2}>
+        <Story />
+      </AdornmentResolverProvider>
+    ),
+    withCanvasProviders({
+      executionState: {
+        getNodeExecutionState: () => ({ status: 'ActionNeeded' as string }),
+        getEdgeExecutionState: () => undefined,
+      },
+      validationState: {
+        getElementValidationState: () => undefined,
+      },
+    }),
+  ],
+  render: () => <ActionNeededStory />,
 };
 
 // ============================================================================
