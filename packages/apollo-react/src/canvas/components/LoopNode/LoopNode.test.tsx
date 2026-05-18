@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { LoopNodeData } from './LoopNode.types';
@@ -79,6 +79,10 @@ function renderLoopNode(props: Partial<React.ComponentProps<typeof LoopNode>> = 
   return screen.getByTestId('loop-node-header');
 }
 
+function getLoopContainer() {
+  return document.querySelector('[data-loop-container]') as HTMLElement;
+}
+
 describe('LoopNode header adornment spacing', () => {
   it('keeps the default header padding when no adornments are visible', () => {
     const header = renderLoopNode();
@@ -119,5 +123,28 @@ describe('LoopNode header adornment spacing', () => {
 
     expect(header.style.paddingLeft).toBe('34px');
     expect(header.style.paddingRight).toBe('34px');
+  });
+});
+
+describe('LoopNode status border hover treatment', () => {
+  it('preserves a resolved status border while hovered', () => {
+    renderLoopNode({ executionStatusOverride: 'Completed' });
+
+    const container = getLoopContainer();
+    fireEvent.mouseEnter(container);
+
+    expect(container).toHaveClass('border-success');
+    expect(container).toHaveClass('shadow-(--canvas-node-shadow-hover)');
+    expect(container).not.toHaveClass('border-border-hover');
+  });
+
+  it('keeps the hover border for neutral statuses without a resolved status border', () => {
+    renderLoopNode({ executionStatusOverride: 'NotExecuted' });
+
+    const container = getLoopContainer();
+    fireEvent.mouseEnter(container);
+
+    expect(container).toHaveClass('border-border-hover');
+    expect(container).toHaveClass('shadow-(--canvas-node-shadow-hover)');
   });
 });
