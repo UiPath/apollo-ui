@@ -1038,3 +1038,38 @@ describe('StageNode - Add Task Button', () => {
     expect(screen.getByRole('button', { name: 'Add task' })).not.toBeDisabled();
   });
 });
+
+describe('StageTitleInput - input attributes', () => {
+  const enterEditMode = async (user: ReturnType<typeof userEvent.setup>) => {
+    await user.click(screen.getByRole('button', { name: 'Test Stage' }));
+    return screen.getByDisplayValue('Test Stage') as HTMLInputElement;
+  };
+
+  it('suppresses browser autocomplete on the stage title input', async () => {
+    const user = userEvent.setup();
+    renderStageNode({ onStageTitleChange: vi.fn() });
+
+    const input = await enterEditMode(user);
+    expect(input).toHaveAttribute('autocomplete', 'off');
+  });
+
+  it('uses a per-stage unique name derived from the stage id', async () => {
+    const user = userEvent.setup();
+    renderStageNode({ onStageTitleChange: vi.fn() });
+
+    const input = await enterEditMode(user);
+    expect(input).toHaveAttribute('name', 'stage-title-stage-1');
+  });
+
+  it('generates a different name for each stage so browsers do not group inputs', async () => {
+    const user = userEvent.setup();
+    const { unmount } = renderStageNode({ id: 'stage-a', onStageTitleChange: vi.fn() });
+    let input = await enterEditMode(user);
+    expect(input).toHaveAttribute('name', 'stage-title-stage-a');
+    unmount();
+
+    renderStageNode({ id: 'stage-b', onStageTitleChange: vi.fn() });
+    input = await enterEditMode(user);
+    expect(input).toHaveAttribute('name', 'stage-title-stage-b');
+  });
+});
