@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import { GRID_SPACING } from '../../constants';
+import { NodeViewportOverlay } from '../NodeViewportOverlay';
 import type { ToolbarAction } from '../Toolbar';
 import { NodeToolbar } from '../Toolbar';
 import { FormattingToolbar } from './FormattingToolbar';
@@ -410,41 +411,53 @@ const StickyNoteNodeComponent = ({
         </StickyNoteContainer>
 
         {!readOnly && selected && !dragging && !isResizing && (
-          <NodeToolbar nodeId={id} config={toolbarConfig} expanded={true} />
+          <NodeToolbar nodeId={id} config={toolbarConfig} expanded={true} portalToNodeOverlay />
         )}
-        <AnimatePresence>
-          {!readOnly && selected && !dragging && !isResizing && isColorPickerOpen && (
-            <div
-              style={{
-                position: 'absolute',
-                top: -40,
-                left: '50%',
-                transform: 'translateX(40px)',
-                zIndex: 1000,
-              }}
-            >
-              <ColorPickerPanel
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.15, ease: 'easeOut' }}
-              >
-                {Object.keys(STICKY_NOTE_COLORS).map((stickyColorKey) => {
-                  const colorName = stickyColorKey as StickyNoteColor;
-                  return (
-                    <ColorOption
-                      key={stickyColorKey}
-                      color={STICKY_NOTE_COLORS[colorName]}
-                      isSelected={colorKey === colorName}
-                      onClick={() => handleColorChange(colorName)}
-                      title={colorName.charAt(0).toUpperCase() + colorName.slice(1)}
-                    />
-                  );
-                })}
-              </ColorPickerPanel>
-            </div>
-          )}
-        </AnimatePresence>
+        {!readOnly && selected && !dragging && !isResizing && (
+          <NodeViewportOverlay nodeId={id} layer="nodeToolbar">
+            <AnimatePresence>
+              {isColorPickerOpen && (
+                <div
+                  className="nodrag nopan nowheel"
+                  style={{
+                    position: 'absolute',
+                    top: -40,
+                    left: '50%',
+                    transform: 'translateX(40px)',
+                    zIndex: 1000,
+                    pointerEvents: 'auto',
+                  }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ColorPickerPanel
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                  >
+                    {Object.keys(STICKY_NOTE_COLORS).map((stickyColorKey) => {
+                      const colorName = stickyColorKey as StickyNoteColor;
+                      return (
+                        <ColorOption
+                          type="button"
+                          key={stickyColorKey}
+                          color={STICKY_NOTE_COLORS[colorName]}
+                          isSelected={colorKey === colorName}
+                          onClick={() => handleColorChange(colorName)}
+                          title={colorName.charAt(0).toUpperCase() + colorName.slice(1)}
+                        />
+                      );
+                    })}
+                  </ColorPickerPanel>
+                </div>
+              )}
+            </AnimatePresence>
+          </NodeViewportOverlay>
+        )}
       </StickyNoteWrapper>
     </>
   );
