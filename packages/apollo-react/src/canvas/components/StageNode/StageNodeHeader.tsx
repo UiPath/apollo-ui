@@ -71,6 +71,7 @@ const StageNodeHeaderInner = ({
         <Row gap={Spacing.SpacingMicro} align="center" flex={1} minW={0}>
           {icon}
           <StageTitleInput
+            stageId={id}
             label={stageDetails.label}
             onChange={isReadOnly ? undefined : onStageTitleChange}
             className="flex-1 min-w-0"

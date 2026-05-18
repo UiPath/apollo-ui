@@ -4,12 +4,14 @@ import { CanvasTooltip } from '../CanvasTooltip';
 import { useStageNodeLabels } from './useStageNodeLabels';
 
 type StageTitleInputProps = {
+  stageId: string;
   label: string;
   onChange?: (next: string) => void;
   className?: string;
 };
 
 export const StageTitleInput = ({
+  stageId,
   label: labelProp,
   onChange,
   className,
@@ -71,7 +73,8 @@ export const StageTitleInput = ({
           {isEditing ? (
             <input
               ref={inputRef}
-              name="Stage Title"
+              name={`stage-title-${stageId}`}
+              autoComplete="off"
               value={label}
               onInput={handleChange}
               onKeyDown={handleKeyDown}
