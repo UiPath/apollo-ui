@@ -74,7 +74,7 @@ export const StageTitleInput = ({
             <input
               ref={inputRef}
               name={`stage-title-${stageId}`}
-              aria-label="Stage title"
+              aria-label={`Stage title: ${label}`}
               autoComplete="off"
               value={label}
               onInput={handleChange}
