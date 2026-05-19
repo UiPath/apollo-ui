@@ -1,9 +1,9 @@
 "use client";
 
 import { toolDefinition } from "@tanstack/ai";
-import { dataFabricAdapter } from "@uipath/apollo-dashboarding";
 import { DateTime } from "luxon";
 import { z } from "zod";
+import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
 import { MultiLineChartCard } from "../../charts/multi-line-chart-card";
 import { ToolResolutionError } from "../../charts/tool-resolution-error";
 import {

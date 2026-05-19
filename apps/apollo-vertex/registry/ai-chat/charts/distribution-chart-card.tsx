@@ -1,18 +1,17 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  type ChartDataModel,
-  type DataAdapter,
-  DistributionChart,
-  type DistributionChartConfiguration,
-  type NumericOrDatetimeField,
-} from "@uipath/apollo-dashboarding";
 import { Card, CardContent } from "@/components/ui/card";
+import { DistributionChartWithAdapter } from "@/components/ui/distribution-chart";
+import type {
+  ChartDataModel,
+  DataAdapter,
+  DistributionChartConfiguration,
+  NumericOrDatetimeModelField,
+} from "@/lib/charts-core";
 
 interface DistributionChartCardProps {
   configuration: DistributionChartConfiguration;
-  dataModel: ChartDataModel<NumericOrDatetimeField>;
+  dataModel: ChartDataModel<NumericOrDatetimeModelField>;
   dataAdapter: DataAdapter;
 }
 
@@ -21,16 +20,13 @@ export function DistributionChartCard({
   dataModel,
   dataAdapter,
 }: DistributionChartCardProps) {
-  const queryClient = useQueryClient();
-
   return (
     <Card className="flex flex-col w-full h-[300px] gap-2 py-4">
       <CardContent className="flex-1 overflow-hidden p-0">
-        <DistributionChart
+        <DistributionChartWithAdapter
           configuration={configuration}
           dataModel={dataModel}
           dataAdapter={dataAdapter}
-          queryClient={queryClient}
         />
       </CardContent>
     </Card>

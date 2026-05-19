@@ -32,6 +32,20 @@
       "@/components/ui/card": ["./registry/card/card"],
       "@/components/ui/carousel": ["./registry/carousel/carousel"],
       "@/components/ui/chart": ["./registry/chart/chart"],
+      "@/lib/charts-core": ["./registry/charts-core/charts-core"],
+      "@/lib/data-fabric-adapter": [
+        "./registry/data-fabric-adapter/data-fabric-adapter"
+      ],
+      "@/components/ui/line-chart": ["./registry/line-chart/line-chart"],
+      "@/components/ui/multi-line-chart": [
+        "./registry/multi-line-chart/multi-line-chart"
+      ],
+      "@/components/ui/bar-chart": ["./registry/bar-chart/bar-chart"],
+      "@/components/ui/distribution-chart": [
+        "./registry/distribution-chart/distribution-chart"
+      ],
+      "@/components/ui/kpi-chart": ["./registry/kpi-chart/kpi-chart"],
+      "@/components/ui/table-chart": ["./registry/table-chart/table-chart"],
       "@/components/ui/checkbox": ["./registry/checkbox/checkbox"],
       "@/components/ui/collapsible": ["./registry/collapsible/collapsible"],
       "@/components/ui/combobox": ["./registry/combobox/combobox"],

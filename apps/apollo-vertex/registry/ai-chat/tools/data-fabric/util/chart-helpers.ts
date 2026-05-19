@@ -1,8 +1,11 @@
-import type {
-  ChartDataModel,
-  DataModelField,
-} from "@uipath/apollo-dashboarding";
 import { z } from "zod";
+import {
+  Aggregation,
+  type ChartDataModel,
+  type DataModelField,
+  type DataModelMetric,
+  type DimensionType,
+} from "@/lib/charts-core";
 import {
   type Entity,
   type EntityField,
@@ -12,22 +15,17 @@ import {
 } from "./entities";
 import { fail, ok, type ResolverResult } from "./resolver-result";
 
-export type Aggregation = "COUNT" | "SUM" | "AVG" | "MIN" | "MAX";
-
-export type DimensionType = "string" | "numeric" | "boolean" | "datetime";
-
 // Data Fabric rewrites aliases that contain dots (qualified field paths)
 // into a canonical `<FUNCTION>_<field>` form when joins are used, breaking
 // the chart's `r[alias]` lookup. Sanitize the alias by replacing dots, so
 // the server respects what we send. The `field` reference still needs to
 // be qualified for the server to resolve the correct entity.
-export function buildMetricEntry(metric: ResolvedMetric) {
+export function buildMetricEntry(metric: ResolvedMetric): DataModelMetric {
   const aliasField = metric.field.replaceAll(".", "_");
   return {
-    id: `${metric.aggregation.toLowerCase()}_${aliasField}`,
+    id: `${metric.aggregation.kind}_${aliasField}`,
     display: metric.display,
     aggregation: metric.aggregation,
-    field: metric.field,
   };
 }
 
@@ -100,17 +98,35 @@ export const metricSchema = z
 export type MetricInput = z.infer<typeof metricSchema>;
 
 export function formatAggregation(aggregation: Aggregation): string {
-  switch (aggregation) {
-    case "COUNT":
+  switch (aggregation.kind) {
+    case "count":
       return "Count";
-    case "SUM":
+    case "sum":
       return "Sum";
-    case "AVG":
+    case "avg":
       return "Avg";
-    case "MIN":
+    case "min":
       return "Min";
-    case "MAX":
+    case "max":
       return "Max";
+  }
+}
+
+function metricInputToAggregation(
+  input: MetricInput,
+  field: string,
+): Aggregation {
+  switch (input.aggregation) {
+    case "COUNT":
+      return Aggregation.count(field);
+    case "SUM":
+      return Aggregation.sum(field);
+    case "AVG":
+      return Aggregation.avg(field);
+    case "MIN":
+      return Aggregation.min(field);
+    case "MAX":
+      return Aggregation.max(field);
   }
 }
 
@@ -128,7 +144,7 @@ export interface ResolvedMetric {
 export function dedupeMetrics(metrics: ResolvedMetric[]): ResolvedMetric[] {
   const seen = new Set<string>();
   return metrics.filter((m) => {
-    const key = `${m.aggregation}|${m.field}`;
+    const key = `${m.aggregation.kind}|${m.field}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -214,7 +230,7 @@ export function resolveSingleMetric(
     }
     return ok({
       field,
-      aggregation: "COUNT",
+      aggregation: Aggregation.count(field),
       display: userField ? `Count of ${userField}` : "Count",
     });
   }
@@ -242,10 +258,11 @@ export function resolveSingleMetric(
       aggregation: metric.aggregation,
     });
   }
+  const aggregation = metricInputToAggregation(metric, field.name);
   return ok({
     field: field.name,
-    aggregation: metric.aggregation,
-    display: `${formatAggregation(metric.aggregation)} of ${field.name}`,
+    aggregation,
+    display: `${formatAggregation(aggregation)} of ${field.name}`,
   });
 }
 
@@ -280,7 +297,7 @@ export function resolveMultiMetric(
     }
     return ok({
       field,
-      aggregation: "COUNT",
+      aggregation: Aggregation.count(field),
       display: userField
         ? `Count of ${unqualifiedDisplay(userField)}`
         : "Count",
@@ -311,9 +328,10 @@ export function resolveMultiMetric(
       aggregation: metric.aggregation,
     });
   }
+  const aggregation = metricInputToAggregation(metric, qualified);
   return ok({
     field: qualified,
-    aggregation: metric.aggregation,
-    display: `${formatAggregation(metric.aggregation)} of ${unqualifiedDisplay(qualified)}`,
+    aggregation,
+    display: `${formatAggregation(aggregation)} of ${unqualifiedDisplay(qualified)}`,
   });
 }
