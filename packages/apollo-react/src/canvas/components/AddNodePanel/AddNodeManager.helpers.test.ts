@@ -45,6 +45,7 @@ describe('placeAddedNode', () => {
       measured: { width: 96, height: 96 },
       data: {},
     };
+    
     const action: Node = {
       id: 'action',
       type: 'square-target',
