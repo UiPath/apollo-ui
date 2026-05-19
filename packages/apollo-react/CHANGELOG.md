@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.26.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.25.1...@uipath/apollo-react@4.26.0) (2026-05-19)
+
+### Features
+
+* **apollo-react:** trigger release ([4d402bb](https://github.com/UiPath/apollo-ui/commit/4d402bb89e522a6e64712f916f6b920c5c346557))
+
 ## [@uipath/apollo-react-v4.25.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.25.0...@uipath/apollo-react@4.25.1) (2026-05-19)
 
 ### Bug Fixes
