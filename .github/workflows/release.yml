@@ -38,9 +38,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      # OIDC env scrubbed from install/build/test/snapshot — only pnpm release
-      # legitimately needs it (for npm trusted publishing). Reduces attack
-      # surface to a single step where third-party JS executes.
+      # OIDC env scrubbed except on the Release step (only place it's needed).
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
         env:
@@ -69,9 +67,7 @@ jobs:
           ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
         run: pnpm test
 
-      # Snapshot dist/ hashes pre/post publish — if a plugin tampers dist
-      # between build and attestation, the attestation would bind Sigstore to
-      # malicious content. The verify step aborts before attest if so.
+      # Pre/post hash to detect plugin tampering before attestation.
       - name: Snapshot dist/ hashes
         env:
           ACTIONS_ID_TOKEN_REQUEST_URL: ""
@@ -109,12 +105,18 @@ jobs:
             exit 1
           fi
 
+      - name: Pack dist for attestation
+        run: |
+          tar -czf "$RUNNER_TEMP/dist-apollo-core.tar.gz"  -C packages/apollo-core  dist
+          tar -czf "$RUNNER_TEMP/dist-apollo-react.tar.gz" -C packages/apollo-react dist
+          tar -czf "$RUNNER_TEMP/dist-apollo-wind.tar.gz"  -C packages/apollo-wind  dist
+          tar -czf "$RUNNER_TEMP/dist-ap-chat.tar.gz"      -C web-packages/ap-chat  dist
+
       - name: Capture version-bump diff
         id: bump
         run: |
-          # pnpm-lock.yaml is deliberately NOT in this allowlist: workspace deps
-          # use link:../ refs so version bumps don't propagate, and allowing it
-          # would let a compromised plugin swap integrity/tarball hashes.
+          # pnpm-lock.yaml NOT in allowlist — a compromised plugin could swap
+          # integrity/tarball hashes there to self-propagate via the next install.
           ALLOWED=(
             'packages/*/CHANGELOG.md'
             'packages/*/package.json'
@@ -151,47 +153,43 @@ jobs:
           retention-days: 7
 
       - name: Generate per-package SBOMs
+        if: steps.bump.outputs.changed == 'true'
         run: |
           pnpm --filter @uipath/apollo-core  sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-apollo-core.cyclonedx.json"
           pnpm --filter @uipath/apollo-react sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-apollo-react.cyclonedx.json"
           pnpm --filter @uipath/apollo-wind  sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-apollo-wind.cyclonedx.json"
           pnpm --filter '@uipath/ap-chat'    sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-ap-chat.cyclonedx.json"
 
-      # Pack each dist directory into a single tarball so each attestation has
-      # one subject (attest-* actions cap at 1024 subjects; apollo-core's dist
-      # alone has >1024 icon files).
-      - name: Pack dist for attestation
-        run: |
-          tar -czf "$RUNNER_TEMP/dist-apollo-core.tar.gz"  -C packages/apollo-core  dist
-          tar -czf "$RUNNER_TEMP/dist-apollo-react.tar.gz" -C packages/apollo-react dist
-          tar -czf "$RUNNER_TEMP/dist-apollo-wind.tar.gz"  -C packages/apollo-wind  dist
-          tar -czf "$RUNNER_TEMP/dist-ap-chat.tar.gz"      -C web-packages/ap-chat  dist
-
       - name: Attest SBOM — apollo-core
+        if: steps.bump.outputs.changed == 'true'
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
           subject-path: ${{ runner.temp }}/dist-apollo-core.tar.gz
           sbom-path: ${{ runner.temp }}/sbom-apollo-core.cyclonedx.json
 
       - name: Attest SBOM — apollo-react
+        if: steps.bump.outputs.changed == 'true'
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
           subject-path: ${{ runner.temp }}/dist-apollo-react.tar.gz
           sbom-path: ${{ runner.temp }}/sbom-apollo-react.cyclonedx.json
 
       - name: Attest SBOM — apollo-wind
+        if: steps.bump.outputs.changed == 'true'
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
           subject-path: ${{ runner.temp }}/dist-apollo-wind.tar.gz
           sbom-path: ${{ runner.temp }}/sbom-apollo-wind.cyclonedx.json
 
       - name: Attest SBOM — ap-chat
+        if: steps.bump.outputs.changed == 'true'
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
           subject-path: ${{ runner.temp }}/dist-ap-chat.tar.gz
           sbom-path: ${{ runner.temp }}/sbom-ap-chat.cyclonedx.json
 
       - name: Upload SBOMs and dist tarballs as release artifact
+        if: steps.bump.outputs.changed == 'true'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-${{ github.sha }}
@@ -200,26 +198,28 @@ jobs:
             ${{ runner.temp }}/dist-*.tar.gz
           retention-days: 90
 
-      # Build provenance attestation — covers GHP consumers, who cannot use npm's
-      # --provenance mechanism (npm.org-only). Download the dist tarball from the
-      # release artifact and verify:
-      #   gh attestation verify dist-<pkg>.tar.gz --owner UiPath
+      # Build provenance covers GHP consumers (npm --provenance is npmjs.org-only).
+      # Verify: gh attestation verify dist-<pkg>.tar.gz --owner UiPath
       - name: Attest build provenance — apollo-core
+        if: steps.bump.outputs.changed == 'true'
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
           subject-path: ${{ runner.temp }}/dist-apollo-core.tar.gz
 
       - name: Attest build provenance — apollo-react
+        if: steps.bump.outputs.changed == 'true'
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
           subject-path: ${{ runner.temp }}/dist-apollo-react.tar.gz
 
       - name: Attest build provenance — apollo-wind
+        if: steps.bump.outputs.changed == 'true'
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
           subject-path: ${{ runner.temp }}/dist-apollo-wind.tar.gz
 
       - name: Attest build provenance — ap-chat
+        if: steps.bump.outputs.changed == 'true'
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
           subject-path: ${{ runner.temp }}/dist-ap-chat.tar.gz
@@ -251,7 +251,8 @@ jobs:
         run: node .github/scripts/verify-version-bump-patch.mjs "$RUNNER_TEMP/version-bump.patch"
 
       - name: Apply version-bump patch
-        run: git apply --no-symlinks --whitespace=nowarn "$RUNNER_TEMP/version-bump.patch"
+        # Symlink defense lives in the verifier (rejects mode-120000 hunks).
+        run: git apply --whitespace=nowarn "$RUNNER_TEMP/version-bump.patch"
 
       - name: Validate package.json mutations
         run: node .github/scripts/validate-package-json-mutations.mjs "$RUNNER_TEMP/version-bump.patch"
