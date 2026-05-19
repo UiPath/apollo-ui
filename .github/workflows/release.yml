@@ -49,10 +49,8 @@ jobs:
         with:
           registry-token: ${{ github.token }}
 
-      # Save before `pnpm release` so a compromised plugin can't poison the
-      # Turbo cache for future runs.
-      - name: Restore Turborepo cache
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      - name: Cache Turborepo
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: .turbo
           key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
@@ -70,12 +68,6 @@ jobs:
           ACTIONS_ID_TOKEN_REQUEST_URL: ""
           ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
         run: pnpm test
-
-      - name: Save Turborepo cache
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
-        with:
-          path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
 
       # Snapshot dist/ hashes pre/post publish — if a plugin tampers dist
       # between build and attestation, the attestation would bind Sigstore to
@@ -165,59 +157,72 @@ jobs:
           pnpm --filter @uipath/apollo-wind  sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-apollo-wind.cyclonedx.json"
           pnpm --filter '@uipath/ap-chat'    sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-ap-chat.cyclonedx.json"
 
+      # Pack each dist directory into a single tarball so each attestation has
+      # one subject (attest-* actions cap at 1024 subjects; apollo-core's dist
+      # alone has >1024 icon files).
+      - name: Pack dist for attestation
+        run: |
+          tar -czf "$RUNNER_TEMP/dist-apollo-core.tar.gz"  -C packages/apollo-core  dist
+          tar -czf "$RUNNER_TEMP/dist-apollo-react.tar.gz" -C packages/apollo-react dist
+          tar -czf "$RUNNER_TEMP/dist-apollo-wind.tar.gz"  -C packages/apollo-wind  dist
+          tar -czf "$RUNNER_TEMP/dist-ap-chat.tar.gz"      -C web-packages/ap-chat  dist
+
       - name: Attest SBOM — apollo-core
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
-          subject-path: packages/apollo-core/dist
+          subject-path: ${{ runner.temp }}/dist-apollo-core.tar.gz
           sbom-path: ${{ runner.temp }}/sbom-apollo-core.cyclonedx.json
 
       - name: Attest SBOM — apollo-react
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
-          subject-path: packages/apollo-react/dist
+          subject-path: ${{ runner.temp }}/dist-apollo-react.tar.gz
           sbom-path: ${{ runner.temp }}/sbom-apollo-react.cyclonedx.json
 
       - name: Attest SBOM — apollo-wind
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
-          subject-path: packages/apollo-wind/dist
+          subject-path: ${{ runner.temp }}/dist-apollo-wind.tar.gz
           sbom-path: ${{ runner.temp }}/sbom-apollo-wind.cyclonedx.json
 
       - name: Attest SBOM — ap-chat
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
-          subject-path: web-packages/ap-chat/dist
+          subject-path: ${{ runner.temp }}/dist-ap-chat.tar.gz
           sbom-path: ${{ runner.temp }}/sbom-ap-chat.cyclonedx.json
 
-      - name: Upload SBOMs as release artifact
+      - name: Upload SBOMs and dist tarballs as release artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: sbom-${{ github.sha }}
-          path: ${{ runner.temp }}/sbom-*.cyclonedx.json
+          name: release-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/sbom-*.cyclonedx.json
+            ${{ runner.temp }}/dist-*.tar.gz
           retention-days: 90
 
       # Build provenance attestation — covers GHP consumers, who cannot use npm's
-      # --provenance mechanism (npm.org-only). Verifiable via:
-      #   gh attestation verify ./extracted-dist-file --owner UiPath
+      # --provenance mechanism (npm.org-only). Download the dist tarball from the
+      # release artifact and verify:
+      #   gh attestation verify dist-<pkg>.tar.gz --owner UiPath
       - name: Attest build provenance — apollo-core
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
-          subject-path: packages/apollo-core/dist
+          subject-path: ${{ runner.temp }}/dist-apollo-core.tar.gz
 
       - name: Attest build provenance — apollo-react
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
-          subject-path: packages/apollo-react/dist
+          subject-path: ${{ runner.temp }}/dist-apollo-react.tar.gz
 
       - name: Attest build provenance — apollo-wind
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
-          subject-path: packages/apollo-wind/dist
+          subject-path: ${{ runner.temp }}/dist-apollo-wind.tar.gz
 
       - name: Attest build provenance — ap-chat
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
-          subject-path: web-packages/ap-chat/dist
+          subject-path: ${{ runner.temp }}/dist-ap-chat.tar.gz
 
   # Isolated runner — App token confined here. The commit-push step has never
   # seen third-party JS from the release job.

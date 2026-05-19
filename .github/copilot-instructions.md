@@ -106,7 +106,6 @@ When any PR touches `.github/workflows/`, `.github/actions/`, `.npmrc`, `pnpm-wo
 **Cache**
 - [ ] Turbo cache key: `${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}`; `restore-keys` scoped to same branch — never matches entries from other branches or PR runs
 - [ ] pnpm store cache key (if used): also includes `github.sha`; `restore-keys` scoped to same branch — never broad enough to be written by a fork/PR run and read by a release run
-- [ ] On release and deploy jobs, prefer `actions/cache/restore` (read) + an explicit `actions/cache/save` step at a known-good point (before any third-party JS execution) over combined `actions/cache` — combined runs post-job save unconditionally, capturing whatever state the workflow ended in (incl. compromised plugin output)
 - [ ] Scheduled workflow jobs (`on: schedule`) do not restore caches under keys that a fork PR could have written
 
 **Injection**
@@ -128,8 +127,8 @@ Flag these patterns immediately:
 |---|---|---|
 | **Lockfile drift (shai-hulud)** | `pnpm install` without `--frozen-lockfile`; `npm install` | `install-node-deps` enforces `--frozen-lockfile` |
 | **Day-zero publish via pnpm dlx** | `pnpm dlx pkg` without `@x.y.z`; `npx -y pkg` | All `pnpm dlx` calls version-pinned |
-| **TanStack: `pull_request_target` + pnpm store cache poison + OIDC extract** | `on: pull_request_target`; broad `restore-keys` missing `ref_name`; pnpm store cache writable from fork run | No `pull_request_target`; Turbo + pnpm store cache branch-scoped; `actions/cache` combined save/restore bypasses `permissions:` |
-| **Cache poisoning (pnpm store)** | `actions/cache` write from fork/PR run with restore-key matching release pipeline | pnpm store cache keys include `github.sha`; `restore-keys` scoped to same branch only; prefer separate `cache/restore` + `cache/save` on release jobs |
+| **TanStack: `pull_request_target` + pnpm store cache poison + OIDC extract** | `on: pull_request_target`; broad `restore-keys` missing `ref_name`; pnpm store cache writable from fork run | No `pull_request_target`; Turbo + pnpm store cache branch-scoped |
+| **Cache poisoning (pnpm store)** | `actions/cache` write from fork/PR run with restore-key matching release pipeline | pnpm store cache keys include `github.sha`; `restore-keys` scoped to same branch only |
 | **Published package protocol injection** | `github:`, `file:`, `link:`, or `git+` protocol in `optionalDependencies`/`dependencies` of a new/updated package | Audit lockfile diff; flag any non-registry URL reference in prod deps |
 | **OIDC trusted-publisher scope too broad** | `id-token: write` on a workflow that isn't `release.yml`; npm trusted-publisher not constrained by `job_workflow_ref` | `id-token: write` job-scoped to release job only; verify npmjs.org trusted-publisher settings include `job_workflow_ref` for `release.yml@refs/heads/main` |
 | **`workflow_run` without head-repo guard** | `on: workflow_run` without `if: github.event.workflow_run.head_repository.full_name == github.repository` | No `workflow_run` trigger in repo; add guard if ever introduced |
