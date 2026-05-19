@@ -1,3 +1,36 @@
+## [@uipath/apollo-react-v4.25.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.24.4...@uipath/apollo-react@4.25.0) (2026-05-19)
+
+### Features
+
+* **apollo-react:** add localization to stage nodes strings [MST-9646] ([b1daa79](https://github.com/UiPath/apollo-ui/commit/b1daa79956cda4a5215016ac5b00bc7c4a46b964))
+* **apollo-react:** add shared ApLocaleProvider for host-driven locale ([6165dbd](https://github.com/UiPath/apollo-ui/commit/6165dbdc1f486f0c3db64bd7b9e9c79dc0619c3b))
+* **apollo-react:** auto-detect host locale in canvas via document.documentElement.lang ([a678a58](https://github.com/UiPath/apollo-ui/commit/a678a58eb5ce745d606bda9fd6431b822d21201a))
+* **apollo-react:** display sla status and remaining time in stage node ([bfa8d9b](https://github.com/UiPath/apollo-ui/commit/bfa8d9b9503ac1ce2e130eb120a168e57c885654))
+
+### Bug Fixes
+
+* **apollo-react:** add .lang as locale fallback ([17b4776](https://github.com/UiPath/apollo-ui/commit/17b47764c2f9ed5461f99cef49c851423898ded3))
+* **apollo-react:** add loop node iteration navigator ([72dc804](https://github.com/UiPath/apollo-ui/commit/72dc804ff0e2e0f770a50eae91be4d45b73c8b36))
+* **apollo-react:** fix loop header adornment spacing [MST-9651] ([cde287a](https://github.com/UiPath/apollo-ui/commit/cde287a98cd2e31312bafd4b1a1cc28f78a2881d))
+* **apollo-react:** format props ([581dc46](https://github.com/UiPath/apollo-ui/commit/581dc46cb21540e1d1de14aee6f5ce2c30e653e6))
+* **apollo-react:** height flickering [MST-9131] ([ee7a135](https://github.com/UiPath/apollo-ui/commit/ee7a135fc43c495a340be27c0a93b592f461e7de))
+* **apollo-react:** hide loop execution adornment ([3860187](https://github.com/UiPath/apollo-ui/commit/38601871e30e7e9c1350d5104a8423c50a6c6d92))
+* **apollo-react:** preserve status borders on hover ([e06d2c2](https://github.com/UiPath/apollo-ui/commit/e06d2c2abfd6f148fd673ef2c2743f5a91efedc4))
+* **apollo-react:** render placeholder stage tasks with dotted border ([b01f6f4](https://github.com/UiPath/apollo-ui/commit/b01f6f4a40d9f7f1fb4af71702d4581ac3c27ac1))
+* **apollo-react:** render user-cancelled execution icon [MST-9651] ([b31a737](https://github.com/UiPath/apollo-ui/commit/b31a737b2e51d3948bd7674a4a9b9910b41a93c6))
+* **apollo-react:** shrink NodeToolbar to fit a single action [MST-9559] ([911d746](https://github.com/UiPath/apollo-ui/commit/911d74680a2999222e74844c79195a6bb7908fb2))
+* **apollo-react:** stage title focus [MST-9622] ([b1b00a8](https://github.com/UiPath/apollo-ui/commit/b1b00a87510818863d56af70706817c0e908dcd0))
+* **apollo-react:** stage title render [MST-9623] [MST-9699] ([72c0573](https://github.com/UiPath/apollo-ui/commit/72c0573e0e395430fa5b13222c483fdf5e53091c))
+* **apollo-react:** sticky note loop layering [MST-9649] ([be31dd7](https://github.com/UiPath/apollo-ui/commit/be31dd78dd9ca27f23a86de83797fac2c689415b))
+* **apollo-react:** stickyNote style selector [MST-9292] ([b4bf265](https://github.com/UiPath/apollo-ui/commit/b4bf265de90420838e7d3f418cbb6e13b4857569))
+* **apollo-react:** update item alignment of sla and chips ([76b042f](https://github.com/UiPath/apollo-ui/commit/76b042ff5d8876ba99657fd6ce5000142b6cdcb1))
+* **apollo-react:** update sla icon types ([b37cc74](https://github.com/UiPath/apollo-ui/commit/b37cc741a05813987e4a0d1ae58b214ea70d60ca))
+* **apollo-react:** update sla text color ([fd90bf8](https://github.com/UiPath/apollo-ui/commit/fd90bf8cebc7efa8798b4860fd06f14e72a38489))
+
+### Reverts
+
+* Revert "chore(apollo-react): drop execution status from placeholder example" ([f0c429e](https://github.com/UiPath/apollo-ui/commit/f0c429e2e7fc705e97b29a38494d70a6f138fe5c))
+
 ## [@uipath/apollo-react-v4.24.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.24.3...@uipath/apollo-react@4.24.4) (2026-05-11)
 
 ### Bug Fixes

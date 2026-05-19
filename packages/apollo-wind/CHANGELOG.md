@@ -1,3 +1,13 @@
+## [@uipath/apollo-wind-v2.17.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.16.1...@uipath/apollo-wind@2.17.0) (2026-05-19)
+
+### Features
+
+* **apollo-wind:** add maxRef to slider for dynamic max from another field ([999736a](https://github.com/UiPath/apollo-ui/commit/999736aba08c27a2a52c3b1f3bec34b9c58757ef))
+
+### Bug Fixes
+
+* **apollo-vertex:** remove deprecated table classNames key from calendar ([12dea7d](https://github.com/UiPath/apollo-ui/commit/12dea7dc8d0a27859103c5778c00a643c157ded6))
+
 ## [@uipath/apollo-wind-v2.16.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.16.0...@uipath/apollo-wind@2.16.1) (2026-05-10)
 
 ### Bug Fixes
