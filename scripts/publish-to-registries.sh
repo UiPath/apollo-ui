@@ -58,18 +58,19 @@ done
 
 TAG="${TAG_NAME:-latest}"
 
-echo "📦 Publishing to npm (OIDC trusted publisher)..."
-# --provenance links the build to its GitHub Actions source; required+verified by npm trusted publishing.
-# Only supported on registry.npmjs.org — GitHub Packages does not support npm provenance.
-# --registry= is the global flag; in pnpm 11 `--@scope:registry=` is silently
-# ignored when scope-targeted registries are routed via this flag at publish time.
-pnpm publish "${filtered_args[@]}" --tag "$TAG" --provenance --registry=https://registry.npmjs.org
+echo "📦 Publishing to npm.org (OIDC trusted publisher)..."
+# --provenance: binds artifact to GitHub Actions source via Sigstore. npmjs.org-only.
+# --@uipath:registry: scope-specific registry override. For scoped packages, this
+# beats both .npmrc's `@uipath:registry=` line and the plain `--registry=` flag
+pnpm publish "${filtered_args[@]}" --tag "$TAG" --provenance \
+  --@uipath:registry=https://registry.npmjs.org
 
-echo "✓ Published to npm"
+echo "✓ Published to npm.org"
 echo ""
 echo "📦 Publishing to GitHub Package Registry..."
 NODE_AUTH_TOKEN="$GH_NPM_REGISTRY_TOKEN" \
-  pnpm publish "${filtered_args[@]}" --tag "$TAG" --registry=https://npm.pkg.github.com
+  pnpm publish "${filtered_args[@]}" --tag "$TAG" \
+    --@uipath:registry=https://npm.pkg.github.com
 
 echo "✓ Published to GitHub Package Registry"
 echo ""
