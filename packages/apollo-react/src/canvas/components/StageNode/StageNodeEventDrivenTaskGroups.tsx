@@ -7,6 +7,7 @@ import {
   StageTaskList,
 } from './StageNode.styles';
 import type { StageNodeProps, StageTaskGroup } from './StageNode.types';
+import { useStageNodeLabels } from './useStageNodeLabels';
 
 const StageNodeEventDrivenTaskGroupsInner = ({
   props,
@@ -31,6 +32,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
   generateDeleteTaskMenuItemForTask: (taskId: string) => NodeMenuItem | undefined;
 }) => {
   const { execution, onTaskGroupModification, onReplaceTaskFromToolbox, loadingTaskIds } = props;
+  const labels = useStageNodeLabels();
 
   /** Lazily builds context menu items for a task. Called only when the menu opens,
    * avoiding object allocation on every render for every task. */
@@ -59,7 +61,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
   return (
     <StageAdditionalTasksSection style={{ marginTop }}>
       <StageAdditionalTasksHeaderSection>
-        <span className="text-xs font-bold text-foreground-muted">Event-driven tasks</span>
+        <span className="text-xs font-bold text-foreground-muted">{labels.eventDrivenTasks}</span>
       </StageAdditionalTasksHeaderSection>
       <StageTaskList>
         {eventDrivenTasks.map(({ task }) => {

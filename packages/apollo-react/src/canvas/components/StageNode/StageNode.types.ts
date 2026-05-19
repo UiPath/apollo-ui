@@ -61,8 +61,6 @@ export interface StageNodeBaseProps {
     selectedTaskId?: string;
     headerChips?: StageHeaderChip[];
   };
-  addTaskLabel?: string;
-  replaceTaskLabel?: string;
   taskOptions?: ListItem[];
   execution?: {
     stageStatus: {

@@ -1,6 +1,7 @@
 import { cn } from '@uipath/apollo-wind';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { CanvasTooltip } from '../CanvasTooltip';
+import { useStageNodeLabels } from './useStageNodeLabels';
 
 type StageTitleInputProps = {
   label: string;
@@ -13,6 +14,7 @@ export const StageTitleInput = ({
   onChange,
   className,
 }: StageTitleInputProps) => {
+  const labels = useStageNodeLabels();
   const isEditable = !!onChange;
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -38,10 +40,10 @@ export const StageTitleInput = ({
   const saveStageTitle = useCallback(() => {
     setIsEditing(false);
     if (!onChange) return;
-    const finalLabel = label.trim() === '' ? 'Untitled Stage' : label;
+    const finalLabel = label.trim() === '' ? labels.untitledStage : label;
     if (finalLabel !== label) setLabel(finalLabel);
     onChange(finalLabel);
-  }, [onChange, label]);
+  }, [onChange, label, labels.untitledStage]);
 
   const handleBlur = useCallback(() => {
     if (isEditing) saveStageTitle();

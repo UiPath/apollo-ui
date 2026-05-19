@@ -31,6 +31,7 @@ import {
 import type { StageNodeProps, StageTaskGroup, StageTaskItem } from './StageNode.types';
 import { getContextMenuItems, getDivider } from './StageNodeTaskUtilities';
 import { StageTaskDragOverlay } from './StageTaskDragOverlay';
+import { useStageNodeLabels } from './useStageNodeLabels';
 
 export const StageNodeSequentialTaskGroups = ({
   props,
@@ -62,6 +63,7 @@ export const StageNodeSequentialTaskGroups = ({
 }) => {
   const { execution, onTaskGroupModification, onTaskReorder, hideParallelOptions, loadingTaskIds } =
     props;
+  const labels = useStageNodeLabels();
 
   const sequentialTaskIds = useMemo(
     () => sequentialTasks.map(({ task }) => task.id),
@@ -145,6 +147,7 @@ export const StageNodeSequentialTaskGroups = ({
           isBelowParallel: (sequentialTaskGroups[groupIndex + 1]?.length ?? 0) > 1,
           reGroupTaskFunction: handleTaskRegroup,
           hideParallelOptions,
+          labels: labels.contextMenu,
         });
         return [...items, ...reGroupOptions];
       }
@@ -158,6 +161,7 @@ export const StageNodeSequentialTaskGroups = ({
       handleTaskRegroup,
       generateReplaceTaskMenuItemForTask,
       allTasks,
+      labels.contextMenu,
     ]
   );
 
@@ -196,7 +200,7 @@ export const StageNodeSequentialTaskGroups = ({
                 <StageTaskGroupContainer isParallel={isParallel}>
                   {isParallel && (
                     <StageParallelLabel>
-                      <span className="text-xs">Parallel</span>
+                      <span className="text-xs">{labels.parallel}</span>
                     </StageParallelLabel>
                   )}
                   {taskGroup.map((task, taskIndex) => {

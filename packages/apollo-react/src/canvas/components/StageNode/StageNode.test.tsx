@@ -1,8 +1,8 @@
-import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen, waitFor } from '../../utils/testing';
 import type { ListItem } from '../Toolbox';
 import { StageNode } from './StageNode';
 import type { StageNodeProps, StageTaskItem } from './StageNode.types';
@@ -309,26 +309,6 @@ describe('StageNode - Replace Task Functionality', () => {
       // Check toolbox title
       const toolboxTitle = screen.getByTestId('toolbox-title');
       expect(toolboxTitle).toHaveTextContent('Replace task');
-    });
-
-    it('should use custom replaceTaskLabel when provided', async () => {
-      const user = userEvent.setup();
-      const onReplaceTaskFromToolbox = vi.fn();
-      renderStageNode({
-        onReplaceTaskFromToolbox,
-        replaceTaskLabel: 'Custom Replace Label',
-      });
-
-      const taskMenuButton = screen.getByTestId('task-menu-button-task-1');
-      await user.click(taskMenuButton);
-
-      const replaceMenuItem = screen.getByTestId('menu-item-task-1-replace-task');
-      await user.click(replaceMenuItem);
-
-      await waitFor(() => {
-        const toolboxTitle = screen.getByTestId('toolbox-title');
-        expect(toolboxTitle).toHaveTextContent('Custom Replace Label');
-      });
     });
 
     it('should display task options in replace task toolbox', async () => {

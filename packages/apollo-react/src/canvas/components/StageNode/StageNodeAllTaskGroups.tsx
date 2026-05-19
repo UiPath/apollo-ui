@@ -10,6 +10,7 @@ import { StageNodeAdhocTaskGroups } from './StageNodeAdhocTaskGroups';
 import { StageNodeEventDrivenTaskGroups } from './StageNodeEventDrivenTaskGroups';
 import { StageNodeSequentialTaskGroups } from './StageNodeSequentialTaskGroups';
 import { getMenuItem } from './StageNodeTaskUtilities';
+import { useStageNodeLabels } from './useStageNodeLabels';
 
 const StageNodeAllTaskGroupsInner = ({
   props,
@@ -39,6 +40,7 @@ const StageNodeAllTaskGroupsInner = ({
     onReplaceTaskFromToolbox,
   } = props;
 
+  const labels = useStageNodeLabels();
   const allTasks = useMemo(() => stageDetails?.tasks || [], [stageDetails?.tasks]);
 
   // Split tasks into separate sections
@@ -53,7 +55,7 @@ const StageNodeAllTaskGroupsInner = ({
 
   const selectedTaskId = stageDetails?.selectedTaskId;
   const defaultContent =
-    stageDetails?.defaultContent || (isReadOnly ? 'No tasks' : 'Add first task');
+    stageDetails?.defaultContent || (isReadOnly ? labels.noTasks : labels.addFirstTask);
 
   const handleReorderSequentialTasks = useCallback(
     (newTasks: StageTaskItem[][]) => {
@@ -97,7 +99,7 @@ const StageNodeAllTaskGroupsInner = ({
         return undefined;
       }
 
-      return getMenuItem('replace-task', 'Replace task', () => {
+      return getMenuItem('replace-task', labels.replaceTask, () => {
         taskStateReference.current = {
           isParallel,
           groupIndex,
@@ -107,7 +109,14 @@ const StageNodeAllTaskGroupsInner = ({
         setIsReplacingTask(true);
       });
     },
-    [onReplaceTaskFromToolbox, allTasks, onTaskClick, setIsReplacingTask, taskStateReference]
+    [
+      onReplaceTaskFromToolbox,
+      allTasks,
+      onTaskClick,
+      setIsReplacingTask,
+      taskStateReference,
+      labels.replaceTask,
+    ]
   );
 
   const generateDeleteTaskMenuItemForTask = useCallback(
@@ -131,11 +140,11 @@ const StageNodeAllTaskGroupsInner = ({
         return undefined;
       }
 
-      return getMenuItem('remove-task', 'Delete task', () =>
+      return getMenuItem('remove-task', labels.deleteTask, () =>
         onTaskGroupModification(GroupModificationType.REMOVE_TASK, groupIndex, taskIndex)
       );
     },
-    [allTasks, onTaskGroupModification]
+    [allTasks, onTaskGroupModification, labels.deleteTask]
   );
 
   return (
