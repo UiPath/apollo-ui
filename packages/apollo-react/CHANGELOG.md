@@ -1,3 +1,11 @@
+## [@uipath/apollo-react-v4.25.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.25.0...@uipath/apollo-react@4.25.1) (2026-05-19)
+
+### Bug Fixes
+
+* **apollo-react:** add aria-label to stage title input ([044553d](https://github.com/UiPath/apollo-ui/commit/044553d214ee9f689b878ccc039b8d6300de86c0))
+* **apollo-react:** aria label with var ([e3d5f3a](https://github.com/UiPath/apollo-ui/commit/e3d5f3afb9f40ee8ff6a7632061e19b97b65c9b9))
+* **apollo-react:** remove autocomplete and add unique stage name ([b82245a](https://github.com/UiPath/apollo-ui/commit/b82245a204575f5807eff4d37e11bee5fbe2cf36))
+
 ## [@uipath/apollo-react-v4.25.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.24.4...@uipath/apollo-react@4.25.0) (2026-05-19)
 
 ### Features
