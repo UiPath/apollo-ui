@@ -175,17 +175,20 @@ Never place secrets in a workflow-level `env:` block. Always scope to the specif
 ```yaml
 # ❌ Wrong — workflow-level env exposes secrets to all steps
 env:
-  NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+  GH_NPM_REGISTRY_TOKEN: ${{ steps.app-token.outputs.token }}
 
 # ✅ Correct — step-level env
 - name: Publish package
   env:
     GH_NPM_REGISTRY_TOKEN: ${{ steps.app-token.outputs.token }}
-    NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
   run: pnpm publish:dev "$PACKAGE" "$SUFFIX"
 ```
 
-The GitHub App token (`steps.app-token.outputs.token`) is used for `GH_NPM_REGISTRY_TOKEN` in publish/unpublish steps. `github.token` with `packages: read` at job level is used for install — pass it via the composite action's `registry-token` input. Do not re-expose either at workflow or job level.
+**Three token classes in this repo, each step-scoped:**
+
+- `github.token` with `packages: read` at job level — used for **installing** private `@uipath/*` packages from GHP. Pass it to the composite action's `registry-token` input. Do not re-expose at workflow or job level.
+- GitHub App installation token (`steps.app-token.outputs.token`) — used for `GH_NPM_REGISTRY_TOKEN` in **GHP publish/unpublish** steps and for **git push / PR creation** in release flows. Mint via `actions/create-github-app-token` with `permission-*` inputs scoped to the minimum needed.
+- **npm.org publishing uses OIDC Trusted Publishing — there is no npm token in CI.** The publishing job declares `id-token: write` and the `@uipath/*` package's npm Trusted Publisher entry pins this repo + `release.yml`. pnpm 11 detects the OIDC env vars set by Actions and exchanges them for a short-lived publish token automatically.
 
 ---
 
@@ -400,7 +403,9 @@ Use this checklist when reviewing or hardening any workflow file.
 ### Secrets
 - [ ] No secrets in workflow-level `env:` blocks
 - [ ] No secrets in job-level `env:` blocks (unless unavoidable and documented)
-- [ ] `NPM_AUTH_TOKEN` and GitHub App token appear only in the `env:` of the specific step that needs them
+- [ ] GitHub App token appears only in the `env:` of the specific step that needs it
+- [ ] No `NPM_AUTH_TOKEN` / `NPM_TOKEN` anywhere — npm.org publishes use OIDC Trusted Publishing
+- [ ] `id-token: write` declared only on the npm-publish job (release.yml), not workflow-level
 - [ ] No secrets interpolated directly into `run:` shell strings — always via `env:`
 
 ### Fork PR Protection
@@ -442,7 +447,7 @@ Use this checklist when reviewing or hardening any workflow file.
 | Write scope at workflow level (`contents: write`, `packages: write`, etc.) | Move to the specific job; use `permissions: {}` at workflow level |
 | Missing `permissions:` block entirely on a workflow with write jobs | Add `permissions: {}` + per-job grants |
 | `persist-credentials: true` on read-only jobs | `persist-credentials: false` unless job pushes |
-| `env: NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}` at job level | Move to the specific `env:` block of the step that needs it |
+| `env: NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}` anywhere | npm.org publishes via OIDC Trusted Publishing — declare `id-token: write` on the publish job and drop the token entirely |
 | `pnpm dlx tsx scripts/foo.ts` | `pnpm exec tsx scripts/foo.ts` (tsx is in devDependencies) |
 | Cache key missing `github.ref_name` | `${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}` |
 | Upload `dist/` in failure artifacts | Upload `coverage/` only |

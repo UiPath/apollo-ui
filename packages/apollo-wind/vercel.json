@@ -1,7 +1,6 @@
 {
-  "buildCommand": "cd ../.. && pnpm turbo storybook:build --filter=@uipath/apollo-wind",
-  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+  "installCommand": "true",
+  "buildCommand": "true",
   "outputDirectory": "storybook-static",
-  "framework": null,
-  "ignoreCommand": "git diff HEAD^ HEAD --quiet . && git diff HEAD^ HEAD --quiet ../../packages/apollo-core"
+  "framework": null
 }

@@ -156,8 +156,7 @@
   ],
   "license": "MIT",
   "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org"
+    "access": "public"
   },
   "peerDependencies": {
     "react": ">=18.3.0",

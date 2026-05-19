@@ -152,7 +152,7 @@ When reviewing `release.yml`, `dev-publish.yml`, `dev-cleanup.yml`, or `scripts/
 - [ ] All publishes scoped to `@uipath/*` only
 - [ ] Dev-publish versions use `x.y.z-prNNN.sha` format
 - [ ] `dev-publish.yml` / `dev-cleanup.yml` cleanup steps validate `^@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+(\.[a-z0-9]+)?$` before `pnpm unpublish:dev`
-- [ ] `NPM_AUTH_TOKEN`, `NPM_TOKEN` step-scoped to the Release step only — not job-level or workflow-level
+- [ ] npm publishes use OIDC Trusted Publishing — no `NPM_AUTH_TOKEN` / `NPM_TOKEN` in workflow `env:`; release job declares `id-token: write`
 - [ ] GitHub App token (`steps.app-token.outputs.token`) step-scoped to the steps that need it — not job-level or workflow-level
 - [ ] `release.yml` checkout uses `persist-credentials: false`; credentials injected via `git remote set-url` only after `pnpm build` + `pnpm test`
 

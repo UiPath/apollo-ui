@@ -27,7 +27,7 @@ jobs:
             - name: Check for changes outside apollo-vertex
               id: scope
               env:
-                  GH_TOKEN: ${{ secrets.AUTO_MERGE_TOKEN }}
+                  GH_TOKEN: ${{ github.token }}
                   GH_REPO: ${{ github.repository }}
                   PR_URL: ${{ github.event.pull_request.html_url }}
               run: |
@@ -40,10 +40,21 @@ jobs:
                     echo "vertex_only=true" >> "$GITHUB_OUTPUT"
                   fi
 
+            - name: Generate GitHub App token
+              if: steps.scope.outputs.vertex_only == 'true'
+              uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+              id: app-token
+              with:
+                  client-id: ${{ vars.RELEASER_APP_CLIENT_ID }}
+                  private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
+                  owner: ${{ github.repository_owner }}
+                  repositories: ${{ github.event.repository.name }}
+                  permission-pull-requests: write
+
             - name: Enable auto-merge
               if: steps.scope.outputs.vertex_only == 'true'
               env:
-                  GH_TOKEN: ${{ secrets.AUTO_MERGE_TOKEN }}
+                  GH_TOKEN: ${{ steps.app-token.outputs.token }}
                   PR_URL: ${{ github.event.pull_request.html_url }}
               run: |
                   gh pr merge --auto --rebase "$PR_URL"
