@@ -106,7 +106,7 @@ When any PR touches `.github/workflows/`, `.github/actions/`, `.npmrc`, `pnpm-wo
 **Cache**
 - [ ] Turbo cache key: `${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}`; `restore-keys` scoped to same branch — never matches entries from other branches or PR runs
 - [ ] pnpm store cache key (if used): also includes `github.sha`; `restore-keys` scoped to same branch — never broad enough to be written by a fork/PR run and read by a release run
-- [ ] Prefer `actions/cache/restore` (read) + `actions/cache/save` (conditional write) over combined `actions/cache` on release and deploy jobs — combined `actions/cache` post-job saves use a runner-internal token that bypasses `permissions:`
+- [ ] On release and deploy jobs, prefer `actions/cache/restore` (read) + an explicit `actions/cache/save` step at a known-good point (before any third-party JS execution) over combined `actions/cache` — combined runs post-job save unconditionally, capturing whatever state the workflow ended in (incl. compromised plugin output)
 - [ ] Scheduled workflow jobs (`on: schedule`) do not restore caches under keys that a fork PR could have written
 
 **Injection**

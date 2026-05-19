@@ -53,12 +53,12 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Inject write credentials only at push time — not during the node script above.
-          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git checkout -b "$BRANCH"
           git add pnpm-workspace.yaml
           git commit -m "chore(repo): prune stale minimumReleaseAge exemptions"
-          git push origin "$BRANCH"
+          # App token via inline extraheader — never persisted to .git/config.
+          git -c http.https://github.com/.extraheader="AUTHORIZATION: bearer $GH_TOKEN" \
+            push origin "$BRANCH"
 
           # Build a markdown list of removed packages
           # shellcheck disable=SC2016

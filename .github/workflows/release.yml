@@ -6,7 +6,6 @@ on:
       - main
       - 'support/**'
 
-# Deny-all default; the release job grants only what it needs.
 permissions: {}
 
 env:
@@ -23,6 +22,9 @@ jobs:
     name: Release and Publish
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      changed: ${{ steps.bump.outputs.changed }}
+      changed_packages: ${{ steps.bump.outputs.changed_packages }}
     permissions:
       contents: write
       packages: write
@@ -36,13 +38,21 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      # OIDC env scrubbed from install/build/test/snapshot — only pnpm release
+      # legitimately needs it (for npm trusted publishing). Reduces attack
+      # surface to a single step where third-party JS executes.
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
+        env:
+          ACTIONS_ID_TOKEN_REQUEST_URL: ""
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
         with:
           registry-token: ${{ github.token }}
 
-      - name: Cache Turborepo
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      # Save before `pnpm release` so a compromised plugin can't poison the
+      # Turbo cache for future runs.
+      - name: Restore Turborepo cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: .turbo
           key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
@@ -50,61 +60,103 @@ jobs:
             ${{ runner.os }}-turbo-${{ github.ref_name }}-
 
       - name: Build packages
+        env:
+          ACTIONS_ID_TOKEN_REQUEST_URL: ""
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
         run: pnpm build
 
       - name: Run tests
+        env:
+          ACTIONS_ID_TOKEN_REQUEST_URL: ""
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
         run: pnpm test
 
-      - name: Generate GitHub App token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        id: app-token
+      - name: Save Turborepo cache
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
-          client-id: ${{ vars.RELEASER_APP_CLIENT_ID }}
-          private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: ${{ github.event.repository.name }}
-          permission-contents: write
-          permission-issues: write
-          permission-packages: write
-          permission-pull-requests: write
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
 
-      - name: Setup git user and credentials
+      # Snapshot dist/ hashes pre/post publish — if a plugin tampers dist
+      # between build and attestation, the attestation would bind Sigstore to
+      # malicious content. The verify step aborts before attest if so.
+      - name: Snapshot dist/ hashes
         env:
-          APP_TOKEN: ${{ steps.app-token.outputs.token }}
+          ACTIONS_ID_TOKEN_REQUEST_URL: ""
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
+        run: |
+          find packages/*/dist web-packages/*/dist -type f -print0 \
+            | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/dist.pre.sha256"
+
+      - name: Setup git user
         run: |
           git config --global user.name "semantic-release-bot"
           git config --global user.email "semantic-release-bot@users.noreply.github.com"
-          # Inject write credentials only after build + test complete.
-          # App token is not in .git/config during pnpm build or pnpm test above.
-          git remote set-url origin "https://x-access-token:${APP_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          # Credential helper reads GITHUB_TOKEN from env on demand. Set only on
+          # the Release step → no leak to later steps that don't push.
+          git config --global credential.helper \
+            '!f() { test -n "$GITHUB_TOKEN" || exit 1; echo "username=x-access-token"; echo "password=$GITHUB_TOKEN"; }; f'
 
       - name: Release
         env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          GH_NPM_REGISTRY_TOKEN: ${{ steps.app-token.outputs.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GH_NPM_REGISTRY_TOKEN: ${{ github.token }}
           HUSKY: 0
         run: pnpm release
 
-      - name: Commit changelogs and package updates
+      - name: Verify dist/ unchanged
+        env:
+          ACTIONS_ID_TOKEN_REQUEST_URL: ""
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            # Get list of changed packages
-            CHANGED_PACKAGES=$(git diff --name-only | grep 'packages/\|web-packages/' | cut -d'/' -f2 | sort -u | tr '\n' ', ' | sed 's/,$//')
-
-            git add --all
-            git commit -m "chore(release): version bump [skip ci]" -m "Packages: $CHANGED_PACKAGES"
-
-            if ! git push; then
-              echo "::error::Failed to push version bump commit"
-              echo "This may indicate a conflict or permission issue"
-              exit 1
-            fi
-            echo "✓ Pushed version bump commit"
-          else
-            echo "No changes to commit"
+          find packages/*/dist web-packages/*/dist -type f -print0 \
+            | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/dist.post.sha256"
+          if ! diff -q "$RUNNER_TEMP/dist.pre.sha256" "$RUNNER_TEMP/dist.post.sha256" >/dev/null; then
+            echo "::error::dist/ was modified during release"
+            diff "$RUNNER_TEMP/dist.pre.sha256" "$RUNNER_TEMP/dist.post.sha256" || true
+            exit 1
           fi
-          # Remove write credentials — push is complete and later steps don't need them
-          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+
+      - name: Capture version-bump diff
+        id: bump
+        run: |
+          # pnpm-lock.yaml is deliberately NOT in this allowlist: workspace deps
+          # use link:../ refs so version bumps don't propagate, and allowing it
+          # would let a compromised plugin swap integrity/tarball hashes.
+          ALLOWED=(
+            'packages/*/CHANGELOG.md'
+            'packages/*/package.json'
+            'web-packages/*/CHANGELOG.md'
+            'web-packages/*/package.json'
+          )
+
+          UNTRACKED=$(git ls-files --others --exclude-standard -- "${ALLOWED[@]}" 2>/dev/null || true)
+          if [ -n "$UNTRACKED" ]; then
+            echo "$UNTRACKED" | xargs git add -N --
+          fi
+
+          PATCH="$RUNNER_TEMP/version-bump.patch"
+          git diff -- "${ALLOWED[@]}" > "$PATCH"
+
+          if [ -s "$PATCH" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            CHANGED_PACKAGES=$(git diff --name-only -- "${ALLOWED[@]}" | grep -E '^(packages|web-packages)/' | cut -d'/' -f2 | sort -u | tr '\n' ', ' | sed 's/,$//')
+            echo "changed_packages=$CHANGED_PACKAGES" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [ -n "$UNTRACKED" ]; then
+            echo "$UNTRACKED" | xargs git reset HEAD --
+          fi
+
+      - name: Upload version-bump patch
+        if: steps.bump.outputs.changed == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: version-bump-patch
+          path: ${{ runner.temp }}/version-bump.patch
+          retention-days: 7
 
       - name: Generate per-package SBOMs
         run: |
@@ -144,8 +196,8 @@ jobs:
           path: ${{ runner.temp }}/sbom-*.cyclonedx.json
           retention-days: 90
 
-      # Build provenance attestation — covers GHP consumers, who cannot use npm's --provenance
-      # mechanism (npm.org-only). Verifiable against local dist files or extracted tarball contents:
+      # Build provenance attestation — covers GHP consumers, who cannot use npm's
+      # --provenance mechanism (npm.org-only). Verifiable via:
       #   gh attestation verify ./extracted-dist-file --owner UiPath
       - name: Attest build provenance — apollo-core
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
@@ -166,3 +218,72 @@ jobs:
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
           subject-path: web-packages/ap-chat/dist
+
+  # Isolated runner — App token confined here. The commit-push step has never
+  # seen third-party JS from the release job.
+  commit-version-bump:
+    name: Commit version bump
+    needs: release
+    if: needs.release.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Download version-bump patch
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: version-bump-patch
+          path: ${{ runner.temp }}
+
+      - name: Verify patch is safe to apply
+        run: node .github/scripts/verify-version-bump-patch.mjs "$RUNNER_TEMP/version-bump.patch"
+
+      - name: Apply version-bump patch
+        run: git apply --no-symlinks --whitespace=nowarn "$RUNNER_TEMP/version-bump.patch"
+
+      - name: Validate package.json mutations
+        run: node .github/scripts/validate-package-json-mutations.mjs "$RUNNER_TEMP/version-bump.patch"
+
+      - name: Generate GitHub App token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          client-id: ${{ vars.RELEASER_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+
+      - name: Commit and push version bump
+        env:
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
+          CHANGED_PACKAGES: ${{ needs.release.outputs.changed_packages }}
+        run: |
+          git config user.name "semantic-release-bot"
+          git config user.email "semantic-release-bot@users.noreply.github.com"
+
+          git add -- \
+            'packages/*/CHANGELOG.md' \
+            'packages/*/package.json' \
+            'web-packages/*/CHANGELOG.md' \
+            'web-packages/*/package.json' 2>/dev/null || true
+
+          if git diff --cached --quiet; then
+            echo "::error::Patch applied but nothing staged"
+            exit 1
+          fi
+
+          git commit -m "chore(release): version bump [skip ci]" -m "Packages: $CHANGED_PACKAGES"
+
+          # App token via inline extraheader — never written to .git/config.
+          if ! git -c http.https://github.com/.extraheader="AUTHORIZATION: bearer $APP_TOKEN" push origin HEAD; then
+            echo "::error::Failed to push version bump commit"
+            exit 1
+          fi
