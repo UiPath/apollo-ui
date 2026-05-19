@@ -1,13 +1,12 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  type DataAdapter,
-  TableChart,
-  type TableChartConfiguration,
-  type TableDataModel,
-} from "@uipath/apollo-dashboarding";
 import { Card, CardContent } from "@/components/ui/card";
+import { TableChartWithAdapter } from "@/components/ui/table-chart";
+import type {
+  DataAdapter,
+  TableChartConfiguration,
+  TableDataModel,
+} from "@/lib/charts-core";
 
 const DEFAULT_TABLE_STATE = { sortBy: null } as const;
 
@@ -22,17 +21,14 @@ export function TableChartCard({
   dataModel,
   dataAdapter,
 }: TableChartCardProps) {
-  const queryClient = useQueryClient();
-
   return (
     <Card className="flex flex-col w-full h-[300px] gap-2 py-4">
       <CardContent className="flex-1 overflow-hidden p-0">
-        <TableChart
+        <TableChartWithAdapter
           configuration={configuration}
           dataModel={dataModel}
           dataAdapter={dataAdapter}
           state={DEFAULT_TABLE_STATE}
-          queryClient={queryClient}
         />
       </CardContent>
     </Card>

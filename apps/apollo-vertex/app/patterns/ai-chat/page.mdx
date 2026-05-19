@@ -255,7 +255,7 @@ Notes:
 
 ## Data Fabric Table Tool
 
-The `data_fabric_table` tool renders entity data as interactive tables powered by `@uipath/apollo-dashboarding`. It supports server-side **filtering** — list filters, text search, and numeric ranges — so users can ask for filtered views directly in the chat.
+The `data_fabric_table` tool renders entity data as interactive tables powered by the `data-fabric-adapter` registry item paired with the `table-chart` component. It supports server-side **filtering** — list filters, text search, and numeric ranges — so users can ask for filtered views directly in the chat.
 
 ```tsx
 import {
@@ -282,7 +282,7 @@ The LLM can pass filters based on the user's request:
 - **Range filter (numeric)** — numeric min/max: `"show orders over $200"`
 - **Range filter (datetime)** — ISO 8601 min/max: `"show orders from the last 30 days"`. The tool prompt is given today's date so the LLM can resolve relative phrases into absolute ISO dates before calling the tool.
 
-Filters are passed through the table configuration to `@uipath/apollo-dashboarding`, which translates them to Data Fabric query filters server-side.
+Filters are passed through the table configuration to the `data-fabric-adapter`, which translates them to Data Fabric query filters server-side.
 
 ### Multi-entity joins
 

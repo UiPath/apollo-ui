@@ -1,10 +1,10 @@
 "use client";
 
 import { toolDefinition } from "@tanstack/ai";
-import { dataFabricAdapter } from "@uipath/apollo-dashboarding";
 import { DateTime } from "luxon";
 import { z } from "zod";
 import { assert } from "@/lib/asserts/assert";
+import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
 import { BarChartCard } from "../../charts/bar-chart-card";
 import { ToolResolutionError } from "../../charts/tool-resolution-error";
 import {
