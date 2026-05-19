@@ -288,8 +288,13 @@ jobs:
 
           git commit -m "chore(release): version bump [skip ci]" -m "Packages: $CHANGED_PACKAGES"
 
-          # App token via inline extraheader — never written to .git/config.
-          if ! git -c http.https://github.com/.extraheader="AUTHORIZATION: bearer $APP_TOKEN" push origin HEAD; then
+          # Inject App token into the origin URL just for the push, then strip it.
+          # Runner is ephemeral and isolated; the token lives in .git/config only
+          # for this step.
+          git remote set-url origin "https://x-access-token:${APP_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if ! git push origin HEAD; then
+            git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
             echo "::error::Failed to push version bump commit"
             exit 1
           fi
+          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"

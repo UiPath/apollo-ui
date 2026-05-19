@@ -56,9 +56,12 @@ jobs:
           git checkout -b "$BRANCH"
           git add pnpm-workspace.yaml
           git commit -m "chore(repo): prune stale minimumReleaseAge exemptions"
-          # App token via inline extraheader — never persisted to .git/config.
-          git -c http.https://github.com/.extraheader="AUTHORIZATION: bearer $GH_TOKEN" \
-            push origin "$BRANCH"
+          # Inject App token into the origin URL just for the push, then strip
+          # it. Runner is ephemeral and isolated; the token lives in .git/config
+          # only for this step.
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin "$BRANCH"
+          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
 
           # Build a markdown list of removed packages
           # shellcheck disable=SC2016
