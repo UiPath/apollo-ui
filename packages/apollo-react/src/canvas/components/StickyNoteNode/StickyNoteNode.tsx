@@ -301,7 +301,7 @@ const StickyNoteNodeComponent = ({
   return (
     <>
       <Global styles={stickyNoteGlobalStyles} />
-      <StickyNoteWrapper>
+      <StickyNoteWrapper data-sticky-note>
         {!readOnly && (
           <>
             {/* Top-left resize control */}

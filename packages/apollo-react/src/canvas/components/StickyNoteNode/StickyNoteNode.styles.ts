@@ -36,11 +36,8 @@ export const RESIZE_CONTROL_Z_INDEX = 100;
 export const stickyNoteGlobalStyles = css`
   /* Override React Flow's elevateNodesOnSelect behavior for sticky notes */
   /* Edges have z-index: 0, so we use STICKY_NOTE_BELOW_EDGE_Z_INDEX to ensure sticky notes are below edges */
-  .react-flow .react-flow__node[data-id^='sticky-'] {
-    z-index: ${STICKY_NOTE_BELOW_EDGE_Z_INDEX} !important;
-  }
-
-  .react-flow .react-flow__node.selected[data-id^='sticky-'] {
+  .react-flow .react-flow__node:has([data-sticky-note]),
+  .react-flow .react-flow__node.selected:has([data-sticky-note]) {
     z-index: ${STICKY_NOTE_BELOW_EDGE_Z_INDEX} !important;
   }
 `;
