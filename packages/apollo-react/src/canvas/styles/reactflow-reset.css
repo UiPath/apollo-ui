@@ -43,7 +43,9 @@
  *   - loop containers need to stay below sticky notes even when selected
  *   - sticky notes own annotation/active annotation layers in StickyNoteNode.styles
  */
-.react-flow__node:not(.parent):not([data-id^="sticky-"]):not(:has([data-loop-container])):hover {
+.react-flow__node:not(.parent):not(:has([data-sticky-note])):not(
+    :has([data-loop-container])
+  ):hover {
   z-index: 1002 !important;
 }
 
