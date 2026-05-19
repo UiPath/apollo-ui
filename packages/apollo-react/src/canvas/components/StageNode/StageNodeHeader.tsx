@@ -11,6 +11,7 @@ import { StageChip, StageHeader } from './StageNode.styles';
 import type { StageNodeProps, StageSlaIcon, StageStatus } from './StageNode.types';
 import { StageHeaderChipType } from './StageNode.types';
 import { StageTitleInput } from './StageTitleInput';
+import { useStageNodeLabels } from './useStageNodeLabels';
 
 const SLA_ICON_CONFIG: Record<StageSlaIcon, { icon: string; iconColor: string }> = {
   warning: {
@@ -44,11 +45,11 @@ const StageNodeHeaderInner = ({
   status?: StageStatus;
   handleTaskAddClick: (event: React.MouseEvent) => void;
 }) => {
+  const labels = useStageNodeLabels();
   const {
     id,
     stageDetails,
     execution,
-    addTaskLabel = 'Add task',
     onTaskAdd,
     onAddTaskFromToolbox,
     onStageTitleChange,
@@ -92,13 +93,13 @@ const StageNodeHeaderInner = ({
             </CanvasTooltip>
           )}
           {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly && (
-            <CanvasTooltip content={addTaskLabel} placement="top">
+            <CanvasTooltip content={labels.addTask} placement="top">
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-6 w-6"
                 onClick={handleTaskAddClick}
-                aria-label={addTaskLabel}
+                aria-label={labels.addTask}
                 disabled={isAddTaskDisabled}
               >
                 <CanvasIcon icon="plus" size={20} />

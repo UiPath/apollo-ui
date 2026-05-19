@@ -1,8 +1,27 @@
 {
+  "stage-node.add-first-task": "Add first task",
+  "stage-node.add-task": "Add task",
+  "stage-node.add-task-to-parallel-group-above": "Add task to parallel group above",
+  "stage-node.add-task-to-parallel-group-below": "Add task to parallel group below",
+  "stage-node.adhoc-tasks": "Ad hoc tasks",
+  "stage-node.create-parallel-group-with-task-above": "Create parallel group with task above",
+  "stage-node.create-parallel-group-with-task-below": "Create parallel group with task below",
+  "stage-node.delete-task": "Delete task",
+  "stage-node.event-driven-tasks": "Event-driven tasks",
+  "stage-node.move-down": "Move down",
+  "stage-node.move-up": "Move up",
+  "stage-node.no-tasks": "No tasks",
+  "stage-node.parallel": "Parallel",
+  "stage-node.remove-from-parallel-group": "Remove from parallel group",
+  "stage-node.remove-group-from-stage": "Remove group from stage",
+  "stage-node.replace-task": "Replace task",
+  "stage-node.ungroup-parallel-tasks": "Ungroup parallel tasks",
+  "stage-node.untitled-stage": "Untitled stage",
   "sticky-note.formatting.bold": "Bold ({boldShortcut})",
   "sticky-note.formatting.italic": "Italic ({italicShortcut})",
   "sticky-note.formatting.strikethrough": "Strikethrough ({strikethroughShortcut})",
   "sticky-note.formatting.bullet-list": "Bullet list",
   "sticky-note.formatting.numbered-list": "Numbered list",
-  "sticky-note.formatting.toolbar": "Text formatting"
+  "sticky-note.formatting.toolbar": "Text formatting",
+  "toolbox.search": "Search"
 }

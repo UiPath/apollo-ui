@@ -15,6 +15,7 @@ interface CanvasProvidersProps {
   edges: Edge[];
   mode: BaseCanvasProps['mode'];
   isDarkMode?: boolean;
+  locale?: BaseCanvasProps['locale'];
 }
 
 /**
@@ -28,10 +29,11 @@ export function CanvasProviders({
   edges,
   mode,
   isDarkMode,
+  locale,
   children,
 }: CanvasProvidersProps) {
   return (
-    <ApI18nProvider component="canvas">
+    <ApI18nProvider component="canvas" locale={locale}>
       <CanvasThemeProvider isDarkMode={isDarkMode}>
         <TooltipProvider delayDuration={200} skipDelayDuration={100}>
           <CanvasTooltipProviderMarker>

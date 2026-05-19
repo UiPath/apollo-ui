@@ -52,6 +52,9 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     backgroundSize = BASE_CANVAS_DEFAULTS.background.size,
     isDarkMode,
 
+    // i18n
+    locale,
+
     // Configuration
     minZoom = BASE_CANVAS_DEFAULTS.zoom.min,
     maxZoom = BASE_CANVAS_DEFAULTS.zoom.max,
@@ -149,7 +152,13 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
   );
 
   return (
-    <CanvasProviders nodes={nodes} edges={edges} mode={mode} isDarkMode={isDarkMode}>
+    <CanvasProviders
+      nodes={nodes}
+      edges={edges}
+      mode={mode}
+      isDarkMode={isDarkMode}
+      locale={locale}
+    >
       <ReactFlow
         {...reactFlowProps}
         // Purposely removing the reactFlow colorMode to prevent conflicts with custom theming implementation.
