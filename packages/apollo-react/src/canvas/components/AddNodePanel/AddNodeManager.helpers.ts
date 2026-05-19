@@ -22,7 +22,6 @@ import { snapUpToGrid } from '../../utils/NodeUtils';
  * Gap (px) used when shifting nodes around an Add Node insertion at the
  * top-level scope. Must exceed `2 × resolveCollisions` margin (32 each side =
  * 64 total) so the post-shift layout doesn't trigger another collision pass.
- *
  */
 const TOP_LEVEL_INSERTION_GAP_PX = GRID_SPACING * 5;
 
