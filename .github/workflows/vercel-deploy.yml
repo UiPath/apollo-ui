@@ -98,27 +98,22 @@ jobs:
         include:
           - project_name: apollo-design
             vercel_project_id_secret: VERCEL_PROJECT_ID_CANVAS
-            app_dir: apps/storybook
             build_filter: storybook-app
             build_task: storybook:build
           - project_name: apollo-docs
             vercel_project_id_secret: VERCEL_PROJECT_ID_DOCS
-            app_dir: apps/apollo-docs
             build_filter: apollo-docs
             build_task: build
           - project_name: apollo-landing
             vercel_project_id_secret: VERCEL_PROJECT_ID_LANDING
-            app_dir: apps/landing
             build_filter: apollo-landing
             build_task: build
           - project_name: apollo-ui-react
             vercel_project_id_secret: VERCEL_PROJECT_ID_UI_REACT
-            app_dir: apps/react-playground
             build_filter: react-playground
             build_task: build
           - project_name: apollo-vertex
             vercel_project_id_secret: VERCEL_PROJECT_ID_VERTEX
-            app_dir: apps/apollo-vertex
             build_filter: apollo-vertex
             build_task: build
 
@@ -187,6 +182,7 @@ jobs:
           esac
 
       - name: Build project
+        id: build
         run: pnpm turbo ${{ matrix.build_task }} --filter=${{ matrix.build_filter }}
 
       - name: Save Turborepo cache
@@ -196,6 +192,7 @@ jobs:
           key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
 
       - name: Build Vercel output
+        id: vercel-build
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -268,11 +265,35 @@ jobs:
           DEPLOY_URL: ${{ steps.deploy.outputs.url }}
           DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
           DEPLOY_ERROR: ${{ steps.deploy.outputs.error_message }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          VERCEL_BUILD_OUTCOME: ${{ steps.vercel-build.outcome }}
+          PROJECT_NAME: ${{ matrix.project_name }}
         run: |
           mkdir -p "$RUNNER_TEMP/deploy-result"
-          printf '%s' "${DEPLOY_URL:-}"      > "$RUNNER_TEMP/deploy-result/url"
-          printf '%s' "${DEPLOY_OUTCOME:-failure}" > "$RUNNER_TEMP/deploy-result/outcome"
-          printf '%s' "${DEPLOY_ERROR:-}"    > "$RUNNER_TEMP/deploy-result/error"
+
+          # Attribute the failure to the earliest step that broke so the PR
+          # comment can show a meaningful status instead of a misleading
+          # "Skipped" when build/prebuild dies before deploy ever runs.
+          if [ "$DEPLOY_OUTCOME" = "success" ]; then
+            OUTCOME="success"
+            ERROR=""
+          elif [ "$BUILD_OUTCOME" = "failure" ]; then
+            OUTCOME="failure"
+            ERROR="Build failed (pnpm turbo) for $PROJECT_NAME"
+          elif [ "$VERCEL_BUILD_OUTCOME" = "failure" ]; then
+            OUTCOME="failure"
+            ERROR="Vercel build failed for $PROJECT_NAME"
+          elif [ "$DEPLOY_OUTCOME" = "failure" ]; then
+            OUTCOME="failure"
+            ERROR="${DEPLOY_ERROR:-Deploy step failed}"
+          else
+            OUTCOME="skipped"
+            ERROR=""
+          fi
+
+          printf '%s' "${DEPLOY_URL:-}" > "$RUNNER_TEMP/deploy-result/url"
+          printf '%s' "$OUTCOME"        > "$RUNNER_TEMP/deploy-result/outcome"
+          printf '%s' "$ERROR"          > "$RUNNER_TEMP/deploy-result/error"
 
       - name: Upload deploy result
         if: always() && github.event_name == 'pull_request'

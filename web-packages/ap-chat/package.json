@@ -49,8 +49,7 @@
   ],
   "license": "MIT",
   "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org"
+    "access": "public"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",

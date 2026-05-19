@@ -63,8 +63,7 @@
   ],
   "license": "MIT",
   "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org"
+    "access": "public"
   },
   "devDependencies": {
     "@rslib/core": "^0.19.6",
