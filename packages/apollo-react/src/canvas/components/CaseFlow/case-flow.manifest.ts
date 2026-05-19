@@ -42,8 +42,6 @@ export const caseManagementTriggerManifest: NodeManifest = {
     description: 'Starts a case instance and triggers a case entered event',
     icon: 'bolt',
     shape: 'circle',
-    color: '#E65100',
-    background: 'linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%)',
   },
   handleConfiguration: [
     {
@@ -56,7 +54,7 @@ export const caseManagementTriggerManifest: NodeManifest = {
           constraints: {
             minConnections: 1,
             allowedTargetCategories: ['case-stage'],
-            forbiddenTargetCategories: ['case-trigger', 'case-condition'],
+            forbiddenTargetCategories: ['case-management-trigger', 'case-condition'],
           },
         },
       ],
