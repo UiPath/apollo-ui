@@ -10,13 +10,11 @@ concurrency:
 
 permissions:
   contents: read
-  packages: read
 
 jobs:
   commitlint:
     name: Validate Commit Messages
     runs-on: ubuntu-latest
-    # @uipath/* packages on GHP are private — fork PRs cannot install them even with GITHUB_TOKEN.
     if: github.event.pull_request.head.repo.fork == false
     steps:
       - name: Checkout code
@@ -27,8 +25,6 @@ jobs:
 
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
-        with:
-          registry-token: ${{ github.token }}
 
       - name: Validate commit messages
         if: github.event_name == 'pull_request'

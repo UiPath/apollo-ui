@@ -98,7 +98,6 @@ When any PR touches `.github/workflows/`, `.github/actions/`, `.npmrc`, `pnpm-wo
 
 **Install safety**
 - [ ] Every `pnpm install` uses `--frozen-lockfile` — use `./.github/actions/install-node-deps`, never call pnpm directly
-- [ ] `registry-token: ${{ github.token }}` is passed to the composite install action (job must have `packages: read`)
 - [ ] No bare `pnpm dlx <pkg>` / `npx -y <pkg>` without exact version pin
 - [ ] Approved pinned `pnpm dlx` versions: `shadcn@4.4.0`, `serve@14.2.6`, `tsx@4.20.6` — changes require same review bar as dependency updates
 - [ ] New `minimumReleaseAgeExclude` entries in `pnpm-workspace.yaml` include exact version + reason: `- 'pkg'  # x.y.z — reason`
@@ -134,7 +133,7 @@ Flag these patterns immediately:
 | **`workflow_run` without head-repo guard** | `on: workflow_run` without `if: github.event.workflow_run.head_repository.full_name == github.repository` | No `workflow_run` trigger in repo; add guard if ever introduced |
 | **Maintainer account takeover / burst publish** | Package receives 3+ new versions in a 6-minute window; new maintainer added within last 30 days; unusual publish time | `monitor-npm-publishes.yml` flags version-to-release mismatch; check socket.dev for maintainer changes |
 | **Forged bot commit identity** | Version-bump commit where committer email ≠ `semantic-release-bot@users.noreply.github.com` | Check committer email on release commits; semantic-release-bot identity is fixed in `release.yml` git config step |
-| **Dependency confusion** | `.npmrc` change to `@uipath` registry routing | `@uipath:registry=https://npm.pkg.github.com`; all 4 names claimed on npm.org |
+| **Dependency confusion** | New `.npmrc` adding `@uipath` registry routing, or `publishConfig.registry` change pointing `@uipath` at a non-npm.org registry | No `.npmrc` in repo; all 4 names claimed on npm.org; publish script pins `--@uipath:registry=https://registry.npmjs.org` for the npm.org publish step |
 | **Workflow injection** | `${{ github.event.*.title }}` etc. in `run:` blocks | Pass via `env:` |
 | **Compromised maintainer / day-zero** | Any production dep update without verifying age, changelog, and postinstall scripts | `minimumReleaseAge: 20160` (14d quarantine); `npm audit signatures` |
 | **Fork secret exfiltration** | Missing `fork == false` guard; `pull_request_target` | All publish/secret jobs guarded |

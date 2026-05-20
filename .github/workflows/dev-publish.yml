@@ -25,7 +25,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: read
       issues: read
     outputs:
       has_label: ${{ steps.check-label.outputs.has_label }}
@@ -172,8 +171,6 @@ jobs:
 
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
-        with:
-          registry-token: ${{ github.token }}
 
       - name: Cleanup previous version
         env:
@@ -198,7 +195,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: read
       pull-requests: write
     steps:
       - name: Checkout code
@@ -208,8 +204,6 @@ jobs:
 
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
-        with:
-          registry-token: ${{ github.token }}
 
       - name: Create initial PR comment
         env:
@@ -242,8 +236,6 @@ jobs:
 
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
-        with:
-          registry-token: ${{ github.token }}
 
       # Compute the full version up front so the PR comment row can be updated
       # even when later steps (App token mint, build, publish) fail. Otherwise
@@ -315,7 +307,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: read
       pull-requests: write
     steps:
       - name: Update PR comment with cleanup status

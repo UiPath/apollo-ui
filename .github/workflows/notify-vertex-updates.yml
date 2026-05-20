@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: read
-  packages: read
 
 jobs:
   notify:
@@ -23,8 +22,6 @@ jobs:
 
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
-        with:
-          registry-token: ${{ github.token }}
 
       - name: Notify changed components
         env:

@@ -44,8 +44,6 @@ jobs:
         env:
           ACTIONS_ID_TOKEN_REQUEST_URL: ""
           ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
-        with:
-          registry-token: ${{ github.token }}
 
       - name: Cache Turborepo
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
@@ -81,8 +79,13 @@ jobs:
           git config --global user.name "semantic-release-bot"
           git config --global user.email "semantic-release-bot@users.noreply.github.com"
           # Credential helper reads GITHUB_TOKEN from env on demand. Set only on
-          # the Release step → no leak to later steps that don't push.
-          git config --global credential.helper \
+          # the Release step → no leak to later steps that don't push. The single
+          # quotes are intentional: git invokes the helper later in a fresh shell
+          # which expands $GITHUB_TOKEN at credential-lookup time, not now.
+          # URL-scoped to github.com so a stray `git push` to any other host can't
+          # exfiltrate the token through this helper.
+          # shellcheck disable=SC2016
+          git config --global credential.https://github.com.helper \
             '!f() { test -n "$GITHUB_TOKEN" || exit 1; echo "username=x-access-token"; echo "password=$GITHUB_TOKEN"; }; f'
 
       - name: Release

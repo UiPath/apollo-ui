@@ -92,7 +92,6 @@ jobs:
     continue-on-error: true
     permissions:
       contents: read
-      packages: read
     strategy:
       matrix:
         include:
@@ -125,8 +124,6 @@ jobs:
 
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
-        with:
-          registry-token: ${{ github.token }}
 
       - name: Restore Turborepo cache
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4

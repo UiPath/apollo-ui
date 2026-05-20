@@ -34,8 +34,6 @@ jobs:
 
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
-        with:
-          registry-token: ${{ github.token }}
 
       - name: Get published packages from PR comment
         id: packages
