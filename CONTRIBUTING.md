@@ -16,7 +16,7 @@ Thank you for your interest in contributing to the Apollo Design System! This do
 ### Prerequisites
 
 - Node.js >= 22
-- pnpm >= 10
+- pnpm >= 11
 
 ### Getting Started
 
@@ -221,12 +221,12 @@ All Apollo packages (`@uipath/apollo-*`) are published to **both** registries si
 - **npm** (`registry.npmjs.org`) - For external open-source users
   - No authentication required for installation
   - Global accessibility and discoverability
-  - Requires: `NPM_AUTH_TOKEN` secret for publishing
+  - Publishes via npm OIDC Trusted Publisher (no long-lived token in CI)
 
 - **GitHub Package Registry** (`npm.pkg.github.com`) - For internal UiPath users
   - Seamless installation for users with existing `.npmrc` configuration
   - Also hosts private dependencies
-  - Requires: `GH_NPM_REGISTRY_TOKEN` secret for publishing
+  - Requires: GitHub App installation token for publishing (managed by CI)
 
 ### How It Works
 
@@ -247,10 +247,10 @@ npm install @uipath/apollo-react  # Pulls from GitHub automatically
 
 **Publishing packages (automated):**
 
-When code is merged to `main` or a PR is opened:
+When code is merged to `main`:
 1. Package is built and tested
-2. Package is published to **npm** using `NPM_AUTH_TOKEN`
-3. Package is published to **GitHub Package Registry** using `GH_NPM_REGISTRY_TOKEN`
+2. Package is published to **npm** via an OIDC token minted from the workflow's `id-token: write` grant (npm Trusted Publisher)
+3. Package is published to **GitHub Package Registry** using a short-lived GitHub App token
 4. Both registries receive identical versions
 
 ## Release Process
@@ -283,50 +283,39 @@ Only packages with new commits since their last release will be published.
 
 ### Dev Packages (Preview Releases)
 
-For testing unreleased changes, dev packages can be published for PRs to **both registries** on-demand.
+For testing unreleased changes, dev packages can be published for PRs on-demand. Dev packages are published **only to GitHub Package Registry** — public npm is reserved for production releases.
 
 **Automatic (CI):**
 - **Trigger:** Add the `dev-packages` label to your PR to publish dev versions
 - When the label is present, packages with changes are published as `<version>-pr<number>.<short-sha>`
 - Example: `@uipath/apollo-react@3.19.3-pr123.abc1234`
-- Published to **both npm and GitHub Package Registry** with `@dev` tag
+- Published to **GitHub Package Registry** with `@dev` tag
 - A comment is added to the PR with the published versions and installation instructions
 - **Continuous publishing:** New commits will automatically re-publish while the label is present
 - **Stop publishing:** Remove the `dev-packages` label to stop publishing on subsequent commits
 - Packages are automatically cleaned up from GitHub Package Registry when the PR is closed or merged
 
-> **Note:** npm has strict unpublish policies - packages with dependents cannot be unpublished, only deprecated. Dev packages are automatically deprecated but remain in the npm registry. GitHub Package Registry allows full deletion.
-
 **Manual (Local):**
 
 ```bash
-# Publish a dev version to both registries
+# Publish a dev version to GitHub Package Registry
 pnpm publish:dev @uipath/apollo-react my-feature
-# → Publishes @uipath/apollo-react@3.19.3-my-feature to npm AND GitHub
+# → Publishes @uipath/apollo-react@3.19.3-my-feature to GitHub Package Registry
 
-# Unpublish a dev version from both registries (within 72 hours)
+# Unpublish a dev version
 pnpm unpublish:dev @uipath/apollo-react my-feature
 ```
 
 **Token Setup (for manual publishing):**
 
-You need **both** tokens to publish manually:
-
-1. **npm token:**
-   - Go to [npmjs.com/settings/YOUR_USERNAME/tokens](https://www.npmjs.com/settings/YOUR_USERNAME/tokens)
-   - Generate **"Automation"** token with:
-     - ✅ Bypass 2FA (required for automation)
-     - ✅ Read and write permissions
-   - Export: `export NPM_AUTH_TOKEN=your_npm_token`
-
-2. **GitHub token:**
-   - Go to [github.com/settings/tokens](https://github.com/settings/tokens)
-   - Generate token with `write:packages` scope
-   - Export: `export GH_NPM_REGISTRY_TOKEN=your_github_token`
-
-> **Note:** npm only allows unpublishing within 72 hours of publication. After that, packages are automatically deprecated instead.
+- Go to [github.com/settings/tokens](https://github.com/settings/tokens) → Fine-grained tokens
+- Set resource owner to **UiPath**, repository access to **UiPath/apollo-ui** only
+- Permissions: `Packages: Read and write`
+- Export: `export GH_NPM_REGISTRY_TOKEN=your_github_token`
 
 **Installing dev packages:**
+
+Dev packages live only on GitHub Package Registry. Internal UiPath users with `.npmrc` configured for `@uipath:registry=https://npm.pkg.github.com` install them as normal:
 
 ```bash
 # Install latest preview version
@@ -339,9 +328,7 @@ npm install @uipath/apollo-react@3.19.3-pr123.abc1234
 npm install @uipath/apollo-react@3.19.3-my-feature
 ```
 
-Dev packages work seamlessly for both external and internal users:
-- External users pull from npm (no auth needed)
-- Internal users with `.npmrc` automatically pull from GitHub Package Registry
+External users cannot install dev packages — they're scoped to UiPath internal consumption. Public npm only receives production releases.
 
 ### Version Ranges
 

@@ -1,7 +1,7 @@
 import { Spacing } from '@uipath/apollo-core';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { Button } from '@uipath/apollo-wind';
-import { CSSProperties, memo, RefObject, useCallback, useMemo } from 'react';
+import { type CSSProperties, memo, type RefObject, useCallback, useMemo } from 'react';
 import { GroupModificationType } from '../../utils';
 import { useStageTasksByGroups } from './hooks/useStageTasksByGroups';
 import { StageContent } from './StageNode.styles';
@@ -10,6 +10,7 @@ import { StageNodeAdhocTaskGroups } from './StageNodeAdhocTaskGroups';
 import { StageNodeEventDrivenTaskGroups } from './StageNodeEventDrivenTaskGroups';
 import { StageNodeSequentialTaskGroups } from './StageNodeSequentialTaskGroups';
 import { getMenuItem } from './StageNodeTaskUtilities';
+import { useStageNodeLabels } from './useStageNodeLabels';
 
 const StageNodeAllTaskGroupsInner = ({
   props,
@@ -39,6 +40,7 @@ const StageNodeAllTaskGroupsInner = ({
     onReplaceTaskFromToolbox,
   } = props;
 
+  const labels = useStageNodeLabels();
   const allTasks = useMemo(() => stageDetails?.tasks || [], [stageDetails?.tasks]);
 
   // Split tasks into separate sections
@@ -53,7 +55,7 @@ const StageNodeAllTaskGroupsInner = ({
 
   const selectedTaskId = stageDetails?.selectedTaskId;
   const defaultContent =
-    stageDetails?.defaultContent || (isReadOnly ? 'No tasks' : 'Add first task');
+    stageDetails?.defaultContent || (isReadOnly ? labels.noTasks : labels.addFirstTask);
 
   const handleReorderSequentialTasks = useCallback(
     (newTasks: StageTaskItem[][]) => {
@@ -97,7 +99,7 @@ const StageNodeAllTaskGroupsInner = ({
         return undefined;
       }
 
-      return getMenuItem('replace-task', 'Replace task', () => {
+      return getMenuItem('replace-task', labels.replaceTask, () => {
         taskStateReference.current = {
           isParallel,
           groupIndex,
@@ -107,7 +109,14 @@ const StageNodeAllTaskGroupsInner = ({
         setIsReplacingTask(true);
       });
     },
-    [onReplaceTaskFromToolbox, allTasks, onTaskClick, setIsReplacingTask, taskStateReference]
+    [
+      onReplaceTaskFromToolbox,
+      allTasks,
+      onTaskClick,
+      setIsReplacingTask,
+      taskStateReference,
+      labels.replaceTask,
+    ]
   );
 
   const generateDeleteTaskMenuItemForTask = useCallback(
@@ -131,11 +140,11 @@ const StageNodeAllTaskGroupsInner = ({
         return undefined;
       }
 
-      return getMenuItem('remove-task', 'Delete task', () =>
+      return getMenuItem('remove-task', labels.deleteTask, () =>
         onTaskGroupModification(GroupModificationType.REMOVE_TASK, groupIndex, taskIndex)
       );
     },
-    [allTasks, onTaskGroupModification]
+    [allTasks, onTaskGroupModification, labels.deleteTask]
   );
 
   return (
@@ -145,15 +154,20 @@ const StageNodeAllTaskGroupsInner = ({
       eventDrivenTaskGroups.length === 0 ? (
         <Column py={2}>
           {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly ? (
-            <Button variant="link" onClick={handleTaskAddClick} style={{ maxWidth: 'fit-content' }}>
+            <Button
+              variant="link"
+              size="sm"
+              onClick={handleTaskAddClick}
+              style={{ maxWidth: 'fit-content', padding: 0 }}
+            >
               {defaultContent}
             </Button>
           ) : (
-            <span className="text-xs text-foreground-muted">{defaultContent}</span>
+            <span className="text-xs text-foreground-muted h-9">{defaultContent}</span>
           )}
         </Column>
       ) : (
-        <Column>
+        <Column py={2}>
           <StageNodeSequentialTaskGroups
             props={props}
             sequentialTaskGroups={sequentialTaskGroups}

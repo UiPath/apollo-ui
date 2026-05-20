@@ -60,12 +60,16 @@ function isValidUrl(input: string): boolean {
 }
 
 /**
- * Get an icon component by its identifier
- * Supports:
- * - UIPath icons (e.g., "uipath.agent")
- * - Any Lucide icon by kebab-case name (e.g., "arrow-right", "file-text", "play")
+ * Get an icon component by its identifier. Supports UIPath icons
+ * (e.g. "uipath.agent") and Lucide kebab-case names (e.g. "arrow-right").
+ * Falls back to the Box icon when `iconId` is missing or unrecognized.
  */
-export function getIcon(iconId: string): IconComponent {
+export function getIcon(iconId?: string): IconComponent {
+  if (!iconId) {
+    const BoxIcon = icons.Box;
+    return ({ w, h, color }) => <BoxIcon width={w ?? 24} height={h ?? 24} color={color} />;
+  }
+
   if (isValidUrl(iconId)) {
     return ({ w, h }) => (
       <img

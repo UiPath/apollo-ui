@@ -3,7 +3,73 @@ packages:
   - 'web-packages/*'
   - 'apps/*'
 
+# Peer dependency behaviour (moved from .npmrc — pnpm 11 limits .npmrc to auth/registry only)
+autoInstallPeers: true
+strictPeerDependencies: false
+
+# Supply-chain hardening
+# 14-day quarantine on newly-published packages (minutes; 14d × 1440)
+minimumReleaseAge: 20160
+# Exempt packages whose latest release is too new to satisfy the quarantine.
+# The weekly `prune-release-age-exemptions` workflow auto-PRs removal of entries once aged.
+#
+# Format: - 'pkg'  # <version> — <reason>
+# The version is required — the prune script uses it to decide when to remove the entry.
+# FIXME: Until https://github.com/pnpm/pnpm/issues/11238 is fixed we need the additional exclusions
+minimumReleaseAgeExclude:
+  - '@uipath/*'              # permanent — own scope, always installable immediately
+  - '@mui/system'            # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - 'eslint'                 # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - '@microsoft/*'           # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - '@stencil/core'          # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - 'lexical'                # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - '@lexical/*'             # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - '@fluentui/react-focus'  # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - 'intl-messageformat'     # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - '@formatjs/*'            # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - 'postcss'                     # 8.5.14 — security override in pnpm.overrides
+  - 'mermaid'                     # 11.15.0 — GHSA-v2wj-7wpq-c8vv backport patch
+  - 'next'                        # 16.2.6 — locked version too new
+  - '@next/swc-darwin-arm64'      # 16.2.6 — co-published with next, optional platform binary
+  - '@next/swc-darwin-x64'        # 16.2.6 — co-published with next, optional platform binary
+  - '@next/swc-linux-arm64-gnu'   # 16.2.6 — co-published with next, optional platform binary
+  - '@next/swc-linux-arm64-musl'  # 16.2.6 — co-published with next, optional platform binary
+  - '@next/swc-linux-x64-gnu'     # 16.2.6 — co-published with next, optional platform binary
+  - '@next/swc-linux-x64-musl'    # 16.2.6 — co-published with next, optional platform binary
+  - '@next/swc-win32-arm64-msvc'  # 16.2.6 — co-published with next, optional platform binary
+  - '@next/swc-win32-x64-msvc'    # 16.2.6 — co-published with next, optional platform binary
+  - 'fs-extra'                    # 11.3.5 — locked version too new
+  - 'sanitize-html'               # 2.17.4 — GHSA-rpr9-rxv7-x643 (XSS via xmp tag), vetted 2026-05-15: publisher ✓, tag+diff ✓, integrity ✓
+  - 'launder'                     # 1.7.1 — co-published with sanitize-html 2.17.4 (ApostropheCMS org, boutell, dayjs only dep), vetted 2026-05-15
+# Refuse transitive git/tarball deps (pnpm 11 default; kept explicit for clarity)
+blockExoticSubdeps: true
+
+# Dependency version overrides (moved from package.json#pnpm — pnpm 11 ignores that field, pnpm/pnpm#11536)
+overrides:
+  minimatch: "^10.2.5"
+  lodash: "^4.18.1"
+  tmp: "^0.2.5"
+  picomatch: ">=4.0.4"
+  postcss: "^8.5.14"
+
+# packageExtensions (moved from package.json#pnpm for the same reason)
+packageExtensions:
+  "@tanstack/ai":
+    dependencies:
+      "@standard-schema/spec": "^1.1.0"
+
 # dompurify XSS - FIXME: no patch available yet
 auditConfig:
   ignoreGhsas:
     - GHSA-v2wj-7wpq-c8vv
+
+# pnpm 11: build scripts are blocked by default — explicitly allow legitimate native builds.
+# These packages require postinstall scripts to download platform-specific binaries or compile native code.
+allowBuilds:
+  '@biomejs/biome': true   # downloads platform-specific binary
+  '@parcel/watcher': true  # native file-system watcher
+  core-js: true            # polyfill compilation
+  es5-ext: true            # ES5 extension build
+  esbuild: true            # downloads native binary
+  msw: true                # service worker init
+  sharp: true              # native image processing

@@ -7,9 +7,10 @@ on:
       - main
       - 'support/**'
 
+# Deny-all default; the cleanup job grants only what it needs.
+permissions: {}
+
 env:
-  GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
-  NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
   TURBO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: 1
 
@@ -17,28 +18,24 @@ jobs:
   cleanup:
     name: Cleanup Dev Packages
     runs-on: ubuntu-latest
+    # Skip fork PRs — cleanup uses publish-scoped tokens; fork PRs must not receive them.
+    if: github.event.pull_request.head.repo.fork == false
     permissions:
       contents: read
       pull-requests: write
-      issues: write
+      packages: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.event.pull_request.base.ref }}
+          persist-credentials: false
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-deps
         with:
-          node-version: 22
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          registry-token: ${{ github.token }}
 
       - name: Get published packages from PR comment
         id: packages
@@ -47,27 +44,33 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           COMMENT=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
-            --jq '[.[] | select(.body | contains("<!-- dev-packages-comment -->")) | .body][0]' 2>/dev/null) || true
+            --jq '[.[] | select(.body | contains("<!-- dev-packages-comment -->")) | select(.user.type == "Bot" or .user.login == "github-actions[bot]") | .body][0]' 2>/dev/null) || true
 
           if [ -z "$COMMENT" ]; then
             echo "No dev packages comment found"
-            echo "packages=" >> $GITHUB_OUTPUT
+            echo "packages=" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           # Extract package@version from table format (supports pr123 and pr123.abc1234 formats)
           # Matches: | `@uipath/package@version-pr123.sha` | status | timestamp |
-          PACKAGES=$(echo "$COMMENT" | grep -oE '\| `@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+(\.[a-z0-9]+)?`' | sed 's/^| `//' | sed 's/`$//' | sort -u)
+          # Backticks in the grep pattern are literal regex chars, not command substitution.
+          # shellcheck disable=SC2016
+          PACKAGES=$(echo "$COMMENT" | grep -oE '\| `@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+(\.[a-z0-9]+)?`' | sed 's/^| `//' | sed "s/\`\$//" | sort -u)
           # Use delimiter for GitHub output (newlines not supported)
-          echo "packages<<EOF" >> $GITHUB_OUTPUT
-          echo "$PACKAGES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          {
+            DELIM="PKGS_$(openssl rand -hex 8)"
+            echo "packages<<${DELIM}"
+            echo "$PACKAGES"
+            echo "${DELIM}"
+          } >> "$GITHUB_OUTPUT"
           echo "Found: $PACKAGES"
 
       - name: Cleanup dev packages
         if: steps.packages.outputs.packages != ''
         env:
           PACKAGES: ${{ steps.packages.outputs.packages }}
+          GH_NPM_REGISTRY_TOKEN: ${{ github.token }}
         run: |
           echo "Cleaning up dev packages..."
           echo ""

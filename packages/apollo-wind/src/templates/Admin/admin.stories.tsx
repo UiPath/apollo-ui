@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Pagination,
   PaginationContent,
@@ -248,10 +249,10 @@ type Story = StoryObj<typeof meta>;
 
 function AdminMenuNav() {
   const menuItems = [
-    { label: 'Manage Access', icon: <Users className="h-4 w-4 shrink-0" /> },
-    { label: 'Data Management', icon: <Globe className="h-4 w-4 shrink-0" /> },
+    { label: 'Manage access', icon: <Users className="h-4 w-4 shrink-0" /> },
+    { label: 'Data management', icon: <Globe className="h-4 w-4 shrink-0" /> },
     { label: 'Settings', icon: <HelpCircle className="h-4 w-4 shrink-0" /> },
-    { label: 'Audit Logs', icon: <RefreshCw className="h-4 w-4 shrink-0" /> },
+    { label: 'Audit logs', icon: <RefreshCw className="h-4 w-4 shrink-0" /> },
     { label: 'Integrations', icon: <Code className="h-4 w-4 shrink-0" /> },
   ];
 
@@ -1520,7 +1521,7 @@ function DataManagementDemo({ theme }: { theme: Theme }) {
   ];
 
   return (
-    <AdminTemplate theme={theme} title="Data Management" menuContent={<AdminMenuNav />}>
+    <AdminTemplate theme={theme} title="Data management" menuContent={<AdminMenuNav />}>
       {/* Page header with actions */}
       <div className="flex items-center justify-between border-b border-border-subtle px-6 py-4">
         <h1 className="text-xl font-semibold text-foreground">Products</h1>
@@ -1550,7 +1551,7 @@ function DataManagementDemo({ theme }: { theme: Theme }) {
               className={cn(themeClass, 'border-border bg-surface-raised text-foreground')}
             >
               <DialogHeader>
-                <DialogTitle className="text-foreground">Add New Product</DialogTitle>
+                <DialogTitle className="text-foreground">Add new product</DialogTitle>
                 <DialogDescription className="text-foreground-muted">
                   Enter the details for the new product.
                 </DialogDescription>
@@ -1628,25 +1629,16 @@ function DataManagementDemo({ theme }: { theme: Theme }) {
 
       {/* Tabs + filter bar */}
       <div className="flex items-center justify-between border-b border-border-subtle px-6 py-3">
-        <div className="flex gap-1">
-          {statusTabs.map((tab) => (
-            <button
-              type="button"
-              key={tab.value}
-              className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                activeTab === tab.value
-                  ? 'bg-surface-hover text-foreground'
-                  : 'text-foreground-muted hover:text-foreground'
-              }`}
-              onClick={() => setActiveTab(tab.value)}
-            >
-              {tab.label}
-              <span className="rounded-full bg-surface-overlay px-1.5 py-0.5 text-xs">
-                {tab.count}
-              </span>
-            </button>
-          ))}
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            {statusTabs.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value} className="gap-2">
+                {tab.label}
+                <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs">{tab.count}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
         <div className="flex items-center gap-2">
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>

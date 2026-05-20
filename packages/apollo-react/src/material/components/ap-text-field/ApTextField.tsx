@@ -58,8 +58,8 @@ export function ApTextField<T extends InputType = 'text'>(props: Readonly<ApText
   }, [value]);
 
   const handleOnInput = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const value = event.target.value;
+    (event: React.FormEvent<HTMLInputElement>) => {
+      const value = event.currentTarget.value;
       setCompositionValue(value);
       onChange?.(value);
     },
@@ -149,7 +149,6 @@ export function ApTextField<T extends InputType = 'text'>(props: Readonly<ApText
       className={className}
       label={label}
       value={compositionValue}
-      onInput={handleOnInput}
       placeholder={placeholder}
       error={error || !!errorMessage}
       required={required}
@@ -163,6 +162,7 @@ export function ApTextField<T extends InputType = 'text'>(props: Readonly<ApText
         min: type === 'number' ? min : undefined,
         max: type === 'number' ? max : undefined,
         step: type === 'number' ? step : undefined,
+        onInput: handleOnInput,
       }}
       {...cachedProps}
       inputRef={inputRef}

@@ -7,23 +7,23 @@ import { z } from "zod";
 import { MultiLineChartCard } from "../../charts/multi-line-chart-card";
 import { ToolResolutionError } from "../../charts/tool-resolution-error";
 import {
-  buildMultiBinnedDataModel,
+  buildMultiMetricDataModel,
+  dedupeMetrics,
   metricSchema,
   type ResolvedMetric,
-  resolveMultiBinnedDimension,
-  resolveMultiBinnedMetric,
-  resolveSingleBinnedDimension,
-  resolveSingleBinnedMetric,
-} from "../data-fabric/binned";
-import type { ResolverFailure } from "../data-fabric/resolver-result";
+  resolveMultiDimension,
+  resolveMultiMetric,
+  resolveSingleDimension,
+  resolveSingleMetric,
+} from "../data-fabric/util/chart-helpers";
 import {
   collectQualifiedFields,
   type DataFabricToolContext,
-  filterSchema,
   generateEntityFieldsDocs,
-  joinSchema,
-  resolveFilters,
-} from "../data-fabric/shared";
+} from "../data-fabric/util/entities";
+import { filterSchema, resolveFilters } from "../data-fabric/util/filters";
+import { joinSchema } from "../data-fabric/util/joins";
+import type { ResolverFailure } from "../data-fabric/util/resolver-result";
 
 const MULTI_LINE_DIMENSION_TYPES = ["datetime"] as const;
 
@@ -79,16 +79,6 @@ export const dataFabricMultiLineClient = dataFabricMultiLineDef.client(
 );
 
 type MultiLineInput = z.infer<typeof dataFabricMultiLineInput>;
-
-function dedupeMetrics(metrics: ResolvedMetric[]): ResolvedMetric[] {
-  const seen = new Set<string>();
-  return metrics.filter((m) => {
-    const key = `${m.aggregation}|${m.field}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
 
 export function createDataFabricMultiLineTool(context: DataFabricToolContext) {
   const today = DateTime.now().toISODate();
@@ -150,17 +140,13 @@ ${generateEntityFieldsDocs(context.entities)}`;
       : null;
 
     const resolvedDimension = qualifiedFields
-      ? resolveMultiBinnedDimension(
+      ? resolveMultiDimension(
           entityName,
           dimension,
           qualifiedFields,
           MULTI_LINE_DIMENSION_TYPES,
         )
-      : resolveSingleBinnedDimension(
-          entity,
-          dimension,
-          MULTI_LINE_DIMENSION_TYPES,
-        );
+      : resolveSingleDimension(entity, dimension, MULTI_LINE_DIMENSION_TYPES);
 
     if (!resolvedDimension.ok) {
       return <ToolResolutionError failure={resolvedDimension} />;
@@ -170,8 +156,8 @@ ${generateEntityFieldsDocs(context.entities)}`;
     const metricFailures: ResolverFailure[] = [];
     for (const metric of metrics) {
       const result = qualifiedFields
-        ? resolveMultiBinnedMetric(entityName, metric, qualifiedFields)
-        : resolveSingleBinnedMetric(entity, metric);
+        ? resolveMultiMetric(entityName, metric, qualifiedFields)
+        : resolveSingleMetric(entity, metric);
       if (result.ok) {
         resolvedMetrics.push(result.value);
       } else {
@@ -194,7 +180,7 @@ ${generateEntityFieldsDocs(context.entities)}`;
       );
     }
 
-    const dataModel = buildMultiBinnedDataModel({
+    const dataModel = buildMultiMetricDataModel({
       id: entityName,
       dimension: resolvedDimension.value.id,
       dimensionType: resolvedDimension.value.type,

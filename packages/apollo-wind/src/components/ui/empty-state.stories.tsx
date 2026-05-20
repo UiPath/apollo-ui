@@ -40,7 +40,7 @@ export const WithAction: Story = {
     title: 'No messages',
     description: 'Your inbox is empty. Start a conversation to see messages here.',
     action: {
-      label: 'New Message',
+      label: 'New message',
       onClick: () => alert('Create new message'),
     },
   },
@@ -52,11 +52,11 @@ export const WithMultipleActions: Story = {
     title: 'No team members',
     description: 'Invite team members to collaborate on this project.',
     action: {
-      label: 'Invite Members',
+      label: 'Invite members',
       onClick: () => alert('Invite members'),
     },
     secondaryAction: {
-      label: 'Learn More',
+      label: 'Learn more',
       onClick: () => alert('Learn more'),
     },
   },
@@ -68,7 +68,7 @@ export const SearchNoResults: Story = {
     title: 'No results found',
     description: "Try adjusting your search or filter to find what you're looking for.",
     action: {
-      label: 'Clear Search',
+      label: 'Clear search',
       onClick: () => alert('Clear search'),
     },
   },
@@ -80,7 +80,7 @@ export const EmptyCart: Story = {
     title: 'Your cart is empty',
     description: 'Add items to your cart to continue shopping.',
     action: {
-      label: 'Browse Products',
+      label: 'Browse products',
       onClick: () => alert('Browse products'),
     },
   },
@@ -100,7 +100,7 @@ export const LongDescription: Story = {
     description:
       'Upload documents to keep all your important files in one place. You can upload PDFs, Word documents, spreadsheets, and more. Drag and drop files or click the button below to get started.',
     action: {
-      label: 'Upload Documents',
+      label: 'Upload documents',
       onClick: () => alert('Upload documents'),
     },
   },
@@ -137,7 +137,7 @@ export const ComposableActions: Story = {
     >
       <Button>Create project</Button>
       <Button variant="outline">Import project</Button>
-      <Button variant="outline">Learn More</Button>
+      <Button variant="outline">Learn more</Button>
     </EmptyState>
   ),
 };

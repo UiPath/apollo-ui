@@ -1,6 +1,8 @@
 import './styles/variables.css';
 import './styles/reactflow-reset.css';
 
+export type { SupportedLocale } from '../i18n';
+export { SUPPORTED_LOCALES } from '../i18n';
 export * from './components';
 export * from './constants';
 export * from './controls';

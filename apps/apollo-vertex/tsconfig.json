@@ -65,6 +65,9 @@
       "@/components/ui/navigation-menu": [
         "./registry/navigation-menu/navigation-menu"
       ],
+      "@/components/ui/onboarding-tour-joyride": [
+        "./registry/onboarding-tour-joyride/index"
+      ],
       "@/components/ui/page-header": ["./registry/page-header/page-header"],
       "@/components/ui/pagination": ["./registry/pagination/pagination"],
       "@/components/ui/popover": ["./registry/popover/popover"],

@@ -81,7 +81,7 @@ export const WithIcon: Story = {
     <div className="flex flex-row justify-center items-center gap-2">
       <Button size="lg">
         <Mail />
-        Send Email
+        Send email
       </Button>
       <Button>
         <Download />
@@ -89,7 +89,7 @@ export const WithIcon: Story = {
       </Button>
       <Button size="sm">
         <Plus />
-        Add Item
+        Add item
       </Button>
       <Button size="xs">
         <Settings />

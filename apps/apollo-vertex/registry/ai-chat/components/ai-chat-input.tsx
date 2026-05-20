@@ -1,7 +1,10 @@
 "use client";
 
-import { ArrowUp, CircleStop } from "lucide-react";
+import type { ContentPart } from "@tanstack/ai";
+import { ArrowUp, CircleStop, Paperclip } from "lucide-react";
 import {
+  type ChangeEvent,
+  type ClipboardEvent,
   type CSSProperties,
   type FocusEvent,
   type FormEvent,
@@ -12,27 +15,43 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import {
+  pendingFilesToContentParts,
+  usePendingFiles,
+} from "../hooks/use-pending-files";
+import { AiChatImagePreview } from "./ai-chat-image-preview";
 import { AiChatInputGlow } from "./ai-chat-input-glow";
+import { AiChatPendingFiles } from "./ai-chat-pending-files";
 
 interface AiChatInputProps {
   value: string;
   onChange: (value: string) => void;
-  onSubmit: () => void;
+  onSubmit: (parts?: ContentPart[]) => void;
   onStop: () => void;
   isLoading: boolean;
   disabled?: boolean;
   placeholder?: string;
   hasMessages?: boolean;
+  acceptedFileTypes?: string;
   ref?: Ref<AiChatInputHandle>;
 }
 
 export interface AiChatInputHandle {
   focus: () => void;
+  addFiles: (files: FileList | File[]) => void;
 }
 
 export function AiChatInput({
@@ -44,15 +63,28 @@ export function AiChatInput({
   disabled = false,
   placeholder,
   hasMessages = false,
+  acceptedFileTypes,
   ref,
 }: AiChatInputProps) {
   const { t } = useTranslation();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [focused, setFocused] = useState(false);
   const displayPlaceholder = placeholder ?? t("shell_input_placeholder");
 
+  const attachmentsEnabled = !!acceptedFileTypes;
+
+  const {
+    files: pendingFiles,
+    add: addFiles,
+    remove: removeFile,
+    clear: clearFiles,
+  } = usePendingFiles();
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
+    addFiles,
   }));
 
   const adjustHeight = () => {
@@ -68,24 +100,45 @@ export function AiChatInput({
     requestAnimationFrame(adjustHeight);
   };
 
-  const submitMessage = () => {
-    if (!value.trim()) return;
-    onSubmit();
+  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.length) addFiles(e.target.files);
+    // reset so picking the same file twice in a row still fires onChange
+    e.target.value = "";
+  };
+
+  const handlePaste = (e: ClipboardEvent<HTMLTextAreaElement>) => {
+    if (!attachmentsEnabled) return;
+    const files = Array.from(e.clipboardData.items)
+      .filter((item) => item.kind === "file")
+      .map((item) => item.getAsFile())
+      .filter((f): f is File => f !== null);
+    if (files.length === 0) return;
+    e.preventDefault();
+    addFiles(files);
+  };
+
+  const submitMessage = async () => {
+    if (!value.trim() && pendingFiles.length === 0) return;
+    const filesSnapshot = pendingFiles;
+    setPreviewUrl(null);
+    clearFiles();
     requestAnimationFrame(() => {
       const el = textareaRef.current;
       if (el) el.style.height = "auto";
     });
+    const parts = await pendingFilesToContentParts(filesSnapshot);
+    onSubmit(parts);
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    submitMessage();
+    void submitMessage();
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      submitMessage();
+      void submitMessage();
     }
   };
 
@@ -110,31 +163,65 @@ export function AiChatInput({
     ...(focused && { style: focusedStyle }),
   };
 
+  const pendingFilesChips = attachmentsEnabled ? (
+    <AiChatPendingFiles
+      files={pendingFiles}
+      onRemove={removeFile}
+      onPreview={setPreviewUrl}
+    />
+  ) : null;
+
+  const plusMenu = attachmentsEnabled ? (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="flex-shrink-0 hover:bg-ai-chat-muted text-ai-chat-muted-foreground"
+          aria-label={t("add_attachment")}
+        >
+          <Paperclip aria-hidden="true" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" side="top">
+        <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+          {t("upload_files")}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ) : null;
+
   const sendStopButton = isLoading ? (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button
+        <Button
           type="button"
-          className="flex-shrink-0 size-9 rounded-lg flex items-center justify-center bg-secondary transition-opacity"
+          variant="secondary"
+          size="icon"
+          className="flex-shrink-0"
           onClick={onStop}
+          aria-label={t("stop")}
         >
           <CircleStop className="size-5 text-foreground" aria-hidden="true" />
-        </button>
+        </Button>
       </TooltipTrigger>
       <TooltipContent>{t("stop")}</TooltipContent>
     </Tooltip>
   ) : (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button
+        <Button
           type="submit"
-          disabled={!value.trim() || disabled}
-          className="flex-shrink-0 size-9 rounded-lg flex items-center justify-center text-white disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+          variant="ghost"
+          size="icon"
+          disabled={(!value.trim() && pendingFiles.length === 0) || disabled}
+          className="flex-shrink-0 text-white hover:text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
           style={{ background: "var(--ai-gradient-strong)" }}
           aria-label={t("send")}
         >
           <ArrowUp className="size-5" aria-hidden="true" />
-        </button>
+        </Button>
       </TooltipTrigger>
       <TooltipContent>{t("send")}</TooltipContent>
     </Tooltip>
@@ -142,6 +229,22 @@ export function AiChatInput({
 
   return (
     <div className="relative z-10 mt-auto pt-3 px-4">
+      {attachmentsEnabled && (
+        <>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept={acceptedFileTypes}
+            hidden
+            onChange={handleFileSelect}
+          />
+          <AiChatImagePreview
+            url={previewUrl}
+            onClose={() => setPreviewUrl(null)}
+          />
+        </>
+      )}
       <div className="relative">
         <div
           className={`absolute pointer-events-none transition-opacity duration-500 -top-14 -left-12 -right-12 -bottom-16 ${
@@ -153,12 +256,15 @@ export function AiChatInput({
         </div>
         {hasMessages ? (
           <form {...formProps}>
+            {pendingFilesChips}
             <div className="flex items-end gap-2 pl-[8px] pr-[8px] pt-[4px] pb-[8px]">
+              {plusMenu}
               <textarea
                 ref={textareaRef}
                 value={value}
                 onChange={(e) => handleChange(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
                 placeholder={displayPlaceholder}
                 aria-label={displayPlaceholder}
                 className="flex-1 resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none max-h-[200px] overflow-y-auto h-[40px] pt-[12px] pb-[8px] leading-[20px]"
@@ -170,18 +276,26 @@ export function AiChatInput({
           </form>
         ) : (
           <form {...formProps}>
+            {pendingFilesChips}
             <textarea
               ref={textareaRef}
               value={value}
               onChange={(e) => handleChange(e.target.value)}
               onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
               placeholder={displayPlaceholder}
               aria-label={displayPlaceholder}
               className="w-full resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none h-[80px] px-[22px] pt-5 pb-2 leading-relaxed"
               rows={1}
               disabled={disabled}
             />
-            <div className="flex items-center justify-end px-[8px] pb-[8px]">
+            <div
+              className={cn(
+                "flex items-center px-[8px] pb-[8px]",
+                plusMenu ? "justify-between" : "justify-end",
+              )}
+            >
+              {plusMenu}
               {sendStopButton}
             </div>
           </form>

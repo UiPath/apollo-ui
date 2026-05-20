@@ -1,7 +1,7 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { GRID_SPACING } from '../../constants';
-import type { NodeTypeRegistry } from '../../core';
+import type { NodeLayout } from '../../hooks/useCanvasNodeLayout';
 import type { PreviewNodeConnectionInfo } from '../../hooks/usePreviewNode';
 import type { NodeManifest } from '../../schema';
 import { resolveCollisions } from '../../utils';
@@ -10,11 +10,9 @@ import {
   CONTAINER_SEQUENCE_GAP_PX,
   collectLinearDownstreamSiblings,
   fitContainersAndPushSiblings,
-  getContainerFitGeometry,
   getContainerPlacement,
   getContainerSafeArea,
   getNodeDimensions,
-  isContainerNodeManifest,
   type NodeDimensions,
   placeContainerNode,
 } from '../../utils/container';
@@ -38,19 +36,6 @@ interface AddNodePlacementResult {
  */
 export function getOriginalEdge(previewNode: Node | null | undefined): Edge | null {
   return (previewNode?.data?.originalEdge as Edge | undefined) ?? null;
-}
-
-function getManifestForNode(
-  registry: NodeTypeRegistry | null,
-  node: Node
-): NodeManifest | undefined {
-  return node.type ? registry?.getManifest(node.type) : undefined;
-}
-
-function getManifestAwareNodeDimensions(registry: NodeTypeRegistry | null, node: Node) {
-  const manifest = getManifestForNode(registry, node);
-
-  return getNodeDimensions(node, getExpandedSize(manifest?.display.shape));
 }
 
 function getPrimaryPreviewHandlePosition(
@@ -144,14 +129,11 @@ function resolveScopedCollisions(
   insertedNode: Node,
   options: {
     ignoredNodeTypes?: string[];
-    getNodeSize: (node: Node) => NodeDimensions;
+    getNodeDimensions: (node: Node) => NodeDimensions;
   }
 ): AddNodePlacementResult {
   const siblingNodes = nodes.filter((node) => node.parentId === insertedNode.parentId);
-  const resolvedSiblings = resolveCollisions(siblingNodes, {
-    ignoredNodeTypes: options.ignoredNodeTypes,
-    getNodeSize: options.getNodeSize,
-  });
+  const resolvedSiblings = resolveCollisions(siblingNodes, options);
   const resolvedSiblingById = new Map(resolvedSiblings.map((node) => [node.id, node]));
   const resolvedNodes = nodes.map((node) => resolvedSiblingById.get(node.id) ?? node);
 
@@ -181,13 +163,13 @@ function shiftForEdgeInsertion({
   edges,
   previewNode,
   insertedNode,
-  getNodeSize,
+  getNodeDimensions,
 }: {
   nodes: Node[];
   edges: Edge[];
   previewNode: Node;
   insertedNode: Node;
-  getNodeSize: (node: Node) => NodeDimensions;
+  getNodeDimensions: (node: Node) => NodeDimensions;
 }): { nodes: Node[]; insertedNode: Node } | null {
   const originalEdge = getOriginalEdge(previewNode);
   if (!originalEdge) return null;
@@ -195,13 +177,13 @@ function shiftForEdgeInsertion({
   const targetNode = nodes.find((node) => node.id === originalEdge.target);
   if (!targetNode || targetNode.parentId !== insertedNode.parentId) return null;
 
-  const insertedSize = getNodeSize(insertedNode);
+  const insertedSize = getNodeDimensions(insertedNode);
 
   // Step 1: clear the upstream source.
   let insertedX = insertedNode.position.x;
   const sourceNode = nodes.find((node) => node.id === originalEdge.source);
   if (sourceNode && sourceNode.parentId === insertedNode.parentId) {
-    const sourceSize = getNodeSize(sourceNode);
+    const sourceSize = getNodeDimensions(sourceNode);
     const requiredInsertedLeft =
       sourceNode.position.x + sourceSize.width + TOP_LEVEL_INSERTION_GAP_PX;
     if (insertedX < requiredInsertedLeft) {
@@ -275,17 +257,17 @@ export function placeAddedNode({
   edges,
   previewNode,
   insertedNode,
-  registry,
+  layout,
   ignoredNodeTypes,
 }: {
   nodes: Node[];
   edges: Edge[];
   previewNode: Node;
   insertedNode: Node;
-  registry: NodeTypeRegistry | null;
+  layout: NodeLayout;
   ignoredNodeTypes?: string[];
 }): AddNodePlacementResult {
-  const getDimensions = (node: Node) => getManifestAwareNodeDimensions(registry, node);
+  const { getNodeDimensions, isContainerNode, getContainerFitGeometry } = layout;
   const placement = getContainerPlacement(previewNode);
 
   if (placement) {
@@ -294,16 +276,14 @@ export function placeAddedNode({
     if (!containerNode) {
       return resolveScopedCollisions(nodes, insertedNode, {
         ignoredNodeTypes,
-        getNodeSize: getDimensions,
+        getNodeDimensions,
       });
     }
 
-    const containerManifest = getManifestForNode(registry, containerNode);
-
-    if (!isContainerNodeManifest(containerManifest)) {
+    if (!isContainerNode(containerNode)) {
       return resolveScopedCollisions(nodes, insertedNode, {
         ignoredNodeTypes,
-        getNodeSize: getDimensions,
+        getNodeDimensions,
       });
     }
 
@@ -312,12 +292,9 @@ export function placeAddedNode({
       insertedNode,
       placement,
       edges,
-      getNodeDimensions: getDimensions,
+      getNodeDimensions,
       safeArea: getContainerSafeArea(containerNode),
-      getContainerFitGeometry: (node) =>
-        isContainerNodeManifest(getManifestForNode(registry, node))
-          ? getContainerFitGeometry()
-          : null,
+      getContainerFitGeometry,
       ignoredNodeTypes,
     });
 
@@ -332,7 +309,7 @@ export function placeAddedNode({
     edges,
     previewNode,
     insertedNode,
-    getNodeSize: getDimensions,
+    getNodeDimensions,
   });
 
   const placementResult = resolveScopedCollisions(
@@ -340,7 +317,7 @@ export function placeAddedNode({
     shifted?.insertedNode ?? insertedNode,
     {
       ignoredNodeTypes,
-      getNodeSize: getDimensions,
+      getNodeDimensions,
     }
   );
 
@@ -351,11 +328,8 @@ export function placeAddedNode({
   const fittedNodes = fitContainersAndPushSiblings({
     nodes: placementResult.nodes,
     containerIds: [placementResult.insertedNode.parentId],
-    getContainerFitGeometry: (node) =>
-      isContainerNodeManifest(getManifestForNode(registry, node))
-        ? getContainerFitGeometry()
-        : null,
-    getNodeDimensions: getDimensions,
+    getContainerFitGeometry,
+    getNodeDimensions,
     ignoredNodeTypes,
     gap: CONTAINER_SEQUENCE_GAP_PX,
   });

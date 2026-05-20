@@ -3,7 +3,6 @@
 import { useLiveQuery } from "@tanstack/react-db";
 import type {
   ColumnFiltersState,
-  PaginationState,
   RowSelectionState,
 } from "@tanstack/react-table";
 import { useSolution } from "@uipath/vs-core";
@@ -21,6 +20,7 @@ import type {
 import { useColumnVisibility } from "./useColumnVisibility";
 import { useEntityColumns } from "./useEntityColumns";
 import { usePersistedColumnOrder } from "./usePersistedColumnOrder";
+import { usePersistedPageSize } from "./usePersistedPageSize";
 import { usePersistedSorting } from "./usePersistedSorting";
 
 export interface UseEntityDataTableOptions<
@@ -97,9 +97,8 @@ export function useEntityDataTable<
     key: `${ENTITY_TABLE_STORAGE_PREFIX}global-filter-${storageKey}`,
     defaultValue: "",
   });
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 10,
+  const { pagination, onPaginationChange } = usePersistedPageSize({
+    storageKey,
   });
 
   return {
@@ -119,6 +118,6 @@ export function useEntityDataTable<
     globalFilter,
     onGlobalFilterChange: setGlobalFilter,
     pagination,
-    onPaginationChange: setPagination,
+    onPaginationChange,
   };
 }

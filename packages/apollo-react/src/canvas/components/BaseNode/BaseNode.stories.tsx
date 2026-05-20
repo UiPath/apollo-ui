@@ -32,7 +32,7 @@ import type { BaseNodeData } from './BaseNode.types';
 // ============================================================================
 
 const meta: Meta<BaseNodeData> = {
-  title: 'Canvas/BaseNode',
+  title: 'Components/BaseNode',
   parameters: {
     layout: 'fullscreen',
   },
@@ -110,7 +110,7 @@ function createShapeStatusGrid(): Node<BaseNodeData>[] {
     );
   });
 
-  // Add a node with a non-existent manifest to demonstrate missing node display
+  // Manifest missing entirely: BaseNode falls back to InitialsBadge from `label`.
   nodes.push(
     createNode({
       id: `unknown-node`,
@@ -123,6 +123,27 @@ function createShapeStatusGrid(): Node<BaseNodeData>[] {
         nodeType: 'uipath.unknown-node',
         version: '1.0.0',
         display: { label: 'Unknown Node', shape: 'square', subLabel: 'Missing manifest' },
+      },
+    })
+  );
+
+  // Manifest present but `display.icon` omitted: falls back to InitialsBadge.
+  nodes.push(
+    createNode({
+      id: `no-icon-node`,
+      type: 'uipath.no-icon-node',
+      position: {
+        x: GRID_CONFIG.startX + GRID_CONFIG.gapX,
+        y: GRID_CONFIG.startY + (STATUSES.length + 1) * GRID_CONFIG.gapY,
+      },
+      data: {
+        nodeType: 'uipath.no-icon-node',
+        version: '1.0.0',
+        display: {
+          label: 'Missing Icon',
+          shape: 'square',
+          subLabel: 'Fallback to icon w/ first letter',
+        },
       },
     })
   );

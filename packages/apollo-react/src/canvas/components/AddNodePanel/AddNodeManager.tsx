@@ -4,6 +4,7 @@ import type React from 'react';
 import { useCallback, useEffect, useRef } from 'react';
 import { FLOATING_CANVAS_PANEL_OFFSET, PREVIEW_NODE_ID } from '../../constants';
 import { useOptionalNodeTypeRegistry } from '../../core';
+import { useCanvasNodeLayout } from '../../hooks/useCanvasNodeLayout';
 import { usePreviewNode } from '../../hooks/usePreviewNode';
 import { isPreviewEdge } from '../../utils/createPreviewNode';
 import type { BaseNodeData } from '../BaseNode';
@@ -69,6 +70,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
 }) => {
   const reactFlowInstance = useReactFlow();
   const registry = useOptionalNodeTypeRegistry();
+  const nodeLayout = useCanvasNodeLayout();
 
   // Watch for preview node selection
   const { previewNode, previewNodeConnectionInfo } = usePreviewNode();
@@ -210,7 +212,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
           edges: placementEdges,
           previewNode: currentPreviewNode,
           insertedNode: finalNode,
-          registry,
+          layout: nodeLayout,
           ignoredNodeTypes,
         });
         placedNode = placement.insertedNode;
@@ -247,6 +249,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
       previewNodeConnectionInfo,
       reactFlowInstance,
       registry,
+      nodeLayout,
       createNodeData,
       onBeforeNodeAdded,
       onNodeAdded,

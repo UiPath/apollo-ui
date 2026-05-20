@@ -7,6 +7,7 @@ import {
   DEFAULT_CONTAINER_MIN_WIDTH,
   ensureContainersFitChildren,
   getContainerFitGeometry,
+  getContainerResizeMinimums,
   getContainerSafeArea,
   getNodeDimensions,
   placeContainerNode,
@@ -32,6 +33,152 @@ describe('container sizing', () => {
       minWidth: DEFAULT_CONTAINER_MIN_WIDTH,
       minHeight: DEFAULT_CONTAINER_MIN_HEIGHT,
       padding: { left: 144, right: 144, top: 96, bottom: 48 },
+    });
+  });
+
+  it('computes side-specific resize minimums that keep children inside the body', () => {
+    const containerNode: Node = {
+      id: 'loop-1',
+      type: 'loop',
+      position: { x: 0, y: 0 },
+      style: { width: 704, height: 368 },
+      data: {},
+    };
+    const leftTopChild: Node = {
+      id: 'left-top-child',
+      type: 'task',
+      parentId: containerNode.id,
+      position: { x: 176, y: 128 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+    const rightBottomChild: Node = {
+      id: 'right-bottom-child',
+      type: 'task',
+      parentId: containerNode.id,
+      position: { x: 416, y: 192 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+
+    expect(
+      getContainerResizeMinimums(containerNode, [containerNode, leftTopChild, rightBottomChild])
+    ).toEqual({
+      left: 672,
+      right: 656,
+      top: 336,
+      bottom: 336,
+    });
+  });
+
+  it('uses default resize minimums when a container has no visible children', () => {
+    const containerNode: Node = {
+      id: 'loop-1',
+      type: 'loop',
+      position: { x: 0, y: 0 },
+      style: { width: 704, height: 368 },
+      data: {},
+    };
+
+    expect(getContainerResizeMinimums(containerNode, [containerNode])).toEqual({
+      left: DEFAULT_CONTAINER_MIN_WIDTH,
+      right: DEFAULT_CONTAINER_MIN_WIDTH,
+      top: DEFAULT_CONTAINER_MIN_HEIGHT,
+      bottom: DEFAULT_CONTAINER_MIN_HEIGHT,
+    });
+  });
+
+  it('caps resize minimums at the current size when children already cross the body', () => {
+    const containerNode: Node = {
+      id: 'loop-1',
+      type: 'loop',
+      position: { x: 0, y: 0 },
+      style: { width: 560, height: 320 },
+      data: {},
+    };
+    const childNode: Node = {
+      id: 'child-1',
+      type: 'task',
+      parentId: containerNode.id,
+      position: { x: 96, y: 64 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+
+    expect(getContainerResizeMinimums(containerNode, [containerNode, childNode])).toMatchObject({
+      left: 560,
+      top: 320,
+    });
+  });
+
+  it('does not return resize minimums below the defaults when the current size is already smaller', () => {
+    const containerNode: Node = {
+      id: 'loop-1',
+      type: 'loop',
+      position: { x: 0, y: 0 },
+      style: { width: 320, height: 160 },
+      data: {},
+    };
+    const childNode: Node = {
+      id: 'child-1',
+      type: 'task',
+      parentId: containerNode.id,
+      position: { x: 96, y: 64 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+
+    expect(getContainerResizeMinimums(containerNode, [containerNode, childNode])).toMatchObject({
+      left: DEFAULT_CONTAINER_MIN_WIDTH,
+      top: DEFAULT_CONTAINER_MIN_HEIGHT,
+    });
+  });
+
+  it('ignores preview, hidden, and ignored child types when computing resize minimums', () => {
+    const containerNode: Node = {
+      id: 'loop-1',
+      type: 'loop',
+      position: { x: 0, y: 0 },
+      style: { width: 704, height: 368 },
+      data: {},
+    };
+    const previewChild: Node = {
+      id: PREVIEW_NODE_ID,
+      type: 'preview',
+      parentId: containerNode.id,
+      position: { x: 0, y: 0 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+    const hiddenChild: Node = {
+      id: 'hidden-child',
+      type: 'task',
+      parentId: containerNode.id,
+      hidden: true,
+      position: { x: 0, y: 0 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+    const ignoredChild: Node = {
+      id: 'ignored-child',
+      type: 'stickyNote',
+      parentId: containerNode.id,
+      position: { x: 0, y: 0 },
+      measured: { width: 96, height: 96 },
+      data: {},
+    };
+
+    expect(
+      getContainerResizeMinimums(
+        containerNode,
+        [containerNode, previewChild, hiddenChild, ignoredChild],
+        { ignoredNodeTypes: ['stickyNote'] }
+      )
+    ).toEqual({
+      left: DEFAULT_CONTAINER_MIN_WIDTH,
+      right: DEFAULT_CONTAINER_MIN_WIDTH,
+      top: DEFAULT_CONTAINER_MIN_HEIGHT,
+      bottom: DEFAULT_CONTAINER_MIN_HEIGHT,
     });
   });
 

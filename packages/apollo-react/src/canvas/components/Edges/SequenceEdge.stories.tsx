@@ -22,7 +22,7 @@ import { SequenceEdge } from './SequenceEdge';
 // ============================================================================
 
 const meta: Meta = {
-  title: 'Canvas/Edges/SequenceEdge',
+  title: 'Components/Edges/SequenceEdge',
   parameters: { layout: 'fullscreen' },
   decorators: [withCanvasProviders()],
 };

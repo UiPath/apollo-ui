@@ -26,6 +26,7 @@ import { Breadcrumb } from '../../controls';
 import { useNodeManifests } from '../../core';
 import { useAddNodeOnConnectEnd } from '../../hooks/useAddNodeOnConnectEnd';
 import { useCanvasEvent } from '../../hooks/useCanvasEvents';
+import { useCanvasNodeLayout } from '../../hooks/useCanvasNodeLayout';
 import type { ToolbarActionEvent } from '../../schema/toolbar';
 import { animatedViewportManager } from '../../stores/animatedViewportManager';
 import {
@@ -126,10 +127,6 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
 
   // Build node types mapping from manifests and defaults.
   const nodeManifests = useNodeManifests();
-  const nodeManifestByType = useMemo(
-    () => new Map(nodeManifests.map((manifest) => [manifest.nodeType, manifest])),
-    [nodeManifests]
-  );
   const nodeTypes = useMemo(() => {
     return nodeManifests.reduce(
       (acc, manifest) => {
@@ -139,10 +136,7 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
       { ...DEFAULT_NODE_TYPES } as NodeTypes
     );
   }, [nodeManifests]);
-  const getManifestForNode = useCallback(
-    (node: Node) => (node.type ? nodeManifestByType.get(node.type) : undefined),
-    [nodeManifestByType]
-  );
+  const { getManifestForNode } = useCanvasNodeLayout();
 
   // Optimized selectors to prevent unnecessary re-renders
   const currentCanvas = useCanvasStore(selectCurrentCanvas);

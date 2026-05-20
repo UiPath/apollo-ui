@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import type { Entities } from "@uipath/uipath-typescript/entities";
 import { useDataFabricEntities } from "./use-data-fabric-entities";
-import type { Entity } from "@/registry/ai-chat/tools/data-fabric/shared";
+import type { Entity } from "@/registry/ai-chat/tools/data-fabric/util/entities";
 
 interface DataFabricGateProps {
   entities: Entities;

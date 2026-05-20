@@ -276,6 +276,64 @@ describe('ListView', () => {
       expect(img).toHaveAttribute('src', 'https://example.com/icon.png');
     });
 
+    it('should render an initials badge when the item has no icon source', () => {
+      const items: ListItem[] = [{ id: 'item-1', name: 'Microsoft Azure AI Foundry', data: {} }];
+
+      render(<ListView {...defaultProps} items={items} />);
+
+      const badge = screen.getByTestId('list-item-initials-badge');
+      expect(badge).toHaveTextContent('M');
+      // Decorative — the row's name is already announced separately.
+      expect(badge).toHaveAttribute('aria-hidden', 'true');
+    });
+
+    it('should not render the initials badge when an icon source is provided', () => {
+      const items: ListItem[] = [
+        { id: 'item-1', name: 'Foo', data: {}, icon: { name: 'star' } },
+        { id: 'item-2', name: 'Bar', data: {}, icon: { url: 'https://example.com/x.svg' } },
+      ];
+
+      render(<ListView {...defaultProps} items={items} />);
+
+      expect(screen.queryByTestId('list-item-initials-badge')).not.toBeInTheDocument();
+    });
+
+    it('should not render the initials badge when icon.Component is provided', () => {
+      const CustomIcon = () => <span data-testid="custom-icon">★</span>;
+      const items: ListItem[] = [
+        { id: 'item-1', name: 'Foo', data: {}, icon: { Component: CustomIcon } },
+      ];
+
+      render(<ListView {...defaultProps} items={items} />);
+
+      expect(screen.queryByTestId('list-item-initials-badge')).not.toBeInTheDocument();
+      expect(screen.getByTestId('custom-icon')).toBeInTheDocument();
+    });
+
+    it('should fall back to the initials badge when icon source is present but empty', () => {
+      // Defensive: `ListItem.icon` is a TS interface, not Zod-validated, so a
+      // mapping bug upstream can produce `{ url: '' }` / `{ name: '' }`. The
+      // truthy guards in IconContainer should treat these as "no source".
+      const items: ListItem[] = [
+        { id: 'item-1', name: 'Empty URL', data: {}, icon: { url: '' } },
+        { id: 'item-2', name: 'Empty Name', data: {}, icon: { name: '' } },
+      ];
+
+      render(<ListView {...defaultProps} items={items} />);
+
+      const badges = screen.getAllByTestId('list-item-initials-badge');
+      expect(badges).toHaveLength(2);
+      expect(badges[0]).toHaveTextContent('E');
+    });
+
+    it('should keep the first emoji intact in the initials badge instead of slicing a surrogate pair', () => {
+      const items: ListItem[] = [{ id: 'item-1', name: '🤖 Robot Agent', data: {} }];
+
+      render(<ListView {...defaultProps} items={items} />);
+
+      expect(screen.getByTestId('list-item-initials-badge')).toHaveTextContent('🤖');
+    });
+
     it('should render multiple items', () => {
       const items: ListItem[] = [
         { id: 'item-1', name: 'Item 1', data: {} },

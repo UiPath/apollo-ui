@@ -10,7 +10,6 @@ import {
   StageTaskDragPlaceholderWrapper,
   StageTaskWrapper,
 } from './StageNode.styles';
-import { StageTaskEntryConditionIcon } from './StageTaskEntryConditionIcon';
 import { TaskContent } from './TaskContent';
 import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
 
@@ -93,12 +92,12 @@ const DraggableTaskComponent = ({
       status={taskExecution?.status}
       isParallel={isParallel}
       isDragEnabled={!isDragDisabled}
+      isPlaceholder={task.isPlaceholder}
       onClick={handleClick}
       {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
     >
       <TaskContent task={task} taskExecution={taskExecution} />
 
-      <StageTaskEntryConditionIcon task={task} />
       {getContextMenuItems && (
         <TaskMenu
           ref={menuRef}

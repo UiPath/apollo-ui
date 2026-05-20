@@ -88,6 +88,7 @@ interface DataTableProps<TData, TValue> {
   renderExpandedRow?: (row: Row<TData>) => React.ReactNode;
   getRowClassName?: (row: TData) => string;
   skeletonColumnWidths?: string[];
+  plain?: boolean;
 }
 
 function DataTable<TData, TValue>({
@@ -123,6 +124,7 @@ function DataTable<TData, TValue>({
   renderExpandedRow,
   getRowClassName,
   skeletonColumnWidths,
+  plain = false,
 }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation();
 
@@ -207,7 +209,7 @@ function DataTable<TData, TValue>({
       <div
         ref={containerRef}
         className={cn(
-          GLASS_CLASSES,
+          !plain && GLASS_CLASSES,
           "relative min-w-0 overflow-hidden",
           stickyHeader && "overflow-auto",
         )}

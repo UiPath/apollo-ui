@@ -7,6 +7,7 @@ import {
   StageTaskList,
 } from './StageNode.styles';
 import type { StageNodeProps, StageTaskGroup } from './StageNode.types';
+import { useStageNodeLabels } from './useStageNodeLabels';
 
 const StageNodeAdhocTaskGroupsInner = ({
   props,
@@ -37,6 +38,7 @@ const StageNodeAdhocTaskGroupsInner = ({
     onTaskPlay,
     loadingTaskIds,
   } = props;
+  const labels = useStageNodeLabels();
 
   /** Lazily builds context menu items for a task. Called only when the menu opens,
    * avoiding object allocation on every render for every task. */
@@ -65,7 +67,7 @@ const StageNodeAdhocTaskGroupsInner = ({
   return (
     <StageAdditionalTasksSection style={{ marginTop }}>
       <StageAdditionalTasksHeaderSection>
-        <span className="text-xs font-bold text-foreground-muted">Ad hoc tasks</span>
+        <span className="text-xs font-bold text-foreground-muted">{labels.adhocTasks}</span>
       </StageAdditionalTasksHeaderSection>
       <StageTaskList>
         {adhocTasks.map(({ task }) => {

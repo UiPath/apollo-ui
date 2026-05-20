@@ -60,8 +60,8 @@ export const BasicDropdown = {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-48">
-        <DropdownMenuItem>New File</DropdownMenuItem>
-        <DropdownMenuItem>New Folder</DropdownMenuItem>
+        <DropdownMenuItem>New file</DropdownMenuItem>
+        <DropdownMenuItem>New folder</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem>Import</DropdownMenuItem>
         <DropdownMenuItem>Export</DropdownMenuItem>
@@ -108,7 +108,7 @@ export const DropdownWithActions = {
             Share
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className="w-44">
-            <DropdownMenuItem>Copy Link</DropdownMenuItem>
+            <DropdownMenuItem>Copy link</DropdownMenuItem>
             <DropdownMenuItem>Email</DropdownMenuItem>
             <DropdownMenuItem>Slack</DropdownMenuItem>
           </DropdownMenuSubContent>
@@ -149,7 +149,7 @@ export const DropdownWithCheckboxes = {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-48">
-          <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
+          <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuCheckboxItem checked disabled>
             Name
@@ -227,7 +227,7 @@ export const DropdownForProfile = {
         <DropdownMenuSeparator />
         <DropdownMenuItem>
           <LogOut className="mr-2 h-4 w-4" />
-          Log Out
+          Log out
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -289,7 +289,7 @@ export const FileActions = {
                     Share
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent className="w-40">
-                    <DropdownMenuItem>Copy Link</DropdownMenuItem>
+                    <DropdownMenuItem>Copy link</DropdownMenuItem>
                     <DropdownMenuItem>Email</DropdownMenuItem>
                     <DropdownMenuItem>Slack</DropdownMenuItem>
                   </DropdownMenuSubContent>
@@ -341,11 +341,11 @@ export const UserMenu = {
           <DropdownMenuSeparator />
           <DropdownMenuItem>
             <User className="mr-2 h-4 w-4" />
-            My Profile
+            My profile
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Settings className="mr-2 h-4 w-4" />
-            Account Settings
+            Account settings
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuCheckboxItem
@@ -357,12 +357,12 @@ export const UserMenu = {
             ) : (
               <Sun className="mr-2 h-4 w-4" />
             )}
-            Dark Mode
+            Dark mode
           </DropdownMenuCheckboxItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem>
             <HelpCircle className="mr-2 h-4 w-4" />
-            Help Center
+            Help center
           </DropdownMenuItem>
           <DropdownMenuItem>
             <LogOut className="mr-2 h-4 w-4" />

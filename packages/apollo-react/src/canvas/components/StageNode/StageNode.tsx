@@ -8,8 +8,10 @@ import type { StageNodeProps, TaskStateReference } from './StageNode.types';
 import { StageNodeAllTaskGroups } from './StageNodeAllTaskGroups';
 import { StageNodeHandles } from './StageNodeHandles';
 import { StageNodeHeader } from './StageNodeHeader';
+import { useStageNodeLabels } from './useStageNodeLabels';
 
 const StageNodeInner = (props: StageNodeProps) => {
+  const labels = useStageNodeLabels();
   const {
     dragging,
     selected,
@@ -17,8 +19,6 @@ const StageNodeInner = (props: StageNodeProps) => {
     width,
     execution,
     stageDetails,
-    addTaskLabel = 'Add task',
-    replaceTaskLabel = 'Replace task',
     taskOptions = [],
     menuItems,
     pendingReplaceTask,
@@ -160,7 +160,7 @@ const StageNodeInner = (props: StageNodeProps) => {
       {onAddTaskFromToolbox && (
         <FloatingCanvasPanel open={isAddingTask} nodeId={id} offset={15}>
           <Toolbox
-            title={addTaskLabel}
+            title={labels.addTask}
             initialItems={taskOptions}
             onClose={() => setIsAddingTask(false)}
             onItemSelect={handleAddTaskToolboxItemSelected}
@@ -172,7 +172,7 @@ const StageNodeInner = (props: StageNodeProps) => {
       {onReplaceTaskFromToolbox && (
         <FloatingCanvasPanel open={isReplacingTask} nodeId={id} offset={15}>
           <Toolbox
-            title={replaceTaskLabel}
+            title={labels.replaceTask}
             initialItems={taskOptions}
             onClose={() => setIsReplacingTask(false)}
             onItemSelect={handleReplaceTaskToolboxItemSelected}

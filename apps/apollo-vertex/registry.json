@@ -190,6 +190,7 @@
           "ai-chat-ring": "oklch(0.64 0.115 208)",
           "ai-chat-muted": "oklch(0.955 0.006 260)",
           "ai-chat-muted-foreground": "oklch(0.50 0.020 260)",
+          "ai-chat-brand-gradient": "linear-gradient(97.73deg, #5D4ED0 8.79%, #1076A0 91.48%)",
           "ai-gradient": "linear-gradient(100.64deg, rgb(238, 224, 255) 8.29%, rgb(207, 217, 255) 88.73%)",
           "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
           "ai-gradient-start": "#6C5AEF",
@@ -288,6 +289,7 @@
           "ai-chat-ring": "oklch(0.69 0.112 207)",
           "ai-chat-muted": "oklch(0.26 0.030 258)",
           "ai-chat-muted-foreground": "oklch(0.65 0.020 258)",
+          "ai-chat-brand-gradient": "linear-gradient(97.73deg, #9485F5 8.79%, #69C7DD 91.48%)",
           "ai-gradient": "linear-gradient(98.69deg, rgb(108, 90, 239) 8.79%, rgb(105, 199, 221) 91.48%)",
           "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
           "ai-gradient-start": "#6C5AEF",
@@ -329,6 +331,7 @@
       "description": "A composable AI chat UI component for TanStack AI with AgentHub adapter, markdown rendering, suggestion buttons, and error display",
       "dependencies": [
         "@mantine/hooks@^9.0.0",
+        "@radix-ui/react-tooltip@^1.2.8",
         "@tanstack/ai@0.14.0",
         "@tanstack/ai-client@0.8.0",
         "@tanstack/ai-react@0.8.0",
@@ -348,11 +351,15 @@
       ],
       "registryDependencies": [
         "@uipath/alert-dialog",
+        "@uipath/button",
         "@uipath/card",
+        "@uipath/dialog",
         "@uipath/dropdown-menu",
+        "@uipath/textarea",
         "@uipath/tooltip"
       ],
       "files": [
+        { "path": "lib/asserts/assert.ts", "type": "registry:lib" },
         {
           "path": "registry/ai-chat/adapters/agenthub/types.ts",
           "type": "registry:lib",
@@ -409,6 +416,21 @@
           "target": "components/ui/ai-chat/hooks/use-sticky-scroll.ts"
         },
         {
+          "path": "registry/ai-chat/hooks/use-pending-files.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/hooks/use-pending-files.ts"
+        },
+        {
+          "path": "registry/ai-chat/animations.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/animations.ts"
+        },
+        {
+          "path": "registry/ai-chat/content-parts.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/content-parts.ts"
+        },
+        {
           "path": "registry/ai-chat/components/ai-chat.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat.tsx"
@@ -444,9 +466,34 @@
           "target": "components/ui/ai-chat/components/ai-chat-input-glow.tsx"
         },
         {
+          "path": "registry/ai-chat/components/ai-chat-pending-files.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-pending-files.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-image-preview.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-image-preview.tsx"
+        },
+        {
           "path": "registry/ai-chat/components/ai-chat-suggestions.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-suggestions.tsx"
+        },
+        {
+          "path": "registry/ai-chat/types.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/types.ts"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-header.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-header.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-message-actions.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-message-actions.tsx"
         },
         {
           "path": "registry/ai-chat/components/ai-chat-thinking.tsx",
@@ -489,6 +536,11 @@
           "target": "components/ui/ai-chat/charts/distribution-chart-card.tsx"
         },
         {
+          "path": "registry/ai-chat/charts/bar-chart-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/bar-chart-card.tsx"
+        },
+        {
           "path": "registry/ai-chat/charts/line-chart-card.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/charts/line-chart-card.tsx"
@@ -514,19 +566,29 @@
           "target": "components/ui/ai-chat/tools/choices/index.ts"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric/shared.ts",
+          "path": "registry/ai-chat/tools/data-fabric/util/entities.ts",
           "type": "registry:lib",
-          "target": "components/ui/ai-chat/tools/data-fabric/shared.ts"
+          "target": "components/ui/ai-chat/tools/data-fabric/util/entities.ts"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric/binned.ts",
+          "path": "registry/ai-chat/tools/data-fabric/util/filters.ts",
           "type": "registry:lib",
-          "target": "components/ui/ai-chat/tools/data-fabric/binned.ts"
+          "target": "components/ui/ai-chat/tools/data-fabric/util/filters.ts"
         },
         {
-          "path": "registry/ai-chat/tools/data-fabric/resolver-result.ts",
+          "path": "registry/ai-chat/tools/data-fabric/util/joins.ts",
           "type": "registry:lib",
-          "target": "components/ui/ai-chat/tools/data-fabric/resolver-result.ts"
+          "target": "components/ui/ai-chat/tools/data-fabric/util/joins.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric/util/chart-helpers.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric/util/chart-helpers.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric/util/resolver-result.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric/util/resolver-result.ts"
         },
         {
           "path": "registry/ai-chat/tools/data-fabric/index.ts",
@@ -537,6 +599,11 @@
           "path": "registry/ai-chat/tools/data-fabric-table/data-fabric-table-tool.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/tools/data-fabric-table/data-fabric-table-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-table/table-data-model.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric-table/table-data-model.ts"
         },
         {
           "path": "registry/ai-chat/tools/data-fabric-table/index.ts",
@@ -552,6 +619,16 @@
           "path": "registry/ai-chat/tools/data-fabric-distribution/index.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric-distribution/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-bar/data-fabric-bar-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/data-fabric-bar/data-fabric-bar-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-bar/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric-bar/index.ts"
         },
         {
           "path": "registry/ai-chat/tools/data-fabric-line/data-fabric-line-tool.tsx",
@@ -1055,6 +1132,40 @@
       ]
     },
     {
+      "name": "onboarding-tour-joyride",
+      "type": "registry:ui",
+      "title": "Onboarding Tour (Joyride)",
+      "description": "Guided onboarding tour built on React Joyride with an Apollo Vertex–styled custom tooltip, welcome modal, and conditional step gating.",
+      "dependencies": [
+        "react-joyride",
+        "lucide-react",
+        "@radix-ui/react-dialog"
+      ],
+      "registryDependencies": ["button"],
+      "files": [
+        {
+          "path": "registry/onboarding-tour-joyride/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/index.ts"
+        },
+        {
+          "path": "registry/onboarding-tour-joyride/onboarding-tour-joyride-types.ts",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/onboarding-tour-joyride-types.ts"
+        },
+        {
+          "path": "registry/onboarding-tour-joyride/tour-persistence.ts",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/tour-persistence.ts"
+        },
+        {
+          "path": "registry/onboarding-tour-joyride/onboarding-tour-joyride-popover.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/onboarding-tour-joyride-popover.tsx"
+        }
+      ]
+    },
+    {
       "name": "navigation-menu",
       "type": "registry:ui",
       "title": "Navigation Menu",
@@ -1204,7 +1315,9 @@
         "@tanstack/react-router",
         "pkce-challenge",
         "sonner",
-        "@mantine/hooks@^9.0.0"
+        "@mantine/hooks@^9.0.0",
+        "@tanstack/react-db",
+        "@uipath/vs-core@^1.2.2"
       ],
       "registryDependencies": [
         "button",
@@ -1296,6 +1409,10 @@
           "type": "registry:ui"
         },
         {
+          "path": "registry/shell/group-membership-screens.tsx",
+          "type": "registry:ui"
+        },
+        {
           "path": "registry/shell/use-group-members.ts",
           "type": "registry:ui"
         },
@@ -1303,7 +1420,14 @@
           "path": "registry/shell/use-is-group-member.ts",
           "type": "registry:ui"
         },
-        { "path": "lib/identity-service.ts", "type": "registry:lib" }
+        {
+          "path": "registry/shell/use-group-id.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-roles.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -1349,6 +1473,10 @@
         {
           "path": "registry/use-data-table/usePersistedSorting.ts",
           "type": "registry:hook"
+        },
+        {
+          "path": "registry/use-data-table/usePersistedPageSize.ts",
+          "type": "registry:hook"
         }
       ]
     },
@@ -1360,7 +1488,7 @@
       "dependencies": [
         "@tanstack/react-table",
         "@tanstack/react-db",
-        "@uipath/vs-core"
+        "@uipath/vs-core@^1.2.2"
       ],
       "registryDependencies": ["@uipath/use-data-table", "@uipath/data-table"],
       "files": [
@@ -1599,7 +1727,7 @@
         "lucide-react",
         "react-i18next"
       ],
-      "registryDependencies": ["button", "popover", "calendar"],
+      "registryDependencies": ["button", "popover", "@uipath/calendar"],
       "files": [
         {
           "path": "registry/date-picker/date-picker.tsx",

@@ -1,6 +1,7 @@
 import { useNavigationStack } from '@uipath/apollo-react/canvas/hooks';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSafeLingui } from '../../../i18n';
 import { useListRef } from 'react-window';
 import {
   TOOLBOX_GAP,
@@ -155,6 +156,8 @@ export function Toolbox<T>({
   quickActions,
   renderEmptyState,
 }: ToolboxProps<T>) {
+  const { _ } = useSafeLingui();
+  const searchPlaceholder = _({ id: 'toolbox.search', message: 'Search' });
   const [items, setItems] = useState<ListItem<T>[]>(initialItems);
   const [search, setSearch] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
@@ -647,7 +650,7 @@ export function Toolbox<T>({
           value={search}
           onChange={handleSearch}
           clear={clearSearch}
-          placeholder="Search"
+          placeholder={searchPlaceholder}
           inputRef={searchInputRef}
           clearButtonRef={clearButtonRef}
           onNavigationKeyDown={handleNavigationKeyDown}

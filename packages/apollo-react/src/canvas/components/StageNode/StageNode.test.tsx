@@ -1,8 +1,8 @@
-import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen, waitFor } from '../../utils/testing';
 import type { ListItem } from '../Toolbox';
 import { StageNode } from './StageNode';
 import type { StageNodeProps, StageTaskItem } from './StageNode.types';
@@ -309,26 +309,6 @@ describe('StageNode - Replace Task Functionality', () => {
       // Check toolbox title
       const toolboxTitle = screen.getByTestId('toolbox-title');
       expect(toolboxTitle).toHaveTextContent('Replace task');
-    });
-
-    it('should use custom replaceTaskLabel when provided', async () => {
-      const user = userEvent.setup();
-      const onReplaceTaskFromToolbox = vi.fn();
-      renderStageNode({
-        onReplaceTaskFromToolbox,
-        replaceTaskLabel: 'Custom Replace Label',
-      });
-
-      const taskMenuButton = screen.getByTestId('task-menu-button-task-1');
-      await user.click(taskMenuButton);
-
-      const replaceMenuItem = screen.getByTestId('menu-item-task-1-replace-task');
-      await user.click(replaceMenuItem);
-
-      await waitFor(() => {
-        const toolboxTitle = screen.getByTestId('toolbox-title');
-        expect(toolboxTitle).toHaveTextContent('Custom Replace Label');
-      });
     });
 
     it('should display task options in replace task toolbox', async () => {
@@ -848,6 +828,93 @@ describe('StageNode - ReadOnly Mode', () => {
   });
 });
 
+describe('StageNode - SLA Indicator', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const getSlaIndicator = () => screen.getByTestId('stage-sla-stage-1');
+
+  it('does not render the SLA indicator when slaText is undefined', () => {
+    renderStageNode({
+      execution: { stageStatus: {}, taskStatus: {} },
+    });
+
+    expect(screen.queryByTestId('stage-sla-stage-1')).not.toBeInTheDocument();
+  });
+
+  it('does not render the SLA indicator when only duration is provided', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: { duration: 'Duration: 1h 30m' },
+        taskStatus: {},
+      },
+    });
+
+    expect(screen.queryByTestId('stage-sla-stage-1')).not.toBeInTheDocument();
+  });
+
+  it('renders slaText without an icon when slaIcon is omitted', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: { slaText: 'SLA: 10 days remaining' },
+        taskStatus: {},
+      },
+    });
+
+    const indicator = getSlaIndicator();
+    expect(indicator).toHaveTextContent('SLA: 10 days remaining');
+    expect(indicator).not.toHaveAttribute('data-sla-icon');
+    expect(indicator.querySelector('svg')).toBeNull();
+  });
+
+  it('renders a warning icon and text when slaIcon is "warning"', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: { slaText: 'SLA: 1 day remaining', slaIcon: 'warning' },
+        taskStatus: {},
+      },
+    });
+
+    const indicator = getSlaIndicator();
+    expect(indicator).toHaveTextContent('SLA: 1 day remaining');
+    expect(indicator).toHaveAttribute('data-sla-icon', 'warning');
+    expect(indicator.querySelector('svg')).not.toBeNull();
+  });
+
+  it('renders an error icon and text when slaIcon is "error"', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: { slaText: 'SLA: 1 day overdue', slaIcon: 'error' },
+        taskStatus: {},
+      },
+    });
+
+    const indicator = getSlaIndicator();
+    expect(indicator).toHaveTextContent('SLA: 1 day overdue');
+    expect(indicator).toHaveAttribute('data-sla-icon', 'error');
+    expect(indicator.querySelector('svg')).not.toBeNull();
+  });
+
+  it('renders both duration and slaText as independent lines when both are provided', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: {
+          duration: 'Duration: 1h 30m',
+          slaText: 'SLA: 1 day remaining',
+          slaIcon: 'warning',
+        },
+        taskStatus: {},
+      },
+    });
+
+    expect(screen.getByText('Duration: 1h 30m')).toBeInTheDocument();
+    const indicator = getSlaIndicator();
+    expect(indicator).toHaveTextContent('SLA: 1 day remaining');
+    expect(indicator).toHaveAttribute('data-sla-icon', 'warning');
+  });
+});
+
 describe('StageNode - Header Chips', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -969,5 +1036,40 @@ describe('StageNode - Add Task Button', () => {
     renderStageNode({ onTaskAdd: vi.fn(), loadingTaskIds: new Set() });
 
     expect(screen.getByRole('button', { name: 'Add task' })).not.toBeDisabled();
+  });
+});
+
+describe('StageTitleInput - input attributes', () => {
+  const enterEditMode = async (user: ReturnType<typeof userEvent.setup>) => {
+    await user.click(screen.getByRole('button', { name: 'Test Stage' }));
+    return screen.getByDisplayValue('Test Stage') as HTMLInputElement;
+  };
+
+  it('suppresses browser autocomplete on the stage title input', async () => {
+    const user = userEvent.setup();
+    renderStageNode({ onStageTitleChange: vi.fn() });
+
+    const input = await enterEditMode(user);
+    expect(input).toHaveAttribute('autocomplete', 'off');
+  });
+
+  it('uses a per-stage unique name derived from the stage id', async () => {
+    const user = userEvent.setup();
+    renderStageNode({ onStageTitleChange: vi.fn() });
+
+    const input = await enterEditMode(user);
+    expect(input).toHaveAttribute('name', 'stage-title-stage-1');
+  });
+
+  it('generates a different name for each stage so browsers do not group inputs', async () => {
+    const user = userEvent.setup();
+    const { unmount } = renderStageNode({ id: 'stage-a', onStageTitleChange: vi.fn() });
+    let input = await enterEditMode(user);
+    expect(input).toHaveAttribute('name', 'stage-title-stage-a');
+    unmount();
+
+    renderStageNode({ id: 'stage-b', onStageTitleChange: vi.fn() });
+    input = await enterEditMode(user);
+    expect(input).toHaveAttribute('name', 'stage-title-stage-b');
   });
 });

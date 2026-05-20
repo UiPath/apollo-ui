@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { STORAGE_KEYS } from "@/lib/auth";
+import { STALE_TIME_MS } from "@/lib/constants";
 import {
   Select,
   SelectContent,
@@ -88,7 +89,7 @@ function useOrgInfo(accessToken: string | null) {
       return fetchOrgInfo(orgId, accessToken);
     },
     enabled: !!accessToken && !!orgId,
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE_TIME_MS,
   });
 
   return { orgInfo: data ?? null, isLoading: isLoading && !!orgId, isError };

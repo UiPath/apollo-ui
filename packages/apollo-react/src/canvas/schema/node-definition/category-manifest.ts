@@ -56,8 +56,8 @@ export const categoryManifestSchema = z.object({
   /** Dark mode color/gradient */
   colorDark: z.string().min(1).optional(),
 
-  /** Icon identifier */
-  icon: z.string().min(1),
+  /** Icon identifier or absolute URL. Omit (don't pass `''`) to fall back to an initials badge derived from `name`. */
+  icon: z.string().min(1).optional(),
 
   /** Tags for search and filtering */
   tags: z.array(z.string()),

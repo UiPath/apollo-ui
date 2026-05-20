@@ -5,11 +5,11 @@ import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyf
 import type { ResizeDragEvent, ResizeParams } from '@uipath/apollo-react/canvas/xyflow/system';
 import { AnimatePresence } from 'motion/react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ApI18nProvider } from '../../../i18n';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import { GRID_SPACING } from '../../constants';
+import { NodeViewportOverlay } from '../NodeViewportOverlay';
 import type { ToolbarAction } from '../Toolbar';
 import { NodeToolbar } from '../Toolbar';
 import { FormattingToolbar } from './FormattingToolbar';
@@ -301,7 +301,7 @@ const StickyNoteNodeComponent = ({
   return (
     <>
       <Global styles={stickyNoteGlobalStyles} />
-      <StickyNoteWrapper>
+      <StickyNoteWrapper data-sticky-note>
         {!readOnly && (
           <>
             {/* Top-left resize control */}
@@ -365,7 +365,7 @@ const StickyNoteNodeComponent = ({
           <TopCornerIndicators visible={selected && !readOnly} />
           <BottomCornerIndicators visible={selected && !readOnly} />
           {isEditing ? (
-            <ApI18nProvider component="canvas">
+            <>
               <FormattingToolbar
                 textAreaRef={textAreaRef}
                 borderColor={color}
@@ -384,7 +384,7 @@ const StickyNoteNodeComponent = ({
                 isEditing={isEditing}
                 className="nodrag nowheel"
               />
-            </ApI18nProvider>
+            </>
           ) : (
             <StickyNoteMarkdown ref={markdownRef} {...scrollCaptureProps}>
               {localContent ? (
@@ -411,41 +411,53 @@ const StickyNoteNodeComponent = ({
         </StickyNoteContainer>
 
         {!readOnly && selected && !dragging && !isResizing && (
-          <NodeToolbar nodeId={id} config={toolbarConfig} expanded={true} />
+          <NodeToolbar nodeId={id} config={toolbarConfig} expanded={true} portalToNodeOverlay />
         )}
-        <AnimatePresence>
-          {!readOnly && selected && !dragging && !isResizing && isColorPickerOpen && (
-            <div
-              style={{
-                position: 'absolute',
-                top: -40,
-                left: '50%',
-                transform: 'translateX(40px)',
-                zIndex: 1000,
-              }}
-            >
-              <ColorPickerPanel
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.15, ease: 'easeOut' }}
-              >
-                {Object.keys(STICKY_NOTE_COLORS).map((stickyColorKey) => {
-                  const colorName = stickyColorKey as StickyNoteColor;
-                  return (
-                    <ColorOption
-                      key={stickyColorKey}
-                      color={STICKY_NOTE_COLORS[colorName]}
-                      isSelected={colorKey === colorName}
-                      onClick={() => handleColorChange(colorName)}
-                      title={colorName.charAt(0).toUpperCase() + colorName.slice(1)}
-                    />
-                  );
-                })}
-              </ColorPickerPanel>
-            </div>
-          )}
-        </AnimatePresence>
+        {!readOnly && selected && !dragging && !isResizing && (
+          <NodeViewportOverlay nodeId={id} layer="nodeToolbar">
+            <AnimatePresence>
+              {isColorPickerOpen && (
+                <div
+                  className="nodrag nopan nowheel"
+                  style={{
+                    position: 'absolute',
+                    top: -40,
+                    left: '50%',
+                    transform: 'translateX(40px)',
+                    zIndex: 1000,
+                    pointerEvents: 'auto',
+                  }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ColorPickerPanel
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                  >
+                    {Object.keys(STICKY_NOTE_COLORS).map((stickyColorKey) => {
+                      const colorName = stickyColorKey as StickyNoteColor;
+                      return (
+                        <ColorOption
+                          type="button"
+                          key={stickyColorKey}
+                          color={STICKY_NOTE_COLORS[colorName]}
+                          isSelected={colorKey === colorName}
+                          onClick={() => handleColorChange(colorName)}
+                          title={colorName.charAt(0).toUpperCase() + colorName.slice(1)}
+                        />
+                      );
+                    })}
+                  </ColorPickerPanel>
+                </div>
+              )}
+            </AnimatePresence>
+          </NodeViewportOverlay>
+        )}
       </StickyNoteWrapper>
     </>
   );

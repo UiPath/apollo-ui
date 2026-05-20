@@ -35,8 +35,8 @@ export const nodeDisplayManifestSchema = z.object({
   /** Description of what the node does */
   description: z.string().optional(),
 
-  /** Icon identifier (e.g., "timer", "uipath.decision") */
-  icon: z.string().min(1),
+  /** Icon identifier (e.g. "timer", "uipath.decision") or absolute URL. Omit (don't pass `''`) to fall back to an initials badge derived from `label`. */
+  icon: z.string().min(1).optional(),
 
   /** Shape of the node */
   shape: nodeShapeSchema.optional(),

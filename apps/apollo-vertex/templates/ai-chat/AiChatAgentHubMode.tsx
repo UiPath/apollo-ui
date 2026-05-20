@@ -3,19 +3,22 @@
 import { clientTools } from "@tanstack/ai-client";
 import { useChat } from "@tanstack/ai-react";
 import { Entities } from "@uipath/uipath-typescript/entities";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createAgentHubConnection } from "@/registry/ai-chat/adapters/agenthub/adapter";
 import { AiChat } from "@/registry/ai-chat/components/ai-chat";
 import { AiChatEmptyState } from "@/registry/ai-chat/components/ai-chat-empty-state";
-import { AiChatMessage } from "@/registry/ai-chat/components/ai-chat-message";
 import { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
 import {
   CHOICES_TOOL_PROMPT,
   presentChoicesClient,
   renderChoices,
 } from "@/registry/ai-chat/tools/choices";
-import type { Entity } from "@/registry/ai-chat/tools/data-fabric/shared";
+import type { Entity } from "@/registry/ai-chat/tools/data-fabric/util/entities";
+import {
+  createDataFabricBarTool,
+  dataFabricBarClient,
+} from "@/registry/ai-chat/tools/data-fabric-bar";
 import {
   createDataFabricDistributionTool,
   dataFabricDistributionClient,
@@ -36,6 +39,7 @@ import {
   createDataFabricTableTool,
   dataFabricTableClient,
 } from "@/registry/ai-chat/tools/data-fabric-table";
+import type { MessageFeedbackType } from "@/registry/ai-chat/types";
 import { DataFabricGate } from "./AiChatDataFabricGate";
 import type { OrgTenantInfo } from "./AiChatLoginGate";
 import { createUiPathSdk } from "./ai-chat-example-utils";
@@ -71,6 +75,12 @@ function AgentHubChatInner({
     dataFabricBaseUrl,
   });
 
+  const barTool = createDataFabricBarTool({
+    entities,
+    accessToken,
+    dataFabricBaseUrl,
+  });
+
   const lineTool = createDataFabricLineTool({
     entities,
     accessToken,
@@ -93,6 +103,7 @@ function AgentHubChatInner({
     presentChoicesClient,
     dataFabricTableClient,
     dataFabricDistributionClient,
+    dataFabricBarClient,
     dataFabricLineClient,
     dataFabricMultiLineClient,
     dataFabricKpiClient,
@@ -105,7 +116,13 @@ function AgentHubChatInner({
     '- "data_fabric_line" — single-metric trend / time-series questions ("orders over time", "revenue by month", "growth across quarters").',
     '- "data_fabric_multi_line" — compare EXACTLY TWO metrics on a shared time axis ("orders count and revenue over time", "min vs max price by month"). The chart only supports two Y axes; for 3+ metrics render multiple charts.',
     '- "data_fabric_distribution" — histogram-style requests ("distribution of X", "histogram of X", numeric value-range binning).',
-    "If two tools could both answer, prefer the more specific one: multi-line beats line when the user names 2+ metrics; line beats distribution for explicit time-series phrasing; kpi beats line/distribution when the user wants a single value with no breakdown.",
+    '- "data_fabric_bar" — categorical breakdown / "by <category>" questions where the dimension is a string field ("orders by status", "revenue by category", "count by region"). Supports a single metric (one bar per category) or any number of metrics (grouped bars per category — 2, 3, 4+ all valid).',
+    "Disambiguation — pick by the dimension first, not by metric count:",
+    '- Compare/show N metrics by a STRING field → "data_fabric_bar". Bar has no metric-count limit; never ask the user to drop metrics. Examples: "compare count, total, and average Amount by Status", "min vs max Amount by CustomerName".',
+    '- Compare exactly two metrics on a DATETIME axis → "data_fabric_multi_line". 3+ metrics on a datetime axis → render multiple line charts.',
+    '- Single-metric trend on a DATETIME axis → "data_fabric_line".',
+    '- Numeric/datetime value-range binning → "data_fabric_distribution".',
+    '- Single scalar with no breakdown → "data_fabric_kpi".',
   ].join("\n");
 
   const systemPrompt = [
@@ -114,6 +131,7 @@ function AgentHubChatInner({
     chartToolSteering,
     tableTool.toolPrompt,
     distributionTool.toolPrompt,
+    barTool.toolPrompt,
     lineTool.toolPrompt,
     multiLineTool.toolPrompt,
     kpiTool.toolPrompt,
@@ -127,10 +145,12 @@ function AgentHubChatInner({
     tools,
   });
 
-  const { messages, sendMessage, isLoading, stop, clear, error } = useChat({
-    connection,
-    tools,
-  });
+  const { messages, sendMessage, reload, status, stop, clear, error } = useChat(
+    {
+      connection,
+      tools,
+    },
+  );
 
   const emptyState = (
     <AiChatEmptyState
@@ -139,91 +159,94 @@ function AgentHubChatInner({
     />
   );
 
+  const [feedback, setFeedback] = useState<Record<string, MessageFeedbackType>>(
+    {},
+  );
+
   return (
     <AiChat
       messages={messages}
-      isLoading={isLoading}
-      onSendMessage={(text) => {
-        void sendMessage(text);
+      status={status}
+      onSendMessage={(text, parts) => {
+        if (!parts?.length) {
+          void sendMessage(text);
+          return;
+        }
+        void sendMessage({
+          content: [
+            ...(text ? [{ type: "text" as const, content: text }] : []),
+            ...parts,
+          ],
+        });
       }}
       onStop={stop}
       onClearChat={clear}
+      onFeedback={(messageId, type) => {
+        setFeedback((prev) => ({ ...prev, [messageId]: type }));
+      }}
+      getFeedback={(messageId) => feedback[messageId] ?? null}
+      onRegenerate={() => void reload()}
+      onEditMessage={(_messageId, content) => void sendMessage(content)}
+      renderToolPart={(part) => {
+        if (!part.output) return null;
+
+        if (part.name === "data_fabric_table") {
+          return (
+            <Suspense>{tableTool.renderTable(part.output, part.id)}</Suspense>
+          );
+        }
+
+        if (part.name === "data_fabric_distribution") {
+          return (
+            <Suspense>
+              {distributionTool.renderDistribution(part.output, part.id)}
+            </Suspense>
+          );
+        }
+
+        if (part.name === "data_fabric_bar") {
+          return <Suspense>{barTool.renderBar(part.output, part.id)}</Suspense>;
+        }
+
+        if (part.name === "data_fabric_line") {
+          return (
+            <Suspense>{lineTool.renderLine(part.output, part.id)}</Suspense>
+          );
+        }
+
+        if (part.name === "data_fabric_multi_line") {
+          return (
+            <Suspense>
+              {multiLineTool.renderMultiLine(part.output, part.id)}
+            </Suspense>
+          );
+        }
+
+        if (part.name === "data_fabric_kpi") {
+          return <Suspense>{kpiTool.renderKpi(part.output, part.id)}</Suspense>;
+        }
+
+        if (part.name === "presentChoices") {
+          return renderChoices(part.output, {
+            onAction: (text) => {
+              void sendMessage(text);
+            },
+          });
+        }
+
+        return null;
+      }}
       title="Autopilot"
       assistantName="Autopilot"
       emptyState={emptyState}
+      acceptedFileTypes="image/*"
       suggestions={[
         t("shell_suggestion_recent_runs"),
         t("shell_suggestion_failing_processes"),
         t("shell_suggestion_summarize_queue"),
       ]}
       error={error ?? null}
-    >
-      {messages.map((message) => (
-        <AiChatMessage
-          key={message.id}
-          message={message}
-          assistantName="Autopilot"
-        >
-          {message.parts.map((part) => {
-            if (part.type !== "tool-call" || !part.output) return null;
-
-            if (part.name === "data_fabric_table") {
-              return (
-                <Suspense key={part.id}>
-                  {tableTool.renderTable(part.output, part.id)}
-                </Suspense>
-              );
-            }
-
-            if (part.name === "data_fabric_distribution") {
-              return (
-                <Suspense key={part.id}>
-                  {distributionTool.renderDistribution(part.output, part.id)}
-                </Suspense>
-              );
-            }
-
-            if (part.name === "data_fabric_line") {
-              return (
-                <Suspense key={part.id}>
-                  {lineTool.renderLine(part.output, part.id)}
-                </Suspense>
-              );
-            }
-
-            if (part.name === "data_fabric_multi_line") {
-              return (
-                <Suspense key={part.id}>
-                  {multiLineTool.renderMultiLine(part.output, part.id)}
-                </Suspense>
-              );
-            }
-
-            if (part.name === "data_fabric_kpi") {
-              return (
-                <Suspense key={part.id}>
-                  {kpiTool.renderKpi(part.output, part.id)}
-                </Suspense>
-              );
-            }
-
-            if (part.name === "presentChoices") {
-              return (
-                <div key={part.id}>
-                  {renderChoices(part.output, {
-                    onAction: (text) => {
-                      void sendMessage(text);
-                    },
-                  })}
-                </div>
-              );
-            }
-
-            return null;
-          })}
-        </AiChatMessage>
-      ))}
-    </AiChat>
+    />
   );
 }
 

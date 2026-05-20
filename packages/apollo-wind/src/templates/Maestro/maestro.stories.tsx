@@ -160,7 +160,7 @@ function SectionHeader({ title }: { title: string }) {
         type="button"
         className="text-sm font-medium text-foreground-muted transition-colors hover:text-foreground"
       >
-        View All
+        View all
       </button>
     </div>
   );

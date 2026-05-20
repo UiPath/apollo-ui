@@ -1,8 +1,7 @@
 name: Dev Publish
 
-permissions:
-  contents: read
-  pull-requests: read
+# Deny-all default; jobs grant the minimum they need.
+permissions: {}
 
 on:
   pull_request:
@@ -12,8 +11,6 @@ on:
       - 'support/**'
 
 env:
-  GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
-  NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
   TURBO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: 1
   BASE_REF: ${{ github.event.pull_request.base.ref }}
@@ -26,6 +23,10 @@ jobs:
   detect-changes:
     name: Detect Changed Packages
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      issues: read
     outputs:
       has_label: ${{ steps.check-label.outputs.has_label }}
       packages: ${{ steps.changed.outputs.packages }}
@@ -39,6 +40,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Check for dev-packages label
         id: check-label
@@ -46,10 +48,10 @@ jobs:
           LABELS_JSON: ${{ toJSON(github.event.pull_request.labels.*.name) }}
         run: |
           if echo "$LABELS_JSON" | jq -e 'index("dev-packages")' > /dev/null; then
-            echo "has_label=true" >> $GITHUB_OUTPUT
+            echo "has_label=true" >> "$GITHUB_OUTPUT"
             echo "✓ dev-packages label is present"
           else
-            echo "has_label=false" >> $GITHUB_OUTPUT
+            echo "has_label=false" >> "$GITHUB_OUTPUT"
             echo "ℹ️ dev-packages label not present - will cleanup only"
           fi
 
@@ -60,26 +62,35 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           COMMENT=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
-            --jq '[.[] | select(.body | contains("<!-- dev-packages-comment -->")) | .body][0]' 2>/dev/null) || true
+            --jq '[.[] | select(.body | contains("<!-- dev-packages-comment -->")) | select(.user.type == "Bot" or .user.login == "github-actions[bot]") | .body][0]' 2>/dev/null) || true
 
           if [ -z "$COMMENT" ]; then
-            echo "has_previous=false" >> $GITHUB_OUTPUT
-            echo "packages=" >> $GITHUB_OUTPUT
+            {
+              echo "has_previous=false"
+              echo "packages="
+            } >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           # Extract all package@version from comment (table format)
           # Matches: | `@uipath/package@version-pr123.sha` | status | timestamp |
-          PUBLISHED=$(echo "$COMMENT" | grep -oE '\| `@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+(\.[a-z0-9]+)?`' | sed 's/^| `//' | sed 's/`$//' | sort -u)
+          # Backticks in the grep pattern are literal regex chars, not command substitution.
+          # shellcheck disable=SC2016
+          PUBLISHED=$(echo "$COMMENT" | grep -oE '\| `@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+(\.[a-z0-9]+)?`' | sed 's/^| `//' | sed "s/\`\$//" | sort -u)
 
           if [ -z "$PUBLISHED" ]; then
-            echo "has_previous=false" >> $GITHUB_OUTPUT
-            echo "packages=" >> $GITHUB_OUTPUT
+            {
+              echo "has_previous=false"
+              echo "packages="
+            } >> "$GITHUB_OUTPUT"
           else
-            echo "has_previous=true" >> $GITHUB_OUTPUT
-            echo "packages<<EOF" >> $GITHUB_OUTPUT
-            echo "$PUBLISHED" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            {
+              echo "has_previous=true"
+              DELIM="PKGS_$(openssl rand -hex 8)"
+              echo "packages<<${DELIM}"
+              echo "$PUBLISHED"
+              echo "${DELIM}"
+            } >> "$GITHUB_OUTPUT"
             echo "Found previous versions: $PUBLISHED"
           fi
 
@@ -92,13 +103,13 @@ jobs:
           # Convert newline-separated package@version list to JSON array
           # Use -Rsc: Raw input, Slurp mode, Compact output (single line)
           MATRIX_JSON=$(echo "$PACKAGES" | jq -Rsc 'split("\n") | map(select(length > 0))')
-          echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+          echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
           echo "Previous matrix: $MATRIX_JSON"
 
       - name: Get changed packages
         id: changed
         run: |
-          CHANGED_FILES=$(git diff --name-only origin/${BASE_REF}...HEAD)
+          CHANGED_FILES=$(git diff --name-only "origin/${BASE_REF}...HEAD")
           PACKAGES=""
 
           for pkg_dir in packages/* web-packages/*; do
@@ -118,29 +129,37 @@ jobs:
 
           PACKAGES=$(echo "$PACKAGES" | xargs)
           if [ -z "$PACKAGES" ]; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-            echo "packages=" >> $GITHUB_OUTPUT
+            {
+              echo "has_changes=false"
+              echo "packages="
+            } >> "$GITHUB_OUTPUT"
           else
-            echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
-            echo "has_changes=true" >> $GITHUB_OUTPUT
+            {
+              echo "packages=$PACKAGES"
+              echo "has_changes=true"
+            } >> "$GITHUB_OUTPUT"
           fi
           echo "Changed packages: $PACKAGES"
 
       - name: Create matrix
         id: matrix
         if: steps.changed.outputs.has_changes == 'true'
+        env:
+          PACKAGES: ${{ steps.changed.outputs.packages }}
         run: |
           # Convert space-separated list to compact JSON array
-          PACKAGES="${{ steps.changed.outputs.packages }}"
           MATRIX_JSON=$(echo "$PACKAGES" | jq -Rc 'split(" ") | map(select(length > 0))')
-          echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+          echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
           echo "Matrix: $MATRIX_JSON"
 
   cleanup:
     name: Cleanup ${{ matrix.package_version }}
     needs: detect-changes
-    if: needs.detect-changes.outputs.has_previous == 'true'
+    if: needs.detect-changes.outputs.has_previous == 'true' && github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
@@ -148,22 +167,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22
-          cache: 'pnpm'
+          persist-credentials: false
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-deps
+        with:
+          registry-token: ${{ github.token }}
 
       - name: Cleanup previous version
         env:
           PACKAGE_VERSION: ${{ matrix.package_version }}
+          GH_NPM_REGISTRY_TOKEN: ${{ github.token }}
         run: |
           if ! [[ "$PACKAGE_VERSION" =~ ^@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+(\.[a-z0-9]+)?$ ]]; then
             echo "::error::Invalid package version format: $PACKAGE_VERSION"
@@ -179,27 +194,22 @@ jobs:
   update-comment-publishing:
     name: Update Comment - Publishing
     needs: [detect-changes, cleanup]
-    if: always() && needs.detect-changes.outputs.has_label == 'true' && needs.detect-changes.outputs.has_changes == 'true'
+    if: always() && needs.detect-changes.outputs.has_label == 'true' && needs.detect-changes.outputs.has_changes == 'true' && github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: read
       pull-requests: write
-      issues: write
     steps:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22
-          cache: 'pnpm'
+          persist-credentials: false
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-deps
+        with:
+          registry-token: ${{ github.token }}
 
       - name: Create initial PR comment
         env:
@@ -214,12 +224,12 @@ jobs:
   publish:
     name: Publish ${{ matrix.package }}
     needs: [detect-changes, cleanup, update-comment-publishing]
-    if: always() && needs.detect-changes.outputs.has_label == 'true' && needs.detect-changes.outputs.has_changes == 'true'
+    if: always() && needs.detect-changes.outputs.has_label == 'true' && needs.detect-changes.outputs.has_changes == 'true' && github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: write
       pull-requests: write
-      issues: write
     strategy:
       fail-fast: false # Continue even if one package fails
       matrix:
@@ -227,26 +237,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22
-          cache: 'pnpm'
+          persist-credentials: false
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-deps
+        with:
+          registry-token: ${{ github.token }}
 
-      - name: Build package
-        env:
-          PACKAGE: ${{ matrix.package }}
-        run: pnpm build --filter="$PACKAGE"
-
-      - name: Publish package
-        id: publish
+      # Compute the full version up front so the PR comment row can be updated
+      # even when later steps (App token mint, build, publish) fail. Otherwise
+      # the row stays stuck on "Publishing..." with no failure signal.
+      - name: Compute version metadata
+        id: meta
         env:
           PACKAGE: ${{ matrix.package }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -254,9 +257,7 @@ jobs:
           SHORT_SHA="${GITHUB_SHA:0:7}"
           SUFFIX="pr${PR_NUMBER}.${SHORT_SHA}"
 
-          echo "Publishing $PACKAGE with suffix $SUFFIX..."
           pkg_json=$(find packages web-packages -name package.json -exec grep -l "\"name\": \"$PACKAGE\"" {} \; | head -1)
-
           if [ ! -f "$pkg_json" ]; then
             echo "::error::Could not find package.json for $PACKAGE"
             exit 1
@@ -273,33 +274,49 @@ jobs:
             exit 1
           fi
 
+          {
+            echo "full_version=$PACKAGE@$version-$SUFFIX"
+            echo "suffix=$SUFFIX"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build package
+        env:
+          PACKAGE: ${{ matrix.package }}
+        run: pnpm build --filter="$PACKAGE"
+
+      - name: Publish package
+        id: publish
+        env:
+          PACKAGE: ${{ matrix.package }}
+          SUFFIX: ${{ steps.meta.outputs.suffix }}
+          GH_NPM_REGISTRY_TOKEN: ${{ github.token }}
+        run: |
+          echo "Publishing $PACKAGE with suffix $SUFFIX..."
           if pnpm publish:dev "$PACKAGE" "$SUFFIX"; then
-            echo "full_version=$PACKAGE@$version-$SUFFIX" >> $GITHUB_OUTPUT
-            echo "status=success" >> $GITHUB_OUTPUT
+            echo "status=success" >> "$GITHUB_OUTPUT"
           else
-            echo "full_version=$PACKAGE@$version-$SUFFIX" >> $GITHUB_OUTPUT
-            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "status=failure" >> "$GITHUB_OUTPUT"
             exit 1
           fi
 
       - name: Update PR comment row
-        if: always()
+        if: always() && steps.meta.outputs.full_version != ''
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          FULL_VERSION: ${{ steps.publish.outputs.full_version }}
-          PUBLISH_STATUS: ${{ steps.publish.outputs.status }}
+          FULL_VERSION: ${{ steps.meta.outputs.full_version }}
+          PUBLISH_STATUS: ${{ steps.publish.outputs.status || 'failure' }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: pnpm exec tsx scripts/update-dev-comment-row.ts
 
   update-comment-cleanup:
     name: Update Comment - Cleanup Only
     needs: [detect-changes, cleanup]
-    if: always() && needs.detect-changes.outputs.has_previous == 'true' && needs.detect-changes.outputs.has_label == 'false'
+    if: always() && needs.detect-changes.outputs.has_previous == 'true' && needs.detect-changes.outputs.has_label == 'false' && github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: read
       pull-requests: write
-      issues: write
     steps:
       - name: Update PR comment with cleanup status
         env:

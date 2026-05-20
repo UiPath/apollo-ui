@@ -31,11 +31,11 @@ export const BasicDialog = {
   render: () => (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">Edit Profile</Button>
+        <Button variant="outline">Edit profile</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Profile</DialogTitle>
+          <DialogTitle>Edit profile</DialogTitle>
           <DialogDescription>
             Make changes to your profile here. Click save when you're done.
           </DialogDescription>
@@ -58,7 +58,7 @@ export const BasicDialog = {
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button>Save Changes</Button>
+          <Button>Save changes</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -320,7 +320,7 @@ export const StickyFooterDialog = {
   render: () => (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">Invite Members</Button>
+        <Button variant="outline">Invite members</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col gap-0 p-0">
         <DialogHeader className="px-6 pt-6 pb-4">

@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@uipath/apollo-wind';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { SUPPORTED_LOCALES, type SupportedLocale } from '../../../i18n';
 import { DefaultCanvasTranslations } from '../../types';
 import {
   createGroupModificationHandlers,
@@ -35,9 +36,11 @@ import { StageHeaderChipType, type StageNodeProps, type StageTaskItem } from './
 const DefaultCanvasDecorator = ({
   initialNodes,
   initialEdges = [],
+  locale,
 }: {
   initialNodes: Node[];
   initialEdges?: Edge[];
+  locale?: SupportedLocale;
 }) => {
   const [nodes, _setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -65,6 +68,7 @@ const DefaultCanvasDecorator = ({
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           mode="design"
+          locale={locale}
           connectionMode={ConnectionMode.Strict}
           defaultEdgeOptions={defaultEdgeOptions}
           connectionLineComponent={StageConnectionEdge}
@@ -79,8 +83,10 @@ const DefaultCanvasDecorator = ({
   );
 };
 
-const meta: Meta<StageNodeProps> = {
-  title: 'Canvas/StageNode',
+type StageNodeStoryArgs = StageNodeProps & { locale?: SupportedLocale };
+
+const meta: Meta<StageNodeStoryArgs> = {
+  title: 'Components/StageNode',
   component: StageNode,
   parameters: {
     layout: 'fullscreen',
@@ -99,7 +105,6 @@ const meta: Meta<StageNodeProps> = {
           data: {
             stageDetails: context.args.stageDetails,
             execution: context.args.execution,
-            addTaskLabel: context.args.addTaskLabel,
             menuItems: context.args.menuItems,
             onTaskAdd: context.args.onTaskAdd,
             onTaskClick: context.args.onTaskClick,
@@ -109,7 +114,13 @@ const meta: Meta<StageNodeProps> = {
 
       const initialEdges = context.parameters?.edges || [];
 
-      return <DefaultCanvasDecorator initialNodes={initialNodes} initialEdges={initialEdges} />;
+      return (
+        <DefaultCanvasDecorator
+          initialNodes={initialNodes}
+          initialEdges={initialEdges}
+          locale={context.args.locale}
+        />
+      );
     },
   ],
   args: {
@@ -117,12 +128,13 @@ const meta: Meta<StageNodeProps> = {
       label: 'Default Stage',
       tasks: [],
     },
+    locale: 'en',
   },
   argTypes: {
-    addTaskLabel: {
-      control: 'text',
-      description: 'Label for the add process button',
-      defaultValue: 'Add process',
+    locale: {
+      control: 'select',
+      options: [...SUPPORTED_LOCALES],
+      description: 'Locale forwarded to ApI18nProvider.',
     },
   },
 };
@@ -188,7 +200,7 @@ export const Default: Story = {
           },
           execution: {
             stageStatus: {
-              duration: 'SLA: None',
+              slaText: 'SLA: None',
             },
           },
           onTaskAdd: () => {
@@ -212,7 +224,7 @@ export const Default: Story = {
           },
           execution: {
             stageStatus: {
-              duration: 'SLA: None',
+              slaText: 'SLA: None',
             },
           },
           onAddTaskFromToolbox: (taskItem: ListItem) => {
@@ -391,7 +403,7 @@ export const ExecutionStatus: Story = {
           execution: {
             stageStatus: {
               status: 'Completed',
-              duration: 'SLA: 4h',
+              slaText: 'SLA: 4h',
             },
             taskStatus: {
               '1': { status: 'Completed', label: 'KYC and AML Checks', duration: '2h 15m' },
@@ -427,7 +439,7 @@ export const ExecutionStatus: Story = {
           execution: {
             stageStatus: {
               status: 'Completed',
-              duration: 'SLA: 6h 15m',
+              slaText: 'SLA: 6h 15m',
             },
             taskStatus: {
               '1': {
@@ -480,7 +492,7 @@ export const ExecutionStatus: Story = {
             stageStatus: {
               status: 'InProgress',
               label: 'In progress',
-              duration: 'SLA: 2h 15m',
+              slaText: 'SLA: 2h 15m',
             },
             taskStatus: {
               '1': { status: 'Completed', label: 'Report Ordering', duration: '2h 15m' },
@@ -564,6 +576,110 @@ export const ExecutionStatus: Story = {
         targetHandle: '3____target____left',
       },
     ] as Edge[],
+  },
+};
+
+export const SLAStates: Story = {
+  name: 'SLA States',
+  parameters: {
+    nodes: [
+      {
+        id: '0',
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Stage 1',
+            isReadOnly: true,
+            tasks: [],
+          },
+          execution: {
+            stageStatus: {
+              slaText: 'SLA: None',
+            },
+            taskStatus: {},
+          },
+        },
+      },
+      {
+        id: '1',
+        type: 'stage',
+        position: { x: 400, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Closing',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'eSign envelope', icon: <DocumentIcon /> }],
+              [{ id: '3', label: 'Review closing docs', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'InProgress',
+              label: 'In progress',
+              slaText: 'SLA: 10 days remaining',
+            },
+            taskStatus: {},
+          },
+        },
+      },
+      {
+        id: '2',
+        type: 'stage',
+        position: { x: 752, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Closing',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'eSign envelope', icon: <DocumentIcon /> }],
+              [{ id: '3', label: 'Review closing docs', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'InProgress',
+              label: 'In progress',
+              slaText: 'SLA: 1 day remaining',
+              slaIcon: 'warning',
+            },
+            taskStatus: {},
+          },
+        },
+      },
+      {
+        id: '3',
+        type: 'stage',
+        position: { x: 1104, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Closing',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'eSign envelope', icon: <DocumentIcon /> }],
+              [{ id: '3', label: 'Review closing docs', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'InProgress',
+              label: 'In progress',
+              slaText: 'SLA: 1 day overdue',
+              slaIcon: 'error',
+            },
+            taskStatus: {},
+          },
+        },
+      },
+    ],
   },
 };
 
@@ -688,6 +804,92 @@ export const InteractiveTaskManagement: Story = {
           },
           onTaskClick: (taskId: string) => {
             window.alert(`Task clicked: ${taskId} (execution mode - read only)`);
+          },
+        },
+      },
+    ],
+  },
+};
+
+export const ExecutionModeWithSla: Story = {
+  name: 'Execution Mode - Runtime vs SLA',
+  parameters: {
+    nodes: [
+      {
+        id: 'exec-runtime-only',
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Runtime only',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'eSign envelope', icon: <DocumentIcon /> }],
+              [{ id: '3', label: 'Review closing docs', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'InProgress',
+              label: 'In progress',
+              duration: 'Duration: 2h 15m',
+            },
+            taskStatus: {},
+          },
+        },
+      },
+      {
+        id: 'exec-sla-only',
+        type: 'stage',
+        position: { x: 400, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'SLA only',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'eSign envelope', icon: <DocumentIcon /> }],
+              [{ id: '3', label: 'Review closing docs', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'InProgress',
+              label: 'In progress',
+              slaText: 'SLA: 1 day remaining',
+              slaIcon: 'warning',
+            },
+            taskStatus: {},
+          },
+        },
+      },
+      {
+        id: 'exec-runtime-and-sla',
+        type: 'stage',
+        position: { x: 752, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Runtime + SLA (both)',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'eSign envelope', icon: <DocumentIcon /> }],
+              [{ id: '3', label: 'Review closing docs', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'InProgress',
+              label: 'In progress',
+              duration: 'Duration: 2h 15m',
+              slaText: 'SLA: 1 day remaining',
+              slaIcon: 'warning',
+            },
+            taskStatus: {},
           },
         },
       },
@@ -875,7 +1077,7 @@ const initialTasks: StageTaskItem[][] = [
   [{ id: 'task-5', label: 'Final Approval', icon: <ProcessIcon /> }],
 ];
 
-const DraggableTaskReorderingStory = () => {
+const DraggableTaskReorderingStory = ({ locale }: { locale?: SupportedLocale }) => {
   const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
   const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
 
@@ -980,6 +1182,7 @@ const DraggableTaskReorderingStory = () => {
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           mode="design"
+          locale={locale}
           connectionMode={ConnectionMode.Strict}
           defaultEdgeOptions={{ type: 'stage' }}
           connectionLineComponent={StageConnectionEdge}
@@ -1000,7 +1203,7 @@ export const DraggableTaskReordering: Story = {
   parameters: {
     useCustomRender: true,
   },
-  render: () => <DraggableTaskReorderingStory />,
+  render: (args) => <DraggableTaskReorderingStory locale={args.locale} />,
 };
 
 const initialTasksForAddReplace: StageTaskItem[][] = [
@@ -1050,7 +1253,7 @@ const availableTaskOptions: ListItem[] = [
   },
 ];
 
-const AddAndReplaceTasksStory = () => {
+const AddAndReplaceTasksStory = ({ locale }: { locale?: SupportedLocale }) => {
   const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
   const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
 
@@ -1346,6 +1549,7 @@ const AddAndReplaceTasksStory = () => {
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           mode="design"
+          locale={locale}
           connectionMode={ConnectionMode.Strict}
           defaultEdgeOptions={{ type: 'stage' }}
           connectionLineComponent={StageConnectionEdge}
@@ -1381,10 +1585,10 @@ export const AddAndReplaceTasks: Story = {
   parameters: {
     useCustomRender: true,
   },
-  render: () => <AddAndReplaceTasksStory />,
+  render: (args) => <AddAndReplaceTasksStory locale={args.locale} />,
 };
 
-const InlineTitleEditStory = () => {
+const InlineTitleEditStory = ({ locale }: { locale?: SupportedLocale }) => {
   const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
   const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
 
@@ -1475,6 +1679,7 @@ const InlineTitleEditStory = () => {
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           mode="design"
+          locale={locale}
           connectionMode={ConnectionMode.Strict}
           defaultEdgeOptions={{ type: 'stage' }}
           connectionLineComponent={StageConnectionEdge}
@@ -1495,7 +1700,7 @@ export const EditableStageTitle: Story = {
   parameters: {
     useCustomRender: true,
   },
-  render: () => <InlineTitleEditStory />,
+  render: (args) => <InlineTitleEditStory locale={args.locale} />,
 };
 
 // Simulate async children fetch (2s delay)
@@ -1522,7 +1727,7 @@ const loadedTaskOptionsWithChildren: ListItem[] = [
   { id: 'script', name: 'Script', data: { type: 'script' }, children: (id) => fetchChildren(id) },
 ];
 
-const AddTaskLoadingStory = () => {
+const AddTaskLoadingStory = ({ locale }: { locale?: SupportedLocale }) => {
   const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
   const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
   const setNodesRef = useRef<React.Dispatch<React.SetStateAction<Node[]>>>(null!);
@@ -1756,6 +1961,7 @@ const AddTaskLoadingStory = () => {
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           mode="design"
+          locale={locale}
           connectionMode={ConnectionMode.Strict}
           defaultEdgeOptions={{ type: 'stage' }}
           connectionLineComponent={StageConnectionEdge}
@@ -1776,7 +1982,7 @@ export const AddTaskLoading: Story = {
   parameters: {
     useCustomRender: true,
   },
-  render: () => <AddTaskLoadingStory />,
+  render: (args) => <AddTaskLoadingStory locale={args.locale} />,
 };
 
 export const AdhocTasks: Story = {
@@ -1798,6 +2004,7 @@ export const AdhocTasks: Story = {
                   label: 'Ad hoc - KYC Check',
                   icon: <VerificationIcon />,
                   isAdhoc: true,
+                  hasEntryCondition: true,
                 },
               ],
               [
@@ -1887,12 +2094,14 @@ export const AdhocTasks: Story = {
                   label: 'Ad hoc - Verify Address',
                   icon: <VerificationIcon />,
                   isAdhoc: true,
+                  hasEntryCondition: true,
                 },
                 {
                   id: '2',
                   label: 'Ad hoc - Verify Identity',
                   icon: <VerificationIcon />,
                   isAdhoc: true,
+                  hasEntryCondition: true,
                 },
               ],
               [
@@ -1901,6 +2110,7 @@ export const AdhocTasks: Story = {
                   label: 'Ad hoc - Bkgd Check',
                   icon: <VerificationIcon />,
                   isAdhoc: true,
+                  hasEntryCondition: true,
                 },
               ],
               [
@@ -1911,14 +2121,21 @@ export const AdhocTasks: Story = {
                   isAdhoc: true,
                 },
               ],
-              [{ id: '5', label: 'Regular Processing', icon: <ProcessIcon /> }],
+              [
+                {
+                  id: '5',
+                  label: 'Regular Processing',
+                  icon: <ProcessIcon />,
+                  hasEntryCondition: true,
+                },
+              ],
             ],
           },
           execution: {
             stageStatus: {
               status: 'InProgress',
               label: 'In progress',
-              duration: 'SLA: 3h 45m',
+              slaText: 'SLA: 3h 45m',
             },
             taskStatus: {
               '1': {
@@ -2006,6 +2223,7 @@ export const TasksBySection: Story = {
                   label: 'Parallel task 1',
                   icon: <DocumentIcon />,
                   taskGroupType: 'sequential',
+                  isPlaceholder: true,
                 },
                 {
                   id: '4',
@@ -2052,6 +2270,7 @@ export const TasksBySection: Story = {
                   label: 'Ad hoc - Risk Assessment',
                   icon: <VerificationIcon />,
                   taskGroupType: 'adhoc',
+                  isPlaceholder: true,
                 },
               ],
               [
@@ -2109,6 +2328,7 @@ export const TasksBySection: Story = {
                   icon: <VerificationIcon />,
                   taskGroupType: 'event-driven',
                   hasEntryCondition: true,
+                  isPlaceholder: true,
                 },
               ],
               [
@@ -2167,6 +2387,8 @@ export const TasksBySection: Story = {
                   label: 'Ad hoc - Verify Address',
                   icon: <VerificationIcon />,
                   taskGroupType: 'adhoc',
+                  hasEntryCondition: true,
+                  isPlaceholder: true,
                 },
               ],
               [
@@ -2193,7 +2415,7 @@ export const TasksBySection: Story = {
             stageStatus: {
               status: 'InProgress',
               label: 'In progress',
-              duration: 'SLA: 3h 45m',
+              slaText: 'SLA: 3h 45m',
             },
             taskStatus: {
               '1': {
@@ -2432,7 +2654,7 @@ export const WithRulesTags: Story = {
             ],
           },
           execution: {
-            stageStatus: { status: 'Completed', label: 'Completed', duration: 'SLA: 4h' },
+            stageStatus: { status: 'Completed', label: 'Completed', slaText: 'SLA: 4h' },
           },
         },
       },
@@ -2465,7 +2687,7 @@ export const WithRulesTags: Story = {
             ],
           },
           execution: {
-            stageStatus: { status: 'InProgress', label: 'In progress', duration: 'SLA: 2h' },
+            stageStatus: { status: 'InProgress', label: 'In progress', slaText: 'SLA: 2h' },
           },
         },
       },

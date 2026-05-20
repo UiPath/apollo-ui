@@ -4,7 +4,7 @@ import { CanvasIcon } from '../../utils/icon-registry';
 import { ListView } from './ListView';
 
 const meta: Meta<typeof ListView> = {
-  title: 'Canvas/Toolbox/ListView',
+  title: 'Components/Toolbox/ListView',
   component: ListView,
   parameters: {
     layout: 'fullscreen',

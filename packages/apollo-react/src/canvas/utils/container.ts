@@ -69,6 +69,14 @@ export interface ContainerSizeChange {
   nextSize: NodeDimensions;
 }
 
+/** Side-specific minimum sizes that prevent manual container resizing from clipping children. */
+export interface ContainerResizeMinimums {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
 /** Result of fitting one or more containers to their visible children. */
 export interface EnsureContainersFitChildrenResult {
   nodes: Node[];
@@ -99,6 +107,8 @@ interface ContainerPreviewContext {
 
 interface ContainerPreviewOptions {
   isContainerNode?: (node: Node) => boolean;
+  allowedContainerId?: string;
+  replacedEdge?: Edge;
   getContainerSafeArea?: (containerNode: Node) => ContainerSafeArea | undefined;
   getContainerContinuationTarget?: (context: {
     containerNode: Node;
@@ -226,6 +236,84 @@ export function getContainerFitGeometry(): ContainerFitGeometry {
     minWidth: DEFAULT_CONTAINER_MIN_WIDTH,
     minHeight: DEFAULT_CONTAINER_MIN_HEIGHT,
     padding,
+  };
+}
+
+function resolveResizeMinimum(minSize: number, currentSize: number, requiredSize: number): number {
+  const requiredMinimum = Math.max(minSize, snapUpToGrid(requiredSize));
+  const currentResizeFloor = Math.max(minSize, currentSize);
+  return Math.min(currentResizeFloor, requiredMinimum);
+}
+
+/** Returns side-specific minimum sizes for shrinking a container around visible direct children. */
+export function getContainerResizeMinimums(
+  containerNode: Pick<Node, 'id' | 'width' | 'height' | 'measured' | 'style'>,
+  nodes: Node[],
+  {
+    minWidth = DEFAULT_CONTAINER_MIN_WIDTH,
+    minHeight = DEFAULT_CONTAINER_MIN_HEIGHT,
+    ignoredNodeTypes = [],
+  }: {
+    minWidth?: number;
+    minHeight?: number;
+    ignoredNodeTypes?: string[];
+  } = {}
+): ContainerResizeMinimums {
+  const currentSize = getNodeDimensions(containerNode, {
+    width: DEFAULT_CONTAINER_WIDTH,
+    height: DEFAULT_CONTAINER_HEIGHT,
+  });
+  const padding = getContainerSafeArea(containerNode, currentSize).padding ?? {};
+  const ignoredTypes = new Set(ignoredNodeTypes);
+  let childBounds: { left: number; right: number; top: number; bottom: number } | undefined;
+
+  for (const childNode of nodes) {
+    if (
+      childNode.id === PREVIEW_NODE_ID ||
+      childNode.hidden ||
+      childNode.parentId !== containerNode.id ||
+      ignoredTypes.has(childNode.type ?? '')
+    ) {
+      continue;
+    }
+
+    const childSize = getNodeDimensions(childNode);
+    const nextBounds = {
+      left: childNode.position.x,
+      right: childNode.position.x + childSize.width,
+      top: childNode.position.y,
+      bottom: childNode.position.y + childSize.height,
+    };
+
+    childBounds = childBounds
+      ? {
+          left: Math.min(childBounds.left, nextBounds.left),
+          right: Math.max(childBounds.right, nextBounds.right),
+          top: Math.min(childBounds.top, nextBounds.top),
+          bottom: Math.max(childBounds.bottom, nextBounds.bottom),
+        }
+      : nextBounds;
+  }
+
+  if (!childBounds) {
+    return {
+      left: minWidth,
+      right: minWidth,
+      top: minHeight,
+      bottom: minHeight,
+    };
+  }
+
+  const leftEdgeLimit = currentSize.width - childBounds.left + (padding.left ?? 0);
+  const topEdgeLimit = currentSize.height - childBounds.top + (padding.top ?? 0);
+  const rightEdgeLimit = childBounds.right + (padding.right ?? 0);
+  const bottomEdgeLimit = childBounds.bottom + (padding.bottom ?? 0);
+
+  return {
+    left: resolveResizeMinimum(minWidth, currentSize.width, leftEdgeLimit),
+    right: resolveResizeMinimum(minWidth, currentSize.width, rightEdgeLimit),
+    top: resolveResizeMinimum(minHeight, currentSize.height, topEdgeLimit),
+    bottom: resolveResizeMinimum(minHeight, currentSize.height, bottomEdgeLimit),
   };
 }
 
@@ -759,6 +847,8 @@ function resolveInsertPreview({
   sourceHandleType,
   reactFlowInstance,
   isContainerNode,
+  allowedContainerId,
+  replacedEdge: exactReplacedEdge,
   getContainerSafeArea,
   previewNodeSize,
   gap,
@@ -766,28 +856,38 @@ function resolveInsertPreview({
 }: ContainerPreviewContext &
   Pick<
     ContainerPreviewOptions,
-    'isContainerNode' | 'getContainerSafeArea' | 'previewNodeSize' | 'gap' | 'getNodeDimensions'
+    | 'isContainerNode'
+    | 'allowedContainerId'
+    | 'replacedEdge'
+    | 'getContainerSafeArea'
+    | 'previewNodeSize'
+    | 'gap'
+    | 'getNodeDimensions'
   >): PreviewGraphOverrides | null {
   if (sourceHandleType !== 'source' || !source.handleId) {
     return null;
   }
 
-  const replacedEdge = getSingleOutgoingEdge(
-    source.nodeId,
-    source.handleId,
-    reactFlowInstance.getEdges()
-  );
+  const replacedEdge =
+    exactReplacedEdge ??
+    getSingleOutgoingEdge(source.nodeId, source.handleId, reactFlowInstance.getEdges());
 
   if (!replacedEdge) {
     return null;
   }
 
-  const sourceNode = reactFlowInstance.getNode(replacedEdge.source)!;
-  const targetNode = reactFlowInstance.getNode(replacedEdge.target)!;
+  const sourceNode = reactFlowInstance.getNode(replacedEdge.source);
+  const targetNode = reactFlowInstance.getNode(replacedEdge.target);
+  if (!sourceNode || !targetNode) {
+    return null;
+  }
   const nodes = reactFlowInstance.getNodes();
 
   const containerNode = getContainerNodeForEdge(sourceNode, targetNode, nodes);
   if (!containerNode) {
+    return null;
+  }
+  if (allowedContainerId && containerNode.id !== allowedContainerId) {
     return null;
   }
   if (isContainerNode && !isContainerNode(containerNode)) {
@@ -851,6 +951,9 @@ function resolveAppendPreview({
 
   const nodes = reactFlowInstance.getNodes();
   const containerNode = nodes.find((node) => node.id === sourceNode.parentId)!;
+  if (options.allowedContainerId && containerNode.id !== options.allowedContainerId) {
+    return null;
+  }
   if (options.isContainerNode && !options.isContainerNode(containerNode)) {
     return null;
   }

@@ -29,8 +29,8 @@ export interface ApI18nProviderProps {
    */
   component: string;
   /**
-   * Locale to use for translations. If not provided, will attempt to use locale from LocaleProvider context.
-   * @default 'en'
+   * Locale to use for translations. If not provided, reads from document.documentElement.lang (set by the host app), falling back to 'en'.
+   * @default document.documentElement.lang || 'en'
    */
   locale?: SupportedLocale;
   /**
@@ -59,7 +59,9 @@ export interface ApI18nProviderProps {
  * ```
  */
 export function ApI18nProvider({ component, locale: propLocale, children }: ApI18nProviderProps) {
-  const locale = propLocale || 'en';
+  const detectedLang = document.documentElement.lang as SupportedLocale;
+  const fallback = SUPPORTED_LOCALES.includes(detectedLang) ? detectedLang : 'en';
+  const locale = propLocale || fallback;
 
   const loadAndActivate = useCallback(() => {
     const preImportedLocales = getAllPreImportedLocales(component);

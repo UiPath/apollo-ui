@@ -1,3 +1,52 @@
+## [@uipath/apollo-wind-v2.17.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.16.1...@uipath/apollo-wind@2.17.0) (2026-05-19)
+
+### Features
+
+* **apollo-wind:** add maxRef to slider for dynamic max from another field ([999736a](https://github.com/UiPath/apollo-ui/commit/999736aba08c27a2a52c3b1f3bec34b9c58757ef))
+
+### Bug Fixes
+
+* **apollo-vertex:** remove deprecated table classNames key from calendar ([12dea7d](https://github.com/UiPath/apollo-ui/commit/12dea7dc8d0a27859103c5778c00a643c157ded6))
+
+## [@uipath/apollo-wind-v2.16.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.16.0...@uipath/apollo-wind@2.16.1) (2026-05-10)
+
+### Bug Fixes
+
+* **repo:** security vulnerabilities ([100aaa5](https://github.com/uipath/apollo-ui/commit/100aaa5ade673e3003e5b9800f3e72ef962e4bc1))
+
+## [@uipath/apollo-wind-v2.16.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.15.1...@uipath/apollo-wind@2.16.0) (2026-05-08)
+
+### Features
+
+* **apollo-wind:** overhaul component gallery page ([c014a24](https://github.com/uipath/apollo-ui/commit/c014a2405e24833cb295f9e7974359944298b105))
+
+### Bug Fixes
+
+* **apollo-wind:** apply biome formatting to component gallery ([e4d5861](https://github.com/uipath/apollo-ui/commit/e4d586122e6ee18e8929807ef9587f29c6ca0b42))
+* **storybook:** update templates and global header for consistency ([0f52cd2](https://github.com/uipath/apollo-ui/commit/0f52cd2157d3e351df34a8a7e05d3f8ecf0545db))
+
+## [@uipath/apollo-wind-v2.15.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.15.0...@uipath/apollo-wind@2.15.1) (2026-05-07)
+
+### Bug Fixes
+
+* **storybook:** apply sentence case to story UI copy in Wind components ([12dd0f4](https://github.com/uipath/apollo-ui/commit/12dd0f44ab66c253954a7ef9046fa4f920c650fb))
+* **storybook:** fix missed sentence case in alert-dialog story ([a466207](https://github.com/uipath/apollo-ui/commit/a466207c7d492b8086208e2ac00ea23c2b07bb3a))
+
+## [@uipath/apollo-wind-v2.15.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.14.0...@uipath/apollo-wind@2.15.0) (2026-05-07)
+
+### Features
+
+* **apollo-wind:** apply future theme overrides to FileUpload ([cc2de28](https://github.com/uipath/apollo-ui/commit/cc2de28c2bc368a71a94d7f2e001883b9da9cafb))
+* **apollo-wind:** apply future theme overrides to Pagination ([60bc105](https://github.com/uipath/apollo-ui/commit/60bc10551395ea640ad83d76471f00d7a69e9e19))
+* **apollo-wind:** apply future theme overrides to Textarea ([12d2a9f](https://github.com/uipath/apollo-ui/commit/12d2a9f1a59c20500622c146af6ce3e7603ecea5))
+
+## [@uipath/apollo-wind-v2.14.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.13.0...@uipath/apollo-wind@2.14.0) (2026-05-05)
+
+### Features
+
+* **apollo-wind:** expand apollo-writing skill with full guidelines and content patterns ([24aeb41](https://github.com/uipath/apollo-ui/commit/24aeb419a61ddf636d86bf15c616e156357a58d6))
+* **apollo-wind:** update apollo-writing skill description in Storybook ([363ec34](https://github.com/uipath/apollo-ui/commit/363ec343e4c09bf2d255e11747bb2efbc9d976b5))
+
 ## [@uipath/apollo-wind-v2.13.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.12.0...@uipath/apollo-wind@2.13.0) (2026-05-04)
 
 ### Features

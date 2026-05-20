@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useMemo } from 'react';
-import { useCanvasStory, withCanvasProviders } from '../../storybook-utils';
+import { StoryInfoPanel, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
@@ -14,13 +14,18 @@ import type { StickyNoteColor, StickyNoteData } from './StickyNoteNode.types';
 // ============================================================================
 
 const meta: Meta = {
-  title: 'Canvas/StickyNoteNode',
+  title: 'Components/StickyNoteNode',
   parameters: { layout: 'fullscreen' },
   decorators: [withCanvasProviders()],
 };
 
 export default meta;
 type Story = StoryObj<typeof meta>;
+
+const LOOP_TYPE = 'uipath.control-flow.foreach';
+const STORY_LOOP_START_HANDLE_ID = 'start';
+const STORY_LOOP_CONTINUE_HANDLE_ID = 'continue';
+const STORY_LOOP_SUCCESS_HANDLE_ID = 'success';
 
 // ============================================================================
 // Helper Functions
@@ -181,6 +186,49 @@ function createBaseNode(
     },
     zIndex: 0,
   };
+}
+
+function createLoopContainerNode(
+  id: string,
+  label: string,
+  position: { x: number; y: number },
+  size: { width: number; height: number },
+  options?: { parentId?: string; selected?: boolean }
+): Node {
+  return {
+    id,
+    type: LOOP_TYPE,
+    position,
+    parentId: options?.parentId,
+    selected: options?.selected ?? false,
+    data: {
+      display: {
+        label,
+        shape: 'container',
+      },
+    },
+    style: size,
+  };
+}
+
+function createLoopActivityNode(
+  id: string,
+  label: string,
+  position: { x: number; y: number },
+  parentId?: string
+): Node {
+  const node = createBaseNode(id, 'play', label, '', position, [
+    {
+      position: Position.Left,
+      handles: [{ id: 'input', type: 'target', handleType: 'input', label: 'Input' }],
+    },
+    {
+      position: Position.Right,
+      handles: [{ id: 'output', type: 'source', handleType: 'output', label: 'Output' }],
+    },
+  ]);
+
+  return parentId ? { ...node, parentId } : node;
 }
 
 function createPipelineNodes(): Node[] {
@@ -423,6 +471,135 @@ function WithBaseNodesStory() {
   );
 }
 
+function StickyNotesInLoopContainersStory() {
+  const initialNodes = useMemo<Node[]>(
+    () => [
+      createLoopActivityNode('ingress', 'Load records', { x: 32, y: 384 }),
+      createLoopContainerNode(
+        'outer-loop',
+        'For Each claim',
+        { x: 224, y: 128 },
+        { width: 1104, height: 608 },
+        { selected: true }
+      ),
+      createLoopContainerNode(
+        'inner-loop',
+        'For Each attachment',
+        { x: 96, y: 160 },
+        { width: 544, height: 288 },
+        { parentId: 'outer-loop' }
+      ),
+      createLoopActivityNode('inner-child', 'Classify attachment', { x: 176, y: 96 }, 'inner-loop'),
+      createLoopActivityNode('edge-left', 'Read metadata', { x: 176, y: 448 }, 'outer-loop'),
+      createLoopActivityNode('edge-right', 'Validate claim', { x: 800, y: 448 }, 'outer-loop'),
+      createLoopActivityNode('review', 'Review finding', { x: 800, y: 256 }, 'outer-loop'),
+      createStickyNote(
+        'sticky-nested-loop-note',
+        'pink',
+        '**Nested loop sticky**\n\nInside the inner loop body with a base node nearby.',
+        { x: 400, y: 368 },
+        { width: 288, height: 176 }
+      ),
+      createStickyNote(
+        'sticky-edge-overlap-note',
+        'green',
+        '**Edge overlap sticky**\n\nThe Read metadata → Validate claim edge intentionally crosses this note.',
+        { x: 600, y: 592 },
+        { width: 320, height: 128 }
+      ),
+      createStickyNote(
+        'sticky-outside-control-note',
+        'blue',
+        '**Outside control**\n\nCompare hover, selection, toolbar, and resize behavior here.',
+        { x: 600, y: 768 },
+        { width: 320, height: 128 }
+      ),
+      createLoopActivityNode('egress', 'Publish results', { x: 1440, y: 384 }),
+    ],
+    []
+  );
+
+  const initialEdges = useMemo<Edge[]>(
+    () => [
+      {
+        id: 'ingress-outer-loop',
+        source: 'ingress',
+        sourceHandle: 'output',
+        target: 'outer-loop',
+        targetHandle: 'input',
+      },
+      {
+        id: 'outer-loop-inner-loop',
+        source: 'outer-loop',
+        sourceHandle: STORY_LOOP_START_HANDLE_ID,
+        target: 'inner-loop',
+        targetHandle: 'input',
+      },
+      {
+        id: 'inner-loop-inner-child',
+        source: 'inner-loop',
+        sourceHandle: STORY_LOOP_START_HANDLE_ID,
+        target: 'inner-child',
+        targetHandle: 'input',
+      },
+      {
+        id: 'inner-child-inner-loop',
+        source: 'inner-child',
+        sourceHandle: 'output',
+        target: 'inner-loop',
+        targetHandle: STORY_LOOP_CONTINUE_HANDLE_ID,
+      },
+      {
+        id: 'inner-loop-review',
+        source: 'inner-loop',
+        sourceHandle: STORY_LOOP_SUCCESS_HANDLE_ID,
+        target: 'review',
+        targetHandle: 'input',
+      },
+      {
+        id: 'edge-left-edge-right',
+        source: 'edge-left',
+        sourceHandle: 'output',
+        target: 'edge-right',
+        targetHandle: 'input',
+      },
+      {
+        id: 'review-outer-loop',
+        source: 'review',
+        sourceHandle: 'output',
+        target: 'outer-loop',
+        targetHandle: STORY_LOOP_CONTINUE_HANDLE_ID,
+      },
+      {
+        id: 'outer-loop-egress',
+        source: 'outer-loop',
+        sourceHandle: STORY_LOOP_SUCCESS_HANDLE_ID,
+        target: 'egress',
+        targetHandle: 'input',
+      },
+    ],
+    []
+  );
+
+  const { canvasProps } = useCanvasStory({
+    initialNodes,
+    initialEdges,
+    additionalNodeTypes: nodeTypes,
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="Sticky Notes In Loop Containers"
+        description="Validation story for sticky notes inside selected/nested loops, sticky notes crossed by workflow edges, and an outside-loop control note."
+      />
+    </BaseCanvas>
+  );
+}
+
 function WithCallbacksStory() {
   const initialNodes = useMemo<Node<StickyNoteData>[]>(
     () => [
@@ -489,6 +666,10 @@ export const Default: Story = {
 
 export const WithBaseNodes: Story = {
   render: () => <WithBaseNodesStory />,
+};
+
+export const StickyNotesInLoopContainers: Story = {
+  render: () => <StickyNotesInLoopContainersStory />,
 };
 
 export const WithCallbacks: Story = {

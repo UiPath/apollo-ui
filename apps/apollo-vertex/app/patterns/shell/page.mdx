@@ -101,40 +101,45 @@ function App() {
 ## Gating access by group membership
 
 Use `GroupMembershipGuard` to restrict the application to members of one or more
-UiPath Identity groups. The guard fetches each configured group in parallel,
-compares the signed-in user's email against the combined member list, and
-renders either a loading indicator or an access-denied screen with a sign-out
-action. When the user is a member of **any** of the listed groups, the children
-render unchanged. An empty `groupIds` array denies access. Fetch failures bubble
-up to the nearest error boundary.
+UiPath Identity groups. The guard reads the live `groups` and `groupMembers`
+collections sourced by `SolutionProvider` from `@uipath/vs-core`, compares the
+signed-in user's email against the combined member list, and renders either a
+loading indicator or an access-denied screen with a sign-out action. When the
+user is a member of **any** of the listed groups, the children render
+unchanged. An empty `groupIds` array denies access.
 
-The toggle below switches between the loading, denied, and granted states using
-stubbed authentication and pre-populated query data.
+The toggle below switches between the loading, denied, and granted visual
+states using stubbed UI — the live data path is exercised in real apps via
+`SolutionProvider`.
 
 <PreviewFullScreen title="GroupMembershipGuard preview">
     <GroupMembershipGuardTemplate />
 </PreviewFullScreen>
 
-Place `GroupMembershipGuard` inside `ShellAuthProvider` so it can read the
-authenticated user from `useAuth`. The `baseUrl`, `orgName`, `orgId`, and each
-`groupId` in `groupIds` compose the Identity API URL
-(`{baseUrl}/{orgName}/identity_/api/Group/{orgId}/{groupId}`):
+Place `GroupMembershipGuard` inside both `SolutionProvider` (so it can read
+identity collections) and `ShellAuthProvider` (so it can read the authenticated
+user from `useAuth`):
 
 ```tsx
+import { SolutionProvider } from '@uipath/vs-core';
 import { GroupMembershipGuard } from '@/components/ui/shell/group-membership-guard';
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <SolutionProvider
+      orgName="your-org"
+      tenantName="your-tenant"
+      orgId="your-org-id"
+      env="production"
+      secret={solutionSecret}
+      configuration={{ entities }}
+    >
       <ShellAuthProvider
         clientId="your-client-id"
         scope="openid profile email offline_access"
         baseUrl={window.location.origin}
       >
         <GroupMembershipGuard
-          baseUrl="https://staging.uipath.com"
-          orgName="your-org"
-          orgId="your-org-id"
           groupIds={['admins-group-id', 'editors-group-id']}
         >
           <ApolloShell
@@ -146,7 +151,47 @@ function App() {
           </ApolloShell>
         </GroupMembershipGuard>
       </ShellAuthProvider>
-    </QueryClientProvider>
+    </SolutionProvider>
+  );
+}
+```
+
+## Resolving group ids by role
+
+`GroupMembershipGuard` and `useIsGroupMember` need group ids, but applications
+typically reason in terms of roles whose backing group names are known ahead of
+time. `useGroupId` looks up a group id by name from the `groups` collection
+exposed by `SolutionProvider` and re-renders reactively as the collection
+updates. It returns `{ groupId, isLoading }`; `groupId` is `null` while the
+collection is loading or when no group with the configured name exists.
+
+A default `Role` enum ships alongside the hook with two members — `ADMIN` and
+`BUSINESS_USER`. Replace it with your own `string` enum if you need different
+roles; the hook is generic over `Role extends string` and accepts any
+`Record<Role, string>` mapping role to group name.
+
+```tsx
+import { GroupMembershipGuard } from '@/components/ui/shell/group-membership-guard';
+import { Role } from '@/components/ui/shell/shell-roles';
+import { useGroupId } from '@/components/ui/shell/use-group-id';
+
+const ROLE_GROUP_MAP: Record<Role, string> = {
+  [Role.ADMIN]: 'apollo-admins',
+  [Role.BUSINESS_USER]: 'apollo-business-users',
+};
+
+function AdminArea({ children }: { children: React.ReactNode }) {
+  const { groupId, isLoading } = useGroupId({
+    role: Role.ADMIN,
+    roleGroupMap: ROLE_GROUP_MAP,
+  });
+
+  if (isLoading || !groupId) {
+    return <div>Loading…</div>;
+  }
+
+  return (
+    <GroupMembershipGuard groupIds={[groupId]}>{children}</GroupMembershipGuard>
   );
 }
 ```

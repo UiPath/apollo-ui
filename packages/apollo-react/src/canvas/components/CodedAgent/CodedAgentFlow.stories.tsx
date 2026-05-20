@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { CodedAgentFlow } from './CodedAgentFlow';
 
 const meta: Meta<typeof CodedAgentFlow> = {
-  title: 'Canvas/CodedAgentFlow',
+  title: 'Components/CodedAgentFlow',
   component: CodedAgentFlow,
   decorators: [
     (Story) => (

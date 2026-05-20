@@ -1,7 +1,7 @@
-import { type Node, type Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import { type Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useMemo } from 'react';
 import { DEFAULT_SOURCE_HANDLE_ID } from '../../../constants';
-import { useOptionalNodeTypeRegistry } from '../../../core';
+import { useCanvasNodeLayout } from '../../../hooks/useCanvasNodeLayout';
 import { showPreviewGraph } from '../../../utils/createPreviewGraph';
 import { isPreviewEdge } from '../../../utils/createPreviewNode';
 import { useBaseCanvasMode } from '../../BaseCanvas/BaseCanvasModeProvider';
@@ -42,13 +42,9 @@ export function useEdgeToolbarState({
   ignoredNodeTypes,
 }: UseEdgeToolbarStateProps): EdgeToolbarState {
   const reactFlow = useReactFlow();
-  const registry = useOptionalNodeTypeRegistry();
+  const { getManifestForNode } = useCanvasNodeLayout();
   const { mode } = useBaseCanvasMode();
   const isDesignMode = mode === 'design';
-  const getManifestForNode = useCallback(
-    (node: Node) => (node.type ? registry?.getManifest(node.type) : undefined),
-    [registry]
-  );
 
   const previewEdge = isPreviewEdge({ id: edgeId, source, target });
 
@@ -69,14 +65,13 @@ export function useEdgeToolbarState({
         nodeId: source,
         handleId: sourceHandleId ?? DEFAULT_SOURCE_HANDLE_ID,
       };
-      const containerOverrides = registry
-        ? resolveContainerAddNodePreview({
-            source: sourceEndpoint,
-            sourceHandleType: 'source',
-            reactFlowInstance: reactFlow,
-            getManifestForNode,
-          })
-        : null;
+      const containerOverrides = resolveContainerAddNodePreview({
+        source: sourceEndpoint,
+        sourceHandleType: 'source',
+        reactFlowInstance: reactFlow,
+        getManifestForNode,
+        replacedEdge: originalEdge,
+      });
 
       showPreviewGraph({
         source: sourceEndpoint,
@@ -99,7 +94,6 @@ export function useEdgeToolbarState({
       source,
       sourceHandleId,
       reactFlow,
-      registry,
       getManifestForNode,
       target,
       targetHandleId,

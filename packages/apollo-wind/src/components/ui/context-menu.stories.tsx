@@ -168,7 +168,7 @@ export const Submenu = {
             Share
           </ContextMenuSubTrigger>
           <ContextMenuSubContent className="w-44">
-            <ContextMenuItem>Copy Link</ContextMenuItem>
+            <ContextMenuItem>Copy link</ContextMenuItem>
             <ContextMenuItem>Email</ContextMenuItem>
             <ContextMenuItem>Slack</ContextMenuItem>
             <ContextMenuItem>Teams</ContextMenuItem>
@@ -286,11 +286,11 @@ export const Groups = {
             <ContextMenuLabel>Actions</ContextMenuLabel>
             <ContextMenuItem>
               <FolderOpen className="mr-2 h-4 w-4" />
-              New Folder
+              New folder
             </ContextMenuItem>
             <ContextMenuItem>
               <FileText className="mr-2 h-4 w-4" />
-              New File
+              New file
             </ContextMenuItem>
           </ContextMenuGroup>
         </ContextMenuContent>
@@ -350,7 +350,7 @@ export const Examples = {
                   Share
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-44">
-                  <ContextMenuItem>Copy Link</ContextMenuItem>
+                  <ContextMenuItem>Copy link</ContextMenuItem>
                   <ContextMenuItem>Email</ContextMenuItem>
                   <ContextMenuItem>Slack</ContextMenuItem>
                 </ContextMenuSubContent>

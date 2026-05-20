@@ -41,6 +41,30 @@ export const allNodeManifests: NodeManifest[] = [
     ],
   },
 
+  // No-Icon Node — exercises BaseNode's InitialsBadge fallback.
+  {
+    nodeType: 'uipath.no-icon-node',
+    version: '1.0.0',
+    category: 'recommended',
+    tags: ['blank', 'no-icon'],
+    sortOrder: 3,
+    display: {
+      label: 'No Icon',
+    },
+    handleConfiguration: [
+      {
+        position: 'left',
+        handles: [{ id: 'input', type: 'target', handleType: 'input' }],
+        visible: true,
+      },
+      {
+        position: 'right',
+        handles: [{ id: 'output', type: 'source', handleType: 'output' }],
+        visible: true,
+      },
+    ],
+  },
+
   // Timer Activity (Delay)
   {
     nodeType: 'uipath.timer-activity',

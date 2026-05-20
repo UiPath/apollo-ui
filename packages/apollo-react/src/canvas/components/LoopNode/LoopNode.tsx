@@ -7,15 +7,20 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { cn } from '@uipath/apollo-wind';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { shallow } from 'zustand/shallow';
+import { NODE_BADGE_INSET_SQUARE, NODE_BADGE_SIZE } from '../../constants';
 import { useOptionalNodeTypeRegistry } from '../../core';
 import { useElementValidationStatus, useNodeExecutionState } from '../../hooks';
+import type { HandleGroupManifest } from '../../schema/node-definition';
 import type { SuggestionType } from '../../types';
 import { resolveAdornments } from '../../utils/adornment-resolver';
 import {
+  type ContainerResizeMinimums,
   DEFAULT_CONTAINER_HEIGHT,
   DEFAULT_CONTAINER_MIN_HEIGHT,
   DEFAULT_CONTAINER_MIN_WIDTH,
   DEFAULT_CONTAINER_WIDTH,
+  getContainerResizeMinimums,
 } from '../../utils/container';
 import { CanvasIcon } from '../../utils/icon-registry';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
@@ -31,28 +36,54 @@ import { MissingManifestNode } from '../BaseNode/BaseNodeMissingManifest';
 import type { HandleActionEvent } from '../ButtonHandle';
 import { ButtonHandles } from '../ButtonHandle';
 import { NodeToolbar } from '../Toolbar';
+import { IterationNavigator } from './IterationNavigator';
 import { type ContainerHandleGroup, resolveContainerHandleGroups } from './LoopNode.helpers';
-import type { LoopNodeProps } from './LoopNode.types';
+import type { LoopIterationState, LoopNodeProps } from './LoopNode.types';
 
 const DEFAULT_LOOP_ICON = 'repeat';
 const DEFAULT_LOOP_TITLE = 'Loop';
 const EMPTY_DATA: Record<string, unknown> = {};
+const LOOP_HEADER_ADORNMENT_GAP = 8;
+const LOOP_HEADER_ADORNMENT_PADDING =
+  NODE_BADGE_INSET_SQUARE + NODE_BADGE_SIZE + LOOP_HEADER_ADORNMENT_GAP;
 
 const RESIZE_CONTROLS = [
-  { position: 'top-left', cursor: 'nwse-resize', indicatorClassName: 'top-[-4px] left-[-4px]' },
-  { position: 'top-right', cursor: 'nesw-resize', indicatorClassName: 'top-[-4px] right-[-4px]' },
+  {
+    position: 'top-left',
+    widthSide: 'left',
+    heightSide: 'top',
+    cursor: 'nwse-resize',
+    indicatorClassName: 'top-[-4px] left-[-4px]',
+  },
+  {
+    position: 'top-right',
+    widthSide: 'right',
+    heightSide: 'top',
+    cursor: 'nesw-resize',
+    indicatorClassName: 'top-[-4px] right-[-4px]',
+  },
   {
     position: 'bottom-left',
+    widthSide: 'left',
+    heightSide: 'bottom',
     cursor: 'nesw-resize',
     indicatorClassName: 'bottom-[-4px] left-[-4px]',
   },
   {
     position: 'bottom-right',
+    widthSide: 'right',
+    heightSide: 'bottom',
     cursor: 'nwse-resize',
     indicatorClassName: 'bottom-[-4px] right-[-4px]',
   },
 ] as const;
 const RESIZE_CONTROL_STYLE = { background: 'transparent', border: 'none', zIndex: 100 } as const;
+const DEFAULT_RESIZE_MINIMUMS: ContainerResizeMinimums = {
+  left: DEFAULT_CONTAINER_MIN_WIDTH,
+  right: DEFAULT_CONTAINER_MIN_WIDTH,
+  top: DEFAULT_CONTAINER_MIN_HEIGHT,
+  bottom: DEFAULT_CONTAINER_MIN_HEIGHT,
+};
 
 const ADORNMENT_SLOT_POSITIONS = ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'] as const;
 const ADORNMENT_SLOT_SHAPES: Record<
@@ -85,6 +116,30 @@ function useHasChildNodes(id: string, enabled: boolean): boolean {
   );
 }
 
+function useContainerResizeMinimums(
+  id: string,
+  width: number,
+  height: number,
+  enabled: boolean
+): ContainerResizeMinimums {
+  return useStore(
+    useCallback(
+      (state: ReactFlowState) => {
+        if (!enabled) {
+          return DEFAULT_RESIZE_MINIMUMS;
+        }
+
+        return getContainerResizeMinimums(
+          { id, width, height },
+          Array.from(state.parentLookup.get(id)?.values() ?? [])
+        );
+      },
+      [enabled, height, id, width]
+    ),
+    shallow
+  );
+}
+
 function useContainerNodeInternalsRefresh(
   id: string,
   handleGroups: ContainerHandleGroup[],
@@ -105,6 +160,18 @@ function useContainerNodeInternalsRefresh(
   }, [id, handleGroups, updateNodeInternals, width, height]);
 }
 
+/** Match BaseNode priority: data override, then manifest defaults. */
+function resolveLoopHandleConfigurations(
+  manifestHandleConfigurations: HandleGroupManifest[] | undefined,
+  data: Record<string, unknown>
+): HandleGroupManifest[] {
+  if (Array.isArray(data.handleConfigurations)) {
+    return data.handleConfigurations as HandleGroupManifest[];
+  }
+
+  return manifestHandleConfigurations ?? [];
+}
+
 function LoopNodeComponent(props: LoopNodeProps) {
   const {
     id,
@@ -120,6 +187,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
     adornments: adornmentsProp,
     executionStatusOverride,
     suggestionType: suggestionTypeProp,
+    iterationState: iterationStateProp,
   } = props;
   const nodeTypeRegistry = useOptionalNodeTypeRegistry();
   const [isHovered, setIsHovered] = useState(false);
@@ -176,6 +244,13 @@ function LoopNodeComponent(props: LoopNodeProps) {
   const isDropTarget = resolvedData.isDropTarget === true;
   const containerWidth = width || DEFAULT_CONTAINER_WIDTH;
   const containerHeight = height || DEFAULT_CONTAINER_HEIGHT;
+  const showResizeControls = selected && !dragging && isDesignMode;
+  const resizeMinimums = useContainerResizeMinimums(
+    id,
+    containerWidth,
+    containerHeight,
+    showResizeControls
+  );
   const nodeSizeStyle = {
     width: containerWidth,
     height: containerHeight,
@@ -193,16 +268,21 @@ function LoopNodeComponent(props: LoopNodeProps) {
 
   const adornments: NodeAdornments = useMemo(
     () => ({
-      ...resolveAdornments(statusContext),
+      ...resolveAdornments(statusContext, { hideExecutionStatusAdornment: true }),
       ...(adornmentsProp ?? {}),
     }),
     [adornmentsProp, statusContext]
   );
+  const hasTopLeftAdornment = !!adornments.topLeft;
+  const hasTopRightAdornment = !!adornments.topRight;
 
-  const resolvedHandleGroups = useMemo(
-    () => (manifest ? resolveHandles(manifest.handleConfiguration, resolvedData) : []),
-    [manifest, resolvedData]
-  );
+  const resolvedHandleGroups = useMemo(() => {
+    const handleConfigurations = resolveLoopHandleConfigurations(
+      manifest?.handleConfiguration,
+      resolvedData
+    );
+    return resolveHandles(handleConfigurations, { ...resolvedData, nodeId: id });
+  }, [manifest?.handleConfiguration, id, resolvedData]);
   const containerHandleGroups = useMemo(
     () => resolveContainerHandleGroups(resolvedHandleGroups),
     [resolvedHandleGroups]
@@ -233,10 +313,12 @@ function LoopNodeComponent(props: LoopNodeProps) {
   const shouldShowHandles = (isConnecting || selected || isHovered) && !dragging;
 
   const showHandleAddButtons = isDesignMode && !multipleNodesSelected && !isConnecting && !dragging;
-  const showResizeControls = selected && !dragging && isDesignMode;
   const showEmptyStateButton = isDesignMode && !hasChildNodes && !!onAddFirstChild;
 
   const interactionState = resolveInteractionState(dragging, selected, isHovered);
+  const activeStatus = suggestionType ?? validationState?.validationStatus ?? executionStatus;
+  const statusBorder = getStatusBorder(activeStatus);
+  const hasStatusBorder = statusBorder.length > 0;
 
   if (!manifest) {
     return (
@@ -270,9 +352,10 @@ function LoopNodeComponent(props: LoopNodeProps) {
       className={cn(
         'group/loop-shell relative box-border flex h-full w-full flex-col overflow-visible rounded-[20px] border bg-transparent',
         'transition-[border-color,box-shadow,opacity] shadow-(--canvas-node-shadow-rest)',
-        'border-border-subtle',
-        getStatusBorder(suggestionType ?? validationState?.validationStatus ?? executionStatus),
-        isHovered && 'shadow-(--canvas-node-shadow-hover) border-border-hover',
+        'border-border',
+        statusBorder,
+        isHovered && 'shadow-(--canvas-node-shadow-hover)',
+        isHovered && !hasStatusBorder && 'border-border-hover',
         selected && 'outline outline-2 outline-foreground-accent-muted',
         isDropTarget && 'bg-surface-hover outline outline-2 outline-brand',
         interactionState === 'drag' && 'cursor-grabbing shadow-(--canvas-node-shadow-lifted)'
@@ -292,8 +375,18 @@ function LoopNodeComponent(props: LoopNodeProps) {
         ) : null
       )}
       <ResizeCornerIndicators visible={showResizeControls} />
-      {showResizeControls ? <ResizeControls onResize={handleResize} /> : null}
-      <Header title={displayTitle} icon={displayIcon} loading={isLoading} isParallel={isParallel} />
+      {showResizeControls ? (
+        <ResizeControls minimums={resizeMinimums} onResize={handleResize} />
+      ) : null}
+      <Header
+        title={displayTitle}
+        icon={displayIcon}
+        loading={isLoading}
+        isParallel={isParallel}
+        iterationState={iterationStateProp}
+        hasTopLeftAdornment={hasTopLeftAdornment}
+        hasTopRightAdornment={hasTopRightAdornment}
+      />
       <BodyFrame isEmpty={showEmptyStateButton} isLoading={isLoading} />
       {showEmptyStateButton ? (
         <div
@@ -338,11 +431,17 @@ function Header({
   icon,
   loading,
   isParallel,
+  iterationState,
+  hasTopLeftAdornment,
+  hasTopRightAdornment,
 }: {
   title: string;
   icon?: string;
   loading: boolean;
   isParallel: boolean;
+  iterationState?: LoopIterationState;
+  hasTopLeftAdornment: boolean;
+  hasTopRightAdornment: boolean;
 }) {
   const titleContent = loading ? (
     <div className="h-5 w-28 animate-pulse rounded bg-(--canvas-background-overlay)" />
@@ -358,21 +457,37 @@ function Header({
     </span>
   ) : null;
 
+  const headerStyle =
+    hasTopLeftAdornment || hasTopRightAdornment
+      ? {
+          paddingLeft: hasTopLeftAdornment ? LOOP_HEADER_ADORNMENT_PADDING : undefined,
+          paddingRight: hasTopRightAdornment ? LOOP_HEADER_ADORNMENT_PADDING : undefined,
+        }
+      : undefined;
+
   return (
     <div
-      className="flex shrink-0 cursor-grab items-center justify-between gap-2.5 px-3.5 pt-2.5 text-foreground active:cursor-grabbing"
+      className={cn(
+        'flex shrink-0 cursor-grab items-center justify-between gap-2.5 rounded-t-[18px]',
+        '-mb-2.5 bg-surface-overlay px-3.5 pb-2.5 pt-2.5 text-foreground',
+        'active:cursor-grabbing'
+      )}
+      style={headerStyle}
       data-testid="loop-node-header"
     >
       <div className="flex min-w-0 items-center gap-2.5">
         {iconContent}
         {titleContent}
       </div>
-      <span className="flex shrink-0 items-center gap-1 rounded-full border border-border-subtle bg-transparent px-2.5 py-0.5 text-[11px] font-semibold leading-4 text-foreground">
-        <span className={cn('flex shrink-0', isParallel && 'rotate-90')} aria-hidden>
-          <CanvasIcon icon="align-justify" size={11} />
+      <div className="flex shrink-0 items-center gap-2">
+        {iterationState ? <IterationNavigator iterationState={iterationState} /> : null}
+        <span className="flex h-6 shrink-0 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-[11px] font-semibold leading-4 text-foreground shadow-sm">
+          <span className={cn('flex shrink-0', isParallel && 'rotate-90')} aria-hidden>
+            <CanvasIcon icon="align-justify" size={11} />
+          </span>
+          {isParallel ? 'Parallel' : 'Sequential'}
         </span>
-        {isParallel ? 'Parallel' : 'Sequential'}
-      </span>
+      </div>
     </div>
   );
 }
@@ -403,7 +518,8 @@ function BodyFrame({ isEmpty, isLoading }: { isEmpty?: boolean; isLoading?: bool
       data-testid="loop-body-frame"
       data-empty={isEmpty ? 'true' : 'false'}
       className={cn(
-        'relative m-2.5 flex flex-1 rounded-xl border-[1.5px] border-dashed border-border-subtle bg-transparent',
+        'relative m-2.5 flex flex-1 rounded-xl border-[1.5px] border-dashed border-border bg-transparent',
+        'shadow-[0_0_0_10px_var(--surface-overlay)]',
         'pointer-events-none'
       )}
     >
@@ -415,19 +531,21 @@ function BodyFrame({ isEmpty, isLoading }: { isEmpty?: boolean; isLoading?: bool
 }
 
 function ResizeControls({
+  minimums = DEFAULT_RESIZE_MINIMUMS,
   onResize,
 }: {
+  minimums?: ContainerResizeMinimums;
   onResize: (_event: unknown, params: { width: number; height: number }) => void;
 }) {
   return (
     <>
-      {RESIZE_CONTROLS.map(({ position, cursor }) => (
+      {RESIZE_CONTROLS.map(({ position, widthSide, heightSide, cursor }) => (
         <NodeResizeControl
           key={position}
           style={RESIZE_CONTROL_STYLE}
           position={position}
-          minWidth={DEFAULT_CONTAINER_MIN_WIDTH}
-          minHeight={DEFAULT_CONTAINER_MIN_HEIGHT}
+          minWidth={minimums[widthSide]}
+          minHeight={minimums[heightSide]}
           onResize={onResize}
         >
           <div

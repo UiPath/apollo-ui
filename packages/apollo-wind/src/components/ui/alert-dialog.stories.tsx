@@ -32,7 +32,7 @@ export const Basic = {
   render: () => (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="outline">Show Dialog</Button>
+        <Button variant="outline">Show dialog</Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -60,7 +60,7 @@ export const Destructive = {
   render: () => (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">Delete Account</Button>
+        <Button variant="destructive">Delete account</Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -73,7 +73,7 @@ export const Destructive = {
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction className={buttonVariants({ variant: 'destructive' })}>
-            Delete Account
+            Delete account
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -102,7 +102,7 @@ export const Sizes = {
             <AlertDialogDescription>Your unsaved changes will be lost.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep Editing</AlertDialogCancel>
+            <AlertDialogCancel>Keep editing</AlertDialogCancel>
             <AlertDialogAction>Discard</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -125,7 +125,7 @@ export const Sizes = {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction>Save Changes</AlertDialogAction>
+            <AlertDialogAction>Save changes</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -148,8 +148,8 @@ export const Sizes = {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Go Back</AlertDialogCancel>
-            <AlertDialogAction>Publish to Production</AlertDialogAction>
+            <AlertDialogCancel>Go back</AlertDialogCancel>
+            <AlertDialogAction>Publish to production</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -181,8 +181,8 @@ export const Examples = {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Stay on Page</AlertDialogCancel>
-            <AlertDialogAction>Leave Without Saving</AlertDialogAction>
+            <AlertDialogCancel>Stay on page</AlertDialogCancel>
+            <AlertDialogAction>Leave without saving</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -248,9 +248,9 @@ export const Examples = {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep Settings</AlertDialogCancel>
+            <AlertDialogCancel>Keep settings</AlertDialogCancel>
             <AlertDialogAction className={buttonVariants({ variant: 'destructive' })}>
-              Reset All
+              Reset all
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

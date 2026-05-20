@@ -1,0 +1,76 @@
+name: Prune minimumReleaseAge Exemptions
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # Monday 09:00 UTC
+  workflow_dispatch:
+
+# Deny-all default; the prune job grants only what it needs.
+permissions: {}
+
+jobs:
+  prune:
+    name: Remove stale exemptions
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Check exemption ages
+        id: check
+        run: node .github/scripts/check-release-age-exemptions.mjs
+
+      - name: Generate GitHub App token
+        if: steps.check.outputs.count != '' && steps.check.outputs.count != '0'
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          client-id: ${{ vars.RELEASER_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Open PR to remove stale exemptions
+        if: steps.check.outputs.count != '' && steps.check.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REMOVABLE: ${{ steps.check.outputs.removable }}
+        run: |
+          BRANCH="chore/prune-release-age-exemptions-$(date +%Y%m%d)"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add pnpm-workspace.yaml
+          git commit -m "chore(repo): prune stale minimumReleaseAge exemptions"
+          # Inject App token into the origin URL just for the push, then strip
+          # it. Runner is ephemeral and isolated; the token lives in .git/config
+          # only for this step.
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin "$BRANCH"
+          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+
+          # Build a markdown list of removed packages
+          # shellcheck disable=SC2016
+          PACKAGES_MD=$(echo "$REMOVABLE" | tr ',' '\n' | sed 's/.*/* `&`/')
+
+          # shellcheck disable=SC2016
+          gh pr create \
+            --title "chore(repo): prune stale minimumReleaseAge exemptions" \
+            --body "$(printf '## Summary\n\nThe following packages were in \`minimumReleaseAgeExclude\` in \`pnpm-workspace.yaml\` because their latest release was too new at the time. Their latest versions are now older than the 14-day quarantine and no longer need an exemption.\n\n%s\n\n_Automated by the [Prune Release Age Exemptions](%s/%s/actions/workflows/prune-release-age-exemptions.yml) workflow._' "$PACKAGES_MD" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY")" \
+            --base main \
+            --head "$BRANCH" \
+            --label "dependencies"

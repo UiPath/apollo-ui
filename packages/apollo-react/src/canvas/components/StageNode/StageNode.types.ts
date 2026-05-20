@@ -18,11 +18,14 @@ enum ElementStatusValues {
 export type StageStatus = `${ElementStatusValues}`;
 export type StageTaskStatus = `${ElementStatusValues}`;
 
+export type StageSlaIcon = 'warning' | 'error';
+
 export interface StageTaskItem {
   id: string;
   label: string;
   icon?: React.ReactElement;
   isAdhoc?: boolean;
+  isPlaceholder?: boolean;
   taskGroupType?: 'sequential' | 'event-driven' | 'adhoc';
   hasEntryCondition?: boolean;
 }
@@ -58,14 +61,14 @@ export interface StageNodeBaseProps {
     selectedTaskId?: string;
     headerChips?: StageHeaderChip[];
   };
-  addTaskLabel?: string;
-  replaceTaskLabel?: string;
   taskOptions?: ListItem[];
   execution?: {
     stageStatus: {
       status?: StageStatus;
       label?: string;
       duration?: string;
+      slaText?: string;
+      slaIcon?: StageSlaIcon;
     };
     taskStatus: Record<string, StageTaskExecution>;
   };

@@ -5,7 +5,7 @@ import type { TaskIconSize } from './TaskIcon.types';
 import { TaskItemTypeValues } from './TaskIcon.types';
 
 export default {
-  title: 'Canvas/TaskIcon',
+  title: 'Components/TaskIcon',
   parameters: {
     layout: 'fullscreen',
   },

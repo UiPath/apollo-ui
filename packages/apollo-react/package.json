@@ -1,6 +1,6 @@
 {
   "name": "@uipath/apollo-react",
-  "version": "4.22.1",
+  "version": "4.26.1",
   "description": "Apollo Design System - React component library with Material UI theming",
   "repository": {
     "type": "git",
@@ -156,8 +156,7 @@
   ],
   "license": "MIT",
   "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org"
+    "access": "public"
   },
   "peerDependencies": {
     "react": ">=18.3.0",
@@ -205,7 +204,7 @@
     "lodash": "^4.18.1",
     "lucide-react": "^0.555.0",
     "luxon": "^3.7.1",
-    "mermaid": "^11.14.0",
+    "mermaid": "^11.15.0",
     "motion": "^12.23.12",
     "react-dropzone": "^14.3.8",
     "react-focus-lock": "^2.13.7",
@@ -217,7 +216,7 @@
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
     "reselect": "^5.1.1",
-    "sanitize-html": "^2.17.0",
+    "sanitize-html": "^2.17.4",
     "unist-util-visit": "^5.0.0",
     "use-sync-external-store": "^1.2.0",
     "zod": "^4.3.5",
@@ -256,8 +255,8 @@
     "@types/sanitize-html": "^2.16.0",
     "@types/webpack-bundle-analyzer": "^4.7.0",
     "@vitejs/plugin-react": "^4.7.0",
-    "@vitest/coverage-v8": "^4.1.0",
-    "@vitest/ui": "^4.1.0",
+    "@vitest/coverage-v8": "^4.1.5",
+    "@vitest/ui": "^4.1.5",
     "esbuild": "^0.27.0",
     "glob": "^13.0.0",
     "happy-dom": "^20.0.0",
@@ -266,7 +265,7 @@
     "typescript": "^5.9.3",
     "use-sync-external-store": "^1.2.0",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^4.1.0",
+    "vitest": "^4.1.5",
     "webpack-bundle-analyzer": "^5.0.1"
   }
 }

@@ -1,36 +1,24 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
-import {
-  fetchGroupMembers,
-  type FetchGroupMembersOptions,
-} from "@/lib/identity-service";
-import { useAuth } from "./shell-auth-provider";
+import { useLiveQuery } from "@tanstack/react-db";
+import { type GroupMember, useSolution } from "@uipath/vs-core";
 
-export const groupMembersQueryOptions = (
-  accessToken: string | null,
-  options: FetchGroupMembersOptions,
-) => ({
-  queryKey: [
-    "identity",
-    "group-members",
-    options.baseUrl,
-    options.orgName,
-    options.orgId,
-    options.groupId,
-  ],
-  queryFn: () => {
-    if (accessToken == null) {
-      throw new Error("accessToken is required");
-    }
-    return fetchGroupMembers(accessToken, options);
-  },
-  staleTime: 5 * 60 * 1000,
-});
+export interface UseGroupMembersOptions {
+  groupId: string;
+}
 
-export const useGroupMembers = (options: FetchGroupMembersOptions) => {
-  const { accessToken } = useAuth();
-  const { data: users } = useSuspenseQuery(
-    groupMembersQueryOptions(accessToken, options),
+export interface UseGroupMembersResult {
+  users: GroupMember[];
+  isLoading: boolean;
+}
+
+export const useGroupMembers = ({
+  groupId,
+}: UseGroupMembersOptions): UseGroupMembersResult => {
+  const solution = useSolution();
+
+  const { data, isLoading } = useLiveQuery<GroupMember>((q) =>
+    q.from({ members: solution?.api.collections.identity.groupMembers }),
   );
 
-  return { users };
+  const users = (data ?? []).filter((member) => member.groupId === groupId);
+  return { users, isLoading };
 };

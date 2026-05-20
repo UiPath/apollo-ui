@@ -38,9 +38,20 @@
  * neighboring node wrappers or connected edge SVGs. This intentionally clears
  * React Flow's selected-node z-index bump (+1000) and connection-line z-index (1001).
  * React Flow sets z-index inline, so `!important` is required to override it.
+ *
+ * Exclusions:
+ *   - loop containers need to stay below sticky notes even when selected
+ *   - sticky notes own annotation/active annotation layers in StickyNoteNode.styles
  */
-.react-flow__node:not(.parent):hover {
+.react-flow__node:not(.parent):not(:has([data-sticky-note])):not(
+    :has([data-loop-container])
+  ):hover {
   z-index: 1002 !important;
+}
+
+/* Keep loop shells behind sticky-note annotations; empty loop body still hit-tests to the loop. */
+.react-flow__node:has([data-loop-container]) {
+  z-index: -20 !important;
 }
 
 /**

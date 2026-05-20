@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { cpSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -19,7 +19,17 @@ function testComponent(component: string, baseAppPath: string): TestResult {
       filter: (src) => !src.includes('node_modules'),
     });
 
-    // Install dependencies in the temp directory
+    // Inject the registry-test workspace config so isolated installs resolve packages
+    // with the same overrides, packageExtensions, and allowBuilds as the main workspace.
+    const testWorkspaceConfig = readFileSync(
+      new URL('pnpm-workspace-registry-test.yaml', import.meta.url),
+      'utf-8'
+    );
+    writeFileSync(join(testDir, 'pnpm-workspace.yaml'), testWorkspaceConfig);
+
+    // Install dependencies in the temp directory.
+    // No --frozen-lockfile: the shadcn-initialised app has no committed lockfile by design —
+    // this test simulates a fresh consumer install to verify components resolve correctly.
     execFileSync('pnpm', ['install'], {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -27,11 +37,46 @@ function testComponent(component: string, baseAppPath: string): TestResult {
     });
 
     // Install the component from registry
-    const addOutput = execFileSync('pnpm', ['exec', 'shadcn', 'add', `@uipath/${component}`, '--overwrite'], {
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-      cwd: testDir,
-    });
+    const addOutput = execFileSync(
+      'pnpm',
+      ['exec', 'shadcn', 'add', `@uipath/${component}`, '--overwrite'],
+      {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+        cwd: testDir,
+      }
+    );
+
+    // Explicitly install @uipath/vs-core's peer deps so pnpm links them into its virtual
+    // node_modules. pnpm 11's strict isolation means peer deps are only visible to a package
+    // when they are present in the consumer's dependency tree at install time. Without these,
+    // GroupMembersCollection / GroupsCollection degrade to Collection<unknown,...> and
+    // useLiveQuery result types cannot be properly inferred by TypeScript.
+    execFileSync(
+      'pnpm',
+      [
+        'add',
+        '-D',
+        'zod@^4.1.12',
+        '@tanstack/query-db-collection@^1.0.31',
+        '@tanstack/react-query@^5.90.3',
+        'idb-keyval@^6.2.1',
+        '@uipath/uipath-typescript@^1.0.0',
+      ],
+      {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+        cwd: testDir,
+      }
+    );
+
+    // Copy the ambient shims so the isolated typecheck runs in the same TypeScript
+    // environment as the monorepo. The file is staged alongside this script by the
+    // CI workflow step before test-registry.ts runs.
+    writeFileSync(
+      join(testDir, 'optional-deps.d.ts'),
+      readFileSync(new URL('optional-deps.d.ts', import.meta.url), 'utf-8'),
+    );
 
     // Type-check all files to verify all imports resolve correctly
     // (next build only checks files in the build graph — components not imported by any page would be skipped)
