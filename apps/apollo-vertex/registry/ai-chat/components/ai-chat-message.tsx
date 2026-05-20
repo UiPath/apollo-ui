@@ -168,7 +168,12 @@ export function AiChatMessage({
             />
             {hasText && (
               <div className="px-4 py-2 text-sm leading-6 rounded-2xl rounded-br-md bg-ai-chat-bubble-user text-ai-chat-bubble-user-foreground">
-                <p className="whitespace-pre-wrap">{displayContent}</p>
+                <AiChatMarkdown
+                  className="text-sm leading-6"
+                  preserveLineBreaks
+                >
+                  {displayContent}
+                </AiChatMarkdown>
               </div>
             )}
             <AiChatMessageActions

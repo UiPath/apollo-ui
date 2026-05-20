@@ -8,7 +8,6 @@ import type {
   ToolCallPart,
   UIMessage,
 } from "@tanstack/ai-client";
-import { AlertCircle, ArrowDown, RefreshCw } from "lucide-react";
 import {
   type DragEvent,
   Fragment,
@@ -18,14 +17,19 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { asBlockquote, isVisibleAssistant } from "../content-parts";
 import { useStickyScroll } from "../hooks/use-sticky-scroll";
 import type { MessageFeedbackType } from "../types";
+import { AiChatEmptyState } from "./ai-chat-empty-state";
+import { AiChatEmptySuggestions } from "./ai-chat-empty-suggestions";
+import { AiChatErrorBanner } from "./ai-chat-error-banner";
 import { AiChatHeader } from "./ai-chat-header";
 import { AiChatInput, type AiChatInputHandle } from "./ai-chat-input";
 import { AiChatLoading } from "./ai-chat-loading";
 import { AiChatMessage } from "./ai-chat-message";
+import { AiChatScrollToBottomButton } from "./ai-chat-scroll-to-bottom-button";
+import { AiChatSelectionMenu } from "./ai-chat-selection-menu";
 
 // Mirrors TanStack's own `= any` default for `UIMessage<TTools>` / `ToolCallPart<TTools>`;
 // their conditional types detect the default and fall back to untyped tool parts.
@@ -55,16 +59,8 @@ export interface AiChatProps<
   onSuggestionClick?: (suggestion: string) => void;
   placeholder?: string;
   acceptedFileTypes?: string;
+  enableTextSelection?: boolean;
   error?: Error | null;
-}
-
-function isVisibleAssistant(m: UIMessage): boolean {
-  if (m.role !== "assistant") return false;
-  return m.parts.some(
-    (p) =>
-      (p.type === "tool-call" && p.output != null) ||
-      (p.type === "text" && p.content),
-  );
 }
 
 export function AiChat<
@@ -89,12 +85,21 @@ export function AiChat<
   onSuggestionClick,
   placeholder,
   acceptedFileTypes,
+  enableTextSelection = false,
   error,
 }: AiChatProps<TTools>) {
   const { t } = useTranslation();
   const [input, setInput] = useState("");
-  const { scrollRef, contentRef, isStuck, scrollToBottom } = useStickyScroll();
+  const [quotedText, setQuotedText] = useState<string | null>(null);
+  const {
+    attachScrollListeners,
+    scrollElement,
+    contentRef,
+    isStuck,
+    scrollToBottom,
+  } = useStickyScroll();
   const inputRef = useRef<AiChatInputHandle>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
   const attachmentsEnabled = !!acceptedFileTypes;
@@ -131,7 +136,10 @@ export function AiChat<
   const displayName = assistantName ?? t("ai_assistant");
   const isInFlight = status === "submitted" || status === "streaming";
 
-  const queuedMessageRef = useRef<string | null>(null);
+  const queuedMessageRef = useRef<{
+    text: string;
+    parts?: ContentPart[];
+  } | null>(null);
 
   const conversationText = messages
     .map((m) => {
@@ -149,23 +157,27 @@ export function AiChat<
   const handleSubmit = (parts?: ContentPart[]) => {
     const text = input.trim();
     if (!text && !parts?.length) return;
+    const composedText = quotedText
+      ? `${asBlockquote(quotedText)}\n\n${text}`
+      : text;
     if (isInFlight) {
-      queuedMessageRef.current = text;
-      setInput("");
-      return;
+      queuedMessageRef.current = { text: composedText, parts };
+    } else {
+      onSendMessage(composedText, parts);
+      scrollToBottom();
     }
-    onSendMessage(text, parts);
     setInput("");
-    scrollToBottom();
+    setQuotedText(null);
   };
 
   const wasInFlightRef = useRef(false);
   useEffect(() => {
     if (wasInFlightRef.current && !isInFlight) {
       if (queuedMessageRef.current) {
-        const queued = queuedMessageRef.current;
+        const { text: queuedText, parts: queuedParts } =
+          queuedMessageRef.current;
         queuedMessageRef.current = null;
-        onSendMessage(queued);
+        onSendMessage(queuedText, queuedParts);
         scrollToBottom();
       } else {
         inputRef.current?.focus();
@@ -173,6 +185,11 @@ export function AiChat<
     }
     wasInFlightRef.current = isInFlight;
   }, [isInFlight, onSendMessage, scrollToBottom]);
+
+  const handleAskAi = (text: string) => {
+    setQuotedText(text);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  };
 
   const lastMessage = messages.at(-1);
   const lastMessageId = lastMessage?.id ?? null;
@@ -185,16 +202,10 @@ export function AiChat<
     messages.findLast((m) => isVisibleAssistant(m))?.id ?? null;
 
   const defaultEmptyState = (
-    <div className="flex flex-col items-center justify-center h-full text-center">
-      <div className="flex flex-col items-center gap-1">
-        <h2 className="text-2xl font-semibold leading-tight tracking-tight text-foreground">
-          {t("shell_empty_title")}
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          {t("shell_empty_description")}
-        </p>
-      </div>
-    </div>
+    <AiChatEmptyState
+      title={t("shell_empty_title")}
+      description={t("shell_empty_description")}
+    />
   );
 
   const defaultHeader = title && (
@@ -206,6 +217,19 @@ export function AiChat<
     />
   );
 
+  const sharedInputProps = {
+    ref: inputRef,
+    value: input,
+    onChange: setInput,
+    onSubmit: handleSubmit,
+    onStop,
+    isLoading: isInFlight,
+    placeholder,
+    acceptedFileTypes,
+    quotedText,
+    onClearQuote: () => setQuotedText(null),
+  };
+
   return (
     <div
       className={cn(
@@ -213,6 +237,7 @@ export function AiChat<
         isDragging && "border-primary",
       )}
       data-slot="ai-chat"
+      ref={chatContainerRef}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
@@ -226,38 +251,12 @@ export function AiChat<
             <div className="px-4 text-center mb-7">
               {emptyState ?? defaultEmptyState}
             </div>
-            <AiChatInput
-              ref={inputRef}
-              value={input}
-              onChange={setInput}
-              onSubmit={handleSubmit}
-              onStop={onStop}
-              isLoading={isInFlight}
-              placeholder={placeholder}
-              acceptedFileTypes={acceptedFileTypes}
-              hasMessages={false}
-            />
-            {suggestions && suggestions.length > 0 && (
-              <div className="mt-4 px-4 flex flex-wrap justify-center gap-2">
-                {suggestions.map((suggestion) => (
-                  <Button
-                    key={suggestion}
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="rounded-full text-xs font-semibold"
-                    onClick={() => {
-                      if (onSuggestionClick) {
-                        onSuggestionClick(suggestion);
-                      } else {
-                        onSendMessage(suggestion);
-                      }
-                    }}
-                  >
-                    {suggestion}
-                  </Button>
-                ))}
-              </div>
+            <AiChatInput {...sharedInputProps} hasMessages={false} />
+            {suggestions && (
+              <AiChatEmptySuggestions
+                suggestions={suggestions}
+                onSelect={onSuggestionClick ?? onSendMessage}
+              />
             )}
           </div>
         </div>
@@ -272,14 +271,20 @@ export function AiChat<
             aria-hidden="true"
           />
           <div
-            ref={scrollRef}
+            ref={attachScrollListeners}
             role="log"
             aria-label={t("chat_messages")}
             aria-live="polite"
             aria-atomic="false"
             aria-busy={isInFlight}
-            className="h-full overflow-y-auto py-4 pl-10 pr-10"
+            className="relative h-full overflow-y-auto py-4 pl-10 pr-10"
           >
+            {enableTextSelection && (
+              <AiChatSelectionMenu
+                onAskAi={handleAskAi}
+                containerRef={scrollElement}
+              />
+            )}
             <div ref={contentRef} className="space-y-1">
               {messages.map((message) => {
                 const isLatestVisibleAssistant =
@@ -328,58 +333,15 @@ export function AiChat<
             </div>
           </div>
 
-          {!isStuck && (
-            <Button
-              type="button"
-              variant="outline"
-              size="icon-sm"
-              onClick={scrollToBottom}
-              aria-label={t("scroll_to_bottom")}
-              className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 size-8 rounded-full border-ai-chat-border bg-ai-chat shadow-md hover:bg-ai-chat-muted"
-            >
-              <ArrowDown className="size-4" />
-            </Button>
-          )}
+          {!isStuck && <AiChatScrollToBottomButton onClick={scrollToBottom} />}
         </div>
       )}
 
-      {error && (
-        <div
-          role="alert"
-          aria-live="assertive"
-          className="relative z-0 mx-4 -mb-6 flex items-center gap-2 rounded-t-lg bg-destructive/10 px-6 pt-3 pb-6 text-sm text-destructive"
-        >
-          <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
-          <span className="flex-1 break-words">{error.message}</span>
-          {onRetry && (
-            <Button
-              type="button"
-              variant="link"
-              size="sm"
-              onClick={onRetry}
-              className="shrink-0 h-auto p-0 text-xs font-medium text-destructive"
-              aria-label={t("retry")}
-            >
-              <RefreshCw className="size-3" aria-hidden="true" />
-              {t("retry")}
-            </Button>
-          )}
-        </div>
-      )}
+      {error && <AiChatErrorBanner message={error.message} onRetry={onRetry} />}
 
       {messages.length > 0 && (
         <div>
-          <AiChatInput
-            ref={inputRef}
-            value={input}
-            onChange={setInput}
-            onSubmit={handleSubmit}
-            onStop={onStop}
-            isLoading={isInFlight}
-            placeholder={placeholder}
-            acceptedFileTypes={acceptedFileTypes}
-            hasMessages
-          />
+          <AiChatInput {...sharedInputProps} hasMessages />
           <div className="pt-2 pb-3 px-4 text-xs leading-normal text-muted-foreground text-center">
             {t("ai_response_disclaimer")}
           </div>
