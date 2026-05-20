@@ -4,6 +4,7 @@ export * from './useAddNodeOnConnectEnd';
 export * from './useCanvasEvents';
 export * from './useCanvasNodeLayout';
 export * from './useEdgePath';
+export * from './useElementsOverlap';
 export * from './useExportCanvas';
 export * from './useNavigationState';
 export * from './usePreviewNode';
