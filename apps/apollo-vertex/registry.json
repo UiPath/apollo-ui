@@ -919,6 +919,7 @@
         "react-i18next",
         "highlight.js",
         "react-markdown",
+        "remark-breaks",
         "remark-gfm",
         "framer-motion"
       ],
@@ -1075,6 +1076,26 @@
           "path": "registry/ai-chat/components/ai-chat-message-actions.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-message-actions.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-selection-menu.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-selection-menu.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-empty-suggestions.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-empty-suggestions.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-scroll-to-bottom-button.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-scroll-to-bottom-button.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-error-banner.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-error-banner.tsx"
         },
         {
           "path": "registry/ai-chat/components/ai-chat-thinking.tsx",

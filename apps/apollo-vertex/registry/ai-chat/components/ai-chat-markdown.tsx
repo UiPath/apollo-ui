@@ -2,6 +2,7 @@
 
 import type { ComponentProps, ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 import { AiChatCodeBlock } from "./ai-chat-code-block";
 
@@ -121,12 +122,22 @@ const components: ComponentProps<typeof ReactMarkdown>["components"] = {
 
 interface AiChatMarkdownProps {
   children: string;
+  className?: string;
+  preserveLineBreaks?: boolean;
 }
 
-export function AiChatMarkdown({ children }: AiChatMarkdownProps) {
+const DEFAULT_WRAPPER =
+  "py-1 text-base leading-relaxed bg-transparent text-foreground prose dark:prose-invert max-w-none";
+
+export function AiChatMarkdown({
+  children,
+  className,
+  preserveLineBreaks = false,
+}: AiChatMarkdownProps) {
+  const plugins = preserveLineBreaks ? [remarkGfm, remarkBreaks] : [remarkGfm];
   return (
-    <div className="py-1 text-base leading-relaxed bg-transparent text-foreground prose dark:prose-invert max-w-none">
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+    <div className={className ?? DEFAULT_WRAPPER}>
+      <ReactMarkdown remarkPlugins={plugins} components={components}>
         {children}
       </ReactMarkdown>
     </div>

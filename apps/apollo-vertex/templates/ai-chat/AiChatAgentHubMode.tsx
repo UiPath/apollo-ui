@@ -187,6 +187,7 @@ function AgentHubChatInner({
       getFeedback={(messageId) => feedback[messageId] ?? null}
       onRegenerate={() => void reload()}
       onEditMessage={(_messageId, content) => void sendMessage(content)}
+      enableTextSelection
       renderToolPart={(part) => {
         if (!part.output) return null;
 
@@ -236,8 +237,8 @@ function AgentHubChatInner({
 
         return null;
       }}
-      title="Autopilot"
-      assistantName="Autopilot"
+      title="AI Assistant"
+      assistantName="AI Assistant"
       emptyState={emptyState}
       acceptedFileTypes="image/*"
       suggestions={[

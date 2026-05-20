@@ -1,7 +1,7 @@
 "use client";
 
 import type { ContentPart } from "@tanstack/ai";
-import { ArrowUp, CircleStop, Paperclip } from "lucide-react";
+import { ArrowUp, CircleStop, Paperclip, X } from "lucide-react";
 import {
   type ChangeEvent,
   type ClipboardEvent,
@@ -46,6 +46,8 @@ interface AiChatInputProps {
   placeholder?: string;
   hasMessages?: boolean;
   acceptedFileTypes?: string;
+  quotedText?: string | null;
+  onClearQuote?: () => void;
   ref?: Ref<AiChatInputHandle>;
 }
 
@@ -64,6 +66,8 @@ export function AiChatInput({
   placeholder,
   hasMessages = false,
   acceptedFileTypes,
+  quotedText,
+  onClearQuote,
   ref,
 }: AiChatInputProps) {
   const { t } = useTranslation();
@@ -171,6 +175,24 @@ export function AiChatInput({
     />
   ) : null;
 
+  const quoteChip = quotedText ? (
+    <div className="flex items-center px-3 pt-2">
+      <div className="inline-flex items-center gap-1.5 rounded-lg bg-ai-chat-muted px-2 py-1.5 text-xs text-ai-chat-muted-foreground max-w-full min-w-0">
+        <span className="truncate">{quotedText}</span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-xs"
+          onClick={onClearQuote}
+          className="shrink-0 hover:bg-ai-chat-border"
+          aria-label={t("remove_quoted_text")}
+        >
+          <X aria-hidden="true" />
+        </Button>
+      </div>
+    </div>
+  ) : null;
+
   const plusMenu = attachmentsEnabled ? (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -256,6 +278,7 @@ export function AiChatInput({
         </div>
         {hasMessages ? (
           <form {...formProps}>
+            {quoteChip}
             {pendingFilesChips}
             <div className="flex items-end gap-2 pl-[8px] pr-[8px] pt-[4px] pb-[8px]">
               {plusMenu}
@@ -276,6 +299,7 @@ export function AiChatInput({
           </form>
         ) : (
           <form {...formProps}>
+            {quoteChip}
             {pendingFilesChips}
             <textarea
               ref={textareaRef}

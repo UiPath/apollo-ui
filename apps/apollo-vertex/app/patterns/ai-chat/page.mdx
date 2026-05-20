@@ -24,6 +24,7 @@ A composable AI chat UI component for Apollo Vertex. Built with React, TypeScrip
 - **Data Fabric KPI Tool** — Render a single scalar metric (count, sum, average, min, max) with optional filters and joins
 - **Suggestion Buttons** — Interactive choice buttons rendered from tool results
 - **File Attachments** — Opt-in via `acceptedFileTypes`; users pick files, paste from the clipboard, drag-and-drop onto the chat, preview images in a fullscreen dialog (both in the input chips and in sent message bubbles), and the resulting `ContentPart[]` arrives in the `onSendMessage` callback
+- **Text Selection → Ask AI** — Opt-in via `enableTextSelection`; selecting any text in the conversation pops up a floating "Ask AI" pill that quotes the selection into the input as a markdown blockquote so the LLM sees the user's question alongside its source context
 
 ## Installation
 
@@ -191,6 +192,22 @@ Attached files arrive in `onSendMessage` as wire-ready TanStack AI `ContentPart`
 - `"image/*"` — images only
 
 Attached images render with a clickable thumbnail chip that opens a fullscreen preview (Esc or backdrop click to close), and the same thumbnails appear in the user's message bubble after sending. Clipboard paste — including OS screenshots — attaches files automatically, and dragging files anywhere over the chat container highlights it with a dashed border before accepting the drop.
+
+## Text Selection → Ask AI
+
+Set `enableTextSelection` to enable selection-driven follow-ups. Selecting any text inside the message scroll area pops up a floating "Ask AI" pill above the selection; clicking it pre-fills the input with the selection as a markdown blockquote, focuses the textarea, and lets the user append their question. The quote rides along to the LLM as message content so the model has the source context, and renders as a styled blockquote in the user's bubble.
+
+```tsx
+<AiChat
+  messages={messages}
+  status={status}
+  onSendMessage={(text) => sendMessage(text)}
+  onStop={stop}
+  enableTextSelection
+/>
+```
+
+The pill is scoped to the message scroll container — selections in the header, input, or outside the chat are ignored. It uses absolute positioning inside the scroll area, so it tracks the text as the user scrolls without any extra wiring. Clicking it preserves the selection through the click so the captured text is read reliably, then collapses the selection after.
 
 ## AgentHub Adapter
 
@@ -597,6 +614,7 @@ Chat shell component. Owns the message loop, scroll, input, loading indicator, s
 | `onSuggestionClick` | `(suggestion: string) => void` | — | Called when a suggestion is clicked (defaults to sending it as a message) |
 | `placeholder` | `string` | — | Input placeholder |
 | `acceptedFileTypes` | `string` | — | HTML accept-string for attachments (e.g. `"image/*"`). Setting this enables the paperclip menu, paste handler, drag-and-drop, chip list, in-bubble image thumbnails, and image preview; omit to disable attachments entirely |
+| `enableTextSelection` | `boolean` | `false` | Show a floating "Ask AI" pill when the user selects text in the message area. Clicking it quotes the selection into the input as a markdown blockquote so the LLM sees the source context alongside the user's question |
 | `error` | `Error \| null` | — | Inline error banner |
 
 ### `AgentHubAdapterConfig`
