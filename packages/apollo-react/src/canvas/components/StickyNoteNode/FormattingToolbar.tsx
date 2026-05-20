@@ -1,6 +1,6 @@
-import { useLingui } from '@lingui/react';
 import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import { memo, type RefObject, useCallback } from 'react';
+import { useSafeLingui } from '../../../i18n';
 import { CanvasTooltip } from '../CanvasTooltip';
 import type { ActiveFormats } from './markdown-formatting';
 import {
@@ -31,7 +31,7 @@ const FormattingToolbarComponent = ({
   activeFormats,
   onFormat,
 }: FormattingToolbarProps) => {
-  const { _ } = useLingui();
+  const { _ } = useSafeLingui();
   const mod = getModifierKey();
   const shift = isMac() ? '⇧' : '+Shift+';
 

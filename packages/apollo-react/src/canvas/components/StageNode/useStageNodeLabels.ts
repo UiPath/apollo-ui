@@ -1,5 +1,5 @@
-import { useLingui } from '@lingui/react';
 import { useMemo } from 'react';
+import { useSafeLingui } from '../../../i18n';
 import type { StageContextMenuLabels } from './StageNodeTaskUtilities';
 
 export interface StageNodeLabels {
@@ -16,7 +16,7 @@ export interface StageNodeLabels {
 }
 
 export function useStageNodeLabels(): StageNodeLabels {
-  const { _ } = useLingui();
+  const { _ } = useSafeLingui();
 
   return useMemo(
     () => ({
