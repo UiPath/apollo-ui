@@ -15,18 +15,8 @@ minimumReleaseAge: 20160
 #
 # Format: - 'pkg'  # <version> — <reason>
 # The version is required — the prune script uses it to decide when to remove the entry.
-# FIXME: Until https://github.com/pnpm/pnpm/issues/11238 is fixed we need the additional exclusions
 minimumReleaseAgeExclude:
-  - '@uipath/*'              # permanent — own scope, always installable immediately
-  - '@mui/system'            # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
-  - 'eslint'                 # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
-  - '@microsoft/*'           # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
-  - '@stencil/core'          # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
-  - 'lexical'                # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
-  - '@lexical/*'             # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
-  - '@fluentui/react-focus'  # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
-  - 'intl-messageformat'     # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
-  - '@formatjs/*'            # no time information, pnpm seems to ignore the minimumReleaseAgeIgnoreMissingTime #11238
+  - '@uipath/*'                   # permanent — own scope, always installable immediately
   - 'postcss'                     # 8.5.14 — security override in pnpm.overrides
   - 'mermaid'                     # 11.15.0 — GHSA-v2wj-7wpq-c8vv backport patch
   - '@mermaid-js/parser'          # 1.1.1 — required by mermaid 11.15.0 (peer bumped from ^1.1.0 in 11.14.0)
@@ -43,6 +33,11 @@ minimumReleaseAgeExclude:
   - 'fs-extra'                    # 11.3.5 — locked version too new
   - 'sanitize-html'               # 2.17.4 — GHSA-rpr9-rxv7-x643 (XSS via xmp tag), vetted 2026-05-15: publisher ✓, tag+diff ✓, integrity ✓
   - 'launder'                     # 1.7.1 — co-published with sanitize-html 2.17.4 (ApostropheCMS org, boutell, dayjs only dep), vetted 2026-05-15
+  - 'turbo'                       # 2.9.14 — GHSA-hcf7-66rw-9f5r + GHSA-3qcw-2rhx-2726, vetted 2026-05-20: OIDC provenance ✓, vercel/turborepo release v2.9.14 ✓, lists both advisories
+  - '@turbo/*'                    # 2.9.14 — platform binaries co-published with turbo (scope rename from turbo-*), same OIDC provenance ✓
+  - 'brace-expansion'             # 5.0.6 — GHSA-jxxr-4gwj-5jf2, vetted 2026-05-20: publisher unchanged (juliangruber) ✓, diff is 1-line fix + regression test, no new deps
+  - 'ws'                          # 8.20.1 — GHSA-58qx-3vcg-4xpx, vetted 2026-05-20: publisher unchanged (lpinca) ✓, release notes credit ChALkeR, fix in lib/sender.js + websocket.js with regression tests
+  - 'engine.io-client'            # 6.6.5 — brings ws ~8.20.1 to the @uipath/uipath-typescript chain, vetted 2026-05-20: OIDC provenance ✓, socketio/socket.io tag by darrachequesne, single commit is the ws bump (PR #5439)
 # Refuse transitive git/tarball deps (pnpm 11 default; kept explicit for clarity)
 blockExoticSubdeps: true
 
