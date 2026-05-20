@@ -41,7 +41,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: read
     outputs:
       matrix: ${{ steps.matrix.outputs.result }}
     steps:
@@ -52,8 +51,6 @@ jobs:
 
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
-        with:
-          registry-token: ${{ github.token }}
 
       - name: Build registry
         run: pnpm --filter apollo-vertex registry:build
@@ -114,6 +111,9 @@ jobs:
     needs: [detect-changes, prepare]
     if: needs.detect-changes.outputs.has_vertex_changes == 'true' && github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
+    # Simulates a downstream consumer installing apollo-vertex shadcn components
+    # into a fresh project. Some components pull in @uipath/proteus-client, which
+    # is GHP-only — so this job needs GHP read auth on its setup-node + test step.
     permissions:
       contents: read
       packages: read

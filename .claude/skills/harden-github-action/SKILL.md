@@ -25,7 +25,7 @@ Do **not** use this skill for:
 - **Package manager**: pnpm 11.x
 - **Node version**: 22
 - **Workspaces**: Turborepo monorepo (`packages/`, `web-packages/`, `apps/`)
-- **Dual registry**: npm public + GitHub Packages (`@uipath` scope at `https://npm.pkg.github.com`)
+- **Dual-publish, single-install**: packages publish to both npm public and GitHub Packages (`@uipath` scope on GHP). CI **installs** only from npm public — no `.npmrc` in repo, no GHP credentials needed at install time. GHP credentials still flow to publish/cleanup steps.
 - **Composite install action**: `.github/actions/install-node-deps/action.yml` — always prefer this over manual setup
 - **Security scanner**: zizmor (via `security-scan.yml`); suppression config at `zizmor.yml`
 - **Workspace quarantine**: `pnpm-workspace.yaml` has `minimumReleaseAge: 20160` (14 days), `blockExoticSubdeps: true`, and a `minimumReleaseAgeExclude` list managed by the weekly `prune-release-age-exemptions.yml` workflow
@@ -157,9 +157,9 @@ Always use `./.github/actions/install-node-deps` instead of manually setting up 
 ```yaml
 - name: Install Node dependencies
   uses: ./.github/actions/install-node-deps
-  with:
-    registry-token: ${{ github.token }}
 ```
+
+The composite action takes no required inputs. No `registry-token`, no `packages: read` permission, no GHP auth — all `@uipath/*` deps resolve from npm public. If a future change reintroduces GHP-only install deps, restore the input + permission and document why.
 
 **Never:**
 - Run `pnpm install` without `--frozen-lockfile` in CI — the composite action always uses it
@@ -186,9 +186,11 @@ env:
 
 **Three token classes in this repo, each step-scoped:**
 
-- `github.token` with `packages: read` at job level — used for **installing** private `@uipath/*` packages from GHP. Pass it to the composite action's `registry-token` input. Do not re-expose at workflow or job level.
-- GitHub App installation token (`steps.app-token.outputs.token`) — used for `GH_NPM_REGISTRY_TOKEN` in **GHP publish/unpublish** steps and for **git push / PR creation** in release flows. Mint via `actions/create-github-app-token` with `permission-*` inputs scoped to the minimum needed.
+- `${{ github.token }}` (the default GITHUB_TOKEN) — used as `GH_NPM_REGISTRY_TOKEN` for **GHP publish / unpublish / cleanup** steps in `release.yml`, `dev-publish.yml`, and `dev-cleanup.yml`. Requires `packages: write` on the publishing/cleanup job (never the workflow). Lives in the step's `env:` block; do not raise to workflow or job scope.
+- GitHub App installation token (`steps.app-token.outputs.token`) — used **only** for pushing the version-bump commit in `release.yml`'s `commit-version-bump` job, which runs on an isolated runner separated from the release/publish job. Mint via `actions/create-github-app-token` with `permission-contents: write`. Never used for npm/GHP publishing.
 - **npm.org publishing uses OIDC Trusted Publishing — there is no npm token in CI.** The publishing job declares `id-token: write` and the `@uipath/*` package's npm Trusted Publisher entry pins this repo + `release.yml`. pnpm 11 detects the OIDC env vars set by Actions and exchanges them for a short-lived publish token automatically.
+
+**Install needs no token.** Since CI installs only from npm public, the composite install action takes no `registry-token` and jobs do not need `packages: read`.
 
 ---
 
@@ -354,8 +356,6 @@ jobs:
 
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
-        with:
-          registry-token: ${{ github.token }}
 
       - name: Cache Turborepo
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
@@ -395,8 +395,7 @@ Use this checklist when reviewing or hardening any workflow file.
 
 ### Install Pattern
 - [ ] All install steps use `./.github/actions/install-node-deps`
-- [ ] `registry-token: ${{ github.token }}` is passed to the composite action (job must have `packages: read`)
-- [ ] Only `registry-token` is passed to the composite action — `registry-url`/`scope` are baked in
+- [ ] No `registry-token` argument passed and no `packages: read` permission on the job — CI installs from npm public only
 - [ ] No raw `pnpm install` without `--frozen-lockfile`
 - [ ] No `pnpm dlx` / `pnpx` / `npx -y` for packages already in devDependencies — use `pnpm exec`
 

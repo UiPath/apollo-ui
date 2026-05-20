@@ -33,7 +33,6 @@ jobs:
     permissions:
       contents: read
       issues: write
-      packages: read
       pull-requests: write
     steps:
       - name: Checkout
@@ -43,8 +42,6 @@ jobs:
 
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
-        with:
-          registry-token: ${{ github.token }}
 
       - name: Check licenses
         id: check
