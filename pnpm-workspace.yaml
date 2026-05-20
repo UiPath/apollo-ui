@@ -17,7 +17,7 @@ minimumReleaseAge: 20160
 # The version is required — the prune script uses it to decide when to remove the entry.
 minimumReleaseAgeExclude:
   - '@uipath/*'                   # permanent — own scope, always installable immediately
-  - 'postcss'                     # 8.5.14 — security override in pnpm.overrides
+  - 'postcss'                     # 8.5.14 — security override in this file's `overrides:` block
   - 'mermaid'                     # 11.15.0 — GHSA-v2wj-7wpq-c8vv backport patch
   - '@mermaid-js/parser'          # 1.1.1 — required by mermaid 11.15.0 (peer bumped from ^1.1.0 in 11.14.0)
   - 'next'                        # 16.2.6 — locked version too new

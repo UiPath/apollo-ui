@@ -89,10 +89,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: pre-deploy
     if: ${{ !cancelled() && (github.event_name == 'push' || (needs.pre-deploy.result == 'success' && github.event.pull_request.head.repo.fork == false)) }}
-    continue-on-error: true
     permissions:
       contents: read
     strategy:
+      # Let every project deploy attempt complete so the PR comment surfaces all outcomes;
+      # a failure in one entry should not cancel the others, but should still fail the workflow.
+      fail-fast: false
       matrix:
         include:
           - project_name: apollo-design
@@ -205,7 +207,6 @@ jobs:
 
       - name: Deploy to Vercel
         id: deploy
-        continue-on-error: true
         run: |
           ERROR_MSG=""
           DEPLOY_URL=""
@@ -213,7 +214,11 @@ jobs:
           # Run from repo root — same reasoning as vercel build above.
           # Vercel applies rootDirectory from project settings to locate
           # the .vercel/output/ directory created by the build step.
-          VERCEL_ARGS=(deploy --prebuilt --yes)
+          # --archive=tgz: package the prebuilt output as a single tarball before
+          # upload. Without it, each file in .vercel/output/ counts as a separate
+          # upload against the 40k/day api-upload-paid quota — Storybook + shadcn
+          # registries blow through that quickly across 5 projects × N PRs/day.
+          VERCEL_ARGS=(deploy --prebuilt --archive=tgz --yes)
           [[ -n "$PROD_FLAG" ]] && VERCEL_ARGS+=("$PROD_FLAG")
           DEPLOY_OUTPUT=$(vercel "${VERCEL_ARGS[@]}" 2>&1)
           DEPLOY_EXIT_CODE=$?
@@ -224,6 +229,13 @@ jobs:
               DEPLOY_OUTPUT="${DEPLOY_OUTPUT//$__secret/***}"
             fi
           done
+
+          # Always echo the full vercel CLI output so the runner log is traceable
+          # without having to download the deploy-result artifact. Collapsible so
+          # successful runs stay tidy.
+          echo "::group::vercel CLI output (exit $DEPLOY_EXIT_CODE)"
+          printf '%s\n' "$DEPLOY_OUTPUT"
+          echo "::endgroup::"
 
           if [ "$DEPLOY_EXIT_CODE" -eq 0 ]; then
             if [ "$PROD_FLAG" == "--prod" ]; then
@@ -241,12 +253,26 @@ jobs:
             } >> "$GITHUB_OUTPUT"
             echo "✅ Deployed ${{ matrix.project_name }} to $DEPLOY_URL" >> "$GITHUB_STEP_SUMMARY"
           else
-            ERROR_MSG=$(echo "$DEPLOY_OUTPUT" | tail -n 5 | tr '\n' ' ')
+            # Prefer the actual `Error: …` line over a blind `tail -n 5`, which
+            # often grabs upload progress bars or Node stack-trace frames and
+            # hides the root cause.
+            ERROR_MSG=$(echo "$DEPLOY_OUTPUT" | grep -m1 -E '^Error: ' || true)
+            if [ -z "$ERROR_MSG" ]; then
+              ERROR_MSG=$(echo "$DEPLOY_OUTPUT" | tail -n 5 | tr '\n' ' ')
+            fi
             if [ "${#ERROR_MSG}" -gt 500 ]; then
               ERROR_MSG="${ERROR_MSG:0:500}..."
             fi
             echo "error_message=$ERROR_MSG" >> "$GITHUB_OUTPUT"
             echo "❌ Failed to deploy ${{ matrix.project_name }}: $ERROR_MSG" >> "$GITHUB_STEP_SUMMARY"
+            # Escape %, CR, LF before interpolating into a workflow command so a
+            # malformed/hostile error string can't break the annotation or inject
+            # a second `::workflow-command::` via an embedded newline. Order
+            # matters: % must be escaped first, since later subs emit %.
+            ERROR_ANNOTATION="${ERROR_MSG//%/%25}"
+            ERROR_ANNOTATION="${ERROR_ANNOTATION//$'\r'/%0D}"
+            ERROR_ANNOTATION="${ERROR_ANNOTATION//$'\n'/%0A}"
+            echo "::error title=Vercel deploy failed for ${{ matrix.project_name }}::$ERROR_ANNOTATION"
             exit 1
           fi
         env:
