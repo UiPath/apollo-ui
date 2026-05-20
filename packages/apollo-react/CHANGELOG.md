@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.26.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.26.0...@uipath/apollo-react@4.26.1) (2026-05-20)
+
+### Bug Fixes
+
+* **apollo-react:** use safeLingui to get fallBack english strings ([2d25460](https://github.com/UiPath/apollo-ui/commit/2d25460686125c7de5678545f7b2fd8d61fe5a0c))
+
 ## [@uipath/apollo-react-v4.26.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.25.1...@uipath/apollo-react@4.26.0) (2026-05-19)
 
 ### Features
