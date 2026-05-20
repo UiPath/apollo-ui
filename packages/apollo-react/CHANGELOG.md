@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.26.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.26.1...@uipath/apollo-react@4.26.2) (2026-05-20)
+
+### Bug Fixes
+
+* **apollo-react:** remove case chips add stage complete MST-10116 ([3660f32](https://github.com/UiPath/apollo-ui/commit/3660f321774288965ce88bca6e36a5d4169a2ede))
+
 ## [@uipath/apollo-react-v4.26.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.26.0...@uipath/apollo-react@4.26.1) (2026-05-20)
 
 ### Bug Fixes
