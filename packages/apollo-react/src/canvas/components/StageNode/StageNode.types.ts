@@ -33,9 +33,8 @@ export interface StageTaskItem {
 export enum StageHeaderChipType {
   Entry = 'entry',
   Exit = 'exit',
+  Completion = 'completion',
   ReturnToOrigin = 'returnToOrigin',
-  CaseExit = 'caseExit',
-  CaseCompletion = 'caseCompletion',
 }
 
 export interface StageHeaderChip {
