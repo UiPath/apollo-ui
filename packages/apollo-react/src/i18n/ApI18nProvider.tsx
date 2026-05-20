@@ -43,7 +43,7 @@ export interface ApI18nProviderProps {
 
 /**
  * Activates apollo-react's pre-built lingui catalogs for a given component
- * group. Wrap any apollo-react UI (e.g. <ApChat>, canvas components) so its
+ * group. Wrap any apollo-react UI (e.g. `<ApChat>`, canvas components) so its
  * strings render in the active locale.
  *
  * `component` must be a key registered in `locale-registry.ts`. Mutates the
