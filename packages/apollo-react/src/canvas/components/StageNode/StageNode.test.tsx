@@ -989,25 +989,23 @@ describe('StageNode - Header Chips', () => {
     renderStageNode({
       stageDetails: {
         ...defaultProps.stageDetails,
-        headerChips: [{ type: StageHeaderChipType.CaseExit, tooltip: 'Exit case condition' }],
+        headerChips: [{ type: StageHeaderChipType.Entry, tooltip: 'Entry condition' }],
       },
     });
 
-    expect(screen.getByRole('button', { name: 'Exit case condition' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Entry condition' })).toBeInTheDocument();
   });
 
   it('should fall back to chip type as aria-label when tooltip is a ReactNode', () => {
     renderStageNode({
       stageDetails: {
         ...defaultProps.stageDetails,
-        headerChips: [
-          { type: StageHeaderChipType.CaseCompletion, tooltip: <span>Completion</span> },
-        ],
+        headerChips: [{ type: StageHeaderChipType.Completion, tooltip: <span>Completion</span> }],
       },
     });
 
     expect(
-      screen.getByRole('button', { name: StageHeaderChipType.CaseCompletion })
+      screen.getByRole('button', { name: StageHeaderChipType.Completion })
     ).toBeInTheDocument();
   });
 });

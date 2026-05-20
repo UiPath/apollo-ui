@@ -2,6 +2,7 @@ import { Icon, Padding, Spacing } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { Button } from '@uipath/apollo-wind';
 import { memo } from 'react';
+import { ChecklistIcon } from '../../../icons';
 import { EntryConditionIcon, ExitConditionIcon, ReturnToOriginIcon } from '../../icons';
 import { CanvasIcon } from '../../utils/icon-registry';
 import { CanvasTooltip } from '../CanvasTooltip';
@@ -27,9 +28,8 @@ const SLA_ICON_CONFIG: Record<StageSlaIcon, { icon: string; iconColor: string }>
 const CHIP_ICONS: Record<StageHeaderChipType, React.ReactElement> = {
   [StageHeaderChipType.Entry]: <EntryConditionIcon w={Icon.IconXs} h={Icon.IconXs} />,
   [StageHeaderChipType.Exit]: <ExitConditionIcon w={Icon.IconXs} h={Icon.IconXs} />,
+  [StageHeaderChipType.Completion]: <ChecklistIcon size={16} />,
   [StageHeaderChipType.ReturnToOrigin]: <ReturnToOriginIcon w={Icon.IconXs} h={Icon.IconXs} />,
-  [StageHeaderChipType.CaseExit]: <CanvasIcon icon="x" size={16} />,
-  [StageHeaderChipType.CaseCompletion]: <CanvasIcon icon="check" size={16} />,
 };
 
 const StageNodeHeaderInner = ({
