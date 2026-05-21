@@ -1,8 +1,8 @@
 import type { Meta } from '@storybook/react-vite';
-import { Folder, File, Globe, Pencil } from 'lucide-react';
+import { File, Folder, Globe, Pencil } from 'lucide-react';
 import TreeView, {
-  type TreeViewItem,
   type TreeViewIconMap,
+  type TreeViewItem,
   type TreeViewMenuItem,
 } from './tree-view';
 
@@ -27,6 +27,7 @@ A hierarchical tree component for displaying and selecting items like file explo
 - **Item actions** – Add \`actions\` for Edit/Delete; rendered in a compact dropdown (single "more" icon) to prevent horizontal scroll
 - **Context menu** – Right-click with \`menuItems\` for custom actions
 - **Access checkboxes** – \`showCheckboxes\` for check/uncheck with \`onCheckChange\`
+- **Custom row renderers** – \`renderCategoryLabel\` and \`renderItemLabel\` replace the row content (icon, name, badge, meta) for category and leaf rows respectively. Chevron, checkboxes and actions menu stay in place. Falls back to the default row content (icon + name + optional badge + meta) when omitted.
 
 ## Layout
 
@@ -277,4 +278,146 @@ export const WithContextMenu = {
       />
     );
   },
+};
+
+// ============================================================================
+// With Custom Category and Item Renderer
+// ============================================================================
+
+export const WithCustomCategoryAndItemRenderer = {
+  name: 'With custom category and item renderer',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Uses `renderCategoryLabel` and `renderItemLabel` to fully customize the row content (icon, name, badge, meta) for category and leaf rows. The chevron, checkboxes and actions menu remain controlled by the component.',
+      },
+    },
+  },
+  render: () => (
+    <TreeView
+      data={sampleData}
+      title="Custom renderers"
+      renderCategoryLabel={(item) => (
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <Globe className="h-4 w-4 text-blue-600" />
+          <span className="flex-1 min-w-0 truncate font-semibold uppercase tracking-wide text-xs">
+            {item.name}
+          </span>
+          {item.children && (
+            <span className="shrink-0 text-xs text-muted-foreground">
+              {item.children.length} items
+            </span>
+          )}
+        </div>
+      )}
+      renderItemLabel={(item) => (
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <File className="h-4 w-4 text-emerald-600" />
+          <span className="flex-1 min-w-0 truncate font-mono text-sm">{item.name}</span>
+          <span className="shrink-0 text-xs text-muted-foreground italic">leaf</span>
+        </div>
+      )}
+    />
+  ),
+};
+
+// ============================================================================
+// With Custom Renderers and Single Selection
+// ============================================================================
+
+export const WithCustomRenderersAndSingleSelection = {
+  name: 'With custom renderers and single selection',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Custom `renderCategoryLabel` and `renderItemLabel` combined with `selectionMode="single"` and `showSelectionCheckboxes`. Only one leaf can be selected at a time; the selection checkbox is still rendered by the component alongside the custom content.',
+      },
+    },
+  },
+  render: () => (
+    <TreeView
+      data={sampleData}
+      title="Custom renderers + single selection"
+      selectionMode="single"
+      showSelectionCheckboxes
+      renderCategoryLabel={(item) => (
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <Folder className="h-4 w-4 text-amber-600" />
+          <span className="flex-1 min-w-0 truncate font-semibold uppercase tracking-wide text-xs">
+            {item.name}
+          </span>
+          {item.children && (
+            <span className="shrink-0 text-xs text-muted-foreground">
+              {item.children.length} items
+            </span>
+          )}
+        </div>
+      )}
+      renderItemLabel={(item) => (
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <File className="h-4 w-4 text-emerald-600" />
+          <span className="flex-1 min-w-0 truncate font-mono text-sm">{item.name}</span>
+          <span className="shrink-0 text-xs text-muted-foreground italic">leaf</span>
+        </div>
+      )}
+      onSelectionChange={(items) =>
+        console.log(
+          'Selected:',
+          items.map((i) => i.name)
+        )
+      }
+    />
+  ),
+};
+
+// ============================================================================
+// With Custom Renderers and Multiple Selection
+// ============================================================================
+
+export const WithCustomRenderersAndMultipleSelection = {
+  name: 'With custom renderers and multiple selection',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Custom `renderCategoryLabel` and `renderItemLabel` combined with `selectionMode="multiple"` (default) and `showSelectionCheckboxes`. Supports shift/ctrl-click and drag-select; the "X selected" badge still appears on collapsed folders alongside the custom content.',
+      },
+    },
+  },
+  render: () => (
+    <TreeView
+      data={sampleData}
+      title="Custom renderers + multiple selection"
+      selectionMode="multiple"
+      showSelectionCheckboxes
+      renderCategoryLabel={(item) => (
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <Folder className="h-4 w-4 text-amber-600" />
+          <span className="flex-1 min-w-0 truncate font-semibold uppercase tracking-wide text-xs">
+            {item.name}
+          </span>
+          {item.children && (
+            <span className="shrink-0 text-xs text-muted-foreground">
+              {item.children.length} items
+            </span>
+          )}
+        </div>
+      )}
+      renderItemLabel={(item) => (
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <File className="h-4 w-4 text-emerald-600" />
+          <span className="flex-1 min-w-0 truncate font-mono text-sm">{item.name}</span>
+          <span className="shrink-0 text-xs text-muted-foreground italic">leaf</span>
+        </div>
+      )}
+      onSelectionChange={(items) =>
+        console.log(
+          'Selected:',
+          items.map((i) => i.name)
+        )
+      }
+    />
+  ),
 };

@@ -1,32 +1,31 @@
 'use client';
 
+import { AnimatePresence, motion } from 'framer-motion';
+import { Box, ChevronRight, Folder, Info, MoreHorizontal, Search, X } from 'lucide-react';
 import * as React from 'react';
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
-import { Folder, ChevronRight, Box, Search, MoreHorizontal, Info } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
-import { X } from 'lucide-react';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
+import { cn } from '@/lib';
 
 /**
  * Action shown in the item's dropdown menu (Edit, Delete, etc.).
@@ -110,6 +109,10 @@ export interface TreeViewProps {
   onCheckChange?: (item: TreeViewItem, checked: boolean) => void;
   iconMap?: TreeViewIconMap;
   menuItems?: TreeViewMenuItem[];
+  /** Custom renderer for category rows (items with children). Replaces icon, name, badge and meta; chevron, checkboxes and actions menu are preserved. Falls back to the default row content (icon + name + optional badge + meta) when omitted. */
+  renderCategoryLabel?: (item: TreeViewItem) => React.ReactNode;
+  /** Custom renderer for leaf rows (items without children). Replaces icon, name, badge and meta; checkboxes and actions menu are preserved. Falls back to the default row content (icon + name + optional badge + meta) when omitted. */
+  renderItemLabel?: (item: TreeViewItem) => React.ReactNode;
 }
 
 interface TreeItemProps {
@@ -131,6 +134,8 @@ interface TreeItemProps {
   iconMap?: TreeViewIconMap;
   menuItems?: TreeViewMenuItem[];
   getSelectedItems: () => TreeViewItem[];
+  renderCategoryLabel?: (item: TreeViewItem) => React.ReactNode;
+  renderItemLabel?: (item: TreeViewItem) => React.ReactNode;
 }
 
 // Helper function to build a map of all items by ID
@@ -208,6 +213,8 @@ function TreeItem({
   iconMap = defaultIconMap,
   menuItems,
   getSelectedItems,
+  renderCategoryLabel,
+  renderItemLabel,
 }: TreeItemProps): React.ReactElement {
   const isOpen = expandedIds.has(item.id);
   const isSelected = selectedIds.has(item.id);
@@ -465,13 +472,19 @@ function TreeItem({
                       )}
                     </button>
                   )}
-                  {renderIcon()}
-                  <span className="flex-1 min-w-0 truncate">{item.name}</span>
-                  {item.badge && <span className="shrink-0 ml-1">{item.badge}</span>}
-                  {item.meta && (
-                    <span className="text-xs text-muted-foreground shrink-0 ml-1 truncate max-w-[6rem]">
-                      {item.meta}
-                    </span>
+                  {renderCategoryLabel ? (
+                    renderCategoryLabel(item)
+                  ) : (
+                    <>
+                      {renderIcon()}
+                      <span className="flex-1 min-w-0 truncate">{item.name}</span>
+                      {item.badge && <span className="shrink-0 ml-1">{item.badge}</span>}
+                      {item.meta && (
+                        <span className="text-xs text-muted-foreground shrink-0 ml-1 truncate max-w-[6rem]">
+                          {item.meta}
+                        </span>
+                      )}
+                    </>
                   )}
                   {selectedCount !== null && selectedCount > 0 && (
                     <Badge
@@ -623,13 +636,19 @@ function TreeItem({
                       )}
                     </button>
                   )}
-                  {renderIcon()}
-                  <span className="flex-1 min-w-0 truncate">{item.name}</span>
-                  {item.badge && <span className="shrink-0 ml-1">{item.badge}</span>}
-                  {item.meta && (
-                    <span className="text-xs text-muted-foreground shrink-0 ml-1 truncate max-w-[6rem]">
-                      {item.meta}
-                    </span>
+                  {renderItemLabel ? (
+                    renderItemLabel(item)
+                  ) : (
+                    <>
+                      {renderIcon()}
+                      <span className="flex-1 min-w-0 truncate">{item.name}</span>
+                      {item.badge && <span className="shrink-0 ml-1">{item.badge}</span>}
+                      {item.meta && (
+                        <span className="text-xs text-muted-foreground shrink-0 ml-1 truncate max-w-[6rem]">
+                          {item.meta}
+                        </span>
+                      )}
+                    </>
                   )}
                   {(item.actions?.length ?? 0) > 0 ? (
                     <DropdownMenu>
@@ -751,6 +770,8 @@ function TreeItem({
                           iconMap={iconMap}
                           menuItems={menuItems}
                           getSelectedItems={getSelectedItems}
+                          renderCategoryLabel={renderCategoryLabel}
+                          renderItemLabel={renderItemLabel}
                         />
                       ))}
                     </motion.div>
@@ -815,6 +836,8 @@ export default function TreeView({
   onAction,
   onCheckChange,
   menuItems,
+  renderCategoryLabel,
+  renderItemLabel,
 }: TreeViewProps) {
   const [currentMousePos, setCurrentMousePos] = useState<number>(0);
   const [dragStart, setDragStart] = useState<number | null>(null);
@@ -1215,6 +1238,8 @@ export default function TreeView({
               iconMap={iconMap}
               menuItems={menuItems}
               getSelectedItems={getSelectedItems}
+              renderCategoryLabel={renderCategoryLabel}
+              renderItemLabel={renderItemLabel}
             />
           ))}
         </section>
