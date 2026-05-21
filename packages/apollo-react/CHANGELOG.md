@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v4.27.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.26.2...@uipath/apollo-react@4.27.0) (2026-05-21)
+
+### Features
+
+* **apollo-react:** add case-management trigger node manifest ([3e11cb0](https://github.com/UiPath/apollo-ui/commit/3e11cb0993fe841365bcfb2d93754917d19e660d))
+* **apollo-react:** add manifest-driven CaseTrigger story ([4109cb8](https://github.com/UiPath/apollo-ui/commit/4109cb8f68e4ba1d3e77d4c5ed8b92b58e078565))
+
 ## [@uipath/apollo-react-v4.26.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.26.1...@uipath/apollo-react@4.26.2) (2026-05-20)
 
 ### Bug Fixes
