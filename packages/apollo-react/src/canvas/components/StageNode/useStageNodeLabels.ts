@@ -10,6 +10,7 @@ export interface StageNodeLabels {
   deleteTask: string;
   adhocTasks: string;
   eventDrivenTasks: string;
+  sequentialTasks: string;
   parallel: string;
   untitledStage: string;
   contextMenu: StageContextMenuLabels;
@@ -30,6 +31,7 @@ export function useStageNodeLabels(): StageNodeLabels {
         id: 'stage-node.event-driven-tasks',
         message: 'Event-driven tasks',
       }),
+      sequentialTasks: _({ id: 'stage-node.sequential-tasks', message: 'Sequential tasks' }),
       parallel: _({ id: 'stage-node.parallel', message: 'Parallel' }),
       untitledStage: _({ id: 'stage-node.untitled-stage', message: 'Untitled stage' }),
       contextMenu: {

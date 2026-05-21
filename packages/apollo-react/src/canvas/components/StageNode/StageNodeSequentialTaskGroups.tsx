@@ -23,6 +23,8 @@ import type { NodeMenuItem } from '../NodeContextMenu';
 import { DraggableTask } from './DraggableTask';
 import { useStageTaskDragHandler } from './hooks/useStageTaskDragHandler';
 import {
+  StageAdditionalTasksHeaderSection,
+  StageAdditionalTasksSection,
   StageParallelBracket,
   StageParallelLabel,
   StageTaskGroupContainer,
@@ -180,64 +182,69 @@ export const StageNodeSequentialTaskGroups = ({
     return null;
   }
   return (
-    <DndContext
-      collisionDetection={closestCenter}
-      sensors={sensors}
-      onDragStart={handleDragStart}
-      onDragMove={handleDragMove}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
-    >
-      <SortableContext items={sequentialTaskIds} strategy={verticalListSortingStrategy}>
-        {/* Disable dragging and panning the canvas when dragging a task */}
-        <StageTaskList className="nodrag nopan">
-          {sequentialTaskGroups.map((taskGroup, groupIndex) => {
-            const isParallel = taskGroup.length > 1;
-            return (
-              <Row key={`group-${groupIndex}`} gap={Spacing.SpacingS}>
-                {isParallel && <StageParallelBracket />}
-                <StageTaskGroupContainer isParallel={isParallel}>
-                  {isParallel && (
-                    <StageParallelLabel>
-                      <span className="text-xs">{labels.parallel}</span>
-                    </StageParallelLabel>
-                  )}
-                  {taskGroup.map((task, taskIndex) => {
-                    const taskExecution = execution?.taskStatus?.[task.id];
-                    return (
-                      <DraggableTask
-                        key={task.id}
-                        task={task}
-                        taskExecution={taskExecution}
-                        isSelected={selectedTaskId === task.id}
-                        isParallel={isParallel}
-                        groupIndex={groupIndex}
-                        taskIndex={taskIndex}
-                        onTaskClick={handleTaskClick}
-                        projectedDepth={
-                          task.id === activeDragId && projected ? projected.depth : undefined
-                        }
-                        isDragDisabled={!onTaskReorder || isReadOnly}
-                        isTaskLoading={loadingTaskIds?.has(task.id)}
-                        {...(hasContextMenu &&
-                          !isReadOnly && {
-                            getContextMenuItems: buildContextMenuItems,
-                          })}
-                      />
-                    );
-                  })}
-                </StageTaskGroupContainer>
-              </Row>
-            );
-          })}
-        </StageTaskList>
-      </SortableContext>
-      <StageTaskDragOverlay
-        activeTask={activeSequentialTask?.task}
-        isActiveTaskParallel={isActiveTaskParallel}
-        taskWidthStyle={taskWidthStyle}
-      />
-    </DndContext>
+    <StageAdditionalTasksSection>
+      <StageAdditionalTasksHeaderSection>
+        <span className="text-xs font-bold text-foreground-muted">{labels.sequentialTasks}</span>
+      </StageAdditionalTasksHeaderSection>
+      <DndContext
+        collisionDetection={closestCenter}
+        sensors={sensors}
+        onDragStart={handleDragStart}
+        onDragMove={handleDragMove}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+      >
+        <SortableContext items={sequentialTaskIds} strategy={verticalListSortingStrategy}>
+          {/* Disable dragging and panning the canvas when dragging a task */}
+          <StageTaskList className="nodrag nopan">
+            {sequentialTaskGroups.map((taskGroup, groupIndex) => {
+              const isParallel = taskGroup.length > 1;
+              return (
+                <Row key={`group-${groupIndex}`} gap={Spacing.SpacingS}>
+                  {isParallel && <StageParallelBracket />}
+                  <StageTaskGroupContainer isParallel={isParallel}>
+                    {isParallel && (
+                      <StageParallelLabel>
+                        <span className="text-xs">{labels.parallel}</span>
+                      </StageParallelLabel>
+                    )}
+                    {taskGroup.map((task, taskIndex) => {
+                      const taskExecution = execution?.taskStatus?.[task.id];
+                      return (
+                        <DraggableTask
+                          key={task.id}
+                          task={task}
+                          taskExecution={taskExecution}
+                          isSelected={selectedTaskId === task.id}
+                          isParallel={isParallel}
+                          groupIndex={groupIndex}
+                          taskIndex={taskIndex}
+                          onTaskClick={handleTaskClick}
+                          projectedDepth={
+                            task.id === activeDragId && projected ? projected.depth : undefined
+                          }
+                          isDragDisabled={!onTaskReorder || isReadOnly}
+                          isTaskLoading={loadingTaskIds?.has(task.id)}
+                          {...(hasContextMenu &&
+                            !isReadOnly && {
+                              getContextMenuItems: buildContextMenuItems,
+                            })}
+                        />
+                      );
+                    })}
+                  </StageTaskGroupContainer>
+                </Row>
+              );
+            })}
+          </StageTaskList>
+        </SortableContext>
+        <StageTaskDragOverlay
+          activeTask={activeSequentialTask?.task}
+          isActiveTaskParallel={isActiveTaskParallel}
+          taskWidthStyle={taskWidthStyle}
+        />
+      </DndContext>
+    </StageAdditionalTasksSection>
   );
 };
