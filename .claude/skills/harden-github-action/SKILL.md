@@ -25,7 +25,7 @@ Do **not** use this skill for:
 - **Package manager**: pnpm 11.x
 - **Node version**: 22
 - **Workspaces**: Turborepo monorepo (`packages/`, `web-packages/`, `apps/`)
-- **Dual-publish, single-install**: packages publish to both npm public and GitHub Packages (`@uipath` scope on GHP). CI **installs** only from npm public — no `.npmrc` in repo, no GHP credentials needed at install time. GHP credentials still flow to publish/cleanup steps.
+- **Dual-publish, single-install**: packages publish to both npm public and GitHub Packages (`@uipath` scope on GHP). CI **installs** only from npm public — repo `.npmrc` carries only the GHP publish `_authToken` placeholder (no `@uipath:registry=` install routing). GHP credentials flow only to publish/cleanup steps.
 - **Composite install action**: `.github/actions/install-node-deps/action.yml` — always prefer this over manual setup
 - **Security scanner**: zizmor (via `security-scan.yml`); suppression config at `zizmor.yml`
 - **Workspace quarantine**: `pnpm-workspace.yaml` has `minimumReleaseAge: 20160` (14 days), `blockExoticSubdeps: true`, and a `minimumReleaseAgeExclude` list managed by the weekly `prune-release-age-exemptions.yml` workflow
