@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google";
 import Image from "next/image";
+import { headers } from "next/headers";
 import { Head } from "nextra/components";
 import { getPageMap } from "nextra/page-map";
 import { Footer, Layout, Navbar } from "nextra-theme-docs";
@@ -77,6 +78,10 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
+  const h = await headers();
+  const pathname = h.get("x-pathname") ?? "";
+  const isPreview = pathname.startsWith("/preview/");
+
   return (
     <html
       lang="en"
@@ -92,18 +97,22 @@ export default async function RootLayout({
         <Analytics />
         <SidebarHoverPrefetch />
         <ThemeWrapper>
-          <Layout
-            sidebar={{
-              autoCollapse: false,
-              defaultMenuCollapseLevel: 1,
-            }}
-            navbar={navbar}
-            pageMap={await getPageMap()}
-            docsRepositoryBase="https://github.com/UiPath/apollo-ui/tree/main/apps/apollo-vertex"
-            footer={footer}
-          >
-            {children}
-          </Layout>
+          {isPreview ? (
+            children
+          ) : (
+            <Layout
+              sidebar={{
+                autoCollapse: false,
+                defaultMenuCollapseLevel: 1,
+              }}
+              navbar={navbar}
+              pageMap={await getPageMap()}
+              docsRepositoryBase="https://github.com/UiPath/apollo-ui/tree/main/apps/apollo-vertex"
+              footer={footer}
+            >
+              {children}
+            </Layout>
+          )}
         </ThemeWrapper>
       </body>
     </html>
