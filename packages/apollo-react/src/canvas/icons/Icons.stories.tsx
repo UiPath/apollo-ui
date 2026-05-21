@@ -4,7 +4,7 @@ import { Column, Row } from '../layouts';
 import * as Icons from '.';
 
 export default {
-  title: 'Core/Icons',
+  title: 'Theme/Icons',
   parameters: {
     layout: 'fullscreen',
   },

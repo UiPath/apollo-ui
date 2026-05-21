@@ -28,7 +28,7 @@ import type { BaseCanvasRef } from './BaseCanvas.types';
 // ============================================================================
 
 const meta: Meta<typeof BaseCanvas> = {
-  title: 'Components/BaseCanvas',
+  title: 'Components/Canvas/BaseCanvas',
   decorators: [withCanvasProviders()],
   parameters: { layout: 'fullscreen' },
   argTypes: {

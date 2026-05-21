@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { ExecutionStatusIcon } from './ExecutionStatusIcon';
 
 const meta = {
-  title: 'Components/ExecutionStatusIcon',
+  title: 'Components/Primitives/ExecutionStatusIcon',
   component: ExecutionStatusIcon,
   parameters: {
     layout: 'centered',

@@ -18,7 +18,7 @@ import { StageNodeWrapper } from './StageNode/StageNode.stories.utils';
 import type { StageTaskItem } from './StageNode/StageNode.types';
 
 const meta: Meta = {
-  title: 'Components/Performance',
+  title: 'Components/Canvas/Performance',
   parameters: {
     layout: 'fullscreen',
   },

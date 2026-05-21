@@ -29,7 +29,7 @@ import { LoopNode } from './LoopNode';
 import type { LoopNodeData } from './LoopNode.types';
 
 const meta: Meta = {
-  title: 'Components/LoopNode',
+  title: 'Components/Nodes/LoopNode',
   parameters: { layout: 'fullscreen' },
   decorators: [withCanvasProviders()],
 };

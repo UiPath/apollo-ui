@@ -14,7 +14,7 @@ import { AgentFlow } from '../AgentFlow';
 import { TimelinePlayer } from './TimelinePlayer';
 
 const meta: Meta<typeof TimelinePlayer> = {
-  title: 'Components/TimelinePlayer',
+  title: 'Components/Controls/TimelinePlayer',
   component: TimelinePlayer,
   parameters: {
     layout: 'fullscreen',

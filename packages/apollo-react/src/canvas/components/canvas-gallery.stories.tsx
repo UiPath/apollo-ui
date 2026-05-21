@@ -134,28 +134,28 @@ const components: ComponentInfo[] = [
   {
     name: 'Agent Flow',
     description: 'Agent workflow canvas with resources and connections',
-    storyPath: 'canvas-components-agentflow--design-mode',
+    storyPath: 'templates-canvas-agent-flow--design-mode',
     category: Category.Canvas,
     preview: <MiniCanvas />,
   },
   {
     name: 'Base Canvas',
     description: 'Core React Flow canvas viewport and provider',
-    storyPath: 'canvas-components-basecanvas--default',
+    storyPath: 'components-canvas-basecanvas--default',
     category: Category.Canvas,
     preview: <MiniCanvas />,
   },
   {
     name: 'Coded Agent Flow',
     description: 'Canvas for coded agent process flows',
-    storyPath: 'canvas-components-codedagentflow--simple-flow',
+    storyPath: 'templates-canvas-agent-flow-coded--simple-flow',
     category: Category.Canvas,
     preview: <MiniCanvas />,
   },
   {
     name: 'Hierarchical Canvas',
     description: 'Nested canvas with parent/child viewport navigation',
-    storyPath: 'canvas-components-hierarchicalcanvas--default',
+    storyPath: 'components-canvas-hierarchicalcanvas--default',
     category: Category.Canvas,
     preview: (
       <div className="w-full h-20 rounded border border-border bg-muted/20 relative overflow-hidden">
@@ -172,7 +172,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Base Node',
     description: 'Core reusable node with shapes, icons and execution states',
-    storyPath: 'canvas-components-basenode--default',
+    storyPath: 'components-nodes-basenode--default',
     category: Category.Nodes,
     preview: (
       <div className="flex gap-3 items-center">
@@ -185,7 +185,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Group Node',
     description: 'Container node that holds nested child nodes',
-    storyPath: 'canvas-components-groupnode--default',
+    storyPath: 'components-nodes-groupnode--default',
     category: Category.Nodes,
     preview: (
       <div className="w-full h-20 rounded border-2 border-dashed border-border bg-muted/10 p-2 relative">
@@ -200,7 +200,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Loop Node',
     description: 'Iterating container that repeats inner nodes',
-    storyPath: 'canvas-components-loopnode--default',
+    storyPath: 'components-nodes-loopnode--default',
     category: Category.Nodes,
     preview: (
       <div className="w-full h-20 rounded border-2 border-border bg-card p-2 flex flex-col gap-1">
@@ -217,7 +217,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Stage Node',
     description: 'Stage container with an ordered list of tasks',
-    storyPath: 'canvas-components-stagenode--default',
+    storyPath: 'components-nodes-stagenode--default',
     category: Category.Nodes,
     preview: (
       <div className="w-full rounded border-2 border-border bg-card overflow-hidden">
@@ -238,7 +238,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Sticky Note Node',
     description: 'Freeform annotation note on the canvas',
-    storyPath: 'canvas-components-stickynotenode--default',
+    storyPath: 'components-nodes-stickynotenode--default',
     category: Category.Nodes,
     preview: (
       <div className="w-20 h-16 bg-yellow-100 dark:bg-yellow-900/40 rounded-sm p-2 shadow-sm border border-yellow-300/50 dark:border-yellow-700/50">
@@ -251,7 +251,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Trigger Node',
     description: 'Entry-point node that starts a flow',
-    storyPath: 'canvas-components-triggernode--default',
+    storyPath: 'components-nodes-triggernode--default',
     category: Category.Nodes,
     preview: (
       <div className="flex items-center gap-3">
@@ -270,7 +270,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Add Node Panel',
     description: 'Panel for selecting and inserting new nodes',
-    storyPath: 'canvas-components-addnodepanel--preview-selection',
+    storyPath: 'components-controls-addnodepanel--preview-selection',
     category: Category.Controls,
     preview: (
       <div className="w-full rounded border border-border bg-card p-2 flex flex-col gap-1.5">
@@ -287,7 +287,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Collapse Config',
     description: 'Collapsible configuration sections for node properties',
-    storyPath: 'canvas-components-collapseconfig--default',
+    storyPath: 'components-panels-collapseconfig--default',
     category: Category.Controls,
     preview: (
       <div className="w-full rounded border border-border bg-card overflow-hidden text-xs">
@@ -308,7 +308,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Node Properties Panel',
     description: 'Side panel for editing selected node properties',
-    storyPath: 'canvas-components-nodepropertiespanel--default',
+    storyPath: 'components-panels-nodepropertiespanel--default',
     category: Category.Controls,
     preview: (
       <div className="w-full rounded border border-border bg-card p-2 flex flex-col gap-2 text-xs">
@@ -327,7 +327,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Node Toolbar',
     description: 'Contextual action toolbar shown above selected nodes',
-    storyPath: 'canvas-components-nodetoolbar--default',
+    storyPath: 'components-controls-nodetoolbar--default',
     category: Category.Controls,
     preview: (
       <div className="flex flex-col items-center gap-2">
@@ -343,7 +343,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Toolbox',
     description: 'Element picker popover for adding canvas components',
-    storyPath: 'canvas-components-toolbox--default',
+    storyPath: 'components-controls-toolbox--default',
     category: Category.Controls,
     preview: (
       <div className="w-full rounded border border-border bg-card p-2 flex flex-col gap-1 text-xs">
@@ -364,7 +364,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Toolbox List View',
     description: 'Scrollable list view for toolbox items',
-    storyPath: 'canvas-components-toolbox-listview--empty-state-default',
+    storyPath: 'components-controls-toolbox-listview--empty-state-default',
     category: Category.Controls,
     preview: (
       <div className="w-full rounded border border-border bg-card overflow-hidden text-xs">
@@ -385,7 +385,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Edges',
     description: 'All canvas edge types and connection styles',
-    storyPath: 'canvas-components-edges--all-edge-types',
+    storyPath: 'components-edges--all-edge-types',
     category: Category.Edges,
     preview: (
       <div className="w-full h-16 relative flex items-center px-3">
@@ -407,7 +407,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Sequence Edge',
     description: 'Sequence flow edge connecting ordered nodes',
-    storyPath: 'canvas-components-edges-sequenceedge--default',
+    storyPath: 'components-edges-sequenceedge--default',
     category: Category.Edges,
     preview: (
       <div className="w-full h-16 relative flex items-center px-3">
@@ -432,7 +432,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Button Handles',
     description: 'Button-style connection handles on canvas nodes',
-    storyPath: 'canvas-components-buttonhandles--default',
+    storyPath: 'components-controls-buttonhandles--default',
     category: Category.Utilities,
     preview: (
       <div className="flex items-center gap-3">
@@ -447,7 +447,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Execution Status Icon',
     description: 'Icons representing node execution states',
-    storyPath: 'canvas-components-executionstatusicon--default',
+    storyPath: 'components-primitives-executionstatusicon--default',
     category: Category.Utilities,
     preview: (
       <div className="flex gap-2 flex-wrap">
@@ -462,7 +462,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Node Inspector',
     description: 'Debug overlay showing live node and edge state',
-    storyPath: 'canvas-components-nodeinspector--default',
+    storyPath: 'components-panels-nodeinspector--default',
     category: Category.Utilities,
     preview: (
       <div className="w-full rounded border border-border bg-card p-2 font-mono text-[10px] text-muted-foreground leading-relaxed">
@@ -476,7 +476,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Performance',
     description: 'Canvas rendering performance benchmark story',
-    storyPath: 'canvas-components-performance--stage-workflow',
+    storyPath: 'components-canvas-performance--stage-workflow',
     category: Category.Utilities,
     preview: (
       <div className="w-full h-16 rounded border border-border bg-muted/20 relative overflow-hidden">
@@ -496,7 +496,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Smart Handle',
     description: 'Adaptive handle that snaps to the nearest node edge',
-    storyPath: 'canvas-components-smarthandle--default',
+    storyPath: 'components-controls-smarthandle--default',
     category: Category.Utilities,
     preview: (
       <div className="flex items-center gap-3">
@@ -520,7 +520,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Task Icon',
     description: 'Icons representing different task types',
-    storyPath: 'canvas-components-taskicon--default',
+    storyPath: 'components-primitives-taskicon--default',
     category: Category.Utilities,
     preview: (
       <div className="flex gap-2 flex-wrap">
@@ -534,7 +534,7 @@ const components: ComponentInfo[] = [
   {
     name: 'Timeline Player',
     description: 'Playback control for execution trace replay',
-    storyPath: 'canvas-components-timelineplayer--default',
+    storyPath: 'components-controls-timelineplayer--default',
     category: Category.Utilities,
     preview: (
       <div className="w-full overflow-hidden">
