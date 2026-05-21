@@ -89,6 +89,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     onHandleAction: onHandleActionProp,
     onHandleMouseEnter: onHandleMouseEnterProp,
     onHandleMouseLeave: onHandleMouseLeaveProp,
+    onActionNeeded,
     shouldShowAddButtonFn: shouldShowAddButtonFnProp,
     shouldShowButtonHandleNotchesFn: shouldShowButtonHandleNotchesFnProp,
     toolbarConfig: toolbarConfigProp,
@@ -665,6 +666,23 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         )}
       </BaseContainer>
       {handleElements}
+      {executionStatus === 'ActionNeeded' && (
+        <div
+          className="absolute left-1/2 z-10 -translate-x-1/2"
+          style={{ top: 'calc(var(--node-h) + 8px)' }}
+        >
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onActionNeeded?.(id);
+            }}
+            className="flex items-center whitespace-nowrap rounded-full bg-amber-400 px-3 py-1 text-[11px] font-semibold text-stone-900 shadow-sm transition-colors hover:bg-amber-300"
+          >
+            Take Action
+          </button>
+        </div>
+      )}
     </div>
   );
 

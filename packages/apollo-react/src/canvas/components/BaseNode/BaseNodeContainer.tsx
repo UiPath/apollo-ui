@@ -14,6 +14,7 @@ export const getStatusBorder = (
     case 'Completed':
     case 'add':
       return 'border-success';
+    case 'ActionNeeded':
     case 'Paused':
     case 'Warning':
     case 'WARNING':

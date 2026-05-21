@@ -29,6 +29,7 @@ export const getExecutionStatusBorder = (executionStatus?: string) => {
       return css`
         border-color: var(--canvas-success-icon);
       `;
+    case 'ActionNeeded':
     case 'Paused':
     case 'Warning':
     case 'WARNING': {

@@ -25,6 +25,7 @@ import type { ValidationErrorSeverity } from '../../types/validation';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { NodeInspector } from '../NodeInspector';
+import { CanvasIcon } from '../../utils/icon-registry';
 import type { BaseNodeData } from './BaseNode.types';
 
 // ============================================================================
@@ -51,7 +52,14 @@ const SHAPES = [
   { shape: 'square', nodeType: 'uipath.blank-node' },
   { shape: 'rectangle', nodeType: 'uipath.agent' },
 ] as const;
-const STATUSES = ['NotExecuted', 'InProgress', 'Completed', 'Failed', 'Paused'] as const;
+const STATUSES = [
+  'NotExecuted',
+  'InProgress',
+  'Completed',
+  'Failed',
+  'Paused',
+  'ActionNeeded',
+] as const;
 
 const GRID_CONFIG = {
   startX: 96,
@@ -673,6 +681,15 @@ const executionStateCards = [
     iconClass: 'bg-muted',
     description: 'Node metadata is still loading. Set via data.loading, not executionStatus.',
   },
+  {
+    state: 'ActionNeeded',
+    value: "'ActionNeeded'",
+    borderClass: 'border-amber-400',
+    bgClass: 'bg-amber-400/10',
+    iconClass: 'bg-amber-400',
+    description:
+      'The process is blocked waiting for human input. Shows a hand icon and a "Take Action" pill below the node.',
+  },
 ] as const;
 
 const executionStateRows = [
@@ -706,10 +723,49 @@ const executionStateRows = [
     trigger: 'data.loading: true',
     meaning: 'Node manifest or metadata is still loading',
   },
+  {
+    state: 'ActionNeeded',
+    trigger: "status: 'ActionNeeded'",
+    meaning: 'Process blocked — waiting for human input before continuing',
+  },
 ] as const;
+
+function CollapsibleSection({
+  title,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="border-t border-border">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between py-5 text-left transition-colors hover:text-foreground"
+      >
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">{title}</h2>
+        <CanvasIcon icon={open ? 'chevron-up' : 'chevron-down'} size={16} />
+      </button>
+      {open && <div className="pb-8">{children}</div>}
+    </div>
+  );
+}
 
 function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
   const [expanded, setExpanded] = useState(false);
+  const [anatomyOpen, setAnatomyOpen] = useState(false);
+  const [howToUseOpen, setHowToUseOpen] = useState(false);
+  const allOpen = anatomyOpen && howToUseOpen;
+  const toggleAll = () => {
+    const next = !allOpen;
+    setAnatomyOpen(next);
+    setHowToUseOpen(next);
+  };
 
   return (
     <div className={cn(globalTheme, 'min-h-screen w-full bg-background text-foreground')}>
@@ -739,7 +795,7 @@ function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
           </p>
         </div>
         <div className="flex justify-center">
-          <div className="relative w-[80vw] h-[560px] overflow-hidden rounded-xl border border-border">
+          <div className="relative w-[90vw] h-[560px] overflow-hidden rounded-xl border border-border">
             {!expanded && <ExecutionStatesCanvas />}
             <ExecutionStatesPreviewButton
               isExpanded={false}
@@ -758,7 +814,7 @@ function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
         >
           <div
             className="relative overflow-hidden rounded-xl border border-border"
-            style={{ width: '80vw', height: '80vh' }}
+            style={{ width: '90vw', height: '90vh' }}
             onClick={(e) => e.stopPropagation()}
           >
             <ExecutionStatesCanvas />
@@ -771,96 +827,113 @@ function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
         </div>
       )}
 
-      {/* ── Anatomy + Spec + How to use ── */}
+      {/* ── Collapsible sections ── */}
       <div className="mx-auto max-w-4xl px-8 pb-8">
-        <div className="mb-8 h-px bg-border" />
-
-        {/* State gallery */}
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">Anatomy</h2>
-        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-          Each state communicates a distinct moment in the execution lifecycle. The visual treatment
-          (border color, overlay icon) updates automatically when the provider returns a new state.
-        </p>
-
-        <div className="mb-8 grid grid-cols-3 gap-4">
-          {executionStateCards.map((card) => (
-            <div
-              key={card.state}
-              className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6"
-            >
-              <div className="flex h-24 items-center justify-center">
-                <div
-                  className={cn(
-                    'flex h-16 w-16 items-center justify-center rounded-lg border-2',
-                    card.borderClass,
-                    card.bgClass
-                  )}
-                >
-                  <div className={cn('h-7 w-7 rounded bg-opacity-80', card.iconClass)} />
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-base font-semibold text-foreground">{card.state}</span>
-                  <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-                    {card.value}
-                  </code>
-                </div>
-                <p className="text-sm text-muted-foreground">{card.description}</p>
-              </div>
-            </div>
-          ))}
+        {/* Expand / Collapse all */}
+        <div className="flex justify-end pb-2">
+          <button
+            type="button"
+            onClick={toggleAll}
+            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {allOpen ? 'Collapse all' : 'Expand all'}
+          </button>
         </div>
 
-        {/* Spec table */}
-        <div className="overflow-hidden rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted">
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">State</th>
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
-                  How it is set
-                </th>
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Meaning</th>
-              </tr>
-            </thead>
-            <tbody>
-              {executionStateRows.map((row) => (
-                <tr key={row.state} className="border-b border-border last:border-b-0">
-                  <td className="px-4 py-3 font-medium text-foreground">{row.state}</td>
-                  <td className="px-4 py-3">
-                    <code className="text-xs text-primary">{row.trigger}</code>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{row.meaning}</td>
+        <CollapsibleSection
+          title="Anatomy"
+          open={anatomyOpen}
+          onToggle={() => setAnatomyOpen((o) => !o)}
+        >
+          <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+            Each state communicates a distinct moment in the execution lifecycle. The visual
+            treatment (border color, overlay icon) updates automatically when the provider returns a
+            new state.
+          </p>
+
+          <div className="mb-8 grid grid-cols-3 gap-4">
+            {executionStateCards.map((card) => (
+              <div
+                key={card.state}
+                className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6"
+              >
+                <div className="flex h-24 items-center justify-center">
+                  <div
+                    className={cn(
+                      'flex h-16 w-16 items-center justify-center rounded-lg border-2',
+                      card.borderClass,
+                      card.bgClass
+                    )}
+                  >
+                    <div className={cn('h-7 w-7 rounded bg-opacity-80', card.iconClass)} />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-base font-semibold text-foreground">{card.state}</span>
+                    <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+                      {card.value}
+                    </code>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{card.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Spec table */}
+          <div className="overflow-hidden rounded-lg border border-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted">
+                  <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">State</th>
+                  <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
+                    How it is set
+                  </th>
+                  <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
+                    Meaning
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {executionStateRows.map((row) => (
+                  <tr key={row.state} className="border-b border-border last:border-b-0">
+                    <td className="px-4 py-3 font-medium text-foreground">{row.state}</td>
+                    <td className="px-4 py-3">
+                      <code className="text-xs text-primary">{row.trigger}</code>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{row.meaning}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CollapsibleSection>
 
-        <div className="my-10 h-px bg-border" />
+        <CollapsibleSection
+          title="How to use"
+          open={howToUseOpen}
+          onToggle={() => setHowToUseOpen((o) => !o)}
+        >
+          <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+            Wire up the{' '}
+            <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+              executionState
+            </code>{' '}
+            option on{' '}
+            <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+              withCanvasProviders
+            </code>{' '}
+            to drive state from outside the node. In stories you can also set{' '}
+            <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+              data.executionStatus
+            </code>{' '}
+            directly as a shorthand.
+          </p>
 
-        {/* How to use */}
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">How to use</h2>
-        <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-          Wire up the{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-            executionState
-          </code>{' '}
-          option on{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-            withCanvasProviders
-          </code>{' '}
-          to drive state from outside the node. In stories you can also set{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-            data.executionStatus
-          </code>{' '}
-          directly as a shorthand.
-        </p>
-
-        <div className="flex flex-col gap-4">
-          <pre className="overflow-x-auto rounded-lg border border-border bg-card p-4 text-[13px] leading-relaxed text-foreground">
-            {`// Via executionState provider (production pattern)
+          <div className="flex flex-col gap-4">
+            <pre className="overflow-x-auto rounded-lg border border-border bg-card p-4 text-[13px] leading-relaxed text-foreground">
+              {`// Via executionState provider (production pattern)
 withCanvasProviders({
   executionState: {
     getNodeExecutionState: (nodeId) => {
@@ -872,9 +945,9 @@ withCanvasProviders({
     getEdgeExecutionState: () => undefined,
   },
 })`}
-          </pre>
-          <pre className="overflow-x-auto rounded-lg border border-border bg-card p-4 text-[13px] leading-relaxed text-foreground">
-            {`// Via node data (story / testing shorthand)
+            </pre>
+            <pre className="overflow-x-auto rounded-lg border border-border bg-card p-4 text-[13px] leading-relaxed text-foreground">
+              {`// Via node data (story / testing shorthand)
 createNode({
   id: 'my-node',
   type: 'uipath.blank-node',
@@ -886,8 +959,9 @@ createNode({
     display: { label: 'My Node', shape: 'square' },
   },
 })`}
-          </pre>
-        </div>
+            </pre>
+          </div>
+        </CollapsibleSection>
       </div>
     </div>
   );

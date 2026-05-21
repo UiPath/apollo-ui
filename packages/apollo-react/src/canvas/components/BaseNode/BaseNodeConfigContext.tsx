@@ -24,6 +24,7 @@ export interface BaseNodeOverrideConfig {
   onHandleMouseEnter?: (event: HandleMouseEvent) => void;
   /** Fired when the cursor leaves a source handle's inline add button. */
   onHandleMouseLeave?: (event: HandleMouseEvent) => void;
+  onActionNeeded?: (nodeId: string) => void;
   shouldShowAddButtonFn?: (opts: { showAddButton: boolean; selected: boolean }) => boolean;
   shouldShowButtonHandleNotchesFn?: (opts: {
     isConnecting: boolean;
