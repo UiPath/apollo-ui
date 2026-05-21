@@ -8,7 +8,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Button, Input, Label, Slider, Switch } from '@uipath/apollo-wind';
+import { Button, Input, Label, Slider, Switch, cn } from '@uipath/apollo-wind';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { NodeRegistryProvider } from '../../core';
 import type { CategoryManifest, NodeManifest } from '../../schema';
@@ -243,7 +243,325 @@ function createSizeGrid(): Node<BaseNodeData>[] {
 // Story Components
 // ============================================================================
 
-function DefaultStory() {
+function ShapesCanvas() {
+  const initialNodes = useMemo<Node<BaseNodeData>[]>(
+    () => [
+      createNode({
+        id: 'shape-circle',
+        type: 'uipath.manual-trigger',
+        position: { x: 96, y: 120 },
+        data: {
+          nodeType: 'uipath.manual-trigger',
+          version: '1.0.0',
+          display: { label: 'Circle', subLabel: 'Manual trigger', shape: 'circle' },
+        },
+      }),
+      createNode({
+        id: 'shape-square',
+        type: 'uipath.blank-node',
+        position: { x: 320, y: 120 },
+        data: {
+          nodeType: 'uipath.blank-node',
+          version: '1.0.0',
+          display: { label: 'Square', subLabel: 'Blank node', shape: 'square' },
+        },
+      }),
+      createNode({
+        id: 'shape-rectangle',
+        type: 'uipath.agent',
+        position: { x: 560, y: 120 },
+        data: {
+          nodeType: 'uipath.agent',
+          version: '1.0.0',
+          display: { label: 'Rectangle', subLabel: 'Agent', shape: 'rectangle' },
+        },
+      }),
+    ],
+    []
+  );
+  const { canvasProps } = useCanvasStory({ initialNodes });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+const shapeRows = [
+  {
+    shape: 'circle',
+    value: "'circle'",
+    example: 'uipath.manual-trigger',
+    use: 'Triggers, entry and exit points',
+  },
+  {
+    shape: 'square',
+    value: "'square'",
+    example: 'uipath.blank-node',
+    use: 'Standard actions — the default for most task nodes',
+  },
+  {
+    shape: 'rectangle',
+    value: "'rectangle'",
+    example: 'uipath.agent',
+    use: 'Agents and wide nodes that need more horizontal label space',
+  },
+] as const;
+
+function CanvasPreviewButton({
+  expanded,
+  onExpand,
+  onClose,
+}: {
+  expanded: boolean;
+  onExpand: () => void;
+  onClose: () => void;
+}) {
+  return expanded ? (
+    <button
+      type="button"
+      onClick={onClose}
+      className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-md border border-border bg-background/80 px-2.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-sm transition-colors hover:bg-surface-hover hover:text-foreground"
+    >
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path
+          d="M7.5 4.5l-6 6M10.5 1.5l-6 6M1.5 1.5l4 4M10.5 10.5l-4-4"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      Close
+    </button>
+  ) : (
+    <button
+      type="button"
+      onClick={onExpand}
+      className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-md border border-border bg-background/80 px-2.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-sm transition-colors hover:bg-surface-hover hover:text-foreground"
+    >
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path
+          d="M7.5 1.5h3v3M4.5 10.5h-3v-3M10.5 4.5V1.5H7.5M1.5 7.5v3h3"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      Expand
+    </button>
+  );
+}
+
+function ShapesPage({ globalTheme }: { globalTheme: string }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className={cn(globalTheme, 'min-h-screen w-full bg-background text-foreground')}>
+      {/* ── Header ── */}
+      <div className="mx-auto max-w-4xl px-8 pt-8">
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">Shapes</h2>
+        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+          BaseNode supports three shapes: <strong className="text-foreground">circle</strong>,{' '}
+          <strong className="text-foreground">square</strong>, and{' '}
+          <strong className="text-foreground">rectangle</strong>. Shape is set via{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">display.shape</code>{' '}
+          in the node data and controls both the rendered outline and the icon crop. Use the shape
+          that best communicates the node's role to the user.
+        </p>
+        <div className="mb-8 h-px bg-border" />
+      </div>
+
+      {/* ── Preview ── */}
+      <div className="pb-8">
+        <div className="mx-auto max-w-4xl px-8 mb-4">
+          <h2 className="mb-1 text-2xl font-bold tracking-tight text-foreground">Preview</h2>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            The three shapes rendered side by side in their default (NotExecuted) state.
+          </p>
+        </div>
+        <div className="flex justify-center">
+          <div className="relative w-[90vw] h-[560px] overflow-hidden rounded-xl border border-border">
+            {!expanded && <ShapesCanvas />}
+            <CanvasPreviewButton
+              expanded={false}
+              onExpand={() => setExpanded(true)}
+              onClose={() => setExpanded(false)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Expanded overlay — single canvas instance, inline unmounted while open */}
+      {expanded && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={() => setExpanded(false)}
+        >
+          <div
+            className="relative overflow-hidden rounded-xl border border-border"
+            style={{ width: '90vw', height: '90vh' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ShapesCanvas />
+            <CanvasPreviewButton
+              expanded={true}
+              onExpand={() => setExpanded(true)}
+              onClose={() => setExpanded(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ── Anatomy + How to use ── */}
+      <div className="mx-auto max-w-4xl px-8 pb-8">
+        <div className="mb-8 h-px bg-border" />
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">Anatomy</h2>
+        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+          Each shape communicates a distinct role in the flow. Choose the shape that best maps to
+          the node's function — not just its appearance.
+        </p>
+
+        {/* Shape gallery */}
+        <div className="mb-8 grid grid-cols-3 gap-4">
+          {/* Circle */}
+          <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6">
+            <div className="flex h-24 items-center justify-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-border bg-surface-raised">
+                <div className="h-7 w-7 rounded-full bg-muted" />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-base font-semibold text-foreground">Circle</span>
+                <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+                  'circle'
+                </code>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Triggers and entry/exit points. Signals a boundary event — where a flow begins or
+                ends.
+              </p>
+            </div>
+          </div>
+
+          {/* Square */}
+          <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6">
+            <div className="flex h-24 items-center justify-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-lg border-2 border-border bg-surface-raised">
+                <div className="h-7 w-7 rounded bg-muted" />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-base font-semibold text-foreground">Square</span>
+                <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+                  'square'
+                </code>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Standard actions — the default for most task nodes. Use when no other shape more
+                specifically communicates the node's role.
+              </p>
+            </div>
+          </div>
+
+          {/* Rectangle */}
+          <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6">
+            <div className="flex h-24 items-center justify-center">
+              <div className="flex h-12 w-40 items-center gap-3 rounded-lg border-2 border-border bg-surface-raised px-3">
+                <div className="h-6 w-6 flex-shrink-0 rounded bg-muted" />
+                <div className="flex flex-col gap-1.5">
+                  <div className="h-1.5 w-16 rounded-full bg-muted" />
+                  <div className="h-1.5 w-10 rounded-full bg-muted opacity-50" />
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-base font-semibold text-foreground">Rectangle</span>
+                <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+                  'rectangle'
+                </code>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Agents and complex nodes that need more horizontal space for labels or internal
+                layout.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Spec table */}
+        <div className="overflow-hidden rounded-lg border border-border">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted">
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Shape</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
+                  <code className="text-xs">display.shape</code>
+                </th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
+                  Example node type
+                </th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
+                  Typical use
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {shapeRows.map((row) => (
+                <tr key={row.shape} className="border-b border-border last:border-b-0">
+                  <td className="px-4 py-3 font-medium text-foreground">{row.shape}</td>
+                  <td className="px-4 py-3">
+                    <code className="text-xs text-primary">{row.value}</code>
+                  </td>
+                  <td className="px-4 py-3">
+                    <code className="text-xs text-muted-foreground">{row.example}</code>
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">{row.use}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="my-10 h-px bg-border" />
+
+        {/* ── How to use ── */}
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">How to use</h2>
+        <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+          Set{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">display.shape</code>{' '}
+          when creating node data. If omitted, the registry manifest's{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">display.shape</code>{' '}
+          is used as the fallback.
+        </p>
+        <pre className="overflow-x-auto rounded-lg border border-border bg-card p-4 text-[13px] leading-relaxed text-foreground">
+          {`createNode({
+  id: 'my-node',
+  type: 'uipath.blank-node',
+  position: { x: 100, y: 100 },
+  data: {
+    nodeType: 'uipath.blank-node',
+    version: '1.0.0',
+    display: {
+      label: 'My Node',
+      shape: 'square', // 'circle' | 'square' | 'rectangle'
+    },
+  },
+})`}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
+function ExecutionStatesStory() {
   const initialNodes = useMemo(() => createShapeStatusGrid(), []);
   const { canvasProps } = useCanvasStory({ initialNodes });
 
@@ -253,14 +571,14 @@ function DefaultStory() {
         <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
       <StoryInfoPanel
-        title="BaseNode Shapes & States"
-        description="Grid showing circle, square, and rectangle shapes with execution states."
+        title="Execution States"
+        description="All execution states across every shape: NotExecuted, InProgress, Completed, Failed, Paused, Loading, and icon fallbacks."
       />
     </BaseCanvas>
   );
 }
 
-function CustomizedSizesStory() {
+function SizesStory() {
   const initialNodes = useMemo(() => createSizeGrid(), []);
   const { canvasProps } = useCanvasStory({ initialNodes });
 
@@ -271,8 +589,8 @@ function CustomizedSizesStory() {
         <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
       <StoryInfoPanel
-        title="Customized Sizes"
-        description="Nodes with various dimensions aligned to 16px grid."
+        title="Sizes"
+        description="Nodes at various dimensions aligned to the 16px grid — squares and circles from 48–128px, rectangles from 128×48 to 320×112."
       />
     </BaseCanvas>
   );
@@ -514,7 +832,7 @@ function DynamicHandlesStory() {
         <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
       <StoryInfoPanel
-        title="Dynamic Handles"
+        title="Handles"
         description="Demonstrates repeat expressions (dynamic handle count) and templated handle labels."
       >
         <Column gap={20}>
@@ -597,18 +915,23 @@ function DynamicHandlesStory() {
 // Exported Stories
 // ============================================================================
 
-export const Default: Story = {
-  name: 'Default',
-  render: () => <DefaultStory />,
+export const Shapes: Story = {
+  name: 'Shapes',
+  render: (_, { globals }) => <ShapesPage globalTheme={globals.theme || 'future-dark'} />,
 };
 
-export const CustomizedSizes: Story = {
-  name: 'Customized sizes',
-  render: () => <CustomizedSizesStory />,
+export const ExecutionStates: Story = {
+  name: 'Execution States',
+  render: () => <ExecutionStatesStory />,
 };
 
-export const DynamicHandles: Story = {
-  name: 'Dynamic Handles',
+export const Sizes: Story = {
+  name: 'Sizes',
+  render: () => <SizesStory />,
+};
+
+export const Handles: Story = {
+  name: 'Handles',
   // Story-level decorator wraps innermost, shadowing the registry installed by
   // the meta-level `withCanvasProviders()`. This lets us register the
   // story-only `uipath.control-switch` / `uipath.decision` manifests that
@@ -1033,7 +1356,7 @@ function CanvasLabelStory() {
         <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
       <StoryInfoPanel
-        title="canvasLabel resolution"
+        title="Label Resolution"
         description={
           'Three instances of the same canvas, exercising the precedence ' +
           'instance.canvasLabel > instance.label > manifest.canvasLabel > ' +
@@ -1049,8 +1372,8 @@ function CanvasLabelStory() {
   );
 }
 
-export const CanvasLabel: Story = {
-  name: 'canvasLabel resolution',
+export const LabelResolution: Story = {
+  name: 'Label Resolution',
   decorators: [
     (Story) => (
       <NodeRegistryProvider manifest={canvasLabelManifest}>
