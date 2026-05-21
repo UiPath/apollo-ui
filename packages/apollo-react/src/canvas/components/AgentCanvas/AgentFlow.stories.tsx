@@ -18,7 +18,7 @@ import {
 import { AgentFlow } from './AgentFlow';
 
 const meta: Meta<typeof AgentFlow> = {
-  title: 'Components/AgentFlow',
+  title: 'Templates/Canvas Agent Flow',
   component: AgentFlow,
   decorators: [
     (Story) => (

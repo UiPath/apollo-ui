@@ -86,7 +86,7 @@ const DefaultCanvasDecorator = ({
 type StageNodeStoryArgs = StageNodeProps & { locale?: SupportedLocale };
 
 const meta: Meta<StageNodeStoryArgs> = {
-  title: 'Components/StageNode',
+  title: 'Components/Nodes/StageNode',
   component: StageNode,
   parameters: {
     layout: 'fullscreen',

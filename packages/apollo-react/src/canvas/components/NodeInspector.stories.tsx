@@ -12,7 +12,7 @@ import type { BaseNodeData } from './BaseNode/BaseNode.types';
 import { NodeInspector } from './NodeInspector';
 
 const meta: Meta = {
-  title: 'Components/NodeInspector',
+  title: 'Components/Panels/NodeInspector',
   component: NodeInspector,
   decorators: [withCanvasProviders()],
   parameters: {

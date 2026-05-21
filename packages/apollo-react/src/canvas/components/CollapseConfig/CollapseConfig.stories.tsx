@@ -61,7 +61,7 @@ const collapseConfigManifest = {
 };
 
 const meta: Meta = {
-  title: 'Components/CollapseConfig',
+  title: 'Components/Panels/CollapseConfig',
   parameters: { layout: 'fullscreen' },
   decorators: [
     (Story) => (

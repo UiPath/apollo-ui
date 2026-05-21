@@ -32,7 +32,7 @@ interface FlowStoryArgs {
 }
 
 const meta: Meta<FlowStoryArgs> = {
-  title: 'Flow',
+  title: 'Templates/Canvas Blank',
   parameters: {
     layout: 'fullscreen',
   },

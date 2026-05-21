@@ -3,7 +3,7 @@ import { HierarchicalCanvas } from './HierarchicalCanvas';
 import { HierarchicalCanvasWithControls } from './HierarchicalCanvasWithControls';
 
 const meta: Meta<typeof HierarchicalCanvas> = {
-  title: 'Components/HierarchicalCanvas',
+  title: 'Components/Canvas/HierarchicalCanvas',
   component: HierarchicalCanvas,
   parameters: {
     layout: 'fullscreen',

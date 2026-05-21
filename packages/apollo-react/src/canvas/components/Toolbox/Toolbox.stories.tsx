@@ -12,7 +12,7 @@ import type { ToolboxQuickAction } from './QuickActionsRow';
 import { Toolbox } from './Toolbox';
 
 const meta: Meta<typeof Toolbox> = {
-  title: 'Components/Toolbox',
+  title: 'Components/Controls/Toolbox',
   component: Toolbox,
   parameters: {
     layout: 'centered',

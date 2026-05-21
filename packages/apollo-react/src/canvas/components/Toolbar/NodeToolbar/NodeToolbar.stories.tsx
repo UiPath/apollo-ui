@@ -103,7 +103,7 @@ const customToolbarManifest: NodeManifest = {
 // ============================================================================
 
 const meta: Meta = {
-  title: 'Components/NodeToolbar',
+  title: 'Components/Controls/NodeToolbar',
   parameters: { layout: 'fullscreen' },
   decorators: [
     (Story) => {

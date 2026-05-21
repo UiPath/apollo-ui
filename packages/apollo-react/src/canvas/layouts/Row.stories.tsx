@@ -24,7 +24,7 @@ const Box = ({
 );
 
 const meta: Meta<typeof Row> = {
-  title: 'Core/Layouts/Row',
+  title: 'Components/Layout/Row',
   component: Row,
   parameters: {
     layout: 'fullscreen',

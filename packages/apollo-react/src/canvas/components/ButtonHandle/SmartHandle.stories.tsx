@@ -29,7 +29,7 @@ import {
 // ============================================================================
 
 const meta: Meta<typeof SmartHandle> = {
-  title: 'Components/SmartHandle',
+  title: 'Components/Controls/SmartHandle',
   component: SmartHandle,
   parameters: {
     layout: 'fullscreen',

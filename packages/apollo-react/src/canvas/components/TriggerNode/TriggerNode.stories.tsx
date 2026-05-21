@@ -199,7 +199,7 @@ const TriggerNodeStory = () => {
 };
 
 const meta = {
-  title: 'Components/TriggerNode',
+  title: 'Components/Nodes/TriggerNode',
   component: BaseCanvas,
   decorators: [
     (Story: any) => {

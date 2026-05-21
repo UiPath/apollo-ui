@@ -32,7 +32,7 @@ import { type ButtonHandleConfig, ButtonHandles, type HandleActionEvent } from '
 // ============================================================================
 
 const meta: Meta<typeof ButtonHandles> = {
-  title: 'Components/ButtonHandles',
+  title: 'Components/Controls/ButtonHandles',
   component: ButtonHandles,
   parameters: {
     layout: 'fullscreen',

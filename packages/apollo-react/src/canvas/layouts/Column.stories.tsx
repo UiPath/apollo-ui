@@ -24,7 +24,7 @@ const Box = ({
 );
 
 const meta: Meta<typeof Column> = {
-  title: 'Core/Layouts/Column',
+  title: 'Components/Layout/Column',
   component: Column,
   parameters: {
     layout: 'fullscreen',
