@@ -561,7 +561,11 @@ function ShapesPage({ globalTheme }: { globalTheme: string }) {
   );
 }
 
-function ExecutionStatesStory() {
+// ============================================================================
+// Execution States Page
+// ============================================================================
+
+function ExecutionStatesCanvas() {
   const initialNodes = useMemo(() => createShapeStatusGrid(), []);
   const { canvasProps } = useCanvasStory({ initialNodes });
 
@@ -570,11 +574,322 @@ function ExecutionStatesStory() {
       <Panel position="bottom-right">
         <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
-      <StoryInfoPanel
-        title="Execution States"
-        description="All execution states across every shape: NotExecuted, InProgress, Completed, Failed, Paused, Loading, and icon fallbacks."
-      />
     </BaseCanvas>
+  );
+}
+
+function ExecutionStatesPreviewButton({
+  isExpanded,
+  onExpand,
+  onClose,
+}: {
+  isExpanded: boolean;
+  onExpand: () => void;
+  onClose: () => void;
+}) {
+  return isExpanded ? (
+    <button
+      type="button"
+      onClick={onClose}
+      className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-md border border-border bg-background/80 px-2.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-sm transition-colors hover:bg-surface-hover hover:text-foreground"
+    >
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path
+          d="M7.5 4.5l-6 6M10.5 1.5l-6 6M1.5 1.5l4 4M10.5 10.5l-4-4"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      Close
+    </button>
+  ) : (
+    <button
+      type="button"
+      onClick={onExpand}
+      className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-md border border-border bg-background/80 px-2.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-sm transition-colors hover:bg-surface-hover hover:text-foreground"
+    >
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path
+          d="M7.5 1.5h3v3M4.5 10.5h-3v-3M10.5 4.5V1.5H7.5M1.5 7.5v3h3"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      Expand
+    </button>
+  );
+}
+
+const executionStateCards = [
+  {
+    state: 'NotExecuted',
+    value: "'NotExecuted'",
+    borderClass: 'border-border',
+    bgClass: 'bg-surface-raised',
+    iconClass: 'bg-muted',
+    description: 'Default state. The node has not yet been reached in the current run.',
+  },
+  {
+    state: 'InProgress',
+    value: "'InProgress'",
+    borderClass: 'border-sky-400',
+    bgClass: 'bg-sky-400/10',
+    iconClass: 'bg-sky-400',
+    description: 'The node is actively being processed. Renders a progress indicator on the node.',
+  },
+  {
+    state: 'Completed',
+    value: "'Completed'",
+    borderClass: 'border-emerald-500',
+    bgClass: 'bg-emerald-500/10',
+    iconClass: 'bg-emerald-500',
+    description: 'The node finished executing successfully.',
+  },
+  {
+    state: 'Failed',
+    value: "'Failed'",
+    borderClass: 'border-red-500',
+    bgClass: 'bg-red-500/10',
+    iconClass: 'bg-red-500',
+    description: 'The node encountered an error during execution.',
+  },
+  {
+    state: 'Paused',
+    value: "'Paused'",
+    borderClass: 'border-amber-400',
+    bgClass: 'bg-amber-400/10',
+    iconClass: 'bg-amber-400',
+    description: 'Execution is paused at this node, typically at a breakpoint.',
+  },
+  {
+    state: 'Loading',
+    value: 'data.loading: true',
+    borderClass: 'border-border',
+    bgClass: 'bg-muted/40',
+    iconClass: 'bg-muted',
+    description: 'Node metadata is still loading. Set via data.loading, not executionStatus.',
+  },
+] as const;
+
+const executionStateRows = [
+  {
+    state: 'NotExecuted',
+    trigger: 'No state returned',
+    meaning: 'Node has not been reached in the current run',
+  },
+  {
+    state: 'InProgress',
+    trigger: "status: 'InProgress'",
+    meaning: 'Node is actively being processed',
+  },
+  {
+    state: 'Completed',
+    trigger: "status: 'Completed'",
+    meaning: 'Node finished executing successfully',
+  },
+  {
+    state: 'Failed',
+    trigger: "status: 'Failed'",
+    meaning: 'Node encountered an error during execution',
+  },
+  {
+    state: 'Paused',
+    trigger: "status: 'Paused'",
+    meaning: 'Execution paused at this node (e.g. breakpoint)',
+  },
+  {
+    state: 'Loading',
+    trigger: 'data.loading: true',
+    meaning: 'Node manifest or metadata is still loading',
+  },
+] as const;
+
+function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className={cn(globalTheme, 'min-h-screen w-full bg-background text-foreground')}>
+      {/* ── Header ── */}
+      <div className="mx-auto max-w-4xl px-8 pt-8">
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">Execution States</h2>
+        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+          Execution states reflect a node's runtime status — where it is in the current run. They
+          are applied externally via the{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+            executionState
+          </code>{' '}
+          provider, not stored in the node's own data. When no state is provided a node renders in
+          its default{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">NotExecuted</code>{' '}
+          appearance.
+        </p>
+        <div className="mb-8 h-px bg-border" />
+      </div>
+
+      {/* ── Preview — 90vw centered ── */}
+      <div className="pb-8">
+        <div className="mx-auto max-w-4xl px-8 mb-4">
+          <h2 className="mb-1 text-2xl font-bold tracking-tight text-foreground">Preview</h2>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            All execution states across every shape — rows are states, columns are shapes.
+          </p>
+        </div>
+        <div className="flex justify-center">
+          <div className="relative w-[80vw] h-[560px] overflow-hidden rounded-xl border border-border">
+            {!expanded && <ExecutionStatesCanvas />}
+            <ExecutionStatesPreviewButton
+              isExpanded={false}
+              onExpand={() => setExpanded(true)}
+              onClose={() => setExpanded(false)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Expanded overlay */}
+      {expanded && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={() => setExpanded(false)}
+        >
+          <div
+            className="relative overflow-hidden rounded-xl border border-border"
+            style={{ width: '80vw', height: '80vh' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ExecutionStatesCanvas />
+            <ExecutionStatesPreviewButton
+              isExpanded={true}
+              onExpand={() => setExpanded(true)}
+              onClose={() => setExpanded(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ── Anatomy + Spec + How to use ── */}
+      <div className="mx-auto max-w-4xl px-8 pb-8">
+        <div className="mb-8 h-px bg-border" />
+
+        {/* State gallery */}
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">Anatomy</h2>
+        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+          Each state communicates a distinct moment in the execution lifecycle. The visual treatment
+          (border color, overlay icon) updates automatically when the provider returns a new state.
+        </p>
+
+        <div className="mb-8 grid grid-cols-3 gap-4">
+          {executionStateCards.map((card) => (
+            <div
+              key={card.state}
+              className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6"
+            >
+              <div className="flex h-24 items-center justify-center">
+                <div
+                  className={cn(
+                    'flex h-16 w-16 items-center justify-center rounded-lg border-2',
+                    card.borderClass,
+                    card.bgClass
+                  )}
+                >
+                  <div className={cn('h-7 w-7 rounded bg-opacity-80', card.iconClass)} />
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-base font-semibold text-foreground">{card.state}</span>
+                  <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+                    {card.value}
+                  </code>
+                </div>
+                <p className="text-sm text-muted-foreground">{card.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Spec table */}
+        <div className="overflow-hidden rounded-lg border border-border">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted">
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">State</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
+                  How it is set
+                </th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Meaning</th>
+              </tr>
+            </thead>
+            <tbody>
+              {executionStateRows.map((row) => (
+                <tr key={row.state} className="border-b border-border last:border-b-0">
+                  <td className="px-4 py-3 font-medium text-foreground">{row.state}</td>
+                  <td className="px-4 py-3">
+                    <code className="text-xs text-primary">{row.trigger}</code>
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">{row.meaning}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="my-10 h-px bg-border" />
+
+        {/* How to use */}
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">How to use</h2>
+        <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+          Wire up the{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+            executionState
+          </code>{' '}
+          option on{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+            withCanvasProviders
+          </code>{' '}
+          to drive state from outside the node. In stories you can also set{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+            data.executionStatus
+          </code>{' '}
+          directly as a shorthand.
+        </p>
+
+        <div className="flex flex-col gap-4">
+          <pre className="overflow-x-auto rounded-lg border border-border bg-card p-4 text-[13px] leading-relaxed text-foreground">
+            {`// Via executionState provider (production pattern)
+withCanvasProviders({
+  executionState: {
+    getNodeExecutionState: (nodeId) => {
+      // Return state for each node from your runtime source
+      return nodeId === 'my-node'
+        ? { status: 'InProgress' }
+        : { status: 'NotExecuted' };
+    },
+    getEdgeExecutionState: () => undefined,
+  },
+})`}
+          </pre>
+          <pre className="overflow-x-auto rounded-lg border border-border bg-card p-4 text-[13px] leading-relaxed text-foreground">
+            {`// Via node data (story / testing shorthand)
+createNode({
+  id: 'my-node',
+  type: 'uipath.blank-node',
+  position: { x: 100, y: 100 },
+  data: {
+    nodeType: 'uipath.blank-node',
+    version: '1.0.0',
+    executionStatus: 'Completed', // 'NotExecuted' | 'InProgress' | 'Completed' | 'Failed' | 'Paused'
+    display: { label: 'My Node', shape: 'square' },
+  },
+})`}
+          </pre>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -922,7 +1237,7 @@ export const Shapes: Story = {
 
 export const ExecutionStates: Story = {
   name: 'Execution States',
-  render: () => <ExecutionStatesStory />,
+  render: (_, { globals }) => <ExecutionStatesPage globalTheme={globals.theme || 'future-dark'} />,
 };
 
 export const Sizes: Story = {
