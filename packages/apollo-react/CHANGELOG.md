@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.28.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.27.0...@uipath/apollo-react@4.28.0) (2026-05-21)
+
+### Features
+
+* **apollo-react:** add Sequential header to StageNode tasks section ([503c4ac](https://github.com/UiPath/apollo-ui/commit/503c4ac2d111eb4bdb93b563816fc7a5dbaf379c))
+
 ## [@uipath/apollo-react-v4.27.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.26.2...@uipath/apollo-react@4.27.0) (2026-05-21)
 
 ### Features
