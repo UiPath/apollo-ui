@@ -68,10 +68,11 @@ export interface ContainerSizeChange {
   previousSize: NodeDimensions;
   nextSize: NodeDimensions;
   /**
-   * Canvas-space delta applied to the container's own `position`. Non-zero when
-   * leading-edge growth shifted the container's top-left outward so children
-   * stay put in canvas. Consumers reconstructing pre-shift rects must add
-   * `positionDelta` back to `position`.
+   * Signed canvas-space delta `newPosition - oldPosition` applied to the
+   * container's own `position`. Non-zero when leading-edge growth shifted
+   * the container's top-left outward so children stay put in canvas.
+   * Consumers reconstructing the pre-shift rect compute it as
+   * `oldPosition = currentPosition - positionDelta`.
    */
   positionDelta?: { x: number; y: number };
 }
@@ -386,21 +387,12 @@ export function ensureContainersFitChildren(
     getNodeDimensions: resolveNodeDimensions = getNodeDimensions,
     ignoredNodeTypes = [],
     includeAncestors = true,
-    includePreviewNode = false,
   }: {
     containerIds?: Iterable<string>;
     getContainerFitGeometry?: (containerNode: Node) => ContainerFitGeometry | null | undefined;
     getNodeDimensions?: (node: Node) => NodeDimensions;
     ignoredNodeTypes?: string[];
     includeAncestors?: boolean;
-    /**
-     * Include `PREVIEW_NODE_ID` when computing the container's required size
-     * and `leadingShift`. Defaults to `false` because the preview is normally
-     * transient and shouldn't grow the container. The Add-Node-preview flow
-     * passes `true` so a preview placed above/below the source still triggers
-     * the container to grow and shift siblings.
-     */
-    includePreviewNode?: boolean;
   } = {}
 ): EnsureContainersFitChildrenResult {
   let nextNodes = nodes;
@@ -450,11 +442,9 @@ export function ensureContainersFitChildren(
 
     for (const childNode of nextNodes) {
       // Transient, hidden, and ignored children should not force a persisted
-      // container size — unless the caller opts in via `includePreviewNode`
-      // (used by the Add-Node-preview flow to grow the container while the
-      // preview is on screen).
+      // container size.
       if (
-        (childNode.id === PREVIEW_NODE_ID && !includePreviewNode) ||
+        childNode.id === PREVIEW_NODE_ID ||
         childNode.hidden ||
         childNode.parentId !== containerId ||
         ignoredTypes.has(childNode.type ?? '')
@@ -466,18 +456,11 @@ export function ensureContainersFitChildren(
       childrenToFit.push({ node: childNode, size: childSize });
       childIdsToShift.add(childNode.id);
 
-      // In preview mode, only the preview's own bbox drives growth — existing
-      // children aren't re-checked, so the container only expands if the
-      // preview itself lands past the safe area. Everyone still gets shifted
-      // by `leadingShift` below to keep canvas-space positions stable.
-      const driveLeadingShift = includePreviewNode ? childNode.id === PREVIEW_NODE_ID : true;
-      if (driveLeadingShift) {
-        if (padding.left !== undefined) {
-          leadingShiftX = Math.max(leadingShiftX, padding.left - childNode.position.x);
-        }
-        if (padding.top !== undefined) {
-          leadingShiftY = Math.max(leadingShiftY, padding.top - childNode.position.y);
-        }
+      if (padding.left !== undefined) {
+        leadingShiftX = Math.max(leadingShiftX, padding.left - childNode.position.x);
+      }
+      if (padding.top !== undefined) {
+        leadingShiftY = Math.max(leadingShiftY, padding.top - childNode.position.y);
       }
     }
 
