@@ -225,7 +225,12 @@ export function getContainerSafeArea(
   };
 }
 
-/** Returns the default fit rules for loop/container nodes. */
+/**
+ * Default fit rules for loop/container nodes. `minWidth`/`minHeight` are the
+ * intrinsic default footprint (what a fresh empty container renders at), so
+ * auto-fit and tidy don't shrink past the empty-state size. The absolute
+ * resize floor (`DEFAULT_CONTAINER_MIN_*`) is enforced by `getContainerResizeMinimums`.
+ */
 export function getContainerFitGeometry(): ContainerFitGeometry {
   const padding = getContainerSafeArea({
     width: DEFAULT_CONTAINER_WIDTH,
@@ -233,8 +238,8 @@ export function getContainerFitGeometry(): ContainerFitGeometry {
   }).padding!;
 
   return {
-    minWidth: DEFAULT_CONTAINER_MIN_WIDTH,
-    minHeight: DEFAULT_CONTAINER_MIN_HEIGHT,
+    minWidth: DEFAULT_CONTAINER_WIDTH,
+    minHeight: DEFAULT_CONTAINER_HEIGHT,
     padding,
   };
 }
