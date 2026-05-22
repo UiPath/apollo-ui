@@ -1,3 +1,15 @@
+## [@uipath/apollo-react-v4.29.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.28.0...@uipath/apollo-react@4.29.0) (2026-05-22)
+
+### Features
+
+* **apollo-react:** snap loop to grid ([5a0b179](https://github.com/UiPath/apollo-ui/commit/5a0b1795f4aca08abec666fcd8d2ff1604853914))
+
+### Bug Fixes
+
+* **apollo-react:** add-node placement parity for containers ([eba3932](https://github.com/UiPath/apollo-ui/commit/eba39325ac388c9ba046308d99c3355f8967e0f2))
+* **apollo-react:** address PR feedback on container fit ([ba42dd3](https://github.com/UiPath/apollo-ui/commit/ba42dd3935023f8e5dfa95d26ce8e04f0a5d0bba))
+* **apollo-react:** prevent preview shifting container ([dcef1ec](https://github.com/UiPath/apollo-ui/commit/dcef1ec0a61540c2370403aa605d90d4c0406a72))
+
 ## [@uipath/apollo-react-v4.28.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.27.0...@uipath/apollo-react@4.28.0) (2026-05-21)
 
 ### Features
