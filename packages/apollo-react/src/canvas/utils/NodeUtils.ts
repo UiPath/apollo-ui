@@ -57,15 +57,21 @@ export function getNonOverlappingPositionForDirection(
   ignoredNodeTypes: string[] = [],
   overflowDirection: { x: 'left' | 'right'; y: 'up' | 'down' } = { x: 'right', y: 'down' }
 ): XYPosition {
-  const isOverlapping = nodes.some(
-    (node) =>
-      node.id !== PREVIEW_NODE_ID &&
-      !ignoredNodeTypes.includes(node.type ?? '') &&
+  const isOverlapping = nodes.some((node) => {
+    if (node.id === PREVIEW_NODE_ID || ignoredNodeTypes.includes(node.type ?? '')) return false;
+    // Fall back to width/height and DEFAULT_NODE_SIZE when `measured` isn't
+    // populated yet — React Flow measures asynchronously, so a node committed
+    // by the previous Add Node click can still have `measured` undefined when
+    // the next click runs overlap detection.
+    const nodeWidth = node.measured?.width ?? node.width ?? DEFAULT_NODE_SIZE;
+    const nodeHeight = node.measured?.height ?? node.height ?? DEFAULT_NODE_SIZE;
+    return (
       node.position.x < newNodePosition.x + newNodeStyle.width &&
-      node.position.x + (node.measured?.width ?? 0) > newNodePosition.x &&
+      node.position.x + nodeWidth > newNodePosition.x &&
       node.position.y < newNodePosition.y + newNodeStyle.height &&
-      node.position.y + (node.measured?.height ?? 0) > newNodePosition.y
-  );
+      node.position.y + nodeHeight > newNodePosition.y
+    );
+  });
 
   if (isOverlapping) {
     // Shift toward the closest perpendicular edge of the source node.
