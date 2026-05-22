@@ -67,6 +67,13 @@ export interface ContainerSizeChange {
   containerId: string;
   previousSize: NodeDimensions;
   nextSize: NodeDimensions;
+  /**
+   * Canvas-space delta applied to the container's own `position`. Non-zero when
+   * leading-edge growth shifted the container's top-left outward so children
+   * stay put in canvas. Consumers reconstructing pre-shift rects must add
+   * `positionDelta` back to `position`.
+   */
+  positionDelta?: { x: number; y: number };
 }
 
 /** Side-specific minimum sizes that prevent manual container resizing from clipping children. */
@@ -379,12 +386,21 @@ export function ensureContainersFitChildren(
     getNodeDimensions: resolveNodeDimensions = getNodeDimensions,
     ignoredNodeTypes = [],
     includeAncestors = true,
+    includePreviewNode = false,
   }: {
     containerIds?: Iterable<string>;
     getContainerFitGeometry?: (containerNode: Node) => ContainerFitGeometry | null | undefined;
     getNodeDimensions?: (node: Node) => NodeDimensions;
     ignoredNodeTypes?: string[];
     includeAncestors?: boolean;
+    /**
+     * Include `PREVIEW_NODE_ID` when computing the container's required size
+     * and `leadingShift`. Defaults to `false` because the preview is normally
+     * transient and shouldn't grow the container. The Add-Node-preview flow
+     * passes `true` so a preview placed above/below the source still triggers
+     * the container to grow and shift siblings.
+     */
+    includePreviewNode?: boolean;
   } = {}
 ): EnsureContainersFitChildrenResult {
   let nextNodes = nodes;
@@ -434,9 +450,11 @@ export function ensureContainersFitChildren(
 
     for (const childNode of nextNodes) {
       // Transient, hidden, and ignored children should not force a persisted
-      // container size.
+      // container size — unless the caller opts in via `includePreviewNode`
+      // (used by the Add-Node-preview flow to grow the container while the
+      // preview is on screen).
       if (
-        childNode.id === PREVIEW_NODE_ID ||
+        (childNode.id === PREVIEW_NODE_ID && !includePreviewNode) ||
         childNode.hidden ||
         childNode.parentId !== containerId ||
         ignoredTypes.has(childNode.type ?? '')
@@ -448,11 +466,18 @@ export function ensureContainersFitChildren(
       childrenToFit.push({ node: childNode, size: childSize });
       childIdsToShift.add(childNode.id);
 
-      if (padding.left !== undefined) {
-        leadingShiftX = Math.max(leadingShiftX, padding.left - childNode.position.x);
-      }
-      if (padding.top !== undefined) {
-        leadingShiftY = Math.max(leadingShiftY, padding.top - childNode.position.y);
+      // In preview mode, only the preview's own bbox drives growth — existing
+      // children aren't re-checked, so the container only expands if the
+      // preview itself lands past the safe area. Everyone still gets shifted
+      // by `leadingShift` below to keep canvas-space positions stable.
+      const driveLeadingShift = includePreviewNode ? childNode.id === PREVIEW_NODE_ID : true;
+      if (driveLeadingShift) {
+        if (padding.left !== undefined) {
+          leadingShiftX = Math.max(leadingShiftX, padding.left - childNode.position.x);
+        }
+        if (padding.top !== undefined) {
+          leadingShiftY = Math.max(leadingShiftY, padding.top - childNode.position.y);
+        }
       }
     }
 
@@ -491,7 +516,20 @@ export function ensureContainersFitChildren(
 
     nextNodes = nextNodes.map((node) => {
       if (node.id === containerId) {
-        return withNodeDimensions(node, nextSize);
+        const resized = withNodeDimensions(node, nextSize);
+        if (!shouldShiftChildren) return resized;
+        // Grow the container in the leading direction by also moving its own
+        // top-left outward, while children's local positions shift inward by
+        // the same amount. Net canvas-space movement of every child is zero —
+        // visually the container's top/left edge expands and the children
+        // stay put, instead of children appearing to jump down/right.
+        return {
+          ...resized,
+          position: {
+            x: (node.position?.x ?? 0) - leadingShiftX,
+            y: (node.position?.y ?? 0) - leadingShiftY,
+          },
+        };
       }
 
       if (shouldShiftChildren && childIdsToShift.has(node.id)) {
@@ -507,11 +545,17 @@ export function ensureContainersFitChildren(
       return node;
     });
     nodesById.set(containerId, nextNodes.find((node) => node.id === containerId)!);
-    if (nextSize.width !== currentSize.width || nextSize.height !== currentSize.height) {
+    // Emit a change record whenever size OR position moved — `fitContainersAndPushSiblings`
+    // uses `changes.length === 0` as an early-out, and `pushSiblingsAfterContainerGrowth`
+    // needs `positionDelta` to reconstruct the pre-shift rect when computing oldRight/oldBottom.
+    const sizeChanged =
+      nextSize.width !== currentSize.width || nextSize.height !== currentSize.height;
+    if (sizeChanged || shouldShiftChildren) {
       changes.push({
         containerId,
         previousSize: currentSize,
         nextSize,
+        positionDelta: shouldShiftChildren ? { x: -leadingShiftX, y: -leadingShiftY } : undefined,
       });
     }
   }
@@ -535,16 +579,6 @@ function clampTopLeftToSafeArea(
     x: clamp(position.x, safeArea.x, maxX),
     y: clamp(position.y, safeArea.y, maxY),
   };
-}
-
-function clampTopToSafeArea(
-  top: number,
-  safeArea: ContainerSafeArea,
-  nodeSize: NodeDimensions
-): number {
-  const maxY = safeArea.y + Math.max(0, safeArea.height - nodeSize.height);
-
-  return clamp(top, safeArea.y, maxY);
 }
 
 function rangesOverlap(startA: number, endA: number, startB: number, endB: number): boolean {
@@ -899,6 +933,8 @@ function resolveInsertPreview({
     return null;
   }
 
+  // For an edge insertion, place the preview between source and target —
+  // `calculateAutoPosition`'s overlap avoidance would shove it off the chain.
   const containerPlacement = getPreviewPlacement({
     sourceNode,
     targetNode,
@@ -919,8 +955,6 @@ function resolveInsertPreview({
   return {
     position: containerPlacement.centerPosition,
     positionMode: 'center',
-    // Store the replaced edge so the preview graph can hide exactly that edge
-    // while preserving enough data for Add Node to reconnect through the node.
     data: { originalEdge: replacedEdge, [PLACEMENT_DATA_KEY]: placement },
     target: {
       nodeId: replacedEdge.target,
@@ -973,34 +1007,23 @@ function resolveAppendPreview({
     return null;
   }
 
-  const targetNode =
-    continuationTarget.nodeId === containerNode.id
-      ? containerNode
-      : reactFlowInstance.getNode(continuationTarget.nodeId);
-  const containerPlacement = getPreviewPlacement({
-    sourceNode,
-    targetNode,
-    containerNode,
-    nodes,
-    safeArea: options.getContainerSafeArea?.(containerNode),
-    previewNodeSize: options.previewNodeSize,
-    gap: options.gap,
-    avoidSiblings: options.avoidSiblings ?? true,
-    getNodeDimensions: options.getNodeDimensions,
-  });
   const placement: ContainerPlacement = {
-    containerId: containerPlacement.containerId,
+    containerId: containerNode.id,
     sourceNodeId: sourceNode.id,
     targetNodeId: continuationTarget.nodeId,
     mode: 'sequence',
   };
 
+  // No `position`/`positionMode` → `createPreviewNode` runs `calculateAutoPosition`,
+  // which anchors on the clicked handle and applies `computeSpreadOffset` for
+  // multi-output sources (Decision True/False). This is the same logic used
+  // for non-container previews; `reparentPreviewNodeToContainer` then converts
+  // to container-local coords and `placeContainerNode` (on materialize) grows
+  // the container via `fitContainersAndPushSiblings`.
   return {
-    position: containerPlacement.centerPosition,
-    positionMode: 'center',
     data: { [PLACEMENT_DATA_KEY]: placement },
     target: continuationTarget,
-    containerId: containerPlacement.containerId,
+    containerId: containerNode.id,
   };
 }
 
@@ -1104,66 +1127,6 @@ function getPreviewPlacement({
 // Materialized placement
 // -----------------------------------------------------------------------------
 
-function getNodeCenterY(position: XYPosition, nodeSize: NodeDimensions): number {
-  return position.y + nodeSize.height / 2;
-}
-
-function getInsertedPosition({
-  sourceNode,
-  targetNode,
-  insertedNode,
-  containerNode,
-  nodes,
-  safeArea,
-  insertedNodeSize,
-  gap,
-  getNodeDimensions,
-}: {
-  sourceNode?: Node;
-  targetNode?: Node;
-  insertedNode: Node;
-  containerNode: Node;
-  nodes: Node[];
-  safeArea: ContainerSafeArea;
-  insertedNodeSize: NodeDimensions;
-  gap: number;
-  getNodeDimensions: (node: Node) => NodeDimensions;
-}): XYPosition {
-  const sourcePosition = getLocalNodePosition(sourceNode, containerNode, nodes);
-  const targetPosition = getLocalNodePosition(targetNode, containerNode, nodes);
-  const sourceSize = sourceNode ? getNodeDimensions(sourceNode) : undefined;
-  const targetSize = targetNode ? getNodeDimensions(targetNode) : undefined;
-  const sourceIsContainer = sourceNode?.id === containerNode.id;
-  const targetIsContainer = targetNode?.id === containerNode.id;
-
-  if (sourcePosition && sourceSize && !sourceIsContainer) {
-    return {
-      x: Math.max(safeArea.x, snapToGrid(sourcePosition.x + sourceSize.width + gap)),
-      y: clampTopToSafeArea(
-        snapToGrid(getNodeCenterY(sourcePosition, sourceSize) - insertedNodeSize.height / 2),
-        safeArea,
-        insertedNodeSize
-      ),
-    };
-  }
-
-  if (targetPosition && targetSize && !targetIsContainer) {
-    return {
-      x: Math.max(safeArea.x, snapToGrid(targetPosition.x - insertedNodeSize.width - gap)),
-      y: clampTopToSafeArea(
-        snapToGrid(getNodeCenterY(targetPosition, targetSize) - insertedNodeSize.height / 2),
-        safeArea,
-        insertedNodeSize
-      ),
-    };
-  }
-
-  return {
-    x: Math.max(safeArea.x, snapToGrid(insertedNode.position.x)),
-    y: clampTopToSafeArea(snapToGrid(insertedNode.position.y), safeArea, insertedNodeSize),
-  };
-}
-
 function getNodeDepth(node: Node | undefined, nodesById: Map<string, Node>): number {
   let depth = 0;
   let parentId = node?.parentId;
@@ -1225,16 +1188,22 @@ function pushSiblingsAfterContainerGrowth({
     if (widthDelta <= 0 && heightDelta <= 0) continue;
 
     const containerNode = nextNodes.find((node) => node.id === change.containerId)!;
-    const oldRight = containerNode.position.x + change.previousSize.width;
+    // When leading-edge growth was applied, `containerNode.position` has already
+    // moved outward by `positionDelta`. Reconstruct the pre-shift position so
+    // `oldRight/oldBottom` reflect the rect siblings actually saw before this fit.
+    const positionDelta = change.positionDelta ?? { x: 0, y: 0 };
+    const prevPosition = {
+      x: containerNode.position.x - positionDelta.x,
+      y: containerNode.position.y - positionDelta.y,
+    };
+    const oldRight = prevPosition.x + change.previousSize.width;
     const newRight = containerNode.position.x + change.nextSize.width;
-    const oldBottom = containerNode.position.y + change.previousSize.height;
+    const oldBottom = prevPosition.y + change.previousSize.height;
     const newBottom = containerNode.position.y + change.nextSize.height;
-    const containerLeft = containerNode.position.x;
-    const containerRight =
-      containerNode.position.x + Math.max(change.previousSize.width, change.nextSize.width);
-    const containerTop = containerNode.position.y;
-    const containerBottom =
-      containerNode.position.y + Math.max(change.previousSize.height, change.nextSize.height);
+    const containerLeft = Math.min(containerNode.position.x, prevPosition.x);
+    const containerRight = Math.max(newRight, oldRight);
+    const containerTop = Math.min(containerNode.position.y, prevPosition.y);
+    const containerBottom = Math.max(newBottom, oldBottom);
 
     nextNodes = nextNodes.map((node) => {
       if (node.id === containerNode.id || node.parentId !== containerNode.parentId) {
@@ -1385,6 +1354,22 @@ export function placeContainerNode({
   const nodesById = new Map(nodes.map((node) => [node.id, node]));
   const insertedSize = resolveNodeDimensions(insertedNode);
   const resolvedSafeArea = getSafeArea(containerNode, safeArea);
+  const upstreamSource =
+    placement.sourceNodeId && placement.sourceNodeId !== placement.containerId
+      ? nodesById.get(placement.sourceNodeId)
+      : undefined;
+  // Sequence mode: trust the preview's y (so handle-aware spread is preserved
+  // for Decision True/False), but ensure x sits past `source.right + gap`.
+  // The preview is sized at 96px and clamped to the container's current safe
+  // area, so for wide materializations (e.g. a 760px Agent) the preview's x
+  // would otherwise stack the new node on top of the source. Mirrors step 1
+  // of `shiftForEdgeInsertion` in the non-container path.
+  const sequenceX = upstreamSource
+    ? Math.max(
+        insertedNode.position.x,
+        snapUpToGrid(upstreamSource.position.x + resolveNodeDimensions(upstreamSource).width + gap)
+      )
+    : insertedNode.position.x;
   const positionedNode =
     placement.mode === 'first-child'
       ? {
@@ -1395,20 +1380,9 @@ export function placeContainerNode({
             insertedSize
           ),
         }
-      : {
-          ...insertedNode,
-          position: getInsertedPosition({
-            sourceNode: placement.sourceNodeId ? nodesById.get(placement.sourceNodeId) : undefined,
-            targetNode: placement.targetNodeId ? nodesById.get(placement.targetNodeId) : undefined,
-            insertedNode,
-            containerNode,
-            nodes,
-            safeArea: resolvedSafeArea,
-            insertedNodeSize: insertedSize,
-            gap,
-            getNodeDimensions: resolveNodeDimensions,
-          }),
-        };
+      : sequenceX !== insertedNode.position.x
+        ? { ...insertedNode, position: { ...insertedNode.position, x: sequenceX } }
+        : insertedNode;
   const targetNode =
     placement.targetNodeId && placement.targetNodeId !== placement.containerId
       ? nodesById.get(placement.targetNodeId)
@@ -1435,17 +1409,16 @@ export function placeContainerNode({
   }
   // Back-edge detection (siblings only): when source is visually at or
   // past target on the x axis, the original edge points backward in flow
-  // (a loopback). Skip the shift; getInsertedPosition places the inserted
-  // node past source, and the chain extends rightward naturally.
+  // (a loopback). Skip the shift; the preview placed the inserted node
+  // past source, and the chain extends rightward naturally.
   // Container.start edges (source = container itself) live in a different
   // coord space and are always forward.
-  const sourceNode = placement.sourceNodeId ? nodesById.get(placement.sourceNodeId) : undefined;
   const sourceIsContainer = placement.sourceNodeId === placement.containerId;
   const isBackEdge =
     !sourceIsContainer &&
-    sourceNode !== undefined &&
+    upstreamSource !== undefined &&
     targetNode !== undefined &&
-    sourceNode.position.x >= targetNode.position.x;
+    upstreamSource.position.x >= targetNode.position.x;
   const requiredTargetLeft = positionedNode.position.x + insertedSize.width + gap;
   const downstreamShift =
     !isBackEdge && targetNode && targetNode.position.x < requiredTargetLeft

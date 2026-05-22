@@ -299,6 +299,55 @@ describe('NodeUtils', () => {
       expect(result).toEqual({ x: 150, y: 120 });
     });
 
+    it('should detect overlap against nodes that have no measured dimensions yet', () => {
+      // Reproduces the "click +True then +False" bug: a freshly-committed node
+      // doesn't have `measured` populated until React Flow re-measures the
+      // DOM. Without a fallback, overlap detection used 0 for its size and
+      // never detected the collision, so the next preview landed on top.
+      const nodes: Node[] = [
+        {
+          id: 'just-committed',
+          position: { x: 100, y: 100 },
+          // No measured, no width/height — fresh from setNodes.
+          data: {},
+        },
+      ];
+
+      const result = getNonOverlappingPositionForDirection(
+        nodes,
+        { x: 100, y: 100 },
+        { width: 96, height: 96 },
+        'right'
+      );
+
+      expect(result.y).toBeGreaterThan(100);
+    });
+
+    it('should prefer `width`/`height` over DEFAULT_NODE_SIZE when measured is missing', () => {
+      const nodes: Node[] = [
+        {
+          id: 'wide',
+          position: { x: 100, y: 100 },
+          width: 200,
+          height: 60,
+          data: {},
+        },
+      ];
+
+      const newPosition = { x: 250, y: 100 };
+
+      const result = getNonOverlappingPositionForDirection(
+        nodes,
+        newPosition,
+        { width: 96, height: 96 },
+        'right'
+      );
+
+      // Existing node spans x=100..300; new at x=250 (width 96) overlaps it.
+      // Without the width fallback, this overlap would be missed.
+      expect(result.y).toBeGreaterThan(100);
+    });
+
     it('should handle all directions correctly', () => {
       const nodes: Node[] = [
         {

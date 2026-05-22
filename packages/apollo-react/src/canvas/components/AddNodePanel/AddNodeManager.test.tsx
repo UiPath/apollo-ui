@@ -910,6 +910,11 @@ describe('AddNodeManager', () => {
 
     screen.getByTestId('select-node').click();
 
+    // Materializes at source.right + gap (160 + 96 + 48 = 304) — `placeContainerNode`
+    // takes the preview's y (so handle-aware spread is preserved) but pushes x
+    // forward to clear the upstream source, matching `shiftForEdgeInsertion`'s
+    // behavior in the non-container path. Without this push, wide materializations
+    // (e.g. a 760px Agent) would stack on top of the source.
     expect(mockNodes.find((node) => node.id === 'test-node-1234567890')).toMatchObject({
       parentId: 'loop-1',
       extent: 'parent',

@@ -224,7 +224,6 @@ describe('resolveContainerAddNodePreview', () => {
 
     expect(previewOverrides).toMatchObject({
       containerId: loopNode.id,
-      positionMode: 'center',
       target: {
         nodeId: loopNode.id,
         handleId: 'continue',
@@ -238,6 +237,8 @@ describe('resolveContainerAddNodePreview', () => {
         },
       },
     });
+    expect(previewOverrides).not.toHaveProperty('positionMode');
+    expect(previewOverrides).not.toHaveProperty('position');
   });
 
   it('continues to insert workflow output handles between container children', () => {
@@ -402,7 +403,6 @@ describe('resolveContainerAddNodePreview', () => {
 
     expect(previewOverrides).toMatchObject({
       containerId: loopNode.id,
-      positionMode: 'center',
       target: {
         nodeId: loopNode.id,
         handleId: 'continue',
@@ -416,6 +416,8 @@ describe('resolveContainerAddNodePreview', () => {
         },
       },
     });
+    expect(previewOverrides).not.toHaveProperty('positionMode');
+    expect(previewOverrides).not.toHaveProperty('position');
   });
 
   it('continues to insert from an occupied container inner source handle', () => {
