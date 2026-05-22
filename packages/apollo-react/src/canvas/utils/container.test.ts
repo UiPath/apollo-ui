@@ -3,8 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { PREVIEW_NODE_ID } from '../constants';
 import {
   type ContainerPlacement,
+  DEFAULT_CONTAINER_HEIGHT,
   DEFAULT_CONTAINER_MIN_HEIGHT,
   DEFAULT_CONTAINER_MIN_WIDTH,
+  DEFAULT_CONTAINER_WIDTH,
   ensureContainersFitChildren,
   getContainerFitGeometry,
   getContainerResizeMinimums,
@@ -30,8 +32,8 @@ describe('container sizing', () => {
       height: 224,
     });
     expect(getContainerFitGeometry()).toMatchObject({
-      minWidth: DEFAULT_CONTAINER_MIN_WIDTH,
-      minHeight: DEFAULT_CONTAINER_MIN_HEIGHT,
+      minWidth: DEFAULT_CONTAINER_WIDTH,
+      minHeight: DEFAULT_CONTAINER_HEIGHT,
       padding: { left: 144, right: 144, top: 96, bottom: 48 },
     });
   });
@@ -485,10 +487,10 @@ describe('container sizing', () => {
       y: 96,
     });
     expect(result.nodes.find((node) => node.id === 'inner')).toMatchObject({
-      style: { width: 400, height: 320 },
+      style: { width: DEFAULT_CONTAINER_WIDTH, height: DEFAULT_CONTAINER_HEIGHT },
     });
     expect(result.nodes.find((node) => node.id === 'outer')).toMatchObject({
-      style: { width: 704, height: 464 },
+      style: { width: 848, height: 464 },
     });
   });
 });

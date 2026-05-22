@@ -878,6 +878,16 @@ describe('ButtonHandleStyleUtils', () => {
       expect(calculateGridAlignedHandlePositions(96, 1)).toEqual([48]);
     });
 
+    it('should snap single handle to grid when nodeSize is not grid-aligned', () => {
+      // 312px node: ideal center 156 is off-grid by 4. Snap → 160.
+      expect(calculateGridAlignedHandlePositions(312, 1)).toEqual([160]);
+    });
+
+    it('should snap single handle to grid when nodeSize is odd', () => {
+      // 321px: half is 160.5. Snap → 160.
+      expect(calculateGridAlignedHandlePositions(321, 1)).toEqual([160]);
+    });
+
     it('should calculate equidistant positions for 2 handles', () => {
       // 2 handles, gridSize=8: ideal=96/3=32, rounded=32, span=32, start=(96-32)/2=32
       // Positions: 32, 64

@@ -375,8 +375,9 @@ describe('ButtonHandles', () => {
       const handleElements = screen.getAllByTestId('handle');
       expect(handleElements).toHaveLength(1);
 
-      // Single handle is always placed at the exact node center, regardless of grid.
-      expect(handleElements[0]).toHaveStyle({ top: '50%' });
+      // nodeHeight=80 → exact center (40) is half a grid step off (gridSize=16).
+      // Snap rounds to 48 (60%) so the handle stays grid-aligned.
+      expect(handleElements[0]).toHaveStyle({ top: '60%' });
     });
   });
 });
