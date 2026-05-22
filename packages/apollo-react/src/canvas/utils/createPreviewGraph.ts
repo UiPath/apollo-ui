@@ -4,7 +4,6 @@ import type {
   Position,
   ReactFlowInstance,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ensureContainersFitChildren, getContainerFitGeometry } from './container';
 import type { CSSProperties } from 'react';
 import { DEFAULT_SOURCE_HANDLE_ID, PREVIEW_NODE_ID } from '../constants';
 import {
@@ -89,12 +88,13 @@ function inferPreviewContainerId(sourceNode: Node, targetNode?: Node): string | 
 
 /**
  * Converts an absolute preview position into container-local coordinates and
- * parents the preview to the container with `extent: 'parent'`. The preview's
- * position is guaranteed valid by `applyPreviewGraphToReactFlow` running
- * `ensureContainersFitChildren({ includePreviewNode: true })` in the same
- * `setNodes` updater — that pass grows the container and shifts the preview
- * into the safe area before xyflow ever sees it, so `extent: 'parent'`'s
- * clamp is always a no-op.
+ * parents the preview to the container with `extent: 'parent'`. When the
+ * preview's handle-aware position lands past the container's body (e.g.
+ * Decision +True spread above the container), xyflow's clamp pulls it back
+ * to the nearest edge of the container body — the preview shows the
+ * approximate landing area inside the current container; the materialize
+ * pass then grows the container and places the real node at its true
+ * post-spread position.
  */
 export function reparentPreviewNodeToContainer(
   previewNode: Node,
@@ -222,28 +222,12 @@ export function applyPreviewGraphToReactFlow(
   const originalEdge = preview.node.data?.originalEdge as Edge | undefined;
 
   setTimeout(() => {
-    reactFlowInstance.setNodes((nodes) => {
-      const nextNodes = [
-        ...nodes
-          .filter((node) => node.id !== PREVIEW_NODE_ID)
-          .map((node) => ({ ...node, selected: false })),
-        preview.node,
-      ];
-      // When the preview is parented to a container, grow the container and
-      // shift its existing children so a preview placed above/below the
-      // source's row stays visually inside the (now-larger) container body.
-      // `includePreviewNode: true` overrides the default skip so the preview's
-      // negative-y drives the leadingShift.
-      if (preview.node.parentId) {
-        const fitResult = ensureContainersFitChildren(nextNodes, {
-          containerIds: [preview.node.parentId],
-          getContainerFitGeometry: () => getContainerFitGeometry(),
-          includePreviewNode: true,
-        });
-        return fitResult.nodes;
-      }
-      return nextNodes;
-    });
+    reactFlowInstance.setNodes((nodes) => [
+      ...nodes
+        .filter((node) => node.id !== PREVIEW_NODE_ID)
+        .map((node) => ({ ...node, selected: false })),
+      preview.node,
+    ]);
 
     reactFlowInstance.setEdges((edges) => [
       ...edges.filter((edge) => !isPreviewEdge(edge) && edge.id !== originalEdge?.id),
