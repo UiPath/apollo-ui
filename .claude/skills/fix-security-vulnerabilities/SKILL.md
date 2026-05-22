@@ -7,9 +7,11 @@ description: Use when fixing npm/pnpm security vulnerabilities, Dependabot alert
 
 ## Overview
 
-Fix each vulnerability by working through five steps in order. Stop as soon as one works. Never use `pnpm update --depth Infinity` — it doesn't reliably re-resolve locked transitive deps. `pnpm update <pkg> -r` (no depth flag) is the right refresh tool when you need to nudge transitives — but verify after, since partial refreshes are common.
+Fix each vulnerability by working through the steps in order. Stop as soon as one works.
 
-**NEVER change audit-level. NEVER add overrides without exhausting the steps below.**
+**Never use `pnpm update <pkg> -r` for security fixes.** It re-resolves every caret range in the lockfile, not just the named package, and pulls in whatever patch/minor bumps the registry has shipped since the last install. On a 2000+ entry lockfile that is a meaningful supply-chain attack surface — you can ship a "one-line fix" that silently updates 10+ unrelated transitives, none of which you vetted. Use surgical overrides instead (Step 3).
+
+**NEVER change audit-level.**
 
 **Pre-install gate: Before running any `pnpm install` or `pnpm add`, always complete the full supply-chain vetting protocol below for every third-party package that would enter the install. Use `npm view` to gather all vetting data — it queries the registry without downloading or executing anything and is always safe to run. Do not install first and check later.**
 
@@ -54,7 +56,7 @@ minimumReleaseAgeExclude:
 
 ---
 
-## Step 3: Transitive dependency → bump something in the chain
+## Step 3: Transitive dependency → surgical override (primary path)
 
 If the vulnerable package is transitive (not in any workspace `package.json`):
 
@@ -63,86 +65,81 @@ If the vulnerable package is transitive (not in any workspace `package.json`):
 pnpm why <vulnerable-package> 2>&1 | head -40
 ```
 
-Check **each ancestor in the chain** (not just direct deps — intermediate transitives also work, e.g. `engine.io-client` updated by `pnpm update <ancestor> -r`) and inspect the constraint type for the package below it:
+Check the parent constraint type on the vulnerable package:
 
 ```bash
-npm view <ancestor>@<locked-version> dependencies --json
-npm view <ancestor>@latest dependencies --json   # compare to latest
+npm view <parent>@<locked-version> dependencies --json
 ```
 
-**Constraint type matters:**
-- **caret (`^x.y.z`)** — typically auto-resolves to a new patch in the same major; a fresh `pnpm update -r` often does the job
-- **tilde (`~x.y.z`)** — locks to a specific minor (`>=x.y.z <x.y+1.0`). A tilde-pinned parent can NOT resolve to a higher minor of the child. If the fix is in a higher minor, the **only** options are: bump that parent itself (if a newer parent has widened the tilde) or override (Step 5).
-- **exact** — only the parent bump or override works.
+- **caret (`^x.y.z`)** — parent admits the fix in range. Use Step 3 below.
+- **tilde (`~x.y.z`)** or **exact** — parent does NOT admit a higher minor. Either bump the parent (apply Step 3 recursively against the parent, picking a parent version that widens the range — e.g. `engine.io-client@6.6.4` pinned `ws ~8.18.3`, bumping to `6.6.5` pinned `ws ~8.20.1` and closed the path), OR use a permanent override (Step 4).
 
 ### 3a. Vet before touching anything
-
-Complete the **full supply-chain vetting protocol** below for every package that would enter the install — the updated direct dep and the patched transitive package. Do not edit `package.json` or run `pnpm install` until vetting passes for all of them.
-
-If any is younger than 14 days, add each to `minimumReleaseAgeExclude` before installing.
-
-### 3b. Install (only after vetting passes)
-
-```bash
-# Edit the version in the relevant package.json, then:
-pnpm install
-pnpm audit  # verify it's gone
-```
-
----
-
-## Step 4: Refresh the transitive resolution
-
-When the parent uses `^` and a higher version of the vulnerable package is already valid under that range, force pnpm to re-resolve.
-
-### 4a. Vet before touching anything
-
-Complete the **full supply-chain vetting protocol** below for `<vulnerable-package>@<fix-version>`. Do not run any install command until vetting passes.
-
-If the fix version is younger than 14 days, add it to `minimumReleaseAgeExclude` before installing.
-
-### 4b. Install (only after vetting passes)
-
-Try the simplest tool first:
-
-```bash
-pnpm update <vulnerable-package> -r
-pnpm audit                                # confirm all paths cleared
-grep -E "^  <vulnerable-package>@" pnpm-lock.yaml | sort -u   # spot any stuck versions
-pnpm why <vulnerable-package>             # only if audit still flags entries — shows which path is stuck
-git diff --stat                           # see scope of side effects before staging
-```
-
-**Side effects of `pnpm update -r` to watch for:**
-- If the target is *also* a direct dep, package.json gets bumped (and alphabetically re-sorted). For transitive-only fixes, package.json should be untouched — if it changed, the target was actually direct and you may want to keep the bump or revert it.
-- Bumping a transitive may cascade — its own transitives can shift. Inspect the lockfile diff before assuming "1 line changed."
-- Peer-dep disambiguation suffixes (the long `(pkg@ver)(pkg2@ver2)` qualifiers in `pnpm-lock.yaml`) can shift across many unrelated entries. Usually cosmetic — confirm by checking that no *actual resolved version* changed (the keys like `pkg@x.y.z:` at the top of each entry block).
-
-**Partial refreshes are common.** `pnpm update -r` often clears most paths but leaves one or two stuck behind tilde-range or exact-version parents. If audit still flags entries:
-
-1. **Inspect the stuck path** with `pnpm why` and look at the constraint at the lowest level that still pins the vulnerable version.
-2. If that constraint is `^`, the temp devDep trick can sometimes nudge it:
-   ```bash
-   pnpm add -D <vulnerable-package>@<fix-version> --filter <workspace-package>
-   pnpm audit
-   pnpm remove <vulnerable-package> --filter <workspace-package>
-   ```
-3. If the stuck constraint is tilde or exact, the trick won't help. Try **bumping the ancestor that holds the tighter range** — if it has a newer version with a widened range, `pnpm update <ancestor> -r` may resolve the child naturally without any override at all. (Real example: `engine.io-client@6.6.4` pinned `ws ~8.18.3`; bumping to `6.6.5` pinned `ws ~8.20.1`, closing the path with no override.)
-4. If nothing in the chain can be moved, fall through to Step 5.
-
----
-
-## Step 5: Last resort → override in pnpm-workspace.yaml
-
-Only after confirming Steps 2–4 are not applicable:
-
-### 5a. Vet before touching anything
 
 Complete the **full supply-chain vetting protocol** below for `<vulnerable-package>@<fix-version>`. Do not edit `pnpm-workspace.yaml` or run `pnpm install` until vetting passes.
 
 If the fix version is younger than 14 days, add it to `minimumReleaseAgeExclude` before installing.
 
-### 5b. Install (only after vetting passes)
+### 3b. Surgical override pattern (add → install → remove → install)
+
+This is the safe pattern for nudging a transitive: it pins exactly the package you intend to fix and produces a minimal lockfile diff. The override forces re-resolution for the target package only; everything else stays locked. After install, you remove the override and run install again — the lockfile preserves the pin (because the parent's caret range admits it), and the config stays clean.
+
+```yaml
+# pnpm-workspace.yaml — temporarily add to the `overrides:` block
+overrides:
+  # ...existing overrides...
+  <vulnerable-package>: "^<fix-version>"
+```
+
+Then:
+
+```bash
+pnpm install                # phase 1: pins the target via the override
+git diff --stat pnpm-lock.yaml   # MUST show only the target package's entries shifting
+```
+
+If anything *other than* the target package shifted in the lockfile diff, **stop**. Investigate before continuing — you may have hit a deeper resolution issue, or another caret range happened to be invalidated by the change.
+
+Once the diff is clean, **remove the override** and install again:
+
+```yaml
+# pnpm-workspace.yaml — delete the override line you just added
+overrides:
+  # ...existing overrides only...
+```
+
+```bash
+pnpm install                # phase 2: should report "Already up to date"
+git diff --stat pnpm-lock.yaml   # MUST still show only the target package's entries
+pnpm audit                  # must exit 0
+```
+
+Phase 2 should report `Already up to date` — meaning the lockfile pin held without needing the override. Final commit contains:
+- `pnpm-lock.yaml`: only the target package's resolution lines changed
+- `pnpm-workspace.yaml`: just the `minimumReleaseAgeExclude` entry (if needed); the `overrides:` block is unchanged from before the fix
+
+**Why this works:** `pnpm install` honors the existing lockfile (`prefer-frozen-lockfile` is the default in pnpm 11). Adding an override invalidates only the target's resolution. Removing the override doesn't invalidate the now-locked version because the parent's caret range still admits it. `pnpm update -r`, by contrast, walks every caret range in the lockfile and re-resolves them all — that is the cascade we want to avoid.
+
+**When the surgical pattern doesn't apply:**
+- Parent uses tilde/exact and the locked version doesn't satisfy the new pin → removing the override would re-resolve to a vulnerable version. Use Step 4 (permanent override) instead.
+- The same vulnerable package is locked at multiple major versions for legitimate reasons → use a version-bounded override (Step 4).
+
+---
+
+## Step 4: Permanent override (when surgical pin won't hold)
+
+Use this when:
+- The parent's range is tilde or exact and doesn't admit the fix on its own (so removing the override would unpin you).
+- Multiple parents pin conflicting ranges and you need ongoing protection.
+- You want documented, regression-resistant protection that future installs cannot accidentally undo.
+
+### 4a. Vet before touching anything
+
+Complete the **full supply-chain vetting protocol** below for `<vulnerable-package>@<fix-version>`. Do not edit `pnpm-workspace.yaml` or run `pnpm install` until vetting passes.
+
+If the fix version is younger than 14 days, add it to `minimumReleaseAgeExclude` before installing.
+
+### 4b. Install (only after vetting passes)
 
 Prefer the most surgical override that fixes the issue:
 
@@ -162,7 +159,7 @@ overrides:
   <vulnerable-package>@>=<vuln-start>: "^<fixed-version>"
 ```
 
-Then `pnpm install`. Then run the full verify section below.
+Then `pnpm install` and run the verify section below. The override stays in place as a documented security pin; the inline comment must include the CVE/GHSA, vetting date, and reasoning.
 
 ---
 
@@ -273,9 +270,12 @@ Run all three — unconditionally, not "if the script exists":
 ```bash
 pnpm audit                    # must exit 0
 pnpm check:dependencies       # must exit 0 — enforces consistent versions across workspaces
+git diff --stat pnpm-lock.yaml   # confirm scope: only the target package's lines should shift
 ```
 
 If `pnpm check:dependencies` fails after a fix, run `pnpm fix:dependencies` to auto-correct version mismatches, then re-run both checks.
+
+If the lockfile diff shows resolutions for packages *other than* the target, the fix is not surgical — stop and investigate before committing. A clean transitive-only security fix should touch at most a few dozen lines in `pnpm-lock.yaml`, all referencing the target package.
 
 ---
 
@@ -285,10 +285,11 @@ If `pnpm check:dependencies` fails after a fix, run `pnpm fix:dependencies` to a
 |-----------|--------|
 | Every fix | Complete supply-chain vetting with `npm view` before editing files or installing |
 | Package < 14 days old | Vetting required (as always) + add to `minimumReleaseAgeExclude` after vetting passes |
-| Direct dep | Vet, then bump version in package.json |
-| Transitive, any ancestor has a newer version with the fix in range | Vet, then `pnpm update <ancestor> -r` — Step 3 |
-| Transitive, parent uses `^` range | Vet, then `pnpm update <pkg> -r` (Step 4); fall back to temp devDep trick if partial |
-| Transitive, parent uses `~` or exact, but a newer ancestor widens the range | Vet, bump that ancestor — Step 3/4 |
-| Transitive, nothing in chain can be moved | Vet, then targeted override in pnpm-workspace.yaml — Step 5 (prefer `parent>child` syntax over blanket) |
+| Direct dep | Vet, then bump version in package.json — Step 2 |
+| Transitive, parent uses `^` and admits the fix | Vet, then surgical override (add → install → remove → install) — Step 3 |
+| Transitive, parent uses `~`/exact, newer parent version widens the range | Vet, apply Step 3 against the ancestor (surgical override on the ancestor, not the leaf) |
+| Transitive, parent uses `~`/exact and no widened version exists | Vet, then permanent override — Step 4 |
+| Transitive, vulnerable package legitimately exists at multiple majors | Vet, then version-bounded permanent override — Step 4 |
 | No patched version exists | Document and monitor |
 | Any supply-chain check fails | Stop — report findings, do not install |
+| **Never** | `pnpm update <pkg> -r` for security fixes — cascades resolution across the lockfile and pulls in unvetted bumps |
