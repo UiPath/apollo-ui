@@ -1183,10 +1183,6 @@ function pushSiblingsAfterContainerGrowth({
   // pass so a sibling that's both right-of and below-of a doubly-growing
   // container is visited once.
   for (const change of sortContainerSizeChanges(changes, nextNodes)) {
-    const widthDelta = change.nextSize.width - change.previousSize.width;
-    const heightDelta = change.nextSize.height - change.previousSize.height;
-    if (widthDelta <= 0 && heightDelta <= 0) continue;
-
     const containerNode = nextNodes.find((node) => node.id === change.containerId)!;
     // When leading-edge growth was applied, `containerNode.position` has already
     // moved outward by `positionDelta`. Reconstruct the pre-shift position so
@@ -1200,6 +1196,12 @@ function pushSiblingsAfterContainerGrowth({
     const newRight = containerNode.position.x + change.nextSize.width;
     const oldBottom = prevPosition.y + change.previousSize.height;
     const newBottom = containerNode.position.y + change.nextSize.height;
+    // Use edge deltas (not size deltas) so leading-only growth — where
+    // position moves outward and size grows by the same amount, leaving
+    // newRight === oldRight — doesn't push right/bottom siblings unnecessarily.
+    const rightDelta = newRight - oldRight;
+    const bottomDelta = newBottom - oldBottom;
+    if (rightDelta <= 0 && bottomDelta <= 0) continue;
     const containerLeft = Math.min(containerNode.position.x, prevPosition.x);
     const containerRight = Math.max(newRight, oldRight);
     const containerTop = Math.min(containerNode.position.y, prevPosition.y);
@@ -1214,9 +1216,9 @@ function pushSiblingsAfterContainerGrowth({
       let nextX = node.position.x;
       let nextY = node.position.y;
 
-      // Width grew: only siblings that sit to the right and overlap the
-      // container's vertical band can be visually covered by the new width.
-      if (widthDelta > 0 && node.position.x >= oldRight) {
+      // Right edge advanced: only siblings that sit to the right and overlap
+      // the container's vertical band can be visually covered.
+      if (rightDelta > 0 && node.position.x >= oldRight) {
         const verticallyOverlaps = rangesOverlap(
           node.position.y,
           node.position.y + nodeSize.height,
@@ -1224,13 +1226,12 @@ function pushSiblingsAfterContainerGrowth({
           containerBottom
         );
         if (verticallyOverlaps) {
-          nextX = Math.max(node.position.x + widthDelta, snapUpToGrid(newRight + gap));
+          nextX = Math.max(node.position.x + rightDelta, snapUpToGrid(newRight + gap));
         }
       }
 
-      // Height grew: mirror logic along Y. Sibling must sit below and
-      // horizontally overlap the container's column.
-      if (heightDelta > 0 && node.position.y >= oldBottom) {
+      // Bottom edge advanced: mirror logic along Y.
+      if (bottomDelta > 0 && node.position.y >= oldBottom) {
         const horizontallyOverlaps = rangesOverlap(
           node.position.x,
           node.position.x + nodeSize.width,
@@ -1238,7 +1239,7 @@ function pushSiblingsAfterContainerGrowth({
           containerRight
         );
         if (horizontallyOverlaps) {
-          nextY = Math.max(node.position.y + heightDelta, snapUpToGrid(newBottom + gap));
+          nextY = Math.max(node.position.y + bottomDelta, snapUpToGrid(newBottom + gap));
         }
       }
 

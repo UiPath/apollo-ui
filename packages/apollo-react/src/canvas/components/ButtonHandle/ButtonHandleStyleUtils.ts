@@ -56,7 +56,7 @@ export const calculateGridAlignedHandlePositions = (
   if (numHandles === 1) {
     // Snap to grid so a single handle stays aligned when `nodeSize` is odd or
     // off-grid (e.g. a 312px container would otherwise place its handle at 156).
-    return [Math.round(nodeSize / 2 / gridSize) * gridSize];
+    return [snapToGrid(nodeSize / 2, gridSize)];
   }
 
   const idealSpacing = nodeSize / (numHandles + 1);
