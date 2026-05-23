@@ -163,7 +163,9 @@ const StageNodeAllTaskGroupsInner = ({
               {defaultContent}
             </Button>
           ) : (
-            <span className="text-xs text-foreground-muted h-9">{defaultContent}</span>
+            <span className="inline-flex items-center h-9 text-sm font-medium text-foreground-muted">
+              {defaultContent}
+            </span>
           )}
         </Column>
       ) : (
