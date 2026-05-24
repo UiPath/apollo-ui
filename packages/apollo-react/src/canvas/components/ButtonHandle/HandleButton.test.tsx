@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { HandleButton } from './HandleButton';
@@ -8,10 +9,14 @@ const DRAG_THRESHOLD = 5;
 function renderButton({
   visible = true,
   onAction = vi.fn<(e: React.MouseEvent) => void>(),
+  onMouseEnter,
+  onMouseLeave,
   handleEl,
 }: {
   visible?: boolean;
   onAction?: (event: React.MouseEvent) => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
   handleEl?: HTMLDivElement;
 } = {}) {
   const handleRef = { current: handleEl ?? null } as React.RefObject<HTMLDivElement | null>;
@@ -21,6 +26,8 @@ function renderButton({
       visible={visible}
       position={Position.Right}
       onAction={onAction}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       handleRef={handleRef}
     />
   );
@@ -145,5 +152,50 @@ describe('HandleButton drag behaviour', () => {
     fireEvent.pointerUp(document);
     fireEvent.click(button);
     expect(onAction).toHaveBeenCalledOnce();
+  });
+});
+
+describe('HandleButton hover handlers', () => {
+  afterEach(cleanup);
+
+  it('invokes onMouseEnter when the cursor enters the inline button', async () => {
+    const user = userEvent.setup();
+    const onMouseEnter = vi.fn();
+    const { button } = renderButton({ onMouseEnter });
+
+    await user.hover(button);
+
+    expect(onMouseEnter).toHaveBeenCalledOnce();
+  });
+
+  it('invokes onMouseLeave when the cursor leaves the inline button', async () => {
+    const user = userEvent.setup();
+    const onMouseLeave = vi.fn();
+    const { button } = renderButton({ onMouseLeave });
+
+    await user.hover(button);
+    await user.unhover(button);
+
+    expect(onMouseLeave).toHaveBeenCalledOnce();
+  });
+
+  it('still calls onAction on click when hover handlers are wired', async () => {
+    const user = userEvent.setup();
+    const onMouseEnter = vi.fn();
+    const onMouseLeave = vi.fn();
+    const { button, onAction } = renderButton({ onMouseEnter, onMouseLeave });
+
+    await user.hover(button);
+    await user.click(button);
+
+    expect(onAction).toHaveBeenCalledOnce();
+  });
+
+  it('does not throw when hovering with no hover handlers supplied', async () => {
+    const user = userEvent.setup();
+    const { button } = renderButton();
+
+    await expect(user.hover(button)).resolves.toBeUndefined();
+    await expect(user.unhover(button)).resolves.toBeUndefined();
   });
 });

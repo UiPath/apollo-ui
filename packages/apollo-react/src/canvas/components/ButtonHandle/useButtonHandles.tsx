@@ -4,13 +4,15 @@ import { useMemo } from 'react';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import { resolveHandles } from '../../utils/manifest-resolver';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
-import type { HandleActionEvent } from '../ButtonHandle';
+import type { HandleActionEvent, HandleMouseEvent } from '../ButtonHandle';
 import { ButtonHandles } from '../ButtonHandle';
 
 export const useButtonHandles = ({
   handleConfigurations,
   shouldShowHandles,
   handleAction,
+  handleMouseEnter,
+  handleMouseLeave,
   nodeId,
   selected,
   hovered,
@@ -27,6 +29,8 @@ export const useButtonHandles = ({
   selected: boolean;
   hovered?: boolean;
   handleAction?: (event: HandleActionEvent) => void;
+  handleMouseEnter?: (event: HandleMouseEvent) => void;
+  handleMouseLeave?: (event: HandleMouseEvent) => void;
   showAddButton?: boolean;
   showNotches?: boolean;
   nodeWidth?: number;
@@ -76,6 +80,8 @@ export const useButtonHandles = ({
         showHandle: connectedHandleIds.has(handle.id) || groupVisible,
         // Preserve individual handle's onAction if it exists, otherwise use global handleAction
         onAction: handle.onAction || handleAction,
+        onMouseEnter: handle.onMouseEnter || handleMouseEnter,
+        onMouseLeave: handle.onMouseLeave || handleMouseLeave,
       }));
 
       return (
@@ -105,6 +111,8 @@ export const useButtonHandles = ({
     shouldShowHandles,
     connectedHandleIds,
     handleAction,
+    handleMouseEnter,
+    handleMouseLeave,
     nodeId,
     showAddButton,
     showNotches,

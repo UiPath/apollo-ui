@@ -37,6 +37,8 @@ export const HandleButton = memo(
     labelVisible,
     position,
     onAction,
+    onMouseEnter,
+    onMouseLeave,
     handleRef,
     label,
     labelIcon,
@@ -47,6 +49,8 @@ export const HandleButton = memo(
     labelVisible?: boolean;
     position: Position;
     onAction: (event: React.MouseEvent) => void;
+    onMouseEnter?: () => void;
+    onMouseLeave?: () => void;
     handleRef?: React.RefObject<HTMLDivElement | null>;
     label?: string;
     labelIcon?: React.ReactNode;
@@ -135,6 +139,8 @@ export const HandleButton = memo(
             aria-label="Add node"
             onClick={handleClick}
             onPointerDown={handlePointerDown}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
             className="nodrag nopan pointer-events-auto animate-fade-in"
           />
         )}

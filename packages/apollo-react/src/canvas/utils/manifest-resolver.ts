@@ -10,7 +10,7 @@
  * - Resolved: Final merged result used for rendering
  */
 
-import type { HandleActionEvent } from '../components/ButtonHandle/ButtonHandle';
+import type { HandleActionEvent, HandleMouseEvent } from '../components/ButtonHandle/ButtonHandle';
 import type { HandleGroupManifest, HandleManifest } from '../schema/node-definition/handle';
 import type { NodeDisplayManifest } from '../schema/node-definition/node-manifest';
 import type { InstanceDisplayConfig } from '../schema/node-instance';
@@ -59,6 +59,10 @@ export interface ResolvedHandle extends Omit<HandleManifest, 'repeat' | 'itemVar
   visible: boolean;
   /** Optional callback for button handle actions (runtime only) */
   onAction?: (event: HandleActionEvent) => void;
+  /** Optional callback fired when the cursor enters the inline add button (runtime only) */
+  onMouseEnter?: (event: HandleMouseEvent) => void;
+  /** Optional callback fired when the cursor leaves the inline add button (runtime only) */
+  onMouseLeave?: (event: HandleMouseEvent) => void;
 }
 
 /**

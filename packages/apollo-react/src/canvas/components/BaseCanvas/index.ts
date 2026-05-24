@@ -2,6 +2,7 @@ export { BaseCanvas } from './BaseCanvas';
 export * from './BaseCanvas.constants';
 export * from './BaseCanvas.hooks';
 export * from './BaseCanvas.types';
+export * from './BaseCanvasModeProvider';
 export * from './CanvasBackground';
 export * from './CanvasProviders';
 export * from './CanvasThemeContext';
