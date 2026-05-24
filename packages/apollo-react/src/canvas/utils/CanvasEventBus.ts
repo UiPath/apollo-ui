@@ -1,6 +1,11 @@
+import type { Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { HandleType } from '../components/ButtonHandle/HandleNotch';
+
 // Canvas Event Bus - Type-safe global event system
 export interface CanvasEvents {
   'handle:action': CanvasHandleActionEvent;
+  'handle:mouseenter': CanvasHandleMouseEvent;
+  'handle:mouseleave': CanvasHandleMouseEvent;
   'node:select': { nodeId: string };
   'node:delete': { nodeId: string };
 }
@@ -8,9 +13,18 @@ export interface CanvasEvents {
 export interface CanvasHandleActionEvent {
   handleId: string;
   nodeId: string;
-  handleType: 'artifact' | 'input' | 'output';
-  position: 'top' | 'bottom' | 'left' | 'right';
+  handleType: HandleType;
+  position: Position;
   timestamp?: number; // Added automatically by event bus
+}
+
+/** Payload for `handle:mouseenter` / `handle:mouseleave` events emitted by `canvasEventBus`. */
+export interface CanvasHandleMouseEvent {
+  handleId: string;
+  nodeId: string;
+  handleType: HandleType;
+  position: Position;
+  timestamp?: number;
 }
 
 type EventName = keyof CanvasEvents;

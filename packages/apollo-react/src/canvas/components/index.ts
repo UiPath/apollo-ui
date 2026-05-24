@@ -6,6 +6,7 @@ export * from './ButtonHandle';
 export * from './CanvasModeToolbar';
 export * from './CanvasPositionControls';
 export * from './CanvasZoomControls';
+export * from './CaseFlow';
 export * from './CodedAgent';
 export * from './Edges';
 export * from './ExecutionStatusIcon';
