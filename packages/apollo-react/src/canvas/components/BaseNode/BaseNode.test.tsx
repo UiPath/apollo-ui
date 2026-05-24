@@ -10,7 +10,13 @@ const DEFAULT_MANIFEST = {
 } as const;
 
 // Hoisted mocks — available inside vi.mock factories
-const { mockUpdateNode, mockHandleConfigs, mockManifest } = vi.hoisted(() => ({
+const {
+  mockUpdateNode,
+  mockHandleConfigs,
+  mockManifest,
+  mockUseButtonHandles,
+  mockOverrideConfig,
+} = vi.hoisted(() => ({
   mockUpdateNode: vi.fn(),
   mockHandleConfigs: { current: undefined as HandleGroupManifest[] | undefined },
   mockManifest: {
@@ -19,6 +25,9 @@ const { mockUpdateNode, mockHandleConfigs, mockManifest } = vi.hoisted(() => ({
       handleConfiguration: [],
     } as Record<string, unknown>,
   },
+  // biome-ignore lint/suspicious/noExplicitAny: hook receives a broad typed options object
+  mockUseButtonHandles: vi.fn() as any,
+  mockOverrideConfig: { current: {} as Record<string, unknown> },
 }));
 
 // xyflow is globally mocked in canvas-mocks.ts; extend with test-specific overrides.
@@ -50,13 +59,21 @@ vi.mock('../BaseCanvas/SelectionStateContext', () => ({
 vi.mock('../BaseCanvas/CanvasThemeContext', () => ({
   useCanvasTheme: () => ({ isDarkMode: false }),
 }));
-vi.mock('../ButtonHandle/useButtonHandles', () => ({ useButtonHandles: () => null }));
+vi.mock('../ButtonHandle/useButtonHandles', () => ({
+  useButtonHandles: (opts: unknown) => {
+    mockUseButtonHandles(opts);
+    return null;
+  },
+}));
 vi.mock('../ButtonHandle/SmartHandle', () => ({
   SmartHandle: () => null,
   SmartHandleProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 vi.mock('./BaseNodeConfigContext', () => ({
-  useBaseNodeOverrideConfig: () => ({ handleConfigurations: mockHandleConfigs.current }),
+  useBaseNodeOverrideConfig: () => ({
+    handleConfigurations: mockHandleConfigs.current,
+    ...mockOverrideConfig.current,
+  }),
 }));
 vi.mock('../../utils/adornment-resolver', () => ({ resolveAdornments: () => ({}) }));
 vi.mock('../../utils/toolbar-resolver', () => ({ resolveToolbar: () => undefined }));
@@ -122,8 +139,10 @@ const makeHandles = (position: Position, count: number): HandleGroupManifest[] =
 describe('BaseNode', () => {
   afterEach(() => {
     mockUpdateNode.mockClear();
+    mockUseButtonHandles.mockClear();
     mockHandleConfigs.current = undefined;
     mockManifest.current = { ...DEFAULT_MANIFEST };
+    mockOverrideConfig.current = {};
   });
 
   describe('Height computation', () => {
@@ -281,6 +300,40 @@ describe('BaseNode', () => {
       render(<BaseNode {...defaultProps} />);
       // No aria-hidden 'M' span — the registered icon takes the slot.
       expect(screen.queryByText('M', { selector: '[aria-hidden="true"]' })).not.toBeInTheDocument();
+    });
+  });
+
+  // BaseNode forwards the consumer-facing `onHandleMouseEnter`/`onHandleMouseLeave`
+  // from `BaseNodeOverrideConfigProvider` into `useButtonHandles` as
+  // `handleMouseEnter`/`handleMouseLeave`. Trigger those by reaching into the
+  // captured hook arguments and invoking them with a synthetic payload.
+  describe('Handle hover handlers', () => {
+    it('forwards onHandleMouseEnter/onHandleMouseLeave overrides and fires with the payload', () => {
+      const onHandleMouseEnter = vi.fn();
+      const onHandleMouseLeave = vi.fn();
+      mockOverrideConfig.current = { onHandleMouseEnter, onHandleMouseLeave };
+
+      render(<BaseNode {...defaultProps} />);
+
+      expect(mockUseButtonHandles).toHaveBeenCalled();
+      const opts = mockUseButtonHandles.mock.calls.at(-1)?.[0] as {
+        handleMouseEnter?: (e: unknown) => void;
+        handleMouseLeave?: (e: unknown) => void;
+      };
+      expect(opts.handleMouseEnter).toBe(onHandleMouseEnter);
+      expect(opts.handleMouseLeave).toBe(onHandleMouseLeave);
+
+      const payload = {
+        handleId: 'output',
+        nodeId: 'test-node',
+        handleType: 'output',
+        position: Position.Right,
+      };
+      opts.handleMouseEnter?.(payload);
+      opts.handleMouseLeave?.(payload);
+
+      expect(onHandleMouseEnter).toHaveBeenCalledWith(payload);
+      expect(onHandleMouseLeave).toHaveBeenCalledWith(payload);
     });
   });
 });

@@ -22,6 +22,14 @@ export interface HandleActionEvent {
   originalEvent: React.MouseEvent;
 }
 
+/** Payload passed to `onMouseEnter` / `onMouseLeave` handlers on a button handle. */
+export interface HandleMouseEvent {
+  handleId: string;
+  nodeId: string;
+  handleType: HandleType;
+  position: Position;
+}
+
 type ButtonHandleProps = {
   id: string;
   nodeId: string;
@@ -40,6 +48,8 @@ type ButtonHandleProps = {
   index?: number; // 0-based index of this handle on the edge
   total?: number; // Total number of handles on this edge
   onAction?: (event: HandleActionEvent) => void;
+  onMouseEnter?: (event: HandleMouseEvent) => void;
+  onMouseLeave?: (event: HandleMouseEvent) => void;
   showNotches?: boolean;
   customPositionAndOffsets?: HandleConfigurationSpecificPosition;
   nodeWidth?: number;
@@ -63,6 +73,8 @@ const ButtonHandleBase = ({
   index = 0,
   total = 1,
   onAction,
+  onMouseEnter,
+  onMouseLeave,
   showNotches = true,
   customPositionAndOffsets,
   nodeWidth,
@@ -72,6 +84,33 @@ const ButtonHandleBase = ({
   const handleRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const isVertical = position === Position.Top || position === Position.Bottom;
+
+  const dispatchMouseEvent = useCallback(
+    (
+      eventName: 'handle:mouseenter' | 'handle:mouseleave',
+      handler: ((event: HandleMouseEvent) => void) | undefined
+    ) => {
+      const payload: HandleMouseEvent = {
+        handleId: id,
+        nodeId,
+        handleType,
+        position: connectionPosition,
+      };
+      handler?.(payload);
+      canvasEventBus.emit(eventName, payload);
+    },
+    [id, nodeId, handleType, connectionPosition]
+  );
+
+  const handleButtonMouseEnter = useCallback(
+    () => dispatchMouseEvent('handle:mouseenter', onMouseEnter),
+    [dispatchMouseEvent, onMouseEnter]
+  );
+
+  const handleButtonMouseLeave = useCallback(
+    () => dispatchMouseEvent('handle:mouseleave', onMouseLeave),
+    [dispatchMouseEvent, onMouseLeave]
+  );
 
   // Calculate position along the edge for multiple handles
   // Use grid-aligned positions when node dimensions are available
@@ -189,6 +228,8 @@ const ButtonHandleBase = ({
             labelVisible={visible}
             position={connectionPosition}
             onAction={handleButtonClick}
+            onMouseEnter={handleButtonMouseEnter}
+            onMouseLeave={handleButtonMouseLeave}
             handleRef={handleRef}
           />
         ) : null}
@@ -246,6 +287,8 @@ const ButtonHandleBase = ({
           labelVisible={visible}
           position={position}
           onAction={handleButtonClick}
+          onMouseEnter={handleButtonMouseEnter}
+          onMouseLeave={handleButtonMouseLeave}
           handleRef={handleRef}
           label={label}
           labelIcon={labelIcon}
@@ -335,6 +378,8 @@ export interface ButtonHandleConfig {
   /** Runtime visibility — controls opacity (e.g. connected handles stay visible). */
   showHandle?: boolean;
   onAction?: (event: HandleActionEvent) => void;
+  onMouseEnter?: (event: HandleMouseEvent) => void;
+  onMouseLeave?: (event: HandleMouseEvent) => void;
   customPositionAndOffsets?: HandleConfigurationSpecificPosition;
 }
 
@@ -425,6 +470,8 @@ const ButtonHandlesBase = ({
             visible={handleVisible}
             showButton={finalSelected && handleVisible && handle.showButton}
             onAction={handle.onAction}
+            onMouseEnter={handle.onMouseEnter}
+            onMouseLeave={handle.onMouseLeave}
             showNotches={showNotches}
             customPositionAndOffsets={customPositionAndOffsets}
             nodeWidth={nodeWidth}

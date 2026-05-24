@@ -51,6 +51,7 @@ export const caseManagementTriggerManifest: NodeManifest = {
           id: 'output',
           type: 'source',
           handleType: 'output',
+          showButton: true,
           constraints: {
             minConnections: 1,
             allowedTargetCategories: ['case-stage'],
@@ -71,6 +72,17 @@ export const caseManagementTriggerManifest: NodeManifest = {
     timeCycle: { type: 'string' },
     context: { type: 'array', items: { type: 'object' } },
     bindings: { type: 'array', items: { type: 'object' } },
+  },
+  toolbarExtensions: {
+    design: {
+      actions: [
+        {
+          id: 'change-trigger-type',
+          icon: 'square-mouse-pointer',
+          label: 'Change trigger type',
+        },
+      ],
+    },
   },
 };
 

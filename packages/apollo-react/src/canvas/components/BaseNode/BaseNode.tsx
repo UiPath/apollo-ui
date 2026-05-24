@@ -87,6 +87,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // Read runtime configuration from context (provided by parent node components)
   const {
     onHandleAction: onHandleActionProp,
+    onHandleMouseEnter: onHandleMouseEnterProp,
+    onHandleMouseLeave: onHandleMouseLeaveProp,
     shouldShowAddButtonFn: shouldShowAddButtonFnProp,
     shouldShowButtonHandleNotchesFn: shouldShowButtonHandleNotchesFnProp,
     toolbarConfig: toolbarConfigProp,
@@ -480,6 +482,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     handleConfigurations,
     shouldShowHandles,
     handleAction,
+    handleMouseEnter: onHandleMouseEnterProp,
+    handleMouseLeave: onHandleMouseLeaveProp,
     nodeId: id,
     selected: selected ?? false,
     hovered: isHovered,
