@@ -59,7 +59,7 @@
     "@swc/helpers": "^0.5.17",
     "@uipath/apollo-react": "workspace:*",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.6"
   },
   "devDependencies": {
     "@rsbuild/core": "^1.6.7",
