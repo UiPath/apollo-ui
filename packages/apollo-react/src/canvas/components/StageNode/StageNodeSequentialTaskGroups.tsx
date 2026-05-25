@@ -43,7 +43,6 @@ export const StageNodeSequentialTaskGroups = ({
   isReadOnly,
   selectedTaskId,
   taskWidthStyle,
-  hasContextMenu,
   handleTaskClick,
   handleReorderSequentialTasks,
   generateReplaceTaskMenuItemForTask,
@@ -55,7 +54,6 @@ export const StageNodeSequentialTaskGroups = ({
   isReadOnly: boolean;
   selectedTaskId?: string;
   taskWidthStyle?: CSSProperties;
-  hasContextMenu: boolean;
   handleTaskClick: (e: React.MouseEvent, taskElementId: string) => void;
   handleReorderSequentialTasks: (newTasks: StageTaskItem[][]) => void;
   generateReplaceTaskMenuItemForTask: (
@@ -63,8 +61,16 @@ export const StageNodeSequentialTaskGroups = ({
     isParallel: boolean
   ) => NodeMenuItem | undefined;
 }) => {
-  const { execution, onTaskGroupModification, onTaskReorder, hideParallelOptions, loadingTaskIds } =
-    props;
+  const {
+    execution,
+    onTaskGroupModification,
+    onReplaceTaskFromToolbox,
+    onTaskReorder,
+    hideParallelOptions,
+    loadingTaskIds,
+    getTaskContextMenuItems,
+  } = props;
+  const hasBuiltInTaskActions = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
   const labels = useStageNodeLabels();
 
   const sequentialTaskIds = useMemo(
@@ -112,21 +118,25 @@ export const StageNodeSequentialTaskGroups = ({
   /** Lazily builds context menu items for a task. Called only when the menu opens,
    * avoiding object allocation on every render for every task. */
   const buildContextMenuItems = useCallback(
-    (groupIndex: number, _: number, taskId: string) => {
+    (groupIndex: number, task: StageTaskItem) => {
       const taskGroup = sequentialTaskGroups[groupIndex] ?? [];
       const isParallel = taskGroup.length > 1;
       const items: NodeMenuItem[] = [];
 
-      const replaceTaskMenuItem = generateReplaceTaskMenuItemForTask(taskId, isParallel);
+      const replaceTaskMenuItem = generateReplaceTaskMenuItemForTask(task.id, isParallel);
       if (replaceTaskMenuItem) {
         items.push(replaceTaskMenuItem);
-        items.push(getDivider());
       }
+
+      const additionalMenuItems =
+        getTaskContextMenuItems?.({ task, taskGroupType: 'sequential', isParallel }) ?? [];
+      items.push(...additionalMenuItems);
+
       let groupIndexInAllTasks: number | undefined;
       let taskIndexInAllTasks: number | undefined;
       for (const [allTasksGroupIndex, group] of allTasks.entries()) {
-        for (const [allTasksTaskIndex, task] of group.entries()) {
-          if (task.id === taskId) {
+        for (const [allTasksTaskIndex, t] of group.entries()) {
+          if (t.id === task.id) {
             groupIndexInAllTasks = allTasksGroupIndex;
             taskIndexInAllTasks = allTasksTaskIndex;
             break;
@@ -151,7 +161,7 @@ export const StageNodeSequentialTaskGroups = ({
           hideParallelOptions,
           labels: labels.contextMenu,
         });
-        return [...items, ...reGroupOptions];
+        return items.length > 0 ? [...items, getDivider(), ...reGroupOptions] : reGroupOptions;
       }
 
       return items;
@@ -162,6 +172,7 @@ export const StageNodeSequentialTaskGroups = ({
       hideParallelOptions,
       handleTaskRegroup,
       generateReplaceTaskMenuItemForTask,
+      getTaskContextMenuItems,
       allTasks,
       labels.contextMenu,
     ]
@@ -211,6 +222,16 @@ export const StageNodeSequentialTaskGroups = ({
                     )}
                     {taskGroup.map((task, taskIndex) => {
                       const taskExecution = execution?.taskStatus?.[task.id];
+                      const customItems =
+                        !isReadOnly && !hasBuiltInTaskActions
+                          ? (getTaskContextMenuItems?.({
+                              task,
+                              taskGroupType: 'sequential',
+                              isParallel,
+                            }) ?? [])
+                          : [];
+                      const hasMenu =
+                        !isReadOnly && (hasBuiltInTaskActions || customItems.length > 0);
                       return (
                         <DraggableTask
                           key={task.id}
@@ -226,10 +247,9 @@ export const StageNodeSequentialTaskGroups = ({
                           }
                           isDragDisabled={!onTaskReorder || isReadOnly}
                           isTaskLoading={loadingTaskIds?.has(task.id)}
-                          {...(hasContextMenu &&
-                            !isReadOnly && {
-                              getContextMenuItems: buildContextMenuItems,
-                            })}
+                          {...(hasMenu && {
+                            getContextMenuItems: () => buildContextMenuItems(groupIndex, task),
+                          })}
                         />
                       );
                     })}

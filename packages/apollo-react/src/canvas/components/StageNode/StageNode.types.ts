@@ -30,6 +30,12 @@ export interface StageTaskItem {
   hasEntryCondition?: boolean;
 }
 
+export interface StageTaskContextMenuArgs {
+  task: StageTaskItem;
+  taskGroupType: 'sequential' | 'event-driven' | 'adhoc';
+  isParallel: boolean;
+}
+
 export enum StageHeaderChipType {
   Entry = 'entry',
   Exit = 'exit',
@@ -86,6 +92,7 @@ export interface StageNodeBaseProps {
   onTaskReorder?: (reorderedTasks: StageTaskItem[][]) => void;
   onReplaceTaskFromToolbox?: (newTask: ListItem, groupIndex: number, taskIndex: number) => void;
   onTaskPlay?: (taskId: string) => Promise<void>;
+  getTaskContextMenuItems?: (args: StageTaskContextMenuArgs) => NodeMenuItem[] | undefined;
   hideParallelOptions?: boolean;
   loadingTaskIds?: ReadonlySet<string>;
 }

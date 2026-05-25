@@ -6,7 +6,7 @@ import {
   StageAdditionalTasksSection,
   StageTaskList,
 } from './StageNode.styles';
-import type { StageNodeProps, StageTaskGroup } from './StageNode.types';
+import type { StageNodeProps, StageTaskGroup, StageTaskItem } from './StageNode.types';
 import { useStageNodeLabels } from './useStageNodeLabels';
 
 const StageNodeEventDrivenTaskGroupsInner = ({
@@ -31,28 +31,39 @@ const StageNodeEventDrivenTaskGroupsInner = ({
   ) => NodeMenuItem | undefined;
   generateDeleteTaskMenuItemForTask: (taskId: string) => NodeMenuItem | undefined;
 }) => {
-  const { execution, onTaskGroupModification, onReplaceTaskFromToolbox, loadingTaskIds } = props;
+  const {
+    execution,
+    onTaskGroupModification,
+    onReplaceTaskFromToolbox,
+    loadingTaskIds,
+    getTaskContextMenuItems,
+  } = props;
+  const hasBuiltInTaskActions = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
   const labels = useStageNodeLabels();
 
   /** Lazily builds context menu items for a task. Called only when the menu opens,
    * avoiding object allocation on every render for every task. */
   const getEventDrivenContextMenuItems = useCallback(
-    (taskId: string): NodeMenuItem[] => {
+    (task: StageTaskItem): NodeMenuItem[] => {
       const items: NodeMenuItem[] = [];
 
-      const replaceTaskMenuItem = generateReplaceTaskMenuItemForTask(taskId, false);
+      const replaceTaskMenuItem = generateReplaceTaskMenuItemForTask(task.id, false);
       if (replaceTaskMenuItem) {
         items.push(replaceTaskMenuItem);
       }
 
-      const deleteTaskMenuItem = generateDeleteTaskMenuItemForTask(taskId);
+      const additionalMenuItems =
+        getTaskContextMenuItems?.({ task, taskGroupType: 'event-driven', isParallel: false }) ?? [];
+      items.push(...additionalMenuItems);
+
+      const deleteTaskMenuItem = generateDeleteTaskMenuItemForTask(task.id);
       if (deleteTaskMenuItem) {
         items.push(deleteTaskMenuItem);
       }
 
       return items;
     },
-    [generateReplaceTaskMenuItemForTask, generateDeleteTaskMenuItemForTask]
+    [generateReplaceTaskMenuItemForTask, getTaskContextMenuItems, generateDeleteTaskMenuItemForTask]
   );
 
   if (eventDrivenTasks.length === 0) {
@@ -66,6 +77,15 @@ const StageNodeEventDrivenTaskGroupsInner = ({
       <StageTaskList>
         {eventDrivenTasks.map(({ task }) => {
           const taskExecution = execution?.taskStatus?.[task.id];
+          const customItems =
+            !isReadOnly && !hasBuiltInTaskActions
+              ? (getTaskContextMenuItems?.({
+                  task,
+                  taskGroupType: 'event-driven',
+                  isParallel: false,
+                }) ?? [])
+              : [];
+          const hasMenu = !isReadOnly && (hasBuiltInTaskActions || customItems.length > 0);
           return (
             <EventDrivenTaskItem
               key={task.id}
@@ -74,10 +94,9 @@ const StageNodeEventDrivenTaskGroupsInner = ({
               isSelected={selectedTaskId === task.id}
               onTaskClick={handleTaskClick}
               isTaskLoading={loadingTaskIds?.has(task.id)}
-              {...((onTaskGroupModification || onReplaceTaskFromToolbox) &&
-                !isReadOnly && {
-                  getContextMenuItems: () => getEventDrivenContextMenuItems(task.id),
-                })}
+              {...(hasMenu && {
+                getContextMenuItems: () => getEventDrivenContextMenuItems(task),
+              })}
             />
           );
         })}
