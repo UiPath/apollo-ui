@@ -4,19 +4,51 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ValidationErrorSeverity } from '../../types/validation';
 import type { LoopNodeData } from './LoopNode.types';
 
-const { mockExecutionState, mockManifest, mockValidationState } = vi.hoisted(() => ({
-  mockExecutionState: { current: undefined as unknown },
-  mockManifest: {
-    current: {
-      display: { label: 'Loop', icon: 'repeat', shape: 'container' },
-      handleConfiguration: [],
-    } as Record<string, unknown>,
-  },
-  mockValidationState: { current: undefined as unknown },
-}));
+const { mockExecutionState, mockGetContainerResizeMinimums, mockManifest, mockValidationState } =
+  vi.hoisted(() => ({
+    mockExecutionState: { current: undefined as unknown },
+    mockGetContainerResizeMinimums: vi.fn(() => ({
+      left: 410,
+      right: 420,
+      top: 230,
+      bottom: 240,
+    })),
+    mockManifest: {
+      current: {
+        display: { label: 'Loop', icon: 'repeat', shape: 'container' },
+        handleConfiguration: [],
+      } as Record<string, unknown>,
+    },
+    mockValidationState: { current: undefined as unknown },
+  }));
 
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@uipath/apollo-react/canvas/xyflow/react')>()),
+  NodeResizeControl: ({
+    children,
+    minHeight,
+    minWidth,
+    onResizeEnd,
+    onResizeStart,
+    position,
+  }: {
+    children?: React.ReactNode;
+    minHeight?: number;
+    minWidth?: number;
+    onResizeEnd?: () => void;
+    onResizeStart?: () => void;
+    position?: string;
+  }) => (
+    <div
+      data-testid={`node-resize-control-${position}`}
+      data-min-height={minHeight}
+      data-min-width={minWidth}
+      onMouseDown={onResizeStart}
+      onMouseUp={onResizeEnd}
+    >
+      {children}
+    </div>
+  ),
   useStore: (selector: unknown) => {
     const state = {
       connection: { inProgress: false },
@@ -27,6 +59,11 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
     return typeof selector === 'function' ? selector(state) : false;
   },
   useUpdateNodeInternals: () => vi.fn(),
+}));
+
+vi.mock('../../utils/container', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../utils/container')>()),
+  getContainerResizeMinimums: mockGetContainerResizeMinimums,
 }));
 
 vi.mock('../../core', () => ({
@@ -86,8 +123,17 @@ function getLoopContainer() {
   return document.querySelector('[data-loop-container]') as HTMLElement;
 }
 
+function getResizeControls() {
+  return screen.queryAllByTestId(/^node-resize-control-/);
+}
+
+function getResizeIndicators() {
+  return screen.queryAllByTestId(/^loop-resize-corner-indicator-/);
+}
+
 beforeEach(() => {
   mockExecutionState.current = undefined;
+  mockGetContainerResizeMinimums.mockClear();
   mockValidationState.current = undefined;
 });
 
@@ -157,6 +203,20 @@ describe('LoopNode header adornment spacing', () => {
 
     expect(header.style.paddingRight).toBe('34px');
   });
+
+  it('uses a rows icon for sequential mode', () => {
+    renderLoopNode({ data: { parallel: false } });
+
+    expect(screen.getByText('Sequential')).toBeInTheDocument();
+    expect(screen.getByTestId('canvas-icon-rows-3')).toBeInTheDocument();
+  });
+
+  it('uses a columns icon for parallel mode', () => {
+    renderLoopNode({ data: { parallel: true } });
+
+    expect(screen.getByText('Parallel')).toBeInTheDocument();
+    expect(screen.getByTestId('canvas-icon-columns-3')).toBeInTheDocument();
+  });
 });
 
 describe('LoopNode status border hover treatment', () => {
@@ -179,5 +239,79 @@ describe('LoopNode status border hover treatment', () => {
 
     expect(container).toHaveClass('border-border-hover');
     expect(container).toHaveClass('shadow-(--canvas-node-shadow-hover)');
+  });
+});
+
+describe('LoopNode resize controls', () => {
+  it('renders resize controls before the loop is selected', () => {
+    renderLoopNode({ selected: false });
+
+    expect(getResizeControls()).toHaveLength(4);
+  });
+
+  it('does not compute child-aware resize minimums for an idle unselected loop', () => {
+    renderLoopNode({ selected: false });
+
+    expect(getResizeControls()).toHaveLength(4);
+    expect(mockGetContainerResizeMinimums).not.toHaveBeenCalled();
+  });
+
+  it('computes child-aware resize minimums when the loop is selected', () => {
+    renderLoopNode({ selected: true });
+
+    expect(mockGetContainerResizeMinimums).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('node-resize-control-bottom-right')).toHaveAttribute(
+      'data-min-width',
+      '420'
+    );
+  });
+
+  it('computes child-aware resize minimums while the loop is hovered', () => {
+    renderLoopNode({ selected: false });
+
+    fireEvent.mouseEnter(getLoopContainer());
+
+    expect(mockGetContainerResizeMinimums).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides resize indicators before the loop is selected', () => {
+    renderLoopNode({ selected: false });
+
+    expect(getResizeIndicators()).toHaveLength(4);
+    for (const indicator of getResizeIndicators()) {
+      expect(indicator).toHaveClass('opacity-0');
+    }
+  });
+
+  it('shows resize indicators when the loop is selected', () => {
+    renderLoopNode({ selected: true });
+
+    expect(getResizeIndicators()).toHaveLength(4);
+    for (const indicator of getResizeIndicators()) {
+      expect(indicator).toHaveClass('opacity-100');
+    }
+  });
+
+  it('does not render resize controls while dragging', () => {
+    renderLoopNode({ dragging: true, selected: true });
+
+    expect(getResizeControls()).toHaveLength(0);
+  });
+
+  it('keeps resize minimums and indicators active during an unselected resize', () => {
+    renderLoopNode({ selected: false });
+
+    fireEvent.mouseDown(screen.getByTestId('node-resize-control-bottom-right'));
+
+    expect(mockGetContainerResizeMinimums).toHaveBeenCalledTimes(1);
+    for (const indicator of getResizeIndicators()) {
+      expect(indicator).toHaveClass('opacity-100');
+    }
+
+    fireEvent.mouseUp(screen.getByTestId('node-resize-control-bottom-right'));
+
+    for (const indicator of getResizeIndicators()) {
+      expect(indicator).toHaveClass('opacity-0');
+    }
   });
 });

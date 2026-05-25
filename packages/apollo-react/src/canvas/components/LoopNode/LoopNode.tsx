@@ -191,6 +191,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
   } = props;
   const nodeTypeRegistry = useOptionalNodeTypeRegistry();
   const [isHovered, setIsHovered] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
 
   const resolvedData = data ?? EMPTY_DATA;
   const isLoading = !!resolvedData.loading;
@@ -244,12 +245,14 @@ function LoopNodeComponent(props: LoopNodeProps) {
   const isDropTarget = resolvedData.isDropTarget === true;
   const containerWidth = width || DEFAULT_CONTAINER_WIDTH;
   const containerHeight = height || DEFAULT_CONTAINER_HEIGHT;
-  const showResizeControls = selected && !dragging && isDesignMode;
+  const resizeControlsMounted = isDesignMode && !dragging;
+  const resizeControlsVisible = resizeControlsMounted && (selected || isResizing);
+  const resizeMinimumsEnabled = resizeControlsMounted && (selected || isHovered || isResizing);
   const resizeMinimums = useContainerResizeMinimums(
     id,
     containerWidth,
     containerHeight,
-    showResizeControls
+    resizeMinimumsEnabled
   );
   const nodeSizeStyle = {
     width: containerWidth,
@@ -299,6 +302,8 @@ function LoopNodeComponent(props: LoopNodeProps) {
     },
     [onResize]
   );
+  const handleResizeStart = useCallback(() => setIsResizing(true), []);
+  const handleResizeEnd = useCallback(() => setIsResizing(false), []);
 
   const handleEmptyClick = useCallback(() => {
     onAddFirstChild?.();
@@ -374,9 +379,14 @@ function LoopNodeComponent(props: LoopNodeProps) {
           </BaseBadgeSlot>
         ) : null
       )}
-      <ResizeCornerIndicators visible={showResizeControls} />
-      {showResizeControls ? (
-        <ResizeControls minimums={resizeMinimums} onResize={handleResize} />
+      <ResizeCornerIndicators visible={resizeControlsVisible} />
+      {resizeControlsMounted ? (
+        <ResizeControls
+          minimums={resizeMinimums}
+          onResize={handleResize}
+          onResizeStart={handleResizeStart}
+          onResizeEnd={handleResizeEnd}
+        />
       ) : null}
       <Header
         title={displayTitle}
@@ -464,6 +474,7 @@ function Header({
           paddingRight: hasTopRightAdornment ? LOOP_HEADER_ADORNMENT_PADDING : undefined,
         }
       : undefined;
+  const executionModeIcon = isParallel ? 'columns-3' : 'rows-3';
 
   return (
     <div
@@ -482,8 +493,8 @@ function Header({
       <div className="flex shrink-0 items-center gap-2">
         {iterationState ? <IterationNavigator iterationState={iterationState} /> : null}
         <span className="flex h-6 shrink-0 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-[11px] font-semibold leading-4 text-foreground shadow-sm">
-          <span className={cn('flex shrink-0', isParallel && 'rotate-90')} aria-hidden>
-            <CanvasIcon icon="align-justify" size={11} />
+          <span className="flex shrink-0" aria-hidden>
+            <CanvasIcon icon={executionModeIcon} size={12} />
           </span>
           {isParallel ? 'Parallel' : 'Sequential'}
         </span>
@@ -533,9 +544,13 @@ function BodyFrame({ isEmpty, isLoading }: { isEmpty?: boolean; isLoading?: bool
 function ResizeControls({
   minimums = DEFAULT_RESIZE_MINIMUMS,
   onResize,
+  onResizeStart,
+  onResizeEnd,
 }: {
   minimums?: ContainerResizeMinimums;
   onResize: (_event: unknown, params: { width: number; height: number }) => void;
+  onResizeStart: () => void;
+  onResizeEnd: () => void;
 }) {
   return (
     <>
@@ -546,7 +561,9 @@ function ResizeControls({
           position={position}
           minWidth={minimums[widthSide]}
           minHeight={minimums[heightSide]}
+          onResizeStart={onResizeStart}
           onResize={onResize}
+          onResizeEnd={onResizeEnd}
         >
           <div
             className="absolute bottom-0 right-0 h-5 w-5 pointer-events-auto"
@@ -565,6 +582,7 @@ function ResizeCornerIndicators({ visible }: { visible: boolean }) {
         <div
           key={position}
           aria-hidden
+          data-testid={`loop-resize-corner-indicator-${position}`}
           className={cn(
             'pointer-events-none absolute h-2 w-2 rounded-full bg-brand transition-opacity',
             indicatorClassName,
