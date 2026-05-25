@@ -1,6 +1,7 @@
 import { cn } from '@uipath/apollo-wind';
 import type { SyntheticEvent } from 'react';
 import { useCallback } from 'react';
+import { useSafeLingui } from '../../../i18n';
 import { clamp } from '../../utils';
 import { CanvasIcon } from '../../utils/icon-registry';
 import type { LoopIterationState } from './LoopNode.types';
@@ -46,12 +47,23 @@ export function IterationNavigator({ iterationState }: IterationNavigatorProps) 
 }
 
 function NavigatorContent({ iterationState }: { iterationState: LoopIterationState }) {
+  const { _ } = useSafeLingui();
   const { activeIndex, total, onActiveIndexChange, disabled, ariaLabel } = iterationState;
   const canInteract = !disabled && typeof onActiveIndexChange === 'function';
   const canGoPrevious = canInteract && activeIndex > 0;
   const canGoNext = canInteract && activeIndex < total - 1;
-  const label = ariaLabel ?? 'Loop iteration';
+  const label = ariaLabel ?? _({ id: 'loop-node.iteration.label', message: 'Loop iteration' });
   const visibleIndex = activeIndex + 1;
+  const statusLabel = _({
+    id: 'loop-node.iteration.status',
+    message: '{label}: {visibleIndex} of {total}',
+    values: { label, visibleIndex, total },
+  });
+  const previousLabel = _({
+    id: 'loop-node.iteration.previous',
+    message: 'Previous loop iteration',
+  });
+  const nextLabel = _({ id: 'loop-node.iteration.next', message: 'Next loop iteration' });
 
   const handlePrevious = useCallback(
     (event: SyntheticEvent) => {
@@ -84,9 +96,7 @@ function NavigatorContent({ iterationState }: { iterationState: LoopIterationSta
       onMouseDown={stopCanvasControlEvent}
       onDoubleClick={stopCanvasControlEvent}
     >
-      <legend className="sr-only">
-        {label}: {visibleIndex} of {total}
-      </legend>
+      <legend className="sr-only">{statusLabel}</legend>
       <button
         type="button"
         className={cn(
@@ -95,7 +105,7 @@ function NavigatorContent({ iterationState }: { iterationState: LoopIterationSta
           canGoPrevious ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-40'
         )}
         disabled={!canGoPrevious}
-        aria-label="Previous loop iteration"
+        aria-label={previousLabel}
         onClick={handlePrevious}
         onPointerDown={stopCanvasControlEvent}
         onMouseDown={stopCanvasControlEvent}
@@ -117,7 +127,7 @@ function NavigatorContent({ iterationState }: { iterationState: LoopIterationSta
           canGoNext ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-40'
         )}
         disabled={!canGoNext}
-        aria-label="Next loop iteration"
+        aria-label={nextLabel}
         onClick={handleNext}
         onPointerDown={stopCanvasControlEvent}
         onMouseDown={stopCanvasControlEvent}
