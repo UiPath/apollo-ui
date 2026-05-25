@@ -134,6 +134,10 @@ function getResizeIndicators() {
 beforeEach(() => {
   mockExecutionState.current = undefined;
   mockGetContainerResizeMinimums.mockClear();
+  mockManifest.current = {
+    display: { label: 'Loop', icon: 'repeat', shape: 'container' },
+    handleConfiguration: [],
+  };
   mockValidationState.current = undefined;
 });
 
@@ -313,5 +317,36 @@ describe('LoopNode resize controls', () => {
     for (const indicator of getResizeIndicators()) {
       expect(indicator).toHaveClass('opacity-0');
     }
+  });
+});
+
+describe('LoopNode localized labels', () => {
+  it('renders the sequential mode label by default', () => {
+    renderLoopNode();
+
+    expect(screen.getByText('Sequential')).toBeTruthy();
+  });
+
+  it('renders the parallel mode label when the loop is parallel', () => {
+    renderLoopNode({ data: { parallel: true } });
+
+    expect(screen.getByText('Parallel')).toBeTruthy();
+  });
+
+  it('uses the localized fallback title when the manifest has no display label', () => {
+    mockManifest.current = {
+      display: { icon: 'repeat', shape: 'container' },
+      handleConfiguration: [],
+    };
+
+    renderLoopNode();
+
+    expect(screen.getByText('Loop')).toBeTruthy();
+  });
+
+  it('exposes a localized accessible label for the empty add button', () => {
+    renderLoopNode({ onAddFirstChild: vi.fn() });
+
+    expect(screen.getByRole('button', { name: 'Add node to loop' })).toBeTruthy();
   });
 });

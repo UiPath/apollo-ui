@@ -8,6 +8,7 @@ import {
 import { cn } from '@uipath/apollo-wind';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { shallow } from 'zustand/shallow';
+import { useSafeLingui } from '../../../i18n';
 import { NODE_BADGE_INSET_SQUARE, NODE_BADGE_SIZE } from '../../constants';
 import { useOptionalNodeTypeRegistry } from '../../core';
 import { useElementValidationStatus, useNodeExecutionState } from '../../hooks';
@@ -35,13 +36,13 @@ import { getStatusBorder } from '../BaseNode/BaseNodeContainer';
 import { MissingManifestNode } from '../BaseNode/BaseNodeMissingManifest';
 import type { HandleActionEvent } from '../ButtonHandle';
 import { ButtonHandles } from '../ButtonHandle';
+import { CanvasTooltip } from '../CanvasTooltip';
 import { NodeToolbar } from '../Toolbar';
 import { IterationNavigator } from './IterationNavigator';
 import { type ContainerHandleGroup, resolveContainerHandleGroups } from './LoopNode.helpers';
 import type { LoopIterationState, LoopNodeProps } from './LoopNode.types';
 
 const DEFAULT_LOOP_ICON = 'repeat';
-const DEFAULT_LOOP_TITLE = 'Loop';
 const EMPTY_DATA: Record<string, unknown> = {};
 const LOOP_HEADER_ADORNMENT_GAP = 8;
 const LOOP_HEADER_ADORNMENT_PADDING =
@@ -190,6 +191,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
     iterationState: iterationStateProp,
   } = props;
   const nodeTypeRegistry = useOptionalNodeTypeRegistry();
+  const { _ } = useSafeLingui();
   const [isHovered, setIsHovered] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
 
@@ -239,9 +241,16 @@ function LoopNodeComponent(props: LoopNodeProps) {
     [manifest?.display, id, resolvedData]
   );
 
-  const displayTitle = display.label ?? DEFAULT_LOOP_TITLE;
+  const displayTitle = display.label ?? _({ id: 'loop-node.title', message: 'Loop' });
   const displayIcon = display.icon ?? DEFAULT_LOOP_ICON;
   const isParallel = resolvedData.parallel === true;
+  const label = isParallel
+    ? _({ id: 'loop-node.mode.parallel', message: 'Parallel' })
+    : _({ id: 'loop-node.mode.sequential', message: 'Sequential' });
+  const addNodeToLoopLabel = _({
+    id: 'loop-node.add-node',
+    message: 'Add node to loop',
+  });
   const isDropTarget = resolvedData.isDropTarget === true;
   const containerWidth = width || DEFAULT_CONTAINER_WIDTH;
   const containerHeight = height || DEFAULT_CONTAINER_HEIGHT;
@@ -393,6 +402,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
         icon={displayIcon}
         loading={isLoading}
         isParallel={isParallel}
+        label={label}
         iterationState={iterationStateProp}
         hasTopLeftAdornment={hasTopLeftAdornment}
         hasTopRightAdornment={hasTopRightAdornment}
@@ -405,7 +415,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
             '-translate-x-1/2 -translate-y-1/2'
           )}
         >
-          <EmptyState onAddFirstChild={handleEmptyClick} />
+          <EmptyState label={addNodeToLoopLabel} onAddFirstChild={handleEmptyClick} />
         </div>
       ) : null}
       {toolbarConfig && (
@@ -441,6 +451,7 @@ function Header({
   icon,
   loading,
   isParallel,
+  label,
   iterationState,
   hasTopLeftAdornment,
   hasTopRightAdornment,
@@ -449,6 +460,7 @@ function Header({
   icon?: string;
   loading: boolean;
   isParallel: boolean;
+  label: string;
   iterationState?: LoopIterationState;
   hasTopLeftAdornment: boolean;
   hasTopRightAdornment: boolean;
@@ -496,30 +508,32 @@ function Header({
           <span className="flex shrink-0" aria-hidden>
             <CanvasIcon icon={executionModeIcon} size={12} />
           </span>
-          {isParallel ? 'Parallel' : 'Sequential'}
+          {label}
         </span>
       </div>
     </div>
   );
 }
 
-function EmptyState({ onAddFirstChild }: { onAddFirstChild: () => void }) {
+function EmptyState({ label, onAddFirstChild }: { label: string; onAddFirstChild: () => void }) {
   return (
-    <button
-      type="button"
-      onClick={onAddFirstChild}
-      aria-label="Add node to loop"
-      className={cn(
-        'nodrag nopan',
-        'pointer-events-auto flex h-8 w-8 items-center justify-center rounded-xl',
-        'border border-border bg-surface-overlay text-foreground',
-        'shadow-(--canvas-node-shadow-lifted)',
-        'transition-colors',
-        'hover:bg-surface-hover hover:border-brand'
-      )}
-    >
-      <CanvasIcon icon="plus" size={14} />
-    </button>
+    <CanvasTooltip content={label} placement="top">
+      <button
+        type="button"
+        onClick={onAddFirstChild}
+        aria-label={label}
+        className={cn(
+          'nodrag nopan',
+          'pointer-events-auto flex h-8 w-8 items-center justify-center rounded-xl',
+          'border border-border bg-surface-overlay text-foreground',
+          'shadow-(--canvas-node-shadow-lifted)',
+          'transition-colors',
+          'hover:bg-surface-hover hover:border-brand'
+        )}
+      >
+        <CanvasIcon icon="plus" size={14} />
+      </button>
+    </CanvasTooltip>
   );
 }
 
