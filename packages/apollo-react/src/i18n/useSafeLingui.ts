@@ -1,3 +1,4 @@
+import { setupI18n } from '@lingui/core';
 import { LinguiContext } from '@lingui/react';
 import { useContext, useMemo } from 'react';
 
@@ -7,10 +8,21 @@ type Translate = {
   (id: string): string;
 };
 
-// Returns the `message` (English default baked into the macro call) when no
+const fallbackI18n = setupI18n({ locale: 'en', messages: { en: {} } });
+
+// Formats the `message` (English default baked into the macro call) when no
 // I18nProvider is mounted upstream. Falls back to `id` if no message is given.
-const fallbackTranslate = ((arg: Descriptor | string): string =>
-  typeof arg === 'string' ? arg : (arg.message ?? arg.id)) as Translate;
+const fallbackTranslate = ((arg: Descriptor | string): string => {
+  if (typeof arg === 'string') {
+    return arg;
+  }
+
+  if (!arg.message) {
+    return arg.id;
+  }
+
+  return fallbackI18n._(arg);
+}) as Translate;
 
 // Drop-in replacement for `useLingui()` from `@lingui/react` that does NOT
 // throw when there is no I18nProvider upstream. Reads `LinguiContext` directly
