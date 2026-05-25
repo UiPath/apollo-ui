@@ -1071,3 +1071,77 @@ describe('StageTitleInput - input attributes', () => {
     expect(input).toHaveAttribute('name', 'stage-title-stage-b');
   });
 });
+
+describe('StageNode - getTaskContextMenuItems', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const renderWithCallback = (
+    getTaskContextMenuItems?: StageNodeProps['getTaskContextMenuItems']
+  ) =>
+    renderStageNode({
+      stageDetails: {
+        label: 'Test Stage',
+        tasks: [[{ id: 'task-1', label: 'Task 1' }]],
+      },
+      getTaskContextMenuItems,
+    });
+
+  it('appends items returned by getTaskContextMenuItems to the task menu', async () => {
+    const user = userEvent.setup();
+    const onCustom = vi.fn();
+    renderWithCallback(() => [{ id: 'custom-action', label: 'Custom Action', onClick: onCustom }]);
+
+    await user.click(screen.getByTestId('task-menu-button-task-1'));
+
+    expect(screen.getByTestId('menu-item-task-1-custom-action')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-item-task-1-custom-action')).toHaveTextContent('Custom Action');
+  });
+
+  it('passes the task and group context to the callback', async () => {
+    const user = userEvent.setup();
+    const getTaskContextMenuItems = vi.fn().mockReturnValue([]);
+    renderStageNode({
+      stageDetails: {
+        label: 'Test Stage',
+        tasks: [[{ id: 'task-a', label: 'Task A' }]],
+      },
+      onReplaceTaskFromToolbox: vi.fn(), // ensure the menu renders
+      getTaskContextMenuItems,
+    });
+
+    await user.click(screen.getByTestId('task-menu-button-task-a'));
+
+    expect(getTaskContextMenuItems).toHaveBeenCalledWith({
+      task: expect.objectContaining({ id: 'task-a', label: 'Task A' }),
+      taskGroupType: 'sequential',
+      isParallel: false,
+    });
+  });
+
+  it('does not render the task menu trigger when the callback returns an empty array and no other actions are provided', () => {
+    renderWithCallback(() => []);
+
+    expect(screen.queryByTestId('task-menu-button-task-1')).not.toBeInTheDocument();
+  });
+
+  it('does not render the task menu trigger when the callback returns undefined and no other actions are provided', () => {
+    renderWithCallback(() => undefined);
+
+    expect(screen.queryByTestId('task-menu-button-task-1')).not.toBeInTheDocument();
+  });
+
+  it('invokes the item onClick when the menu item is clicked', async () => {
+    const user = userEvent.setup();
+    const onCustom = vi.fn();
+    renderWithCallback(() => [
+      { id: 'go-to-definition', label: 'Go to definition', onClick: onCustom },
+    ]);
+
+    await user.click(screen.getByTestId('task-menu-button-task-1'));
+    await user.click(screen.getByTestId('menu-item-task-1-go-to-definition'));
+
+    expect(onCustom).toHaveBeenCalledTimes(1);
+  });
+});

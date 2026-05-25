@@ -67,8 +67,6 @@ const StageNodeAllTaskGroupsInner = ({
     [onTaskReorder, eventDrivenTaskGroups, adhocTaskGroups]
   );
 
-  const hasContextMenu = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
-
   const handleTaskClick = useCallback(
     (e: React.MouseEvent, taskElementId: string) => {
       e.stopPropagation();
@@ -177,7 +175,6 @@ const StageNodeAllTaskGroupsInner = ({
             isReadOnly={isReadOnly}
             selectedTaskId={selectedTaskId}
             taskWidthStyle={taskWidthStyle}
-            hasContextMenu={hasContextMenu}
             handleTaskClick={handleTaskClick}
             handleReorderSequentialTasks={handleReorderSequentialTasks}
             allTasks={allTasks}

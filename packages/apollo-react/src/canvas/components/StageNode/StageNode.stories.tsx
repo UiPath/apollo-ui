@@ -1218,6 +1218,13 @@ const initialTasksForAddReplace: StageTaskItem[][] = [
   ],
   [{ id: 'task-2', label: 'Document Review', icon: <DocumentIcon /> }],
   [{ id: 'task-3', label: 'Process Validation', icon: <ProcessIcon /> }],
+  [
+    {
+      id: 'task-with-custom-action',
+      label: 'Task with Custom Menu Action',
+      icon: <ProcessIcon />,
+    },
+  ],
 ];
 
 const availableTaskOptions: ListItem[] = [
@@ -1504,6 +1511,16 @@ const AddAndReplaceTasksStory = ({ locale }: { locale?: SupportedLocale }) => {
                 onTaskGroupModification: handleTaskGroupModification,
                 onTaskReorder: handleTaskReorder,
                 onTaskClick: handleTaskClick,
+                getTaskContextMenuItems: ({ task }: { task: StageTaskItem }) =>
+                  task.id === 'task-with-custom-action'
+                    ? [
+                        {
+                          id: 'go-to-definition',
+                          label: 'Go to definition',
+                          onClick: () => alert(`Go to definition clicked for task: ${task.id}`),
+                        },
+                      ]
+                    : undefined,
               },
             }
           : node
