@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.31.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.30.0...@uipath/apollo-react@4.31.0) (2026-05-26)
+
+### Features
+
+* **apollo-react:** reorganise Canvas Storybook IA to mirror Wind structure ([99437fd](https://github.com/UiPath/apollo-ui/commit/99437fdf3cb6b5d3f5b6306f9e751f900d19bc55))
+
 ## [@uipath/apollo-react-v4.30.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.29.1...@uipath/apollo-react@4.30.0) (2026-05-26)
 
 ### Features
