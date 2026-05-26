@@ -25,8 +25,11 @@ import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
 import { BaseCanvas } from '../BaseCanvas';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
+import { CanvasIcon } from '../../utils/icon-registry';
+import { cn } from '@uipath/apollo-wind';
+import { LoopNodeExecutionCount } from './LoopNodeExecutionCount';
 import { LoopNode } from './LoopNode';
-import type { LoopNodeData } from './LoopNode.types';
+import type { LoopNodeExecutionCountState, LoopNodeData } from './LoopNode.types';
 
 const meta: Meta = {
   title: 'Components/Nodes/LoopNode',
@@ -665,4 +668,711 @@ export const ExecutionStates: Story = {
     }),
   ],
   render: () => <ExecutionStatesStory />,
+};
+
+// ============================================================================
+// Execution Count — LoopNodeExecutionCount doc page
+// ============================================================================
+
+type LoopCountNodeData = LoopNodeData & {
+  initialIndex: number;
+  initialIsAll?: boolean;
+  total: number;
+  interactive?: boolean;
+  iterationStatuses?: Map<number, string>;
+  status?: ElementStatusValues;
+};
+
+const EXECUTION_COUNT_STATUS = new Map<string, ElementStatusValues>([
+  ['ec-all', ElementStatusValues.InProgress],
+  ['ec-full', ElementStatusValues.InProgress],
+  ['ec-compact', ElementStatusValues.Completed],
+  ['ec-minimal', ElementStatusValues.Failed],
+]);
+
+const EXECUTION_COUNT_ITERATION_STATUSES = new Map<string, Map<number, string>>([
+  [
+    'ec-all',
+    new Map([
+      [0, 'Completed'],
+      [1, 'Completed'],
+      [2, 'Completed'],
+      [3, 'InProgress'],
+      [4, 'Failed'],
+    ]),
+  ],
+  [
+    'ec-full',
+    new Map([
+      [0, 'Completed'],
+      [1, 'Completed'],
+      [2, 'InProgress'],
+    ]),
+  ],
+  [
+    'ec-compact',
+    new Map([
+      [0, 'Completed'],
+      [1, 'Completed'],
+      [2, 'Completed'],
+    ]),
+  ],
+  [
+    'ec-minimal',
+    new Map([
+      [0, 'Completed'],
+      [1, 'Failed'],
+    ]),
+  ],
+]);
+
+function createExecutionCountNodes(): Node<LoopCountNodeData>[] {
+  return [
+    {
+      id: 'ec-all',
+      type: LOOP_TYPE,
+      position: { x: 80, y: 80 },
+      data: {
+        display: { label: 'For Each Order', shape: 'container' },
+        initialIndex: 3,
+        initialIsAll: true,
+        total: 5,
+        iterationStatuses: EXECUTION_COUNT_ITERATION_STATUSES.get('ec-all'),
+        status: ElementStatusValues.InProgress,
+      },
+      style: { width: 600, height: 240 },
+    },
+    {
+      id: 'ec-full',
+      type: LOOP_TYPE,
+      position: { x: 80, y: 368 },
+      data: {
+        display: { label: 'For Each Region', shape: 'container' },
+        initialIndex: 2,
+        total: 5,
+        iterationStatuses: EXECUTION_COUNT_ITERATION_STATUSES.get('ec-full'),
+        status: ElementStatusValues.InProgress,
+      },
+      style: { width: 600, height: 240 },
+    },
+    {
+      id: 'ec-compact',
+      type: LOOP_TYPE,
+      position: { x: 80, y: 656 },
+      data: {
+        display: { label: 'For Each City', shape: 'container' },
+        initialIndex: 2,
+        total: 3,
+        iterationStatuses: EXECUTION_COUNT_ITERATION_STATUSES.get('ec-compact'),
+        status: ElementStatusValues.Completed,
+      },
+      style: { width: 300, height: 240 },
+    },
+    {
+      id: 'ec-minimal',
+      type: LOOP_TYPE,
+      position: { x: 80, y: 944 },
+      data: {
+        display: { label: 'For Each Item', shape: 'container' },
+        initialIndex: 1,
+        total: 8,
+        iterationStatuses: EXECUTION_COUNT_ITERATION_STATUSES.get('ec-minimal'),
+        status: ElementStatusValues.Failed,
+      },
+      style: { width: 200, height: 240 },
+    },
+  ];
+}
+
+function LoopCountCanvasNode(props: NodeProps<Node<LoopCountNodeData>>) {
+  const { data } = props;
+  const [activeIndex, setActiveIndex] = useState(
+    Math.max(0, Math.min(data.total - 1, data.initialIndex))
+  );
+  const [isAll, setIsAll] = useState(data.initialIsAll ?? false);
+
+  useEffect(() => {
+    setActiveIndex(Math.max(0, Math.min(data.total - 1, data.initialIndex)));
+    setIsAll(data.initialIsAll ?? false);
+  }, [data.initialIndex, data.initialIsAll, data.total]);
+
+  const iterationPillState: LoopNodeExecutionCountState = {
+    activeIndex,
+    total: data.total,
+    onActiveIndexChange:
+      data.interactive === false
+        ? undefined
+        : (i) => {
+            setIsAll(false);
+            setActiveIndex(i);
+          },
+    isAll,
+    onAllChange: setIsAll,
+    iterationStatuses: data.iterationStatuses,
+  };
+
+  return <LoopNode {...props} iterationPillState={iterationPillState} />;
+}
+
+const LOOP_COUNT_NODE_TYPES = {
+  [LOOP_TYPE]: LoopCountCanvasNode,
+};
+
+function ExecutionCountCanvas() {
+  const initialNodes = useMemo(() => createExecutionCountNodes(), []);
+  const { canvasProps } = useCanvasStory({
+    initialNodes,
+    additionalNodeTypes: LOOP_COUNT_NODE_TYPES,
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+function ExecutionCountPreviewButton({
+  expanded,
+  onExpand,
+  onClose,
+}: {
+  expanded: boolean;
+  onExpand: () => void;
+  onClose: () => void;
+}) {
+  return expanded ? (
+    <button
+      type="button"
+      onClick={onClose}
+      className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-md border border-border bg-background/80 px-2.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-sm transition-colors hover:bg-surface-hover hover:text-foreground"
+    >
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path
+          d="M7.5 4.5l-6 6M10.5 1.5l-6 6M1.5 1.5l4 4M10.5 10.5l-4-4"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      Close
+    </button>
+  ) : (
+    <button
+      type="button"
+      onClick={onExpand}
+      className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-md border border-border bg-background/80 px-2.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-sm transition-colors hover:bg-surface-hover hover:text-foreground"
+    >
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path
+          d="M7.5 1.5h3v3M4.5 10.5h-3v-3M10.5 4.5V1.5H7.5M1.5 7.5v3h3"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      Expand
+    </button>
+  );
+}
+
+const tierRows = [
+  {
+    width: '≥ 400 px',
+    tier: 'full' as const,
+    controls: 'All toggle · ‹ prev · k/N fraction (click-to-type) · next › · jump-to-failed ⊕',
+    badgeClass: 'bg-emerald-500/10 text-emerald-600',
+  },
+  {
+    width: '260 – 399 px',
+    tier: 'compact' as const,
+    controls: 'All toggle · k/N fraction (click-to-type) · jump-to-failed ⊕',
+    badgeClass: 'bg-amber-500/10 text-amber-600',
+  },
+  {
+    width: '< 260 px',
+    tier: 'minimal' as const,
+    controls: 'Count chip only — read-only',
+    badgeClass: 'bg-sky-500/10 text-sky-600',
+  },
+] as const;
+
+const ANATOMY_ITERATION_STATUSES = new Map<number, string>([
+  [0, 'Completed'],
+  [1, 'Completed'],
+  [2, 'InProgress'],
+  [3, 'Failed'],
+]);
+const ANATOMY_TOTAL = 5;
+
+function CollapsibleSection({
+  title,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="border-t border-border">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between py-5 text-left transition-colors hover:text-foreground"
+      >
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">{title}</h2>
+        <CanvasIcon icon={open ? 'chevron-up' : 'chevron-down'} size={16} />
+      </button>
+      {open && <div className="pb-8">{children}</div>}
+    </div>
+  );
+}
+
+function ExecutionCountPage({ globalTheme }: { globalTheme: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const [anatomyOpen, setAnatomyOpen] = useState(false);
+  const [headerLayoutOpen, setHeaderLayoutOpen] = useState(false);
+  const [howToUseOpen, setHowToUseOpen] = useState(false);
+  const allOpen = anatomyOpen && headerLayoutOpen && howToUseOpen;
+  const toggleAll = () => {
+    const next = !allOpen;
+    setAnatomyOpen(next);
+    setHeaderLayoutOpen(next);
+    setHowToUseOpen(next);
+  };
+  const [defaultAnatIndex, setDefaultAnatIndex] = useState(3);
+  const [defaultAnatIsAll, setDefaultAnatIsAll] = useState(true);
+  const [anatIndex, setAnatIndex] = useState(2);
+  const [anatIsAll, setAnatIsAll] = useState(false);
+  const [headerIndex, setHeaderIndex] = useState(2);
+  const [headerIsAll, setHeaderIsAll] = useState(false);
+
+  return (
+    <div className={cn(globalTheme, 'min-h-screen w-full bg-background text-foreground')}>
+      {/* ── Header ── */}
+      <div className="mx-auto max-w-4xl px-8 pt-8">
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">Execution Count</h2>
+        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+            LoopNodeExecutionCount
+          </code>{' '}
+          is a unified segmented pill that lets users navigate loop iterations at runtime. An{' '}
+          <strong className="text-foreground">All</strong> toggle on the left switches between
+          aggregate and per-iteration views. The right segment shows the current fraction{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">k / N</code> with
+          prev/next arrows, a click-to-type jump shortcut, and an optional crosshair button that
+          jumps directly to the first failed iteration. The component adapts to three size tiers
+          based on the available header width.
+        </p>
+        <div className="mb-8 h-px bg-border" />
+      </div>
+
+      {/* ── Preview ── */}
+      <div className="pb-8">
+        <div className="mx-auto mb-4 max-w-4xl px-8">
+          <h2 className="mb-1 text-2xl font-bold tracking-tight text-foreground">Preview</h2>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Three loop nodes side-by-side: wide (full tier), medium (compact tier), and narrow
+            (minimal tier). Interact with the pills directly on the canvas.
+          </p>
+        </div>
+        <div className="flex justify-center">
+          <div className="relative h-[480px] w-[90vw] overflow-hidden rounded-xl border border-border">
+            {!expanded && <ExecutionCountCanvas />}
+            <ExecutionCountPreviewButton
+              expanded={false}
+              onExpand={() => setExpanded(true)}
+              onClose={() => setExpanded(false)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Expanded overlay */}
+      {expanded && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={() => setExpanded(false)}
+        >
+          <div
+            className="relative overflow-hidden rounded-xl border border-border"
+            style={{ width: '90vw', height: '90vh' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ExecutionCountCanvas />
+            <ExecutionCountPreviewButton
+              expanded={true}
+              onExpand={() => setExpanded(true)}
+              onClose={() => setExpanded(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ── Sections ── */}
+      <div className="mx-auto max-w-4xl px-8 pb-8">
+        {/* Expand / Collapse all */}
+        <div className="flex justify-end pb-2">
+          <button
+            type="button"
+            onClick={toggleAll}
+            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {allOpen ? 'Collapse all' : 'Expand all'}
+          </button>
+        </div>
+
+        <CollapsibleSection
+          title="Anatomy"
+          open={anatomyOpen}
+          onToggle={() => setAnatomyOpen((o) => !o)}
+        >
+          <h3 className="mb-2 text-lg font-semibold text-foreground">Default</h3>
+          <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+            By default, the pill opens in the <strong className="text-foreground">All</strong> view,
+            showing the aggregate execution summary across all iterations. Click{' '}
+            <strong className="text-foreground">All</strong> to toggle into individual iteration
+            navigation.
+          </p>
+          <div className="mb-8 flex items-center justify-center rounded-xl border border-border bg-card p-8">
+            <LoopNodeExecutionCount
+              size="full"
+              state={{
+                activeIndex: defaultAnatIndex,
+                total: ANATOMY_TOTAL,
+                onActiveIndexChange: (i) => {
+                  setDefaultAnatIsAll(false);
+                  setDefaultAnatIndex(i);
+                },
+                isAll: defaultAnatIsAll,
+                onAllChange: setDefaultAnatIsAll,
+                iterationStatuses: ANATOMY_ITERATION_STATUSES,
+              }}
+            />
+          </div>
+
+          {/* Tier cards */}
+          <h3 className="mb-2 text-lg font-semibold text-foreground">Responsive</h3>
+          <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+            The pill adapts to three responsive tiers based on the loop node's rendered width. As
+            nodes are resized or deeply nested, controls are progressively removed so the pill never
+            overflows the header.
+          </p>
+          <div className="mb-8 grid grid-cols-3 gap-4">
+            {tierRows.map((row) => (
+              <div
+                key={row.tier}
+                className="flex flex-col gap-3 rounded-xl border border-border bg-card p-6"
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className={cn('rounded px-1.5 py-0.5 font-mono text-[11px]', row.badgeClass)}
+                  >
+                    {row.tier}
+                  </span>
+                  <span className="font-mono text-xs text-muted-foreground">{row.width}</span>
+                </div>
+                <div className="flex items-center justify-center rounded-lg border border-border bg-surface-raised py-5">
+                  <LoopNodeExecutionCount
+                    size={row.tier}
+                    state={{
+                      activeIndex: anatIndex,
+                      total: ANATOMY_TOTAL,
+                      onActiveIndexChange: (i) => {
+                        setAnatIsAll(false);
+                        setAnatIndex(i);
+                      },
+                      isAll: anatIsAll,
+                      onAllChange: setAnatIsAll,
+                      iterationStatuses: ANATOMY_ITERATION_STATUSES,
+                    }}
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">{row.controls}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Spec table */}
+          <div className="overflow-hidden rounded-lg border border-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted">
+                  <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
+                    Node width
+                  </th>
+                  <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
+                    <code className="text-xs">size</code> tier
+                  </th>
+                  <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
+                    Controls visible
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {tierRows.map((row, i) => (
+                  <tr
+                    key={row.tier}
+                    className={i < tierRows.length - 1 ? 'border-b border-border' : ''}
+                  >
+                    <td className="px-4 py-3 font-mono text-xs font-semibold text-foreground">
+                      {row.width}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={cn(
+                          'rounded px-1.5 py-0.5 font-mono text-[11px]',
+                          row.badgeClass
+                        )}
+                      >
+                        {row.tier}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">{row.controls}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Count Range */}
+          <div className="mt-10 mb-2">
+            <h3 className="mb-2 text-lg font-semibold text-foreground">Count Range</h3>
+            <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+              The pill supports iteration counts from <strong className="text-foreground">1</strong>{' '}
+              to <strong className="text-foreground">999</strong>. The fraction scales naturally as
+              digit width increases — no truncation or overflow at any value.
+            </p>
+            <div className="rounded-xl border border-border bg-card p-6">
+              <div className="flex flex-wrap items-end gap-6">
+                {[
+                  { active: 0, total: 1, label: 'Minimum' },
+                  { active: 4, total: 10, label: '' },
+                  { active: 49, total: 100, label: '' },
+                  { active: 99, total: 500, label: '' },
+                  { active: 998, total: 999, label: 'Maximum' },
+                ].map(({ active, total, label }) => (
+                  <div key={total} className="flex flex-col items-center gap-2">
+                    <LoopNodeExecutionCount
+                      size="full"
+                      state={{
+                        activeIndex: active,
+                        total,
+                        isAll: false,
+                        onAllChange: () => {},
+                      }}
+                    />
+                    <span className="text-[11px] font-mono text-muted-foreground">
+                      {label || `${active + 1} / ${total}`}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="Header Layout"
+          open={headerLayoutOpen}
+          onToggle={() => setHeaderLayoutOpen((o) => !o)}
+        >
+          <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+            The loop node header is divided into two regions. The right region always renders in
+            this fixed order: execution count pill first, then the sequential/parallel chip.
+          </p>
+
+          {/* Visual mockup */}
+          <div className="mb-8 rounded-xl border border-border bg-card p-6">
+            <div className="rounded-[18px] bg-surface-overlay px-3.5 py-2.5 shadow-sm">
+              <div className="flex items-center justify-between gap-2.5 text-foreground">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <span className="shrink-0" aria-hidden>
+                    <CanvasIcon icon="repeat" size={16} />
+                  </span>
+                  <span className="truncate text-[15px] font-semibold leading-5">
+                    For Each Region
+                  </span>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <LoopNodeExecutionCount
+                    size="full"
+                    state={{
+                      activeIndex: headerIndex,
+                      total: ANATOMY_TOTAL,
+                      onActiveIndexChange: (i) => {
+                        setHeaderIsAll(false);
+                        setHeaderIndex(i);
+                      },
+                      isAll: headerIsAll,
+                      onAllChange: setHeaderIsAll,
+                      iterationStatuses: ANATOMY_ITERATION_STATUSES,
+                    }}
+                  />
+                  <span className="flex h-6 shrink-0 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-[11px] font-semibold leading-4 text-foreground shadow-sm">
+                    <span className="flex shrink-0" aria-hidden>
+                      <CanvasIcon icon="align-justify" size={11} />
+                    </span>
+                    Sequential
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 flex items-start justify-between px-1">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-muted font-mono text-[10px] font-bold text-foreground">
+                  A
+                </span>
+                <span>Icon · Title — truncates on narrow nodes</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-muted font-mono text-[10px] font-bold text-foreground">
+                    B
+                  </span>
+                  <span>Execution Count pill</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-muted font-mono text-[10px] font-bold text-foreground">
+                    C
+                  </span>
+                  <span>Sequential / Parallel chip</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-6 overflow-hidden rounded-lg border border-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted">
+                  <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
+                    Region
+                  </th>
+                  <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
+                    Content
+                  </th>
+                  <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Rule</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-border">
+                  <td className="px-4 py-3 font-mono text-xs font-semibold text-foreground">
+                    Left
+                  </td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">Icon · Title</td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">
+                    Title truncates with ellipsis as the node narrows
+                  </td>
+                </tr>
+                <tr className="border-b border-border">
+                  <td className="px-4 py-3 font-mono text-xs font-semibold text-foreground">
+                    Right — 1st
+                  </td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">
+                    <code className="rounded bg-muted px-1.5 py-0.5 text-[11px] text-primary">
+                      LoopNodeExecutionCount
+                    </code>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">
+                    Adapts to <strong>full / compact / minimal</strong> tier based on{' '}
+                    <code className="rounded bg-muted px-1.5 py-0.5 text-[11px] text-primary">
+                      nodeWidth
+                    </code>
+                    ; always right-aligned, never overlaid
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3 font-mono text-xs font-semibold text-foreground">
+                    Right — 2nd
+                  </td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">
+                    Sequential / Parallel chip
+                  </td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">
+                    Fixed width; always the rightmost element in the header
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+            Pass{' '}
+            <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+              iterationPillState
+            </code>{' '}
+            directly to{' '}
+            <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">LoopNode</code>.
+            The component computes the size tier from its measured{' '}
+            <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">width</code>{' '}
+            automatically — no absolute positioning or overlay wrappers needed.
+          </p>
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="How to use"
+          open={howToUseOpen}
+          onToggle={() => setHowToUseOpen((o) => !o)}
+        >
+          <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+            Build a{' '}
+            <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+              LoopNodeExecutionCountState
+            </code>{' '}
+            object from your runtime data and pass it as{' '}
+            <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+              iterationPillState
+            </code>{' '}
+            to <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">LoopNode</code>
+            . The size tier is derived automatically from the node's measured width — no overlay or
+            absolute positioning needed.
+          </p>
+          <pre className="overflow-x-auto rounded-lg border border-border bg-card p-4 text-[13px] leading-relaxed text-foreground">
+            {`import { LoopNode } from '@uipath/apollo-react/canvas';
+import type { LoopNodeExecutionCountState } from '@uipath/apollo-react/canvas';
+
+function MyLoopCanvasNode(props: NodeProps<Node<MyLoopData>>) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isAll, setIsAll] = useState(false);
+
+  const iterationPillState: LoopNodeExecutionCountState = {
+    activeIndex,
+    total: props.data.total,
+    onActiveIndexChange: (i) => { setIsAll(false); setActiveIndex(i); },
+    isAll,
+    onAllChange: setIsAll,
+    iterationStatuses: props.data.iterationStatuses,
+  };
+
+  // LoopNode computes full / compact / minimal tier from its measured width automatically
+  return <LoopNode {...props} iterationPillState={iterationPillState} />;
+}`}
+          </pre>
+        </CollapsibleSection>
+      </div>
+    </div>
+  );
+}
+
+export const ExecutionCount: Story = {
+  name: 'Execution Count',
+  decorators: [
+    withCanvasProviders({
+      executionState: {
+        getNodeExecutionState: (nodeId: string) => EXECUTION_COUNT_STATUS.get(nodeId),
+        getEdgeExecutionState: () => undefined,
+      },
+      validationState: {
+        getElementValidationState: () => undefined,
+      },
+    }),
+  ],
+  render: (_, { globals }) => <ExecutionCountPage globalTheme={globals.theme || 'future-dark'} />,
 };
