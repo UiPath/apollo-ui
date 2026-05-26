@@ -26,6 +26,7 @@ import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { NodeInspector } from '../NodeInspector';
 import { CanvasIcon } from '../../utils/icon-registry';
+import { BaseNodeOverrideConfigProvider } from './BaseNodeConfigContext';
 import type { BaseNodeData } from './BaseNode.types';
 
 // ============================================================================
@@ -573,16 +574,65 @@ function ShapesPage({ globalTheme }: { globalTheme: string }) {
 // Execution States Page
 // ============================================================================
 
-function ExecutionStatesCanvas() {
+function TakeActionModal({ nodeId, onClose }: { nodeId: string; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-amber-400/20">
+            <CanvasIcon icon="flag" size={20} color="rgb(251 191 36)" />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-foreground">Action Required</h3>
+            <p className="text-xs text-muted-foreground">Node: {nodeId}</p>
+          </div>
+        </div>
+        <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+          This node is paused and waiting for your input before execution can continue. Review the
+          details and confirm to proceed.
+        </p>
+        <div className="mb-6 rounded-lg border border-amber-400/30 bg-amber-400/10 p-3 text-sm text-foreground">
+          <span className="font-medium">Pending:</span> Manual review and approval required.
+        </div>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-stone-900 transition-colors hover:bg-amber-300"
+          >
+            Complete Action
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExecutionStatesCanvas({ onActionNeeded }: { onActionNeeded?: (nodeId: string) => void }) {
   const initialNodes = useMemo(() => createShapeStatusGrid(), []);
   const { canvasProps } = useCanvasStory({ initialNodes });
 
   return (
-    <BaseCanvas {...canvasProps} mode="design">
-      <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} />
-      </Panel>
-    </BaseCanvas>
+    <BaseNodeOverrideConfigProvider value={{ onActionNeeded }}>
+      <BaseCanvas {...canvasProps} mode="design">
+        <Panel position="bottom-right">
+          <CanvasPositionControls translations={DefaultCanvasTranslations} />
+        </Panel>
+      </BaseCanvas>
+    </BaseNodeOverrideConfigProvider>
   );
 }
 
@@ -688,7 +738,7 @@ const executionStateCards = [
     bgClass: 'bg-amber-400/10',
     iconClass: 'bg-amber-400',
     description:
-      'The process is blocked waiting for human input. Shows a hand icon and a "Take Action" pill below the node.',
+      'The process is blocked waiting for human input during an active execution. Shows a flag icon and an always-visible "Take action" pill at the top-right of the node. Only rendered when the flow is in an executing state.',
   },
 ] as const;
 
@@ -761,6 +811,7 @@ function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
   const [anatomyOpen, setAnatomyOpen] = useState(false);
   const [howToUseOpen, setHowToUseOpen] = useState(false);
   const [takeActionOpen, setTakeActionOpen] = useState(false);
+  const [actionNodeId, setActionNodeId] = useState<string | null>(null);
   const allOpen = anatomyOpen && howToUseOpen && takeActionOpen;
   const toggleAll = () => {
     const next = !allOpen;
@@ -795,10 +846,17 @@ function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
           <p className="text-sm leading-relaxed text-muted-foreground">
             All execution states across every shape — rows are states, columns are shapes.
           </p>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            <strong className="font-medium text-foreground">Note:</strong> This grid shows{' '}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">Failed</code> and{' '}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">ActionNeeded</code>{' '}
+            side by side for documentation purposes only. In a real execution these states are
+            mutually exclusive — a node cannot be in both at the same time.
+          </p>
         </div>
         <div className="flex justify-center">
           <div className="relative w-[90vw] h-[560px] overflow-hidden rounded-xl border border-border">
-            {!expanded && <ExecutionStatesCanvas />}
+            {!expanded && <ExecutionStatesCanvas onActionNeeded={setActionNodeId} />}
             <ExecutionStatesPreviewButton
               isExpanded={false}
               onExpand={() => setExpanded(true)}
@@ -819,7 +877,7 @@ function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
             style={{ width: '90vw', height: '90vh' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <ExecutionStatesCanvas />
+            <ExecutionStatesCanvas onActionNeeded={setActionNodeId} />
             <ExecutionStatesPreviewButton
               isExpanded={true}
               onExpand={() => setExpanded(true)}
@@ -913,7 +971,7 @@ function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
         </CollapsibleSection>
 
         <CollapsibleSection
-          title="Take Action"
+          title="Take action"
           open={takeActionOpen}
           onToggle={() => setTakeActionOpen((o) => !o)}
         >
@@ -922,8 +980,11 @@ function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
             <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
               ActionNeeded
             </code>{' '}
-            state, a prompt is surfaced to the user to unblock execution. The designs below are
-            prototype explorations — iteration happens here before being wired into the canvas.
+            state, a "Take action" prompt is surfaced to the user to unblock execution.{' '}
+            <strong className="font-medium text-foreground">
+              This pill is only present on flows that are in an executing state
+            </strong>{' '}
+            — it will not appear during design-time or when no run is active.
           </p>
 
           <div className="mb-8 grid grid-cols-2 gap-6">
@@ -932,18 +993,22 @@ function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
               <div className="flex h-24 items-center justify-center">
                 <button
                   type="button"
+                  onClick={() => setActionNodeId('state-1-preview')}
                   className="flex items-center gap-1.5 rounded-full bg-amber-400 px-2.5 py-1 text-[11px] font-semibold text-stone-900 shadow-sm transition-colors hover:bg-amber-300"
                 >
-                  <CanvasIcon icon="hand" size={12} />
-                  Take Action
+                  <CanvasIcon icon="flag" size={12} />
+                  Take action
                 </button>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-base font-semibold text-foreground">
-                  State 1 — Always visible
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-semibold text-foreground">Always visible</span>
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                    In use
+                  </span>
+                </div>
                 <p className="text-sm text-muted-foreground">
-                  Solid amber pill with hand icon and label. Always rendered when the node is in{' '}
+                  Solid amber pill with flag icon and label. Always rendered when the node is in{' '}
                   <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
                     ActionNeeded
                   </code>{' '}
@@ -957,21 +1022,25 @@ function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
               <div className="flex h-24 items-center justify-center">
                 <button
                   type="button"
+                  onClick={() => setActionNodeId('state-2-preview')}
                   className="group flex items-center gap-0 rounded-full bg-amber-400 px-2 py-1 text-[11px] font-semibold text-stone-900 shadow-sm transition-all hover:gap-1.5 hover:bg-amber-300 hover:px-2.5"
                 >
-                  <CanvasIcon icon="hand" size={12} />
+                  <CanvasIcon icon="flag" size={12} />
                   <span className="max-w-0 overflow-hidden whitespace-nowrap transition-[max-width] duration-200 group-hover:max-w-[80px]">
-                    Take Action
+                    Take action
                   </span>
                 </button>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-base font-semibold text-foreground">
-                  State 2 — Hover to expand
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-semibold text-foreground">Hover to expand</span>
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                    Reference only
+                  </span>
+                </div>
                 <p className="text-sm text-muted-foreground">
-                  Only the hand icon is visible by default. Hovering the pill expands it to reveal
-                  the "Take Action" label. The text slides in from the right using a{' '}
+                  Only the flag icon is visible by default. Hovering the pill expands it to reveal
+                  the "Take action" label. The text slides in from the right using a{' '}
                   <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
                     max-width
                   </code>{' '}
@@ -983,10 +1052,18 @@ function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
 
           <div className="rounded-lg border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
             <span className="font-medium text-foreground">Note: </span>
-            These are documentation prototypes. The current canvas renders the hand icon in the
-            top-right adornment slot and a separate pill below the node. The goal of this section is
-            to align on the preferred UX before updating{' '}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">BaseNode.tsx</code>.
+            These are documentation prototypes showing both explored states. The canvas uses{' '}
+            <strong>State 1</strong> — an always-visible "Take action" pill with a flag icon
+            positioned at the top-right of the node. The pill is only rendered when the flow is
+            actively executing. Clicking it triggers the{' '}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
+              onActionNeeded
+            </code>{' '}
+            callback wired through{' '}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
+              BaseNodeOverrideConfigProvider
+            </code>
+            .
           </div>
         </CollapsibleSection>
 
@@ -1043,6 +1120,9 @@ createNode({
           </div>
         </CollapsibleSection>
       </div>
+      {actionNodeId && (
+        <TakeActionModal nodeId={actionNodeId} onClose={() => setActionNodeId(null)} />
+      )}
     </div>
   );
 }

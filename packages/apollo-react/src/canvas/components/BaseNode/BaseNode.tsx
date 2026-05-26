@@ -676,24 +676,21 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           return (
             <button
               type="button"
-              className="group absolute z-10 flex items-center gap-0 overflow-hidden rounded-full bg-amber-400 text-[11px] font-semibold text-stone-900 shadow-sm transition-all hover:gap-1.5 hover:bg-amber-300"
+              className="absolute z-10 flex items-center gap-1 rounded-full bg-amber-400 text-[11px] font-semibold text-stone-900 shadow-sm transition-colors hover:bg-amber-300"
               style={{
                 top: badgeInset,
                 left: `calc(var(--node-w) - ${badgeInset + NODE_BADGE_SIZE}px)`,
                 height: NODE_BADGE_SIZE,
                 minWidth: NODE_BADGE_SIZE,
+                paddingInline: '4px 10px',
               }}
               onClick={(e) => {
                 e.stopPropagation();
                 onActionNeeded?.(id);
               }}
             >
-              <div className="flex h-full w-5 flex-shrink-0 items-center justify-center">
-                <CanvasIcon icon="hand" size={12} />
-              </div>
-              <span className="max-w-0 overflow-hidden whitespace-nowrap transition-[max-width,padding] duration-200 group-hover:max-w-[80px] group-hover:pr-2.5">
-                Take Action
-              </span>
+              <CanvasIcon icon="flag" size={12} />
+              <span className="whitespace-nowrap">Take action</span>
             </button>
           );
         })()}
