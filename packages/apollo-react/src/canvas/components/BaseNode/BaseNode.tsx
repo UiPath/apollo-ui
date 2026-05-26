@@ -10,6 +10,9 @@ import {
   DEFAULT_NODE_SIZE,
   DEFAULT_RECTANGLE_NODE_WIDTH,
   GRID_SPACING,
+  NODE_BADGE_INSET_CIRCLE,
+  NODE_BADGE_INSET_SQUARE,
+  NODE_BADGE_SIZE,
   NODE_BORDER_SIZE,
   NODE_CONTAINER_RADIUS_RATIO,
   NODE_HEIGHT_DEFAULT,
@@ -25,7 +28,7 @@ import { useElementValidationStatus, useNodeExecutionState } from '../../hooks';
 import type { NodeShape } from '../../schema';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import { resolveAdornments } from '../../utils/adornment-resolver';
-import { getIcon } from '../../utils/icon-registry';
+import { CanvasIcon, getIcon } from '../../utils/icon-registry';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
 import { selectIsConnecting } from '../../utils/NodeUtils';
 import { resolveToolbar } from '../../utils/toolbar-resolver';
@@ -625,7 +628,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
             {adornments.topLeft}
           </BaseBadgeSlot>
         )}
-        {adornments?.topRight && (
+        {adornments?.topRight && executionStatus !== 'ActionNeeded' && (
           <BaseBadgeSlot position="top-right" shape={displayShape}>
             {adornments.topRight}
           </BaseBadgeSlot>
@@ -666,23 +669,34 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         )}
       </BaseContainer>
       {handleElements}
-      {executionStatus === 'ActionNeeded' && (
-        <div
-          className="absolute left-1/2 z-10 -translate-x-1/2"
-          style={{ top: 'calc(var(--node-h) + 8px)' }}
-        >
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onActionNeeded?.(id);
-            }}
-            className="flex items-center whitespace-nowrap rounded-full bg-amber-400 px-3 py-1 text-[11px] font-semibold text-stone-900 shadow-sm transition-colors hover:bg-amber-300"
-          >
-            Take Action
-          </button>
-        </div>
-      )}
+      {executionStatus === 'ActionNeeded' &&
+        (() => {
+          const badgeInset =
+            displayShape === 'circle' ? NODE_BADGE_INSET_CIRCLE : NODE_BADGE_INSET_SQUARE;
+          return (
+            <button
+              type="button"
+              className="group absolute z-10 flex items-center gap-0 overflow-hidden rounded-full bg-amber-400 text-[11px] font-semibold text-stone-900 shadow-sm transition-all hover:gap-1.5 hover:bg-amber-300"
+              style={{
+                top: badgeInset,
+                left: `calc(var(--node-w) - ${badgeInset + NODE_BADGE_SIZE}px)`,
+                height: NODE_BADGE_SIZE,
+                minWidth: NODE_BADGE_SIZE,
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onActionNeeded?.(id);
+              }}
+            >
+              <div className="flex h-full w-5 flex-shrink-0 items-center justify-center">
+                <CanvasIcon icon="hand" size={12} />
+              </div>
+              <span className="max-w-0 overflow-hidden whitespace-nowrap transition-[max-width,padding] duration-200 group-hover:max-w-[80px] group-hover:pr-2.5">
+                Take Action
+              </span>
+            </button>
+          );
+        })()}
     </div>
   );
 
