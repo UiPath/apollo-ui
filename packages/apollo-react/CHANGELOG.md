@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.30.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.29.1...@uipath/apollo-react@4.30.0) (2026-05-26)
+
+### Features
+
+* **apollo-react:** add getTaskContextMenuItems in stageProps [MST-7548] ([76bce5b](https://github.com/UiPath/apollo-ui/commit/76bce5b05a71733d1537cc69efd828209929127a))
+
 ## [@uipath/apollo-react-v4.29.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.29.0...@uipath/apollo-react@4.29.1) (2026-05-26)
 
 ### Bug Fixes
