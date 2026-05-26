@@ -1,4 +1,12 @@
 {
+  "loop-node.execution-count.show-aggregate": "Show aggregate across all iterations",
+  "loop-node.execution-count.return-to-individual": "Return to individual iteration view",
+  "loop-node.execution-count.click-to-return": "Click to return to individual iteration view",
+  "loop-node.execution-count.previous-iteration": "Previous iteration",
+  "loop-node.execution-count.next-iteration": "Next iteration",
+  "loop-node.execution-count.click-to-jump": "Click to jump to a specific iteration",
+  "loop-node.execution-count.jump-to-failed": "Jump to first failed iteration",
+  "loop-node.execution-count.jump-to-iteration": "Jump to iteration {iterationNumber} (failed)",
   "stage-node.add-first-task": "Add first task",
   "stage-node.add-task": "Add task",
   "stage-node.add-task-to-parallel-group-above": "Add task to parallel group above",

@@ -20,12 +20,23 @@ export interface LoopIterationState {
   ariaLabel?: string;
 }
 
+export interface LoopNodeExecutionCountState {
+  activeIndex: number;
+  total: number;
+  onActiveIndexChange?: (nextIndex: number) => void;
+  disabled?: boolean;
+  isAll: boolean;
+  onAllChange: (isAll: boolean) => void;
+  iterationStatuses?: Map<number, ElementStatusValues>;
+}
+
 export interface LoopNodeConfig {
   toolbarConfig?: NodeToolbarConfig | null;
   adornments?: NodeAdornments;
   executionStatusOverride?: ElementStatusValues;
   suggestionType?: SuggestionType;
   iterationState?: LoopIterationState;
+  iterationPillState?: LoopNodeExecutionCountState;
 }
 
 export interface LoopNodeProps extends NodeProps<Node<LoopNodeData>>, LoopNodeConfig {

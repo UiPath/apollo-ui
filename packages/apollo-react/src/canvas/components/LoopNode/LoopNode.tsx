@@ -37,8 +37,13 @@ import type { HandleActionEvent } from '../ButtonHandle';
 import { ButtonHandles } from '../ButtonHandle';
 import { NodeToolbar } from '../Toolbar';
 import { IterationNavigator } from './IterationNavigator';
+import { LoopNodeExecutionCount } from './LoopNodeExecutionCount';
 import { type ContainerHandleGroup, resolveContainerHandleGroups } from './LoopNode.helpers';
-import type { LoopIterationState, LoopNodeProps } from './LoopNode.types';
+import type {
+  LoopNodeExecutionCountState,
+  LoopIterationState,
+  LoopNodeProps,
+} from './LoopNode.types';
 
 const DEFAULT_LOOP_ICON = 'repeat';
 const DEFAULT_LOOP_TITLE = 'Loop';
@@ -188,6 +193,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
     executionStatusOverride,
     suggestionType: suggestionTypeProp,
     iterationState: iterationStateProp,
+    iterationPillState: iterationPillStateProp,
   } = props;
   const nodeTypeRegistry = useOptionalNodeTypeRegistry();
   const [isHovered, setIsHovered] = useState(false);
@@ -384,6 +390,8 @@ function LoopNodeComponent(props: LoopNodeProps) {
         loading={isLoading}
         isParallel={isParallel}
         iterationState={iterationStateProp}
+        iterationPillState={iterationPillStateProp}
+        nodeWidth={containerWidth}
         hasTopLeftAdornment={hasTopLeftAdornment}
         hasTopRightAdornment={hasTopRightAdornment}
       />
@@ -432,6 +440,8 @@ function Header({
   loading,
   isParallel,
   iterationState,
+  iterationPillState,
+  nodeWidth,
   hasTopLeftAdornment,
   hasTopRightAdornment,
 }: {
@@ -440,6 +450,8 @@ function Header({
   loading: boolean;
   isParallel: boolean;
   iterationState?: LoopIterationState;
+  iterationPillState?: LoopNodeExecutionCountState;
+  nodeWidth: number;
   hasTopLeftAdornment: boolean;
   hasTopRightAdornment: boolean;
 }) {
@@ -480,7 +492,14 @@ function Header({
         {titleContent}
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        {iterationState ? <IterationNavigator iterationState={iterationState} /> : null}
+        {iterationPillState ? (
+          <LoopNodeExecutionCount
+            state={iterationPillState}
+            size={nodeWidth >= 400 ? 'full' : nodeWidth >= 260 ? 'compact' : 'minimal'}
+          />
+        ) : iterationState ? (
+          <IterationNavigator iterationState={iterationState} />
+        ) : null}
         <span className="flex h-6 shrink-0 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-[11px] font-semibold leading-4 text-foreground shadow-sm">
           <span className={cn('flex shrink-0', isParallel && 'rotate-90')} aria-hidden>
             <CanvasIcon icon="align-justify" size={11} />
