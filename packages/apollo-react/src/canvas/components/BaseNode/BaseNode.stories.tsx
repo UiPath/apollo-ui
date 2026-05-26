@@ -760,11 +760,13 @@ function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
   const [expanded, setExpanded] = useState(false);
   const [anatomyOpen, setAnatomyOpen] = useState(false);
   const [howToUseOpen, setHowToUseOpen] = useState(false);
-  const allOpen = anatomyOpen && howToUseOpen;
+  const [takeActionOpen, setTakeActionOpen] = useState(false);
+  const allOpen = anatomyOpen && howToUseOpen && takeActionOpen;
   const toggleAll = () => {
     const next = !allOpen;
     setAnatomyOpen(next);
     setHowToUseOpen(next);
+    setTakeActionOpen(next);
   };
 
   return (
@@ -907,6 +909,84 @@ function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
                 ))}
               </tbody>
             </table>
+          </div>
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="Take Action"
+          open={takeActionOpen}
+          onToggle={() => setTakeActionOpen((o) => !o)}
+        >
+          <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+            When a node is in the{' '}
+            <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+              ActionNeeded
+            </code>{' '}
+            state, a prompt is surfaced to the user to unblock execution. The designs below are
+            prototype explorations — iteration happens here before being wired into the canvas.
+          </p>
+
+          <div className="mb-8 grid grid-cols-2 gap-6">
+            {/* State 1 — always visible pill */}
+            <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6">
+              <div className="flex h-24 items-center justify-center">
+                <button
+                  type="button"
+                  className="flex items-center gap-1.5 rounded-full bg-amber-400 px-2.5 py-1 text-[11px] font-semibold text-stone-900 shadow-sm transition-colors hover:bg-amber-300"
+                >
+                  <CanvasIcon icon="hand" size={12} />
+                  Take Action
+                </button>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-base font-semibold text-foreground">
+                  State 1 — Always visible
+                </span>
+                <p className="text-sm text-muted-foreground">
+                  Solid amber pill with hand icon and label. Always rendered when the node is in{' '}
+                  <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
+                    ActionNeeded
+                  </code>{' '}
+                  state — no interaction required to reveal it.
+                </p>
+              </div>
+            </div>
+
+            {/* State 2 — hover to expand */}
+            <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6">
+              <div className="flex h-24 items-center justify-center">
+                <button
+                  type="button"
+                  className="group flex items-center gap-0 rounded-full bg-amber-400 px-2 py-1 text-[11px] font-semibold text-stone-900 shadow-sm transition-all hover:gap-1.5 hover:bg-amber-300 hover:px-2.5"
+                >
+                  <CanvasIcon icon="hand" size={12} />
+                  <span className="max-w-0 overflow-hidden whitespace-nowrap transition-[max-width] duration-200 group-hover:max-w-[80px]">
+                    Take Action
+                  </span>
+                </button>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-base font-semibold text-foreground">
+                  State 2 — Hover to expand
+                </span>
+                <p className="text-sm text-muted-foreground">
+                  Only the hand icon is visible by default. Hovering the pill expands it to reveal
+                  the "Take Action" label. The text slides in from the right using a{' '}
+                  <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
+                    max-width
+                  </code>{' '}
+                  transition.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">Note: </span>
+            These are documentation prototypes. The current canvas renders the hand icon in the
+            top-right adornment slot and a separate pill below the node. The goal of this section is
+            to align on the preferred UX before updating{' '}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">BaseNode.tsx</code>.
           </div>
         </CollapsibleSection>
 
