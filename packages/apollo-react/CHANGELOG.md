@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.29.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.29.0...@uipath/apollo-react@4.29.1) (2026-05-26)
+
+### Bug Fixes
+
+* **apollo-react:** center 'No tasks' text on read-only stage ([f46cca9](https://github.com/UiPath/apollo-ui/commit/f46cca9801cb94f4ad8e9fc27f0b354a9f7bd0e8))
+
 ## [@uipath/apollo-react-v4.29.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.28.0...@uipath/apollo-react@4.29.0) (2026-05-22)
 
 ### Features
