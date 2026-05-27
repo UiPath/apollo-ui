@@ -62,7 +62,7 @@ function KpiChartResolver({
   const numericValue =
     rawValue == null ? 0 : assertNumber(rawValue, "KPI numeric value");
   const valueText = metric
-    ? formatMetricValue(language, numericValue, metric.aggregation)
+    ? formatMetricValue(language, numericValue, metric.expression)
     : "";
 
   return (

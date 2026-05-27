@@ -95,7 +95,7 @@ function LineChartResolver({
         data={data}
         seriesLabel={metric.display}
         formatValue={(value) =>
-          formatMetricValue(language, value, metric.aggregation)
+          formatMetricValue(language, value, metric.expression)
         }
       />
     </SpinnerWithChildren>

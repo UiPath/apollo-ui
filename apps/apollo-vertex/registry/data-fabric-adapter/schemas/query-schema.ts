@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { FromConfigSchema, JoinConfigSchema } from "@/lib/charts-core";
+import {
+  FromConfigSchema,
+  JoinConfigSchema,
+  PrimitiveValueSchema,
+} from "@/lib/charts-core";
 
 const DataFabricSortOptionSchema = z.object({
   fieldName: z.string(),
@@ -70,7 +74,7 @@ export const DataFabricQueryRequestSchema = z.object({
 
 export const DataFabricQueryResponseSchema = z.object({
   totalRecordCount: z.number(),
-  value: z.array(z.record(z.string(), z.unknown())),
+  value: z.array(z.record(z.string(), PrimitiveValueSchema)),
 });
 
 export type DataFabricQueryRequest = z.infer<

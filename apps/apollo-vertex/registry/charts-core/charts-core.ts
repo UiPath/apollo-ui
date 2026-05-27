@@ -1,23 +1,29 @@
+export { mapResponseToChartData } from "./chart-data-mapper";
 export { ChartLoadingBoundary } from "./chart-loading-boundary";
 export type {
   BarChartData,
   ChartDataModel,
-  DataModelField,
-  DataModelMetric,
   DatetimeModelField,
   DimensionType,
   DistributionChartData,
+  DataModelField,
+  DataModelFieldType,
   KpiChartData,
   KpiDataModel,
   LineChartData,
+  DataModelMetric,
   MultiLineChartData,
   NumericOrDatetimeModelField,
   StringModelField,
   TableChartData,
 } from "./chart-models";
 export type { DataAdapter } from "./data-adapter";
+export {
+  type DataQueryResponse,
+  DataQueryResponseSchema,
+  PrimitiveValueSchema,
+} from "./data-query-response-schema";
 export { mapConfigFilterToFilterValues } from "./map-filter-config";
-export { Aggregation, type AggregationKind } from "./models/aggregation";
 export {
   type BarChartConfiguration,
   BarChartConfigurationSchema,
@@ -49,6 +55,11 @@ export {
   type TableChartConfiguration,
   TableChartConfigurationSchema,
 } from "./models/configurations/table-chart-configuration";
+export type {
+  DataModelAggregate,
+  AggregationKind,
+  MetricExpression,
+} from "./models/expression";
 export type { ListFilter } from "./models/filter";
 export type { FilterValues } from "./models/filter-values";
 export {
@@ -64,7 +75,9 @@ export { niceDurationNumbers } from "./util/binning/nice-duration-numbers";
 export { niceNumbers } from "./util/binning/nice-numbers";
 export { dataTypeAlignment } from "./util/data-type-alignment";
 export { binLabel } from "./util/format/bin-label";
+export { buildField } from "./util/build-field";
 export { format } from "./util/format/format";
 export { formatMetricValue } from "./util/format/format-metric-value";
 export { formatPercentage } from "./util/format/format-percentage";
 export { getChartRange } from "./util/format/get-chart-range";
+export { getMetricFieldType } from "./util/get-metric-field-type";

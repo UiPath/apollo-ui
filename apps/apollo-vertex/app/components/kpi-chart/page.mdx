@@ -2,7 +2,7 @@ import { KpiChartTemplate } from '@/templates/charts/KpiChartTemplate';
 
 # KPI Chart
 
-A single scalar metric (count, sum, average, min, max).
+A single scalar metric. No dimension, no breakdown — just a label and a formatted value.
 
 <div className="not-prose my-8">
   <KpiChartTemplate />
@@ -13,3 +13,82 @@ A single scalar metric (count, sum, average, min, max).
 ```bash
 npx shadcn@latest add @uipath/kpi-chart
 ```
+
+Installs both the prop-driven `KpiChart` view and the `KpiChartWithAdapter` variant.
+
+## View
+
+`KpiChart` renders a static label/value pair. Format the value yourself (this component just prints it).
+
+```tsx
+import { KpiChart } from "@/components/ui/kpi-chart";
+
+<KpiChart label="Total revenue" value="$342,000" />
+```
+
+### Props
+
+- `label: string` — small text shown above the value.
+- `value: string` — formatted display value.
+
+## With adapter
+
+`KpiChartWithAdapter` runs a single aggregate query and renders the result with `formatMetricValue` from charts-core (which respects the metric's expression and field type).
+
+The chart package does not bundle an adapter. Install one of the ready-made adapters (or implement the `DataAdapter` interface yourself):
+
+```bash
+npx shadcn@latest add @uipath/data-fabric-adapter
+# or
+npx shadcn@latest add @uipath/insights-adapter
+```
+
+```tsx
+import { KpiChartWithAdapter } from "@/components/ui/kpi-chart";
+import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
+
+const adapter = dataFabricAdapter({
+  baseUrl: "/api/datafabric/.../api",
+  accessToken,
+  entityName: "Orders",
+});
+
+const dataModel = {
+  id: "total-revenue",
+  metrics: [
+    {
+      id: "revenue",
+      display: "Total revenue",
+      expression: {
+        type: "aggregate" as const,
+        aggregation: "SUM" as const,
+        argument: {
+          id: "Amount",
+          display: "Amount",
+          type: "currency" as const,
+          format: { currency: "USD" },
+        },
+      },
+    },
+  ],
+};
+
+const configuration = {
+  id: "revenue-kpi",
+  name: "Total revenue",
+  type: "kpi" as const,
+  metrics: ["revenue"],
+};
+
+<KpiChartWithAdapter
+  configuration={configuration}
+  dataModel={dataModel}
+  dataAdapter={adapter}
+/>
+```
+
+### Props
+
+- `configuration: KpiChartConfiguration` — one metric, no dimension.
+- `dataModel: KpiDataModel` — metrics only (no `dimensions` field).
+- `dataAdapter: DataAdapter` — implementation that runs the query.

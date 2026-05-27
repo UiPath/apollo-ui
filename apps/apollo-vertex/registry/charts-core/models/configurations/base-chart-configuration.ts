@@ -10,4 +10,5 @@ export const BaseChartConfigurationSchema = z.object({
   filters: z.array(FilterValuesSchema).optional(),
   joins: z.array(JoinConfigSchema).optional(),
   from: FromConfigSchema.optional(),
+  filterTableId: z.string().optional(),
 });

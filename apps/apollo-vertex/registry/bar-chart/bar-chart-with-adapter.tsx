@@ -95,7 +95,7 @@ function BarChartResolver({
     for (const m of metrics) {
       const v = assertNumberOrNull(row[m.id], "Metric value") ?? 0;
       values[m.id] = v;
-      formattedValues[m.id] = formatMetricValue(language, v, m.aggregation);
+      formattedValues[m.id] = formatMetricValue(language, v, m.expression);
       const total = totalsByMetricId[m.id] ?? 0;
       formattedPercents[m.id] =
         total === 0 ? "" : formatPercentage(language, v / total);

@@ -13,3 +13,97 @@ A time-series line chart over a datetime dimension.
 ```bash
 npx shadcn@latest add @uipath/line-chart
 ```
+
+Installs both the prop-driven `LineChart` view and the `LineChartWithAdapter` variant.
+
+## View
+
+`LineChart` plots an array of `{ x, y }` points. Use it when the series is already in memory.
+
+```tsx
+import { LineChart } from "@/components/ui/line-chart";
+
+const data = [
+  { x: "Jan", y: 120 },
+  { x: "Feb", y: 132 },
+  { x: "Mar", y: 101 },
+  // ...
+];
+
+const formatValue = (value: number) =>
+  new Intl.NumberFormat("en-US", { notation: "compact" }).format(value);
+
+<LineChart
+  data={data}
+  seriesLabel="Order count"
+  formatValue={formatValue}
+/>
+```
+
+### Props
+
+- `data: Array<{ x: string; y: number }>` — points in order. `x` is rendered on the axis as-is.
+- `seriesLabel: string` — tooltip/legend label.
+- `formatValue: (value: number) => string` — formats Y values in the tooltip and axis.
+- `color?: string` — optional override; defaults to `var(--color-primary)`.
+
+## With adapter
+
+`LineChartWithAdapter` queries the configured `DataAdapter`, bins the response on the dimension's time axis, and renders the line. Wrapped in Suspense + error boundary.
+
+The chart package does not bundle an adapter. Install one of the ready-made adapters (or implement the `DataAdapter` interface yourself):
+
+```bash
+npx shadcn@latest add @uipath/data-fabric-adapter
+# or
+npx shadcn@latest add @uipath/insights-adapter
+```
+
+```tsx
+import { LineChartWithAdapter } from "@/components/ui/line-chart";
+import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
+
+const adapter = dataFabricAdapter({
+  baseUrl: "/api/datafabric/.../api",
+  accessToken,
+  entityName: "Orders",
+});
+
+const dataModel = {
+  id: "orders-over-time",
+  dimensions: [
+    { id: "OrderDate", display: "Order date", type: "datetime" as const },
+  ],
+  metrics: [
+    {
+      id: "total",
+      display: "Total orders",
+      expression: {
+        type: "aggregate" as const,
+        aggregation: "COUNT" as const,
+        argument: { id: "Id", display: "Id", type: "numeric" as const },
+      },
+    },
+  ],
+};
+
+const configuration = {
+  id: "orders-line",
+  name: "Orders over time",
+  type: "line" as const,
+  dimensions: ["OrderDate"],
+  metrics: ["total"],
+};
+
+<LineChartWithAdapter
+  configuration={configuration}
+  dataModel={dataModel}
+  dataAdapter={adapter}
+/>
+```
+
+### Props
+
+- `configuration: LineChartConfiguration` — single dimension + single metric (line charts always render one series).
+- `dataModel: ChartDataModel<DatetimeModelField>` — dimension must be `datetime`.
+- `dataAdapter: DataAdapter` — implementation that runs the query.

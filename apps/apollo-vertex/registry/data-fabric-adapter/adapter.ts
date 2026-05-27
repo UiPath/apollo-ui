@@ -1,7 +1,11 @@
 import { queryOptions } from "@tanstack/react-query";
 import { initClient } from "@ts-rest/core";
 import { z } from "zod";
-import type { DataAdapter, ListFilter } from "@/lib/charts-core";
+import {
+  type DataAdapter,
+  type ListFilter,
+  PrimitiveValueSchema,
+} from "@/lib/charts-core";
 import { dataFabricBarChartAdapter } from "./chart-adapters/bar";
 import { dataFabricDistributionChartAdapter } from "./chart-adapters/distribution";
 import { dataFabricKpiChartAdapter } from "./chart-adapters/kpi";
@@ -9,7 +13,6 @@ import { dataFabricLineChartAdapter } from "./chart-adapters/line";
 import { dataFabricMultiLineChartAdapter } from "./chart-adapters/multi-line";
 import { dataFabricTableChartAdapter } from "./chart-adapters/table";
 import { dataFabricContract } from "./contract";
-import { PrimitiveValueSchema } from "./schemas/data-query-response-schema";
 import { dataFabricQuery } from "./utils/query";
 
 interface DataFabricAdapterProps {

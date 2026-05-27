@@ -1,19 +1,34 @@
-import type { Aggregation } from "../../models/aggregation";
+import type { MetricExpression } from "../../models/expression";
+import { getMetricFieldType } from "../get-metric-field-type";
 import type { BaseFormatOptions } from "./base-format-options";
 import { format } from "./format";
 
 export function formatMetricValue(
   locale: Intl.LocalesArgument,
   value: unknown,
-  aggregation: Aggregation,
+  expression: MetricExpression,
   options?: BaseFormatOptions,
 ): string {
-  switch (aggregation.kind) {
-    case "count":
-    case "sum":
-    case "avg":
-    case "min":
-    case "max":
-      return format(locale, value, "numeric", options);
+  const fieldType = getMetricFieldType(expression);
+
+  if (fieldType === "currency" && expression.argument.type === "currency") {
+    const fmt = expression.argument.format;
+    return format(locale, value, "currency", {
+      ...options,
+      ...(fmt && { currency: fmt.currency }),
+    });
   }
+
+  if (fieldType === "boolean" && expression.argument.type === "boolean") {
+    const fmt = expression.argument.format;
+    return format(locale, value, "boolean", {
+      ...options,
+      ...(fmt && {
+        trueLabel: fmt.trueDisplay,
+        falseLabel: fmt.falseDisplay,
+      }),
+    });
+  }
+
+  return format(locale, value, fieldType, options);
 }

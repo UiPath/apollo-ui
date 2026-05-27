@@ -1,9 +1,6 @@
 import { assertDefined } from "@/lib/asserts/assert-defined";
-import type { PrimitiveValue } from "@/lib/charts-core";
-import {
-  type DataQueryResponse,
-  PrimitiveValueSchema,
-} from "../schemas/data-query-response-schema";
+import type { DataQueryResponse } from "./data-query-response-schema";
+import type { PrimitiveValue } from "./models/primitive-value";
 
 interface ChartDataMappingOptions {
   dimensions: string[];
@@ -30,29 +27,29 @@ export function mapResponseToChartData({
       .values;
   });
 
-  const metricValues = metrics?.map((metric) => {
+  const metricValues = metrics.map((metric) => {
     return assertDefined(data[metric], `Metric data: ${metric}`).values;
   });
 
   return Array.from({ length: rowCount }, (_, rowIdx) => {
     const entries: Array<readonly [string, PrimitiveValue]> = [
       ...dimensions.map(
-        (dimension, dimensionIdx): readonly [string, PrimitiveValue] => {
-          const value = PrimitiveValueSchema.parse(
-            assertDefined(
-              dimensionValues[dimensionIdx],
-              `Dimension ${dimensionIdx}`,
-            )[rowIdx],
-          );
-          return [dimension, value];
-        },
+        (dimension, dimensionIdx): readonly [string, PrimitiveValue] => [
+          dimension,
+          // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) `DataFabricQueryResponse` was validated upstream
+          assertDefined(
+            dimensionValues[dimensionIdx],
+            `Dimension ${dimensionIdx}`,
+          )[rowIdx] as PrimitiveValue,
+        ],
       ),
-      ...metrics.map((metric, metricIdx): readonly [string, PrimitiveValue] => {
-        const value = PrimitiveValueSchema.parse(
-          assertDefined(metricValues[metricIdx], `Metric ${metricIdx}`)[rowIdx],
-        );
-        return [metric, value];
-      }),
+      ...metrics.map((metric, metricIdx): readonly [string, PrimitiveValue] => [
+        metric,
+        // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) `DataFabricQueryResponse` was validated upstream
+        assertDefined(metricValues[metricIdx], `Metric ${metricIdx}`)[
+          rowIdx
+        ] as PrimitiveValue,
+      ]),
     ];
 
     return Object.fromEntries(entries);

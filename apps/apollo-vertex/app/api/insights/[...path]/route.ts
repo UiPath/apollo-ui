@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { proxyToUiPath } from "@/lib/api-proxy";
 
-const DATAFABRIC_SEGMENT = "datafabric_";
+const INSIGHTS_SEGMENT = "insightsrtm_";
 
 export async function GET(
   request: NextRequest,
@@ -9,7 +9,7 @@ export async function GET(
 ) {
   const { path } = await params;
   return proxyToUiPath(request, path, {
-    requiredServiceSegment: DATAFABRIC_SEGMENT,
+    requiredServiceSegment: INSIGHTS_SEGMENT,
   });
 }
 
@@ -19,6 +19,6 @@ export async function POST(
 ) {
   const { path } = await params;
   return proxyToUiPath(request, path, {
-    requiredServiceSegment: DATAFABRIC_SEGMENT,
+    requiredServiceSegment: INSIGHTS_SEGMENT,
   });
 }

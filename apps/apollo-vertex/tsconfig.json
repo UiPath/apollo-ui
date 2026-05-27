@@ -36,6 +36,9 @@
       "@/lib/data-fabric-adapter": [
         "./registry/data-fabric-adapter/data-fabric-adapter"
       ],
+      "@/lib/insights-adapter": [
+        "./registry/insights-adapter/insights-adapter"
+      ],
       "@/components/ui/line-chart": ["./registry/line-chart/line-chart"],
       "@/components/ui/multi-line-chart": [
         "./registry/multi-line-chart/multi-line-chart"
