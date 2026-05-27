@@ -267,6 +267,9 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
       nodeId={PREVIEW_NODE_ID}
       placement="right-start"
       offset={FLOATING_CANVAS_PANEL_OFFSET}
+      // The default AddNodePanel (Toolbox) manages its own virtualized scroll,
+      // so the chrome's outer scroll is disabled to avoid a redundant scrollbar.
+      scrollableContent={!!CustomPanel}
     >
       {CustomPanel ? (
         <CustomPanel onNodeSelect={(item) => handleNodeSelect(item)} onClose={handleClose} />

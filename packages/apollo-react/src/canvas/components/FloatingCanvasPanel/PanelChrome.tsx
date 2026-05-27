@@ -14,9 +14,10 @@ const PanelHeader = styled.div`
   flex-shrink: 0;
 `;
 
-const PanelContent = styled.div`
+const PanelContent = styled.div<{ scrollable?: boolean }>`
   flex: 1;
-  overflow-y: auto;
+  min-height: 0;
+  overflow-y: ${(props) => (props.scrollable === false ? 'hidden' : 'auto')};
   overflow-x: hidden;
 
   &::-webkit-scrollbar {
@@ -45,6 +46,7 @@ export interface PanelChromeProps {
   children?: ReactNode;
   onClose?: () => void;
   scrollKey?: string;
+  scrollableContent?: boolean;
 }
 
 export function PanelChrome({
@@ -54,6 +56,7 @@ export function PanelChrome({
   children,
   onClose,
   scrollKey,
+  scrollableContent = true,
 }: PanelChromeProps) {
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -88,7 +91,9 @@ export function PanelChrome({
           )}
         </PanelHeader>
       )}
-      <PanelContent ref={contentRef}>{children}</PanelContent>
+      <PanelContent ref={contentRef} scrollable={scrollableContent}>
+        {children}
+      </PanelContent>
     </>
   );
 }
