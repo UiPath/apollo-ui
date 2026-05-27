@@ -1,7 +1,9 @@
 import { queryOptions } from "@tanstack/react-query";
-import type { DataAdapter } from "@/lib/charts-core";
-import { mapConfigFilterToFilterValues } from "@/lib/charts-core";
-import { mapResponseToChartData } from "../utils/chart-data-mapper";
+import {
+  type DataAdapter,
+  mapConfigFilterToFilterValues,
+  mapResponseToChartData,
+} from "@/lib/charts-core";
 import { type DataFabricClient, dataFabricQuery } from "../utils/query";
 import { createDataFabricChartQueryOptions } from "../utils/query-options";
 import { mapDataFabricResponseToChartData } from "../utils/response-data-mapper";

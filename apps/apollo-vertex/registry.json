@@ -348,6 +348,11 @@
           "type": "registry:lib"
         },
         {
+          "path": "registry/charts-core/chart-data-mapper.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/chart-data-mapper.ts"
+        },
+        {
           "path": "registry/charts-core/chart-loading-boundary.tsx",
           "type": "registry:lib",
           "target": "lib/charts-core/chart-loading-boundary.tsx"
@@ -366,6 +371,11 @@
           "path": "registry/charts-core/data-adapter.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/data-adapter.ts"
+        },
+        {
+          "path": "registry/charts-core/data-query-response-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/data-query-response-schema.ts"
         },
         {
           "path": "registry/charts-core/error-boundary.tsx",
@@ -428,9 +438,14 @@
           "target": "lib/charts-core/models/configurations/table-chart-configuration.ts"
         },
         {
-          "path": "registry/charts-core/models/aggregation.ts",
+          "path": "registry/charts-core/models/expression.ts",
           "type": "registry:lib",
-          "target": "lib/charts-core/models/aggregation.ts"
+          "target": "lib/charts-core/models/expression.ts"
+        },
+        {
+          "path": "registry/charts-core/models/field.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/field.ts"
         },
         {
           "path": "registry/charts-core/models/filter-values.ts",
@@ -581,6 +596,16 @@
           "path": "registry/charts-core/util/format/percentage-format-options.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/format/percentage-format-options.ts"
+        },
+        {
+          "path": "registry/charts-core/util/build-field.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/build-field.ts"
+        },
+        {
+          "path": "registry/charts-core/util/get-metric-field-type.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/get-metric-field-type.ts"
         }
       ]
     },
@@ -644,11 +669,6 @@
           "target": "lib/data-fabric-adapter/data-fabric-adapter.ts"
         },
         {
-          "path": "registry/data-fabric-adapter/schemas/data-query-response-schema.ts",
-          "type": "registry:lib",
-          "target": "lib/data-fabric-adapter/schemas/data-query-response-schema.ts"
-        },
-        {
           "path": "registry/data-fabric-adapter/schemas/query-schema.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/schemas/query-schema.ts"
@@ -657,11 +677,6 @@
           "path": "registry/data-fabric-adapter/utils/binning-utils.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/utils/binning-utils.ts"
-        },
-        {
-          "path": "registry/data-fabric-adapter/utils/chart-data-mapper.ts",
-          "type": "registry:lib",
-          "target": "lib/data-fabric-adapter/utils/chart-data-mapper.ts"
         },
         {
           "path": "registry/data-fabric-adapter/utils/fetch-date-binned-data.ts",
@@ -697,6 +712,122 @@
           "path": "registry/data-fabric-adapter/utils/throw-error.ts",
           "type": "registry:lib",
           "target": "lib/data-fabric-adapter/utils/throw-error.ts"
+        }
+      ]
+    },
+    {
+      "name": "insights-adapter",
+      "type": "registry:lib",
+      "title": "Insights Adapter",
+      "description": "DataAdapter implementation that talks to the UiPath Insights standalone-query API. Pair with any chart from charts-core.",
+      "dependencies": [
+        "@tanstack/react-query@^5.90.0",
+        "@ts-rest/core@^3.53.0-rc.1",
+        "@types/luxon",
+        "luxon",
+        "zod"
+      ],
+      "registryDependencies": ["@uipath/charts-core"],
+      "files": [
+        {
+          "path": "registry/insights-adapter/adapter.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/adapter.ts"
+        },
+        {
+          "path": "registry/insights-adapter/chart-adapters/bar.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/chart-adapters/bar.ts"
+        },
+        {
+          "path": "registry/insights-adapter/chart-adapters/distribution.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/chart-adapters/distribution.ts"
+        },
+        {
+          "path": "registry/insights-adapter/chart-adapters/kpi.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/chart-adapters/kpi.ts"
+        },
+        {
+          "path": "registry/insights-adapter/chart-adapters/line.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/chart-adapters/line.ts"
+        },
+        {
+          "path": "registry/insights-adapter/chart-adapters/multi-line.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/chart-adapters/multi-line.ts"
+        },
+        {
+          "path": "registry/insights-adapter/chart-adapters/table.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/chart-adapters/table.ts"
+        },
+        {
+          "path": "registry/insights-adapter/contract.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/contract.ts"
+        },
+        {
+          "path": "registry/insights-adapter/insights-adapter.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/insights-adapter.ts"
+        },
+        {
+          "path": "registry/insights-adapter/schemas/aggregate-fragment-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/schemas/aggregate-fragment-schema.ts"
+        },
+        {
+          "path": "registry/insights-adapter/schemas/filter-fragment-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/schemas/filter-fragment-schema.ts"
+        },
+        {
+          "path": "registry/insights-adapter/schemas/filter-request-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/schemas/filter-request-schema.ts"
+        },
+        {
+          "path": "registry/insights-adapter/schemas/query-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/schemas/query-schema.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/assert-configuration-supported.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/assert-configuration-supported.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/binning.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/binning.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/filter-request.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/filter-request.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/metric-aggregate.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/metric-aggregate.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/query-options.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/query-options.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/query.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/query.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/throw-error.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/throw-error.ts"
         }
       ]
     },

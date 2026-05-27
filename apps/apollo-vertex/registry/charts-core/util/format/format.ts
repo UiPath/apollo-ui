@@ -13,7 +13,7 @@ import { formatDuration } from "./format-duration";
 import { formatNumber } from "./format-number";
 import { formatPercentage } from "./format-percentage";
 
-type FieldType =
+type DataModelFieldType =
   | "string"
   | "boolean"
   | "id"
@@ -39,7 +39,7 @@ type TypeToFormat = {
 // Generic-narrowing pattern: each case narrows fieldType to a specific
 // literal, but TS can't narrow `options: TypeToFormat[TFieldType]` along
 // with it, so the `as` casts are mechanical and safe.
-export const format = <TFieldType extends FieldType>(
+export const format = <TFieldType extends DataModelFieldType>(
   locale: Intl.LocalesArgument,
   value: unknown,
   fieldType: TFieldType,

@@ -1,12 +1,8 @@
-import type { DimensionType } from "./chart-models";
+import type { DataModelField } from "./models/field";
 
-export interface TableDataModelField {
-  id: string;
-  display: string;
-  type: DimensionType;
-}
+export type TableDataModelField = DataModelField;
 
 export interface TableDataModel {
   id: string;
-  fields: Array<TableDataModelField>;
+  fields: Array<DataModelField>;
 }

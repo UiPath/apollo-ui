@@ -1,7 +1,4 @@
-import {
-  type DataQueryResponse,
-  PrimitiveValueSchema,
-} from "../schemas/data-query-response-schema";
+import type { DataQueryResponse } from "@/lib/charts-core";
 import type { DataFabricQueryResponse } from "../schemas/query-schema";
 
 export function mapDataFabricResponseToChartData(
@@ -19,10 +16,7 @@ export function mapDataFabricResponseToChartData(
 
   for (const key of columnKeys) {
     result[key] = {
-      values: rows.map((row) => {
-        const value = row[key];
-        return value == null ? null : PrimitiveValueSchema.parse(value);
-      }),
+      values: rows.map((row) => row[key] ?? null),
       stackValues: null,
       ungrouped: null,
     };

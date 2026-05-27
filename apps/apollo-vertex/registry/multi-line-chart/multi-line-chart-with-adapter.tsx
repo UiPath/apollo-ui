@@ -114,8 +114,8 @@ function MultiLineChartResolver({
       color,
       axis: idx === 0 ? "left" : "right",
       formatValue: (value: number) =>
-        formatMetricValue(language, value, metric.aggregation),
-      totalText: formatMetricValue(language, total, metric.aggregation),
+        formatMetricValue(language, value, metric.expression),
+      totalText: formatMetricValue(language, total, metric.expression),
       totalLabel: t("total_metric", { metric: metric.display }),
     };
   });

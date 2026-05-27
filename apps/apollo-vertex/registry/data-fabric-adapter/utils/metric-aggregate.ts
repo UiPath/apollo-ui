@@ -11,21 +11,32 @@ export interface DataFabricAggregate {
 export function mapMetricToDataFabricAggregate(
   metric: DataModelMetric,
 ): DataFabricAggregate {
-  const a = metric.aggregation;
-  switch (a.kind) {
-    case "count":
-      return {
-        function: "COUNT",
-        field: a.field ?? metric.id,
-        alias: metric.id,
-      };
-    case "sum":
-      return { function: "SUM", field: a.field, alias: metric.id };
-    case "avg":
-      return { function: "AVG", field: a.field, alias: metric.id };
-    case "min":
-      return { function: "MIN", field: a.field, alias: metric.id };
-    case "max":
-      return { function: "MAX", field: a.field, alias: metric.id };
+  const expr = metric.expression;
+  if (expr.filters && expr.filters.length > 0) {
+    throw new Error(
+      `Data Fabric does not support per-aggregate filters (metric "${metric.id}").`,
+    );
+  }
+
+  const field = expr.argument.id;
+  switch (expr.aggregation) {
+    case "COUNT":
+      return { function: "COUNT", field, alias: metric.id };
+    case "SUM":
+      return { function: "SUM", field, alias: metric.id };
+    case "AVERAGE":
+      return { function: "AVG", field, alias: metric.id };
+    case "MIN":
+      return { function: "MIN", field, alias: metric.id };
+    case "MAX":
+      return { function: "MAX", field, alias: metric.id };
+    case "ANY":
+    case "DISTINCT_COUNT":
+    case "MEDIAN":
+    case "PERCENTAGE":
+    case "PERCENTILE":
+      throw new Error(
+        `Data Fabric does not support aggregation "${expr.aggregation}" (metric "${metric.id}").`,
+      );
   }
 }

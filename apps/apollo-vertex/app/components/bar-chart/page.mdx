@@ -13,3 +13,95 @@ A metric broken down by a categorical dimension.
 ```bash
 npx shadcn@latest add @uipath/bar-chart
 ```
+
+Installs both the prop-driven `BarChart` view and the `BarChartWithAdapter` variant.
+
+## View
+
+`BarChart` renders pre-shaped rows. Use it when the data is already in memory.
+
+```tsx
+import { BarChart } from "@/components/ui/bar-chart";
+
+const rows = [
+  {
+    id: "engineering",
+    dimensions: [{ key: "department", label: "Engineering" }],
+    values: { spend: 28000 },
+    formattedValues: { spend: "$28,000" },
+    formattedPercents: { spend: "32.2%" },
+  },
+  // ...
+];
+
+<BarChart
+  rows={rows}
+  series={[{ id: "spend", label: "Total spend" }]}
+/>
+```
+
+### Props
+
+- `rows: BarChartRow[]` — one row per category. Each row carries its dimensions, raw `values`, and pre-formatted `formattedValues`/`formattedPercents` for the tooltip and labels.
+- `series: BarChartSeries[]` — one entry per metric. With multiple series, bars are grouped per category. Set `color` to override the palette.
+
+## With adapter
+
+`BarChartWithAdapter` wires the chart to a `DataAdapter`. It manages its own data fetching, Suspense, and error boundary — drop it anywhere a `QueryClientProvider` is in scope.
+
+The chart package does not bundle an adapter. Install one of the ready-made adapters (or implement the `DataAdapter` interface yourself):
+
+```bash
+npx shadcn@latest add @uipath/data-fabric-adapter
+# or
+npx shadcn@latest add @uipath/insights-adapter
+```
+
+```tsx
+import { BarChartWithAdapter } from "@/components/ui/bar-chart";
+import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
+
+const adapter = dataFabricAdapter({
+  baseUrl: "/api/datafabric/.../api",
+  accessToken,
+  entityName: "Orders",
+});
+
+const dataModel = {
+  id: "orders-by-status",
+  dimensions: [
+    { id: "Status", display: "Status", type: "string" as const },
+  ],
+  metrics: [
+    {
+      id: "total",
+      display: "Total orders",
+      expression: {
+        type: "aggregate" as const,
+        aggregation: "COUNT" as const,
+        argument: { id: "Id", display: "Id", type: "numeric" as const },
+      },
+    },
+  ],
+};
+
+const configuration = {
+  id: "orders-bar",
+  name: "Orders by status",
+  type: "bar" as const,
+  dimensions: ["Status"],
+  metrics: ["total"],
+};
+
+<BarChartWithAdapter
+  configuration={configuration}
+  dataModel={dataModel}
+  dataAdapter={adapter}
+/>
+```
+
+### Props
+
+- `configuration: BarChartConfiguration` — `dimensions`/`metrics` reference IDs that must exist in `dataModel`. Optional `filters`, `joins`, `from`, `filterTableId`.
+- `dataModel: ChartDataModel<StringModelField>` — defines available dimensions (`StringModelField` only — bar charts need a categorical X axis) and metrics with `expression` shape.
+- `dataAdapter: DataAdapter` — implementation that runs the query. Use `dataFabricAdapter` or `insightsAdapter` from `@uipath/data-fabric-adapter` / `@uipath/insights-adapter`, or implement the interface yourself.

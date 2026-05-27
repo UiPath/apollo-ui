@@ -1,18 +1,27 @@
 import type { Interval } from "luxon";
-import type { Aggregation } from "./models/aggregation";
+import type { MetricExpression } from "./models/expression";
+import type {
+  DatetimeModelField,
+  DataModelField,
+  DataModelFieldType,
+  NumericOrDatetimeModelField,
+  StringModelField,
+} from "./models/field";
 import type { PrimitiveValue } from "./models/primitive-value";
 
-export type DimensionType = "numeric" | "string" | "boolean" | "datetime";
-
-export interface DataModelField {
-  id: string;
-  type: DimensionType;
-}
+export type {
+  DataModelField,
+  DataModelFieldType,
+  DatetimeModelField,
+  NumericOrDatetimeModelField,
+  StringModelField,
+};
+export type DimensionType = DataModelFieldType;
 
 export interface DataModelMetric {
   id: string;
   display: string;
-  aggregation: Aggregation;
+  expression: MetricExpression;
 }
 
 export interface ChartDataModel<
@@ -27,12 +36,6 @@ export interface KpiDataModel {
   id: string;
   metrics: DataModelMetric[];
 }
-
-export type DatetimeModelField = DataModelField & { type: "datetime" };
-export type NumericOrDatetimeModelField = DataModelField & {
-  type: "numeric" | "datetime";
-};
-export type StringModelField = DataModelField & { type: "string" };
 
 export interface KpiChartData<_TMetaData = unknown> {
   data: number | number[];

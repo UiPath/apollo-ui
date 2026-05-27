@@ -16,13 +16,13 @@ import { mapFilterValuesToDataFabricFilterGroup } from "./filter-group";
 import type { DataFabricAggregate } from "./metric-aggregate";
 import { type DataFabricClient, dataFabricQuery } from "./query";
 
-type Aggregate = DataFabricAggregate;
+type DataModelAggregate = DataFabricAggregate;
 
 interface FetchDateBinnedDataOptions {
   client: DataFabricClient;
   entityName: string;
   dimensionId: string;
-  aggregates: Aggregate[];
+  aggregates: DataModelAggregate[];
   filters: FilterValues[];
   joins?: JoinConfig[];
   from?: FromConfig;

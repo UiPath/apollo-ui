@@ -3,9 +3,9 @@ import { assertDefined } from "@/lib/asserts/assert-defined";
 import {
   type DataAdapter,
   mapConfigFilterToFilterValues,
+  mapResponseToChartData,
 } from "@/lib/charts-core";
 import type { DataFabricQueryRequest } from "../schemas/query-schema";
-import { mapResponseToChartData } from "../utils/chart-data-mapper";
 import { mapMetricToDataFabricAggregate } from "../utils/metric-aggregate";
 import { type DataFabricClient, dataFabricQuery } from "../utils/query";
 import { createDataFabricChartQueryOptions } from "../utils/query-options";

@@ -2,7 +2,7 @@ import { MultiLineChartTemplate } from '@/templates/charts/MultiLineChartTemplat
 
 # Multi-Line Chart
 
-Two metrics on a shared datetime axis with independent Y axes.
+Two metrics on a shared datetime axis with independent left and right Y axes.
 
 <div className="not-prose my-8">
   <MultiLineChartTemplate />
@@ -13,3 +13,133 @@ Two metrics on a shared datetime axis with independent Y axes.
 ```bash
 npx shadcn@latest add @uipath/multi-line-chart
 ```
+
+Installs both the prop-driven `MultiLineChart` view and the `MultiLineChartWithAdapter` variant.
+
+## View
+
+`MultiLineChart` plots up to two series sharing an X axis. Pass series with `axis: "left" | "right"` to drive independent Y axes (useful when units differ).
+
+```tsx
+import { MultiLineChart } from "@/components/ui/multi-line-chart";
+
+const data = [
+  { month: "Jan", orders: 120, revenue: 12000 },
+  { month: "Feb", orders: 132, revenue: 14500 },
+  // ...
+];
+
+const numberFormat = new Intl.NumberFormat("en-US");
+const currencyFormat = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+});
+
+<MultiLineChart
+  data={data}
+  xKey="month"
+  series={[
+    {
+      id: "orders",
+      label: "Orders",
+      color: "var(--chart-1)",
+      axis: "left",
+      formatValue: (v) => numberFormat.format(v),
+      totalText: numberFormat.format(252),
+      totalLabel: "Total orders",
+    },
+    {
+      id: "revenue",
+      label: "Revenue",
+      color: "var(--chart-2)",
+      axis: "right",
+      formatValue: (v) => currencyFormat.format(v),
+      totalText: currencyFormat.format(26500),
+      totalLabel: "Total revenue",
+    },
+  ]}
+/>
+```
+
+### Props
+
+- `data: Array<Record<string, string | number>>` — rows keyed by series id and `xKey`.
+- `xKey: string` — which property names the X axis (e.g., `"month"`).
+- `series: MultiLineChartSeries[]` — exactly two entries: one `axis: "left"`, one `axis: "right"`. Each carries label, color, formatter, and pre-computed `totalText`/`totalLabel` shown above the chart.
+
+## With adapter
+
+`MultiLineChartWithAdapter` issues one query per metric (parallel) against the shared dimension, bins datetime, and renders the dual-axis chart.
+
+The chart package does not bundle an adapter. Install one of the ready-made adapters (or implement the `DataAdapter` interface yourself):
+
+```bash
+npx shadcn@latest add @uipath/data-fabric-adapter
+# or
+npx shadcn@latest add @uipath/insights-adapter
+```
+
+```tsx
+import { MultiLineChartWithAdapter } from "@/components/ui/multi-line-chart";
+import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
+
+const adapter = dataFabricAdapter({
+  baseUrl: "/api/datafabric/.../api",
+  accessToken,
+  entityName: "Orders",
+});
+
+const idField = { id: "Id", display: "Id", type: "numeric" as const };
+const amountField = {
+  id: "Amount",
+  display: "Amount",
+  type: "numeric" as const,
+};
+
+const dataModel = {
+  id: "orders-trends",
+  dimensions: [
+    { id: "OrderDate", display: "Order date", type: "datetime" as const },
+  ],
+  metrics: [
+    {
+      id: "order_count",
+      display: "Orders",
+      expression: {
+        type: "aggregate" as const,
+        aggregation: "COUNT" as const,
+        argument: idField,
+      },
+    },
+    {
+      id: "revenue",
+      display: "Revenue",
+      expression: {
+        type: "aggregate" as const,
+        aggregation: "SUM" as const,
+        argument: amountField,
+      },
+    },
+  ],
+};
+
+const configuration = {
+  id: "orders-multi-line",
+  name: "Orders + revenue over time",
+  type: "multi_line" as const,
+  dimensions: ["OrderDate"],
+  metrics: ["order_count", "revenue"],
+};
+
+<MultiLineChartWithAdapter
+  configuration={configuration}
+  dataModel={dataModel}
+  dataAdapter={adapter}
+/>
+```
+
+### Props
+
+- `configuration: MultiLineChartConfiguration` — one datetime dimension, exactly two metrics.
+- `dataModel: ChartDataModel<DatetimeModelField>` — dimension must be `datetime`.
+- `dataAdapter: DataAdapter` — implementation that runs the queries.
