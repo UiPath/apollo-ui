@@ -1037,6 +1037,42 @@ describe('StageNode - Add Task Button', () => {
   });
 });
 
+describe('StageNode - Stage status icon tooltip', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('renders the status icon with the status name as aria-label and tooltip when no host label is supplied', () => {
+    renderStageNode({
+      execution: { stageStatus: { status: 'InProgress' }, taskStatus: {} },
+    });
+
+    const statusButton = screen.getByRole('button', { name: 'In progress' });
+    expect(statusButton).toBeInTheDocument();
+  });
+
+  it('uses the host-supplied error label as the aria-label so screen readers match the tooltip', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: { status: 'Failed', label: 'Activity X threw NullReferenceException' },
+        taskStatus: {},
+      },
+    });
+
+    expect(
+      screen.getByRole('button', { name: 'Activity X threw NullReferenceException' })
+    ).toBeInTheDocument();
+  });
+
+  it('uses "In progress" as the aria-label for the InProgress status', () => {
+    renderStageNode({
+      execution: { stageStatus: { status: 'InProgress' as const }, taskStatus: {} },
+    });
+
+    expect(screen.getByRole('button', { name: 'In progress' })).toBeInTheDocument();
+  });
+});
+
 describe('StageTitleInput - input attributes', () => {
   const enterEditMode = async (user: ReturnType<typeof userEvent.setup>) => {
     await user.click(screen.getByRole('button', { name: 'Test Stage' }));

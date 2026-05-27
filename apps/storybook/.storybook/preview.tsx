@@ -1,6 +1,7 @@
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import type { Preview } from '@storybook/react';
+import { SUPPORTED_LOCALES } from '@uipath/apollo-react/i18n';
 import {
   apolloMaterialUiThemeDark,
   apolloMaterialUiThemeDarkHC,
@@ -61,6 +62,23 @@ const allThemes: ThemeMode[] = [
   'canvas',
 ];
 
+// Human-readable display names for the locale toolbar.
+const LOCALE_LABELS: Record<(typeof SUPPORTED_LOCALES)[number], string> = {
+  en: 'English',
+  es: 'Español',
+  pt: 'Português',
+  de: 'Deutsch',
+  fr: 'Français',
+  ja: '日本語',
+  ko: '한국어',
+  ru: 'Русский',
+  tr: 'Türkçe',
+  'zh-CN': '中文 (简体)',
+  'zh-TW': '中文 (繁體)',
+  'pt-BR': 'Português (Brasil)',
+  'es-MX': 'Español (México)',
+};
+
 // Map every theme to its closest MUI equivalent (used by stories with `parameters.material`)
 const muiThemeMap: Record<ThemeMode, typeof apolloMaterialUiThemeLight> = {
   light: apolloMaterialUiThemeLight,
@@ -107,6 +125,7 @@ const preview: Preview = {
   initialGlobals: {
     theme: 'future-dark',
     reactScan: 'off',
+    locale: 'en',
   },
   parameters: {
     backgrounds: { disable: true },
@@ -228,11 +247,23 @@ const preview: Preview = {
         },
       },
     }),
+    // Locale toolbar — sets <html lang>, which `ApI18nProvider` picks up as its
+    // fallback locale (see packages/apollo-react/src/i18n/ApI18nProvider.tsx).
+    locale: {
+      description: 'Locale for ApI18nProvider (sets <html lang>)',
+      toolbar: {
+        title: 'Locale',
+        icon: 'globe',
+        items: SUPPORTED_LOCALES.map((code) => ({ value: code, title: LOCALE_LABELS[code] })),
+        dynamicTitle: true,
+      },
+    },
   },
   decorators: [
     (Story, context) => {
       const theme = (context.globals.theme ?? 'future-dark') as ThemeMode;
       const reactScanEnabled = context.globals.reactScan === 'on';
+      const locale = (context.globals.locale ?? 'en') as (typeof SUPPORTED_LOCALES)[number];
 
       // Apply theme class to <body>. All themes (core and element) use <body>:
       // - Core themes match body.light/body.dark in apollo-core theme-variables.css
@@ -258,6 +289,12 @@ const preview: Preview = {
         }
       }, [reactScanEnabled]);
 
+      // Write synchronously during the decorator render so the freshly-mounted ApI18nProvider
+      // (forced by the `key={locale}` below) sees the new value on its first render.
+      if (typeof document !== 'undefined' && document.documentElement.lang !== locale) {
+        document.documentElement.lang = locale;
+      }
+
       const isFullscreen = context.parameters?.layout === 'fullscreen';
       const useMaterial = context.parameters?.material === true;
 
@@ -269,7 +306,7 @@ const preview: Preview = {
           <ThemeProvider theme={muiTheme}>
             <CssBaseline />
             <GlobalStyles />
-            <div style={{ height: '100%', width: '100%' }}>
+            <div key={locale} style={{ height: '100%', width: '100%' }}>
               <Story />
             </div>
           </ThemeProvider>
@@ -277,7 +314,7 @@ const preview: Preview = {
       }
 
       return (
-        <div className={isFullscreen ? 'h-screen' : 'p-1'}>
+        <div key={locale} className={isFullscreen ? 'h-screen' : 'p-1'}>
           <Story />
         </div>
       );

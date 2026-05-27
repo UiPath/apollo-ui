@@ -9,6 +9,7 @@ import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import { StageTaskIcon, StageTaskRetryDuration } from './StageNode.styles';
 import type { StageTaskExecution, StageTaskItem } from './StageNode.types';
 import { StageTaskEntryConditionIcon } from './StageTaskEntryConditionIcon';
+import { useExecutionStatusLabel } from './useExecutionStatusLabel';
 
 const ProcessCanvasIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -111,11 +112,14 @@ export interface TaskContentProps {
 
 export const TaskContent = memo(
   ({ task, taskExecution, isDragging, onTaskPlay }: TaskContentProps) => {
+    const getStatusName = useExecutionStatusLabel();
     const hasExecutionStatus = !!taskExecution?.status;
     const hasSecondRowContent =
       taskExecution &&
       (taskExecution.duration || taskExecution.retryDuration || taskExecution.badge);
     const showPlayButtonSmall = onTaskPlay && hasExecutionStatus;
+    const taskStatusFallbackName = hasExecutionStatus ? getStatusName(taskExecution?.status) : '';
+    const taskStatusTooltip = taskExecution?.message || taskStatusFallbackName;
 
     return (
       <Column
@@ -141,21 +145,18 @@ export const TaskContent = memo(
             </CanvasTooltip>
           </Row>
           <Row align="center" gap={Spacing.SpacingXs} style={{ flexShrink: 0 }}>
-            {hasExecutionStatus &&
-              (taskExecution.message ? (
-                <CanvasTooltip content={taskExecution.message} placement="top">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-4 w-4"
-                    aria-label={taskExecution.message}
-                  >
-                    <ExecutionStatusIcon status={taskExecution.status} />
-                  </Button>
-                </CanvasTooltip>
-              ) : (
-                <ExecutionStatusIcon status={taskExecution.status} />
-              ))}
+            {hasExecutionStatus && (
+              <CanvasTooltip content={taskStatusTooltip} placement="top">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-4 w-4"
+                  aria-label={taskStatusTooltip}
+                >
+                  <ExecutionStatusIcon status={taskExecution.status} />
+                </Button>
+              </CanvasTooltip>
+            )}
             {!hasSecondRowContent && (
               <StageTaskEntryConditionIcon task={task} small={!!hasExecutionStatus} />
             )}

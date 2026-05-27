@@ -8,6 +8,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
+import { useSafeLingui } from '../../../i18n';
 import { GRID_SPACING } from '../../constants';
 import { NodeViewportOverlay } from '../NodeViewportOverlay';
 import type { ToolbarAction } from '../Toolbar';
@@ -63,6 +64,7 @@ const StickyNoteNodeComponent = ({
   onColorChange,
   onResize,
 }: StickyNoteNodeProps) => {
+  const { _ } = useSafeLingui();
   const { updateNodeData, deleteElements } = useReactFlow();
   const [isEditing, setIsEditing] = useState(!readOnly && (data.autoFocus ?? false));
   const [isResizing, setIsResizing] = useState(false);
@@ -261,13 +263,13 @@ const StickyNoteNodeComponent = ({
       {
         id: 'delete',
         icon: <CanvasIcon icon="trash" size={14} />,
-        label: 'Delete',
+        label: _({ id: 'sticky-note.toolbar.delete', message: 'Delete' }),
         onAction: handleDelete,
       },
       {
         id: 'edit',
         icon: <CanvasIcon icon="pencil" size={14} />,
-        label: 'Edit',
+        label: _({ id: 'sticky-note.toolbar.edit', message: 'Edit' }),
         onAction: handleEditClick,
       },
       { id: 'separator' },
@@ -285,7 +287,7 @@ const StickyNoteNodeComponent = ({
             }}
           />
         ),
-        label: 'Color',
+        label: _({ id: 'sticky-note.toolbar.color', message: 'Color' }),
         onAction: handleToggleColorPicker,
       },
     ];
@@ -296,7 +298,7 @@ const StickyNoteNodeComponent = ({
       position: 'top' as const,
       align: 'center' as const,
     };
-  }, [handleEditClick, handleToggleColorPicker, color, handleDelete]);
+  }, [_, handleEditClick, handleToggleColorPicker, color, handleDelete]);
 
   return (
     <>
