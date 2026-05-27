@@ -630,14 +630,34 @@ export function Toolbox<T>({
     handleBackTransition,
   ]);
 
+  // When rendered inside a `FloatingCanvasPanel`, the panel's `size` middleware
+  // exposes `--floating-available-height` so the Toolbox can cap its own
+  // height to whatever fits the viewport.
+  const responsiveStyle = useMemo<React.CSSProperties>(
+    () =>
+      fullHeight
+        ? { boxSizing: 'border-box', overflow: 'hidden' }
+        : {
+            boxSizing: 'border-box',
+            overflow: 'hidden',
+            maxHeight: `min(${TOOLBOX_HEIGHT}px, var(--floating-available-height, ${TOOLBOX_HEIGHT}px))`,
+          },
+    [fullHeight]
+  );
+
   return (
-    <div ref={containerRef} data-testid="toolbox-container">
+    <div
+      ref={containerRef}
+      data-testid="toolbox-container"
+      style={{ maxHeight: '100%', overflow: 'hidden' }}
+    >
       <Column
         px={TOOLBOX_PADDING_X}
         py={TOOLBOX_PADDING_Y}
         gap={TOOLBOX_GAP}
         w={fullWidth ? '100%' : TOOLBOX_WIDTH}
         h={fullHeight ? '100%' : TOOLBOX_HEIGHT}
+        style={responsiveStyle}
       >
         {quickActions && quickActions.length > 0 && <QuickActionsRow actions={quickActions} />}
         <Header
