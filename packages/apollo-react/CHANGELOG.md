@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.33.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.32.2...@uipath/apollo-react@4.33.0) (2026-05-27)
+
+### Features
+
+* **apollo-react:** add CanvasModeToolbar and CanvasZoomControls components ([70a2801](https://github.com/UiPath/apollo-ui/commit/70a2801c7cbf4fca209f3548809d3cac519117e2))
+
 ## [@uipath/apollo-react-v4.32.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.32.1...@uipath/apollo-react@4.32.2) (2026-05-27)
 
 ### Bug Fixes
