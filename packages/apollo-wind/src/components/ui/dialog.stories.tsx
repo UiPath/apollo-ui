@@ -1,5 +1,6 @@
 import type { Meta } from '@storybook/react-vite';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Trash2 } from 'lucide-react';
+import * as React from 'react';
 import { Button } from './button';
 import { Input } from './input';
 import { Label } from './label';
@@ -14,10 +15,32 @@ import {
   DialogTrigger,
 } from './dialog';
 
+// Storybook decorator injects viewMode so story components can open by default
+// on the canvas page but stay closed on the docs page.
+const ViewModeContext = React.createContext<string>('story');
+
 const meta: Meta<typeof Dialog> = {
-  title: 'Components/Overlays/Dialog',
+  title: 'Components/Overlays/Dialog (Modal)',
   component: Dialog,
   tags: ['autodocs'],
+  decorators: [
+    (Story, context) => (
+      <ViewModeContext.Provider value={context.viewMode}>
+        <Story />
+      </ViewModeContext.Provider>
+    ),
+  ],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A window overlaid on the primary content, rendering it inert while the dialog is open. ' +
+          'This component follows [shadcn/ui](https://ui.shadcn.com/docs/components/dialog) naming conventions — ' +
+          'if you are looking for a **modal**, this is it. ' +
+          'For destructive confirmations that require an explicit user decision, see the **Alert Dialog** component instead.',
+      },
+    },
+  },
 };
 
 export default meta;
@@ -26,10 +49,10 @@ export default meta;
 // Basic Dialog
 // ============================================================================
 
-export const BasicDialog = {
-  name: 'Basic Dialog',
-  render: () => (
-    <Dialog>
+function BasicDialogStory() {
+  const viewMode = React.useContext(ViewModeContext);
+  return (
+    <Dialog defaultOpen={viewMode === 'story'}>
       <DialogTrigger asChild>
         <Button variant="outline">Edit profile</Button>
       </DialogTrigger>
@@ -41,17 +64,13 @@ export const BasicDialog = {
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
-            </Label>
-            <Input id="name" defaultValue="John Doe" className="col-span-3" />
+          <div className="grid gap-2">
+            <Label htmlFor="name">Name</Label>
+            <Input id="name" defaultValue="John Doe" />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="username" className="text-right">
-              Username
-            </Label>
-            <Input id="username" defaultValue="@johndoe" className="col-span-3" />
+          <div className="grid gap-2">
+            <Label htmlFor="username">Username</Label>
+            <Input id="username" defaultValue="@johndoe" />
           </div>
         </div>
         <DialogFooter>
@@ -62,17 +81,22 @@ export const BasicDialog = {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  ),
+  );
+}
+
+export const BasicDialog = {
+  name: 'Basic',
+  render: () => <BasicDialogStory />,
 };
 
 // ============================================================================
 // Complex Dialog
 // ============================================================================
 
-export const ComplexDialog = {
-  name: 'Complex Dialog',
-  render: () => (
-    <Dialog>
+function ComplexDialogStory() {
+  const viewMode = React.useContext(ViewModeContext);
+  return (
+    <Dialog defaultOpen={viewMode === 'story'}>
       <DialogTrigger asChild>
         <Button variant="outline">Create Project</Button>
       </DialogTrigger>
@@ -115,17 +139,22 @@ export const ComplexDialog = {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  ),
+  );
+}
+
+export const ComplexDialog = {
+  name: 'Complex',
+  render: () => <ComplexDialogStory />,
 };
 
 // ============================================================================
 // Link Dialog
 // ============================================================================
 
-export const LinkDialog = {
-  name: 'Link Dialog',
-  render: () => (
-    <Dialog>
+function LinkDialogStory() {
+  const viewMode = React.useContext(ViewModeContext);
+  return (
+    <Dialog defaultOpen={viewMode === 'story'}>
       <DialogTrigger asChild>
         <Button variant="outline">Share Link</Button>
       </DialogTrigger>
@@ -156,17 +185,22 @@ export const LinkDialog = {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  ),
+  );
+}
+
+export const LinkDialog = {
+  name: 'Link',
+  render: () => <LinkDialogStory />,
 };
 
 // ============================================================================
 // No Button Dialog
 // ============================================================================
 
-export const NoButtonDialog = {
-  name: 'No Button Dialog',
-  render: () => (
-    <Dialog>
+function NoButtonDialogStory() {
+  const viewMode = React.useContext(ViewModeContext);
+  return (
+    <Dialog defaultOpen={viewMode === 'story'}>
       <DialogTrigger asChild>
         <Button variant="outline">What's New</Button>
       </DialogTrigger>
@@ -214,17 +248,22 @@ export const NoButtonDialog = {
         </div>
       </DialogContent>
     </Dialog>
-  ),
+  );
+}
+
+export const NoButtonDialog = {
+  name: 'No Button',
+  render: () => <NoButtonDialogStory />,
 };
 
 // ============================================================================
 // Scrollable Content Dialog
 // ============================================================================
 
-export const ScrollableContentDialog = {
-  name: 'Scrollable Content Dialog',
-  render: () => (
-    <Dialog>
+function ScrollableContentDialogStory() {
+  const viewMode = React.useContext(ViewModeContext);
+  return (
+    <Dialog defaultOpen={viewMode === 'story'}>
       <DialogTrigger asChild>
         <Button variant="outline">Terms of Service</Button>
       </DialogTrigger>
@@ -308,17 +347,22 @@ export const ScrollableContentDialog = {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  ),
+  );
+}
+
+export const ScrollableContentDialog = {
+  name: 'Scrollable Content',
+  render: () => <ScrollableContentDialogStory />,
 };
 
 // ============================================================================
 // Sticky Footer Dialog
 // ============================================================================
 
-export const StickyFooterDialog = {
-  name: 'Sticky Footer Dialog',
-  render: () => (
-    <Dialog>
+function StickyFooterDialogStory() {
+  const viewMode = React.useContext(ViewModeContext);
+  return (
+    <Dialog defaultOpen={viewMode === 'story'}>
       <DialogTrigger asChild>
         <Button variant="outline">Invite members</Button>
       </DialogTrigger>
@@ -360,5 +404,78 @@ export const StickyFooterDialog = {
         </div>
       </DialogContent>
     </Dialog>
-  ),
+  );
+}
+
+export const StickyFooterDialog = {
+  name: 'Sticky Footer',
+  render: () => <StickyFooterDialogStory />,
+};
+
+// ============================================================================
+// Delete Confirmation Dialog
+// ============================================================================
+
+function DeleteConfirmationExample() {
+  const viewMode = React.useContext(ViewModeContext);
+  const [open, setOpen] = React.useState(viewMode === 'story');
+  const [deleted, setDeleted] = React.useState(false);
+
+  const handleDelete = () => {
+    setDeleted(true);
+    setOpen(false);
+  };
+
+  const handleReset = () => {
+    setDeleted(false);
+    setOpen(true);
+  };
+
+  return (
+    <div className="flex flex-col items-start gap-4">
+      {deleted ? (
+        <div className="flex items-center gap-3 rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <Trash2 className="h-4 w-4 shrink-0" />
+          <span>
+            <strong>John Doe</strong> has been permanently deleted.
+          </span>
+          <Button variant="ghost" size="sm" className="ml-2 h-6 text-xs" onClick={handleReset}>
+            Undo (demo)
+          </Button>
+        </div>
+      ) : (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button variant="destructive">
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete user
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Delete User</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete <strong>John Doe</strong>? This action cannot be
+                undone and will permanently remove the user and all associated data.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button variant="destructive" onClick={handleDelete}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+}
+
+export const DeleteConfirmation = {
+  name: 'Delete',
+  render: () => <DeleteConfirmationExample />,
 };
