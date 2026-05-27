@@ -208,18 +208,24 @@ describe('LoopNode header adornment spacing', () => {
     expect(header.style.paddingRight).toBe('34px');
   });
 
-  it('uses a rows icon for sequential mode', () => {
+  it('uses an unrotated text align icon for sequential mode', () => {
     renderLoopNode({ data: { parallel: false } });
 
     expect(screen.getByText('Sequential')).toBeInTheDocument();
-    expect(screen.getByTestId('canvas-icon-rows-3')).toBeInTheDocument();
+    expect(screen.getByTestId('canvas-icon-text-align-justify')).toBeInTheDocument();
+    expect(screen.getByTestId('canvas-icon-text-align-justify').parentElement).not.toHaveClass(
+      'rotate-90'
+    );
   });
 
-  it('uses a columns icon for parallel mode', () => {
+  it('uses a rotated text align icon for parallel mode', () => {
     renderLoopNode({ data: { parallel: true } });
 
     expect(screen.getByText('Parallel')).toBeInTheDocument();
-    expect(screen.getByTestId('canvas-icon-columns-3')).toBeInTheDocument();
+    expect(screen.getByTestId('canvas-icon-text-align-justify')).toBeInTheDocument();
+    expect(screen.getByTestId('canvas-icon-text-align-justify').parentElement).toHaveClass(
+      'rotate-90'
+    );
   });
 });
 
@@ -321,18 +327,6 @@ describe('LoopNode resize controls', () => {
 });
 
 describe('LoopNode localized labels', () => {
-  it('renders the sequential mode label by default', () => {
-    renderLoopNode();
-
-    expect(screen.getByText('Sequential')).toBeTruthy();
-  });
-
-  it('renders the parallel mode label when the loop is parallel', () => {
-    renderLoopNode({ data: { parallel: true } });
-
-    expect(screen.getByText('Parallel')).toBeTruthy();
-  });
-
   it('uses the localized fallback title when the manifest has no display label', () => {
     mockManifest.current = {
       display: { icon: 'repeat', shape: 'container' },

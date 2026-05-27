@@ -486,7 +486,6 @@ function Header({
           paddingRight: hasTopRightAdornment ? LOOP_HEADER_ADORNMENT_PADDING : undefined,
         }
       : undefined;
-  const executionModeIcon = isParallel ? 'columns-3' : 'rows-3';
 
   return (
     <div
@@ -505,8 +504,8 @@ function Header({
       <div className="flex shrink-0 items-center gap-2">
         {iterationState ? <IterationNavigator iterationState={iterationState} /> : null}
         <span className="flex h-6 shrink-0 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-[11px] font-semibold leading-4 text-foreground shadow-sm">
-          <span className="flex shrink-0" aria-hidden>
-            <CanvasIcon icon={executionModeIcon} size={12} />
+          <span className={cn('flex shrink-0', isParallel && 'rotate-90')} aria-hidden>
+            <CanvasIcon icon="text-align-justify" size={12} />
           </span>
           {label}
         </span>
