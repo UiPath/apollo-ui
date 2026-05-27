@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.32.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.31.1...@uipath/apollo-react@4.32.0) (2026-05-27)
+
+### Features
+
+* **apollo-react:** add stage and task status tooltip [MST-10211] ([9b89d8b](https://github.com/UiPath/apollo-ui/commit/9b89d8bb7ab5e78a3586d07a44c58e49963a9416))
+
 ## [@uipath/apollo-react-v4.31.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.31.0...@uipath/apollo-react@4.31.1) (2026-05-27)
 
 ### Bug Fixes
