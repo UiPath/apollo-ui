@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.31.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.31.0...@uipath/apollo-react@4.31.1) (2026-05-27)
+
+### Bug Fixes
+
+* **apollo-react:** optimize loop resize handles [MST-10254] ([a88d9fd](https://github.com/UiPath/apollo-ui/commit/a88d9fd25c9daa730d062f299f2c1ad4e57164d1))
+
 ## [@uipath/apollo-react-v4.31.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.30.0...@uipath/apollo-react@4.31.0) (2026-05-26)
 
 ### Features
