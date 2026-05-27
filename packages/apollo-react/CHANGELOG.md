@@ -1,3 +1,11 @@
+## [@uipath/apollo-react-v4.32.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.32.0...@uipath/apollo-react@4.32.1) (2026-05-27)
+
+### Bug Fixes
+
+* **apollo-react:** add loop node i18n [MST-10256] ([23598e3](https://github.com/UiPath/apollo-ui/commit/23598e3332c0f5cfa1c430458e32ae24d982225f))
+* **apollo-react:** address review comments ([aefd6b7](https://github.com/UiPath/apollo-ui/commit/aefd6b7dd40ccbe2ce1429659c3aec1c482f0f44))
+* **apollo-react:** format safe lingui fallback values [MST-10256] ([c60ee2a](https://github.com/UiPath/apollo-ui/commit/c60ee2ae7d3955174867503a8a44ab84df8b8e2b))
+
 ## [@uipath/apollo-react-v4.32.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.31.1...@uipath/apollo-react@4.32.0) (2026-05-27)
 
 ### Features
