@@ -16,7 +16,6 @@ import {
   DropdownMenuTrigger,
 } from '@uipath/apollo-wind';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { SUPPORTED_LOCALES, type SupportedLocale } from '../../../i18n';
 import { DefaultCanvasTranslations } from '../../types';
 import {
   createGroupModificationHandlers,
@@ -36,11 +35,9 @@ import { StageHeaderChipType, type StageNodeProps, type StageTaskItem } from './
 const DefaultCanvasDecorator = ({
   initialNodes,
   initialEdges = [],
-  locale,
 }: {
   initialNodes: Node[];
   initialEdges?: Edge[];
-  locale?: SupportedLocale;
 }) => {
   const [nodes, _setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -68,7 +65,6 @@ const DefaultCanvasDecorator = ({
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           mode="design"
-          locale={locale}
           connectionMode={ConnectionMode.Strict}
           defaultEdgeOptions={defaultEdgeOptions}
           connectionLineComponent={StageConnectionEdge}
@@ -83,9 +79,7 @@ const DefaultCanvasDecorator = ({
   );
 };
 
-type StageNodeStoryArgs = StageNodeProps & { locale?: SupportedLocale };
-
-const meta: Meta<StageNodeStoryArgs> = {
+const meta: Meta<StageNodeProps> = {
   title: 'Components/Nodes/StageNode',
   component: StageNode,
   parameters: {
@@ -114,27 +108,13 @@ const meta: Meta<StageNodeStoryArgs> = {
 
       const initialEdges = context.parameters?.edges || [];
 
-      return (
-        <DefaultCanvasDecorator
-          initialNodes={initialNodes}
-          initialEdges={initialEdges}
-          locale={context.args.locale}
-        />
-      );
+      return <DefaultCanvasDecorator initialNodes={initialNodes} initialEdges={initialEdges} />;
     },
   ],
   args: {
     stageDetails: {
       label: 'Default Stage',
       tasks: [],
-    },
-    locale: 'en',
-  },
-  argTypes: {
-    locale: {
-      control: 'select',
-      options: [...SUPPORTED_LOCALES],
-      description: 'Locale forwarded to ApI18nProvider.',
     },
   },
 };
@@ -543,7 +523,6 @@ export const ExecutionStatus: Story = {
           execution: {
             stageStatus: {
               status: 'NotExecuted',
-              label: 'Not started',
             },
             taskStatus: {},
           },
@@ -1077,7 +1056,7 @@ const initialTasks: StageTaskItem[][] = [
   [{ id: 'task-5', label: 'Final Approval', icon: <ProcessIcon /> }],
 ];
 
-const DraggableTaskReorderingStory = ({ locale }: { locale?: SupportedLocale }) => {
+const DraggableTaskReorderingStory = () => {
   const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
   const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
 
@@ -1182,7 +1161,6 @@ const DraggableTaskReorderingStory = ({ locale }: { locale?: SupportedLocale }) 
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           mode="design"
-          locale={locale}
           connectionMode={ConnectionMode.Strict}
           defaultEdgeOptions={{ type: 'stage' }}
           connectionLineComponent={StageConnectionEdge}
@@ -1203,7 +1181,7 @@ export const DraggableTaskReordering: Story = {
   parameters: {
     useCustomRender: true,
   },
-  render: (args) => <DraggableTaskReorderingStory locale={args.locale} />,
+  render: () => <DraggableTaskReorderingStory />,
 };
 
 const initialTasksForAddReplace: StageTaskItem[][] = [
@@ -1260,7 +1238,7 @@ const availableTaskOptions: ListItem[] = [
   },
 ];
 
-const AddAndReplaceTasksStory = ({ locale }: { locale?: SupportedLocale }) => {
+const AddAndReplaceTasksStory = () => {
   const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
   const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
 
@@ -1566,7 +1544,6 @@ const AddAndReplaceTasksStory = ({ locale }: { locale?: SupportedLocale }) => {
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           mode="design"
-          locale={locale}
           connectionMode={ConnectionMode.Strict}
           defaultEdgeOptions={{ type: 'stage' }}
           connectionLineComponent={StageConnectionEdge}
@@ -1602,10 +1579,10 @@ export const AddAndReplaceTasks: Story = {
   parameters: {
     useCustomRender: true,
   },
-  render: (args) => <AddAndReplaceTasksStory locale={args.locale} />,
+  render: () => <AddAndReplaceTasksStory />,
 };
 
-const InlineTitleEditStory = ({ locale }: { locale?: SupportedLocale }) => {
+const InlineTitleEditStory = () => {
   const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
   const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
 
@@ -1696,7 +1673,6 @@ const InlineTitleEditStory = ({ locale }: { locale?: SupportedLocale }) => {
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           mode="design"
-          locale={locale}
           connectionMode={ConnectionMode.Strict}
           defaultEdgeOptions={{ type: 'stage' }}
           connectionLineComponent={StageConnectionEdge}
@@ -1717,7 +1693,7 @@ export const EditableStageTitle: Story = {
   parameters: {
     useCustomRender: true,
   },
-  render: (args) => <InlineTitleEditStory locale={args.locale} />,
+  render: () => <InlineTitleEditStory />,
 };
 
 // Simulate async children fetch (2s delay)
@@ -1744,7 +1720,7 @@ const loadedTaskOptionsWithChildren: ListItem[] = [
   { id: 'script', name: 'Script', data: { type: 'script' }, children: (id) => fetchChildren(id) },
 ];
 
-const AddTaskLoadingStory = ({ locale }: { locale?: SupportedLocale }) => {
+const AddTaskLoadingStory = () => {
   const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
   const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
   const setNodesRef = useRef<React.Dispatch<React.SetStateAction<Node[]>>>(null!);
@@ -1978,7 +1954,6 @@ const AddTaskLoadingStory = ({ locale }: { locale?: SupportedLocale }) => {
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           mode="design"
-          locale={locale}
           connectionMode={ConnectionMode.Strict}
           defaultEdgeOptions={{ type: 'stage' }}
           connectionLineComponent={StageConnectionEdge}
@@ -1999,7 +1974,7 @@ export const AddTaskLoading: Story = {
   parameters: {
     useCustomRender: true,
   },
-  render: (args) => <AddTaskLoadingStory locale={args.locale} />,
+  render: () => <AddTaskLoadingStory />,
 };
 
 export const AdhocTasks: Story = {

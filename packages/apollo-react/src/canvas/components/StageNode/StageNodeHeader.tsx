@@ -12,6 +12,7 @@ import { StageChip, StageHeader } from './StageNode.styles';
 import type { StageNodeProps, StageSlaIcon, StageStatus } from './StageNode.types';
 import { StageHeaderChipType } from './StageNode.types';
 import { StageTitleInput } from './StageTitleInput';
+import { useExecutionStatusLabel } from './useExecutionStatusLabel';
 import { useStageNodeLabels } from './useStageNodeLabels';
 
 const SLA_ICON_CONFIG: Record<StageSlaIcon, { icon: string; iconColor: string }> = {
@@ -46,6 +47,7 @@ const StageNodeHeaderInner = ({
   handleTaskAddClick: (event: React.MouseEvent) => void;
 }) => {
   const labels = useStageNodeLabels();
+  const getStatusName = useExecutionStatusLabel();
   const {
     id,
     stageDetails,
@@ -64,6 +66,8 @@ const StageNodeHeaderInner = ({
   const slaText = execution?.stageStatus?.slaText;
   const slaIcon = execution?.stageStatus?.slaIcon;
   const slaIndicator = slaIcon ? SLA_ICON_CONFIG[slaIcon] : undefined;
+  const statusFallbackName = status ? getStatusName(status) : '';
+  const statusTooltip = statusLabel || statusFallbackName;
 
   return (
     <StageHeader isException={isException} data-testid={`stage-header-${id}`}>
@@ -79,8 +83,8 @@ const StageNodeHeaderInner = ({
         </Row>
         <Row gap={Spacing.SpacingMicro} align="start" py={Padding.PadS}>
           {status && (
-            <CanvasTooltip content={statusLabel} placement="top">
-              <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={statusLabel}>
+            <CanvasTooltip content={statusTooltip} placement="top">
+              <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={statusTooltip}>
                 {status === 'NotExecuted' ? (
                   <CanvasIcon
                     icon="hourglass"

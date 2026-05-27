@@ -15,6 +15,14 @@
   "stage-node.remove-from-parallel-group": "Remove from parallel group",
   "stage-node.remove-group-from-stage": "Remove group from stage",
   "stage-node.replace-task": "Replace task",
+  "stage-node.status.cancelled": "Cancelled",
+  "stage-node.status.completed": "Completed",
+  "stage-node.status.failed": "Failed",
+  "stage-node.status.in-progress": "In progress",
+  "stage-node.status.not-executed": "Not started",
+  "stage-node.status.paused": "Paused",
+  "stage-node.status.terminated": "Terminated",
+  "stage-node.status.warning": "Warning",
   "stage-node.ungroup-parallel-tasks": "Ungroup parallel tasks",
   "stage-node.untitled-stage": "Untitled stage",
   "sticky-note.formatting.bold": "Bold ({boldShortcut})",
@@ -23,5 +31,8 @@
   "sticky-note.formatting.bullet-list": "Bullet list",
   "sticky-note.formatting.numbered-list": "Numbered list",
   "sticky-note.formatting.toolbar": "Text formatting",
+  "sticky-note.toolbar.color": "Color",
+  "sticky-note.toolbar.delete": "Delete",
+  "sticky-note.toolbar.edit": "Edit",
   "toolbox.search": "Search"
 }
