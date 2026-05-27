@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.18.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.17.0...@uipath/apollo-wind@2.18.0) (2026-05-27)
+
+### Features
+
+* **apollo-wind:** add Delete story to Dialog, improve dialog stories UX ([813c036](https://github.com/UiPath/apollo-ui/commit/813c036546380fcd662eb5a0183d9cf645d94f4b))
+
 ## [@uipath/apollo-wind-v2.17.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.16.1...@uipath/apollo-wind@2.17.0) (2026-05-19)
 
 ### Features
