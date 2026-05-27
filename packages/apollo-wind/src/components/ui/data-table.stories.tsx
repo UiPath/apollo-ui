@@ -1024,8 +1024,8 @@ function ModalDeleteExample() {
   );
 }
 
-export const ModalDelete = {
-  name: 'Modal Delete',
+export const DeleteDialog = {
+  name: 'Delete Dialog',
   render: () => <ModalDeleteExample />,
 };
 
