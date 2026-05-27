@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.32.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.32.1...@uipath/apollo-react@4.32.2) (2026-05-27)
+
+### Bug Fixes
+
+* **apollo-react:** addNodePanel scrolling [MST-9993] ([43523b8](https://github.com/UiPath/apollo-ui/commit/43523b8adffd51812d0a1a8b8751b1bb3bc1e491))
+
 ## [@uipath/apollo-react-v4.32.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.32.0...@uipath/apollo-react@4.32.1) (2026-05-27)
 
 ### Bug Fixes
