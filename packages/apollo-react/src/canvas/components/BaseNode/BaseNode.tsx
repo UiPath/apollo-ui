@@ -319,13 +319,11 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const displayLabelBackgroundColor = labelBackgroundColor;
   const displayFooterVariant = footerVariant;
 
-  // SubLabel: Component prop takes precedence, then plain string from display
+  // SubLabel: Component prop takes precedence, then plain string from display.
   const displaySubLabel = useMemo(() => {
-    // 1. Component prop (e.g., composite with health score badge)
     if (subLabelComponent !== undefined) {
       return subLabelComponent;
     }
-    // 2. Plain string from display.subLabel
     return display.subLabel;
   }, [subLabelComponent, display.subLabel]);
 
@@ -690,7 +688,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
               }}
             >
               <CanvasIcon icon="flag" size={12} />
-              <span className="whitespace-nowrap">Take action</span>
+              <span className="whitespace-nowrap">Action needed</span>
             </button>
           );
         })()}

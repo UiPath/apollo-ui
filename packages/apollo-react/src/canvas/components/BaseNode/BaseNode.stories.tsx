@@ -589,7 +589,7 @@ function TakeActionModal({ nodeId, onClose }: { nodeId: string; onClose: () => v
             <CanvasIcon icon="flag" size={20} color="rgb(251 191 36)" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-foreground">Action Required</h3>
+            <h3 className="text-base font-semibold text-foreground">Action Needed</h3>
             <p className="text-xs text-muted-foreground">Node: {nodeId}</p>
           </div>
         </div>
@@ -738,7 +738,7 @@ const executionStateCards = [
     bgClass: 'bg-amber-400/10',
     iconClass: 'bg-amber-400',
     description:
-      'The process is blocked waiting for human input during an active execution. Shows a flag icon and an always-visible "Take action" pill at the top-right of the node. Only rendered when the flow is in an executing state.',
+      'The process is blocked waiting for human input during an active execution. Shows a flag icon and an always-visible "Action needed" pill at the top-right of the node. Only rendered when the flow is in an executing state.',
   },
 ] as const;
 
@@ -971,7 +971,7 @@ function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
         </CollapsibleSection>
 
         <CollapsibleSection
-          title="Take action"
+          title="Action needed"
           open={takeActionOpen}
           onToggle={() => setTakeActionOpen((o) => !o)}
         >
@@ -980,90 +980,95 @@ function ExecutionStatesPage({ globalTheme }: { globalTheme: string }) {
             <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
               ActionNeeded
             </code>{' '}
-            state, a "Take action" prompt is surfaced to the user to unblock execution.{' '}
+            state, an "Action needed" pill is surfaced at the top-right of the node to prompt the
+            user to unblock execution.{' '}
             <strong className="font-medium text-foreground">
               This pill is only present on flows that are in an executing state
             </strong>{' '}
             — it will not appear during design-time or when no run is active.
           </p>
 
-          <div className="mb-8 grid grid-cols-2 gap-6">
-            {/* State 1 — always visible pill */}
-            <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6">
-              <div className="flex h-24 items-center justify-center">
+          <div className="mb-8 grid grid-cols-3 gap-8">
+            {/* Always visible */}
+            <div className="flex flex-col gap-3">
+              <div className="flex h-16 items-center">
                 <button
                   type="button"
                   onClick={() => setActionNodeId('state-1-preview')}
                   className="flex items-center gap-1.5 rounded-full bg-amber-400 px-2.5 py-1 text-[11px] font-semibold text-stone-900 shadow-sm transition-colors hover:bg-amber-300"
                 >
                   <CanvasIcon icon="flag" size={12} />
-                  Take action
+                  Action needed
                 </button>
               </div>
               <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-base font-semibold text-foreground">Always visible</span>
-                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
-                    In use
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Solid amber pill with flag icon and label. Always rendered when the node is in{' '}
+                <span className="text-sm font-semibold text-foreground">Always visible</span>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Solid amber pill with flag icon and label, always rendered at the top-right when
+                  the node is in{' '}
                   <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
                     ActionNeeded
                   </code>{' '}
-                  state — no interaction required to reveal it.
+                  state. Clicking it triggers the{' '}
+                  <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
+                    onActionNeeded
+                  </code>{' '}
+                  callback wired through{' '}
+                  <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
+                    BaseNodeOverrideConfigProvider
+                  </code>
+                  .
                 </p>
               </div>
             </div>
 
-            {/* State 2 — hover to expand */}
-            <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6">
-              <div className="flex h-24 items-center justify-center">
-                <button
-                  type="button"
-                  onClick={() => setActionNodeId('state-2-preview')}
-                  className="group flex items-center gap-0 rounded-full bg-amber-400 px-2 py-1 text-[11px] font-semibold text-stone-900 shadow-sm transition-all hover:gap-1.5 hover:bg-amber-300 hover:px-2.5"
-                >
-                  <CanvasIcon icon="flag" size={12} />
-                  <span className="max-w-0 overflow-hidden whitespace-nowrap transition-[max-width] duration-200 group-hover:max-w-[80px]">
-                    Take action
-                  </span>
-                </button>
+            {/* TBD: Action response */}
+            <div className="flex flex-col gap-3">
+              <div className="flex h-16 items-center">
+                <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                  Upcoming
+                </span>
               </div>
               <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-base font-semibold text-foreground">Hover to expand</span>
-                  <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                    Reference only
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Only the flag icon is visible by default. Hovering the pill expands it to reveal
-                  the "Take action" label. The text slides in from the right using a{' '}
+                <span className="text-sm font-semibold text-foreground">
+                  Action response — not yet defined
+                </span>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Clicking the pill fires{' '}
                   <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
-                    max-width
+                    onActionNeeded(nodeId)
                   </code>{' '}
-                  transition.
+                  — what the app renders in response is a consumer responsibility. The surface
+                  (modal, side panel, or inline) and its content model have not yet been specified.
                 </p>
               </div>
             </div>
-          </div>
 
-          <div className="rounded-lg border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">Note: </span>
-            These are documentation prototypes showing both explored states. The canvas uses{' '}
-            <strong>State 1</strong> — an always-visible "Take action" pill with a flag icon
-            positioned at the top-right of the node. The pill is only rendered when the flow is
-            actively executing. Clicking it triggers the{' '}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
-              onActionNeeded
-            </code>{' '}
-            callback wired through{' '}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
-              BaseNodeOverrideConfigProvider
-            </code>
-            .
+            {/* TBD: Execution count impact */}
+            <div className="flex flex-col gap-3">
+              <div className="flex h-16 items-center">
+                <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                  Upcoming
+                </span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-semibold text-foreground">
+                  Execution count display — not yet defined
+                </span>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  It has not yet been specified how{' '}
+                  <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
+                    ActionNeeded
+                  </code>{' '}
+                  interacts with the execution count badge (
+                  <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
+                    IterationNavigatorPill
+                  </code>
+                  ). Does the count freeze while blocked? Increment on resolution? Show a distinct
+                  state when a count is also present?
+                </p>
+              </div>
+            </div>
           </div>
         </CollapsibleSection>
 
