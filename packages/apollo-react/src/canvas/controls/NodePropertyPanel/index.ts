@@ -1,4 +1,3 @@
-export { Breadcrumb } from './Breadcrumb';
 export { NodePropertyPanel } from './NodePropertyPanel';
 export type {
   NodePropertyPanelProps,
