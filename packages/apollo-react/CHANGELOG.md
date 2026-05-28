@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.34.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.33.0...@uipath/apollo-react@4.34.0) (2026-05-28)
+
+### Features
+
+* **storybook:** redesign BaseNode Shapes page with doc layout and IA improvements ([e269af0](https://github.com/UiPath/apollo-ui/commit/e269af05ca8099d21298254d249c5ab6bbb862ad))
+
 ## [@uipath/apollo-react-v4.33.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.32.2...@uipath/apollo-react@4.33.0) (2026-05-27)
 
 ### Features
