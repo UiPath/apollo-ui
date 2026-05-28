@@ -1,4 +1,3 @@
-export { Breadcrumb } from './Breadcrumb';
 export { CanvasPropertiesPanel } from './CanvasPropertiesPanel';
 export type {
   CanvasPropertiesPanelProps,
