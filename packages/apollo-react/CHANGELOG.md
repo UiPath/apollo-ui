@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.36.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.35.0...@uipath/apollo-react@4.36.0) (2026-05-29)
+
+### Features
+
+* **apollo-react:** expose caseFlowManifest + handle hover handlers ([b73d03f](https://github.com/UiPath/apollo-ui/commit/b73d03f0142c4b6c705125a4e78a9f975cbcad90)), closes [#720](https://github.com/UiPath/apollo-ui/issues/720)
+
 ## [@uipath/apollo-react-v4.35.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.34.0...@uipath/apollo-react@4.35.0) (2026-05-29)
 
 ### Features
