@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.35.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.34.0...@uipath/apollo-react@4.35.0) (2026-05-29)
+
+### Features
+
+* **apollo-react:** add IterationNavigatorPill component and Execution Count story ([c908b68](https://github.com/UiPath/apollo-ui/commit/c908b68f493d064058a6ab7a0b4df82c7aa89a97))
+
 ## [@uipath/apollo-react-v4.34.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.33.0...@uipath/apollo-react@4.34.0) (2026-05-28)
 
 ### Features
