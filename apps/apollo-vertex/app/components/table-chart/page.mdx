@@ -84,7 +84,7 @@ npx shadcn@latest add @uipath/insights-adapter
 ```tsx
 import { useState } from "react";
 import { TableChartWithAdapter } from "@/components/ui/table-chart";
-import type { TableChartState } from "@uipath/charts-core";
+import type { TableChartState } from "@/lib/charts-core";
 import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
 
 const adapter = dataFabricAdapter({
