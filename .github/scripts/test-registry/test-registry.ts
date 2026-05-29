@@ -28,9 +28,12 @@ function testComponent(component: string, baseAppPath: string): TestResult {
     writeFileSync(join(testDir, 'pnpm-workspace.yaml'), testWorkspaceConfig);
 
     // Install dependencies in the temp directory.
-    // No --frozen-lockfile: the shadcn-initialised app has no committed lockfile by design —
-    // this test simulates a fresh consumer install to verify components resolve correctly.
-    execFileSync('pnpm', ['install'], {
+    // --no-frozen-lockfile: this test simulates a fresh consumer install, and we need to
+    // regenerate the lockfile after writing the test pnpm-workspace.yaml above — its
+    // overrides/packageExtensions do not match the lockfile shadcn init produced.
+    // pnpm defaults to frozen-lockfile=true under CI=true, which would otherwise refuse
+    // the install with ERR_PNPM_LOCKFILE_CONFIG_MISMATCH.
+    execFileSync('pnpm', ['install', '--no-frozen-lockfile'], {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd: testDir,
