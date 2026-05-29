@@ -1,5 +1,4 @@
 "use client";
-
 import { InvoiceReviewTemplate } from "@/templates/invoice-review/InvoiceReviewTemplate";
 
 export default function InvoiceReviewPage() {
