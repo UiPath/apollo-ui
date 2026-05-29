@@ -18,10 +18,13 @@ export function AiChatErrorBanner({
     <div
       role="alert"
       aria-live="assertive"
-      className="relative z-0 mx-4 -mb-6 flex items-center gap-2 rounded-t-lg bg-destructive/10 px-6 pt-3 pb-6 text-sm text-destructive"
+      className="relative z-0 mx-4 -mb-6 flex max-h-[30%] items-start gap-2 overflow-y-auto rounded-t-lg bg-destructive/10 px-6 pt-3 pb-6 text-sm text-destructive"
     >
-      <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
-      <span className="flex-1 break-words">{message}</span>
+      <AlertCircle
+        className="size-4 shrink-0 mt-0.5 sticky top-0"
+        aria-hidden="true"
+      />
+      <span className="flex-1 break-words whitespace-pre-wrap">{message}</span>
       {onRetry && (
         <Button
           type="button"
