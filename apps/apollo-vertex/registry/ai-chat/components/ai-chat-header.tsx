@@ -21,6 +21,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { AutopilotGradientIcon } from "./icons/autopilot-gradient";
 
 interface AiChatHeaderProps {
@@ -39,11 +44,9 @@ export function AiChatHeader({
   const { t } = useTranslation();
   const { copied, error, copy } = useClipboard({ timeout: 2000 });
 
-  const copyLabel = copied
-    ? t("copied")
-    : error
-      ? t("copy_conversation_failed")
-      : t("copy_conversation");
+  const copyLabel = error
+    ? t("copy_conversation_failed")
+    : t("copy_conversation");
 
   return (
     <div className="relative z-10 py-3 px-4 flex items-center justify-between gap-2 bg-background">
@@ -60,20 +63,25 @@ export function AiChatHeader({
       {hasMessages && (
         <AlertDialog>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                className="hover:bg-ai-chat-muted shrink-0"
-                aria-label={t("more_options")}
-              >
-                <MoreHorizontal
-                  className="size-4 text-ai-chat-muted-foreground"
-                  aria-hidden="true"
-                />
-              </Button>
-            </DropdownMenuTrigger>
+            <Tooltip open={copied}>
+              <DropdownMenuTrigger asChild>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    className="hover:bg-ai-chat-muted shrink-0"
+                    aria-label={t("more_options")}
+                  >
+                    <MoreHorizontal
+                      className="size-4 text-ai-chat-muted-foreground"
+                      aria-hidden="true"
+                    />
+                  </Button>
+                </TooltipTrigger>
+              </DropdownMenuTrigger>
+              <TooltipContent>{t("copied")}</TooltipContent>
+            </Tooltip>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => copy(conversationText)}>
                 {copyLabel}
