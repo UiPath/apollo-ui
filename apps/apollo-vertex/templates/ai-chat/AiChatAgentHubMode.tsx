@@ -242,9 +242,9 @@ function AgentHubChatInner({
       emptyState={emptyState}
       acceptedFileTypes="image/*"
       suggestions={[
-        t("shell_suggestion_recent_runs"),
-        t("shell_suggestion_failing_processes"),
-        t("shell_suggestion_summarize_queue"),
+        "Show me recent automation runs",
+        "What processes are failing?",
+        "Summarize today's queue data",
       ]}
       error={error ?? null}
     />
