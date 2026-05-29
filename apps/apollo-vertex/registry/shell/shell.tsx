@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { FC, PropsWithChildren } from "react";
 import { useContext } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { AuthContext, useAuth } from "./shell-auth-provider";
 import { ShellLayout } from "./shell-layout";
 import { LocaleProvider } from "./shell-locale-provider";
@@ -71,7 +72,14 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   loginDescription,
 }) => {
   return (
-    <LocaleProvider>
+    <LocaleProvider
+      loadingElement={
+        <div className="flex h-screen gap-4 p-4 bg-background dark:bg-sidebar">
+          <Skeleton className="h-full w-[280px]" />
+          <Skeleton className="h-full flex-1 rounded-lg" />
+        </div>
+      }
+    >
       <ApolloShellContent
         companyName={companyName}
         productName={productName}
