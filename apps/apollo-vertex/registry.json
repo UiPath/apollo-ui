@@ -2058,7 +2058,8 @@
         "avatar",
         "dropdown-menu",
         "skeleton",
-        "sidebar"
+        "sidebar",
+        "spinner"
       ],
       "files": [
         { "path": "registry/shell/shell.tsx", "type": "registry:ui" },

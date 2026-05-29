@@ -1,13 +1,18 @@
 import {
   type PropsWithChildren,
+  type ReactNode,
   useEffect,
   useEffectEvent,
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { configurei18n } from "@/lib/i18n";
 import { LANGUAGE_CHANGED_EVENT } from "./shell-constants";
+
+interface LocaleProviderProps {
+  loadingElement?: ReactNode;
+}
 
 export const LocaleProviderComponent = ({ children }: PropsWithChildren) => {
   const { i18n } = useTranslation();
@@ -40,7 +45,10 @@ export const LocaleProviderComponent = ({ children }: PropsWithChildren) => {
   return children;
 };
 
-export const LocaleProvider = ({ children }: PropsWithChildren) => {
+export const LocaleProvider = ({
+  children,
+  loadingElement,
+}: PropsWithChildren<LocaleProviderProps>) => {
   const [isConfigured, setIsConfigured] = useState(false);
   const configure = async () => {
     await configurei18n();
@@ -53,10 +61,11 @@ export const LocaleProvider = ({ children }: PropsWithChildren) => {
 
   if (!isConfigured)
     return (
-      <div className="flex h-screen gap-4 p-4 bg-background dark:bg-sidebar">
-        <Skeleton className="h-full w-[280px]" />
-        <Skeleton className="h-full flex-1 rounded-lg" />
-      </div>
+      loadingElement ?? (
+        <div className="flex h-full w-full items-center justify-center">
+          <Spinner className="size-6" />
+        </div>
+      )
     );
 
   return <LocaleProviderComponent>{children}</LocaleProviderComponent>;
