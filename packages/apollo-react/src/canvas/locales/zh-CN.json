@@ -1,8 +1,27 @@
 {
+  "stage-node.add-first-task": "添加第一个任务",
+  "stage-node.add-task": "添加任务",
+  "stage-node.add-task-to-parallel-group-above": "将任务添加到上面的并行组",
+  "stage-node.add-task-to-parallel-group-below": "将任务添加到下面的并行组",
+  "stage-node.adhoc-tasks": "临时任务",
+  "stage-node.create-parallel-group-with-task-above": "与上方的任务创建并行组",
+  "stage-node.create-parallel-group-with-task-below": "与下方的任务创建并行组",
+  "stage-node.delete-task": "删除任务",
+  "stage-node.event-driven-tasks": "事件驱动型任务",
+  "stage-node.move-down": "下移",
+  "stage-node.move-up": "上移",
+  "stage-node.no-tasks": "无任务",
+  "stage-node.parallel": "并行",
+  "stage-node.remove-from-parallel-group": "从并行组中移除",
+  "stage-node.remove-group-from-stage": "从阶段中移除组",
+  "stage-node.replace-task": "替换任务",
+  "stage-node.ungroup-parallel-tasks": "取消并行任务分组",
+  "stage-node.untitled-stage": "无标题阶段",
   "sticky-note.formatting.bold": "粗体 ({boldShortcut})",
   "sticky-note.formatting.italic": "斜体 ({italicShortcut})",
   "sticky-note.formatting.strikethrough": "删除线 ({strikethroughShortcut})",
   "sticky-note.formatting.bullet-list": "项目符号列表",
   "sticky-note.formatting.numbered-list": "编号列表",
-  "sticky-note.formatting.toolbar": "文本格式设置"
+  "sticky-note.formatting.toolbar": "文本格式设置",
+  "toolbox.search": "搜索"
 }

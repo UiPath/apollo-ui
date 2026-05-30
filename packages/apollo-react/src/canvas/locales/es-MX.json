@@ -1,8 +1,27 @@
 {
+  "stage-node.add-first-task": "Agregar primera tarea",
+  "stage-node.add-task": "Agregar tarea",
+  "stage-node.add-task-to-parallel-group-above": "Agregar tarea al grupo paralelo anterior",
+  "stage-node.add-task-to-parallel-group-below": "Agregar tarea al grupo paralelo siguiente",
+  "stage-node.adhoc-tasks": "Tareas ad hoc",
+  "stage-node.create-parallel-group-with-task-above": "Crear grupo paralelo con la tarea anterior",
+  "stage-node.create-parallel-group-with-task-below": "Crear grupo paralelo con la tarea siguiente",
+  "stage-node.delete-task": "Eliminar tarea",
+  "stage-node.event-driven-tasks": "Tareas basadas en eventos",
+  "stage-node.move-down": "Mover hacia abajo",
+  "stage-node.move-up": "Mover hacia arriba",
+  "stage-node.no-tasks": "Sin tareas",
+  "stage-node.parallel": "Paralelo",
+  "stage-node.remove-from-parallel-group": "Eliminar del grupo paralelo",
+  "stage-node.remove-group-from-stage": "Eliminar grupo de la etapa",
+  "stage-node.replace-task": "Reemplazar tarea",
+  "stage-node.ungroup-parallel-tasks": "Desagrupar tareas paralelas",
+  "stage-node.untitled-stage": "Etapa sin título",
   "sticky-note.formatting.bold": "Negrita ({boldShortcut})",
   "sticky-note.formatting.italic": "Cursiva ({italicShortcut})",
   "sticky-note.formatting.strikethrough": "Tachado ({strikethroughShortcut})",
   "sticky-note.formatting.bullet-list": "Lista con viñetas",
   "sticky-note.formatting.numbered-list": "Lista numerada",
-  "sticky-note.formatting.toolbar": "Formato de texto"
+  "sticky-note.formatting.toolbar": "Formato de texto",
+  "toolbox.search": "Buscar"
 }

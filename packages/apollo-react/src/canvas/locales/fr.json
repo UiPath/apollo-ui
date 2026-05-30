@@ -1,8 +1,27 @@
 {
+  "stage-node.add-first-task": "Ajouter la première tâche",
+  "stage-node.add-task": "Ajouter une tâche",
+  "stage-node.add-task-to-parallel-group-above": "Ajouter une tâche au groupe parallèle ci-dessus",
+  "stage-node.add-task-to-parallel-group-below": "Ajouter une tâche au groupe parallèle ci-dessous",
+  "stage-node.adhoc-tasks": "Tâches ad hoc",
+  "stage-node.create-parallel-group-with-task-above": "Créer un groupe parallèle avec la tâche ci-dessus",
+  "stage-node.create-parallel-group-with-task-below": "Créer un groupe parallèle avec la tâche ci-dessous",
+  "stage-node.delete-task": "Supprimer la tâche",
+  "stage-node.event-driven-tasks": "Tâches axées sur les événements",
+  "stage-node.move-down": "Déplacer vers le haut",
+  "stage-node.move-up": "Monter",
+  "stage-node.no-tasks": "Aucune tâche",
+  "stage-node.parallel": "Parallèle",
+  "stage-node.remove-from-parallel-group": "Supprimer du groupe parallèle",
+  "stage-node.remove-group-from-stage": "Supprimer le groupe de l’étape",
+  "stage-node.replace-task": "Remplacer la tâche",
+  "stage-node.ungroup-parallel-tasks": "Dissocier les tâches parallèles",
+  "stage-node.untitled-stage": "Étape sans titre",
   "sticky-note.formatting.bold": "Gras ({boldShortcut})",
   "sticky-note.formatting.italic": "Italique ({italicShortcut})",
   "sticky-note.formatting.strikethrough": "Barré ({strikethroughShortcut})",
   "sticky-note.formatting.bullet-list": "Liste à puces",
   "sticky-note.formatting.numbered-list": "Liste numérotée",
-  "sticky-note.formatting.toolbar": "Mise en forme du texte"
+  "sticky-note.formatting.toolbar": "Mise en forme du texte",
+  "toolbox.search": "Rechercher"
 }

@@ -1,8 +1,27 @@
 {
+  "stage-node.add-first-task": "最初のタスクを追加",
+  "stage-node.add-task": "タスクを追加",
+  "stage-node.add-task-to-parallel-group-above": "上記の並列グループにタスクを追加",
+  "stage-node.add-task-to-parallel-group-below": "下記の並列グループにタスクを追加",
+  "stage-node.adhoc-tasks": "アドホック タスク",
+  "stage-node.create-parallel-group-with-task-above": "上記のタスクを含む並列グループを作成",
+  "stage-node.create-parallel-group-with-task-below": "下記のタスクを含む並列グループを作成",
+  "stage-node.delete-task": "タスクを削除",
+  "stage-node.event-driven-tasks": "イベント ドリブン タスク",
+  "stage-node.move-down": "下に移動",
+  "stage-node.move-up": "上に移動",
+  "stage-node.no-tasks": "タスクがありません。",
+  "stage-node.parallel": "並列",
+  "stage-node.remove-from-parallel-group": "並列グループから削除",
+  "stage-node.remove-group-from-stage": "ステージからグループを削除",
+  "stage-node.replace-task": "タスクを置換",
+  "stage-node.ungroup-parallel-tasks": "並列タスクのグループ化を解除する",
+  "stage-node.untitled-stage": "無題のステージ",
   "sticky-note.formatting.bold": "太字 ({boldShortcut})",
   "sticky-note.formatting.italic": "斜体 ({italicShortcut})",
   "sticky-note.formatting.strikethrough": "取り消し線 ({strikethroughShortcut})",
   "sticky-note.formatting.bullet-list": "箇条書き",
   "sticky-note.formatting.numbered-list": "番号付きリスト",
-  "sticky-note.formatting.toolbar": "テキストの書式設定"
+  "sticky-note.formatting.toolbar": "テキストの書式設定",
+  "toolbox.search": "検索"
 }
