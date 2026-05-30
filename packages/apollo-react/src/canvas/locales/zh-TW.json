@@ -1,8 +1,27 @@
 {
+  "stage-node.add-first-task": "新增第一個任務",
+  "stage-node.add-task": "新增任務",
+  "stage-node.add-task-to-parallel-group-above": "將任務新增到上方的平行群組",
+  "stage-node.add-task-to-parallel-group-below": "將任務新增到下方的平行群組",
+  "stage-node.adhoc-tasks": "臨時任務",
+  "stage-node.create-parallel-group-with-task-above": "使用以上任務建立平行群組",
+  "stage-node.create-parallel-group-with-task-below": "使用以下任務建立平行群組",
+  "stage-node.delete-task": "刪除任務",
+  "stage-node.event-driven-tasks": "事件驅動的任務",
+  "stage-node.move-down": "下移",
+  "stage-node.move-up": "上移",
+  "stage-node.no-tasks": "無任務",
+  "stage-node.parallel": "並行",
+  "stage-node.remove-from-parallel-group": "從平行群組中移除",
+  "stage-node.remove-group-from-stage": "從階段中移除群組",
+  "stage-node.replace-task": "取代任務",
+  "stage-node.ungroup-parallel-tasks": "將平行任務取消分組",
+  "stage-node.untitled-stage": "未命名階段",
   "sticky-note.formatting.bold": "粗體 ({boldShortcut})",
   "sticky-note.formatting.italic": "斜體 ({italicShortcut})",
   "sticky-note.formatting.strikethrough": "刪除線 ({strikethroughShortcut})",
   "sticky-note.formatting.bullet-list": "項目符號清單",
   "sticky-note.formatting.numbered-list": "編號清單",
-  "sticky-note.formatting.toolbar": "文字格式"
+  "sticky-note.formatting.toolbar": "文字格式",
+  "toolbox.search": "搜尋"
 }

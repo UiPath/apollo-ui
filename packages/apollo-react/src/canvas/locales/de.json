@@ -1,8 +1,27 @@
 {
+  "stage-node.add-first-task": "Erste Aufgabe hinzufügen",
+  "stage-node.add-task": "Aufgabe hinzufügen",
+  "stage-node.add-task-to-parallel-group-above": "Aufgabe zur parallelen Gruppe oben hinzufügen",
+  "stage-node.add-task-to-parallel-group-below": "Aufgabe zur parallelen Gruppe unten hinzufügen",
+  "stage-node.adhoc-tasks": "Ad-hoc-Aufgaben",
+  "stage-node.create-parallel-group-with-task-above": "Parallele Gruppe mit Aufgabe oben erstellen",
+  "stage-node.create-parallel-group-with-task-below": "Parallele Gruppe mit Aufgabe unten erstellen",
+  "stage-node.delete-task": "Aufgabe löschen",
+  "stage-node.event-driven-tasks": "Ereignisgesteuerte Aufgaben",
+  "stage-node.move-down": "Nach unten",
+  "stage-node.move-up": "Nach oben",
+  "stage-node.no-tasks": "Keine Aufgaben",
+  "stage-node.parallel": "Parallel",
+  "stage-node.remove-from-parallel-group": "Aus paralleler Gruppe entfernen",
+  "stage-node.remove-group-from-stage": "Gruppe aus Phase entfernen",
+  "stage-node.replace-task": "Aufgabe ersetzen",
+  "stage-node.ungroup-parallel-tasks": "Gruppierung paralleler Aufgaben aufheben",
+  "stage-node.untitled-stage": "Schritt ohne Titel",
   "sticky-note.formatting.bold": "Fett ({boldShortcut})",
   "sticky-note.formatting.italic": "Kursiv ({italicShortcut})",
   "sticky-note.formatting.strikethrough": "Durchgestrichen ({strikethroughShortcut})",
   "sticky-note.formatting.bullet-list": "Aufzählungsliste",
   "sticky-note.formatting.numbered-list": "Nummerierte Liste",
-  "sticky-note.formatting.toolbar": "Textformatierung"
+  "sticky-note.formatting.toolbar": "Textformatierung",
+  "toolbox.search": "Suchen"
 }

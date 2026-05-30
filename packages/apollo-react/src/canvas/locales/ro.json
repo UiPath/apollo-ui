@@ -1,8 +1,27 @@
 {
+  "stage-node.add-first-task": "Adăugați prima sarcină",
+  "stage-node.add-task": "Adaugă activitate",
+  "stage-node.add-task-to-parallel-group-above": "Adăugați sarcina la grupul paralel de mai sus",
+  "stage-node.add-task-to-parallel-group-below": "Adăugați sarcina la grupul paralel de mai jos",
+  "stage-node.adhoc-tasks": "Sarcini ad hoc",
+  "stage-node.create-parallel-group-with-task-above": "Creați un grup paralel cu sarcina de mai sus",
+  "stage-node.create-parallel-group-with-task-below": "Creați un grup paralel cu sarcina de mai jos",
+  "stage-node.delete-task": "Ștergere sarcină",
+  "stage-node.event-driven-tasks": "Sarcini bazate pe evenimente",
+  "stage-node.move-down": "Mutare în jos",
+  "stage-node.move-up": "Mută în sus",
+  "stage-node.no-tasks": "Nicio sarcină",
+  "stage-node.parallel": "Paralel",
+  "stage-node.remove-from-parallel-group": "Eliminați din grupul paralel",
+  "stage-node.remove-group-from-stage": "Eliminați grupul din etapă",
+  "stage-node.replace-task": "Înlocuiți activitatea",
+  "stage-node.ungroup-parallel-tasks": "Anulați gruparea sarcinilor paralele",
+  "stage-node.untitled-stage": "Scenă fără titlu",
   "sticky-note.formatting.bold": "Bold ({boldShortcut})",
   "sticky-note.formatting.italic": "Cursiv ({italicShortcut})",
   "sticky-note.formatting.strikethrough": "Barare ({strikethroughShortcut})",
   "sticky-note.formatting.bullet-list": "Listă cu marcatori",
   "sticky-note.formatting.numbered-list": "Listă numerotată",
-  "sticky-note.formatting.toolbar": "Formatarea textului"
+  "sticky-note.formatting.toolbar": "Formatarea textului",
+  "toolbox.search": "Căutare"
 }
