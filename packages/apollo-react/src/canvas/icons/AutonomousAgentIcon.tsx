@@ -1,7 +1,7 @@
 export const AutonomousAgentIcon = ({
   w = 48,
   h = 48,
-  color = 'var(--color-foreground-emp)',
+  color = 'currentColor',
 }: {
   w?: number | string;
   h?: number | string;

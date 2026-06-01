@@ -1,7 +1,7 @@
 export const FlaskRunIcon = ({
   w = 32,
   h = 32,
-  color = 'var(--color-foreground-emp)',
+  color = 'currentColor',
 }: {
   w?: number | string;
   h?: number | string;

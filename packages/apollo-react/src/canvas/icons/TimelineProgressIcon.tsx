@@ -1,7 +1,7 @@
 export const TimelineProgressIcon = ({
   w = 10,
   h = 10,
-  color = '#0067DF',
+  color = 'currentColor',
 }: {
   w?: number | string;
   h?: number | string;
