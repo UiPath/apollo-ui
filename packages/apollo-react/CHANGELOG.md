@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v4.36.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.36.0...@uipath/apollo-react@4.36.1) (2026-06-01)
+
+### Bug Fixes
+
+* **apollo-react:** clean up loop node stories ([5400b31](https://github.com/UiPath/apollo-ui/commit/5400b3157b26c64110cbaf1340f6fbc4e3e03754))
+* **apollo-react:** make canvas icons honor currentColor ([4f0da84](https://github.com/UiPath/apollo-ui/commit/4f0da84244a41954706d0ae77256d7b9a325e94b))
+
 ## [@uipath/apollo-react-v4.36.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.35.0...@uipath/apollo-react@4.36.0) (2026-05-29)
 
 ### Features
