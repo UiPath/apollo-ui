@@ -26,10 +26,10 @@ export function useStageNodeLabels(): StageNodeLabels {
       addTask: _({ id: 'stage-node.add-task', message: 'Add task' }),
       replaceTask: _({ id: 'stage-node.replace-task', message: 'Replace task' }),
       deleteTask: _({ id: 'stage-node.delete-task', message: 'Delete task' }),
-      adhocTasks: _({ id: 'stage-node.adhoc-tasks', message: 'Ad hoc tasks' }),
+      adhocTasks: _({ id: 'stage-node.adhoc-tasks', message: 'Manually triggered tasks' }),
       eventDrivenTasks: _({
         id: 'stage-node.event-driven-tasks',
-        message: 'Event-driven tasks',
+        message: 'Event-triggered tasks',
       }),
       sequentialTasks: _({ id: 'stage-node.sequential-tasks', message: 'Sequential tasks' }),
       parallel: _({ id: 'stage-node.parallel', message: 'Parallel' }),
