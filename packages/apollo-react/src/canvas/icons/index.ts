@@ -26,6 +26,7 @@ export { EntryConditionIcon } from './EntryConditionIcon';
 export { ExitConditionIcon } from './ExitConditionIcon';
 export { FlaskRunIcon } from './FlaskRunIcon';
 export { FlowProject } from './FlowProject';
+export { FunctionProject } from './FunctionProject';
 export { GoogleIcon } from './GoogleIcon';
 export { HealthScoreIcon } from './HealthScoreIcon';
 export { HumanIcon } from './HumanIcon';
