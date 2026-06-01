@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.36.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.36.1...@uipath/apollo-react@4.36.2) (2026-06-01)
+
+### Bug Fixes
+
+* **apollo-react:** align stage task group labels with properties panel ([d918280](https://github.com/UiPath/apollo-ui/commit/d9182803a71c3de7359441a1a998f09204b55623))
+
 ## [@uipath/apollo-react-v4.36.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.36.0...@uipath/apollo-react@4.36.1) (2026-06-01)
 
 ### Bug Fixes
