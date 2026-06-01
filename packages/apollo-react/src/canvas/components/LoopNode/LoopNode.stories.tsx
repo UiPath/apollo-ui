@@ -7,6 +7,7 @@ import {
   Position,
   useReactFlow,
 } from '@uipath/apollo-react/canvas/xyflow/react';
+import { cn } from '@uipath/apollo-wind';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAddNodeOnConnectEnd, useCanvasEvent } from '../../hooks';
 import {
@@ -19,17 +20,16 @@ import { DefaultCanvasTranslations } from '../../types';
 import { ElementStatusValues } from '../../types/execution';
 import type { CanvasHandleActionEvent } from '../../utils';
 import { removePreviewFromReactFlow } from '../../utils/createPreviewNode';
+import { CanvasIcon } from '../../utils/icon-registry';
 import { snapToGrid } from '../../utils/NodeUtils';
 import { AddNodeManager } from '../AddNodePanel';
 import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
 import { BaseCanvas } from '../BaseCanvas';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
-import { CanvasIcon } from '../../utils/icon-registry';
-import { cn } from '@uipath/apollo-wind';
-import { LoopNodeExecutionCount } from './LoopNodeExecutionCount';
 import { LoopNode } from './LoopNode';
-import type { LoopNodeExecutionCountState, LoopNodeData } from './LoopNode.types';
+import type { LoopNodeData, LoopNodeExecutionCountState } from './LoopNode.types';
+import { LoopNodeExecutionCount } from './LoopNodeExecutionCount';
 
 const meta: Meta = {
   title: 'Components/Nodes/LoopNode',
@@ -67,12 +67,15 @@ function createLoopContainerNode(
     ...options?.data?.display,
     shape: 'container' as const,
   };
+  const parentScope = options?.parentId
+    ? { parentId: options.parentId, extent: 'parent' as const }
+    : {};
 
   return {
     id,
     type: LOOP_TYPE,
     position: snapPoint(position),
-    parentId: options?.parentId,
+    ...parentScope,
     selected: options?.selected ?? false,
     data: {
       ...options?.data,
@@ -99,6 +102,7 @@ function createActivityNode(
     return {
       ...node,
       parentId: options.parentId,
+      extent: 'parent' as const,
     };
   }
 
@@ -488,161 +492,6 @@ function NestedOuterOutputAppendStory() {
   );
 }
 
-type LoopExecutionNodeData = LoopNodeData & {
-  initialIndex: number;
-  total: number;
-  interactive?: boolean;
-};
-
-const LOOP_EXECUTION_SIZE = { width: 520, height: 280 };
-const LOOP_EXECUTION_GRID = {
-  startX: 80,
-  startY: 80,
-  gapX: 640,
-  gapY: 360,
-} as const;
-
-const LOOP_EXECUTION_CASES: {
-  id: string;
-  label: string;
-  status: ElementStatusValues;
-  initialIndex: number;
-  total: number;
-  parallel?: boolean;
-  interactive?: boolean;
-}[] = [
-  {
-    id: 'loop-completed',
-    label: 'Completed loop',
-    status: ElementStatusValues.Completed,
-    initialIndex: 2,
-    total: 3,
-  },
-  {
-    id: 'loop-running',
-    label: 'Running loop',
-    status: ElementStatusValues.InProgress,
-    initialIndex: 1,
-    total: 3,
-  },
-  {
-    id: 'loop-paused',
-    label: 'Paused loop',
-    status: ElementStatusValues.Paused,
-    initialIndex: 1,
-    total: 4,
-  },
-  {
-    id: 'loop-failed',
-    label: 'Failed loop',
-    status: ElementStatusValues.Failed,
-    initialIndex: 0,
-    total: 3,
-  },
-  {
-    id: 'loop-cancelled',
-    label: 'Cancelled',
-    status: ElementStatusValues.Cancelled,
-    initialIndex: 2,
-    total: 5,
-  },
-  {
-    id: 'loop-parallel',
-    label: 'Parallel loop',
-    status: ElementStatusValues.Completed,
-    initialIndex: 2,
-    total: 3,
-    parallel: true,
-  },
-  {
-    id: 'loop-label-only',
-    label: 'Label only',
-    status: ElementStatusValues.Completed,
-    initialIndex: 1,
-    total: 3,
-    interactive: false,
-  },
-  {
-    id: 'loop-clamped',
-    label: 'Clamped active index',
-    status: ElementStatusValues.Completed,
-    initialIndex: 99,
-    total: 3,
-  },
-];
-
-const LOOP_EXECUTION_STATUS = new Map(LOOP_EXECUTION_CASES.map(({ id, status }) => [id, status]));
-
-function createExecutionStateGrid(): Node<LoopExecutionNodeData>[] {
-  return LOOP_EXECUTION_CASES.map(
-    ({ id, label, initialIndex, total, parallel, interactive }, index) => {
-      const colIndex = index % 2;
-      const rowIndex = Math.floor(index / 2);
-
-      return {
-        id,
-        type: LOOP_TYPE,
-        position: {
-          x: LOOP_EXECUTION_GRID.startX + colIndex * LOOP_EXECUTION_GRID.gapX,
-          y: LOOP_EXECUTION_GRID.startY + rowIndex * LOOP_EXECUTION_GRID.gapY,
-        },
-        data: {
-          display: { label, shape: 'container' },
-          parallel,
-          initialIndex,
-          total,
-          interactive,
-        },
-        style: LOOP_EXECUTION_SIZE,
-      };
-    }
-  );
-}
-
-function LoopExecutionCanvasNode(props: NodeProps<Node<LoopExecutionNodeData>>) {
-  const { data } = props;
-  const [activeIndex, setActiveIndex] = useState(data.initialIndex);
-
-  useEffect(() => {
-    setActiveIndex(data.initialIndex);
-  }, [data.initialIndex]);
-
-  return (
-    <LoopNode
-      {...props}
-      iterationState={{
-        activeIndex,
-        total: data.total,
-        onActiveIndexChange: data.interactive === false ? undefined : setActiveIndex,
-      }}
-    />
-  );
-}
-
-const LOOP_EXECUTION_NODE_TYPES = {
-  [LOOP_TYPE]: LoopExecutionCanvasNode,
-};
-
-function ExecutionStatesStory() {
-  const initialNodes = useMemo(() => createExecutionStateGrid(), []);
-  const { canvasProps } = useCanvasStory({
-    initialNodes,
-    additionalNodeTypes: LOOP_EXECUTION_NODE_TYPES,
-  });
-
-  return (
-    <BaseCanvas {...canvasProps} mode="design">
-      <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} />
-      </Panel>
-      <StoryInfoPanel
-        title="Loop Execution States"
-        description="Grid showing loop status border treatment, iteration navigation, clamped index handling, label-only navigation, and sequential/parallel badges."
-      />
-    </BaseCanvas>
-  );
-}
-
 export const Default: Story = {
   render: () => <DefaultStory />,
 };
@@ -655,21 +504,6 @@ export const NestedOuterOutputAppend: Story = {
   render: () => <NestedOuterOutputAppendStory />,
 };
 
-export const ExecutionStates: Story = {
-  decorators: [
-    withCanvasProviders({
-      executionState: {
-        getNodeExecutionState: (nodeId: string) => LOOP_EXECUTION_STATUS.get(nodeId),
-        getEdgeExecutionState: () => undefined,
-      },
-      validationState: {
-        getElementValidationState: () => undefined,
-      },
-    }),
-  ],
-  render: () => <ExecutionStatesStory />,
-};
-
 // ============================================================================
 // Execution Count — LoopNodeExecutionCount doc page
 // ============================================================================
@@ -679,7 +513,7 @@ type LoopCountNodeData = LoopNodeData & {
   initialIsAll?: boolean;
   total: number;
   interactive?: boolean;
-  iterationStatuses?: Map<number, string>;
+  iterationStatuses?: Map<number, ElementStatusValues>;
   status?: ElementStatusValues;
 };
 
@@ -690,38 +524,38 @@ const EXECUTION_COUNT_STATUS = new Map<string, ElementStatusValues>([
   ['ec-minimal', ElementStatusValues.Failed],
 ]);
 
-const EXECUTION_COUNT_ITERATION_STATUSES = new Map<string, Map<number, string>>([
+const EXECUTION_COUNT_ITERATION_STATUSES = new Map<string, Map<number, ElementStatusValues>>([
   [
     'ec-all',
     new Map([
-      [0, 'Completed'],
-      [1, 'Completed'],
-      [2, 'Completed'],
-      [3, 'InProgress'],
-      [4, 'Failed'],
+      [0, ElementStatusValues.Completed],
+      [1, ElementStatusValues.Completed],
+      [2, ElementStatusValues.Completed],
+      [3, ElementStatusValues.InProgress],
+      [4, ElementStatusValues.Failed],
     ]),
   ],
   [
     'ec-full',
     new Map([
-      [0, 'Completed'],
-      [1, 'Completed'],
-      [2, 'InProgress'],
+      [0, ElementStatusValues.Completed],
+      [1, ElementStatusValues.Completed],
+      [2, ElementStatusValues.InProgress],
     ]),
   ],
   [
     'ec-compact',
     new Map([
-      [0, 'Completed'],
-      [1, 'Completed'],
-      [2, 'Completed'],
+      [0, ElementStatusValues.Completed],
+      [1, ElementStatusValues.Completed],
+      [2, ElementStatusValues.Completed],
     ]),
   ],
   [
     'ec-minimal',
     new Map([
-      [0, 'Completed'],
-      [1, 'Failed'],
+      [0, ElementStatusValues.Completed],
+      [1, ElementStatusValues.Failed],
     ]),
   ],
 ]);
@@ -901,11 +735,11 @@ const tierRows = [
   },
 ] as const;
 
-const ANATOMY_ITERATION_STATUSES = new Map<number, string>([
-  [0, 'Completed'],
-  [1, 'Completed'],
-  [2, 'InProgress'],
-  [3, 'Failed'],
+const ANATOMY_ITERATION_STATUSES = new Map<number, ElementStatusValues>([
+  [0, ElementStatusValues.Completed],
+  [1, ElementStatusValues.Completed],
+  [2, ElementStatusValues.InProgress],
+  [3, ElementStatusValues.Failed],
 ]);
 const ANATOMY_TOTAL = 5;
 
