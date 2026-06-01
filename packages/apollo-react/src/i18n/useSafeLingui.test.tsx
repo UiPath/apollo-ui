@@ -32,14 +32,14 @@ describe('useSafeLingui', () => {
     render(
       <TranslationProbe
         descriptor={{
-          id: 'loop-node.iteration.status',
-          message: '{label}: {visibleIndex} of {total}',
-          values: { label: 'Loop iteration', visibleIndex: 1, total: 3 },
+          id: 'loop-node.execution-count.jump-to-iteration',
+          message: 'Jump to iteration {iterationNumber} (failed)',
+          values: { iterationNumber: 2 },
         }}
       />
     );
 
-    expect(screen.getByText('Loop iteration: 1 of 3')).toBeInTheDocument();
+    expect(screen.getByText('Jump to iteration 2 (failed)')).toBeInTheDocument();
   });
 
   it('uses the mounted Lingui provider when available', () => {

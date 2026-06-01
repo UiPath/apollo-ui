@@ -44,10 +44,6 @@
   "sticky-note.toolbar.edit": "Edit",
   "toolbox.search": "Search",
   "loop-node.add-node": "Add node to loop",
-  "loop-node.iteration.label": "Loop iteration",
-  "loop-node.iteration.next": "Next loop iteration",
-  "loop-node.iteration.previous": "Previous loop iteration",
-  "loop-node.iteration.status": "{label}: {visibleIndex} of {total}",
   "loop-node.mode.parallel": "Parallel",
   "loop-node.mode.sequential": "Sequential",
   "loop-node.title": "Loop"

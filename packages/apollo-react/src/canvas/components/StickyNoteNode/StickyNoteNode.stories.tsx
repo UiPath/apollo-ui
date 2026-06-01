@@ -195,11 +195,15 @@ function createLoopContainerNode(
   size: { width: number; height: number },
   options?: { parentId?: string; selected?: boolean }
 ): Node {
+  const parentScope = options?.parentId
+    ? { parentId: options.parentId, extent: 'parent' as const }
+    : {};
+
   return {
     id,
     type: LOOP_TYPE,
     position,
-    parentId: options?.parentId,
+    ...parentScope,
     selected: options?.selected ?? false,
     data: {
       display: {
@@ -228,7 +232,7 @@ function createLoopActivityNode(
     },
   ]);
 
-  return parentId ? { ...node, parentId } : node;
+  return parentId ? { ...node, parentId, extent: 'parent' as const } : node;
 }
 
 function createPipelineNodes(): Node[] {

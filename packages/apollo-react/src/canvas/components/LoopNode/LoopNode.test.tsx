@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ValidationErrorSeverity } from '../../types/validation';
-import type { LoopNodeData } from './LoopNode.types';
+import type { LoopNodeData, LoopNodeExecutionCountState } from './LoopNode.types';
 
 const { mockExecutionState, mockGetContainerResizeMinimums, mockManifest, mockValidationState } =
   vi.hoisted(() => ({
@@ -249,6 +249,26 @@ describe('LoopNode status border hover treatment', () => {
 
     expect(container).toHaveClass('border-border-hover');
     expect(container).toHaveClass('shadow-(--canvas-node-shadow-hover)');
+  });
+});
+
+describe('LoopNode execution count', () => {
+  it('renders the execution count pill when iterationPillState is provided', () => {
+    const iterationPillState: LoopNodeExecutionCountState = {
+      activeIndex: 1,
+      total: 3,
+      onActiveIndexChange: vi.fn(),
+      isAll: false,
+      onAllChange: vi.fn(),
+    };
+
+    renderLoopNode({ iterationPillState, width: 520 });
+
+    expect(
+      screen.getByRole('button', { name: 'Show aggregate across all iterations' })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Previous iteration' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next iteration' })).not.toBeDisabled();
   });
 });
 

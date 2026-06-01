@@ -38,14 +38,9 @@ import type { HandleActionEvent } from '../ButtonHandle';
 import { ButtonHandles } from '../ButtonHandle';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { NodeToolbar } from '../Toolbar';
-import { IterationNavigator } from './IterationNavigator';
-import { LoopNodeExecutionCount } from './LoopNodeExecutionCount';
 import { type ContainerHandleGroup, resolveContainerHandleGroups } from './LoopNode.helpers';
-import type {
-  LoopNodeExecutionCountState,
-  LoopIterationState,
-  LoopNodeProps,
-} from './LoopNode.types';
+import type { LoopNodeExecutionCountState, LoopNodeProps } from './LoopNode.types';
+import { LoopNodeExecutionCount } from './LoopNodeExecutionCount';
 
 const DEFAULT_LOOP_ICON = 'repeat';
 const EMPTY_DATA: Record<string, unknown> = {};
@@ -193,7 +188,6 @@ function LoopNodeComponent(props: LoopNodeProps) {
     adornments: adornmentsProp,
     executionStatusOverride,
     suggestionType: suggestionTypeProp,
-    iterationState: iterationStateProp,
     iterationPillState: iterationPillStateProp,
   } = props;
   const nodeTypeRegistry = useOptionalNodeTypeRegistry();
@@ -409,7 +403,6 @@ function LoopNodeComponent(props: LoopNodeProps) {
         loading={isLoading}
         isParallel={isParallel}
         label={label}
-        iterationState={iterationStateProp}
         iterationPillState={iterationPillStateProp}
         nodeWidth={containerWidth}
         hasTopLeftAdornment={hasTopLeftAdornment}
@@ -460,7 +453,6 @@ function Header({
   loading,
   isParallel,
   label,
-  iterationState,
   iterationPillState,
   nodeWidth,
   hasTopLeftAdornment,
@@ -471,7 +463,6 @@ function Header({
   loading: boolean;
   isParallel: boolean;
   label: string;
-  iterationState?: LoopIterationState;
   iterationPillState?: LoopNodeExecutionCountState;
   nodeWidth: number;
   hasTopLeftAdornment: boolean;
@@ -519,8 +510,6 @@ function Header({
             state={iterationPillState}
             size={nodeWidth >= 400 ? 'full' : nodeWidth >= 260 ? 'compact' : 'minimal'}
           />
-        ) : iterationState ? (
-          <IterationNavigator iterationState={iterationState} />
         ) : null}
         <span className="flex h-6 shrink-0 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-[11px] font-semibold leading-4 text-foreground shadow-sm">
           <span className={cn('flex shrink-0', isParallel && 'rotate-90')} aria-hidden>

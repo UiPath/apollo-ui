@@ -12,14 +12,6 @@ export interface LoopNodeResizeSize {
   height: number;
 }
 
-export interface LoopIterationState {
-  activeIndex: number;
-  total: number;
-  onActiveIndexChange?: (nextIndex: number) => void;
-  disabled?: boolean;
-  ariaLabel?: string;
-}
-
 export interface LoopNodeExecutionCountState {
   activeIndex: number;
   total: number;
@@ -35,7 +27,6 @@ export interface LoopNodeConfig {
   adornments?: NodeAdornments;
   executionStatusOverride?: ElementStatusValues;
   suggestionType?: SuggestionType;
-  iterationState?: LoopIterationState;
   iterationPillState?: LoopNodeExecutionCountState;
 }
 
