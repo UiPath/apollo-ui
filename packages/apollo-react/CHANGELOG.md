@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.37.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.36.2...@uipath/apollo-react@4.37.0) (2026-06-02)
+
+### Features
+
+* **apollo-react:** add FunctionProject canvas icon ([31e7096](https://github.com/UiPath/apollo-ui/commit/31e7096e9656c4a5ff76512745b1f0f5e4de1fe8))
+
 ## [@uipath/apollo-react-v4.36.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.36.1...@uipath/apollo-react@4.36.2) (2026-06-01)
 
 ### Bug Fixes
