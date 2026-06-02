@@ -28,10 +28,17 @@ const SLA_ICON_CONFIG: Record<StageSlaIcon, { icon: string; iconColor: string }>
 
 const CHIP_ICONS: Record<StageHeaderChipType, React.ReactElement> = {
   [StageHeaderChipType.Entry]: <EntryConditionIcon w={Icon.IconXs} h={Icon.IconXs} />,
-  [StageHeaderChipType.Exit]: <ExitConditionIcon w={Icon.IconXs} h={Icon.IconXs} />,
   [StageHeaderChipType.Completion]: <ChecklistIcon size={16} />,
+  [StageHeaderChipType.Exit]: <ExitConditionIcon w={Icon.IconXs} h={Icon.IconXs} />,
   [StageHeaderChipType.ReturnToOrigin]: <ReturnToOriginIcon w={Icon.IconXs} h={Icon.IconXs} />,
 };
+
+const CHIP_ORDER: StageHeaderChipType[] = [
+  StageHeaderChipType.Entry,
+  StageHeaderChipType.Completion,
+  StageHeaderChipType.Exit,
+  StageHeaderChipType.ReturnToOrigin,
+];
 
 const StageNodeHeaderInner = ({
   props,
@@ -129,30 +136,32 @@ const StageNodeHeaderInner = ({
           )}
           {stageDetails.headerChips && stageDetails.headerChips.length > 0 && (
             <div className="flex flex-wrap items-center gap-1">
-              {stageDetails.headerChips.map((chip) => {
-                const button = (
-                  <StageChip
-                    key={chip.type}
-                    type="button"
-                    aria-label={typeof chip.tooltip === 'string' ? chip.tooltip : chip.type}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      chip.onClick?.();
-                    }}
-                  >
-                    {CHIP_ICONS[chip.type]}
-                    {chip.count !== undefined && <span className="text-xs">{chip.count}</span>}
-                  </StageChip>
-                );
-                if (chip.tooltip) {
-                  return (
-                    <CanvasTooltip key={chip.type} placement="bottom" content={chip.tooltip}>
-                      {button}
-                    </CanvasTooltip>
+              {[...stageDetails.headerChips]
+                .sort((left, right) => CHIP_ORDER.indexOf(left.type) - CHIP_ORDER.indexOf(right.type))
+                .map((chip) => {
+                  const button = (
+                    <StageChip
+                      key={chip.type}
+                      type="button"
+                      aria-label={typeof chip.tooltip === 'string' ? chip.tooltip : chip.type}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        chip.onClick?.();
+                      }}
+                    >
+                      {CHIP_ICONS[chip.type]}
+                      {chip.count !== undefined && <span className="text-xs">{chip.count}</span>}
+                    </StageChip>
                   );
-                }
-                return button;
-              })}
+                  if (chip.tooltip) {
+                    return (
+                      <CanvasTooltip key={chip.type} placement="bottom" content={chip.tooltip}>
+                        {button}
+                      </CanvasTooltip>
+                    );
+                  }
+                  return button;
+                })}
             </div>
           )}
         </div>
