@@ -10,12 +10,17 @@ export const GLASS_CLASSES = [
   "dark:shadow-[0_2px_24px_2px_rgba(0,0,0,0.12),inset_0_1px_0_0_color-mix(in_srgb,var(--sidebar)_5%,transparent)]",
 ] as const;
 
-const cardVariants = cva("flex flex-col gap-6 py-6 text-card-foreground", {
+const cardVariants = cva("flex flex-col text-card-foreground", {
   variants: {
     variant: {
       default: GLASS_CLASSES,
       solid: "bg-card rounded-xl border",
       glass: GLASS_CLASSES,
+      // Dashboard cards have a consistent inner rhythm — gap between
+      // sections + outer vertical padding — that other Card consumers
+      // (metric-card, queue cards, comms cards, etc.) don't want.
+      // Opt in with variant="dashboard"; everything else stays unaffected.
+      dashboard: [...GLASS_CLASSES, "gap-6 py-6"],
     },
   },
   defaultVariants: {
