@@ -47,6 +47,8 @@ export interface StickyNoteNodeProps extends NodeProps {
   onContentChange?: (content: string) => void;
   onColorChange?: (color: StickyNoteColor) => void;
   onResize?: (width: number, height: number) => void;
+  onResizeStart?: () => void;
+  onResizeEnd?: () => void;
 }
 
 const minWidth = GRID_SPACING * 8;
@@ -63,6 +65,8 @@ const StickyNoteNodeComponent = ({
   onContentChange,
   onColorChange,
   onResize,
+  onResizeStart,
+  onResizeEnd,
 }: StickyNoteNodeProps) => {
   const { _ } = useSafeLingui();
   const { updateNodeData, deleteElements } = useReactFlow();
@@ -193,14 +197,16 @@ const StickyNoteNodeComponent = ({
   // Resize handlers
   const handleResizeStart = useCallback(() => {
     setIsResizing(true);
-  }, []);
+    onResizeStart?.();
+  }, [onResizeStart]);
 
   const handleResizeEnd = useCallback(
     (_event: ResizeDragEvent, params: ResizeParams) => {
       setIsResizing(false);
       onResize?.(params.width, params.height);
+      queueMicrotask(() => onResizeEnd?.());
     },
-    [onResize]
+    [onResize, onResizeEnd]
   );
 
   // Color change handler

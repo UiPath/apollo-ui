@@ -28,6 +28,7 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
     children,
     minHeight,
     minWidth,
+    onResize,
     onResizeEnd,
     onResizeStart,
     position,
@@ -35,6 +36,10 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
     children?: React.ReactNode;
     minHeight?: number;
     minWidth?: number;
+    onResize?: (
+      event: React.MouseEvent<HTMLDivElement>,
+      params: { width: number; height: number }
+    ) => void;
     onResizeEnd?: () => void;
     onResizeStart?: () => void;
     position?: string;
@@ -44,6 +49,7 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
       data-min-height={minHeight}
       data-min-width={minWidth}
       onMouseDown={onResizeStart}
+      onMouseMove={(event) => onResize?.(event, { width: 130, height: 77 })}
       onMouseUp={onResizeEnd}
     >
       {children}
@@ -343,6 +349,32 @@ describe('LoopNode resize controls', () => {
     for (const indicator of getResizeIndicators()) {
       expect(indicator).toHaveClass('opacity-0');
     }
+  });
+
+  it('calls onResizeStart once when resize starts', () => {
+    const onResizeStart = vi.fn();
+    renderLoopNode({ onResizeStart });
+
+    fireEvent.mouseDown(screen.getByTestId('node-resize-control-bottom-right'));
+
+    expect(onResizeStart).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls public onResizeEnd after resize end and preserves live onResize', async () => {
+    const onResize = vi.fn();
+    const onResizeEnd = vi.fn();
+    renderLoopNode({ onResize, onResizeEnd });
+
+    const resizeControl = screen.getByTestId('node-resize-control-bottom-right');
+    fireEvent.mouseMove(resizeControl);
+    fireEvent.mouseUp(resizeControl);
+
+    expect(onResize).toHaveBeenCalledWith({ width: 128, height: 80 });
+    expect(onResizeEnd).not.toHaveBeenCalled();
+
+    await Promise.resolve();
+
+    expect(onResizeEnd).toHaveBeenCalledTimes(1);
   });
 });
 

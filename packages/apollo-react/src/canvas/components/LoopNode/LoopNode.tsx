@@ -184,6 +184,8 @@ function LoopNodeComponent(props: LoopNodeProps) {
     height = 0,
     onAddFirstChild,
     onResize,
+    onResizeStart,
+    onResizeEnd,
     toolbarConfig: toolbarConfigProp,
     adornments: adornmentsProp,
     executionStatusOverride,
@@ -311,8 +313,14 @@ function LoopNodeComponent(props: LoopNodeProps) {
     },
     [onResize]
   );
-  const handleResizeStart = useCallback(() => setIsResizing(true), []);
-  const handleResizeEnd = useCallback(() => setIsResizing(false), []);
+  const handleResizeStart = useCallback(() => {
+    setIsResizing(true);
+    onResizeStart?.();
+  }, [onResizeStart]);
+  const handleResizeEnd = useCallback(() => {
+    setIsResizing(false);
+    queueMicrotask(() => onResizeEnd?.());
+  }, [onResizeEnd]);
 
   const handleEmptyClick = useCallback(() => {
     onAddFirstChild?.();
