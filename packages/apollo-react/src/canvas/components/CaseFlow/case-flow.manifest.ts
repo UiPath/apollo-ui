@@ -42,6 +42,7 @@ export const caseManagementTriggerManifest: NodeManifest = {
     description: 'Starts a case instance and triggers a case entered event',
     icon: 'zap',
     shape: 'circle',
+    shadow: false,
   },
   handleConfiguration: [
     {
