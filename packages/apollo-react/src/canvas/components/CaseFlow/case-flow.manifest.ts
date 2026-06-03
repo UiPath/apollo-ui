@@ -21,7 +21,7 @@ export const caseFlowCategories: CategoryManifest[] = [
     sortOrder: 0,
     color: 'linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%)',
     colorDark: 'linear-gradient(135deg, #E65100 0%, #EF6C00 100%)',
-    icon: 'bolt',
+    icon: 'zap',
     tags: ['trigger', 'start', 'case', 'event'],
   },
 ];
@@ -40,7 +40,7 @@ export const caseManagementTriggerManifest: NodeManifest = {
   display: {
     label: 'Trigger',
     description: 'Starts a case instance and triggers a case entered event',
-    icon: 'bolt',
+    icon: 'zap',
     shape: 'circle',
   },
   handleConfiguration: [
