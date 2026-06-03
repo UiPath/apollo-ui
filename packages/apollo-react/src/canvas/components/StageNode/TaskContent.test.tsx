@@ -90,3 +90,27 @@ describe('TaskContent - execution status tooltip', () => {
     expect(screen.getByRole('button', { name: 'Not started' })).toBeInTheDocument();
   });
 });
+
+describe('TaskContent - duration tooltip', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('wraps the duration text with a tooltip showing the durationTooltip content', () => {
+    renderTaskContent({
+      taskExecution: { status: 'InProgress', duration: '6s', durationTooltip: '4s remaining' },
+    });
+
+    const durationText = screen.getByText('6s');
+    const tooltipWrapper = durationText.closest('[data-testid="canvas-tooltip"]');
+    expect(tooltipWrapper).toHaveAttribute('data-tooltip-content', '4s remaining');
+  });
+
+  it('renders the duration with empty tooltip content when no durationTooltip is supplied', () => {
+    renderTaskContent({ taskExecution: { status: 'Completed', duration: '6s' } });
+
+    const durationText = screen.getByText('6s');
+    const tooltipWrapper = durationText.closest('[data-testid="canvas-tooltip"]');
+    expect(tooltipWrapper).toHaveAttribute('data-tooltip-content', '');
+  });
+});

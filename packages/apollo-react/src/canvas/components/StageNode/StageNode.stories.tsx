@@ -764,6 +764,7 @@ export const InteractiveTaskManagement: Story = {
               '2': {
                 status: 'InProgress',
                 duration: '1h 15m',
+                durationTooltip: '45m remaining',
                 retryDuration: '15m',
                 badge: 'Retry',
                 badgeStatus: 'warning',

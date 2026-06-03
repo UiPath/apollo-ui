@@ -106,6 +106,8 @@ export interface StageTaskExecution {
   message?: string;
   label?: string;
   duration?: string;
+  /** Tooltip shown on hover over the duration text (e.g. a wait-for-timer countdown). */
+  durationTooltip?: React.ReactNode;
   retryDuration?: string;
   badge?: string;
   badgeStatus?: 'warning' | 'info' | 'error';
