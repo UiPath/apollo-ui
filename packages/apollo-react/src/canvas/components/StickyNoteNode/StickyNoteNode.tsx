@@ -5,6 +5,7 @@ import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyf
 import type { ResizeDragEvent, ResizeParams } from '@uipath/apollo-react/canvas/xyflow/system';
 import { AnimatePresence } from 'motion/react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
@@ -75,6 +76,7 @@ const StickyNoteNodeComponent = ({
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [localContent, setLocalContent] = useState(data.content || '');
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const skipBlurRef = useRef<string | null>(null);
   const { ref: markdownRef, scrollCaptureProps } = useScrollCapture();
   const colorButtonRef = useRef<HTMLDivElement>(null);
   const [activeFormats, setActiveFormats] = useState<ActiveFormats>({
@@ -132,13 +134,21 @@ const StickyNoteNodeComponent = ({
   const handleBlur = useCallback(() => {
     setIsEditing(false);
     if (readOnly) return;
-    if (localContent !== data.content) {
-      onContentChange?.(localContent);
-      updateNodeData(id, { content: localContent });
+
+    const content = textAreaRef.current?.value ?? localContent;
+    if (skipBlurRef.current === content) {
+      skipBlurRef.current = null;
+      return;
+    }
+
+    if (content !== data.content) {
+      onContentChange?.(content);
+      updateNodeData(id, { content });
     }
   }, [id, localContent, data.content, updateNodeData, onContentChange, readOnly]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    skipBlurRef.current = null;
     setLocalContent(e.target.value);
   }, []);
 
@@ -169,6 +179,7 @@ const StickyNoteNodeComponent = ({
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === 'Escape') {
+        skipBlurRef.current = textAreaRef.current?.value ?? localContent;
         setIsEditing(false);
         setLocalContent(data.content || '');
         textAreaRef.current?.blur();
@@ -191,17 +202,36 @@ const StickyNoteNodeComponent = ({
       }
       shortcutKeyDown(e);
     },
-    [data.content, shortcutKeyDown, handleFormat]
+    [data.content, localContent, shortcutKeyDown, handleFormat]
   );
 
   // Resize handlers
   const handleResizeStart = useCallback(() => {
     if (isEditing) {
+      const content = textAreaRef.current?.value ?? localContent;
+
+      if (!readOnly && content !== data.content) {
+        skipBlurRef.current = content;
+        flushSync(() => {
+          onContentChange?.(content);
+          updateNodeData(id, { content });
+        });
+      }
+
       textAreaRef.current?.blur();
     }
     setIsResizing(true);
     onResizeStart?.();
-  }, [isEditing, onResizeStart]);
+  }, [
+    data.content,
+    id,
+    isEditing,
+    localContent,
+    onContentChange,
+    onResizeStart,
+    readOnly,
+    updateNodeData,
+  ]);
 
   const handleResizeEnd = useCallback(
     (_event: ResizeDragEvent, params: ResizeParams) => {
