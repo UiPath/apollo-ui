@@ -319,7 +319,9 @@ function LoopNodeComponent(props: LoopNodeProps) {
   }, [onResizeStart]);
   const handleResizeEnd = useCallback(() => {
     setIsResizing(false);
-    queueMicrotask(() => onResizeEnd?.());
+    if (onResizeEnd) {
+      queueMicrotask(onResizeEnd);
+    }
   }, [onResizeEnd]);
 
   const handleEmptyClick = useCallback(() => {
