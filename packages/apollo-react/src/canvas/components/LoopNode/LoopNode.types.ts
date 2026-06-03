@@ -33,4 +33,6 @@ export interface LoopNodeConfig {
 export interface LoopNodeProps extends NodeProps<Node<LoopNodeData>>, LoopNodeConfig {
   onAddFirstChild?: () => void;
   onResize?: (size: LoopNodeResizeSize) => void;
+  onResizeStart?: () => void;
+  onResizeEnd?: () => void;
 }
