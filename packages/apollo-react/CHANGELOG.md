@@ -1,3 +1,14 @@
+## [@uipath/apollo-react-v4.38.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.37.1...@uipath/apollo-react@4.38.0) (2026-06-03)
+
+### Features
+
+* **apollo-react:** add ActionNeeded execution state with Take Action pill ([58f15d7](https://github.com/UiPath/apollo-ui/commit/58f15d7a0418a08dc365d9523284812c66d9d44c))
+* **apollo-react:** replace ActionNeeded bottom pill with hover-expand top-right badge ([c17d4e1](https://github.com/UiPath/apollo-ui/commit/c17d4e13593bdd5a668514c37430203be5caf714))
+* **storybook:** add center-aligned Take Action pill PoC to Execution States preview canvas ([4444e52](https://github.com/UiPath/apollo-ui/commit/4444e52d3da6c191e8824a9043a2c6ca4c3877c9))
+* **storybook:** add Take Action modal to Execution States page ([bd20f8a](https://github.com/UiPath/apollo-ui/commit/bd20f8a629c1c3b6a201537b2a4c584f0588b197))
+* **storybook:** add Take Action prototype section to Execution States page ([080d0e5](https://github.com/UiPath/apollo-ui/commit/080d0e5dade26da9cec56cfef100d62eb7342b8e))
+* **storybook:** redesign BaseNode Execution States page with doc layout ([f1d6d0c](https://github.com/UiPath/apollo-ui/commit/f1d6d0ca580b7d0268f6eae013b3cba5b77cbf6b))
+
 ## [@uipath/apollo-react-v4.37.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.37.0...@uipath/apollo-react@4.37.1) (2026-06-03)
 
 ### Bug Fixes
