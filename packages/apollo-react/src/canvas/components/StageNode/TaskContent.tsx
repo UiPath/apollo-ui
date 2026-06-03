@@ -172,7 +172,13 @@ export const TaskContent = memo(
           <Row align="center" justify="space-between">
             <Row gap={'2px'}>
               {taskExecution?.duration && (
-                <span className="text-xs text-foreground-muted">{taskExecution.duration}</span>
+                <CanvasTooltip
+                  content={taskExecution.durationTooltip}
+                  placement="top"
+                  hide={isDragging}
+                >
+                  <span className="text-xs text-foreground-muted">{taskExecution.duration}</span>
+                </CanvasTooltip>
               )}
               {taskExecution?.retryDuration && (
                 <StageTaskRetryDuration status={taskExecution.badgeStatus ?? 'warning'}>
