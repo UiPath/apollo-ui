@@ -196,9 +196,12 @@ const StickyNoteNodeComponent = ({
 
   // Resize handlers
   const handleResizeStart = useCallback(() => {
+    if (isEditing) {
+      textAreaRef.current?.blur();
+    }
     setIsResizing(true);
     onResizeStart?.();
-  }, [onResizeStart]);
+  }, [isEditing, onResizeStart]);
 
   const handleResizeEnd = useCallback(
     (_event: ResizeDragEvent, params: ResizeParams) => {
