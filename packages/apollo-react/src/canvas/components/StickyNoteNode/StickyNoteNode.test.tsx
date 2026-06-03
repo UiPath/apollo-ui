@@ -1,5 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const { mockDeleteElements, mockUpdateNodeData } = vi.hoisted(() => ({
+  mockDeleteElements: vi.fn(),
+  mockUpdateNodeData: vi.fn(),
+}));
 
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@uipath/apollo-react/canvas/xyflow/react')>()),
@@ -26,8 +31,8 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
     </div>
   ),
   useReactFlow: () => ({
-    deleteElements: vi.fn(),
-    updateNodeData: vi.fn(),
+    deleteElements: mockDeleteElements,
+    updateNodeData: mockUpdateNodeData,
   }),
 }));
 
@@ -55,6 +60,18 @@ function renderStickyNoteNode(props: Partial<StickyNoteNodeProps> = {}) {
   render(<StickyNoteNode {...defaultProps} {...props} />);
 }
 
+function startEditing() {
+  fireEvent.doubleClick(screen.getByText('Remember the resize lifecycle'));
+  const textarea = screen.getByRole('textbox');
+  textarea.focus();
+  return textarea;
+}
+
+beforeEach(() => {
+  mockDeleteElements.mockReset();
+  mockUpdateNodeData.mockReset();
+});
+
 describe('StickyNoteNode resize lifecycle', () => {
   it('calls onResizeStart once when resize starts', () => {
     const onResizeStart = vi.fn();
@@ -78,5 +95,38 @@ describe('StickyNoteNode resize lifecycle', () => {
     await Promise.resolve();
 
     expect(onResizeEnd).toHaveBeenCalledTimes(1);
+  });
+
+  it('commits pending text edits before resize start', () => {
+    const events: string[] = [];
+    const onContentChange = vi.fn(() => events.push('content-change'));
+    const onResizeStart = vi.fn(() => events.push('resize-start'));
+    mockUpdateNodeData.mockImplementation(() => events.push('update-node-data'));
+    renderStickyNoteNode({ onContentChange, onResizeStart });
+
+    const textarea = startEditing();
+    fireEvent.change(textarea, { target: { value: 'Updated note text' } });
+    fireEvent.mouseDown(screen.getByTestId('node-resize-control-bottom-right'));
+
+    expect(events).toEqual(['content-change', 'update-node-data', 'resize-start']);
+    expect(onContentChange).toHaveBeenCalledWith('Updated note text');
+    expect(mockUpdateNodeData).toHaveBeenCalledWith('sticky-note-1', {
+      content: 'Updated note text',
+    });
+  });
+
+  it('does not emit a content update on resize start when text is unchanged', () => {
+    const events: string[] = [];
+    const onContentChange = vi.fn(() => events.push('content-change'));
+    const onResizeStart = vi.fn(() => events.push('resize-start'));
+    mockUpdateNodeData.mockImplementation(() => events.push('update-node-data'));
+    renderStickyNoteNode({ onContentChange, onResizeStart });
+
+    startEditing();
+    fireEvent.mouseDown(screen.getByTestId('node-resize-control-bottom-right'));
+
+    expect(events).toEqual(['resize-start']);
+    expect(onContentChange).not.toHaveBeenCalled();
+    expect(mockUpdateNodeData).not.toHaveBeenCalled();
   });
 });
