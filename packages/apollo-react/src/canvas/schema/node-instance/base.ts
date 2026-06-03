@@ -49,6 +49,7 @@ export const displayConfigSchema = z
     centerAdornmentComponent: z.any().optional(), // React.ReactNode
     footerComponent: z.any().optional(), // React.ReactNode
     footerVariant: z.string().optional(), // FooterVariant enum
+    shadow: z.boolean().optional(),
   })
   .catchall(z.unknown()); // Allow additional properties
 

@@ -310,6 +310,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const displayShape = display.shape ?? 'square';
   const displayBackground = display.background;
   const displayColor = display.color;
+  const displayShadow = display.shadow ?? true;
   const displayIconBackground = isDarkMode
     ? (display.iconBackgroundDark ?? display.iconBackground)
     : display.iconBackground;
@@ -610,6 +611,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         hasFooter={hasFooter}
         background={displayBackground}
         loading={data.loading}
+        shadow={displayShadow}
       >
         {(Icon || data.loading) && (
           <BaseInnerShape

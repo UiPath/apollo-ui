@@ -44,6 +44,7 @@ interface BaseContainerProps {
   hasFooter?: boolean;
   background?: string;
   loading?: boolean;
+  shadow?: boolean;
   children: React.ReactNode;
 }
 
@@ -59,6 +60,7 @@ export const BaseContainer = ({
   hasFooter,
   background,
   loading,
+  shadow = true,
   children,
 }: BaseContainerProps) => {
   const activeStatus = suggestionType ?? validationStatus ?? executionStatus;
@@ -72,24 +74,26 @@ export const BaseContainer = ({
     return cn(
       'relative flex items-center cursor-pointer bg-surface-overlay border border-border',
       'w-(--node-w) h-(--node-h) rounded-(--node-radius)',
-      'shadow-(--canvas-node-shadow-rest) outline-offset-0 transition-[box-shadow,border-color] duration-150',
+      'outline-offset-0 transition-[box-shadow,border-color] duration-150',
+      shadow && 'shadow-(--canvas-node-shadow-rest)',
       shape === 'rectangle'
         ? 'flex-row justify-start gap-3 p-(--node-gap)'
         : 'flex-col justify-center',
       hasFooter && 'flex-wrap',
       statusBorder,
-      isHovered && 'shadow-(--canvas-node-shadow-hover)',
+      shadow && isHovered && 'shadow-(--canvas-node-shadow-hover)',
       isHovered && !hasStatusBorder && 'border-border-hover',
       isSelected && 'outline outline-2 outline-foreground-accent-muted',
       interactionState === 'disabled' && 'opacity-50 cursor-not-allowed',
-      interactionState === 'drag' && 'cursor-grabbing shadow-(--canvas-node-shadow-lifted)',
+      interactionState === 'drag' &&
+        cn('cursor-grabbing', shadow && 'shadow-(--canvas-node-shadow-lifted)'),
       // Decorative stacked layer for drillable / collapsed nodes. Purely visual:
       // a ::before pseudo inherits the container's radius/size, sits behind at
       // -z-10, and is offset down so only a thin arc peeks out below the card.
       isStacked &&
         'before:content-[""] before:absolute before:inset-x-0 before:top-0 before:h-full before:rounded-[inherit] before:bg-surface-overlay before:border before:border-brand before:translate-y-[6px] before:-z-10 before:pointer-events-none'
     );
-  }, [shape, hasFooter, activeStatus, isSelected, isHovered, isStacked, interactionState]);
+  }, [shape, hasFooter, activeStatus, isSelected, isHovered, isStacked, interactionState, shadow]);
 
   return (
     <div
