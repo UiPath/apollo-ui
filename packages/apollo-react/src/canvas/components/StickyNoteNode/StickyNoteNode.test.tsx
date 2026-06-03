@@ -1,10 +1,21 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { StickyNoteData } from './StickyNoteNode.types';
 
-const { mockDeleteElements, mockUpdateNodeData } = vi.hoisted(() => ({
-  mockDeleteElements: vi.fn(),
-  mockUpdateNodeData: vi.fn(),
-}));
+const { deferredUpdate, mockDeleteElements, mockUpdateNodeData } = vi.hoisted(() => {
+  const deferredUpdate: {
+    handler?: (id: string, data: Record<string, unknown>) => void;
+  } = {};
+
+  return {
+    deferredUpdate,
+    mockDeleteElements: vi.fn(),
+    mockUpdateNodeData: vi.fn((id: string, data: Record<string, unknown>) => {
+      deferredUpdate.handler?.(id, data);
+    }),
+  };
+});
 
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@uipath/apollo-react/canvas/xyflow/react')>()),
@@ -67,9 +78,57 @@ function startEditing() {
   return textarea;
 }
 
+function DeferredUpdateHarness({
+  onStartContent,
+}: {
+  onStartContent: (content: string | undefined) => void;
+}) {
+  const [nodeData, setNodeData] = useState<StickyNoteData>(defaultProps.data);
+  const nodeDataRef = useRef<StickyNoteData>(defaultProps.data);
+  const queueRef = useRef<Record<string, unknown>[]>([]);
+  const [, rerender] = useState(0);
+
+  useLayoutEffect(() => {
+    deferredUpdate.handler = (_id, data) => {
+      queueRef.current.push(data);
+      rerender((value) => value + 1);
+    };
+
+    return () => {
+      deferredUpdate.handler = undefined;
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    if (queueRef.current.length === 0) return;
+
+    const updates = queueRef.current;
+    queueRef.current = [];
+    const nextData = updates.reduce<StickyNoteData>(
+      (current, update) => ({ ...current, ...update }),
+      nodeDataRef.current
+    );
+
+    nodeDataRef.current = nextData;
+    setNodeData(nextData);
+  });
+
+  return (
+    <StickyNoteNode
+      {...defaultProps}
+      data={nodeData}
+      onResizeStart={() => onStartContent(nodeDataRef.current.content)}
+    />
+  );
+}
+
 beforeEach(() => {
+  deferredUpdate.handler = undefined;
   mockDeleteElements.mockReset();
   mockUpdateNodeData.mockReset();
+  mockUpdateNodeData.mockImplementation((id: string, data: Record<string, unknown>) => {
+    deferredUpdate.handler?.(id, data);
+  });
 });
 
 describe('StickyNoteNode resize lifecycle', () => {
@@ -113,6 +172,21 @@ describe('StickyNoteNode resize lifecycle', () => {
     expect(mockUpdateNodeData).toHaveBeenCalledWith('sticky-note-1', {
       content: 'Updated note text',
     });
+    expect(onContentChange).toHaveBeenCalledTimes(1);
+    expect(mockUpdateNodeData).toHaveBeenCalledTimes(1);
+  });
+
+  it('flushes pending text into controlled node data before resize start', () => {
+    const onStartContent = vi.fn();
+
+    render(<DeferredUpdateHarness onStartContent={onStartContent} />);
+
+    const textarea = startEditing();
+    fireEvent.change(textarea, { target: { value: 'Updated text' } });
+    fireEvent.mouseDown(screen.getByTestId('node-resize-control-bottom-right'));
+
+    expect(onStartContent).toHaveBeenCalledWith('Updated text');
+    expect(mockUpdateNodeData).toHaveBeenCalledTimes(1);
   });
 
   it('does not emit a content update on resize start when text is unchanged', () => {
@@ -126,6 +200,18 @@ describe('StickyNoteNode resize lifecycle', () => {
     fireEvent.mouseDown(screen.getByTestId('node-resize-control-bottom-right'));
 
     expect(events).toEqual(['resize-start']);
+    expect(onContentChange).not.toHaveBeenCalled();
+    expect(mockUpdateNodeData).not.toHaveBeenCalled();
+  });
+
+  it('does not commit canceled edits when Escape blurs the textarea', () => {
+    const onContentChange = vi.fn();
+    renderStickyNoteNode({ onContentChange });
+
+    const textarea = startEditing();
+    fireEvent.change(textarea, { target: { value: 'Discard this edit' } });
+    fireEvent.keyDown(textarea, { key: 'Escape' });
+
     expect(onContentChange).not.toHaveBeenCalled();
     expect(mockUpdateNodeData).not.toHaveBeenCalled();
   });
