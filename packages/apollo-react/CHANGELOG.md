@@ -1,3 +1,11 @@
+## [@uipath/apollo-react-v4.37.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.37.0...@uipath/apollo-react@4.37.1) (2026-06-03)
+
+### Bug Fixes
+
+* **apollo-react:** add resize lifecycle callbacks [MST-10602] ([555d137](https://github.com/UiPath/apollo-ui/commit/555d137d9fb2b8b27a319a4051501464431ba6ea))
+* **apollo-react:** guard resize end microtasks [MST-10602] ([fc8d746](https://github.com/UiPath/apollo-ui/commit/fc8d74699c95a706ea7680f429a38358ed7ca1ed))
+* **apollo-react:** settle sticky note edits before resize [MST-10602] ([d16c152](https://github.com/UiPath/apollo-ui/commit/d16c152b87ed4c77d900b223dd8c1797745e0c7d))
+
 ## [@uipath/apollo-react-v4.37.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.36.2...@uipath/apollo-react@4.37.0) (2026-06-02)
 
 ### Features
