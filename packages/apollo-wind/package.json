@@ -46,6 +46,11 @@
     "./postcss": {
       "import": "./dist/postcss.config.export.js",
       "require": "./dist/postcss.config.export.cjs"
+    },
+    "./editor-themes": {
+      "import": "./dist/editor-themes/index.js",
+      "require": "./dist/editor-themes/index.cjs",
+      "types": "./dist/editor-themes/index.d.ts"
     }
   },
   "files": [

@@ -9,7 +9,6 @@ import {
   oneLight,
   prism,
   vs,
-  vscDarkPlus,
 } from 'react-syntax-highlighter/dist/esm/styles/prism/index.js';
 
 import { Button } from '@/components/ui/button';
@@ -68,6 +67,108 @@ export interface CodeBlockProps {
 }
 
 // ============================================================================
+// Apollo Future Prism themes
+// Colors from the --code-* token spec in foundation/Future/colors.stories.tsx
+// ============================================================================
+
+// future-dark: zinc palette backgrounds, cyan keywords, emerald strings,
+// amber numbers, violet literals — matching the Apollo Future dark token spec.
+const apolloFutureDark = {
+  'code[class*="language-"]': { color: '#a1a1aa', background: 'none', fontSize: '1em' }, // zinc-400  --code-rest
+  'pre[class*="language-"]': { color: '#a1a1aa', background: 'none', fontSize: '1em' },
+  comment: { color: '#52525b' }, // zinc-600  — muted below rest
+  prolog: { color: '#52525b' },
+  cdata: { color: '#52525b' },
+  punctuation: { color: '#71717a' }, // zinc-500  --code-punctuation
+  '.namespace': { opacity: '0.7' },
+  property: { color: '#22d3ee' }, // cyan-400  --code-key
+  tag: { color: '#22d3ee' },
+  'attr-name': { color: '#22d3ee' },
+  keyword: { color: '#22d3ee' },
+  'keyword.module': { color: '#22d3ee' },
+  'keyword.control-flow': { color: '#22d3ee' },
+  atrule: { color: '#22d3ee' },
+  'atrule.rule': { color: '#22d3ee' },
+  function: { color: '#22d3ee' },
+  'function.maybe-class-name': { color: '#22d3ee' },
+  builtin: { color: '#22d3ee' },
+  'class-name': { color: '#a78bfa' }, // violet-400  --code-literal
+  'maybe-class-name': { color: '#a78bfa' },
+  'imports.maybe-class-name': { color: '#a78bfa' },
+  'exports.maybe-class-name': { color: '#a78bfa' },
+  boolean: { color: '#a78bfa' },
+  constant: { color: '#a78bfa' },
+  symbol: { color: '#a78bfa' },
+  regex: { color: '#a78bfa' },
+  string: { color: '#34d399' }, // emerald-400  --code-string
+  'attr-value': { color: '#34d399' },
+  char: { color: '#34d399' },
+  selector: { color: '#34d399' },
+  inserted: { color: '#34d399' },
+  number: { color: '#fbbf24' }, // amber-400  --code-number
+  unit: { color: '#fbbf24' },
+  operator: { color: '#71717a' }, // zinc-500  --code-punctuation
+  'operator.arrow': { color: '#71717a' },
+  'punctuation.interpolation-punctuation': { color: '#71717a' },
+  entity: { color: '#a1a1aa', cursor: 'help' },
+  variable: { color: '#a1a1aa' }, // zinc-400  --code-rest
+  parameter: { color: '#a1a1aa' },
+  console: { color: '#a1a1aa' },
+  deleted: { color: '#ff6467' }, // red-400 — visual diff only
+  important: { color: '#fbbf24', fontWeight: 'bold' },
+  bold: { fontWeight: 'bold' },
+  italic: { fontStyle: 'italic' },
+};
+
+// future-light: same semantic mapping on the lighter zinc palette.
+const apolloFutureLight = {
+  'code[class*="language-"]': { color: '#52525b', background: 'none', fontSize: '1em' }, // zinc-600  --code-rest
+  'pre[class*="language-"]': { color: '#52525b', background: 'none', fontSize: '1em' },
+  comment: { color: '#a1a1aa' }, // zinc-400  — muted above rest
+  prolog: { color: '#a1a1aa' },
+  cdata: { color: '#a1a1aa' },
+  punctuation: { color: '#71717a' }, // zinc-500  --code-punctuation
+  '.namespace': { opacity: '0.7' },
+  property: { color: '#0e7490' }, // cyan-700  --code-key
+  tag: { color: '#0e7490' },
+  'attr-name': { color: '#0e7490' },
+  keyword: { color: '#0e7490' },
+  'keyword.module': { color: '#0e7490' },
+  'keyword.control-flow': { color: '#0e7490' },
+  atrule: { color: '#0e7490' },
+  'atrule.rule': { color: '#0e7490' },
+  function: { color: '#0e7490' },
+  'function.maybe-class-name': { color: '#0e7490' },
+  builtin: { color: '#0e7490' },
+  'class-name': { color: '#7c3aed' }, // violet-600  --code-literal
+  'maybe-class-name': { color: '#7c3aed' },
+  'imports.maybe-class-name': { color: '#7c3aed' },
+  'exports.maybe-class-name': { color: '#7c3aed' },
+  boolean: { color: '#7c3aed' },
+  constant: { color: '#7c3aed' },
+  symbol: { color: '#7c3aed' },
+  regex: { color: '#7c3aed' },
+  string: { color: '#047857' }, // emerald-700  --code-string
+  'attr-value': { color: '#047857' },
+  char: { color: '#047857' },
+  selector: { color: '#047857' },
+  inserted: { color: '#047857' },
+  number: { color: '#b45309' }, // amber-700  --code-number
+  unit: { color: '#b45309' },
+  operator: { color: '#71717a' }, // zinc-500  --code-punctuation
+  'operator.arrow': { color: '#71717a' },
+  'punctuation.interpolation-punctuation': { color: '#71717a' },
+  entity: { color: '#52525b', cursor: 'help' },
+  variable: { color: '#52525b' }, // zinc-600  --code-rest
+  parameter: { color: '#52525b' },
+  console: { color: '#52525b' },
+  deleted: { color: '#c10007' }, // red-700 — visual diff only
+  important: { color: '#b45309', fontWeight: 'bold' },
+  bold: { fontWeight: 'bold' },
+  italic: { fontStyle: 'italic' },
+};
+
+// ============================================================================
 // Per-theme configuration
 // ============================================================================
 
@@ -100,23 +201,23 @@ const THEME_CONFIG: Record<CodeBlockTheme, ThemeConfig> = {
     iconColor: '#6b7280',
     lineNumberColor: '#c8d4de',
   },
-  // ── Future dark — VS Code Dark+ for a modern zinc feel ───────────────────
+  // ── Future dark — Apollo Future token spec (zinc palette, cyan/emerald/amber/violet) ──
   'future-dark': {
-    prismStyle: vscDarkPlus,
-    bg: 'var(--surface-raised)',
-    headerBg: '#09090b',
-    labelColor: '#a1a1aa',
-    iconColor: '#71717a',
-    lineNumberColor: '#3f3f46',
+    prismStyle: apolloFutureDark,
+    bg: '#18181b', // zinc-900  surface-raised
+    headerBg: '#09090b', // zinc-950  surface — one step deeper than body
+    labelColor: '#a1a1aa', // zinc-400  --code-rest / foreground-muted
+    iconColor: '#71717a', // zinc-500  foreground-subtle
+    lineNumberColor: '#52525b', // zinc-600  matches comment colour — most muted code text
   },
-  // ── Future light — VS Code Light for a clean zinc-50 feel ────────────────
+  // ── Future light — Apollo Future token spec (zinc palette, cyan/emerald/amber/violet) ──
   'future-light': {
-    prismStyle: vs,
-    bg: 'var(--surface-raised)',
-    headerBg: '#f4f4f5',
-    labelColor: '#52525b',
-    iconColor: '#71717a',
-    lineNumberColor: '#d4d4d8',
+    prismStyle: apolloFutureLight,
+    bg: '#f4f4f5', // zinc-100  surface-raised
+    headerBg: '#e4e4e7', // zinc-200  surface-overlay — one step deeper than body
+    labelColor: '#71717a', // zinc-500  foreground-muted
+    iconColor: '#a1a1aa', // zinc-400  foreground-subtle
+    lineNumberColor: '#a1a1aa', // zinc-400  matches comment colour — most muted code text
   },
   // ── Wireframe — classic Prism on grey-50, minimal ────────────────────────
   wireframe: {
@@ -163,6 +264,15 @@ const THEME_CONFIG: Record<CodeBlockTheme, ThemeConfig> = {
     iconColor: '#374151',
     lineNumberColor: '#9ca3af',
   },
+};
+
+// Themes that have CSS custom-property scoping via a class name on the element.
+// When an explicit `theme` prop is passed we wrap the component in a div carrying
+// that class so that `future:` Tailwind variants and CSS vars resolve correctly
+// regardless of the page's global theme.
+const THEME_SCOPE_CLASS: Partial<Record<CodeBlockTheme, string>> = {
+  'future-dark': 'future-dark',
+  'future-light': 'future-light',
 };
 
 // ============================================================================
@@ -270,7 +380,12 @@ export function CodeBlock({
 
   const showHeader = !!(fileName || language || showCopyButton);
 
-  return (
+  // When an explicit future theme is passed, wrap in its scope class so that
+  // `future:` Tailwind variants and CSS custom properties resolve correctly
+  // regardless of the page's global theme.
+  const scopeClass = theme ? THEME_SCOPE_CLASS[theme] : undefined;
+
+  const block = (
     <div
       className={cn(
         'overflow-hidden rounded-lg border border-border future:border-border-subtle font-mono text-sm',
@@ -331,4 +446,6 @@ export function CodeBlock({
       </SyntaxHighlighter>
     </div>
   );
+
+  return scopeClass ? <div className={scopeClass}>{block}</div> : block;
 }
