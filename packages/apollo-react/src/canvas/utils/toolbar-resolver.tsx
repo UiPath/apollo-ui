@@ -161,14 +161,25 @@ export function resolveToolbar(
   context: ExtendedNodeContext,
   nodeData?: Record<string, unknown>
 ): NodeToolbarConfig | undefined {
-  const { nodeType, toolbarExtensions: manifestToolbarExtensions } = manifest;
+  const {
+    nodeType,
+    toolbarExtensions: manifestToolbarExtensions,
+    suppressDefaultToolbarActions,
+  } = manifest;
 
   // Get mode from module-level store for filtering/defaults
   // (UIX doesn't pass custom properties through its context)
   const { mode } = getToolbarActionStore();
 
-  // Step 1: Get mode defaults (applies to all nodes)
-  const modeDefaults = toolbarRegistry.getModeDefaults(mode);
+  // Step 1: Get mode defaults (applies to all nodes), minus any IDs the manifest suppresses
+  const rawDefaults = toolbarRegistry.getModeDefaults(mode);
+  const suppressed = new Set(suppressDefaultToolbarActions?.[mode] ?? []);
+  const modeDefaults: ModeToolbarConfig = suppressed.size
+    ? {
+        actions: rawDefaults.actions.filter((a) => !suppressed.has(a.id)),
+        overflowActions: rawDefaults.overflowActions?.filter((a) => !suppressed.has(a.id)),
+      }
+    : rawDefaults;
 
   // Step 2: Get node-type-specific extensions
   const nodeExtensions = manifestToolbarExtensions?.[mode];

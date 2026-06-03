@@ -84,6 +84,10 @@ export const caseManagementTriggerManifest: NodeManifest = {
       ],
     },
   },
+  suppressDefaultToolbarActions: {
+    design: ['breakpoint'],
+    debug: ['breakpoint'],
+  },
 };
 
 // ============================================================================

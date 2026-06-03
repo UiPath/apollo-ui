@@ -103,6 +103,14 @@ export const nodeManifestSchema = z.object({
   /** Toolbar extensions per mode (adds to global defaults) */
   toolbarExtensions: toolbarConfigurationSchema.optional(),
 
+  /**
+   * Default toolbar action IDs to suppress per mode (removes from global defaults).
+   * Keyed by mode; each value is the list of `id`s to hide.
+   * Example: `{ design: ['breakpoint'], debug: ['breakpoint'] }` hides the breakpoint
+   * button on this node in both modes.
+   */
+  suppressDefaultToolbarActions: z.record(z.string(), z.array(z.string())).optional(),
+
   /** Input defaults for the node */
   inputDefaults: z.record(z.string(), z.unknown()).optional(),
 
