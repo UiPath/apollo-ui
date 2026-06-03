@@ -207,7 +207,9 @@ const StickyNoteNodeComponent = ({
     (_event: ResizeDragEvent, params: ResizeParams) => {
       setIsResizing(false);
       onResize?.(params.width, params.height);
-      queueMicrotask(() => onResizeEnd?.());
+      if (onResizeEnd) {
+        queueMicrotask(onResizeEnd);
+      }
     },
     [onResize, onResizeEnd]
   );
