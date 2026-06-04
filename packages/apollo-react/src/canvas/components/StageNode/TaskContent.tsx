@@ -120,9 +120,13 @@ export const TaskContent = memo(
     const showPlayButtonSmall = onTaskPlay && hasExecutionStatus;
     const taskStatusFallbackName = hasExecutionStatus ? getStatusName(taskExecution?.status) : '';
     const taskStatusTooltip = taskExecution?.message || taskStatusFallbackName;
-    const durationLabel = taskExecution?.duration ? (
-      <span className="text-xs text-foreground-muted">{taskExecution.duration}</span>
-    ) : null;
+    const durationLabel = useMemo(
+      () =>
+        taskExecution?.duration ? (
+          <span className="text-xs text-foreground-muted">{taskExecution.duration}</span>
+        ) : null,
+      [taskExecution?.duration]
+    );
 
     return (
       <Column
