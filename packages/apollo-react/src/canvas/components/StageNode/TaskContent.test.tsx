@@ -106,11 +106,11 @@ describe('TaskContent - duration tooltip', () => {
     expect(tooltipWrapper).toHaveAttribute('data-tooltip-content', '4s remaining');
   });
 
-  it('renders the duration with empty tooltip content when no durationTooltip is supplied', () => {
+  it('renders the duration text without a tooltip wrapper when no durationTooltip is supplied', () => {
     renderTaskContent({ taskExecution: { status: 'Completed', duration: '6s' } });
 
     const durationText = screen.getByText('6s');
     const tooltipWrapper = durationText.closest('[data-testid="canvas-tooltip"]');
-    expect(tooltipWrapper).toHaveAttribute('data-tooltip-content', '');
+    expect(tooltipWrapper).toBeNull();
   });
 });
