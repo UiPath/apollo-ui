@@ -1,163 +1,221 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import {
-	ChevronIcon,
-	NavIcon,
-	NavLabel,
-	NavLink,
-	NavSection,
-	ParentNavButton,
+	FolderChevron,
+	FolderIcon,
+	FolderItem,
+	FolderLabel,
+	FolderSearchIcon,
+	FolderSearchInput,
+	FolderSearchWrap,
+	FolderTree,
+	OrchestratorHeader,
+	OrchestratorLogo,
+	OrchestratorTitle,
+	ProtoLink,
+	PrototypesChevron,
+	PrototypesHeader,
+	PrototypesLinks,
+	PrototypesSection,
 	SidebarContainer,
+	SidebarDivider,
 	SidebarNav,
-	SubNav,
-	SubNavLink,
+	TopNav,
+	TopNavIcon,
+	TopNavItem,
 } from "./Sidebar.styles";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Folder tree mock data (matches the Orchestrator screenshot)
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface FolderNode {
+	id: string;
+	label: string;
+	children?: FolderNode[];
+}
+
+const FOLDER_TREE: FolderNode[] = [
+	{ id: "demo-gs", label: "Demo GS Invoice Proce…" },
+	{ id: "lead-scoring", label: "Lead scoring agent 2 1…" },
+	{
+		id: "maestro-1",
+		label: "Maestro w multiple ent…",
+		children: [
+			{ id: "maestro-1a", label: "Sub-folder A" },
+			{ id: "maestro-1b", label: "Sub-folder B" },
+		],
+	},
+	{ id: "maestro-2", label: "Maestro w multiple ent…" },
+	{ id: "maestro-3", label: "Maestro w multiple ent…" },
+	{ id: "maestro-4", label: "Maestro w multiple ent…" },
+	{ id: "maestro-5", label: "Maestro w multiple ent…" },
+	{ id: "solution-api", label: "Solution w API" },
+	{ id: "solution-28", label: "Solution 28" },
+	{ id: "solution-cs", label: "Solution with CS" },
+	{ id: "solution-cs2", label: "Solution with CS 2" },
+	{ id: "agent-3api", label: "agent with 3 api wfs" },
+	{ id: "api-4", label: "api 4" },
+	{
+		id: "demo-trigger",
+		label: "demo trigger",
+		children: [
+			{ id: "demo-trigger-a", label: "Child trigger A" },
+		],
+	},
+	{ id: "destination-high", label: "destination high" },
+	{ id: "destination-low", label: "destination low" },
+	{ id: "dev-work", label: "dev work" },
+	{ id: "fara-numere", label: "fara numere" },
+	{ id: "folder-w-feed", label: "folder w feed" },
+	{ id: "hw-solution", label: "hw solution" },
+	{ id: "interm", label: "interm" },
+];
+
+const PROTOTYPES = [
+	{ label: "Execution Target (OR-92995)", path: "/prototypes/execution-target" },
+	{ label: "User Event Triggers", path: "/prototypes/user-event-triggers" },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export function Sidebar() {
 	const location = useLocation();
-	const [expandedMenus, setExpandedMenus] = useState<string[]>([
-		"/core",
-		"/material",
-		"/components",
-	]);
 
-	const navigation = [
-		{
-			label: "Home",
-			path: "/",
-			icon: "🏠",
-		},
-		{
-			label: "Core",
-			path: "/core",
-			icon: "🎨",
-			children: [
-				{ label: "Borders & Strokes", path: "/core/borders" },
-				{ label: "Breakpoints", path: "/core/screens" },
-				{ label: "Colors", path: "/core/colors" },
-				{ label: "CSS Variables", path: "/core/css-variables" },
-				{ label: "Icons", path: "/core/icons" },
-				{ label: "Shadows", path: "/core/shadows" },
-				{ label: "Spacing & Padding", path: "/core/spacing" },
-				{ label: "Typography", path: "/core/fonts" },
-			],
-		},
-		{
-			label: "Components",
-			path: "/components",
-			icon: "🧩",
-			children: [
-				{ label: "Accordion", path: "/components/accordion" },
-				{ label: "Alert Bar", path: "/components/alert-bar" },
-				{ label: "Badge", path: "/components/badge" },
-				{ label: "Button", path: "/components/button" },
-				{ label: "Chat", path: "/components/chat" },
-				{ label: "Chip", path: "/components/chip" },
-				{ label: "Circular Progress", path: "/components/circular-progress" },
-				{ label: "Icon", path: "/components/icon" },
-				{ label: "Icon Button", path: "/components/icon-button" },
-				{ label: "Link", path: "/components/link" },
-				{ label: "Menu", path: "/components/menu" },
-				{ label: "Modal", path: "/components/modal" },
-				{ label: "Popover", path: "/components/popover" },
-				{ label: "Progress Spinner", path: "/components/progress-spinner" },
-				{ label: "Sankey Diagram", path: "/components/sankey-diagram" },
-				{ label: "Skeleton", path: "/components/skeleton" },
-				{ label: "Text Area", path: "/components/text-area" },
-				{ label: "Text Field", path: "/components/text-field" },
-				{ label: "Tool Call", path: "/components/tool-call" },
-				{ label: "Tooltip", path: "/components/tooltip" },
-				{ label: "Tree View", path: "/components/tree-view" },
-				{ label: "Typography", path: "/components/typography" },
-			],
-		},
-		{
-			label: "Material Overrides",
-			path: "/material",
-			icon: "🎭",
-			children: [
-				{ label: "Alert", path: "/material/alert" },
-				{ label: "Autocomplete", path: "/material/autocomplete" },
-				{ label: "Button Base", path: "/material/button-base" },
-				{ label: "Buttons", path: "/material/buttons" },
-				{ label: "Checkbox", path: "/material/checkbox" },
-				{ label: "Chip", path: "/material/chip" },
-				{ label: "Circular Progress", path: "/material/circular-progress" },
-				{ label: "Datepicker", path: "/material/datepicker" },
-				{ label: "Dialog", path: "/material/dialog" },
-				{ label: "Divider", path: "/material/divider" },
-				{ label: "Form Controls", path: "/material/form-controls" },
-				{ label: "Input Base", path: "/material/input-base" },
-				{ label: "Inputs", path: "/material/inputs" },
-				{ label: "Linear Progress", path: "/material/linear-progress" },
-				{ label: "Link", path: "/material/link" },
-				{ label: "List", path: "/material/list" },
-				{ label: "Menu Item", path: "/material/menu-item" },
-				{ label: "Radio", path: "/material/radio" },
-				{ label: "Select", path: "/material/select" },
-				{ label: "Slider", path: "/material/slider" },
-				{ label: "Snackbar", path: "/material/snackbar" },
-				{ label: "Stepper", path: "/material/stepper" },
-				{ label: "Switch", path: "/material/switch" },
-				{ label: "Tabs", path: "/material/tabs" },
-				{ label: "Text Field", path: "/material/text-field" },
-				{ label: "Tooltip", path: "/material/tooltip" },
-				{ label: "Typography", path: "/material/typography" },
-			],
-		},
-	];
+	const [selectedFolder, setSelectedFolder] = useState("maestro-5");
+	const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
+		new Set(["maestro-1"]),
+	);
+	const [folderSearch, setFolderSearch] = useState("");
+	const [activeTopNav, setActiveTopNav] = useState<string | null>(null);
+	const [prototypesExpanded, setPrototypesExpanded] = useState(true);
 
-	const isActivePath = (path: string) => {
-		if (path === "/") {
-			return location.pathname === "/";
-		}
-		return location.pathname.startsWith(path);
-	};
+	const onPrototypePath = location.pathname.startsWith("/prototypes");
 
-	const toggleMenu = (path: string) => {
-		setExpandedMenus((prev) =>
-			prev.includes(path) ? prev.filter((p) => p !== path) : [...prev, path],
+	function toggleFolder(id: string) {
+		setExpandedFolders((prev) => {
+			const next = new Set(prev);
+			if (next.has(id)) next.delete(id);
+			else next.add(id);
+			return next;
+		});
+	}
+
+	function matchesSearch(label: string) {
+		if (!folderSearch) return true;
+		return label.toLowerCase().includes(folderSearch.toLowerCase());
+	}
+
+	function renderFolder(node: FolderNode, depth = 0) {
+		const hasChildren = !!node.children?.length;
+		const expanded = expandedFolders.has(node.id);
+		const isActive = selectedFolder === node.id;
+
+		// Filter: show node if it or any descendant matches search
+		const selfMatches = matchesSearch(node.label);
+		const childMatches = node.children?.some((c) => matchesSearch(c.label));
+		if (!selfMatches && !childMatches) return null;
+
+		return (
+			<div key={node.id}>
+				<FolderItem
+					$isActive={isActive}
+					$depth={depth}
+					onClick={() => {
+						setSelectedFolder(node.id);
+						setActiveTopNav(null);
+						if (hasChildren) toggleFolder(node.id);
+					}}
+					title={node.label}
+				>
+					<FolderChevron
+						$visible={hasChildren}
+						$expanded={expanded}
+					>
+						▶
+					</FolderChevron>
+					<FolderIcon>{hasChildren ? (expanded ? "📂" : "📁") : "📁"}</FolderIcon>
+					<FolderLabel>{node.label}</FolderLabel>
+				</FolderItem>
+
+				{hasChildren && expanded && (
+					<div>
+						{node.children!.map((child) => renderFolder(child, depth + 1))}
+					</div>
+				)}
+			</div>
 		);
-	};
-
-	const isExpanded = (path: string) => expandedMenus.includes(path);
+	}
 
 	return (
 		<SidebarContainer>
-			<SidebarNav>
-				{navigation.map((item) => (
-					<NavSection key={item.path}>
-						{item.children ? (
-							<ParentNavButton
-								onClick={() => toggleMenu(item.path)}
-								$isActive={isActivePath(item.path)}
-							>
-								<NavIcon>{item.icon}</NavIcon>
-								<NavLabel>{item.label}</NavLabel>
-								<ChevronIcon $isExpanded={isExpanded(item.path)}>▼</ChevronIcon>
-							</ParentNavButton>
-						) : (
-							<NavLink to={item.path} $isActive={isActivePath(item.path)}>
-								<NavIcon>{item.icon}</NavIcon>
-								<NavLabel>{item.label}</NavLabel>
-							</NavLink>
-						)}
+			{/* ── UiPath Orchestrator branding ────────────── */}
+			<OrchestratorHeader>
+				<OrchestratorLogo>U</OrchestratorLogo>
+				<OrchestratorTitle>Orchestrator</OrchestratorTitle>
+			</OrchestratorHeader>
 
-						{item.children && (
-							<SubNav $isExpanded={isExpanded(item.path)}>
-								{item.children.map((child) => (
-									<SubNavLink
-										key={child.path}
-										to={child.path}
-										$isActive={location.pathname === child.path}
-									>
-										{child.label}
-									</SubNavLink>
-								))}
-							</SubNav>
-						)}
-					</NavSection>
-				))}
+			<SidebarNav>
+				{/* ── Top nav items ─────────────────────────── */}
+				<TopNav>
+					{[
+						{ id: "tenant", icon: "🏢", label: "Tenant" },
+						{ id: "registry", icon: "📦", label: "Registry" },
+						{ id: "my-folders", icon: "📂", label: "My Folders" },
+					].map(({ id, icon, label }) => (
+						<TopNavItem
+							key={id}
+							$isActive={activeTopNav === id}
+							onClick={() => {
+								setActiveTopNav((prev) => (prev === id ? null : id));
+								setSelectedFolder("");
+							}}
+						>
+							<TopNavIcon>{icon}</TopNavIcon>
+							{label}
+						</TopNavItem>
+					))}
+				</TopNav>
+
+				<SidebarDivider />
+
+				{/* ── Folder search ──────────────────────────── */}
+				<FolderSearchWrap>
+					<FolderSearchIcon>🔍</FolderSearchIcon>
+					<FolderSearchInput
+						placeholder="Search"
+						value={folderSearch}
+						onChange={(e) => setFolderSearch(e.target.value)}
+					/>
+				</FolderSearchWrap>
+
+				{/* ── Folder tree ────────────────────────────── */}
+				<FolderTree>
+					{FOLDER_TREE.map((node) => renderFolder(node))}
+				</FolderTree>
+
+				{/* ── Prototypes nav ─────────────────────────── */}
+				<PrototypesSection>
+					<PrototypesHeader
+						$isActive={onPrototypePath}
+						onClick={() => setPrototypesExpanded((p) => !p)}
+					>
+						🧪 Prototypes
+						<PrototypesChevron $expanded={prototypesExpanded}>▼</PrototypesChevron>
+					</PrototypesHeader>
+					<PrototypesLinks $expanded={prototypesExpanded}>
+						{PROTOTYPES.map(({ label, path }) => (
+							<ProtoLink
+								key={path}
+								to={path}
+								$isActive={location.pathname === path}
+								title={label}
+							>
+								{label}
+							</ProtoLink>
+						))}
+					</PrototypesLinks>
+				</PrototypesSection>
 			</SidebarNav>
 		</SidebarContainer>
 	);

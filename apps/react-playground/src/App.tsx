@@ -65,6 +65,8 @@ import { MaterialTextField } from "./pages/material/MaterialTextField";
 import { MaterialTooltip } from "./pages/material/MaterialTooltip";
 import { MaterialTypography } from "./pages/material/MaterialTypography";
 import { ApSankeyShowcase } from "./pages/components/ApSankeyShowcase";
+import { ExecutionTargetPrototype } from "./pages/prototypes/ExecutionTargetPrototype";
+import { UserEventTriggersPrototype } from "./pages/prototypes/UserEventTriggersPrototype";
 
 function App() {
 	return (
@@ -201,6 +203,14 @@ function App() {
 							<Route
 								path="/components/sankey-diagram"
 								element={<ApSankeyShowcase />}
+							/>
+							<Route
+								path="/prototypes/execution-target"
+								element={<ExecutionTargetPrototype />}
+							/>
+							<Route
+								path="/prototypes/user-event-triggers"
+								element={<UserEventTriggersPrototype />}
 							/>
 						</Routes>
 					</MainContent>

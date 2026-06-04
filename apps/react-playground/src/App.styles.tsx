@@ -8,5 +8,5 @@ export const AppContainer = styled.div`
 
 export const MainContent = styled.main`
   flex: 1;
-  margin-left: 280px; /* Width of the sidebar */
+  margin-left: 220px; /* Width of the sidebar */
 `;
