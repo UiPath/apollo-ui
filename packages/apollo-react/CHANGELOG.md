@@ -1,3 +1,11 @@
+## [@uipath/apollo-react-v4.39.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.39.2...@uipath/apollo-react@4.39.3) (2026-06-04)
+
+### Bug Fixes
+
+* **apollo-react:** fixed PR comments ([b4ad548](https://github.com/UiPath/apollo-ui/commit/b4ad5484adf68f6b60265f0566ea7e02683c6c17))
+* **apollo-react:** fixed PR comments ([1269459](https://github.com/UiPath/apollo-ui/commit/1269459c1d62d419855ccea7c292a5e7ea356da1))
+* **apollo-react:** part 1 adding time left tooltip to time elapsed (including timers) ([c6025e7](https://github.com/UiPath/apollo-ui/commit/c6025e721aa3546fae0dcbda20146b945270adab))
+
 ## [@uipath/apollo-react-v4.39.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.39.1...@uipath/apollo-react@4.39.2) (2026-06-04)
 
 ### Bug Fixes
