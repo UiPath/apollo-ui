@@ -1,6 +1,14 @@
+import MonacoEditor from '@monaco-editor/react';
+import { javascript } from '@codemirror/lang-javascript';
+import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
+import { EditorState } from '@codemirror/state';
+import { EditorView, drawSelection, highlightActiveLine, lineNumbers } from '@codemirror/view';
+import { tags as t } from '@lezer/highlight';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useEffect, useRef } from 'react';
 import type { CodeBlockTheme } from './code-block';
 import { CodeBlock } from './code-block';
+import type { ApolloFutureCodeMirrorTheme } from '../../editor-themes';
 import {
   apolloFutureDarkCodeMirror,
   apolloFutureDarkMonaco,
@@ -17,6 +25,12 @@ const meta = {
   component: CodeBlock,
   parameters: {
     layout: 'padded',
+    docs: {
+      description: {
+        component:
+          '`CodeBlock` is a **read-only display primitive** for rendering syntax-highlighted code snippets in UI and documentation. It has no cursor, no input, and no editing capability.\n\nIf you need an editable code field, see **Monaco Editor** (multi-line expressions and scripts) or **CodeMirror Editor** (single-line `{{ variable }}` interpolation) in this same section.',
+      },
+    },
   },
   tags: ['autodocs'],
   argTypes: {
@@ -354,6 +368,491 @@ export function DataTable<T extends { id: string | number }>({
 `.trim();
 
 // ============================================================================
+// Live editor components + sample code
+// ============================================================================
+
+const monacoSample = `interface WorkflowNode {
+  id: string;
+  type: 'action' | 'condition' | 'trigger';
+  executionStatus: 'NotExecuted' | 'InProgress' | 'Completed' | 'Failed';
+}
+
+function getNextNodes(node: WorkflowNode): string[] {
+  if (node.executionStatus === 'Completed') {
+    return node.type === 'condition'
+      ? ['true-branch', 'false-branch']
+      : ['next'];
+  }
+  return [];
+}`.trim();
+
+const codemirrorSample = `workflow.status === "active" && user.role !== "viewer"
+  ? user.displayName + " — " + workflow.name
+  : "Access restricted"`.trim();
+
+function LiveMonacoEditor({ variant }: { variant: 'dark' | 'light' }) {
+  const themeName = `apollo-future-${variant}`;
+  return (
+    <MonacoEditor
+      height="260px"
+      defaultLanguage="typescript"
+      defaultValue={monacoSample}
+      theme={themeName}
+      beforeMount={(monaco) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        monaco.editor.defineTheme('apollo-future-dark', apolloFutureDarkMonaco as any);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        monaco.editor.defineTheme('apollo-future-light', apolloFutureLightMonaco as any);
+      }}
+      options={{
+        fontSize: 13,
+        lineHeight: 20,
+        minimap: { enabled: false },
+        scrollBeyondLastLine: false,
+        wordWrap: 'on',
+        fontFamily:
+          'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+        padding: { top: 16, bottom: 16 },
+        lineNumbers: 'on',
+        glyphMargin: false,
+        folding: false,
+        renderLineHighlight: 'line',
+        hideCursorInOverviewRuler: true,
+        overviewRulerBorder: false,
+        scrollbar: { vertical: 'auto', horizontal: 'hidden', alwaysConsumeMouseWheel: false },
+        automaticLayout: true,
+      }}
+    />
+  );
+}
+
+function buildCMExtensions(tokens: ApolloFutureCodeMirrorTheme, isDark: boolean) {
+  const { syntax, ui } = tokens;
+  const theme = EditorView.theme(
+    {
+      '&': {
+        backgroundColor: ui.background,
+        color: ui.foreground,
+        fontFamily:
+          'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+        fontSize: '13px',
+        lineHeight: '1.6',
+      },
+      '.cm-cursor, .cm-dropCursor': { borderLeftColor: ui.cursor },
+      '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection': {
+        backgroundColor: ui.selection,
+      },
+      '.cm-activeLine': { backgroundColor: ui.lineHighlight },
+      '.cm-gutters': { backgroundColor: ui.background, color: ui.lineNumber, border: 'none' },
+      '.cm-gutter.cm-lineNumbers .cm-gutterElement': {
+        color: ui.lineNumber,
+        paddingLeft: '12px',
+        paddingRight: '8px',
+      },
+      '.cm-activeLineGutter': { color: ui.lineNumberActive, backgroundColor: 'transparent' },
+      '.cm-matchingBracket': { outline: `1px solid ${ui.matchingBracket}`, borderRadius: '2px' },
+      '.cm-content': { padding: '12px 0', caretColor: ui.cursor },
+      '.cm-line': { padding: '0 16px' },
+      '.cm-scroller': { overflow: 'auto' },
+    },
+    { dark: isDark }
+  );
+
+  const highlight = HighlightStyle.define([
+    { tag: t.comment, color: syntax.comment, fontStyle: 'italic' },
+    { tag: t.punctuation, color: syntax.punctuation },
+    { tag: [t.keyword, t.operatorKeyword], color: syntax.keyword },
+    { tag: t.operator, color: syntax.operator },
+    { tag: [t.string, t.regexp, t.special(t.string)], color: syntax.string },
+    { tag: [t.number, t.integer, t.float], color: syntax.number },
+    { tag: [t.bool, t.null], color: syntax.literal },
+    { tag: [t.className, t.typeName, t.definition(t.typeName)], color: syntax.literal },
+    { tag: [t.propertyName, t.attributeName], color: syntax.keyword },
+    { tag: t.function(t.variableName), color: syntax.keyword },
+    { tag: t.meta, color: syntax.meta },
+    { tag: t.variableName, color: syntax.rest },
+  ]);
+
+  return [
+    theme,
+    syntaxHighlighting(highlight),
+    javascript({ typescript: true }),
+    lineNumbers(),
+    highlightActiveLine(),
+    drawSelection(),
+  ];
+}
+
+function LiveCodeMirrorEditor({ variant }: { variant: 'dark' | 'light' }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const tokens = variant === 'dark' ? apolloFutureDarkCodeMirror : apolloFutureLightCodeMirror;
+  const borderColor = variant === 'dark' ? '#3f3f46' : '#d4d4d8';
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const view = new EditorView({
+      state: EditorState.create({
+        doc: codemirrorSample,
+        extensions: buildCMExtensions(tokens, variant === 'dark'),
+      }),
+      parent: containerRef.current,
+    });
+    return () => view.destroy();
+  }, [variant, tokens]);
+
+  return (
+    <div ref={containerRef} className="overflow-hidden rounded-lg border" style={{ borderColor }} />
+  );
+}
+
+// ============================================================================
+// Code Editors — display vs editing, orchestrator pattern, theme adapters
+// ============================================================================
+
+const monacoUsageDark = `import { apolloFutureDarkMonaco } from '@uipath/apollo-wind/editor-themes';
+import * as monaco from 'monaco-editor';
+
+// Register once at app startup
+monaco.editor.defineTheme('apollo-future-dark', apolloFutureDarkMonaco);
+monaco.editor.defineTheme('apollo-future-light', apolloFutureLightMonaco);
+
+// Use in any editor instance
+monaco.editor.create(containerEl, {
+  theme: 'apollo-future-dark',
+  language: 'typescript',
+});`.trim();
+
+const codemirrorUsageDark = `import { EditorView } from '@codemirror/view';
+import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
+import { tags as t } from '@lezer/highlight';
+import { apolloFutureDarkCodeMirror } from '@uipath/apollo-wind/editor-themes';
+
+const { syntax, ui } = apolloFutureDarkCodeMirror;
+
+const theme = EditorView.theme({
+  '&': { backgroundColor: ui.background, color: ui.foreground },
+  '.cm-cursor': { borderLeftColor: ui.cursor },
+  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': {
+    backgroundColor: ui.selection,
+  },
+  '.cm-activeLine': { backgroundColor: ui.lineHighlight },
+  '.cm-gutters': { backgroundColor: ui.background, borderRight: 'none' },
+  '.cm-lineNumbers .cm-gutterElement': { color: ui.lineNumber },
+  '.cm-activeLineGutter': { color: ui.lineNumberActive },
+  '.cm-matchingBracket': { outline: \`1px solid \${ui.matchingBracket}\` },
+}, { dark: true });
+
+const highlight = HighlightStyle.define([
+  { tag: t.comment,                            color: syntax.comment, fontStyle: 'italic' },
+  { tag: t.punctuation,                        color: syntax.punctuation },
+  { tag: [t.keyword, t.operator],              color: syntax.keyword },
+  { tag: [t.string, t.regexp],                 color: syntax.string },
+  { tag: [t.number, t.integer],                color: syntax.number },
+  { tag: [t.bool, t.null, t.className, t.typeName], color: syntax.literal },
+  { tag: [t.propertyName, t.attributeName],    color: syntax.keyword },
+  { tag: t.meta,                               color: syntax.meta },
+  { tag: t.name,                               color: syntax.rest },
+]);
+
+export const apolloFutureDark = [theme, syntaxHighlighting(highlight)];`.trim();
+
+const decisionRows = [
+  {
+    useCase: 'Show a code snippet or usage example',
+    solution: 'CodeBlock',
+    pkg: '@uipath/apollo-wind',
+    notes: 'Read-only. No cursor or input.',
+  },
+  {
+    useCase: '{{ variable }} single-line interpolation',
+    solution: 'CodeMirror',
+    pkg: '@codemirror/*',
+    notes: 'Lightweight. Ideal for expression fields.',
+  },
+  {
+    useCase: 'JavaScript / TypeScript expression editing',
+    solution: 'Monaco',
+    pkg: '@monaco-editor/react',
+    notes: 'Full IntelliSense, diagnostics, multi-line.',
+  },
+  {
+    useCase: 'Multi-line script or complex expression',
+    solution: 'Monaco',
+    pkg: '@monaco-editor/react',
+    notes: 'Use when CodeMirror is insufficient.',
+  },
+];
+
+export const CodeEditors = {
+  name: 'Code Editors',
+  parameters: { layout: 'fullscreen' },
+  render: () => (
+    <div className="future-dark min-h-screen w-full bg-background text-foreground">
+      <div className="mx-auto max-w-4xl px-8 pt-8">
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">Code in Apollo</h2>
+        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+          Apollo provides three solutions for code in UI, depending on whether users are{' '}
+          <strong className="text-foreground">reading</strong> or{' '}
+          <strong className="text-foreground">writing</strong> it. They are not interchangeable —
+          each has a distinct role, package weight, and interaction model.
+        </p>
+        <div className="mb-8 h-px bg-border" />
+      </div>
+
+      <div className="mx-auto max-w-4xl px-8 pb-8">
+        {/* ── Decision table ── */}
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">When to use what</h2>
+        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+          Start here. Pick the solution that matches the user's intent, then see its dedicated page
+          for live demos and integration guidance.
+        </p>
+
+        <div className="mb-10 overflow-hidden rounded-lg border border-border">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted">
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
+                  Use case
+                </th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
+                  Solution
+                </th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Package</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {decisionRows.map((row) => (
+                <tr key={row.useCase} className="border-b border-border last:border-b-0">
+                  <td className="px-4 py-3 text-muted-foreground">{row.useCase}</td>
+                  <td className="px-4 py-3 font-medium text-foreground">{row.solution}</td>
+                  <td className="px-4 py-3">
+                    <code className="text-xs text-primary">{row.pkg}</code>
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">{row.notes}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="mb-8 h-px bg-border" />
+
+        {/* ── Orchestrator pattern ── */}
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">
+          The orchestrator pattern
+        </h2>
+        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+          When building expression or script input fields, encapsulate the Monaco/CodeMirror
+          decision in a single{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+            CodeEditorField
+          </code>{' '}
+          component. Feature code passes a{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">mode</code> and the
+          orchestrator picks the right editor — keeping the decision in one place and making it easy
+          to change.
+        </p>
+
+        <div className="grid grid-cols-3 gap-4">
+          <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
+            <span className="text-sm font-semibold text-foreground">Single-line + literal</span>
+            <p className="text-sm text-muted-foreground">
+              <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
+                mode: literal
+              </code>{' '}
+              and line count is 1 → render{' '}
+              <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
+                CodeMirrorEditor
+              </code>
+              . Lightweight, optimised for{' '}
+              <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
+                {'{{ variable }}'}
+              </code>{' '}
+              interpolation.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
+            <span className="text-sm font-semibold text-foreground">Expression mode</span>
+            <p className="text-sm text-muted-foreground">
+              <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
+                mode: expression
+              </code>{' '}
+              → render{' '}
+              <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
+                MonacoEditor
+              </code>
+              . Full IntelliSense, type checking, and diagnostics for JS/TS expressions.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
+            <span className="text-sm font-semibold text-foreground">Multi-line</span>
+            <p className="text-sm text-muted-foreground">
+              Any mode where line count exceeds 1 → escalate to{' '}
+              <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
+                MonacoEditor
+              </code>{' '}
+              regardless of mode. Prevents CodeMirror being used for complex scripts.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  ),
+};
+
+export const MonacoEditorStory = {
+  name: 'Monaco Editor',
+  parameters: { layout: 'fullscreen' },
+  render: () => (
+    <div className="future-dark min-h-screen w-full bg-background text-foreground">
+      <div className="mx-auto max-w-4xl px-8 pt-8">
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">Monaco Editor</h2>
+        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+          Full-featured code editor for multi-line TypeScript / JavaScript expressions and scripts.
+          Provides IntelliSense, syntax diagnostics, bracket matching, and folding. Import{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+            apolloFutureDarkMonaco
+          </code>{' '}
+          or{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+            apolloFutureLightMonaco
+          </code>{' '}
+          from{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+            @uipath/apollo-wind/editor-themes
+          </code>{' '}
+          and register once at app startup.
+        </p>
+        <div className="mb-8 h-px bg-border" />
+      </div>
+
+      <div className="mx-auto max-w-4xl px-8 pb-8">
+        <h2 className="mb-6 text-2xl font-bold tracking-tight text-foreground">Preview</h2>
+
+        <div className="mb-10 grid grid-cols-2 gap-4">
+          <div>
+            <div className="mb-2 flex items-center gap-2">
+              <span className="text-sm font-semibold text-foreground">Future Dark</span>
+              <code className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-primary">
+                apollo-future-dark
+              </code>
+            </div>
+            <div className="overflow-hidden rounded-lg border" style={{ borderColor: '#3f3f46' }}>
+              <LiveMonacoEditor variant="dark" />
+            </div>
+          </div>
+          <div>
+            <div className="mb-2 flex items-center gap-2">
+              <span className="text-sm font-semibold text-foreground">Future Light</span>
+              <code className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-primary">
+                apollo-future-light
+              </code>
+            </div>
+            <div className="overflow-hidden rounded-lg border" style={{ borderColor: '#d4d4d8' }}>
+              <LiveMonacoEditor variant="light" />
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-8 h-px bg-border" />
+
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">How to use</h2>
+        <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+          Define both themes once before mounting any editor. The theme name is a plain string
+          reference — you can switch themes at runtime by updating the{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">theme</code> option.
+        </p>
+        <CodeBlock
+          language="typescript"
+          fileName="setup.ts"
+          theme="future-dark"
+          showLineNumbers={false}
+        >
+          {monacoUsageDark}
+        </CodeBlock>
+      </div>
+    </div>
+  ),
+};
+
+export const CodeMirrorEditorStory = {
+  name: 'CodeMirror Editor',
+  parameters: { layout: 'fullscreen' },
+  render: () => (
+    <div className="future-dark min-h-screen w-full bg-background text-foreground">
+      <div className="mx-auto max-w-4xl px-8 pt-8">
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">
+          CodeMirror Editor
+        </h2>
+        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+          Lightweight editor for single-line expressions and{' '}
+          <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
+            {'{{ variable }}'}
+          </code>{' '}
+          template literal interpolation. Much smaller than Monaco — use it when you need syntax
+          highlighting and bracket matching without the full IDE runtime. Consume{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+            apolloFutureDarkCodeMirror
+          </code>{' '}
+          or{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+            apolloFutureLightCodeMirror
+          </code>{' '}
+          from{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+            @uipath/apollo-wind/editor-themes
+          </code>
+          .
+        </p>
+        <div className="mb-8 h-px bg-border" />
+      </div>
+
+      <div className="mx-auto max-w-4xl px-8 pb-8">
+        <h2 className="mb-6 text-2xl font-bold tracking-tight text-foreground">Preview</h2>
+
+        <div className="mb-10 grid grid-cols-2 gap-4">
+          <div>
+            <p className="mb-2 text-sm font-semibold text-foreground">Future Dark</p>
+            <LiveCodeMirrorEditor variant="dark" />
+          </div>
+          <div>
+            <p className="mb-2 text-sm font-semibold text-foreground">Future Light</p>
+            <LiveCodeMirrorEditor variant="light" />
+          </div>
+        </div>
+
+        <div className="mb-8 h-px bg-border" />
+
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">How to use</h2>
+        <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+          Destructure{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">syntax</code> and{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">ui</code> from the
+          token object. Build a{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+            HighlightStyle
+          </code>{' '}
+          for syntax colours and an{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+            EditorView.theme
+          </code>{' '}
+          for editor chrome, then combine them into a single extension array.
+        </p>
+        <CodeBlock
+          language="typescript"
+          fileName="codemirror-theme.ts"
+          theme="future-dark"
+          showLineNumbers={false}
+        >
+          {codemirrorUsageDark}
+        </CodeBlock>
+      </div>
+    </div>
+  ),
+};
+
+// ============================================================================
 // Default — no `theme` prop: auto-follows the Apollo page theme
 // ============================================================================
 
@@ -568,338 +1067,6 @@ export const AllThemes = {
           </CodeBlock>
         </div>
       ))}
-    </div>
-  ),
-};
-
-// ============================================================================
-// Code Editors — display vs editing, orchestrator pattern, theme adapters
-// ============================================================================
-
-const monacoUsageDark = `import { apolloFutureDarkMonaco } from '@uipath/apollo-wind/editor-themes';
-import * as monaco from 'monaco-editor';
-
-// Register once at app startup
-monaco.editor.defineTheme('apollo-future-dark', apolloFutureDarkMonaco);
-monaco.editor.defineTheme('apollo-future-light', apolloFutureLightMonaco);
-
-// Use in any editor instance
-monaco.editor.create(containerEl, {
-  theme: 'apollo-future-dark',
-  language: 'typescript',
-});`.trim();
-
-const codemirrorUsageDark = `import { EditorView } from '@codemirror/view';
-import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
-import { tags as t } from '@lezer/highlight';
-import { apolloFutureDarkCodeMirror } from '@uipath/apollo-wind/editor-themes';
-
-const { syntax, ui } = apolloFutureDarkCodeMirror;
-
-const theme = EditorView.theme({
-  '&': { backgroundColor: ui.background, color: ui.foreground },
-  '.cm-cursor': { borderLeftColor: ui.cursor },
-  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': {
-    backgroundColor: ui.selection,
-  },
-  '.cm-activeLine': { backgroundColor: ui.lineHighlight },
-  '.cm-gutters': { backgroundColor: ui.background, borderRight: 'none' },
-  '.cm-lineNumbers .cm-gutterElement': { color: ui.lineNumber },
-  '.cm-activeLineGutter': { color: ui.lineNumberActive },
-  '.cm-matchingBracket': { outline: \`1px solid \${ui.matchingBracket}\` },
-}, { dark: true });
-
-const highlight = HighlightStyle.define([
-  { tag: t.comment,                            color: syntax.comment, fontStyle: 'italic' },
-  { tag: t.punctuation,                        color: syntax.punctuation },
-  { tag: [t.keyword, t.operator],              color: syntax.keyword },
-  { tag: [t.string, t.regexp],                 color: syntax.string },
-  { tag: [t.number, t.integer],                color: syntax.number },
-  { tag: [t.bool, t.null, t.className, t.typeName], color: syntax.literal },
-  { tag: [t.propertyName, t.attributeName],    color: syntax.keyword },
-  { tag: t.meta,                               color: syntax.meta },
-  { tag: t.name,                               color: syntax.rest },
-]);
-
-export const apolloFutureDark = [theme, syntaxHighlighting(highlight)];`.trim();
-
-const decisionRows = [
-  {
-    useCase: 'Show a code snippet or usage example',
-    solution: 'CodeBlock',
-    pkg: '@uipath/apollo-wind',
-    notes: 'Read-only. No cursor or input.',
-  },
-  {
-    useCase: '{{ variable }} single-line interpolation',
-    solution: 'CodeMirror',
-    pkg: '@codemirror/*',
-    notes: 'Lightweight. Ideal for expression fields.',
-  },
-  {
-    useCase: 'JavaScript / TypeScript expression editing',
-    solution: 'Monaco',
-    pkg: '@monaco-editor/react',
-    notes: 'Full IntelliSense, diagnostics, multi-line.',
-  },
-  {
-    useCase: 'Multi-line script or complex expression',
-    solution: 'Monaco',
-    pkg: '@monaco-editor/react',
-    notes: 'Use when CodeMirror is insufficient.',
-  },
-];
-
-export const CodeEditors = {
-  name: 'Code Editors',
-  parameters: { layout: 'fullscreen' },
-  render: () => (
-    <div className="future-dark min-h-screen w-full bg-background text-foreground">
-      {/* ── Header ── */}
-      <div className="mx-auto max-w-4xl px-8 pt-8">
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">Code in Apollo</h2>
-        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-          Apollo provides two distinct solutions depending on whether the user is{' '}
-          <strong className="text-foreground">reading</strong> code or{' '}
-          <strong className="text-foreground">writing</strong> it. Using the wrong tool introduces
-          unnecessary weight or missing capabilities — the table below clarifies when to reach for
-          each.
-        </p>
-        <div className="mb-8 h-px bg-border" />
-      </div>
-
-      <div className="mx-auto max-w-4xl px-8 pb-8">
-        {/* ── Decision table ── */}
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">When to use what</h2>
-        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-          Choose based on whether the user needs to read or write, and on the complexity of the
-          editing task.
-        </p>
-
-        <div className="mb-10 overflow-hidden rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted">
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
-                  Use case
-                </th>
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">
-                  Solution
-                </th>
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Package</th>
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {decisionRows.map((row) => (
-                <tr key={row.useCase} className="border-b border-border last:border-b-0">
-                  <td className="px-4 py-3 text-muted-foreground">{row.useCase}</td>
-                  <td className="px-4 py-3 font-medium text-foreground">{row.solution}</td>
-                  <td className="px-4 py-3">
-                    <code className="text-xs text-primary">{row.pkg}</code>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{row.notes}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="mb-8 h-px bg-border" />
-
-        {/* ── Orchestrator pattern ── */}
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">
-          The orchestrator pattern
-        </h2>
-        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-          When building an expression or script field, use a single{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-            CodeEditorField
-          </code>{' '}
-          component that picks the right editor internally. This keeps the decision out of feature
-          code and makes it easy to change later.
-        </p>
-
-        <div className="mb-8 grid grid-cols-3 gap-4">
-          <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-foreground">Single-line + literal</span>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Mode is{' '}
-              <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">literal</code> and
-              line count is 1 → use{' '}
-              <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
-                CodeMirrorEditor
-              </code>
-              . Lightweight, optimised for{' '}
-              <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
-                {'{{ variable }}'}
-              </code>{' '}
-              interpolation.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-foreground">Expression mode</span>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Mode is{' '}
-              <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">expression</code>{' '}
-              → use{' '}
-              <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
-                MonacoEditor
-              </code>
-              . Full IntelliSense, type checking, and diagnostics for JS/TS expressions.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-foreground">Multi-line</span>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Any mode where line count exceeds 1 → escalate to{' '}
-              <code className="rounded bg-muted px-1 py-0.5 text-xs text-primary">
-                MonacoEditor
-              </code>{' '}
-              regardless of mode. Prevents CodeMirror from being used for complex scripts.
-            </p>
-          </div>
-        </div>
-
-        <div className="mb-8 h-px bg-border" />
-
-        {/* ── Monaco theme adapter ── */}
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">
-          Monaco theme adapter
-        </h2>
-        <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-          Import{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-            apolloFutureDarkMonaco
-          </code>{' '}
-          or{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-            apolloFutureLightMonaco
-          </code>{' '}
-          from{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-            @uipath/apollo-wind/editor-themes
-          </code>
-          . Each is a plain{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-            IStandaloneThemeData
-          </code>{' '}
-          object — no Apollo runtime needed at the call site.
-        </p>
-
-        <div className="mb-3 grid grid-cols-4 gap-3 text-xs">
-          {[
-            {
-              label: 'Keywords',
-              color: apolloFutureDarkMonaco.colors['editor.foreground'],
-              swatch: '#22d3ee',
-              text: 'cyan-400',
-            },
-            { label: 'Strings', color: '#34d399', swatch: '#34d399', text: 'emerald-400' },
-            { label: 'Numbers', color: '#fbbf24', swatch: '#fbbf24', text: 'amber-400' },
-            { label: 'Literals', color: '#a78bfa', swatch: '#a78bfa', text: 'violet-400' },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2"
-            >
-              <div
-                className="h-3 w-3 shrink-0 rounded-full"
-                style={{ backgroundColor: item.swatch }}
-              />
-              <div>
-                <p className="font-medium text-foreground">{item.label}</p>
-                <p className="text-muted-foreground">{item.text}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <CodeBlock
-          language="typescript"
-          fileName="setup.ts"
-          theme="future-dark"
-          showLineNumbers={false}
-          className="mb-8"
-        >
-          {monacoUsageDark}
-        </CodeBlock>
-
-        <div className="mb-8 h-px bg-border" />
-
-        {/* ── CodeMirror theme adapter ── */}
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">
-          CodeMirror theme adapter
-        </h2>
-        <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-          Import{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-            apolloFutureDarkCodeMirror
-          </code>{' '}
-          or{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-            apolloFutureLightCodeMirror
-          </code>
-          . Each object exposes{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">syntax</code> and{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">ui</code> token
-          groups that map directly to{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-            HighlightStyle
-          </code>{' '}
-          and{' '}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
-            EditorView.theme
-          </code>
-          .
-        </p>
-
-        <div className="mb-3 grid grid-cols-2 gap-3 text-xs">
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="mb-2 font-semibold text-foreground">syntax tokens</p>
-            <div className="grid grid-cols-3 gap-y-1.5">
-              {Object.entries(apolloFutureDarkCodeMirror.syntax).map(([key, color]) => (
-                <div key={key} className="flex items-center gap-1.5">
-                  <div
-                    className="h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: color }}
-                  />
-                  <code className="text-muted-foreground">{key}</code>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="mb-2 font-semibold text-foreground">ui tokens</p>
-            <div className="grid grid-cols-2 gap-y-1.5">
-              {Object.entries(apolloFutureDarkCodeMirror.ui).map(([key, color]) => (
-                <div key={key} className="flex items-center gap-1.5">
-                  <div
-                    className="h-2.5 w-2.5 shrink-0 rounded-full border border-border/50"
-                    style={{ backgroundColor: color }}
-                  />
-                  <code className="text-muted-foreground">{key}</code>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <CodeBlock
-          language="typescript"
-          fileName="codemirror-theme.ts"
-          theme="future-dark"
-          showLineNumbers={false}
-        >
-          {codemirrorUsageDark}
-        </CodeBlock>
-      </div>
     </div>
   ),
 };
