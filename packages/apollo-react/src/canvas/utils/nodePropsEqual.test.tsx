@@ -56,6 +56,10 @@ describe('areNodePropsEqualIgnoringPosition', () => {
     ).toBe(false);
   });
 
+  it('returns false when key sets differ and the differing values are both undefined', () => {
+    expect(areNodePropsEqualIgnoringPosition({ foo: undefined }, { bar: undefined })).toBe(false);
+  });
+
   it('returns false when a key is added or removed', () => {
     expect(areNodePropsEqualIgnoringPosition({ id: 'n1' }, { id: 'n1', selected: true })).toBe(
       false
