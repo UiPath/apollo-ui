@@ -120,6 +120,9 @@ export const TaskContent = memo(
     const showPlayButtonSmall = onTaskPlay && hasExecutionStatus;
     const taskStatusFallbackName = hasExecutionStatus ? getStatusName(taskExecution?.status) : '';
     const taskStatusTooltip = taskExecution?.message || taskStatusFallbackName;
+    const durationLabel = taskExecution?.duration ? (
+      <span className="text-xs text-foreground-muted">{taskExecution.duration}</span>
+    ) : null;
 
     return (
       <Column
@@ -171,15 +174,18 @@ export const TaskContent = memo(
         {taskExecution && hasSecondRowContent && (
           <Row align="center" justify="space-between">
             <Row gap={'2px'}>
-              {taskExecution?.duration && (
-                <CanvasTooltip
-                  content={taskExecution.durationTooltip}
-                  placement="top"
-                  hide={isDragging}
-                >
-                  <span className="text-xs text-foreground-muted">{taskExecution.duration}</span>
-                </CanvasTooltip>
-              )}
+              {durationLabel &&
+                (taskExecution?.durationTooltip ? (
+                  <CanvasTooltip
+                    content={taskExecution.durationTooltip}
+                    placement="top"
+                    hide={isDragging}
+                  >
+                    {durationLabel}
+                  </CanvasTooltip>
+                ) : (
+                  durationLabel
+                ))}
               {taskExecution?.retryDuration && (
                 <StageTaskRetryDuration status={taskExecution.badgeStatus ?? 'warning'}>
                   <span className="text-xs">{`(+${taskExecution.retryDuration})`}</span>
