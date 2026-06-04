@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.39.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.39.0...@uipath/apollo-react@4.39.1) (2026-06-04)
+
+### Bug Fixes
+
+* **apollo-react:** flush sticky note edit before resize [MST-10602] ([8ab68e6](https://github.com/UiPath/apollo-ui/commit/8ab68e6a3a9f28f62304e5b8ea177b252d3e6f4d))
+
 ## [@uipath/apollo-react-v4.39.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.38.0...@uipath/apollo-react@4.39.0) (2026-06-04)
 
 ### Features
