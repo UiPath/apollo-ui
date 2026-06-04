@@ -109,6 +109,110 @@ function createActivityNode(
   return node;
 }
 
+const makeEdge = (
+  id: string,
+  source: string,
+  sourceHandle: string,
+  target: string,
+  targetHandle: string
+): Edge => ({ id, source, sourceHandle, target, targetHandle });
+
+// Grid geometry for laying out children inside a loop container. Every value is
+// grid-aligned (a multiple of GRID_SPACING = 16) and mirrors the container safe
+// area from utils/container.ts (header + frame inset + body padding + inner
+// handle rail), so children never overlap the header and are never clamped by
+// `extent: 'parent'`.
+const CHILD_GRID = {
+  childSize: 96, // blank-node footprint (DEFAULT_NODE_SIZE)
+  labelAllowance: 32, // room for the label rendered beneath the node shape
+  cellWidth: 176, // childSize + horizontal gap
+  cellHeight: 160, // childSize + label + vertical gap
+  safeLeft: 144, // container left padding (frame + body + inner handle rail)
+  safeTop: 96, // container top padding (header + frame + body)
+  padRight: 144, // mirror safeLeft — the safe area is symmetric horizontally
+  padBottom: 48, // container bottom padding (frame + body)
+} as const;
+
+// Places `labels.length` children in a grid inside a loop and returns the child
+// nodes plus the container size needed to hold them with clean margins.
+function layoutLoopChildren(
+  parentId: string,
+  labels: string[],
+  columns: number
+): { children: Node[]; width: number; height: number } {
+  const rows = Math.ceil(labels.length / columns);
+  const usedColumns = Math.min(columns, labels.length);
+
+  const children = labels.map((label, index) => {
+    const column = index % columns;
+    const row = Math.floor(index / columns);
+    return createActivityNode(
+      `${parentId}-child-${index}`,
+      label,
+      {
+        x: CHILD_GRID.safeLeft + column * CHILD_GRID.cellWidth,
+        y: CHILD_GRID.safeTop + row * CHILD_GRID.cellHeight,
+      },
+      { parentId }
+    );
+  });
+
+  const width =
+    CHILD_GRID.safeLeft +
+    (usedColumns - 1) * CHILD_GRID.cellWidth +
+    CHILD_GRID.childSize +
+    CHILD_GRID.padRight;
+  const height =
+    CHILD_GRID.safeTop +
+    (rows - 1) * CHILD_GRID.cellHeight +
+    CHILD_GRID.childSize +
+    CHILD_GRID.labelAllowance +
+    CHILD_GRID.padBottom;
+
+  return { children, width, height };
+}
+
+// Wires each grid row as an independent left-to-right chain fanning out from the
+// loop's `start` handle and back into its `continue` handle. Because activity
+// nodes have a fixed left input / right output, per-row chains keep every edge
+// short and horizontal instead of snaking diagonally across the grid.
+function loopBodyRowEdges(loopId: string, children: Node[], columns: number): Edge[] {
+  const edges: Edge[] = [];
+
+  for (let start = 0; start < children.length; start += columns) {
+    const rowChildren = children.slice(start, start + columns);
+    const first = rowChildren[0];
+    if (!first) continue;
+
+    const row = start / columns;
+    edges.push(
+      makeEdge(`${loopId}-start-r${row}`, loopId, STORY_LOOP_START_HANDLE_ID, first.id, 'input')
+    );
+
+    for (let i = 0; i < rowChildren.length - 1; i++) {
+      const from = rowChildren[i];
+      const to = rowChildren[i + 1];
+      if (!from || !to) continue;
+      edges.push(makeEdge(`${from.id}-${to.id}`, from.id, 'output', to.id, 'input'));
+    }
+
+    const last = rowChildren[rowChildren.length - 1];
+    if (last) {
+      edges.push(
+        makeEdge(
+          `${last.id}-continue-r${row}`,
+          last.id,
+          'output',
+          loopId,
+          STORY_LOOP_CONTINUE_HANDLE_ID
+        )
+      );
+    }
+  }
+
+  return edges;
+}
+
 interface AutoPreviewSource {
   nodeId: string;
   handleId: string;
@@ -492,6 +596,193 @@ function NestedOuterOutputAppendStory() {
   );
 }
 
+// 24 children — a single loop densely populated to exercise re-render cost when
+// the container is dragged (every child moves with the parent each frame).
+const MANY_CHILD_LABELS = [
+  'Validate input',
+  'Normalize fields',
+  'Lookup account',
+  'Score risk',
+  'Check policy',
+  'Fetch history',
+  'Enrich profile',
+  'Detect anomalies',
+  'Apply rules',
+  'Build payload',
+  'Call service',
+  'Parse response',
+  'Map results',
+  'Update record',
+  'Write audit',
+  'Emit metric',
+  'Queue follow-up',
+  'Notify owner',
+  'Tag outcome',
+  'Archive copy',
+  'Reconcile totals',
+  'Flag exceptions',
+  'Summarize run',
+  'Persist state',
+];
+
+function buildManyChildrenGraph(): { nodes: Node[]; edges: Edge[] } {
+  const columns = 6;
+  const layout = layoutLoopChildren('loop-many', MANY_CHILD_LABELS, columns);
+
+  const loopPosition = { x: 320, y: 96 };
+  const centerY = loopPosition.y + layout.height / 2;
+
+  const loop = createLoopContainerNode(
+    'loop-many',
+    loopPosition,
+    { width: layout.width, height: layout.height },
+    { selected: true, data: { display: { label: 'For Each record' } } }
+  );
+
+  const nodes: Node[] = [
+    createActivityNode('ingress', 'Load records', { x: 32, y: centerY }),
+    loop,
+    ...layout.children,
+    createActivityNode('egress', 'Publish results', {
+      x: loopPosition.x + layout.width + 160,
+      y: centerY,
+    }),
+  ];
+
+  const edges: Edge[] = [
+    makeEdge('ingress-loop', 'ingress', 'output', 'loop-many', 'input'),
+    ...loopBodyRowEdges('loop-many', layout.children, columns),
+    makeEdge('loop-egress', 'loop-many', STORY_LOOP_SUCCESS_HANDLE_ID, 'egress', 'input'),
+  ];
+
+  return { nodes, edges };
+}
+
+function ManyChildrenStory() {
+  const { initialNodes, initialEdges } = useMemo(() => {
+    const graph = buildManyChildrenGraph();
+    return { initialNodes: graph.nodes, initialEdges: graph.edges };
+  }, []);
+
+  return (
+    <LoopCanvasStory
+      initialNodes={initialNodes}
+      initialEdges={initialEdges}
+      storyInfo={{
+        title: 'Loop With Many Children',
+        description:
+          'A single loop containing 24 child nodes laid out in a grid. Drag the loop around — every child moves with it, so this is the stress case for container re-render performance.',
+      }}
+    />
+  );
+}
+
+const INNER_DOCUMENT_LABELS = [
+  'Download file',
+  'Detect type',
+  'Extract text',
+  'OCR scan',
+  'Classify',
+  'Validate',
+];
+
+const INNER_CANDIDATE_LABELS = [
+  'Match entity',
+  'Score match',
+  'Resolve duplicate',
+  'Merge record',
+  'Update index',
+  'Log result',
+];
+
+function NestedLoopsManyChildrenStory() {
+  const { initialNodes, initialEdges } = useMemo(() => {
+    const innerColumns = 2;
+    const innerA = layoutLoopChildren('inner-a', INNER_DOCUMENT_LABELS, innerColumns);
+    const innerB = layoutLoopChildren('inner-b', INNER_CANDIDATE_LABELS, innerColumns);
+
+    // Two inner loops sit side-by-side inside the outer loop, both pinned to the
+    // outer container's safe area; the outer loop is sized to wrap them.
+    const innerGap = 48;
+    const innerAPosition = { x: CHILD_GRID.safeLeft, y: CHILD_GRID.safeTop };
+    const innerBPosition = {
+      x: CHILD_GRID.safeLeft + innerA.width + innerGap,
+      y: CHILD_GRID.safeTop,
+    };
+
+    const outerWidth =
+      CHILD_GRID.safeLeft + innerA.width + innerGap + innerB.width + CHILD_GRID.padRight;
+    const outerHeight =
+      CHILD_GRID.safeTop + Math.max(innerA.height, innerB.height) + CHILD_GRID.padBottom;
+
+    const outerPosition = { x: 320, y: 96 };
+    const centerY = outerPosition.y + outerHeight / 2;
+
+    const outerLoop = createLoopContainerNode(
+      'outer-loop',
+      outerPosition,
+      { width: outerWidth, height: outerHeight },
+      { selected: true, data: { display: { label: 'For Each batch' } } }
+    );
+    const loopA = createLoopContainerNode(
+      'inner-a',
+      innerAPosition,
+      { width: innerA.width, height: innerA.height },
+      { parentId: 'outer-loop', data: { display: { label: 'For Each document' } } }
+    );
+    const loopB = createLoopContainerNode(
+      'inner-b',
+      innerBPosition,
+      { width: innerB.width, height: innerB.height },
+      { parentId: 'outer-loop', data: { display: { label: 'For Each candidate' } } }
+    );
+
+    // Parents must precede their children in the nodes array (React Flow rule).
+    const nodes: Node[] = [
+      createActivityNode('ingress', 'Load batches', { x: 32, y: centerY }),
+      outerLoop,
+      loopA,
+      ...innerA.children,
+      loopB,
+      ...innerB.children,
+      createActivityNode('egress', 'Publish results', {
+        x: outerPosition.x + outerWidth + 160,
+        y: centerY,
+      }),
+    ];
+
+    const edges: Edge[] = [
+      makeEdge('ingress-outer', 'ingress', 'output', 'outer-loop', 'input'),
+      makeEdge('outer-start-inner-a', 'outer-loop', STORY_LOOP_START_HANDLE_ID, 'inner-a', 'input'),
+      ...loopBodyRowEdges('inner-a', innerA.children, innerColumns),
+      makeEdge('inner-a-inner-b', 'inner-a', STORY_LOOP_SUCCESS_HANDLE_ID, 'inner-b', 'input'),
+      ...loopBodyRowEdges('inner-b', innerB.children, innerColumns),
+      makeEdge(
+        'inner-b-outer-continue',
+        'inner-b',
+        STORY_LOOP_SUCCESS_HANDLE_ID,
+        'outer-loop',
+        STORY_LOOP_CONTINUE_HANDLE_ID
+      ),
+      makeEdge('outer-egress', 'outer-loop', STORY_LOOP_SUCCESS_HANDLE_ID, 'egress', 'input'),
+    ];
+
+    return { initialNodes: nodes, initialEdges: edges };
+  }, []);
+
+  return (
+    <LoopCanvasStory
+      initialNodes={initialNodes}
+      initialEdges={initialEdges}
+      storyInfo={{
+        title: 'Nested Loops With Many Children',
+        description:
+          'An outer loop containing two inner loops, each with its own grid of child nodes. Dragging the outer loop moves every descendant (inner loops and their children) — the deepest container re-render stress case.',
+      }}
+    />
+  );
+}
+
 export const Default: Story = {
   render: () => <DefaultStory />,
 };
@@ -502,6 +793,16 @@ export const NestedOuterOutputInsert: Story = {
 
 export const NestedOuterOutputAppend: Story = {
   render: () => <NestedOuterOutputAppendStory />,
+};
+
+export const ManyChildren: Story = {
+  name: 'Loop With Many Children',
+  render: () => <ManyChildrenStory />,
+};
+
+export const NestedLoopsManyChildren: Story = {
+  name: 'Nested Loops With Many Children',
+  render: () => <NestedLoopsManyChildrenStory />,
 };
 
 // ============================================================================
