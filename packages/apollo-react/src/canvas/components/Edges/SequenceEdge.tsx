@@ -1,4 +1,8 @@
-import { type EdgeProps, Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  type EdgeProps,
+  Position,
+  type XYPosition,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useRef, useState } from 'react';
 import { useEdgeExecutionState, useEdgePath, useElementValidationStatus } from '../../hooks';
 import type { NodeExecutionStateWithDebug } from '../../types/execution';
@@ -105,6 +109,7 @@ export const SequenceEdge = memo(function SequenceEdge({
     targetX: hideArrowHead ? targetX + offsetX : targetX,
     targetY: hideArrowHead ? targetY + offsetY : targetY,
     targetPosition,
+    bendPoints: data?.bendPoints as XYPosition[] | undefined,
   });
 
   // Edge toolbar state

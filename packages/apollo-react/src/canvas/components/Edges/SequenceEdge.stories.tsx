@@ -6,9 +6,9 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react';
-import type { Edge, EdgeTypes, Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Edge, EdgeTypes, Node, OnNodeDrag } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useMemo } from 'react';
+import { type Dispatch, type SetStateAction, useCallback, useMemo } from 'react';
 import { useCanvasStory, withCanvasProviders } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
@@ -529,6 +529,136 @@ function PlainLineStory() {
 
   return (
     <BaseCanvas {...canvasProps} edgeTypes={edgeTypes} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+// Bend points are valid only for the layout they were routed in. Once a node is
+// dragged, drop the bends on its connected edges so they fall back to the live
+// smooth-step path and follow the drag (mirrors the host's drag-start handling).
+function useClearBendsOnDragStart(setEdges: Dispatch<SetStateAction<Edge[]>>): OnNodeDrag {
+  return useCallback(
+    (_event, _node, draggedNodes) => {
+      const movedIds = new Set(draggedNodes.map((n) => n.id));
+      setEdges((eds) =>
+        eds.map((edge) => {
+          if (!movedIds.has(edge.source) && !movedIds.has(edge.target)) return edge;
+          if (edge.data?.bendPoints == null) return edge;
+          const { bendPoints: _removed, ...rest } = edge.data;
+          return { ...edge, data: rest };
+        })
+      );
+    },
+    [setEdges]
+  );
+}
+
+// ============================================================================
+// Bend Points Story (routed edges)
+// ============================================================================
+
+function BendPointsStory() {
+  const initialNodes = useMemo(
+    () => [
+      createStickyNote(
+        'sticky-bend',
+        'yellow',
+        '**Bend Points**\nSet `data.bendPoints` (interior corners, in flow coords) to route an edge around obstacles. The path anchors on the live handle positions and threads through the bends with rounded corners. Absent ⇒ standard smooth-step.',
+        { x: 100, y: 60 },
+        { width: 640, height: 480 }
+      ),
+      // Source routes down-and-around an obstacle to the target. Kept well below
+      // the description text so nodes don't overlap it.
+      createNode({
+        id: 'bend-source',
+        label: 'Source',
+        x: 150,
+        y: 240,
+        sourcePositions: [Position.Right],
+      }),
+      // Obstacle sitting on the straight-line path between source and target
+      createNode({ id: 'bend-obstacle', label: 'Obstacle', x: 390, y: 270 }),
+      createNode({
+        id: 'bend-target',
+        label: 'Target',
+        x: 610,
+        y: 410,
+        targetPositions: [Position.Left],
+      }),
+
+      createStickyNote(
+        'sticky-bend-compare',
+        'white',
+        '**No bend points (default)**\nStraight smooth-step would cut through an obstacle.',
+        { x: 100, y: 580 },
+        { width: 640, height: 200 }
+      ),
+      createNode({
+        id: 'bend-compare-source',
+        label: 'Source',
+        x: 150,
+        y: 650,
+        sourcePositions: [Position.Right],
+      }),
+      createNode({
+        id: 'bend-compare-target',
+        label: 'Target',
+        x: 610,
+        y: 650,
+        targetPositions: [Position.Left],
+      }),
+    ],
+    []
+  );
+
+  const initialEdges: Edge[] = useMemo(
+    () => [
+      {
+        id: 'e-bend-routed',
+        source: 'bend-source',
+        target: 'bend-target',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+        // Interior corners: out from the source, down the left of the obstacle,
+        // then right underneath it into the target (handle centres at node +48).
+        data: {
+          bendPoints: [
+            { x: 340, y: 288 },
+            { x: 340, y: 458 },
+            { x: 570, y: 458 },
+          ],
+        },
+      },
+      {
+        id: 'e-bend-compare',
+        source: 'bend-compare-source',
+        target: 'bend-compare-target',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'sequence',
+      },
+    ],
+    []
+  );
+
+  const { canvasProps, setEdges } = useCanvasStory({
+    initialNodes,
+    initialEdges,
+    additionalNodeTypes: nodeTypes,
+  });
+  const onNodeDragStart = useClearBendsOnDragStart(setEdges);
+
+  return (
+    <BaseCanvas
+      {...canvasProps}
+      edgeTypes={edgeTypes}
+      mode="design"
+      onNodeDragStart={onNodeDragStart}
+    >
       <Panel position="bottom-right">
         <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
@@ -1166,6 +1296,18 @@ export const PlainLine: Story = {
       description: {
         story:
           'Demonstrates a SequenceEdge parameterized to render as a plain line. `data.hideArrowHead: true` omits the directional arrow at the target so both ends terminate plainly (useful for artifact / annotation edges). `data.hideToolbar: true` suppresses the mid-edge insert toolbar. Everything else about SequenceEdge (path, label, status animations, diff styling) is unchanged.',
+      },
+    },
+  },
+};
+
+export const BendPoints: Story = {
+  render: () => <BendPointsStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates a SequenceEdge routed through layout-provided `data.bendPoints`. The path anchors on the live handle positions and threads through the interior corners with rounded turns, letting the edge avoid obstacle nodes. When bendPoints are absent the edge uses the standard smooth-step path.',
       },
     },
   },

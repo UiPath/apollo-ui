@@ -501,4 +501,177 @@ describe('useEdgePath', () => {
       expect(result.current.edgePath).toBeDefined();
     });
   });
+
+  describe('bend-point edges', () => {
+    const baseBendParams = {
+      sourceNodeId: 'node-1',
+      sourceHandleId: 'output',
+      sourceX: 100,
+      sourceY: 100,
+      sourcePosition: Position.Right,
+      targetNodeId: 'node-2',
+      targetHandleId: 'input',
+      targetX: 200,
+      targetY: 200,
+      targetPosition: Position.Left,
+    };
+
+    it('should route through interior bend points instead of using getSmoothStepPath', () => {
+      const { result } = renderHook(() =>
+        useEdgePath({
+          ...baseBendParams,
+          bendPoints: [
+            { x: 150, y: 100 },
+            { x: 150, y: 200 },
+          ],
+        })
+      );
+
+      expect(result.current.isLoopEdge).toBe(false);
+      expect(mockGetSmoothStepPath).not.toHaveBeenCalled();
+      // Path is anchored on the (source-offset) start: 100 + (-8) for Position.Right
+      expect(result.current.edgePath.startsWith('M 92 100')).toBe(true);
+      // Each bend is the apex of a rounded (quadratic) corner
+      expect(result.current.edgePath).toContain('Q 150 100');
+      expect(result.current.edgePath).toContain('Q 150 200');
+      // Path terminates at the target endpoint
+      expect(result.current.edgePath).toContain('200 200');
+    });
+
+    it("snaps the first bend onto the source handle's axis (horizontal exit)", () => {
+      // ELK placed its source port 16px below the rendered handle (y 116 vs 100);
+      // the first bend must snap to the handle's y so the exit stays horizontal.
+      const { result } = renderHook(() =>
+        useEdgePath({
+          ...baseBendParams,
+          bendPoints: [
+            { x: 150, y: 116 },
+            { x: 150, y: 200 },
+          ],
+        })
+      );
+
+      expect(result.current.edgePath).toContain('Q 150 100');
+    });
+
+    it("snaps the last bend onto the target handle's axis (horizontal entry)", () => {
+      // ELK placed its target port 16px above the rendered handle (y 184 vs 200).
+      const { result } = renderHook(() =>
+        useEdgePath({
+          ...baseBendParams,
+          bendPoints: [
+            { x: 150, y: 100 },
+            { x: 150, y: 184 },
+          ],
+        })
+      );
+
+      expect(result.current.edgePath).toContain('Q 150 200');
+    });
+
+    it('shifts bends forward to keep the riser a source-offset past a right handle', () => {
+      // Reproduces the real ELK output: right handle at x=556, but ELK's riser is
+      // at x=544 (behind the handle) → the exit would route backward into the node.
+      // The riser is pushed to sourceX + sourceOffset (556 + 8 = 564) so it clears
+      // the handle by the same gap the smooth-step exit uses.
+      const { result } = renderHook(() =>
+        useEdgePath({
+          ...baseBendParams,
+          sourceX: 556,
+          sourceY: 208,
+          targetX: 820,
+          targetY: 320,
+          bendPoints: [
+            { x: 544, y: 208 },
+            { x: 544, y: 320 },
+          ],
+        })
+      );
+
+      expect(result.current.edgePath).toContain('Q 564 208');
+      expect(result.current.edgePath).toContain('Q 564 320');
+      expect(result.current.edgePath).not.toContain('544');
+    });
+
+    it('leaves interior bends untouched (only first/last snap to handles)', () => {
+      const { result } = renderHook(() =>
+        useEdgePath({
+          ...baseBendParams,
+          bendPoints: [
+            { x: 150, y: 100 },
+            { x: 175, y: 150 },
+            { x: 150, y: 200 },
+          ],
+        })
+      );
+
+      // The middle bend is preserved exactly.
+      expect(result.current.edgePath).toContain('Q 175 150');
+    });
+
+    it('should fall back to smooth-step path when bendPoints is an empty array', () => {
+      const { result } = renderHook(() => useEdgePath({ ...baseBendParams, bendPoints: [] }));
+
+      expect(result.current.isLoopEdge).toBe(false);
+      expect(mockGetSmoothStepPath).toHaveBeenCalled();
+    });
+
+    it('should fall back to smooth-step path when bendPoints is undefined', () => {
+      renderHook(() => useEdgePath(baseBendParams));
+
+      expect(mockGetSmoothStepPath).toHaveBeenCalled();
+    });
+
+    it('should ignore bendPoints for self-loop edges', () => {
+      const { result } = renderHook(() =>
+        useEdgePath({
+          ...baseBendParams,
+          targetNodeId: 'node-1', // self-loop
+          bendPoints: [{ x: 150, y: 300 }],
+        })
+      );
+
+      expect(result.current.isLoopEdge).toBe(true);
+      expect(mockGetSmoothStepPath).not.toHaveBeenCalled();
+    });
+
+    it('should ignore bendPoints for loopBack edges', () => {
+      const { result } = renderHook(() =>
+        useEdgePath({
+          ...baseBendParams,
+          targetHandleId: 'loopBack',
+          bendPoints: [{ x: 150, y: 300 }],
+        })
+      );
+
+      expect(result.current.isLoopEdge).toBe(true);
+      expect(mockGetSmoothStepPath).not.toHaveBeenCalled();
+    });
+
+    it('should recompute the path when bendPoints change', () => {
+      const initial = [
+        { x: 150, y: 100 },
+        { x: 175, y: 150 },
+        { x: 150, y: 200 },
+      ];
+      const { result, rerender } = renderHook((props) => useEdgePath(props), {
+        initialProps: { ...baseBendParams, bendPoints: initial },
+      });
+
+      const firstResult = result.current;
+
+      // Move the (interior, un-snapped) middle bend's x from 175 → 185.
+      rerender({
+        ...baseBendParams,
+        bendPoints: [
+          { x: 150, y: 100 },
+          { x: 185, y: 150 },
+          { x: 150, y: 200 },
+        ],
+      });
+
+      expect(result.current).not.toBe(firstResult);
+      expect(result.current.edgePath).toContain('Q 185 150');
+    });
+  });
 });

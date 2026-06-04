@@ -1,4 +1,8 @@
-import { getSmoothStepPath, Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  getSmoothStepPath,
+  Position,
+  type XYPosition,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { useMemo } from 'react';
 import { GRID_SPACING } from '../constants';
 
@@ -19,6 +23,43 @@ const SOURCE_OFFSETS: Record<Position, { x: number; y: number }> = {
 // Helper function to snap a value to the grid
 const snapToGrid = (value: number): number => {
   return Math.round(value / GRID_SPACING) * GRID_SPACING;
+};
+
+const BEND_CORNER_RADIUS = GRID_SPACING;
+
+const distance = (a: XYPosition, b: XYPosition): number => Math.hypot(b.x - a.x, b.y - a.y);
+
+// A point `d` units from `from` along the direction toward `to`.
+const pointToward = (from: XYPosition, to: XYPosition, d: number): XYPosition => {
+  const len = distance(from, to);
+  if (len === 0) return { x: from.x, y: from.y };
+  const t = d / len;
+  return { x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t };
+};
+
+/**
+ * Build an SVG path through an ordered list of points, rounding each interior
+ * vertex with a quadratic curve.
+ */
+const roundedPolylinePath = (points: XYPosition[]): string => {
+  const first = points[0];
+  if (!first) return '';
+
+  let path = `M ${first.x} ${first.y}`;
+  for (let i = 1; i < points.length - 1; i++) {
+    const prev = points[i - 1];
+    const corner = points[i];
+    const next = points[i + 1];
+    if (!prev || !corner || !next) continue;
+    const radiusIn = Math.min(BEND_CORNER_RADIUS, distance(prev, corner) / 2);
+    const radiusOut = Math.min(BEND_CORNER_RADIUS, distance(corner, next) / 2);
+    const approach = pointToward(corner, prev, radiusIn);
+    const departure = pointToward(corner, next, radiusOut);
+    path += ` L ${approach.x} ${approach.y} Q ${corner.x} ${corner.y} ${departure.x} ${departure.y}`;
+  }
+  const last = points[points.length - 1];
+  if (last && points.length > 1) path += ` L ${last.x} ${last.y}`;
+  return path;
 };
 
 /**
@@ -73,6 +114,7 @@ export interface EdgePathParams {
   targetX: number;
   targetY: number;
   targetPosition: Position;
+  bendPoints?: XYPosition[];
 }
 
 export interface EdgePathState {
@@ -111,6 +153,7 @@ export function useEdgePath({
   targetX,
   targetY,
   targetPosition,
+  bendPoints,
 }: EdgePathParams): EdgePathState {
   // Memoize path calculation
   return useMemo(() => {
@@ -124,6 +167,8 @@ export function useEdgePath({
     let edgePath: string;
     let labelX: number;
     let labelY: number;
+
+    const hasBendPoints = !needsCustomPath && bendPoints != null && bendPoints.length > 0;
 
     if (needsCustomPath) {
       // Use larger height and right extension for success edges
@@ -143,6 +188,60 @@ export function useEdgePath({
       // Position label below the edge
       labelX = (sourceX + targetX) / 2;
       labelY = Math.max(sourceY, targetY) + loopHeight;
+    } else if (hasBendPoints) {
+      const start: XYPosition = {
+        x: sourceX + SOURCE_OFFSETS[sourcePosition].x,
+        y: sourceY + SOURCE_OFFSETS[sourcePosition].y,
+      };
+      const end: XYPosition = { x: targetX, y: targetY };
+
+      // Copy the bends — they're shared edge data and we mutate below (snap + shift).
+      const interior: XYPosition[] = bendPoints.map((p) => ({ x: p.x, y: p.y }));
+      const isSrcHorizontal = sourcePosition === Position.Left || sourcePosition === Position.Right;
+      const isTgtHorizontal = targetPosition === Position.Left || targetPosition === Position.Right;
+      const firstBend = interior[0];
+      const lastBend = interior[interior.length - 1];
+
+      // Snap the first/last bend onto the handle's perpendicular axis so the
+      // exit/entry segments stay orthogonal despite ELK's port vs handle offset.
+      if (firstBend) {
+        if (isSrcHorizontal) firstBend.y = start.y;
+        else firstBend.x = start.x;
+      }
+      if (lastBend) {
+        if (isTgtHorizontal) lastBend.y = end.y;
+        else lastBend.x = end.x;
+      }
+
+      // Keep the riser at least the source-offset past the handle in the exit
+      // direction; otherwise it lands on/behind the protruding handle and routes
+      // back into the node. Shift every bend by the shortfall to preserve shape.
+      if (firstBend) {
+        const exitGap = Math.abs(
+          isSrcHorizontal ? SOURCE_OFFSETS[sourcePosition].x : SOURCE_OFFSETS[sourcePosition].y
+        );
+        let dx = 0;
+        let dy = 0;
+        if (sourcePosition === Position.Right) dx = Math.max(0, sourceX + exitGap - firstBend.x);
+        else if (sourcePosition === Position.Left)
+          dx = Math.min(0, sourceX - exitGap - firstBend.x);
+        else if (sourcePosition === Position.Bottom)
+          dy = Math.max(0, sourceY + exitGap - firstBend.y);
+        else if (sourcePosition === Position.Top) dy = Math.min(0, sourceY - exitGap - firstBend.y);
+        if (dx !== 0 || dy !== 0) {
+          for (const p of interior) {
+            p.x += dx;
+            p.y += dy;
+          }
+        }
+      }
+
+      const points: XYPosition[] = [start, ...interior, end];
+      edgePath = roundedPolylinePath(points);
+
+      const mid = points[Math.floor(points.length / 2)] ?? end;
+      labelX = mid.x;
+      labelY = mid.y;
     } else {
       const { sourceOffsetX, sourceOffsetY } = {
         sourceOffsetX: sourceX + SOURCE_OFFSETS[sourcePosition].x,
@@ -176,5 +275,6 @@ export function useEdgePath({
     targetY,
     sourcePosition,
     targetPosition,
+    bendPoints,
   ]);
 }

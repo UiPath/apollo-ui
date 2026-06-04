@@ -3,6 +3,7 @@ import type {
   Edge,
   Node,
   Viewport as ReactFlowViewport,
+  XYPosition,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/system';
 import type { IRawSpan } from '../types/TraceModels';
@@ -527,6 +528,12 @@ export type AgentFlowNodeDataUpdate<T extends AgentFlowCustomNode> = Partial<T['
 export type AgentFlowDefaultEdgeData = {
   label: string | null;
   isDimmed?: boolean;
+  /**
+   * Optional interior routing corners (in flow coordinates) produced by an
+   * auto-layout pass so the edge routes around nodes. Consumed by SequenceEdge
+   * via `useEdgePath`. Transient/derived — recompute on layout, do not persist.
+   */
+  bendPoints?: XYPosition[];
 };
 export type AgentFlowDefaultEdge = Edge<AgentFlowDefaultEdgeData, 'default'>;
 export type AgentFlowCustomEdge = AgentFlowDefaultEdge;
