@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v4.39.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.39.1...@uipath/apollo-react@4.39.2) (2026-06-04)
+
+### Bug Fixes
+
+* **apollo-react:** harden node props comparator against differing key sets ([6d5cced](https://github.com/UiPath/apollo-ui/commit/6d5ccedd89e08867d9f47287634986f554795c34))
+
+### Performance Improvements
+
+* **apollo-react:** stop child nodes re-rendering when a canvas container is dragged ([5fff761](https://github.com/UiPath/apollo-ui/commit/5fff761329cfa639eae687b477fd1bc032523fc4))
+
 ## [@uipath/apollo-react-v4.39.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.39.0...@uipath/apollo-react@4.39.1) (2026-06-04)
 
 ### Bug Fixes
