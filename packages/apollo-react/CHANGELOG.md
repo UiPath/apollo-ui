@@ -1,3 +1,14 @@
+## [@uipath/apollo-react-v4.39.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.38.0...@uipath/apollo-react@4.39.0) (2026-06-04)
+
+### Features
+
+* **apollo-react:** manifest opt-out for node elevation shadow ([808ca4d](https://github.com/UiPath/apollo-ui/commit/808ca4d4547ac3df62e5ceb8b70268605e9327e8))
+* **apollo-react:** suppressDefaultToolbarActions for manifest-driven nodes ([95ff449](https://github.com/UiPath/apollo-ui/commit/95ff449be91ce496a6bf487a2680b25cfd6f8623))
+
+### Bug Fixes
+
+* **apollo-react:** use zap (lightning) instead of bolt (gear) for case trigger icon ([405e886](https://github.com/UiPath/apollo-ui/commit/405e886c05d468c73cc868f38f0195c9f668cdbb))
+
 ## [@uipath/apollo-react-v4.38.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.37.1...@uipath/apollo-react@4.38.0) (2026-06-03)
 
 ### Features
