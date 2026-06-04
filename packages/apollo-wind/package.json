@@ -137,6 +137,12 @@
     "zod": "^4.3.5"
   },
   "devDependencies": {
+    "@codemirror/lang-javascript": "^6.2.5",
+    "@codemirror/language": "^6.12.3",
+    "@codemirror/state": "^6.6.0",
+    "@codemirror/view": "^6.43.0",
+    "@lezer/highlight": "^1.2.3",
+    "@monaco-editor/react": "^4.7.0",
     "@rsbuild/plugin-react": "^1.4.1",
     "@rslib/core": "^0.19.6",
     "@semantic-release/changelog": "^6.0.3",
@@ -164,6 +170,7 @@
     "globals": "^16.5.0",
     "jest-axe": "^10.0.0",
     "jsdom": "^27.2.0",
+    "monaco-editor": "^0.55.1",
     "postcss": "^8.5.6",
     "postcss-import": "^16.1.1",
     "react": "19.2.3",
