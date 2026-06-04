@@ -3,6 +3,7 @@ import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyf
 import { memo, useCallback } from 'react';
 import { GRID_SPACING } from '../../constants';
 import { CanvasIcon } from '../../utils/icon-registry';
+import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import {
   BottomCornerIndicators,
   GroupContainer,
@@ -208,4 +209,4 @@ const GroupNodeComponent = ({ id, data, selected }: GroupNodeProps) => {
   );
 };
 
-export const GroupNode = memo(GroupNodeComponent);
+export const GroupNode = memo(GroupNodeComponent, areNodePropsEqualIgnoringPosition);

@@ -2,6 +2,7 @@ import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useCallback, useMemo } from 'react';
 import { useOptionalNodeTypeRegistry } from '../../core';
+import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import { LoopNode } from './LoopNode';
 import { resolveContainerPreviewConnectionHandles } from './LoopNode.helpers';
 import type { LoopNodeData } from './LoopNode.types';
@@ -43,4 +44,4 @@ function LoopCanvasNodeComponent(props: NodeProps<Node<LoopNodeData>>) {
   );
 }
 
-export const LoopCanvasNode = memo(LoopCanvasNodeComponent);
+export const LoopCanvasNode = memo(LoopCanvasNodeComponent, areNodePropsEqualIgnoringPosition);

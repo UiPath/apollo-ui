@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import { NodeContextMenu } from '../NodeContextMenu';
 import { useSetNodeSelection } from '../NodePropertiesPanel/hooks';
@@ -196,4 +197,4 @@ const StageNodeInner = (props: StageNodeProps) => {
   );
 };
 
-export const StageNode = memo(StageNodeInner);
+export const StageNode = memo(StageNodeInner, areNodePropsEqualIgnoringPosition);

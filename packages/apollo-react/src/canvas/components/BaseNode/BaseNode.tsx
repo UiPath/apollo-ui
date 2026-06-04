@@ -28,6 +28,7 @@ import { resolveAdornments } from '../../utils/adornment-resolver';
 import { getIcon } from '../../utils/icon-registry';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
 import { selectIsConnecting } from '../../utils/NodeUtils';
+import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import { resolveToolbar } from '../../utils/toolbar-resolver';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
 import { useCanvasTheme } from '../BaseCanvas/CanvasThemeContext';
@@ -680,4 +681,4 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   return nodeContent;
 };
 
-export const BaseNode = memo(BaseNodeComponent);
+export const BaseNode = memo(BaseNodeComponent, areNodePropsEqualIgnoringPosition);
