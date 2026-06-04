@@ -572,8 +572,8 @@ describe('useEdgePath', () => {
     it('shifts bends forward to keep the riser a source-offset past a right handle', () => {
       // Reproduces the real ELK output: right handle at x=556, but ELK's riser is
       // at x=544 (behind the handle) → the exit would route backward into the node.
-      // The riser is pushed to sourceX + sourceOffset (556 + 8 = 564) so it clears
-      // the handle by the same gap the smooth-step exit uses.
+      // The riser is pushed out by the exit gap (the source-offset magnitude, 8px)
+      // to sourceX + 8 = 564, clearing the handle like the smooth-step exit does.
       const { result } = renderHook(() =>
         useEdgePath({
           ...baseBendParams,

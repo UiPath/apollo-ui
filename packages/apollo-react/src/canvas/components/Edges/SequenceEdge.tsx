@@ -109,7 +109,8 @@ export const SequenceEdge = memo(function SequenceEdge({
     targetX: hideArrowHead ? targetX + offsetX : targetX,
     targetY: hideArrowHead ? targetY + offsetY : targetY,
     targetPosition,
-    bendPoints: data?.bendPoints as XYPosition[] | undefined,
+    // `data` is loosely typed on EdgeProps; guard so a malformed value can't crash useEdgePath.
+    bendPoints: Array.isArray(data?.bendPoints) ? (data?.bendPoints as XYPosition[]) : undefined,
   });
 
   // Edge toolbar state
