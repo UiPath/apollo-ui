@@ -2,7 +2,7 @@ import { AutoLinkPlugin } from '@lexical/react/LexicalAutoLinkPlugin';
 
 // eslint-disable-next-line spaced-comment
 const URL_MATCHER =
-  /((https?:\/\/(www\.)?)|(www\.))[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/; //NOSONAR - the emails are processed on client side only, the risk for regex DoS is minimal
+  /((https?:\/\/(www\.)?)|(www\.))[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)/; //NOSONAR - the emails are processed on client side only, the risk for regex DoS is minimal
 
 // eslint-disable-next-line spaced-comment
 const EMAIL_MATCHER =
