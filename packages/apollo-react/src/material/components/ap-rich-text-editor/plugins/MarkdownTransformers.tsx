@@ -54,7 +54,9 @@ const UNDERLINE_IMPORTER: ElementTransformer = {
 
 // Very primitive table setup
 const TABLE_ROW_REG_EXP = /^(?:\|)(.+)(?:\|)\s?$/;
-const TABLE_ROW_DIVIDER_REG_EXP = /^(\| ?:?-*:? ?)+\|\s?$/;
+// Each cell is anchored by a trailing '|' so the repetition can't overlap,
+// avoiding the catastrophic backtracking (ReDoS) of the original pattern.
+const TABLE_ROW_DIVIDER_REG_EXP = /^\|(?:\s*:?-+:?\s*\|)+\s*$/;
 
 const TABLE: ElementTransformer = {
   dependencies: [TableNode, TableRowNode, TableCellNode],
