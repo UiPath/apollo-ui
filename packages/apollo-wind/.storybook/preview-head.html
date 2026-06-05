@@ -22,4 +22,11 @@
     width: 100%;
     height: 100%;
   }
+
+  /* Theme-match autodocs story previews. By default Storybook renders each story block on the white
+     docs page, which leaves transparent components (e.g. the borderless PromptEditor) white-on-white
+     under a dark theme. Painting the block with the active theme surface keeps them readable. */
+  .sb-story {
+    background-color: var(--color-background);
+  }
 </style>
