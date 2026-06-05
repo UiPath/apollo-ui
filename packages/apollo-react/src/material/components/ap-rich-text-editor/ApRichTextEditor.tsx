@@ -184,10 +184,10 @@ export const ApRichTextEditor: React.FC<ApRichTextEditorProps> = (props) => {
           <div
             aria-labelledby="editor-label"
             role="application"
-            className={`editor-container disabled'${errorMessage || error ? ' error' : ''} loading`}
+            className={`editor-container disabled${errorMessage || error ? ' error' : ''} loading`}
             style={{ maxHeight }}
-            aria-disabled={disabled}
-            aria-invalid={!!error}
+            aria-disabled={true}
+            aria-invalid={!!(error || errorMessage)}
           >
             <ToolbarPlugin disabled={true} />
             <CircularProgress
@@ -202,8 +202,11 @@ export const ApRichTextEditor: React.FC<ApRichTextEditorProps> = (props) => {
             role="application"
             className={`editor-container${disabled ? ' disabled' : ''}${errorMessage || error ? ' error' : ''}`}
             aria-disabled={disabled}
+            aria-invalid={!!(error || errorMessage)}
             style={{ maxHeight }}
-            aria-errormessage={errorMessage ? 'editor-error-message' : undefined}
+            aria-errormessage={
+              errorMessage || (error && helperText) ? 'editor-error-message' : undefined
+            }
             aria-describedby={helperText ? 'editor-helper-text' : undefined}
           >
             <OnChangePlugin

@@ -33,6 +33,6 @@ const MATCHERS = [
   },
 ];
 
-export default function PlaygroundAutoLinkPlugin() {
+export default function RichTextEditorAutoLinkPlugin() {
   return <AutoLinkPlugin matchers={MATCHERS} />;
 }

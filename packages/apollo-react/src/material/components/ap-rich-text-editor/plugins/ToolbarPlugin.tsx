@@ -240,8 +240,8 @@ export default function ToolbarPlugin({ disabled = false }: { disabled?: boolean
               // Currently, couldn't get it working
               editor.update(() => {
                 const selection = $getSelection();
-                if (selection) {
-                  selection.insertText(`[${selection.getTextContent() ?? 'text'}](link)`);
+                if ($isRangeSelection(selection)) {
+                  selection.insertText(`[${selection.getTextContent() || 'text'}](link)`);
                 }
               });
             } else {
