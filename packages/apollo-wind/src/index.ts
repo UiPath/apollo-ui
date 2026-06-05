@@ -391,3 +391,16 @@ export {
   isFileField,
   isCustomField,
 } from './components/forms/form-schema';
+
+// -----------------------------------------------------------------------------
+// Prompt Editor
+// -----------------------------------------------------------------------------
+export { PromptEditor } from './components/ui/prompt-editor';
+export type {
+  PromptEditorProps,
+  PromptEditorRef,
+  PromptEditorToken,
+  PromptEditorTokenType,
+  PromptEditorAutoCompleteOption,
+  PromptEditorMode,
+} from './components/ui/prompt-editor';
