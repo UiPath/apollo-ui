@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Column } from '@uipath/apollo-react/canvas/layouts';
+import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useMemo, useState } from 'react';
 import {
@@ -13,6 +14,7 @@ import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
 import type { BaseNodeData } from '../BaseNode';
 import { CanvasPositionControls } from '../CanvasPositionControls';
+import { NodeInspector } from '../NodeInspector';
 import { NodePropertiesPanel } from './NodePropertiesPanel';
 
 // ============================================================================
@@ -20,7 +22,7 @@ import { NodePropertiesPanel } from './NodePropertiesPanel';
 // ============================================================================
 
 const meta: Meta<typeof NodePropertiesPanel> = {
-  title: 'Canvas/Components/Panels/Node Flyout Panel',
+  title: 'Components/Panels/Node Flyout Panel',
   component: NodePropertiesPanel,
   parameters: { layout: 'fullscreen' },
   decorators: [withCanvasProviders()],
@@ -88,9 +90,74 @@ function PropertiesPanelStory() {
 }
 
 // ============================================================================
+// Inspector Story Component
+// ============================================================================
+
+const inspectorNodes = (): Node<BaseNodeData>[] => [
+  createNode({
+    id: 'agent-1',
+    type: 'uipath.agent',
+    position: { x: 200, y: 350 },
+    display: { label: 'AI Agent', subLabel: 'Claude Opus' },
+    data: {
+      parameters: {
+        description: 'An AI agent that can perform tasks and make decisions.',
+        capabilities: ['Data processing', 'Decision making', 'Integrations'],
+      },
+    },
+  }),
+  createNode({
+    id: 'script-1',
+    type: 'uipath.script',
+    position: { x: 600, y: 200 },
+    display: { label: 'Transform Data', subLabel: 'JavaScript' },
+  }),
+  createNode({
+    id: 'decision-1',
+    type: 'uipath.control-flow.decision',
+    position: { x: 600, y: 450 },
+    display: { label: 'Route Response', subLabel: 'Success check' },
+  }),
+];
+
+const inspectorEdges = (): Edge[] => [
+  { id: 'e-agent-script', source: 'agent-1', sourceHandle: 'success', target: 'script-1' },
+  { id: 'e-agent-decision', source: 'agent-1', sourceHandle: 'error', target: 'decision-1' },
+];
+
+function InspectorStory() {
+  const initialNodes = useMemo(() => inspectorNodes(), []);
+  const initialEdges = useMemo(() => inspectorEdges(), []);
+  const { canvasProps } = useCanvasStory({ initialNodes, initialEdges });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <NodeInspector />
+      <Panel position="top-left">
+        <Column
+          p={20}
+          gap={8}
+          style={{
+            backgroundColor: 'var(--canvas-background-secondary)',
+            color: 'var(--canvas-foreground)',
+          }}
+        >
+          <span className="text-lg font-bold">Node Inspector</span>
+          <span className="text-sm">Click on nodes to see their raw data</span>
+        </Column>
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+// ============================================================================
 // Exported Stories
 // ============================================================================
 
 export const Default: Story = {
   render: () => <PropertiesPanelStory />,
+};
+
+export const Inspector: Story = {
+  render: () => <InspectorStory />,
 };
