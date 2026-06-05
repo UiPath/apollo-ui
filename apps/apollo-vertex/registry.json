@@ -1647,6 +1647,11 @@
           "target": "components/ui/data-table/data-table.tsx"
         },
         {
+          "path": "registry/data-table/data-table-expand-toggle.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-expand-toggle.tsx"
+        },
+        {
           "path": "registry/data-table/data-table-filters.tsx",
           "type": "registry:ui",
           "target": "components/ui/data-table/data-table-filters.tsx"
