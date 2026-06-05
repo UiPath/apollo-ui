@@ -61,6 +61,7 @@ export function Sidebar() {
 				{ label: "Modal", path: "/components/modal" },
 				{ label: "Popover", path: "/components/popover" },
 				{ label: "Progress Spinner", path: "/components/progress-spinner" },
+				{ label: "Rich Text Editor", path: "/components/rich-text-editor" },
 				{ label: "Sankey Diagram", path: "/components/sankey-diagram" },
 				{ label: "Skeleton", path: "/components/skeleton" },
 				{ label: "Text Area", path: "/components/text-area" },
