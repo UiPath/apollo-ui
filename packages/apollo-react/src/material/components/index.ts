@@ -12,6 +12,7 @@ export * from './ap-menu';
 export * from './ap-modal';
 export * from './ap-popover';
 export * from './ap-progress-spinner';
+export * from './ap-rich-text-editor';
 export * from './ap-skeleton';
 export * from './ap-text-area';
 export * from './ap-text-field';

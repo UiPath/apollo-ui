@@ -14,6 +14,10 @@ const config: LinguiConfig = {
       include: ['src/material/components/ap-tool-call'],
     },
     {
+      path: 'src/material/components/ap-rich-text-editor/locales/{locale}',
+      include: ['src/material/components/ap-rich-text-editor'],
+    },
+    {
       path: 'src/canvas/locales/{locale}',
       include: ['src/canvas'],
     },

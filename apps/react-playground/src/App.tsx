@@ -30,6 +30,7 @@ import { LinkShowcase } from "./pages/components/LinkShowcase";
 import { MenuShowcase } from "./pages/components/MenuShowcase";
 import { ModalShowcase } from "./pages/components/ModalShowcase";
 import { ProgressSpinnerShowcase } from "./pages/components/ProgressSpinnerShowcase";
+import { RichTextEditorShowcase } from "./pages/components/RichTextEditorShowcase";
 import { SkeletonShowcase } from "./pages/components/SkeletonShowcase";
 import { TextAreaShowcase } from "./pages/components/TextAreaShowcase";
 import { TextFieldShowcase } from "./pages/components/TextFieldShowcase";
@@ -159,6 +160,10 @@ function App() {
 							<Route path="/components/link" element={<LinkShowcase />} />
 							<Route path="/components/modal" element={<ModalShowcase />} />
 							<Route path="/components/popover" element={<PopoverShowcase />} />
+							<Route
+								path="/components/rich-text-editor"
+								element={<RichTextEditorShowcase />}
+							/>
 							<Route
 								path="/components/skeleton"
 								element={<SkeletonShowcase />}

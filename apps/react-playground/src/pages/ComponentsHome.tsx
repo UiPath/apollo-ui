@@ -37,6 +37,11 @@ export function ComponentsHome() {
 			path: "/components/progress-spinner",
 			icon: "⌛",
 		},
+		{
+			label: "Rich Text Editor",
+			path: "/components/rich-text-editor",
+			icon: "📄",
+		},
 		{ label: "Skeleton", path: "/components/skeleton", icon: "⏳" },
 		{ label: "Text Area", path: "/components/text-area", icon: "📝" },
 		{ label: "Text Field", path: "/components/text-field", icon: "✏️" },
