@@ -1,6 +1,5 @@
-import { Column } from '@uipath/apollo-react/canvas/layouts';
+import { cn } from '@uipath/apollo-wind';
 import { memo, useCallback } from 'react';
-import { FieldError, FieldHelpText, FieldLabel, SelectInput } from '../NodePropertiesPanel.styles';
 import type { ConfigField } from '../NodePropertiesPanel.types';
 
 interface SelectFieldProps {
@@ -23,15 +22,24 @@ export const SelectField = memo(function SelectField({
     [onChange]
   );
 
+  const selectId = `field-${field.key}`;
+
   return (
-    <Column gap={4}>
-      <FieldLabel>{field.label}</FieldLabel>
-      <SelectInput
-        className="nodrag"
-        value={value || (field.defaultValue as string | undefined) || ''}
+    <div className="flex flex-col gap-1">
+      <label htmlFor={selectId} className="text-[13px] text-foreground-subtle">
+        {field.label}
+      </label>
+      <select
+        id={selectId}
+        className={cn(
+          'nodrag w-full px-3 py-2 text-[13px] border rounded bg-transparent text-foreground outline-none transition-colors appearance-none cursor-pointer',
+          'focus:border-[var(--canvas-primary,theme(colors.blue.500))]',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
+          error && 'border-red-500'
+        )}
+        value={value ?? (field.defaultValue as string | undefined) ?? ''}
         onChange={handleChange}
         disabled={field.disabled}
-        hasError={!!error}
       >
         {field.placeholder && (
           <option value="" disabled>
@@ -43,9 +51,11 @@ export const SelectField = memo(function SelectField({
             {option.label}
           </option>
         ))}
-      </SelectInput>
-      {field.helpText && <FieldHelpText>{field.helpText}</FieldHelpText>}
-      {error && <FieldError>{error}</FieldError>}
-    </Column>
+      </select>
+      {field.helpText && (
+        <span className="text-[12px] text-foreground-subtle block">{field.helpText}</span>
+      )}
+      {error && <span className="text-[12px] text-red-500 block">{error}</span>}
+    </div>
   );
 });

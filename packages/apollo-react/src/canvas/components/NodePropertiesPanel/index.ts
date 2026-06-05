@@ -1,5 +1,4 @@
 export { NodePropertiesPanel } from './NodePropertiesPanel';
-export * from './NodePropertiesPanel.styles';
 export type {
   AgentNodeConfig,
   ConfigField,
