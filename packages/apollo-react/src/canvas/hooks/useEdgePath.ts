@@ -27,7 +27,30 @@ const snapToGrid = (value: number): number => {
 
 const BEND_CORNER_RADIUS = GRID_SPACING;
 
+const GAP_OFFSET = 28;
+
 const distance = (a: XYPosition, b: XYPosition): number => Math.hypot(b.x - a.x, b.y - a.y);
+
+const isColinear = (a: XYPosition, b: XYPosition, c: XYPosition): boolean =>
+  (a.x === b.x && b.x === c.x) || (a.y === b.y && b.y === c.y);
+
+const dropColinearBends = (
+  interior: XYPosition[],
+  start: XYPosition,
+  end: XYPosition
+): XYPosition[] => {
+  const kept: XYPosition[] = [];
+  let prev = start;
+  for (let i = 0; i < interior.length; i++) {
+    const cur = interior[i];
+    if (!cur) continue;
+    const next = interior[i + 1] ?? end;
+    if (isColinear(prev, cur, next)) continue;
+    kept.push(cur);
+    prev = cur;
+  }
+  return kept;
+};
 
 // A point `d` units from `from` along the direction toward `to`.
 const pointToward = (from: XYPosition, to: XYPosition, d: number): XYPosition => {
@@ -168,7 +191,10 @@ export function useEdgePath({
     let labelX: number;
     let labelY: number;
 
-    const hasBendPoints = !needsCustomPath && bendPoints != null && bendPoints.length > 0;
+    // Keep only finite bends so a malformed/non-finite point can't corrupt the
+    // SVG path; with none left we fall through to the smooth-step path.
+    const finiteBends = bendPoints?.filter((p) => Number.isFinite(p?.x) && Number.isFinite(p?.y));
+    const hasBendPoints = !needsCustomPath && finiteBends != null && finiteBends.length > 0;
 
     if (needsCustomPath) {
       // Use larger height and right extension for success edges
@@ -195,46 +221,81 @@ export function useEdgePath({
       };
       const end: XYPosition = { x: targetX, y: targetY };
 
-      // Copy the bends — they're shared edge data and we mutate below (snap + shift).
-      const interior: XYPosition[] = bendPoints.map((p) => ({ x: p.x, y: p.y }));
+      // Copy the bends (shared edge data, mutated below) and drop colinear points
+      // so the first/last two are the genuine exit/entry risers the shifts assume.
+      const interior: XYPosition[] = dropColinearBends(
+        finiteBends.map((p) => ({ x: p.x, y: p.y })),
+        start,
+        end
+      );
       const isSrcHorizontal = sourcePosition === Position.Left || sourcePosition === Position.Right;
       const isTgtHorizontal = targetPosition === Position.Left || targetPosition === Position.Right;
       const firstBend = interior[0];
       const lastBend = interior[interior.length - 1];
 
       // Snap the first/last bend onto the handle's perpendicular axis so the
-      // exit/entry segments stay orthogonal despite ELK's port vs handle offset.
-      if (firstBend) {
+      // exit/entry segments stay orthogonal. Re-run after the shifts (see below).
+      const snapFirstToSource = (): void => {
+        if (!firstBend) return;
         if (isSrcHorizontal) firstBend.y = start.y;
         else firstBend.x = start.x;
-      }
-      if (lastBend) {
+      };
+      const snapLastToTarget = (): void => {
+        if (!lastBend) return;
         if (isTgtHorizontal) lastBend.y = end.y;
         else lastBend.x = end.x;
-      }
+      };
+      snapFirstToSource();
+      snapLastToTarget();
 
-      // Keep the riser at least the source-offset past the handle in the exit
-      // direction; otherwise it lands on/behind the protruding handle and routes
-      // back into the node. Shift every bend by the shortfall to preserve shape.
-      if (firstBend) {
-        const exitGap = Math.abs(
-          isSrcHorizontal ? SOURCE_OFFSETS[sourcePosition].x : SOURCE_OFFSETS[sourcePosition].y
-        );
-        let dx = 0;
-        let dy = 0;
-        if (sourcePosition === Position.Right) dx = Math.max(0, sourceX + exitGap - firstBend.x);
-        else if (sourcePosition === Position.Left)
-          dx = Math.min(0, sourceX - exitGap - firstBend.x);
-        else if (sourcePosition === Position.Bottom)
-          dy = Math.max(0, sourceY + exitGap - firstBend.y);
-        else if (sourcePosition === Position.Top) dy = Math.min(0, sourceY - exitGap - firstBend.y);
-        if (dx !== 0 || dy !== 0) {
-          for (const p of interior) {
+      // Translate the bends in [from, to] by (dx, dy) — moving a riser's two
+      // endpoints together keeps it and its neighbours orthogonal.
+      const shiftBends = (from: number, to: number, dx: number, dy: number): void => {
+        if (dx === 0 && dy === 0) return;
+        for (let i = from; i <= to; i++) {
+          const p = interior[i];
+          if (p) {
             p.x += dx;
             p.y += dy;
           }
         }
+      };
+
+      // Pull the last riser back so the approach clears the target handle (only
+      // when ELK's last bend is closer than GAP_OFFSET). Touches just the last
+      // riser, leaving the source exit untouched.
+      if (lastBend) {
+        let dx = 0;
+        let dy = 0;
+        if (targetPosition === Position.Left) dx = Math.min(0, end.x - GAP_OFFSET - lastBend.x);
+        else if (targetPosition === Position.Right)
+          dx = Math.max(0, end.x + GAP_OFFSET - lastBend.x);
+        else if (targetPosition === Position.Top) dy = Math.min(0, end.y - GAP_OFFSET - lastBend.y);
+        else if (targetPosition === Position.Bottom)
+          dy = Math.max(0, end.y + GAP_OFFSET - lastBend.y);
+        shiftBends(interior.length - 2, interior.length - 1, dx, dy);
       }
+
+      // Push the first riser past the handle so the throw-out clears the `+`
+      // button before turning — measured from `start` with the same GAP_OFFSET
+      // getSmoothStepPath uses, so bend and smooth-step edges exit alike.
+      if (firstBend) {
+        let dx = 0;
+        let dy = 0;
+        if (sourcePosition === Position.Right) dx = Math.max(0, start.x + GAP_OFFSET - firstBend.x);
+        else if (sourcePosition === Position.Left)
+          dx = Math.min(0, start.x - GAP_OFFSET - firstBend.x);
+        else if (sourcePosition === Position.Bottom)
+          dy = Math.max(0, start.y + GAP_OFFSET - firstBend.y);
+        else if (sourcePosition === Position.Top)
+          dy = Math.min(0, start.y - GAP_OFFSET - firstBend.y);
+        shiftBends(0, 1, dx, dy);
+      }
+
+      // Re-snap: on a short route the two risers overlap, so a cross-axis shift
+      // can knock the opposite end off its handle axis.
+      snapFirstToSource();
+      snapLastToTarget();
 
       const points: XYPosition[] = [start, ...interior, end];
       edgePath = roundedPolylinePath(points);
@@ -255,6 +316,7 @@ export function useEdgePath({
         targetY,
         targetPosition,
         borderRadius: 16,
+        offset: GAP_OFFSET,
       });
     }
 

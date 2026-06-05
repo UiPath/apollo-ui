@@ -569,11 +569,12 @@ describe('useEdgePath', () => {
       expect(result.current.edgePath).toContain('Q 150 200');
     });
 
-    it('shifts bends forward to keep the riser a source-offset past a right handle', () => {
+    it('shifts bends forward to keep the riser past the end of a right handle', () => {
       // Reproduces the real ELK output: right handle at x=556, but ELK's riser is
       // at x=544 (behind the handle) → the exit would route backward into the node.
-      // The riser is pushed out by the exit gap (the source-offset magnitude, 8px)
-      // to sourceX + 8 = 564, clearing the handle like the smooth-step exit does.
+      // The riser is pushed out to start.x + EXIT_OFFSET = (556 - 8) + 28 = 576, so
+      // the throw-out clears the `+` handle button before turning — the same place
+      // the smooth-step edges turn.
       const { result } = renderHook(() =>
         useEdgePath({
           ...baseBendParams,
@@ -588,9 +589,166 @@ describe('useEdgePath', () => {
         })
       );
 
-      expect(result.current.edgePath).toContain('Q 564 208');
-      expect(result.current.edgePath).toContain('Q 564 320');
+      expect(result.current.edgePath).toContain('Q 576 208');
+      expect(result.current.edgePath).toContain('Q 576 320');
       expect(result.current.edgePath).not.toContain('544');
+    });
+
+    it('shifts bends back to keep the approach clear of a left target handle', () => {
+      const { result } = renderHook(() =>
+        useEdgePath({
+          ...baseBendParams,
+          bendPoints: [
+            { x: 190, y: 100 },
+            { x: 190, y: 200 },
+          ],
+        })
+      );
+
+      expect(result.current.edgePath).toContain('Q 172 100');
+      expect(result.current.edgePath).toContain('Q 172 200');
+      expect(result.current.edgePath).not.toContain('190');
+    });
+
+    it('shifts only the last riser for target clearance, leaving the source exit in place', () => {
+      const { result } = renderHook(() =>
+        useEdgePath({
+          ...baseBendParams, // source Right @ (100,100), target Left
+          targetX: 300,
+          targetY: 300,
+          bendPoints: [
+            { x: 150, y: 100 },
+            { x: 150, y: 200 },
+            { x: 290, y: 200 },
+            { x: 290, y: 300 },
+          ],
+        })
+      );
+
+      // Source exit keeps its natural gap (first riser untouched).
+      expect(result.current.edgePath).toContain('Q 150 100');
+      expect(result.current.edgePath).toContain('Q 150 200');
+      // Last riser pulled back to clear the target handle.
+      expect(result.current.edgePath).toContain('Q 272 200');
+      expect(result.current.edgePath).toContain('Q 272 300');
+      expect(result.current.edgePath).not.toContain('290');
+    });
+
+    // Polyline vertices = M start, each Q corner, final L end. Orthogonal iff
+    // every consecutive pair shares an axis.
+    const isOrthogonalPath = (path: string): boolean => {
+      const pts: Array<[number, number]> = [];
+      const m = /^M (-?[\d.]+) (-?[\d.]+)/.exec(path);
+      if (m) pts.push([Number(m[1]), Number(m[2])]);
+      for (const q of path.matchAll(/Q (-?[\d.]+) (-?[\d.]+)/g))
+        pts.push([Number(q[1]), Number(q[2])]);
+      const ls = [...path.matchAll(/L (-?[\d.]+) (-?[\d.]+)/g)];
+      const lastL = ls[ls.length - 1];
+      if (lastL) pts.push([Number(lastL[1]), Number(lastL[2])]);
+      return pts.every((p, i) => i === 0 || pts[i - 1][0] === p[0] || pts[i - 1][1] === p[1]);
+    };
+
+    it('drops colinear bends so the riser shift stays orthogonal', () => {
+      const { result } = renderHook(() =>
+        useEdgePath({
+          ...baseBendParams, // source Right @ (100,100), target Left
+          targetX: 700,
+          targetY: 100,
+          bendPoints: [
+            { x: 300, y: 100 },
+            { x: 300, y: 200 },
+            { x: 500, y: 200 },
+            { x: 500, y: 100 },
+            { x: 680, y: 100 },
+          ],
+        })
+      );
+
+      expect(isOrthogonalPath(result.current.edgePath)).toBe(true);
+      expect(result.current.edgePath).toContain('Q 500 200');
+      expect(result.current.edgePath).toContain('Q 500 100');
+      expect(result.current.edgePath).not.toContain('680');
+    });
+
+    it('keeps a cross-axis route orthogonal when the target shift fires', () => {
+      const { result } = renderHook(() =>
+        useEdgePath({
+          ...baseBendParams,
+          targetX: 300,
+          targetY: 300,
+          targetPosition: Position.Bottom,
+          bendPoints: [
+            { x: 200, y: 100 },
+            { x: 200, y: 310 },
+            { x: 300, y: 310 },
+          ],
+        })
+      );
+
+      expect(isOrthogonalPath(result.current.edgePath)).toBe(true);
+      expect(result.current.edgePath).toContain('Q 200 328');
+      expect(result.current.edgePath).toContain('Q 300 328');
+    });
+
+    it('handles a single bend (L-shape) without a diagonal', () => {
+      const { result } = renderHook(() =>
+        useEdgePath({
+          ...baseBendParams,
+          targetX: 300,
+          targetY: 300,
+          targetPosition: Position.Top,
+          bendPoints: [{ x: 300, y: 100 }],
+        })
+      );
+
+      expect(isOrthogonalPath(result.current.edgePath)).toBe(true);
+    });
+
+    it('drops non-finite bends and never emits NaN in the path', () => {
+      const { result } = renderHook(() =>
+        useEdgePath({
+          ...baseBendParams,
+          bendPoints: [
+            { x: 150, y: 100 },
+            { x: Number.NaN, y: 150 },
+            { x: 150, y: 200 },
+          ],
+        })
+      );
+
+      expect(result.current.edgePath).not.toContain('NaN');
+      expect(result.current.edgePath).not.toContain('Infinity');
+    });
+
+    it('falls back to smooth-step when every bend is non-finite', () => {
+      const { result } = renderHook(() =>
+        useEdgePath({
+          ...baseBendParams,
+          bendPoints: [{ x: Number.NaN, y: Number.NaN }],
+        })
+      );
+
+      expect(result.current.isLoopEdge).toBe(false);
+      expect(mockGetSmoothStepPath).toHaveBeenCalled();
+    });
+
+    it('re-snaps the opposite end after an overlapping cross-axis shift', () => {
+      // 2-bend Right → Bottom: the shared riser is moved by the target shift,
+      // knocking the source bend off start.y; the re-snap must restore it.
+      const { result } = renderHook(() =>
+        useEdgePath({
+          ...baseBendParams,
+          targetX: 300,
+          targetY: 300,
+          targetPosition: Position.Bottom,
+          bendPoints: [
+            { x: 300, y: 100 },
+            { x: 300, y: 315 },
+          ],
+        })
+      );
+
+      expect(isOrthogonalPath(result.current.edgePath)).toBe(true);
     });
 
     it('leaves interior bends untouched (only first/last snap to handles)', () => {
