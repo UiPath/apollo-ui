@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/table";
 import { useReactTableCompat } from "@/hooks/useReactTableCompat";
 import { cn } from "@/lib/utils";
+import { DataTableExpandAllToggle } from "./data-table-expand-toggle";
 import { DataTablePagination } from "./data-table-pagination";
 import { DATA_TABLE_ROW_HEIGHT } from "./data-table-row";
 import {
@@ -195,6 +196,9 @@ function DataTable<TData, TValue>({
   };
 
   const rows = table.getRowModel().rows;
+  // When rows are expandable and the consumer includes a dedicated expand
+  // column (id "expand"), render an expand/collapse-all toggle in its header.
+  const isExpandable = !!renderExpandedRow;
   const { containerRef, canScrollLeft, canScrollRight } = useScrollShadow();
 
   return (
@@ -247,12 +251,17 @@ function DataTable<TData, TValue>({
                         : {}),
                     }}
                   >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                    {!header.isPlaceholder &&
+                    isExpandable &&
+                    header.column.id === "expand" &&
+                    rows.length > 0 ? (
+                      <DataTableExpandAllToggle table={table} />
+                    ) : header.isPlaceholder ? null : (
+                      flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )
+                    )}
                     {enableColumnResizing && (
                       <div
                         data-slot="column-resizer"
