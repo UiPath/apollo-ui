@@ -18,6 +18,8 @@ minimumReleaseAge: 20160
 minimumReleaseAgeExclude:
   - '@uipath/*'                   # permanent — own scope, always installable immediately
   - '@turbo/*'                    # 2.9.14 — platform binaries co-published with turbo (scope rename from turbo-*), same OIDC provenance ✓
+  - 'tmp'                         # 0.2.7 — security patch for GHSA-ph9p-34f9-6g65 (path traversal), fixed >=0.2.6
+  - 'hono'                        # 4.12.23 — security patches GHSA-xrhx-7g5j-rcj5/GHSA-3hrh-pfw6-9m5x/GHSA-2gcr-mfcq-wcc3 (+1), fixed >=4.12.21
 # Refuse transitive git/tarball deps (pnpm 11 default; kept explicit for clarity)
 blockExoticSubdeps: true
 
@@ -25,9 +27,10 @@ blockExoticSubdeps: true
 overrides:
   minimatch: "^10.2.5"
   lodash: "^4.18.1"
-  tmp: "^0.2.5"
+  tmp: "^0.2.6"
   picomatch: ">=4.0.4"
   postcss: "^8.5.14"
+  hono: "^4.12.21"
 
 # packageExtensions (moved from package.json#pnpm for the same reason)
 packageExtensions:
