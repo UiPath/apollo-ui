@@ -183,12 +183,7 @@ const preview: Preview = {
                 'Layout',
                 'Nodes',
                 'Panels',
-                [
-                  'Node Property Trigger',
-                  'Node Manifest Panel',
-                  'Node Flyout Panel',
-                  '*',
-                ],
+                ['Node Property Trigger', 'Node Manifest Panel', 'Node Flyout Panel', '*'],
                 'Primitives',
                 '*',
               ],

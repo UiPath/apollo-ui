@@ -92,7 +92,7 @@ export const NodePropertiesPanel = memo(function NodePropertiesPanel({
     return (
       <div
         key={section.id}
-        className="px-4 py-4 border-b border-[var(--canvas-border-de-emp,theme(colors.zinc.800))] last:border-b-0"
+        className="px-4 py-4 border-b border-(--canvas-border-de-emp) last:border-b-0"
       >
         {section.title && (
           <div className="font-medium text-[14px] text-foreground mb-2">{section.title}</div>
