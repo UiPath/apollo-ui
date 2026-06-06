@@ -1,4 +1,3 @@
-export { Breadcrumb } from './Breadcrumb';
 export { NodePropertyTrigger } from './NodePropertyTrigger';
 export type {
   NodePropertyTriggerProps,

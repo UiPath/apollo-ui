@@ -184,7 +184,7 @@ const preview: Preview = {
                 'Nodes',
                 'Panels',
                 [
-                  'Node Property Panel',
+                  'Node Property Trigger',
                   'Node Manifest Panel',
                   'Node Flyout Panel',
                   '*',

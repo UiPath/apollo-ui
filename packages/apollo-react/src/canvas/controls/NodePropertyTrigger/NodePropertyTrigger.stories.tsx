@@ -2,27 +2,38 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { cn } from '@uipath/apollo-wind';
 import { CanvasIcon } from '../../utils/icon-registry';
-import { NodePropertyPanel } from './NodePropertyPanel';
+import { NodePropertyTrigger } from './NodePropertyTrigger';
 import type {
-  NodePropertyPanelBehavior,
-  NodePropertyPanelItem,
-  NodePropertyPanelLayout,
-  NodePropertyPanelPreset,
-} from './NodePropertyPanel';
+  NodePropertyTriggerBehavior,
+  NodePropertyTriggerItem,
+  NodePropertyTriggerLayout,
+  NodePropertyTriggerPreset,
+} from './NodePropertyTrigger';
 
-const meta: Meta<typeof NodePropertyPanel> = {
-  title: 'Components/Panels/Node Property Panel',
-  component: NodePropertyPanel,
+const meta: Meta<typeof NodePropertyTrigger> = {
+  title: 'Components/Panels/Node Property Trigger',
+  component: NodePropertyTrigger,
   parameters: { layout: 'fullscreen' },
 };
 export default meta;
 
-type Story = StoryObj<typeof NodePropertyPanel>;
+type Story = StoryObj<typeof NodePropertyTrigger>;
 
-const DEFAULT_PANELS: NodePropertyPanelItem[] = [
-  { label: 'Parameters', enabled: false },
-  { label: 'Input', enabled: false },
-  { label: 'Output', enabled: false },
+const DEFAULT_PANELS: NodePropertyTriggerItem[] = [
+  { label: 'Button 1', enabled: false },
+  { label: 'Button 2', enabled: false },
+  { label: 'Button 3', enabled: false },
+];
+
+const GENERIC_BEHAVIOR_OPTIONS = [
+  { value: 'auto-hide' as const, label: 'Button 1' },
+  { value: 'always-persist' as const, label: 'Button 2' },
+];
+
+const GENERIC_LAYOUT_OPTIONS = [
+  { value: 'right' as const, label: 'Button 1' },
+  { value: 'bottom' as const, label: 'Button 2' },
+  { value: 'split' as const, label: 'Button 3' },
 ];
 
 const CanvasBackground = ({ children }: { children: React.ReactNode }) => (
@@ -42,17 +53,20 @@ const StateLabel = ({ children }: { children: React.ReactNode }) => (
 
 export const Default: Story = {
   render: () => {
-    const [panels, setPanels] = useState<NodePropertyPanelItem[]>(DEFAULT_PANELS);
-    const [behavior, setBehavior] = useState<NodePropertyPanelBehavior>('auto-hide');
-    const [layout, setLayout] = useState<NodePropertyPanelLayout | undefined>(undefined);
+    const [panels, setPanels] = useState<NodePropertyTriggerItem[]>(DEFAULT_PANELS);
+    const [behavior, setBehavior] = useState<NodePropertyTriggerBehavior>('auto-hide');
+    const [layout, setLayout] = useState<NodePropertyTriggerLayout | undefined>(undefined);
 
     return (
       <CanvasBackground>
-        <_Panel
+        <NodePropertyTrigger
           panels={panels}
           behavior={behavior}
+          behaviorOptions={GENERIC_BEHAVIOR_OPTIONS}
+          layout={layout}
+          layoutOptions={GENERIC_LAYOUT_OPTIONS}
           onBehaviorChange={setBehavior}
-          onLayoutChange={setLayout}
+          onLayoutChange={(l) => setLayout(l)}
           onPanelToggle={(lbl, enabled) =>
             setPanels((prev) => prev.map((p) => (p.label === lbl ? { ...p, enabled } : p)))
           }
@@ -66,16 +80,21 @@ export const Default: Story = {
 
 export const States: Story = {
   render: () => {
-    const [panels, setPanels] = useState<NodePropertyPanelItem[]>(DEFAULT_PANELS);
-    const [behavior, setBehavior] = useState<NodePropertyPanelBehavior>('auto-hide');
-    const [layout, setLayout] = useState<NodePropertyPanelLayout | undefined>(undefined);
+    const [panels, setPanels] = useState<NodePropertyTriggerItem[]>(DEFAULT_PANELS);
+    const [behavior, setBehavior] = useState<NodePropertyTriggerBehavior>('auto-hide');
+    const [layout, setLayout] = useState<NodePropertyTriggerLayout | undefined>(undefined);
 
     return (
       <CanvasBackground>
         <div className="flex gap-24 items-start">
           <div>
             <StateLabel>Default State</StateLabel>
-            <NodePropertyPanel label="Properties" />
+            <NodePropertyTrigger
+              label="Properties"
+              panels={DEFAULT_PANELS}
+              behaviorOptions={GENERIC_BEHAVIOR_OPTIONS}
+              layoutOptions={GENERIC_LAYOUT_OPTIONS}
+            />
           </div>
           <div>
             <StateLabel>Clicked State with popover</StateLabel>
@@ -83,6 +102,7 @@ export const States: Story = {
               initialOpen
               panels={panels}
               behavior={behavior}
+              layout={layout}
               onBehaviorChange={setBehavior}
               onLayoutChange={setLayout}
               onPanelToggle={(lbl, enabled) =>
@@ -100,27 +120,30 @@ export const States: Story = {
 
 export const WithPresets: Story = {
   render: () => {
-    const [panels, setPanels] = useState<NodePropertyPanelItem[]>([
-      { label: 'Parameters', enabled: true },
-      { label: 'Input', enabled: false },
-      { label: 'Output', enabled: true },
+    const [panels, setPanels] = useState<NodePropertyTriggerItem[]>([
+      { label: 'Button 1', enabled: true },
+      { label: 'Button 2', enabled: false },
+      { label: 'Button 3', enabled: true },
     ]);
-    const [behavior, setBehavior] = useState<NodePropertyPanelBehavior>('always-persist');
-    const [layout, setLayout] = useState<NodePropertyPanelLayout | undefined>('right');
-    const [presets, setPresets] = useState<NodePropertyPanelPreset[]>([
-      { id: '1', label: 'Compact view' },
-      { id: '2', label: 'Debug layout' },
+    const [behavior, setBehavior] = useState<NodePropertyTriggerBehavior>('always-persist');
+    const [layout, setLayout] = useState<NodePropertyTriggerLayout | undefined>('right');
+    const [presets, setPresets] = useState<NodePropertyTriggerPreset[]>([
+      { id: '1', label: 'Preset 1' },
+      { id: '2', label: 'Preset 2' },
     ]);
 
     return (
       <CanvasBackground>
-        <_Panel
+        <NodePropertyTrigger
           panels={panels}
           behavior={behavior}
+          behaviorOptions={GENERIC_BEHAVIOR_OPTIONS}
+          layout={layout}
+          layoutOptions={GENERIC_LAYOUT_OPTIONS}
           presets={presets}
           canSavePreset
           onBehaviorChange={setBehavior}
-          onLayoutChange={setLayout}
+          onLayoutChange={(l) => setLayout(l)}
           onPanelToggle={(lbl, enabled) =>
             setPanels((prev) => prev.map((p) => (p.label === lbl ? { ...p, enabled } : p)))
           }
@@ -132,7 +155,10 @@ export const WithPresets: Story = {
   },
 };
 
-// ─── Shared interactive panel (pill + inline popover, toggleable) ─────────────
+// ─── Shared interactive panel (pill + inline popover, used by States only) ────
+// Story-only helper that renders the trigger + popover inline (not via portal)
+// so the States doc layout can display the open state statically. Not a
+// component — do not use outside stories.
 
 const SLIDERS_ICON = (
   <svg
@@ -162,6 +188,7 @@ function _Panel({
   initialOpen = false,
   panels = [],
   behavior,
+  layout,
   presets = [],
   canSavePreset = false,
   onBehaviorChange,
@@ -171,12 +198,13 @@ function _Panel({
   onSavePreset,
 }: {
   initialOpen?: boolean;
-  panels?: NodePropertyPanelItem[];
-  behavior: NodePropertyPanelBehavior;
-  presets?: NodePropertyPanelPreset[];
+  panels?: NodePropertyTriggerItem[];
+  behavior: NodePropertyTriggerBehavior;
+  layout?: NodePropertyTriggerLayout;
+  presets?: NodePropertyTriggerPreset[];
   canSavePreset?: boolean;
-  onBehaviorChange: (b: NodePropertyPanelBehavior) => void;
-  onLayoutChange: (l: NodePropertyPanelLayout) => void;
+  onBehaviorChange: (b: NodePropertyTriggerBehavior) => void;
+  onLayoutChange: (l: NodePropertyTriggerLayout) => void;
   onPanelToggle: (label: string, enabled: boolean) => void;
   onPresetDelete?: (id: string) => void;
   onSavePreset?: () => void;
@@ -245,10 +273,7 @@ function _Panel({
             <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wide text-foreground-subtle">
               Panel behavior
             </p>
-            {[
-              { value: 'auto-hide' as const, label: 'Auto hide' },
-              { value: 'always-persist' as const, label: 'Always persist' },
-            ].map(({ value, label }) => (
+            {GENERIC_BEHAVIOR_OPTIONS.map(({ value, label }) => (
               <button
                 key={value}
                 type="button"
@@ -273,11 +298,7 @@ function _Panel({
             <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wide text-foreground-subtle">
               Default layouts
             </p>
-            {[
-              { value: 'right' as const, name: 'Default — Right' },
-              { value: 'bottom' as const, name: 'Default — Bottom' },
-              { value: 'split' as const, name: 'Default — Split' },
-            ].map(({ value, name }) => (
+            {GENERIC_LAYOUT_OPTIONS.map(({ value, label }) => (
               <button
                 key={value}
                 type="button"
@@ -285,9 +306,15 @@ function _Panel({
                   onLayoutChange(value);
                   setOpen(false);
                 }}
-                className="flex w-full items-center px-3 py-2 text-xs text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                className="flex w-full items-center justify-between px-3 py-2 text-xs text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
               >
-                {name}
+                <span>{label}</span>
+                <span
+                  className={cn(
+                    'size-2 rounded-full',
+                    layout === value ? 'bg-foreground-accent' : 'bg-surface-overlay'
+                  )}
+                />
               </button>
             ))}
           </div>
