@@ -3,27 +3,59 @@ import { createPortal } from 'react-dom';
 import { cn } from '@uipath/apollo-wind';
 import { CanvasIcon } from '../../utils/icon-registry';
 
-export type NodePropertyPanelItem = {
+export type NodePropertyTriggerItem = {
   label: string;
   enabled?: boolean;
 };
 
-export type NodePropertyPanelBehavior = 'auto-hide' | 'always-persist';
-export type NodePropertyPanelLayout = 'right' | 'bottom' | 'split';
-export type NodePropertyPanelPreset = { id: string; label: string };
+export type NodePropertyTriggerBehavior = 'auto-hide' | 'always-persist';
+export type NodePropertyTriggerLayout = 'right' | 'bottom' | 'split';
+export type NodePropertyTriggerPreset = { id: string; label: string };
 
-export type NodePropertyPanelProps = {
+export type NodePropertyTriggerBehaviorOption = {
+  value: NodePropertyTriggerBehavior;
+  label: string;
+};
+
+export type NodePropertyTriggerLayoutOption = {
+  value: NodePropertyTriggerLayout;
+  label: string;
+};
+
+const DEFAULT_BEHAVIOR_OPTIONS: NodePropertyTriggerBehaviorOption[] = [
+  { value: 'auto-hide', label: 'Auto hide' },
+  { value: 'always-persist', label: 'Always persist' },
+];
+
+const DEFAULT_LAYOUT_OPTIONS: NodePropertyTriggerLayoutOption[] = [
+  { value: 'right', label: 'Default — Right' },
+  { value: 'bottom', label: 'Default — Bottom' },
+  { value: 'split', label: 'Default — Split' },
+];
+
+export type NodePropertyTriggerProps = {
+  /** Text shown on the label button. Defaults to 'Properties'. */
   label?: string;
-  panels?: NodePropertyPanelItem[];
-  behavior?: NodePropertyPanelBehavior;
-  layout?: NodePropertyPanelLayout;
-  presets?: NodePropertyPanelPreset[];
-  /** Called when the "Properties" label text is clicked. */
+  /** Panels to display as toggleable items in the popover. */
+  panels?: NodePropertyTriggerItem[];
+  /** Currently active panel behaviour — reflected as a selection indicator in the popover. */
+  behavior?: NodePropertyTriggerBehavior;
+  /** Behaviour options shown in the popover. Defaults to Auto hide / Always persist. */
+  behaviorOptions?: NodePropertyTriggerBehaviorOption[];
+  /** Currently active layout — reflected as a selection indicator in the popover. */
+  layout?: NodePropertyTriggerLayout;
+  /** Layout options shown in the popover. Defaults to Right / Bottom / Split. */
+  layoutOptions?: NodePropertyTriggerLayoutOption[];
+  /** Saved presets to show in the popover. */
+  presets?: NodePropertyTriggerPreset[];
+  /** Additional class names applied to the trigger root element. */
+  className?: string;
+  /** Called when the label button is clicked. */
   onPropertiesClick?: () => void;
-  onBehaviorChange?: (behavior: NodePropertyPanelBehavior) => void;
-  onLayoutChange?: (layout: NodePropertyPanelLayout) => void;
+  onBehaviorChange?: (behavior: NodePropertyTriggerBehavior) => void;
+  onLayoutChange?: (layout: NodePropertyTriggerLayout) => void;
   onPanelToggle?: (label: string, enabled: boolean) => void;
-  onPresetApply?: (preset: NodePropertyPanelPreset) => void;
+  onPresetApply?: (preset: NodePropertyTriggerPreset) => void;
   onPresetDelete?: (id: string) => void;
   onSavePreset?: () => void;
   /** When true a "Save as preset" button is shown at the bottom of the presets section. */
@@ -35,17 +67,18 @@ type MenuPos = { right: number; top?: number; bottom?: number };
 const ITEM_CLASS =
   'flex w-full items-center justify-between px-3 py-2 text-xs text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground';
 
-const ITEM_NO_DOT_CLASS =
-  'flex w-full items-center px-3 py-2 text-xs text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground';
-
 const SECTION_HEADING_CLASS =
   'px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wide text-foreground-subtle';
 
-export function NodePropertyPanel({
+export function NodePropertyTrigger({
   label = 'Properties',
   panels = [],
   behavior = 'auto-hide',
+  behaviorOptions = DEFAULT_BEHAVIOR_OPTIONS,
+  layout,
+  layoutOptions = DEFAULT_LAYOUT_OPTIONS,
   presets = [],
+  className,
   onPropertiesClick,
   onBehaviorChange,
   onLayoutChange,
@@ -54,14 +87,14 @@ export function NodePropertyPanel({
   onPresetDelete,
   onSavePreset,
   canSavePreset = false,
-}: NodePropertyPanelProps) {
+}: NodePropertyTriggerProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState<MenuPos | null>(null);
-  const btnRef = useRef<HTMLButtonElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleToggle = useCallback(() => {
-    if (!menuOpen && btnRef.current) {
-      const rect = btnRef.current.getBoundingClientRect();
+    if (!menuOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
       const upward = rect.bottom + 420 > window.innerHeight;
       setMenuPos({
         right: window.innerWidth - rect.right,
@@ -72,13 +105,15 @@ export function NodePropertyPanel({
     setMenuOpen((v) => !v);
   }, [menuOpen]);
 
-  // Close on outside click
+  // Close on outside click — exclude both the trigger container and the portalled menu
   useEffect(() => {
     if (!menuOpen) return;
     const handlePointerDown = (e: PointerEvent) => {
+      const target = e.target as Element;
       if (
-        btnRef.current &&
-        !btnRef.current.closest('[data-node-property-panel-root]')?.contains(e.target as Node)
+        containerRef.current &&
+        !containerRef.current.contains(target) &&
+        !target.closest('[data-node-property-panel-menu]')
       ) {
         setMenuOpen(false);
       }
@@ -129,12 +164,7 @@ export function NodePropertyPanel({
 
         <div className={cn(panels.length > 0 && 'border-t border-border-subtle')}>
           <p className={SECTION_HEADING_CLASS}>Panel behavior</p>
-          {(
-            [
-              { value: 'auto-hide', label: 'Auto hide' },
-              { value: 'always-persist', label: 'Always persist' },
-            ] as { value: NodePropertyPanelBehavior; label: string }[]
-          ).map(({ value, label: behaviorLabel }) => (
+          {behaviorOptions.map(({ value, label: behaviorLabel }) => (
             <button
               key={value}
               type="button"
@@ -157,13 +187,7 @@ export function NodePropertyPanel({
 
         <div className="border-t border-border-subtle">
           <p className={SECTION_HEADING_CLASS}>Default layouts</p>
-          {(
-            [
-              { value: 'right', name: 'Default — Right' },
-              { value: 'bottom', name: 'Default — Bottom' },
-              { value: 'split', name: 'Default — Split' },
-            ] as { value: NodePropertyPanelLayout; name: string }[]
-          ).map(({ value, name }) => (
+          {layoutOptions.map(({ value, label: layoutLabel }) => (
             <button
               key={value}
               type="button"
@@ -171,9 +195,15 @@ export function NodePropertyPanel({
                 onLayoutChange?.(value);
                 setMenuOpen(false);
               }}
-              className={ITEM_NO_DOT_CLASS}
+              className={ITEM_CLASS}
             >
-              {name}
+              <span>{layoutLabel}</span>
+              <span
+                className={cn(
+                  'size-2 rounded-full',
+                  layout === value ? 'bg-foreground-accent' : 'bg-surface-overlay'
+                )}
+              />
             </button>
           ))}
         </div>
@@ -225,8 +255,12 @@ export function NodePropertyPanel({
 
   return (
     <div
+      ref={containerRef}
       data-node-property-panel-root
-      className="w-fit flex flex-row items-center rounded-xl border border-border-subtle bg-surface-raised p-1"
+      className={cn(
+        'w-fit flex flex-row items-center rounded-xl border border-border-subtle bg-surface-raised p-1',
+        className
+      )}
       style={{ boxShadow: '0 2px 6px rgba(0,0,0,0.08)' }}
     >
       <button
@@ -241,7 +275,6 @@ export function NodePropertyPanel({
 
       <div className="relative">
         <button
-          ref={btnRef}
           type="button"
           title="Panel options"
           onClick={handleToggle}
@@ -260,4 +293,4 @@ export function NodePropertyPanel({
   );
 }
 
-NodePropertyPanel.displayName = 'NodePropertyPanel';
+NodePropertyTrigger.displayName = 'NodePropertyTrigger';
