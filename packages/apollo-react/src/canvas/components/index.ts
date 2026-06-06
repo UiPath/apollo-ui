@@ -1,4 +1,5 @@
 export * from './AddNodePanel';
+export * from './ProbeCard';
 export * from './AgentCanvas';
 export * from './BaseCanvas';
 export * from './BaseNode';
