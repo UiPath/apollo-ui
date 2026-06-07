@@ -84,7 +84,7 @@ const wrapSvg = (iconName: string, body: IconElement[]): string =>
 
 /**
  * Build the inline SVG markup for a token chip's leading icon, keyed by token type. Output mirrors
- * what `<TokenPill>` renders in edit mode (lucide v0.555.0), suitable for embedding in a markdown
+ * what `<TokenPill>` renders in edit mode (lucide v0.577.0), suitable for embedding in a markdown
  * HTML string. Non-variable token types fall back to the input (`variable`) glyph.
  */
 export function buildTokenIconSvgMarkup(type: PromptEditorTokenType): string {

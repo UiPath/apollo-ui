@@ -36,7 +36,6 @@ const MARKDOWN_PREVIEW_STYLES = `
 .prompt-editor-preview strong { font-weight: 700; }
 .prompt-editor-preview em { font-style: italic; }
 .prompt-editor-preview .token-pill { display: inline-flex; align-items: center; gap: 3px; height: 20px; padding: 0 4px; border-radius: 4px; font-size: 13px; line-height: 20px; vertical-align: middle; background: var(--color-primary-lighter); color: var(--color-foreground); }
-.prompt-editor-preview .token-pill[data-invalid='true'] { background: var(--color-error-background); }
 .prompt-editor-preview .token-pill svg { display: block; flex-shrink: 0; color: var(--color-primary); width: 14px; height: 14px; }
 `;
 
@@ -108,7 +107,6 @@ const PURIFY_CONFIG = {
   ],
   ALLOWED_ATTR: [
     'class',
-    'data-invalid',
     // links — `target` is intentionally disallowed so `target="_blank"` can't enable tabnabbing
     'href',
     'rel',

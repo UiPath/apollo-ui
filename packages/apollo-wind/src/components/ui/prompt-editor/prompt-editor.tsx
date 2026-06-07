@@ -452,10 +452,15 @@ export const PromptEditor = ({
           />
         )}
 
-        {/* Preview mode */}
+        {/* Preview mode — mirror `borderless`: when set, the parent supplies the chrome, so drop
+            the editor's own border/background here too (keeps edit/preview consistent). */}
         {mode === 'preview' && (
           <div
-            className={`border bg-background ${showToolbar ? 'border-t-0 rounded-b-md' : 'rounded-md'}`}
+            className={
+              borderless
+                ? undefined
+                : `border bg-background ${showToolbar ? 'border-t-0 rounded-b-md' : 'rounded-md'}`
+            }
           >
             <MarkdownPreview tokens={previewTokens} minRows={minRows} />
           </div>
