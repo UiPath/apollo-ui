@@ -1,3 +1,16 @@
+## [@uipath/apollo-react-v4.40.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.39.5...@uipath/apollo-react@4.40.0) (2026-06-08)
+
+### Features
+
+* **apollo-react:** port rich text editor from apollo-design-system ([eb86e2d](https://github.com/UiPath/apollo-ui/commit/eb86e2da3c248b2b6debd5a9987f991073614bef))
+
+### Bug Fixes
+
+* **apollo-react:** address rich text editor review feedback ([53c8074](https://github.com/UiPath/apollo-ui/commit/53c80741950acdd48face652f9c3e72640757ea2))
+* **apollo-react:** fix ReDoS in rich text editor table divider regex ([9904e9a](https://github.com/UiPath/apollo-ui/commit/9904e9aab2451a2c4dcdaa8c49f8703154db2f03))
+* **apollo-react:** remove duplicate slash in rich text editor URL matcher ([53cf303](https://github.com/UiPath/apollo-ui/commit/53cf303d755ec211ec8342ccc13d2c8e2a93711a))
+* **apollo-react:** tidy rich text editor a11y and lint nits from review ([fc8073f](https://github.com/UiPath/apollo-ui/commit/fc8073f4ed3b4911a2d71c94dfa7434ef8a5bfe6))
+
 ## [@uipath/apollo-react-v4.39.5](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.39.4...@uipath/apollo-react@4.39.5) (2026-06-08)
 
 ### Bug Fixes
