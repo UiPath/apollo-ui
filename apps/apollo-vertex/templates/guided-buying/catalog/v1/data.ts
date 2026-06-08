@@ -467,6 +467,14 @@ export function eppSavings(item: CatalogItem): number {
   return item.eppPrice ? item.listPrice - item.eppPrice : 0;
 }
 
+/**
+ * Default quantity when adding an item. The request is for laptops, so any
+ * laptop carries the inferred request quantity (2); accessories default to 1.
+ */
+export function defaultQuantityFor(item: CatalogItem): number {
+  return item.category === "Laptops" ? INFERRED_REQUEST_QUANTITY : 1;
+}
+
 /** The active price given the price basis (EPP when applied, else list). */
 export function activePrice(item: CatalogItem, basis: PriceBasis): number {
   return basis === "epp" ? effectivePrice(item) : item.listPrice;

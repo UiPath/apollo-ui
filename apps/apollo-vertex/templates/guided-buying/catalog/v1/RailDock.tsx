@@ -1,15 +1,10 @@
-import type { Ref } from "react";
 import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
 import { cn } from "@/lib/utils";
 import { ChatRail } from "./ChatRail";
-import type { BuyRequest, RailNote } from "./types";
 
 interface RailDockProps {
   open: boolean;
   hasUpdates: boolean;
-  request: BuyRequest;
-  notes: RailNote[];
-  inputRef?: Ref<HTMLInputElement>;
   onCollapse: () => void;
   onExpand: () => void;
 }
@@ -21,9 +16,6 @@ interface RailDockProps {
 export function RailDock({
   open,
   hasUpdates,
-  request,
-  notes,
-  inputRef,
   onCollapse,
   onExpand,
 }: RailDockProps) {
@@ -36,12 +28,7 @@ export function RailDock({
       )}
     >
       {open ? (
-        <ChatRail
-          request={request}
-          notes={notes}
-          inputRef={inputRef}
-          onCollapse={onCollapse}
-        />
+        <ChatRail onCollapse={onCollapse} />
       ) : (
         <button
           type="button"

@@ -21,7 +21,10 @@ const ACCENT = "bg-[#0f7b8a] text-white hover:bg-[#0c6976]";
 
 interface ProductDetailProps {
   item: CatalogItem;
+  /** Pending quantity to add when the item isn't in the cart yet. */
   defaultQuantity: number;
+  /** Live cart quantity (0 if not in cart) — the source of truth once added. */
+  cartQuantity: number;
   inCart: boolean;
   comparing: boolean;
   isPicked: boolean;
@@ -36,6 +39,7 @@ interface ProductDetailProps {
 export function ProductDetail({
   item,
   defaultQuantity,
+  cartQuantity,
   inCart,
   comparing,
   isPicked,
@@ -46,7 +50,12 @@ export function ProductDetail({
   onAskAgent,
   onClose,
 }: ProductDetailProps) {
-  const [quantity, setQuantity] = useState(defaultQuantity);
+  // Pending qty applies before the item is in the cart; once in the cart, the
+  // stepper reads and edits the cart quantity directly (single source of truth).
+  const [pendingQty, setPendingQty] = useState(defaultQuantity);
+  const quantity = inCart ? cartQuantity : pendingQty;
+  const onQtyChange = (next: number) =>
+    inCart ? onAddToCart(next) : setPendingQty(next);
   const basis = usePriceBasis();
   const showStrike = showsListStrike(item, basis);
   const savings = activeSavings(item, basis);
@@ -133,7 +142,7 @@ export function ProductDetail({
             )}
 
             <div className="flex flex-wrap items-center gap-3 pt-1">
-              <QuantityStepper value={quantity} onChange={setQuantity} />
+              <QuantityStepper value={quantity} onChange={onQtyChange} />
               <Button
                 variant={inCart ? "outline" : "default"}
                 className={cn(!inCart && ACCENT)}

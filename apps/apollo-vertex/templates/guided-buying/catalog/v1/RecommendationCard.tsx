@@ -10,6 +10,7 @@ interface RecommendationCardProps {
   /** Total catalog size, for the "browse all N" line. */
   totalCount: number;
   inCart: boolean;
+  quantity: number;
   /** "photo" shows the product image; "logo" shows the brand logo. */
   imageMode?: "photo" | "logo";
   onToggleCart: (item: CatalogItem) => void;
@@ -25,6 +26,7 @@ export function RecommendationCard({
   alternatives,
   totalCount,
   inCart,
+  quantity,
   imageMode = "photo",
   onToggleCart,
   onOpenDetail,
@@ -56,6 +58,7 @@ export function RecommendationCard({
         <ProductCard
           item={item}
           inCart={inCart}
+          quantity={quantity}
           featured
           imageMode={imageMode}
           onToggleCart={onToggleCart}

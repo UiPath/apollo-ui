@@ -309,7 +309,7 @@ export function AiChatInput({
               onPaste={handlePaste}
               placeholder={displayPlaceholder}
               aria-label={displayPlaceholder}
-              className="w-full resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none h-[80px] px-[22px] pt-5 pb-2 leading-relaxed"
+              className="w-full resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none h-[52px] px-[22px] pt-4 pb-2 leading-relaxed"
               rows={1}
               disabled={disabled}
             />
