@@ -18,7 +18,6 @@ minimumReleaseAge: 20160
 minimumReleaseAgeExclude:
   - '@uipath/*'                   # permanent — own scope, always installable immediately
   - '@turbo/*'                    # 2.9.14 — platform binaries co-published with turbo (scope rename from turbo-*), same OIDC provenance ✓
-  - 'engine.io-client'            # 6.6.5 — brings ws ~8.20.1 to the @uipath/uipath-typescript chain, vetted 2026-05-20: OIDC provenance ✓, socketio/socket.io tag by darrachequesne, single commit is the ws bump (PR #5439)
 # Refuse transitive git/tarball deps (pnpm 11 default; kept explicit for clarity)
 blockExoticSubdeps: true
 
