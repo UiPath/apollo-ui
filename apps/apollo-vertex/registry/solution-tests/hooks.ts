@@ -46,5 +46,5 @@ export type { UseRunResultsResult } from "./use-run-results";
 
 export { useForceStopBatch, useForceStopRun } from "./use-force-stop";
 
-export type { MutationHookResult, AttachmentFetcher } from "./mutations";
+export type { MutationHook, AttachmentFetcher } from "./mutations";
 export type { ResultAttachmentField } from "./types";

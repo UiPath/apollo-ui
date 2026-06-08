@@ -1,8 +1,11 @@
-/** Hook return shape for a write: `mutate` rejects on failure; `isPending` reflects it. */
-export interface MutationHookResult<TArgs extends unknown[], TResult> {
-  mutate: (...args: TArgs) => Promise<TResult>;
-  isPending: boolean;
-}
+import type { UseMutationResult } from "@tanstack/react-query";
+
+/** A write hook's return: the React Query mutation, keyed by its variables. */
+export type MutationHook<TVariables> = UseMutationResult<
+  void,
+  Error,
+  TVariables
+>;
 
 export interface AttachmentFetcher<TArgs extends unknown[]> {
   fetch: (...args: TArgs) => Promise<unknown>;

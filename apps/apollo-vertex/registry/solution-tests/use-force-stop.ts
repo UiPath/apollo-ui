@@ -8,25 +8,20 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useSolutionTestsActions } from "./context";
-import type { MutationHookResult } from "./mutations";
+import type { MutationHook } from "./mutations";
 
 /** Force-stop a whole batch run. */
-export function useForceStopBatch(): MutationHookResult<
-  [batchId: string],
-  void
-> {
+export function useForceStopBatch(): MutationHook<string> {
   const actions = useSolutionTestsActions();
-  const { mutateAsync, isPending } = useMutation({
+  return useMutation({
     mutationFn: (batchId: string) => actions.forceStopBatch(batchId),
   });
-  return { mutate: (batchId) => mutateAsync(batchId), isPending };
 }
 
 /** Force-stop a single run. */
-export function useForceStopRun(): MutationHookResult<[runId: string], void> {
+export function useForceStopRun(): MutationHook<string> {
   const actions = useSolutionTestsActions();
-  const { mutateAsync, isPending } = useMutation({
+  return useMutation({
     mutationFn: (runId: string) => actions.forceStopRun(runId),
   });
-  return { mutate: (runId) => mutateAsync(runId), isPending };
 }

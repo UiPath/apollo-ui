@@ -12,8 +12,8 @@ import { useMutation } from "@tanstack/react-query";
 import { useSolution } from "@uipath/vs-core";
 import { fetchAttachment } from "./attachments";
 import { ENTITY } from "./constants";
-import { useSolutionTestsActions, useSolutionTestsEntityId } from "./context";
-import type { AttachmentFetcher, MutationHookResult } from "./mutations";
+import { useSolutionTestsActions } from "./context";
+import type { AttachmentFetcher, MutationHook } from "./mutations";
 import { JobRole } from "./types";
 import type {
   ResultAttachmentField,
@@ -69,24 +69,19 @@ export function useRunResults(runId: string): UseRunResultsResult {
 }
 
 /** Adopt a run result's job as the test baseline. */
-export function useAdoptJob(): MutationHookResult<[resultId: string], void> {
+export function useAdoptJob(): MutationHook<string> {
   const actions = useSolutionTestsActions();
-  const { mutateAsync, isPending } = useMutation({
+  return useMutation({
     mutationFn: (resultId: string) => actions.adoptJob(resultId),
   });
-  return { mutate: (resultId) => mutateAsync(resultId), isPending };
 }
 
 /** Update the test baseline from a run result. */
-export function useUpdateBaseline(): MutationHookResult<
-  [resultId: string],
-  void
-> {
+export function useUpdateBaseline(): MutationHook<string> {
   const actions = useSolutionTestsActions();
-  const { mutateAsync, isPending } = useMutation({
+  return useMutation({
     mutationFn: (resultId: string) => actions.updateBaseline(resultId),
   });
-  return { mutate: (resultId) => mutateAsync(resultId), isPending };
 }
 
 /** One attachment slot for a run result (run-details expansion). */
@@ -94,10 +89,9 @@ export function useResultAttachment(): AttachmentFetcher<
   [resultId: string, field: ResultAttachmentField]
 > {
   const solution = useSolution();
-  const getEntityId = useSolutionTestsEntityId();
   return {
     fetch: (resultId: string, field: ResultAttachmentField) => {
-      const entityId = getEntityId(ENTITY.runResults);
+      const entityId = solution?.api.entityIds?.[ENTITY.runResults];
       if (!entityId) return Promise.resolve(null);
       return fetchAttachment(solution, entityId, resultId, field);
     },

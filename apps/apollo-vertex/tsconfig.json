@@ -99,6 +99,7 @@
       "@/components/ui/sidebar": ["./registry/sidebar/sidebar"],
       "@/components/ui/skeleton": ["./registry/skeleton/skeleton"],
       "@/components/ui/slider": ["./registry/slider/slider"],
+      "@/components/ui/solution-tests": ["./registry/solution-tests/index"],
       "@/components/ui/sonner": ["./registry/sonner/sonner"],
       "@/components/ui/spinner": ["./registry/spinner/spinner"],
       "@/components/ui/switch": ["./registry/switch/switch"],
