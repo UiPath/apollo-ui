@@ -1,7 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
-import { BackgroundVariant, Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  BackgroundVariant,
+  Panel,
+  Position,
+  ReactFlowProvider,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   Button,
   Select,
@@ -261,15 +266,19 @@ function ModesCanvas({ mode }: { mode: 'design' | 'view' | 'readonly' }) {
   const { canvasProps } = useCanvasStory({ initialNodes, initialEdges: pipelineEdges });
   return (
     <BaseCanvas {...canvasProps} mode={mode}>
-      <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} />
-      </Panel>
+      {/* Hide controls in readonly — the mode is fully frozen, controls would be misleading */}
+      {mode !== 'readonly' && (
+        <Panel position="bottom-right">
+          <CanvasPositionControls translations={DefaultCanvasTranslations} />
+        </Panel>
+      )}
     </BaseCanvas>
   );
 }
 
 function ModesPage({ globalTheme }: { globalTheme: string }) {
-  const [activeMode, setActiveMode] = useState<'design' | 'view' | 'readonly'>('design');
+  // Default to 'view' — matches the BaseCanvas prop default documented in the header
+  const [activeMode, setActiveMode] = useState<'design' | 'view' | 'readonly'>('view');
   const [expanded, setExpanded] = useState(false);
 
   const activeModeCard = modeCards.find((c) => c.mode === activeMode)!;
@@ -520,31 +529,76 @@ const backgroundVariantRows = [
   {
     variant: BackgroundVariant.Dots,
     label: 'Dots',
-    defaultGap: 20,
-    defaultSize: 1,
+    defaultGap: 16,
+    defaultSize: 2,
     description: 'Small dots on a grid. Subtle and unobtrusive at all zoom levels.',
   },
   {
     variant: BackgroundVariant.Lines,
     label: 'Lines',
-    defaultGap: 20,
+    defaultGap: 16,
     defaultSize: 1,
     description: 'Grid lines. Provides a clear spatial reference for node alignment.',
   },
   {
     variant: BackgroundVariant.Cross,
     label: 'Cross',
-    defaultGap: 20,
+    defaultGap: 16,
     defaultSize: 4,
     description: 'Plus marks at intersections. A midpoint between dots and full grid lines.',
   },
 ];
 
-function BehaviorCanvas({ backgroundVariant }: { backgroundVariant?: BackgroundVariant }) {
+function BehaviorCanvas({ id = 'behavior-canvas' }: { id?: string }) {
   const initialNodes = useMemo(() => createPipelineNodes(), []);
   const { canvasProps } = useCanvasStory({ initialNodes, initialEdges: pipelineEdges });
   return (
-    <BaseCanvas {...canvasProps} mode="view" backgroundVariant={backgroundVariant}>
+    <ReactFlowProvider>
+      <BaseCanvas {...canvasProps} id={id} mode="view">
+        <Panel position="bottom-right">
+          <CanvasPositionControls translations={DefaultCanvasTranslations} />
+        </Panel>
+      </BaseCanvas>
+    </ReactFlowProvider>
+  );
+}
+
+function BackgroundVariantCanvas() {
+  const initialNodes = useMemo(() => createPipelineNodes(), []);
+  const [backgroundType, setBackgroundType] = useState<BackgroundVariant>(BackgroundVariant.Lines);
+  const { canvasProps } = useCanvasStory({ initialNodes, initialEdges: pipelineEdges });
+
+  const bgProps = {
+    [BackgroundVariant.Dots]: { gap: 16, size: 2 },
+    [BackgroundVariant.Cross]: { gap: 16, size: 4 },
+    [BackgroundVariant.Lines]: { gap: 16, size: 1 },
+  }[backgroundType];
+
+  return (
+    <BaseCanvas
+      {...canvasProps}
+      id="background-variant-canvas"
+      mode="view"
+      backgroundVariant={backgroundType}
+      backgroundGap={bgProps.gap}
+      backgroundSize={bgProps.size}
+    >
+      <StoryInfoPanel title="Background variants">
+        <Row gap={8} style={{ marginTop: 8 }}>
+          {[BackgroundVariant.Dots, BackgroundVariant.Lines, BackgroundVariant.Cross].map(
+            (variant) => (
+              <Button
+                key={variant}
+                size="sm"
+                variant={backgroundType === variant ? 'default' : 'secondary'}
+                onClick={() => setBackgroundType(variant)}
+              >
+                {variant}
+              </Button>
+            )
+          )}
+        </Row>
+      </StoryInfoPanel>
       <Panel position="bottom-right">
         <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
@@ -554,7 +608,6 @@ function BehaviorCanvas({ backgroundVariant }: { backgroundVariant?: BackgroundV
 
 function BehaviorPage({ globalTheme }: { globalTheme: string }) {
   const [expanded, setExpanded] = useState(false);
-  const [activeVariant, setActiveVariant] = useState<BackgroundVariant>(BackgroundVariant.Dots);
 
   return (
     <div className={cn(globalTheme, 'min-h-screen w-full bg-background text-foreground')}>
@@ -786,29 +839,8 @@ import { DefaultCanvasTranslations } from '@uipath/apollo-react/canvas/types';
           .
         </p>
 
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          {backgroundVariantRows.map((v) => (
-            <button
-              key={v.variant}
-              type="button"
-              onClick={() => setActiveVariant(v.variant)}
-              className={cn(
-                'rounded-md border px-3 py-1.5 text-sm font-medium transition-colors',
-                activeVariant === v.variant
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border bg-transparent text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {v.label}
-            </button>
-          ))}
-          <span className="text-xs text-muted-foreground">
-            {backgroundVariantRows.find((v) => v.variant === activeVariant)?.description}
-          </span>
-        </div>
-
         <div className="mb-6 h-[560px] overflow-hidden rounded-xl border border-border">
-          <BehaviorCanvas backgroundVariant={activeVariant} />
+          <BackgroundVariantCanvas />
         </div>
 
         <div className="overflow-hidden rounded-lg border border-border">
@@ -939,11 +971,11 @@ function DefaultStory() {
               <SelectValue placeholder="Edge type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="default">Default (Bezier)</SelectItem>
+              <SelectItem value="default">Default (Apollo)</SelectItem>
+              <SelectItem value="simplebezier">Simple Bezier</SelectItem>
               <SelectItem value="straight">Straight</SelectItem>
               <SelectItem value="step">Step</SelectItem>
               <SelectItem value="smoothstep">Smooth Step</SelectItem>
-              <SelectItem value="bezier">Bezier</SelectItem>
             </SelectContent>
           </Select>
 
