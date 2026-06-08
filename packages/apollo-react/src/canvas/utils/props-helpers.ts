@@ -24,6 +24,22 @@ const SPAN_STATUS = {
 export const NODE_ID_DELIMITER = '=>';
 export const EDGE_ID_DELIMITER = '::';
 
+// Streaming/partial spans can carry malformed JSON; an unguarded throw here would
+// abort node-status computation for the whole render and drop highlighting intermittently.
+const parseSpanAttributes = (span: IRawSpan): Record<string, unknown> | null => {
+  if (!span.Attributes) return null;
+  try {
+    return JSON.parse(span.Attributes);
+  } catch {
+    return null;
+  }
+};
+
+// An in-flight span may arrive before its Status is populated; treat a missing/non-numeric
+// Status as RUNNING so the node still glows while executing.
+const spanStatus = (span: IRawSpan): number =>
+  Number.isFinite(span.Status) ? span.Status : SPAN_STATUS.RUNNING;
+
 const getResourceNodeId = (resource: AgentFlowResource): string => {
   return resource.id;
 };
@@ -49,7 +65,7 @@ const hasResourceStatus = (
   targetStatus: number
 ): boolean => {
   for (const span of spans) {
-    const attributes = span.Attributes ? JSON.parse(span.Attributes) : null;
+    const attributes = parseSpanAttributes(span);
     if (!attributes) continue;
 
     // Check for tool/context/escalation/mcp status
@@ -62,7 +78,13 @@ const hasResourceStatus = (
     ) {
       const normalizedToolName = normalizeToolName(resource);
 
-      if (attributes.toolName === normalizedToolName && span.Status === targetStatus) {
+      // Case-insensitive: escalation tool names preserve the resource-name casing in the span
+      // (e.g. `escalate_Escalation_1`) while normalizeToolName lowercases it.
+      if (
+        typeof attributes.toolName === 'string' &&
+        attributes.toolName.toLowerCase() === normalizedToolName.toLowerCase() &&
+        spanStatus(span) === targetStatus
+      ) {
         return true;
       }
     }
@@ -96,11 +118,11 @@ const hasModelStatus = (
   targetStatus: number
 ): boolean => {
   for (const span of spans) {
-    const attributes = span.Attributes ? JSON.parse(span.Attributes) : null;
+    const attributes = parseSpanAttributes(span);
     if (!attributes) continue;
 
     // Check for model status
-    if (attributes.type === 'completion' && span.Status === targetStatus) {
+    if (attributes.type === 'completion' && spanStatus(span) === targetStatus) {
       return true;
     }
   }
@@ -129,12 +151,12 @@ export const hasModelSuccess = (model: AgentFlowModel, spans: IRawSpan[]): boole
 // Helper function to check if an agent has a running status
 export const hasAgentRunning = (spans: IRawSpan[]): boolean => {
   for (const span of spans) {
-    const attributes = span.Attributes ? JSON.parse(span.Attributes) : null;
+    const attributes = parseSpanAttributes(span);
     if (!attributes) continue;
 
     // Check for agent run status
     if (attributes.type === 'agentRun') {
-      const isRunning = span.Status === SPAN_STATUS.RUNNING;
+      const isRunning = spanStatus(span) === SPAN_STATUS.RUNNING;
       return isRunning;
     }
   }
