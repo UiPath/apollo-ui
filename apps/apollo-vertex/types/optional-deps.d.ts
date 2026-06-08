@@ -1,13 +1,33 @@
 declare module "@tanstack/react-db" {
+  // Minimal stand-ins for @tanstack/db (re-exported by react-db). The phantom
+  // `__row` on Collection carries the row type so `useLiveQuery` can infer it;
+  // QueryResult is opaque (query-builder hooks supply their row type explicitly).
+  export interface Collection<T = unknown> {
+    readonly __row?: T;
+    // Optimistic, server-synced row mutation (Immer-style draft). The returned
+    // transaction's `isPersisted.promise` resolves once the write is committed.
+    update(
+      id: string,
+      callback: (draft: T) => void,
+    ): { isPersisted: { promise: Promise<unknown> } };
+  }
+  interface QueryResult {
+    readonly __query?: true;
+  }
+  interface QueryBuilder {
+    from(source: Record<string, unknown>): QueryResult;
+  }
+
+  // Accepts both the direct-collection form (`() => collection`, used by the
+  // Solution Tests read hooks — row type inferred from the Collection) and the
+  // query-builder form (`(q) => q.from({...})`, used by the identity/entity
+  // hooks — row type supplied explicitly).
   export function useLiveQuery<T>(
-    queryFn: (q: {
-      from: (source: Record<string, unknown>) => unknown;
-    }) => unknown,
+    queryFn: (
+      q: QueryBuilder,
+    ) => Collection<T> | QueryResult | undefined | null,
     deps?: Array<unknown>,
-  ): {
-    data: T[] | undefined;
-    isLoading: boolean;
-  };
+  ): { data: T[] | undefined; isLoading: boolean; isReady: boolean };
 }
 
 declare module "@uipath/proteus-client" {
@@ -57,8 +77,18 @@ declare module "@uipath/vs-core" {
 
   export function useSolution(): {
     api: {
+      // Authenticated UiPath SDK client; passed to @uipath/uipath-typescript
+      // service constructors (e.g. attachment downloads).
+      sdk: { core: import("@uipath/uipath-typescript/core").UiPath };
       collections: {
         entities: Record<string, unknown>;
+        // Name-keyed namespace for the Solution Test entity collections
+        // (UiPathSTTests, UiPathSTBatchRuns, …). A given collection may be absent.
+        solutionTests: Record<
+          string,
+          | import("@tanstack/react-db").Collection<Record<string, unknown>>
+          | undefined
+        >;
         identity: {
           groups: unknown;
           groupMembers: unknown;
