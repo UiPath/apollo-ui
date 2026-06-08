@@ -103,7 +103,8 @@ export const SettingsPromptBox = styled.div<{ isEmpty?: boolean }>`
   color: ${({ isEmpty }) =>
     isEmpty ? 'var(--canvas-foreground-de-emp)' : 'var(--canvas-foreground)'};
   font-style: ${({ isEmpty }) => (isEmpty ? 'italic' : 'normal')};
-  background: var(--canvas-background-secondary);
+  background: var(--canvas-background-hover);
+  border: 1px solid var(--canvas-border-de-emp);
   border-radius: 6px;
   padding: 8px 10px;
   max-height: 80px;
