@@ -11,7 +11,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useSolution } from "@uipath/vs-core";
 import { ENTITY } from "./constants";
 import { useSolutionTestsActions } from "./context";
-import type { MutationHookResult } from "./mutations";
+import type { MutationHook } from "./mutations";
 import type { SolutionTest } from "./types";
 
 export interface UseSolutionTestsResult {
@@ -30,13 +30,13 @@ export function useSolutionTests(): UseSolutionTestsResult {
   return { tests: data ?? [], isLoading };
 }
 
-/** Run the given tests (all active tests when omitted). */
-export function useRunTests(): MutationHookResult<[testIds?: string[]], void> {
+/** Run the given tests (all active tests when `testIds` is omitted). */
+export function useRunTests(): MutationHook<{ testIds?: string[] }> {
   const actions = useSolutionTestsActions();
-  const { mutateAsync, isPending } = useMutation({
-    mutationFn: (testIds?: string[]) => actions.runTests(testIds),
+  return useMutation({
+    mutationFn: ({ testIds }: { testIds?: string[] }) =>
+      actions.runTests(testIds),
   });
-  return { mutate: (testIds) => mutateAsync(testIds), isPending };
 }
 
 /**
@@ -45,12 +45,12 @@ export function useRunTests(): MutationHookResult<[testIds?: string[]], void> {
  * goes through the collection's optimistic `.update()` (synced to the backend
  * by vs-core) rather than the injected `actions`.
  */
-export function useToggleTestActive(): MutationHookResult<
-  [testId: string, isActive: boolean],
-  void
-> {
+export function useToggleTestActive(): MutationHook<{
+  testId: string;
+  isActive: boolean;
+}> {
   const solution = useSolution();
-  const { mutateAsync, isPending } = useMutation({
+  return useMutation({
     mutationFn: async ({
       testId,
       isActive,
@@ -68,17 +68,12 @@ export function useToggleTestActive(): MutationHookResult<
       await transaction.isPersisted.promise;
     },
   });
-  return {
-    mutate: (testId, isActive) => mutateAsync({ testId, isActive }),
-    isPending,
-  };
 }
 
 /** Delete a test. */
-export function useDeleteTest(): MutationHookResult<[testId: string], void> {
+export function useDeleteTest(): MutationHook<string> {
   const actions = useSolutionTestsActions();
-  const { mutateAsync, isPending } = useMutation({
+  return useMutation({
     mutationFn: (testId: string) => actions.deleteTest(testId),
   });
-  return { mutate: (testId) => mutateAsync(testId), isPending };
 }

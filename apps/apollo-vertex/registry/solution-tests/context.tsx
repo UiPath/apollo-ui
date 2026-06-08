@@ -11,13 +11,9 @@ import {
 } from "./config";
 import { createSolutionTestActions } from "./create-actions";
 
-/** Resolves a Solution Test entity name (e.g. `UiPathSTRunResults`) to its DataFabric id (GUID). */
-export type EntityIdResolver = (name: string) => string | undefined;
-
 interface SolutionTestsContextValue {
   config: ResolvedSolutionTestsConfig;
   actions: SolutionTestsActions;
-  getEntityId: EntityIdResolver;
 }
 
 const SolutionTestsContext = createContext<SolutionTestsContextValue | null>(
@@ -29,25 +25,21 @@ interface SolutionTestsProviderProps {
   /** Base URL each action slug is appended to (no trailing slash). */
   triggerBaseUrl: string;
   getToken: () => Promise<string | null> | string | null;
-  /** Resolves a Solution Test entity name to its DataFabric id (GUID); used for attachment reads. */
-  getEntityId: EntityIdResolver;
   children: ReactNode;
 }
 
-export const SolutionTestsProvider: React.FC<SolutionTestsProviderProps> = ({
+export const SolutionTestsProvider = ({
   config,
   triggerBaseUrl,
   getToken,
-  getEntityId,
   children,
-}) => {
+}: SolutionTestsProviderProps) => {
   const value = useMemo(
     () => ({
       config: resolveConfig(config),
       actions: createSolutionTestActions({ triggerBaseUrl, getToken }),
-      getEntityId,
     }),
-    [config, triggerBaseUrl, getToken, getEntityId],
+    [config, triggerBaseUrl, getToken],
   );
   return (
     <SolutionTestsContext.Provider value={value}>
@@ -72,8 +64,4 @@ export function useSolutionTestsConfig(): ResolvedSolutionTestsConfig {
 
 export function useSolutionTestsActions(): SolutionTestsActions {
   return useSolutionTestsContext().actions;
-}
-
-export function useSolutionTestsEntityId(): EntityIdResolver {
-  return useSolutionTestsContext().getEntityId;
 }

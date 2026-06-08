@@ -1,0 +1,179 @@
+import { SolutionTestsTemplate } from '@/templates/SolutionTestsTemplate';
+import { PreviewFullScreen } from '@/app/_components/preview-full-screen';
+
+# Solution tests
+
+A full-page composition for managing UiPath Solution Tests — test cases,
+batch runs, a KPI score trend, run-result baselines, and adopt / update /
+remove actions. The view is domain-neutral: it reads the generic `UiPathST*`
+Solution Test entity collections from your vs-core solution and is
+parameterized for the subject entity (loans, claims, invoices, …) through
+`SolutionTestsConfig`. Intended to render inside an
+[`ApolloShell`](/patterns/shell).
+
+<PreviewFullScreen title="Solution tests preview">
+    <SolutionTestsTemplate />
+</PreviewFullScreen>
+
+## Composition
+
+In production, render the smart `SolutionTests` container inside a
+`SolutionTestsProvider`; it reads the `UiPathST*` collections from your vs-core
+solution through the collection-backed hooks. The preview above is instead a
+presentational demo — it renders the dumb `SolutionTestsView` (and the dumb
+expanded views) with in-memory mock data and no-op handlers, so it never
+touches the hooks or vs-core. From top to bottom the view stacks:
+
+- **`PageHeader`** — title and the "Run all" action.
+- **KPI bar** — cards plus a `recharts` score-trend chart across recent runs.
+- **Tabs** — `Test cases` (list, enable/disable, run, delete) and
+  `Test runs` (batch runs backed by live queries, per-run results, force-stop).
+- **Dialogs** — run details, JSON viewer, and delete confirmation, plus the
+  expected-vs-actual baseline adopt / update / remove flows.
+
+Source: [`templates/SolutionTestsTemplate.tsx`](https://github.com/UiPath/apollo-ui/blob/main/apps/apollo-vertex/templates/SolutionTestsTemplate.tsx)
+
+## Consumer interface
+
+The smart container has three inputs, all on `SolutionTestsProvider` (two
+required, plus an optional `config`). Reads are implicit (the `UiPathST*`
+collections on your vs-core solution); writes and presentation are explicit
+props:
+
+```tsx
+interface SolutionTestsProviderProps {
+  /**
+   * Required. Base URL that write-action slugs are appended to (no trailing
+   * slash): `{base}/{org}/{tenant}/orchestrator_/t/{folderKey}`.
+   */
+  triggerBaseUrl: string;
+  /** Required. Resolves the caller's current bearer token (refreshed near expiry). */
+  getToken: () => Promise<string | null> | string | null;
+  /** Optional per-vertical presentation config. */
+  config?: SolutionTestsConfig;
+  children: ReactNode;
+}
+
+interface SolutionTestsConfig {
+  /** Columns inserted between Test Name and Version. Usually the only customization. */
+  subjectColumns?: ColumnDef<SolutionTest>[];
+  /** Turns the test name into a link to its subject. */
+  getSubjectHref?: (test: SolutionTest) => string | undefined;
+  /** Subject noun for labels, e.g. `{ singular: "Loan", plural: "Loans" }`. */
+  subjectNoun?: { singular: string; plural: string };
+  /** Score at/above which a result passes (drives pass color + KPI trend line). Defaults to 0.9. */
+  passThreshold?: number;
+  /** Show the Expected/Actual input panels in run-result details. Defaults to false (outputs only). */
+  showInputs?: boolean;
+}
+```
+
+So a consumer is responsible for exactly three things:
+
+1. **Reads** — ensure the name-keyed `UiPathST*` collections exist on your
+   vs-core solution (`solution.api.collections.solutionTests`); the list reads
+   query them reactively with no wiring. Attachment reads (expected/actual
+   output, evaluator results) resolve each entity's DataFabric id from
+   `solution.api.entityIds` (vs-core 2.0.6+), so they need no extra wiring.
+2. **Writes** — pass `triggerBaseUrl` + `getToken`. The provider builds the
+   whole write surface (run, delete, force-stop, adopt / update / remove
+   baseline) from them. Toggle-active isn't a trigger. It goes through the
+   collection's optimistic update and needs no extra wiring.
+3. **Presentation** — pass `config.subjectColumns` (and optionally
+   `getSubjectHref` / `subjectNoun`) to flavor the table for your vertical.
+
+Everything else (evaluator labels, status labels, the poll interval) is
+hard-coded in `constants.ts`. Edit there to retarget a deployment. The pass
+threshold defaults to `0.9` in `constants.ts` but is overridable per vertical
+via `config.passThreshold`. Consumers who want to supply their own data plumbing can instead
+render the dumb `SolutionTestsView`, which takes all data and callbacks via
+props. It must still be wrapped in `SolutionTestsProvider` (the view reads
+`config` from context via `useSolutionTestsConfig`), as the preview above does.
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/solution-tests
+```
+
+> **Requires [`@uipath/vs-core`](https://www.npmjs.com/package/@uipath/vs-core)
+> `^2.0.6`.** The container reads the Solution Test collections from the
+> dedicated, name-keyed `solution.api.collections.solutionTests` namespace, and
+> resolves attachment entity ids from `solution.api.entityIds` (added in 2.0.6).
+> Install vs-core per its README — it brings its own
+> peers (`@tanstack/db`, `@tanstack/query-db-collection`,
+> `@tanstack/react-query`, `@uipath/uipath-typescript`). The component itself
+> pulls `@tanstack/react-db` (for `useLiveQuery`), `@tanstack/react-table`,
+> `@tanstack/react-router`, `recharts`, `sonner`, and `react-i18next`.
+
+The Solution Test entities (`UiPathST*`) are generic across verticals, so the
+only per-vertical customization most consumers need is their vertical's
+**`subjectColumns`**. The smart `SolutionTests` container reads its data from
+your vs-core Solution Test collections — the name-keyed
+`solution.api.collections.solutionTests` set (`UiPathSTTests`,
+`UiPathSTBatchRuns`, `UiPathSTRuns`, `UiPathSTJobs`, `UiPathSTRunResults`) — via
+the collection-backed hooks, so your only data responsibility is to make sure
+those collections exist on your solution. Wrap `<SolutionTests />` in a
+`<SolutionTestsProvider>` with your presentation `config`.
+
+Reads are live the moment the collections exist. **Writes** (run, delete,
+force-stop, adopt/update/remove baseline) POST an action slug to your Solution
+Test trigger base URL — pass `triggerBaseUrl` and `getToken` to the provider and
+it builds the whole write surface for you, so you don't reimplement the
+trigger/auth plumbing. (Toggle-active and attachment reads aren't triggers — they
+go through the vs-core collections/sdk.)
+
+```tsx
+"use client";
+
+import {
+  SolutionTests,
+  SolutionTestsProvider,
+  type SolutionTestsConfig,
+} from "@/components/ui/solution-tests";
+
+const config: SolutionTestsConfig = {
+  subjectColumns, // the only per-vertical customization
+  subjectNoun: { singular: "Loan", plural: "Loans" },
+};
+
+export default function SolutionTestsPage() {
+  // List reads come from the vs-core solution's `collections.solutionTests` in
+  // context (provided higher up by your shell). No read wiring required.
+  return (
+    <SolutionTestsProvider
+      config={config}
+      // `{base}/{org}/{tenant}/orchestrator_/t/{folderKey}` (no trailing slash)
+      triggerBaseUrl={`/${env.UIPATH_ORG_NAME}/${env.UIPATH_TENANT_NAME}/orchestrator_/t/${env.UIPATH_SOLUTION_FOLDER_KEY}`}
+      getToken={() => tokenService.getCurrentToken()}
+    >
+      <SolutionTests />
+    </SolutionTestsProvider>
+  );
+}
+```
+
+The exported dumb `SolutionTestsView` takes all data + callbacks via props if
+you prefer to supply your own data plumbing or render the view against a mock
+(as the preview does).
+
+## Customizing
+
+- **Subject columns** — `config.subjectColumns` injects your vertical's columns
+  between Test Name and Version; `config.getSubjectHref` turns the test name
+  into a link to the subject. This is normally the only required config.
+- **Data source** — the smart `SolutionTests` container reads the `UiPathST*`
+  collections from `solution.api.collections.solutionTests` (vs-core 2.x) via
+  the collection-backed hooks in `hooks.ts`; just ensure those collections exist
+  on your solution. Reads are reactive (live queries); writes POST to the
+  provider's `triggerBaseUrl` (see Installation).
+- **Subject noun** — `config.subjectNoun` (a `singular` / `plural` pair) drives
+  the subject-flavored KPI card (e.g. "Loans passing"), the runs "passed"
+  column, and the run-results dialog title; omit it for generic "Tests"
+  wording.
+- **Fixed setup** — evaluator labels, status labels, and the poll interval are
+  hard-coded in `constants.ts`; edit there to retarget a deployment. The pass
+  threshold defaults to `0.9` but is overridable via `config.passThreshold`.
+- **i18n** — framework strings use `react-i18next`; wrap your app in
+  `ApolloShell` (which initializes i18n via `LocaleProvider`) or provide your
+  own `I18nextProvider`.

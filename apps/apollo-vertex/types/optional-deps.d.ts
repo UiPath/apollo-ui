@@ -80,6 +80,8 @@ declare module "@uipath/vs-core" {
       // Authenticated UiPath SDK client; passed to @uipath/uipath-typescript
       // service constructors (e.g. attachment downloads).
       sdk: { core: import("@uipath/uipath-typescript/core").UiPath };
+      // Resolved DataFabric id (GUID) per registered entity, keyed by entity name.
+      entityIds: Record<string, string>;
       collections: {
         entities: Record<string, unknown>;
         // Name-keyed namespace for the Solution Test entity collections

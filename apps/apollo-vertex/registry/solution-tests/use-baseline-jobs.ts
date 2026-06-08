@@ -12,8 +12,8 @@ import { useMutation } from "@tanstack/react-query";
 import { useSolution } from "@uipath/vs-core";
 import { fetchAttachment } from "./attachments";
 import { ENTITY } from "./constants";
-import { useSolutionTestsActions, useSolutionTestsEntityId } from "./context";
-import type { AttachmentFetcher, MutationHookResult } from "./mutations";
+import { useSolutionTestsActions } from "./context";
+import type { AttachmentFetcher, MutationHook } from "./mutations";
 import { JobRole } from "./types";
 import type { SolutionTestJob } from "./types";
 
@@ -37,24 +37,19 @@ export function useBaselineJobs(testId: string): UseBaselineJobsResult {
 }
 
 /** Remove a job from the test's expected (baseline) results. */
-export function useRemoveJobBaseline(): MutationHookResult<
-  [baselineId: string],
-  void
-> {
+export function useRemoveJobBaseline(): MutationHook<string> {
   const actions = useSolutionTestsActions();
-  const { mutateAsync, isPending } = useMutation({
+  return useMutation({
     mutationFn: (baselineId: string) => actions.removeJobBaseline(baselineId),
   });
-  return { mutate: (baselineId) => mutateAsync(baselineId), isPending };
 }
 
 /** Expected-output attachment for a baseline job (Agents expansion). */
 export function useJobExpectedOutput(): AttachmentFetcher<[jobId: string]> {
   const solution = useSolution();
-  const getEntityId = useSolutionTestsEntityId();
   return {
     fetch: (jobId: string) => {
-      const entityId = getEntityId(ENTITY.jobs);
+      const entityId = solution?.api.entityIds?.[ENTITY.jobs];
       if (!entityId) return Promise.resolve(null);
       // The baseline job's expected output lives in the `Output` File field on
       // UiPathSTJobs — `ExpectedOutput` only exists on UiPathSTRunResults.

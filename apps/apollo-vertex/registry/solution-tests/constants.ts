@@ -32,6 +32,9 @@ export const AGENT_SUCCESS_STATUSES = new Set(["success", "partial_success"]);
 /** Default score ≥ threshold for a pass; overridable via `config.passThreshold`. */
 export const DEFAULT_PASS_THRESHOLD = 0.9;
 
+/** Most recent completed batches plotted on the KPI score-trend chart. */
+export const MAX_TREND_POINTS = 10;
+
 /** Evaluator id → display label. */
 export const EVALUATOR_LABELS: Record<string, string> = {
   "uipath-json-similarity": "JSON Similarity",
