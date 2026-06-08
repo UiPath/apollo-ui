@@ -659,16 +659,16 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         {displayFooter && (
           <div className="basis-full pt-0.5 min-w-0 overflow-hidden">{displayFooter}</div>
         )}
-        {toolbarConfig && (
-          <NodeToolbar
-            nodeId={id}
-            config={toolbarConfig}
-            expanded={selected || isHovered}
-            hidden={dragging || multipleNodesSelected}
-            offsetToolbar={hasHandleButtonsAtToolbar}
-          />
-        )}
       </BaseContainer>
+      {toolbarConfig && (
+        <NodeToolbar
+          nodeId={id}
+          config={toolbarConfig}
+          expanded={selected || isHovered}
+          hidden={dragging || multipleNodesSelected}
+          offsetToolbar={hasHandleButtonsAtToolbar}
+        />
+      )}
       {handleElements}
       {executionStatus === 'ActionNeeded' &&
         (() => {
