@@ -10,7 +10,7 @@ interface TextFieldProps {
 }
 
 const inputBase =
-  'w-full px-3 py-2 text-[13px] font-mono border border-(--canvas-border) rounded bg-transparent text-foreground outline-none transition-colors placeholder:text-foreground-subtle focus:border-[var(--canvas-primary,theme(colors.blue.500))] disabled:opacity-50 disabled:cursor-not-allowed';
+  'w-full px-3 py-2 text-[13px] font-mono border border-(--canvas-border) rounded bg-transparent text-foreground outline-none transition-colors placeholder:text-foreground-subtle focus:border-(--canvas-primary) disabled:opacity-50 disabled:cursor-not-allowed';
 
 export const TextField = memo(function TextField({
   field,
