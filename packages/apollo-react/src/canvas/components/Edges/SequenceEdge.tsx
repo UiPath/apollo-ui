@@ -33,6 +33,7 @@ function areEdgePropsEqual(prevProps: EdgeProps, nextProps: EdgeProps): boolean 
   // Always re-render if these change
   if (prevProps.id !== nextProps.id) return false;
   if (prevProps.selected !== nextProps.selected) return false;
+  if (prevProps.animated !== nextProps.animated) return false;
   if (prevProps.source !== nextProps.source) return false;
   if (prevProps.target !== nextProps.target) return false;
   if (prevProps.sourcePosition !== nextProps.sourcePosition) return false;
@@ -53,6 +54,7 @@ function areEdgePropsEqual(prevProps: EdgeProps, nextProps: EdgeProps): boolean 
 export const SequenceEdge = memo(function SequenceEdge({
   id,
   selected,
+  animated,
   source,
   sourceX,
   sourceY,
@@ -180,11 +182,13 @@ export const SequenceEdge = memo(function SequenceEdge({
           strokeWidth={style?.strokeWidth || 2}
           style={{
             stroke: edgeColor,
-            strokeDasharray: isDiffRemoved
-              ? style?.strokeDasharray || '5,5'
-              : previewEdge
-                ? '5,5'
-                : '0',
+            strokeDasharray: animated
+              ? undefined
+              : isDiffRemoved
+                ? style?.strokeDasharray || '5,5'
+                : previewEdge
+                  ? '5,5'
+                  : '0',
             opacity: style?.opacity !== undefined ? style.opacity : 1,
             transition: 'stroke 0.2s ease, opacity 0.2s ease',
           }}
