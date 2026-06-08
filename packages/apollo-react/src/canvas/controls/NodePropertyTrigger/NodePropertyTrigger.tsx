@@ -128,6 +128,8 @@ export function NodePropertyTrigger({
     createPortal(
       <div
         data-node-property-panel-menu
+        role="menu"
+        aria-label="Panel options"
         className="w-56 overflow-y-auto max-h-[70vh] rounded-xl border border-border-subtle bg-surface-raised"
         style={{
           position: 'fixed',
@@ -228,6 +230,7 @@ export function NodePropertyTrigger({
               <button
                 type="button"
                 title="Delete preset"
+                aria-label="Delete preset"
                 onClick={() => onPresetDelete?.(preset.id)}
                 className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
               >
@@ -277,6 +280,9 @@ export function NodePropertyTrigger({
         <button
           type="button"
           title="Panel options"
+          aria-label="Panel options"
+          aria-haspopup="true"
+          aria-expanded={menuOpen}
           onClick={handleToggle}
           className={cn(
             'grid size-8 place-items-center rounded-lg transition',
