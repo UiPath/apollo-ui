@@ -285,8 +285,10 @@ function ProbeCardComponent({
     input.focus({ preventScroll: true });
   }, [watches.length]);
 
-  // Delete/Backspace removes the probe when the card has focus and no editable
-  // field is active. Capture phase runs before ReactFlow's document-level handler.
+  // Keyboard shortcuts — capture phase so we run before ReactFlow's handlers.
+  //   Escape          → dismiss the probe (always, even from an input)
+  //   Delete/Backspace → dismiss when card has focus but no editable is active
+  //   ArrowUp/Down    → move focus between watch expression inputs
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const card = cardRef.current;
