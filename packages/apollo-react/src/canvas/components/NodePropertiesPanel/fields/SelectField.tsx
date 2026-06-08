@@ -39,7 +39,7 @@ export const SelectField = memo(function SelectField({
           id={selectId}
           className={cn(
             'nodrag w-full px-3 py-2 pr-8 text-[13px] border border-(--canvas-border) rounded bg-transparent text-foreground outline-none transition-colors appearance-none cursor-pointer',
-            'focus:border-[var(--canvas-primary,theme(colors.blue.500))]',
+            'focus:border-(--canvas-primary)',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             error && 'border-red-500'
           )}

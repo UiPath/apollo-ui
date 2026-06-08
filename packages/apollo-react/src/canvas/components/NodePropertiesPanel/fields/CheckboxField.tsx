@@ -23,8 +23,12 @@ export const CheckboxField = memo(function CheckboxField({
 
   return (
     <div className="flex flex-col gap-1">
-      <div className="py-2 rounded transition hover:bg-surface-hover">
-        <label className="flex items-center text-[13px] text-foreground cursor-pointer select-none">
+      <div
+        className={`py-2 rounded transition ${field.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-surface-hover'}`}
+      >
+        <label
+          className={`flex items-center text-[13px] text-foreground select-none ${field.disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+        >
           <input
             className="nodrag size-[18px] mr-2 cursor-pointer"
             type="checkbox"

@@ -67,8 +67,8 @@ export const NumberField = memo(function NumberField({
         <input
           id={`field-${field.key}`}
           className={cn(
-            'nodrag flex-1 px-3 py-2 text-[13px] font-mono border rounded bg-transparent text-foreground outline-none transition-colors',
-            'focus:border-[var(--canvas-primary,theme(colors.blue.500))]',
+            'nodrag flex-1 px-3 py-2 text-[13px] font-mono border border-(--canvas-border) rounded bg-transparent text-foreground outline-none transition-colors',
+            'focus:border-(--canvas-primary)',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             '[appearance:textfield] [&::-webkit-inner-spin-button]:hidden [&::-webkit-outer-spin-button]:hidden',
             error && 'border-red-500'

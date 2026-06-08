@@ -109,8 +109,9 @@ export function NodePropertyTrigger({
   useEffect(() => {
     if (!menuOpen) return;
     const handlePointerDown = (e: PointerEvent) => {
-      const target = e.target as Element;
+      const target = e.target instanceof Element ? e.target : null;
       if (
+        target &&
         containerRef.current &&
         !containerRef.current.contains(target) &&
         !target.closest('[data-node-property-panel-menu]')
@@ -146,6 +147,8 @@ export function NodePropertyTrigger({
               <button
                 key={panelLabel}
                 type="button"
+                role="menuitemcheckbox"
+                aria-checked={!!enabled}
                 onClick={() => {
                   onPanelToggle?.(panelLabel, !enabled);
                   setMenuOpen(false);
@@ -170,6 +173,8 @@ export function NodePropertyTrigger({
             <button
               key={value}
               type="button"
+              role="menuitemradio"
+              aria-checked={behavior === value}
               onClick={() => {
                 onBehaviorChange?.(value);
                 setMenuOpen(false);
@@ -193,6 +198,8 @@ export function NodePropertyTrigger({
             <button
               key={value}
               type="button"
+              role="menuitemradio"
+              aria-checked={layout === value}
               onClick={() => {
                 onLayoutChange?.(value);
                 setMenuOpen(false);
@@ -281,7 +288,7 @@ export function NodePropertyTrigger({
           type="button"
           title="Panel options"
           aria-label="Panel options"
-          aria-haspopup="true"
+          aria-haspopup="menu"
           aria-expanded={menuOpen}
           onClick={handleToggle}
           className={cn(
