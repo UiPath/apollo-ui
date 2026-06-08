@@ -11,6 +11,8 @@ import type { CatalogItem } from "./types";
 interface ProductCardProps {
   item: CatalogItem;
   inCart: boolean;
+  /** Quantity shown on the Add button (request qty, or cart qty once added). */
+  quantity: number;
   /** Featured (recommended) styling: teal Add-to-cart accent. */
   featured?: boolean;
   /** "photo" shows the product image; "logo" shows the brand logo. */
@@ -24,6 +26,7 @@ interface ProductCardProps {
 export function ProductCard({
   item,
   inCart,
+  quantity,
   featured = false,
   imageMode = "photo",
   onToggleCart,
@@ -36,8 +39,19 @@ export function ProductCard({
   return (
     <Card
       variant="solid"
+      role="button"
+      tabIndex={0}
+      aria-label={`View ${item.name} details`}
+      onClick={() => onOpenDetail(item)}
+      onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpenDetail(item);
+        }
+      }}
       className={cn(
-        "h-full gap-3 rounded-2xl border p-4 shadow-sm transition-shadow hover:shadow-md",
+        "h-full cursor-pointer gap-3 rounded-2xl border p-4 shadow-sm transition-shadow hover:shadow-md",
         className,
       )}
     >
@@ -83,13 +97,13 @@ export function ProductCard({
         </div>
 
         <div className="flex items-center justify-end gap-1">
-          <Button variant="ghost" size="sm" onClick={() => onOpenDetail(item)}>
-            Details
-          </Button>
           <Button
             size="sm"
             variant={featured || inCart ? "default" : "secondary"}
-            onClick={() => onToggleCart(item)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleCart(item);
+            }}
             aria-pressed={inCart}
             className={cn(
               featured &&
@@ -100,12 +114,12 @@ export function ProductCard({
             {inCart ? (
               <>
                 <Check className="size-4" />
-                Added
+                {quantity} added
               </>
             ) : (
               <>
                 <Plus className="size-4" />
-                Add to cart
+                Add {quantity}
               </>
             )}
           </Button>

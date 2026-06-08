@@ -9,6 +9,7 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   CheckCircle2,
   LayoutDashboard,
@@ -17,10 +18,14 @@ import {
   Wrench,
 } from "lucide-react";
 import { useState } from "react";
+import { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
 import { ApolloShell, type ShellNavItem } from "@/registry/shell/shell";
 import { Catalog } from "./catalog/Catalog";
+import { BuyFlow } from "./catalog/v1/BuyFlow";
 import { CartProvider } from "./catalog/v1/CartProvider";
+import { ConversationProvider } from "./catalog/v1/ConversationProvider";
 import { Review } from "./catalog/v1/Review";
+import { Workbench } from "./workbench/Workbench";
 
 const navItems: ShellNavItem[] = [
   { path: "/dashboard", label: "dashboard", icon: LayoutDashboard },
@@ -39,18 +44,29 @@ function EmptyPage({ title }: { title: string }) {
 
 // Stub destination for Submit — the real Track page is a separate task.
 function TrackStub() {
+  const reduceMotion = useReducedMotion();
   return (
-    <div className="flex h-full items-center justify-center">
-      <div className="space-y-2 text-center">
-        <CheckCircle2 className="mx-auto size-10 text-[#0f7b8a]" aria-hidden />
+    <motion.div
+      className="flex h-full items-center justify-center"
+      initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div className="flex flex-col items-center gap-2 text-center">
+        <CheckCircle2 className="size-10 text-[#0f7b8a]" aria-hidden />
         <h1 className="text-2xl font-semibold text-foreground">
           Request submitted
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Tracking is coming soon.
-        </p>
+        {/* Slim Autopilot presence — the agent stays through confirmation. */}
+        <div className="flex items-center gap-1.5">
+          <AutopilotGradientIcon size={16} aria-hidden="true" />
+          <span className="text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">Autopilot</span> ·
+            I’ve got this queued — I’ll track it from here.
+          </span>
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -88,7 +104,7 @@ const dashboardRoute = createRoute({
 const buyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/buy",
-  component: () => <EmptyPage title="Buy" />,
+  component: BuyFlow,
 });
 
 const catalogRoute = createRoute({
@@ -100,7 +116,7 @@ const catalogRoute = createRoute({
 const workbenchRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/workbench",
-  component: () => <EmptyPage title="Workbench" />,
+  component: Workbench,
 });
 
 // Review & submit (reached from the cart's "Review & submit").
@@ -133,16 +149,18 @@ export function GuidedBuyingShell() {
   const [router] = useState(() =>
     createRouter({
       routeTree,
-      // TODO: default to /dashboard once more sections are built; for now the
-      // prototype lands on /catalog (the Selection screen) — the active work.
-      history: createMemoryHistory({ initialEntries: ["/catalog"] }),
+      // The prototype lands on /buy — the Intake front door. The /catalog link
+      // jumps straight to the resolved workspace (Catalog seeds the thread).
+      history: createMemoryHistory({ initialEntries: ["/buy"] }),
     }),
   );
 
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
-        <RouterProvider router={router} />
+        <ConversationProvider>
+          <RouterProvider router={router} />
+        </ConversationProvider>
       </CartProvider>
     </QueryClientProvider>
   );

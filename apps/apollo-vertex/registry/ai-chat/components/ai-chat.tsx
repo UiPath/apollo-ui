@@ -248,7 +248,7 @@ export function AiChat<
       {messages.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center min-h-0">
           <div className="w-full">
-            <div className="px-4 text-center mb-7">
+            <div className="px-4 text-center mb-5">
               {emptyState ?? defaultEmptyState}
             </div>
             <AiChatInput {...sharedInputProps} hasMessages={false} />
@@ -277,7 +277,7 @@ export function AiChat<
             aria-live="polite"
             aria-atomic="false"
             aria-busy={isInFlight}
-            className="relative h-full overflow-y-auto py-4 pl-10 pr-10"
+            className="relative h-full overflow-y-auto py-4 pl-10 pr-10 [scrollbar-gutter:stable]"
           >
             {enableTextSelection && (
               <AiChatSelectionMenu

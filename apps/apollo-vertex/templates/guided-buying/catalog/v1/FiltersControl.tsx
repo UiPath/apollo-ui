@@ -127,17 +127,31 @@ export function FiltersControl({
 
           <Separator />
 
-          <div className="flex items-center justify-between">
-            <Label htmlFor="in-stock-only" className="font-normal">
-              In stock only
-            </Label>
-            <Switch
-              id="in-stock-only"
-              checked={filters.inStockOnly}
-              onCheckedChange={(checked) =>
-                onChange({ ...filters, inStockOnly: checked })
-              }
-            />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="in-stock-only" className="font-normal">
+                In stock only
+              </Label>
+              <Switch
+                id="in-stock-only"
+                checked={filters.inStockOnly}
+                onCheckedChange={(checked) =>
+                  onChange({ ...filters, inStockOnly: checked })
+                }
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="epp-pricing" className="font-normal">
+                EPP pricing
+              </Label>
+              <Switch
+                id="epp-pricing"
+                checked={filters.priceBasis === "epp"}
+                onCheckedChange={(checked) =>
+                  onChange({ ...filters, priceBasis: checked ? "epp" : "list" })
+                }
+              />
+            </div>
           </div>
         </div>
 
@@ -166,9 +180,7 @@ function FilterGroup({
 }) {
   return (
     <div className="space-y-2.5">
-      <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {label}
-      </h3>
+      <h3 className="text-xs font-medium text-muted-foreground">{label}</h3>
       {children}
     </div>
   );

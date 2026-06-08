@@ -24,6 +24,8 @@ export function CartLine({
   onQtyChange,
   onRemove,
 }: CartLineProps) {
+  const unit = activePrice(item, basis);
+  const lineTotal = unit * quantity;
   return (
     <div className="flex gap-3 border-b py-4 last:border-b-0">
       <BrandMark item={item} />
@@ -37,29 +39,34 @@ export function CartLine({
         <div className="mt-2 flex items-center justify-between gap-2">
           {readOnly ? (
             <span className="text-sm text-muted-foreground">
-              Qty {quantity}
+              {formatPrice(unit, item.currency)} × {quantity} ={" "}
+              <span className="font-medium text-foreground">
+                {formatPrice(lineTotal, item.currency)}
+              </span>
             </span>
           ) : (
-            <QuantityStepper
-              value={quantity}
-              onChange={(value) => onQtyChange?.(value)}
-            />
+            <>
+              <QuantityStepper
+                value={quantity}
+                onChange={(value) => onQtyChange?.(value)}
+              />
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-medium text-foreground">
+                  {formatPrice(lineTotal, item.currency)}
+                </span>
+                {onRemove && (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={onRemove}
+                    aria-label={`Remove ${item.name}`}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                )}
+              </div>
+            </>
           )}
-          <div className="flex items-center gap-1">
-            <span className="text-sm font-medium text-foreground">
-              {formatPrice(activePrice(item, basis) * quantity, item.currency)}
-            </span>
-            {!readOnly && onRemove && (
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={onRemove}
-                aria-label={`Remove ${item.name}`}
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            )}
-          </div>
         </div>
       </div>
     </div>
