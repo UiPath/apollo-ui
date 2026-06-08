@@ -365,6 +365,25 @@ describe('props-helpers', () => {
       expect((escalationNode?.data as any).hasSuccess).toBe(true);
     });
 
+    it('matches escalation status case-insensitively (span preserves resource-name casing)', () => {
+      // Backend emits `escalate_Test_Escalation` (case preserved); normalizeToolName lowercases.
+      const spans = [
+        {
+          Attributes: JSON.stringify({ toolName: 'escalate_Test_Escalation' }),
+          Status: 0, // RUNNING status
+        } as any,
+      ];
+
+      const propsWithSpans = { ...mockAgentFlowProps, spans };
+      const { nodes } = computeNodesAndEdges(propsWithSpans);
+
+      const escalationNode = nodes.find(
+        (node) => node.type === 'resource' && node.data.type === 'escalation'
+      );
+
+      expect((escalationNode?.data as any).hasRunning).toBe(true);
+    });
+
     it('handles context tool name normalization', () => {
       const spans = [
         {
@@ -381,6 +400,40 @@ describe('props-helpers', () => {
       );
 
       expect((contextNode?.data as any).hasSuccess).toBe(true);
+    });
+
+    it('skips spans with malformed Attributes without throwing, still detecting valid spans', () => {
+      const spans = [
+        { Attributes: '{ this is not valid json', Status: 0 } as any,
+        { Attributes: JSON.stringify({ toolName: 'Test_Tool' }), Status: 1 } as any,
+      ];
+
+      const propsWithSpans = { ...mockAgentFlowProps, spans };
+      let nodes;
+      expect(() => {
+        nodes = computeNodesAndEdges(propsWithSpans).nodes;
+      }).not.toThrow();
+
+      const toolNode = nodes!.find(
+        (node: any) => node.type === 'resource' && node.data.type === 'tool'
+      );
+      expect((toolNode?.data as any).hasSuccess).toBe(true);
+    });
+
+    it('treats an in-flight span with missing Status as RUNNING', () => {
+      const spans = [
+        {
+          // Status omitted entirely (span streamed before Status populated)
+          Attributes: JSON.stringify({ toolName: 'Test_Tool' }),
+        } as any,
+      ];
+
+      const propsWithSpans = { ...mockAgentFlowProps, spans };
+      const { nodes } = computeNodesAndEdges(propsWithSpans);
+
+      const toolNode = nodes.find((node) => node.type === 'resource' && node.data.type === 'tool');
+      expect((toolNode?.data as any).hasRunning).toBe(true);
+      expect((toolNode?.data as any).hasSuccess).toBe(false);
     });
   });
 });
