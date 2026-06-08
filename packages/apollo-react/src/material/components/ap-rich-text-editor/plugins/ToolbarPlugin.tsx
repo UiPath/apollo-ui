@@ -56,7 +56,7 @@ function getSelectedNode(selection: RangeSelection) {
 
 export default function ToolbarPlugin({ disabled = false }: { disabled?: boolean }) {
   const [editor] = useLexicalComposerContext();
-  const toolbarRef = useRef(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
   const { _ } = useSafeLingui();
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);

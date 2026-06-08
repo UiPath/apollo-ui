@@ -510,7 +510,7 @@
 }
 
 .ap-rich-text-editor .editor-table-cell-primary-selected {
-  border: 2px solid rgb(60, 132, 244);
+  border: 2px solid var(--color-focus-indicator);
   display: block;
   height: calc(100% - 2px);
   position: absolute;

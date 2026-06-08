@@ -20,7 +20,7 @@ import { CircularProgress, FormHelperText } from '@mui/material';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { $getRoot, $insertNodes, type EditorState, type LexicalEditor } from 'lexical';
 import type React from 'react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 
 import { useSafeLingui } from '../../../i18n/useSafeLingui';
 import { ApTypography } from '../ap-typography';
@@ -109,6 +109,12 @@ export const ApRichTextEditor: React.FC<ApRichTextEditorProps> = (props) => {
 
   const { _ } = useSafeLingui();
 
+  // Per-instance ids so multiple editors on one page don't collide on their ARIA relationships.
+  const baseId = useId();
+  const labelId = `${baseId}-label`;
+  const helperId = `${baseId}-helper`;
+  const errorId = `${baseId}-error`;
+
   const getInitialEditorState = useCallback(
     (editor: LexicalEditor, format: RichTextEditorInputFormat, content?: string) => {
       if (format === 'markdown') {
@@ -161,28 +167,30 @@ export const ApRichTextEditor: React.FC<ApRichTextEditorProps> = (props) => {
 
   const getHelperText = useCallback(() => {
     if (errorMessage) {
-      return <ErrorMessage id="editor-error-message" message={errorMessage} />;
+      return <ErrorMessage id={errorId} message={errorMessage} />;
     }
     if (error) {
-      return <ErrorMessage id="editor-error-message" message={helperText ?? ''} />;
+      return <ErrorMessage id={errorId} message={helperText ?? ''} />;
     }
     return (
-      <ApTypography id="editor-helper-text" variant={FontVariantToken.fontSizeS}>
+      <ApTypography id={helperId} variant={FontVariantToken.fontSizeS}>
         {helperText}
       </ApTypography>
     );
-  }, [error, errorMessage, helperText]);
+  }, [error, errorMessage, helperText, errorId, helperId]);
 
   return (
     <div className="ap-rich-text-editor">
-      <span id="editor-label" className={`editor-label${disabled ? ' disabled' : ''}`}>
-        {label}
-        {required && ' *'}
-      </span>
+      {label && (
+        <span id={labelId} className={`editor-label${disabled ? ' disabled' : ''}`}>
+          {label}
+          {required && ' *'}
+        </span>
+      )}
       {loading ? (
         <LexicalComposer key="rte-loading" initialConfig={editorConfig}>
           <div
-            aria-labelledby="editor-label"
+            aria-labelledby={label ? labelId : undefined}
             role="application"
             className={`editor-container disabled${errorMessage || error ? ' error' : ''} loading`}
             style={{ maxHeight }}
@@ -198,16 +206,14 @@ export const ApRichTextEditor: React.FC<ApRichTextEditorProps> = (props) => {
       ) : (
         <LexicalComposer key="rte-editor" initialConfig={editorConfig}>
           <div
-            aria-labelledby="editor-label"
+            aria-labelledby={label ? labelId : undefined}
             role="application"
             className={`editor-container${disabled ? ' disabled' : ''}${errorMessage || error ? ' error' : ''}`}
             aria-disabled={disabled}
             aria-invalid={!!(error || errorMessage)}
             style={{ maxHeight }}
-            aria-errormessage={
-              errorMessage || (error && helperText) ? 'editor-error-message' : undefined
-            }
-            aria-describedby={helperText ? 'editor-helper-text' : undefined}
+            aria-errormessage={errorMessage || (error && helperText) ? errorId : undefined}
+            aria-describedby={helperText ? helperId : undefined}
           >
             <OnChangePlugin
               onChange={(editorState: EditorState, editor: LexicalEditor) => {
@@ -222,16 +228,10 @@ export const ApRichTextEditor: React.FC<ApRichTextEditorProps> = (props) => {
               <RichTextPlugin
                 contentEditable={
                   <ContentEditable
-                    ariaLabelledBy="editor-label"
+                    ariaLabelledBy={label ? labelId : undefined}
                     className="editor-input"
                     disabled={disabled}
-                    ariaDescribedBy={
-                      errorMessage
-                        ? 'editor-error-message'
-                        : helperText
-                          ? 'editor-helper-text'
-                          : undefined
-                    }
+                    ariaDescribedBy={errorMessage ? errorId : helperText ? helperId : undefined}
                     data-testid={dataTestid}
                   />
                 }
