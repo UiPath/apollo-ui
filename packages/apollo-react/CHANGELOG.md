@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.39.5](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.39.4...@uipath/apollo-react@4.39.5) (2026-06-08)
+
+### Bug Fixes
+
+* **apollo-react:** keep node toolbar usable on disabled nodes and fix dark-mode prompt preview ([0c3004f](https://github.com/UiPath/apollo-ui/commit/0c3004fa5b0a4b810dce977e8c476b20179a29fb))
+
 ## [@uipath/apollo-react-v4.39.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.39.2...@uipath/apollo-react@4.39.3) (2026-06-04)
 
 ### Bug Fixes
