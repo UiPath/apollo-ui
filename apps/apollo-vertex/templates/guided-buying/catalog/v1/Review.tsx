@@ -1,9 +1,11 @@
 "use client";
 
 import { useNavigate } from "@tanstack/react-router";
+import { motion, useReducedMotion } from "framer-motion";
 import { ChevronDown, Pencil, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
+import { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -22,6 +24,7 @@ const BASIS = "epp" as const;
 /** Review & submit — the commit surface for the catalog path. */
 export function Review() {
   const navigate = useNavigate();
+  const reduceMotion = useReducedMotion();
   const { items, quantities, setOpen } = useCart();
   const [agentOpen, setAgentOpen] = useState(false);
 
@@ -45,8 +48,22 @@ export function Review() {
   }
 
   return (
-    <div className="h-full overflow-y-auto">
+    <motion.div
+      className="h-full overflow-y-auto"
+      initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+    >
       <div className="mx-auto w-full max-w-2xl space-y-6 px-6 py-8">
+        {/* Slim Autopilot presence — the agent stays with you through commit. */}
+        <div className="flex items-center gap-2">
+          <AutopilotGradientIcon size={18} aria-hidden="true" />
+          <span className="text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">Autopilot</span> ·
+            I’ve prepared this for you — ready when you are.
+          </span>
+        </div>
+
         {/* Intent hero */}
         <header className="space-y-1.5">
           <p className="text-sm text-muted-foreground">Review &amp; submit</p>
@@ -78,7 +95,12 @@ export function Review() {
             ))}
           </div>
           <div className="mt-4 border-t pt-4">
-            <CartSummary items={items} quantities={quantities} basis={BASIS} />
+            <CartSummary
+              items={items}
+              quantities={quantities}
+              basis={BASIS}
+              totalLabel="Total"
+            />
           </div>
         </section>
 
@@ -146,6 +168,6 @@ export function Review() {
           </Button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

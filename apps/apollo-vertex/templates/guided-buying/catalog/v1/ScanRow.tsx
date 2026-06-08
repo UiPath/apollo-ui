@@ -21,6 +21,8 @@ const AI_GRADIENT = { background: "var(--ai-gradient-strong)" };
 interface ScanRowProps {
   item: CatalogItem;
   inCart: boolean;
+  /** Quantity shown on the Add button (request qty, or cart qty once added). */
+  quantity: number;
   comparing: boolean;
   /** Elevated "Picked for you" lead row. */
   recommended?: boolean;
@@ -57,6 +59,7 @@ export function BrandMark({ item }: { item: CatalogItem }) {
 export function ScanRow({
   item,
   inCart,
+  quantity,
   comparing,
   recommended = false,
   note,
@@ -75,14 +78,26 @@ export function ScanRow({
       style={recommended ? AI_GRADIENT : {}}
     >
       <div
+        role="button"
+        tabIndex={0}
+        aria-label={`View ${item.name} details`}
+        onClick={() => onOpenDetail(item)}
+        onKeyDown={(e) => {
+          if (e.target !== e.currentTarget) return;
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onOpenDetail(item);
+          }
+        }}
         className={cn(
-          "flex flex-wrap items-center gap-x-4 gap-y-3 bg-card p-4 transition-shadow hover:shadow-sm",
+          "flex cursor-pointer flex-wrap items-center gap-x-4 gap-y-3 bg-card p-4 transition-shadow hover:shadow-sm",
           recommended ? "rounded-[7px]" : "rounded-lg border",
         )}
       >
         <Checkbox
           checked={comparing}
           onCheckedChange={() => onToggleCompare(item)}
+          onClick={(e) => e.stopPropagation()}
           aria-label={`Compare ${item.name}`}
           className="shrink-0"
         />
@@ -127,30 +142,26 @@ export function ScanRow({
 
           <div className="flex items-center gap-1">
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onOpenDetail(item)}
-            >
-              Details
-            </Button>
-            <Button
               size="sm"
               variant={
                 inCart ? "outline" : recommended ? "default" : "secondary"
               }
-              onClick={() => onToggleCart(item)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleCart(item);
+              }}
               aria-pressed={inCart}
               className={cn(!inCart && recommended && ACCENT)}
             >
               {inCart ? (
                 <>
                   <Check className="size-4" />
-                  Added
+                  {quantity} added
                 </>
               ) : (
                 <>
                   <Plus className="size-4" />
-                  Add
+                  Add {quantity}
                 </>
               )}
             </Button>

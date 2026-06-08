@@ -5,10 +5,17 @@ interface CartSummaryProps {
   items: CatalogItem[];
   quantities: Record<string, number>;
   basis: PriceBasis;
+  /** Bottom-line label — "Subtotal" in the cart, "Total" on Review. */
+  totalLabel?: string;
 }
 
-/** Shared cart totals — subtotal, EPP savings, item count. */
-export function CartSummary({ items, quantities, basis }: CartSummaryProps) {
+/** Shared cart totals — subtotal/total, EPP savings, item count. */
+export function CartSummary({
+  items,
+  quantities,
+  basis,
+  totalLabel = "Subtotal",
+}: CartSummaryProps) {
   const count = items.reduce((sum, i) => sum + (quantities[i.id] ?? 0), 0);
   const subtotal = items.reduce(
     (sum, i) => sum + activePrice(i, basis) * (quantities[i.id] ?? 0),
@@ -34,7 +41,7 @@ export function CartSummary({ items, quantities, basis }: CartSummaryProps) {
         </div>
       )}
       <div className="flex justify-between text-base font-semibold text-foreground">
-        <span>Subtotal</span>
+        <span>{totalLabel}</span>
         <span>{formatPrice(subtotal, "USD")}</span>
       </div>
     </div>

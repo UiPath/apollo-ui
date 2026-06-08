@@ -2,6 +2,7 @@
 
 // oxlint-disable max-lines -- /buy workspace orchestrator; holds the wired state
 import { useNavigate } from "@tanstack/react-router";
+import { motion, useReducedMotion } from "framer-motion";
 import { Columns3, ShoppingCart, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
@@ -10,8 +11,10 @@ import { Button } from "@/components/ui/button";
 import {
   PageHeader,
   PageHeaderActions,
+  PageHeaderDescription,
   PageHeaderNav,
   PageHeaderTitle,
+  PageHeaderTitleGroup,
 } from "@/components/ui/page-header";
 import { cn } from "@/lib/utils";
 import {
@@ -19,9 +22,9 @@ import {
   CATALOG_ITEMS,
   CATALOG_PRICE_MAX,
   CATALOG_PRICE_MIN,
+  defaultQuantityFor,
   eppSavings,
   formatPrice,
-  INFERRED_REQUEST_QUANTITY,
   RECOMMENDATION,
   SAMPLE_REQUEST,
 } from "./data";
@@ -39,13 +42,13 @@ import { PriceBasisProvider } from "./price-basis-context";
 import { ScanRow } from "./ScanRow";
 import { Toolbar } from "./Toolbar";
 import { useRail } from "./useRail";
+import { useConversation } from "./conversation-context";
 import type {
   CatalogCategory,
   CatalogItem,
   Filters,
   LayoutMode,
   PriceBasis,
-  RailNote,
   SortKey,
 } from "./types";
 
@@ -129,7 +132,6 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
   const [compareOpen, setCompareOpen] = useState(false);
   const [detailSlug, setDetailSlug] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
-  const [railNotes, setRailNotes] = useState<RailNote[]>([]);
   const [railUnread, setRailUnread] = useState(false);
 
   // Cart state lives above the router so Review (a separate route) shares it.
@@ -139,14 +141,23 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
     open: cartOpen,
     setOpen: setCartOpen,
     inCart,
-    toggle: toggleCart,
     setQuantity: addToCart,
   } = useCart();
+
+  // Adding lands the item's default quantity (2 for the recommended item);
+  // toggling again removes it. Quantity then lives in cart state everywhere.
+  const toggleCart = (item: CatalogItem) =>
+    addToCart(item, inCart(item.id) ? 0 : defaultQuantityFor(item));
+
+  // Quantity surfaced on the Add button: cart qty once added, else the qty that
+  // adding would land (the request quantity for laptops).
+  const addQuantityFor = (item: CatalogItem) =>
+    inCart(item.id) ? (quantities[item.id] ?? 1) : defaultQuantityFor(item);
   const rail = useRail();
   const navigate = useNavigate();
-  const railInputRef = useRef<HTMLInputElement>(null);
+  const { addNote } = useConversation();
+  const reduceMotion = useReducedMotion();
   const pushedRef = useRef(false);
-  const noteIdRef = useRef(0);
 
   // Reflect detail/compare state in the real browser URL (?item / ?compare) so
   // it's shareable and deep-linkable. The shell runs in an in-memory router, so
@@ -224,9 +235,10 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
     if (railVisible) setRailUnread(false);
   }, [railVisible]);
 
+  // Agent-authored notes (filter changes) append to the shared thread; flag the
+  // launcher when the rail isn't on screen to see them.
   const addRailNote = (text: string) => {
-    noteIdRef.current += 1;
-    setRailNotes((prev) => [...prev, { id: noteIdRef.current, text }]);
+    addNote(text);
     if (!railVisible) setRailUnread(true);
   };
 
@@ -301,10 +313,8 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
     }
   };
 
-  const askAgent = () => {
-    rail.expand();
-    requestAnimationFrame(() => railInputRef.current?.focus());
-  };
+  // AiChat owns its composer, so we just surface the rail; the user types there.
+  const askAgent = () => rail.expand();
 
   const visibleCount = (f: Filters) =>
     CATALOG_ITEMS.filter((item) => matches(item, f, query)).length;
@@ -467,7 +477,13 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
           >
             <PageHeader>
               <PageHeaderNav>
-                <PageHeaderTitle>Guided buying</PageHeaderTitle>
+                <PageHeaderTitleGroup>
+                  <PageHeaderTitle>Catalog</PageHeaderTitle>
+                  <PageHeaderDescription>
+                    Sourcing {SAMPLE_REQUEST.summary.replace(/\.$/, "")} ·
+                    prices shown per unit
+                  </PageHeaderDescription>
+                </PageHeaderTitleGroup>
               </PageHeaderNav>
               <PageHeaderActions>
                 <Button
@@ -480,9 +496,19 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
                   <ShoppingCart className="size-4" />
                   {cartCount > 0 && (
                     <>
-                      <Badge variant="secondary" className="px-1.5">
-                        {cartCount}
-                      </Badge>
+                      <motion.span
+                        key={cartCount}
+                        animate={reduceMotion ? {} : { scale: [1, 1.3, 1] }}
+                        transition={{
+                          duration: 0.32,
+                          ease: [0.22, 1, 0.36, 1],
+                        }}
+                        className="inline-flex"
+                      >
+                        <Badge variant="secondary" className="px-1.5">
+                          {cartCount}
+                        </Badge>
+                      </motion.span>
                       <span className="text-muted-foreground">
                         {formatPrice(subtotal, "USD")}
                       </span>
@@ -519,6 +545,7 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
                       <ScanRow
                         item={recommendedItem}
                         inCart={inCart(recommendedItem.id)}
+                        quantity={addQuantityFor(recommendedItem)}
                         comparing={compareIds.includes(recommendedItem.id)}
                         recommended
                         note={recommendationNote}
@@ -532,6 +559,7 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
                         key={item.id}
                         item={item}
                         inCart={inCart(item.id)}
+                        quantity={addQuantityFor(item)}
                         comparing={compareIds.includes(item.id)}
                         onToggleCart={toggleCart}
                         onToggleCompare={toggleCompare}
@@ -547,6 +575,7 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
                         alternatives={RECOMMENDATION.alternatives}
                         totalCount={CATALOG_ITEMS.length}
                         inCart={inCart(recommendedItem.id)}
+                        quantity={addQuantityFor(recommendedItem)}
                         imageMode={imageMode}
                         onToggleCart={toggleCart}
                         onOpenDetail={openDetail}
@@ -557,6 +586,7 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
                         key={item.id}
                         item={item}
                         inCart={inCart(item.id)}
+                        quantity={addQuantityFor(item)}
                         imageMode={imageMode}
                         onToggleCart={toggleCart}
                         onOpenDetail={openDetail}
@@ -602,11 +632,8 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
             <ProductDetailOverlay onClose={closeDetail}>
               <ProductDetail
                 item={detailItem}
-                defaultQuantity={
-                  detailItem.category === "Laptops"
-                    ? INFERRED_REQUEST_QUANTITY
-                    : 1
-                }
+                defaultQuantity={defaultQuantityFor(detailItem)}
+                cartQuantity={quantities[detailItem.id] ?? 0}
                 inCart={inCart(detailItem.id)}
                 comparing={compareIds.includes(detailItem.id)}
                 isPicked={detailItem.id === RECOMMENDATION.itemId}
@@ -659,12 +686,7 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
               onClose={closeCompare}
               onRemove={removeFromCompare}
               onAdd={addToCompare}
-              onAddToCart={(item) =>
-                addToCart(
-                  item,
-                  item.category === "Laptops" ? INFERRED_REQUEST_QUANTITY : 1,
-                )
-              }
+              onAddToCart={(item) => addToCart(item, defaultQuantityFor(item))}
             />
           )}
         </main>
@@ -673,9 +695,6 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
         <RailDock
           open={railVisible}
           hasUpdates={railUnread}
-          request={SAMPLE_REQUEST}
-          notes={railNotes}
-          inputRef={railInputRef}
           onCollapse={rail.collapse}
           onExpand={rail.expand}
         />
