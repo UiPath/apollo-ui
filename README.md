@@ -182,6 +182,7 @@ pnpm dev              # Watch mode for all packages
 pnpm build            # Build all packages
 pnpm lint             # Lint all packages
 pnpm test             # Run tests
+pnpm storybook:dev    # Run Storybook
 ```
 
 ### Component Guidelines
