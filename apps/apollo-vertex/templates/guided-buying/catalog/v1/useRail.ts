@@ -18,9 +18,12 @@ export interface RailController {
  * see `railVisible` in Selection — which restores the user's choice on close.
  */
 export function useRail(): RailController {
+  // Default collapsed (orb): the catalog page already carries the agent's work
+  // (intent line, Picked-for-you, filter chips), so the rail steps back until
+  // re-summoned. Honors a manual expand once set this session.
   const [pref, setPref] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return sessionStorage.getItem(STORAGE_KEY) !== "0";
+    if (typeof window === "undefined") return false;
+    return sessionStorage.getItem(STORAGE_KEY) === "1";
   });
 
   useEffect(() => {

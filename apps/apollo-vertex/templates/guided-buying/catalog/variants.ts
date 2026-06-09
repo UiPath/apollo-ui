@@ -8,7 +8,7 @@ export interface CatalogVariant {
   /** Human-readable label shown in the variant switcher. */
   label: string;
   /** The variant's root component. Rendered full-bleed inside the Catalog page. */
-  Component: ComponentType;
+  Component: ComponentType<{ cold?: boolean }>;
 }
 
 /**

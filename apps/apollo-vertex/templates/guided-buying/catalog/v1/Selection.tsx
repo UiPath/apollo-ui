@@ -2,8 +2,8 @@
 
 // oxlint-disable max-lines -- /buy workspace orchestrator; holds the wired state
 import { useNavigate } from "@tanstack/react-router";
-import { motion, useReducedMotion } from "framer-motion";
-import { Columns3, ShoppingCart, X } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { Check, Columns3, ShoppingCart, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
 import { Badge } from "@/components/ui/badge";
@@ -32,17 +32,14 @@ import { useCart } from "./cart-context";
 import { CartDrawer } from "./CartDrawer";
 import { CompareView } from "./CompareView";
 import { type FilterChip, FilterChips } from "./FilterChips";
-import { NotInCatalogBanner } from "./NotInCatalogBanner";
 import { ProductCard } from "./ProductCard";
 import { ProductDetail } from "./ProductDetail";
 import { ProductDetailOverlay } from "./ProductDetailOverlay";
 import { RecommendationCard } from "./RecommendationCard";
-import { RailDock } from "./RailDock";
 import { PriceBasisProvider } from "./price-basis-context";
 import { ScanRow } from "./ScanRow";
 import { Toolbar } from "./Toolbar";
-import { useRail } from "./useRail";
-import { useConversation } from "./conversation-context";
+import { useAutopilotChat } from "../../autopilot-chat-context";
 import type {
   CatalogCategory,
   CatalogItem,
@@ -53,6 +50,10 @@ import type {
 } from "./types";
 
 const MAX_COMPARE = 4;
+
+// Staggered fade-up for catalog items on entry. Soft ease-out; the per-item
+// delay is capped so long lists don't lag.
+const ITEM_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const DEFAULT_FILTERS: Filters = {
   brands: [],
@@ -121,18 +122,35 @@ function matches(item: CatalogItem, filters: Filters, query: string): boolean {
 interface SelectionProps {
   /** "photo" shows product images; "logo" shows brand logos. */
   imageMode?: "photo" | "logo";
+  /**
+   * Cold browse (Catalog nav, no active request): no intent line, no agent
+   * filters, no Picked-for-you, no escalation banner, Add defaults to 1.
+   * Scoped (reached via "See all in catalog") keeps the request framing.
+   */
+  cold?: boolean;
 }
 
 /** Selection step of Guided Buying — catalog browse-and-pick (catalog goods only). */
-export function Selection({ imageMode = "photo" }: SelectionProps) {
+export function Selection({
+  imageMode = "photo",
+  cold = false,
+}: SelectionProps) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("recommended");
   const [layout, setLayout] = useState<LayoutMode>("rows");
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
   const [detailSlug, setDetailSlug] = useState<string | null>(null);
-  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
-  const [railUnread, setRailUnread] = useState(false);
+  // Cold browse starts neutral (no agent inferences); scoped starts with them.
+  const [filters, setFilters] = useState<Filters>(
+    cold ? CLEARED_FILTERS : DEFAULT_FILTERS,
+  );
+  // Transient "added to cart" confirmation anchored to the cart button.
+  const [added, setAdded] = useState<{
+    name: string;
+    qty: number;
+    amount: string;
+  } | null>(null);
 
   // Cart state lives above the router so Review (a separate route) shares it.
   const {
@@ -144,20 +162,71 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
     setQuantity: addToCart,
   } = useCart();
 
-  // Adding lands the item's default quantity (2 for the recommended item);
-  // toggling again removes it. Quantity then lives in cart state everywhere.
-  const toggleCart = (item: CatalogItem) =>
-    addToCart(item, inCart(item.id) ? 0 : defaultQuantityFor(item));
+  // Quantity an Add lands: the request quantity when scoped (2 for laptops),
+  // but 1 in cold browse where there's no request.
+  const qtyFor = (item: CatalogItem) => (cold ? 1 : defaultQuantityFor(item));
+
+  const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (addedTimer.current) clearTimeout(addedTimer.current);
+    },
+    [],
+  );
+
+  // Show (and auto-dismiss) the cart confirmation; hovering pauses the timer.
+  const notifyAdded = (item: CatalogItem, qty: number) => {
+    const amount = formatPrice(
+      activePrice(item, filters.priceBasis) * qty,
+      item.currency,
+    );
+    setAdded({ name: item.name, qty, amount });
+    if (addedTimer.current) clearTimeout(addedTimer.current);
+    addedTimer.current = setTimeout(() => setAdded(null), 3000);
+  };
+  const pauseAdded = () => {
+    if (addedTimer.current) clearTimeout(addedTimer.current);
+  };
+  const resumeAdded = () => {
+    addedTimer.current = setTimeout(() => setAdded(null), 1500);
+  };
+
+  // Adding lands the default quantity (+ a confirmation); toggling again
+  // removes it. Quantity then lives in cart state everywhere.
+  const toggleCart = (item: CatalogItem) => {
+    const adding = !inCart(item.id);
+    addToCart(item, adding ? qtyFor(item) : 0);
+    if (adding) notifyAdded(item, qtyFor(item));
+  };
 
   // Quantity surfaced on the Add button: cart qty once added, else the qty that
-  // adding would land (the request quantity for laptops).
+  // adding would land.
   const addQuantityFor = (item: CatalogItem) =>
-    inCart(item.id) ? (quantities[item.id] ?? 1) : defaultQuantityFor(item);
-  const rail = useRail();
+    inCart(item.id) ? (quantities[item.id] ?? 1) : qtyFor(item);
   const navigate = useNavigate();
-  const { addNote } = useConversation();
+  // The ask affordance is the global Autopilot FAB; filter changes surface there.
+  const { note: agentNote, setOpen: openAutopilot } = useAutopilotChat();
   const reduceMotion = useReducedMotion();
   const pushedRef = useRef(false);
+
+  // Sticky toolbar: pin it to the top once the user scrolls past it. A sentinel
+  // just above the toolbar flips `toolbarStuck` via IntersectionObserver.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const toolbarSentinelRef = useRef<HTMLDivElement>(null);
+  const [toolbarStuck, setToolbarStuck] = useState(false);
+  useEffect(() => {
+    const root = scrollRef.current;
+    const sentinel = toolbarSentinelRef.current;
+    if (!root || !sentinel) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry) setToolbarStuck(!entry.isIntersecting);
+      },
+      { root, threshold: 0 },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, []);
 
   // Reflect detail/compare state in the real browser URL (?item / ?compare) so
   // it's shareable and deep-linkable. The shell runs in an in-memory router, so
@@ -197,10 +266,12 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
     (item) => item.id === RECOMMENDATION.itemId,
   );
   const query = search.trim().toLowerCase();
-  // Feature the recommendation only on the default landing, under EPP, and only
-  // when it satisfies the active filters — never contradict the filter state.
+  // Feature the recommendation only when scoped to a request, on the default
+  // landing, under EPP, and only when it satisfies the active filters — never in
+  // cold browse, and never contradicting the filter state.
   const showRecommendation = Boolean(
-    sort === "recommended" &&
+    !cold &&
+      sort === "recommended" &&
       query === "" &&
       filters.priceBasis === "epp" &&
       recommendedItem &&
@@ -227,20 +298,9 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
   const detailItem = detailSlug
     ? (CATALOG_ITEMS.find((item) => item.id === detailSlug) ?? null)
     : null;
-  // The rail yields the right edge to the cart/compare surfaces, then restores.
-  const railVisible = rail.open && !cartOpen && !compareOpen;
 
-  // Clear the launcher's unread dot once the rail is visible again.
-  useEffect(() => {
-    if (railVisible) setRailUnread(false);
-  }, [railVisible]);
-
-  // Agent-authored notes (filter changes) append to the shared thread; flag the
-  // launcher when the rail isn't on screen to see them.
-  const addRailNote = (text: string) => {
-    addNote(text);
-    if (!railVisible) setRailUnread(true);
-  };
+  // Agent-authored notes (filter changes) surface in the Autopilot FAB thread.
+  const addRailNote = (text: string) => agentNote(text);
 
   const reviewSubmit = () => {
     setCartOpen(false);
@@ -313,8 +373,8 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
     }
   };
 
-  // AiChat owns its composer, so we just surface the rail; the user types there.
-  const askAgent = () => rail.expand();
+  // Open the Autopilot FAB to ask about this item.
+  const askAgent = () => openAutopilot(true);
 
   const visibleCount = (f: Filters) =>
     CATALOG_ITEMS.filter((item) => matches(item, f, query)).length;
@@ -464,12 +524,27 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
     ? `Matches your request · ${formatPrice(eppSavings(recommendedItem), recommendedItem.currency)}/unit cheaper with EPP applied`
     : "";
 
+  // Per-item entrance props (fade-up, staggered by position).
+  const itemMotion = (i: number) =>
+    reduceMotion
+      ? {}
+      : {
+          initial: { opacity: 0, y: 8 },
+          animate: { opacity: 1, y: 0 },
+          transition: {
+            duration: 0.3,
+            ease: ITEM_EASE,
+            delay: Math.min(i, 14) * 0.04,
+          },
+        };
+
   return (
     <PriceBasisProvider value={filters.priceBasis}>
       <div className="relative z-10 flex h-full min-h-0">
         {/* Main column — catalog grid + detail overlay */}
         <main className="relative min-h-0 min-w-0 flex-1 overflow-hidden">
           <div
+            ref={scrollRef}
             className={cn(
               "flex h-full flex-col overflow-y-auto",
               detailItem && "overflow-hidden",
@@ -479,173 +554,248 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
               <PageHeaderNav>
                 <PageHeaderTitleGroup>
                   <PageHeaderTitle>Catalog</PageHeaderTitle>
-                  <PageHeaderDescription>
-                    Sourcing {SAMPLE_REQUEST.summary.replace(/\.$/, "")} ·
-                    prices shown per unit
-                  </PageHeaderDescription>
+                  {cold ? (
+                    <PageHeaderDescription>
+                      Browse the full catalog — laptops, monitors, docking, and
+                      accessories
+                    </PageHeaderDescription>
+                  ) : (
+                    <PageHeaderDescription>
+                      Sourcing {SAMPLE_REQUEST.summary.replace(/\.$/, "")} ·
+                      prices shown per unit
+                    </PageHeaderDescription>
+                  )}
                 </PageHeaderTitleGroup>
               </PageHeaderNav>
               <PageHeaderActions>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                  onClick={() => setCartOpen(true)}
-                >
-                  <span>Cart</span>
-                  <ShoppingCart className="size-4" />
-                  {cartCount > 0 && (
-                    <>
-                      <motion.span
-                        key={cartCount}
-                        animate={reduceMotion ? {} : { scale: [1, 1.3, 1] }}
+                <div className="relative">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => setCartOpen(true)}
+                  >
+                    <span>Cart</span>
+                    <ShoppingCart className="size-4" />
+                    {cartCount > 0 && (
+                      <>
+                        <motion.span
+                          key={cartCount}
+                          animate={reduceMotion ? {} : { scale: [1, 1.3, 1] }}
+                          transition={{
+                            duration: 0.32,
+                            ease: [0.22, 1, 0.36, 1],
+                          }}
+                          className="inline-flex"
+                        >
+                          <Badge variant="secondary" className="px-1.5">
+                            {cartCount}
+                          </Badge>
+                        </motion.span>
+                        <span className="text-muted-foreground">
+                          {formatPrice(subtotal, "USD")}
+                        </span>
+                      </>
+                    )}
+                  </Button>
+
+                  {/* Transient add-to-cart confirmation, anchored under the cart. */}
+                  <AnimatePresence>
+                    {added && !cartOpen && (
+                      <motion.div
+                        role="status"
+                        onMouseEnter={pauseAdded}
+                        onMouseLeave={resumeAdded}
+                        initial={
+                          reduceMotion
+                            ? false
+                            : { opacity: 0, y: -6, scale: 0.98 }
+                        }
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -6, scale: 0.98 }}
                         transition={{
-                          duration: 0.32,
+                          duration: 0.22,
                           ease: [0.22, 1, 0.36, 1],
                         }}
-                        className="inline-flex"
+                        className="absolute right-0 top-full z-30 mt-2 flex w-64 items-start gap-2.5 rounded-xl bg-foreground p-3 text-left text-background shadow-lg"
                       >
-                        <Badge variant="secondary" className="px-1.5">
-                          {cartCount}
-                        </Badge>
-                      </motion.span>
-                      <span className="text-muted-foreground">
-                        {formatPrice(subtotal, "USD")}
-                      </span>
-                    </>
-                  )}
-                </Button>
+                        <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#0f7b8a] text-white">
+                          <Check className="size-2.5" aria-hidden />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium">
+                            {added.qty} {added.name} added
+                            <span className="font-normal text-background/65">
+                              {" · "}
+                              {added.amount}
+                            </span>
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </PageHeaderActions>
             </PageHeader>
 
-            <div className="space-y-4 px-6 pb-6">
-              <Toolbar
-                search={search}
-                onSearchChange={setSearch}
-                sort={sort}
-                onSortChange={setSort}
-                layout={layout}
-                onLayoutChange={setLayout}
-                filters={filters}
-                activeFilterCount={chips.length}
-                onFiltersChange={setFilters}
-                onClearAllFilters={clearAllFilters}
-                canCompare={compareIds.length >= 2}
-                onCompare={openCompare}
-              />
+            <div className="px-6 pb-6">
+              {/* Sentinel: when it scrolls out of view, the toolbar is pinned. */}
+              <div ref={toolbarSentinelRef} aria-hidden className="h-0" />
+              <div
+                className={cn(
+                  "sticky top-0 z-20 transition-[margin,padding,background-color,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+                  toolbarStuck &&
+                    "-mx-6 border-b border-border bg-background/80 px-10 py-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/70",
+                )}
+              >
+                <Toolbar
+                  search={search}
+                  onSearchChange={setSearch}
+                  sort={sort}
+                  onSortChange={setSort}
+                  layout={layout}
+                  onLayoutChange={setLayout}
+                  filters={filters}
+                  activeFilterCount={chips.length}
+                  onFiltersChange={setFilters}
+                  onClearAllFilters={clearAllFilters}
+                  canCompare={compareIds.length >= 2}
+                  onCompare={openCompare}
+                  stuck={toolbarStuck}
+                  cartCount={cartCount}
+                  onOpenCart={() => setCartOpen(true)}
+                />
+              </div>
 
-              <FilterChips chips={chips} onClearAll={clearAllFilters} />
+              <div className="space-y-4 pt-4">
+                <FilterChips chips={chips} onClearAll={clearAllFilters} />
 
-              <NotInCatalogBanner />
-
-              {gridItems.length > 0 || showRecommendation ? (
-                layout === "rows" ? (
-                  <div className="space-y-2">
-                    {showRecommendation && recommendedItem && (
-                      <ScanRow
-                        item={recommendedItem}
-                        inCart={inCart(recommendedItem.id)}
-                        quantity={addQuantityFor(recommendedItem)}
-                        comparing={compareIds.includes(recommendedItem.id)}
-                        recommended
-                        note={recommendationNote}
-                        onToggleCart={toggleCart}
-                        onToggleCompare={toggleCompare}
-                        onOpenDetail={openDetail}
-                      />
-                    )}
-                    {gridItems.map((item) => (
-                      <ScanRow
-                        key={item.id}
-                        item={item}
-                        inCart={inCart(item.id)}
-                        quantity={addQuantityFor(item)}
-                        comparing={compareIds.includes(item.id)}
-                        onToggleCart={toggleCart}
-                        onToggleCompare={toggleCompare}
-                        onOpenDetail={openDetail}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {showRecommendation && recommendedItem && (
-                      <RecommendationCard
-                        item={recommendedItem}
-                        alternatives={RECOMMENDATION.alternatives}
-                        totalCount={CATALOG_ITEMS.length}
-                        inCart={inCart(recommendedItem.id)}
-                        quantity={addQuantityFor(recommendedItem)}
-                        imageMode={imageMode}
-                        onToggleCart={toggleCart}
-                        onOpenDetail={openDetail}
-                      />
-                    )}
-                    {gridItems.map((item) => (
-                      <ProductCard
-                        key={item.id}
-                        item={item}
-                        inCart={inCart(item.id)}
-                        quantity={addQuantityFor(item)}
-                        imageMode={imageMode}
-                        onToggleCart={toggleCart}
-                        onOpenDetail={openDetail}
-                      />
-                    ))}
-                  </div>
-                )
-              ) : (
-                <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
-                  <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <AutopilotIcon
-                      size={16}
-                      className="shrink-0 text-[#0f7b8a]"
-                      aria-hidden
-                    />
-                    {relaxSuggestion && relaxSuggestion.count > 0
-                      ? `Nothing matches — drop ${relaxSuggestion.label} to show ${relaxSuggestion.count}?`
-                      : "Nothing matches the current filters."}
-                  </p>
-                  {relaxSuggestion && relaxSuggestion.count > 0 ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={relaxSuggestion.onRemove}
-                    >
-                      Drop {relaxSuggestion.label}
-                    </Button>
+                {gridItems.length > 0 || showRecommendation ? (
+                  layout === "rows" ? (
+                    <div className="space-y-2">
+                      {showRecommendation && recommendedItem && (
+                        <motion.div {...itemMotion(0)}>
+                          <ScanRow
+                            item={recommendedItem}
+                            inCart={inCart(recommendedItem.id)}
+                            quantity={addQuantityFor(recommendedItem)}
+                            comparing={compareIds.includes(recommendedItem.id)}
+                            recommended
+                            note={recommendationNote}
+                            onToggleCart={toggleCart}
+                            onToggleCompare={toggleCompare}
+                            onOpenDetail={openDetail}
+                          />
+                        </motion.div>
+                      )}
+                      {gridItems.map((item, i) => (
+                        <motion.div
+                          key={item.id}
+                          {...itemMotion(showRecommendation ? i + 1 : i)}
+                        >
+                          <ScanRow
+                            item={item}
+                            inCart={inCart(item.id)}
+                            quantity={addQuantityFor(item)}
+                            comparing={compareIds.includes(item.id)}
+                            onToggleCart={toggleCart}
+                            onToggleCompare={toggleCompare}
+                            onOpenDetail={openDetail}
+                          />
+                        </motion.div>
+                      ))}
+                    </div>
                   ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={clearAllFilters}
-                    >
-                      Clear all filters
-                    </Button>
-                  )}
-                </div>
-              )}
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                      {showRecommendation && recommendedItem && (
+                        <motion.div
+                          className="sm:col-span-2"
+                          {...itemMotion(0)}
+                        >
+                          <RecommendationCard
+                            item={recommendedItem}
+                            alternatives={RECOMMENDATION.alternatives}
+                            totalCount={CATALOG_ITEMS.length}
+                            inCart={inCart(recommendedItem.id)}
+                            quantity={addQuantityFor(recommendedItem)}
+                            imageMode={imageMode}
+                            onToggleCart={toggleCart}
+                            onOpenDetail={openDetail}
+                          />
+                        </motion.div>
+                      )}
+                      {gridItems.map((item, i) => (
+                        <motion.div
+                          key={item.id}
+                          {...itemMotion(showRecommendation ? i + 1 : i)}
+                        >
+                          <ProductCard
+                            item={item}
+                            inCart={inCart(item.id)}
+                            quantity={addQuantityFor(item)}
+                            imageMode={imageMode}
+                            onToggleCart={toggleCart}
+                            onOpenDetail={openDetail}
+                          />
+                        </motion.div>
+                      ))}
+                    </div>
+                  )
+                ) : (
+                  <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
+                    <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <AutopilotIcon
+                        size={16}
+                        className="shrink-0 text-[#0f7b8a]"
+                        aria-hidden
+                      />
+                      {relaxSuggestion && relaxSuggestion.count > 0
+                        ? `Nothing matches — drop ${relaxSuggestion.label} to show ${relaxSuggestion.count}?`
+                        : "Nothing matches the current filters."}
+                    </p>
+                    {relaxSuggestion && relaxSuggestion.count > 0 ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={relaxSuggestion.onRemove}
+                      >
+                        Drop {relaxSuggestion.label}
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={clearAllFilters}
+                      >
+                        Clear all filters
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          {detailItem && (
-            <ProductDetailOverlay onClose={closeDetail}>
-              <ProductDetail
-                item={detailItem}
-                defaultQuantity={defaultQuantityFor(detailItem)}
-                cartQuantity={quantities[detailItem.id] ?? 0}
-                inCart={inCart(detailItem.id)}
-                comparing={compareIds.includes(detailItem.id)}
-                isPicked={detailItem.id === RECOMMENDATION.itemId}
-                recommendationNote={recommendationNote}
-                imageMode={imageMode}
-                onAddToCart={(quantity) => addToCart(detailItem, quantity)}
-                onToggleCompare={() => toggleCompare(detailItem)}
-                onAskAgent={askAgent}
-                onClose={closeDetail}
-              />
-            </ProductDetailOverlay>
-          )}
+          <AnimatePresence>
+            {detailItem && (
+              <ProductDetailOverlay key="product-detail" onClose={closeDetail}>
+                <ProductDetail
+                  item={detailItem}
+                  defaultQuantity={qtyFor(detailItem)}
+                  cartQuantity={quantities[detailItem.id] ?? 0}
+                  inCart={inCart(detailItem.id)}
+                  comparing={compareIds.includes(detailItem.id)}
+                  isPicked={detailItem.id === RECOMMENDATION.itemId}
+                  recommendationNote={recommendationNote}
+                  imageMode={imageMode}
+                  onAddToCart={(quantity) => addToCart(detailItem, quantity)}
+                  onToggleCompare={() => toggleCompare(detailItem)}
+                  onAskAgent={askAgent}
+                  onClose={closeDetail}
+                />
+              </ProductDetailOverlay>
+            )}
+          </AnimatePresence>
 
           {/* Sticky compare bar (selection from the row checkboxes) */}
           {compareIds.length > 0 && !compareOpen && !detailItem && (
@@ -686,18 +836,10 @@ export function Selection({ imageMode = "photo" }: SelectionProps) {
               onClose={closeCompare}
               onRemove={removeFromCompare}
               onAdd={addToCompare}
-              onAddToCart={(item) => addToCart(item, defaultQuantityFor(item))}
+              onAddToCart={(item) => addToCart(item, qtyFor(item))}
             />
           )}
         </main>
-
-        {/* Docked assistant rail (collapsible) */}
-        <RailDock
-          open={railVisible}
-          hasUpdates={railUnread}
-          onCollapse={rail.collapse}
-          onExpand={rail.expand}
-        />
 
         <CartDrawer onReviewSubmit={reviewSubmit} />
       </div>

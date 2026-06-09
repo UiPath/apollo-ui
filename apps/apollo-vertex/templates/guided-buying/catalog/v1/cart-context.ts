@@ -17,6 +17,8 @@ export interface CartContextValue {
   toggle: (item: CatalogItem) => void;
   setQuantity: (item: CatalogItem, quantity: number) => void;
   remove: (item: CatalogItem) => void;
+  /** Empty the cart (e.g. after a request is submitted). */
+  clear: () => void;
 }
 
 export const CartContext = createContext<CartContextValue | null>(null);

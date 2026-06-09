@@ -23,6 +23,7 @@ interface ShellLayoutProps {
   variant?: "minimal";
   companyLogo?: CompanyLogo;
   navItems: ShellNavItem[];
+  onUserClick?: () => void;
 }
 
 function DarkGradientBackground() {
@@ -177,6 +178,7 @@ export function ShellLayout({
   variant,
   companyLogo,
   navItems,
+  onUserClick,
 }: PropsWithChildren<ShellLayoutProps>) {
   if (variant === "minimal") {
     return (
@@ -189,6 +191,7 @@ export function ShellLayout({
             productName={productName}
             companyLogo={companyLogo}
             navItems={navItems}
+            onUserClick={onUserClick}
           />
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             {children}
@@ -210,6 +213,7 @@ export function ShellLayout({
         productName={productName}
         companyLogo={companyLogo}
         navItems={navItems}
+        onUserClick={onUserClick}
       />
       <SidebarInset className="relative flex-1 flex flex-col overflow-hidden rounded-none m-0 ml-0 shadow-none bg-transparent">
         <header className="flex items-center h-12 px-4 md:hidden">

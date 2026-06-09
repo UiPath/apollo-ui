@@ -263,21 +263,15 @@ export function AiChat<
       ) : (
         <div className="relative flex-1 min-h-0">
           <div
-            className="absolute top-0 left-0 right-0 h-6 z-10 pointer-events-none"
-            style={{
-              background:
-                "linear-gradient(to bottom, var(--background) 0%, transparent 100%)",
-            }}
-            aria-hidden="true"
-          />
-          <div
             ref={attachScrollListeners}
             role="log"
             aria-label={t("chat_messages")}
             aria-live="polite"
             aria-atomic="false"
             aria-busy={isInFlight}
-            className="relative h-full overflow-y-auto py-4 pl-10 pr-10 [scrollbar-gutter:stable]"
+            // Fade content out at the top edge via an alpha mask (works over any
+            // background, unlike a solid-color gradient overlay).
+            className="relative h-full overflow-y-auto py-4 pl-10 pr-10 [scrollbar-gutter:stable] [mask-image:linear-gradient(to_bottom,transparent_0,#000_24px)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0,#000_24px)]"
           >
             {enableTextSelection && (
               <AiChatSelectionMenu

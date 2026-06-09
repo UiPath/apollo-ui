@@ -15,12 +15,15 @@ interface UserProfileProps {
   isCollapsed: boolean;
   collapsedMenuSide?: "top" | "right" | "bottom" | "left";
   collapsedMenuAlign?: "start" | "center" | "end";
+  /** When set, a "Switch user" item appears in the menu (e.g. demo seats). */
+  onUserClick?: () => void;
 }
 
 export const UserProfile = ({
   isCollapsed,
   collapsedMenuSide = "top",
   collapsedMenuAlign = "start",
+  onUserClick,
 }: UserProfileProps) => {
   const { t } = useTranslation();
   const { user } = useUser();
@@ -73,7 +76,7 @@ export const UserProfile = ({
               </div>
             </div>
             <DropdownMenuSeparator />
-            <UserProfileMenuItems />
+            <UserProfileMenuItems onSwitchUser={onUserClick} />
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
@@ -110,7 +113,7 @@ export const UserProfile = ({
             side="top"
             sideOffset={8}
           >
-            <UserProfileMenuItems />
+            <UserProfileMenuItems onSwitchUser={onUserClick} />
           </DropdownMenuContent>
         </DropdownMenu>
       )}
