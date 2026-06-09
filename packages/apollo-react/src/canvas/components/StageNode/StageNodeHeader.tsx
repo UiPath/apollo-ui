@@ -33,7 +33,7 @@ const CHIP_ICONS: Partial<Record<StageHeaderChipType, React.ReactElement>> = {
   [StageHeaderChipType.ReturnToOrigin]: <ReturnToOriginIcon w={Icon.IconXs} h={Icon.IconXs} />,
 };
 
-/** Header-chip types that render as non-interactive status pills instead of the interactive {@link StageChip}. */
+/** Header-chip types that render as filled status pills (Optional / Ends case) instead of the icon-based {@link StageChip}. */
 const STATUS_BADGE_CONFIG: Partial<
   Record<
     StageHeaderChipType,
@@ -41,37 +41,43 @@ const STATUS_BADGE_CONFIG: Partial<
   >
 > = {
   [StageHeaderChipType.Optional]: {
-    className: 'bg-background-secondary text-foreground-muted',
+    className: 'bg-background-secondary text-foreground-muted hover:bg-background-secondary/80',
     testId: 'optional',
     labelKey: 'optionalBadge',
   },
   [StageHeaderChipType.EndsCase]: {
-    className: 'bg-error-icon text-foreground-inverse',
+    className: 'bg-error-icon text-foreground-inverse hover:bg-error-icon/80',
     testId: 'ends-case',
     labelKey: 'endsCaseBadge',
   },
 };
 
-/** Non-interactive status pill (no count/click); focusable only when a tooltip is supplied so it's reachable via keyboard. */
+/** Filled status pill (e.g. "Optional", "Ends case"). Interactive — clicking navigates the consumer to the related control. */
 const StageStatusBadge = ({
   label,
   tooltip,
   className,
   testId,
+  onClick,
 }: {
   label: string;
   tooltip?: React.ReactNode;
   className: string;
   testId: string;
+  onClick?: () => void;
 }) => {
   const badge = (
-    <span
+    <button
+      type="button"
       data-testid={testId}
-      tabIndex={tooltip ? 0 : undefined}
-      className={`inline-flex h-6 items-center justify-center whitespace-nowrap rounded-[10px] border border-transparent px-2 text-xs font-normal ${className}`}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.();
+      }}
+      className={`inline-flex h-6 cursor-pointer items-center justify-center whitespace-nowrap rounded-[10px] border border-transparent px-2 text-xs font-normal transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${className}`}
     >
       {label}
-    </span>
+    </button>
   );
 
   if (tooltip) {
@@ -190,6 +196,7 @@ const StageNodeHeaderInner = ({
                       className={statusBadge.className}
                       label={chip.label || labels[statusBadge.labelKey]}
                       tooltip={chip.tooltip}
+                      onClick={chip.onClick}
                     />
                   );
                 }

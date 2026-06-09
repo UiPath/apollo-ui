@@ -2721,6 +2721,7 @@ export const WithStatusBadges: Story = {
               {
                 type: StageHeaderChipType.Optional,
                 tooltip: 'Not required for case completion',
+                onClick: () => window.alert('Open "Required for case completion" setting'),
               },
             ],
           },
@@ -2752,6 +2753,7 @@ export const WithStatusBadges: Story = {
               {
                 type: StageHeaderChipType.EndsCase,
                 tooltip: 'Entering this stage ends the case',
+                onClick: () => window.alert('Open terminal-stage setting'),
               },
             ],
           },
@@ -2781,8 +2783,16 @@ export const WithStatusBadges: Story = {
                 tooltip: 'Stage completion',
                 onClick: () => window.alert('Open stage completion panel'),
               },
-              { type: StageHeaderChipType.Optional, label: 'Optional' },
-              { type: StageHeaderChipType.EndsCase, label: 'Ends case' },
+              {
+                type: StageHeaderChipType.Optional,
+                label: 'Optional',
+                onClick: () => window.alert('Open "Required for case completion" setting'),
+              },
+              {
+                type: StageHeaderChipType.EndsCase,
+                label: 'Ends case',
+                onClick: () => window.alert('Open terminal-stage setting'),
+              },
             ],
           },
           execution: { stageStatus: { slaText: 'SLA: 1 day remaining', slaIcon: 'warning' } },

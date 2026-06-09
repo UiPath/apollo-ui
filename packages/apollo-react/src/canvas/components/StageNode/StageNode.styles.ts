@@ -255,7 +255,7 @@ export const StageChip = styled.button`
   justify-content: center;
   gap: ${Padding.PadS};
   box-sizing: border-box;
-  height: 24px;
+  height: ${Spacing.SpacingL};
   padding: 0 ${Spacing.SpacingXs};
   border-radius: 10px;
   border: 1px solid var(--canvas-border-de-emp);
