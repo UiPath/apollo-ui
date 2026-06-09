@@ -9,30 +9,51 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
-import { motion, useReducedMotion } from "framer-motion";
-import {
-  CheckCircle2,
-  LayoutDashboard,
-  Library,
-  ShoppingCart,
-  Wrench,
-} from "lucide-react";
+import { LayoutDashboard, ShoppingCart, Store, Wrench } from "lucide-react";
 import { useState } from "react";
-import { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
 import { ApolloShell, type ShellNavItem } from "@/registry/shell/shell";
+import { AutopilotChatProvider } from "./AutopilotChatProvider";
+import { AutopilotFab } from "./AutopilotFab";
 import { Catalog } from "./catalog/Catalog";
 import { BuyFlow } from "./catalog/v1/BuyFlow";
 import { CartProvider } from "./catalog/v1/CartProvider";
+import { CatalogSubmitted } from "./catalog/v1/CatalogSubmitted";
+import { ConfigureFlow } from "./catalog/v1/ConfigureFlow";
 import { ConversationProvider } from "./catalog/v1/ConversationProvider";
 import { Review } from "./catalog/v1/Review";
 import { Workbench } from "./workbench/Workbench";
 
-const navItems: ShellNavItem[] = [
+// The requester seat (Marcus Webb) self-serves the buy flow; the buyer seat
+// (procurement) also gets the Workbench, where routed requests land.
+const requesterNavItems: ShellNavItem[] = [
   { path: "/dashboard", label: "dashboard", icon: LayoutDashboard },
   { path: "/buy", label: "buy", icon: ShoppingCart },
-  { path: "/catalog", label: "catalog", icon: Library },
-  { path: "/workbench", label: "workbench", icon: Wrench },
+  { path: "/catalog", label: "catalog", icon: Store },
 ];
+
+const workbenchNavItem: ShellNavItem = {
+  path: "/workbench",
+  label: "workbench",
+  icon: Wrench,
+};
+
+const buyerNavItems: ShellNavItem[] = [...requesterNavItems, workbenchNavItem];
+
+type Seat = "requester" | "buyer";
+
+const SEATS: Record<
+  Seat,
+  { user: { name: string; email: string }; navItems: ShellNavItem[] }
+> = {
+  requester: {
+    user: { name: "Marcus Webb", email: "Requester · Denver team" },
+    navItems: requesterNavItems,
+  },
+  buyer: {
+    user: { name: "Sam Rivera", email: "Procurement" },
+    navItems: buyerNavItems,
+  },
+};
 
 function EmptyPage({ title }: { title: string }) {
   return (
@@ -42,35 +63,10 @@ function EmptyPage({ title }: { title: string }) {
   );
 }
 
-// Stub destination for Submit — the real Track page is a separate task.
-function TrackStub() {
-  const reduceMotion = useReducedMotion();
-  return (
-    <motion.div
-      className="flex h-full items-center justify-center"
-      initial={reduceMotion ? false : { opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-    >
-      <div className="flex flex-col items-center gap-2 text-center">
-        <CheckCircle2 className="size-10 text-[#0f7b8a]" aria-hidden />
-        <h1 className="text-2xl font-semibold text-foreground">
-          Request submitted
-        </h1>
-        {/* Slim Autopilot presence — the agent stays through confirmation. */}
-        <div className="flex items-center gap-1.5">
-          <AutopilotGradientIcon size={16} aria-hidden="true" />
-          <span className="text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">Autopilot</span> ·
-            I’ve got this queued — I’ll track it from here.
-          </span>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
 function GuidedBuyingLayout() {
+  const [seat, setSeat] = useState<Seat>("requester");
+  const { user, navItems } = SEATS[seat];
+
   return (
     <ApolloShell
       companyName="UiPath"
@@ -81,8 +77,17 @@ function GuidedBuyingLayout() {
         alt: "UiPath logo",
       }}
       navItems={navItems}
+      user={user}
+      onUserClick={() =>
+        setSeat((s) => (s === "requester" ? "buyer" : "requester"))
+      }
     >
-      <Outlet />
+      {/* Clips the Buy↔Configure horizontal slide so it can't flash a scrollbar. */}
+      <div className="relative h-full overflow-hidden">
+        <Outlet />
+      </div>
+      {/* One Autopilot home — the orb FAB, same corner on every surface. */}
+      <AutopilotFab />
     </ApolloShell>
   );
 }
@@ -113,6 +118,13 @@ const catalogRoute = createRoute({
   component: Catalog,
 });
 
+// Configure with agent (off-catalog contract path — launched from the Buy chip).
+const configureRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/configure",
+  component: ConfigureFlow,
+});
+
 const workbenchRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/workbench",
@@ -126,11 +138,11 @@ const reviewRoute = createRoute({
   component: Review,
 });
 
-// Track stub (Submit destination; the real Track page is a separate task).
+// Submit destination — the catalog request "submitted" finish line.
 const trackRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/track",
-  component: TrackStub,
+  component: CatalogSubmitted,
 });
 
 const routeTree = rootRoute.addChildren([
@@ -138,6 +150,7 @@ const routeTree = rootRoute.addChildren([
   dashboardRoute,
   buyRoute,
   catalogRoute,
+  configureRoute,
   workbenchRoute,
   reviewRoute,
   trackRoute,
@@ -159,7 +172,9 @@ export function GuidedBuyingShell() {
     <QueryClientProvider client={queryClient}>
       <CartProvider>
         <ConversationProvider>
-          <RouterProvider router={router} />
+          <AutopilotChatProvider>
+            <RouterProvider router={router} />
+          </AutopilotChatProvider>
         </ConversationProvider>
       </CartProvider>
     </QueryClientProvider>

@@ -5,6 +5,7 @@ import { ChatRail } from "./ChatRail";
 interface RailDockProps {
   open: boolean;
   hasUpdates: boolean;
+  cold?: boolean;
   onCollapse: () => void;
   onExpand: () => void;
 }
@@ -16,6 +17,7 @@ interface RailDockProps {
 export function RailDock({
   open,
   hasUpdates,
+  cold,
   onCollapse,
   onExpand,
 }: RailDockProps) {
@@ -28,7 +30,7 @@ export function RailDock({
       )}
     >
       {open ? (
-        <ChatRail onCollapse={onCollapse} />
+        <ChatRail onCollapse={onCollapse} cold={cold} />
       ) : (
         <button
           type="button"

@@ -53,12 +53,22 @@ export interface DetailField {
   value: string;
 }
 
+/** The outcome a decision button commits to. */
+export type Decision = "approved" | "countered" | "rejected";
+
+export interface ActionSpec {
+  label: string;
+  decision: Decision;
+}
+
 export interface WorkbenchDetail {
   id: string;
   request: string;
   requester: string;
   value: string;
   needBy: string;
+  /** Header timing line — traces to what the flow set (need-by or activation). */
+  timing: string;
   type: ForkType;
   finding: {
     tag: string;
@@ -66,8 +76,10 @@ export interface WorkbenchDetail {
     metrics: DetailMetric[];
     body: string;
   };
-  /** Action button labels — the fork's decision (stubbed). */
-  actions: { primary: string; secondary: string; reject: string };
+  /** Decision buttons — primary is the agent's recommendation. */
+  actions: { primary: ActionSpec; secondary: ActionSpec; reject: ActionSpec };
+  /** First-person Autopilot confirmation per decision (Activity + resolved card). */
+  confirmations: Record<Decision, string>;
   suggestions: string[];
   composerPlaceholder: string;
   lines: DetailLine[];
@@ -131,8 +143,8 @@ export const WORKBENCH_ROWS: WorkbenchRow[] = [
     id: "REQ-2051",
     request: "12 mobile lines for Denver",
     requester: "Marcus Webb",
-    value: "$8,640",
-    needBy: "Jun 24",
+    value: "$660/mo",
+    needBy: "Next cycle",
     type: "contract",
     status: "awaiting",
     assignee: "You",
@@ -193,6 +205,7 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
     requester: "Lena Fischer",
     value: "€2,450",
     needBy: "Jun 18, 2026",
+    timing: "Need by Jun 18, 2026",
     type: "quote",
     finding: {
       tag: "Off-catalog · Quote",
@@ -205,9 +218,14 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
       body: "These desks aren't in the catalog, so I sourced 3 vendors and selected the best quote. WorkSpace GmbH came in lowest at €490/unit — height-adjustable, 5-year warranty, delivered to Berlin in 10 business days. That's €550 under the team's €3,000 budget for this request.",
     },
     actions: {
-      primary: "Approve quote",
-      secondary: "Counter",
-      reject: "Reject",
+      primary: { label: "Approve quote", decision: "approved" },
+      secondary: { label: "Counter", decision: "countered" },
+      reject: { label: "Reject", decision: "rejected" },
+    },
+    confirmations: {
+      approved: "Approved — PO issued to WorkSpace GmbH.",
+      countered: "Counter drafted and sent to WorkSpace GmbH.",
+      rejected: "Rejected — Lena has been notified.",
     },
     suggestions: ["Why this vendor?", "Negotiate with agent", "Budget check"],
     composerPlaceholder: "Ask about this quote…",
@@ -278,41 +296,52 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
     id: "REQ-2051",
     request: "12 mobile lines for Denver",
     requester: "Marcus Webb",
-    value: "$8,640",
+    value: "$660/mo",
     needBy: "Jun 24, 2026",
+    timing: "Activation · next billing cycle",
     type: "contract",
     finding: {
-      tag: "Under MSA · Contract",
-      headline: "Under your T-Mobile MSA — terms ready to counter",
+      tag: "Configured · Contract",
+      headline: "Configured under your T-Mobile MSA — ready to approve",
       metrics: [
-        { label: "Proposed", value: "$8,640/yr" },
-        { label: "MSA rate", value: "$7,920/yr" },
-        { label: "Over MSA", value: "$720", cls: "text-destructive" },
+        { label: "Per line", value: "$55/mo" },
+        { label: "Monthly", value: "$660/mo" },
+        { label: "Annual", value: "$7,920/yr" },
       ],
-      body: "12 new lines for the Denver team fall under your existing T-Mobile MSA. The proposed rate is $60/line/mo, but your MSA ceiling is $55/line/mo. I've drafted a counter at the MSA rate — $7,920/yr, saving $720.",
+      body: "Configured under your active T-Mobile MSA — 12 Business Pro lines for the Denver team at $55/line/mo (MSA tier 2), bring-your-own-device ($0, no subsidy). That's $660/mo, $7,920/yr. MDM, activation, and billing are set to recommended defaults — review and approve.",
     },
-    actions: { primary: "Accept", secondary: "Counter", reject: "Reject" },
+    actions: {
+      primary: { label: "Approve", decision: "approved" },
+      secondary: { label: "Counter", decision: "countered" },
+      reject: { label: "Reject", decision: "rejected" },
+    },
+    confirmations: {
+      approved: "Approved — provisioning 12 Business Pro lines with T-Mobile.",
+      countered: "Counter sent to T-Mobile.",
+      rejected: "Rejected — Marcus has been notified.",
+    },
     suggestions: [
-      "What's in the MSA?",
-      "Negotiate with agent",
-      "Compare to last term",
+      "Why Business Pro?",
+      "Show the MSA terms",
+      "Adjust the configuration",
     ],
-    composerPlaceholder: "Ask about this contract…",
+    composerPlaceholder: "Ask about this configuration…",
     lines: [
       {
-        description: "Mobile line — unlimited data (Denver)",
+        description: "Mobile line · Business Pro (Denver)",
         qty: 12,
-        unitPrice: "$60.00/mo",
-        amount: "$8,640.00/yr",
+        unitPrice: "$55.00/mo",
+        amount: "$660.00/mo",
       },
     ],
-    linesTotal: "$8,640.00/yr",
+    linesTotal: "$660.00/mo · $7,920.00/yr",
     source: {
       filename: "T-Mobile-MSA-2024.pdf",
       lines: [
         "Master Service Agreement",
         "T-Mobile for Business",
-        "Negotiated line rate: $55.00 / line / mo",
+        "Tier 2 (Business Pro): $55.00 / line / mo",
+        "Includes: 50 GB hotspot · 5 GB intl roaming · priority data",
         "Term: 24 months",
         "Effective: Jan 1, 2024",
       ],
@@ -321,33 +350,48 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
       { id: "a0", label: "Awaiting your decision", indicator: "pending" },
       {
         id: "a1",
-        label: "Drafted counter terms",
-        time: "8:48 AM",
-        desc: "$55/line/mo per MSA ceiling",
-        indicator: "ai-pass",
+        label: "Escalated to you",
+        time: "8:52 AM",
+        desc: "Configured — ready to approve",
+        indicator: "ai-warn",
       },
       {
         id: "a2",
-        label: "Matched to T-Mobile MSA",
-        time: "8:45 AM",
-        desc: "Existing agreement applies",
+        label: "Configured devices + defaults",
+        time: "8:50 AM",
+        desc: "BYOD ($0) · Intune · next billing cycle",
         indicator: "ai-pass",
       },
       {
         id: "a3",
+        label: "Configured 12 Business Pro lines",
+        time: "8:48 AM",
+        desc: "$55/line · MSA tier 2",
+        indicator: "ai-pass",
+      },
+      {
+        id: "a4",
+        label: "Matched to active T-Mobile MSA",
+        time: "8:45 AM",
+        desc: "No new contract needed",
+        indicator: "ai-pass",
+      },
+      {
+        id: "a5",
         label: "Request received",
         time: "8:42 AM",
-        desc: "From Marcus Webb · Intake",
+        desc: "From Marcus Webb · Configure with agent",
         indicator: "event",
       },
     ],
     details: [
       { label: "Request ID", value: "REQ-2051" },
       { label: "Requester", value: "Marcus Webb · IT, Denver" },
-      { label: "Estimated value", value: "$8,640/yr" },
-      { label: "Need by", value: "Jun 24, 2026" },
+      { label: "Estimated value", value: "$660/mo · $7,920/yr" },
+      { label: "Activation", value: "Next billing cycle" },
       { label: "Type", value: "Contract · under MSA" },
-      { label: "Route", value: "Direct to you · MSA governed" },
+      { label: "Plan", value: "Business Pro · MSA tier 2" },
+      { label: "Devices", value: "Bring your own · $0/line" },
       { label: "Agreement", value: "T-Mobile MSA · 2024" },
     ],
   },

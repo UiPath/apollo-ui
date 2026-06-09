@@ -25,6 +25,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setQuantity: (item, quantity) =>
       setQuantities((prev) => ({ ...prev, [item.id]: quantity })),
     remove: (item) => setQuantities((prev) => ({ ...prev, [item.id]: 0 })),
+    clear: () => setQuantities({}),
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

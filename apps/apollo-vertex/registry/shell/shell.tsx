@@ -7,7 +7,7 @@ import { ShellLayout } from "./shell-layout";
 import { LocaleProvider } from "./shell-locale-provider";
 import { ShellLogin } from "./shell-login";
 import type { TranslationKey } from "./shell-translation-key";
-import { ShellUserProvider } from "./shell-user-provider";
+import { ShellUserProvider, type User } from "./shell-user-provider";
 
 export interface CompanyLogo {
   url: string;
@@ -28,6 +28,13 @@ export interface ShellNavItem {
   subItems?: ShellSubNavItem[];
 }
 
+/** Caller-supplied identity for the sidebar chip (overrides the auth user). */
+export interface ShellUser {
+  name: string;
+  /** Subtitle line — email or a role label. */
+  email: string;
+}
+
 export interface ApolloShellProps extends PropsWithChildren {
   companyName: string;
   productName: string;
@@ -35,6 +42,21 @@ export interface ApolloShellProps extends PropsWithChildren {
   companyLogo?: CompanyLogo;
   navItems: ShellNavItem[];
   loginDescription?: string;
+  /** Override the sidebar identity (e.g. a demo "seat"). */
+  user?: ShellUser;
+  /** Make the identity chip a button (e.g. switch seats) instead of a menu. */
+  onUserClick?: () => void;
+}
+
+function toUser(u: ShellUser): User {
+  const parts = u.name.trim().split(" ");
+  return {
+    id: "shell-user-override",
+    name: u.name,
+    email: u.email,
+    first_name: parts[0] ?? u.name,
+    last_name: parts.slice(1).join(" "),
+  };
 }
 
 const ApolloShellContent: FC<ApolloShellProps> = ({
@@ -45,6 +67,8 @@ const ApolloShellContent: FC<ApolloShellProps> = ({
   variant,
   navItems,
   loginDescription,
+  user,
+  onUserClick,
 }) => {
   const authContext = useContext(AuthContext);
   const { accessToken } = useAuth();
@@ -54,13 +78,14 @@ const ApolloShellContent: FC<ApolloShellProps> = ({
   }
 
   return (
-    <ShellUserProvider>
+    <ShellUserProvider userOverride={user ? toUser(user) : null}>
       <ShellLayout
         companyName={companyName}
         productName={productName}
         companyLogo={companyLogo}
         variant={variant}
         navItems={navItems}
+        onUserClick={onUserClick}
       >
         {children}
       </ShellLayout>
@@ -76,6 +101,8 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   variant,
   navItems,
   loginDescription,
+  user,
+  onUserClick,
 }) => {
   return (
     <LocaleProvider
@@ -93,6 +120,8 @@ export const ApolloShell: FC<ApolloShellProps> = ({
         variant={variant}
         navItems={navItems}
         loginDescription={loginDescription}
+        user={user}
+        onUserClick={onUserClick}
       >
         {children}
       </ApolloShellContent>

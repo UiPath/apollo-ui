@@ -4,7 +4,6 @@
 
 import {
   ArrowLeft,
-  ArrowUp,
   ChevronLeft,
   ChevronRight,
   Plus,
@@ -19,6 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
+  type Decision,
   FORK_BADGE_STATUS,
   FORK_DOT,
   FORK_LABEL,
@@ -33,7 +33,7 @@ import {
 
 type CenterView = "finding" | "comms";
 type RightTab = "activity" | "details" | "lines" | "source";
-type Resolution = "approved" | "countered" | "rejected" | null;
+type Resolution = Decision | null;
 
 const REVIEWER_INITIALS = "PV";
 
@@ -208,57 +208,37 @@ function LeftQueue({
 
 function ResolvedAlert({
   detail,
-  resolution,
+  decision,
 }: {
   detail: Detail;
-  resolution: Resolution;
+  decision: Decision;
 }) {
-  if (resolution === "approved") {
+  const body = detail.confirmations[decision];
+  if (decision === "rejected") {
     return (
-      <Alert>
-        <AlertTitle>
-          {detail.type === "quote" ? "Quote approved" : "Terms accepted"}
-        </AlertTitle>
-        <AlertDescription>
-          {detail.type === "quote"
-            ? "Approved and routed for sign-off — I'll place the order once cleared."
-            : "Accepted at the MSA rate — I'll provision the lines."}
-        </AlertDescription>
-      </Alert>
-    );
-  }
-  if (resolution === "countered") {
-    return (
-      <Alert>
-        <AlertTitle>Counter sent</AlertTitle>
-        <AlertDescription>
-          {
-            "I've sent the counter and will let you know when they respond. (Prototype stub.)"
-          }
-        </AlertDescription>
+      <Alert status="error">
+        <AlertTitle>{STATUS_LABEL.rejected}</AlertTitle>
+        <AlertDescription>{body}</AlertDescription>
       </Alert>
     );
   }
   return (
-    <Alert status="error">
-      <AlertTitle>Request rejected</AlertTitle>
-      <AlertDescription>The requester has been notified.</AlertDescription>
+    <Alert>
+      <AlertTitle>{STATUS_LABEL[decision]}</AlertTitle>
+      <AlertDescription>{body}</AlertDescription>
     </Alert>
   );
 }
 
 function Finding({
   detail,
-  resolution,
+  decision,
   onResolve,
 }: {
   detail: Detail;
-  resolution: Resolution;
-  onResolve: (r: Resolution) => void;
+  decision: Resolution;
+  onResolve: (d: Decision) => void;
 }) {
-  const [query, setQuery] = useState("");
-  const [focused, setFocused] = useState(false);
-
   return (
     <div className="flex-1 overflow-y-auto px-4 pb-8 pt-8 sm:px-6 lg:px-8">
       <Badge
@@ -295,75 +275,26 @@ function Finding({
         {detail.finding.body}
       </p>
 
-      {resolution ? (
-        <ResolvedAlert detail={detail} resolution={resolution} />
+      {decision ? (
+        <ResolvedAlert detail={detail} decision={decision} />
       ) : (
-        <>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button onClick={() => onResolve("approved")}>
-              {detail.actions.primary}
-            </Button>
-            <Button variant="outline" onClick={() => onResolve("countered")}>
-              {detail.actions.secondary}
-            </Button>
-            <Button variant="ghost" onClick={() => onResolve("rejected")}>
-              {detail.actions.reject}
-            </Button>
-          </div>
-
-          {/* Autopilot follow-up chips + ask composer */}
-          <div className="mt-6 max-w-[560px]">
-            <div className="mb-2 flex flex-wrap gap-2">
-              {detail.suggestions.map((s) => (
-                <Button
-                  key={s}
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full text-muted-foreground"
-                  onClick={() => setQuery(s)}
-                >
-                  {s}
-                </Button>
-              ))}
-            </div>
-            <div
-              className="flex items-center gap-2 rounded-[10px]"
-              style={
-                focused
-                  ? {
-                      border: "2px solid transparent",
-                      background:
-                        "linear-gradient(var(--background), var(--background)) padding-box, var(--ai-gradient-strong) border-box",
-                      padding: "6px 6px 6px 14px",
-                    }
-                  : {
-                      border: "2px solid var(--input)",
-                      padding: "6px 6px 6px 14px",
-                    }
-              }
-            >
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onFocus={() => setFocused(true)}
-                onBlur={() => setFocused(false)}
-                placeholder={detail.composerPlaceholder}
-                className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/60"
-              />
-              <button
-                type="button"
-                disabled={!query.trim()}
-                onClick={() => setQuery("")}
-                aria-label="Ask Autopilot"
-                className="flex size-8 shrink-0 items-center justify-center rounded-lg text-white transition-all disabled:opacity-40"
-                style={{ background: "var(--ai-gradient-strong)" }}
-              >
-                <ArrowUp className="size-[18px]" />
-              </button>
-            </div>
-          </div>
-        </>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button onClick={() => onResolve(detail.actions.primary.decision)}>
+            {detail.actions.primary.label}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => onResolve(detail.actions.secondary.decision)}
+          >
+            {detail.actions.secondary.label}
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => onResolve(detail.actions.reject.decision)}
+          >
+            {detail.actions.reject.label}
+          </Button>
+        </div>
       )}
     </div>
   );
@@ -411,12 +342,30 @@ function renderDot(indicator: TimelineEntry["indicator"]) {
   );
 }
 
-function ActivityTab({ detail }: { detail: Detail }) {
+function ActivityTab({
+  detail,
+  decision,
+}: {
+  detail: Detail;
+  decision: Resolution;
+}) {
   const [noteState, setNoteState] = useState<"default" | "input">("default");
   const [noteText, setNoteText] = useState("");
   const [notes, setNotes] = useState<TimelineEntry[]>([]);
 
-  const items = [...notes, ...detail.activity];
+  // The decision posts a first-person Autopilot confirmation at the top.
+  const resolved: TimelineEntry[] = decision
+    ? [
+        {
+          id: "resolved",
+          label: detail.confirmations[decision],
+          time: "Just now",
+          indicator: decision === "rejected" ? "ai-warn" : "ai-pass",
+        },
+      ]
+    : [];
+
+  const items = [...resolved, ...notes, ...detail.activity];
 
   const addNote = () => {
     const text = noteText.trim();
@@ -617,7 +566,13 @@ function SourceTab({ detail }: { detail: Detail }) {
   );
 }
 
-function RightPanel({ detail }: { detail: Detail }) {
+function RightPanel({
+  detail,
+  decision,
+}: {
+  detail: Detail;
+  decision: Resolution;
+}) {
   const [tab, setTab] = useState<RightTab>("activity");
   const [width, setWidth] = useState(380);
 
@@ -678,7 +633,9 @@ function RightPanel({ detail }: { detail: Detail }) {
         ))}
       </div>
       <div className="flex flex-1 flex-col overflow-hidden">
-        {tab === "activity" && <ActivityTab detail={detail} />}
+        {tab === "activity" && (
+          <ActivityTab detail={detail} decision={decision} />
+        )}
         {tab === "details" && <DetailsTab detail={detail} />}
         {tab === "lines" && <LinesTab detail={detail} />}
         {tab === "source" && <SourceTab detail={detail} />}
@@ -691,6 +648,8 @@ function RightPanel({ detail }: { detail: Detail }) {
 
 interface WorkbenchDetailProps {
   id: string;
+  decision: Resolution;
+  onDecide: (id: string, decision: Decision) => void;
   onBack: () => void;
   onSelect: (id: string) => void;
 }
@@ -698,16 +657,17 @@ interface WorkbenchDetailProps {
 /** Three-region escalation detail: queue · the agent's work + the call · reference. */
 export function WorkbenchDetail({
   id,
+  decision,
+  onDecide,
   onBack,
   onSelect,
 }: WorkbenchDetailProps) {
   const [centerView, setCenterView] = useState<CenterView>("finding");
-  const [resolution, setResolution] = useState<Resolution>(null);
 
   const detail = WORKBENCH_DETAILS[id];
   if (!detail) return null;
 
-  const status: WorkbenchStatus = resolution ?? "awaiting";
+  const status: WorkbenchStatus = decision ?? "awaiting";
 
   return (
     <div className="flex h-full min-h-0">
@@ -727,8 +687,8 @@ export function WorkbenchDetail({
                 </span>
               </div>
               <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                {detail.requester} · {detail.value} · Need by {detail.needBy} ·
-                Assigned to you
+                {detail.requester} · {detail.value} · {detail.timing} · Assigned
+                to you
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
@@ -771,8 +731,8 @@ export function WorkbenchDetail({
             {centerView === "finding" ? (
               <Finding
                 detail={detail}
-                resolution={resolution}
-                onResolve={setResolution}
+                decision={decision}
+                onResolve={(d) => onDecide(id, d)}
               />
             ) : (
               <div className="flex flex-1 flex-col items-center justify-center gap-2 px-8 text-center">
@@ -787,7 +747,7 @@ export function WorkbenchDetail({
             )}
           </div>
 
-          <RightPanel detail={detail} />
+          <RightPanel detail={detail} decision={decision} />
         </div>
       </div>
     </div>

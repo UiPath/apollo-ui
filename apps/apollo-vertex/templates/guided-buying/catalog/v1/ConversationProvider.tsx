@@ -7,8 +7,10 @@ import type {
 } from "@tanstack/ai-client";
 import { type ReactNode, useRef, useState } from "react";
 import {
+  type BuyPhase,
   ConversationContext,
   type ConversationContextValue,
+  type RequestDetails,
 } from "./conversation-context";
 import {
   APPROVAL_LIMIT,
@@ -20,9 +22,9 @@ import {
 } from "./data";
 import type { CatalogItem } from "./types";
 
-// The Bridge intro — streams in word-by-word above the inferred envelope.
+// The Bridge lead line — streams in word-by-word above the inferred envelope.
 const INTRO =
-  "I'll take it from here. Here's what I inferred from your team's past requests and your profile — edit anything that's off.";
+  "Here's what I inferred from your team's past requests and your profile. Edit anything that's off.";
 
 // Sourcing summary — the products layer, shown when the user continues to
 // selection (kept separate from the request envelope).
@@ -36,6 +38,8 @@ const RESOLVED_SUMMARY = `Here's what I'm on: ${SAMPLE_REQUEST.summary}\n\n${SAM
 const ENVELOPE_TOOL = "presentEnvelope";
 const MATCHES_TOOL = "presentMatches";
 const REVIEW_TOOL = "reviewCta";
+const WORKBENCH_TOOL = "workbenchCta";
+const SERVICE_BRIDGE_TOOL = "presentServiceBridge";
 
 // Two laptop alternatives behind the pick (the "2 alternatives" move).
 const ALT_IDS = CATALOG_ITEMS.filter(
@@ -76,7 +80,12 @@ function toolPart(id: string, name: string, output: unknown): MessagePart {
 export function ConversationProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<UIMessage[]>([]);
   const [status, setStatus] = useState<ChatClientState>("ready");
+  const [phase, setPhase] = useState<BuyPhase>("intake");
+  const [requestDetails, setRequestDetails] = useState<RequestDetails | null>(
+    null,
+  );
   const [hasResolved, setHasResolved] = useState(false);
+  const [routedRequestId, setRoutedRequestId] = useState<string | null>(null);
 
   const idRef = useRef(0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -106,6 +115,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
 
   const sendCatalogRequest = (text: string) => {
     clearTimers();
+    setPhase("bridge");
     selectionStartedRef.current = false;
     const userMsg = textMessage(nextId(), "user", text);
     const assistantId = nextId();
@@ -153,6 +163,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     if (selectionStartedRef.current) return;
     selectionStartedRef.current = true;
     clearTimers();
+    setPhase("selection");
     const assistantId = nextId();
     setMessages((prev) => [
       ...prev,
@@ -178,6 +189,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
 
   const resolveDefault = () => {
     clearTimers();
+    setPhase("selection");
     setMessages([
       textMessage(nextId(), "user", SAMPLE_REQUEST.summary),
       textMessage(nextId(), "assistant", RESOLVED_SUMMARY),
@@ -186,19 +198,57 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     setHasResolved(true);
   };
 
-  const sendOffCatalog = (text: string) => {
+  const sendOffCatalog = (text: string, requestId: string) => {
     clearTimers();
+    setPhase("offcatalog");
+    setRoutedRequestId(requestId);
+    const assistantId = nextId();
     setMessages((prev) => [
       ...prev,
       textMessage(nextId(), "user", text),
-      textMessage(
-        nextId(),
-        "assistant",
-        "That's an off-catalog request — I'll hand it to the Workbench once it's available.",
-      ),
+      {
+        id: assistantId,
+        role: "assistant",
+        parts: [
+          {
+            type: "text",
+            content:
+              "This one needs a buyer — I've sourced what I can and routed it to procurement. They'll review it in the Workbench and you'll get an update here once they've decided.",
+          },
+          toolPart(`${assistantId}-wb`, WORKBENCH_TOOL, { requestId }),
+        ],
+      },
     ]);
     setStatus("ready");
     // Stays in Intake: off-catalog doesn't resolve into the catalog workspace.
+  };
+
+  const clearRoutedRequest = () => setRoutedRequestId(null);
+  const routeToWorkbench = (id: string) => setRoutedRequestId(id);
+
+  // Contract fork: a short in-chat service Bridge (restate + provenance +
+  // routing). Its CTA opens the configurator. Doesn't resolve into the catalog.
+  const sendServiceRequest = (text: string) => {
+    clearTimers();
+    setPhase("service");
+    const userMsg = textMessage(nextId(), "user", text);
+    const assistantId = nextId();
+    setMessages((prev) => [
+      ...prev,
+      userMsg,
+      textMessage(assistantId, "assistant", ""),
+    ]);
+    setStatus("submitted");
+    timers.current.push(
+      setTimeout(() => {
+        setAssistantParts(assistantId, [
+          toolPart(`${assistantId}-svc`, SERVICE_BRIDGE_TOOL, {
+            kind: "service",
+          }),
+        ]);
+        setStatus("ready");
+      }, 600),
+    );
   };
 
   const addNote = (text: string) => {
@@ -238,7 +288,25 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     selectionStartedRef.current = false;
     setMessages([]);
     setStatus("ready");
+    setPhase("intake");
+    setRequestDetails(null);
     setHasResolved(false);
+    setRoutedRequestId(null);
+  };
+
+  // Step back one screen. From Selection, drop the matches turn to reveal the
+  // Bridge again; from the first step after Intake, fall back to the hero.
+  const stepBack = () => {
+    if (phase === "selection") {
+      clearTimers();
+      selectionStartedRef.current = false;
+      cartConfirmedRef.current = false;
+      setMessages((prev) => prev.slice(0, -1));
+      setStatus("ready");
+      setPhase("bridge");
+      return;
+    }
+    startFresh();
   };
 
   const stop = () => {
@@ -249,14 +317,22 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
   const value: ConversationContextValue = {
     messages,
     status,
+    phase,
+    requestDetails,
+    setRequestDetails,
     hasResolved,
     sendCatalogRequest,
     continueToSelection,
     resolveDefault,
     sendOffCatalog,
+    sendServiceRequest,
+    routedRequestId,
+    routeToWorkbench,
+    clearRoutedRequest,
     addNote,
     confirmAddToCart,
     startFresh,
+    stepBack,
     stop,
   };
 

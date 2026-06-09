@@ -1,16 +1,27 @@
 import { useFocusTrap, useHotkeys } from "@mantine/hooks";
-import { type ReactNode, useEffect, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
+import { motion, useReducedMotion } from "framer-motion";
+import { type ReactNode, useEffect, useRef } from "react";
 
 interface ProductDetailOverlayProps {
   onClose: () => void;
   children: ReactNode;
 }
 
+// Smooth ease-out reveal; quicker ease-in close. Rendered inside an
+// <AnimatePresence> so the exit plays before unmount.
+const REVEAL = {
+  duration: 0.42,
+  ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+};
+const CLOSE = {
+  duration: 0.2,
+  ease: [0.4, 0, 1, 1] as [number, number, number, number],
+};
+
 /**
  * Scoped overlay layered over the catalog main column (never the rail). Handles
  * the overlay hygiene: focus trap, Esc to close, dim-to-close, restored focus,
- * and a slide-in from the right edge.
+ * and a slide-in/out from the right edge.
  */
 export function ProductDetailOverlay({
   onClose,
@@ -18,6 +29,7 @@ export function ProductDetailOverlay({
 }: ProductDetailOverlayProps) {
   const focusTrapRef = useFocusTrap(true);
   useHotkeys([["Escape", onClose]]);
+  const reduceMotion = useReducedMotion();
 
   // Return focus to the triggering element when the overlay unmounts.
   const restoreRef = useRef<HTMLElement | null>(null);
@@ -26,39 +38,35 @@ export function ProductDetailOverlay({
     return () => restoreRef.current?.focus?.();
   }, []);
 
-  // Slide-in on mount.
-  const [entered, setEntered] = useState(false);
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setEntered(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
+  const reveal = reduceMotion ? { duration: 0 } : REVEAL;
+  const close = reduceMotion ? { duration: 0 } : CLOSE;
 
   return (
     <div className="absolute inset-0 z-30">
-      {/* Dimmed grid behind — click to close. */}
-      <button
+      {/* Dimmed catalog behind — click to close. */}
+      <motion.button
         type="button"
         aria-label="Close details"
         tabIndex={-1}
         onClick={onClose}
-        className={cn(
-          "absolute inset-0 bg-foreground/20 transition-opacity duration-300",
-          entered ? "opacity-100" : "opacity-0",
-        )}
+        className="absolute inset-0 bg-foreground/20"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1, transition: reveal }}
+        exit={{ opacity: 0, transition: close }}
       />
       {/* Sliding detail panel — fills the main column, leaving a dim gutter. */}
-      <div
+      <motion.div
         ref={focusTrapRef}
         role="dialog"
         aria-modal="true"
         aria-label="Product details"
-        className={cn(
-          "absolute inset-y-0 right-0 left-0 flex flex-col overflow-y-auto bg-background shadow-xl transition-transform duration-300 ease-out sm:left-12",
-          entered ? "translate-x-0" : "translate-x-full",
-        )}
+        className="absolute inset-y-0 right-0 flex w-full max-w-[768px] flex-col overflow-y-auto bg-background shadow-xl"
+        initial={{ x: "100%" }}
+        animate={{ x: 0, transition: reveal }}
+        exit={{ x: "100%", transition: close }}
       >
         {children}
-      </div>
+      </motion.div>
     </div>
   );
 }

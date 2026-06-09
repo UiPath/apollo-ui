@@ -1,5 +1,5 @@
 import { ArrowLeft, Check, Columns3, Plus } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { Fragment, type ReactNode, useState } from "react";
 import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -84,7 +84,7 @@ export function ProductDetail({
         </nav>
       </header>
 
-      <div className="mx-auto w-full max-w-4xl space-y-8 px-6 py-6">
+      <div className="w-full space-y-8 px-6 py-6">
         {/* Top: image + identity/price */}
         <div className="grid gap-6 lg:grid-cols-2">
           <ProductImage
@@ -205,28 +205,25 @@ export function ProductDetail({
         </section>
 
         {/* Full spec breakdown */}
-        <section className="space-y-4">
+        <section className="space-y-5">
           <h2 className="text-sm font-semibold text-foreground">
             Specifications
           </h2>
           {item.specGroups ? (
-            <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
+            <div className="grid gap-x-12 gap-y-7 sm:grid-cols-2">
               {item.specGroups.map((group) => (
                 <div key={group.label}>
-                  <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <h3 className="mb-3 text-xs font-semibold text-muted-foreground">
                     {group.label}
                   </h3>
-                  <dl className="space-y-1.5">
+                  {/* Label/value pairs as aligned columns — close together and
+                      left-aligned so the eye scans straight down. */}
+                  <dl className="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2 text-sm leading-6">
                     {group.rows.map((row) => (
-                      <div
-                        key={row.label}
-                        className="flex justify-between gap-4 text-sm"
-                      >
+                      <Fragment key={row.label}>
                         <dt className="text-muted-foreground">{row.label}</dt>
-                        <dd className="text-right text-foreground">
-                          {row.value}
-                        </dd>
-                      </div>
+                        <dd className="text-foreground">{row.value}</dd>
+                      </Fragment>
                     ))}
                   </dl>
                 </div>

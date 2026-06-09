@@ -61,32 +61,38 @@ export function FiltersControl({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-[380px] p-0">
-        <div className="max-h-[70vh] space-y-5 overflow-y-auto p-4">
+      <PopoverContent align="end" className="w-[300px] p-0">
+        <div className="max-h-[70vh] space-y-4 overflow-y-auto p-4">
           <FilterGroup label="Brand">
-            {CATALOG_BRANDS.map((brand) => (
-              <CheckRow
-                key={brand}
-                id={`brand-${brand}`}
-                label={brand}
-                checked={filters.brands.includes(brand)}
-                onCheckedChange={(checked) => toggleBrand(brand, checked)}
-              />
-            ))}
+            <div className="grid grid-cols-2 gap-x-3 gap-y-2.5">
+              {CATALOG_BRANDS.map((brand) => (
+                <CheckRow
+                  key={brand}
+                  id={`brand-${brand}`}
+                  label={brand}
+                  checked={filters.brands.includes(brand)}
+                  onCheckedChange={(checked) => toggleBrand(brand, checked)}
+                />
+              ))}
+            </div>
           </FilterGroup>
 
           <Separator />
 
           <FilterGroup label="Category">
-            {CATALOG_CATEGORIES.map((category) => (
-              <CheckRow
-                key={category}
-                id={`category-${category}`}
-                label={category}
-                checked={filters.categories.includes(category)}
-                onCheckedChange={(checked) => toggleCategory(category, checked)}
-              />
-            ))}
+            <div className="grid grid-cols-2 gap-x-3 gap-y-2.5">
+              {CATALOG_CATEGORIES.map((category) => (
+                <CheckRow
+                  key={category}
+                  id={`category-${category}`}
+                  label={category}
+                  checked={filters.categories.includes(category)}
+                  onCheckedChange={(checked) =>
+                    toggleCategory(category, checked)
+                  }
+                />
+              ))}
+            </div>
           </FilterGroup>
 
           <Separator />
@@ -179,8 +185,10 @@ function FilterGroup({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-2.5">
-      <h3 className="text-xs font-medium text-muted-foreground">{label}</h3>
+    <div>
+      <h3 className="mb-2.5 text-xs font-semibold text-muted-foreground">
+        {label}
+      </h3>
       {children}
     </div>
   );
@@ -204,7 +212,10 @@ function CheckRow({
         checked={checked}
         onCheckedChange={(value) => onCheckedChange(value === true)}
       />
-      <Label htmlFor={id} className="font-normal text-foreground">
+      <Label
+        htmlFor={id}
+        className="truncate text-sm font-normal text-foreground"
+      >
         {label}
       </Label>
     </div>

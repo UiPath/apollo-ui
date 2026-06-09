@@ -32,7 +32,9 @@ export const useUser = () => {
 
 export const UserContext = createContext<UserContextValue | null>(null);
 
-export const ShellUserProvider: FC<PropsWithChildren> = ({ children }) => {
+export const ShellUserProvider: FC<
+  PropsWithChildren<{ userOverride?: User | null }>
+> = ({ children, userOverride }) => {
   const { user: authUser, isAuthenticated, isLoading } = useAuth();
   const [user, setUser] = useState<User | null>(null);
 
@@ -52,8 +54,17 @@ export const ShellUserProvider: FC<PropsWithChildren> = ({ children }) => {
     }
   }, [authUser]);
 
+  // A caller-supplied identity (e.g. a demo "seat") wins over the auth user.
+  const effectiveUser = userOverride ?? user;
+
   return (
-    <UserContext.Provider value={{ user, isAuthenticated, isLoading }}>
+    <UserContext.Provider
+      value={{
+        user: effectiveUser,
+        isAuthenticated: userOverride != null || isAuthenticated,
+        isLoading,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );

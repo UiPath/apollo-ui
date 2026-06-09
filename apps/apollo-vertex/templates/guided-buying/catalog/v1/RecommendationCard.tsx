@@ -1,7 +1,10 @@
-import { Sparkles } from "lucide-react";
+import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
 import { eppSavings, formatPrice } from "./data";
 import { ProductCard } from "./ProductCard";
 import type { CatalogItem } from "./types";
+
+// The agent's signature gradient — reused (not new) as the promo background.
+const AI_GRADIENT = { background: "var(--ai-gradient-strong)" };
 
 interface RecommendationCardProps {
   item: CatalogItem;
@@ -18,8 +21,9 @@ interface RecommendationCardProps {
 }
 
 /**
- * The agent's top pick: a gradient promo panel fused with the featured product
- * tile, framed as one highlighted unit. Spans two grid columns on wider screens.
+ * The agent's top pick: an AI-gradient promo panel with the featured product as
+ * a solid white card inset inside it — the gradient frames the card like a
+ * border. Spans two grid columns on wider screens.
  */
 export function RecommendationCard({
   item,
@@ -38,12 +42,15 @@ export function RecommendationCard({
       : `${item.name} is the best match for your request`;
 
   return (
-    <div className="overflow-hidden rounded-2xl border-2 border-cyan-400/70 shadow-sm sm:col-span-2">
+    <div
+      className="overflow-hidden rounded-2xl shadow-sm sm:col-span-2"
+      style={AI_GRADIENT}
+    >
       <div className="grid grid-cols-1 sm:grid-cols-2">
-        {/* Promo panel */}
-        <div className="flex flex-col justify-center gap-4 bg-gradient-to-br from-[#6d5cd6] to-[#3b5bdb] p-6 text-white">
-          <div className="flex items-center gap-1.5 text-sm font-medium">
-            <Sparkles className="size-4" aria-hidden />
+        {/* Promo panel — agent gradient (full-bleed). */}
+        <div className="flex flex-col justify-center gap-4 p-6 text-white sm:p-8">
+          <div className="flex items-center gap-1.5 text-sm font-semibold">
+            <AutopilotIcon size={16} aria-hidden />
             Picked for you
           </div>
           <h2 className="text-2xl font-semibold leading-snug">{headline}</h2>
@@ -54,17 +61,19 @@ export function RecommendationCard({
           </p>
         </div>
 
-        {/* Featured product — borderless so the outer frame reads as one unit */}
-        <ProductCard
-          item={item}
-          inCart={inCart}
-          quantity={quantity}
-          featured
-          imageMode={imageMode}
-          onToggleCart={onToggleCart}
-          onOpenDetail={onOpenDetail}
-          className="rounded-none border-0 shadow-none hover:shadow-none"
-        />
+        {/* Featured product — solid white card, inset so the gradient frames it. */}
+        <div className="p-3">
+          <ProductCard
+            item={item}
+            inCart={inCart}
+            quantity={quantity}
+            featured
+            imageMode={imageMode}
+            onToggleCart={onToggleCart}
+            onOpenDetail={onOpenDetail}
+            className="h-full rounded-xl border-0 shadow-none hover:shadow-none"
+          />
+        </div>
       </div>
     </div>
   );

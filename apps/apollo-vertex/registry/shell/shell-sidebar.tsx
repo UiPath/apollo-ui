@@ -47,6 +47,7 @@ interface ShellSidebarProps {
   variant?: "minimal";
   companyLogo?: CompanyLogo;
   navItems: ShellNavItem[];
+  onUserClick?: () => void;
 }
 
 export const ShellSidebar = ({
@@ -55,6 +56,7 @@ export const ShellSidebar = ({
   variant,
   companyLogo,
   navItems,
+  onUserClick,
 }: ShellSidebarProps) => {
   if (variant === "minimal") {
     return (
@@ -82,6 +84,7 @@ export const ShellSidebar = ({
             isCollapsed
             collapsedMenuSide="bottom"
             collapsedMenuAlign="end"
+            onUserClick={onUserClick}
           />
         </div>
       </header>
@@ -94,6 +97,7 @@ export const ShellSidebar = ({
       productName={productName}
       companyLogo={companyLogo}
       navItems={navItems}
+      onUserClick={onUserClick}
     />
   );
 };
@@ -103,6 +107,7 @@ interface SidebarNavProps {
   productName: string;
   companyLogo?: CompanyLogo;
   navItems: ShellNavItem[];
+  onUserClick?: () => void;
 }
 
 function SidebarNav({
@@ -110,6 +115,7 @@ function SidebarNav({
   productName,
   companyLogo,
   navItems,
+  onUserClick,
 }: SidebarNavProps) {
   const { t } = useTranslation();
   const { state, toggleSidebar } = useSidebar();
@@ -338,7 +344,7 @@ function SidebarNav({
       </SidebarContent>
 
       <SidebarFooter className="p-4 pt-0">
-        <UserProfile isCollapsed={isCollapsed} />
+        <UserProfile isCollapsed={isCollapsed} onUserClick={onUserClick} />
       </SidebarFooter>
 
       <div

@@ -141,6 +141,7 @@
   "start_conversation_with": "Start a conversation with {{name}}",
   "stop": "Stop",
   "success": "Success",
+  "switch_user": "Switch user",
   "system": "System",
   "table_no_valid_fields": "None of the requested fields exist on {{entity}}: {{fields}}.",
   "team": "Team",

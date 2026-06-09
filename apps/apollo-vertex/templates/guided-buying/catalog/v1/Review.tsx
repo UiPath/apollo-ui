@@ -16,17 +16,27 @@ import { cn } from "@/lib/utils";
 import { useCart } from "./cart-context";
 import { CartLine } from "./CartLine";
 import { CartSummary } from "./CartSummary";
+import { useConversation } from "./conversation-context";
 import { APPROVAL_LIMIT, formatPrice, leadTime, SAMPLE_REQUEST } from "./data";
 
 // Review commits the EPP-priced catalog scenario.
 const BASIS = "epp" as const;
+
+// Bridge defaults — used when Review is reached without a resolved Bridge
+// (e.g. the catalog path); the Bridge overrides these when it confirms.
+const DEFAULT_APPROVER = "Alex Chen · Design Director";
+const DEFAULT_COST_CENTER = "Design Operations · CC-4421";
 
 /** Review & submit — the commit surface for the catalog path. */
 export function Review() {
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
   const { items, quantities, setOpen } = useCart();
+  const { requestDetails } = useConversation();
   const [agentOpen, setAgentOpen] = useState(false);
+
+  const approver = requestDetails?.approver ?? DEFAULT_APPROVER;
+  const costCenter = requestDetails?.costCenter ?? DEFAULT_COST_CENTER;
 
   const editCart = () => {
     setOpen(true);
@@ -114,16 +124,22 @@ export function Review() {
           </p>
         </section>
 
-        {/* Approval routing (in-limit happy path) */}
-        <section className="flex items-center gap-2 rounded-xl border p-4 text-sm">
-          <ShieldCheck
-            className="size-4 shrink-0 text-muted-foreground"
-            aria-hidden
-          />
-          <span className="text-foreground">
-            Within your {formatPrice(APPROVAL_LIMIT, "USD")} limit · no approval
-            needed
-          </span>
+        {/* Approval routing (in-limit happy path) — matches what the Bridge confirmed. */}
+        <section className="rounded-xl border p-4 text-sm">
+          <div className="flex items-center gap-2">
+            <ShieldCheck
+              className="size-4 shrink-0 text-muted-foreground"
+              aria-hidden
+            />
+            <span className="text-foreground">
+              Within your {formatPrice(APPROVAL_LIMIT, "USD")} limit · no
+              procurement review
+            </span>
+          </div>
+          <p className="mt-1 pl-6 text-muted-foreground">
+            Routes to <span className="text-foreground">{approver}</span> ·{" "}
+            {costCenter}
+          </p>
         </section>
 
         {/* Agent summary — one collapsed line, expandable */}

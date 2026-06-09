@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import {
+  type Decision,
   FORK_BADGE_STATUS,
   FORK_LABEL,
   type ForkType,
@@ -52,10 +53,12 @@ function StatCard({ label, value, hint, valueClass, dim }: StatCardProps) {
 
 interface WorkbenchListProps {
   onOpen: (id: string) => void;
+  /** Decisions made this session — override the seed row status. */
+  decisions: Record<string, Decision>;
 }
 
 /** Workbench landing — stat cards + the escalation queue table. */
-export function WorkbenchList({ onOpen }: WorkbenchListProps) {
+export function WorkbenchList({ onOpen, decisions }: WorkbenchListProps) {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<ForkType | "all">("all");
   const [statusFilter, setStatusFilter] = useState<WorkbenchStatus | "all">(
@@ -157,25 +160,43 @@ export function WorkbenchList({ onOpen }: WorkbenchListProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Request</TableHead>
-                <TableHead>Requester</TableHead>
-                <TableHead>Value</TableHead>
-                <TableHead>Need by</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Assignee</TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground">
+                  Request
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground">
+                  Requester
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground">
+                  Value
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground">
+                  Need by
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground">
+                  Type
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground">
+                  Status
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground">
+                  Assignee
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rows.map((row) => {
                 const openable = WORKBENCH_DETAILS[row.id] != null;
+                const effectiveStatus = decisions[row.id] ?? row.status;
                 return (
                   <TableRow
                     key={row.id}
                     onClick={() => {
                       if (openable) onOpen(row.id);
                     }}
-                    className={cn(openable && "cursor-pointer")}
+                    className={cn(
+                      "h-[52px]",
+                      openable && "cursor-pointer hover:bg-muted/50",
+                    )}
                   >
                     <TableCell className="font-medium text-foreground">
                       {row.request}
@@ -183,11 +204,11 @@ export function WorkbenchList({ onOpen }: WorkbenchListProps) {
                         {row.id}
                       </span>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="text-foreground">
                       {row.requester}
                     </TableCell>
                     <TableCell className="tabular-nums">{row.value}</TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="text-foreground">
                       {row.needBy}
                     </TableCell>
                     <TableCell>
@@ -201,13 +222,13 @@ export function WorkbenchList({ onOpen }: WorkbenchListProps) {
                     </TableCell>
                     <TableCell>
                       <Badge
-                        status={STATUS_BADGE[row.status]}
+                        status={STATUS_BADGE[effectiveStatus]}
                         variant="secondary"
                       >
-                        {STATUS_LABEL[row.status]}
+                        {STATUS_LABEL[effectiveStatus]}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="text-foreground">
                       {row.assignee}
                     </TableCell>
                   </TableRow>
