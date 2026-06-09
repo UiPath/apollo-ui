@@ -33,6 +33,41 @@ const CHIP_ICONS: Record<StageHeaderChipType, React.ReactElement> = {
   [StageHeaderChipType.ReturnToOrigin]: <ReturnToOriginIcon w={Icon.IconXs} h={Icon.IconXs} />,
 };
 
+/**
+ * Non-interactive status pill rendered in the stage header (e.g. "Optional",
+ * "Ends case"). Unlike {@link StageChip} these have no count and no click
+ * behavior — they are pure status indicators driven by `stageDetails` flags.
+ */
+const StageStatusBadge = ({
+  label,
+  tooltip,
+  className,
+  testId,
+}: {
+  label: string;
+  tooltip?: React.ReactNode;
+  className: string;
+  testId: string;
+}) => {
+  const badge = (
+    <span
+      data-testid={testId}
+      className={`inline-flex h-5 items-center whitespace-nowrap rounded-full px-2 text-xs font-normal leading-5 ${className}`}
+    >
+      {label}
+    </span>
+  );
+
+  if (tooltip) {
+    return (
+      <CanvasTooltip placement="bottom" content={tooltip}>
+        {badge}
+      </CanvasTooltip>
+    );
+  }
+  return badge;
+};
+
 const StageNodeHeaderInner = ({
   props,
   isReadOnly,
@@ -68,6 +103,14 @@ const StageNodeHeaderInner = ({
   const slaIndicator = slaIcon ? SLA_ICON_CONFIG[slaIcon] : undefined;
   const statusFallbackName = status ? getStatusName(status) : '';
   const statusTooltip = statusLabel || statusFallbackName;
+
+  const isOptional = !!stageDetails.isOptional;
+  const endsCase = !!stageDetails.endsCase;
+  const optionalLabel = stageDetails.optionalLabel ?? labels.optionalBadge;
+  const endsCaseLabel = stageDetails.endsCaseLabel ?? labels.endsCaseBadge;
+  const hasHeaderChips = !!stageDetails.headerChips && stageDetails.headerChips.length > 0;
+  const hasStatusBadges = isOptional || endsCase;
+  const showStatusRow = !!slaText || hasHeaderChips || hasStatusBadges;
 
   return (
     <StageHeader isException={isException} data-testid={`stage-header-${id}`}>
@@ -113,7 +156,7 @@ const StageNodeHeaderInner = ({
           )}
         </Row>
       </div>
-      {(slaText || (stageDetails.headerChips && stageDetails.headerChips.length > 0)) && (
+      {showStatusRow && (
         <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
           {slaText && (
             <span
@@ -127,9 +170,9 @@ const StageNodeHeaderInner = ({
               {slaText}
             </span>
           )}
-          {stageDetails.headerChips && stageDetails.headerChips.length > 0 && (
+          {(hasHeaderChips || hasStatusBadges) && (
             <div className="flex flex-wrap items-center gap-1">
-              {stageDetails.headerChips.map((chip) => {
+              {stageDetails.headerChips?.map((chip) => {
                 const button = (
                   <StageChip
                     key={chip.type}
@@ -153,6 +196,22 @@ const StageNodeHeaderInner = ({
                 }
                 return button;
               })}
+              {isOptional && (
+                <StageStatusBadge
+                  testId={`stage-optional-badge-${id}`}
+                  className="bg-background-secondary text-foreground-muted"
+                  label={optionalLabel}
+                  tooltip={stageDetails.optionalTooltip}
+                />
+              )}
+              {endsCase && (
+                <StageStatusBadge
+                  testId={`stage-ends-case-badge-${id}`}
+                  className="bg-error-icon text-foreground-inverse"
+                  label={endsCaseLabel}
+                  tooltip={stageDetails.endsCaseTooltip}
+                />
+              )}
             </div>
           )}
         </div>

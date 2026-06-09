@@ -2687,3 +2687,107 @@ export const WithRulesTags: Story = {
     ],
   },
 };
+
+export const WithStatusBadges: Story = {
+  name: 'With Status Badges (Optional / Ends Case)',
+  parameters: {
+    nodes: [
+      // Optional stage — subtle, non-interactive "Optional" badge alongside SLA + chips.
+      {
+        id: '1',
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Intake',
+            isOptional: true,
+            optionalTooltip: 'Not required for case completion',
+            tasks: [
+              [{ id: 't1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: 't2', label: 'eSign envelope', icon: <ProcessIcon /> }],
+            ],
+            headerChips: [
+              {
+                type: StageHeaderChipType.Entry,
+                count: 1,
+                tooltip: 'Entry rules',
+                onClick: () => window.alert('Open entry rules panel'),
+              },
+              {
+                type: StageHeaderChipType.Exit,
+                count: 1,
+                tooltip: 'Exit rules',
+                onClick: () => window.alert('Open exit rules panel'),
+              },
+            ],
+          },
+          execution: { stageStatus: { slaText: 'SLA: 3 days' } },
+          onTaskClick: (taskId: string) => window.alert(`Task clicked: ${taskId}`),
+          onTaskAdd: () => window.alert('Add task'),
+        },
+      },
+      // Terminal stage — filled danger "Ends case" badge.
+      {
+        id: '2',
+        type: 'stage',
+        position: { x: 400, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Rejected',
+            endsCase: true,
+            endsCaseTooltip: 'Entering this stage ends the case',
+            tasks: [
+              [{ id: 't3', label: 'Summarize rejection', icon: <DocumentIcon /> }],
+              [{ id: 't4', label: 'Send customer letter', icon: <ProcessIcon /> }],
+            ],
+            headerChips: [
+              {
+                type: StageHeaderChipType.Entry,
+                count: 1,
+                tooltip: 'Entry rules',
+                onClick: () => window.alert('Open entry rules panel'),
+              },
+            ],
+          },
+          onTaskClick: (taskId: string) => window.alert(`Task clicked: ${taskId}`),
+          onTaskAdd: () => window.alert('Add task'),
+        },
+      },
+      // Both badges + SLA + chips coexisting, plus consumer-supplied labels.
+      {
+        id: '3',
+        type: 'stage',
+        position: { x: 752, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Optional + terminal',
+            isOptional: true,
+            endsCase: true,
+            optionalLabel: 'Optional',
+            endsCaseLabel: 'Ends case',
+            tasks: [[{ id: 't5', label: 'Final compliance audit', icon: <DocumentIcon /> }]],
+            headerChips: [
+              {
+                type: StageHeaderChipType.Entry,
+                count: 2,
+                tooltip: 'Entry rules',
+                onClick: () => window.alert('Open entry rules panel'),
+              },
+              {
+                type: StageHeaderChipType.Completion,
+                tooltip: 'Stage completion',
+                onClick: () => window.alert('Open stage completion panel'),
+              },
+            ],
+          },
+          execution: { stageStatus: { slaText: 'SLA: 1 day remaining', slaIcon: 'warning' } },
+          onTaskClick: (taskId: string) => window.alert(`Task clicked: ${taskId}`),
+          onTaskAdd: () => window.alert('Add task'),
+        },
+      },
+    ],
+  },
+};

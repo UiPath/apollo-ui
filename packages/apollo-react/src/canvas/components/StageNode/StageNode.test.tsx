@@ -1010,6 +1010,97 @@ describe('StageNode - Header Chips', () => {
   });
 });
 
+describe('StageNode - Status Badges', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const optionalBadge = () => screen.queryByTestId('stage-optional-badge-stage-1');
+  const endsCaseBadge = () => screen.queryByTestId('stage-ends-case-badge-stage-1');
+
+  it('does not render status badges by default', () => {
+    renderStageNode();
+    expect(optionalBadge()).not.toBeInTheDocument();
+    expect(endsCaseBadge()).not.toBeInTheDocument();
+  });
+
+  it('renders the Optional badge with the default label when isOptional is true', () => {
+    renderStageNode({ stageDetails: { ...defaultProps.stageDetails, isOptional: true } });
+    const badge = optionalBadge();
+    expect(badge).toBeInTheDocument();
+    expect(badge).toHaveTextContent('Optional');
+    expect(endsCaseBadge()).not.toBeInTheDocument();
+  });
+
+  it('renders the Ends case badge with the default label when endsCase is true', () => {
+    renderStageNode({ stageDetails: { ...defaultProps.stageDetails, endsCase: true } });
+    const badge = endsCaseBadge();
+    expect(badge).toBeInTheDocument();
+    expect(badge).toHaveTextContent('Ends case');
+    expect(optionalBadge()).not.toBeInTheDocument();
+  });
+
+  it('renders both badges when both flags are set', () => {
+    renderStageNode({
+      stageDetails: { ...defaultProps.stageDetails, isOptional: true, endsCase: true },
+    });
+    expect(optionalBadge()).toBeInTheDocument();
+    expect(endsCaseBadge()).toBeInTheDocument();
+  });
+
+  it('uses consumer-supplied labels when provided', () => {
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        isOptional: true,
+        endsCase: true,
+        optionalLabel: 'Opcional',
+        endsCaseLabel: 'Finaliza caso',
+      },
+    });
+    expect(optionalBadge()).toHaveTextContent('Opcional');
+    expect(endsCaseBadge()).toHaveTextContent('Finaliza caso');
+  });
+
+  it('renders the status row even when there is no SLA text or header chips', () => {
+    renderStageNode({ stageDetails: { ...defaultProps.stageDetails, isOptional: true } });
+    expect(optionalBadge()).toBeInTheDocument();
+    expect(screen.queryByTestId('stage-sla-stage-1')).not.toBeInTheDocument();
+  });
+
+  it('renders status badges alongside SLA text and header chips', () => {
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        isOptional: true,
+        endsCase: true,
+        headerChips: [{ type: StageHeaderChipType.Entry }],
+      },
+      execution: {
+        stageStatus: { slaText: 'SLA: 3 days' },
+        taskStatus: {},
+      },
+    });
+    expect(screen.getByTestId('stage-sla-stage-1')).toHaveTextContent('SLA: 3 days');
+    expect(screen.getByRole('button', { name: StageHeaderChipType.Entry })).toBeInTheDocument();
+    expect(optionalBadge()).toBeInTheDocument();
+    expect(endsCaseBadge()).toBeInTheDocument();
+  });
+
+  it('renders the badge when an optionalTooltip is provided', () => {
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        isOptional: true,
+        optionalTooltip: 'Not required for case completion',
+      },
+    });
+
+    expect(optionalBadge()).toBeInTheDocument();
+    expect(optionalBadge()).toHaveTextContent('Optional');
+  });
+});
+
 describe('StageNode - Add Task Button', () => {
   it('disables the add task button when loadingTaskIds is non-empty', () => {
     renderStageNode({
