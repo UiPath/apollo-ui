@@ -1,3 +1,15 @@
+## [@uipath/apollo-react-v4.41.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.40.0...@uipath/apollo-react@4.41.0) (2026-06-09)
+
+### Features
+
+* **apollo-react:** add Optional and Ends case status badges to StageNode header ([7d9be97](https://github.com/UiPath/apollo-ui/commit/7d9be9731ac3f353d994d2c9517cb5e6812c59d2))
+
+### Bug Fixes
+
+* **apollo-react:** gate status-badge interactivity on onClick and restore exhaustive chip icon map ([3878473](https://github.com/UiPath/apollo-ui/commit/38784734b06f9b0eb5422e7e522abbc357e8a09b))
+* **apollo-react:** make status badges interactive with hover and tokenize chip height ([2432b43](https://github.com/UiPath/apollo-ui/commit/2432b4368cabf82182c4eaf1699d756329910078))
+* **apollo-react:** model status badges as header chips and grid-align stage card heights ([9acfc99](https://github.com/UiPath/apollo-ui/commit/9acfc99825b8734881c038bb27489e573eb0a26c))
+
 ## [@uipath/apollo-react-v4.40.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.39.5...@uipath/apollo-react@4.40.0) (2026-06-08)
 
 ### Features
