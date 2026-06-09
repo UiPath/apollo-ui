@@ -41,11 +41,14 @@ export enum StageHeaderChipType {
   Exit = 'exit',
   Completion = 'completion',
   ReturnToOrigin = 'returnToOrigin',
+  Optional = 'optional',
+  EndsCase = 'endsCase',
 }
 
 export interface StageHeaderChip {
   type: StageHeaderChipType;
   count?: number;
+  label?: string;
   tooltip?: React.ReactNode;
   onClick?: () => void;
 }
@@ -65,12 +68,6 @@ export interface StageNodeBaseProps {
     tasks: StageTaskItem[][];
     selectedTaskId?: string;
     headerChips?: StageHeaderChip[];
-    isOptional?: boolean;
-    optionalLabel?: string;
-    optionalTooltip?: React.ReactNode;
-    endsCase?: boolean;
-    endsCaseLabel?: string;
-    endsCaseTooltip?: React.ReactNode;
   };
   taskOptions?: ListItem[];
   execution?: {
