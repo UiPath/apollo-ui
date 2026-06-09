@@ -1070,9 +1070,14 @@ describe('StageNode - Status Badges', () => {
     expect(optionalBadge()).toHaveTextContent('Optional');
   });
 
-  it('renders the badge as an interactive button', () => {
-    renderStageNode(withChips([{ type: StageHeaderChipType.Optional }]));
+  it('renders an interactive button when an onClick is provided', () => {
+    renderStageNode(withChips([{ type: StageHeaderChipType.Optional, onClick: vi.fn() }]));
     expect(optionalBadge()?.tagName).toBe('BUTTON');
+  });
+
+  it('renders a non-interactive span when no onClick is provided', () => {
+    renderStageNode(withChips([{ type: StageHeaderChipType.Optional }]));
+    expect(optionalBadge()?.tagName).toBe('SPAN');
   });
 
   it('calls the chip onClick when the badge is clicked', async () => {
