@@ -401,19 +401,6 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     [isConnecting, selected, isHovered, dragging]
   );
 
-  const toolbarPosition = toolbarConfig?.position ?? (toolbarConfig ? Position.Top : undefined);
-
-  // True when handle buttons at the toolbar's position would collide with it.
-  const hasHandleButtonsAtToolbar = useMemo(() => {
-    if (!toolbarPosition || !handleConfigurations?.length) return false;
-    return handleConfigurations.some(
-      (config) =>
-        config.position === toolbarPosition &&
-        config.visible !== false &&
-        config.handles.some((h) => h.type === 'source' && h.showButton !== false)
-    );
-  }, [toolbarPosition, handleConfigurations]);
-
   const hasVisibleBottomHandles = useMemo(() => {
     if (
       !handleConfigurations ||
@@ -479,6 +466,69 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   // Check if smart handles are enabled via node data
   const useSmartHandles = data?.useSmartHandles ?? false;
+  const toolbarPosition = toolbarConfig?.position ?? (toolbarConfig ? Position.Top : undefined);
+
+  // Handle affordances *configured* at the toolbar's side that it would overlap.
+  // `button` = a source add button; `label` = a handle label (any handle type).
+  // Whether each is actually rendered is gated by `offsetToolbar` below, since
+  // buttons and labels appear under different conditions.
+  const toolbarSideHandleAffordances = useMemo(() => {
+    let hasButton = false;
+    let hasLabel = false;
+    if (!toolbarPosition || !handleConfigurations?.length) {
+      return { hasButton, hasLabel };
+    }
+    for (const config of handleConfigurations) {
+      if (config.position !== toolbarPosition || config.visible === false) continue;
+      for (const handle of config.handles) {
+        if (handle.visible === false) continue;
+        const showButton = useSmartHandles ? handle.showButton : handle.showButton !== false;
+        if (handle.type === 'source' && showButton) hasButton = true;
+        if (handle.label) hasLabel = true;
+      }
+    }
+    return { hasButton, hasLabel };
+  }, [toolbarPosition, handleConfigurations]);
+
+  // Offset the toolbar to clear whichever handle affordance is actually rendered
+  // at its side — not merely configured. A shown add button stacks button + label
+  // and needs the larger offset; a label alone needs only a small one.
+  const offsetToolbar = useMemo<'button' | 'label' | false>(() => {
+    if (multipleNodesSelected) return false;
+    const { hasButton, hasLabel } = toolbarSideHandleAffordances;
+
+    // Mirror the gating that actually renders an add button (see `useButtonHandles`
+    // / `smartHandleElements`), so the larger 'button' offset only applies when one
+    // is really on screen — not while connecting/dragging or under a custom predicate.
+    const isAddButtonShown = () => {
+      // SmartHandle add buttons require selection (and ignore connect/drag state).
+      if (useSmartHandles) {
+        return mode === 'design' && !!selected;
+      }
+      const showAddButton = mode === 'design' && !isConnecting && !dragging;
+      if (shouldShowAddButtonFn) {
+        return shouldShowAddButtonFn({ showAddButton, selected: !!selected });
+      }
+      return showAddButton && (!!selected || isHovered);
+    };
+
+    if (hasButton && isAddButtonShown()) return 'button';
+    // Labels render whenever their handle is visible — on hover or selection, in
+    // any mode (including readonly) — which is exactly when the toolbar is shown,
+    // so a configured label always coincides with it.
+    if (hasLabel) return 'label';
+    return false;
+  }, [
+    toolbarSideHandleAffordances,
+    mode,
+    multipleNodesSelected,
+    useSmartHandles,
+    selected,
+    isHovered,
+    isConnecting,
+    dragging,
+    shouldShowAddButtonFn,
+  ]);
 
   // Generate ButtonHandle elements (default behavior)
   // Hide add buttons when multiple nodes are selected to avoid visual clutter
@@ -666,7 +716,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           config={toolbarConfig}
           expanded={selected || isHovered}
           hidden={dragging || multipleNodesSelected}
-          offsetToolbar={hasHandleButtonsAtToolbar}
+          offsetToolbar={offsetToolbar}
         />
       )}
       {handleElements}
