@@ -13,6 +13,8 @@ export interface StageNodeLabels {
   sequentialTasks: string;
   parallel: string;
   untitledStage: string;
+  optionalBadge: string;
+  endsCaseBadge: string;
   contextMenu: StageContextMenuLabels;
 }
 
@@ -34,6 +36,8 @@ export function useStageNodeLabels(): StageNodeLabels {
       sequentialTasks: _({ id: 'stage-node.sequential-tasks', message: 'Sequential tasks' }),
       parallel: _({ id: 'stage-node.parallel', message: 'Parallel' }),
       untitledStage: _({ id: 'stage-node.untitled-stage', message: 'Untitled stage' }),
+      optionalBadge: _({ id: 'stage-node.optional-badge', message: 'Optional' }),
+      endsCaseBadge: _({ id: 'stage-node.ends-case-badge', message: 'Ends case' }),
       contextMenu: {
         moveUp: _({ id: 'stage-node.move-up', message: 'Move up' }),
         moveDown: _({ id: 'stage-node.move-down', message: 'Move down' }),

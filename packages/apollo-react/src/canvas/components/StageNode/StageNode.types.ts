@@ -65,6 +65,12 @@ export interface StageNodeBaseProps {
     tasks: StageTaskItem[][];
     selectedTaskId?: string;
     headerChips?: StageHeaderChip[];
+    isOptional?: boolean;
+    optionalLabel?: string;
+    optionalTooltip?: React.ReactNode;
+    endsCase?: boolean;
+    endsCaseLabel?: string;
+    endsCaseTooltip?: React.ReactNode;
   };
   taskOptions?: ListItem[];
   execution?: {
