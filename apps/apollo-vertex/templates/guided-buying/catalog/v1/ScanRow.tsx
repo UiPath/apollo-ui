@@ -1,6 +1,8 @@
 import { Check, Plus } from "lucide-react";
+import { useState } from "react";
 import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
 import { Button } from "@/components/ui/button";
+import { GLASS_CLASSES } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import {
@@ -33,17 +35,19 @@ interface ScanRowProps {
   onOpenDetail: (item: CatalogItem) => void;
 }
 
-/** Small brand mark — logo when available, vendor initials otherwise. */
+/** Small brand mark — logo when available, vendor initials on missing/broken. */
 export function BrandMark({ item }: { item: CatalogItem }) {
   const logo = vendorLogoUrl(item.vendor);
+  const [failed, setFailed] = useState(false);
   return (
     <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white">
-      {logo ? (
+      {logo && !failed ? (
         // oxlint-disable-next-line next/no-img-element
         <img
           src={logo}
           alt={`${item.vendor} logo`}
           loading="lazy"
+          onError={() => setFailed(true)}
           className="size-5 object-contain"
         />
       ) : (
@@ -72,11 +76,15 @@ export function ScanRow({
   const stockLine = `${item.inStock ? "In stock" : "Out of stock"} · ${item.source}`;
 
   return (
-    // Recommended row gets a 2px AI-gradient border via the padding-box trick.
-    <div
-      className={cn("rounded-lg", recommended && "p-0.5")}
-      style={recommended ? AI_GRADIENT : {}}
-    >
+    // Recommended row gets an AI-gradient glow behind it (no border).
+    <div className="relative">
+      {recommended && (
+        <div
+          className="pointer-events-none absolute -inset-0.5 rounded-xl opacity-15 blur-md"
+          style={AI_GRADIENT}
+          aria-hidden
+        />
+      )}
       <div
         role="button"
         tabIndex={0}
@@ -90,8 +98,8 @@ export function ScanRow({
           }
         }}
         className={cn(
-          "flex cursor-pointer flex-wrap items-center gap-x-4 gap-y-3 bg-card p-4 transition-shadow hover:shadow-sm",
-          recommended ? "rounded-[7px]" : "rounded-lg border",
+          "relative flex cursor-pointer flex-wrap items-center gap-x-4 gap-y-3 rounded-lg p-4 transition-shadow hover:shadow-md",
+          recommended ? "border bg-card" : cn(...GLASS_CLASSES, "rounded-lg"),
         )}
       >
         <Checkbox
@@ -109,7 +117,7 @@ export function ScanRow({
             <h3 className="font-medium text-foreground">{item.name}</h3>
             {recommended && (
               <span
-                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold text-white"
+                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-white"
                 style={AI_GRADIENT}
               >
                 <AutopilotIcon size={12} aria-hidden />
@@ -161,7 +169,7 @@ export function ScanRow({
               ) : (
                 <>
                   <Plus className="size-4" />
-                  Add {quantity}
+                  {quantity > 1 ? `Add ${quantity}` : "Add"}
                 </>
               )}
             </Button>

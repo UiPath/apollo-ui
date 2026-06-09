@@ -1,4 +1,6 @@
-import { Columns3, LayoutGrid, List, Search } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { Columns3, LayoutGrid, List, Search, ShoppingCart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -34,6 +36,10 @@ interface ToolbarProps {
   /** Whether enough products are selected (≥2) to compare. */
   canCompare: boolean;
   onCompare: () => void;
+  /** Pinned to the top — flattens the card and reveals the Cart button. */
+  stuck?: boolean;
+  cartCount?: number;
+  onOpenCart?: () => void;
 }
 
 /** Catalog toolbar: label, AI-assisted search, layout toggle, sort, and compare. */
@@ -50,9 +56,18 @@ export function Toolbar({
   onClearAllFilters,
   canCompare,
   onCompare,
+  stuck = false,
+  cartCount = 0,
+  onOpenCart,
 }: ToolbarProps) {
+  const reduceMotion = useReducedMotion();
   return (
-    <div className="flex flex-col gap-3 rounded-2xl bg-card p-4 lg:flex-row lg:items-center lg:gap-4">
+    <div
+      className={cn(
+        "flex flex-col gap-3 transition-[background-color,border-radius,padding] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none lg:flex-row lg:items-center lg:gap-4",
+        stuck ? "bg-transparent p-0" : "rounded-2xl bg-card p-4",
+      )}
+    >
       <div className="relative flex-1">
         <Search
           className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
@@ -128,6 +143,31 @@ export function Toolbar({
             )}
           </Tooltip>
         </TooltipProvider>
+
+        {/* Cart slides in next to Compare once the toolbar is pinned (the
+            header's cart has scrolled away). */}
+        <AnimatePresence>
+          {stuck && (
+            <motion.div
+              key="toolbar-cart"
+              className="overflow-hidden"
+              initial={reduceMotion ? false : { opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: "auto" }}
+              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, width: 0 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <Button variant="outline" className="gap-2" onClick={onOpenCart}>
+                <ShoppingCart className="size-4" />
+                Cart
+                {cartCount > 0 && (
+                  <Badge variant="secondary" className="px-1.5">
+                    {cartCount}
+                  </Badge>
+                )}
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

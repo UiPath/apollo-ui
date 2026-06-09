@@ -1,98 +1,192 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { AiChat } from "@/registry/ai-chat/components/ai-chat";
-import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
-import { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
-import { useConversation } from "./conversation-context";
-import { MatchCarousel, ReviewCta } from "./MatchCarousel";
-import { RequestEnvelope } from "./RequestEnvelope";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { motion, useReducedMotion } from "framer-motion";
+import { type ReactNode, useEffect, useRef, useState } from "react";
+import { AiChatEmptySuggestions } from "@/registry/ai-chat/components/ai-chat-empty-suggestions";
+import { AiChatInput } from "@/registry/ai-chat/components/ai-chat-input";
+import { BuyScaffold } from "./BuyScaffold";
+import { type BuyPhase, useConversation } from "./conversation-context";
+import { GuidedBuy } from "./GuidedBuy";
 
-// The catalog (demo) path; the other two preview the quote/contract forks.
+const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+// Where the surface is heading as it animates out — drives the exit direction.
+type Leaving = null | "catalog" | "configure";
+
+// The three demo launch points — one per use case. Catalog = requester
+// self-serving; quote = generic handoff to a seeded Workbench item; contract =
+// the Configure-with-agent wizard.
 const CATALOG_STARTER = "2 ThinkPad X1 laptops for our new designers.";
-const STARTERS = [
-  CATALOG_STARTER,
-  "5 standing desks for the Berlin office.",
-  "Add 12 mobile lines for the Denver team.",
-];
+const QUOTE_STARTER = "5 standing desks for the Berlin office.";
+const CONTRACT_STARTER = "Add 12 mobile lines for the Denver team.";
+const STARTERS = [CATALOG_STARTER, QUOTE_STARTER, CONTRACT_STARTER];
+
+// Title + subtext per step — the constant header anchor. The first two ask
+// (gather, verify); the rest deliver.
+const HEADERS: Record<BuyPhase, { title: string; subtext: ReactNode }> = {
+  intake: {
+    title: "What do you need?",
+    subtext:
+      "Tell Autopilot what to buy. It sources, prices, and routes the request.",
+  },
+  bridge: {
+    title: "Did I get this right?",
+    subtext:
+      "Here's what I inferred from your team's past requests and your profile.",
+  },
+  selection: {
+    title: "Here are your matches.",
+    subtext: "12 in the catalog, priced with EPP and filtered to in-stock.",
+  },
+  service: {
+    title: "Did I get this right?",
+    subtext: "12 mobile lines for the Denver team, under your T-Mobile MSA.",
+  },
+  offcatalog: {
+    title: "Routed to procurement.",
+    subtext:
+      "This one needs a buyer. I've sourced what I can and sent it to the Workbench; you'll get an update here once they've decided.",
+  },
+};
 
 /**
- * The `/buy` front door. A centered chat column within the Buy section (nav
- * stays visible — no full-screen takeover). Autopilot delivers the answer in
- * the thread: a streamed restatement, then a carousel of matches. The chat
- * starts fresh each time the user lands here.
+ * The `/buy` front door. One persistent header anchor (BuyScaffold) across two
+ * framings: Intake — the conversational "What do you need?" hero (free text +
+ * chips), the one place chat is the right primitive — and, once a request is
+ * made, a guided surface (GuidedBuy) of structured surfaces, not a transcript.
+ * As the step changes, the title/subtext slide up and fade out/in (staggered).
  */
 export function BuyFlow() {
   const {
-    messages,
-    status,
+    phase,
     sendCatalogRequest,
     sendOffCatalog,
+    sendServiceRequest,
     stop,
     startFresh,
+    stepBack,
   } = useConversation();
 
-  // Reset to the Intake empty state whenever the user (re)enters Buy.
+  const navigate = useNavigate();
+  const reduceMotion = useReducedMotion();
+  const [leaving, setLeaving] = useState<Leaving>(null);
+  const [input, setInput] = useState("");
+
+  // Returning from Configure: shift the surface back in from the left, and keep
+  // the thread (the ServiceBridge they left) rather than resetting to the hero.
+  const fromConfigure = useRouterState({
+    select: (s) => s.location.state.fromConfigure === true,
+  });
+
+  // Reset to the Intake empty state on a fresh entry to Buy — but not when
+  // shifting back from Configure, where the conversation should still be there.
   const didReset = useRef(false);
   useEffect(() => {
     if (didReset.current) return;
     didReset.current = true;
-    startFresh();
-  }, [startFresh]);
+    if (!fromConfigure) startFresh();
+  }, [startFresh, fromConfigure]);
 
   const handleSuggestion = (suggestion: string) => {
-    if (suggestion === CATALOG_STARTER) sendCatalogRequest(suggestion);
-    else sendOffCatalog(suggestion);
+    if (suggestion === CONTRACT_STARTER) {
+      sendServiceRequest(suggestion);
+      return;
+    }
+    if (suggestion === QUOTE_STARTER) {
+      sendOffCatalog(suggestion, "REQ-2048");
+      return;
+    }
+    sendCatalogRequest(suggestion);
   };
 
+  const handleIntakeSubmit = () => {
+    const text = input.trim();
+    if (text) sendCatalogRequest(text);
+  };
+
+  // "See all": lift/fade the surface out, then navigate — the catalog plays its
+  // own fade-up entrance on mount.
+  const handleSeeAll = () => {
+    if (reduceMotion) {
+      void navigate({ to: "/catalog" });
+      return;
+    }
+    setLeaving("catalog");
+  };
+
+  // "Configure with agent": slide the surface out to the left; Configure slides
+  // in from the right (see ConfigureFlow's entrance).
+  const handleConfigure = () => {
+    if (reduceMotion) {
+      void navigate({ to: "/configure" });
+      return;
+    }
+    setLeaving("configure");
+  };
+
+  const exitTarget =
+    leaving === "catalog"
+      ? { y: -8, opacity: 0 }
+      : leaving === "configure"
+        ? { x: "-100%", opacity: 0 }
+        : { x: 0, y: 0, opacity: 1 };
+
+  const isIntake = phase === "intake";
+  const header = HEADERS[phase];
+
   return (
-    <div className="h-full">
-      <AiChat
-        messages={messages}
-        status={status}
-        onSendMessage={sendCatalogRequest}
-        onStop={stop}
-        renderToolPart={(part) =>
-          part.name === "presentEnvelope" ? (
-            <RequestEnvelope />
-          ) : part.name === "presentMatches" ? (
-            <MatchCarousel output={part.output} />
-          ) : part.name === "reviewCta" ? (
-            <ReviewCta />
-          ) : null
-        }
-        suggestions={STARTERS}
-        onSuggestionClick={handleSuggestion}
-        placeholder="Describe what you need…"
-        // Header is absent on the empty hero; it appears once it's a conversation.
-        header={
-          messages.length > 0 ? (
-            <div className="flex items-center gap-1.5 px-4 py-3">
-              <AutopilotGradientIcon size={21} aria-hidden="true" />
-              <span className="bg-clip-text pt-0.5 text-sm font-bold tracking-tight text-transparent [background-image:var(--ai-chat-brand-gradient)]">
-                Autopilot
-              </span>
+    <motion.div
+      className="h-full"
+      initial={
+        fromConfigure && !reduceMotion ? { x: "-100%", opacity: 0 } : false
+      }
+      animate={exitTarget}
+      transition={{ duration: reduceMotion ? 0.12 : 0.32, ease: EASE }}
+      onAnimationComplete={() => {
+        if (leaving === "catalog") void navigate({ to: "/catalog" });
+        else if (leaving === "configure") void navigate({ to: "/configure" });
+      }}
+    >
+      <BuyScaffold
+        stepKey={phase}
+        title={header.title}
+        subtext={header.subtext}
+        // The cart belongs once products are on screen (the Selection step).
+        showCart={phase === "selection"}
+        // No back/reset on Intake — there's no previous step and it's already fresh.
+        {...(isIntake ? {} : { onBack: stepBack, onReset: startFresh })}
+      >
+        {isIntake ? (
+          // Intake — the one conversational surface (free text + chips).
+          <div className="space-y-7">
+            <AiChatInput
+              value={input}
+              onChange={setInput}
+              onSubmit={handleIntakeSubmit}
+              onStop={stop}
+              isLoading={false}
+              placeholder="Describe what you need…"
+              // Attach a quote, spec, or PO for Autopilot to parse — the paperclip
+              // menu, paste, and the pending-file chips (which grow the input) all
+              // turn on with this.
+              acceptedFileTypes="image/*,.pdf,.csv,.xlsx,.docx,.txt"
+            />
+            <div>
+              <p className="text-center text-xs font-medium text-muted-foreground">
+                Try an example:
+              </p>
+              <AiChatEmptySuggestions
+                suggestions={STARTERS}
+                onSelect={handleSuggestion}
+              />
             </div>
-          ) : null
-        }
-        emptyState={
-          <div className="flex flex-col items-center gap-3 text-center">
-            <span
-              className="flex size-12 items-center justify-center rounded-full text-white"
-              style={{ background: "var(--ai-gradient-strong)" }}
-            >
-              <AutopilotIcon size={26} aria-hidden />
-            </span>
-            <h1 className="text-2xl font-semibold text-foreground">
-              What do you need?
-            </h1>
-            <p className="max-w-sm text-sm text-muted-foreground">
-              Tell Autopilot what to buy — it sources, prices, and routes the
-              request.
-            </p>
           </div>
-        }
-      />
-    </div>
+        ) : (
+          // Guided middle — structured surfaces fueled by the agent.
+          <GuidedBuy onSeeAll={handleSeeAll} onConfigure={handleConfigure} />
+        )}
+      </BuyScaffold>
+    </motion.div>
   );
 }

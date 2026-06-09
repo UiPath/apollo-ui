@@ -38,7 +38,7 @@ export function ProductCard({
 
   return (
     <Card
-      variant="solid"
+      variant={featured ? "solid" : "glass"}
       role="button"
       tabIndex={0}
       aria-label={`View ${item.name} details`}
@@ -51,7 +51,7 @@ export function ProductCard({
         }
       }}
       className={cn(
-        "h-full cursor-pointer gap-3 rounded-2xl border p-4 shadow-sm transition-shadow hover:shadow-md",
+        "h-full cursor-pointer gap-3 p-4 transition-shadow hover:shadow-md",
         className,
       )}
     >
@@ -119,7 +119,7 @@ export function ProductCard({
             ) : (
               <>
                 <Plus className="size-4" />
-                Add {quantity}
+                {quantity > 1 ? `Add ${quantity}` : "Add"}
               </>
             )}
           </Button>

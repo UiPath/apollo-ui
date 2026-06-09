@@ -1,35 +1,29 @@
 "use client";
 
-import { useEffect } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useConversation } from "./v1/conversation-context";
 import { CATALOG_VARIANTS } from "./variants";
 
-interface CatalogProps {
-  /**
-   * Seed the resolved thread on mount. True for direct /catalog entry (the rail
-   * should already have context); false when hosted behind the Buy Intake hero,
-   * which drives the resolve itself.
-   */
-  seedOnMount?: boolean;
-}
-
 /**
- * Catalog page host. Renders the default variant. The variant registry (and the
- * in-app switcher) is kept for future use — the switcher is just not shown now.
+ * Catalog page host. Two states, switched on whether there's an active request:
+ * Catalog nav (no request) → cold browse; "See all in catalog" after a request
+ * (hasResolved) → the request-scoped view. Fades up into view on mount (paired
+ * with the chat's exit transition on "See all").
  */
-export function Catalog({ seedOnMount = true }: CatalogProps) {
-  const { hasResolved, resolveDefault } = useConversation();
+export function Catalog() {
+  const { hasResolved } = useConversation();
+  const reduceMotion = useReducedMotion();
   const ActiveVariant = CATALOG_VARIANTS[0].Component;
 
-  // Seed the resolved thread for direct entry; the guard makes it run once
-  // (resolveDefault flips hasResolved, so re-runs are no-ops).
-  useEffect(() => {
-    if (seedOnMount && !hasResolved) resolveDefault();
-  }, [seedOnMount, hasResolved, resolveDefault]);
-
   return (
-    <div className="relative h-full">
-      <ActiveVariant />
-    </div>
+    <motion.div
+      className="relative h-full"
+      initial={reduceMotion ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {/* Page fades in; the catalog items stagger their own fade-up (Selection). */}
+      <ActiveVariant cold={!hasResolved} />
+    </motion.div>
   );
 }
