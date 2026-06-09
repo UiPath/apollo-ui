@@ -14,8 +14,13 @@ export interface NodeToolbarProps {
   expanded: boolean;
   /** When true, forcefully hides all toolbar actions including pinned items */
   hidden?: boolean;
-  /** When true, push the toolbar further from the node to clear handle buttons. */
-  offsetToolbar?: boolean;
+  /**
+   * Push the toolbar further from the node to clear a colliding handle affordance.
+   * `'button'` clears a source add button (larger offset); `'label'` clears a
+   * label-only handle (smaller offset). Omit/`false` for no offset.
+   * `true` is accepted as a back-compat alias for `'button'`.
+   */
+  offsetToolbar?: boolean | 'button' | 'label';
   /** Render the toolbar in the node overlay layer instead of inside the node wrapper. */
   portalToNodeOverlay?: boolean;
 }
