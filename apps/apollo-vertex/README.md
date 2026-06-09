@@ -57,4 +57,5 @@ npx shadcn@latest add http://localhost:3000/r/button.json
 2.  Add the component definition to `registry.json`.
 3.  Create a documentation page in `app/components/<component>/page.mdx`.
 4.  Run `pnpm registry:build` to update the registry artifacts.
+5.  Commit the generated files under `public/r/`.
 
