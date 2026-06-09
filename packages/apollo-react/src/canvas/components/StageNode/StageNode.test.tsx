@@ -1018,7 +1018,9 @@ describe('StageNode - Status Badges', () => {
   const optionalBadge = () => screen.queryByTestId('stage-optional-badge-stage-1');
   const endsCaseBadge = () => screen.queryByTestId('stage-ends-case-badge-stage-1');
 
-  const withChips = (chips: { type: StageHeaderChipType; label?: string; tooltip?: string }[]) => ({
+  const withChips = (
+    chips: { type: StageHeaderChipType; label?: string; tooltip?: string; onClick?: () => void }[]
+  ) => ({
     stageDetails: { ...defaultProps.stageDetails, headerChips: chips },
   });
 
@@ -1068,22 +1070,18 @@ describe('StageNode - Status Badges', () => {
     expect(optionalBadge()).toHaveTextContent('Optional');
   });
 
-  it('is not rendered as an interactive button', () => {
+  it('renders the badge as an interactive button', () => {
     renderStageNode(withChips([{ type: StageHeaderChipType.Optional }]));
-    expect(
-      screen.queryByRole('button', { name: StageHeaderChipType.Optional })
-    ).not.toBeInTheDocument();
+    expect(optionalBadge()?.tagName).toBe('BUTTON');
   });
 
-  it('makes the badge keyboard-focusable only when a tooltip is provided', () => {
-    renderStageNode(
-      withChips([
-        { type: StageHeaderChipType.Optional, tooltip: 'Not required for case completion' },
-        { type: StageHeaderChipType.EndsCase },
-      ])
-    );
-    expect(optionalBadge()).toHaveAttribute('tabindex', '0');
-    expect(endsCaseBadge()).not.toHaveAttribute('tabindex');
+  it('calls the chip onClick when the badge is clicked', async () => {
+    const user = userEvent.setup();
+    const onClick = vi.fn();
+    renderStageNode(withChips([{ type: StageHeaderChipType.EndsCase, onClick }]));
+
+    await user.click(endsCaseBadge() as HTMLElement);
+    expect(onClick).toHaveBeenCalledTimes(1);
   });
 
   it('renders status badges alongside SLA text and interactive chips', () => {
