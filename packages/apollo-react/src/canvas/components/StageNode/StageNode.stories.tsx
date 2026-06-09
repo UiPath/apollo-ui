@@ -2692,7 +2692,7 @@ export const WithStatusBadges: Story = {
   name: 'With Status Badges (Optional / Ends Case)',
   parameters: {
     nodes: [
-      // Optional stage — subtle, non-interactive "Optional" badge alongside SLA + chips.
+      // Optional stage — subtle "Optional" badge (clickable) alongside SLA + chips.
       {
         id: '1',
         type: 'stage',

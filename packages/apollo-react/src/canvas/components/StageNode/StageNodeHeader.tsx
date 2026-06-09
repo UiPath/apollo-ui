@@ -26,58 +26,81 @@ const SLA_ICON_CONFIG: Record<StageSlaIcon, { icon: string; iconColor: string }>
   },
 };
 
-const CHIP_ICONS: Partial<Record<StageHeaderChipType, React.ReactElement>> = {
+const CHIP_ICONS: Record<StageHeaderChipType, React.ReactElement | null> = {
   [StageHeaderChipType.Entry]: <EntryConditionIcon w={Icon.IconXs} h={Icon.IconXs} />,
   [StageHeaderChipType.Exit]: <ExitConditionIcon w={Icon.IconXs} h={Icon.IconXs} />,
   [StageHeaderChipType.Completion]: <ChecklistIcon size={16} />,
   [StageHeaderChipType.ReturnToOrigin]: <ReturnToOriginIcon w={Icon.IconXs} h={Icon.IconXs} />,
+  // Render as status pills (see STATUS_BADGE_CONFIG), never via CHIP_ICONS — listed for exhaustiveness.
+  [StageHeaderChipType.Optional]: null,
+  [StageHeaderChipType.EndsCase]: null,
 };
 
 /** Header-chip types that render as filled status pills (Optional / Ends case) instead of the icon-based {@link StageChip}. */
 const STATUS_BADGE_CONFIG: Partial<
   Record<
     StageHeaderChipType,
-    { className: string; testId: string; labelKey: 'optionalBadge' | 'endsCaseBadge' }
+    {
+      className: string;
+      hoverClassName: string;
+      testId: string;
+      labelKey: 'optionalBadge' | 'endsCaseBadge';
+    }
   >
 > = {
   [StageHeaderChipType.Optional]: {
-    className: 'bg-background-secondary text-foreground-muted hover:bg-background-secondary/80',
+    className: 'bg-background-secondary text-foreground-muted',
+    hoverClassName: 'hover:bg-background-secondary/80',
     testId: 'optional',
     labelKey: 'optionalBadge',
   },
   [StageHeaderChipType.EndsCase]: {
-    className: 'bg-error-icon text-foreground-inverse hover:bg-error-icon/80',
+    className: 'bg-error-icon text-foreground-inverse',
+    hoverClassName: 'hover:bg-error-icon/80',
     testId: 'ends-case',
     labelKey: 'endsCaseBadge',
   },
 };
 
-/** Filled status pill (e.g. "Optional", "Ends case"). Interactive — clicking navigates the consumer to the related control. */
+const STATUS_BADGE_BASE_CLASS =
+  'inline-flex h-6 items-center justify-center whitespace-nowrap rounded-[10px] border border-transparent px-2 text-xs font-normal';
+
+/**
+ * Filled status pill (e.g. "Optional", "Ends case"). Interactive when an `onClick` is supplied —
+ * it then renders a focusable button with hover that navigates the consumer to the related control;
+ * otherwise it renders a plain, non-interactive label.
+ */
 const StageStatusBadge = ({
   label,
   tooltip,
   className,
+  hoverClassName,
   testId,
   onClick,
 }: {
   label: string;
   tooltip?: React.ReactNode;
   className: string;
+  hoverClassName: string;
   testId: string;
   onClick?: () => void;
 }) => {
-  const badge = (
+  const badge = onClick ? (
     <button
       type="button"
       data-testid={testId}
       onClick={(e) => {
         e.stopPropagation();
-        onClick?.();
+        onClick();
       }}
-      className={`inline-flex h-6 cursor-pointer items-center justify-center whitespace-nowrap rounded-[10px] border border-transparent px-2 text-xs font-normal transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${className}`}
+      className={`${STATUS_BADGE_BASE_CLASS} ${className} ${hoverClassName} cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2`}
     >
       {label}
     </button>
+  ) : (
+    <span data-testid={testId} className={`${STATUS_BADGE_BASE_CLASS} ${className}`}>
+      {label}
+    </span>
   );
 
   if (tooltip) {
@@ -194,6 +217,7 @@ const StageNodeHeaderInner = ({
                       key={chip.type}
                       testId={`stage-${statusBadge.testId}-badge-${id}`}
                       className={statusBadge.className}
+                      hoverClassName={statusBadge.hoverClassName}
                       label={chip.label || labels[statusBadge.labelKey]}
                       tooltip={chip.tooltip}
                       onClick={chip.onClick}
