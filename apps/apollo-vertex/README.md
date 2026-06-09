@@ -53,6 +53,8 @@ npx shadcn@latest add http://localhost:3000/r/button.json
 
 ## Adding a New Component
 
+To add a new component to the registry, follow these steps:
+
 1.  Create the component file in `registry/<component>/<component>.tsx`.
 2.  Add the component definition to `registry.json`.
 3.  Create a documentation page in `app/components/<component>/page.mdx`.
