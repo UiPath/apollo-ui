@@ -78,7 +78,7 @@ export const StageHeader = styled.div<{ isException?: boolean }>`
 `;
 
 export const StageContent = styled.div`
-  padding: 15px ${STAGE_CONTENT_PADDING_X}px ${Spacing.SpacingBase} ${STAGE_CONTENT_PADDING_X}px;
+  padding: 15px ${STAGE_CONTENT_PADDING_X}px ${Spacing.SpacingS} ${STAGE_CONTENT_PADDING_X}px;
   border-radius: 0 0 ${Spacing.SpacingBase} ${Spacing.SpacingBase};
   overflow: hidden;
   flex: 1;
@@ -254,7 +254,9 @@ export const StageChip = styled.button`
   align-items: center;
   justify-content: center;
   gap: ${Padding.PadS};
-  padding: ${Padding.PadXs} ${Spacing.SpacingXs};
+  box-sizing: border-box;
+  height: 24px;
+  padding: 0 ${Spacing.SpacingXs};
   border-radius: 10px;
   border: 1px solid var(--canvas-border-de-emp);
   background: transparent;

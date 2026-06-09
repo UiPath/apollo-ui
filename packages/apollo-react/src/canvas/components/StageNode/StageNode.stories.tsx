@@ -2701,8 +2701,6 @@ export const WithStatusBadges: Story = {
         data: {
           stageDetails: {
             label: 'Intake',
-            isOptional: true,
-            optionalTooltip: 'Not required for case completion',
             tasks: [
               [{ id: 't1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
               [{ id: 't2', label: 'eSign envelope', icon: <ProcessIcon /> }],
@@ -2720,6 +2718,10 @@ export const WithStatusBadges: Story = {
                 tooltip: 'Exit rules',
                 onClick: () => window.alert('Open exit rules panel'),
               },
+              {
+                type: StageHeaderChipType.Optional,
+                tooltip: 'Not required for case completion',
+              },
             ],
           },
           execution: { stageStatus: { slaText: 'SLA: 3 days' } },
@@ -2736,8 +2738,6 @@ export const WithStatusBadges: Story = {
         data: {
           stageDetails: {
             label: 'Rejected',
-            endsCase: true,
-            endsCaseTooltip: 'Entering this stage ends the case',
             tasks: [
               [{ id: 't3', label: 'Summarize rejection', icon: <DocumentIcon /> }],
               [{ id: 't4', label: 'Send customer letter', icon: <ProcessIcon /> }],
@@ -2748,6 +2748,10 @@ export const WithStatusBadges: Story = {
                 count: 1,
                 tooltip: 'Entry rules',
                 onClick: () => window.alert('Open entry rules panel'),
+              },
+              {
+                type: StageHeaderChipType.EndsCase,
+                tooltip: 'Entering this stage ends the case',
               },
             ],
           },
@@ -2764,10 +2768,6 @@ export const WithStatusBadges: Story = {
         data: {
           stageDetails: {
             label: 'Optional + terminal',
-            isOptional: true,
-            endsCase: true,
-            optionalLabel: 'Optional',
-            endsCaseLabel: 'Ends case',
             tasks: [[{ id: 't5', label: 'Final compliance audit', icon: <DocumentIcon /> }]],
             headerChips: [
               {
@@ -2781,6 +2781,8 @@ export const WithStatusBadges: Story = {
                 tooltip: 'Stage completion',
                 onClick: () => window.alert('Open stage completion panel'),
               },
+              { type: StageHeaderChipType.Optional, label: 'Optional' },
+              { type: StageHeaderChipType.EndsCase, label: 'Ends case' },
             ],
           },
           execution: { stageStatus: { slaText: 'SLA: 1 day remaining', slaIcon: 'warning' } },
