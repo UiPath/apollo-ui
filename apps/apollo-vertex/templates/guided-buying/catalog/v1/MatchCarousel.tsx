@@ -1,10 +1,11 @@
 "use client";
 
 import { useNavigate } from "@tanstack/react-router";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Plus } from "lucide-react";
 import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
 import { Button } from "@/components/ui/button";
+import { GLASS_CLASSES } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useCart } from "./cart-context";
 import {
@@ -64,12 +65,7 @@ function MatchCard({ item, lead = false, index }: MatchCardProps) {
   const onAdd = () => setQuantity(item, requestQty);
 
   const card = (
-    <div
-      className={cn(
-        "flex h-full flex-col gap-2 bg-card p-3",
-        lead ? "rounded-2xl shadow-md" : "rounded-2xl border shadow-sm",
-      )}
-    >
+    <div className={cn("flex h-full flex-col gap-2 p-3", GLASS_CLASSES)}>
       {/* Image — the badge overlays here so the text rows below stay aligned. */}
       <div className="relative">
         <ProductImage
@@ -196,6 +192,7 @@ export function MatchCarousel({
   onSeeAll?: () => void;
 }) {
   const navigate = useNavigate();
+  const reduceMotion = useReducedMotion();
   const { items: cartItems, quantities, count: cartCount } = useCart();
   const lead = CATALOG_ITEMS.find((item) => item.id === output.leadId);
   const alts = output.altIds
@@ -237,16 +234,33 @@ export function MatchCarousel({
           >
             See all {output.totalCount} in catalog
           </Button>
-          {cartCount > 0 && (
-            <Button
-              size="sm"
-              className={ACCENT}
-              onClick={() => void navigate({ to: "/review" })}
-            >
-              Review &amp; submit · {cartCount} item{cartCount === 1 ? "" : "s"}{" "}
-              · {formatPrice(cartTotal, "USD")}
-            </Button>
-          )}
+          {/* The primary transitions in once the cart has items (like the top bar). */}
+          <AnimatePresence>
+            {cartCount > 0 && (
+              <motion.div
+                key="review"
+                initial={
+                  reduceMotion ? false : { opacity: 0, x: 8, scale: 0.9 }
+                }
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={
+                  reduceMotion
+                    ? { opacity: 0 }
+                    : { opacity: 0, x: 8, scale: 0.9 }
+                }
+                transition={{ duration: 0.28, ease: EASE }}
+              >
+                <Button
+                  size="sm"
+                  className={ACCENT}
+                  onClick={() => void navigate({ to: "/review" })}
+                >
+                  Review &amp; submit · {cartCount} item
+                  {cartCount === 1 ? "" : "s"} · {formatPrice(cartTotal, "USD")}
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
     </div>

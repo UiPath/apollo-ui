@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { GLASS_CLASSES } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useConversation } from "./conversation-context";
 
@@ -206,7 +207,7 @@ export function RequestEnvelope() {
 
   return (
     <div className="w-full space-y-3">
-      <div className="divide-y overflow-hidden rounded-xl border bg-card">
+      <div className={cn(GLASS_CLASSES, "divide-y overflow-hidden rounded-xl")}>
         {/* What the user actually asked for — the anchor the inferences hang off. */}
         {requestText && (
           <motion.div
