@@ -103,26 +103,35 @@ export function NodePropertyTrigger({
 
   // Uncontrolled fallback — when behavior/layout are not driven by the consumer,
   // the component manages them internally so it works correctly out of the box.
-  const [internalBehavior, setInternalBehavior] = useState<NodePropertyTriggerBehavior>('auto-hide');
-  const [internalLayout, setInternalLayout] = useState<NodePropertyTriggerLayout | undefined>(undefined);
+  const [internalBehavior, setInternalBehavior] =
+    useState<NodePropertyTriggerBehavior>('auto-hide');
+  const [internalLayout, setInternalLayout] = useState<NodePropertyTriggerLayout | undefined>(
+    undefined
+  );
   const effectiveBehavior = behavior ?? internalBehavior;
   const effectiveLayout = layout ?? internalLayout;
 
-  const handleBehaviorChange = useCallback((val: NodePropertyTriggerBehavior) => {
-    if (onBehaviorChange) {
-      onBehaviorChange(val);
-    } else {
-      setInternalBehavior(val);
-    }
-  }, [onBehaviorChange]);
+  const handleBehaviorChange = useCallback(
+    (val: NodePropertyTriggerBehavior) => {
+      if (onBehaviorChange) {
+        onBehaviorChange(val);
+      } else {
+        setInternalBehavior(val);
+      }
+    },
+    [onBehaviorChange]
+  );
 
-  const handleLayoutChange = useCallback((val: NodePropertyTriggerLayout) => {
-    if (onLayoutChange) {
-      onLayoutChange(val);
-    } else {
-      setInternalLayout(val);
-    }
-  }, [onLayoutChange]);
+  const handleLayoutChange = useCallback(
+    (val: NodePropertyTriggerLayout) => {
+      if (onLayoutChange) {
+        onLayoutChange(val);
+      } else {
+        setInternalLayout(val);
+      }
+    },
+    [onLayoutChange]
+  );
 
   const handleToggle = useCallback(() => {
     if (!menuOpen && containerRef.current) {
