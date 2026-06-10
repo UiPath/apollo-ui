@@ -41,7 +41,7 @@ export const SelectField = memo(function SelectField({
             'nodrag w-full px-3 py-2 pr-8 text-[13px] border border-(--canvas-border) rounded bg-transparent text-foreground outline-none transition-colors appearance-none cursor-pointer',
             'focus:border-(--canvas-primary)',
             'disabled:opacity-50 disabled:cursor-not-allowed',
-            error && 'border-red-500'
+            error && 'border-(--canvas-error)'
           )}
           value={value ?? (field.defaultValue as string | undefined) ?? ''}
           onChange={handleChange}
@@ -67,7 +67,7 @@ export const SelectField = memo(function SelectField({
       {field.helpText && (
         <span className="text-[12px] text-foreground-subtle block">{field.helpText}</span>
       )}
-      {error && <span className="text-[12px] text-red-500 block">{error}</span>}
+      {error && <span className="text-[12px] text-(--canvas-error-text) block">{error}</span>}
     </div>
   );
 });

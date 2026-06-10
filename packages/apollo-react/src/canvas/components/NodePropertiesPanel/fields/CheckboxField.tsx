@@ -30,7 +30,7 @@ export const CheckboxField = memo(function CheckboxField({
           className={`flex items-center text-[13px] text-foreground select-none ${field.disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
         >
           <input
-            className="nodrag size-[18px] mr-2 cursor-pointer"
+            className="nodrag size-[18px] mr-2 cursor-pointer disabled:cursor-not-allowed accent-(--canvas-primary)"
             type="checkbox"
             checked={!!value}
             onChange={handleChange}
@@ -43,7 +43,9 @@ export const CheckboxField = memo(function CheckboxField({
       {field.helpText && (
         <span className="text-[12px] text-foreground-subtle block ml-[26px]">{field.helpText}</span>
       )}
-      {error && <span className="text-[12px] text-red-500 block ml-[26px]">{error}</span>}
+      {error && (
+        <span className="text-[12px] text-(--canvas-error-text) block ml-[26px]">{error}</span>
+      )}
     </div>
   );
 });

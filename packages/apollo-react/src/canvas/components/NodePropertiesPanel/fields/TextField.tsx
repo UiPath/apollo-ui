@@ -67,7 +67,7 @@ export const TextField = memo(function TextField({
       {field.type === 'textarea' ? (
         <textarea
           id={inputId}
-          className={cn('nodrag resize-y', inputBase, error && 'border-red-500')}
+          className={cn('nodrag resize-y', inputBase, error && 'border-(--canvas-error)')}
           value={localValue}
           onChange={handleChange}
           placeholder={field.placeholder}
@@ -78,7 +78,7 @@ export const TextField = memo(function TextField({
         <div className="flex items-center gap-2">
           <input
             id={inputId}
-            className={cn('nodrag flex-1', inputBase, error && 'border-red-500')}
+            className={cn('nodrag flex-1', inputBase, error && 'border-(--canvas-error)')}
             type="text"
             value={localValue}
             onChange={handleChange}
@@ -95,7 +95,7 @@ export const TextField = memo(function TextField({
       {field.helpText && (
         <span className="text-[12px] text-foreground-subtle block">{field.helpText}</span>
       )}
-      {error && <span className="text-[12px] text-red-500 block">{error}</span>}
+      {error && <span className="text-[12px] text-(--canvas-error-text) block">{error}</span>}
     </div>
   );
 });
