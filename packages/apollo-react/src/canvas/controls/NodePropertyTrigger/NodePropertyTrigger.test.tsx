@@ -8,15 +8,19 @@ const BEHAVIOR_OPTIONS = [
   { value: 'always-persist' as const, label: 'Always persist' },
 ];
 
-const LAYOUT_OPTIONS = [
-  { value: 'right' as const, label: 'Right' },
-];
+const LAYOUT_OPTIONS = [{ value: 'right' as const, label: 'Right' }];
 
 function setup(props: React.ComponentProps<typeof NodePropertyTrigger> = {}) {
   // Provide a stable bounding rect so position calculation doesn't throw
   vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({
-    bottom: 100, top: 80, right: 300, left: 200,
-    width: 100, height: 20, x: 200, y: 80,
+    bottom: 100,
+    top: 80,
+    right: 300,
+    left: 200,
+    width: 100,
+    height: 20,
+    x: 200,
+    y: 80,
     toJSON: () => ({}),
   } as DOMRect);
   return render(
