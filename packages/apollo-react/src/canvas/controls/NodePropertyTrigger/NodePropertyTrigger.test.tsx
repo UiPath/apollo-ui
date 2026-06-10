@@ -1,5 +1,5 @@
 import { fireEvent } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, userEvent } from '../../utils/testing';
 import { NodePropertyTrigger } from './NodePropertyTrigger';
 
@@ -33,6 +33,10 @@ function setup(props: React.ComponentProps<typeof NodePropertyTrigger> = {}) {
 }
 
 describe('NodePropertyTrigger', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('renders closed by default', () => {
     setup();
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
@@ -125,12 +129,12 @@ describe('NodePropertyTrigger', () => {
       onPresetApply,
     });
     await userEvent.click(screen.getByRole('button', { name: 'Panel options' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Compact' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Compact' }));
     expect(onPresetApply).toHaveBeenCalledWith({ id: 'p1', label: 'Compact' });
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
-  it('calls onPresetDelete with the preset id when the delete button is clicked', async () => {
+  it('calls onPresetDelete with the preset id and closes the menu', async () => {
     const onPresetDelete = vi.fn();
     setup({
       presets: [{ id: 'p1', label: 'Compact' }],
@@ -139,6 +143,15 @@ describe('NodePropertyTrigger', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Panel options' }));
     await userEvent.click(screen.getByRole('button', { name: 'Delete preset' }));
     expect(onPresetDelete).toHaveBeenCalledWith('p1');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('closes the popover when Escape is pressed', async () => {
+    setup();
+    await userEvent.click(screen.getByRole('button', { name: 'Panel options' }));
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('calls onPropertiesClick when the label button is clicked', async () => {
@@ -151,14 +164,14 @@ describe('NodePropertyTrigger', () => {
   it('shows the Save as preset button only when canSavePreset is true', async () => {
     setup({ canSavePreset: true });
     await userEvent.click(screen.getByRole('button', { name: 'Panel options' }));
-    expect(screen.getByRole('button', { name: /save as preset/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /save as preset/i })).toBeInTheDocument();
   });
 
   it('calls onSavePreset when Save as preset is clicked', async () => {
     const onSavePreset = vi.fn();
     setup({ canSavePreset: true, onSavePreset });
     await userEvent.click(screen.getByRole('button', { name: 'Panel options' }));
-    await userEvent.click(screen.getByRole('button', { name: /save as preset/i }));
+    await userEvent.click(screen.getByRole('menuitem', { name: /save as preset/i }));
     expect(onSavePreset).toHaveBeenCalledTimes(1);
   });
 });
