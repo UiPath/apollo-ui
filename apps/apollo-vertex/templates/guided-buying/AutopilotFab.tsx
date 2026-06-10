@@ -110,7 +110,7 @@ export function AutopilotFab() {
         <PopoverTrigger asChild>
           <button
             type="button"
-            aria-label="Ask Autopilot"
+            aria-label="Ask AI Assistant"
             className="relative flex size-14 items-center justify-center rounded-full text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
             style={AI_GRADIENT}
           >
@@ -131,7 +131,7 @@ export function AutopilotFab() {
           {/* Header */}
           <div className="flex items-center gap-2 border-b px-4 py-3">
             <Mark size={16} />
-            <span className="font-semibold text-foreground">Autopilot</span>
+            <span className="font-semibold text-foreground">AI Assistant</span>
           </div>
 
           {/* Thread */}

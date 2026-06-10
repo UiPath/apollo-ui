@@ -179,7 +179,7 @@ export function BuyScaffold({
           <div className="flex items-center justify-center gap-1.5">
             <AutopilotGradientIcon size={20} aria-hidden="true" />
             <span className="bg-clip-text pt-0.5 text-sm font-bold tracking-tight text-transparent [background-image:var(--ai-chat-brand-gradient)]">
-              Autopilot
+              AI Assistant
             </span>
           </div>
           {/* Title + subtext — slide up & fade out/in as the step changes. */}

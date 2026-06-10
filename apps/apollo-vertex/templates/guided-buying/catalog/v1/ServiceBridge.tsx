@@ -8,8 +8,10 @@ import {
   FileText,
   Info,
   type LucideIcon,
+  Quote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useConversation } from "./conversation-context";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const STAGGER = 0.4;
@@ -51,6 +53,7 @@ interface ServiceBridgeProps {
 export function ServiceBridge({ onConfigure }: ServiceBridgeProps) {
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
+  const { requestText } = useConversation();
 
   const routingDelay = reduceMotion ? 0 : FIELDS.length * STAGGER;
   const ctaDelay = reduceMotion ? 0 : routingDelay + 0.25;
@@ -58,6 +61,29 @@ export function ServiceBridge({ onConfigure }: ServiceBridgeProps) {
   return (
     <div className="w-full space-y-3">
       <div className="divide-y overflow-hidden rounded-xl border bg-card">
+        {/* What the user asked for — the anchor (read-only, like the rest here). */}
+        {requestText && (
+          <motion.div
+            className="flex items-center gap-3 px-4 py-2.5"
+            initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: EASE }}
+          >
+            <Quote
+              className="size-4 shrink-0 text-muted-foreground"
+              aria-hidden
+            />
+            <div className="min-w-0 flex-1">
+              <p className="text-xs text-muted-foreground">Request</p>
+              <p className="text-sm font-medium text-foreground">
+                {requestText}
+              </p>
+            </div>
+            <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+              From you
+            </span>
+          </motion.div>
+        )}
         {FIELDS.map((field, i) => {
           const Icon = field.icon;
           return (

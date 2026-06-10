@@ -4,7 +4,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Check, ChevronDown } from "lucide-react";
-import { Fragment, useState } from "react";
+import { Fragment, type ReactNode, useState } from "react";
 import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
 import { Button } from "@/components/ui/button";
 import {
@@ -125,9 +125,32 @@ function StepDot({ state }: { state: StepState }) {
     );
   return (
     <span
-      className="size-4 shrink-0 rounded-full border border-muted-foreground/40"
+      className="size-4 shrink-0 rounded-full border border-dashed border-muted-foreground/40"
       aria-hidden
     />
+  );
+}
+
+/** One node of the rail timeline: a dot column (dot + connecting line) + content. */
+function TimelineRow({
+  dot,
+  isLast = false,
+  children,
+}: {
+  dot: ReactNode;
+  isLast?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex gap-2.5">
+      <div className="flex w-4 flex-col items-center">
+        <span className="mt-0.5">{dot}</span>
+        {!isLast && <div className="my-1 min-h-[12px] w-px flex-1 bg-border" />}
+      </div>
+      <div className={cn("min-w-0 flex-1", isLast ? "pb-0" : "pb-4")}>
+        {children}
+      </div>
+    </div>
   );
 }
 
@@ -287,11 +310,14 @@ export function ConfigureFlow() {
   };
 
   return (
+    // Configure is an expansion of the Bridge, not a peer screen: the header
+    // stays anchored (no entrance), the rail reveals in from the right, and the
+    // center fades in. On back it collapses with a fade. No horizontal swipe.
     <motion.div
       className="flex h-full min-h-0"
-      initial={reduceMotion ? false : { x: "100%" }}
-      animate={{ x: leaving ? "100%" : 0 }}
-      transition={{ duration: reduceMotion ? 0.12 : 0.32, ease: EASE }}
+      initial={false}
+      animate={{ opacity: leaving ? 0 : 1 }}
+      transition={{ duration: reduceMotion ? 0.12 : 0.3, ease: EASE }}
       onAnimationComplete={() => {
         if (leaving)
           void navigate({
@@ -542,73 +568,75 @@ export function ConfigureFlow() {
         </div>
       </div>
 
-      {/* Building-so-far rail (envelope styling) */}
-      <aside className="hidden w-[320px] shrink-0 flex-col overflow-y-auto border-l bg-card/40 p-5 lg:flex">
+      {/* Building-so-far rail (envelope styling) — reveals in from the right as
+          the workspace opens; its first two items are the Bridge's confirmed
+          Carrier (T-Mobile MSA) + Quantity (12 lines · Denver). */}
+      <motion.aside
+        className="hidden w-[320px] shrink-0 flex-col overflow-y-auto border-l bg-card/40 px-5 pb-5 pt-10 lg:flex"
+        initial={reduceMotion ? false : { x: "100%", opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{
+          duration: reduceMotion ? 0.12 : 0.36,
+          ease: EASE,
+          delay: reduceMotion ? 0 : 0.06,
+        }}
+      >
         <div className="flex items-center gap-1.5">
           <AutopilotIcon size={16} className="text-[#0f7b8a]" aria-hidden />
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <span className="text-xs font-semibold text-muted-foreground">
             {confirmed ? "Configured" : "Building so far"}
           </span>
         </div>
-        <div className="mt-4 space-y-3">
+        <div className="mt-6">
           {mainSteps.map((s) => (
-            <div key={s.label} className="flex items-start gap-2.5">
-              <span className="mt-0.5">
-                <StepDot state={s.state} />
-              </span>
-              <div className="min-w-0">
-                <p className="text-xs text-muted-foreground">{s.label}</p>
-                <p
-                  className={cn(
-                    "truncate text-sm font-medium",
-                    s.value === "—"
-                      ? "text-muted-foreground/60"
-                      : "text-foreground",
-                  )}
-                >
-                  {s.value}
-                </p>
-              </div>
-            </div>
+            <TimelineRow key={s.label} dot={<StepDot state={s.state} />}>
+              <p className="text-xs text-muted-foreground">{s.label}</p>
+              <p
+                className={cn(
+                  "truncate text-sm font-medium",
+                  s.value === "—"
+                    ? "text-muted-foreground/60"
+                    : "text-foreground",
+                )}
+              >
+                {s.value}
+              </p>
+            </TimelineRow>
           ))}
 
-          {/* The rest is the agent's job — one grouped line, not seven stops. */}
-          <div className="flex items-start gap-2.5">
-            <span className="mt-0.5">
-              <StepDot state={confirmed ? "done" : "pending"} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-muted-foreground">
-                {confirmed ? "Agent handled" : "Agent handles next"}
-              </p>
-              <ul className="mt-1.5 space-y-1">
-                {AUTO_STEPS.map((s) => (
-                  <li
-                    key={s.label}
-                    className="flex items-baseline justify-between gap-2 text-xs"
+          {/* The rest is the agent's job — one grouped node, not seven stops. */}
+          <TimelineRow
+            dot={<StepDot state={confirmed ? "done" : "pending"} />}
+            isLast
+          >
+            <p className="text-xs font-medium text-muted-foreground">
+              {confirmed ? "Agent handled" : "Agent handles next"}
+            </p>
+            <ul className="mt-1.5 space-y-1">
+              {AUTO_STEPS.map((s) => (
+                <li
+                  key={s.label}
+                  className="flex items-baseline justify-between gap-2 text-xs"
+                >
+                  <span
+                    className={
+                      confirmed ? "text-foreground" : "text-muted-foreground/70"
+                    }
                   >
-                    <span
-                      className={
-                        confirmed
-                          ? "text-foreground"
-                          : "text-muted-foreground/70"
-                      }
-                    >
-                      {s.label}
+                    {s.label}
+                  </span>
+                  {confirmed && (
+                    <span className="truncate text-right text-muted-foreground">
+                      {s.value}
                     </span>
-                    {confirmed && (
-                      <span className="truncate text-right text-muted-foreground">
-                        {s.value}
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </TimelineRow>
         </div>
         <div className="mt-6 border-t pt-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          <p className="text-xs font-semibold text-muted-foreground">
             {confirmed ? "Monthly" : "Running monthly"}
           </p>
           <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
@@ -624,7 +652,7 @@ export function ConfigureFlow() {
               : ""}
           </p>
         </div>
-      </aside>
+      </motion.aside>
     </motion.div>
   );
 }

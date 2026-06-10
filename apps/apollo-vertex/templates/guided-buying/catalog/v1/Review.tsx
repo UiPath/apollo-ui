@@ -32,9 +32,12 @@ export function Review() {
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
   const { items, quantities, setOpen } = useCart();
-  const { requestDetails } = useConversation();
+  const { requestText, requestDetails } = useConversation();
   const [agentOpen, setAgentOpen] = useState(false);
 
+  // Lead with what the user actually asked for; fall back to the sample on a
+  // direct /catalog entry where there was no prompt.
+  const requestSummary = requestText ?? SAMPLE_REQUEST.summary;
   const approver = requestDetails?.approver ?? DEFAULT_APPROVER;
   const costCenter = requestDetails?.costCenter ?? DEFAULT_COST_CENTER;
 
@@ -69,8 +72,8 @@ export function Review() {
         <div className="flex items-center gap-2">
           <AutopilotGradientIcon size={18} aria-hidden="true" />
           <span className="text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">Autopilot</span> ·
-            I’ve prepared this for you — ready when you are.
+            <span className="font-semibold text-foreground">AI Assistant</span>{" "}
+            · I’ve prepared this for you — ready when you are.
           </span>
         </div>
 
@@ -78,7 +81,7 @@ export function Review() {
         <header className="space-y-1.5">
           <p className="text-sm text-muted-foreground">Review &amp; submit</p>
           <h1 className="text-2xl font-semibold leading-snug text-foreground">
-            “{SAMPLE_REQUEST.summary}”
+            “{requestSummary}”
           </h1>
         </header>
 

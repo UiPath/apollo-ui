@@ -77,7 +77,7 @@ export function ChatRail({ onCollapse, cold = false }: ChatRailProps) {
           >
             <AutopilotIcon size={16} aria-hidden />
           </span>
-          <span className="font-semibold text-foreground">Autopilot</span>
+          <span className="font-semibold text-foreground">AI Assistant</span>
         </div>
         <Button
           variant="ghost"
@@ -162,7 +162,7 @@ export function ChatRail({ onCollapse, cold = false }: ChatRailProps) {
           <button
             type="submit"
             disabled={!query.trim()}
-            aria-label="Ask Autopilot"
+            aria-label="Ask AI Assistant"
             className="flex size-8 shrink-0 items-center justify-center rounded-lg text-white transition-all disabled:opacity-40"
             style={AI_GRADIENT}
           >

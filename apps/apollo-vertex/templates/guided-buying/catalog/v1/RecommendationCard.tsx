@@ -51,7 +51,7 @@ export function RecommendationCard({
         <div className="flex flex-col justify-center gap-4 p-6 text-white sm:p-8">
           <div className="flex items-center gap-1.5 text-sm font-semibold">
             <AutopilotIcon size={16} aria-hidden />
-            Picked for you
+            Best match
           </div>
           <h2 className="text-2xl font-semibold leading-snug">{headline}</h2>
           <p className="text-sm text-white/80">
