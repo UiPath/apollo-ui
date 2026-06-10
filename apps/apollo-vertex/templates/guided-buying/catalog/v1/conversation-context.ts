@@ -10,6 +10,7 @@ export type BuyPhase =
   | "bridge"
   | "selection"
   | "service"
+  | "sourcing"
   | "offcatalog";
 
 /** What the Bridge confirmed — carried to Review so its routing matches. */
@@ -43,6 +44,8 @@ export interface ConversationContextValue {
   sendOffCatalog: (text: string, requestId: string) => void;
   /** Contract fork: in-chat service Bridge that continues to the configurator. */
   sendServiceRequest: (text: string) => void;
+  /** Sourcing fork: services Bridge for an RFQ that routes to procurement. */
+  sendSourcingRequest: (text: string) => void;
   /** The Workbench item an off-catalog request was routed to (for "View in Workbench"). */
   routedRequestId: string | null;
   /** Route a request to a specific Workbench item (e.g. from Configure). */

@@ -17,7 +17,12 @@ import {
   PageHeaderTitleGroup,
 } from "@/components/ui/page-header";
 import { cn } from "@/lib/utils";
+import { useRequests } from "../../requests/requests-context";
 import { formatPrice } from "./data";
+
+// The configured contract lands in the buyer's Workbench and the requester's My
+// Requests as one object (REQ-2051).
+const CONTRACT_REQUEST_ID = "REQ-2051";
 
 // Flags carried on the back-navigation: `fromConfigure` makes /buy slide in from
 // the left; `resetChat` forces a fresh Intake hero (used by the finish line,
@@ -239,16 +244,23 @@ export function ConfigureFlow() {
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
 
+  const { openRequest } = useRequests();
+
   const [step, setStep] = useState<Step>("plan");
   const [confirmed, setConfirmed] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [tierId, setTierId] = useState("pro");
   const [deviceId, setDeviceId] = useState("byod");
   const [quoteStub, setQuoteStub] = useState(false);
-  const [trackStub, setTrackStub] = useState(false);
   const [showOtherDevices, setShowOtherDevices] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [leaveReset, setLeaveReset] = useState(false);
+
+  // Submit for approval: route the configured contract to procurement and land
+  // the requester in its My Requests detail (no separate confirmation screen).
+  const submitForApproval = () => {
+    openRequest(CONTRACT_REQUEST_ID);
+    void navigate({ to: "/requests" });
+  };
 
   const tier = TIERS.find((t) => t.id === tierId) ?? TIERS[0];
   const device = DEVICES.find((d) => d.id === deviceId) ?? DEVICES[0];
@@ -345,13 +357,11 @@ export function ConfigureFlow() {
       <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
         <PageHeader>
           <PageHeaderNav>
-            {/* No in-flow back once submitted — it's a terminal screen. */}
-            {!submitted && <PageHeaderBackButton onClick={goBack} />}
+            <PageHeaderBackButton onClick={goBack} />
             <PageHeaderTitleGroup>
               <PageHeaderTitle>Configure with agent</PageHeaderTitle>
               <PageHeaderDescription>
-                Mobile service · 12 lines for Denver · REQ-2051{" "}
-                {submitted ? "· Pending approval" : "(draft)"}
+                Mobile service · 12 lines for Denver · REQ-2051 (draft)
               </PageHeaderDescription>
             </PageHeaderTitleGroup>
           </PageHeaderNav>
@@ -361,106 +371,38 @@ export function ConfigureFlow() {
           <AnimatePresence mode="wait">
             {confirmed ? (
               <motion.div key="confirmed" className="space-y-6" {...anim}>
-                {submitted ? (
-                  <>
-                    {/* The finish line — outcome first, in the agent's voice. */}
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-[#0f7b8a] text-white">
-                        <Check className="size-5" aria-hidden />
+                <>
+                  <div className="rounded-xl border bg-card p-5">
+                    <div className="flex items-center gap-2">
+                      <span className="flex size-7 items-center justify-center rounded-full bg-[#0f7b8a] text-white">
+                        <Check className="size-4" aria-hidden />
                       </span>
-                      <div className="space-y-2">
-                        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                          Submitted. Procurement has it from here.
-                        </h2>
-                        <p className="text-sm text-foreground">
-                          12 {tier.name} lines · {device.name} ·{" "}
-                          {formatPrice(monthly, "USD")}/mo ·{" "}
-                          {formatPrice(monthly * 12, "USD")}/yr, under your
-                          T-Mobile MSA.
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {
-                            "They'll review and approve. You'll be notified when it's decided."
-                          }
-                        </p>
-                      </div>
+                      <h2 className="text-lg font-semibold text-foreground">
+                        Configuration complete
+                      </h2>
                     </div>
-
-                    {/* Defaults — quiet reference, demoted below the outcome. */}
-                    <div className="rounded-lg border bg-muted/30 p-4">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                        Filled with defaults
-                      </p>
-                      <dl className="mt-3 grid grid-cols-[max-content_1fr] gap-x-6 gap-y-1.5 text-xs">
-                        {AUTO_STEPS.map((s) => (
-                          <Fragment key={s.label}>
-                            <dt className="text-muted-foreground">{s.label}</dt>
-                            <dd className="text-foreground">{s.value}</dd>
-                          </Fragment>
-                        ))}
-                      </dl>
-                    </div>
-
-                    {/* One clear action; tracking stays a quiet stub. */}
-                    <div className="flex items-center justify-between gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setTrackStub(true)}
-                        className="text-xs text-muted-foreground underline-offset-2 hover:underline"
-                      >
-                        Track request
-                      </button>
-                      <Button
-                        className={ACCENT}
-                        onClick={() => goBackToChat(true)}
-                      >
-                        Back to Buy
-                        <ArrowRight className="size-4" aria-hidden />
-                      </Button>
-                    </div>
-                    {trackStub && (
-                      <p className="text-right text-xs text-muted-foreground">
-                        Request tracking is coming soon.
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <div className="rounded-xl border bg-card p-5">
-                      <div className="flex items-center gap-2">
-                        <span className="flex size-7 items-center justify-center rounded-full bg-[#0f7b8a] text-white">
-                          <Check className="size-4" aria-hidden />
-                        </span>
-                        <h2 className="text-lg font-semibold text-foreground">
-                          Configuration complete
-                        </h2>
-                      </div>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        12 {tier.name} lines · {device.name} ·{" "}
-                        {formatPrice(monthly, "USD")}/mo ·{" "}
-                        {formatPrice(monthly * 12, "USD")}/yr. I filled the rest
-                        with recommended defaults:
-                      </p>
-                      <dl className="mt-4 grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2 text-sm">
-                        {AUTO_STEPS.map((s) => (
-                          <Fragment key={s.label}>
-                            <dt className="text-muted-foreground">{s.label}</dt>
-                            <dd className="text-foreground">{s.value}</dd>
-                          </Fragment>
-                        ))}
-                      </dl>
-                    </div>
-                    <div className="flex justify-end">
-                      <Button
-                        className={ACCENT}
-                        onClick={() => setSubmitted(true)}
-                      >
-                        Submit for approval
-                        <ArrowRight className="size-4" aria-hidden />
-                      </Button>
-                    </div>
-                  </>
-                )}
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      12 {tier.name} lines · {device.name} ·{" "}
+                      {formatPrice(monthly, "USD")}/mo ·{" "}
+                      {formatPrice(monthly * 12, "USD")}/yr. I filled the rest
+                      with recommended defaults:
+                    </p>
+                    <dl className="mt-4 grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2 text-sm">
+                      {AUTO_STEPS.map((s) => (
+                        <Fragment key={s.label}>
+                          <dt className="text-muted-foreground">{s.label}</dt>
+                          <dd className="text-foreground">{s.value}</dd>
+                        </Fragment>
+                      ))}
+                    </dl>
+                  </div>
+                  <div className="flex justify-end">
+                    <Button className={ACCENT} onClick={submitForApproval}>
+                      Submit for approval
+                      <ArrowRight className="size-4" aria-hidden />
+                    </Button>
+                  </div>
+                </>
               </motion.div>
             ) : (
               <motion.div

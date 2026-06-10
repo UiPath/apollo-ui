@@ -3,7 +3,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "framer-motion";
 import { Check } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "./cart-context";
 import { useConversation } from "./conversation-context";
@@ -39,7 +39,6 @@ export function CatalogSubmitted() {
   const reduceMotion = useReducedMotion();
   const { items, quantities, clear } = useCart();
   const { requestDetails } = useConversation();
-  const [trackStub, setTrackStub] = useState(false);
 
   const approver = requestDetails?.approver ?? DEFAULT_APPROVER;
   const costCenter = requestDetails?.costCenter ?? DEFAULT_COST_CENTER;
@@ -110,24 +109,22 @@ export function CatalogSubmitted() {
           </div>
         )}
 
-        {/* One clear action; tracking stays a quiet stub. */}
+        {/* One clear action; the request also lives on in My Requests. */}
         <div className="flex items-center justify-between gap-3">
           <button
             type="button"
-            onClick={() => setTrackStub(true)}
+            onClick={() => {
+              clear();
+              void navigate({ to: "/requests" });
+            }}
             className="text-xs text-muted-foreground underline-offset-2 hover:underline"
           >
-            Track this request
+            View all requests
           </button>
           <Button className={ACCENT} onClick={backToBuy}>
             Back to Buy
           </Button>
         </div>
-        {trackStub && (
-          <p className="text-right text-xs text-muted-foreground">
-            Request tracking is coming soon.
-          </p>
-        )}
       </div>
     </motion.div>
   );
