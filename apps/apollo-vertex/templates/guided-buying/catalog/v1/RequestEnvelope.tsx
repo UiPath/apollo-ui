@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
   Building2,
@@ -10,6 +10,7 @@ import {
   type LucideIcon,
   MapPin,
   Pencil,
+  Quote,
   UserRound,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -140,7 +141,8 @@ const INITIAL_VALUES = Object.fromEntries(
  */
 export function RequestEnvelope() {
   const reduceMotion = useReducedMotion();
-  const { continueToSelection, setRequestDetails } = useConversation();
+  const { requestText, continueToSelection, setRequestDetails } =
+    useConversation();
   const [continued, setContinued] = useState(false);
   // Edits are local to this turn (the demo doesn't persist them) but reflect
   // immediately — including the cascade into the approver + routing line.
@@ -148,8 +150,13 @@ export function RequestEnvelope() {
     () => INITIAL_VALUES,
   );
   // Which field's picker is open (one at a time), and a transient flash on the
-  // approver when the cascade updates it so the connection is visible.
-  const [editingKey, setEditingKey] = useState<FieldKey | null>(null);
+  // approver when the cascade updates it so the connection is visible. The
+  // request row edits as free text ("request"); the others open a picker.
+  const [editingKey, setEditingKey] = useState<FieldKey | "request" | null>(
+    null,
+  );
+  // The request is editable free text (local to this turn, like the fields).
+  const [requestValue, setRequestValue] = useState(requestText ?? "");
   const [approverFlash, setApproverFlash] = useState(false);
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(
@@ -200,6 +207,68 @@ export function RequestEnvelope() {
   return (
     <div className="w-full space-y-3">
       <div className="divide-y overflow-hidden rounded-xl border bg-card">
+        {/* What the user actually asked for — the anchor the inferences hang off. */}
+        {requestText && (
+          <motion.div
+            className="px-4 py-2.5"
+            initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: EASE }}
+          >
+            <div className="flex items-center gap-3">
+              <Quote
+                className="size-4 shrink-0 text-muted-foreground"
+                aria-hidden
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-muted-foreground">Request</p>
+                {editingKey === "request" ? (
+                  <input
+                    type="text"
+                    value={requestValue}
+                    aria-label="Request"
+                    onChange={(e) => setRequestValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") setEditingKey(null);
+                    }}
+                    // biome-ignore lint/a11y/noAutofocus: focus the field the user just opened
+                    autoFocus
+                    className="mt-0.5 w-full rounded-md border border-input bg-background px-2 py-1 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                ) : (
+                  <p className="text-sm font-medium text-foreground">
+                    {requestValue}
+                  </p>
+                )}
+              </div>
+              {editingKey !== "request" && (
+                <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+                  From you
+                </span>
+              )}
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={
+                  editingKey === "request"
+                    ? "Done editing request"
+                    : "Edit request"
+                }
+                disabled={continued}
+                onClick={() =>
+                  setEditingKey((k) => (k === "request" ? null : "request"))
+                }
+                className="shrink-0 text-muted-foreground"
+              >
+                {editingKey === "request" ? (
+                  <Check className="size-3.5" aria-hidden />
+                ) : (
+                  <Pencil className="size-3.5" aria-hidden />
+                )}
+              </Button>
+            </div>
+          </motion.div>
+        )}
         {FIELDS.map((field, i) => {
           const Icon = field.icon;
           const isApprover = field.key === "approver";
@@ -273,52 +342,64 @@ export function RequestEnvelope() {
                   </p>
                 )}
 
-              {/* Agent picker: current value + alternatives it already knows. */}
-              {editingKey === field.key && (
-                <motion.div
-                  className="mt-2 space-y-1 pl-7"
-                  initial={reduceMotion ? false : { opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.2, ease: EASE }}
-                >
-                  {field.options.map((opt) => {
-                    const selected = values[field.key] === opt.value;
-                    return (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => choose(field.key, opt.value)}
-                        className={cn(
-                          "flex w-full items-start gap-2 rounded-md border px-3 py-2 text-left transition-colors",
-                          selected
-                            ? "border-[#0f7b8a] bg-[#0f7b8a]/5"
-                            : "border-transparent hover:bg-muted",
-                        )}
-                      >
-                        <span
+              {/* Agent picker: current value + alternatives it already knows.
+                  Closes with the reverse of the open, a touch quicker. */}
+              <AnimatePresence>
+                {editingKey === field.key && (
+                  <motion.div
+                    className="mt-2 space-y-1 pl-7"
+                    initial={reduceMotion ? false : { opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={
+                      reduceMotion
+                        ? { opacity: 0 }
+                        : {
+                            opacity: 0,
+                            y: -4,
+                            transition: { duration: 0.14, ease: EASE },
+                          }
+                    }
+                    transition={{ duration: 0.2, ease: EASE }}
+                  >
+                    {field.options.map((opt) => {
+                      const selected = values[field.key] === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => choose(field.key, opt.value)}
                           className={cn(
-                            "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border",
+                            "flex w-full items-start gap-2 rounded-md border px-3 py-2 text-left transition-colors",
                             selected
-                              ? "border-[#0f7b8a] bg-[#0f7b8a] text-white"
-                              : "border-muted-foreground/40",
+                              ? "border-[#0f7b8a] bg-[#0f7b8a]/5"
+                              : "border-transparent hover:bg-muted",
                           )}
-                          aria-hidden
                         >
-                          {selected && <Check className="size-2.5" />}
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block text-sm font-medium text-foreground">
-                            {opt.value}
+                          <span
+                            className={cn(
+                              "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border",
+                              selected
+                                ? "border-[#0f7b8a] bg-[#0f7b8a] text-white"
+                                : "border-muted-foreground/40",
+                            )}
+                            aria-hidden
+                          >
+                            {selected && <Check className="size-2.5" />}
                           </span>
-                          <span className="block text-xs text-muted-foreground">
-                            {opt.reason}
+                          <span className="min-w-0">
+                            <span className="block text-sm font-medium text-foreground">
+                              {opt.value}
+                            </span>
+                            <span className="block text-xs text-muted-foreground">
+                              {opt.reason}
+                            </span>
                           </span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                </motion.div>
-              )}
+                        </button>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           );
         })}
