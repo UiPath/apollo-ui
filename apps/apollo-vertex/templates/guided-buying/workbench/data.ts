@@ -3,7 +3,7 @@
 // The buyer's escalation queue: off-catalog Buy requests fork here for a human
 // to decide. Quote = amber, Contract = red. All scripted/mocked.
 
-export type ForkType = "quote" | "contract";
+export type ForkType = "quote" | "contract" | "sourcing";
 
 export type WorkbenchStatus =
   | "awaiting"
@@ -53,6 +53,19 @@ export interface DetailField {
   value: string;
 }
 
+/** A shortlisted vendor in a sourcing detail. Figures are indicative estimates. */
+export interface VendorBid {
+  name: string;
+  /** Indicative estimate (no RFQ sent yet), e.g. "$58,000". */
+  bid: string;
+  /** The agent's recommended vendor. */
+  agentPick?: boolean;
+  /** How this vendor was sourced, e.g. "Approved vendor · delivered your 2024 refresh". */
+  source: string;
+  /** Rationale chips (e.g. "Lowest estimate", "$3k over budget guidance"). */
+  chips: string[];
+}
+
 /** The outcome a decision button commits to. */
 export type Decision = "approved" | "countered" | "rejected";
 
@@ -76,12 +89,20 @@ export interface WorkbenchDetail {
     metrics: DetailMetric[];
     body: string;
   };
-  /** Decision buttons — primary is the agent's recommendation. */
-  actions: { primary: ActionSpec; secondary: ActionSpec; reject: ActionSpec };
-  /** First-person Autopilot confirmation per decision (Activity + resolved card). */
+  /** Decision buttons — primary is the agent's recommendation. Secondary optional. */
+  actions: { primary: ActionSpec; secondary?: ActionSpec; reject: ActionSpec };
+  /** First-person confirmation per decision (Activity + resolved card). */
   confirmations: Record<Decision, string>;
+  /** Optional resolved-state title per decision (e.g. "RFQ sent · awaiting bids"). */
+  resolvedTitles?: Partial<Record<Decision, string>>;
   suggestions: string[];
   composerPlaceholder: string;
+  /** Sourcing only: one line on how the agent assembled the shortlist. */
+  shortlistNote?: string;
+  /** Sourcing only: the agent's shortlisted vendors with indicative estimates. */
+  shortlist?: VendorBid[];
+  /** Sourcing only: the judgment call the agent flagged for the buyer. */
+  attention?: string;
   lines: DetailLine[];
   linesTotal: string;
   source: { filename: string; lines: string[] };
@@ -92,17 +113,20 @@ export interface WorkbenchDetail {
 export const FORK_LABEL: Record<ForkType, string> = {
   quote: "Quote",
   contract: "Contract",
+  sourcing: "Sourcing",
 };
 
-// Fork colors: Quote = amber (warning), Contract = red (error).
+// Fork colors: Quote/Sourcing = amber (warning), Contract = red (error).
 export const FORK_BADGE_STATUS: Record<ForkType, "warning" | "error"> = {
   quote: "warning",
   contract: "error",
+  sourcing: "warning",
 };
 
 export const FORK_DOT: Record<ForkType, string> = {
   quote: "bg-warning",
   contract: "bg-destructive",
+  sourcing: "bg-warning",
 };
 
 export const STATUS_LABEL: Record<WorkbenchStatus, string> = {
@@ -146,6 +170,17 @@ export const WORKBENCH_ROWS: WorkbenchRow[] = [
     value: "$660/mo",
     needBy: "Next cycle",
     type: "contract",
+    status: "awaiting",
+    assignee: "You",
+    dueGroup: "today",
+  },
+  {
+    id: "REQ-2053",
+    request: "Q3 rebrand · 2 contract designers",
+    requester: "Marcus Webb",
+    value: "~$58,000",
+    needBy: "Q3 start",
+    type: "sourcing",
     status: "awaiting",
     assignee: "You",
     dueGroup: "today",
@@ -393,6 +428,130 @@ export const WORKBENCH_DETAILS: Record<string, WorkbenchDetail> = {
       { label: "Plan", value: "Business Pro · MSA tier 2" },
       { label: "Devices", value: "Bring your own · $0/line" },
       { label: "Agreement", value: "T-Mobile MSA · 2024" },
+    ],
+  },
+
+  "REQ-2053": {
+    id: "REQ-2053",
+    request: "Q3 rebrand · 2 contract designers",
+    requester: "Marcus Webb",
+    value: "~$58,000",
+    needBy: "Q3 start",
+    timing: "Engagement · ~Q3 (3 months)",
+    type: "sourcing",
+    finding: {
+      tag: "Sourcing · RFQ",
+      headline: "Sourced 3 vendors, shortlist ready for your call",
+      metrics: [
+        { label: "Recommended", value: "$58,000" },
+        { label: "Budget guidance", value: "$55,000" },
+        { label: "Over guidance", value: "$3,000", cls: "text-warning" },
+      ],
+      body: "No catalog SKU and no standing contract for this, so I drafted an RFQ for Q3 rebrand support (2 contract designers, ~3 months) and shortlisted three vendors. These are indicative estimates from past work and a market scan, not firm bids; sending the RFQ turns them into real bids. Studio North is my pick (they delivered your 2024 refresh) at an estimated $58,000, $3k over your $55k guidance. Pixel & Co is lowest at an estimated $49,000 but unproven; Maddox Creative is premium at $72,000.",
+    },
+    actions: {
+      primary: { label: "Send RFQ to shortlist", decision: "countered" },
+      reject: { label: "Decline", decision: "rejected" },
+    },
+    confirmations: {
+      approved: "Selected Studio North. Drafting the engagement and PO.",
+      countered: "RFQ sent to all three vendors. Bids due in 5 business days.",
+      rejected: "Declined. Marcus has been notified.",
+    },
+    resolvedTitles: {
+      countered: "RFQ sent · awaiting bids",
+    },
+    suggestions: [
+      "Why Studio North?",
+      "Compare the estimates",
+      "Adjust the shortlist",
+    ],
+    composerPlaceholder: "Ask about this sourcing…",
+    shortlistNote:
+      "Two from your approved design vendors, one from a market scan for Q3 availability.",
+    shortlist: [
+      {
+        name: "Studio North",
+        bid: "$58,000",
+        agentPick: true,
+        source: "Approved vendor · delivered your 2024 refresh",
+        chips: ["$3k over budget guidance"],
+      },
+      {
+        name: "Pixel & Co",
+        bid: "$49,000",
+        source: "Market scan · new vendor",
+        chips: ["Lowest estimate", "Unproven"],
+      },
+      {
+        name: "Maddox Creative",
+        bid: "$72,000",
+        source: "Approved vendor · premium tier",
+        chips: ["Over budget"],
+      },
+    ],
+    attention:
+      "Studio North is $3k over your $55k guidance, but they delivered your 2024 refresh. Your call.",
+    lines: [
+      {
+        description: "Contract designer · Q3 rebrand (~3 months)",
+        qty: 2,
+        unitPrice: "$29,000",
+        amount: "$58,000",
+      },
+    ],
+    linesTotal: "$58,000",
+    source: {
+      filename: "RFQ-Q3-rebrand-design.pdf",
+      lines: [
+        "Request for Quote: Q3 Rebrand Design Support",
+        "Scope: contract design support for the Q3 rebrand",
+        "Headcount: 2 contract designers",
+        "Duration: ~3 months (Q3)",
+        "Deliverables: brand system updates, marketing collateral, design QA",
+        "Budget guidance: ~$55,000",
+        "Bids due: 5 business days from issue",
+      ],
+    },
+    activity: [
+      { id: "a0", label: "Awaiting your decision", indicator: "pending" },
+      {
+        id: "a1",
+        label: "Escalated to you",
+        time: "10:21 AM",
+        desc: "Flagged the budget tradeoff",
+        indicator: "ai-warn",
+      },
+      {
+        id: "a2",
+        label: "Shortlisted 3 vendors",
+        time: "10:18 AM",
+        desc: "2 approved vendors, 1 from market scan",
+        indicator: "ai-pass",
+      },
+      {
+        id: "a3",
+        label: "Drafted the RFQ brief",
+        time: "10:14 AM",
+        desc: "Scope, duration, deliverables",
+        indicator: "ai-pass",
+      },
+      {
+        id: "a4",
+        label: "Request received",
+        time: "10:10 AM",
+        desc: "From Marcus Webb · Intake",
+        indicator: "event",
+      },
+    ],
+    details: [
+      { label: "Request ID", value: "REQ-2053" },
+      { label: "Requester", value: "Marcus Webb · Design Ops" },
+      { label: "Estimated value", value: "~$58,000" },
+      { label: "Engagement", value: "Q3 rebrand · 2 designers · ~3 mo" },
+      { label: "Type", value: "Sourcing · RFQ" },
+      { label: "Budget guidance", value: "~$55,000" },
+      { label: "Cost center", value: "Design Operations · CC-4421" },
     ],
   },
 };

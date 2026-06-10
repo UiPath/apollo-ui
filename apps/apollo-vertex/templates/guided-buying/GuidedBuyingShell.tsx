@@ -8,8 +8,15 @@ import {
   createRouter,
   Outlet,
   RouterProvider,
+  useNavigate,
 } from "@tanstack/react-router";
-import { LayoutDashboard, ShoppingCart, Store, Wrench } from "lucide-react";
+import {
+  ClipboardList,
+  LayoutDashboard,
+  ShoppingCart,
+  Store,
+  Wrench,
+} from "lucide-react";
 import { useState } from "react";
 import { ApolloShell, type ShellNavItem } from "@/registry/shell/shell";
 import { AutopilotChatProvider } from "./AutopilotChatProvider";
@@ -21,25 +28,36 @@ import { CatalogSubmitted } from "./catalog/v1/CatalogSubmitted";
 import { ConfigureFlow } from "./catalog/v1/ConfigureFlow";
 import { ConversationProvider } from "./catalog/v1/ConversationProvider";
 import { Review } from "./catalog/v1/Review";
+import { MyRequests } from "./requests/MyRequests";
+import { RequestsProvider } from "./requests/RequestsProvider";
 import { Workbench } from "./workbench/Workbench";
 
-// The requester seat (Marcus Webb) self-serves the buy flow; the buyer seat
-// (procurement) also gets the Workbench, where routed requests land.
-const requesterNavItems: ShellNavItem[] = [
+// Buy and Catalog are shared front doors. The queue nav item is seat-dependent:
+// the requester (Marcus Webb) gets My Requests (their own queue); the buyer
+// (procurement) gets the Workbench, where requests that needed judgment land.
+const baseNavItems: ShellNavItem[] = [
   { path: "/dashboard", label: "dashboard", icon: LayoutDashboard },
   { path: "/buy", label: "buy", icon: ShoppingCart },
   { path: "/catalog", label: "catalog", icon: Store },
 ];
 
-const workbenchNavItem: ShellNavItem = {
-  path: "/workbench",
-  label: "workbench",
-  icon: Wrench,
-};
+const requesterNavItems: ShellNavItem[] = [
+  ...baseNavItems,
+  { path: "/requests", label: "requests", icon: ClipboardList },
+];
 
-const buyerNavItems: ShellNavItem[] = [...requesterNavItems, workbenchNavItem];
+const buyerNavItems: ShellNavItem[] = [
+  ...baseNavItems,
+  { path: "/workbench", label: "workbench", icon: Wrench },
+];
 
 type Seat = "requester" | "buyer";
+
+// Where each seat lands when the identity chip swaps it — its own queue.
+const SEAT_HOME: Record<Seat, "/requests" | "/workbench"> = {
+  requester: "/requests",
+  buyer: "/workbench",
+};
 
 const SEATS: Record<
   Seat,
@@ -66,6 +84,15 @@ function EmptyPage({ title }: { title: string }) {
 function GuidedBuyingLayout() {
   const [seat, setSeat] = useState<Seat>("requester");
   const { user, navItems } = SEATS[seat];
+  const navigate = useNavigate();
+
+  // Switching seats swaps the nav and lands on that seat's own queue: the buyer
+  // (procurement) drops into the Workbench; the requester into My Requests.
+  const switchSeat = () => {
+    const next: Seat = seat === "requester" ? "buyer" : "requester";
+    setSeat(next);
+    void navigate({ to: SEAT_HOME[next] });
+  };
 
   return (
     <ApolloShell
@@ -78,9 +105,7 @@ function GuidedBuyingLayout() {
       }}
       navItems={navItems}
       user={user}
-      onUserClick={() =>
-        setSeat((s) => (s === "requester" ? "buyer" : "requester"))
-      }
+      onUserClick={switchSeat}
     >
       {/* Clips the Buy↔Configure horizontal slide so it can't flash a scrollbar. */}
       <div className="relative h-full overflow-hidden">
@@ -131,6 +156,13 @@ const workbenchRoute = createRoute({
   component: Workbench,
 });
 
+// My Requests — the requester's durable queue of their own submitted requests.
+const requestsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/requests",
+  component: MyRequests,
+});
+
 // Review & submit (reached from the cart's "Review & submit").
 const reviewRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -152,6 +184,7 @@ const routeTree = rootRoute.addChildren([
   catalogRoute,
   configureRoute,
   workbenchRoute,
+  requestsRoute,
   reviewRoute,
   trackRoute,
 ]);
@@ -172,9 +205,11 @@ export function GuidedBuyingShell() {
     <QueryClientProvider client={queryClient}>
       <CartProvider>
         <ConversationProvider>
-          <AutopilotChatProvider>
-            <RouterProvider router={router} />
-          </AutopilotChatProvider>
+          <RequestsProvider>
+            <AutopilotChatProvider>
+              <RouterProvider router={router} />
+            </AutopilotChatProvider>
+          </RequestsProvider>
         </ConversationProvider>
       </CartProvider>
     </QueryClientProvider>

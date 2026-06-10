@@ -139,6 +139,7 @@ export function WorkbenchList({ onOpen, decisions }: WorkbenchListProps) {
             <option value="all">Type: All</option>
             <option value="quote">Quote</option>
             <option value="contract">Contract</option>
+            <option value="sourcing">Sourcing</option>
           </select>
           <select
             aria-label="Filter by status"
