@@ -31,7 +31,18 @@ import {
 
 export function ApChatShowcase() {
 	const { theme, highContrast } = useTheme();
-	const chatTheme = highContrast ? (`${theme}-hc` as const) : theme;
+	// ApChat only supports the classic themes — map future themes to the
+	// closest classic equivalent until the web component adds future support.
+	const chatBaseTheme =
+		theme === "future-dark"
+			? "dark"
+			: theme === "future-light"
+				? "light"
+				: theme;
+	const chatTheme =
+		highContrast && (theme === "light" || theme === "dark")
+			? (`${theme}-hc` as const)
+			: chatBaseTheme;
 	const embeddedContainerRef = useRef<HTMLDivElement>(null);
 
 	const [chatService, setChatService] = useState<AutopilotChatService | null>(

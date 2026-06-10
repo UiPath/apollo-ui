@@ -2,6 +2,8 @@ import { ThemeProvider as MuiThemeProvider } from "@mui/material";
 import {
 	apolloMaterialUiThemeDark,
 	apolloMaterialUiThemeDarkHC,
+	apolloMaterialUiThemeFutureDark,
+	apolloMaterialUiThemeFutureLight,
 	apolloMaterialUiThemeLight,
 	apolloMaterialUiThemeLightHC,
 } from "@uipath/apollo-react/material/theme";
@@ -14,12 +16,26 @@ import {
 	useState,
 } from "react";
 
-type Theme = "light" | "dark";
+export const THEMES = ["light", "dark", "future-light", "future-dark"] as const;
+export type Theme = (typeof THEMES)[number];
+
+const ALL_THEME_CLASSES = [
+	"light",
+	"dark",
+	"light-hc",
+	"dark-hc",
+	"future-light",
+	"future-dark",
+];
+
+/** High contrast variants only exist for the classic themes. */
+const supportsHighContrast = (theme: Theme) =>
+	theme === "light" || theme === "dark";
 
 interface ThemeContextType {
 	theme: Theme;
 	highContrast: boolean;
-	toggleTheme: () => void;
+	setTheme: (theme: Theme) => void;
 	toggleHighContrast: () => void;
 }
 
@@ -28,7 +44,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: ReactNode }) {
 	const [theme, setTheme] = useState<Theme>(() => {
 		const savedTheme = localStorage.getItem("theme") as Theme;
-		return savedTheme || "light";
+		return THEMES.includes(savedTheme) ? savedTheme : "light";
 	});
 
 	const [highContrast, setHighContrast] = useState<boolean>(() => {
@@ -38,11 +54,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		const root = document.body;
-		// Remove all theme classes first
-		root.classList.remove("light", "dark", "light-hc", "dark-hc");
+		root.classList.remove(...ALL_THEME_CLASSES);
 
-		// Add the appropriate theme class
-		if (highContrast) {
+		if (highContrast && supportsHighContrast(theme)) {
 			root.classList.add(`${theme}-hc`);
 		} else {
 			root.classList.add(theme);
@@ -52,28 +66,30 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 		localStorage.setItem("highContrast", String(highContrast));
 	}, [theme, highContrast]);
 
-	const toggleTheme = () => {
-		setTheme((prev) => (prev === "light" ? "dark" : "light"));
-	};
-
 	const toggleHighContrast = () => {
 		setHighContrast((prev) => !prev);
 	};
 
 	const muiTheme = useMemo(() => {
-		if (theme === "dark") {
-			return highContrast
-				? apolloMaterialUiThemeDarkHC
-				: apolloMaterialUiThemeDark;
+		switch (theme) {
+			case "future-dark":
+				return apolloMaterialUiThemeFutureDark;
+			case "future-light":
+				return apolloMaterialUiThemeFutureLight;
+			case "dark":
+				return highContrast
+					? apolloMaterialUiThemeDarkHC
+					: apolloMaterialUiThemeDark;
+			default:
+				return highContrast
+					? apolloMaterialUiThemeLightHC
+					: apolloMaterialUiThemeLight;
 		}
-		return highContrast
-			? apolloMaterialUiThemeLightHC
-			: apolloMaterialUiThemeLight;
 	}, [theme, highContrast]);
 
 	return (
 		<ThemeContext.Provider
-			value={{ theme, highContrast, toggleTheme, toggleHighContrast }}
+			value={{ theme, highContrast, setTheme, toggleHighContrast }}
 		>
 			<MuiThemeProvider theme={muiTheme}>{children}</MuiThemeProvider>
 		</ThemeContext.Provider>
