@@ -1,8 +1,8 @@
-import type { StorybookConfig } from '@storybook/react-vite';
-import { mergeAlias } from 'vite';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { StorybookConfig } from '@storybook/react-vite';
+import { mergeAlias } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -44,6 +44,16 @@ const config: StorybookConfig = {
       directory: '../../../packages/apollo-react/src/canvas',
       files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
       titlePrefix: 'Canvas',
+    },
+    {
+      directory: '../../../packages/apollo-react/src/material',
+      files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
+      titlePrefix: 'Material (Maintenance Only)',
+    },
+    {
+      directory: '../src',
+      files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
+      titlePrefix: 'Core',
     },
   ],
   addons: [
@@ -104,13 +114,43 @@ const config: StorybookConfig = {
     : undefined,
   async viteFinal(config) {
     const tailwindcss = (await import('@tailwindcss/vite')).default;
+    const react = (await import('@vitejs/plugin-react')).default;
+    const svgr = (await import('vite-plugin-svgr')).default;
 
     const apolloWindSrc = resolve(__dirname, '../../../packages/apollo-wind/src');
     const apolloReactSrc = resolve(__dirname, '../../../packages/apollo-react/src');
 
+    // Replace the framework's default react plugin with one that compiles
+    // lingui macros — apollo-react source (aliased below for HMR) uses
+    // `@lingui/core/macro`, which must be transformed at build time.
+    // The macro plugin resolves the lingui config from cwd (apps/storybook);
+    // LINGUI_CONFIG points it at apollo-react's config instead.
+    process.env.LINGUI_CONFIG = resolve(apolloReactSrc, '../lingui.config.ts');
+    const plugins = ((config.plugins || []) as unknown[])
+      .flat(Number.POSITIVE_INFINITY)
+      .filter(
+        (plugin) =>
+          !(
+            plugin &&
+            typeof plugin === 'object' &&
+            'name' in plugin &&
+            typeof plugin.name === 'string' &&
+            (plugin.name === 'vite:react-babel' || plugin.name === 'vite:react-refresh')
+          )
+      );
+
     return {
       ...config,
-      plugins: [...(config.plugins || []), tailwindcss()],
+      plugins: [
+        ...plugins,
+        react({ babel: { plugins: ['@lingui/babel-plugin-lingui-macro'] } }),
+        // apollo-react material sources import plain .svg as React components
+        // (rslib compiles them with @svgr/webpack); mirror that for the
+        // source-aliased imports. Scoped so ?url/?import svg imports elsewhere
+        // keep resolving as assets.
+        svgr({ include: '**/apollo-react/src/material/**/*.svg' }),
+        tailwindcss(),
+      ],
       resolve: {
         ...config.resolve,
         alias: mergeAlias(config.resolve?.alias, [

@@ -38,14 +38,13 @@ export const GlobalStyles = () => {
       /*
         4. Improve text rendering
       */
+      /* background-color / color / font-family intentionally NOT set here —
+         MUI CssBaseline provides them from the active Apollo theme. */
       body {
         line-height: 1.5;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         text-rendering: optimizeLegibility;
-        font-family: system-ui, sans-serif;
-        background-color: #fff;
-        color: #000;
       }
 
       /*
