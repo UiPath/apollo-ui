@@ -1,3 +1,13 @@
+## [@uipath/apollo-core-v5.10.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.9.1...@uipath/apollo-core@5.10.0) (2026-06-10)
+
+### Features
+
+* **apollo-core:** add future-theming support ([ef79bfc](https://github.com/UiPath/apollo-ui/commit/ef79bfc1c819805b5a67bdda18ab6818f572c8fa))
+
+### Bug Fixes
+
+* **repo:** consistency on versions ([4f7851d](https://github.com/UiPath/apollo-ui/commit/4f7851d4927fa1afb423e0b694d1e4c07b06eb8f))
+
 ## [@uipath/apollo-core-v5.9.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.9.0...@uipath/apollo-core@5.9.1) (2026-05-10)
 
 ### Bug Fixes

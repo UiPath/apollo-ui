@@ -1,3 +1,15 @@
+## [@uipath/apollo-react-v4.43.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.42.0...@uipath/apollo-react@4.43.0) (2026-06-10)
+
+### Features
+
+* **apollo-react:** add future-theming support ([9030f70](https://github.com/UiPath/apollo-ui/commit/9030f705ebfc0ce7be9c9ff0dc33ef5700599918))
+* **apollo-react:** add material stories ([69f0de0](https://github.com/UiPath/apollo-ui/commit/69f0de019023ca1bee5c5836aa640a177b8f5eb8))
+
+### Bug Fixes
+
+* **apollo-react:** chat stories ([0d8a960](https://github.com/UiPath/apollo-ui/commit/0d8a960e6ddfd953f48d2a86a062e0d7605ff912))
+* **repo:** consistency on versions ([4f7851d](https://github.com/UiPath/apollo-ui/commit/4f7851d4927fa1afb423e0b694d1e4c07b06eb8f))
+
 ## [@uipath/apollo-react-v4.41.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.41.0...@uipath/apollo-react@4.41.1) (2026-06-10)
 
 ### Bug Fixes

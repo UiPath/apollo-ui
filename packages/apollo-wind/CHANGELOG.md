@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.19.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.18.0...@uipath/apollo-wind@2.19.0) (2026-06-10)
+
+### Features
+
+* **apollo-react:** add future-theming support ([9030f70](https://github.com/UiPath/apollo-ui/commit/9030f705ebfc0ce7be9c9ff0dc33ef5700599918))
+
 ## [@uipath/apollo-wind-v2.18.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.17.0...@uipath/apollo-wind@2.18.0) (2026-05-27)
 
 ### Features
