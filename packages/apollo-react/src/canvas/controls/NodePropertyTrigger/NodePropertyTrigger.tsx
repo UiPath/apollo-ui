@@ -146,6 +146,16 @@ export function NodePropertyTrigger({
     setMenuOpen((v) => !v);
   }, [menuOpen]);
 
+  // Close on Escape key
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [menuOpen]);
+
   // Close on scroll or viewport resize so the fixed-position menu doesn't detach from its trigger
   useEffect(() => {
     if (!menuOpen) return;
@@ -279,6 +289,7 @@ export function NodePropertyTrigger({
             <div key={preset.id} className="flex items-center gap-1 px-2 py-1">
               <button
                 type="button"
+                role="menuitem"
                 onClick={() => {
                   onPresetApply?.(preset);
                   setMenuOpen(false);
@@ -291,7 +302,10 @@ export function NodePropertyTrigger({
                 type="button"
                 title="Delete preset"
                 aria-label="Delete preset"
-                onClick={() => onPresetDelete?.(preset.id)}
+                onClick={() => {
+                  onPresetDelete?.(preset.id);
+                  setMenuOpen(false);
+                }}
                 className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
               >
                 <CanvasIcon icon="trash-2" size={11} />
@@ -301,6 +315,7 @@ export function NodePropertyTrigger({
           {canSavePreset && (
             <button
               type="button"
+              role="menuitem"
               onClick={() => {
                 onSavePreset?.();
                 setMenuOpen(false);

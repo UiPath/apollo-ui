@@ -384,7 +384,10 @@ function _Panel({
                 <button
                   type="button"
                   title="Delete preset"
-                  onClick={() => onPresetDelete?.(preset.id)}
+                  onClick={() => {
+                    onPresetDelete?.(preset.id);
+                    setOpen(false);
+                  }}
                   className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
                 >
                   <CanvasIcon icon="trash-2" size={11} />
