@@ -222,28 +222,28 @@ const MyComponent = styled('div')(({ theme }) => ({
 1. **Update service layer** in `service/` directory if needed
 2. **Create/modify React components** in `components/` directory
 3. **Update providers** if you need new state management
-4. **Test locally** using the React playground (see below)
+4. **Test locally** using the Storybook chat story (see below)
 5. **Update DOCS.md** if adding public API methods
 6. **Add to showcase** for visual testing
 
 ### Testing Your Changes
 
-Use the interactive React playground at:
+Use the interactive Storybook chat harness at:
 
 ```
-apps/react-playground/src/pages/ApChatShowcase.tsx
+packages/apollo-react/src/material/stories/chat.stories.tsx
+packages/apollo-react/src/material/stories/chat-story-support.tsx
 ```
 
 This is the primary development and testing environment. To test:
 
 ```bash
-# Start the React playground dev server
-cd apps/react-playground
-pnpm dev
+# Start the design Storybook (port 6007)
+pnpm storybook:design
 
 # Open in browser
-# http://localhost:5173 (or the port shown in terminal)
-# Navigate to "Components" → "Chat"
+# http://localhost:6007
+# Navigate to "Material (Maintenance Only)" → "Components" → "Chat"
 ```
 
 The showcase page provides interactive controls for:
@@ -390,9 +390,9 @@ The chat interface has several picker/menu components:
 - Type definitions with examples
 - Configuration options
 
-### 2. React Playground Showcase (Development Testing)
+### 2. Storybook Chat Harness (Development Testing)
 
-**Location**: `apps/react-playground/src/pages/ApChatShowcase.tsx`
+**Location**: `packages/apollo-react/src/material/stories/chat-story-support.tsx` (rendered by `chat.stories.tsx`)
 
 **CRITICAL**: This is the **primary development and testing environment** that must have ALL features available for testing.
 
