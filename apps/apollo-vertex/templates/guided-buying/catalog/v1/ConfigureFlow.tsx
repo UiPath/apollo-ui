@@ -116,16 +116,17 @@ function StepDot({ state }: { state: StepState }) {
       </span>
     );
   if (state === "current")
+    // The active step — a circle with a solid border (same size as the checks).
     return (
       <span
-        className="size-4 shrink-0 rounded-full ring-2 ring-[#0f7b8a]/40"
-        style={AI_GRADIENT}
+        className="block size-4 shrink-0 rounded-full border-2 border-muted-foreground/70"
         aria-hidden
       />
     );
+  // Upcoming — a circle with a dotted border.
   return (
     <span
-      className="size-4 shrink-0 rounded-full border border-dashed border-muted-foreground/40"
+      className="block size-4 shrink-0 rounded-full border-2 border-dotted border-muted-foreground/50"
       aria-hidden
     />
   );
