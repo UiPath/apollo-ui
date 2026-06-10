@@ -11,6 +11,7 @@ import {
 } from "./MatchCarousel";
 import { RequestEnvelope } from "./RequestEnvelope";
 import { ServiceBridge } from "./ServiceBridge";
+import { ServicesBridge } from "./ServicesBridge";
 
 interface GuidedBuyProps {
   /** See-all → catalog (plays Buy's exit transition). */
@@ -49,6 +50,8 @@ export function GuidedBuy({ onSeeAll, onConfigure }: GuidedBuyProps) {
         return <RequestEnvelope />;
       case "presentServiceBridge":
         return <ServiceBridge onConfigure={onConfigure} />;
+      case "presentSourcingBridge":
+        return <ServicesBridge />;
       case "presentMatches":
         return (
           <MatchCarousel

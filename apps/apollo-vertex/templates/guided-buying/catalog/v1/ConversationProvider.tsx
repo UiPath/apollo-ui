@@ -40,6 +40,7 @@ const MATCHES_TOOL = "presentMatches";
 const REVIEW_TOOL = "reviewCta";
 const WORKBENCH_TOOL = "workbenchCta";
 const SERVICE_BRIDGE_TOOL = "presentServiceBridge";
+const SOURCING_BRIDGE_TOOL = "presentSourcingBridge";
 
 // Two laptop alternatives behind the pick (the "2 alternatives" move).
 const ALT_IDS = CATALOG_ITEMS.filter(
@@ -255,6 +256,32 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  // Sourcing fork: a services Bridge (restate + provenance + RFQ routing line).
+  // Its CTA routes the RFQ to procurement; the rich beat is the buyer's Workbench.
+  const sendSourcingRequest = (text: string) => {
+    clearTimers();
+    setPhase("sourcing");
+    setRequestText(text);
+    const userMsg = textMessage(nextId(), "user", text);
+    const assistantId = nextId();
+    setMessages((prev) => [
+      ...prev,
+      userMsg,
+      textMessage(assistantId, "assistant", ""),
+    ]);
+    setStatus("submitted");
+    timers.current.push(
+      setTimeout(() => {
+        setAssistantParts(assistantId, [
+          toolPart(`${assistantId}-src`, SOURCING_BRIDGE_TOOL, {
+            kind: "sourcing",
+          }),
+        ]);
+        setStatus("ready");
+      }, 600),
+    );
+  };
+
   const addNote = (text: string) => {
     setMessages((prev) => [...prev, textMessage(nextId(), "assistant", text)]);
   };
@@ -332,6 +359,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     resolveDefault,
     sendOffCatalog,
     sendServiceRequest,
+    sendSourcingRequest,
     routedRequestId,
     routeToWorkbench,
     clearRoutedRequest,

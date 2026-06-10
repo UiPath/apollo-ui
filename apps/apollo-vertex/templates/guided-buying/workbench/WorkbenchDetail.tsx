@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Plus,
   Sparkle,
+  TriangleAlert,
 } from "lucide-react";
 import { type PointerEvent, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -17,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { useRequests } from "../requests/requests-context";
 import {
   type Decision,
   FORK_BADGE_STATUS,
@@ -214,17 +216,18 @@ function ResolvedAlert({
   decision: Decision;
 }) {
   const body = detail.confirmations[decision];
+  const title = detail.resolvedTitles?.[decision] ?? STATUS_LABEL[decision];
   if (decision === "rejected") {
     return (
       <Alert status="error">
-        <AlertTitle>{STATUS_LABEL.rejected}</AlertTitle>
+        <AlertTitle>{title}</AlertTitle>
         <AlertDescription>{body}</AlertDescription>
       </Alert>
     );
   }
   return (
     <Alert>
-      <AlertTitle>{STATUS_LABEL[decision]}</AlertTitle>
+      <AlertTitle>{title}</AlertTitle>
       <AlertDescription>{body}</AlertDescription>
     </Alert>
   );
@@ -239,6 +242,7 @@ function Finding({
   decision: Resolution;
   onResolve: (d: Decision) => void;
 }) {
+  const { primary, secondary, reject } = detail.actions;
   return (
     <div className="flex-1 overflow-y-auto px-4 pb-8 pt-8 sm:px-6 lg:px-8">
       <Badge
@@ -275,24 +279,95 @@ function Finding({
         {detail.finding.body}
       </p>
 
+      {/* Sourcing: how the shortlist was assembled + the vendors (estimates). */}
+      {detail.shortlist && (
+        <div className="mb-6 max-w-[560px] space-y-2">
+          {detail.shortlistNote && (
+            <p className="text-xs leading-[1.6] text-muted-foreground">
+              {detail.shortlistNote}
+            </p>
+          )}
+          {detail.shortlist.map((v) => (
+            <div
+              key={v.name}
+              className={cn(
+                "rounded-xl border p-3.5",
+                v.agentPick
+                  ? "border-[#0f7b8a] bg-[#0f7b8a]/[0.04]"
+                  : "border-border",
+              )}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold text-foreground">
+                    {v.name}
+                  </span>
+                  {v.agentPick && (
+                    <span
+                      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white"
+                      style={{ background: "var(--ai-gradient-strong)" }}
+                    >
+                      <Sparkle
+                        className="size-2.5"
+                        fill="currentColor"
+                        strokeWidth={0}
+                        aria-hidden
+                      />
+                      Agent pick
+                    </span>
+                  )}
+                </div>
+                <span className="whitespace-nowrap text-base font-semibold text-foreground">
+                  Est. {v.bid}
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">{v.source}</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {v.chips.map((chip) => (
+                  <span
+                    key={chip}
+                    className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground"
+                  >
+                    {chip}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* The judgment call the agent flagged for the buyer. */}
+      {detail.attention && (
+        <div className="mb-6 flex max-w-[560px] items-start gap-2 rounded-xl border border-warning/40 bg-warning/10 p-3 text-sm">
+          <TriangleAlert
+            className="mt-0.5 size-4 shrink-0 text-warning"
+            aria-hidden
+          />
+          <span className="text-foreground">
+            <span className="font-semibold">Needs your call · </span>
+            {detail.attention}
+          </span>
+        </div>
+      )}
+
       {decision ? (
         <ResolvedAlert detail={detail} decision={decision} />
       ) : (
         <div className="flex flex-wrap items-center gap-2">
-          <Button onClick={() => onResolve(detail.actions.primary.decision)}>
-            {detail.actions.primary.label}
+          <Button onClick={() => onResolve(primary.decision)}>
+            {primary.label}
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => onResolve(detail.actions.secondary.decision)}
-          >
-            {detail.actions.secondary.label}
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => onResolve(detail.actions.reject.decision)}
-          >
-            {detail.actions.reject.label}
+          {secondary && (
+            <Button
+              variant="outline"
+              onClick={() => onResolve(secondary.decision)}
+            >
+              {secondary.label}
+            </Button>
+          )}
+          <Button variant="ghost" onClick={() => onResolve(reject.decision)}>
+            {reject.label}
           </Button>
         </div>
       )}
@@ -663,11 +738,16 @@ export function WorkbenchDetail({
   onSelect,
 }: WorkbenchDetailProps) {
   const [centerView, setCenterView] = useState<CenterView>("finding");
+  // The requester's lens on this same request: notes they posted land in Comms,
+  // and an urgent flag they raised shows in the header.
+  const { threads, urgent } = useRequests();
 
   const detail = WORKBENCH_DETAILS[id];
   if (!detail) return null;
 
   const status: WorkbenchStatus = decision ?? "awaiting";
+  const notes = threads[id] ?? [];
+  const isUrgent = urgent[id] === true;
 
   return (
     <div className="flex h-full min-h-0">
@@ -692,6 +772,16 @@ export function WorkbenchDetail({
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
+              {isUrgent && (
+                <Badge
+                  status="error"
+                  variant="secondary"
+                  className="gap-1 rounded-[4px]"
+                >
+                  <TriangleAlert className="size-3" aria-hidden />
+                  Urgent
+                </Badge>
+              )}
               <Badge
                 status={FORK_BADGE_STATUS[detail.type]}
                 variant="secondary"
@@ -700,7 +790,8 @@ export function WorkbenchDetail({
                 {FORK_LABEL[detail.type]}
               </Badge>
               <Badge status={STATUS_BADGE[status]} variant="secondary">
-                {STATUS_LABEL[status]}
+                {(decision && detail.resolvedTitles?.[decision]) ??
+                  STATUS_LABEL[status]}
               </Badge>
             </div>
           </div>
@@ -723,7 +814,18 @@ export function WorkbenchDetail({
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  {v === "finding" ? FORK_LABEL[detail.type] : "Comms"}
+                  {v === "finding" ? (
+                    FORK_LABEL[detail.type]
+                  ) : (
+                    <>
+                      Comms
+                      {notes.length > 0 && (
+                        <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] tabular-nums text-muted-foreground">
+                          {notes.length}
+                        </span>
+                      )}
+                    </>
+                  )}
                 </button>
               ))}
             </div>
@@ -734,6 +836,23 @@ export function WorkbenchDetail({
                 decision={decision}
                 onResolve={(d) => onDecide(id, d)}
               />
+            ) : notes.length > 0 ? (
+              <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-6 py-6">
+                {notes.map((n) => (
+                  <div
+                    key={n.id}
+                    className="max-w-[80%] rounded-xl border bg-muted/40 px-3.5 py-2.5"
+                  >
+                    <p className="text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground">
+                        {n.author}
+                      </span>{" "}
+                      · requester · {n.time}
+                    </p>
+                    <p className="mt-1 text-sm text-foreground">{n.text}</p>
+                  </div>
+                ))}
+              </div>
             ) : (
               <div className="flex flex-1 flex-col items-center justify-center gap-2 px-8 text-center">
                 <p className="text-sm text-muted-foreground">

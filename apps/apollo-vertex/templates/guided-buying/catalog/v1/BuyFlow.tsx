@@ -18,9 +18,9 @@ type Leaving = null | "catalog" | "configure";
 // self-serving; quote = generic handoff to a seeded Workbench item; contract =
 // the Configure-with-agent wizard.
 const CATALOG_STARTER = "2 ThinkPad X1 laptops for our new designers.";
-const QUOTE_STARTER = "5 standing desks for the Berlin office.";
+const SOURCING_STARTER = "Hire 2 contract designers for the Q3 rebrand.";
 const CONTRACT_STARTER = "Add 12 mobile lines for the Denver team.";
-const STARTERS = [CATALOG_STARTER, QUOTE_STARTER, CONTRACT_STARTER];
+const STARTERS = [CATALOG_STARTER, SOURCING_STARTER, CONTRACT_STARTER];
 
 // Title + subtext per step — the constant header anchor. The first two ask
 // (gather, verify); the rest deliver.
@@ -44,10 +44,15 @@ const HEADERS: Record<BuyPhase, { title: string; subtext: ReactNode }> = {
     subtext:
       "The assistant filled in the details it could. Check them before continuing.",
   },
+  sourcing: {
+    title: "Review the request details",
+    subtext:
+      "The assistant filled in the details it could. Check them before sending.",
+  },
   offcatalog: {
     title: "Routed to procurement.",
     subtext:
-      "This one needs a buyer. I've sourced what I can and sent it to the Workbench; you'll get an update here once they've decided.",
+      "I've drafted the RFQ, shortlisted vendors, and sent it to procurement. You'll get an update here once it's sourced.",
   },
 };
 
@@ -62,7 +67,7 @@ export function BuyFlow() {
   const {
     phase,
     sendCatalogRequest,
-    sendOffCatalog,
+    sendSourcingRequest,
     sendServiceRequest,
     stop,
     startFresh,
@@ -100,8 +105,8 @@ export function BuyFlow() {
       sendServiceRequest(suggestion);
       return;
     }
-    if (suggestion === QUOTE_STARTER) {
-      sendOffCatalog(suggestion, "REQ-2048");
+    if (suggestion === SOURCING_STARTER) {
+      sendSourcingRequest(suggestion);
       return;
     }
     sendCatalogRequest(suggestion);
