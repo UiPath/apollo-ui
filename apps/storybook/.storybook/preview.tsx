@@ -5,12 +5,15 @@ import { SUPPORTED_LOCALES } from '@uipath/apollo-react/i18n';
 import {
   apolloMaterialUiThemeDark,
   apolloMaterialUiThemeDarkHC,
+  apolloMaterialUiThemeFutureDark,
+  apolloMaterialUiThemeFutureLight,
   apolloMaterialUiThemeLight,
   apolloMaterialUiThemeLightHC,
 } from '@uipath/apollo-react/material/theme';
 // biome-ignore lint/correctness/noUnusedImports: needed
 import React, { useEffect } from 'react';
 import { GlobalStyles } from './GlobalStyles';
+import { ALL_THEMES, clampThemeForMaterial, DEFAULT_THEME, type ThemeMode } from './themes';
 
 const isDev = import.meta.env.MODE !== 'production';
 
@@ -38,30 +41,6 @@ import '@uipath/apollo-react/canvas/xyflow/style.css';
 // Wind: source Tailwind CSS (processed by PostCSS/Tailwind at dev time)
 import '@/styles/tailwind.css';
 
-// All available themes
-type ThemeMode =
-  | 'light'
-  | 'dark'
-  | 'light-hc'
-  | 'dark-hc'
-  | 'future-light'
-  | 'future-dark'
-  | 'wireframe'
-  | 'vertex'
-  | 'canvas';
-
-const allThemes: ThemeMode[] = [
-  'light',
-  'dark',
-  'light-hc',
-  'dark-hc',
-  'future-light',
-  'future-dark',
-  'wireframe',
-  'vertex',
-  'canvas',
-];
-
 // Human-readable display names for the locale toolbar.
 const LOCALE_LABELS: Record<(typeof SUPPORTED_LOCALES)[number], string> = {
   en: 'English',
@@ -79,14 +58,16 @@ const LOCALE_LABELS: Record<(typeof SUPPORTED_LOCALES)[number], string> = {
   'es-MX': 'Español (México)',
 };
 
-// Map every theme to its closest MUI equivalent (used by stories with `parameters.material`)
+// Map every theme to its MUI equivalent (used by stories with `parameters.material`).
+// Demo themes never reach Material stories (clamped in the decorator and hidden
+// from the selector by the manager tool) but keep closest-match fallbacks.
 const muiThemeMap: Record<ThemeMode, typeof apolloMaterialUiThemeLight> = {
   light: apolloMaterialUiThemeLight,
   dark: apolloMaterialUiThemeDark,
   'light-hc': apolloMaterialUiThemeLightHC,
   'dark-hc': apolloMaterialUiThemeDarkHC,
-  'future-light': apolloMaterialUiThemeLight,
-  'future-dark': apolloMaterialUiThemeDark,
+  'future-light': apolloMaterialUiThemeFutureLight,
+  'future-dark': apolloMaterialUiThemeFutureDark,
   wireframe: apolloMaterialUiThemeLight,
   vertex: apolloMaterialUiThemeDark,
   canvas: apolloMaterialUiThemeDark,
@@ -209,29 +190,30 @@ const preview: Preview = {
             ],
             '*',
           ],
+          'Material (Maintenance Only)',
+          ['Introduction', 'Components', ['All Components', '*'], '*'],
+          'Core',
+          [
+            'Introduction',
+            'Colors',
+            'Typography',
+            'Spacing',
+            'Borders',
+            'Shadows',
+            'Icons',
+            'Screens',
+            'CSS Variables',
+            '*',
+          ],
         ],
       },
     },
   },
   globalTypes: {
+    // Theme selection UI lives in .storybook/manager.tsx (custom tool) so the
+    // item list can be filtered per story (Material stories hide demo themes).
     theme: {
       description: 'Toggle design language theme',
-      toolbar: {
-        title: 'Theme',
-        icon: 'paintbrush',
-        items: [
-          { value: 'light', title: 'Light' },
-          { value: 'dark', title: 'Dark' },
-          { value: 'light-hc', title: 'Light High Contrast' },
-          { value: 'dark-hc', title: 'Dark High Contrast' },
-          { value: 'future-light', title: 'Future Light' },
-          { value: 'future-dark', title: 'Future Dark' },
-          { value: 'wireframe', title: 'Wireframe' },
-          { value: 'vertex', title: 'Vertex' },
-          { value: 'canvas', title: 'Canvas' },
-        ],
-        dynamicTitle: true,
-      },
     },
     ...(isDev && {
       reactScan: {
@@ -261,7 +243,11 @@ const preview: Preview = {
   },
   decorators: [
     (Story, context) => {
-      const theme = (context.globals.theme ?? 'future-dark') as ThemeMode;
+      const useMaterial = context.parameters?.material === true;
+      const globalTheme = (context.globals.theme ?? DEFAULT_THEME) as ThemeMode;
+      // Material stories never render with Wind-only demo themes (the manager
+      // tool also auto-corrects the global; this is the same-frame guarantee).
+      const theme = useMaterial ? clampThemeForMaterial(globalTheme) : globalTheme;
       const reactScanEnabled = context.globals.reactScan === 'on';
       const locale = (context.globals.locale ?? 'en') as (typeof SUPPORTED_LOCALES)[number];
 
@@ -270,10 +256,10 @@ const preview: Preview = {
       // - Element themes match .future-dark/.vertex/etc. in Wind tailwind.consumer.css
       useEffect(() => {
         const body = document.body;
-        body.classList.remove(...allThemes);
+        body.classList.remove(...ALL_THEMES);
         body.classList.add(theme);
         return () => {
-          body.classList.remove(...allThemes);
+          body.classList.remove(...ALL_THEMES);
         };
       }, [theme, context.id]);
 
@@ -296,10 +282,9 @@ const preview: Preview = {
       }
 
       const isFullscreen = context.parameters?.layout === 'fullscreen';
-      const useMaterial = context.parameters?.material === true;
 
       // Stories with `parameters.material` get MUI ThemeProvider + CssBaseline +
-      // GlobalStyles. Used by legacy MUI-based stories (e.g. react-playground).
+      // GlobalStyles (Material Overrides stories).
       if (useMaterial) {
         const muiTheme = muiThemeMap[theme];
         return (
