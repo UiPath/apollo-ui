@@ -287,11 +287,27 @@ const preview: Preview = {
       // GlobalStyles (Material Overrides stories).
       if (useMaterial) {
         const muiTheme = muiThemeMap[theme];
+        // key={locale} forces a story remount so mount-time i18n (ApI18nProvider
+        // reading <html lang>) picks up the new locale. Stories that receive the
+        // locale as a reactive prop (e.g. Chat, whose harness owns a stateful
+        // service singleton that must NOT be torn down) opt out via
+        // `parameters.localeRemount: false`.
+        const remountKey = context.parameters?.localeRemount === false ? 'static' : locale;
         return (
           <ThemeProvider theme={muiTheme}>
             <CssBaseline />
             <GlobalStyles />
-            <div key={locale} style={{ height: '100%', width: '100%' }}>
+            <div
+              key={remountKey}
+              style={{
+                height: '100%',
+                width: '100%',
+                // previewHead strips #storybook-root padding globally; give
+                // regular stories breathing room, keep fullscreen edge-to-edge.
+                padding: isFullscreen ? 0 : 24,
+                boxSizing: 'border-box',
+              }}
+            >
               <Story />
             </div>
           </ThemeProvider>
