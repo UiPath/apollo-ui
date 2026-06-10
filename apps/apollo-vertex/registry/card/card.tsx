@@ -54,7 +54,7 @@ function Card({
             className={cn(
               "absolute inset-0 rounded-2xl pointer-events-none blur-xl",
               "transition-opacity duration-150",
-              selected ? "opacity-100" : "opacity-0",
+              selected ? "opacity-50" : "opacity-0",
             )}
             style={{ background: "var(--ai-gradient)" }}
           />

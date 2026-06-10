@@ -7,6 +7,7 @@ import { ArrowRight, Check, ChevronDown } from "lucide-react";
 import { Fragment, type ReactNode, useState } from "react";
 import { AutopilotIcon } from "@/registry/ai-chat/components/icons/autopilot";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   PageHeader,
   PageHeaderBackButton,
@@ -165,15 +166,15 @@ function OptionCard({
   onSelect: () => void;
 }) {
   return (
-    <button
-      type="button"
+    // Glass card with the AI glow selectable state; keep the teal outline for
+    // the selected card (overrides the card's default primary border).
+    <Card
+      selectable="ai"
+      selected={selected}
       onClick={onSelect}
-      aria-pressed={selected}
       className={cn(
-        "w-full rounded-xl border bg-card p-4 text-left transition-shadow",
-        selected
-          ? "border-[#0f7b8a] shadow-sm ring-1 ring-[#0f7b8a]"
-          : "hover:shadow-sm",
+        "rounded-xl p-4",
+        selected && "border-[#0f7b8a] ring-1 ring-[#0f7b8a]",
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -223,7 +224,7 @@ function OptionCard({
           </span>
         </div>
       </div>
-    </button>
+    </Card>
   );
 }
 
@@ -280,6 +281,19 @@ export function ConfigureFlow() {
     exit: reduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 },
     transition: { duration: reduceMotion ? 0.12 : 0.24, ease: EASE },
   };
+
+  // Staggered reveal for a step's content (question → note → options → actions),
+  // matching the content transitions elsewhere. `i` is the element's order.
+  const STEP_STAGGER = 0.06;
+  const stepItem = (i: number) => ({
+    initial: reduceMotion ? false : { opacity: 0, y: 8 },
+    animate: { opacity: 1, y: 0 },
+    transition: {
+      duration: reduceMotion ? 0.12 : 0.3,
+      ease: EASE,
+      delay: reduceMotion ? 0 : i * STEP_STAGGER,
+    },
+  });
 
   // Shift the whole screen out to the right and return to the chat (which slides
   // back in from the left). In-flow backs restore the thread; the finish line
@@ -449,13 +463,29 @@ export function ConfigureFlow() {
                 )}
               </motion.div>
             ) : (
-              <motion.div key={step} className="space-y-6" {...anim}>
+              <motion.div
+                key={step}
+                className="space-y-6"
+                initial={false}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
+                transition={{
+                  duration: reduceMotion ? 0.12 : 0.24,
+                  ease: EASE,
+                }}
+              >
                 {step === "plan" ? (
                   <div className="space-y-3">
-                    <h2 className="text-xl font-semibold text-foreground">
+                    <motion.h2
+                      {...stepItem(0)}
+                      className="text-xl font-semibold text-foreground"
+                    >
                       Which plan tier for the Denver lines?
-                    </h2>
-                    <div className="flex items-start gap-2 rounded-lg border bg-muted/40 p-3">
+                    </motion.h2>
+                    <motion.div
+                      {...stepItem(1)}
+                      className="flex items-start gap-2 rounded-lg border bg-muted/40 p-3"
+                    >
                       <AutopilotIcon
                         size={16}
                         className="mt-0.5 shrink-0 text-[#0f7b8a]"
@@ -466,24 +496,31 @@ export function ConfigureFlow() {
                           "Your T-Mobile MSA includes three business tiers. Based on the SE team's usage, Business Pro fits."
                         }
                       </p>
-                    </div>
+                    </motion.div>
                     <div className="space-y-3 pt-1">
-                      {TIERS.map((t) => (
-                        <OptionCard
-                          key={t.id}
-                          option={t}
-                          selected={t.id === tierId}
-                          onSelect={() => setTierId(t.id)}
-                        />
+                      {TIERS.map((t, i) => (
+                        <motion.div key={t.id} {...stepItem(2 + i)}>
+                          <OptionCard
+                            option={t}
+                            selected={t.id === tierId}
+                            onSelect={() => setTierId(t.id)}
+                          />
+                        </motion.div>
                       ))}
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <h2 className="text-xl font-semibold text-foreground">
+                    <motion.h2
+                      {...stepItem(0)}
+                      className="text-xl font-semibold text-foreground"
+                    >
                       Devices for the 12 lines?
-                    </h2>
-                    <div className="flex items-start gap-2 rounded-lg border bg-muted/40 p-3">
+                    </motion.h2>
+                    <motion.div
+                      {...stepItem(1)}
+                      className="flex items-start gap-2 rounded-lg border bg-muted/40 p-3"
+                    >
                       <AutopilotIcon
                         size={16}
                         className="mt-0.5 shrink-0 text-[#0f7b8a]"
@@ -494,39 +531,44 @@ export function ConfigureFlow() {
                           "The Denver team refreshed devices last quarter, so I'd skip the subsidy."
                         }
                       </p>
-                    </div>
+                    </motion.div>
                     {/* Lead with the agent pick; tuck the alternatives away. */}
                     <div className="space-y-3 pt-1">
-                      <OptionCard
-                        option={DEVICES[0]}
-                        selected={deviceId === DEVICES[0].id}
-                        onSelect={() => setDeviceId(DEVICES[0].id)}
-                      />
+                      <motion.div {...stepItem(2)}>
+                        <OptionCard
+                          option={DEVICES[0]}
+                          selected={deviceId === DEVICES[0].id}
+                          onSelect={() => setDeviceId(DEVICES[0].id)}
+                        />
+                      </motion.div>
                       {showOtherDevices ? (
-                        DEVICES.slice(1).map((d) => (
-                          <OptionCard
-                            key={d.id}
-                            option={d}
-                            selected={d.id === deviceId}
-                            onSelect={() => setDeviceId(d.id)}
-                          />
+                        DEVICES.slice(1).map((d, i) => (
+                          <motion.div key={d.id} {...stepItem(3 + i)}>
+                            <OptionCard
+                              option={d}
+                              selected={d.id === deviceId}
+                              onSelect={() => setDeviceId(d.id)}
+                            />
+                          </motion.div>
                         ))
                       ) : (
-                        <button
-                          type="button"
-                          onClick={() => setShowOtherDevices(true)}
-                          className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
-                        >
-                          Other options
-                          <ChevronDown className="size-4" aria-hidden />
-                        </button>
+                        <motion.div {...stepItem(3)}>
+                          <button
+                            type="button"
+                            onClick={() => setShowOtherDevices(true)}
+                            className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                          >
+                            Other options
+                            <ChevronDown className="size-4" aria-hidden />
+                          </button>
+                        </motion.div>
                       )}
                     </div>
                   </div>
                 )}
 
                 {/* Actions — back lives in the header (consistent, top-left). */}
-                <div className="flex justify-end">
+                <motion.div {...stepItem(5)} className="flex justify-end">
                   {step === "plan" ? (
                     <Button
                       className={ACCENT}
@@ -544,7 +586,7 @@ export function ConfigureFlow() {
                       <ArrowRight className="size-4" aria-hidden />
                     </Button>
                   )}
-                </div>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
