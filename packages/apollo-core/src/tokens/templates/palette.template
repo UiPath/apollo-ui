@@ -1,9 +1,9 @@
 import * as c from '../Colors';
 
 export type Palette = {
-  type: "light" | "light-hc" | "dark" | "dark-hc" | undefined;
+  type: "light" | "light-hc" | "dark" | "dark-hc" | "future-dark" | "future-light" | undefined;
   semantic: {
-<% _.each(allProperties, function(property) { if (property.name.endsWith('Light')) {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('Light') && !property.name.endsWith('FutureLight')) {
 %>    <%= property.name[0].toLowerCase() + property.name.slice(1, -'Light'.length) %>: string;
 <% }}); %>
     // Keep these typos for compatibility reasons
@@ -159,7 +159,7 @@ export type Palette = {
 export const lightPalette: Palette = {
   type: 'light',
   semantic: {
-<% _.each(allProperties, function(property) { if (property.name.endsWith('Light')) {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('Light') && !property.name.endsWith('FutureLight')) {
 %>    <%= property.name[0].toLowerCase() + property.name.slice(1, -'Light'.length) %>: c.<%= property.name %>,
 <% }}); %>
     // Keep these typos for compatibility reasons
@@ -471,7 +471,7 @@ export const lightHighContrastPalette: Palette = {
 export const darkPalette: Palette = {
   type: "dark",
   semantic: {
-<% _.each(allProperties, function(property) { if (property.name.endsWith('Dark')) {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('Dark') && !property.name.endsWith('FutureDark')) {
 %>    <%= property.name[0].toLowerCase() + property.name.slice(1, -'Dark'.length) %>: c.<%= property.name %>,
 <% }}); %>
     // Keep these typos for compatibility reasons
@@ -777,5 +777,319 @@ export const darkHighContrastPalette: Palette = {
   background: {
     default: c.ColorBackgroundDarkHc,
     paper: c.ColorBackgroundDarkHc,
+  },
+};
+
+export const futureDarkPalette: Palette = {
+  type: "future-dark",
+  semantic: {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('FutureDark')) {
+%>    <%= property.name[0].toLowerCase() + property.name.slice(1, -'FutureDark'.length) %>: c.<%= property.name %>,
+<% }}); %>
+    // Keep these typos for compatibility reasons
+    colorBackgroundHigh: c.ColorBackgroundHighlightFutureDark,
+    colorForegroundHigh: c.ColorForegroundHighlightFutureDark,
+    colorForegroundHighSelected: c.ColorForegroundHighlightSelectedFutureDark,
+    colorForegroundHighSelectedHover: c.ColorForegroundHighlightSelectedHoverFutureDark,
+  },
+  primary: {
+    contrastText: c.ColorForegroundOnAccentFutureDark,
+    light: c.ColorPrimaryLighterFutureDark,
+    main: c.ColorPrimaryFutureDark,
+    dark: c.ColorPrimaryDarkerFutureDark,
+  },
+  secondary: {
+    contrastText: c.ColorForegroundOnAccentFutureDark,
+    light: c.ColorPrimaryLighterFutureDark,
+    main: c.ColorPrimaryFutureDark,
+    dark: c.ColorPrimaryDarkerFutureDark,
+  },
+  error: {
+    contrastText: c.ColorWhite,
+    light: c.ColorError250,
+    main: c.ColorError500,
+    dark: c.ColorError750,
+  },
+  success: {
+    contrastText: c.ColorWhite,
+    light: c.ColorGreen250,
+    main: c.ColorGreen500,
+    dark: c.ColorGreen750,
+  },
+  warning: {
+    contrastText: c.ColorWhite,
+    light: c.ColorWarning300,
+    main: c.ColorWarning500,
+    dark: c.ColorWarning700,
+  },
+  info: {
+    contrastText: c.ColorBlack,
+    light: c.ColorInfoBackgroundFutureDark,
+    main: c.ColorInfoForegroundFutureDark,
+    dark: c.ColorInfo700,
+  },
+  orange: {
+    100: c.ColorOrange100,
+    200: c.ColorOrange200,
+    300: c.ColorOrange300,
+    400: c.ColorOrange400,
+    500: c.ColorOrange500,
+    600: c.ColorOrange600,
+    700: c.ColorOrange700,
+    800: c.ColorOrange800,
+  },
+  blue: {
+    100: c.ColorBlue100,
+    200: c.ColorBlue200,
+    300: c.ColorBlue300,
+    400: c.ColorBlue400,
+    500: c.ColorBlue500,
+    600: c.ColorBlue600,
+    700: c.ColorBlue700,
+    800: c.ColorBlue800,
+  },
+  blue_secondary: {
+    100: c.ColorBlueSecondary100,
+    200: c.ColorBlueSecondary200,
+    300: c.ColorBlueSecondary300,
+    400: c.ColorBlueSecondary400,
+    500: c.ColorBlueSecondary500,
+    600: c.ColorBlueSecondary600,
+    700: c.ColorBlueSecondary700,
+    800: c.ColorBlueSecondary800,
+  },
+  green: {
+    100: c.ColorGreen100,
+    200: c.ColorGreen200,
+    300: c.ColorGreen300,
+    400: c.ColorGreen400,
+    500: c.ColorGreen500,
+    600: c.ColorGreen600,
+    700: c.ColorGreen700,
+    800: c.ColorGreen800,
+  },
+  yellow: {
+    100: c.ColorYellow100,
+    200: c.ColorYellow200,
+    300: c.ColorYellow300,
+    400: c.ColorYellow400,
+    500: c.ColorYellow500,
+    600: c.ColorYellow600,
+    700: c.ColorYellow700,
+    800: c.ColorYellow800,
+  },
+  red: {
+    100: c.ColorRed100,
+    200: c.ColorRed200,
+    300: c.ColorRed300,
+    400: c.ColorRed400,
+    500: c.ColorRed500,
+    600: c.ColorRed600,
+    700: c.ColorRed700,
+    800: c.ColorRed800,
+  },
+  purple: {
+    100: c.ColorPurple100,
+    200: c.ColorPurple200,
+    300: c.ColorPurple300,
+    400: c.ColorPurple400,
+    500: c.ColorPurple500,
+    600: c.ColorPurple600,
+    700: c.ColorPurple700,
+    800: c.ColorPurple800,
+  },
+  light_blue: {
+    100: c.ColorLightBlue100,
+    200: c.ColorLightBlue200,
+    300: c.ColorLightBlue300,
+    400: c.ColorLightBlue400,
+    500: c.ColorLightBlue500,
+    600: c.ColorLightBlue600,
+    700: c.ColorLightBlue700,
+    800: c.ColorLightBlue800,
+  },
+  ink: {
+    100: c.ColorInk100,
+    150: c.ColorInk150,
+    300: c.ColorInk300,
+    400: c.ColorInk400,
+    450: c.ColorInk450,
+    550: c.ColorInk550,
+    600: c.ColorInk600,
+    650: c.ColorInk650,
+    700: c.ColorInk700,
+  },
+  text: {
+    primary: c.ColorForegroundFutureDark,
+    secondary: c.ColorForegroundDeEmpFutureDark,
+    disabled: c.ColorForegroundDisableFutureDark
+  },
+  divider: c.ColorBorderFutureDark,
+  common: {
+    black: c.ColorBlack,
+    white: c.ColorWhite,
+  },
+  icon: c.ColorIconDefaultFutureDark,
+  background: {
+    default: c.ColorBackgroundFutureDark,
+    // Future themes raise cards/dialogs one surface step above the canvas
+    paper: c.ColorBackgroundRaisedFutureDark,
+  },
+};
+
+export const futureLightPalette: Palette = {
+  type: "future-light",
+  semantic: {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('FutureLight')) {
+%>    <%= property.name[0].toLowerCase() + property.name.slice(1, -'FutureLight'.length) %>: c.<%= property.name %>,
+<% }}); %>
+    // Keep these typos for compatibility reasons
+    colorBackgroundHigh: c.ColorBackgroundHighlightFutureLight,
+    colorForegroundHigh: c.ColorForegroundHighlightFutureLight,
+    colorForegroundHighSelected: c.ColorForegroundHighlightSelectedFutureLight,
+    colorForegroundHighSelectedHover: c.ColorForegroundHighlightSelectedHoverFutureLight,
+  },
+  primary: {
+    contrastText: c.ColorForegroundOnAccentFutureLight,
+    light: c.ColorPrimaryLighterFutureLight,
+    main: c.ColorPrimaryFutureLight,
+    dark: c.ColorPrimaryDarkerFutureLight,
+  },
+  secondary: {
+    contrastText: c.ColorForegroundOnAccentFutureLight,
+    light: c.ColorPrimaryLighterFutureLight,
+    main: c.ColorPrimaryFutureLight,
+    dark: c.ColorPrimaryDarkerFutureLight,
+  },
+  error: {
+    contrastText: c.ColorWhite,
+    light: c.ColorError250,
+    main: c.ColorError500,
+    dark: c.ColorError750,
+  },
+  success: {
+    contrastText: c.ColorWhite,
+    light: c.ColorGreen250,
+    main: c.ColorGreen500,
+    dark: c.ColorGreen750,
+  },
+  warning: {
+    contrastText: c.ColorWhite,
+    light: c.ColorWarning300,
+    main: c.ColorWarning500,
+    dark: c.ColorWarning700,
+  },
+  info: {
+    contrastText: c.ColorBlack,
+    light: c.ColorInfoBackgroundFutureLight,
+    main: c.ColorInfoForegroundFutureLight,
+    dark: c.ColorInfo700,
+  },
+  orange: {
+    100: c.ColorOrange100,
+    200: c.ColorOrange200,
+    300: c.ColorOrange300,
+    400: c.ColorOrange400,
+    500: c.ColorOrange500,
+    600: c.ColorOrange600,
+    700: c.ColorOrange700,
+    800: c.ColorOrange800,
+  },
+  blue: {
+    100: c.ColorBlue100,
+    200: c.ColorBlue200,
+    300: c.ColorBlue300,
+    400: c.ColorBlue400,
+    500: c.ColorBlue500,
+    600: c.ColorBlue600,
+    700: c.ColorBlue700,
+    800: c.ColorBlue800,
+  },
+  blue_secondary: {
+    100: c.ColorBlueSecondary100,
+    200: c.ColorBlueSecondary200,
+    300: c.ColorBlueSecondary300,
+    400: c.ColorBlueSecondary400,
+    500: c.ColorBlueSecondary500,
+    600: c.ColorBlueSecondary600,
+    700: c.ColorBlueSecondary700,
+    800: c.ColorBlueSecondary800,
+  },
+  green: {
+    100: c.ColorGreen100,
+    200: c.ColorGreen200,
+    300: c.ColorGreen300,
+    400: c.ColorGreen400,
+    500: c.ColorGreen500,
+    600: c.ColorGreen600,
+    700: c.ColorGreen700,
+    800: c.ColorGreen800,
+  },
+  yellow: {
+    100: c.ColorYellow100,
+    200: c.ColorYellow200,
+    300: c.ColorYellow300,
+    400: c.ColorYellow400,
+    500: c.ColorYellow500,
+    600: c.ColorYellow600,
+    700: c.ColorYellow700,
+    800: c.ColorYellow800,
+  },
+  red: {
+    100: c.ColorRed100,
+    200: c.ColorRed200,
+    300: c.ColorRed300,
+    400: c.ColorRed400,
+    500: c.ColorRed500,
+    600: c.ColorRed600,
+    700: c.ColorRed700,
+    800: c.ColorRed800,
+  },
+  purple: {
+    100: c.ColorPurple100,
+    200: c.ColorPurple200,
+    300: c.ColorPurple300,
+    400: c.ColorPurple400,
+    500: c.ColorPurple500,
+    600: c.ColorPurple600,
+    700: c.ColorPurple700,
+    800: c.ColorPurple800,
+  },
+  light_blue: {
+    100: c.ColorLightBlue100,
+    200: c.ColorLightBlue200,
+    300: c.ColorLightBlue300,
+    400: c.ColorLightBlue400,
+    500: c.ColorLightBlue500,
+    600: c.ColorLightBlue600,
+    700: c.ColorLightBlue700,
+    800: c.ColorLightBlue800,
+  },
+  ink: {
+    100: c.ColorInk100,
+    150: c.ColorInk150,
+    300: c.ColorInk300,
+    400: c.ColorInk400,
+    450: c.ColorInk450,
+    550: c.ColorInk550,
+    600: c.ColorInk600,
+    650: c.ColorInk650,
+    700: c.ColorInk700,
+  },
+  text: {
+    primary: c.ColorForegroundFutureLight,
+    secondary: c.ColorForegroundDeEmpFutureLight,
+    disabled: c.ColorForegroundDisableFutureLight
+  },
+  divider: c.ColorBorderFutureLight,
+  common: {
+    black: c.ColorBlack,
+    white: c.ColorWhite,
+  },
+  icon: c.ColorIconDefaultFutureLight,
+  background: {
+    default: c.ColorBackgroundFutureLight,
+    // Future themes raise cards/dialogs one surface step above the canvas
+    paper: c.ColorBackgroundRaisedFutureLight,
   },
 };

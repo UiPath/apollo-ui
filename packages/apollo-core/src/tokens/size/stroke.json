@@ -22,6 +22,12 @@
     "dark-hc": {
       "value": "{stroke.s.value} solid {color.border.dark-hc.value}"
     },
+    "future-dark": {
+      "value": "{stroke.s.value} solid {color.border.future-dark.value}"
+    },
+    "future-light": {
+      "value": "{stroke.s.value} solid {color.border.future-light.value}"
+    },
     "thick": {
       "s": { "value": "1px" },
       "m": { "value": "2px" },
