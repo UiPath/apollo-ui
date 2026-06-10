@@ -6,48 +6,25 @@ export const ThemeControls = styled.div`
   gap: 16px;
 `;
 
-export const IconButton = styled.button<{ $isActive: boolean }>`
-  background: ${(props) =>
-		props.$isActive ? "var(--color-primary)" : "var(--color-background)"};
-  border: 2px solid
-    ${(props) =>
-			props.$isActive ? "var(--color-primary)" : "var(--color-border)"};
-  border-radius: 50%;
-  width: 36px;
+export const ThemeSelect = styled.select`
+  background: var(--color-background);
+  color: var(--color-foreground-emp);
+  border: 2px solid var(--color-border);
+  border-radius: 18px;
   height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  font-size: 16px;
   transition: all 0.2s ease;
-  flex-shrink: 0;
-  color: ${(props) =>
-		props.$isActive ? "var(--color-white)" : "var(--color-foreground-emp)"};
-  box-shadow: ${(props) =>
-		props.$isActive ? "0 2px 8px rgba(250, 70, 22, 0.3)" : "none"};
-
-  svg {
-    color: ${(props) =>
-			props.$isActive ? "var(--color-white)" : "var(--color-foreground-emp)"};
-    transition: color 0.2s ease;
-  }
 
   &:hover {
-    background: ${(props) =>
-			props.$isActive
-				? "var(--color-primary)"
-				: "var(--color-background-hover)"};
     border-color: var(--color-primary);
-    transform: translateY(-2px);
-    box-shadow: ${(props) =>
-			props.$isActive
-				? "0 4px 12px rgba(250, 70, 22, 0.4)"
-				: "0 2px 8px rgba(0, 0, 0, 0.1)"};
   }
 
-  &:active {
-    transform: translateY(0);
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
   }
 `;
 
@@ -56,11 +33,12 @@ export const HighContrastCheckbox = styled.div`
   align-items: center;
 `;
 
-export const CheckboxLabel = styled.label`
+export const CheckboxLabel = styled.label<{ $disabled?: boolean }>`
   display: flex;
   align-items: center;
   gap: 8px;
-  cursor: pointer;
+  cursor: ${(props) => (props.$disabled ? "not-allowed" : "pointer")};
+  opacity: ${(props) => (props.$disabled ? 0.5 : 1)};
   user-select: none;
 `;
 
