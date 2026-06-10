@@ -43,18 +43,18 @@ export const MuiButton = (palette: Palette): ComponentsOverrides['MuiButton'] =>
   contained: {
     border: `1px solid ${palette.semantic.colorPrimary}`,
     backgroundColor: `${palette.semantic.colorPrimary}`,
-    color: `${palette.semantic.colorForegroundInverse}`,
-    '&.MuiButton-containedSecondary': { color: `${palette.semantic.colorForegroundInverse}` },
+    color: `${palette.semantic.colorForegroundOnAccent}`,
+    '&.MuiButton-containedSecondary': { color: `${palette.semantic.colorForegroundOnAccent}` },
     '&&:hover': {
       backgroundColor: `${palette.semantic.colorPrimaryHover}`,
       border: `1px solid ${palette.semantic.colorPrimaryHover}`,
-      color: `${palette.semantic.colorForegroundInverse}`,
+      color: `${palette.semantic.colorForegroundOnAccent}`,
       boxShadow: 'none',
     },
     '&&:focus': {
       boxShadow: 'none',
       border: `1px solid ${palette.semantic.colorPrimaryFocused}`,
-      color: `${palette.semantic.colorForegroundInverse}`,
+      color: `${palette.semantic.colorForegroundOnAccent}`,
     },
     '&&:disabled': {
       backgroundColor: `${palette.semantic.colorBackgroundDisabled}`,
