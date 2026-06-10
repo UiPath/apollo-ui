@@ -85,7 +85,7 @@ function MatchCard({ item, lead = false, index }: MatchCardProps) {
             style={AI_GRADIENT}
           >
             <AutopilotIcon size={12} aria-hidden />
-            Picked for you
+            Best match
           </span>
         )}
       </div>

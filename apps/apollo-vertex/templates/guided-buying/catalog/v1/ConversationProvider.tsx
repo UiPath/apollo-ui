@@ -81,6 +81,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<UIMessage[]>([]);
   const [status, setStatus] = useState<ChatClientState>("ready");
   const [phase, setPhase] = useState<BuyPhase>("intake");
+  const [requestText, setRequestText] = useState<string | null>(null);
   const [requestDetails, setRequestDetails] = useState<RequestDetails | null>(
     null,
   );
@@ -116,6 +117,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
   const sendCatalogRequest = (text: string) => {
     clearTimers();
     setPhase("bridge");
+    setRequestText(text);
     selectionStartedRef.current = false;
     const userMsg = textMessage(nextId(), "user", text);
     const assistantId = nextId();
@@ -201,6 +203,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
   const sendOffCatalog = (text: string, requestId: string) => {
     clearTimers();
     setPhase("offcatalog");
+    setRequestText(text);
     setRoutedRequestId(requestId);
     const assistantId = nextId();
     setMessages((prev) => [
@@ -231,6 +234,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
   const sendServiceRequest = (text: string) => {
     clearTimers();
     setPhase("service");
+    setRequestText(text);
     const userMsg = textMessage(nextId(), "user", text);
     const assistantId = nextId();
     setMessages((prev) => [
@@ -289,6 +293,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     setMessages([]);
     setStatus("ready");
     setPhase("intake");
+    setRequestText(null);
     setRequestDetails(null);
     setHasResolved(false);
     setRoutedRequestId(null);
@@ -318,6 +323,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     messages,
     status,
     phase,
+    requestText,
     requestDetails,
     setRequestDetails,
     hasResolved,

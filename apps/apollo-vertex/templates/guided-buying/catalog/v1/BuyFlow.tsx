@@ -26,22 +26,23 @@ const STARTERS = [CATALOG_STARTER, QUOTE_STARTER, CONTRACT_STARTER];
 // (gather, verify); the rest deliver.
 const HEADERS: Record<BuyPhase, { title: string; subtext: ReactNode }> = {
   intake: {
-    title: "What do you need?",
-    subtext:
-      "Tell Autopilot what to buy. It sources, prices, and routes the request.",
+    title: "What do you want to buy?",
+    subtext: "Describe the item, quantity, and who it’s for.",
   },
   bridge: {
-    title: "Did I get this right?",
+    title: "Review the request details",
     subtext:
-      "Here's what I inferred from your team's past requests and your profile.",
+      "The assistant filled in the details it could. Check them before choosing an item.",
   },
   selection: {
-    title: "Here are your matches.",
-    subtext: "12 in the catalog, priced with EPP and filtered to in-stock.",
+    title: "Select from matching options",
+    subtext:
+      "These in-stock catalog items match your request and include employee pricing.",
   },
   service: {
-    title: "Did I get this right?",
-    subtext: "12 mobile lines for the Denver team, under your T-Mobile MSA.",
+    title: "Review the request details",
+    subtext:
+      "The assistant filled in the details it could. Check them before continuing.",
   },
   offcatalog: {
     title: "Routed to procurement.",
@@ -78,15 +79,21 @@ export function BuyFlow() {
   const fromConfigure = useRouterState({
     select: (s) => s.location.state.fromConfigure === true,
   });
+  // The finish line passes resetChat so "Back to Buy" lands on a fresh Intake
+  // (the request is already submitted), not the Bridge they came from.
+  const resetChat = useRouterState({
+    select: (s) => s.location.state.resetChat === true,
+  });
 
-  // Reset to the Intake empty state on a fresh entry to Buy — but not when
-  // shifting back from Configure, where the conversation should still be there.
+  // Reset to the Intake empty state on a fresh entry to Buy — and when returning
+  // from a submitted Configure — but not when stepping back into an in-flight
+  // Bridge, where the conversation should still be there.
   const didReset = useRef(false);
   useEffect(() => {
     if (didReset.current) return;
     didReset.current = true;
-    if (!fromConfigure) startFresh();
-  }, [startFresh, fromConfigure]);
+    if (!fromConfigure || resetChat) startFresh();
+  }, [startFresh, fromConfigure, resetChat]);
 
   const handleSuggestion = (suggestion: string) => {
     if (suggestion === CONTRACT_STARTER) {
@@ -125,11 +132,13 @@ export function BuyFlow() {
     setLeaving("configure");
   };
 
+  // Configure isn't a peer screen, so it hands off with a fade (it expands open
+  // on the other side) rather than a lateral swipe.
   const exitTarget =
     leaving === "catalog"
       ? { y: -8, opacity: 0 }
       : leaving === "configure"
-        ? { x: "-100%", opacity: 0 }
+        ? { opacity: 0 }
         : { x: 0, y: 0, opacity: 1 };
 
   const isIntake = phase === "intake";
@@ -138,9 +147,7 @@ export function BuyFlow() {
   return (
     <motion.div
       className="h-full"
-      initial={
-        fromConfigure && !reduceMotion ? { x: "-100%", opacity: 0 } : false
-      }
+      initial={fromConfigure && !reduceMotion ? { opacity: 0 } : false}
       animate={exitTarget}
       transition={{ duration: reduceMotion ? 0.12 : 0.32, ease: EASE }}
       onAnimationComplete={() => {
@@ -166,7 +173,7 @@ export function BuyFlow() {
               onSubmit={handleIntakeSubmit}
               onStop={stop}
               isLoading={false}
-              placeholder="Describe what you need…"
+              placeholder="Tell us what you want to buy…"
               // Attach a quote, spec, or PO for Autopilot to parse — the paperclip
               // menu, paste, and the pending-file chips (which grow the input) all
               // turn on with this.

@@ -25,6 +25,8 @@ export interface ConversationContextValue {
   status: ChatClientState;
   /** The active Buy step (header anchor + back navigation). */
   phase: BuyPhase;
+  /** What the user prompted (free text or a starter chip) — shown on the Bridge. */
+  requestText: string | null;
   /** The Bridge-confirmed routing/cost-center (null until a Bridge resolves). */
   requestDetails: RequestDetails | null;
   /** Record what the Bridge confirmed (called when continuing to selection). */

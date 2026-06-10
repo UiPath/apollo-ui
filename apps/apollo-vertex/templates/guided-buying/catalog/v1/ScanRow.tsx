@@ -26,7 +26,7 @@ interface ScanRowProps {
   /** Quantity shown on the Add button (request qty, or cart qty once added). */
   quantity: number;
   comparing: boolean;
-  /** Elevated "Picked for you" lead row. */
+  /** Elevated "Best match" lead row. */
   recommended?: boolean;
   /** Agent rationale shown under the name on the recommended row. */
   note?: string;
@@ -121,7 +121,7 @@ export function ScanRow({
                 style={AI_GRADIENT}
               >
                 <AutopilotIcon size={12} aria-hidden />
-                Picked for you
+                Best match
               </span>
             )}
           </div>
