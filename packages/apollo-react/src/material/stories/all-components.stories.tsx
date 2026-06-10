@@ -41,6 +41,7 @@ import {
   ApSkeleton,
   ApToolCall,
   ApTypography,
+  StatusTypes,
 } from '../components';
 import { materialParameters } from './storybook-helpers';
 
@@ -315,14 +316,14 @@ const components: ComponentInfo[] = [
     description: 'Status badges',
     storyPath: storyDocs('badge'),
     category: Category.DataDisplay,
-    preview: <ApBadge status="success" label="Success" />,
+    preview: <ApBadge status={StatusTypes.SUCCESS} label="Success" />,
   },
   {
     name: 'Icon',
     description: 'Apollo icon library',
     storyPath: storyDocs('icon'),
     category: Category.DataDisplay,
-    preview: <ApIcon icon="home" />,
+    preview: <ApIcon name="home" />,
   },
   {
     name: 'Tooltip',
@@ -484,8 +485,8 @@ const components: ComponentInfo[] = [
     category: Category.Feedback,
     preview: (
       <Stack spacing={0.5} sx={{ width: 140 }}>
-        <ApSkeleton variant="text" />
-        <ApSkeleton variant="rectangular" height={32} />
+        <ApSkeleton variant="rectangle" style={{ height: 12 }} />
+        <ApSkeleton variant="rectangle" style={{ height: 32 }} />
       </Stack>
     ),
   },
@@ -554,7 +555,7 @@ const components: ComponentInfo[] = [
     description: 'Agent tool invocation display',
     storyPath: storyDocs('tool-call'),
     category: Category.Ai,
-    preview: <ApToolCall name="search_files" status="completed" />,
+    preview: <ApToolCall toolName="search_files" output="2 files found" />,
   },
 ];
 

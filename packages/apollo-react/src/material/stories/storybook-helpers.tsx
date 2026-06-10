@@ -43,7 +43,7 @@ export function Section({
   );
 }
 
-export function Row({ label, children }: { label?: string; children: ReactNode }) {
+export function Row({ label, children }: { label?: string; children?: ReactNode }) {
   return (
     <Box sx={{ mb: 2 }}>
       {label && (

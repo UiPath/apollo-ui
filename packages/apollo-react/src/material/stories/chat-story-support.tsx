@@ -1,10 +1,17 @@
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import Divider from '@mui/material/Divider';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import type { CSSProperties, ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FontVariantToken } from '../../core';
 import {
   ApChat,
   type ApChatTheme,
+  ApTypography,
   AutopilotChatEvent,
   AutopilotChatMode,
   type AutopilotChatResourceItem,
@@ -30,6 +37,29 @@ import {
  * equivalent (mirrors the playground's `chatBaseTheme`/`chatTheme` logic),
  * and Wind-only demo themes (wireframe/vertex/canvas) fall back to dark.
  */
+const CHAT_LOCALES: SupportedLocale[] = [
+  'en',
+  'de',
+  'es',
+  'es-MX',
+  'fr',
+  'ja',
+  'ko',
+  'pt',
+  'pt-BR',
+  'ru',
+  'tr',
+  'zh-CN',
+  'zh-TW',
+];
+
+/** Maps Storybook's global locale to a chat-supported locale (fallback: en). */
+export function mapToChatLocale(globalLocale: unknown): SupportedLocale {
+  return CHAT_LOCALES.includes(globalLocale as SupportedLocale)
+    ? (globalLocale as SupportedLocale)
+    : 'en';
+}
+
 export function mapToChatTheme(globalTheme: unknown): ApChatTheme {
   switch (globalTheme) {
     case 'light':
@@ -55,27 +85,18 @@ export function mapToChatTheme(globalTheme: unknown): ApChatTheme {
 
 function Section({ children }: { children: ReactNode }) {
   return (
-    <Box
-      sx={{
-        mb: 3,
-        pb: 3,
-        borderBottom: '1px solid var(--color-border)',
-        '&:last-child': { borderBottom: 'none', mb: 0, pb: 0 },
-      }}
-    >
+    <Box sx={{ mb: 3, '&:last-child': { mb: 0, '& > .MuiDivider-root': { display: 'none' } } }}>
       {children}
+      <Divider sx={{ mt: 3 }} />
     </Box>
   );
 }
 
 function SectionTitle({ children }: { children: ReactNode }) {
   return (
-    <Box
-      component="h3"
-      sx={{ fontSize: 16, fontWeight: 600, color: 'var(--color-primary)', m: '0 0 16px 0' }}
-    >
+    <ApTypography variant={FontVariantToken.fontSizeMBold} component="h3" sx={{ mb: 2 }}>
       {children}
-    </Box>
+    </ApTypography>
   );
 }
 
@@ -85,105 +106,104 @@ function ButtonGroup({ children }: { children: ReactNode }) {
 
 type DemoButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & { primary?: boolean };
 
-function DemoButton({ primary = false, ...props }: DemoButtonProps) {
+/* All harness controls below render MUI components so the control panel
+   itself exercises the Apollo theme overrides under every theme. */
+
+function DemoButton({ primary = false, children, onClick, disabled, title }: DemoButtonProps) {
   return (
-    <Box
-      component="button"
-      type="button"
-      {...props}
-      sx={{
-        padding: '8px 16px',
-        background: primary ? 'var(--color-primary)' : 'var(--color-background-secondary)',
-        color: primary ? 'var(--color-background)' : 'var(--color-foreground-emp)',
-        border: primary ? 'none' : '1px solid var(--color-border)',
-        borderRadius: '6px',
-        fontSize: 14,
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        whiteSpace: 'nowrap',
-        '&:hover': {
-          background: primary ? 'var(--color-primary-hover)' : 'var(--color-background-hover)',
-          borderColor: primary ? undefined : 'var(--color-primary)',
-        },
-        '&:active': { transform: 'scale(0.98)' },
-        '&:disabled': { opacity: 0.5, cursor: 'not-allowed' },
-      }}
-    />
-  );
-}
-
-const fieldStyle: CSSProperties = {
-  width: '100%',
-  padding: '10px 12px',
-  background: 'var(--color-background)',
-  color: 'var(--color-foreground-emp)',
-  border: '1px solid var(--color-border)',
-  borderRadius: 6,
-  fontSize: 14,
-  marginBottom: 12,
-  boxSizing: 'border-box',
-};
-
-function DemoInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  const { style, ...rest } = props;
-  return <input {...rest} style={{ ...fieldStyle, ...style }} />;
-}
-
-function DemoTextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  const { style, ...rest } = props;
-  return (
-    <textarea
-      {...rest}
-      style={{
-        ...fieldStyle,
-        minHeight: 80,
-        resize: 'vertical',
-        fontFamily: 'inherit',
-        ...style,
-      }}
-    />
-  );
-}
-
-function DemoSelect(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  const { style, ...rest } = props;
-  return <select {...rest} style={{ ...fieldStyle, cursor: 'pointer', ...style }} />;
-}
-
-function CheckboxLabel({ children }: { children: ReactNode }) {
-  return (
-    <Box
-      component="label"
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1,
-        mb: 1,
-        cursor: 'pointer',
-        fontSize: 14,
-        color: 'var(--color-foreground-emp)',
-        '& input[type="checkbox"]': { cursor: 'pointer' },
-      }}
+    <Button
+      variant={primary ? 'contained' : 'outlined'}
+      size="small"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      sx={{ whiteSpace: 'nowrap' }}
     >
       {children}
-    </Box>
+    </Button>
+  );
+}
+
+type FieldChangeHandler = React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+
+function DemoInput({
+  style,
+  type,
+  min,
+  max,
+  value,
+  onChange,
+  placeholder,
+  disabled,
+}: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <TextField
+      size="small"
+      fullWidth
+      type={type}
+      value={value}
+      placeholder={placeholder}
+      disabled={disabled}
+      onChange={onChange as FieldChangeHandler}
+      inputProps={{ min, max }}
+      sx={{ mb: 1.5 }}
+      style={style}
+    />
+  );
+}
+
+function DemoTextArea({
+  style,
+  value,
+  onChange,
+  placeholder,
+  disabled,
+}: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <TextField
+      size="small"
+      fullWidth
+      multiline
+      minRows={3}
+      value={value}
+      placeholder={placeholder}
+      disabled={disabled}
+      onChange={onChange as unknown as FieldChangeHandler}
+      sx={{ mb: 1.5 }}
+      style={style}
+    />
+  );
+}
+
+function DemoSelect({
+  style,
+  children,
+  value,
+  onChange,
+  disabled,
+}: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <TextField
+      select
+      size="small"
+      fullWidth
+      value={value}
+      disabled={disabled}
+      onChange={onChange as unknown as FieldChangeHandler}
+      SelectProps={{ native: true }}
+      sx={{ mb: 1.5 }}
+      style={style}
+    >
+      {children}
+    </TextField>
   );
 }
 
 function InfoText({ children, style }: { children: ReactNode; style?: CSSProperties }) {
   return (
-    <Box
-      component="p"
-      sx={{
-        fontSize: 13,
-        color: 'var(--color-foreground-de-emp)',
-        m: '8px 0 0 0',
-        lineHeight: 1.5,
-      }}
-      style={style}
-    >
+    <Typography component="p" variant="body2" sx={{ color: 'text.secondary', mt: 1 }} style={style}>
       {children}
-    </Box>
+    </Typography>
   );
 }
 
@@ -202,17 +222,19 @@ export interface ChatShowcaseDemoProps {
   instanceName: string;
   /** Chat mode the harness starts in. */
   initialMode?: AutopilotChatMode;
+  /** Locale, driven by Storybook's global locale selector. */
+  locale?: SupportedLocale;
 }
 
 export function ChatShowcaseDemo({
   theme,
   instanceName,
   initialMode = AutopilotChatMode.SideBySide,
+  locale = 'en',
 }: ChatShowcaseDemoProps) {
   const embeddedContainerRef = useRef<HTMLDivElement>(null);
 
   const [chatService, setChatService] = useState<AutopilotChatService | null>(null);
-  const [locale, setLocale] = useState<SupportedLocale>('en');
   const [chatMode, setChatMode] = useState<AutopilotChatMode>(initialMode);
   const [customMessage, setCustomMessage] = useState('Hello, how can I help you today?');
   const [errorMessage, setErrorMessage] = useState('An error occurred. Please try again.');
@@ -472,7 +494,7 @@ export function ChatShowcaseDemo({
 				</div>
 
 				<div style="display: flex; gap: 12px;">
-					<button id="saveSettings" style="padding: 8px 16px; background: var(--color-primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">
+					<button id="saveSettings" style="padding: 8px 16px; background: var(--color-primary); color: var(--color-foreground-on-accent); border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">
 						Save Settings
 					</button>
 					<button id="resetSettings" style="padding: 8px 16px; background: transparent; color: var(--color-foreground); border: 1px solid var(--color-border); border-radius: 4px; cursor: pointer;">
@@ -1797,28 +1819,9 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
           boxSizing: 'border-box',
         }}
       >
-        <Box component="h2" sx={{ m: '0 0 24px 0', color: 'var(--color-primary)' }}>
+        <ApTypography variant={FontVariantToken.fontSizeH3Bold} component="h2" sx={{ mb: 3 }}>
           ApChat Showcase
-        </Box>
-
-        <Section>
-          <SectionTitle>Locale</SectionTitle>
-          <DemoSelect value={locale} onChange={(e) => setLocale(e.target.value as SupportedLocale)}>
-            <option value="en">English (en)</option>
-            <option value="de">German (de)</option>
-            <option value="es">Spanish (es)</option>
-            <option value="es-MX">Spanish - Mexico (es-MX)</option>
-            <option value="fr">French (fr)</option>
-            <option value="ja">Japanese (ja)</option>
-            <option value="ko">Korean (ko)</option>
-            <option value="pt">Portuguese (pt)</option>
-            <option value="pt-BR">Portuguese - Brazil (pt-BR)</option>
-            <option value="ru">Russian (ru)</option>
-            <option value="tr">Turkish (tr)</option>
-            <option value="zh-CN">Chinese - Simplified (zh-CN)</option>
-            <option value="zh-TW">Chinese - Traditional (zh-TW)</option>
-          </DemoSelect>
-        </Section>
+        </ApTypography>
 
         <Section>
           <SectionTitle>Chat Mode Controls</SectionTitle>
@@ -1864,14 +1867,16 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
             <DemoButton onClick={setResourceManager}>Set Resource Manager</DemoButton>
             <DemoButton onClick={clearResourceManager}>Clear Resource Manager</DemoButton>
           </ButtonGroup>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={resourcePaginationEnabled}
-              onChange={() => setResourcePaginationEnabled(!resourcePaginationEnabled)}
-            />
-            Enable Pagination (50 vars, 30 files)
-          </CheckboxLabel>
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={resourcePaginationEnabled}
+                onChange={() => setResourcePaginationEnabled(!resourcePaginationEnabled)}
+              />
+            }
+            label="Enable Pagination (50 vars, 30 files)"
+          />
           <InfoText style={{ marginTop: 8 }}>Page Size: {resourcePageSize}</InfoText>
           <DemoInput
             type="number"
@@ -1971,14 +1976,16 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
             <DemoButton onClick={setConversation}>Set Conversation</DemoButton>
             <DemoButton onClick={setSuggestions}>Set Suggestions</DemoButton>
           </ButtonGroup>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={waitForMore}
-              onChange={() => setWaitForMore(!waitForMore)}
-            />
-            Wait For More Messages
-          </CheckboxLabel>
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={waitForMore}
+                onChange={() => setWaitForMore(!waitForMore)}
+              />
+            }
+            label="Wait For More Messages"
+          />
         </Section>
 
         <Section>
@@ -2032,188 +2039,236 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
 
         <Section>
           <SectionTitle>Feature Toggles</SectionTitle>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.history}
-              onChange={() => toggleFeature('history')}
-            />
-            History
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.settings}
-              onChange={() => toggleFeature('settings')}
-            />
-            Settings
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.attachments}
-              onChange={() => toggleFeature('attachments')}
-            />
-            Attachments
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.audio}
-              onChange={() => toggleFeature('audio')}
-            />
-            STT Dictate
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.audioStreaming}
-              onChange={() => toggleFeature('audioStreaming')}
-            />
-            Voice Interaction
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.htmlPreview}
-              onChange={() => toggleFeature('htmlPreview')}
-            />
-            HTML Preview
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.headerSeparator}
-              onChange={() => toggleFeature('headerSeparator')}
-            />
-            Header Separator
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.fullHeight}
-              onChange={() => toggleFeature('fullHeight')}
-            />
-            Full Height
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.resize}
-              onChange={() => toggleFeature('resize')}
-            />
-            Resize
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.close}
-              onChange={() => toggleFeature('close')}
-            />
-            Close
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.feedback}
-              onChange={() => toggleFeature('feedback')}
-            />
-            Feedback
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.model}
-              onChange={() => toggleFeature('model')}
-            />
-            Model
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.agentMode}
-              onChange={() => toggleFeature('agentMode')}
-            />
-            Agent Mode
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.sendOnClick}
-              onChange={() => toggleFeature('sendOnClick')}
-            />
-            Send On Click
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.paginatedMessages}
-              onChange={() => toggleFeature('paginatedMessages')}
-            />
-            Paginated Messages
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.compactMode}
-              onChange={() => toggleFeature('compactMode')}
-            />
-            Compact Mode
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.customScrollTheme}
-              onChange={() => toggleFeature('customScrollTheme')}
-            />
-            Custom Scroll Theme
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input type="checkbox" checked={features.copy} onChange={() => toggleFeature('copy')} />
-            Copy
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.attachmentsAsync}
-              onChange={() => toggleFeature('attachmentsAsync')}
-            />
-            Attachments Async
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={features.readOnly}
-              onChange={() => toggleFeature('readOnly')}
-            />
-            Read Only
-          </CheckboxLabel>
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.history}
+                onChange={() => toggleFeature('history')}
+              />
+            }
+            label="History"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.settings}
+                onChange={() => toggleFeature('settings')}
+              />
+            }
+            label="Settings"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.attachments}
+                onChange={() => toggleFeature('attachments')}
+              />
+            }
+            label="Attachments"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.audio}
+                onChange={() => toggleFeature('audio')}
+              />
+            }
+            label="STT Dictate"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.audioStreaming}
+                onChange={() => toggleFeature('audioStreaming')}
+              />
+            }
+            label="Voice Interaction"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.htmlPreview}
+                onChange={() => toggleFeature('htmlPreview')}
+              />
+            }
+            label="HTML Preview"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.headerSeparator}
+                onChange={() => toggleFeature('headerSeparator')}
+              />
+            }
+            label="Header Separator"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.fullHeight}
+                onChange={() => toggleFeature('fullHeight')}
+              />
+            }
+            label="Full Height"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.resize}
+                onChange={() => toggleFeature('resize')}
+              />
+            }
+            label="Resize"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.close}
+                onChange={() => toggleFeature('close')}
+              />
+            }
+            label="Close"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.feedback}
+                onChange={() => toggleFeature('feedback')}
+              />
+            }
+            label="Feedback"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.model}
+                onChange={() => toggleFeature('model')}
+              />
+            }
+            label="Model"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.agentMode}
+                onChange={() => toggleFeature('agentMode')}
+              />
+            }
+            label="Agent Mode"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.sendOnClick}
+                onChange={() => toggleFeature('sendOnClick')}
+              />
+            }
+            label="Send On Click"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.paginatedMessages}
+                onChange={() => toggleFeature('paginatedMessages')}
+              />
+            }
+            label="Paginated Messages"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.compactMode}
+                onChange={() => toggleFeature('compactMode')}
+              />
+            }
+            label="Compact Mode"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.customScrollTheme}
+                onChange={() => toggleFeature('customScrollTheme')}
+              />
+            }
+            label="Custom Scroll Theme"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.copy}
+                onChange={() => toggleFeature('copy')}
+              />
+            }
+            label="Copy"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.attachmentsAsync}
+                onChange={() => toggleFeature('attachmentsAsync')}
+              />
+            }
+            label="Attachments Async"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.readOnly}
+                onChange={() => toggleFeature('readOnly')}
+              />
+            }
+            label="Read Only"
+          />
         </Section>
 
         <Section>
           <SectionTitle>State Controls</SectionTitle>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={isWaiting}
-              onChange={() => {
-                setIsWaiting(!isWaiting);
-                chatService?.setWaiting(!isWaiting);
-              }}
-            />
-            Set Waiting
-          </CheckboxLabel>
-          <CheckboxLabel>
-            <input
-              type="checkbox"
-              checked={isShowLoading}
-              onChange={() => {
-                setIsShowLoading(!isShowLoading);
-                chatService?.setShowLoading(!isShowLoading);
-              }}
-            />
-            Set Show Loading
-          </CheckboxLabel>
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={isWaiting}
+                onChange={() => {
+                  setIsWaiting(!isWaiting);
+                  chatService?.setWaiting(!isWaiting);
+                }}
+              />
+            }
+            label="Set Waiting"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={isShowLoading}
+                onChange={() => {
+                  setIsShowLoading(!isShowLoading);
+                  chatService?.setShowLoading(!isShowLoading);
+                }}
+              />
+            }
+            label="Set Show Loading"
+          />
         </Section>
       </Box>
 

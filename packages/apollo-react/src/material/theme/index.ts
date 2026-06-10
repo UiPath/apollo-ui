@@ -10,7 +10,12 @@ import type {
   TypeBackground,
   TypeText,
 } from '@mui/material/styles/createPalette';
-import { darkPalette, futureDarkPalette, futureLightPalette, lightPalette } from '@uipath/apollo-core';
+import {
+  darkPalette,
+  futureDarkPalette,
+  futureLightPalette,
+  lightPalette,
+} from '@uipath/apollo-core';
 import {
   darkHighContrastPalette,
   type Palette as IPalette,
