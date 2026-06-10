@@ -56,5 +56,5 @@ npx shadcn@latest add http://localhost:3000/r/button.json
 1.  Create the component file in `registry/<component>/<component>.tsx`.
 2.  Add the component definition (name, files, dependencies) to `registry.json`.
 3.  Create a documentation page in `app/components/<component>/page.mdx`.
-4.  Run `pnpm registry:build` to update the registry artifacts.
+4.  Run `pnpm registry:build` to regenerate the registry artifacts under `public/r/`.
 
