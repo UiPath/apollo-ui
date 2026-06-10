@@ -11,6 +11,8 @@ import {
   Quote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { GLASS_CLASSES } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { useConversation } from "./conversation-context";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -60,7 +62,7 @@ export function ServiceBridge({ onConfigure }: ServiceBridgeProps) {
 
   return (
     <div className="w-full space-y-3">
-      <div className="divide-y overflow-hidden rounded-xl border bg-card">
+      <div className={cn(GLASS_CLASSES, "divide-y overflow-hidden rounded-xl")}>
         {/* What the user asked for — the anchor (read-only, like the rest here). */}
         {requestText && (
           <motion.div
