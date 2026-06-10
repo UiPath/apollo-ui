@@ -155,6 +155,56 @@ export const WithPresets: Story = {
   },
 };
 
+// ─── Custom Options ───────────────────────────────────────────────────────────
+// Demonstrates how swapping behaviorOptions / layoutOptions / panels affects
+// the popover contents — useful for verifying extensibility.
+
+export const CustomOptions: Story = {
+  render: () => {
+    const [panels, setPanels] = useState([
+      { label: 'Manifest', enabled: true },
+      { label: 'Variables', enabled: false },
+      { label: 'Log', enabled: false },
+    ]);
+
+    return (
+      <CanvasBackground>
+        <div className="flex flex-col gap-8 items-start">
+          <div>
+            <StateLabel>Custom behavior labels (3 options)</StateLabel>
+            <NodePropertyTrigger
+              behaviorOptions={[
+                { value: 'auto-hide', label: 'Auto hide' },
+                { value: 'always-persist', label: 'Always visible' },
+                { value: 'minimized', label: 'Minimized' },
+              ]}
+              layoutOptions={[
+                { value: 'right', label: 'Right panel' },
+                { value: 'bottom', label: 'Bottom panel' },
+              ]}
+            />
+          </div>
+
+          <div>
+            <StateLabel>Custom panels list — toggle enabled state</StateLabel>
+            <NodePropertyTrigger
+              panels={panels}
+              onPanelToggle={(lbl, enabled) =>
+                setPanels((prev) => prev.map((p) => (p.label === lbl ? { ...p, enabled } : p)))
+              }
+            />
+          </div>
+
+          <div>
+            <StateLabel>No layout options (behavior only)</StateLabel>
+            <NodePropertyTrigger layoutOptions={[]} />
+          </div>
+        </div>
+      </CanvasBackground>
+    );
+  },
+};
+
 // ─── Shared interactive panel (pill + inline popover, used by States only) ────
 // Story-only helper that renders the trigger + popover inline (not via portal)
 // so the States doc layout can display the open state statically. Not a

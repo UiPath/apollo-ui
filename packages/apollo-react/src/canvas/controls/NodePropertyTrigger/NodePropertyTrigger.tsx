@@ -8,8 +8,10 @@ export type NodePropertyTriggerItem = {
   enabled?: boolean;
 };
 
-export type NodePropertyTriggerBehavior = 'auto-hide' | 'always-persist';
-export type NodePropertyTriggerLayout = 'right' | 'bottom' | 'split';
+// Literal suggestions are provided for IntelliSense but the type accepts any
+// string so consumers can introduce custom behaviors without casting.
+export type NodePropertyTriggerBehavior = 'auto-hide' | 'always-persist' | (string & {});
+export type NodePropertyTriggerLayout = 'right' | 'bottom' | 'split' | (string & {});
 export type NodePropertyTriggerPreset = { id: string; label: string };
 
 export type NodePropertyTriggerBehaviorOption = {
@@ -64,6 +66,13 @@ export type NodePropertyTriggerProps = {
 
 type MenuPos = { right: number; top?: number; bottom?: number };
 
+/** Estimated max height of the popover menu — used to decide whether to open upward. */
+const MENU_ESTIMATED_HEIGHT = 420;
+/** Gap between the trigger pill and the popover. */
+const MENU_GAP = 8;
+/** z-index for the portalled menu — sits above canvas panels and toolbars. */
+const MENU_Z_INDEX = 9999;
+
 const ITEM_CLASS =
   'flex w-full items-center justify-between px-3 py-2 text-xs text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground';
 
@@ -73,7 +82,7 @@ const SECTION_HEADING_CLASS =
 export function NodePropertyTrigger({
   label = 'Properties',
   panels = [],
-  behavior = 'auto-hide',
+  behavior,
   behaviorOptions = DEFAULT_BEHAVIOR_OPTIONS,
   layout,
   layoutOptions = DEFAULT_LAYOUT_OPTIONS,
@@ -92,17 +101,52 @@ export function NodePropertyTrigger({
   const [menuPos, setMenuPos] = useState<MenuPos | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Uncontrolled fallback — when behavior/layout are not driven by the consumer,
+  // the component manages them internally so it works correctly out of the box.
+  const [internalBehavior, setInternalBehavior] = useState<NodePropertyTriggerBehavior>('auto-hide');
+  const [internalLayout, setInternalLayout] = useState<NodePropertyTriggerLayout | undefined>(undefined);
+  const effectiveBehavior = behavior ?? internalBehavior;
+  const effectiveLayout = layout ?? internalLayout;
+
+  const handleBehaviorChange = useCallback((val: NodePropertyTriggerBehavior) => {
+    if (onBehaviorChange) {
+      onBehaviorChange(val);
+    } else {
+      setInternalBehavior(val);
+    }
+  }, [onBehaviorChange]);
+
+  const handleLayoutChange = useCallback((val: NodePropertyTriggerLayout) => {
+    if (onLayoutChange) {
+      onLayoutChange(val);
+    } else {
+      setInternalLayout(val);
+    }
+  }, [onLayoutChange]);
+
   const handleToggle = useCallback(() => {
     if (!menuOpen && containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
-      const upward = rect.bottom + 420 > window.innerHeight;
+      const upward = rect.bottom + MENU_ESTIMATED_HEIGHT > window.innerHeight;
       setMenuPos({
         right: window.innerWidth - rect.right,
-        top: upward ? undefined : rect.bottom + 8,
-        bottom: upward ? window.innerHeight - rect.top + 8 : undefined,
+        top: upward ? undefined : rect.bottom + MENU_GAP,
+        bottom: upward ? window.innerHeight - rect.top + MENU_GAP : undefined,
       });
     }
     setMenuOpen((v) => !v);
+  }, [menuOpen]);
+
+  // Close on scroll or viewport resize so the fixed-position menu doesn't detach from its trigger
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = () => setMenuOpen(false);
+    window.addEventListener('scroll', close, { capture: true, passive: true });
+    window.addEventListener('resize', close, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', close, { capture: true });
+      window.removeEventListener('resize', close);
+    };
   }, [menuOpen]);
 
   // Close on outside click — exclude both the trigger container and the portalled menu
@@ -137,7 +181,7 @@ export function NodePropertyTrigger({
           right: menuPos.right,
           top: menuPos.top,
           bottom: menuPos.bottom,
-          zIndex: 9999,
+          zIndex: MENU_Z_INDEX,
           boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
         }}
       >
@@ -174,9 +218,9 @@ export function NodePropertyTrigger({
               key={value}
               type="button"
               role="menuitemradio"
-              aria-checked={behavior === value}
+              aria-checked={effectiveBehavior === value}
               onClick={() => {
-                onBehaviorChange?.(value);
+                handleBehaviorChange(value);
                 setMenuOpen(false);
               }}
               className={ITEM_CLASS}
@@ -185,7 +229,7 @@ export function NodePropertyTrigger({
               <span
                 className={cn(
                   'size-2 rounded-full',
-                  behavior === value ? 'bg-foreground-accent' : 'bg-surface-overlay'
+                  effectiveBehavior === value ? 'bg-foreground-accent' : 'bg-surface-overlay'
                 )}
               />
             </button>
@@ -199,9 +243,9 @@ export function NodePropertyTrigger({
               key={value}
               type="button"
               role="menuitemradio"
-              aria-checked={layout === value}
+              aria-checked={effectiveLayout === value}
               onClick={() => {
-                onLayoutChange?.(value);
+                handleLayoutChange(value);
                 setMenuOpen(false);
               }}
               className={ITEM_CLASS}
@@ -210,7 +254,7 @@ export function NodePropertyTrigger({
               <span
                 className={cn(
                   'size-2 rounded-full',
-                  layout === value ? 'bg-foreground-accent' : 'bg-surface-overlay'
+                  effectiveLayout === value ? 'bg-foreground-accent' : 'bg-surface-overlay'
                 )}
               />
             </button>
