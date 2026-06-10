@@ -97,7 +97,6 @@ Must be one of:
 - `apollo-vertex` - Documentation site and component registry
 - `ap-chat` - Chat component
 - `storybook` - Storybook app
-- `react-playground` - React testing app
 
 Or one of these monorepo-wide scopes:
 
@@ -422,8 +421,7 @@ apollo-ui/
 │   └── ap-chat/           # Chat component
 └── apps/                  # Development apps
     ├── apollo-vertex/     # Documentation site
-    ├── storybook/         # Storybook
-    └── react-playground/  # React testing
+    └── storybook/         # Storybook
 ```
 
 ## Code of Conduct

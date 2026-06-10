@@ -26,9 +26,6 @@
   - changed-files:
       - any-glob-to-any-file: "apps/landing/**"
 
-"app:react-playground":
-  - changed-files:
-      - any-glob-to-any-file: "apps/react-playground/**"
 
 "ci":
   - changed-files:

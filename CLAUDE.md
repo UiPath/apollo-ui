@@ -123,7 +123,6 @@ apollo-ui/
 │
 ├── apps/                       # Development applications
 │   ├── storybook/              # Storybook documentation
-│   ├── react-playground/       # React testing environment
 │
 ├── packages/                   # Core + framework packages
 │   ├── apollo-core/            # Design tokens (fonts, colors, spacing, icons)

@@ -334,7 +334,7 @@ Commit Lint workflow. The commit MUST pass them.
 - Allowed scopes (`scope-enum`) — pick the one matching the changed files:
   - Packages: `apollo-core`, `apollo-react`, `apollo-wind`, `ap-chat`
   - Apps: `apollo-vertex`, `apollo-wind-storybook`, `apollo-wind-demo`,
-    `react-playground`, `storybook`
+    `storybook`
   - Monorepo-wide: `repo`, `ci`, `docs`, `build`, `workspace`, `release`, `l10n`
   - Derive from the diff paths: `packages/apollo-react/**` → `apollo-react`,
     `web-packages/ap-chat/**` → `ap-chat`, `.github/**` → `ci`,

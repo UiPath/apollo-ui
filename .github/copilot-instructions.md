@@ -9,7 +9,7 @@ Apollo v.4 is UiPath's open-source design system. Monorepo with Turborepo + pnpm
 ```
 packages/        # apollo-core (tokens/icons), apollo-react (React+MUI), apollo-wind (Tailwind+shadcn) — REQUIRE TESTS
 web-packages/    # ap-chat (web component) — REQUIRE TESTS
-apps/            # storybook, react-playground — NO TESTS NEEDED
+apps/            # storybook — NO TESTS NEEDED
 .github/         # workflows, actions, scripts
 ```
 
