@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.41.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.41.0...@uipath/apollo-react@4.41.1) (2026-06-10)
+
+### Bug Fixes
+
+* **apollo-react:** refine node toolbar offsets and add hover bridge [MST-10329] ([d8a85ef](https://github.com/UiPath/apollo-ui/commit/d8a85ef6e487ead41051b9b33243537b76fdbde8))
+
 ## [@uipath/apollo-react-v4.41.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.40.0...@uipath/apollo-react@4.41.0) (2026-06-09)
 
 ### Features
