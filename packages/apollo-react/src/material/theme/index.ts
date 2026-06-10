@@ -10,7 +10,7 @@ import type {
   TypeBackground,
   TypeText,
 } from '@mui/material/styles/createPalette';
-import { darkPalette, lightPalette } from '@uipath/apollo-core';
+import { darkPalette, futureDarkPalette, futureLightPalette, lightPalette } from '@uipath/apollo-core';
 import {
   darkHighContrastPalette,
   type Palette as IPalette,
@@ -22,6 +22,8 @@ import breakpoints from './breakpoints';
 import {
   darkHighContrastOverrides,
   darkOverrides,
+  futureDarkOverrides,
+  futureLightOverrides,
   lightHighContrastOverrides,
   lightOverrides,
 } from './overrides';
@@ -160,9 +162,41 @@ const apolloMaterialUiThemeDarkHC = createTheme({
   typography,
 });
 
+const apolloMaterialUiThemeFutureDark = createTheme({
+  palette: {
+    ...futureDarkPalette,
+    mode: 'dark',
+  },
+  spacing,
+  breakpoints,
+  components: defaultsDeep(
+    futureDarkOverrides,
+    globalPropOverrides,
+    getGlobalVariantOverrides(futureDarkPalette)
+  ),
+  typography,
+});
+
+const apolloMaterialUiThemeFutureLight = createTheme({
+  palette: {
+    ...futureLightPalette,
+    mode: 'light',
+  },
+  spacing,
+  breakpoints,
+  components: defaultsDeep(
+    futureLightOverrides,
+    globalPropOverrides,
+    getGlobalVariantOverrides(futureLightPalette)
+  ),
+  typography,
+});
+
 export {
   apolloMaterialUiThemeLight,
   apolloMaterialUiThemeLightHC,
   apolloMaterialUiThemeDark,
   apolloMaterialUiThemeDarkHC,
+  apolloMaterialUiThemeFutureDark,
+  apolloMaterialUiThemeFutureLight,
 };

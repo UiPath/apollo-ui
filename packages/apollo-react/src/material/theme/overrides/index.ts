@@ -2,6 +2,8 @@ import type { Components } from '@mui/material';
 import { darkPalette, lightPalette } from '@uipath/apollo-core';
 import {
   darkHighContrastPalette,
+  futureDarkPalette,
+  futureLightPalette,
   lightHighContrastPalette,
   type Palette,
 } from '@uipath/apollo-core/tokens/jss/palette';
@@ -124,3 +126,5 @@ export const lightOverrides: Components = getOverrides(lightPalette);
 export const lightHighContrastOverrides: Components = getOverrides(lightHighContrastPalette);
 export const darkOverrides: Components = getOverrides(darkPalette);
 export const darkHighContrastOverrides: Components = getOverrides(darkHighContrastPalette);
+export const futureDarkOverrides: Components = getOverrides(futureDarkPalette);
+export const futureLightOverrides: Components = getOverrides(futureLightPalette);
