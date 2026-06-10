@@ -17,7 +17,6 @@
     "check:dependencies": "check-dependency-version-consistency .",
     "commit": "git-cz",
     "dev": "turbo run dev",
-    "dev:react-playground": "turbo run dev --filter=react-playground",
     "dev:chat": "turbo run dev --filter=@uipath/ap-chat",
     "dev:apollo-vertex": "turbo run dev --filter=apollo-vertex",
     "dev:apollo-docs": "turbo run dev --filter=apollo-docs",

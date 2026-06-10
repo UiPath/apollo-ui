@@ -58,8 +58,7 @@ apollo-ui/
 │
 └── apps/                  # Demo & development applications
     ├── apollo-vertex/     # 🌟 Main Storybook hub
-    ├── storybook/         # 📚 Component documentation
-    └── react-playground/  # 🔬 React testing environment
+    └── storybook/         # 📚 Component documentation
 ```
 
 ## 📥 Installation

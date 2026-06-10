@@ -35,7 +35,6 @@ module.exports = {
         'apollo-vertex',
         'apollo-wind-storybook',
         'apollo-wind-demo',
-        'react-playground',
         'storybook',
 
         // Monorepo-wide scopes
