@@ -40,6 +40,8 @@ export * as ScreenSizes from './ScreenSizes';
 export {
   darkPalette,
   darkHighContrastPalette,
+  futureDarkPalette,
+  futureLightPalette,
   lightHighContrastPalette,
   lightPalette,
 } from './jss/palette';
