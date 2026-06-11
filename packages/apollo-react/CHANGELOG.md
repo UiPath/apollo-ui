@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.43.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.43.0...@uipath/apollo-react@4.43.1) (2026-06-11)
+
+### Bug Fixes
+
+* **apollo-react:** bump react-syntax-highlighter to ^16.1.1 (ESM fix) ([c2bb006](https://github.com/UiPath/apollo-ui/commit/c2bb00602ce82824e1931f5f6e7ebd5adc67050d))
+
 ## [@uipath/apollo-react-v4.43.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.42.0...@uipath/apollo-react@4.43.0) (2026-06-10)
 
 ### Features
