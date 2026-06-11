@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { Edge, Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Edge, EdgeTypes, Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Handle, Panel, Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Download, Plus, StickyNote } from 'lucide-react';
 import { type FC, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -18,6 +18,8 @@ import { showPreviewGraph } from '../utils/createPreviewGraph';
 import { AddNodeManager, AddNodePanel } from './AddNodePanel';
 import { BaseCanvas } from './BaseCanvas';
 import type { BaseNodeData } from './BaseNode/BaseNode.types';
+import type { CanvasEdgeProps } from './Edges';
+import { CanvasEdge } from './Edges';
 import { FloatingCanvasPanel } from './FloatingCanvasPanel';
 import { StickyNoteNode } from './StickyNoteNode';
 import type { StickyNoteData } from './StickyNoteNode/StickyNoteNode.types';
@@ -29,6 +31,7 @@ import type { ListItem } from './Toolbox';
 
 interface FlowStoryArgs {
   useSmartHandles: boolean;
+  useCanvasEdge: boolean;
 }
 
 const meta: Meta<FlowStoryArgs> = {
@@ -46,9 +49,18 @@ const meta: Meta<FlowStoryArgs> = {
         defaultValue: { summary: 'false' },
       },
     },
+    useCanvasEdge: {
+      control: 'boolean',
+      description:
+        'Render edges with the new orthogonal CanvasEdge (draggable waypoints) instead of SequenceEdge',
+      table: {
+        defaultValue: { summary: 'false' },
+      },
+    },
   },
   args: {
     useSmartHandles: false,
+    useCanvasEdge: false,
   },
 };
 
@@ -164,7 +176,16 @@ const additionalNodeTypes = {
   stickyNote: StickyNoteNode,
 };
 
-function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
+// Preset wrapper following the SequenceEdge pattern: editing defaults ON for
+// edges of this type (per-edge `data.enableEditing` still wins, matching how
+// presets layer defaults), so no per-edge store state needs to be patched and
+// newly connected edges pick it up automatically.
+function EditableCanvasEdge(props: CanvasEdgeProps) {
+  const data = useMemo(() => ({ enableEditing: true, ...props.data }), [props.data]);
+  return <CanvasEdge {...props} data={data} />;
+}
+
+function DefaultStory({ useSmartHandles, useCanvasEdge }: FlowStoryArgs) {
   const initialNodes = useMemo(() => createInitialNodes(useSmartHandles), [useSmartHandles]);
   const initialEdges = useMemo(() => createInitialEdges(), []);
   const [stickyNoteCounter, setStickyNoteCounter] = useState(0);
@@ -185,6 +206,17 @@ function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
     initialEdges,
     additionalNodeTypes,
   });
+
+  // Swap the `default` edge renderer for the new CanvasEdge (with editing
+  // enabled via the preset wrapper) when toggled. Edges carry no explicit
+  // `type`, so they resolve to `edgeTypes.default`.
+  const edgeTypes = useMemo<EdgeTypes>(
+    () =>
+      useCanvasEdge
+        ? { ...canvasProps.edgeTypes, default: EditableCanvasEdge }
+        : canvasProps.edgeTypes,
+    [useCanvasEdge, canvasProps.edgeTypes]
+  );
 
   // Update nodes when useSmartHandles changes
   const handleSmartHandlesToggle = useCallback(() => {
@@ -336,6 +368,7 @@ function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
   return (
     <BaseCanvas
       {...canvasProps}
+      edgeTypes={edgeTypes}
       deleteKeyCode={DELETE_KEY_CODES}
       mode="design"
       selectionOnDrag
