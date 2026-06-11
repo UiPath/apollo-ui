@@ -36,24 +36,24 @@ if (isDev) {
 const config: StorybookConfig = {
   stories: [
     {
+      directory: '../src',
+      files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
+      titlePrefix: 'Apollo Core',
+    },
+    {
       directory: '../../../packages/apollo-wind/src',
       files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
-      titlePrefix: 'Wind',
+      titlePrefix: 'Apollo Wind',
     },
     {
       directory: '../../../packages/apollo-react/src/canvas',
       files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
-      titlePrefix: 'Canvas',
+      titlePrefix: 'Apollo React/Canvas',
     },
     {
       directory: '../../../packages/apollo-react/src/material',
       files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
-      titlePrefix: 'Material (Maintenance Only)',
-    },
-    {
-      directory: '../src',
-      files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
-      titlePrefix: 'Core',
+      titlePrefix: 'Apollo React/Material (Maintenance Only)',
     },
   ],
   addons: [
@@ -96,6 +96,15 @@ const config: StorybookConfig = {
       #storybook-root > * {
         width: 100%;
         height: 100%;
+      }
+      /* Docs pages: paint surfaces from Apollo semantic tokens (driven by the
+         theme class on <body>, see .storybook/DocsContainer.tsx). The docs
+         theme object can't hold var()/oklch values (storybook theming derives
+         colors via polished), so the background is tokenized here instead. */
+      #storybook-docs .sbdocs-wrapper,
+      #storybook-docs .sbdocs-preview,
+      #storybook-docs .docs-story {
+        background: var(--color-background);
       }
     </style>
   `,
