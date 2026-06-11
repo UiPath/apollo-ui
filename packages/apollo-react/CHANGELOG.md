@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.44.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.44.0...@uipath/apollo-react@4.44.1) (2026-06-11)
+
+### Bug Fixes
+
+* **apollo-react:** eliminate unnecessary re-renders in StageNode canvas components ([bdd13d3](https://github.com/UiPath/apollo-ui/commit/bdd13d38410f4ce8da3589994957d7ea29d60a56))
+
 ## [@uipath/apollo-react-v4.44.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.43.1...@uipath/apollo-react@4.44.0) (2026-06-11)
 
 ### Features
