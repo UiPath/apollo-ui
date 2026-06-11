@@ -17,6 +17,7 @@ import {
   useCallback,
   useState,
 } from 'react';
+import { useSafeLingui } from '../../../i18n';
 import { CanvasIcon } from '../../utils/icon-registry';
 
 export type NodePropertyTriggerItem = {
@@ -45,15 +46,35 @@ export type NodePropertyTriggerLayoutOption = {
   label: string;
 };
 
-const DEFAULT_BEHAVIOR_OPTIONS: NodePropertyTriggerBehaviorOption[] = [
-  { value: 'auto-hide', label: 'Auto hide' },
-  { value: 'always-persist', label: 'Always persist' },
+type Translate = ReturnType<typeof useSafeLingui>['_'];
+
+// Built lazily so the default labels go through Lingui (English message as
+// fallback when no I18nProvider is mounted) — same pattern as the other
+// canvas components (CanvasZoomControls, StageNode).
+const defaultBehaviorOptions = (_: Translate): NodePropertyTriggerBehaviorOption[] => [
+  {
+    value: 'auto-hide',
+    label: _({ id: 'canvas.property_trigger.auto_hide', message: 'Auto hide' }),
+  },
+  {
+    value: 'always-persist',
+    label: _({ id: 'canvas.property_trigger.always_persist', message: 'Always persist' }),
+  },
 ];
 
-const DEFAULT_LAYOUT_OPTIONS: NodePropertyTriggerLayoutOption[] = [
-  { value: 'right', label: 'Default — Right' },
-  { value: 'bottom', label: 'Default — Bottom' },
-  { value: 'split', label: 'Default — Split' },
+const defaultLayoutOptions = (_: Translate): NodePropertyTriggerLayoutOption[] => [
+  {
+    value: 'right',
+    label: _({ id: 'canvas.property_trigger.layout_right', message: 'Default — Right' }),
+  },
+  {
+    value: 'bottom',
+    label: _({ id: 'canvas.property_trigger.layout_bottom', message: 'Default — Bottom' }),
+  },
+  {
+    value: 'split',
+    label: _({ id: 'canvas.property_trigger.layout_split', message: 'Default — Split' }),
+  },
 ];
 
 export type NodePropertyTriggerProps = {
@@ -197,19 +218,19 @@ export function NodePropertyTriggerRadioItem({
 }
 
 export function NodePropertyTrigger({
-  label = 'Properties',
+  label,
   className,
   showMenu = true,
   open,
   onOpenChange,
-  menuAriaLabel = 'Panel options',
+  menuAriaLabel,
   children,
   onPropertiesClick,
   panels = [],
   behavior,
-  behaviorOptions = DEFAULT_BEHAVIOR_OPTIONS,
+  behaviorOptions,
   layout,
-  layoutOptions = DEFAULT_LAYOUT_OPTIONS,
+  layoutOptions,
   presets = [],
   onBehaviorChange,
   onLayoutChange,
@@ -219,13 +240,21 @@ export function NodePropertyTrigger({
   onSavePreset,
   canSavePreset = false,
 }: NodePropertyTriggerProps) {
+  const { _ } = useSafeLingui();
+  const resolvedLabel =
+    label ?? _({ id: 'canvas.property_trigger.properties', message: 'Properties' });
+  const resolvedMenuAriaLabel =
+    menuAriaLabel ?? _({ id: 'canvas.property_trigger.panel_options', message: 'Panel options' });
+  const resolvedBehaviorOptions = behaviorOptions ?? defaultBehaviorOptions(_);
+  const resolvedLayoutOptions = layoutOptions ?? defaultLayoutOptions(_);
+
   // Uncontrolled fallback — when behavior/layout are not driven by the consumer,
   // the component manages them internally so it works correctly out of the box.
   const [internalBehavior, setInternalBehavior] = useState<NodePropertyTriggerBehavior>(
-    () => behaviorOptions[0]?.value ?? 'auto-hide'
+    () => resolvedBehaviorOptions[0]?.value ?? 'auto-hide'
   );
   const [internalLayout, setInternalLayout] = useState<NodePropertyTriggerLayout>(
-    () => layoutOptions[0]?.value ?? 'right'
+    () => resolvedLayoutOptions[0]?.value ?? 'right'
   );
   const effectiveBehavior = behavior ?? internalBehavior;
   const effectiveLayout = layout ?? internalLayout;
@@ -272,14 +301,16 @@ export function NodePropertyTrigger({
     });
   }
 
-  if (behaviorOptions.length > 0) {
+  if (resolvedBehaviorOptions.length > 0) {
     sections.push({
       key: 'behavior',
       node: (
         <>
-          <NodePropertyTriggerSectionLabel>Panel behavior</NodePropertyTriggerSectionLabel>
+          <NodePropertyTriggerSectionLabel>
+            {_({ id: 'canvas.property_trigger.panel_behavior', message: 'Panel behavior' })}
+          </NodePropertyTriggerSectionLabel>
           <DropdownMenuRadioGroup value={effectiveBehavior} onValueChange={handleBehaviorChange}>
-            {behaviorOptions.map(({ value, label: behaviorLabel }) => (
+            {resolvedBehaviorOptions.map(({ value, label: behaviorLabel }) => (
               <NodePropertyTriggerRadioItem key={value} value={value}>
                 {behaviorLabel}
               </NodePropertyTriggerRadioItem>
@@ -290,14 +321,16 @@ export function NodePropertyTrigger({
     });
   }
 
-  if (layoutOptions.length > 0) {
+  if (resolvedLayoutOptions.length > 0) {
     sections.push({
       key: 'layouts',
       node: (
         <>
-          <NodePropertyTriggerSectionLabel>Default layouts</NodePropertyTriggerSectionLabel>
+          <NodePropertyTriggerSectionLabel>
+            {_({ id: 'canvas.property_trigger.default_layouts', message: 'Default layouts' })}
+          </NodePropertyTriggerSectionLabel>
           <DropdownMenuRadioGroup value={effectiveLayout} onValueChange={handleLayoutChange}>
-            {layoutOptions.map(({ value, label: layoutLabel }) => (
+            {resolvedLayoutOptions.map(({ value, label: layoutLabel }) => (
               <NodePropertyTriggerRadioItem key={value} value={value}>
                 {layoutLabel}
               </NodePropertyTriggerRadioItem>
@@ -313,9 +346,16 @@ export function NodePropertyTrigger({
       key: 'presets',
       node: (
         <>
-          <NodePropertyTriggerSectionLabel>Saved presets</NodePropertyTriggerSectionLabel>
+          <NodePropertyTriggerSectionLabel>
+            {_({ id: 'canvas.property_trigger.saved_presets', message: 'Saved presets' })}
+          </NodePropertyTriggerSectionLabel>
           {presets.length === 0 && (
-            <p className="px-3 pb-2 text-[11px] text-foreground-subtle">No saved presets yet.</p>
+            <p className="px-3 pb-2 text-[11px] text-foreground-subtle">
+              {_({
+                id: 'canvas.property_trigger.no_saved_presets',
+                message: 'No saved presets yet.',
+              })}
+            </p>
           )}
           {presets.map((preset) => (
             <DropdownMenuItem
@@ -326,8 +366,11 @@ export function NodePropertyTrigger({
               <span className="min-w-0 flex-1 truncate">{preset.label}</span>
               <button
                 type="button"
-                title="Delete preset"
-                aria-label="Delete preset"
+                title={_({ id: 'canvas.property_trigger.delete_preset', message: 'Delete preset' })}
+                aria-label={_({
+                  id: 'canvas.property_trigger.delete_preset',
+                  message: 'Delete preset',
+                })}
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
@@ -349,7 +392,9 @@ export function NodePropertyTrigger({
               onSelect={() => onSavePreset?.()}
             >
               <CanvasIcon icon="plus" size={12} />
-              <span>Save as preset</span>
+              <span>
+                {_({ id: 'canvas.property_trigger.save_as_preset', message: 'Save as preset' })}
+              </span>
             </DropdownMenuItem>
           )}
         </>
@@ -378,7 +423,7 @@ export function NodePropertyTrigger({
         onClick={onPropertiesClick}
         className="flex h-8 items-center rounded-lg px-2.5 text-xs font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
       >
-        {label}
+        {resolvedLabel}
       </button>
 
       {showMenu && (
@@ -392,8 +437,8 @@ export function NodePropertyTrigger({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                title={menuAriaLabel}
-                aria-label={menuAriaLabel}
+                title={resolvedMenuAriaLabel}
+                aria-label={resolvedMenuAriaLabel}
                 className="grid size-8 place-items-center rounded-lg text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground data-[state=open]:bg-surface-overlay data-[state=open]:text-foreground"
               >
                 <CanvasIcon icon="sliders-horizontal" size={14} />
