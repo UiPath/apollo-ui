@@ -133,6 +133,8 @@ export type NodePropertyTriggerProps = {
   /** Receives the panel's `id` (or its `label` when no id was supplied). */
   onPanelToggle?: (id: string, enabled: boolean) => void;
   onPresetApply?: (preset: NodePropertyTriggerPreset) => void;
+  /** When provided, each preset row shows a rename (pencil) button. */
+  onPresetRename?: (preset: NodePropertyTriggerPreset) => void;
   onPresetDelete?: (id: string) => void;
   onSavePreset?: () => void;
   /** When true a "Save as preset" button is shown at the bottom of the presets section. */
@@ -245,6 +247,7 @@ export function NodePropertyTrigger({
   onLayoutChange,
   onPanelToggle,
   onPresetApply,
+  onPresetRename,
   onPresetDelete,
   onSavePreset,
   canSavePreset = false,
@@ -373,6 +376,31 @@ export function NodePropertyTrigger({
               onSelect={() => onPresetApply?.(preset)}
             >
               <span className="min-w-0 flex-1 truncate">{preset.label}</span>
+              {onPresetRename && (
+                <button
+                  type="button"
+                  title={_({
+                    id: 'canvas.property_trigger.rename_preset',
+                    message: 'Rename preset',
+                  })}
+                  aria-label={_({
+                    id: 'canvas.property_trigger.rename_preset',
+                    message: 'Rename preset',
+                  })}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    onPresetRename(preset);
+                  }}
+                  // Pointer events must not bubble into the Radix item — its
+                  // pointerup-select would apply the preset and close the menu.
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onPointerUp={(e) => e.stopPropagation()}
+                  className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
+                >
+                  <CanvasIcon icon="pencil" size={11} />
+                </button>
+              )}
               <button
                 type="button"
                 title={_({ id: 'canvas.property_trigger.delete_preset', message: 'Delete preset' })}
