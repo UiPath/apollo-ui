@@ -1,9 +1,30 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { cn } from '@uipath/apollo-wind';
+import {
+  cn,
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@uipath/apollo-wind';
+import {
+  type ComponentPropsWithoutRef,
+  Fragment,
+  type ReactNode,
+  useCallback,
+  useState,
+} from 'react';
 import { CanvasIcon } from '../../utils/icon-registry';
 
 export type NodePropertyTriggerItem = {
+  /**
+   * Stable identity passed to `onPanelToggle`. Falls back to `label` when
+   * omitted — supply an `id` whenever labels are localized or can change.
+   */
+  id?: string;
   label: string;
   enabled?: boolean;
 };
@@ -38,6 +59,33 @@ const DEFAULT_LAYOUT_OPTIONS: NodePropertyTriggerLayoutOption[] = [
 export type NodePropertyTriggerProps = {
   /** Text shown on the label button. Defaults to 'Properties'. */
   label?: string;
+  /** Additional class names applied to the trigger root element. */
+  className?: string;
+  /**
+   * When false the trigger renders as a plain label pill — no divider, no
+   * sliders button, no popover. Lets the same component serve secondary
+   * triggers (e.g. a Variables pill) that only need `onPropertiesClick`.
+   * @default true
+   */
+  showMenu?: boolean;
+  /** Controlled popover state. Omit for uncontrolled (Radix-managed). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Accessible name for the sliders button. Defaults to 'Panel options'. */
+  menuAriaLabel?: string;
+  /**
+   * Custom popover content. When provided it fully replaces the built-in
+   * sections — compose with `NodePropertyTriggerCheckboxItem`,
+   * `NodePropertyTriggerRadioItem`, `NodePropertyTriggerSectionLabel`,
+   * `NodePropertyTriggerSeparator`, and any `@uipath/apollo-wind`
+   * DropdownMenu primitives. This is the i18n/extension path: all text in
+   * composed content is consumer-rendered.
+   */
+  children?: ReactNode;
+  /** Called when the label button is clicked. */
+  onPropertiesClick?: () => void;
+
+  // ── Built-in sections (used only when `children` is not provided) ──
   /** Panels to display as toggleable items in the popover. */
   panels?: NodePropertyTriggerItem[];
   /** Currently active panel behaviour — reflected as a selection indicator in the popover. */
@@ -50,13 +98,10 @@ export type NodePropertyTriggerProps = {
   layoutOptions?: NodePropertyTriggerLayoutOption[];
   /** Saved presets to show in the popover. */
   presets?: NodePropertyTriggerPreset[];
-  /** Additional class names applied to the trigger root element. */
-  className?: string;
-  /** Called when the label button is clicked. */
-  onPropertiesClick?: () => void;
   onBehaviorChange?: (behavior: NodePropertyTriggerBehavior) => void;
   onLayoutChange?: (layout: NodePropertyTriggerLayout) => void;
-  onPanelToggle?: (label: string, enabled: boolean) => void;
+  /** Receives the panel's `id` (or its `label` when no id was supplied). */
+  onPanelToggle?: (id: string, enabled: boolean) => void;
   onPresetApply?: (preset: NodePropertyTriggerPreset) => void;
   onPresetDelete?: (id: string) => void;
   onSavePreset?: () => void;
@@ -64,31 +109,108 @@ export type NodePropertyTriggerProps = {
   canSavePreset?: boolean;
 };
 
-type MenuPos = { right: number; top?: number; bottom?: number };
+const ROW_CLASS =
+  'group justify-between gap-2 rounded-none px-3 py-2 text-xs text-foreground-muted focus:bg-surface-overlay focus:text-foreground';
 
-/** Estimated max height of the popover menu — used to decide whether to open upward. */
-const MENU_ESTIMATED_HEIGHT = 420;
-/** Gap between the trigger pill and the popover. */
-const MENU_GAP = 8;
-/** z-index for the portalled menu — sits above canvas panels and toolbars. */
-const MENU_Z_INDEX = 9999;
+/** Right-aligned state dot driven by Radix's `data-state` on the parent row. */
+const DOT_CLASS =
+  'size-2 shrink-0 rounded-full bg-surface-overlay group-data-[state=checked]:bg-foreground-accent';
 
-const ITEM_CLASS =
-  'flex w-full items-center justify-between px-3 py-2 text-xs text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground';
+/** Hides the built-in left ItemIndicator from the apollo-wind item wrappers. */
+const HIDE_LEFT_INDICATOR_CLASS = '[&>span:first-child]:hidden';
 
-const SECTION_HEADING_CLASS =
-  'px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wide text-foreground-subtle';
+/** Uppercase section heading matching the canvas panel-options design. */
+export function NodePropertyTriggerSectionLabel({
+  className,
+  ...props
+}: ComponentPropsWithoutRef<typeof DropdownMenuLabel>) {
+  return (
+    <DropdownMenuLabel
+      className={cn(
+        'px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wide text-foreground-subtle',
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+/** Full-width section separator matching the canvas panel-options design. */
+export function NodePropertyTriggerSeparator({
+  className,
+  ...props
+}: ComponentPropsWithoutRef<typeof DropdownMenuSeparator>) {
+  return (
+    <DropdownMenuSeparator className={cn('mx-0 my-0 bg-border-subtle', className)} {...props} />
+  );
+}
+
+export type NodePropertyTriggerCheckboxItemProps = ComponentPropsWithoutRef<
+  typeof DropdownMenuCheckboxItem
+> & {
+  /**
+   * Checkbox rows keep the menu open by default so several panels can be
+   * toggled in one visit. Set true to close on select instead.
+   * @default false
+   */
+  closeOnSelect?: boolean;
+};
+
+/** Checkbox row with a right-aligned state dot (canvas panel-options design). */
+export function NodePropertyTriggerCheckboxItem({
+  className,
+  children,
+  closeOnSelect = false,
+  onSelect,
+  ...props
+}: NodePropertyTriggerCheckboxItemProps) {
+  return (
+    <DropdownMenuCheckboxItem
+      className={cn(ROW_CLASS, HIDE_LEFT_INDICATOR_CLASS, className)}
+      onSelect={(e) => {
+        if (!closeOnSelect) e.preventDefault();
+        onSelect?.(e);
+      }}
+      {...props}
+    >
+      <span className="min-w-0 flex-1 truncate">{children}</span>
+      <span className={DOT_CLASS} />
+    </DropdownMenuCheckboxItem>
+  );
+}
+
+/** Radio row with a right-aligned state dot (canvas panel-options design). */
+export function NodePropertyTriggerRadioItem({
+  className,
+  children,
+  ...props
+}: ComponentPropsWithoutRef<typeof DropdownMenuRadioItem>) {
+  return (
+    <DropdownMenuRadioItem
+      className={cn(ROW_CLASS, HIDE_LEFT_INDICATOR_CLASS, className)}
+      {...props}
+    >
+      <span className="min-w-0 flex-1 truncate">{children}</span>
+      <span className={DOT_CLASS} />
+    </DropdownMenuRadioItem>
+  );
+}
 
 export function NodePropertyTrigger({
   label = 'Properties',
+  className,
+  showMenu = true,
+  open,
+  onOpenChange,
+  menuAriaLabel = 'Panel options',
+  children,
+  onPropertiesClick,
   panels = [],
   behavior,
   behaviorOptions = DEFAULT_BEHAVIOR_OPTIONS,
   layout,
   layoutOptions = DEFAULT_LAYOUT_OPTIONS,
   presets = [],
-  className,
-  onPropertiesClick,
   onBehaviorChange,
   onLayoutChange,
   onPanelToggle,
@@ -97,22 +219,19 @@ export function NodePropertyTrigger({
   onSavePreset,
   canSavePreset = false,
 }: NodePropertyTriggerProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [menuPos, setMenuPos] = useState<MenuPos | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
   // Uncontrolled fallback — when behavior/layout are not driven by the consumer,
   // the component manages them internally so it works correctly out of the box.
-  const [internalBehavior, setInternalBehavior] =
-    useState<NodePropertyTriggerBehavior>('auto-hide');
-  const [internalLayout, setInternalLayout] = useState<NodePropertyTriggerLayout | undefined>(
-    undefined
+  const [internalBehavior, setInternalBehavior] = useState<NodePropertyTriggerBehavior>(
+    () => behaviorOptions[0]?.value ?? 'auto-hide'
+  );
+  const [internalLayout, setInternalLayout] = useState<NodePropertyTriggerLayout>(
+    () => layoutOptions[0]?.value ?? 'right'
   );
   const effectiveBehavior = behavior ?? internalBehavior;
   const effectiveLayout = layout ?? internalLayout;
 
   const handleBehaviorChange = useCallback(
-    (val: NodePropertyTriggerBehavior) => {
+    (val: string) => {
       if (onBehaviorChange) {
         onBehaviorChange(val);
       } else {
@@ -123,7 +242,7 @@ export function NodePropertyTrigger({
   );
 
   const handleLayoutChange = useCallback(
-    (val: NodePropertyTriggerLayout) => {
+    (val: string) => {
       if (onLayoutChange) {
         onLayoutChange(val);
       } else {
@@ -133,207 +252,120 @@ export function NodePropertyTrigger({
     [onLayoutChange]
   );
 
-  const handleToggle = useCallback(() => {
-    if (!menuOpen && containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      const upward = rect.bottom + MENU_ESTIMATED_HEIGHT > window.innerHeight;
-      setMenuPos({
-        right: window.innerWidth - rect.right,
-        top: upward ? undefined : rect.bottom + MENU_GAP,
-        bottom: upward ? window.innerHeight - rect.top + MENU_GAP : undefined,
-      });
-    }
-    setMenuOpen((v) => !v);
-  }, [menuOpen]);
+  // Empty sections collapse entirely (heading included) so consumers that
+  // don't use a feature get a lean menu. Exception: the presets empty state
+  // renders while `canSavePreset` is true — it teaches that presets exist.
+  const sections: { key: string; node: ReactNode }[] = [];
 
-  // Close on Escape key
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMenuOpen(false);
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [menuOpen]);
+  if (panels.length > 0) {
+    sections.push({
+      key: 'panels',
+      node: panels.map(({ id, label: panelLabel, enabled }) => (
+        <NodePropertyTriggerCheckboxItem
+          key={id ?? panelLabel}
+          checked={!!enabled}
+          onCheckedChange={(checked) => onPanelToggle?.(id ?? panelLabel, checked === true)}
+        >
+          {panelLabel}
+        </NodePropertyTriggerCheckboxItem>
+      )),
+    });
+  }
 
-  // Close on scroll or viewport resize so the fixed-position menu doesn't detach from its trigger
-  useEffect(() => {
-    if (!menuOpen) return;
-    const close = () => setMenuOpen(false);
-    window.addEventListener('scroll', close, { capture: true, passive: true });
-    window.addEventListener('resize', close, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', close, { capture: true });
-      window.removeEventListener('resize', close);
-    };
-  }, [menuOpen]);
-
-  // Close on outside click — exclude both the trigger container and the portalled menu
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handlePointerDown = (e: PointerEvent) => {
-      const target = e.target instanceof Element ? e.target : null;
-      if (
-        target &&
-        containerRef.current &&
-        !containerRef.current.contains(target) &&
-        !target.closest('[data-node-property-panel-menu]')
-      ) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener('pointerdown', handlePointerDown, true);
-    return () => document.removeEventListener('pointerdown', handlePointerDown, true);
-  }, [menuOpen]);
-
-  const menuPortal =
-    menuOpen &&
-    menuPos &&
-    createPortal(
-      <div
-        data-node-property-panel-menu
-        role="menu"
-        aria-label="Panel options"
-        className="w-56 overflow-y-auto max-h-[70vh] rounded-xl border border-border-subtle bg-surface-raised"
-        style={{
-          position: 'fixed',
-          right: menuPos.right,
-          top: menuPos.top,
-          bottom: menuPos.bottom,
-          zIndex: MENU_Z_INDEX,
-          boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-        }}
-      >
-        {panels.length > 0 && (
-          <div>
-            {panels.map(({ label: panelLabel, enabled }) => (
-              <button
-                key={panelLabel}
-                type="button"
-                role="menuitemcheckbox"
-                aria-checked={!!enabled}
-                onClick={() => {
-                  onPanelToggle?.(panelLabel, !enabled);
-                  setMenuOpen(false);
-                }}
-                className={ITEM_CLASS}
-              >
-                <span>{panelLabel}</span>
-                <span
-                  className={cn(
-                    'size-2 rounded-full',
-                    enabled ? 'bg-foreground-accent' : 'bg-surface-overlay'
-                  )}
-                />
-              </button>
+  if (behaviorOptions.length > 0) {
+    sections.push({
+      key: 'behavior',
+      node: (
+        <>
+          <NodePropertyTriggerSectionLabel>Panel behavior</NodePropertyTriggerSectionLabel>
+          <DropdownMenuRadioGroup value={effectiveBehavior} onValueChange={handleBehaviorChange}>
+            {behaviorOptions.map(({ value, label: behaviorLabel }) => (
+              <NodePropertyTriggerRadioItem key={value} value={value}>
+                {behaviorLabel}
+              </NodePropertyTriggerRadioItem>
             ))}
-          </div>
-        )}
+          </DropdownMenuRadioGroup>
+        </>
+      ),
+    });
+  }
 
-        <div className={cn(panels.length > 0 && 'border-t border-border-subtle')}>
-          <p className={SECTION_HEADING_CLASS}>Panel behavior</p>
-          {behaviorOptions.map(({ value, label: behaviorLabel }) => (
-            <button
-              key={value}
-              type="button"
-              role="menuitemradio"
-              aria-checked={effectiveBehavior === value}
-              onClick={() => {
-                handleBehaviorChange(value);
-                setMenuOpen(false);
-              }}
-              className={ITEM_CLASS}
-            >
-              <span>{behaviorLabel}</span>
-              <span
-                className={cn(
-                  'size-2 rounded-full',
-                  effectiveBehavior === value ? 'bg-foreground-accent' : 'bg-surface-overlay'
-                )}
-              />
-            </button>
-          ))}
-        </div>
+  if (layoutOptions.length > 0) {
+    sections.push({
+      key: 'layouts',
+      node: (
+        <>
+          <NodePropertyTriggerSectionLabel>Default layouts</NodePropertyTriggerSectionLabel>
+          <DropdownMenuRadioGroup value={effectiveLayout} onValueChange={handleLayoutChange}>
+            {layoutOptions.map(({ value, label: layoutLabel }) => (
+              <NodePropertyTriggerRadioItem key={value} value={value}>
+                {layoutLabel}
+              </NodePropertyTriggerRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
+        </>
+      ),
+    });
+  }
 
-        <div className="border-t border-border-subtle">
-          <p className={SECTION_HEADING_CLASS}>Default layouts</p>
-          {layoutOptions.map(({ value, label: layoutLabel }) => (
-            <button
-              key={value}
-              type="button"
-              role="menuitemradio"
-              aria-checked={effectiveLayout === value}
-              onClick={() => {
-                handleLayoutChange(value);
-                setMenuOpen(false);
-              }}
-              className={ITEM_CLASS}
-            >
-              <span>{layoutLabel}</span>
-              <span
-                className={cn(
-                  'size-2 rounded-full',
-                  effectiveLayout === value ? 'bg-foreground-accent' : 'bg-surface-overlay'
-                )}
-              />
-            </button>
-          ))}
-        </div>
-
-        <div className="border-t border-border-subtle">
-          <p className={SECTION_HEADING_CLASS}>Saved presets</p>
+  if (presets.length > 0 || canSavePreset) {
+    sections.push({
+      key: 'presets',
+      node: (
+        <>
+          <NodePropertyTriggerSectionLabel>Saved presets</NodePropertyTriggerSectionLabel>
           {presets.length === 0 && (
             <p className="px-3 pb-2 text-[11px] text-foreground-subtle">No saved presets yet.</p>
           )}
           {presets.map((preset) => (
-            <div key={preset.id} className="flex items-center gap-1 px-2 py-1">
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  onPresetApply?.(preset);
-                  setMenuOpen(false);
-                }}
-                className="min-w-0 flex-1 truncate rounded px-1.5 py-1 text-left text-xs text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
-              >
-                {preset.label}
-              </button>
+            <DropdownMenuItem
+              key={preset.id}
+              className={cn(ROW_CLASS, 'pr-1')}
+              onSelect={() => onPresetApply?.(preset)}
+            >
+              <span className="min-w-0 flex-1 truncate">{preset.label}</span>
               <button
                 type="button"
                 title="Delete preset"
                 aria-label="Delete preset"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
                   onPresetDelete?.(preset.id);
-                  setMenuOpen(false);
                 }}
+                // Pointer events must not bubble into the Radix item — its
+                // pointerup-select would apply the preset and close the menu.
+                onPointerDown={(e) => e.stopPropagation()}
+                onPointerUp={(e) => e.stopPropagation()}
                 className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
               >
                 <CanvasIcon icon="trash-2" size={11} />
               </button>
-            </div>
+            </DropdownMenuItem>
           ))}
           {canSavePreset && (
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                onSavePreset?.();
-                setMenuOpen(false);
-              }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-xs text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+            <DropdownMenuItem
+              className={cn(ROW_CLASS, 'justify-start')}
+              onSelect={() => onSavePreset?.()}
             >
               <CanvasIcon icon="plus" size={12} />
               <span>Save as preset</span>
-            </button>
+            </DropdownMenuItem>
           )}
-        </div>
-      </div>,
-      document.body
-    );
+        </>
+      ),
+    });
+  }
+
+  const defaultSections = sections.map(({ key, node }, index) => (
+    <Fragment key={key}>
+      {index > 0 && <NodePropertyTriggerSeparator />}
+      {node}
+    </Fragment>
+  ));
 
   return (
     <div
-      ref={containerRef}
       data-node-property-panel-root
       className={cn(
         'w-fit flex flex-row items-center rounded-xl border border-border-subtle bg-surface-raised p-1',
@@ -349,27 +381,35 @@ export function NodePropertyTrigger({
         {label}
       </button>
 
-      <div className="mx-0.5 h-4 w-px shrink-0 bg-border-subtle" />
+      {showMenu && (
+        <>
+          <div className="mx-0.5 h-4 w-px shrink-0 bg-border-subtle" />
 
-      <div className="relative">
-        <button
-          type="button"
-          title="Panel options"
-          aria-label="Panel options"
-          aria-haspopup="menu"
-          aria-expanded={menuOpen}
-          onClick={handleToggle}
-          className={cn(
-            'grid size-8 place-items-center rounded-lg transition',
-            menuOpen
-              ? 'bg-surface-overlay text-foreground'
-              : 'text-foreground-muted hover:bg-surface-overlay hover:text-foreground'
-          )}
-        >
-          <CanvasIcon icon="sliders-horizontal" size={14} />
-        </button>
-        {menuPortal}
-      </div>
+          {/* modal={false}: Radix's modal overlay sets pointer-events:none on body,
+              which doesn't play well with React Flow's foreignObject canvases —
+              same rationale as CanvasDropdownMenu. */}
+          <DropdownMenu open={open} onOpenChange={onOpenChange} modal={false}>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                title={menuAriaLabel}
+                aria-label={menuAriaLabel}
+                className="grid size-8 place-items-center rounded-lg text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground data-[state=open]:bg-surface-overlay data-[state=open]:text-foreground"
+              >
+                <CanvasIcon icon="sliders-horizontal" size={14} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              data-node-property-panel-menu
+              align="end"
+              sideOffset={8}
+              className="w-56 rounded-xl border-border-subtle bg-surface-raised p-0 shadow-[0_4px_16px_rgba(0,0,0,0.12)]"
+            >
+              {children ?? defaultSections}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      )}
     </div>
   );
 }
