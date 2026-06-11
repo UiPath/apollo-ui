@@ -1,10 +1,17 @@
 export { Breadcrumb } from './Breadcrumb';
-export { NodePropertyTrigger } from './NodePropertyTrigger';
+export {
+  NodePropertyTrigger,
+  NodePropertyTriggerCheckboxItem,
+  NodePropertyTriggerRadioItem,
+  NodePropertyTriggerSectionLabel,
+  NodePropertyTriggerSeparator,
+} from './NodePropertyTrigger';
 export type {
   NodePropertyTriggerProps,
   NodePropertyTriggerItem,
   NodePropertyTriggerBehavior,
   NodePropertyTriggerBehaviorOption,
+  NodePropertyTriggerCheckboxItemProps,
   NodePropertyTriggerLayout,
   NodePropertyTriggerLayoutOption,
   NodePropertyTriggerPreset,
