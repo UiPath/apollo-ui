@@ -1,264 +1,30 @@
-import { type EdgeProps, Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { memo, useRef, useState } from 'react';
-import { useEdgeExecutionState, useEdgePath, useElementValidationStatus } from '../../hooks';
-import type { NodeExecutionStateWithDebug } from '../../types/execution';
-import { isPreviewEdge } from '../../utils/createPreviewNode';
-import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
-import { EdgeToolbar, useEdgeToolbarState } from '../Toolbar';
-import { edgeTargetStatusToEdgeColor, getStatusAnimation } from './EdgeUtils';
+import { memo, useMemo } from 'react';
+import { CanvasEdge } from './CanvasEdge';
+import { areEdgePropsEqual } from './shared/areEdgePropsEqual';
+import type { CanvasEdgeData, CanvasEdgeProps } from './shared/types';
 
-const ARROW_SIZE = 10;
-
-// Arrow angle based on which side of the TARGET node the edge connects to
-// The arrow should point INTO the target node
-// Angle 0 = pointing right, PI/2 = pointing down, PI = pointing left, -PI/2 = pointing up
-const ANGLE_MAP: Record<Position, number> = {
-  [Position.Left]: 0, // Edge enters left side, arrow points right
-  [Position.Right]: Math.PI, // Edge enters right side, arrow points left
-  [Position.Top]: Math.PI / 2, // Edge enters top, arrow points down
-  [Position.Bottom]: -Math.PI / 2, // Edge enters bottom, arrow points up
+/** Legacy SequenceEdge data contract, translated to `CanvasEdgeData` below. */
+type LegacySequenceEdgeData = CanvasEdgeData & {
+  /** @deprecated Use `enableToolbar: false` instead. */
+  hideToolbar?: boolean;
 };
 
-// Offset to position start/arrow slightly away from the node edge
-const ARROW_OFFSETS: Record<Position, { x: number; y: number }> = {
-  [Position.Left]: { x: 8, y: 0 },
-  [Position.Right]: { x: -8, y: 0 },
-  [Position.Top]: { x: 0, y: 8 },
-  [Position.Bottom]: { x: 0, y: -8 },
-};
+/**
+ * Workflow edge preset — `CanvasEdge` with `routing: 'handle'`, execution and
+ * toolbar enabled by default. Consumer-supplied `data` overrides any default.
+ * Prefer `CanvasEdge` directly for new code; kept for backward compatibility
+ * with existing `type: 'sequence'` registrations.
+ */
+export const SequenceEdge = memo(function SequenceEdge(props: CanvasEdgeProps) {
+  const data = useMemo<CanvasEdgeData>(() => {
+    const { hideToolbar, ...rest } = (props.data ?? {}) as LegacySequenceEdgeData;
+    return {
+      routing: 'handle',
+      enableExecution: true,
+      enableToolbar: hideToolbar !== true,
+      ...rest,
+    };
+  }, [props.data]);
 
-// Custom comparison to prevent re-renders during pan/zoom
-// Coordinates can have tiny floating point differences that don't affect visual output
-function areEdgePropsEqual(prevProps: EdgeProps, nextProps: EdgeProps): boolean {
-  // Always re-render if these change
-  if (prevProps.id !== nextProps.id) return false;
-  if (prevProps.selected !== nextProps.selected) return false;
-  if (prevProps.animated !== nextProps.animated) return false;
-  if (prevProps.source !== nextProps.source) return false;
-  if (prevProps.target !== nextProps.target) return false;
-  if (prevProps.sourcePosition !== nextProps.sourcePosition) return false;
-  if (prevProps.targetPosition !== nextProps.targetPosition) return false;
-  if (prevProps.data !== nextProps.data) return false;
-  if (prevProps.style !== nextProps.style) return false;
-
-  // For coordinates, only re-render if change is > 0.5px (avoids floating point noise)
-  const threshold = 0.5;
-  if (Math.abs(prevProps.sourceX - nextProps.sourceX) > threshold) return false;
-  if (Math.abs(prevProps.sourceY - nextProps.sourceY) > threshold) return false;
-  if (Math.abs(prevProps.targetX - nextProps.targetX) > threshold) return false;
-  if (Math.abs(prevProps.targetY - nextProps.targetY) > threshold) return false;
-
-  return true;
-}
-
-export const SequenceEdge = memo(function SequenceEdge({
-  id,
-  selected,
-  animated,
-  source,
-  sourceX,
-  sourceY,
-  sourcePosition,
-  sourceHandleId,
-  target,
-  targetX,
-  targetY,
-  targetPosition,
-  targetHandleId,
-  style,
-  data,
-}: EdgeProps) {
-  const [isHovered, setIsHovered] = useState(false);
-  const pathElementRef = useRef<SVGPathElement | null>(null);
-
-  const { mode } = useBaseCanvasMode();
-  const isReadOnly = mode === 'readonly';
-  const previewEdge = isPreviewEdge({ id, source, target });
-
-  const executionStatus = useEdgeExecutionState(id, target);
-  const { validationStatus } = useElementValidationStatus(id) ?? { validationStatus: undefined };
-
-  // Use provided status or fall back to hook values
-  const status = executionStatus
-    ? ((executionStatus as NodeExecutionStateWithDebug)?.status ?? executionStatus)
-    : validationStatus;
-
-  // Check if this edge has diff styling applied
-  const isDiffAdded = data?.isDiffAdded === true;
-  const isDiffRemoved = data?.isDiffRemoved === true;
-
-  const hideArrowHead = data?.hideArrowHead === true;
-  const hideToolbar = data?.hideToolbar === true;
-
-  const angle = ANGLE_MAP[targetPosition];
-  const { x: offsetX, y: offsetY } = ARROW_OFFSETS[targetPosition];
-
-  // When the arrow head is hidden, inset the target point so the line stops at
-  // the same visual distance from the target node as the source side — the
-  // arrow polygon normally fills this gap.
-  const { edgePath, labelX, labelY } = useEdgePath({
-    sourceNodeId: source,
-    targetNodeId: target,
-    sourceHandleId,
-    targetHandleId,
-    sourceX,
-    sourceY,
-    sourcePosition,
-    targetX: hideArrowHead ? targetX + offsetX : targetX,
-    targetY: hideArrowHead ? targetY + offsetY : targetY,
-    targetPosition,
-  });
-
-  // Edge toolbar state
-  const {
-    showToolbar,
-    toolbarPositioning,
-    config: toolbarConfig,
-    handleMouseMoveOnPath,
-  } = useEdgeToolbarState({
-    edgeId: id,
-    pathElementRef,
-    isHovered,
-    sourceHandleId,
-    targetHandleId,
-    sourcePosition,
-    targetPosition,
-    source,
-    target,
-  });
-
-  const getEdgeColor = () => {
-    // Diff styling takes priority
-    if (isDiffAdded) return 'var(--canvas-success-icon)';
-    if (isDiffRemoved) return 'var(--canvas-error-icon)';
-
-    if (previewEdge) return 'var(--canvas-primary)';
-    if (selected) return 'var(--canvas-primary)';
-    if (isHovered) return 'var(--canvas-primary-hover)';
-    if (status) return edgeTargetStatusToEdgeColor[status] ?? 'var(--canvas-border)';
-    return 'var(--canvas-border)';
-  };
-
-  const edgeColor = getEdgeColor();
-
-  return (
-    <>
-      <g
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        onMouseMove={handleMouseMoveOnPath}
-      >
-        {/* Invisible interaction layer for easier selection */}
-        <path
-          className="react-flow__edge-interaction"
-          d={edgePath}
-          fill="none"
-          stroke="transparent"
-          strokeWidth={20}
-          style={{ pointerEvents: 'stroke', cursor: isReadOnly ? 'default' : 'pointer' }}
-        />
-
-        {/* Outline for selected state */}
-        {selected && (
-          <path
-            className="react-flow__edge-outline"
-            d={edgePath}
-            fill="none"
-            stroke="var(--canvas-primary)"
-            strokeWidth={10}
-            opacity={0.3}
-            style={{
-              pointerEvents: 'none',
-              transition: 'opacity 0.2s ease',
-            }}
-          />
-        )}
-
-        {/* Visual edge path */}
-        <path
-          id={id}
-          className="react-flow__edge-path"
-          d={edgePath}
-          strokeWidth={style?.strokeWidth || 2}
-          style={{
-            stroke: edgeColor,
-            strokeDasharray: animated
-              ? undefined
-              : isDiffRemoved
-                ? style?.strokeDasharray || '5,5'
-                : previewEdge
-                  ? '5,5'
-                  : '0',
-            opacity: style?.opacity !== undefined ? style.opacity : 1,
-            transition: 'stroke 0.2s ease, opacity 0.2s ease',
-          }}
-          ref={pathElementRef}
-        />
-
-        {/* Arrow head - filled triangle */}
-        {!hideArrowHead && (
-          <polygon
-            points={`
-              ${targetX},${targetY}
-              ${targetX - ARROW_SIZE * Math.cos(angle - Math.PI / 6)},${targetY - ARROW_SIZE * Math.sin(angle - Math.PI / 6)}
-              ${targetX - ARROW_SIZE * Math.cos(angle + Math.PI / 6)},${targetY - ARROW_SIZE * Math.sin(angle + Math.PI / 6)}
-            `}
-            fill={edgeColor}
-            style={{
-              pointerEvents: 'none',
-              opacity: style?.opacity !== undefined ? style.opacity : 1,
-              transition: 'fill 0.2s ease, opacity 0.2s ease',
-              transform: `translate(${offsetX}px, ${offsetY}px)`,
-            }}
-          />
-        )}
-
-        {getStatusAnimation(status, edgePath)}
-
-        {/* Edge label from data */}
-        {typeof data?.label === 'string' && data.label.length > 0 && (
-          <foreignObject
-            x={labelX}
-            y={labelY}
-            width={1}
-            height={1}
-            overflow="visible"
-            style={{ pointerEvents: 'none' }}
-          >
-            <div
-              className="react-flow__edge-label nodrag nopan"
-              style={{
-                position: 'absolute',
-                transform: 'translate(-50%, -50%)',
-                whiteSpace: 'nowrap',
-                pointerEvents: 'none',
-                color: 'var(--canvas-foreground)',
-                background: 'var(--canvas-background)',
-                padding: '4px 8px',
-                borderRadius: '4px',
-                fontSize: '12px',
-                fontWeight: 500,
-                border: `1px solid ${selected ? 'var(--canvas-primary)' : 'var(--canvas-border)'}`,
-                boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-              }}
-            >
-              {data.label}
-            </div>
-          </foreignObject>
-        )}
-      </g>
-
-      {/* Edge toolbar for adding nodes */}
-      {!hideToolbar && showToolbar && toolbarPositioning && (
-        <EdgeToolbar
-          edgeId={id}
-          visible={showToolbar}
-          positioning={toolbarPositioning}
-          config={toolbarConfig}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        />
-      )}
-    </>
-  );
+  return <CanvasEdge {...props} data={data} />;
 }, areEdgePropsEqual);
