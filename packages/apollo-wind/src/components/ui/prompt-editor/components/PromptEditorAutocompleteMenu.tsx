@@ -1,6 +1,6 @@
+import { Database, Paperclip, SquareFunction, Variable } from 'lucide-react';
 import { useEffect, useReducer, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Database, Paperclip, SquareFunction, Variable } from 'lucide-react';
 import {
   Command,
   CommandEmpty,
@@ -115,7 +115,13 @@ export const PromptEditorAutocompleteMenu = ({
     if (!open) return;
     const node = containerRef.current;
     if (!node) return;
-    const handlePointerDown = (e: PointerEvent) => e.stopPropagation();
+    const handlePointerDown = (e: PointerEvent) => {
+      // preventDefault suppresses the follow-up mousedown so the browser can't move focus off the
+      // Lexical editor before `commitChip` runs — keeping the trigger node's caret/key valid even if
+      // a racing state update would otherwise invalidate `triggerInfo.nodeKey`.
+      e.preventDefault();
+      e.stopPropagation();
+    };
     node.addEventListener('pointerdown', handlePointerDown);
     return () => node.removeEventListener('pointerdown', handlePointerDown);
   }, [open]);
