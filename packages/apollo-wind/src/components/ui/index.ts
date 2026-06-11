@@ -30,6 +30,7 @@ export * from './multi-select';
 export * from './pagination';
 export * from './popover';
 export * from './progress';
+export * from './prompt-editor';
 export * from './radio-group';
 export * from './resizable';
 export * from './scroll-area';

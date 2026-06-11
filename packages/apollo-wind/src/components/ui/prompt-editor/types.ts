@@ -2,6 +2,12 @@ export type PromptEditorTokenType = 'input' | 'output' | 'state' | 'resource' | 
 
 interface BaseToken {
   type: PromptEditorTokenType;
+  /**
+   * Variable path **without** a leading `$` — e.g. `vars.firstName`, `state.retryCount`. apollo-wind
+   * owns this no-`$` convention (unlike flow-workbench's `$vars.firstName`). Serialization and
+   * `ValidateTokensPlugin` compare these by exact string equality against
+   * {@link PromptEditorAutoCompleteOption.value}, so the two must use the same `$`-less form.
+   */
   value: string;
 }
 
@@ -34,6 +40,7 @@ export type PromptEditorToken =
 
 export interface PromptEditorAutoCompleteOption {
   type: Exclude<PromptEditorTokenType, 'text'>;
+  /** Variable path without a leading `$` (e.g. `vars.firstName`). See {@link PromptEditorToken} value. */
   value: string;
 }
 
@@ -53,16 +60,6 @@ export type PromptEditorToolbarFormatAction =
   | 'italic'
   | 'numberedList'
   | 'strikethrough';
-
-export interface PromptEditorHighlightLocator {
-  text: string;
-  expandedText: string;
-}
-
-export interface PromptEditorHighlightItem {
-  id: string;
-  locator: PromptEditorHighlightLocator;
-}
 
 export interface PromptEditorTokenColorConfig {
   background: string;
