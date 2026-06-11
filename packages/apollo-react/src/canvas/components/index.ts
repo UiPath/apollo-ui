@@ -18,6 +18,7 @@ export * from './MiniCanvasNavigator';
 export * from './NodeContextMenu';
 export * from './NodeInspector';
 export * from './NodePropertiesPanel';
+export * from './NodePropertyPanel';
 export * from './ProbeCard';
 export * from './shared';
 export * from './StageNode';
