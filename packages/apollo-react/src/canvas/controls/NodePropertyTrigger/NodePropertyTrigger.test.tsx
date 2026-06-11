@@ -235,6 +235,31 @@ describe('NodePropertyTrigger', () => {
     expect(screen.getByText('No saved presets yet.')).toBeInTheDocument();
   });
 
+  it('clamps the uncontrolled selection when the options change and no longer contain it', async () => {
+    const { user, rerender } = setup();
+    await openMenu(user);
+    // Uncontrolled: select the second option, then swap the option set.
+    await user.click(screen.getByRole('menuitemradio', { name: 'Always persist' }));
+    rerender(
+      <NodePropertyTrigger
+        behaviorOptions={[
+          { value: 'pinned', label: 'Pinned' },
+          { value: 'floating', label: 'Floating' },
+        ]}
+        layoutOptions={LAYOUT_OPTIONS}
+      />
+    );
+    await openMenu(user);
+    expect(screen.getByRole('menuitemradio', { name: 'Pinned' })).toHaveAttribute(
+      'aria-checked',
+      'true'
+    );
+    expect(screen.getByRole('menuitemradio', { name: 'Floating' })).toHaveAttribute(
+      'aria-checked',
+      'false'
+    );
+  });
+
   it('supports controlled open state', () => {
     const onOpenChange = vi.fn();
     const { rerender } = setup({ open: true, onOpenChange });
