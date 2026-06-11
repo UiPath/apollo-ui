@@ -12,6 +12,7 @@ import {
 } from '@uipath/apollo-react/material/theme';
 // biome-ignore lint/correctness/noUnusedImports: needed
 import React, { useEffect } from 'react';
+import { ApolloDocsContainer } from './DocsContainer';
 import { GlobalStyles } from './GlobalStyles';
 import { ALL_THEMES, clampThemeForMaterial, DEFAULT_THEME, type ThemeMode } from './themes';
 
@@ -110,6 +111,9 @@ const preview: Preview = {
   },
   parameters: {
     backgrounds: { disable: true },
+    docs: {
+      container: ApolloDocsContainer,
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
@@ -122,7 +126,7 @@ const preview: Preview = {
     options: {
       storySort: {
         order: [
-          'Wind',
+          'Apollo Wind',
           [
             'Introduction',
             'Theme',
@@ -164,35 +168,39 @@ const preview: Preview = {
             'Experiments',
             '*',
           ],
-          'Canvas',
+          'Apollo React',
           [
-            'Introduction',
-            'Theme',
-            'Components',
+            'Canvas',
             [
-              'All Components',
-              'Canvas',
-              'Controls',
-              'Edges',
-              'Layout',
-              'Nodes',
-              'Panels',
-              'Primitives',
+              'Introduction',
+              'Theme',
+              'Components',
+              [
+                'All Components',
+                'Canvas',
+                'Controls',
+                'Edges',
+                'Layout',
+                'Nodes',
+                'Panels',
+                'Primitives',
+                '*',
+              ],
+              'Templates',
+              [
+                'Canvas Blank',
+                'Canvas with Panels',
+                'Canvas Agent Flow',
+                'Canvas Agent Flow Coded',
+                '*',
+              ],
               '*',
             ],
-            'Templates',
-            [
-              'Canvas Blank',
-              'Canvas with Panels',
-              'Canvas Agent Flow',
-              'Canvas Agent Flow Coded',
-              '*',
-            ],
+            'Material (Maintenance Only)',
+            ['Introduction', 'Components', ['All Components', '*'], '*'],
             '*',
           ],
-          'Material (Maintenance Only)',
-          ['Introduction', 'Components', ['All Components', '*'], '*'],
-          'Core',
+          'Apollo Core',
           [
             'Introduction',
             'Colors',
