@@ -730,7 +730,7 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(@types/react@19.2.8)(react@19.2.3)
       react-syntax-highlighter:
-        specifier: ^16.1.0
+        specifier: ^16.1.1
         version: 16.1.1(react@19.2.3)
       react-window:
         specifier: ^2.2.1
