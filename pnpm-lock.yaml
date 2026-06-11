@@ -1046,7 +1046,7 @@ importers:
         specifier: ^4.7.3
         version: 4.7.3(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react-syntax-highlighter:
-        specifier: ^16.1.0
+        specifier: ^16.1.1
         version: 16.1.1(react@19.2.3)
       recharts:
         specifier: 2.15.4
