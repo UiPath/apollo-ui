@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.44.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.43.1...@uipath/apollo-react@4.44.0) (2026-06-11)
+
+### Features
+
+* **apollo-react:** add onStatusClick to StageNode header status icon ([1025502](https://github.com/UiPath/apollo-ui/commit/10255026afaffae8ef18098b10278081f09f8471))
+
 ## [@uipath/apollo-react-v4.43.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.43.0...@uipath/apollo-react@4.43.1) (2026-06-11)
 
 ### Bug Fixes
