@@ -132,6 +132,7 @@ const StageNodeHeaderInner = ({
     id,
     stageDetails,
     execution,
+    onStatusClick,
     onTaskAdd,
     onAddTaskFromToolbox,
     onStageTitleChange,
@@ -164,7 +165,21 @@ const StageNodeHeaderInner = ({
         <Row gap={Spacing.SpacingMicro} align="start" py={Padding.PadS}>
           {status && (
             <CanvasTooltip content={statusTooltip} placement="top">
-              <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={statusTooltip}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                aria-label={statusTooltip}
+                data-testid={`stage-status-${id}`}
+                onClick={
+                  onStatusClick
+                    ? (e) => {
+                        e.stopPropagation();
+                        onStatusClick();
+                      }
+                    : undefined
+                }
+              >
                 {status === 'NotExecuted' ? (
                   <CanvasIcon
                     icon="hourglass"
