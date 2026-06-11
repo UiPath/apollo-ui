@@ -107,6 +107,9 @@ const StageNodeInner = (props: StageNodeProps) => {
     [onAddTaskFromToolbox, setSelectedNodeId, id]
   );
 
+  const handleAddTaskToolboxClose = useCallback(() => setIsAddingTask(false), []);
+  const handleReplaceTaskToolboxClose = useCallback(() => setIsReplacingTask(false), []);
+
   const handleReplaceTaskToolboxItemSelected = useCallback(
     (item: ListItem) => {
       onReplaceTaskFromToolbox?.(
@@ -133,7 +136,7 @@ const StageNodeInner = (props: StageNodeProps) => {
   return (
     <div
       data-testid={`stage-${id}`}
-      style={{ position: 'relative' }}
+      className="relative"
       onClick={handleStageClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -158,24 +161,27 @@ const StageNodeInner = (props: StageNodeProps) => {
         />
       </StageContainer>
 
-      {onAddTaskFromToolbox && (
-        <FloatingCanvasPanel open={isAddingTask} nodeId={id} offset={15}>
+      {/* Panels are mounted only while open: FloatingCanvasPanel subscribes to the
+          node's internals (useInternalNode), so a permanently mounted panel re-renders
+          on every drag/measure frame of the stage even though it renders nothing. */}
+      {onAddTaskFromToolbox && isAddingTask && (
+        <FloatingCanvasPanel nodeId={id} offset={15}>
           <Toolbox
             title={labels.addTask}
             initialItems={taskOptions}
-            onClose={() => setIsAddingTask(false)}
+            onClose={handleAddTaskToolboxClose}
             onItemSelect={handleAddTaskToolboxItemSelected}
             onSearch={onTaskToolboxSearch}
           />
         </FloatingCanvasPanel>
       )}
 
-      {onReplaceTaskFromToolbox && (
-        <FloatingCanvasPanel open={isReplacingTask} nodeId={id} offset={15}>
+      {onReplaceTaskFromToolbox && isReplacingTask && (
+        <FloatingCanvasPanel nodeId={id} offset={15}>
           <Toolbox
             title={labels.replaceTask}
             initialItems={taskOptions}
-            onClose={() => setIsReplacingTask(false)}
+            onClose={handleReplaceTaskToolboxClose}
             onItemSelect={handleReplaceTaskToolboxItemSelected}
             onSearch={onTaskToolboxSearch}
           />

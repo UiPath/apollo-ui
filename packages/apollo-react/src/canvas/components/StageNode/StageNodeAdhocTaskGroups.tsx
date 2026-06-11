@@ -96,9 +96,7 @@ const StageNodeAdhocTaskGroupsInner = ({
               onTaskClick={handleTaskClick}
               onTaskPlay={onTaskPlay}
               isTaskLoading={loadingTaskIds?.has(task.id)}
-              {...(hasMenu && {
-                getContextMenuItems: () => getAdhocContextMenuItems(task),
-              })}
+              getContextMenuItems={hasMenu ? getAdhocContextMenuItems : undefined}
             />
           );
         })}

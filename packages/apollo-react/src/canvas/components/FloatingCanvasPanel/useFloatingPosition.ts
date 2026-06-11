@@ -49,7 +49,10 @@ export function useFloatingPosition({
   fallbackPlacement = 'none',
 }: UseFloatingPositionOptions): UseFloatingPositionReturn {
   const referenceRef = useRef<HTMLDivElement>(null);
-  const internalNode = useInternalNode(nodeId || '');
+  // Subscribe to the node's internals only while open: internals change on every
+  // drag/measure frame, so a closed-but-mounted panel would otherwise re-render
+  // at frame rate whenever its anchor node moves.
+  const internalNode = useInternalNode(open && nodeId ? nodeId : '');
   const [availableHeight, setAvailableHeight] = useState<number | null>(null);
 
   const computedAnchor = useMemo<AnchorRect | null>(() => {

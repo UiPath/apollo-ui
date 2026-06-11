@@ -11,7 +11,9 @@ export const StageTaskDragOverlay = ({
   isActiveTaskParallel,
   taskWidthStyle,
 }: StageTaskDragOverlayProps) => {
-  const zoom = useStore((state) => state.transform[2]);
+  // Only track zoom while a drag is active; otherwise the selector returns a
+  // constant so idle overlays don't re-render on every canvas zoom change.
+  const zoom = useStore((state) => (activeTask ? state.transform[2] : 1));
   const dragOverlayStyle = useMemo<React.CSSProperties>(
     () => ({
       transform: `scale(${zoom})`,

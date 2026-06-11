@@ -48,11 +48,11 @@ vi.mock('@dnd-kit/utilities', () => ({
 // Mock FloatingCanvasPanel
 vi.mock('../FloatingCanvasPanel', () => ({
   FloatingCanvasPanel: ({
-    open,
+    open = true,
     children,
     onClose,
   }: {
-    open: boolean;
+    open?: boolean;
     children?: React.ReactNode;
     onClose?: () => void;
   }) =>
@@ -109,19 +109,13 @@ vi.mock('../Toolbox', () => ({
 vi.mock('./DraggableTask', () => ({
   DraggableTask: ({
     task,
-    groupIndex,
-    taskIndex,
     isDragDisabled,
     getContextMenuItems,
   }: {
     task: StageTaskItem;
-    groupIndex?: number;
-    taskIndex?: number;
     isDragDisabled?: boolean;
     getContextMenuItems?: (
-      groupIndex: number,
-      taskIndex: number,
-      taskId: string
+      task: StageTaskItem
     ) => Array<{ id?: string; label?: string; onClick?: () => void }>;
   }) => {
     const [menuItems, setMenuItems] = React.useState<
@@ -138,9 +132,7 @@ vi.mock('./DraggableTask', () => ({
             type="button"
             data-testid={`task-menu-button-${task.id}`}
             onClick={() => {
-              if (groupIndex !== undefined && taskIndex !== undefined) {
-                setMenuItems(getContextMenuItems(groupIndex, taskIndex, task.id));
-              }
+              setMenuItems(getContextMenuItems(task));
             }}
           >
             Open Menu
