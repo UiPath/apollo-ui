@@ -48,6 +48,15 @@ export type NodePropertyTriggerLayoutOption = {
 
 type Translate = ReturnType<typeof useSafeLingui>['_'];
 
+/**
+ * Clamps an uncontrolled selection to the current option set at render time,
+ * so a later options change can never strand the radio group on a value that
+ * no longer exists. No effect/state-sync needed.
+ */
+function clampToOptions<T extends string>(value: T, options: { value: T }[]): T {
+  return options.some((option) => option.value === value) ? value : (options[0]?.value ?? value);
+}
+
 // Built lazily so the default labels go through Lingui (English message as
 // fallback when no I18nProvider is mounted) — same pattern as the other
 // canvas components (CanvasZoomControls, StageNode).
@@ -256,8 +265,8 @@ export function NodePropertyTrigger({
   const [internalLayout, setInternalLayout] = useState<NodePropertyTriggerLayout>(
     () => resolvedLayoutOptions[0]?.value ?? 'right'
   );
-  const effectiveBehavior = behavior ?? internalBehavior;
-  const effectiveLayout = layout ?? internalLayout;
+  const effectiveBehavior = behavior ?? clampToOptions(internalBehavior, resolvedBehaviorOptions);
+  const effectiveLayout = layout ?? clampToOptions(internalLayout, resolvedLayoutOptions);
 
   const handleBehaviorChange = useCallback(
     (val: string) => {
