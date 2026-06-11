@@ -915,6 +915,43 @@ describe('StageNode - SLA Indicator', () => {
   });
 });
 
+describe('StageNode - Status Icon', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const warningExecution = {
+    stageStatus: { status: 'Warning' as const, label: 'This stage has validation warnings.' },
+    taskStatus: {},
+  };
+
+  it('does not render the status icon when status is undefined', () => {
+    renderStageNode({ execution: { stageStatus: {}, taskStatus: {} } });
+
+    expect(screen.queryByTestId('stage-status-stage-1')).not.toBeInTheDocument();
+  });
+
+  it('invokes onStatusClick without propagating to onStageClick', async () => {
+    const onStatusClick = vi.fn();
+    const onStageClick = vi.fn();
+    renderStageNode({ execution: warningExecution, onStatusClick, onStageClick });
+
+    await userEvent.click(screen.getByTestId('stage-status-stage-1'));
+
+    expect(onStatusClick).toHaveBeenCalledTimes(1);
+    expect(onStageClick).not.toHaveBeenCalled();
+  });
+
+  it('propagates the click to onStageClick when onStatusClick is not provided', async () => {
+    const onStageClick = vi.fn();
+    renderStageNode({ execution: warningExecution, onStageClick });
+
+    await userEvent.click(screen.getByTestId('stage-status-stage-1'));
+
+    expect(onStageClick).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('StageNode - Header Chips', () => {
   beforeEach(() => {
     vi.clearAllMocks();

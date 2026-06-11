@@ -82,6 +82,7 @@ export interface StageNodeBaseProps {
   };
   menuItems?: NodeMenuItem[];
   onStageClick?: () => void;
+  onStatusClick?: () => void;
   onTaskAdd?: () => void;
   onAddTaskFromToolbox?: (taskItem: ListItem) => void;
   onTaskToolboxSearch?: ToolboxSearchHandler;

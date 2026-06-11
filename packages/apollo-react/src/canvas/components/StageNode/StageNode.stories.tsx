@@ -227,6 +227,9 @@ export const Default: Story = {
         width: 304,
         data: {
           onReplaceTaskFromToolbox: () => {},
+          onStatusClick: () => {
+            window.alert('Status icon clicked - this would navigate to the validation issue');
+          },
           stageDetails: {
             label: 'Validation - Failed',
             isReadOnly: true,
@@ -255,6 +258,9 @@ export const Default: Story = {
         position: { x: 1104, y: 96 },
         width: 304,
         data: {
+          onStatusClick: () => {
+            window.alert('Status icon clicked - this would navigate to the validation issue');
+          },
           stageDetails: {
             label: 'Review - Warning',
             isReadOnly: true,
