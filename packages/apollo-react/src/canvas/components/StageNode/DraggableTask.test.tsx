@@ -52,8 +52,6 @@ const defaultProps: DraggableTaskProps = {
   taskExecution: undefined,
   isSelected: false,
   isParallel: false,
-  groupIndex: 0,
-  taskIndex: 0,
   onTaskClick: vi.fn(),
   isDragDisabled: false,
 };
@@ -64,14 +62,7 @@ describe('DraggableTask', () => {
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
-      render(
-        <DraggableTask
-          {...defaultProps}
-          groupIndex={0}
-          taskIndex={0}
-          getContextMenuItems={() => menuItems}
-        />
-      );
+      render(<DraggableTask {...defaultProps} getContextMenuItems={() => menuItems} />);
 
       const menuButton = screen.getByTestId('stage-task-menu-task-1');
       expect(menuButton).toBeInTheDocument();
@@ -81,14 +72,7 @@ describe('DraggableTask', () => {
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
-      render(
-        <DraggableTask
-          {...defaultProps}
-          groupIndex={0}
-          taskIndex={0}
-          getContextMenuItems={() => menuItems}
-        />
-      );
+      render(<DraggableTask {...defaultProps} getContextMenuItems={() => menuItems} />);
 
       const menuButton = screen.getByTestId('stage-task-menu-task-1');
       expect(menuButton).toBeInTheDocument();
@@ -105,14 +89,7 @@ describe('DraggableTask', () => {
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
-      render(
-        <DraggableTask
-          {...defaultProps}
-          groupIndex={0}
-          taskIndex={0}
-          getContextMenuItems={() => menuItems}
-        />
-      );
+      render(<DraggableTask {...defaultProps} getContextMenuItems={() => menuItems} />);
 
       const menuButton = screen.getByTestId('stage-task-menu-task-1');
       expect(menuButton).toBeInTheDocument();
@@ -127,14 +104,7 @@ describe('DraggableTask', () => {
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
-      render(
-        <DraggableTask
-          {...defaultProps}
-          groupIndex={0}
-          taskIndex={0}
-          getContextMenuItems={() => menuItems}
-        />
-      );
+      render(<DraggableTask {...defaultProps} getContextMenuItems={() => menuItems} />);
 
       const menuButton = screen.getByTestId('stage-task-menu-task-1');
       await user.click(menuButton);
@@ -155,8 +125,6 @@ describe('DraggableTask', () => {
         <DraggableTask
           {...defaultProps}
           onTaskClick={onTaskClick}
-          groupIndex={0}
-          taskIndex={0}
           getContextMenuItems={() => menuItems}
         />
       );
@@ -175,14 +143,7 @@ describe('DraggableTask', () => {
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
-      render(
-        <DraggableTask
-          {...defaultProps}
-          groupIndex={0}
-          taskIndex={0}
-          getContextMenuItems={() => menuItems}
-        />
-      );
+      render(<DraggableTask {...defaultProps} getContextMenuItems={() => menuItems} />);
 
       // Open menu
       const menuButton = screen.getByTestId('stage-task-menu-task-1');
@@ -205,14 +166,7 @@ describe('DraggableTask', () => {
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
-      render(
-        <DraggableTask
-          {...defaultProps}
-          groupIndex={0}
-          taskIndex={0}
-          getContextMenuItems={() => menuItems}
-        />
-      );
+      render(<DraggableTask {...defaultProps} getContextMenuItems={() => menuItems} />);
 
       // Open menu
       const menuButton = screen.getByTestId('stage-task-menu-task-1');
@@ -237,14 +191,7 @@ describe('DraggableTask', () => {
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
-      render(
-        <DraggableTask
-          {...defaultProps}
-          groupIndex={0}
-          taskIndex={0}
-          getContextMenuItems={() => menuItems}
-        />
-      );
+      render(<DraggableTask {...defaultProps} getContextMenuItems={() => menuItems} />);
 
       // Open menu
       const menuButton = screen.getByTestId('stage-task-menu-task-1');
@@ -284,8 +231,6 @@ describe('DraggableTask', () => {
         <DraggableTask
           {...defaultProps}
           onTaskClick={onTaskClick}
-          groupIndex={0}
-          taskIndex={0}
           getContextMenuItems={() => menuItems}
         />
       );

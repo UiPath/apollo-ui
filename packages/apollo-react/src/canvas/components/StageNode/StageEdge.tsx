@@ -5,7 +5,7 @@ import {
   getSmoothStepPath,
   useStore,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 export const StageEdgeLabel = styled.div`
   position: absolute;
@@ -88,7 +88,13 @@ function StageEdgeInner({
     borderRadius: 40,
   });
 
-  const { endX, endY, angle } = getArrowFromBezier(pathData, arrowSize);
+  // getArrowFromBezier creates a detached SVG path and measures it
+  // (getTotalLength/getPointAtLength) — memoized so re-renders that don't move
+  // the edge (e.g. selection toggles) skip the geometry work.
+  const { endX, endY, angle } = useMemo(
+    () => getArrowFromBezier(pathData, arrowSize),
+    [pathData, arrowSize]
+  );
 
   const arrowLineLength = arrowSize;
 

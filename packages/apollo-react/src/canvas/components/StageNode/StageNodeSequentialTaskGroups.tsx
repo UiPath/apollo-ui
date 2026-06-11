@@ -116,10 +116,17 @@ export const StageNodeSequentialTaskGroups = ({
   );
 
   /** Lazily builds context menu items for a task. Called only when the menu opens,
-   * avoiding object allocation on every render for every task. */
+   * avoiding object allocation on every render for every task, and shared as a single
+   * stable reference across all tasks (per-task closures would defeat DraggableTask's memo). */
   const buildContextMenuItems = useCallback(
-    (groupIndex: number, task: StageTaskItem) => {
-      const taskGroup = sequentialTaskGroups[groupIndex] ?? [];
+    (task: StageTaskItem) => {
+      const groupIndex = sequentialTaskGroups.findIndex((group) =>
+        group.some((t) => t.id === task.id)
+      );
+      const taskGroup = sequentialTaskGroups[groupIndex];
+      if (!taskGroup) {
+        return [];
+      }
       const isParallel = taskGroup.length > 1;
       const items: NodeMenuItem[] = [];
 
@@ -220,7 +227,7 @@ export const StageNodeSequentialTaskGroups = ({
                         <span className="text-xs">{labels.parallel}</span>
                       </StageParallelLabel>
                     )}
-                    {taskGroup.map((task, taskIndex) => {
+                    {taskGroup.map((task) => {
                       const taskExecution = execution?.taskStatus?.[task.id];
                       const customItems =
                         !isReadOnly && !hasBuiltInTaskActions
@@ -239,17 +246,13 @@ export const StageNodeSequentialTaskGroups = ({
                           taskExecution={taskExecution}
                           isSelected={selectedTaskId === task.id}
                           isParallel={isParallel}
-                          groupIndex={groupIndex}
-                          taskIndex={taskIndex}
                           onTaskClick={handleTaskClick}
                           projectedDepth={
                             task.id === activeDragId && projected ? projected.depth : undefined
                           }
                           isDragDisabled={!onTaskReorder || isReadOnly}
                           isTaskLoading={loadingTaskIds?.has(task.id)}
-                          {...(hasMenu && {
-                            getContextMenuItems: () => buildContextMenuItems(groupIndex, task),
-                          })}
+                          getContextMenuItems={hasMenu ? buildContextMenuItems : undefined}
                         />
                       );
                     })}

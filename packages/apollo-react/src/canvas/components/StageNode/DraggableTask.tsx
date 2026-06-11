@@ -18,15 +18,12 @@ const DraggableTaskComponent = ({
   taskExecution,
   isSelected,
   isParallel,
-  groupIndex,
-  taskIndex,
   getContextMenuItems,
   onTaskClick,
   isDragDisabled,
   projectedDepth,
   isTaskLoading,
 }: DraggableTaskProps) => {
-  const zoom = useStore((s) => s.transform[2]);
   const taskRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<TaskMenuHandle>(null);
 
@@ -41,17 +38,15 @@ const DraggableTaskComponent = ({
     menuRef.current?.handleContextMenu(e);
   }, []);
 
-  const handleGetContextMenuItems = useCallback(() => {
-    if (!getContextMenuItems) {
-      return [];
-    }
-    return getContextMenuItems(groupIndex, taskIndex, task.id);
-  }, [getContextMenuItems, groupIndex, taskIndex, task.id]);
-
   const { attributes, listeners, setNodeRef, transition, transform, isDragging } = useSortable({
     id: task.id,
     disabled: isDragDisabled,
   });
+
+  // Zoom is only needed to scale an active drag transform. The selector resolves
+  // a constant while idle, so canvas zoom changes don't re-render every task —
+  // but an active drag still tracks zoom reactively (e.g. pinch mid-drag).
+  const zoom = useStore((s) => (transform ? s.transform[2] : 1));
 
   const style = useMemo<React.CSSProperties>(() => {
     const scaledTransform = transform
@@ -101,8 +96,8 @@ const DraggableTaskComponent = ({
       {getContextMenuItems && (
         <TaskMenu
           ref={menuRef}
-          taskId={task.id}
-          getContextMenuItems={handleGetContextMenuItems}
+          task={task}
+          getContextMenuItems={getContextMenuItems}
           disabled={isTaskLoading}
         />
       )}

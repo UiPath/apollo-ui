@@ -6,9 +6,9 @@ export interface DraggableTaskProps {
   taskExecution?: StageTaskExecution;
   isSelected: boolean;
   isParallel: boolean;
-  groupIndex: number;
-  taskIndex: number;
-  getContextMenuItems?: (groupIndex: number, taskIndex: number, taskId: string) => NodeMenuItem[];
+  /** Receives the task so parents can pass one stable function to every item
+   * instead of a per-task closure (which would defeat the memo). */
+  getContextMenuItems?: (task: StageTaskItem) => NodeMenuItem[];
   onTaskClick: (e: React.MouseEvent, taskId: string) => void;
   onTaskPlay?: (taskId: string) => Promise<void>;
   isDragDisabled?: boolean;

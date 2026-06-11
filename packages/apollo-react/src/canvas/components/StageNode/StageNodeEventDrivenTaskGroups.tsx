@@ -94,9 +94,7 @@ const StageNodeEventDrivenTaskGroupsInner = ({
               isSelected={selectedTaskId === task.id}
               onTaskClick={handleTaskClick}
               isTaskLoading={loadingTaskIds?.has(task.id)}
-              {...(hasMenu && {
-                getContextMenuItems: () => getEventDrivenContextMenuItems(task),
-              })}
+              getContextMenuItems={hasMenu ? getEventDrivenContextMenuItems : undefined}
             />
           );
         })}
