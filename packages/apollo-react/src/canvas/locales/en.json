@@ -46,5 +46,18 @@
   "loop-node.add-node": "Add node to loop",
   "loop-node.mode.parallel": "Parallel",
   "loop-node.mode.sequential": "Sequential",
-  "loop-node.title": "Loop"
+  "loop-node.title": "Loop",
+  "canvas.property_trigger.properties": "Properties",
+  "canvas.property_trigger.panel_options": "Panel options",
+  "canvas.property_trigger.auto_hide": "Auto hide",
+  "canvas.property_trigger.always_persist": "Always persist",
+  "canvas.property_trigger.layout_right": "Default — Right",
+  "canvas.property_trigger.layout_bottom": "Default — Bottom",
+  "canvas.property_trigger.layout_split": "Default — Split",
+  "canvas.property_trigger.panel_behavior": "Panel behavior",
+  "canvas.property_trigger.default_layouts": "Default layouts",
+  "canvas.property_trigger.saved_presets": "Saved presets",
+  "canvas.property_trigger.no_saved_presets": "No saved presets yet.",
+  "canvas.property_trigger.save_as_preset": "Save as preset",
+  "canvas.property_trigger.delete_preset": "Delete preset"
 }
