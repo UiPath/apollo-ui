@@ -158,6 +158,27 @@ describe('NodePropertyTrigger', () => {
     expect(screen.getByRole('menu')).toBeInTheDocument();
   });
 
+  it('shows the rename button only when onPresetRename is provided, and keeps the menu open', async () => {
+    const onPresetRename = vi.fn();
+    const { user, rerender } = setup({
+      presets: [{ id: 'p1', label: 'Compact' }],
+      onPresetRename,
+    });
+    await openMenu(user);
+    await user.click(screen.getByRole('button', { name: 'Rename preset' }));
+    expect(onPresetRename).toHaveBeenCalledWith({ id: 'p1', label: 'Compact' });
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+
+    rerender(
+      <NodePropertyTrigger
+        behaviorOptions={BEHAVIOR_OPTIONS}
+        layoutOptions={LAYOUT_OPTIONS}
+        presets={[{ id: 'p1', label: 'Compact' }]}
+      />
+    );
+    expect(screen.queryByRole('button', { name: 'Rename preset' })).not.toBeInTheDocument();
+  });
+
   it('calls onPropertiesClick when the label button is clicked', async () => {
     const onPropertiesClick = vi.fn();
     const { user } = setup({ onPropertiesClick, label: 'Properties' });
