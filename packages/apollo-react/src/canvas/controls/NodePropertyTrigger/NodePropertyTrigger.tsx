@@ -389,13 +389,17 @@ export function NodePropertyTrigger({
               {onPresetRename && (
                 <button
                   type="button"
+                  // Per-preset accessible name — multiple presets render
+                  // multiple buttons; identical names are ambiguous to AT.
                   title={_({
-                    id: 'canvas.property_trigger.rename_preset',
-                    message: 'Rename preset',
+                    id: 'canvas.property_trigger.rename_preset_with_label',
+                    message: 'Rename {label}',
+                    values: { label: preset.label },
                   })}
                   aria-label={_({
-                    id: 'canvas.property_trigger.rename_preset',
-                    message: 'Rename preset',
+                    id: 'canvas.property_trigger.rename_preset_with_label',
+                    message: 'Rename {label}',
+                    values: { label: preset.label },
                   })}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -415,12 +419,14 @@ export function NodePropertyTrigger({
                 <button
                   type="button"
                   title={_({
-                    id: 'canvas.property_trigger.delete_preset',
-                    message: 'Delete preset',
+                    id: 'canvas.property_trigger.delete_preset_with_label',
+                    message: 'Delete {label}',
+                    values: { label: preset.label },
                   })}
                   aria-label={_({
-                    id: 'canvas.property_trigger.delete_preset',
-                    message: 'Delete preset',
+                    id: 'canvas.property_trigger.delete_preset_with_label',
+                    message: 'Delete {label}',
+                    values: { label: preset.label },
                   })}
                   onClick={(e) => {
                     e.stopPropagation();
