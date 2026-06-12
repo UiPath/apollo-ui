@@ -274,7 +274,7 @@
     "@vitest/coverage-v8": "^4.1.5",
     "@vitest/ui": "^4.1.5",
     "dayjs": "^1.11.20",
-    "esbuild": "^0.27.0",
+    "esbuild": "^0.28.1",
     "glob": "^13.0.0",
     "happy-dom": "^20.0.0",
     "react": "19.2.3",
