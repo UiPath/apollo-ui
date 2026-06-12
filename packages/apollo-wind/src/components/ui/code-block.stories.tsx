@@ -4,10 +4,8 @@ import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { EditorState } from '@codemirror/state';
 import { EditorView, drawSelection, highlightActiveLine, lineNumbers } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta } from '@storybook/react-vite';
 import { useEffect, useRef } from 'react';
-import type { CodeBlockTheme } from './code-block';
-import { CodeBlock } from './code-block';
 import type { ApolloFutureCodeMirrorTheme } from '../../editor-themes';
 import {
   apolloFutureDarkCodeMirror,
@@ -21,58 +19,12 @@ import {
 // ============================================================================
 
 const meta = {
-  title: 'Components/Core/Code Block',
-  component: CodeBlock,
-  parameters: {
-    layout: 'padded',
-    docs: {
-      description: {
-        component:
-          '`CodeBlock` is a **read-only display primitive** for rendering syntax-highlighted code snippets in UI and documentation. It has no cursor, no input, and no editing capability.\n\nIf you need an editable code field, see **Monaco Editor** (multi-line expressions and scripts) or **CodeMirror Editor** (single-line `{{ variable }}` interpolation) in this same section.',
-      },
-    },
-  },
-  tags: ['autodocs'],
-  argTypes: {
-    language: {
-      control: 'select',
-      options: [
-        'tsx',
-        'typescript',
-        'javascript',
-        'json',
-        'css',
-        'html',
-        'python',
-        'bash',
-        'sql',
-        'yaml',
-        'markdown',
-      ],
-    },
-    theme: {
-      control: 'select',
-      options: [
-        'dark',
-        'light',
-        'dark-hc',
-        'light-hc',
-        'future-dark',
-        'future-light',
-        'wireframe',
-        'vertex',
-        'canvas',
-      ],
-    },
-    showLineNumbers: { control: 'boolean' },
-    showCopyButton: { control: 'boolean' },
-    wrapLines: { control: 'boolean' },
-    fileName: { control: 'text' },
-  },
-} satisfies Meta<typeof CodeBlock>;
+  title: 'Patterns/Code Editors',
+  tags: ['!autodocs'],
+  parameters: { layout: 'padded' },
+} satisfies Meta;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
 // ============================================================================
 // Sample code snippets
@@ -558,12 +510,6 @@ export const apolloFutureDark = [theme, syntaxHighlighting(highlight)];`.trim();
 
 const decisionRows = [
   {
-    useCase: 'Show a code snippet or usage example',
-    solution: 'CodeBlock',
-    pkg: '@uipath/apollo-wind',
-    notes: 'Read-only. No cursor or input.',
-  },
-  {
     useCase: '{{ variable }} single-line interpolation',
     solution: 'CodeMirror',
     pkg: '@codemirror/*',
@@ -584,17 +530,15 @@ const decisionRows = [
 ];
 
 export const CodeEditors = {
-  name: 'Code Editors',
+  name: 'Overview',
   parameters: { layout: 'fullscreen' },
   render: () => (
     <div className="future-dark min-h-screen w-full bg-background text-foreground">
       <div className="mx-auto max-w-4xl px-8 pt-8">
         <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">Code in Apollo</h2>
         <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-          Apollo provides three solutions for code in UI, depending on whether users are{' '}
-          <strong className="text-foreground">reading</strong> or{' '}
-          <strong className="text-foreground">writing</strong> it. They are not interchangeable —
-          each has a distinct role, package weight, and interaction model.
+          Apollo provides two editors for code input, each with a distinct role, package weight,
+          and interaction model. Pick the one that matches the user's intent.
         </p>
         <div className="mb-8 h-px bg-border" />
       </div>
@@ -702,7 +646,7 @@ export const CodeEditors = {
 };
 
 export const MonacoEditorStory = {
-  name: 'Monaco Editor',
+  name: 'Editor Monaco',
   parameters: { layout: 'fullscreen' },
   render: () => (
     <div className="future-dark min-h-screen w-full bg-background text-foreground">
@@ -763,21 +707,16 @@ export const MonacoEditorStory = {
           reference — you can switch themes at runtime by updating the{' '}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">theme</code> option.
         </p>
-        <CodeBlock
-          language="typescript"
-          fileName="setup.ts"
-          theme="future-dark"
-          showLineNumbers={false}
-        >
-          {monacoUsageDark}
-        </CodeBlock>
+        <pre className="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-100">
+          <code>{monacoUsageDark}</code>
+        </pre>
       </div>
     </div>
   ),
 };
 
 export const CodeMirrorEditorStory = {
-  name: 'CodeMirror Editor',
+  name: 'Editor CodeMirror',
   parameters: { layout: 'fullscreen' },
   render: () => (
     <div className="future-dark min-h-screen w-full bg-background text-foreground">
@@ -839,234 +778,71 @@ export const CodeMirrorEditorStory = {
           </code>{' '}
           for editor chrome, then combine them into a single extension array.
         </p>
-        <CodeBlock
-          language="typescript"
-          fileName="codemirror-theme.ts"
-          theme="future-dark"
-          showLineNumbers={false}
-        >
-          {codemirrorUsageDark}
-        </CodeBlock>
+        <pre className="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-100">
+          <code>{codemirrorUsageDark}</code>
+        </pre>
       </div>
     </div>
   ),
-};
-
-// ============================================================================
-// Default — no `theme` prop: auto-follows the Apollo page theme
-// ============================================================================
-
-export const Default: Story = {
-  args: {
-    children: tsxSample,
-    language: 'tsx',
-    showLineNumbers: true,
-    showCopyButton: true,
-  },
-};
-
-// ============================================================================
-// With File Name
-// ============================================================================
-
-export const WithFileName: Story = {
-  name: 'With File Name',
-  args: {
-    children: tsxSample,
-    language: 'tsx',
-    fileName: 'UserCard.tsx',
-    showLineNumbers: true,
-    showCopyButton: true,
-  },
-};
-
-// ============================================================================
-// No Line Numbers
-// ============================================================================
-
-export const NoLineNumbers: Story = {
-  name: 'No Line Numbers',
-  args: {
-    children: jsSample,
-    language: 'javascript',
-    showLineNumbers: false,
-    showCopyButton: true,
-  },
-};
-
-// ============================================================================
-// No Copy Button
-// ============================================================================
-
-export const NoCopyButton: Story = {
-  name: 'No Copy Button',
-  args: {
-    children: jsonSample,
-    language: 'json',
-    showLineNumbers: true,
-    showCopyButton: false,
-  },
-};
-
-// ============================================================================
-// Wrap Long Lines
-// ============================================================================
-
-export const WrapLongLines: Story = {
-  name: 'Wrap Long Lines',
-  args: {
-    children: `const result = await someVeryLongFunctionName({ parameterOne: 'value', parameterTwo: 42, parameterThree: true, parameterFour: 'another long value that pushes the line past the viewport width' });`,
-    language: 'javascript',
-    showLineNumbers: false,
-    wrapLines: true,
-  },
-};
-
-// ============================================================================
-// Languages
-// ============================================================================
-
-export const Languages = {
-  name: 'Languages',
-  parameters: { layout: 'padded' },
-  render: () => (
-    <div className="flex flex-col gap-6 max-w-3xl">
-      <div>
-        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">
-          TypeScript / TSX
-        </p>
-        <CodeBlock language="tsx" showLineNumbers={false}>
-          {tsxSample.split('\n').slice(0, 8).join('\n')}
-        </CodeBlock>
-      </div>
-
-      <div>
-        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">
-          JavaScript
-        </p>
-        <CodeBlock language="javascript" showLineNumbers={false}>
-          {jsSample}
-        </CodeBlock>
-      </div>
-
-      <div>
-        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">
-          JSON
-        </p>
-        <CodeBlock language="json" showLineNumbers={false}>
-          {jsonSample}
-        </CodeBlock>
-      </div>
-
-      <div>
-        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">
-          CSS
-        </p>
-        <CodeBlock language="css" showLineNumbers={false}>
-          {cssSample}
-        </CodeBlock>
-      </div>
-
-      <div>
-        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">
-          Python
-        </p>
-        <CodeBlock language="python" showLineNumbers={false}>
-          {pythonSample}
-        </CodeBlock>
-      </div>
-
-      <div>
-        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">
-          Bash
-        </p>
-        <CodeBlock language="bash" showLineNumbers={false}>
-          {bashSample}
-        </CodeBlock>
-      </div>
-
-      <div>
-        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">
-          SQL
-        </p>
-        <CodeBlock language="sql" showLineNumbers={false}>
-          {sqlSample}
-        </CodeBlock>
-      </div>
-
-      <div>
-        <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">
-          HTML
-        </p>
-        <CodeBlock language="html" showLineNumbers={false}>
-          {htmlSample}
-        </CodeBlock>
-      </div>
-    </div>
-  ),
-};
-
-// ============================================================================
-// Long Code
-// ============================================================================
-
-export const LongCode: Story = {
-  name: 'Long Code',
-  args: {
-    children: longSample,
-    language: 'tsx',
-    fileName: 'DataTable.tsx',
-    showLineNumbers: true,
-    showCopyButton: true,
-  },
 };
 
 // ============================================================================
 // All Themes
 // ============================================================================
 
-const THEME_LABELS: Record<CodeBlockTheme, string> = {
-  // Standard
-  dark: 'Dark',
-  light: 'Light',
-  'dark-hc': 'High Contrast Dark',
-  'light-hc': 'High Contrast Light',
-  // Future design language
-  'future-dark': 'Future: Dark',
-  'future-light': 'Future: Light',
-  wireframe: 'Wireframe',
-  vertex: 'Vertex',
-  canvas: 'Canvas',
-};
-
-const preview = `
-import { useState } from 'react';
-
-export function Counter() {
-  const [count, setCount] = useState(0);
-  return (
-    <button type="button" onClick={() => setCount(count + 1)}>
-      Count: {count}
-    </button>
-  );
-}
-`.trim();
-
 export const AllThemes = {
-  name: 'All Themes',
-  parameters: { layout: 'padded' },
+  name: 'Themes',
+  parameters: { layout: 'fullscreen' },
   render: () => (
-    <div className="grid grid-cols-2 gap-6">
-      {(Object.keys(THEME_LABELS) as CodeBlockTheme[]).map((t) => (
-        <div key={t}>
-          <p className="text-xs font-medium text-foreground-subtle mb-2 uppercase tracking-wide">
-            {THEME_LABELS[t]}
-          </p>
-          <CodeBlock language="tsx" fileName="Counter.tsx" theme={t} showLineNumbers={false}>
-            {preview}
-          </CodeBlock>
+    <div className="future-dark min-h-screen w-full bg-background text-foreground">
+      <div className="mx-auto max-w-4xl px-8 py-8">
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">Editor Themes</h2>
+        <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
+          Both Monaco and CodeMirror ship with two Apollo themes:{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">future-dark</code>{' '}
+          and{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">future-light</code>.
+          Import them from{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-primary">
+            @uipath/apollo-wind/editor-themes
+          </code>
+          .
+        </p>
+
+        <div className="mb-10">
+          <h3 className="mb-4 text-lg font-semibold text-foreground">Monaco Editor</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="mb-2 text-sm font-medium text-muted-foreground">Future Dark</p>
+              <div className="overflow-hidden rounded-lg border" style={{ borderColor: '#3f3f46' }}>
+                <LiveMonacoEditor variant="dark" />
+              </div>
+            </div>
+            <div>
+              <p className="mb-2 text-sm font-medium text-muted-foreground">Future Light</p>
+              <div className="overflow-hidden rounded-lg border" style={{ borderColor: '#d4d4d8' }}>
+                <LiveMonacoEditor variant="light" />
+              </div>
+            </div>
+          </div>
         </div>
-      ))}
+
+        <div className="mb-8 h-px bg-border" />
+
+        <div>
+          <h3 className="mb-4 text-lg font-semibold text-foreground">CodeMirror Editor</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="mb-2 text-sm font-medium text-muted-foreground">Future Dark</p>
+              <LiveCodeMirrorEditor variant="dark" />
+            </div>
+            <div>
+              <p className="mb-2 text-sm font-medium text-muted-foreground">Future Light</p>
+              <LiveCodeMirrorEditor variant="light" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   ),
 };

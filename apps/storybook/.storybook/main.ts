@@ -184,6 +184,23 @@ const config: StorybookConfig = {
 
     return {
       ...config,
+      optimizeDeps: {
+        ...config.optimizeDeps,
+        include: [
+          ...(config.optimizeDeps?.include ?? []),
+          '@monaco-editor/react',
+          '@codemirror/lang-javascript',
+          '@codemirror/language',
+          '@codemirror/state',
+          '@codemirror/view',
+          '@lezer/highlight',
+        ],
+        exclude: [
+          ...(config.optimizeDeps?.exclude ?? []),
+          'monaco-editor',
+        ],
+      },
+      // biome-ignore lint/suspicious/noExplicitAny: plugins array typed as unknown[] after flat/filter; cast required
       plugins: [
         sourceAliasPlugin,
         ...plugins,
@@ -194,7 +211,7 @@ const config: StorybookConfig = {
         // keep resolving as assets.
         svgr({ include: '**/apollo-react/src/material/**/*.svg' }),
         tailwindcss(),
-      ],
+      ] as any,
       resolve: {
         ...config.resolve,
         alias: mergeAlias(config.resolve?.alias, [
