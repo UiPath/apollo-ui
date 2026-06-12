@@ -509,7 +509,14 @@ export function NodePropertyTrigger({
             <DropdownMenuContent
               data-node-property-trigger-menu
               align="end"
-              sideOffset={8}
+              // sideOffset + alignOffset compensate for the pill's p-1 (4px) wrapper padding.
+              // The DropdownMenuTrigger is the sliders button, whose bottom is 4px above the
+              // pill's bottom edge and whose right edge is 4px inside the pill's right edge.
+              // sideOffset={12}: 12 - 4 = 8px gap from pill bottom  ✓
+              // alignOffset={-4}: for align="end" negative shifts content RIGHT →
+              //   content right = sliders button right + 4 = pill right  ✓
+              sideOffset={12}
+              alignOffset={-4}
               className="w-56 rounded-xl border-border-subtle bg-surface-raised p-0 shadow-[0_4px_16px_rgba(0,0,0,0.12)]"
             >
               {children ?? defaultSections}
