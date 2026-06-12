@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.19.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.19.0...@uipath/apollo-wind@2.19.1) (2026-06-12)
+
+### Bug Fixes
+
+* **apollo-wind:** use surface-overlay for future field backgrounds ([63f770d](https://github.com/UiPath/apollo-ui/commit/63f770dc31237d57841dd5289a528867a70babe7))
+
 ## [@uipath/apollo-wind-v2.19.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.18.0...@uipath/apollo-wind@2.19.0) (2026-06-10)
 
 ### Features
