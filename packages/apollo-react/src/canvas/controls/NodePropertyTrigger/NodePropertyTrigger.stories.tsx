@@ -159,6 +159,18 @@ export const WithPresets: Story = {
           onPanelToggle={(id, enabled) =>
             setPanels((prev) => prev.map((p) => (p.id === id ? { ...p, enabled } : p)))
           }
+          onPresetRename={(preset) =>
+            setPresets((prev) =>
+              prev.map((p) => {
+                if (p.id !== preset.id) return p;
+                // Demo rename: bump a trailing "(n)" counter instead of growing the label.
+                const match = p.label.match(/^(.*) \((\d+)\)$/);
+                const base = match ? match[1] : p.label;
+                const next = match ? Number(match[2]) + 1 : 2;
+                return { ...p, label: `${base} (${next})` };
+              })
+            )
+          }
           onPresetDelete={(id) => setPresets((prev) => prev.filter((p) => p.id !== id))}
           onSavePreset={() =>
             setPresets((prev) => [

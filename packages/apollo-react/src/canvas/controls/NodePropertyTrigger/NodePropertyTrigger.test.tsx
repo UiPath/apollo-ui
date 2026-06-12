@@ -153,7 +153,7 @@ describe('NodePropertyTrigger', () => {
       onPresetDelete,
     });
     await openMenu(user);
-    await user.click(screen.getByRole('menuitem', { name: 'Delete Compact' }));
+    await user.click(screen.getByRole('button', { name: 'Delete preset' }));
     expect(onPresetDelete).toHaveBeenCalledWith('p1');
     expect(screen.getByRole('menu')).toBeInTheDocument();
   });
@@ -165,7 +165,7 @@ describe('NodePropertyTrigger', () => {
       onPresetRename,
     });
     await openMenu(user);
-    await user.click(screen.getByRole('menuitem', { name: 'Rename Compact' }));
+    await user.click(screen.getByRole('button', { name: 'Rename preset' }));
     expect(onPresetRename).toHaveBeenCalledWith({ id: 'p1', label: 'Compact' });
     expect(screen.getByRole('menu')).toBeInTheDocument();
 
@@ -176,7 +176,7 @@ describe('NodePropertyTrigger', () => {
         presets={[{ id: 'p1', label: 'Compact' }]}
       />
     );
-    expect(screen.queryByRole('menuitem', { name: 'Rename Compact' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Rename preset' })).not.toBeInTheDocument();
   });
 
   it('calls onPropertiesClick when the label button is clicked', async () => {

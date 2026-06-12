@@ -372,55 +372,71 @@ export function NodePropertyTrigger({
             </p>
           )}
           {presets.map((preset) => (
-            <Fragment key={preset.id}>
-              <DropdownMenuItem
-                aria-label={_({
-                  id: 'canvas.property_trigger.apply_preset_with_label',
-                  message: 'Apply {label}',
-                  values: { label: preset.label },
-                })}
-                className={ROW_CLASS}
-                onSelect={() => onPresetApply?.(preset)}
-              >
-                <span className="min-w-0 flex-1 truncate">{preset.label}</span>
-              </DropdownMenuItem>
+            <DropdownMenuItem
+              key={preset.id}
+              aria-label={_({
+                id: 'canvas.property_trigger.apply_preset_with_label',
+                message: 'Apply {label}',
+                values: { label: preset.label },
+              })}
+              className={cn(ROW_CLASS, 'pr-1')}
+              onSelect={() => onPresetApply?.(preset)}
+            >
+              {/* title: truncated labels are otherwise unreadable. */}
+              <span title={preset.label} className="min-w-0 flex-1 truncate">
+                {preset.label}
+              </span>
               {onPresetRename && (
-                <DropdownMenuItem
-                  className={cn(ROW_CLASS, 'justify-start pl-6')}
-                  onSelect={(e) => {
+                <button
+                  type="button"
+                  title={_({
+                    id: 'canvas.property_trigger.rename_preset',
+                    message: 'Rename preset',
+                  })}
+                  aria-label={_({
+                    id: 'canvas.property_trigger.rename_preset',
+                    message: 'Rename preset',
+                  })}
+                  onClick={(e) => {
+                    e.stopPropagation();
                     e.preventDefault();
                     onPresetRename(preset);
                   }}
+                  // Pointer events must not bubble into the Radix item — its
+                  // pointerup-select would apply the preset and close the menu.
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onPointerUp={(e) => e.stopPropagation()}
+                  className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
                 >
                   <CanvasIcon icon="pencil" size={11} />
-                  <span className="min-w-0 flex-1 truncate">
-                    {_({
-                      id: 'canvas.property_trigger.rename_preset_with_label',
-                      message: 'Rename {label}',
-                      values: { label: preset.label },
-                    })}
-                  </span>
-                </DropdownMenuItem>
+                </button>
               )}
               {onPresetDelete && (
-                <DropdownMenuItem
-                  className={cn(ROW_CLASS, 'justify-start pl-6')}
-                  onSelect={(e) => {
+                <button
+                  type="button"
+                  title={_({
+                    id: 'canvas.property_trigger.delete_preset',
+                    message: 'Delete preset',
+                  })}
+                  aria-label={_({
+                    id: 'canvas.property_trigger.delete_preset',
+                    message: 'Delete preset',
+                  })}
+                  onClick={(e) => {
+                    e.stopPropagation();
                     e.preventDefault();
                     onPresetDelete(preset.id);
                   }}
+                  // Pointer events must not bubble into the Radix item — its
+                  // pointerup-select would apply the preset and close the menu.
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onPointerUp={(e) => e.stopPropagation()}
+                  className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
                 >
                   <CanvasIcon icon="trash-2" size={11} />
-                  <span className="min-w-0 flex-1 truncate">
-                    {_({
-                      id: 'canvas.property_trigger.delete_preset_with_label',
-                      message: 'Delete {label}',
-                      values: { label: preset.label },
-                    })}
-                  </span>
-                </DropdownMenuItem>
+                </button>
               )}
-            </Fragment>
+            </DropdownMenuItem>
           ))}
           {canSavePreset && (
             <DropdownMenuItem
