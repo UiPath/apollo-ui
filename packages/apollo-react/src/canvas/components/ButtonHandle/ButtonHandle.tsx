@@ -3,12 +3,13 @@ import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import type { HandleConfigurationSpecificPosition } from '../../schema/node-definition/handle';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import { cx } from '../../utils/CssUtil';
+import { calculateGridAlignedHandlePositions } from '../../utils/handle-positioning';
 import {
   getHandleActionPortal,
   getInwardHandleLayout,
   type InwardHandleLayout,
 } from './ButtonHandleLayoutUtils';
-import { calculateGridAlignedHandlePositions, pixelToPercent } from './ButtonHandleStyleUtils';
+import { pixelToPercent } from './ButtonHandleStyleUtils';
 import { HandleButton, HandleHoverBridge } from './HandleButton';
 import { HandleLabel } from './HandleLabel';
 import { HandleNotch, type HandleType } from './HandleNotch';
