@@ -2,18 +2,18 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { DropdownMenuItem, DropdownMenuRadioGroup } from '@uipath/apollo-wind';
 import { useState } from 'react';
 import { CanvasIcon } from '../../utils/icon-registry';
+import type {
+  NodePropertyTriggerBehavior,
+  NodePropertyTriggerItem,
+  NodePropertyTriggerLayout,
+  NodePropertyTriggerPreset,
+} from './NodePropertyTrigger';
 import {
   NodePropertyTrigger,
   NodePropertyTriggerCheckboxItem,
   NodePropertyTriggerRadioItem,
   NodePropertyTriggerSectionLabel,
   NodePropertyTriggerSeparator,
-} from './NodePropertyTrigger';
-import type {
-  NodePropertyTriggerBehavior,
-  NodePropertyTriggerItem,
-  NodePropertyTriggerLayout,
-  NodePropertyTriggerPreset,
 } from './NodePropertyTrigger';
 
 const meta: Meta<typeof NodePropertyTrigger> = {

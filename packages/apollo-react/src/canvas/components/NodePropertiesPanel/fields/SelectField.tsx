@@ -31,14 +31,14 @@ export const SelectField = memo(function SelectField({
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={selectId} className="text-[13px] text-foreground-subtle">
+      <label htmlFor={selectId} className="text-[13px] text-(--canvas-foreground-de-emp)">
         {field.label}
       </label>
       <div className="relative">
         <select
           id={selectId}
           className={cn(
-            'nodrag w-full px-3 py-2 pr-8 text-[13px] border border-(--canvas-border) rounded bg-transparent text-foreground outline-none transition-colors appearance-none cursor-pointer',
+            'nodrag w-full px-3 py-2 pr-8 text-[13px] border border-(--canvas-border) rounded bg-(--canvas-background) text-(--canvas-foreground) outline-none transition-colors appearance-none cursor-pointer',
             'focus:border-(--canvas-primary)',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             error && 'border-(--canvas-error)'
@@ -60,12 +60,14 @@ export const SelectField = memo(function SelectField({
         </select>
         <ChevronDown
           size={14}
-          className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-foreground-subtle"
+          className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-(--canvas-foreground-de-emp)"
           aria-hidden
         />
       </div>
       {field.helpText && (
-        <span className="text-[12px] text-foreground-subtle block">{field.helpText}</span>
+        <span className="text-[12px] text-(--canvas-foreground-de-emp) block">
+          {field.helpText}
+        </span>
       )}
       {error && <span className="text-[12px] text-(--canvas-error-text) block">{error}</span>}
     </div>

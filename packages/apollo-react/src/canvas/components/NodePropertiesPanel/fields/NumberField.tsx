@@ -60,14 +60,17 @@ export const NumberField = memo(function NumberField({
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={`field-${field.key}`} className="text-[13px] text-foreground-subtle">
+      <label
+        htmlFor={`field-${field.key}`}
+        className="text-[13px] text-(--canvas-foreground-de-emp)"
+      >
         {field.label}
       </label>
       <div className="flex items-center gap-2">
         <input
           id={`field-${field.key}`}
           className={cn(
-            'nodrag flex-1 px-3 py-2 text-[13px] font-mono border border-(--canvas-border) rounded bg-transparent text-foreground outline-none transition-colors',
+            'nodrag flex-1 px-3 py-2 text-[13px] font-mono border border-(--canvas-border) rounded bg-(--canvas-background) text-(--canvas-foreground) outline-none transition-colors',
             'focus:border-(--canvas-primary)',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             '[appearance:textfield] [&::-webkit-inner-spin-button]:hidden [&::-webkit-outer-spin-button]:hidden',
@@ -83,13 +86,15 @@ export const NumberField = memo(function NumberField({
           step={field.step}
         />
         {field.suffix && (
-          <span className="shrink-0 text-[13px] text-foreground-subtle whitespace-nowrap">
+          <span className="shrink-0 text-[13px] text-(--canvas-foreground-de-emp) whitespace-nowrap">
             {field.suffix}
           </span>
         )}
       </div>
       {field.helpText && (
-        <span className="text-[12px] text-foreground-subtle block">{field.helpText}</span>
+        <span className="text-[12px] text-(--canvas-foreground-de-emp) block">
+          {field.helpText}
+        </span>
       )}
       {error && <span className="text-[12px] text-(--canvas-error-text) block">{error}</span>}
     </div>

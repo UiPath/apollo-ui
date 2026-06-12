@@ -10,7 +10,7 @@ interface TextFieldProps {
 }
 
 const inputBase =
-  'w-full px-3 py-2 text-[13px] font-mono border border-(--canvas-border) rounded bg-transparent text-foreground outline-none transition-colors placeholder:text-foreground-subtle focus:border-(--canvas-primary) disabled:opacity-50 disabled:cursor-not-allowed';
+  'w-full px-3 py-2 text-[13px] font-mono border border-(--canvas-border) rounded bg-(--canvas-background) text-(--canvas-foreground) outline-none transition-colors placeholder:text-(--canvas-foreground-de-emp) focus:border-(--canvas-primary) disabled:opacity-50 disabled:cursor-not-allowed';
 
 export const TextField = memo(function TextField({
   field,
@@ -61,7 +61,7 @@ export const TextField = memo(function TextField({
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={inputId} className="text-[13px] text-foreground-subtle">
+      <label htmlFor={inputId} className="text-[13px] text-(--canvas-foreground-de-emp)">
         {field.label}
       </label>
       {field.type === 'textarea' ? (
@@ -86,14 +86,16 @@ export const TextField = memo(function TextField({
             disabled={field.disabled}
           />
           {field.suffix && (
-            <span className="shrink-0 text-[13px] text-foreground-subtle whitespace-nowrap">
+            <span className="shrink-0 text-[13px] text-(--canvas-foreground-de-emp) whitespace-nowrap">
               {field.suffix}
             </span>
           )}
         </div>
       )}
       {field.helpText && (
-        <span className="text-[12px] text-foreground-subtle block">{field.helpText}</span>
+        <span className="text-[12px] text-(--canvas-foreground-de-emp) block">
+          {field.helpText}
+        </span>
       )}
       {error && <span className="text-[12px] text-(--canvas-error-text) block">{error}</span>}
     </div>
