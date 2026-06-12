@@ -74,7 +74,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
               aria-expanded={open}
               aria-label={selected.length > 0 ? `${selected.length} items selected` : placeholder}
               className={cn(
-                'w-full justify-between future:rounded-xl future:border-0 future:bg-surface-raised future:hover:bg-surface-overlay future:font-normal future:text-muted-foreground',
+                'w-full justify-between future:rounded-xl future:border-0 future:bg-surface-overlay future:hover:bg-surface-hover future:font-normal future:text-muted-foreground',
                 selected.length > 0 ? 'h-auto min-h-10' : 'h-10'
               )}
               disabled={disabled}
@@ -89,7 +89,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
                       <Badge
                         key={value}
                         variant="secondary"
-                        className="mr-1"
+                        className="mr-1 future:bg-surface-raised future:hover:bg-surface-raised"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleUnselect(value);
