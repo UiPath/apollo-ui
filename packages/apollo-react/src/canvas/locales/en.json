@@ -60,6 +60,6 @@
   "canvas.property_trigger.no_saved_presets": "No saved presets yet.",
   "canvas.property_trigger.save_as_preset": "Save as preset",
   "canvas.property_trigger.apply_preset_with_label": "Apply {label}",
-  "canvas.property_trigger.delete_preset_with_label": "Delete {label}",
-  "canvas.property_trigger.rename_preset_with_label": "Rename {label}"
+  "canvas.property_trigger.rename_preset": "Rename preset",
+  "canvas.property_trigger.delete_preset": "Delete preset"
 }
