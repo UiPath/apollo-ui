@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v4.45.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.45.0...@uipath/apollo-react@4.45.1) (2026-06-12)
+
+### Bug Fixes
+
+* **apollo-react:** per-preset accessible names on inline preset actions ([b1ed0c8](https://github.com/UiPath/apollo-ui/commit/b1ed0c8251c4dcfcc589a695381614d64dc8a8be))
+* **apollo-react:** restore inline preset rename/delete actions in NodePropertyTrigger ([36f1a4d](https://github.com/UiPath/apollo-ui/commit/36f1a4d670da848867713d63a6ce8318dd38d3d9)), closes [#781](https://github.com/UiPath/apollo-ui/issues/781)
+
 ## [@uipath/apollo-react-v4.45.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.44.1...@uipath/apollo-react@4.45.0) (2026-06-12)
 
 ### Features
