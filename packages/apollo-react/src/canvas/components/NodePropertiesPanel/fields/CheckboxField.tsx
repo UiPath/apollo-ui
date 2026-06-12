@@ -1,3 +1,4 @@
+import { cn } from '@uipath/apollo-wind';
 import { memo, useCallback } from 'react';
 import type { ConfigField } from '../NodePropertiesPanel.types';
 
@@ -24,10 +25,16 @@ export const CheckboxField = memo(function CheckboxField({
   return (
     <div className="flex flex-col gap-1">
       <div
-        className={`py-2 rounded transition ${field.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-(--canvas-background-hover)'}`}
+        className={cn(
+          'py-2 rounded transition',
+          field.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-(--canvas-background-hover)'
+        )}
       >
         <label
-          className={`flex items-center text-[13px] text-(--canvas-foreground) select-none ${field.disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+          className={cn(
+            'flex items-center text-[13px] text-(--canvas-foreground) select-none',
+            field.disabled ? 'cursor-not-allowed' : 'cursor-pointer'
+          )}
         >
           <input
             className="nodrag size-[18px] mr-2 cursor-pointer disabled:cursor-not-allowed accent-(--canvas-primary)"
