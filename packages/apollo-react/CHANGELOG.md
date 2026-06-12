@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.46.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.45.1...@uipath/apollo-react@4.46.0) (2026-06-12)
+
+### Features
+
+* **apollo-react:** add unified CanvasEdge with waypoint editing and pluggable routing ([106d268](https://github.com/UiPath/apollo-ui/commit/106d268b54ed4396854559c7f62bf15fc82f4a94))
+
 ## [@uipath/apollo-react-v4.45.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.45.0...@uipath/apollo-react@4.45.1) (2026-06-12)
 
 ### Bug Fixes
