@@ -11,6 +11,7 @@ export * from './createPreviewGraph';
 export * from './createPreviewNode';
 export * from './export-canvas';
 export * from './GroupModificationUtils';
+export * from './handle-positioning';
 export * from './icon-registry';
 export * from './manifest-resolver';
 export * from './NodeUtils';
