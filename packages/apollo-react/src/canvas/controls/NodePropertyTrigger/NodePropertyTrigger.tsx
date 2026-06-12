@@ -447,7 +447,7 @@ export function NodePropertyTrigger({
 
   return (
     <div
-      data-node-property-panel-root
+      data-node-property-trigger-root
       className={cn(
         'w-fit flex flex-row items-center rounded-xl border border-border-subtle bg-surface-raised p-1',
         className
@@ -485,7 +485,7 @@ export function NodePropertyTrigger({
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              data-node-property-panel-menu
+              data-node-property-trigger-menu
               align="end"
               sideOffset={8}
               className="w-56 rounded-xl border-border-subtle bg-surface-raised p-0 shadow-[0_4px_16px_rgba(0,0,0,0.12)]"
