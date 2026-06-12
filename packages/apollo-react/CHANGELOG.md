@@ -1,3 +1,27 @@
+## [@uipath/apollo-react-v4.45.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.44.1...@uipath/apollo-react@4.45.0) (2026-06-12)
+
+### Features
+
+* **apollo-react:** add CanvasPropertiesPanel control component ([2ae9275](https://github.com/UiPath/apollo-ui/commit/2ae9275945c95772bb40438357f8a61bd75ee9ef))
+* **apollo-react:** add NodePropertyTrigger canvas control component ([133f066](https://github.com/UiPath/apollo-ui/commit/133f06650687b5c2ac7a9559225753ebaa2d31dd))
+* **apollo-react:** localize NodePropertyTrigger prefab via useSafeLingui ([6438044](https://github.com/UiPath/apollo-ui/commit/6438044fb4055716747d1977e4283b08b4e38279))
+* **apollo-react:** migrate NodePropertiesPanel to Tailwind CSS ([fdd2810](https://github.com/UiPath/apollo-ui/commit/fdd28103a29c687b0ab40cc0fbed9549993d0eb6))
+* **apollo-react:** NodePropertyTrigger preset rename affordance ([73e8d90](https://github.com/UiPath/apollo-ui/commit/73e8d902c025f7aa057272af3e2bdcc85a19cadc))
+* **storybook:** update Canvas panel IA and rename stories ([51e2c6d](https://github.com/UiPath/apollo-ui/commit/51e2c6dec37973e1809d440a1ce49f86d457a266))
+
+### Bug Fixes
+
+* **apollo-react:** address CalinaCristian review comments on ia-and-panel-nodes ([6ccc721](https://github.com/UiPath/apollo-ui/commit/6ccc721e5be5645e9318e75c1a39de3eee5a05c3))
+* **apollo-react:** address Copilot review comments on ia-and-panel-nodes ([5c20073](https://github.com/UiPath/apollo-ui/commit/5c2007309747e97fd5b628ecc89a9a21abe788da))
+* **apollo-react:** address Copilot review comments on ia-and-panel-nodes (round 2) ([6baf6c4](https://github.com/UiPath/apollo-ui/commit/6baf6c4f2f94d66d06cf048728a79b719a02d5e9))
+* **apollo-react:** address Copilot review comments on ia-and-panel-nodes (round 3) ([e046026](https://github.com/UiPath/apollo-ui/commit/e046026a8933988be9f50258ff4e120d4b97d5b3))
+* **apollo-react:** address NodePropertyTrigger review feedback ([5ed6ad2](https://github.com/UiPath/apollo-ui/commit/5ed6ad281755a49114df7c436b6ad4bf9bc91c66))
+* **apollo-react:** address PR review comments on ia-and-panel-nodes ([18af431](https://github.com/UiPath/apollo-ui/commit/18af43111c760cc3751a8597442ce1d7f65b65d3))
+* **apollo-react:** apply biome formatting to NodePropertyTrigger files ([af6833f](https://github.com/UiPath/apollo-ui/commit/af6833f56bd09c706897fcc79f5edcee3c70aee4))
+* **apollo-react:** clamp uncontrolled NodePropertyTrigger selection to current options ([ce8eccb](https://github.com/UiPath/apollo-ui/commit/ce8eccb2c270daaf83b2923b16a79b3dfd4344b7))
+* **apollo-react:** replace hard-coded red-500 with canvas error tokens in field components ([f8f7d7d](https://github.com/UiPath/apollo-ui/commit/f8f7d7deed364d36b444a9c9fd07e922802a8050))
+* **apollo-react:** tidy NodePropertyTrigger review nits ([d22ec4b](https://github.com/UiPath/apollo-ui/commit/d22ec4ba743927f3f42b20d11f9eb60b3b2e2140))
+
 ## [@uipath/apollo-react-v4.44.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.44.0...@uipath/apollo-react@4.44.1) (2026-06-11)
 
 ### Bug Fixes
