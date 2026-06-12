@@ -141,7 +141,7 @@ describe('NodePropertyTrigger', () => {
       onPresetApply,
     });
     await openMenu(user);
-    await user.click(screen.getByRole('menuitem', { name: /Compact/ }));
+    await user.click(screen.getByRole('menuitem', { name: 'Apply Compact' }));
     expect(onPresetApply).toHaveBeenCalledWith({ id: 'p1', label: 'Compact' });
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
@@ -153,7 +153,7 @@ describe('NodePropertyTrigger', () => {
       onPresetDelete,
     });
     await openMenu(user);
-    await user.click(screen.getByRole('button', { name: 'Delete preset' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Delete Compact' }));
     expect(onPresetDelete).toHaveBeenCalledWith('p1');
     expect(screen.getByRole('menu')).toBeInTheDocument();
   });
@@ -165,7 +165,7 @@ describe('NodePropertyTrigger', () => {
       onPresetRename,
     });
     await openMenu(user);
-    await user.click(screen.getByRole('button', { name: 'Rename preset' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Rename Compact' }));
     expect(onPresetRename).toHaveBeenCalledWith({ id: 'p1', label: 'Compact' });
     expect(screen.getByRole('menu')).toBeInTheDocument();
 
@@ -176,7 +176,7 @@ describe('NodePropertyTrigger', () => {
         presets={[{ id: 'p1', label: 'Compact' }]}
       />
     );
-    expect(screen.queryByRole('button', { name: 'Rename preset' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'Rename Compact' })).not.toBeInTheDocument();
   });
 
   it('calls onPropertiesClick when the label button is clicked', async () => {
@@ -184,6 +184,12 @@ describe('NodePropertyTrigger', () => {
     const { user } = setup({ onPropertiesClick, label: 'Properties' });
     await user.click(screen.getByRole('button', { name: 'Properties' }));
     expect(onPropertiesClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders the label as non-interactive text when no click handler is provided', () => {
+    setup({ label: 'Properties' });
+    expect(screen.queryByRole('button', { name: 'Properties' })).not.toBeInTheDocument();
+    expect(screen.getByText('Properties')).toBeInTheDocument();
   });
 
   it('shows the Save as preset button only when canSavePreset is true', async () => {
@@ -201,7 +207,7 @@ describe('NodePropertyTrigger', () => {
   });
 
   it('renders a plain label pill without divider or sliders button when showMenu is false', () => {
-    setup({ showMenu: false, label: 'Variables' });
+    setup({ showMenu: false, label: 'Variables', onPropertiesClick: vi.fn() });
     expect(screen.getByRole('button', { name: 'Variables' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Panel options' })).not.toBeInTheDocument();
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();

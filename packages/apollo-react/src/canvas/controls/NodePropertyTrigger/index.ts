@@ -1,17 +1,17 @@
+export type {
+  NodePropertyTriggerBehavior,
+  NodePropertyTriggerBehaviorOption,
+  NodePropertyTriggerCheckboxItemProps,
+  NodePropertyTriggerItem,
+  NodePropertyTriggerLayout,
+  NodePropertyTriggerLayoutOption,
+  NodePropertyTriggerPreset,
+  NodePropertyTriggerProps,
+} from './NodePropertyTrigger';
 export {
   NodePropertyTrigger,
   NodePropertyTriggerCheckboxItem,
   NodePropertyTriggerRadioItem,
   NodePropertyTriggerSectionLabel,
   NodePropertyTriggerSeparator,
-} from './NodePropertyTrigger';
-export type {
-  NodePropertyTriggerProps,
-  NodePropertyTriggerItem,
-  NodePropertyTriggerBehavior,
-  NodePropertyTriggerBehaviorOption,
-  NodePropertyTriggerCheckboxItemProps,
-  NodePropertyTriggerLayout,
-  NodePropertyTriggerLayoutOption,
-  NodePropertyTriggerPreset,
 } from './NodePropertyTrigger';

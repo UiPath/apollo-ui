@@ -118,9 +118,9 @@ export type NodePropertyTriggerProps = {
   // ── Built-in sections (used only when `children` is not provided) ──
   /** Panels to display as toggleable items in the popover. */
   panels?: NodePropertyTriggerItem[];
-  /** Currently active panel behaviour — reflected as a selection indicator in the popover. */
+  /** Currently active panel behavior — reflected as a selection indicator in the popover. */
   behavior?: NodePropertyTriggerBehavior;
-  /** Behaviour options shown in the popover. Defaults to Auto hide / Always persist. */
+  /** Behavior options shown in the popover. Defaults to Auto hide / Always persist. */
   behaviorOptions?: NodePropertyTriggerBehaviorOption[];
   /** Currently active layout — reflected as a selection indicator in the popover. */
   layout?: NodePropertyTriggerLayout;
@@ -259,6 +259,8 @@ export function NodePropertyTrigger({
     menuAriaLabel ?? _({ id: 'canvas.property_trigger.panel_options', message: 'Panel options' });
   const resolvedBehaviorOptions = behaviorOptions ?? defaultBehaviorOptions(_);
   const resolvedLayoutOptions = layoutOptions ?? defaultLayoutOptions(_);
+  const labelBaseClassName =
+    'flex h-8 items-center rounded-lg px-2.5 text-xs font-medium text-foreground-muted transition';
 
   // Uncontrolled fallback — when behavior/layout are not driven by the consumer,
   // the component manages them internally so it works correctly out of the box.
@@ -370,58 +372,55 @@ export function NodePropertyTrigger({
             </p>
           )}
           {presets.map((preset) => (
-            <DropdownMenuItem
-              key={preset.id}
-              className={cn(ROW_CLASS, 'pr-1')}
-              onSelect={() => onPresetApply?.(preset)}
-            >
-              <span className="min-w-0 flex-1 truncate">{preset.label}</span>
+            <Fragment key={preset.id}>
+              <DropdownMenuItem
+                aria-label={_({
+                  id: 'canvas.property_trigger.apply_preset_with_label',
+                  message: 'Apply {label}',
+                  values: { label: preset.label },
+                })}
+                className={ROW_CLASS}
+                onSelect={() => onPresetApply?.(preset)}
+              >
+                <span className="min-w-0 flex-1 truncate">{preset.label}</span>
+              </DropdownMenuItem>
               {onPresetRename && (
-                <button
-                  type="button"
-                  title={_({
-                    id: 'canvas.property_trigger.rename_preset',
-                    message: 'Rename preset',
-                  })}
-                  aria-label={_({
-                    id: 'canvas.property_trigger.rename_preset',
-                    message: 'Rename preset',
-                  })}
-                  onClick={(e) => {
-                    e.stopPropagation();
+                <DropdownMenuItem
+                  className={cn(ROW_CLASS, 'justify-start pl-6')}
+                  onSelect={(e) => {
                     e.preventDefault();
                     onPresetRename(preset);
                   }}
-                  // Pointer events must not bubble into the Radix item — its
-                  // pointerup-select would apply the preset and close the menu.
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onPointerUp={(e) => e.stopPropagation()}
-                  className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
                 >
                   <CanvasIcon icon="pencil" size={11} />
-                </button>
+                  <span className="min-w-0 flex-1 truncate">
+                    {_({
+                      id: 'canvas.property_trigger.rename_preset_with_label',
+                      message: 'Rename {label}',
+                      values: { label: preset.label },
+                    })}
+                  </span>
+                </DropdownMenuItem>
               )}
-              <button
-                type="button"
-                title={_({ id: 'canvas.property_trigger.delete_preset', message: 'Delete preset' })}
-                aria-label={_({
-                  id: 'canvas.property_trigger.delete_preset',
-                  message: 'Delete preset',
-                })}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  onPresetDelete?.(preset.id);
-                }}
-                // Pointer events must not bubble into the Radix item — its
-                // pointerup-select would apply the preset and close the menu.
-                onPointerDown={(e) => e.stopPropagation()}
-                onPointerUp={(e) => e.stopPropagation()}
-                className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
-              >
-                <CanvasIcon icon="trash-2" size={11} />
-              </button>
-            </DropdownMenuItem>
+              {onPresetDelete && (
+                <DropdownMenuItem
+                  className={cn(ROW_CLASS, 'justify-start pl-6')}
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    onPresetDelete(preset.id);
+                  }}
+                >
+                  <CanvasIcon icon="trash-2" size={11} />
+                  <span className="min-w-0 flex-1 truncate">
+                    {_({
+                      id: 'canvas.property_trigger.delete_preset_with_label',
+                      message: 'Delete {label}',
+                      values: { label: preset.label },
+                    })}
+                  </span>
+                </DropdownMenuItem>
+              )}
+            </Fragment>
           ))}
           {canSavePreset && (
             <DropdownMenuItem
@@ -455,13 +454,17 @@ export function NodePropertyTrigger({
       )}
       style={{ boxShadow: '0 2px 6px rgba(0,0,0,0.08)' }}
     >
-      <button
-        type="button"
-        onClick={onPropertiesClick}
-        className="flex h-8 items-center rounded-lg px-2.5 text-xs font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
-      >
-        {resolvedLabel}
-      </button>
+      {onPropertiesClick ? (
+        <button
+          type="button"
+          onClick={onPropertiesClick}
+          className={cn(labelBaseClassName, 'hover:bg-surface-overlay hover:text-foreground')}
+        >
+          {resolvedLabel}
+        </button>
+      ) : (
+        <span className={labelBaseClassName}>{resolvedLabel}</span>
+      )}
 
       {showMenu && (
         <>

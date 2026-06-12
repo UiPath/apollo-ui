@@ -24,10 +24,10 @@ export const CheckboxField = memo(function CheckboxField({
   return (
     <div className="flex flex-col gap-1">
       <div
-        className={`py-2 rounded transition ${field.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-surface-hover'}`}
+        className={`py-2 rounded transition ${field.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-(--canvas-background-hover)'}`}
       >
         <label
-          className={`flex items-center text-[13px] text-foreground select-none ${field.disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+          className={`flex items-center text-[13px] text-(--canvas-foreground) select-none ${field.disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
         >
           <input
             className="nodrag size-[18px] mr-2 cursor-pointer disabled:cursor-not-allowed accent-(--canvas-primary)"
@@ -41,7 +41,9 @@ export const CheckboxField = memo(function CheckboxField({
         </label>
       </div>
       {field.helpText && (
-        <span className="text-[12px] text-foreground-subtle block ml-[26px]">{field.helpText}</span>
+        <span className="text-[12px] text-(--canvas-foreground-de-emp) block ml-[26px]">
+          {field.helpText}
+        </span>
       )}
       {error && (
         <span className="text-[12px] text-(--canvas-error-text) block ml-[26px]">{error}</span>

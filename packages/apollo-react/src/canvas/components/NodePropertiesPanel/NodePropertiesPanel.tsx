@@ -95,7 +95,9 @@ export const NodePropertiesPanel = memo(function NodePropertiesPanel({
         className="px-4 py-4 border-b border-(--canvas-border-de-emp) last:border-b-0"
       >
         {section.title && (
-          <div className="font-medium text-[14px] text-foreground mb-2">{section.title}</div>
+          <div className="font-medium text-[14px] text-(--canvas-foreground) mb-2">
+            {section.title}
+          </div>
         )}
         <div className="flex flex-col gap-4">
           {section.fields.map((field) => (
