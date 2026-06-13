@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.47.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.46.0...@uipath/apollo-react@4.47.0) (2026-06-13)
+
+### Features
+
+* **apollo-react:** expose canvas handle positioning utility ([e17d10a](https://github.com/UiPath/apollo-ui/commit/e17d10a90739b8e9311d663d9b1498681d0d73d0))
+
 ## [@uipath/apollo-react-v4.46.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.45.1...@uipath/apollo-react@4.46.0) (2026-06-12)
 
 ### Features
