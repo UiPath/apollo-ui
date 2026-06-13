@@ -392,6 +392,22 @@ function LoopNodeComponent(props: LoopNodeProps) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
+      {/* Clip the surface-overlay matte to the card's inner edge so it never overshoots or
+          falls short at the corners. 19px = container rounded-[20px] - 1px border. */}
+      <div className="absolute inset-0 isolate flex flex-col overflow-hidden rounded-[19px]">
+        <Header
+          title={displayTitle}
+          icon={displayIcon}
+          loading={isLoading}
+          isParallel={isParallel}
+          label={label}
+          iterationPillState={iterationPillStateProp}
+          nodeWidth={containerWidth}
+          hasTopLeftAdornment={hasTopLeftAdornment}
+          hasTopRightAdornment={hasTopRightAdornment}
+        />
+        <BodyFrame isEmpty={showEmptyStateButton} isLoading={isLoading} />
+      </div>
       {ADORNMENT_SLOT_POSITIONS.map((slot) =>
         adornments?.[slot] ? (
           <BaseBadgeSlot key={slot} position={ADORNMENT_SLOT_SHAPES[slot]} shape="rectangle">
@@ -408,18 +424,6 @@ function LoopNodeComponent(props: LoopNodeProps) {
           onResizeEnd={handleResizeEnd}
         />
       ) : null}
-      <Header
-        title={displayTitle}
-        icon={displayIcon}
-        loading={isLoading}
-        isParallel={isParallel}
-        label={label}
-        iterationPillState={iterationPillStateProp}
-        nodeWidth={containerWidth}
-        hasTopLeftAdornment={hasTopLeftAdornment}
-        hasTopRightAdornment={hasTopRightAdornment}
-      />
-      <BodyFrame isEmpty={showEmptyStateButton} isLoading={isLoading} />
       {showEmptyStateButton ? (
         <div
           className={cn(
@@ -504,7 +508,7 @@ function Header({
   return (
     <div
       className={cn(
-        'flex shrink-0 cursor-grab items-center justify-between gap-2.5 rounded-t-[18px]',
+        'relative z-10 flex shrink-0 cursor-grab items-center justify-between gap-2.5 rounded-t-[18px]',
         '-mb-2.5 bg-surface-overlay px-3.5 pb-2.5 pt-2.5 text-foreground',
         'active:cursor-grabbing'
       )}
@@ -562,7 +566,9 @@ function BodyFrame({ isEmpty, isLoading }: { isEmpty?: boolean; isLoading?: bool
       data-empty={isEmpty ? 'true' : 'false'}
       className={cn(
         'relative m-2.5 flex flex-1 rounded-xl border-[1.5px] border-dashed border-border bg-transparent',
-        'shadow-[0_0_0_10px_var(--surface-overlay)]',
+        // Oversized spread on purpose: the parent rounded-[19px] clip layer (not this value)
+        // defines the matte's outer edge. Shrinking it back reintroduces the corner gaps.
+        'shadow-[0_0_0_200px_var(--surface-overlay)]',
         'pointer-events-none'
       )}
     >
