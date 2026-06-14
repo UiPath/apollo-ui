@@ -11,6 +11,8 @@ import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import { useSafeLingui } from '../../../i18n';
 import { GRID_SPACING } from '../../constants';
+import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
+import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
 import { NodeViewportOverlay } from '../NodeViewportOverlay';
 import type { ToolbarAction } from '../Toolbar';
 import { NodeToolbar } from '../Toolbar';
@@ -71,6 +73,7 @@ const StickyNoteNodeComponent = ({
 }: StickyNoteNodeProps) => {
   const { _ } = useSafeLingui();
   const { updateNodeData, deleteElements } = useReactFlow();
+  const { multipleNodesSelected } = useSelectionState();
   const [isEditing, setIsEditing] = useState(!readOnly && (data.autoFocus ?? false));
   const [isResizing, setIsResizing] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
@@ -108,10 +111,10 @@ const StickyNoteNodeComponent = ({
   }, [isEditing, data.autoFocus, id, updateNodeData, readOnly]);
 
   useEffect(() => {
-    if (!selected || isResizing) {
+    if (!selected || dragging || isResizing || multipleNodesSelected) {
       setIsColorPickerOpen(false);
     }
-  }, [selected, isResizing]);
+  }, [selected, dragging, isResizing, multipleNodesSelected]);
 
   useEffect(() => {
     if (readOnly) {
@@ -341,6 +344,9 @@ const StickyNoteNodeComponent = ({
     };
   }, [_, handleEditClick, handleToggleColorPicker, color, handleDelete]);
 
+  const shouldRenderToolbarOverlay =
+    !readOnly && selected && !dragging && !isResizing && !multipleNodesSelected;
+
   return (
     <>
       <Global styles={stickyNoteGlobalStyles} />
@@ -453,10 +459,10 @@ const StickyNoteNodeComponent = ({
           )}
         </StickyNoteContainer>
 
-        {!readOnly && selected && !dragging && !isResizing && (
+        {shouldRenderToolbarOverlay && (
           <NodeToolbar nodeId={id} config={toolbarConfig} expanded={true} portalToNodeOverlay />
         )}
-        {!readOnly && selected && !dragging && !isResizing && (
+        {shouldRenderToolbarOverlay && (
           <NodeViewportOverlay nodeId={id} layer="nodeToolbar">
             <AnimatePresence>
               {isColorPickerOpen && (
@@ -506,4 +512,4 @@ const StickyNoteNodeComponent = ({
   );
 };
 
-export const StickyNoteNode = memo(StickyNoteNodeComponent);
+export const StickyNoteNode = memo(StickyNoteNodeComponent, areNodePropsEqualIgnoringPosition);

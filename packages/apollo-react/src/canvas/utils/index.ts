@@ -14,6 +14,7 @@ export * from './GroupModificationUtils';
 export * from './handle-positioning';
 export * from './icon-registry';
 export * from './manifest-resolver';
+export * from './nodePropsEqual';
 export * from './NodeUtils';
 export * from './props-helpers';
 export * from './resource-operations';

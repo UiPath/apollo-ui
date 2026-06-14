@@ -112,7 +112,7 @@ function resolveInteractionState(
 function useHasChildNodes(id: string, enabled: boolean): boolean {
   return useStore(
     useCallback(
-      (state: ReactFlowState) => !enabled || state.nodes.some((node) => node.parentId === id),
+      (state: ReactFlowState) => !enabled || (state.parentLookup.get(id)?.size ?? 0) > 0,
       [id, enabled]
     )
   );
@@ -434,12 +434,11 @@ function LoopNodeComponent(props: LoopNodeProps) {
           <EmptyState label={addNodeToLoopLabel} onAddFirstChild={handleEmptyClick} />
         </div>
       ) : null}
-      {toolbarConfig && (
+      {toolbarConfig && !dragging && !multipleNodesSelected && (
         <NodeToolbar
           nodeId={id}
           config={toolbarConfig}
           expanded={selected || isHovered}
-          hidden={dragging || multipleNodesSelected}
           portalToNodeOverlay
         />
       )}
