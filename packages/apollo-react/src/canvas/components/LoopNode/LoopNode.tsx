@@ -430,11 +430,12 @@ function LoopNodeComponent(props: LoopNodeProps) {
           <EmptyState label={addNodeToLoopLabel} onAddFirstChild={handleEmptyClick} />
         </div>
       ) : null}
-      {toolbarConfig && !dragging && !multipleNodesSelected && (
+      {toolbarConfig && (
         <NodeToolbar
           nodeId={id}
           config={toolbarConfig}
           expanded={selected || isHovered}
+          hidden={dragging || multipleNodesSelected}
           portalToNodeOverlay
         />
       )}

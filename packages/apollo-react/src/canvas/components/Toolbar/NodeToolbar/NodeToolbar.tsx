@@ -154,6 +154,10 @@ const NodeToolbarComponent = ({
     return null;
   }
 
+  if (portalToNodeOverlay && displayState === 'hidden') {
+    return null;
+  }
+
   const toolbarContent = (
     <AnimatePresence>
       {displayState !== 'hidden' && (
