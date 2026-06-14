@@ -258,6 +258,44 @@ describe('LoopNode status border hover treatment', () => {
   });
 });
 
+describe('LoopNode boundary state', () => {
+  it('renders the loop shell in the default boundary state', () => {
+    renderLoopNode();
+
+    const container = getLoopContainer();
+    const bodyFrame = screen.getByTestId('loop-body-frame');
+    expect(container).toHaveAttribute('data-boundary-state', 'default');
+    expect(container).not.toHaveClass('outline-error');
+    expect(container).not.toHaveClass('outline-brand');
+    expect(bodyFrame).toHaveClass('border-border');
+    expect(bodyFrame).not.toHaveClass('border-error');
+  });
+
+  it('renders the loop shell with error styling when the boundary state is invalid', () => {
+    renderLoopNode({ boundaryState: 'invalid' });
+
+    const container = getLoopContainer();
+    const bodyFrame = screen.getByTestId('loop-body-frame');
+    expect(container).toHaveAttribute('data-boundary-state', 'invalid');
+    expect(container).toHaveClass('outline-error');
+    expect(container).not.toHaveClass('outline-brand');
+    expect(bodyFrame).toHaveClass('border-border');
+    expect(bodyFrame).not.toHaveClass('border-error');
+  });
+
+  it('renders the loop shell with brand styling when the boundary state is drop target', () => {
+    renderLoopNode({ boundaryState: 'drop-target' });
+
+    const container = getLoopContainer();
+    const bodyFrame = screen.getByTestId('loop-body-frame');
+    expect(container).toHaveAttribute('data-boundary-state', 'drop-target');
+    expect(container).toHaveClass('outline-brand');
+    expect(container).not.toHaveClass('outline-error');
+    expect(bodyFrame).toHaveClass('border-border');
+    expect(bodyFrame).not.toHaveClass('border-error');
+  });
+});
+
 describe('LoopNode execution count', () => {
   it('renders the execution count pill when iterationPillState is provided', () => {
     const iterationPillState: LoopNodeExecutionCountState = {

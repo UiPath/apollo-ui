@@ -189,6 +189,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
     onResizeEnd,
     toolbarConfig: toolbarConfigProp,
     adornments: adornmentsProp,
+    boundaryState = 'default',
     executionStatusOverride,
     suggestionType: suggestionTypeProp,
     iterationPillState: iterationPillStateProp,
@@ -254,7 +255,6 @@ function LoopNodeComponent(props: LoopNodeProps) {
     id: 'loop-node.add-node',
     message: 'Add node to loop',
   });
-  const isDropTarget = resolvedData.isDropTarget === true;
   const containerWidth = width || DEFAULT_CONTAINER_WIDTH;
   const containerHeight = height || DEFAULT_CONTAINER_HEIGHT;
   const resizeControlsMounted = isDesignMode && !dragging;
@@ -371,6 +371,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
       data-selected={selected ? 'true' : 'false'}
       data-execution-status={executionStatus}
       data-interaction-state={interactionState}
+      data-boundary-state={boundaryState}
       data-suggestion-type={suggestionType}
       data-validation-status={validationState?.validationStatus}
       aria-busy={resolvedData.loading || undefined}
@@ -382,7 +383,8 @@ function LoopNodeComponent(props: LoopNodeProps) {
         isHovered && 'shadow-(--canvas-node-shadow-hover)',
         isHovered && !hasStatusBorder && 'border-border-hover',
         selected && 'outline outline-2 outline-foreground-accent-muted',
-        isDropTarget && 'bg-surface-hover outline outline-2 outline-brand',
+        boundaryState === 'drop-target' && 'outline outline-2 outline-brand',
+        boundaryState === 'invalid' && 'outline outline-2 outline-error',
         interactionState === 'drag' && 'cursor-grabbing shadow-(--canvas-node-shadow-lifted)'
       )}
       style={{

@@ -22,9 +22,12 @@ export interface LoopNodeExecutionCountState {
   iterationStatuses?: Map<number, ElementStatusValues>;
 }
 
+export type LoopNodeBoundaryState = 'default' | 'drop-target' | 'invalid';
+
 export interface LoopNodeConfig {
   toolbarConfig?: NodeToolbarConfig | null;
   adornments?: NodeAdornments;
+  boundaryState?: LoopNodeBoundaryState;
   executionStatusOverride?: ElementStatusValues;
   suggestionType?: SuggestionType;
   iterationPillState?: LoopNodeExecutionCountState;

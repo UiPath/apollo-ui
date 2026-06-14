@@ -12,6 +12,7 @@ import {
   getContainerResizeMinimums,
   getContainerSafeArea,
   getNodeDimensions,
+  isRectInsideContainerSafeArea,
   placeContainerNode,
 } from './container';
 
@@ -36,6 +37,46 @@ describe('container sizing', () => {
       minHeight: DEFAULT_CONTAINER_HEIGHT,
       padding: { left: 144, right: 144, top: 96, bottom: 48 },
     });
+  });
+
+  it('detects whether a child rect is fully inside the container boundary safe area', () => {
+    const containerNode: Node = {
+      id: 'loop-1',
+      type: 'loop',
+      position: { x: 0, y: 0 },
+      style: { width: 704, height: 368 },
+      data: {},
+    };
+
+    expect(
+      isRectInsideContainerSafeArea({ x: 48, y: 80, width: 96, height: 96 }, containerNode)
+    ).toBe(true);
+    expect(
+      isRectInsideContainerSafeArea({ x: 47, y: 80, width: 96, height: 96 }, containerNode)
+    ).toBe(false);
+    expect(
+      isRectInsideContainerSafeArea({ x: 48, y: 79, width: 96, height: 96 }, containerNode)
+    ).toBe(false);
+    expect(
+      isRectInsideContainerSafeArea({ x: 561, y: 80, width: 96, height: 96 }, containerNode)
+    ).toBe(false);
+    expect(
+      isRectInsideContainerSafeArea({ x: 48, y: 225, width: 96, height: 96 }, containerNode)
+    ).toBe(false);
+  });
+
+  it('uses measured dimensions when validating a child rect against a container safe area', () => {
+    const containerNode: Node = {
+      id: 'loop-1',
+      type: 'loop',
+      position: { x: 0, y: 0 },
+      measured: { width: 704, height: 368 },
+      data: {},
+    };
+
+    expect(
+      isRectInsideContainerSafeArea({ x: 144, y: 96, width: 416, height: 224 }, containerNode)
+    ).toBe(true);
   });
 
   it('computes side-specific resize minimums that keep children inside the body', () => {
