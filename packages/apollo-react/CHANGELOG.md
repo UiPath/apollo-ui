@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.47.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.47.0...@uipath/apollo-react@4.47.1) (2026-06-14)
+
+### Bug Fixes
+
+* **apollo-react:** clip loop node matte to remove corner gaps ([d6071d1](https://github.com/UiPath/apollo-ui/commit/d6071d12c38f91f1b5d874fd59e68e6b7dcf7e65))
+
 ## [@uipath/apollo-react-v4.47.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.46.0...@uipath/apollo-react@4.47.0) (2026-06-13)
 
 ### Features
