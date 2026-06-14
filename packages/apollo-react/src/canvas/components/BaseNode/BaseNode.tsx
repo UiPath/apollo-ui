@@ -710,12 +710,11 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           <div className="basis-full pt-0.5 min-w-0 overflow-hidden">{displayFooter}</div>
         )}
       </BaseContainer>
-      {toolbarConfig && (
+      {toolbarConfig && !dragging && !multipleNodesSelected && (
         <NodeToolbar
           nodeId={id}
           config={toolbarConfig}
           expanded={selected || isHovered}
-          hidden={dragging || multipleNodesSelected}
           offsetToolbar={offsetToolbar}
         />
       )}

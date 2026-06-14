@@ -1,6 +1,10 @@
 import { type ReactNode, useMemo } from 'react';
 import { useEdgeExecutionState, useElementValidationStatus } from '../../../../hooks';
-import type { ElementStatus, NodeExecutionStateWithDebug } from '../../../../types/execution';
+import {
+  type ElementStatus,
+  ElementStatusValues,
+  type NodeExecutionStateWithDebug,
+} from '../../../../types/execution';
 import type { ValidationErrorSeverity } from '../../../../types/validation';
 import { edgeTargetStatusToEdgeColor, getStatusAnimation } from '../../EdgeUtils';
 
@@ -39,7 +43,15 @@ export function useExecutionEdge(args: UseExecutionEdgeArgs): ExecutionEdge {
 
   const status = enabled ? resolveStatus(executionState, validation) : undefined;
   const statusColor = status ? edgeTargetStatusToEdgeColor[status] : undefined;
-  const animation = useMemo(() => getStatusAnimation(status, edgePath), [status, edgePath]);
+  // Non-animating edges should not recompute animation output on geometry-only updates.
+  const animationPath = status === ElementStatusValues.InProgress ? edgePath : undefined;
+  const animation = useMemo(() => {
+    if (animationPath == null) {
+      return null;
+    }
+
+    return getStatusAnimation(status, animationPath);
+  }, [status, animationPath]);
 
   return { statusColor, animation };
 }

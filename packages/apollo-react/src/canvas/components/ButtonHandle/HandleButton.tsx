@@ -155,7 +155,13 @@ export const HandleButton = memo(
       </div>
     );
 
+    const shouldRenderPortal = Boolean(visible || (label && labelVisible));
+
     if (portal) {
+      if (!shouldRenderPortal) {
+        return null;
+      }
+
       const { nodeId, ...anchor } = portal;
 
       return (
