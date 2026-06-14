@@ -9,7 +9,14 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { cn } from '@uipath/apollo-wind';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useAddNodeOnConnectEnd, useCanvasEvent } from '../../hooks';
+import {
+  type ExecutionStateContextValue,
+  ExecutionStatusContext,
+  useAddNodeOnConnectEnd,
+  useCanvasEvent,
+  type ValidationStateContextValue,
+  ValidationStatusContext,
+} from '../../hooks';
 import {
   createNode,
   StoryInfoPanel,
@@ -228,14 +235,18 @@ interface LoopCanvasStoryProps {
   initialNodes: Node[];
   initialEdges: Edge[];
   autoPreviewSource?: AutoPreviewSource;
+  executionState?: ExecutionStateContextValue;
   storyInfo: StoryInfo;
+  validationState?: ValidationStateContextValue;
 }
 
 function LoopCanvasStory({
   initialNodes,
   initialEdges,
   autoPreviewSource,
+  executionState,
   storyInfo,
+  validationState,
 }: LoopCanvasStoryProps) {
   const reactFlow = useReactFlow();
   const handleAddNodeOnConnectEnd = useAddNodeOnConnectEnd();
@@ -301,7 +312,7 @@ function LoopCanvasStory({
     removePreviewFromReactFlow(reactFlow);
   }, [reactFlow]);
 
-  return (
+  const canvas = (
     <BaseCanvas
       {...canvasProps}
       mode="design"
@@ -316,6 +327,27 @@ function LoopCanvasStory({
       <StoryInfoPanel title={storyInfo.title} description={storyInfo.description} />
     </BaseCanvas>
   );
+
+  if (executionState || validationState) {
+    return (
+      <ExecutionStatusContext.Provider
+        value={
+          executionState ?? {
+            getNodeExecutionState: () => undefined,
+            getEdgeExecutionState: () => undefined,
+          }
+        }
+      >
+        <ValidationStatusContext.Provider
+          value={validationState ?? { getElementValidationState: () => undefined }}
+        >
+          {canvas}
+        </ValidationStatusContext.Provider>
+      </ExecutionStatusContext.Provider>
+    );
+  }
+
+  return canvas;
 }
 
 function DefaultStory() {
@@ -783,6 +815,442 @@ function NestedLoopsManyChildrenStory() {
   );
 }
 
+const ANIMATED_STATUS_SEQUENCE: ElementStatusValues[] = [
+  ElementStatusValues.InProgress,
+  ElementStatusValues.Warning,
+  ElementStatusValues.Failed,
+  ElementStatusValues.InProgress,
+  ElementStatusValues.Failed,
+  ElementStatusValues.Warning,
+];
+
+const STRESS_OUTER_CHILD_LABELS = [
+  'Shard queue',
+  'Warm cache',
+  'Load tenant',
+  'Resolve plan',
+  'Fetch config',
+  'Build cursor',
+  'Claim batch',
+  'Prime metrics',
+  'Guard rails',
+  'Trace run',
+];
+
+const STRESS_INNER_DIRECT_LABELS = [
+  'Parse item',
+  'Hydrate context',
+  'Check SLA',
+  'Resolve owner',
+  'Fetch signals',
+  'Run classifier',
+  'Score branch',
+  'Write checkpoint',
+  'Compare baseline',
+  'Patch summary',
+  'Emit audit',
+  'Notify reviewer',
+];
+
+const STRESS_DEEP_CHILD_LABELS = [
+  'Read page',
+  'Extract table',
+  'Normalize row',
+  'Validate schema',
+  'Detect mismatch',
+  'Repair value',
+  'Index row',
+  'Persist item',
+];
+
+const STRESS_INNER_LOOP_COUNT = 4;
+const STRESS_OUTER_DIRECT_COLUMNS = 5;
+const STRESS_INNER_DIRECT_COLUMNS = 4;
+const STRESS_DEEP_CHILD_COLUMNS = 4;
+const STRESS_INNER_COLUMNS = 2;
+const STRESS_INNER_GAP_X = 80;
+const STRESS_INNER_GAP_Y = 96;
+const STRESS_DEEP_LOOP_GAP_Y = 64;
+
+const getAnimatedStatus = (index: number): ElementStatusValues =>
+  ANIMATED_STATUS_SEQUENCE[index % ANIMATED_STATUS_SEQUENCE.length] ??
+  ElementStatusValues.InProgress;
+
+const createAnimatedId = (
+  kind: 'edge' | 'loop' | 'node',
+  status: ElementStatusValues,
+  suffix: string
+) => `${kind}-${status}-${suffix}`;
+
+const ANIMATED_STATUS_SET = new Set<ElementStatusValues>(ANIMATED_STATUS_SEQUENCE);
+
+const resolveAnimatedStatusFromId = (id: string): ElementStatusValues | undefined => {
+  const status = id.split('-')[1] as ElementStatusValues | undefined;
+  return status && ANIMATED_STATUS_SET.has(status) ? status : undefined;
+};
+
+const ANIMATED_STATUS_EXECUTION_STATE: ExecutionStateContextValue = {
+  getNodeExecutionState: resolveAnimatedStatusFromId,
+  getEdgeExecutionState: () => undefined,
+};
+
+const NO_STRESS_VALIDATION_STATE: ValidationStateContextValue = {
+  getElementValidationState: () => undefined,
+};
+
+const DEFAULT_ACTIVITY_GRID_ORIGIN = {
+  x: CHILD_GRID.safeLeft,
+  y: CHILD_GRID.safeTop,
+} as const;
+
+function getActivityGridMetrics(
+  count: number,
+  columns: number,
+  origin: { x: number; y: number } = DEFAULT_ACTIVITY_GRID_ORIGIN
+) {
+  const rows = Math.ceil(count / columns);
+  const usedColumns = Math.min(columns, count);
+
+  return {
+    rows,
+    width:
+      origin.x +
+      (usedColumns - 1) * CHILD_GRID.cellWidth +
+      CHILD_GRID.childSize +
+      CHILD_GRID.padRight,
+    height:
+      origin.y +
+      (rows - 1) * CHILD_GRID.cellHeight +
+      CHILD_GRID.childSize +
+      CHILD_GRID.labelAllowance +
+      CHILD_GRID.padBottom,
+  };
+}
+
+function createAnimatedActivityNode(
+  suffix: string,
+  label: string,
+  position: { x: number; y: number },
+  options: {
+    parentId?: string;
+    status?: ElementStatusValues;
+    statusIndex?: number;
+    subLabel?: string | null;
+  } = {}
+): Node<BaseNodeData> {
+  const status = options.status ?? getAnimatedStatus(options.statusIndex ?? 0);
+
+  return createActivityNode(createAnimatedId('node', status, suffix), label, position, {
+    parentId: options.parentId,
+    subLabel: options.subLabel,
+  });
+}
+
+function layoutAnimatedActivityGrid(
+  parentId: string,
+  groupKey: string,
+  labels: string[],
+  columns: number,
+  statusOffset: number,
+  options: {
+    origin?: { x: number; y: number };
+    subLabel?: string | ((index: number) => string);
+  } = {}
+): {
+  children: Node<BaseNodeData>[];
+  height: number;
+  rows: number;
+  width: number;
+} {
+  const origin = options.origin ?? DEFAULT_ACTIVITY_GRID_ORIGIN;
+  const metrics = getActivityGridMetrics(labels.length, columns, origin);
+
+  const children = labels.map((label, index) => {
+    const column = index % columns;
+    const row = Math.floor(index / columns);
+    const subLabel =
+      typeof options.subLabel === 'function' ? options.subLabel(index) : options.subLabel;
+
+    return createAnimatedActivityNode(
+      `${groupKey}-${index}`,
+      label,
+      {
+        x: origin.x + column * CHILD_GRID.cellWidth,
+        y: origin.y + row * CHILD_GRID.cellHeight,
+      },
+      {
+        parentId,
+        statusIndex: statusOffset + index,
+        subLabel,
+      }
+    );
+  });
+
+  return {
+    children,
+    ...metrics,
+  };
+}
+
+function getStressInnerLoopSize() {
+  const directMetrics = getActivityGridMetrics(
+    STRESS_INNER_DIRECT_LABELS.length,
+    STRESS_INNER_DIRECT_COLUMNS
+  );
+  const deepMetrics = getActivityGridMetrics(
+    STRESS_DEEP_CHILD_LABELS.length,
+    STRESS_DEEP_CHILD_COLUMNS
+  );
+  const deepPosition = {
+    x: CHILD_GRID.safeLeft,
+    y: CHILD_GRID.safeTop + directMetrics.rows * CHILD_GRID.cellHeight + STRESS_DEEP_LOOP_GAP_Y,
+  };
+
+  return {
+    deepPosition,
+    height: deepPosition.y + deepMetrics.height + CHILD_GRID.padBottom,
+    width: Math.max(directMetrics.width, deepPosition.x + deepMetrics.width + CHILD_GRID.padRight),
+  };
+}
+
+function makeStressEdge(
+  suffix: string,
+  source: string,
+  sourceHandle: string,
+  target: string,
+  targetHandle: string
+): Edge {
+  return makeEdge(`stress-edge-${suffix}`, source, sourceHandle, target, targetHandle);
+}
+
+function buildAnimatedInnerLoop(
+  index: number,
+  parentId: string,
+  position: { x: number; y: number },
+  statusOffset: number
+): { edges: Edge[]; loop: Node<LoopNodeData>; nodes: Node[] } {
+  const innerStatus = getAnimatedStatus(statusOffset);
+  const innerId = createAnimatedId('loop', innerStatus, `stress-inner-${index}`);
+  const innerSize = getStressInnerLoopSize();
+  const deepStatus = getAnimatedStatus(statusOffset + 40);
+  const deepId = createAnimatedId('loop', deepStatus, `stress-deep-${index}`);
+
+  const directChildren = layoutAnimatedActivityGrid(
+    innerId,
+    `stress-inner-${index}-direct`,
+    STRESS_INNER_DIRECT_LABELS,
+    STRESS_INNER_DIRECT_COLUMNS,
+    statusOffset + 1,
+    { subLabel: `Inner ${index + 1}` }
+  );
+  const deepChildren = layoutAnimatedActivityGrid(
+    deepId,
+    `stress-deep-${index}-child`,
+    STRESS_DEEP_CHILD_LABELS,
+    STRESS_DEEP_CHILD_COLUMNS,
+    statusOffset + 41,
+    { subLabel: `Nested ${index + 1}` }
+  );
+
+  const loop = createLoopContainerNode(
+    innerId,
+    position,
+    { width: innerSize.width, height: innerSize.height },
+    {
+      parentId,
+      data: { display: { label: `For Each partition ${index + 1}` } },
+    }
+  );
+  const deepLoop = createLoopContainerNode(
+    deepId,
+    innerSize.deepPosition,
+    { width: deepChildren.width, height: deepChildren.height },
+    {
+      parentId: innerId,
+      data: { display: { label: `For Each nested child ${index + 1}` } },
+    }
+  );
+
+  return {
+    loop,
+    nodes: [loop, ...directChildren.children, deepLoop, ...deepChildren.children],
+    edges: [
+      ...loopBodyRowEdges(innerId, directChildren.children, STRESS_INNER_DIRECT_COLUMNS),
+      makeStressEdge(
+        `inner-${index}-start-deep`,
+        innerId,
+        STORY_LOOP_START_HANDLE_ID,
+        deepId,
+        'input'
+      ),
+      ...loopBodyRowEdges(deepId, deepChildren.children, STRESS_DEEP_CHILD_COLUMNS),
+      makeStressEdge(
+        `deep-${index}-inner-continue`,
+        deepId,
+        STORY_LOOP_SUCCESS_HANDLE_ID,
+        innerId,
+        STORY_LOOP_CONTINUE_HANDLE_ID
+      ),
+    ],
+  };
+}
+
+function buildAnimatedStatusStressGraph(): { nodes: Node[]; edges: Edge[] } {
+  const outerId = createAnimatedId('loop', getAnimatedStatus(0), 'stress-outer');
+  const outerDirectChildren = layoutAnimatedActivityGrid(
+    outerId,
+    'stress-outer-direct',
+    STRESS_OUTER_CHILD_LABELS,
+    STRESS_OUTER_DIRECT_COLUMNS,
+    10,
+    { subLabel: 'Outer child' }
+  );
+  const innerSize = getStressInnerLoopSize();
+  const innerRows = Math.ceil(STRESS_INNER_LOOP_COUNT / STRESS_INNER_COLUMNS);
+  const innerTop =
+    CHILD_GRID.safeTop + outerDirectChildren.rows * CHILD_GRID.cellHeight + STRESS_DEEP_LOOP_GAP_Y;
+  const innerGridWidth =
+    CHILD_GRID.safeLeft +
+    STRESS_INNER_COLUMNS * innerSize.width +
+    (STRESS_INNER_COLUMNS - 1) * STRESS_INNER_GAP_X +
+    CHILD_GRID.padRight;
+  const outerWidth = Math.max(outerDirectChildren.width, innerGridWidth);
+  const outerHeight =
+    innerTop +
+    innerRows * innerSize.height +
+    (innerRows - 1) * STRESS_INNER_GAP_Y +
+    CHILD_GRID.padBottom;
+  const outerPosition = { x: 384, y: 96 };
+  const centerY = outerPosition.y + outerHeight / 2;
+
+  const ingress = createAnimatedActivityNode('stress-ingress', 'Receive events', {
+    x: 32,
+    y: centerY,
+  });
+  const prepare = createAnimatedActivityNode('stress-prepare', 'Prepare batches', {
+    x: 192,
+    y: centerY,
+  });
+  const outerLoop = createLoopContainerNode(
+    outerId,
+    outerPosition,
+    { width: outerWidth, height: outerHeight },
+    {
+      selected: true,
+      data: { display: { label: 'For Each account shard' } },
+    }
+  );
+  const aggregate = createAnimatedActivityNode('stress-aggregate', 'Aggregate status', {
+    x: outerPosition.x + outerWidth + 160,
+    y: centerY,
+  });
+  const publish = createAnimatedActivityNode('stress-publish', 'Publish results', {
+    x: outerPosition.x + outerWidth + 352,
+    y: centerY,
+  });
+
+  const innerLoops = Array.from({ length: STRESS_INNER_LOOP_COUNT }, (_, index) =>
+    buildAnimatedInnerLoop(
+      index,
+      outerId,
+      {
+        x:
+          CHILD_GRID.safeLeft +
+          (index % STRESS_INNER_COLUMNS) * (innerSize.width + STRESS_INNER_GAP_X),
+        y:
+          innerTop +
+          Math.floor(index / STRESS_INNER_COLUMNS) * (innerSize.height + STRESS_INNER_GAP_Y),
+      },
+      index * 20 + 30
+    )
+  );
+
+  const innerLoopEdges: Edge[] = [];
+  for (let index = 0; index < innerLoops.length; index++) {
+    const current = innerLoops[index];
+    if (!current) continue;
+
+    if (index === 0) {
+      innerLoopEdges.push(
+        makeStressEdge(
+          'outer-start-inner-0',
+          outerId,
+          STORY_LOOP_START_HANDLE_ID,
+          current.loop.id,
+          'input'
+        )
+      );
+    }
+
+    const next = innerLoops[index + 1];
+    innerLoopEdges.push(
+      next
+        ? makeStressEdge(
+            `inner-${index}-inner-${index + 1}`,
+            current.loop.id,
+            STORY_LOOP_SUCCESS_HANDLE_ID,
+            next.loop.id,
+            'input'
+          )
+        : makeStressEdge(
+            `inner-${index}-outer-continue`,
+            current.loop.id,
+            STORY_LOOP_SUCCESS_HANDLE_ID,
+            outerId,
+            STORY_LOOP_CONTINUE_HANDLE_ID
+          )
+    );
+  }
+
+  return {
+    nodes: [
+      ingress,
+      prepare,
+      outerLoop,
+      ...outerDirectChildren.children,
+      ...innerLoops.flatMap((innerLoop) => innerLoop.nodes),
+      aggregate,
+      publish,
+    ],
+    edges: [
+      makeStressEdge('ingress-prepare', ingress.id, 'output', prepare.id, 'input'),
+      makeStressEdge('prepare-outer', prepare.id, 'output', outerId, 'input'),
+      ...loopBodyRowEdges(outerId, outerDirectChildren.children, STRESS_OUTER_DIRECT_COLUMNS),
+      ...innerLoops.flatMap((innerLoop) => innerLoop.edges),
+      ...innerLoopEdges,
+      makeStressEdge(
+        'outer-aggregate',
+        outerId,
+        STORY_LOOP_SUCCESS_HANDLE_ID,
+        aggregate.id,
+        'input'
+      ),
+      makeStressEdge('aggregate-publish', aggregate.id, 'output', publish.id, 'input'),
+    ],
+  };
+}
+
+function AnimatedStatusStressStory() {
+  const { initialNodes, initialEdges } = useMemo(() => {
+    const graph = buildAnimatedStatusStressGraph();
+    return { initialNodes: graph.nodes, initialEdges: graph.edges };
+  }, []);
+
+  return (
+    <LoopCanvasStory
+      initialNodes={initialNodes}
+      initialEdges={initialEdges}
+      executionState={ANIMATED_STATUS_EXECUTION_STATE}
+      validationState={NO_STRESS_VALIDATION_STATE}
+      storyInfo={{
+        title: 'Animated Status Stress',
+        description:
+          'A large outer loop with direct children, four nested loops, deeper child loops, and animated InProgress/Warning/Failed status chrome throughout. Drag the selected outer loop while profiling paint and scripting cost.',
+      }}
+    />
+  );
+}
+
 export const Default: Story = {
   render: () => <DefaultStory />,
 };
@@ -803,6 +1271,11 @@ export const ManyChildren: Story = {
 export const NestedLoopsManyChildren: Story = {
   name: 'Nested Loops With Many Children',
   render: () => <NestedLoopsManyChildrenStory />,
+};
+
+export const AnimatedStatusStress: Story = {
+  name: 'Animated Status Stress',
+  render: () => <AnimatedStatusStressStory />,
 };
 
 // ============================================================================

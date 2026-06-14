@@ -55,6 +55,18 @@
 }
 
 /**
+ * Animated status glow is box-shadow driven, which is expensive while React
+ * Flow is also transforming nodes and recalculating connected edges. When any
+ * node is actively dragged, pause every status glow in that canvas and keep the
+ * static status border visible.
+ */
+.react-flow[data-canvas-node-dragging="true"] .animate-glow {
+  animation: none;
+  box-shadow: none;
+  will-change: auto;
+}
+
+/**
  * Canvas pane gradient for future themes.
  *
  * <Background /> passes bgColor as `background-color`, which only accepts

@@ -111,6 +111,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
 
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance<NodeType, EdgeType>>();
+  const [isNodeDragging, setIsNodeDragging] = useState(false);
 
   const { isReady } = useAutoLayout(nodes, initialAutoLayout, fitViewOptions);
   const { ensureNodesInView, ensureAllNodesInView, centerNode } = useEnsureNodesInView();
@@ -130,6 +131,22 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
       onInit?.(instance);
     },
     [onInit]
+  );
+
+  const handleNodeDragStart = useCallback<NonNullable<typeof onNodeDragStart>>(
+    (event, node, nodes) => {
+      setIsNodeDragging(true);
+      onNodeDragStart?.(event, node, nodes);
+    },
+    [onNodeDragStart]
+  );
+
+  const handleNodeDragStop = useCallback<NonNullable<typeof onNodeDragStop>>(
+    (event, node, nodes) => {
+      setIsNodeDragging(false);
+      onNodeDragStop?.(event, node, nodes);
+    },
+    [onNodeDragStop]
   );
 
   useImperativeHandle(
@@ -195,13 +212,14 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
         onConnectStart={isDesignMode ? onConnectStart : undefined}
         onConnectEnd={isDesignMode ? onConnectEnd : undefined}
         onNodeClick={isInteractive ? onNodeClick : undefined}
-        onNodeDragStart={isDesignMode ? onNodeDragStart : undefined}
+        onNodeDragStart={isDesignMode ? handleNodeDragStart : undefined}
         onNodeDrag={isDesignMode ? onNodeDrag : undefined}
-        onNodeDragStop={isDesignMode ? onNodeDragStop : undefined}
+        onNodeDragStop={isDesignMode ? handleNodeDragStop : undefined}
         onPaneClick={isInteractive ? onPaneClick : undefined}
         onSelectionChange={onSelectionChange}
         style={reactFlowStyle}
         elevateEdgesOnSelect={isDesignMode}
+        data-canvas-node-dragging={isNodeDragging || undefined}
       >
         {showBackground && (
           <CanvasBackground

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { Panel, ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import React, { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -34,17 +34,50 @@ const mockReactFlowInstance = {
   zoomTo: vi.fn(),
 };
 
+const mockNode = { data: {}, id: 'node-1', position: { x: 0, y: 0 } };
+
+interface MockReactFlowProps {
+  children?: React.ReactNode;
+  style?: React.CSSProperties;
+  onInit?: (instance: typeof mockReactFlowInstance) => void;
+  onNodeDragStart?: (
+    event: React.MouseEvent<HTMLDivElement>,
+    node: typeof mockNode,
+    nodes: (typeof mockNode)[]
+  ) => void;
+  onNodeDragStop?: (
+    event: React.MouseEvent<HTMLDivElement>,
+    node: typeof mockNode,
+    nodes: (typeof mockNode)[]
+  ) => void;
+  'data-canvas-node-dragging'?: boolean;
+}
+
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', async () => {
   const actual = await vi.importActual('@uipath/apollo-react/canvas/xyflow/react');
   return {
     ...actual,
-    ReactFlow: ({ children, style, onInit }: any) => {
+    ReactFlow: ({
+      children,
+      style,
+      onInit,
+      onNodeDragStart,
+      onNodeDragStop,
+      'data-canvas-node-dragging': isNodeDragging,
+    }: MockReactFlowProps) => {
       // Use useEffect to simulate onInit being called after mount
       React.useEffect(() => {
         onInit?.(mockReactFlowInstance);
       }, [onInit]);
+
       return (
-        <div data-testid="react-flow" style={style}>
+        <div
+          data-testid="react-flow"
+          data-canvas-node-dragging={isNodeDragging}
+          style={style}
+          onMouseDown={(event) => onNodeDragStart?.(event, mockNode, [mockNode])}
+          onMouseUp={(event) => onNodeDragStop?.(event, mockNode, [mockNode])}
+        >
           {children}
         </div>
       );
@@ -137,6 +170,28 @@ describe('BaseCanvas', () => {
     });
     // Reset mock state
     mockIsReady = true;
+  });
+
+  it('marks the canvas while a design-mode node drag is active', () => {
+    const onNodeDragStart = vi.fn();
+    const onNodeDragStop = vi.fn();
+
+    renderBaseCanvas({
+      mode: 'design',
+      onNodeDragStart,
+      onNodeDragStop,
+    });
+
+    const reactFlow = screen.getByTestId('react-flow');
+    expect(reactFlow).not.toHaveAttribute('data-canvas-node-dragging');
+
+    fireEvent.mouseDown(reactFlow);
+    expect(onNodeDragStart).toHaveBeenCalledTimes(1);
+    expect(reactFlow).toHaveAttribute('data-canvas-node-dragging', 'true');
+
+    fireEvent.mouseUp(reactFlow);
+    expect(onNodeDragStop).toHaveBeenCalledTimes(1);
+    expect(reactFlow).not.toHaveAttribute('data-canvas-node-dragging');
   });
 
   it('renders additional panels', () => {
