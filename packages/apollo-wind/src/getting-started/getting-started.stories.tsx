@@ -115,8 +115,8 @@ function OverviewTab() {
     <div className="space-y-6">
       <SectionDescription>
         Apollo Wind is the Tailwind CSS component library for new React applications. Built on
-        shadcn/ui and Radix primitives, it provides 60+ components, page templates, and full
-        theming support, all consistent with the Apollo design system tokens from apollo-core.
+        shadcn/ui and Radix primitives, it provides 60+ components, page templates, and full theming
+        support, all consistent with the Apollo design system tokens from apollo-core.
       </SectionDescription>
 
       <Divider />
@@ -310,9 +310,7 @@ function QuickStartTab() {
               <CodeBlock label="Components">
                 {`import { Button, Input, Dialog } from '@uipath/apollo-wind';`}
               </CodeBlock>
-              <CodeBlock label="Utilities">
-                {`import { cn } from '@uipath/apollo-wind';`}
-              </CodeBlock>
+              <CodeBlock label="Utilities">{`import { cn } from '@uipath/apollo-wind';`}</CodeBlock>
               <CodeBlock label="CSS theme">
                 {`import '@uipath/apollo-wind/tailwind.css';`}
               </CodeBlock>
@@ -339,9 +337,7 @@ function QuickStartTab() {
             </StepItem>
 
             <StepItem step={2} title="Install dependencies">
-              <CodeBlock label="terminal">
-                {'npm install -g pnpm\npnpm install'}
-              </CodeBlock>
+              <CodeBlock label="terminal">{'npm install -g pnpm\npnpm install'}</CodeBlock>
               <p>
                 This project uses <InlineCode>pnpm</InlineCode> workspaces. Install it globally if
                 you don't have it yet.
@@ -356,9 +352,8 @@ function QuickStartTab() {
             <StepItem step={4} title="Start Storybook">
               <CodeBlock label="terminal">{'pnpm storybook:dev'}</CodeBlock>
               <p>
-                Opens Apollo Wind Storybook at{' '}
-                <InlineCode>http://localhost:6007</InlineCode>. Changes to source files hot-reload
-                automatically.
+                Opens Apollo Wind Storybook at <InlineCode>http://localhost:6007</InlineCode>.
+                Changes to source files hot-reload automatically.
               </p>
             </StepItem>
           </div>
@@ -386,7 +381,11 @@ const components = [
   { category: 'Forms', name: 'Slider', description: 'Range input' },
   { category: 'Forms', name: 'Label', description: 'Form field label' },
   { category: 'Forms', name: 'Search', description: 'Search input with clear action' },
-  { category: 'Forms', name: 'FileUpload', description: 'Drag-and-drop file input with per-file errors' },
+  {
+    category: 'Forms',
+    name: 'FileUpload',
+    description: 'Drag-and-drop file input with per-file errors',
+  },
   { category: 'Forms', name: 'Stepper', description: 'Multi-step form progress' },
   { category: 'Date & Time', name: 'Calendar', description: 'Month calendar picker' },
   { category: 'Date & Time', name: 'DatePicker', description: 'Date input with popover' },
@@ -432,10 +431,22 @@ const components = [
   { category: 'Custom Apollo', name: 'FlowNode', description: 'Workflow canvas node' },
   { category: 'Custom Apollo', name: 'FlowProperties', description: 'Node properties panel' },
   { category: 'Custom Apollo', name: 'GridMaestro', description: 'Maestro-style data grid' },
-  { category: 'Custom Apollo', name: 'ChatComposer', description: 'AI chat input with attachments' },
+  {
+    category: 'Custom Apollo',
+    name: 'ChatComposer',
+    description: 'AI chat input with attachments',
+  },
   { category: 'Custom Apollo', name: 'ChatStepsView', description: 'AI thinking steps display' },
-  { category: 'Custom Apollo', name: 'ChatFirstExperience', description: 'Empty chat onboarding state' },
-  { category: 'Custom Apollo', name: 'ChatPromptSuggestions', description: 'Suggested prompt chips' },
+  {
+    category: 'Custom Apollo',
+    name: 'ChatFirstExperience',
+    description: 'Empty chat onboarding state',
+  },
+  {
+    category: 'Custom Apollo',
+    name: 'ChatPromptSuggestions',
+    description: 'Suggested prompt chips',
+  },
   { category: 'Custom Apollo', name: 'Canvas', description: 'Pannable, zoomable canvas area' },
 ] as const;
 
