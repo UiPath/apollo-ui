@@ -327,6 +327,15 @@ function QuickStartTab() {
               This path is for contributors and team members who want to browse or modify Apollo
               Wind source files and run Storybook on their machine.
             </p>
+            <ul className="mt-2 list-disc pl-4 space-y-1">
+              <li>
+                <strong>Node.js 22 or later</strong> is required. Check your version with{' '}
+                <InlineCode>node --version</InlineCode>.
+              </li>
+              <li>
+                <strong>pnpm 11.1.3</strong> is the required package manager for this repo.
+              </li>
+            </ul>
           </InfoCallout>
 
           <div className="space-y-6">
@@ -337,10 +346,10 @@ function QuickStartTab() {
             </StepItem>
 
             <StepItem step={2} title="Install dependencies">
-              <CodeBlock label="terminal">{'npm install -g pnpm\npnpm install'}</CodeBlock>
+              <CodeBlock label="terminal">{'npm install -g pnpm@11.1.3\npnpm install'}</CodeBlock>
               <p>
-                This project uses <InlineCode>pnpm</InlineCode> workspaces. Install it globally if
-                you don't have it yet.
+                This project uses <InlineCode>pnpm</InlineCode> workspaces. Install the pinned
+                version globally if you don't have it yet.
               </p>
             </StepItem>
 
