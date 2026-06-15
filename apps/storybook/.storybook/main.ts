@@ -116,6 +116,19 @@ const config: StorybookConfig = {
         width: auto;
       }
     </style>
+    <script>
+      // Rewrite legacy story paths that used the old "Wind" titlePrefix (pre-IA rename).
+      // Storybook stores the last-viewed story in the URL (?path=) so returning users
+      // who bookmarked or cached a "wind-*" path land here with an invalid story ID.
+      (function () {
+        var params = new URLSearchParams(window.location.search);
+        var path = params.get('path');
+        if (path && path.indexOf('/story/wind-') === 0) {
+          params.set('path', path.replace('/story/wind-', '/story/apollo-wind-'));
+          window.location.replace('?' + params.toString());
+        }
+      })();
+    </script>
   `,
   previewBody: isDev
     ? (body) =>
