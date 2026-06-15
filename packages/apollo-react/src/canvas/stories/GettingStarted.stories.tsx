@@ -273,7 +273,7 @@ function QuickStartTab() {
       <div className="rounded-xl border border-border bg-card p-5">
         <p className="mb-1 text-sm font-semibold text-foreground">What are you trying to do?</p>
         <p className="mb-4 text-xs text-muted-foreground">
-          Choose the path that matches your goal — the steps below will update accordingly.
+          Choose the path that matches your goal. The steps below will update accordingly.
         </p>
         <div className="flex flex-col gap-2 sm:flex-row">
           {quickStartPaths.map((p) => (
@@ -444,6 +444,15 @@ export const Default = { render: () => <MyStory /> };`}
               This path is for contributors and team members who want to browse or modify Apollo
               Canvas source files and run Storybook on their machine.
             </p>
+            <ul className="mt-2 list-disc pl-4 space-y-1">
+              <li>
+                <strong>Node.js 22 or later</strong> is required. Check your version with{' '}
+                <InlineCode>node --version</InlineCode>.
+              </li>
+              <li>
+                <strong>pnpm 11.1.3</strong> is the required package manager for this repo.
+              </li>
+            </ul>
           </InfoCallout>
 
           <div className="space-y-6">
@@ -454,10 +463,10 @@ export const Default = { render: () => <MyStory /> };`}
             </StepItem>
 
             <StepItem step={2} title="Install dependencies">
-              <CodeBlock label="terminal">{'npm install -g pnpm\npnpm install'}</CodeBlock>
+              <CodeBlock label="terminal">{'npm install -g pnpm@11.1.3\npnpm install'}</CodeBlock>
               <p>
-                This project uses <InlineCode>pnpm</InlineCode> workspaces. Install it globally if
-                you don't have it yet.
+                This project uses <InlineCode>pnpm</InlineCode> workspaces. Install the pinned
+                version globally if you don't have it yet.
               </p>
             </StepItem>
 

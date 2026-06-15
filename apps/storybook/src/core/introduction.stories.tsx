@@ -169,7 +169,7 @@ function OverviewTab() {
             {
               title: 'Design Tokens',
               description:
-                'Colors, spacing, typography, radius, shadows — the full Apollo token set as JS constants and CSS variables.',
+                'Colors, spacing, typography, radius, shadows: the full Apollo token set as JS constants and CSS variables.',
               example: (
                 <div className="flex gap-1.5">
                   {[
@@ -368,6 +368,15 @@ body.dark  { /* dark token values  */ }
               This path is for contributors and team members who want to browse or modify Apollo
               Core source files and run Storybook on their machine.
             </p>
+            <ul className="mt-2 list-disc pl-4 space-y-1">
+              <li>
+                <strong>Node.js 22 or later</strong> is required. Check your version with{' '}
+                <InlineCode>node --version</InlineCode>.
+              </li>
+              <li>
+                <strong>pnpm 11.1.3</strong> is the required package manager for this repo.
+              </li>
+            </ul>
           </InfoCallout>
 
           <div className="space-y-6">
@@ -378,10 +387,10 @@ body.dark  { /* dark token values  */ }
             </StepItem>
 
             <StepItem step={2} title="Install dependencies">
-              <CodeBlock label="terminal">{'npm install -g pnpm\npnpm install'}</CodeBlock>
+              <CodeBlock label="terminal">{'npm install -g pnpm@11.1.3\npnpm install'}</CodeBlock>
               <p>
-                This project uses <InlineCode>pnpm</InlineCode> workspaces. Install it globally if
-                you don't have it yet.
+                This project uses <InlineCode>pnpm</InlineCode> workspaces. Install the pinned
+                version globally if you don't have it yet.
               </p>
             </StepItem>
 
@@ -420,7 +429,7 @@ function TokensTab() {
         <TokenCard
           title="Colors"
           description="Semantic color tokens for text, backgrounds, borders, and brand palettes."
-          storyPath="/story/apollo-core-theme-colors--page"
+          storyPath="/story/apollo-core-theme-colors--all"
           example={
             <div className="flex gap-1.5">
               {['bg-primary', 'bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500'].map(
@@ -434,7 +443,7 @@ function TokensTab() {
         <TokenCard
           title="Typography"
           description="Font families, sizes, weights, and line heights for consistent type."
-          storyPath="/story/apollo-core-theme-typography--page"
+          storyPath="/story/apollo-core-theme-typography--all"
           example={
             <div className="flex flex-col gap-0.5">
               <span className="text-base font-semibold leading-none text-foreground">Aa</span>
@@ -445,7 +454,7 @@ function TokensTab() {
         <TokenCard
           title="Spacing"
           description="A consistent spacing scale from xs to 4xl used across all components."
-          storyPath="/story/apollo-core-theme-spacing--page"
+          storyPath="/story/apollo-core-theme-spacing--all"
           example={
             <div className="flex items-end gap-1">
               {[2, 3, 4, 6, 8].map((s) => (
@@ -461,7 +470,7 @@ function TokensTab() {
         <TokenCard
           title="Icons"
           description="SVG icon library with 1000+ icons from the Apollo icon set."
-          storyPath="/story/apollo-core-theme-icons--page"
+          storyPath="/story/apollo-core-theme-icons--all"
           example={
             <svg
               viewBox="0 0 24 24"
@@ -482,7 +491,7 @@ function TokensTab() {
         <TokenCard
           title="Shadows"
           description="Elevation shadow tokens for cards, modals, and layered surfaces."
-          storyPath="/story/apollo-core-theme-shadows--page"
+          storyPath="/story/apollo-core-theme-shadows--all"
           example={
             <div className="flex gap-3">
               {['shadow-sm', 'shadow-md', 'shadow-lg'].map((s) => (
@@ -494,7 +503,7 @@ function TokensTab() {
         <TokenCard
           title="Borders"
           description="Border radius and width tokens for consistent component shapes."
-          storyPath="/story/apollo-core-theme-borders--page"
+          storyPath="/story/apollo-core-theme-borders--all"
           example={
             <div className="flex gap-3">
               {['rounded-sm', 'rounded-md', 'rounded-xl', 'rounded-full'].map((r) => (
@@ -506,7 +515,7 @@ function TokensTab() {
         <TokenCard
           title="CSS Variables"
           description="All tokens as CSS custom properties for use in any framework or plain CSS."
-          storyPath="/story/apollo-core-theme-css-variables--page"
+          storyPath="/story/apollo-core-theme-css-variables--all"
           example={
             <code className="text-xs text-muted-foreground">
               <span className="text-blue-400">--color-primary</span>
@@ -517,7 +526,7 @@ function TokensTab() {
         <TokenCard
           title="Screens"
           description="Responsive breakpoint tokens matching Tailwind's screen scale."
-          storyPath="/story/apollo-core-theme-screens--page"
+          storyPath="/story/apollo-core-theme-screens--all"
           example={
             <div className="flex items-end gap-1.5">
               {['xs', 'sm', 'md', 'lg'].map((s, i) => (

@@ -4,9 +4,9 @@
 
 ### No em dashes in Storybook documentation content
 
-**Never use ` — ` (em dash with spaces) in any Storybook story copy** — this includes description text, callouts, step labels, tooltips, and any other user-facing content in `.stories.tsx` files.
+**Never use ` — ` (em dash with spaces) in any Storybook story copy.** This includes description text, callouts, step labels, tooltips, and any other user-facing content in `.stories.tsx` files.
 
-- Use a period and a new sentence instead: `"...ownership model. Source is copied..."`)
+- Use a period and a new sentence instead: `"...ownership model. Source is copied..."`
 - Use a colon for lists or clarifications: `"Prerequisites: Node 18+, Tailwind v4"`
 - Use a comma for light joining: `"...templates, all consistent with..."`
 
