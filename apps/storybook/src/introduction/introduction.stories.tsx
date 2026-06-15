@@ -129,7 +129,8 @@ function IntroductionPage() {
           </h1>
           <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
             The UiPath open-source design system. Shared tokens, React components, and Tailwind
-            utilities for building consistent product experiences across web apps and canvas editors.
+            utilities for building consistent product experiences across web apps and canvas
+            editors.
           </p>
         </div>
 
@@ -224,7 +225,6 @@ function IntroductionPage() {
             />
           </div>
         </div>
-
       </div>
     </div>
   );

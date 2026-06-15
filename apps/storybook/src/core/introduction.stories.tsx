@@ -168,10 +168,17 @@ function OverviewTab() {
           {[
             {
               title: 'Design Tokens',
-              description: 'Colors, spacing, typography, radius, shadows — the full Apollo token set as JS constants and CSS variables.',
+              description:
+                'Colors, spacing, typography, radius, shadows — the full Apollo token set as JS constants and CSS variables.',
               example: (
                 <div className="flex gap-1.5">
-                  {['bg-primary', 'bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500'].map((c) => (
+                  {[
+                    'bg-primary',
+                    'bg-blue-500',
+                    'bg-emerald-500',
+                    'bg-amber-500',
+                    'bg-rose-500',
+                  ].map((c) => (
                     <div key={c} className={`h-6 w-6 rounded-full ${c}`} />
                   ))}
                 </div>
@@ -179,16 +186,29 @@ function OverviewTab() {
             },
             {
               title: 'Icons',
-              description: '1000+ SVG icons from the Apollo icon set, importable as React components or raw SVG.',
+              description:
+                '1000+ SVG icons from the Apollo icon set, importable as React components or raw SVG.',
               example: (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-6 w-6 text-foreground" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M3 4.5v4.25A2.25 2.25 0 0 0 5.25 11h4.5A2.25 2.25 0 0 0 12 8.75V4.5A2.25 2.25 0 0 0 9.75 2.25h-4.5A2.25 2.25 0 0 0 3 4.5Zm0 10.5v.75A2.25 2.25 0 0 0 5.25 18h4.5A2.25 2.25 0 0 0 12 15.75v-.75A2.25 2.25 0 0 0 9.75 12.75h-4.5A2.25 2.25 0 0 0 3 15Zm9-10.5v.75a2.25 2.25 0 0 0 2.25 2.25h.75" />
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  className="h-6 w-6 text-foreground"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M3 4.5v4.25A2.25 2.25 0 0 0 5.25 11h4.5A2.25 2.25 0 0 0 12 8.75V4.5A2.25 2.25 0 0 0 9.75 2.25h-4.5A2.25 2.25 0 0 0 3 4.5Zm0 10.5v.75A2.25 2.25 0 0 0 5.25 18h4.5A2.25 2.25 0 0 0 12 15.75v-.75A2.25 2.25 0 0 0 9.75 12.75h-4.5A2.25 2.25 0 0 0 3 15Zm9-10.5v.75a2.25 2.25 0 0 0 2.25 2.25h.75"
+                  />
                 </svg>
               ),
             },
             {
               title: 'Fonts',
-              description: 'Inter and JetBrains Mono font face declarations, self-hosted and ready to import.',
+              description:
+                'Inter and JetBrains Mono font face declarations, self-hosted and ready to import.',
               example: (
                 <div className="flex flex-col gap-0.5">
                   <span className="text-base font-semibold leading-none text-foreground">Aa</span>
@@ -198,7 +218,8 @@ function OverviewTab() {
             },
             {
               title: 'CSS Custom Properties',
-              description: 'All tokens as CSS variables, resolved by the active theme class on the root element.',
+              description:
+                'All tokens as CSS variables, resolved by the active theme class on the root element.',
               example: (
                 <code className="text-xs text-muted-foreground">
                   <span className="text-blue-400">--color-primary</span>
@@ -274,7 +295,10 @@ function QuickStartTab() {
 @import "@uipath/apollo-core/tokens/css/theme-variables.css";
 @import "@uipath/apollo-core/fonts/font.css";`}
               </CodeBlock>
-              <p>This loads all Apollo design tokens as CSS custom properties and registers the font faces.</p>
+              <p>
+                This loads all Apollo design tokens as CSS custom properties and registers the font
+                faces.
+              </p>
             </StepItem>
 
             <StepItem step={3} title="Apply a theme class">
@@ -295,7 +319,9 @@ function QuickStartTab() {
           <Divider />
 
           <div>
-            <h3 className="mb-3 text-lg font-semibold text-foreground">Using tokens in JavaScript</h3>
+            <h3 className="mb-3 text-lg font-semibold text-foreground">
+              Using tokens in JavaScript
+            </h3>
             <SectionDescription>
               Import typed token constants directly from the package for use in JS/TS code.
             </SectionDescription>
@@ -312,7 +338,9 @@ const style = {
           <Divider />
 
           <div>
-            <h3 className="mb-3 text-lg font-semibold text-foreground">Using CSS custom properties</h3>
+            <h3 className="mb-3 text-lg font-semibold text-foreground">
+              Using CSS custom properties
+            </h3>
             <SectionDescription>
               All tokens are also available as CSS variables, resolved by the active theme class on{' '}
               <InlineCode>{'<body>'}</InlineCode>.
@@ -365,8 +393,8 @@ body.dark  { /* dark token values  */ }
             <StepItem step={4} title="Start Storybook">
               <CodeBlock label="terminal">{'pnpm storybook:dev'}</CodeBlock>
               <p>
-                Opens Apollo Storybook at <InlineCode>http://localhost:6007</InlineCode>. Changes
-                to source files hot-reload automatically.
+                Opens Apollo Storybook at <InlineCode>http://localhost:6007</InlineCode>. Changes to
+                source files hot-reload automatically.
               </p>
             </StepItem>
           </div>
@@ -395,9 +423,11 @@ function TokensTab() {
           storyPath="/story/apollo-core-theme-colors--page"
           example={
             <div className="flex gap-1.5">
-              {['bg-primary', 'bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500'].map((c) => (
-                <div key={c} className={`h-6 w-6 rounded-full ${c}`} />
-              ))}
+              {['bg-primary', 'bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500'].map(
+                (c) => (
+                  <div key={c} className={`h-6 w-6 rounded-full ${c}`} />
+                )
+              )}
             </div>
           }
         />
@@ -419,7 +449,11 @@ function TokensTab() {
           example={
             <div className="flex items-end gap-1">
               {[2, 3, 4, 6, 8].map((s) => (
-                <div key={s} className="rounded-sm bg-primary/40" style={{ width: s * 4, height: s * 4 }} />
+                <div
+                  key={s}
+                  className="rounded-sm bg-primary/40"
+                  style={{ width: s * 4, height: s * 4 }}
+                />
               ))}
             </div>
           }
@@ -429,8 +463,19 @@ function TokensTab() {
           description="SVG icon library with 1000+ icons from the Apollo icon set."
           storyPath="/story/apollo-core-theme-icons--page"
           example={
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-6 w-6 text-foreground" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M3 4.5v4.25A2.25 2.25 0 0 0 5.25 11h4.5A2.25 2.25 0 0 0 12 8.75V4.5A2.25 2.25 0 0 0 9.75 2.25h-4.5A2.25 2.25 0 0 0 3 4.5Zm0 10.5v.75A2.25 2.25 0 0 0 5.25 18h4.5A2.25 2.25 0 0 0 12 15.75v-.75A2.25 2.25 0 0 0 9.75 12.75h-4.5A2.25 2.25 0 0 0 3 15Zm9-10.5v.75a2.25 2.25 0 0 0 2.25 2.25h.75" />
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              className="h-6 w-6 text-foreground"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M3 4.5v4.25A2.25 2.25 0 0 0 5.25 11h4.5A2.25 2.25 0 0 0 12 8.75V4.5A2.25 2.25 0 0 0 9.75 2.25h-4.5A2.25 2.25 0 0 0 3 4.5Zm0 10.5v.75A2.25 2.25 0 0 0 5.25 18h4.5A2.25 2.25 0 0 0 12 15.75v-.75A2.25 2.25 0 0 0 9.75 12.75h-4.5A2.25 2.25 0 0 0 3 15Zm9-10.5v.75a2.25 2.25 0 0 0 2.25 2.25h.75"
+              />
             </svg>
           }
         />
@@ -476,7 +521,11 @@ function TokensTab() {
           example={
             <div className="flex items-end gap-1.5">
               {['xs', 'sm', 'md', 'lg'].map((s, i) => (
-                <div key={s} className="rounded-sm bg-primary/30" style={{ width: 18 + i * 8, height: 18 + i * 4 }} />
+                <div
+                  key={s}
+                  className="rounded-sm bg-primary/30"
+                  style={{ width: 18 + i * 8, height: 18 + i * 4 }}
+                />
               ))}
             </div>
           }

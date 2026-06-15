@@ -428,8 +428,8 @@ export const Default = { render: () => <MyStory /> };`}
                 <span className="font-medium text-foreground">withCanvasProviders</span> wraps the
                 story in ReactFlowProvider, ExecutionStatusContext, and ValidationStatusContext.{' '}
                 <span className="font-medium text-foreground">useCanvasStory</span> manages
-                node/edge state and returns a ready-to-spread{' '}
-                <InlineCode>canvasProps</InlineCode> object.
+                node/edge state and returns a ready-to-spread <InlineCode>canvasProps</InlineCode>{' '}
+                object.
               </InfoCallout>
             </div>
           </div>
@@ -463,9 +463,7 @@ export const Default = { render: () => <MyStory /> };`}
 
             <StepItem step={3} title="Build all packages">
               <CodeBlock label="terminal">{'pnpm build'}</CodeBlock>
-              <p>
-                Compiles apollo-core, apollo-wind, and apollo-react before Storybook starts.
-              </p>
+              <p>Compiles apollo-core, apollo-wind, and apollo-react before Storybook starts.</p>
             </StepItem>
 
             <StepItem step={4} title="Start Storybook">
