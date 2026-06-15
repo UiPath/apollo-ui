@@ -12,7 +12,7 @@ import {
 } from './shared';
 
 const meta = {
-  title: 'Borders',
+  title: 'Theme/Borders',
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',

@@ -3,7 +3,7 @@ import { ScreenSizes } from '@uipath/apollo-react/core';
 import { PageContainer, PageDescription, PageTitle, PRIMARY_GRADIENT, SHADOW_SM } from './shared';
 
 const meta = {
-  title: 'Screens',
+  title: 'Theme/Screens',
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',

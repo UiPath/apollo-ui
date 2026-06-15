@@ -11,7 +11,7 @@ import {
 } from './shared';
 
 const meta = {
-  title: 'Typography',
+  title: 'Theme/Typography',
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',

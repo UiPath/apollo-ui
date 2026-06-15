@@ -13,7 +13,7 @@ import {
 } from './shared';
 
 const meta = {
-  title: 'Spacing',
+  title: 'Theme/Spacing',
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',

@@ -3,7 +3,7 @@ import { Shadow } from '@uipath/apollo-react/core';
 import { BRAND_GRADIENT, PageContainer, PageDescription, PageTitle } from './shared';
 
 const meta = {
-  title: 'Shadows',
+  title: 'Theme/Shadows',
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',

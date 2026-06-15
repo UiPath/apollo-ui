@@ -126,6 +126,7 @@ const preview: Preview = {
     options: {
       storySort: {
         order: [
+          'Introduction',
           'Apollo Wind',
           [
             'Introduction',
@@ -204,14 +205,18 @@ const preview: Preview = {
           'Apollo Core',
           [
             'Introduction',
-            'Colors',
-            'Typography',
-            'Spacing',
-            'Borders',
-            'Shadows',
-            'Icons',
-            'Screens',
-            'CSS Variables',
+            'Theme',
+            [
+              'Colors',
+              'Typography',
+              'Spacing',
+              'Borders',
+              'Shadows',
+              'Icons',
+              'Screens',
+              'CSS Variables',
+              '*',
+            ],
             '*',
           ],
         ],
