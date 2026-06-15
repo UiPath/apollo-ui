@@ -197,6 +197,53 @@ describe('ApTooltip', () => {
     expect(container).toBeInTheDocument();
   });
 
+  it('shows smartTooltip for line-clamped multiline overflow', async () => {
+    const originalGetComputedStyle = window.getComputedStyle;
+
+    render(
+      <ApTooltip content="Full label text" smartTooltip>
+        <div data-testid="clamped-label" style={{ overflow: 'hidden' }}>
+          Long label text that wraps across more than two lines
+        </div>
+      </ApTooltip>
+    );
+
+    const label = screen.getByTestId('clamped-label');
+    const getComputedStyleSpy = vi
+      .spyOn(window, 'getComputedStyle')
+      .mockImplementation((element) => {
+        const style = originalGetComputedStyle.call(window, element);
+        if (element !== label) {
+          return style;
+        }
+
+        return new Proxy(style, {
+          get(target, prop, receiver) {
+            if (prop === 'getPropertyValue') {
+              return (property: string) =>
+                property === '-webkit-line-clamp' ? '2' : target.getPropertyValue(property);
+            }
+            return Reflect.get(target, prop, receiver);
+          },
+        });
+      });
+
+    Object.defineProperties(label, {
+      clientHeight: { configurable: true, value: 36 },
+      scrollHeight: { configurable: true, value: 72 },
+    });
+
+    try {
+      await userEvent.hover(label);
+
+      await waitFor(() => {
+        expect(screen.getByText('Full label text')).toBeInTheDocument();
+      });
+    } finally {
+      getComputedStyleSpy.mockRestore();
+    }
+  });
+
   /**
    * Re-rendering behavior tests
    *

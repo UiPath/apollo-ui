@@ -1,6 +1,31 @@
+import type { HTMLAttributes, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, type UserEvent, userEvent } from '../../utils/testing';
 import { NodeLabel, type NodeLabelProps } from './NodeLabel';
+
+vi.mock('../CanvasTooltip', async () => {
+  const React = await import('react');
+
+  return {
+    CanvasTooltip: ({ content, children }: { content: ReactNode; children: ReactNode }) => {
+      const trigger = React.isValidElement(children)
+        ? React.cloneElement(children, {
+            'data-tooltip-trigger': typeof content === 'string' ? content : 'true',
+            onMouseEnter: () => undefined,
+          } as HTMLAttributes<HTMLElement>)
+        : children;
+
+      return (
+        <div
+          data-testid="canvas-tooltip"
+          data-tooltip-content={typeof content === 'string' ? content : undefined}
+        >
+          {trigger}
+        </div>
+      );
+    },
+  };
+});
 
 describe('NodeLabel', () => {
   const defaultProps: NodeLabelProps = {
@@ -45,6 +70,38 @@ describe('NodeLabel', () => {
 
       expect(screen.getByText('Test Node')).toBeInTheDocument();
       expect(screen.getByText('Adornment')).toBeInTheDocument();
+    });
+  });
+
+  describe('Tooltips', () => {
+    it('should use label and subLabel as tooltip content when labelTooltip is not provided', () => {
+      render(<NodeLabel {...defaultProps} />);
+
+      const tooltips = screen.getAllByTestId('canvas-tooltip');
+
+      expect(tooltips).toHaveLength(2);
+      expect(tooltips[0]).toHaveAttribute('data-tooltip-content', 'Test Node');
+      expect(tooltips[1]).toHaveAttribute('data-tooltip-content', 'Test Description');
+    });
+
+    it('should use labelTooltip for both label and subLabel when provided', () => {
+      render(<NodeLabel {...defaultProps} labelTooltip="Custom tooltip" />);
+
+      const tooltips = screen.getAllByTestId('canvas-tooltip');
+
+      expect(tooltips).toHaveLength(2);
+      expect(tooltips[0]).toHaveAttribute('data-tooltip-content', 'Custom tooltip');
+      expect(tooltips[1]).toHaveAttribute('data-tooltip-content', 'Custom tooltip');
+    });
+
+    it('should pass tooltip trigger props to label and subLabel elements', () => {
+      render(<NodeLabel {...defaultProps} />);
+
+      expect(screen.getByTestId('node-label')).toHaveAttribute('data-tooltip-trigger', 'Test Node');
+      expect(screen.getByTestId('node-sublabel')).toHaveAttribute(
+        'data-tooltip-trigger',
+        'Test Description'
+      );
     });
   });
 
