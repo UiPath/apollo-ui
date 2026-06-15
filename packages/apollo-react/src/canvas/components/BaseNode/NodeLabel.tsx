@@ -37,78 +37,100 @@ export const BaseTextContainer = ({
 
 interface ConditionalTooltipProps {
   content?: string;
+  placement?: 'top' | 'bottom';
   children: React.ReactNode;
 }
 
-const ConditionalTooltip = ({ content, children }: ConditionalTooltipProps) => {
+const ConditionalTooltip = ({ content, placement = 'top', children }: ConditionalTooltipProps) => {
   if (!content) {
     return children;
   }
 
   return (
-    <CanvasTooltip delay placement="top" content={content} smartTooltip>
+    <CanvasTooltip delay placement={placement} content={content} smartTooltip>
       {children}
     </CanvasTooltip>
   );
 };
 
-interface HeaderProps {
+interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   shape?: NodeShape;
   backgroundColor?: string;
   onDoubleClick?: (e: React.MouseEvent) => void;
-  children: React.ReactNode;
   'data-testid'?: string;
 }
 
-const Header = ({
-  shape,
-  backgroundColor,
-  onDoubleClick,
-  children,
-  'data-testid': dataTestId,
-}: HeaderProps) => (
-  // biome-ignore lint/a11y/noStaticElementInteractions: double-click-to-edit is the existing UX
-  <div
-    data-testid={dataTestId}
-    onDoubleClick={onDoubleClick}
-    className={cx(
-      'text-center text-sm leading-[18px] font-semibold text-foreground overflow-hidden',
-      backgroundColor && 'px-1.5 py-0.5 rounded-sm',
-      shape === 'rectangle'
-        ? 'w-full text-left whitespace-nowrap text-ellipsis'
-        : 'wrap-break-word line-clamp-3'
-    )}
-    style={backgroundColor ? { backgroundColor } : undefined}
-  >
-    {children}
-  </div>
+const Header = forwardRef<HTMLDivElement, HeaderProps>(
+  (
+    {
+      shape,
+      backgroundColor,
+      onDoubleClick,
+      children,
+      className,
+      style,
+      'data-testid': dataTestId,
+      ...triggerProps
+    },
+    ref
+  ) => (
+    <div
+      {...triggerProps}
+      ref={ref}
+      data-testid={dataTestId}
+      onDoubleClick={onDoubleClick}
+      className={cx(
+        'text-center text-sm leading-[18px] font-semibold text-foreground overflow-hidden',
+        backgroundColor && 'px-1.5 py-0.5 rounded-sm',
+        shape === 'rectangle'
+          ? 'w-full text-left whitespace-nowrap text-ellipsis'
+          : 'wrap-break-word line-clamp-3',
+        className
+      )}
+      style={{ ...style, ...(backgroundColor ? { backgroundColor } : undefined) }}
+    >
+      {children}
+    </div>
+  )
 );
+Header.displayName = 'Header';
 
-interface SubHeaderProps {
+interface SubHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   shape?: NodeShape;
   onDoubleClick?: (e: React.MouseEvent) => void;
-  children: React.ReactNode;
   'data-testid'?: string;
 }
 
-const SubHeader = ({
-  shape,
-  onDoubleClick,
-  children,
-  'data-testid': dataTestId,
-}: SubHeaderProps) => (
-  // biome-ignore lint/a11y/noStaticElementInteractions: double-click-to-edit is the existing UX
-  <div
-    data-testid={dataTestId}
-    onDoubleClick={onDoubleClick}
-    className={cx(
-      'text-center text-xs leading-[18px] text-foreground-muted wrap-break-word overflow-hidden',
-      shape === 'rectangle' ? 'w-full text-left line-clamp-2' : 'line-clamp-5'
-    )}
-  >
-    {children}
-  </div>
+const SubHeader = forwardRef<HTMLDivElement, SubHeaderProps>(
+  (
+    {
+      shape,
+      onDoubleClick,
+      children,
+      className,
+      style,
+      'data-testid': dataTestId,
+      ...triggerProps
+    },
+    ref
+  ) => (
+    <div
+      {...triggerProps}
+      ref={ref}
+      data-testid={dataTestId}
+      onDoubleClick={onDoubleClick}
+      className={cx(
+        'text-center text-xs leading-[18px] text-foreground-muted wrap-break-word overflow-hidden',
+        shape === 'rectangle' ? 'w-full text-left line-clamp-2' : 'line-clamp-5',
+        className
+      )}
+      style={style}
+    >
+      {children}
+    </div>
+  )
 );
+SubHeader.displayName = 'SubHeader';
 
 interface EditableLabelProps {
   shape?: NodeShape;
@@ -307,6 +329,14 @@ const NodeLabelInternal = ({
     );
   }
 
+  const headerTooltipContent = labelTooltip ?? label;
+  const subHeaderTooltipContent = labelTooltip ?? subLabel;
+
+  // Rectangle nodes render the label inside the node body, so a top-placed
+  // tooltip sits above the node. Other shapes render the label below the node,
+  // where a top-placed tooltip would overlap the node itself, so place it below.
+  const tooltipPlacement = shape === 'rectangle' ? 'top' : 'bottom';
+
   return (
     <BaseTextContainer hasBottomHandles={hasBottomHandles} shape={shape}>
       {isEditing ? (
@@ -338,25 +368,29 @@ const NodeLabelInternal = ({
           />
         </>
       ) : (
-        <ConditionalTooltip content={labelTooltip}>
-          <Header
-            shape={shape}
-            backgroundColor={labelBackgroundColor}
-            onDoubleClick={readonly ? undefined : handleDoubleClick(labelInputRef)}
-            data-testid="node-label"
-          >
-            {label}
-          </Header>
-          {subLabel && (
-            <SubHeader
+        <>
+          <ConditionalTooltip content={headerTooltipContent} placement={tooltipPlacement}>
+            <Header
               shape={shape}
-              onDoubleClick={readonly ? undefined : handleDoubleClick(subLabelInputRef)}
-              data-testid="node-sublabel"
+              backgroundColor={labelBackgroundColor}
+              onDoubleClick={readonly ? undefined : handleDoubleClick(labelInputRef)}
+              data-testid="node-label"
             >
-              {subLabel}
-            </SubHeader>
+              {label}
+            </Header>
+          </ConditionalTooltip>
+          {subLabel && (
+            <ConditionalTooltip content={subHeaderTooltipContent} placement={tooltipPlacement}>
+              <SubHeader
+                shape={shape}
+                onDoubleClick={readonly ? undefined : handleDoubleClick(subLabelInputRef)}
+                data-testid="node-sublabel"
+              >
+                {subLabel}
+              </SubHeader>
+            </ConditionalTooltip>
           )}
-        </ConditionalTooltip>
+        </>
       )}
       {centerAdornment}
     </BaseTextContainer>

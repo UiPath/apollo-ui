@@ -8,7 +8,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Button, Input, Label, Slider, Switch, cn } from '@uipath/apollo-wind';
+import { Button, cn, Input, Label, Slider, Switch } from '@uipath/apollo-wind';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { NodeRegistryProvider } from '../../core';
 import type { CategoryManifest, NodeManifest } from '../../schema';
@@ -22,12 +22,12 @@ import {
 } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
 import type { ValidationErrorSeverity } from '../../types/validation';
+import { CanvasIcon } from '../../utils/icon-registry';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { NodeInspector } from '../NodeInspector';
-import { CanvasIcon } from '../../utils/icon-registry';
-import { BaseNodeOverrideConfigProvider } from './BaseNodeConfigContext';
 import type { BaseNodeData } from './BaseNode.types';
+import { BaseNodeOverrideConfigProvider } from './BaseNodeConfigContext';
 
 // ============================================================================
 // Meta Configuration
@@ -1150,6 +1150,79 @@ function SizesStory() {
   );
 }
 
+function LabelTooltipsStory() {
+  const initialNodes = useMemo<Node<BaseNodeData>[]>(
+    () => [
+      createNode({
+        id: 'label-tooltip-circle',
+        type: 'uipath.manual-trigger',
+        position: { x: 160, y: 180 },
+        data: {
+          nodeType: 'uipath.manual-trigger',
+          version: '1.0.0',
+          display: {
+            label:
+              'Customer Intake Trigger With a Very Long Header That Should Clamp Across Multiple Lines and Continue Far Beyond the Visible Node Label Area for Tooltip Testing',
+            subLabel:
+              'Fallback sublabel tooltip uses this full trigger description when labelTooltip is absent. This deliberately verbose description keeps going long enough to exceed the circular node sublabel clamp, so hover can reveal the complete text for a customer intake process with multiple upstream systems, exception routing, validation notes, and operational metadata.',
+            shape: 'circle',
+          },
+        },
+      }),
+      createNode({
+        id: 'label-tooltip-square',
+        type: 'uipath.blank-node',
+        position: { x: 440, y: 180 },
+        data: {
+          nodeType: 'uipath.blank-node',
+          version: '1.0.0',
+          display: {
+            label:
+              'Quarterly Revenue Reconciliation Approval With Exception Handling Manual Review Regional Overrides Audit Controls and a Name That Intentionally Keeps Going',
+            subLabel:
+              'Hover this sublabel to verify it becomes the tooltip content without an override. The copy is intentionally extended with enough operational detail to overflow the square node sublabel clamp during visual review, including invoice matching, revenue variance notes, controller approval status, and downstream posting requirements.',
+            shape: 'square',
+          },
+        },
+      }),
+      {
+        ...createNode({
+          id: 'label-tooltip-rectangle',
+          type: 'uipath.agent',
+          position: { x: 720, y: 180 },
+          data: {
+            nodeType: 'uipath.agent',
+            version: '1.0.0',
+            display: {
+              label:
+                'Operations Agent With Long Header Text That Exceeds the Available Rectangle Width by a Wide Margin for Tooltip Testing',
+              subLabel:
+                'This rectangle sublabel is intentionally long so the smart tooltip can expose the full text after the two-line clamp, including monitoring context, escalation policy, queue ownership, and remediation notes.',
+              shape: 'rectangle',
+            },
+          },
+        }),
+        width: 184,
+        height: 64,
+      },
+    ],
+    []
+  );
+  const { canvasProps } = useCanvasStory({ initialNodes });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="Label Tooltips"
+        description="Hover the truncated node labels and sublabels. No labelTooltip override is provided, so each tooltip should use the corresponding label or sublabel text."
+      />
+    </BaseCanvas>
+  );
+}
+
 /**
  * Story-only manifest with `repeat` expressions and templated labels so the
  * DynamicHandles story can demonstrate manifest-level dynamic handle features.
@@ -1482,6 +1555,11 @@ export const ExecutionStates: Story = {
 export const Sizes: Story = {
   name: 'Sizes',
   render: () => <SizesStory />,
+};
+
+export const LabelTooltips: Story = {
+  name: 'Label Tooltips',
+  render: () => <LabelTooltipsStory />,
 };
 
 export const Handles: Story = {
