@@ -114,7 +114,7 @@ function OverviewTab() {
       <SectionDescription>
         Apollo Canvas is a React-based visual workflow editor built on top of ReactFlow. It provides
         a complete set of nodes, edges, controls, and panels designed for building process
-        automation UIs — consistent with the Apollo design system.
+        automation UIs, consistent with the Apollo design system.
       </SectionDescription>
 
       <InfoCallout>
@@ -157,7 +157,7 @@ function OverviewTab() {
             {
               title: 'Controls',
               description:
-                'Interactive UI overlaid on the canvas — toolbar, zoom, node picker, and handles.',
+                'Interactive UI overlaid on the canvas: toolbar, zoom, node picker, and handles.',
               components: ['CanvasModeToolbar', 'CanvasZoomControls', 'Toolbox', 'AddNodePanel'],
             },
             {
@@ -207,7 +207,7 @@ function OverviewTab() {
             <tbody>
               {[
                 ['design', 'Build and edit the workflow graph', 'Yes'],
-                ['debug', 'Step through execution with live node status', 'No — locked during run'],
+                ['debug', 'Step through execution with live node status', 'No, locked during run'],
                 ['evaluate', 'Review and assess workflow quality', 'No'],
               ].map(([mode, purpose, editable]) => (
                 <tr key={mode} className="border-b border-border last:border-0 hover:bg-muted/20">
@@ -231,7 +231,7 @@ function OverviewTab() {
           {[
             {
               title: 'Nodes are data-driven',
-              body: 'Node appearance is controlled entirely by data passed via nodeTypes and the node data object — never by direct DOM manipulation.',
+              body: 'Node appearance is controlled entirely by data passed via nodeTypes and the node data object. Never use direct DOM manipulation.',
             },
             {
               title: 'Status is contextual',
@@ -261,30 +261,65 @@ function OverviewTab() {
 // Tab: Quick Start
 // ============================================================================
 
+const quickStartPaths = ['Add to existing project', 'Run locally'] as const;
+type QuickStartPath = (typeof quickStartPaths)[number];
+
 function QuickStartTab() {
+  const [path, setPath] = React.useState<QuickStartPath>('Add to existing project');
+
   return (
     <div className="space-y-8">
-      <SectionDescription>
-        Get a canvas with nodes, edges, and toolbar controls running in under 5 minutes.
-      </SectionDescription>
-
-      <StepItem step={1} title="Install the package">
-        <CodeBlock label="terminal">{'pnpm add @uipath/apollo-react'}</CodeBlock>
-        <p>
-          The canvas is included in the main package — no separate install needed for ReactFlow.
+      {/* Path switcher */}
+      <div className="rounded-xl border border-border bg-card p-5">
+        <p className="mb-1 text-sm font-semibold text-foreground">What are you trying to do?</p>
+        <p className="mb-4 text-xs text-muted-foreground">
+          Choose the path that matches your goal — the steps below will update accordingly.
         </p>
-      </StepItem>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          {quickStartPaths.map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setPath(p)}
+              className={cn(
+                'flex-1 cursor-pointer rounded-lg border px-4 py-3 text-left text-sm transition-colors',
+                path === p
+                  ? 'border-primary bg-primary/10 font-medium text-foreground'
+                  : 'border-border bg-background text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <span className="block font-medium text-foreground">{p}</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                {p === 'Add to existing project'
+                  ? 'Install Apollo Canvas as a dependency in your own app'
+                  : 'Clone the apollo-ui repo and run Storybook locally'}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
 
-      <StepItem step={2} title="Import the CSS theme">
-        <CodeBlock label="main.tsx or _app.tsx">
-          {"import '@uipath/apollo-react/core/theme.css';"}
-        </CodeBlock>
-        <p>This loads the Apollo design tokens as CSS custom properties.</p>
-      </StepItem>
+      {path === 'Add to existing project' && (
+        <>
+          <div className="space-y-6">
+            <StepItem step={1} title="Install the package">
+              <CodeBlock label="terminal">{'pnpm add @uipath/apollo-react'}</CodeBlock>
+              <p>
+                The canvas is included in the main package. No separate install needed for
+                ReactFlow.
+              </p>
+            </StepItem>
 
-      <StepItem step={3} title="Render a canvas">
-        <CodeBlock label="MyCanvas.tsx">
-          {`import { useState, useCallback } from 'react';
+            <StepItem step={2} title="Import the CSS theme">
+              <CodeBlock label="main.tsx or _app.tsx">
+                {"import '@uipath/apollo-react/core/theme.css';"}
+              </CodeBlock>
+              <p>This loads the Apollo design tokens as CSS custom properties.</p>
+            </StepItem>
+
+            <StepItem step={3} title="Render a canvas">
+              <CodeBlock label="MyCanvas.tsx">
+                {`import { useState, useCallback } from 'react';
 import {
   type Node, type Edge,
   type NodeChange, type EdgeChange, type Connection,
@@ -336,38 +371,39 @@ export function MyCanvas() {
     </div>
   );
 }`}
-        </CodeBlock>
-      </StepItem>
+              </CodeBlock>
+            </StepItem>
+          </div>
 
-      <Divider />
+          <Divider />
 
-      <div>
-        <h3 className="mb-3 text-lg font-semibold text-foreground">Import Paths</h3>
-        <SectionDescription>
-          Canvas exports are namespaced under the <InlineCode>/canvas</InlineCode> subpath.
-        </SectionDescription>
-        <div className="space-y-3">
-          <CodeBlock label="Canvas components">
-            {`import { BaseCanvas, CanvasModeToolbar, CanvasZoomControls } from '@uipath/apollo-react/canvas';`}
-          </CodeBlock>
-          <CodeBlock label="ReactFlow re-exports (nodes, edges, hooks)">
-            {`import { useReactFlow, Panel, Handle } from '@uipath/apollo-react/canvas/xyflow/react';`}
-          </CodeBlock>
-          <CodeBlock label="Canvas hooks">
-            {`import { useCanvasEvents, useExportCanvas, useElementsOverlap } from '@uipath/apollo-react/canvas';`}
-          </CodeBlock>
-        </div>
-      </div>
+          <div>
+            <h3 className="mb-3 text-lg font-semibold text-foreground">Import Paths</h3>
+            <SectionDescription>
+              Canvas exports are namespaced under the <InlineCode>/canvas</InlineCode> subpath.
+            </SectionDescription>
+            <div className="space-y-3">
+              <CodeBlock label="Canvas components">
+                {`import { BaseCanvas, CanvasModeToolbar, CanvasZoomControls } from '@uipath/apollo-react/canvas';`}
+              </CodeBlock>
+              <CodeBlock label="ReactFlow re-exports (nodes, edges, hooks)">
+                {`import { useReactFlow, Panel, Handle } from '@uipath/apollo-react/canvas/xyflow/react';`}
+              </CodeBlock>
+              <CodeBlock label="Canvas hooks">
+                {`import { useCanvasEvents, useExportCanvas, useElementsOverlap } from '@uipath/apollo-react/canvas';`}
+              </CodeBlock>
+            </div>
+          </div>
 
-      <Divider />
+          <Divider />
 
-      <div>
-        <h3 className="mb-3 text-lg font-semibold text-foreground">Writing Stories</h3>
-        <SectionDescription>
-          Use the built-in storybook utilities to reduce boilerplate in canvas stories.
-        </SectionDescription>
-        <CodeBlock label="MyNode.stories.tsx">
-          {`import { withCanvasProviders, useCanvasStory } from '../storybook-utils';
+          <div>
+            <h3 className="mb-3 text-lg font-semibold text-foreground">Writing Stories</h3>
+            <SectionDescription>
+              Use the built-in storybook utilities to reduce boilerplate in canvas stories.
+            </SectionDescription>
+            <CodeBlock label="MyNode.stories.tsx">
+              {`import { withCanvasProviders, useCanvasStory } from '../storybook-utils';
 import { BaseCanvas } from '../BaseCanvas';
 
 const meta = {
@@ -386,16 +422,62 @@ function MyStory() {
 }
 
 export const Default = { render: () => <MyStory /> };`}
-        </CodeBlock>
-        <div className="mt-3">
+            </CodeBlock>
+            <div className="mt-3">
+              <InfoCallout>
+                <span className="font-medium text-foreground">withCanvasProviders</span> wraps the
+                story in ReactFlowProvider, ExecutionStatusContext, and ValidationStatusContext.{' '}
+                <span className="font-medium text-foreground">useCanvasStory</span> manages
+                node/edge state and returns a ready-to-spread{' '}
+                <InlineCode>canvasProps</InlineCode> object.
+              </InfoCallout>
+            </div>
+          </div>
+        </>
+      )}
+
+      {path === 'Run locally' && (
+        <>
           <InfoCallout>
-            <span className="font-medium text-foreground">withCanvasProviders</span> wraps the story
-            in ReactFlowProvider, ExecutionStatusContext, and ValidationStatusContext.{' '}
-            <span className="font-medium text-foreground">useCanvasStory</span> manages node/edge
-            state and returns a ready-to-spread <InlineCode>canvasProps</InlineCode> object.
+            <p className="mb-1 font-medium text-foreground">Before you begin</p>
+            <p>
+              This path is for contributors and team members who want to browse or modify Apollo
+              Canvas source files and run Storybook on their machine.
+            </p>
           </InfoCallout>
-        </div>
-      </div>
+
+          <div className="space-y-6">
+            <StepItem step={1} title="Clone the repository">
+              <CodeBlock label="terminal">
+                {'git clone https://github.com/UiPath/apollo-ui.git\ncd apollo-ui'}
+              </CodeBlock>
+            </StepItem>
+
+            <StepItem step={2} title="Install dependencies">
+              <CodeBlock label="terminal">{'npm install -g pnpm\npnpm install'}</CodeBlock>
+              <p>
+                This project uses <InlineCode>pnpm</InlineCode> workspaces. Install it globally if
+                you don't have it yet.
+              </p>
+            </StepItem>
+
+            <StepItem step={3} title="Build all packages">
+              <CodeBlock label="terminal">{'pnpm build'}</CodeBlock>
+              <p>
+                Compiles apollo-core, apollo-wind, and apollo-react before Storybook starts.
+              </p>
+            </StepItem>
+
+            <StepItem step={4} title="Start Storybook">
+              <CodeBlock label="terminal">{'pnpm storybook:dev'}</CodeBlock>
+              <p>
+                Opens Apollo Canvas Storybook at <InlineCode>http://localhost:6007</InlineCode>.
+                Changes to source files hot-reload automatically.
+              </p>
+            </StepItem>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -588,20 +670,9 @@ function GettingStartedPage({ globalTheme }: { globalTheme: string }) {
         {/* Header */}
         <h1 className="text-[2rem] font-bold tracking-tight text-foreground">Apollo Canvas</h1>
         <p className="text-base leading-7 text-muted-foreground">
-          A visual workflow canvas built on ReactFlow — nodes, edges, controls, and panels designed
+          A visual workflow canvas built on ReactFlow. Nodes, edges, controls, and panels designed
           for process automation UIs.
         </p>
-
-        <div className="pt-2">
-          <a
-            href="https://github.com/UiPath/apollo-ui"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-medium text-primary underline"
-          >
-            github.com/UiPath/apollo-ui
-          </a>
-        </div>
 
         {/* Tabs */}
         <div className="flex gap-1 border-b border-border pb-0 pt-6">

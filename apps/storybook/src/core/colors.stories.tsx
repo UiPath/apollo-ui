@@ -11,7 +11,7 @@ import {
 } from './shared';
 
 const meta = {
-  title: 'Colors',
+  title: 'Theme/Colors',
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',

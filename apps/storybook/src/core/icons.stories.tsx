@@ -15,7 +15,7 @@ import {
 } from './shared';
 
 const meta = {
-  title: 'Icons',
+  title: 'Theme/Icons',
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',

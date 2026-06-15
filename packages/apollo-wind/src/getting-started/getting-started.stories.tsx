@@ -107,517 +107,389 @@ function StepItem({
 }
 
 // ============================================================================
-// Package card
+// Tab: Overview
 // ============================================================================
 
-const installTabs = ['Add to existing project', 'Run locally'] as const;
-type InstallTab = (typeof installTabs)[number];
-
-function PackageCard({
-  name,
-  packageName,
-  description,
-  bestFor,
-  consumerInstall,
-  localDevCommands,
-}: {
-  name: string;
-  packageName: string;
-  description: string;
-  bestFor: string;
-  consumerInstall: string;
-  localDevCommands: string;
-}) {
-  const [activeTab, setActiveTab] = React.useState<InstallTab>('Add to existing project');
-
-  return (
-    <div className="rounded-xl border border-border bg-card p-6">
-      <div className="mb-1 flex items-baseline gap-3">
-        <h3 className="text-lg font-semibold text-foreground">{name}</h3>
-        <InlineCode>{packageName}</InlineCode>
-      </div>
-      <p className="mb-4 text-sm leading-6 text-muted-foreground">{description}</p>
-
-      <p className="mb-5 text-sm leading-6 text-muted-foreground">
-        <span className="font-medium text-foreground">Best for: </span>
-        {bestFor}
-      </p>
-
-      {/* Install path tabs */}
-      <div className="mb-4 inline-flex rounded-lg border border-border bg-muted/50 p-1">
-        {installTabs.map((tab) => (
-          <button
-            type="button"
-            key={tab}
-            className={cn(
-              'cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-              activeTab === tab
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {activeTab === 'Add to existing project' && (
-        <div>
-          <CodeBlock>{consumerInstall}</CodeBlock>
-        </div>
-      )}
-
-      {activeTab === 'Run locally' && (
-        <div>
-          <p className="mb-2 text-sm text-muted-foreground">
-            After cloning the{' '}
-            <a
-              href="https://github.com/UiPath/apollo-ui"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-primary underline"
-            >
-              apollo-ui
-            </a>{' '}
-            monorepo and running <InlineCode>pnpm install</InlineCode>:
-          </p>
-          <CodeBlock>{localDevCommands}</CodeBlock>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================================================
-// CLI components
-// ============================================================================
-
-const cliComponents = [
-  // Forms
-  { category: 'Forms', name: 'button', description: 'Primary action trigger' },
-  { category: 'Forms', name: 'button-group', description: 'Grouped action buttons' },
-  { category: 'Forms', name: 'input', description: 'Text input field' },
-  { category: 'Forms', name: 'textarea', description: 'Multi-line text input' },
-  { category: 'Forms', name: 'select', description: 'Dropdown selector' },
-  { category: 'Forms', name: 'combobox', description: 'Searchable dropdown' },
-  { category: 'Forms', name: 'multi-select', description: 'Multi-value selector' },
-  { category: 'Forms', name: 'checkbox', description: 'Boolean toggle' },
-  { category: 'Forms', name: 'radio-group', description: 'Single-choice selector' },
-  { category: 'Forms', name: 'switch', description: 'On/off toggle' },
-  { category: 'Forms', name: 'slider', description: 'Range input' },
-  { category: 'Forms', name: 'label', description: 'Form field label' },
-  { category: 'Forms', name: 'search', description: 'Search input with clear action' },
-  {
-    category: 'Forms',
-    name: 'file-upload',
-    description: 'Drag-and-drop file input with per-file errors',
-  },
-  { category: 'Forms', name: 'stepper', description: 'Multi-step form progress' },
-  // Date & Time
-  { category: 'Date & Time', name: 'calendar', description: 'Month calendar picker' },
-  { category: 'Date & Time', name: 'date-picker', description: 'Date input with popover' },
-  {
-    category: 'Date & Time',
-    name: 'datetime-picker',
-    description: 'Combined date and time picker',
-  },
-  // Layout
-  { category: 'Layout', name: 'card', description: 'Content container with header and body' },
-  { category: 'Layout', name: 'separator', description: 'Horizontal or vertical divider' },
-  { category: 'Layout', name: 'resizable', description: 'Draggable split-pane layout' },
-  { category: 'Layout', name: 'scroll-area', description: 'Custom scrollable container' },
-  { category: 'Layout', name: 'aspect-ratio', description: 'Enforce element aspect ratio' },
-  // Navigation
-  { category: 'Navigation', name: 'tabs', description: 'Tabbed content switcher' },
-  { category: 'Navigation', name: 'breadcrumb', description: 'Hierarchical location trail' },
-  { category: 'Navigation', name: 'pagination', description: 'Page navigation controls' },
-  { category: 'Navigation', name: 'accordion', description: 'Collapsible content sections' },
-  { category: 'Navigation', name: 'tree-view', description: 'Hierarchical item tree' },
-  // Overlays
-  { category: 'Overlays', name: 'dialog', description: 'Modal overlay' },
-  { category: 'Overlays', name: 'sheet', description: 'Slide-in side panel' },
-  { category: 'Overlays', name: 'alert-dialog', description: 'Confirmation dialog' },
-  { category: 'Overlays', name: 'popover', description: 'Anchored floating panel' },
-  { category: 'Overlays', name: 'hover-card', description: 'Preview card on hover' },
-  { category: 'Overlays', name: 'dropdown-menu', description: 'Contextual action menu' },
-  { category: 'Overlays', name: 'context-menu', description: 'Right-click menu' },
-  { category: 'Overlays', name: 'command', description: 'Command palette with search' },
-  { category: 'Overlays', name: 'tooltip', description: 'Inline hover hint' },
-  // Data Display
-  { category: 'Data Display', name: 'data-table', description: 'Sortable, filterable table' },
-  { category: 'Data Display', name: 'badge', description: 'Status and label pill' },
-  { category: 'Data Display', name: 'alert', description: 'Inline status message' },
-  { category: 'Data Display', name: 'stats-card', description: 'KPI metric card' },
-  { category: 'Data Display', name: 'empty-state', description: 'Zero-state placeholder' },
-  { category: 'Data Display', name: 'skeleton', description: 'Loading placeholder' },
-  { category: 'Data Display', name: 'progress', description: 'Progress bar' },
-  { category: 'Data Display', name: 'spinner', description: 'Loading indicator' },
-  { category: 'Data Display', name: 'sonner', description: 'Toast notifications' },
-  { category: 'Data Display', name: 'toggle', description: 'Single toggle button' },
-  { category: 'Data Display', name: 'toggle-group', description: 'Segmented toggle controls' },
-  // Custom Apollo
-  { category: 'Custom Apollo', name: 'page-header', description: 'Page title and action bar' },
-  { category: 'Custom Apollo', name: 'global-header', description: 'App-level top navigation' },
-  { category: 'Custom Apollo', name: 'panel-studio', description: 'Studio-style side panel' },
-  { category: 'Custom Apollo', name: 'panel-delegate', description: 'Delegate-style nav panel' },
-  { category: 'Custom Apollo', name: 'panel-flow', description: 'Flow editor nav rail' },
-  { category: 'Custom Apollo', name: 'panel-maestro', description: 'Maestro dashboard panel' },
-  { category: 'Custom Apollo', name: 'toolbar-canvas', description: 'Canvas floating toolbar' },
-  { category: 'Custom Apollo', name: 'toolbar-view', description: 'View mode toolbar' },
-  { category: 'Custom Apollo', name: 'flow-node', description: 'Workflow canvas node' },
-  { category: 'Custom Apollo', name: 'flow-properties', description: 'Node properties panel' },
-  { category: 'Custom Apollo', name: 'grid-maestro', description: 'Maestro-style data grid' },
-  {
-    category: 'Custom Apollo',
-    name: 'chat-composer',
-    description: 'AI chat input with attachments',
-  },
-  { category: 'Custom Apollo', name: 'chat-steps-view', description: 'AI thinking steps display' },
-  {
-    category: 'Custom Apollo',
-    name: 'chat-first-experience',
-    description: 'Empty chat onboarding state',
-  },
-  {
-    category: 'Custom Apollo',
-    name: 'chat-prompt-suggestions',
-    description: 'Suggested prompt chips',
-  },
-  { category: 'Custom Apollo', name: 'canvas', description: 'Pannable, zoomable canvas area' },
-] as const;
-
-function PrereqsTooltip() {
-  const [open, setOpen] = React.useState(false);
-
-  return (
-    <span className="relative inline-block">
-      <button
-        type="button"
-        onMouseEnter={() => setOpen(true)}
-        onMouseLeave={() => setOpen(false)}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setOpen(false)}
-        className="inline-flex cursor-default items-center gap-1 rounded border border-border bg-muted/60 px-1.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-      >
-        Prerequisites
-        <svg
-          width="10"
-          height="10"
-          viewBox="0 0 10 10"
-          fill="none"
-          className="shrink-0 opacity-60"
-          aria-hidden="true"
-        >
-          <circle cx="5" cy="5" r="4.5" stroke="currentColor" />
-          <path d="M5 4.5v3M5 3h.01" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
-        </svg>
-      </button>
-
-      {open && (
-        <div className="absolute bottom-full left-0 z-50 mb-2 w-64 rounded-lg border border-border bg-card p-3 shadow-lg">
-          <p className="mb-2 text-xs font-medium text-foreground">Before you begin</p>
-          <ul className="space-y-1.5 text-xs leading-5 text-muted-foreground">
-            <li>
-              <span className="font-medium text-foreground">Node 18+</span> — required by the shadcn
-              CLI
-            </li>
-            <li>
-              <span className="font-medium text-foreground">Tailwind CSS v4</span> — uses{' '}
-              <code className="rounded bg-muted px-1 py-px font-mono text-[10px]">
-                @import "tailwindcss"
-              </code>
-              , not{' '}
-              <code className="rounded bg-muted px-1 py-px font-mono text-[10px]">
-                tailwind.config.js
-              </code>
-            </li>
-            <li>
-              <span className="font-medium text-foreground">React project</span> — Vite, Next.js, or
-              any React setup
-            </li>
-          </ul>
-        </div>
-      )}
-    </span>
-  );
-}
-
-// ============================================================================
-// Tab: Choose your package
-// ============================================================================
-
-function ChooseYourPackageTab() {
+function OverviewTab() {
   return (
     <div className="space-y-6">
       <SectionDescription>
-        Apollo is split into focused packages. Pick the one that matches what you're building.
+        Apollo Wind is the Tailwind CSS component library for new React applications. Built on
+        shadcn/ui and Radix primitives, it provides 60+ components, page templates, and full
+        theming support, all consistent with the Apollo design system tokens from apollo-core.
       </SectionDescription>
 
-      <PackageCard
-        name="Apollo Wind"
-        packageName="@uipath/apollo-wind"
-        description="The modern UI component library for rapid prototyping and new product interfaces. Built with Tailwind CSS and shadcn/ui — includes 60+ components, page templates, and full theming support."
-        bestFor="Prototyping, new product UIs, and any project using Tailwind CSS."
-        consumerInstall="npm install @uipath/apollo-wind"
-        localDevCommands={`pnpm build\npnpm storybook:dev`}
-      />
+      <Divider />
 
-      <PackageCard
-        name="Apollo React"
-        packageName="@uipath/apollo-react"
-        description="The component library for UiPath workflows and automation products. Built on Material UI with Apollo theming — provides the components and patterns used across workflow-based experiences."
-        bestFor="Workflow interfaces, automation products, and existing Material UI projects."
-        consumerInstall="npm install @uipath/apollo-react"
-        localDevCommands={`pnpm build\npnpm storybook:dev`}
-      />
+      <div>
+        <h3 className="mb-4 text-lg font-semibold text-foreground">What's included</h3>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {[
+            {
+              title: 'Components',
+              description:
+                '60+ production-ready components across Forms, Navigation, Overlays, Data Display, and Layout categories.',
+              examples: ['Button', 'DataTable', 'Dialog', 'Combobox', 'Tabs'],
+            },
+            {
+              title: 'Templates',
+              description:
+                'Full page layouts for common UiPath product patterns: admin pages, delegate views, Studio, Flow, and Maestro.',
+              examples: ['Admin', 'Delegate', 'Studio', 'Flow', 'Maestro'],
+            },
+            {
+              title: 'Theming',
+              description:
+                'Future design language themes with full dark and light mode support. All tokens resolve from CSS custom properties.',
+              examples: ['future-dark', 'future-light', 'vertex', 'canvas'],
+            },
+            {
+              title: 'Design Tokens',
+              description:
+                'Semantic color, spacing, typography, and radius tokens from apollo-core, wired into Tailwind via CSS variables.',
+              examples: ['Colors', 'Spacing', 'Typography', 'Radius'],
+            },
+          ].map(({ title, description, examples }) => (
+            <div key={title} className="rounded-xl border border-border bg-card p-5">
+              <h4 className="mb-1 text-base font-semibold text-foreground">{title}</h4>
+              <p className="mb-3 text-sm leading-6 text-muted-foreground">{description}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {examples.map((e) => (
+                  <InlineCode key={e}>{e}</InlineCode>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
-      <PackageCard
-        name="Apollo Core"
-        packageName="@uipath/apollo-core"
-        description="The shared foundation — design tokens, icons, fonts, and CSS variables. Both Apollo Wind and Apollo React depend on this package. Install it directly only if you need tokens without a component library."
-        bestFor="Custom builds that need design tokens, icons, or fonts without a full component library."
-        consumerInstall="npm install @uipath/apollo-core"
-        localDevCommands="pnpm build"
-      />
+      <Divider />
+
+      <div>
+        <h3 className="mb-4 text-lg font-semibold text-foreground">Design principles</h3>
+        <div className="space-y-3">
+          {[
+            {
+              title: 'You own the code',
+              body: 'Components follow the shadcn ownership model. Source is copied into your project. You can read, modify, and update on your own terms.',
+            },
+            {
+              title: 'Tailwind-first',
+              body: 'Styling uses static Tailwind utility classes. No runtime CSS-in-JS or emotion. Works with Tailwind v4 and the @import "tailwindcss" syntax.',
+            },
+            {
+              title: 'Accessible by default',
+              body: 'All interactive components are built on Radix UI primitives, which handle focus management, keyboard navigation, and ARIA attributes.',
+            },
+            {
+              title: 'Token-driven theming',
+              body: 'Visual appearance is controlled entirely by CSS custom properties from apollo-core. Switching themes is a single class change on the root element.',
+            },
+          ].map(({ title, body }) => (
+            <div key={title} className="rounded-lg border border-border bg-card p-4">
+              <p className="mb-1 text-sm font-semibold text-foreground">{title}</p>
+              <p className="text-sm leading-6 text-muted-foreground">{body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
 // ============================================================================
-// Tab: CLI
+// Tab: Quick Start
 // ============================================================================
 
-function CLITab() {
-  const [copiedComponent, setCopiedComponent] = React.useState<string | null>(null);
+const quickStartPaths = ['Add to existing project', 'Run locally'] as const;
+type QuickStartPath = (typeof quickStartPaths)[number];
 
-  const handleCopyComponent = (name: string) => {
-    navigator.clipboard.writeText(`npx shadcn@latest add https://ui.uipath.com/r/${name}.json`);
-    setCopiedComponent(name);
-    setTimeout(() => setCopiedComponent(null), 2000);
-  };
-
-  const categories = [...new Set(cliComponents.map((c) => c.category))];
+function QuickStartTab() {
+  const [path, setPath] = React.useState<QuickStartPath>('Add to existing project');
 
   return (
     <div className="space-y-8">
-      {/* Why CLI */}
-      <div>
-        <InfoCallout>
-          <p className="mb-2 font-medium text-foreground">Work in progress</p>
-          <p>
-            This is the <span className="font-medium text-foreground">Apollo Wind CLI</span> — a
-            frontend-specific tool for Tailwind-based projects using{' '}
-            <InlineCode>@uipath/apollo-wind</InlineCode>. The registry is not yet published;
-            commands on this page reflect the target experience and will work once it is.
-          </p>
-          <p className="mt-2">
-            Other teams at UiPath are also building CLIs for different parts of the stack. Check the{' '}
-            <a
-              href="https://github.com/UiPath"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-primary underline"
+      {/* Path switcher */}
+      <div className="rounded-xl border border-border bg-card p-5">
+        <p className="mb-1 text-sm font-semibold text-foreground">What are you trying to do?</p>
+        <p className="mb-4 text-xs text-muted-foreground">
+          Choose the path that matches your goal. The steps below will update accordingly.
+        </p>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          {quickStartPaths.map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setPath(p)}
+              className={cn(
+                'flex-1 cursor-pointer rounded-lg border px-4 py-3 text-left text-sm transition-colors',
+                path === p
+                  ? 'border-primary bg-primary/10 font-medium text-foreground'
+                  : 'border-border bg-background text-muted-foreground hover:text-foreground'
+              )}
             >
-              UiPath GitHub
-            </a>{' '}
-            for the full picture.
-          </p>
-        </InfoCallout>
-        <div className="mt-6">
-          <SectionDescription>
-            Apollo's CLI follows the shadcn ownership model — components are copied directly into
-            your project rather than installed as a locked package dependency. You own the code, can
-            customize it freely, and updates are an explicit choice, not a forced upgrade.
-          </SectionDescription>
+              <span className="block font-medium text-foreground">{p}</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                {p === 'Add to existing project'
+                  ? 'Install Apollo Wind as a dependency in your own app'
+                  : 'Clone the apollo-ui repo and run Storybook locally'}
+              </span>
+            </button>
+          ))}
         </div>
       </div>
 
-      <Divider />
+      {path === 'Add to existing project' && (
+        <>
+          <InfoCallout>
+            <p className="mb-1 font-medium text-foreground">Prerequisites</p>
+            <ul className="space-y-1">
+              <li>
+                <span className="font-medium text-foreground">Node 18+</span>: required by the
+                shadcn CLI
+              </li>
+              <li>
+                <span className="font-medium text-foreground">Tailwind CSS v4</span>: uses{' '}
+                <InlineCode>@import "tailwindcss"</InlineCode>, not{' '}
+                <InlineCode>tailwind.config.js</InlineCode>
+              </li>
+              <li>
+                <span className="font-medium text-foreground">React project</span>: Vite, Next.js,
+                or any React setup
+              </li>
+            </ul>
+          </InfoCallout>
 
-      {/* Quick Start */}
-      <div>
-        <h3 className="mb-1 text-lg font-semibold text-foreground">Quick Start</h3>
-        <p className="mb-6 flex flex-wrap items-center gap-2 text-base leading-7 text-muted-foreground">
-          Three commands to get Apollo components and theming into your project. <PrereqsTooltip />
-        </p>
+          <div className="space-y-6">
+            <StepItem step={1} title="Install the package">
+              <CodeBlock label="terminal">{'npm install @uipath/apollo-wind'}</CodeBlock>
+            </StepItem>
 
-        <div className="space-y-4">
-          <StepItem step={1} title="Initialize shadcn">
-            <CodeBlock>{`npx shadcn@latest init`}</CodeBlock>
+            <StepItem step={2} title="Import the CSS theme">
+              <CodeBlock label="main.tsx or _app.tsx">
+                {`import '@uipath/apollo-wind/tailwind.css';`}
+              </CodeBlock>
+              <p>This loads Apollo design tokens and the Tailwind base styles.</p>
+            </StepItem>
+
+            <StepItem step={3} title="Apply the theme class">
+              <CodeBlock label="App.tsx">
+                {`export function App() {
+  return (
+    <div className="future-dark min-h-screen bg-background text-foreground">
+      {/* your app */}
+    </div>
+  );
+}`}
+              </CodeBlock>
+              <p>
+                Switch to light mode by replacing <InlineCode>future-dark</InlineCode> with{' '}
+                <InlineCode>future-light</InlineCode>. All tokens adapt automatically.
+              </p>
+            </StepItem>
+
+            <StepItem step={4} title="Add your first component">
+              <CodeBlock label="terminal">
+                {'npx shadcn@latest add https://ui.uipath.com/r/button.json'}
+              </CodeBlock>
+              <p>
+                Copies the component source into{' '}
+                <InlineCode>src/components/ui/button.tsx</InlineCode>. It's yours to use and modify.
+              </p>
+            </StepItem>
+          </div>
+
+          <Divider />
+
+          <div>
+            <h3 className="mb-3 text-lg font-semibold text-foreground">Import paths</h3>
+            <SectionDescription>
+              Components and utilities are exported from the package root.
+            </SectionDescription>
+            <div className="space-y-3">
+              <CodeBlock label="Components">
+                {`import { Button, Input, Dialog } from '@uipath/apollo-wind';`}
+              </CodeBlock>
+              <CodeBlock label="Utilities">
+                {`import { cn } from '@uipath/apollo-wind';`}
+              </CodeBlock>
+              <CodeBlock label="CSS theme">
+                {`import '@uipath/apollo-wind/tailwind.css';`}
+              </CodeBlock>
+            </div>
+          </div>
+        </>
+      )}
+
+      {path === 'Run locally' && (
+        <>
+          <InfoCallout>
+            <p className="mb-1 font-medium text-foreground">Before you begin</p>
             <p>
-              Creates a <InlineCode>components.json</InlineCode> config in your project root.
+              This path is for contributors and team members who want to browse or modify Apollo
+              Wind source files and run Storybook on their machine.
             </p>
-          </StepItem>
+          </InfoCallout>
 
-          <StepItem step={2} title="Add the Apollo theme preset">
-            <CodeBlock>{`npx shadcn@latest add https://ui.uipath.com/r/theme.json`}</CodeBlock>
-            <p>
-              Installs the Apollo CSS theme file and adds the <InlineCode>future-dark</InlineCode>{' '}
-              and <InlineCode>future-light</InlineCode> classes to your project.
-            </p>
-          </StepItem>
+          <div className="space-y-6">
+            <StepItem step={1} title="Clone the repository">
+              <CodeBlock label="terminal">
+                {'git clone https://github.com/UiPath/apollo-ui.git\ncd apollo-ui'}
+              </CodeBlock>
+            </StepItem>
 
-          <StepItem step={3} title="Add your first component">
-            <CodeBlock>{`npx shadcn@latest add https://ui.uipath.com/r/button.json`}</CodeBlock>
-            <p>
-              Copies the component source into <InlineCode>src/components/ui/button.tsx</InlineCode>
-              . It's yours to use, read, and modify.
-            </p>
-          </StepItem>
-        </div>
-      </div>
+            <StepItem step={2} title="Install dependencies">
+              <CodeBlock label="terminal">
+                {'npm install -g pnpm\npnpm install'}
+              </CodeBlock>
+              <p>
+                This project uses <InlineCode>pnpm</InlineCode> workspaces. Install it globally if
+                you don't have it yet.
+              </p>
+            </StepItem>
 
-      <Divider />
+            <StepItem step={3} title="Build all packages">
+              <CodeBlock label="terminal">{'pnpm build'}</CodeBlock>
+              <p>Compiles apollo-core, apollo-wind, and apollo-react before Storybook starts.</p>
+            </StepItem>
 
-      {/* Theming */}
-      <div>
-        <h3 className="mb-3 text-lg font-semibold text-foreground">Activating the Theme</h3>
-        <SectionDescription>
-          After installing the theme preset, apply the theme class to your root element. All
-          semantic tokens resolve automatically from there.
-        </SectionDescription>
-
-        <CodeBlock label="Apply theme to your app root">
-          {`<div className="future-dark min-h-screen bg-background text-foreground">
-  {/* your app */}
-</div>`}
-        </CodeBlock>
-
-        <p className="mt-4 text-sm text-muted-foreground">
-          Switch to light theme by replacing <InlineCode>future-dark</InlineCode> with{' '}
-          <InlineCode>future-light</InlineCode>. No other changes needed — all tokens adapt
-          automatically.
-        </p>
-      </div>
-
-      <Divider />
-
-      {/* Updating */}
-      <div>
-        <h3 className="mb-3 text-lg font-semibold text-foreground">Updating Components</h3>
-        <SectionDescription>
-          Because components live in your project, updates are opt-in. Re-run the add command to
-          pull the latest version and review the diff before committing.
-        </SectionDescription>
-
-        <CodeBlock>{`npx shadcn@latest add https://ui.uipath.com/r/button.json`}</CodeBlock>
-
-        <p className="mt-3 text-sm text-muted-foreground">
-          shadcn will show you what changed. Accept the update, keep your version, or merge
-          selectively — the choice is yours.
-        </p>
-      </div>
-
-      <Divider />
-
-      {/* Available Components */}
-      <div>
-        <h3 className="mb-3 text-lg font-semibold text-foreground">Available Components</h3>
-        <SectionDescription>
-          Click copy on any row to get the install command for that component.
-        </SectionDescription>
-
-        <div className="overflow-hidden rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/50">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Component
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Description
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Install
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {categories.map((category) => (
-                <React.Fragment key={category}>
-                  <tr className="border-b border-border bg-muted/30">
-                    <td
-                      colSpan={3}
-                      className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                    >
-                      {category}
-                    </td>
-                  </tr>
-                  {cliComponents
-                    .filter((c) => c.category === category)
-                    .map(({ name, description }) => (
-                      <tr
-                        key={name}
-                        className="border-b border-border last:border-0 hover:bg-muted/20"
-                      >
-                        <td className="px-4 py-3 font-medium text-foreground">
-                          <InlineCode>{name}</InlineCode>
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">{description}</td>
-                        <td className="px-4 py-3 text-right">
-                          <button
-                            type="button"
-                            onClick={() => handleCopyComponent(name)}
-                            className="cursor-pointer rounded px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-                          >
-                            {copiedComponent === name ? 'Copied!' : 'Copy'}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            <StepItem step={4} title="Start Storybook">
+              <CodeBlock label="terminal">{'pnpm storybook:dev'}</CodeBlock>
+              <p>
+                Opens Apollo Wind Storybook at{' '}
+                <InlineCode>http://localhost:6007</InlineCode>. Changes to source files hot-reload
+                automatically.
+              </p>
+            </StepItem>
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
 // ============================================================================
-// Tab: Contributing to Apollo
+// Tab: Components
 // ============================================================================
 
-function ContributingTab() {
+const components = [
+  { category: 'Forms', name: 'Button', description: 'Primary action trigger' },
+  { category: 'Forms', name: 'ButtonGroup', description: 'Grouped action buttons' },
+  { category: 'Forms', name: 'Input', description: 'Text input field' },
+  { category: 'Forms', name: 'Textarea', description: 'Multi-line text input' },
+  { category: 'Forms', name: 'Select', description: 'Dropdown selector' },
+  { category: 'Forms', name: 'Combobox', description: 'Searchable dropdown' },
+  { category: 'Forms', name: 'MultiSelect', description: 'Multi-value selector' },
+  { category: 'Forms', name: 'Checkbox', description: 'Boolean toggle' },
+  { category: 'Forms', name: 'RadioGroup', description: 'Single-choice selector' },
+  { category: 'Forms', name: 'Switch', description: 'On/off toggle' },
+  { category: 'Forms', name: 'Slider', description: 'Range input' },
+  { category: 'Forms', name: 'Label', description: 'Form field label' },
+  { category: 'Forms', name: 'Search', description: 'Search input with clear action' },
+  { category: 'Forms', name: 'FileUpload', description: 'Drag-and-drop file input with per-file errors' },
+  { category: 'Forms', name: 'Stepper', description: 'Multi-step form progress' },
+  { category: 'Date & Time', name: 'Calendar', description: 'Month calendar picker' },
+  { category: 'Date & Time', name: 'DatePicker', description: 'Date input with popover' },
+  { category: 'Date & Time', name: 'DatetimePicker', description: 'Combined date and time picker' },
+  { category: 'Layout', name: 'Card', description: 'Content container with header and body' },
+  { category: 'Layout', name: 'Separator', description: 'Horizontal or vertical divider' },
+  { category: 'Layout', name: 'Resizable', description: 'Draggable split-pane layout' },
+  { category: 'Layout', name: 'ScrollArea', description: 'Custom scrollable container' },
+  { category: 'Layout', name: 'AspectRatio', description: 'Enforce element aspect ratio' },
+  { category: 'Navigation', name: 'Tabs', description: 'Tabbed content switcher' },
+  { category: 'Navigation', name: 'Breadcrumb', description: 'Hierarchical location trail' },
+  { category: 'Navigation', name: 'Pagination', description: 'Page navigation controls' },
+  { category: 'Navigation', name: 'Accordion', description: 'Collapsible content sections' },
+  { category: 'Navigation', name: 'TreeView', description: 'Hierarchical item tree' },
+  { category: 'Overlays', name: 'Dialog', description: 'Modal overlay' },
+  { category: 'Overlays', name: 'Sheet', description: 'Slide-in side panel' },
+  { category: 'Overlays', name: 'AlertDialog', description: 'Confirmation dialog' },
+  { category: 'Overlays', name: 'Popover', description: 'Anchored floating panel' },
+  { category: 'Overlays', name: 'HoverCard', description: 'Preview card on hover' },
+  { category: 'Overlays', name: 'DropdownMenu', description: 'Contextual action menu' },
+  { category: 'Overlays', name: 'ContextMenu', description: 'Right-click menu' },
+  { category: 'Overlays', name: 'Command', description: 'Command palette with search' },
+  { category: 'Overlays', name: 'Tooltip', description: 'Inline hover hint' },
+  { category: 'Data Display', name: 'DataTable', description: 'Sortable, filterable table' },
+  { category: 'Data Display', name: 'Badge', description: 'Status and label pill' },
+  { category: 'Data Display', name: 'Alert', description: 'Inline status message' },
+  { category: 'Data Display', name: 'StatsCard', description: 'KPI metric card' },
+  { category: 'Data Display', name: 'EmptyState', description: 'Zero-state placeholder' },
+  { category: 'Data Display', name: 'Skeleton', description: 'Loading placeholder' },
+  { category: 'Data Display', name: 'Progress', description: 'Progress bar' },
+  { category: 'Data Display', name: 'Spinner', description: 'Loading indicator' },
+  { category: 'Data Display', name: 'Sonner', description: 'Toast notifications' },
+  { category: 'Data Display', name: 'Toggle', description: 'Single toggle button' },
+  { category: 'Data Display', name: 'ToggleGroup', description: 'Segmented toggle controls' },
+  { category: 'Custom Apollo', name: 'PageHeader', description: 'Page title and action bar' },
+  { category: 'Custom Apollo', name: 'GlobalHeader', description: 'App-level top navigation' },
+  { category: 'Custom Apollo', name: 'PanelStudio', description: 'Studio-style side panel' },
+  { category: 'Custom Apollo', name: 'PanelDelegate', description: 'Delegate-style nav panel' },
+  { category: 'Custom Apollo', name: 'PanelFlow', description: 'Flow editor nav rail' },
+  { category: 'Custom Apollo', name: 'PanelMaestro', description: 'Maestro dashboard panel' },
+  { category: 'Custom Apollo', name: 'ToolbarCanvas', description: 'Canvas floating toolbar' },
+  { category: 'Custom Apollo', name: 'ToolbarView', description: 'View mode toolbar' },
+  { category: 'Custom Apollo', name: 'FlowNode', description: 'Workflow canvas node' },
+  { category: 'Custom Apollo', name: 'FlowProperties', description: 'Node properties panel' },
+  { category: 'Custom Apollo', name: 'GridMaestro', description: 'Maestro-style data grid' },
+  { category: 'Custom Apollo', name: 'ChatComposer', description: 'AI chat input with attachments' },
+  { category: 'Custom Apollo', name: 'ChatStepsView', description: 'AI thinking steps display' },
+  { category: 'Custom Apollo', name: 'ChatFirstExperience', description: 'Empty chat onboarding state' },
+  { category: 'Custom Apollo', name: 'ChatPromptSuggestions', description: 'Suggested prompt chips' },
+  { category: 'Custom Apollo', name: 'Canvas', description: 'Pannable, zoomable canvas area' },
+] as const;
+
+function ComponentsTab() {
+  const categories = [...new Set(components.map((c) => c.category))];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <SectionDescription>
-        If you're contributing to the design system itself, clone the monorepo and run locally.
+        All Apollo Wind components organised by category. Open any sidebar story for live examples
+        and full prop documentation.
       </SectionDescription>
 
-      <CodeBlock label="Setup">
-        {`# Install pnpm if you haven't already
-npm install -g pnpm
-
-# Clone the repository
-git clone https://github.com/UiPath/apollo-ui.git
-cd apollo-ui
-
-# Install dependencies
-pnpm install
-
-# Build all packages
-pnpm build
-
-# Start the Apollo Wind Storybook
-pnpm storybook:dev`}
-      </CodeBlock>
-
-      <CodeBlock label="Development">
-        {`# Run all packages in development mode
-pnpm dev
-
-# Run Storybook
-pnpm storybook:dev
-
-# Lint all packages
-pnpm lint
-
-# Run tests
-pnpm test`}
-      </CodeBlock>
+      <div className="overflow-hidden rounded-lg border border-border">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border bg-muted/50">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Component
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Description
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {categories.map((category) => (
+              <React.Fragment key={category}>
+                <tr className="border-b border-border bg-muted/30">
+                  <td
+                    colSpan={2}
+                    className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                  >
+                    {category}
+                  </td>
+                </tr>
+                {components
+                  .filter((c) => c.category === category)
+                  .map(({ name, description }) => (
+                    <tr
+                      key={name}
+                      className="border-b border-border last:border-0 hover:bg-muted/20"
+                    >
+                      <td className="px-4 py-3 font-medium text-foreground">
+                        <InlineCode>{name}</InlineCode>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">{description}</td>
+                    </tr>
+                  ))}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -626,11 +498,11 @@ pnpm test`}
 // Page
 // ============================================================================
 
-const tabs = ['Choose your package', 'Contributing to Apollo', 'CLI'] as const;
+const tabs = ['Overview', 'Quick Start', 'Components'] as const;
 type TabId = (typeof tabs)[number];
 
 function GettingStartedPage({ globalTheme }: { globalTheme: string }) {
-  const [activeTab, setActiveTab] = React.useState<TabId>('Choose your package');
+  const [activeTab, setActiveTab] = React.useState<TabId>('Overview');
 
   return (
     <div
@@ -642,27 +514,14 @@ function GettingStartedPage({ globalTheme }: { globalTheme: string }) {
     >
       <div className="mx-auto max-w-3xl space-y-2 p-8">
         {/* Header */}
-        <h1 className="text-[2rem] font-bold tracking-tight text-foreground">
-          UiPath Design System
-        </h1>
+        <h1 className="text-[2rem] font-bold tracking-tight text-foreground">Apollo Wind</h1>
         <p className="text-base leading-7 text-muted-foreground">
-          Apollo v.4 is UiPath's open-source design system for building consistent user experiences
-          across all UiPath products.
+          Tailwind CSS components for new React applications. Built on shadcn/ui and Radix
+          primitives, themed with Apollo design tokens.
         </p>
 
-        <div className="pt-2">
-          <a
-            href="https://github.com/UiPath/apollo-ui"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-medium text-primary underline"
-          >
-            github.com/UiPath/apollo-ui
-          </a>
-        </div>
-
         {/* Tabs */}
-        <div className="flex gap-1 border-b border-border pt-6 pb-0">
+        <div className="flex gap-1 border-b border-border pb-0 pt-6">
           {tabs.map((tab) => (
             <button
               type="button"
@@ -682,9 +541,9 @@ function GettingStartedPage({ globalTheme }: { globalTheme: string }) {
 
         {/* Tab content */}
         <div className="pt-6">
-          {activeTab === 'Choose your package' && <ChooseYourPackageTab />}
-          {activeTab === 'Contributing to Apollo' && <ContributingTab />}
-          {activeTab === 'CLI' && <CLITab />}
+          {activeTab === 'Overview' && <OverviewTab />}
+          {activeTab === 'Quick Start' && <QuickStartTab />}
+          {activeTab === 'Components' && <ComponentsTab />}
         </div>
       </div>
     </div>

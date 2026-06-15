@@ -36,7 +36,11 @@ if (isDev) {
 const config: StorybookConfig = {
   stories: [
     {
-      directory: '../src',
+      directory: '../src/introduction',
+      files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
+    },
+    {
+      directory: '../src/core',
       files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
       titlePrefix: 'Apollo Core',
     },

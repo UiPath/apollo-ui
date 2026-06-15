@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { PageContainer, SearchInput } from './shared';
 
 const meta = {
-  title: 'CSS Variables',
+  title: 'Theme/CSS Variables',
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
