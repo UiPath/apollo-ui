@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 export interface GlowConfig {
   start: string;
   end: string;
@@ -214,7 +216,7 @@ export function cardBgStyle(
   bg: string,
   opacity: number,
   gradient: CardGradient,
-): React.CSSProperties {
+): CSSProperties {
   if (gradient.enabled) {
     const alpha = gradient.opacity / 100;
     const style = {
@@ -222,14 +224,14 @@ export function cardBgStyle(
       borderColor: "transparent",
     };
     // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- CSS custom properties require assertion
-    return style as unknown as React.CSSProperties;
+    return style as unknown as CSSProperties;
   }
   const value =
     bg === "white"
       ? `rgba(255,255,255,${opacity / 100})`
       : `color-mix(in srgb, var(--${bg}) ${opacity}%, transparent)`;
   // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- CSS custom properties require assertion
-  return { "--card-bg-override": value } as unknown as React.CSSProperties;
+  return { "--card-bg-override": value } as unknown as CSSProperties;
 }
 
 export function getInsightCardClasses(

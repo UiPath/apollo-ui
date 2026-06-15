@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 type Phase = "logo" | "skeleton" | "done";
 
 interface DashboardLoadingProps {
-  children: React.ReactNode;
+  children: ReactNode;
   triggerReplay?: number;
 }
 
@@ -86,33 +86,39 @@ function SkeletonPhase({ exiting }: { exiting: boolean }) {
 // Plays the logo → skeleton → content intro once, then renders children.
 // It owns its phase state from mount; to replay, the parent gives it a new
 // `key` so it remounts — no resetting state in response to a prop change.
-function LoadingSequence({ children }: { children: React.ReactNode }) {
+function LoadingSequence({ children }: { children: ReactNode }) {
   const [phase, setPhase] = useState<Phase>("logo");
   const [exiting, setExiting] = useState(false);
 
   useEffect(() => {
     if (phase === "done") return;
 
+    let exitTimer: ReturnType<typeof setTimeout>;
+
     if (phase === "logo") {
-      const timer = setTimeout(() => {
+      const enterTimer = setTimeout(() => {
         setExiting(true);
-        setTimeout(() => {
+        exitTimer = setTimeout(() => {
           setExiting(false);
           setPhase("skeleton");
         }, 500);
       }, 2000);
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(enterTimer);
+        clearTimeout(exitTimer);
+      };
     }
 
-    if (phase === "skeleton") {
-      const timer = setTimeout(() => {
-        setExiting(true);
-        setTimeout(() => {
-          setPhase("done");
-        }, 500);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
+    const enterTimer = setTimeout(() => {
+      setExiting(true);
+      exitTimer = setTimeout(() => {
+        setPhase("done");
+      }, 500);
+    }, 1000);
+    return () => {
+      clearTimeout(enterTimer);
+      clearTimeout(exitTimer);
+    };
   }, [phase]);
 
   if (phase === "done") {
