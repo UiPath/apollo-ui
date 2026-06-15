@@ -195,10 +195,7 @@ const config: StorybookConfig = {
           '@codemirror/view',
           '@lezer/highlight',
         ],
-        exclude: [
-          ...(config.optimizeDeps?.exclude ?? []),
-          'monaco-editor',
-        ],
+        exclude: [...(config.optimizeDeps?.exclude ?? []), 'monaco-editor'],
       },
       // biome-ignore lint/suspicious/noExplicitAny: plugins array typed as unknown[] after flat/filter; cast required
       plugins: [
