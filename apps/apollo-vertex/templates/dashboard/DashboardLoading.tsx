@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 type Phase = "logo" | "skeleton" | "done";
 
@@ -10,6 +11,8 @@ interface DashboardLoadingProps {
 }
 
 function LogoPhase({ exiting }: { exiting: boolean }) {
+  const { t } = useTranslation();
+
   return (
     <div
       className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-500 ${
@@ -38,7 +41,7 @@ function LogoPhase({ exiting }: { exiting: boolean }) {
 
       {/* Loading text */}
       <p className="mt-6 text-sm text-muted-foreground animate-pulse">
-        Creating your overview...
+        {t("creating_your_overview")}
       </p>
 
       <style>{`
@@ -80,20 +83,12 @@ function SkeletonPhase({ exiting }: { exiting: boolean }) {
   );
 }
 
-export function DashboardLoading({
-  children,
-  triggerReplay,
-}: DashboardLoadingProps) {
-  const [phase, setPhase] = useState<Phase>("done");
+// Plays the logo → skeleton → content intro once, then renders children.
+// It owns its phase state from mount; to replay, the parent gives it a new
+// `key` so it remounts — no resetting state in response to a prop change.
+function LoadingSequence({ children }: { children: React.ReactNode }) {
+  const [phase, setPhase] = useState<Phase>("logo");
   const [exiting, setExiting] = useState(false);
-
-  useEffect(() => {
-    if (triggerReplay === 0) return;
-    if (triggerReplay) {
-      setExiting(false);
-      setPhase("logo");
-    }
-  }, [triggerReplay]);
 
   useEffect(() => {
     if (phase === "done") return;
@@ -132,4 +127,19 @@ export function DashboardLoading({
       {phase === "skeleton" && <SkeletonPhase exiting={exiting} />}
     </div>
   );
+}
+
+export function DashboardLoading({
+  children,
+  triggerReplay,
+}: DashboardLoadingProps) {
+  // No replay requested — render content directly with the same fade-in the
+  // sequence ends on. Each new `triggerReplay` value remounts the sequence.
+  if (!triggerReplay) {
+    return (
+      <div className="animate-in fade-in duration-500 h-full">{children}</div>
+    );
+  }
+
+  return <LoadingSequence key={triggerReplay}>{children}</LoadingSequence>;
 }

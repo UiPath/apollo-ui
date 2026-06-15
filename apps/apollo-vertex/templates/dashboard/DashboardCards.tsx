@@ -1,5 +1,8 @@
+"use client";
+
 import { AlertTriangle, CheckCircle, Clock, XCircle } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -120,6 +123,8 @@ const complianceChecks = [
 // --- Card components ---
 
 export function KpiCards({ kpis }: { kpis: KpiItem[] }) {
+  const { t } = useTranslation();
+
   return (
     <>
       {kpis.map((kpi) => (
@@ -135,8 +140,8 @@ export function KpiCards({ kpis }: { kpis: KpiItem[] }) {
           <CardContent>
             <div className="text-2xl font-bold">{kpi.value}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              <span className="text-emerald-500">{kpi.change}</span> from last
-              week
+              <span className="text-emerald-500">{kpi.change}</span>{" "}
+              {t("from_last_week")}
             </p>
           </CardContent>
         </Card>
@@ -146,20 +151,22 @@ export function KpiCards({ kpis }: { kpis: KpiItem[] }) {
 }
 
 export function InvoiceTable() {
+  const { t } = useTranslation();
+
   return (
     <Card variant="glass">
       <CardHeader>
-        <CardTitle>Recent Invoices</CardTitle>
+        <CardTitle>{t("recent_invoices")}</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Invoice</TableHead>
-              <TableHead>Vendor</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Date</TableHead>
+              <TableHead>{t("invoice")}</TableHead>
+              <TableHead>{t("vendor")}</TableHead>
+              <TableHead>{t("amount")}</TableHead>
+              <TableHead>{t("status")}</TableHead>
+              <TableHead>{t("date")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -193,10 +200,12 @@ export function InvoiceTable() {
 }
 
 export function ActivityBarChart() {
+  const { t } = useTranslation();
+
   return (
     <Card variant="glass">
       <CardHeader>
-        <CardTitle>Processing Activity</CardTitle>
+        <CardTitle>{t("processing_activity")}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex items-end gap-3 h-32">
@@ -219,10 +228,12 @@ export function ActivityBarChart() {
 }
 
 export function ActivityFeed() {
+  const { t } = useTranslation();
+
   return (
     <Card variant="glass">
       <CardHeader>
-        <CardTitle>Recent Activity</CardTitle>
+        <CardTitle>{t("recent_activity")}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -242,10 +253,12 @@ export function ActivityFeed() {
 }
 
 export function PipelineProgress() {
+  const { t } = useTranslation();
+
   return (
     <Card variant="glass">
       <CardHeader>
-        <CardTitle>Processing Pipeline</CardTitle>
+        <CardTitle>{t("processing_pipeline")}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -265,10 +278,12 @@ export function PipelineProgress() {
 }
 
 export function ComplianceProgress() {
+  const { t } = useTranslation();
+
   return (
     <Card variant="glass">
       <CardHeader>
-        <CardTitle>Compliance Pass Rates</CardTitle>
+        <CardTitle>{t("compliance_pass_rates")}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
