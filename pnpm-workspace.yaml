@@ -35,6 +35,7 @@ overrides:
   picomatch: ">=4.0.4"
   postcss: "^8.5.14"
   hono: "^4.12.25"                      # GHSA-88fw-hqm2-52qc (high)/rv63/wwfh/j6c9/wgpf (moderate) — vetted 2026-06-16; transitive via @modelcontextprotocol/sdk + @hono/node-server (both pin ^4)
+  dompurify: ">=3.4.7"                  # GHSA-vxr8-fq34-vvx9 (+gvmj/x4vx/rp9w/r47g/hpcv/76mc)
   # Security pins (vetted 2026-06-16)
   esbuild: "^0.28.1"                    # GHSA-gv7w-rqvm-qjhr (high)/GHSA-g7r4-m6w7-qqqr (low) — Storybook 10.4.x widened its range (@storybook/csf-plugin@10.4.1 now allows esbuild ^0.28.1) and nothing in the tree still pins <0.28; override retained as defense-in-depth to pin the patched line
   "ws@>=8.0.0 <9": "^8.21.0"            # GHSA-96hv-2xvq-fx4p (high) — latest engine.io-client (6.6.5) still pins ws ~8.20.1; blocked upstream at Socket.IO
@@ -46,11 +47,6 @@ packageExtensions:
   "@tanstack/ai":
     dependencies:
       "@standard-schema/spec": "^1.1.0"
-
-# dompurify XSS - FIXME: no patch available yet
-auditConfig:
-  ignoreGhsas:
-    - GHSA-v2wj-7wpq-c8vv
 
 # pnpm 11: build scripts are blocked by default — explicitly allow legitimate native builds.
 # These packages require postinstall scripts to download platform-specific binaries or compile native code.
