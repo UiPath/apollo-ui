@@ -36,7 +36,13 @@ function TruncatedText({
   }, [children]);
 
   const textEl = (
-    <p ref={textRef} className={`line-clamp-2 ${className ?? ""}`}>
+    <p
+      ref={textRef}
+      className={`line-clamp-2 ${className ?? ""}`}
+      // Make the trigger keyboard-focusable only when it actually clamps, so
+      // the tooltip is reachable via focus without adding stray tab stops.
+      {...(isTruncated ? { tabIndex: 0 } : {})}
+    >
       {children}
     </p>
   );
@@ -102,7 +108,11 @@ function KpiContent({
   );
 }
 
-function DonutContent() {
+function DonutContent({ cardData }: { cardData: InsightCardData }) {
+  const circumference = 97.39;
+  // donutPercent is a 0–1 fraction; fall back to the sample value.
+  const fraction = cardData.donutPercent ?? 0.47;
+  const label = cardData.donutLabel ?? "funded";
   return (
     <div className="flex items-center justify-center flex-1">
       <div className="relative size-3/4 aspect-square">
@@ -122,17 +132,17 @@ function DonutContent() {
             fill="none"
             className="stroke-chart-1"
             strokeWidth="2"
-            strokeDasharray="97.39"
-            strokeDashoffset={97.39 * (1 - 0.47)}
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference * (1 - fraction)}
             strokeLinecap="round"
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-2xl font-normal tracking-tight leading-none">
-            47%
+            {Math.round(fraction * 100)}%
           </span>
           <span className="text-[10px] text-muted-foreground mt-0.5">
-            funded
+            {label}
           </span>
         </div>
       </div>
@@ -181,7 +191,7 @@ function HorizontalBarsContent({
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
           {barsWithColor.map((issue) => {
-            const pct = Math.round((issue.value / total) * 100);
+            const pct = total > 0 ? Math.round((issue.value / total) * 100) : 0;
             return (
               <div key={issue.label} className="flex items-center gap-1.5">
                 <div className={`size-2 rounded-full ${issue.color}`} />
@@ -220,12 +230,16 @@ function HorizontalBarsContent({
   );
 }
 
-function SparklineContent() {
-  const max = Math.max(...sparklinePoints);
+function SparklineContent({ cardData }: { cardData: InsightCardData }) {
+  const data =
+    cardData.points && cardData.points.length > 1
+      ? cardData.points
+      : sparklinePoints;
+  const max = Math.max(...data) || 1;
   const h = 40;
   const w = 120;
-  const step = w / (sparklinePoints.length - 1);
-  const points = sparklinePoints
+  const step = w / (data.length - 1);
+  const points = data
     .map((v, i) => `${i * step},${h - (v / max) * h}`)
     .join(" ");
 
@@ -245,12 +259,16 @@ function SparklineContent() {
   );
 }
 
-function AreaContent() {
-  const max = Math.max(...areaPoints);
+function AreaContent({ cardData }: { cardData: InsightCardData }) {
+  const data =
+    cardData.points && cardData.points.length > 1
+      ? cardData.points
+      : areaPoints;
+  const max = Math.max(...data) || 1;
   const h = 40;
   const w = 120;
-  const step = w / (areaPoints.length - 1);
-  const linePoints = areaPoints
+  const step = w / (data.length - 1);
+  const linePoints = data
     .map((v, i) => `${i * step},${h - (v / max) * h}`)
     .join(" ");
   const areaPath = `0,${h} ${linePoints} ${w},${h}`;
@@ -297,35 +315,42 @@ function StackedBarContent({
     label: bar.label,
     segments: bar.segments.map((value, i) => ({
       value,
+      category: i,
       color: chartColors[i % chartColors.length],
     })),
   }));
-  const maxTotal = Math.max(
-    ...barData.map((d) => d.segments.reduce((sum, s) => sum + s.value, 0)),
-  );
+  const maxTotal =
+    barData.length > 0
+      ? Math.max(
+          ...barData.map((d) =>
+            d.segments.reduce((sum, s) => sum + s.value, 0),
+          ),
+        )
+      : 0;
 
   if (viewMode === "compact" && !isExpanded) {
-    // Summary: aggregate all days into one horizontal stacked bar
+    // Summary: aggregate all bars into one horizontal stacked bar. Key totals
+    // by category (segment position), not CSS color — colors repeat via modulo
+    // once there are more than 5 categories, which would merge distinct ones.
     const totals = barData.reduce(
       (acc, day) => {
-        for (const seg of day.segments) {
-          const key = seg.color;
-          acc[key] = (acc[key] ?? 0) + seg.value;
-        }
+        day.segments.forEach((seg) => {
+          acc[seg.category] = (acc[seg.category] ?? 0) + seg.value;
+        });
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<number, number>,
     );
     const grandTotal = Object.values(totals).reduce((a, b) => a + b, 0);
 
     return (
       <div className="flex flex-col gap-3">
         <div className="h-3 w-full rounded-full overflow-hidden flex">
-          {legend.map((item) => (
+          {legend.map((item, i) => (
             <div
-              key={item.color}
+              key={item.label}
               className={`${item.color} relative`}
-              style={{ flex: totals[item.color] ?? 0 }}
+              style={{ flex: totals[i] ?? 0 }}
             >
               <div
                 className={`absolute inset-0 ${item.color} opacity-35 dark:opacity-55 blur-[4px]`}
@@ -334,9 +359,10 @@ function StackedBarContent({
           ))}
         </div>
         <div className="flex items-center justify-between">
-          {legend.map((item) => {
-            const val = totals[item.color] ?? 0;
-            const pct = Math.round((val / grandTotal) * 100);
+          {legend.map((item, i) => {
+            const val = totals[i] ?? 0;
+            const pct =
+              grandTotal > 0 ? Math.round((val / grandTotal) * 100) : 0;
             return (
               <div key={item.label} className="flex items-center gap-1.5">
                 <div className={`size-2 rounded-full ${item.color}`} />
@@ -356,7 +382,7 @@ function StackedBarContent({
       <div className="flex items-end justify-between flex-1 min-h-0">
         {barData.map((bar) => {
           const total = bar.segments.reduce((sum, s) => sum + s.value, 0);
-          const pct = (total / maxTotal) * 100;
+          const pct = maxTotal > 0 ? (total / maxTotal) * 100 : 0;
           return (
             <div
               key={bar.label}
@@ -369,7 +395,7 @@ function StackedBarContent({
                 <div className="absolute inset-0 flex flex-col-reverse rounded-t-sm overflow-hidden">
                   {bar.segments.map((seg) => (
                     <div
-                      key={seg.color}
+                      key={`seg-${seg.category}`}
                       className={`${seg.color} relative`}
                       style={{ flex: seg.value }}
                     />
@@ -378,7 +404,7 @@ function StackedBarContent({
                 <div className="absolute inset-0 flex flex-col-reverse rounded-t-sm opacity-35 dark:opacity-55 blur-[4px]">
                   {bar.segments.map((seg) => (
                     <div
-                      key={`glow-${seg.color}`}
+                      key={`glow-${seg.category}`}
                       className={seg.color}
                       style={{ flex: seg.value }}
                     />
@@ -431,8 +457,10 @@ export function InsightCardBody({
         isExpanded={isExpanded}
       />
     );
-  if (content.chartType === "donut") return <DonutContent />;
-  if (content.chartType === "sparkline") return <SparklineContent />;
+  if (content.chartType === "donut")
+    return <DonutContent cardData={cardData} />;
+  if (content.chartType === "sparkline")
+    return <SparklineContent cardData={cardData} />;
   if (content.chartType === "stacked-bar")
     return (
       <StackedBarContent
@@ -441,5 +469,5 @@ export function InsightCardBody({
         isExpanded={isExpanded}
       />
     );
-  return <AreaContent />;
+  return <AreaContent cardData={cardData} />;
 }
