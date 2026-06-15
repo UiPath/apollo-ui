@@ -555,7 +555,13 @@ function EmptyState({ label, onAddFirstChild }: { label: string; onAddFirstChild
   );
 }
 
-function BodyFrame({ isEmpty, isLoading }: { isEmpty?: boolean; isLoading?: boolean }) {
+const BodyFrame = memo(function BodyFrame({
+  isEmpty,
+  isLoading,
+}: {
+  isEmpty?: boolean;
+  isLoading?: boolean;
+}) {
   return (
     <div
       data-testid="loop-body-frame"
@@ -571,9 +577,9 @@ function BodyFrame({ isEmpty, isLoading }: { isEmpty?: boolean; isLoading?: bool
       ) : null}
     </div>
   );
-}
+});
 
-function ResizeControls({
+const ResizeControls = memo(function ResizeControls({
   minimums = DEFAULT_RESIZE_MINIMUMS,
   onResize,
   onResizeStart,
@@ -605,9 +611,13 @@ function ResizeControls({
       ))}
     </>
   );
-}
+});
 
-function ResizeCornerIndicators({ visible }: { visible: boolean }) {
+const ResizeCornerIndicators = memo(function ResizeCornerIndicators({
+  visible,
+}: {
+  visible: boolean;
+}) {
   return (
     <>
       {RESIZE_CONTROLS.map(({ position, indicatorClassName }) => (
@@ -624,7 +634,7 @@ function ResizeCornerIndicators({ visible }: { visible: boolean }) {
       ))}
     </>
   );
-}
+});
 
 type SharedHandleGroupProps = {
   nodeId: string;
