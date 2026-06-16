@@ -16,19 +16,15 @@ import { ApolloDocsContainer } from './DocsContainer';
 import { GlobalStyles } from './GlobalStyles';
 import { ALL_THEMES, clampThemeForMaterial, DEFAULT_THEME, type ThemeMode } from './themes';
 
-const isDev = import.meta.env.MODE !== 'production';
-
 // The react-scan devtools hook is installed via previewBody in main.ts
 // (must happen before React initializes). Here we configure the overlay/canvas
 // and start paused — toggling happens via the toolbar global in the decorator.
-if (isDev) {
-  try {
-    const { scan, setOptions } = await import('react-scan');
-    scan({ enabled: true, showToolbar: true, allowInIframe: true });
-    setOptions({ enabled: false });
-  } catch {
-    // react-scan optional; preview works without it
-  }
+try {
+  const { scan, setOptions } = await import('react-scan');
+  scan({ enabled: true, showToolbar: true, allowInIframe: true });
+  setOptions({ enabled: false });
+} catch {
+  // react-scan optional; preview works without it
 }
 
 // Apollo core + canvas CSS
@@ -229,20 +225,18 @@ const preview: Preview = {
     theme: {
       description: 'Toggle design language theme',
     },
-    ...(isDev && {
-      reactScan: {
-        description: 'Toggle React Scan rendering highlights',
-        toolbar: {
-          title: 'React Scan',
-          icon: 'beaker',
-          items: [
-            { value: 'off', title: 'React Scan: Off' },
-            { value: 'on', title: 'React Scan: On' },
-          ],
-          dynamicTitle: true,
-        },
+    reactScan: {
+      description: 'Toggle React Scan rendering highlights',
+      toolbar: {
+        title: 'React Scan',
+        icon: 'beaker',
+        items: [
+          { value: 'off', title: 'React Scan: Off' },
+          { value: 'on', title: 'React Scan: On' },
+        ],
+        dynamicTitle: true,
       },
-    }),
+    },
     // Locale toolbar — sets <html lang>, which `ApI18nProvider` picks up as its
     // fallback locale (see packages/apollo-react/src/i18n/ApI18nProvider.tsx).
     locale: {
@@ -279,14 +273,16 @@ const preview: Preview = {
 
       // Toggle react-scan
       useEffect(() => {
-        if (isDev) {
-          import('react-scan').then(({ setOptions }) => {
+        import('react-scan')
+          .then(({ setOptions }) => {
             setOptions({
               enabled: reactScanEnabled,
               showToolbar: reactScanEnabled,
             });
+          })
+          .catch(() => {
+            // react-scan optional; preview works without it
           });
-        }
       }, [reactScanEnabled]);
 
       // Write synchronously during the decorator render so the freshly-mounted ApI18nProvider
