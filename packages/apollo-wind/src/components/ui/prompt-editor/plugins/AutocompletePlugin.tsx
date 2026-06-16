@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { mergeRegister } from '@lexical/utils';
 import {
@@ -13,14 +12,15 @@ import {
   KEY_ESCAPE_COMMAND,
   type LexicalEditor,
 } from 'lexical';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { PromptEditorAutocompleteMenu } from '../components/PromptEditorAutocompleteMenu';
 import type { PromptEditorAutoCompleteOption } from '../types';
-import { createTokenNodeForOption } from '../utils/insert-token';
 import {
   inferTokenTypeFromPath,
   shouldSuppressOpenForDismissed,
   VARIABLE_PATH_REGEX,
 } from '../utils/autocomplete-segments';
+import { createTokenNodeForOption } from '../utils/insert-token';
 
 const findTrigger = (
   text: string,
@@ -104,7 +104,12 @@ export const AutocompletePlugin = ({ options }: { options: PromptEditorAutoCompl
         dismissedTriggerRef.current = { ...triggerInfoRef.current };
       setOpen(false);
       setAnchorEl(null);
-      triggerInfoRef.current = null;
+      // Keep the trigger sentinel on an *explicit* dismissal (Escape / click-outside) so the user can
+      // still press Enter to commit a typed-but-unmatched `$path` as a free-form chip — the KEY_ENTER
+      // handler needs `triggerInfoRef`. Non-explicit auto-closes (commit done, cursor moved off the
+      // trigger, no trigger found) clear it; the update listener's no-trigger path also calls this
+      // non-explicitly once the caret actually leaves the `$`, so the sentinel can't dangle.
+      if (!explicit) triggerInfoRef.current = null;
       // Refocus the editor only when an open picker is actually closing (Escape, click-outside,
       // selection-commit). Without this guard, every "no trigger detected" close path would call
       // editor.focus() — Lexical's focus() runs an internal editor.update() that re-fires the same
@@ -345,6 +350,7 @@ export const AutocompletePlugin = ({ options }: { options: PromptEditorAutoCompl
       initialSearch={query}
       options={options}
       onSelect={handleVariablePickerSelect}
+      onCommitFreeForm={handleVariablePickerSelect}
       onClose={() => closeMenu(true)}
     />
   );
