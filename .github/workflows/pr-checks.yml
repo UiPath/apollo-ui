@@ -13,14 +13,17 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
+# Deny-all at the workflow level; each job grants only what it needs. Prevents
+# permission creep if a future job is added without an explicit permissions block.
+permissions: {}
 
 jobs:
   checks:
     name: ${{ matrix.check }}
     runs-on: ubuntu-latest
     if: github.event.pull_request.head.repo.fork == false
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -91,8 +94,11 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: coverage
-          path: coverage/
+          path: |
+            packages/*/coverage/
+            web-packages/*/coverage/
           retention-days: 7
+          if-no-files-found: ignore
 
       - name: Run Build
         if: matrix.check == 'Build'
@@ -110,12 +116,47 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: failure-${{ matrix.check }}-${{ github.sha }}
-          path: coverage/
+          path: |
+            packages/*/coverage/
+            web-packages/*/coverage/
           retention-days: 3
+          if-no-files-found: ignore
+
+  # ── Sticky PR comment: per-package coverage ──────────────────────────────
+  coverage-comment:
+    name: Coverage Comment
+    needs: checks
+    if: always() && github.event.pull_request.head.repo.fork == false
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+      issues: write # PR comments go through the issues.* endpoint; pulls.* is never called
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download coverage
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        continue-on-error: true
+        with:
+          name: coverage
+
+      - name: Post coverage comment
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { buildAndPostCoverageComment } = require('./scripts/coverage-pr-comment.cjs');
+            await buildAndPostCoverageComment({ github, context, core });
 
   detect-lockfile-changes:
     name: Detect Lockfile Changes
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       changed: ${{ steps.lockfile_check.outputs.changed }}
     steps:
@@ -139,6 +180,8 @@ jobs:
     needs: detect-lockfile-changes
     if: needs.detect-lockfile-changes.outputs.changed == 'true' && github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
