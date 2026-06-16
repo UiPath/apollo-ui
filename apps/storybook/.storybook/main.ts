@@ -7,11 +7,6 @@ import { mergeAlias } from 'vite';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// react-scan is a dev-only tool — skip it in production Storybook builds.
-// main.ts runs in Node (Storybook CLI) so we use process.env.
-// preview.tsx runs in the browser (Vite) so it uses import.meta.env.MODE instead.
-const isDev = process.env.NODE_ENV !== 'production';
-
 // react-scan must install its devtools hook before React initializes.
 // Two Storybook behaviors interfere with this:
 //   1. A <head> script copies __REACT_DEVTOOLS_GLOBAL_HOOK__ from the parent frame
@@ -22,15 +17,13 @@ const isDev = process.env.NODE_ENV !== 'production';
 // forcing bippy to install a fresh hook. This all executes before React loads
 // (React is loaded via type="module" scripts, which are deferred).
 let reactScanHook = '';
-if (isDev) {
-  try {
-    reactScanHook = readFileSync(
-      resolve(__dirname, '../node_modules/react-scan/dist/install-hook.global.js'),
-      'utf-8'
-    );
-  } catch {
-    // react-scan optional; Storybook works without it
-  }
+try {
+  reactScanHook = readFileSync(
+    resolve(__dirname, '../node_modules/react-scan/dist/install-hook.global.js'),
+    'utf-8'
+  );
+} catch {
+  // react-scan optional; Storybook works without it
 }
 
 const config: StorybookConfig = {
@@ -121,7 +114,10 @@ const config: StorybookConfig = {
       }
     </style>
   `,
-  previewBody: isDev
+  // Only delete the stale devtools hook when we actually have react-scan's
+  // installer to put back. Without it, deleting the hook would break React
+  // DevTools while reinstalling nothing (react-scan is optional).
+  previewBody: reactScanHook
     ? (body) =>
         `<script>delete window.__REACT_DEVTOOLS_GLOBAL_HOOK__;${reactScanHook}</script>\n${body}`
     : undefined,
