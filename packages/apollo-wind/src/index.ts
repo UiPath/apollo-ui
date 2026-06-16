@@ -141,6 +141,19 @@ export type {
 
 export { Progress } from './components/ui/progress';
 
+// -----------------------------------------------------------------------------
+// Prompt Editor
+// -----------------------------------------------------------------------------
+export { PromptEditor, VARIABLE_DRAG_MIME } from './components/ui/prompt-editor';
+export type {
+  PromptEditorAutoCompleteOption,
+  PromptEditorMode,
+  PromptEditorProps,
+  PromptEditorRef,
+  PromptEditorToken,
+  PromptEditorTokenType,
+} from './components/ui/prompt-editor';
+
 export { Skeleton } from './components/ui/skeleton';
 
 export { Spinner, spinnerVariants } from './components/ui/spinner';
@@ -391,16 +404,3 @@ export {
   isFileField,
   isCustomField,
 } from './components/forms/form-schema';
-
-// -----------------------------------------------------------------------------
-// Prompt Editor
-// -----------------------------------------------------------------------------
-export { PromptEditor } from './components/ui/prompt-editor';
-export type {
-  PromptEditorProps,
-  PromptEditorRef,
-  PromptEditorToken,
-  PromptEditorTokenType,
-  PromptEditorAutoCompleteOption,
-  PromptEditorMode,
-} from './components/ui/prompt-editor';
