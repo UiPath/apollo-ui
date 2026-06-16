@@ -148,9 +148,44 @@ const config: StorybookConfig = {
           )
       );
 
+    // Rolldown (vite 8) does not substitute `$1` capture groups in string alias
+    // replacements the way Rollup/esbuild (vite 7) did, leaving a literal `$1` in
+    // the resolved path. The regex→source *subpath* aliases are therefore handled
+    // here as an explicit `pre` resolver: plain JS `.replace` honours `$1` in every
+    // bundler, and we delegate back to Vite's resolver so extension/index
+    // resolution still applies. Exact-match barrels (no `$1`) stay as aliases below.
+    const sourceAliasRules: Array<[RegExp, string]> = [
+      [/^@uipath\/apollo-wind\/(?!.*\.css$)(.*)/, `${apolloWindSrc}/$1`],
+      [/^@uipath\/apollo-react\/canvas\/(?!xyflow\/.*\.css)(.*)/, `${apolloReactSrc}/canvas/$1`],
+      [/^@uipath\/apollo-react\/material\/(.*)/, `${apolloReactSrc}/material/$1`],
+    ];
+    const sourceAliasPlugin = {
+      name: 'apollo-source-alias',
+      enforce: 'pre' as const,
+      async resolveId(
+        this: { resolve: (s: string, i?: string, o?: object) => Promise<{ id: string } | null> },
+        source: string,
+        importer: string | undefined,
+        options: object
+      ) {
+        for (const [pattern, replacement] of sourceAliasRules) {
+          if (pattern.test(source)) {
+            const rewritten = source.replace(pattern, replacement);
+            const resolved = await this.resolve(rewritten, importer, {
+              ...options,
+              skipSelf: true,
+            });
+            return resolved ?? rewritten;
+          }
+        }
+        return null;
+      },
+    };
+
     return {
       ...config,
       plugins: [
+        sourceAliasPlugin,
         ...plugins,
         react({ babel: { plugins: ['@lingui/babel-plugin-lingui-macro'] } }),
         // apollo-react material sources import plain .svg as React components
@@ -173,30 +208,18 @@ const config: StorybookConfig = {
             find: /^@uipath\/apollo-wind$/,
             replacement: resolve(apolloWindSrc, 'index.ts'),
           },
-          {
-            find: /^@uipath\/apollo-wind\/(?!.*\.css$)(.*)/,
-            replacement: `${apolloWindSrc}/$1`,
-          },
           // ── Apollo React → source for HMR ──
           // Canvas barrel (exact match, no trailing path)
           {
             find: /^@uipath\/apollo-react\/canvas$/,
             replacement: resolve(apolloReactSrc, 'canvas/index.ts'),
           },
-          // Canvas subpaths (exclude xyflow CSS — vendored, only in dist)
-          {
-            find: /^@uipath\/apollo-react\/canvas\/(?!xyflow\/.*\.css)(.*)/,
-            replacement: `${apolloReactSrc}/canvas/$1`,
-          },
-          // Material barrel + subpaths
+          // Material barrel (exact match, no trailing path)
           {
             find: /^@uipath\/apollo-react\/material$/,
             replacement: resolve(apolloReactSrc, 'material/index.ts'),
           },
-          {
-            find: /^@uipath\/apollo-react\/material\/(.*)/,
-            replacement: `${apolloReactSrc}/material/$1`,
-          },
+          // Subpath rules with `$1` live in sourceAliasPlugin above (rolldown compat).
         ]),
       },
     };

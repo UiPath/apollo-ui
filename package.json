@@ -65,7 +65,7 @@
     "stylelint": "^16.12.0",
     "stylelint-config-standard": "^36.0.1",
     "stylelint-config-tailwindcss": "^1.0.0",
-    "tsx": "^4.20.6",
+    "tsx": "^4.22.4",
     "turbo": "^2.9.14",
     "typescript": "^5.9.3",
     "vitest": "^4.1.5"
