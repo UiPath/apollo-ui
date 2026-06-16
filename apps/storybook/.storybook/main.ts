@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/react-vite';
 import { mergeAlias } from 'vite';
+import type { PluginOption } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -186,15 +187,6 @@ const config: StorybookConfig = {
       ...config,
       optimizeDeps: {
         ...config.optimizeDeps,
-        include: [
-          ...(config.optimizeDeps?.include ?? []),
-          '@monaco-editor/react',
-          '@codemirror/lang-javascript',
-          '@codemirror/language',
-          '@codemirror/state',
-          '@codemirror/view',
-          '@lezer/highlight',
-        ],
         exclude: [...(config.optimizeDeps?.exclude ?? []), 'monaco-editor'],
       },
       // biome-ignore lint/suspicious/noExplicitAny: plugins array typed as unknown[] after flat/filter; cast required
@@ -208,7 +200,7 @@ const config: StorybookConfig = {
         // keep resolving as assets.
         svgr({ include: '**/apollo-react/src/material/**/*.svg' }),
         tailwindcss(),
-      ] as any,
+      ] as PluginOption[],
       resolve: {
         ...config.resolve,
         alias: mergeAlias(config.resolve?.alias, [
