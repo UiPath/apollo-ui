@@ -1,3 +1,16 @@
+## [@uipath/apollo-react-v4.48.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.47.1...@uipath/apollo-react@4.48.0) (2026-06-16)
+
+### Features
+
+* **storybook:** add system-wide introduction landing page and unify getting started docs ([a337586](https://github.com/UiPath/apollo-ui/commit/a337586ff2a77cc616da8b7d084e11298736c5fd))
+
+### Bug Fixes
+
+* **storybook:** address Copilot review comments on PR [#825](https://github.com/UiPath/apollo-ui/issues/825) ([28931f9](https://github.com/UiPath/apollo-ui/commit/28931f9419440e92cb2850686a6041e694998336))
+* **storybook:** apply biome formatting to introduction and getting started stories ([c77c391](https://github.com/UiPath/apollo-ui/commit/c77c3916a7ce3f1814fe2fb27a55e6b3ddd823d7))
+* **storybook:** handle clipboard write rejection in CodeBlock copy button ([7a7adf3](https://github.com/UiPath/apollo-ui/commit/7a7adf37a48ab6c1ea7907ced66cb0f99c330709))
+* **storybook:** remove remaining em dashes from canvas getting started ([5849848](https://github.com/UiPath/apollo-ui/commit/5849848425825d9a7cf88a88d41ad5fc6877dba3))
+
 ## [@uipath/apollo-react-v4.47.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.47.0...@uipath/apollo-react@4.47.1) (2026-06-14)
 
 ### Bug Fixes
