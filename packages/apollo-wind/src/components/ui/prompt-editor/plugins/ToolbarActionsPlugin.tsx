@@ -1,4 +1,3 @@
-import { type MutableRefObject, useEffect } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import {
   $createTextNode,
@@ -8,6 +7,7 @@ import {
   $isRangeSelection,
   $isTextNode,
 } from 'lexical';
+import { type MutableRefObject, useEffect } from 'react';
 import type { PromptEditorToolbarActionsRef } from '../types';
 
 interface ToolbarActionsPluginProps {
@@ -30,28 +30,33 @@ const wrapSelectionWithMarkers = (startMarker: string, endMarker: string) => {
     return;
   }
 
-  // Insert end marker after the selection's focus point
-  const focusNode = selection.focus.getNode();
-  const focusOffset = selection.focus.offset;
-  if ($isTextNode(focusNode)) {
-    const text = focusNode.getTextContent();
-    focusNode.setTextContent(text.slice(0, focusOffset) + endMarker + text.slice(focusOffset));
+  // Normalize to the logical start/end points: anchor/focus swap meaning for backward
+  // (right-to-left) selections, so resolve via isBackward() rather than assuming anchor=start.
+  const isBackward = selection.isBackward();
+  const startPoint = isBackward ? selection.focus : selection.anchor;
+  const endPoint = isBackward ? selection.anchor : selection.focus;
+  const startNode = startPoint.getNode();
+  const startOffset = startPoint.offset;
+  const endNode = endPoint.getNode();
+  const endOffset = endPoint.offset;
+
+  // Insert the end marker first so the start offset stays valid when both points share one text node.
+  if ($isTextNode(endNode)) {
+    const text = endNode.getTextContent();
+    endNode.setTextContent(text.slice(0, endOffset) + endMarker + text.slice(endOffset));
   } else {
-    // Focus is on a non-text node (e.g., decorator) — insert after it
+    // End point is a non-text node (e.g., decorator) — insert after it
     const endText = $createTextNode(endMarker);
-    focusNode.insertAfter(endText);
+    endNode.insertAfter(endText);
   }
 
-  // Insert start marker before the selection's anchor point
-  const anchorNode = selection.anchor.getNode();
-  const anchorOffset = selection.anchor.offset;
-  if ($isTextNode(anchorNode)) {
-    const text = anchorNode.getTextContent();
-    anchorNode.setTextContent(text.slice(0, anchorOffset) + startMarker + text.slice(anchorOffset));
+  if ($isTextNode(startNode)) {
+    const text = startNode.getTextContent();
+    startNode.setTextContent(text.slice(0, startOffset) + startMarker + text.slice(startOffset));
   } else {
-    // Anchor is on a non-text node — insert before it
+    // Start point is a non-text node — insert before it
     const startText = $createTextNode(startMarker);
-    anchorNode.insertBefore(startText);
+    startNode.insertBefore(startText);
   }
 };
 

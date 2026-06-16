@@ -25,6 +25,11 @@ describe('inferTokenTypeFromPath', () => {
     expect(inferTokenTypeFromPath('unknown.path', OPTIONS)).toBe('input');
     expect(inferTokenTypeFromPath('vars.unmatched', OPTIONS)).toBe('input');
   });
+
+  it('falls back to the leading namespace for state/resource with no matching option', () => {
+    expect(inferTokenTypeFromPath('state.unknown', OPTIONS)).toBe('state');
+    expect(inferTokenTypeFromPath('resource.unknown', OPTIONS)).toBe('resource');
+  });
 });
 
 describe('VARIABLE_PATH_REGEX (free-form Enter commit)', () => {
@@ -33,6 +38,8 @@ describe('VARIABLE_PATH_REGEX (free-form Enter commit)', () => {
     'metadata.run.id',
     'agent.name',
     'vars.a.b.c',
+    'state.retryCount',
+    'resource.knowledgeBase',
   ])('accepts valid path %s', (path) => expect(VARIABLE_PATH_REGEX.test(path)).toBe(true));
 
   it.each([

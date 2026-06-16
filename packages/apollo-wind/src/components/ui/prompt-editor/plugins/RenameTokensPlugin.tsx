@@ -1,10 +1,10 @@
-import { useEffect, useRef } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { useEffect, useRef } from 'react';
 import {
   isInputTokenNode,
   isOutputTokenNode,
-  isStateTokenNode,
   isResourceTokenNode,
+  isStateTokenNode,
 } from '../nodes';
 import type {
   PromptEditorAutoCompleteOption,
@@ -156,6 +156,15 @@ export const RenameTokensPlugin = ({ options, onChange }: RenameTokensPluginProp
           let tokensChanged = false;
           const tokenNodes = getAllPromptTokenNodes();
 
+          // Group renames by token type once so the per-node lookup is O(1) instead of
+          // re-filtering all renames for every node (which made the update O(nodes × renames)).
+          const renamesByType = new Map<string, typeof sortedRenames>();
+          for (const rename of sortedRenames) {
+            const list = renamesByType.get(rename.type);
+            if (list) list.push(rename);
+            else renamesByType.set(rename.type, [rename]);
+          }
+
           for (const node of tokenNodes) {
             const nodeType = isInputTokenNode(node)
               ? 'input'
@@ -168,8 +177,8 @@ export const RenameTokensPlugin = ({ options, onChange }: RenameTokensPluginProp
                     : null;
             if (!nodeType) continue;
 
-            const matchingRenames = sortedRenames.filter((r) => r.type === nodeType);
-            if (matchingRenames.length === 0) continue;
+            const matchingRenames = renamesByType.get(nodeType);
+            if (!matchingRenames) continue;
 
             const currentValue = node.getValue();
             let nextValue = currentValue;

@@ -13,6 +13,7 @@ import {
   type PromptEditorAutoCompleteOption,
   type PromptEditorTokenType,
 } from '../types';
+import { VARIABLE_PATH_REGEX } from '../utils/autocomplete-segments';
 
 const MENU_WIDTH = 320;
 const VIEWPORT_MARGIN = 8;
@@ -36,6 +37,12 @@ export interface PromptEditorAutocompleteMenuProps {
   options: PromptEditorAutoCompleteOption[];
   /** Called with the selected option's value (path). */
   onSelect: (path: string) => void;
+  /**
+   * Commit the typed query verbatim as a free-form chip. When set, a typed path that matches no
+   * option but is a valid variable path is offered as an "Insert" item so Enter commits it (the
+   * menu owns Enter while focused, so free-form commit has to happen here, not in the editor).
+   */
+  onCommitFreeForm?: (path: string) => void;
   /** Called when the menu should close (Escape, click-outside, selection committed). */
   onClose: () => void;
 }
@@ -63,6 +70,7 @@ export const PromptEditorAutocompleteMenu = ({
   initialSearch,
   options,
   onSelect,
+  onCommitFreeForm,
   onClose,
 }: PromptEditorAutocompleteMenuProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -135,6 +143,15 @@ export const PromptEditorAutocompleteMenu = ({
   );
   const portalTarget = resolvePortalTarget(anchorEl.contextElement);
 
+  // Offer a free-form "Insert" item when the typed query is a valid path that no option provides.
+  const trimmedSearch = search.trim();
+  const freeFormPath =
+    onCommitFreeForm &&
+    VARIABLE_PATH_REGEX.test(trimmedSearch) &&
+    !options.some((o) => o.value === trimmedSearch)
+      ? trimmedSearch
+      : null;
+
   return createPortal(
     // biome-ignore lint/a11y/noStaticElementInteractions: positioning wrapper that forwards Escape to close; the interactive surface is the cmdk Command (a combobox with its own keyboard handling).
     <div
@@ -174,6 +191,16 @@ export const PromptEditorAutocompleteMenu = ({
               </CommandItem>
             );
           })}
+          {freeFormPath && (
+            // Typed a valid path that isn't a known option → offer to insert it verbatim. cmdk shows
+            // this because its value matches the search; selecting it (Enter) commits the free-form chip.
+            <CommandItem value={freeFormPath} onSelect={() => onCommitFreeForm?.(freeFormPath)}>
+              <Variable className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+              <span className="truncate">
+                Insert <span className="font-medium">{freeFormPath}</span>
+              </span>
+            </CommandItem>
+          )}
         </CommandList>
       </Command>
     </div>,
