@@ -110,8 +110,9 @@ function KpiContent({
 
 function DonutContent({ cardData }: { cardData: InsightCardData }) {
   const circumference = 97.39;
-  // donutPercent is a 0–1 fraction; fall back to the sample value.
-  const fraction = cardData.donutPercent ?? 0.47;
+  // donutPercent is a 0–1 fraction; fall back to the sample value and clamp so
+  // out-of-range data can't produce a negative/oversized arc or a wrong label.
+  const fraction = Math.min(1, Math.max(0, cardData.donutPercent ?? 0.47));
   const label = cardData.donutLabel ?? "funded";
   return (
     <div className="flex items-center justify-center flex-1">
@@ -206,26 +207,36 @@ function HorizontalBarsContent({
     );
   }
 
+  // Normalize bar values to a share of the total so the percentages match the
+  // compact view — bar values are raw counts, not percentages, so rendering
+  // them as `value%` would disagree with the compact legend for the same data.
+  const expandedTotal = barsWithColor.reduce((sum, s) => sum + s.value, 0);
   return (
     <div className="flex flex-col gap-5">
-      {barsWithColor.map((issue) => (
-        <div key={issue.label}>
-          <div className="flex items-center justify-between text-xs mb-1.5">
-            <span className="font-medium">{issue.label}</span>
-            <span className="font-bold">{issue.value}%</span>
-          </div>
-          <div className="h-1 w-full rounded-full bg-muted dark:bg-foreground/10 relative">
-            <div
-              className={`h-full rounded-full ${issue.color} relative`}
-              style={{ width: `${issue.value}%` }}
-            >
+      {barsWithColor.map((issue) => {
+        const pct =
+          expandedTotal > 0
+            ? Math.round((issue.value / expandedTotal) * 100)
+            : 0;
+        return (
+          <div key={issue.label}>
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="font-medium">{issue.label}</span>
+              <span className="font-bold">{pct}%</span>
+            </div>
+            <div className="h-1 w-full rounded-full bg-muted dark:bg-foreground/10 relative">
               <div
-                className={`absolute inset-0 ${issue.color} rounded-full opacity-35 dark:opacity-55 blur-[4px]`}
-              />
+                className={`h-full rounded-full ${issue.color} relative`}
+                style={{ width: `${pct}%` }}
+              >
+                <div
+                  className={`absolute inset-0 ${issue.color} rounded-full opacity-35 dark:opacity-55 blur-[4px]`}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -444,30 +455,43 @@ export function InsightCardBody({
   isExpanded?: boolean;
 }) {
   const { data } = useDashboardData();
-  const cardData = data.insightCards[cardIndex] ?? data.insightCards[0];
+  // Bail out rather than fall back to insightCards[0]: rendering a different
+  // card's data for the given content would be silently misleading.
+  const cardData = data.insightCards[cardIndex];
+  if (!cardData) return null;
 
   if (content.type === "kpi") {
     return <KpiContent cardData={cardData} viewMode={viewMode} />;
   }
-  if (content.chartType === "horizontal-bars")
-    return (
-      <HorizontalBarsContent
-        cardData={cardData}
-        viewMode={viewMode}
-        isExpanded={isExpanded}
-      />
-    );
-  if (content.chartType === "donut")
-    return <DonutContent cardData={cardData} />;
-  if (content.chartType === "sparkline")
-    return <SparklineContent cardData={cardData} />;
-  if (content.chartType === "stacked-bar")
-    return (
-      <StackedBarContent
-        cardData={cardData}
-        viewMode={viewMode}
-        isExpanded={isExpanded}
-      />
-    );
-  return <AreaContent cardData={cardData} />;
+
+  switch (content.chartType) {
+    case "horizontal-bars":
+      return (
+        <HorizontalBarsContent
+          cardData={cardData}
+          viewMode={viewMode}
+          isExpanded={isExpanded}
+        />
+      );
+    case "donut":
+      return <DonutContent cardData={cardData} />;
+    case "sparkline":
+      return <SparklineContent cardData={cardData} />;
+    case "stacked-bar":
+      return (
+        <StackedBarContent
+          cardData={cardData}
+          viewMode={viewMode}
+          isExpanded={isExpanded}
+        />
+      );
+    case "area":
+      return <AreaContent cardData={cardData} />;
+    default: {
+      // Exhaustiveness guard: a new ChartType must add a case above rather than
+      // silently falling through to a default renderer.
+      const _exhaustive: never = content.chartType;
+      return _exhaustive;
+    }
+  }
 }
