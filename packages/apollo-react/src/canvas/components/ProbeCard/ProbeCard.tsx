@@ -402,15 +402,17 @@ function ProbeCardComponent({
 
     const onWheel = (e: WheelEvent) => {
       if (e.ctrlKey) {
-        e.stopPropagation();
-        e.preventDefault();
-        onCanvasZoomRef.current?.({
-          clientX: e.clientX,
-          clientY: e.clientY,
-          deltaY: e.deltaY,
-          deltaMode: e.deltaMode,
-          ctrlKey: e.ctrlKey,
-        });
+        if (onCanvasZoomRef.current) {
+          e.stopPropagation();
+          e.preventDefault();
+          onCanvasZoomRef.current({
+            clientX: e.clientX,
+            clientY: e.clientY,
+            deltaY: e.deltaY,
+            deltaMode: e.deltaMode,
+            ctrlKey: e.ctrlKey,
+          });
+        }
         return;
       }
       const target = e.target instanceof Node ? e.target : null;
@@ -422,19 +424,21 @@ function ProbeCardComponent({
         e.stopPropagation();
         return;
       }
-      e.stopPropagation();
-      e.preventDefault();
-      const deltaNormalize = e.deltaMode === 1 ? 20 : 1;
-      let deltaX = e.deltaX * deltaNormalize;
-      let deltaY = e.deltaY * deltaNormalize;
-      if (!isMac() && e.shiftKey) {
-        deltaX = e.deltaY * deltaNormalize;
-        deltaY = 0;
+      if (onCanvasPanRef.current) {
+        e.stopPropagation();
+        e.preventDefault();
+        const deltaNormalize = e.deltaMode === 1 ? 20 : 1;
+        let deltaX = e.deltaX * deltaNormalize;
+        let deltaY = e.deltaY * deltaNormalize;
+        if (!isMac() && e.shiftKey) {
+          deltaX = e.deltaY * deltaNormalize;
+          deltaY = 0;
+        }
+        onCanvasPanRef.current({
+          x: -deltaX * PAN_ON_SCROLL_SPEED,
+          y: -deltaY * PAN_ON_SCROLL_SPEED,
+        });
       }
-      onCanvasPanRef.current?.({
-        x: -deltaX * PAN_ON_SCROLL_SPEED,
-        y: -deltaY * PAN_ON_SCROLL_SPEED,
-      });
     };
 
     card.addEventListener('wheel', onWheel, { passive: false });
