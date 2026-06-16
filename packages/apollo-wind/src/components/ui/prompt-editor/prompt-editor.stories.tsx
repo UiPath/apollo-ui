@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
+import { VARIABLE_DRAG_MIME } from './plugins/VariableDropPlugin';
 import { PromptEditor } from './prompt-editor';
 import type { PromptEditorAutoCompleteOption, PromptEditorMode, PromptEditorToken } from './types';
 
@@ -145,5 +146,57 @@ export const Controlled: Story = {
       );
     };
     return <ControlledExample />;
+  },
+};
+
+/**
+ * Variable drag-drop. The chips above the editor are the drag *source* (the consumer's
+ * responsibility) — each sets the variable path on `dataTransfer` under `VARIABLE_DRAG_MIME` on
+ * drag start. Dropping one onto the editor inserts a token at the drop point via `mapVarDropToToken`.
+ * Drag a chip into the editor to try it.
+ */
+export const WithVariableDragDrop: Story = {
+  render: () => {
+    const DragDropExample = () => {
+      const [value, setValue] = useState<PromptEditorToken[]>([]);
+      const mapVarDropToToken = (path: string): PromptEditorAutoCompleteOption =>
+        AUTOCOMPLETE_OPTIONS.find((o) => o.value === path) ?? { type: 'input', value: path };
+      return (
+        <div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+            {AUTOCOMPLETE_OPTIONS.map((o) => (
+              // biome-ignore lint/a11y/noStaticElementInteractions: demo drag source for the story; real consumers own the (accessible) drag affordance.
+              <span
+                key={o.value}
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData(VARIABLE_DRAG_MIME, o.value);
+                  e.dataTransfer.effectAllowed = 'copy';
+                }}
+                style={{
+                  cursor: 'grab',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 4,
+                  padding: '2px 8px',
+                  fontSize: 13,
+                  background: 'var(--color-muted)',
+                }}
+              >
+                {o.value}
+              </span>
+            ))}
+          </div>
+          <PromptEditor
+            ariaLabel="Prompt"
+            value={value}
+            onChange={setValue}
+            autoCompleteOptions={AUTOCOMPLETE_OPTIONS}
+            mapVarDropToToken={mapVarDropToToken}
+            placeholder="Drag a variable here…"
+          />
+        </div>
+      );
+    };
+    return <DragDropExample />;
   },
 };

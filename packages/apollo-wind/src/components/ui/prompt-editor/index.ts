@@ -1,8 +1,9 @@
-export { PromptEditor } from './prompt-editor';
+export { VARIABLE_DRAG_MIME } from './plugins/VariableDropPlugin';
 export type { PromptEditorProps, PromptEditorRef } from './prompt-editor';
+export { PromptEditor } from './prompt-editor';
 export type {
-  PromptEditorToken,
-  PromptEditorTokenType,
   PromptEditorAutoCompleteOption,
   PromptEditorMode,
+  PromptEditorToken,
+  PromptEditorTokenType,
 } from './types';

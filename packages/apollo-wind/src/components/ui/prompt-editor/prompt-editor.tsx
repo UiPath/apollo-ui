@@ -1,3 +1,10 @@
+import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import { ContentEditable } from '@lexical/react/LexicalContentEditable';
+import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
+import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
+import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
+import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin';
+import { $getSelection, $isRangeSelection, type LexicalEditor } from 'lexical';
 import {
   forwardRef,
   useCallback,
@@ -7,26 +14,20 @@ import {
   useRef,
   useState,
 } from 'react';
-import { LexicalComposer } from '@lexical/react/LexicalComposer';
-import { ContentEditable } from '@lexical/react/LexicalContentEditable';
-import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
-import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
-import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
-import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin';
-import { $getSelection, $isRangeSelection, type LexicalEditor } from 'lexical';
-import { InputTokenNode, OutputTokenNode, StateTokenNode, ResourceTokenNode } from './nodes';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { EditorToolbar } from './components/EditorToolbar';
+import { MarkdownPreview } from './components/MarkdownPreview';
+import { InputTokenNode, OutputTokenNode, ResourceTokenNode, StateTokenNode } from './nodes';
+import { AutocompletePlugin } from './plugins/AutocompletePlugin';
 import { CopyPastePlugin } from './plugins/CopyPastePlugin';
 import { EditorRefPlugin } from './plugins/EditorRefPlugin';
 import { MultilinePlugin } from './plugins/MultilinePlugin';
 import { NodeSelectionFixPlugin } from './plugins/NodeSelectionFixPlugin';
-import { ValueSyncPlugin } from './plugins/ValueSyncPlugin';
-import { AutocompletePlugin } from './plugins/AutocompletePlugin';
-import { ValidateTokensPlugin } from './plugins/ValidateTokensPlugin';
 import { RenameTokensPlugin } from './plugins/RenameTokensPlugin';
 import { ToolbarActionsPlugin } from './plugins/ToolbarActionsPlugin';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { EditorToolbar } from './components/EditorToolbar';
-import { MarkdownPreview } from './components/MarkdownPreview';
+import { ValidateTokensPlugin } from './plugins/ValidateTokensPlugin';
+import { ValueSyncPlugin } from './plugins/ValueSyncPlugin';
+import { VariableDropPlugin } from './plugins/VariableDropPlugin';
 import type {
   PromptEditorAutoCompleteOption,
   PromptEditorMode,
@@ -34,10 +35,10 @@ import type {
   PromptEditorToolbarActionsRef,
 } from './types';
 import {
-  areTokensEqual,
   $getEditorTokensInternal,
-  $setEditorTokensInternal,
   $insertTokenAtCursor,
+  $setEditorTokensInternal,
+  areTokensEqual,
 } from './utils';
 
 const DEFAULT_MIN_ROWS = 4;
@@ -71,6 +72,12 @@ export interface PromptEditorProps {
   fillHeight?: boolean;
   /** Drop the editor's own border/background/rounding so a parent can provide the field chrome. */
   borderless?: boolean;
+  /**
+   * Enable variable drag-drop: map a path dropped onto the editor (see `VARIABLE_DRAG_MIME`) to the
+   * token to insert at the drop point. The drag *source* is the consumer's (it sets the path on
+   * `dataTransfer`); omit this prop to disable drop handling entirely.
+   */
+  mapVarDropToToken?: (insertPath: string) => PromptEditorAutoCompleteOption;
 }
 
 const EMPTY_AUTOCOMPLETE_OPTIONS: PromptEditorAutoCompleteOption[] = [];
@@ -104,6 +111,7 @@ const EditorInner = forwardRef(
       ariaLabel,
       fillHeight,
       borderless,
+      mapVarDropToToken,
       toolbarActionsRef,
       showToolbar,
     }: EditorInnerProps,
@@ -365,6 +373,9 @@ const EditorInner = forwardRef(
         {options.length > 0 && <AutocompletePlugin options={options} />}
         <ValidateTokensPlugin options={options} />
         {options.length > 0 && <RenameTokensPlugin options={options} onChange={onChange} />}
+        {mapVarDropToToken && (
+          <VariableDropPlugin mapVarDropToToken={mapVarDropToToken} disabled={disabled} />
+        )}
       </div>
     );
   }
@@ -390,6 +401,7 @@ export const PromptEditor = ({
   editorRef,
   fillHeight,
   borderless,
+  mapVarDropToToken,
 }: PromptEditorProps) => {
   // Normalize the token-array props once so malformed input (e.g. `{}` from a Storybook object
   // control) can't crash the editor, the preview, or ValueSyncPlugin.
@@ -487,6 +499,7 @@ export const PromptEditor = ({
               placeholder={placeholder}
               fillHeight={fillHeight}
               borderless={borderless}
+              mapVarDropToToken={mapVarDropToToken}
               showToolbar={showToolbar}
               toolbarActionsRef={toolbarActionsRef}
               value={value}

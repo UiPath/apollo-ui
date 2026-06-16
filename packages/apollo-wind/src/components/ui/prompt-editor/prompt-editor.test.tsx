@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { VARIABLE_DRAG_MIME } from './plugins/VariableDropPlugin';
 import { PromptEditor, type PromptEditorRef } from './prompt-editor';
 import type { PromptEditorAutoCompleteOption, PromptEditorMode, PromptEditorToken } from './types';
 
@@ -152,5 +153,51 @@ describe('PromptEditor', () => {
       <PromptEditor value={badTokens} initialValue={badTokens} mode="preview" />
     );
     expect(getByText('Nothing to preview')).toBeInTheDocument();
+  });
+
+  describe('variable drag-drop', () => {
+    const mapVarDropToToken = (path: string): PromptEditorAutoCompleteOption => ({
+      type: 'input',
+      value: path,
+    });
+
+    it('mounts with mapVarDropToToken (drag-drop enabled) without throwing', () => {
+      expect(() =>
+        render(<PromptEditor ariaLabel="Prompt" mapVarDropToToken={mapVarDropToToken} />)
+      ).not.toThrow();
+      expect(screen.getByRole('textbox', { name: 'Prompt' })).toBeInTheDocument();
+    });
+
+    it('mounts the drop plugin and inserts a token when a variable is dropped', async () => {
+      // Guards the prop wiring: if mapVarDropToToken weren't threaded through to EditorInner, the
+      // VariableDropPlugin would never mount and this drop would do nothing. jsdom lacks
+      // caretPositionFromPoint, so the drop falls back to inserting at the end of the editor.
+      const onChange = vi.fn();
+      render(
+        <PromptEditor
+          ariaLabel="Prompt"
+          mapVarDropToToken={mapVarDropToToken}
+          onChange={onChange}
+        />
+      );
+      const editor = screen.getByRole('textbox', { name: 'Prompt' });
+
+      const dataTransfer = {
+        types: [VARIABLE_DRAG_MIME],
+        getData: (type: string) => (type === VARIABLE_DRAG_MIME ? 'state.retryCount' : ''),
+        dropEffect: 'none',
+      };
+      const dropEvent = new Event('drop', { bubbles: true, cancelable: true });
+      Object.defineProperty(dropEvent, 'dataTransfer', { value: dataTransfer });
+      Object.defineProperty(dropEvent, 'clientX', { value: 0 });
+      Object.defineProperty(dropEvent, 'clientY', { value: 0 });
+      editor.dispatchEvent(dropEvent);
+
+      await waitFor(() => expect(onChange).toHaveBeenCalled());
+      const lastTokens = onChange.mock.calls.at(-1)?.[0] as PromptEditorToken[];
+      expect(lastTokens.some((t) => t.type === 'input' && t.value === 'state.retryCount')).toBe(
+        true
+      );
+    });
   });
 });
