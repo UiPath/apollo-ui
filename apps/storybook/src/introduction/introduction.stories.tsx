@@ -70,7 +70,7 @@ function PackageCard({
         <InlineCode>{packageName}</InlineCode>
         <a
           href={`/?path=${storyPath}`}
-          target="_parent"
+          target="_top"
           className="self-start rounded-lg border border-border bg-background px-4 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted no-underline"
         >
           Explore docs →
@@ -127,7 +127,7 @@ function IntroductionPage() {
           <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground">
             Apollo Design System
           </h1>
-          <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
+          <p className="text-lg leading-8 text-muted-foreground">
             The UiPath open-source design system. Shared tokens, React components, and Tailwind
             utilities for building consistent product experiences across web apps and canvas
             editors.
@@ -145,7 +145,7 @@ function IntroductionPage() {
           <a
             href="https://github.com/UiPath/apollo-ui"
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="rounded-lg border border-border bg-background px-4 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted no-underline"
           >
             View on GitHub →
