@@ -122,7 +122,7 @@ function OverviewTab() {
       </SectionDescription>
 
       <InfoCallout>
-        The canvas is powered by <InlineCode>@uipath/apollo-react/canvas/xyflow/react</InlineCode> —
+        The canvas is powered by <InlineCode>@uipath/apollo-react/canvas/xyflow/react</InlineCode>,
         a re-export of ReactFlow with Apollo-specific extensions. You do not need to install
         ReactFlow separately.
       </InfoCallout>
