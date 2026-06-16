@@ -74,23 +74,7 @@
   },
   "peerDependencies": {
     "react": ">=18.0.0",
-    "react-dom": ">=18.0.0",
-    "@monaco-editor/react": ">=4.0.0",
-    "monaco-editor": ">=0.50.0",
-    "@codemirror/lang-javascript": ">=6.0.0",
-    "@codemirror/language": ">=6.0.0",
-    "@codemirror/state": ">=6.0.0",
-    "@codemirror/view": ">=6.0.0",
-    "@lezer/highlight": ">=1.0.0"
-  },
-  "peerDependenciesMeta": {
-    "@monaco-editor/react": { "optional": true },
-    "monaco-editor": { "optional": true },
-    "@codemirror/lang-javascript": { "optional": true },
-    "@codemirror/language": { "optional": true },
-    "@codemirror/state": { "optional": true },
-    "@codemirror/view": { "optional": true },
-    "@lezer/highlight": { "optional": true }
+    "react-dom": ">=18.0.0"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -141,7 +125,6 @@
     "react-hook-form": "^7.66.1",
     "react-live": "^4.1.8",
     "react-resizable-panels": "^4.7.3",
-    "react-syntax-highlighter": "^16.1.1",
     "recharts": "2.15.4",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
@@ -175,7 +158,6 @@
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.2",
-    "@types/react-syntax-highlighter": "^15.5.13",
     "@vitest/coverage-v8": "^4.1.5",
     "@vitest/ui": "^4.1.5",
     "ajv": "^8.18.0",

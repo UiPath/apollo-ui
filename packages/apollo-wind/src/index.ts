@@ -92,6 +92,9 @@ export { FileUpload } from './components/ui/file-upload';
 // -----------------------------------------------------------------------------
 // Data Display Components
 // -----------------------------------------------------------------------------
+// NOTE: CodeBlock was removed. Use Monaco or CodeMirror with Apollo editor
+// themes instead. See @uipath/apollo-wind/editor-themes for the theme API and
+// Patterns → Code Editors in Storybook for integration guidance.
 export {
   Card,
   CardContent,
@@ -106,7 +109,6 @@ export type { StatsCardProps } from './components/ui/stats-card';
 
 export { Badge, badgeVariants } from './components/ui/badge';
 export type { BadgeProps } from './components/ui/badge';
-
 
 export { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar';
 

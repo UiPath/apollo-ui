@@ -1,5 +1,5 @@
 /**
- * Apollo Future — CodeMirror v6 Theme Tokens
+ * Apollo CodeMirror v6 Theme Tokens — Future, Core, and Core HC variants.
  *
  * Plain color/style data objects for building CodeMirror v6 extensions.
  * This file has NO imports from `@codemirror/*` — consumers wire these
@@ -13,7 +13,7 @@
  * import { EditorView } from '@codemirror/view';
  * import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
  * import { tags as t } from '@lezer/highlight';
- * import { apolloFutureDarkCodeMirror } from '@uipath/apollo-wind/editor-themes/codemirror';
+ * import { apolloFutureDarkCodeMirror } from '@uipath/apollo-wind/editor-themes';
  *
  * const { syntax, ui } = apolloFutureDarkCodeMirror;
  *
@@ -111,7 +111,7 @@ export interface CodeMirrorUiTokens {
   matchingBracket: string;
 }
 
-export interface ApolloFutureCodeMirrorTheme {
+export interface ApolloCodeMirrorTheme {
   syntax: CodeMirrorSyntaxTokens;
   ui: CodeMirrorUiTokens;
 }
@@ -126,7 +126,7 @@ export interface ApolloFutureCodeMirrorTheme {
  * Base palette: zinc-900 surfaces, cyan accent, muted zinc foregrounds.
  * Syntax colors follow the `--code-*` custom properties from the design system.
  */
-export const apolloFutureDarkCodeMirror: ApolloFutureCodeMirrorTheme = {
+export const apolloFutureDarkCodeMirror: ApolloCodeMirrorTheme = {
   syntax: {
     // --code-rest: zinc-400
     rest: '#a1a1aa',
@@ -179,7 +179,7 @@ export const apolloFutureDarkCodeMirror: ApolloFutureCodeMirrorTheme = {
  * Base palette: zinc-100 surfaces, cyan-700 accent, muted zinc foregrounds.
  * Syntax colors follow the `--code-*` custom properties from the design system.
  */
-export const apolloFutureLightCodeMirror: ApolloFutureCodeMirrorTheme = {
+export const apolloFutureLightCodeMirror: ApolloCodeMirrorTheme = {
   syntax: {
     // --code-rest: zinc-600
     rest: '#52525b',
@@ -219,5 +219,121 @@ export const apolloFutureLightCodeMirror: ApolloFutureCodeMirrorTheme = {
     indentGuide: '#d4d4d8',
     // cyan-600 (re-uses cursor color for bracket pairing)
     matchingBracket: '#0891b2',
+  },
+};
+
+// =============================================================================
+// Apollo Core — Dark
+// =============================================================================
+
+export const apolloCoreDarkCodeMirror: ApolloCodeMirrorTheme = {
+  syntax: {
+    rest: '#cfd8dd',
+    comment: '#526069',
+    punctuation: '#8a97a0',
+    keyword: '#66adff',
+    string: '#f25a8c',
+    number: '#6ecdb6',
+    literal: '#dc80db',
+    operator: '#66adff',
+    meta: '#8a97a0',
+  },
+  ui: {
+    background: '#182027',
+    foreground: '#cfd8dd',
+    cursor: '#66adff',
+    selection: '#37465266',
+    lineHighlight: '#27313980',
+    lineNumber: '#526069',
+    lineNumberActive: '#8a97a0',
+    indentGuide: '#374652',
+    matchingBracket: '#66adff',
+  },
+};
+
+// =============================================================================
+// Apollo Core — Light
+// =============================================================================
+
+export const apolloCoreLightCodeMirror: ApolloCodeMirrorTheme = {
+  syntax: {
+    rest: '#526069',
+    comment: '#a4b1b8',
+    punctuation: '#6b7882',
+    keyword: '#0067df',
+    string: '#d91153',
+    number: '#1e7f5a',
+    literal: '#b748b6',
+    operator: '#0067df',
+    meta: '#6b7882',
+  },
+  ui: {
+    background: '#ffffff',
+    foreground: '#526069',
+    cursor: '#0067df',
+    selection: '#e9f1fa',
+    lineHighlight: '#f4f5f780',
+    lineNumber: '#a4b1b8',
+    lineNumberActive: '#6b7882',
+    indentGuide: '#cfd8dd',
+    matchingBracket: '#0067df',
+  },
+};
+
+// =============================================================================
+// Apollo Core — Dark High Contrast
+// =============================================================================
+
+export const apolloCoreDarkHCCodeMirror: ApolloCodeMirrorTheme = {
+  syntax: {
+    rest: '#cfd8dd',
+    comment: '#526069',
+    punctuation: '#8a97a0',
+    keyword: '#badaff', // HC: brighter primary
+    string: '#fd7da7', // HC: higher contrast pink
+    number: '#6ecdb6',
+    literal: '#dc80db',
+    operator: '#badaff',
+    meta: '#8a97a0',
+  },
+  ui: {
+    background: '#182027',
+    foreground: '#cfd8dd',
+    cursor: '#badaff',
+    selection: '#37465266',
+    lineHighlight: '#27313980',
+    lineNumber: '#526069',
+    lineNumberActive: '#bbc7cd',
+    indentGuide: '#374652',
+    matchingBracket: '#badaff',
+  },
+};
+
+// =============================================================================
+// Apollo Core — Light High Contrast
+// =============================================================================
+
+export const apolloCoreLightHCCodeMirror: ApolloCodeMirrorTheme = {
+  syntax: {
+    rest: '#374652', // HC: stronger default text
+    comment: '#8a97a0',
+    punctuation: '#526069',
+    keyword: '#00489d', // HC: stronger primary
+    string: '#a60e3f', // HC: darker string
+    number: '#176245', // HC: darker numeric
+    literal: '#8c338b', // HC: darker purple
+    operator: '#00489d',
+    meta: '#526069',
+  },
+  ui: {
+    background: '#ffffff',
+    foreground: '#374652',
+    cursor: '#00489d',
+    selection: '#e9f1fa',
+    lineHighlight: '#f4f5f780',
+    lineNumber: '#8a97a0',
+    lineNumberActive: '#526069',
+    indentGuide: '#cfd8dd',
+    matchingBracket: '#00489d',
   },
 };
