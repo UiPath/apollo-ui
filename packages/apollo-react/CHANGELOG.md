@@ -1,3 +1,11 @@
+## [@uipath/apollo-react-v4.48.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.48.0...@uipath/apollo-react@4.48.1) (2026-06-16)
+
+### Bug Fixes
+
+* **apollo-react:** improve canvas overlay performance ([cc285f5](https://github.com/UiPath/apollo-ui/commit/cc285f5cbd2a0e5204125c8d538d45e61b1601cf))
+* **apollo-react:** reduce loop drag render churn [MST-11141] ([23eb5fb](https://github.com/UiPath/apollo-ui/commit/23eb5fba112a6bed240639f9437e1af09be2cf36))
+* **apollo-react:** skip hidden portal toolbars ([41904f5](https://github.com/UiPath/apollo-ui/commit/41904f55acc970a1e93dc85c4dc1e599ef0db0a3))
+
 ## [@uipath/apollo-react-v4.48.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.47.1...@uipath/apollo-react@4.48.0) (2026-06-16)
 
 ### Features
