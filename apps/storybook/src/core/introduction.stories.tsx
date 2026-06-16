@@ -132,7 +132,7 @@ function TokenCard({
       </div>
       <a
         href={`/?path=${storyPath}`}
-        target="_parent"
+        target="_top"
         className="mt-auto inline-flex items-center justify-center rounded-lg border border-border bg-background px-4 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted no-underline"
       >
         View tokens →
