@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.48.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.48.2...@uipath/apollo-react@4.48.3) (2026-06-17)
+
+### Bug Fixes
+
+* **apollo-react:** correct NodePropertyTrigger popover alignment and gap ([8c7fddd](https://github.com/UiPath/apollo-ui/commit/8c7fdddd2e58975f2bbd62a89248c5059c833f7a))
+
 ## [@uipath/apollo-react-v4.48.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.48.0...@uipath/apollo-react@4.48.1) (2026-06-16)
 
 ### Bug Fixes
