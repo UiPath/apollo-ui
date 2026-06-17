@@ -36,7 +36,7 @@ overrides:
   postcss: "^8.5.14"
   hono: "^4.12.25"                      # GHSA-88fw-hqm2-52qc (high)/rv63/wwfh/j6c9/wgpf (moderate) — vetted 2026-06-16; transitive via @modelcontextprotocol/sdk + @hono/node-server (both pin ^4)
   # Security pins (vetted 2026-06-16)
-  esbuild: "^0.28.1"                    # GHSA-gv7w-rqvm-qjhr (high)/GHSA-g7r4-m6w7-qqqr (low) — Storybook core pins esbuild ^0.18..^0.27 (<0.28) in both 10.2.x and 10.4.x; vite 8 (rolldown) drops its own esbuild but Storybook still forces it, so this override stays until Storybook widens the range
+  esbuild: "^0.28.1"                    # GHSA-gv7w-rqvm-qjhr (high)/GHSA-g7r4-m6w7-qqqr (low) — Storybook 10.4.x widened its range (@storybook/csf-plugin@10.4.1 now allows esbuild ^0.28.1) and nothing in the tree still pins <0.28; override retained as defense-in-depth to pin the patched line
   "ws@>=8.0.0 <9": "^8.21.0"            # GHSA-96hv-2xvq-fx4p (high) — latest engine.io-client (6.6.5) still pins ws ~8.20.1; blocked upstream at Socket.IO
   "@opentelemetry/core": "^2.8.0"       # GHSA-8988-4f7v-96qf (moderate) — @uipath/core-telemetry pins sdk-logs ^0.204.0 which pins core/resources exactly 2.1.0; bump upstream to drop
   "@opentelemetry/resources": "^2.8.0"  # lockstep with core 2.8.0 (sdk-logs/resources pin core exactly at 2.1.0)
