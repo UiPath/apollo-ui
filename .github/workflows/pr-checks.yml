@@ -111,6 +111,19 @@ jobs:
             pnpm build --affected
           fi
 
+      - name: Collect package sizes
+        if: matrix.check == 'Build'
+        run: node scripts/pr-package-report.cjs --collect-sizes=pkg-sizes.json
+
+      - name: Upload package sizes
+        if: matrix.check == 'Build'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: package-sizes
+          path: pkg-sizes.json
+          retention-days: 7
+          if-no-files-found: ignore
+
       - name: Upload Failure Artifacts
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -122,7 +135,7 @@ jobs:
           retention-days: 3
           if-no-files-found: ignore
 
-  # ── Sticky PR comment: per-package coverage ──────────────────────────────
+  # ── Sticky PR comment: per-package coverage + published size ──────────────
   coverage-comment:
     name: Coverage Comment
     needs: checks
@@ -131,7 +144,8 @@ jobs:
     continue-on-error: true
     permissions:
       contents: read
-      pull-requests: write
+      pull-requests: write # post/update the sticky PR comment
+      actions: read # read the last main build's run + download its package-sizes artifact
     steps:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -145,12 +159,64 @@ jobs:
         with:
           name: coverage
 
-      - name: Post coverage comment
+      - name: Download package sizes
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        continue-on-error: true
+        with:
+          name: package-sizes
+
+      # "vs main" baseline: the latest successful main build that actually uploaded a
+      # package-sizes artifact (skip-ci version-bump commits skip release.yml, so the most
+      # recent run may have none — walk back until one does).
+      - name: Find latest main size baseline
+        id: baseline
+        # Best-effort: the job's continue-on-error only keeps the workflow green; a failed step
+        # still skips the rest of the job. Without this, a transient Actions API error here would
+        # suppress the whole coverage+size comment. Failure → empty run_id → "vs main" shows "—".
+        continue-on-error: true
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
-            const { buildAndPostCoverageComment } = require('./scripts/coverage-pr-comment.cjs');
-            await buildAndPostCoverageComment({ github, context, core });
+            const runs = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'release.yml',
+              branch: 'main',
+              status: 'success',
+              per_page: 10,
+            });
+            for (const run of runs.data.workflow_runs) {
+              const arts = await github.rest.actions.listWorkflowRunArtifacts({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: run.id,
+              });
+              if (arts.data.artifacts.some((a) => a.name === 'package-sizes' && !a.expired)) {
+                core.info(`Size baseline from main run ${run.id} (${(run.head_sha || '').slice(0, 7)})`);
+                core.setOutput('run_id', String(run.id));
+                return;
+              }
+            }
+            core.info('No main build with a package-sizes artifact found; "vs main" will show "—".');
+
+      - name: Download main size baseline
+        if: steps.baseline.outputs.run_id
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        continue-on-error: true
+        with:
+          name: package-sizes
+          path: base-sizes
+          run-id: ${{ steps.baseline.outputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Post coverage + size comment
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          PKG_SIZES_BASE_FILE: base-sizes/pkg-sizes.json
+        with:
+          script: |
+            const { postPackageReportComment } = require('./scripts/pr-package-report.cjs');
+            await postPackageReportComment({ github, context, core });
 
   detect-lockfile-changes:
     name: Detect Lockfile Changes
