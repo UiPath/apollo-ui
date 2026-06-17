@@ -71,7 +71,7 @@
     "vitest": "^4.1.5"
   },
   "engines": {
-    "node": ">=22",
+    "node": ">=22.12.0",
     "pnpm": ">=11"
   },
   "packageManager": "pnpm@11.1.3",
