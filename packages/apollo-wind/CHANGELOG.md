@@ -1,3 +1,15 @@
+## [@uipath/apollo-wind-v2.21.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.20.1...@uipath/apollo-wind@2.21.0) (2026-06-17)
+
+### Features
+
+* **apollo-wind:** add Core/HC editor themes and expand Code Editors patterns page ([109560b](https://github.com/UiPath/apollo-ui/commit/109560bc9aac0320bcbc39d8d6d2c5d53992b299))
+* **apollo-wind:** migrate Code Editors stories and remove CodeBlock component ([531b319](https://github.com/UiPath/apollo-ui/commit/531b31908f637e35513d4885c2e81f5c936488f2))
+* **storybook:** add Monaco/CodeMirror live demos and restructure Code Block IA ([d95eab1](https://github.com/UiPath/apollo-ui/commit/d95eab1fb873a4c623d3a3ceec6278bf9973ad5b))
+
+### Bug Fixes
+
+* **apollo-wind:** connect future-dark and future-light CodeBlock themes to Apollo CSS tokens ([1b56fc0](https://github.com/UiPath/apollo-ui/commit/1b56fc019ba7a9a1e55fc1dbaf3725ca13e1599c))
+
 ## [@uipath/apollo-wind-v2.20.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.20.0...@uipath/apollo-wind@2.20.1) (2026-06-17)
 
 ### Performance Improvements
