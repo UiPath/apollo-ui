@@ -23,6 +23,7 @@ minimumReleaseAgeExclude:
   - 'dompurify'                   # 3.4.10 — GHSA-vxr8-fq34-vvx9 (+gvmj/x4vx/rp9w/r47g/hpcv/76mc), vetted 2026-06-16: cure53 publisher ✓, advisory ✓, integrity ✓, no deps
   - '@opentelemetry/core'         # 2.8.0 — GHSA-8988-4f7v-96qf (moderate, CVE-2026-54285), vetted 2026-06-16: SLSA provenance ✓, OIDC publisher ✓, advisory ✓, integrity ✓
   - '@opentelemetry/resources'    # 2.8.0 — lockstep with core (sdk-logs/resources pin core exactly), vetted 2026-06-16: SLSA provenance ✓, OIDC publisher ✓, integrity ✓, no new deps
+  - 'hono'                         # 4.12.25 — GHSA-88fw-hqm2-52qc (high) +rv63/wwfh/j6c9/wgpf (moderate), vetted 2026-06-16: publisher yusukebe (sole maintainer, unchanged) ✓, registry signature ✓, release tag+diff security-only ✓, integrity ✓, no deps
 # Refuse transitive git/tarball deps (pnpm 11 default; kept explicit for clarity)
 blockExoticSubdeps: true
 
@@ -33,7 +34,7 @@ overrides:
   tmp: "^0.2.6"
   picomatch: ">=4.0.4"
   postcss: "^8.5.14"
-  hono: "^4.12.21"
+  hono: "^4.12.25"                      # GHSA-88fw-hqm2-52qc (high)/rv63/wwfh/j6c9/wgpf (moderate) — vetted 2026-06-16; transitive via @modelcontextprotocol/sdk + @hono/node-server (both pin ^4)
   # Security pins (vetted 2026-06-16)
   esbuild: "^0.28.1"                    # GHSA-gv7w-rqvm-qjhr (high)/GHSA-g7r4-m6w7-qqqr (low) — vite pins esbuild ^0.27.0 and tsx pins ~0.25.0; only vite 8 (major migration) would widen
   "ws@>=8.0.0 <9": "^8.21.0"            # GHSA-96hv-2xvq-fx4p (high) — latest engine.io-client (6.6.5) still pins ws ~8.20.1; blocked upstream at Socket.IO
