@@ -227,6 +227,28 @@ jobs:
         with:
           subject-path: ${{ runner.temp }}/dist-ap-chat.tar.gz
 
+      # Publish this build's per-package sizes so PR runs can show a "vs main" delta against the
+      # last successful main build. Unconditional (not gated on a version bump) so the baseline
+      # refreshes on every main build. `npm pack --dry-run` writes nothing to dist/.
+      # continue-on-error: this is best-effort telemetry — it must never fail the publishing
+      # job, which would skip the `commit-version-bump` job (needs: release) and leave the
+      # version bump uncommitted on main after npm publish + tags already happened.
+      - name: Collect package sizes baseline
+        continue-on-error: true
+        env:
+          ACTIONS_ID_TOKEN_REQUEST_URL: ""
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
+        run: node scripts/pr-package-report.cjs --collect-sizes=pkg-sizes.json
+
+      - name: Upload package sizes baseline
+        continue-on-error: true
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: package-sizes
+          path: pkg-sizes.json
+          retention-days: 90
+          if-no-files-found: ignore
+
   # Isolated runner — App token confined here. The commit-push step has never
   # seen third-party JS from the release job.
   commit-version-bump:
