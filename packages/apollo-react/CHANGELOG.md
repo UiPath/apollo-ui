@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.48.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.48.3...@uipath/apollo-react@4.48.4) (2026-06-17)
+
+### Performance Improvements
+
+* **apollo-react:** de-duplicate fonts via re-export from apollo-core [MST-11264] ([71cb683](https://github.com/UiPath/apollo-ui/commit/71cb683fa2a3dbc09c27ced8ad70fffd6448f925))
+
 ## [@uipath/apollo-react-v4.48.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.48.2...@uipath/apollo-react@4.48.3) (2026-06-17)
 
 ### Bug Fixes

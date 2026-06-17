@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.20.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.20.0...@uipath/apollo-wind@2.20.1) (2026-06-17)
+
+### Performance Improvements
+
+* **apollo-wind:** mark side-effect-free for tree-shaking [MST-11264] ([d1dbec0](https://github.com/UiPath/apollo-ui/commit/d1dbec0d28a829aa1a339ebd74a34d7a4290d647))
+
 ## [@uipath/apollo-wind-v2.20.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.19.1...@uipath/apollo-wind@2.20.0) (2026-06-16)
 
 ### Features
