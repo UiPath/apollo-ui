@@ -46,4 +46,11 @@ export interface NodePropertyPanelProps {
    * edges and re-insets its labels to line up with the fields. Default `1.5rem`.
    */
   contentInset?: string;
+  /**
+   * Arbitrary content rendered in the panel body instead of a `MetadataForm`.
+   * Use when the node's properties are not schema-driven (e.g. an expression
+   * editor, a preview pane, or a custom layout). When provided, `schema` is
+   * ignored and the children fill the scrollable content area.
+   */
+  children?: ReactNode;
 }

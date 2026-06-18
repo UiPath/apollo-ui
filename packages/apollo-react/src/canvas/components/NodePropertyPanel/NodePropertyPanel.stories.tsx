@@ -1,7 +1,17 @@
+import MonacoEditor from '@monaco-editor/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { FormSchema } from '@uipath/apollo-wind';
-import { ChevronDown, Globe, Maximize2, Play, Redo2, Sparkles, Undo2, X } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { cn, Switch, Tabs, TabsContent, TabsList, TabsTrigger } from '@uipath/apollo-wind';
+import {
+  apolloCoreDarkHCMonaco,
+  apolloCoreDarkMonaco,
+  apolloCoreLightHCMonaco,
+  apolloCoreLightMonaco,
+  apolloFutureDarkMonaco,
+  apolloFutureLightMonaco,
+} from '@uipath/apollo-wind/editor-themes';
+import { ChevronDown, CircleCheck, Code2, GitFork, Globe, GripVertical, Play, Plus, Sparkles, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { NodePropertyPanel } from './NodePropertyPanel';
 
@@ -30,30 +40,6 @@ const PanelFrame = ({
   </div>
 );
 
-const PanelTitleBar = ({ title }: { title: string }) => (
-  <div className="flex h-10 shrink-0 items-center justify-between border-b border-border-subtle bg-surface-raised px-2">
-    <span className="ml-2 text-sm font-semibold text-foreground">{title}</span>
-  </div>
-);
-
-const NodeIdentityRow = ({ name, type }: { name: string; type: string }) => (
-  <div className="flex shrink-0 items-center gap-3 border-b border-border-subtle bg-surface-raised px-6 py-4">
-    <div className="flex min-w-0 flex-1 flex-col">
-      <p className="truncate text-base font-semibold leading-5 tracking-[-0.4px] text-foreground">
-        {name}
-      </p>
-      <p className="mt-0.5 truncate text-sm leading-5 text-foreground-muted">{type}</p>
-    </div>
-    <button
-      type="button"
-      className="flex h-8 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-foreground-on-accent transition hover:bg-brand-hover"
-    >
-      <Play size={14} />
-      Run
-    </button>
-  </div>
-);
-
 function RunButton() {
   return (
     <button
@@ -65,6 +51,62 @@ function RunButton() {
     </button>
   );
 }
+
+function DebugButton() {
+  return (
+    <button
+      type="button"
+      className="flex h-8 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-foreground-on-accent transition hover:bg-brand-hover"
+    >
+      <Play size={14} />
+      Debug
+    </button>
+  );
+}
+
+// ── Monaco ──────────────────────────────────────────────────────────────────
+
+let _monacoThemesRegistered = false;
+
+// biome-ignore lint/suspicious/noExplicitAny: Monaco types not available at story level
+function registerMonacoThemes(monaco: any) {
+  if (_monacoThemesRegistered) return;
+  monaco.editor.defineTheme('apollo-future-dark', apolloFutureDarkMonaco);
+  monaco.editor.defineTheme('apollo-future-light', apolloFutureLightMonaco);
+  monaco.editor.defineTheme('apollo-core-dark', apolloCoreDarkMonaco);
+  monaco.editor.defineTheme('apollo-core-light', apolloCoreLightMonaco);
+  monaco.editor.defineTheme('apollo-core-dark-hc', apolloCoreDarkHCMonaco);
+  monaco.editor.defineTheme('apollo-core-light-hc', apolloCoreLightHCMonaco);
+  _monacoThemesRegistered = true;
+}
+
+const THEME_CLASS_MAP: Record<string, string> = {
+  'future-dark': 'apollo-future-dark',
+  'future-light': 'apollo-future-light',
+  'dark': 'apollo-core-dark',
+  'light': 'apollo-core-light',
+  'dark-hc': 'apollo-core-dark-hc',
+  'light-hc': 'apollo-core-light-hc',
+};
+
+function getMonacoThemeName(): string {
+  const classes = Array.from(document.body.classList);
+  const match = classes.find((c) => c in THEME_CLASS_MAP);
+  return match ? THEME_CLASS_MAP[match] : 'apollo-future-dark';
+}
+
+function useMonacoTheme(): string {
+  const [themeName, setThemeName] = useState(getMonacoThemeName);
+  useEffect(() => {
+    const observer = new MutationObserver(() => setThemeName(getMonacoThemeName()));
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+  return themeName;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+
 
 // ============================================================================
 // Shared FormSchema (steps = tabs; sections within each step hold the fields)
@@ -262,6 +304,12 @@ dockview) renders its own drag handle and close button.
 export default meta;
 type Story = StoryObj<typeof NodePropertyPanel>;
 
+// Matches the tab chrome TabbedStepForm uses inside MetadataForm.
+const TAB_LIST_CLASS =
+  'h-auto justify-start gap-0.5 overflow-x-auto rounded-lg bg-transparent p-0.5 text-muted-foreground [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+const TAB_TRIGGER_CLASS =
+  'inline-flex h-6 shrink-0 items-center whitespace-nowrap rounded-md px-2.5 text-xs font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-surface-overlay data-[state=active]:text-foreground data-[state=active]:shadow-sm';
+
 // ============================================================================
 // Stories — NodePropertyPanel
 // ============================================================================
@@ -276,7 +324,7 @@ export const Default: Story = {
         nodeCategory="HTTP Request"
         action={<RunButton />}
         schema={httpRequestForm}
-        contentInset="0.75rem"
+        contentInset="0.875rem"
         onClose={() => {}}
         className="h-[640px]"
       />
@@ -292,6 +340,7 @@ export const EmbeddedNoTitleBar: Story = {
         nodeCategory="HTTP Request"
         action={<RunButton />}
         schema={httpRequestForm}
+        contentInset="0.875rem"
         className="h-[600px]"
       />
     </PanelFrame>
@@ -307,6 +356,7 @@ export const NoParametersTab: Story = {
         nodeCategory="Starts a flow run manually"
         action={<RunButton />}
         schema={manualTriggerForm}
+        contentInset="0.875rem"
         onClose={() => {}}
         className="h-[600px]"
       />
@@ -321,143 +371,146 @@ export const NoParametersTab: Story = {
 // ============================================================================
 
 function FullEditorStory() {
+  const monacoTheme = useMonacoTheme();
+  const [label, setLabel] = useState('Script');
+  const [category, setCategory] = useState('HTTP Request');
+  const [editingLabel, setEditingLabel] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(false);
+  const labelRef = useRef<HTMLInputElement>(null);
+  const categoryRef = useRef<HTMLInputElement>(null);
+
   return (
     <CanvasBackground>
       <PanelFrame>
-        <PanelTitleBar title="Properties" />
-        <NodeIdentityRow name="Policy check" type="AI Agent" />
-        <div className="flex flex-col gap-6 overflow-auto bg-surface-raised px-6 pb-6 pt-4">
-          {/* Field: Path */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-foreground-muted">Path</span>
-              <div className="flex items-center gap-0.5">
-                <button
-                  type="button"
-                  aria-label="AI assist"
-                  title="AI assist"
-                  className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-                >
-                  <Sparkles size={12} />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Insert variable"
-                  title="Insert variable"
-                  className="flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-                >
-                  <span className="font-mono text-[10px]">{'{x}'}</span>
-                  <span>Insert</span>
-                  <ChevronDown size={9} />
-                </button>
-              </div>
-            </div>
-            <div className="overflow-hidden rounded-xl border border-border-subtle bg-surface-raised">
-              <div className="flex items-center justify-between border-b border-border-subtle bg-surface px-3 py-2">
-                <span className="font-mono text-xs text-foreground-muted">result</span>
-                <button
-                  type="button"
-                  aria-label="Expand editor"
-                  title="Expand editor"
-                  className="grid size-6 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
-                >
-                  <Maximize2 size={11} />
-                </button>
-              </div>
-              <div className="flex items-center gap-1 border-b border-border-subtle bg-surface px-2.5 py-1.5">
-                <button type="button" aria-label="Undo" title="Undo" className="grid size-6 place-items-center rounded text-foreground-subtle transition hover:text-foreground">
-                  <Undo2 size={12} />
-                </button>
-                <button type="button" aria-label="Redo" title="Redo" className="grid size-6 place-items-center rounded text-foreground-subtle transition hover:text-foreground">
-                  <Redo2 size={12} />
-                </button>
-                <div className="mx-1 h-3 w-px shrink-0 bg-border-subtle" />
-                <button type="button" className="rounded px-2 py-0.5 text-[11px] font-semibold text-foreground transition">
-                  expr
-                </button>
-                <button type="button" className="rounded px-2 py-0.5 text-[11px] text-foreground-subtle transition">
-                  json
-                </button>
-              </div>
-              <pre className="overflow-auto whitespace-pre-wrap bg-surface-raised p-3 text-xs font-mono leading-5 text-foreground">
-                {'items\n  .filter(x => x.active)\n  .map(x => x.value)'}
-              </pre>
-              <div className="flex items-center justify-between border-t border-border-subtle bg-surface px-3 py-1.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="size-1.5 shrink-0 rounded-full bg-green-500" />
-                  <span className="text-[10px] text-foreground-subtle">No errors</span>
+        <NodePropertyPanel
+          panelTitle="Properties"
+          onClose={() => {}}
+          contentInset="0.875rem"
+          className="h-[560px]"
+        >
+          <div className="flex h-full flex-col">
+            {/* Inline-editable identity row */}
+            <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
+              <div className="flex min-w-0 flex-1 items-center gap-3.5">
+                <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
+                  <Code2 />
                 </div>
-                <span className="text-[10px] text-foreground-subtle">Ln 1, Col 1</span>
+                <div className="flex min-w-0 flex-1 flex-col justify-center">
+                  {editingLabel ? (
+                    <input
+                      ref={labelRef}
+                      value={label}
+                      onChange={(e) => setLabel(e.target.value)}
+                      onBlur={() => setEditingLabel(false)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false); }}
+                      className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
+                      autoFocus
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => { setEditingLabel(true); setTimeout(() => labelRef.current?.select(), 0); }}
+                      className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
+                    >
+                      {label}
+                    </button>
+                  )}
+                  {editingCategory ? (
+                    <input
+                      ref={categoryRef}
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      onBlur={() => setEditingCategory(false)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false); }}
+                      className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
+                      autoFocus
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => { setEditingCategory(true); setTimeout(() => categoryRef.current?.select(), 0); }}
+                      className="truncate rounded px-1.5 py-0.5 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay"
+                    >
+                      {category}
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="shrink-0">
+                <DebugButton />
               </div>
             </div>
-            <p className="text-[11px] leading-4 text-foreground-subtle">
-              Transform expression run against the node input data.
-            </p>
-          </div>
 
-          {/* Field: Output Mapping */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-foreground-muted">Output Mapping</span>
-              <div className="flex items-center gap-0.5">
-                <button
-                  type="button"
-                  aria-label="AI assist"
-                  title="AI assist"
-                  className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-                >
-                  <Sparkles size={12} />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Insert variable"
-                  title="Insert variable"
-                  className="flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-                >
-                  <span className="font-mono text-[10px]">{'{x}'}</span>
-                  <span>Insert</span>
-                  <ChevronDown size={9} />
-                </button>
+            {/* Tabs + editor */}
+            <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
+              <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                <TabsList className={TAB_LIST_CLASS}>
+                  <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>Parameters</TabsTrigger>
+                  <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>Error handling</TabsTrigger>
+                  <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>Advanced</TabsTrigger>
+                </TabsList>
               </div>
-            </div>
-            <div className="overflow-hidden rounded-xl border border-border-subtle bg-surface-raised">
-              <div className="flex items-center justify-between border-b border-border-subtle bg-surface px-3 py-2">
-                <span className="font-mono text-xs text-foreground-muted">object</span>
-                <button type="button" aria-label="Expand editor" title="Expand editor" className="grid size-6 place-items-center rounded text-foreground-subtle transition hover:text-foreground">
-                  <Maximize2 size={11} />
-                </button>
-              </div>
-              <div className="flex items-center gap-1 border-b border-border-subtle bg-surface px-2.5 py-1.5">
-                <button type="button" aria-label="Undo" title="Undo" className="grid size-6 place-items-center rounded text-foreground-subtle transition hover:text-foreground">
-                  <Undo2 size={12} />
-                </button>
-                <button type="button" aria-label="Redo" title="Redo" className="grid size-6 place-items-center rounded text-foreground-subtle transition hover:text-foreground">
-                  <Redo2 size={12} />
-                </button>
-                <div className="mx-1 h-3 w-px shrink-0 bg-border-subtle" />
-                <button type="button" className="rounded px-2 py-0.5 text-[11px] text-foreground-subtle transition">
-                  expr
-                </button>
-                <button type="button" className="rounded px-2 py-0.5 text-[11px] font-semibold text-foreground transition">
-                  json
-                </button>
-              </div>
-              <pre className="overflow-auto whitespace-pre-wrap bg-surface-raised p-3 text-xs font-mono leading-5 text-foreground">
-                {'{\n  "id": invoice.id,\n  "total": invoice.amount,\n  "approved": true\n}'}
-              </pre>
-              <div className="flex items-center justify-between border-t border-border-subtle bg-surface px-3 py-1.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="size-1.5 shrink-0 rounded-full bg-green-500" />
-                  <span className="text-[10px] text-foreground-subtle">No errors</span>
+              <TabsContent value="parameters" className="mt-0 flex min-h-0 flex-1 flex-col">
+                <div className="flex shrink-0 items-center justify-between py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                  <span className="text-xs font-medium text-foreground-muted">Path</span>
+                  <div className="flex items-center gap-0.5">
+                    <button
+                      type="button"
+                      aria-label="AI assist"
+                      title="AI assist"
+                      className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                    >
+                      <Sparkles size={12} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Insert variable"
+                      title="Insert variable"
+                      className="flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                    >
+                      <span className="font-mono text-[10px]">{'{x}'}</span>
+                      <span>Insert</span>
+                      <ChevronDown size={9} />
+                    </button>
+                  </div>
                 </div>
-                <span className="text-[10px] text-foreground-subtle">Ln 1, Col 1</span>
-              </div>
-            </div>
-            <p className="text-[11px] leading-4 text-foreground-subtle">
-              Maps the node output to the expected schema.
-            </p>
+                <div className="flex min-h-0 flex-1 flex-col pb-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                  <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border-subtle">
+                    <MonacoEditor
+                      height="100%"
+                      defaultLanguage="javascript"
+                      defaultValue={'// Script\nconst result = items\n  .filter(x => x.active)\n  .map(x => ({\n    id: x.id,\n    value: x.value,\n  }));\n\nreturn result;'}
+                      theme={monacoTheme}
+                      beforeMount={registerMonacoThemes}
+                      options={{
+                        fontSize: 13,
+                        lineHeight: 20,
+                        minimap: { enabled: false },
+                        scrollBeyondLastLine: false,
+                        wordWrap: 'on',
+                        fontFamily:
+                          'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+                        padding: { top: 6, bottom: 16 },
+                        lineNumbers: 'on',
+                        lineNumbersMinChars: 2,
+                        lineDecorationsWidth: 4,
+                        glyphMargin: false,
+                        folding: false,
+                        renderLineHighlight: 'line',
+                        hideCursorInOverviewRuler: true,
+                        overviewRulerBorder: false,
+                        scrollbar: { vertical: 'auto', horizontal: 'hidden', alwaysConsumeMouseWheel: false },
+                        automaticLayout: true,
+                      }}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="error-handling" className="mt-0" />
+              <TabsContent value="advanced" className="mt-0" />
+            </Tabs>
           </div>
-        </div>
+        </NodePropertyPanel>
       </PanelFrame>
     </CanvasBackground>
   );
@@ -469,93 +522,296 @@ export const FullEditor: Story = {
 };
 
 // ============================================================================
-// Compact Editor
-// Collapsed by default. Shows label + value preview; expands inline on click.
+// Compact Editor — Switch/Case node with accordion case panels.
 // ============================================================================
 
+const COMPACT_EDITOR_OPTIONS = {
+  fontSize: 13,
+  lineHeight: 20,
+  minimap: { enabled: false },
+  scrollBeyondLastLine: false,
+  wordWrap: 'on',
+  fontFamily:
+    'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+  padding: { top: 6, bottom: 8 },
+  lineNumbers: 'on',
+  lineNumbersMinChars: 2,
+  lineDecorationsWidth: 4,
+  glyphMargin: false,
+  folding: false,
+  renderLineHighlight: 'line',
+  hideCursorInOverviewRuler: true,
+  overviewRulerBorder: false,
+  scrollbar: { vertical: 'auto', horizontal: 'hidden', alwaysConsumeMouseWheel: false },
+  automaticLayout: true,
+} as const;
+
+const INLINE_EDITOR_OPTIONS = {
+  fontSize: 13,
+  lineHeight: 20,
+  minimap: { enabled: false },
+  scrollBeyondLastLine: false,
+  wordWrap: 'off',
+  fontFamily:
+    'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+  padding: { top: 10, bottom: 10 },
+  lineNumbers: 'off',
+  lineNumbersMinChars: 0,
+  lineDecorationsWidth: 0,
+  glyphMargin: false,
+  folding: false,
+  renderLineHighlight: 'none',
+  hideCursorInOverviewRuler: true,
+  overviewRulerBorder: false,
+  overviewRulerLanes: 0,
+  scrollbar: { vertical: 'hidden', horizontal: 'hidden', alwaysConsumeMouseWheel: false },
+  automaticLayout: true,
+} as const;
+
+function CasePanel({
+  caseTitle,
+  onTitleChange,
+  onDelete,
+  monacoTheme,
+  defaultExpanded = false,
+  defaultValue = '',
+}: {
+  caseTitle: string;
+  onTitleChange: (title: string) => void;
+  onDelete: () => void;
+  monacoTheme: string;
+  defaultExpanded?: boolean;
+  defaultValue?: string;
+}) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const titleRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-border-subtle">
+      {/* Card header */}
+      <div className="group flex items-center gap-2 px-3 py-2.5">
+        <div className="grid size-5 shrink-0 cursor-grab place-items-center text-foreground-subtle">
+          <GripVertical size={12} />
+        </div>
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="grid size-5 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
+        >
+          <ChevronDown
+            size={12}
+            className={cn('transition-transform duration-150', !expanded && '-rotate-90')}
+          />
+        </button>
+        {editingTitle ? (
+          <input
+            ref={titleRef}
+            value={caseTitle}
+            onChange={(e) => onTitleChange(e.target.value)}
+            onBlur={() => setEditingTitle(false)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingTitle(false); }}
+            className="flex-1 rounded bg-surface-overlay px-1 py-0.5 text-xs font-medium text-foreground outline-none ring-1 ring-brand"
+            autoFocus
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => { setEditingTitle(true); setTimeout(() => titleRef.current?.select(), 0); }}
+            className="flex-1 truncate rounded px-1 py-0.5 text-left text-xs font-medium text-foreground transition hover:bg-surface-overlay"
+          >
+            {caseTitle}
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={onDelete}
+          aria-label="Delete case"
+          title="Delete case"
+          className="grid size-5 shrink-0 place-items-center rounded text-foreground-subtle opacity-0 transition hover:text-foreground group-hover:opacity-100"
+        >
+          <X size={12} />
+        </button>
+      </div>
+
+      {expanded && (
+        <>
+          {/* Condition label + buttons */}
+          <div className="flex items-center justify-between border-t border-border-subtle px-3 py-2">
+            <span className="text-xs font-medium text-foreground-muted">Condition</span>
+            <div className="flex items-center gap-0.5">
+              <button
+                type="button"
+                aria-label="AI assist"
+                title="AI assist"
+                className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+              >
+                <Sparkles size={12} />
+              </button>
+              <button
+                type="button"
+                aria-label="Insert variable"
+                title="Insert variable"
+                className="flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+              >
+                <span className="font-mono text-[10px]">{'{x}'}</span>
+                <span>Insert</span>
+                <ChevronDown size={9} />
+              </button>
+            </div>
+          </div>
+          <div className="px-3 pb-3">
+            <div className="overflow-hidden rounded-xl border border-border-subtle" style={{ height: '120px' }}>
+              <MonacoEditor
+                height="100%"
+                defaultLanguage="javascript"
+                defaultValue={defaultValue}
+                theme={monacoTheme}
+                beforeMount={registerMonacoThemes}
+                options={COMPACT_EDITOR_OPTIONS}
+              />
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function CompactEditorStory() {
+  const monacoTheme = useMonacoTheme();
+  const [cases, setCases] = useState([{ id: 1, title: 'Case 1' }]);
+  const nextIdRef = useRef(2);
+  const [defaultBranch, setDefaultBranch] = useState(false);
+
+  const addCase = () => {
+    const id = nextIdRef.current++;
+    setCases((prev) => [...prev, { id, title: `Case ${id}` }]);
+  };
+  const deleteCase = (id: number) => setCases((prev) => prev.filter((c) => c.id !== id));
+  const updateCaseTitle = (id: number, title: string) =>
+    setCases((prev) => prev.map((c) => (c.id === id ? { ...c, title } : c)));
+  const [label, setLabel] = useState('Switch');
+  const [category, setCategory] = useState('Control');
+  const [editingLabel, setEditingLabel] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(false);
+  const labelRef = useRef<HTMLInputElement>(null);
+  const categoryRef = useRef<HTMLInputElement>(null);
+
   return (
     <CanvasBackground>
       <PanelFrame>
-        <PanelTitleBar title="Properties" />
-        <NodeIdentityRow name="Policy check" type="AI Agent" />
-        <div className="flex flex-col overflow-auto bg-surface-raised pb-4 pt-2">
-          {/* Compact field row — collapsed */}
-          <div className="flex items-center gap-3 border-b border-border-subtle px-4 py-2.5">
-            <span className="w-24 shrink-0 text-xs text-foreground-muted">Path</span>
-            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden rounded-lg border border-border-subtle bg-surface px-2.5 py-1.5">
-              <span className="truncate font-mono text-xs text-foreground">
-                items.filter(x =&gt; x.active)
-              </span>
-            </div>
-            <button
-              type="button"
-              aria-label="AI assist"
-              title="AI assist"
-              className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
-            >
-              <Sparkles size={12} />
-            </button>
-          </div>
-
-          {/* Compact field row — expanded inline */}
-          <div className="border-b border-border-subtle px-4 py-2.5">
-            <div className="flex items-center gap-3 pb-2">
-              <span className="w-24 shrink-0 text-xs text-foreground-muted">Output Mapping</span>
-              <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-                <span className="truncate font-mono text-xs text-foreground-muted">
-                  expanded
-                </span>
-                <button
-                  type="button"
-                  aria-label="Close"
-                  title="Close"
-                  className="grid size-5 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
-                >
-                  <X size={11} />
-                </button>
+        <NodePropertyPanel
+          panelTitle="Properties"
+          onClose={() => {}}
+          contentInset="0.875rem"
+          className="h-[640px]"
+        >
+          <div className="flex h-full flex-col">
+            {/* Inline-editable identity row */}
+            <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
+              <div className="flex min-w-0 flex-1 items-center gap-3.5">
+                <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
+                  <GitFork />
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col justify-center">
+                  {editingLabel ? (
+                    <input
+                      ref={labelRef}
+                      value={label}
+                      onChange={(e) => setLabel(e.target.value)}
+                      onBlur={() => setEditingLabel(false)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false); }}
+                      className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
+                      autoFocus
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => { setEditingLabel(true); setTimeout(() => labelRef.current?.select(), 0); }}
+                      className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
+                    >
+                      {label}
+                    </button>
+                  )}
+                  {editingCategory ? (
+                    <input
+                      ref={categoryRef}
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      onBlur={() => setEditingCategory(false)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false); }}
+                      className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
+                      autoFocus
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => { setEditingCategory(true); setTimeout(() => categoryRef.current?.select(), 0); }}
+                      className="truncate rounded px-1.5 py-0.5 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay"
+                    >
+                      {category}
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="shrink-0">
+                <DebugButton />
               </div>
             </div>
-            <div className="overflow-hidden rounded-xl border border-border-subtle bg-surface-raised">
-              <div className="flex items-center gap-1 border-b border-border-subtle bg-surface px-2.5 py-1.5">
-                <button type="button" aria-label="Undo" title="Undo" className="grid size-6 place-items-center rounded text-foreground-subtle transition hover:text-foreground">
-                  <Undo2 size={12} />
-                </button>
-                <button type="button" aria-label="Redo" title="Redo" className="grid size-6 place-items-center rounded text-foreground-subtle transition hover:text-foreground">
-                  <Redo2 size={12} />
-                </button>
-                <div className="mx-1 h-3 w-px shrink-0 bg-border-subtle" />
-                <button type="button" className="rounded px-2 py-0.5 text-[11px] text-foreground-subtle transition">
-                  expr
-                </button>
-                <button type="button" className="rounded px-2 py-0.5 text-[11px] font-semibold text-foreground transition">
-                  json
-                </button>
-              </div>
-              <pre className="overflow-auto whitespace-pre-wrap bg-surface-raised p-3 text-xs font-mono leading-5 text-foreground">
-                {'{\n  "id": invoice.id,\n  "total": invoice.amount\n}'}
-              </pre>
-            </div>
-          </div>
 
-          {/* Another collapsed row */}
-          <div className="flex items-center gap-3 border-b border-border-subtle px-4 py-2.5">
-            <span className="w-24 shrink-0 text-xs text-foreground-muted">Condition</span>
-            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden rounded-lg border border-border-subtle bg-surface px-2.5 py-1.5">
-              <span className="truncate font-mono text-xs text-foreground-muted">
-                No expression
-              </span>
+          <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
+            <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+              <TabsList className={TAB_LIST_CLASS}>
+                <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>Parameters</TabsTrigger>
+                <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>Error handling</TabsTrigger>
+                <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>Advanced</TabsTrigger>
+              </TabsList>
             </div>
-            <button
-              type="button"
-              aria-label="AI assist"
-              title="AI assist"
-              className="grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
-            >
-              <Sparkles size={12} />
-            </button>
+
+            <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto">
+              {/* Cases field label row */}
+              <div className="py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                <span className="text-sm font-medium text-foreground-muted">Cases</span>
+              </div>
+
+              {/* Case accordion panels — inset cards with gap */}
+              <div className="flex flex-col gap-2 pb-1 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                {cases.map((c, i) => (
+                  <CasePanel
+                    key={c.id}
+                    caseTitle={c.title}
+                    onTitleChange={(title) => updateCaseTitle(c.id, title)}
+                    onDelete={() => deleteCase(c.id)}
+                    monacoTheme={monacoTheme}
+                    defaultExpanded={i === 0}
+                    defaultValue={i === 0 ? 'input.status === "active"' : ''}
+                  />
+                ))}
+              </div>
+
+              {/* Add case */}
+              <button
+                type="button"
+                onClick={addCase}
+                className="flex items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover [padding-inline:var(--mf-content-inset,0.875rem)]"
+              >
+                <Plus size={12} />
+                Add case
+              </button>
+
+              {/* Default branch toggle */}
+              <div className="flex items-center gap-2 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                <Switch size="sm" checked={defaultBranch} onCheckedChange={setDefaultBranch} />
+                <span className="text-xs text-foreground-muted">Default branch</span>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="error-handling" className="mt-0" />
+            <TabsContent value="advanced" className="mt-0" />
+          </Tabs>
           </div>
-        </div>
+        </NodePropertyPanel>
       </PanelFrame>
     </CanvasBackground>
   );
@@ -568,79 +824,239 @@ export const CompactEditor: Story = {
 
 // ============================================================================
 // Input Editor
-// Single-line expression input for simple scalar values or conditions.
+// Inline expression inputs — one per case, no code editor panel.
 // ============================================================================
 
+function InlineCaseRow({
+  caseTitle,
+  onTitleChange,
+  onDelete,
+  monacoTheme,
+  defaultValue = '',
+}: {
+  caseTitle: string;
+  onTitleChange: (title: string) => void;
+  onDelete: () => void;
+  monacoTheme: string;
+  defaultValue?: string;
+}) {
+  const [editingTitle, setEditingTitle] = useState(false);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const [value, setValue] = useState(defaultValue);
+  const [mode, setMode] = useState<'fixed' | 'expression'>('fixed');
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      {/* Case title row with action buttons and delete on hover */}
+      <div className="group flex items-center">
+        {editingTitle ? (
+          <input
+            ref={titleRef}
+            value={caseTitle}
+            onChange={(e) => onTitleChange(e.target.value)}
+            onBlur={() => setEditingTitle(false)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingTitle(false); }}
+            className="flex-1 rounded bg-surface-overlay px-1 py-0.5 text-xs font-medium text-foreground outline-none ring-1 ring-brand"
+            autoFocus
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => { setEditingTitle(true); setTimeout(() => titleRef.current?.select(), 0); }}
+            className="flex-1 truncate rounded px-1 py-0.5 text-left text-xs font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+          >
+            {caseTitle}
+          </button>
+        )}
+        <div className="flex shrink-0 items-center gap-0.5">
+          <button
+            type="button"
+            onClick={onDelete}
+            aria-label="Delete case"
+            title="Delete case"
+            className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle opacity-0 transition hover:bg-surface-overlay hover:text-foreground group-hover:opacity-100"
+          >
+            <X size={12} />
+          </button>
+          <button
+            type="button"
+            aria-label="AI assist"
+            title="AI assist"
+            className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+          >
+            <Sparkles size={12} />
+          </button>
+          <button
+            type="button"
+            aria-label="Insert variable"
+            title="Insert variable"
+            className="flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+          >
+            <span className="font-mono text-[10px]">{'{x}'}</span>
+            <span>Insert</span>
+            <ChevronDown size={9} />
+          </button>
+        </div>
+      </div>
+      {/* Monaco editor — Code2 button overlays on the right to toggle mode */}
+      <div className="relative h-10 overflow-hidden rounded-xl border border-border-subtle">
+        <MonacoEditor
+          height="40px"
+          language={mode === 'expression' ? 'javascript' : 'plaintext'}
+          value={value}
+          onChange={(val) => setValue(val ?? '')}
+          theme={monacoTheme}
+          beforeMount={registerMonacoThemes}
+          options={INLINE_EDITOR_OPTIONS}
+        />
+        {value === '' && (
+          <div className="pointer-events-none absolute left-[6px] top-1/2 -translate-y-1/2 font-mono text-[13px] text-foreground-subtle">
+            {mode === 'fixed' ? 'Enter a value' : 'Enter an expression'}
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={() => setMode((m) => (m === 'fixed' ? 'expression' : 'fixed'))}
+          title={mode === 'fixed' ? 'Switch to Expression' : 'Switch to Fixed'}
+          className={cn(
+            'absolute right-2 top-1/2 z-10 grid size-5 -translate-y-1/2 place-items-center rounded transition-colors',
+            mode === 'expression'
+              ? 'bg-surface-overlay text-foreground'
+              : 'text-foreground-subtle hover:text-foreground'
+          )}
+        >
+          <Code2 size={12} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function InputEditorStory() {
+  const monacoTheme = useMonacoTheme();
+  const [cases, setCases] = useState([{ id: 1, title: 'Return value' }]);
+  const nextIdRef = useRef(2);
+  const [defaultBranch, setDefaultBranch] = useState(false);
+  const [label, setLabel] = useState('End');
+  const [category, setCategory] = useState('Control');
+  const [editingLabel, setEditingLabel] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(false);
+  const labelRef = useRef<HTMLInputElement>(null);
+  const categoryRef = useRef<HTMLInputElement>(null);
+
+  const addCase = () => {
+    const id = nextIdRef.current++;
+    setCases((prev) => [...prev, { id, title: `Output variable ${id}` }]);
+  };
+  const deleteCase = (id: number) => setCases((prev) => prev.filter((c) => c.id !== id));
+  const updateCaseTitle = (id: number, title: string) =>
+    setCases((prev) => prev.map((c) => (c.id === id ? { ...c, title } : c)));
+
   return (
     <CanvasBackground>
       <PanelFrame>
-        <PanelTitleBar title="Properties" />
-        <NodeIdentityRow name="Policy check" type="AI Agent" />
-        <div className="flex flex-col gap-3 overflow-auto bg-surface-raised px-6 pb-6 pt-4">
-          {/* Inline expression input */}
-          <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-foreground-muted">Condition</span>
-            <div className="flex items-center gap-1.5 overflow-hidden rounded-xl border border-border-subtle bg-surface px-3 py-2.5">
-              <span className="shrink-0 font-mono text-[10px] text-foreground-muted">fx</span>
-              <div className="mx-1 h-3 w-px shrink-0 bg-border-subtle" />
-              <span className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">
-                input.status === &quot;active&quot;
-              </span>
-              <button
-                type="button"
-                aria-label="AI assist"
-                title="AI assist"
-                className="ml-1 grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
-              >
-                <Sparkles size={12} />
-              </button>
-            </div>
-          </div>
-
-          {/* Inline input — empty/placeholder state */}
-          <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-foreground-muted">Retry limit</span>
-            <div className="flex items-center gap-1.5 overflow-hidden rounded-xl border border-border-subtle bg-surface px-3 py-2.5">
-              <span className="shrink-0 font-mono text-[10px] text-foreground-muted">fx</span>
-              <div className="mx-1 h-3 w-px shrink-0 bg-border-subtle" />
-              <span className="min-w-0 flex-1 truncate font-mono text-xs text-foreground-subtle">
-                Enter expression
-              </span>
-              <button
-                type="button"
-                aria-label="AI assist"
-                title="AI assist"
-                className="ml-1 grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
-              >
-                <Sparkles size={12} />
-              </button>
-            </div>
-          </div>
-
-          {/* Inline input — with variable pill */}
-          <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-foreground-muted">Timeout (ms)</span>
-            <div className="flex items-center gap-1.5 overflow-hidden rounded-xl border border-border-subtle bg-surface px-3 py-2.5">
-              <span className="shrink-0 font-mono text-[10px] text-foreground-muted">fx</span>
-              <div className="mx-1 h-3 w-px shrink-0 bg-border-subtle" />
-              <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
-                <span className="rounded-md bg-surface-overlay px-1.5 py-0.5 font-mono text-[10px] text-foreground">
-                  config.timeout
-                </span>
-                <span className="font-mono text-xs text-foreground">* 1000</span>
+        <NodePropertyPanel
+          panelTitle="Properties"
+          onClose={() => {}}
+          contentInset="0.875rem"
+          className="h-[640px]"
+        >
+          <div className="flex h-full flex-col">
+            {/* Inline-editable identity row */}
+            <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
+              <div className="flex min-w-0 flex-1 items-center gap-3.5">
+                <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
+                  <CircleCheck />
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col justify-center">
+                  {editingLabel ? (
+                    <input
+                      ref={labelRef}
+                      value={label}
+                      onChange={(e) => setLabel(e.target.value)}
+                      onBlur={() => setEditingLabel(false)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false); }}
+                      className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
+                      autoFocus
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => { setEditingLabel(true); setTimeout(() => labelRef.current?.select(), 0); }}
+                      className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
+                    >
+                      {label}
+                    </button>
+                  )}
+                  {editingCategory ? (
+                    <input
+                      ref={categoryRef}
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      onBlur={() => setEditingCategory(false)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false); }}
+                      className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
+                      autoFocus
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => { setEditingCategory(true); setTimeout(() => categoryRef.current?.select(), 0); }}
+                      className="truncate rounded px-1.5 py-0.5 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay"
+                    >
+                      {category}
+                    </button>
+                  )}
+                </div>
               </div>
-              <button
-                type="button"
-                aria-label="AI assist"
-                title="AI assist"
-                className="ml-1 grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
-              >
-                <Sparkles size={12} />
-              </button>
+              <div className="shrink-0">
+                <DebugButton />
+              </div>
             </div>
+
+            {/* Tabs */}
+            <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
+              <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                <TabsList className={TAB_LIST_CLASS}>
+                  <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>Parameters</TabsTrigger>
+                  <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>Error handling</TabsTrigger>
+                  <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>Advanced</TabsTrigger>
+                </TabsList>
+              </div>
+              <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto">
+                <div className="py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                  <span className="text-sm font-medium text-foreground-muted">Output messaging</span>
+                </div>
+                <div className="flex flex-col gap-3 pb-1 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                  {cases.map((c) => (
+                    <InlineCaseRow
+                      key={c.id}
+                      caseTitle={c.title}
+                      onTitleChange={(title) => updateCaseTitle(c.id, title)}
+                      onDelete={() => deleteCase(c.id)}
+                      monacoTheme={monacoTheme}
+                      defaultValue=""
+                    />
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={addCase}
+                  className="flex items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover [padding-inline:var(--mf-content-inset,0.875rem)]"
+                >
+                  <Plus size={12} />
+                  Add output variable
+                </button>
+                <div className="flex items-center gap-2 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                  <Switch size="sm" checked={defaultBranch} onCheckedChange={setDefaultBranch} />
+                  <span className="text-xs text-foreground-muted">Default branch</span>
+                </div>
+              </TabsContent>
+              <TabsContent value="error-handling" className="mt-0" />
+              <TabsContent value="advanced" className="mt-0" />
+            </Tabs>
           </div>
-        </div>
+        </NodePropertyPanel>
       </PanelFrame>
     </CanvasBackground>
   );
@@ -667,9 +1083,9 @@ function InlineEditingStory() {
   return (
     <CanvasBackground>
       <PanelFrame>
-        <PanelTitleBar title="Properties" />
+        <NodePropertyPanel panelTitle="Properties" onClose={() => {}} contentInset="0.875rem">
         {/* Node identity row — inline editable */}
-        <div className="flex shrink-0 items-center gap-3 border-b border-border-subtle bg-surface-raised px-6 py-4">
+        <div className="flex shrink-0 items-center gap-3 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
             {editingName ? (
               <input
@@ -728,25 +1144,7 @@ function InlineEditingStory() {
             Run
           </button>
         </div>
-        {/* Fields */}
-        <div className="flex flex-col gap-4 overflow-auto bg-surface-raised px-6 pb-6 pt-4">
-          <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-foreground-muted">Path</span>
-            <div className="rounded-xl border border-border-subtle bg-surface p-3">
-              <pre className="whitespace-pre-wrap font-mono text-xs leading-5 text-foreground">
-                {'items.filter(x => x.active).map(x => x.value)'}
-              </pre>
-            </div>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-foreground-muted">Output Mapping</span>
-            <div className="rounded-xl border border-border-subtle bg-surface p-3">
-              <pre className="whitespace-pre-wrap font-mono text-xs leading-5 text-foreground">
-                {'{\n  "id": invoice.id,\n  "total": invoice.amount\n}'}
-              </pre>
-            </div>
-          </div>
-        </div>
+        </NodePropertyPanel>
       </PanelFrame>
     </CanvasBackground>
   );
