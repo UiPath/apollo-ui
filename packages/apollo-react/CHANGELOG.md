@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.49.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.48.4...@uipath/apollo-react@4.49.0) (2026-06-18)
+
+### Features
+
+* **apollo-react:** add NodePropertyPanel canvas component ([80ddaa9](https://github.com/UiPath/apollo-ui/commit/80ddaa9b4c7fce63f7a2eaf4345f7ee36845cfdf))
+
 ## [@uipath/apollo-react-v4.48.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.48.3...@uipath/apollo-react@4.48.4) (2026-06-17)
 
 ### Performance Improvements
