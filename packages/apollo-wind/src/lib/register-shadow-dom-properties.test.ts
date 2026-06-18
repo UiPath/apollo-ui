@@ -41,6 +41,15 @@ describe('registerCssPropertyRules', () => {
     expect(text).not.toContain('@layer');
   });
 
+  it('injects only one style element when called multiple times', () => {
+    registerCssPropertyRules(SAMPLE_CSS);
+    registerCssPropertyRules(SAMPLE_CSS);
+    registerCssPropertyRules(SAMPLE_CSS);
+
+    const elements = document.querySelectorAll(SELECTOR);
+    expect(elements).toHaveLength(1);
+  });
+
   it('does nothing when CSS has no @property rules', () => {
     registerCssPropertyRules('.flex { display: flex; }');
 

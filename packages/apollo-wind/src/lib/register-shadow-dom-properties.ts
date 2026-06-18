@@ -28,7 +28,7 @@
  * ```
  */
 
-const PROPERTY_RE = /@property\s+(--[\w-]+)\s*\{[^}]+\}/g;
+const PROPERTY_RE = /@property\s+--[\w-]+\s*\{[^}]*\}/g;
 const MARKER = 'data-tw-property-rules';
 
 export function registerCssPropertyRules(css: string): void {
