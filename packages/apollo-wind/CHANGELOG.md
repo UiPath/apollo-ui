@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.22.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.21.0...@uipath/apollo-wind@2.22.0) (2026-06-18)
+
+### Features
+
+* **apollo-wind:** add MetadataForm stepVariant="tabs" ([7663582](https://github.com/UiPath/apollo-ui/commit/76635820fb0c2744b5e4b1fea8c3eb41ca531b83))
+
 ## [@uipath/apollo-wind-v2.21.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.20.1...@uipath/apollo-wind@2.21.0) (2026-06-17)
 
 ### Features
