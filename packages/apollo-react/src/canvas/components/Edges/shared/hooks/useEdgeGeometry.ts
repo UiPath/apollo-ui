@@ -27,8 +27,17 @@ export type UseEdgeGeometryArgs = {
   targetX: number;
   targetY: number;
   targetPosition: Position;
-  /** Manual waypoints — only used in `waypoint` routing. */
+  /**
+   * Waypoints for `waypoint` routing. Either manual (user-placed) or
+   * router-produced. `autoRouted` distinguishes the two and controls whether
+   * bends get face-clearance.
+   */
   waypoints: Waypoint[];
+  /**
+   * True when `waypoints` are router-produced (not user-placed), so the path
+   * builder may shift bends off the node faces. Manual waypoints render as-is.
+   */
+  autoRouted?: boolean;
   /**
    * When false, `segments` is always empty and segment extraction is skipped.
    * Segments are only consumed by the editing chrome, so consumers with
@@ -81,6 +90,7 @@ export function useEdgeGeometry(args: UseEdgeGeometryArgs): EdgeGeometry {
     targetY,
     targetPosition,
     waypoints,
+    autoRouted = false,
     enableSegments = true,
     hideArrowHead = false,
   } = args;
@@ -99,10 +109,21 @@ export function useEdgeGeometry(args: UseEdgeGeometryArgs): EdgeGeometry {
             targetX,
             targetY,
             targetPosition,
-            waypoints
+            waypoints,
+            autoRouted
           )
         : EMPTY_VERTICES,
-    [isWaypoint, sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition, waypoints]
+    [
+      isWaypoint,
+      sourceX,
+      sourceY,
+      sourcePosition,
+      targetX,
+      targetY,
+      targetPosition,
+      waypoints,
+      autoRouted,
+    ]
   );
 
   const segments = useMemo(

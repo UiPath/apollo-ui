@@ -185,6 +185,110 @@ describe('buildPathVertices', () => {
     const indices = result.map((v) => v.waypointIndex).filter((i) => i >= 0);
     expect(indices.sort()).toEqual([0, 1]);
   });
+
+  it('shifts an auto-routed first waypoint sitting against the source face out to STUB_OFFSET (regression)', () => {
+    // Auto-routed bend hard against the Right face → pushed out to STUB_OFFSET.
+    const result = buildPathVertices(
+      0,
+      0,
+      Position.Right,
+      200,
+      100,
+      Position.Left,
+      [wp('a', 5, 50)],
+      true
+    );
+    const drawn = result.find((v) => v.waypointIndex === 0);
+    const src = ARROW_OFFSETS[Position.Right];
+    expect(drawn).toMatchObject({ x: src.x + EDGE_CONSTANTS.STUB_OFFSET, y: 50 });
+    expect(isOrthogonal(result)).toBe(true);
+  });
+
+  it('renders a MANUAL close waypoint exactly where placed (no face-clearance)', () => {
+    // Same close bend, user-placed (autoRouted = false) → rendered as-is.
+    const result = buildPathVertices(
+      0,
+      0,
+      Position.Right,
+      200,
+      100,
+      Position.Left,
+      [wp('a', 5, 50)],
+      false
+    );
+    expect(result.find((v) => v.waypointIndex === 0)).toMatchObject({ x: 5, y: 50 });
+  });
+
+  it('leaves an auto-routed first waypoint that already clears the source face untouched', () => {
+    const result = buildPathVertices(
+      0,
+      0,
+      Position.Right,
+      200,
+      100,
+      Position.Left,
+      [wp('a', 100, 50)],
+      true
+    );
+    expect(result.find((v) => v.waypointIndex === 0)).toMatchObject({ x: 100, y: 50 });
+  });
+
+  it('shifts an auto-routed last waypoint sitting against the target face out to STUB_OFFSET', () => {
+    // Target (Left face) is cleared symmetrically — riser pushed away from it.
+    const result = buildPathVertices(
+      0,
+      0,
+      Position.Right,
+      200,
+      100,
+      Position.Left,
+      [wp('a', 100, 50), wp('b', 198, 50)],
+      true
+    );
+    const drawn = result.find((v) => v.waypointIndex === 1);
+    const endX = 200 + ARROW_OFFSETS[Position.Left].x;
+    expect(drawn).toMatchObject({ x: endX - EDGE_CONSTANTS.STUB_OFFSET, y: 50 });
+    expect(isOrthogonal(result)).toBe(true);
+  });
+
+  it('clears a vertical (Bottom) source face on the y axis', () => {
+    // Bottom-face exit: the shift runs on y, not x.
+    const result = buildPathVertices(
+      0,
+      0,
+      Position.Bottom,
+      100,
+      200,
+      Position.Top,
+      [wp('a', 50, 5)],
+      true
+    );
+    const drawn = result.find((v) => v.waypointIndex === 0);
+    const src = ARROW_OFFSETS[Position.Bottom];
+    expect(drawn).toMatchObject({ x: 50, y: src.y + EDGE_CONSTANTS.STUB_OFFSET });
+    expect(isOrthogonal(result)).toBe(true);
+  });
+
+  it('pulls a bend behind the source face forward to a clean STUB_OFFSET exit', () => {
+    // Behind the face (gap < 0), e.g. router port behind the handle: the riser is
+    // pulled forward to exactly STUB_OFFSET in front, never left hugging the node.
+    const src = ARROW_OFFSETS[Position.Right];
+    const result = buildPathVertices(
+      0,
+      0,
+      Position.Right,
+      200,
+      100,
+      Position.Left,
+      [wp('a', src.x - 20, 50)],
+      true
+    );
+    expect(result.find((v) => v.waypointIndex === 0)).toMatchObject({
+      x: src.x + EDGE_CONSTANTS.STUB_OFFSET,
+      y: 50,
+    });
+    expect(isOrthogonal(result)).toBe(true);
+  });
 });
 
 describe('extractSegments', () => {

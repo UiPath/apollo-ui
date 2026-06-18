@@ -154,6 +154,34 @@ function connectorElbow(from: Point, to: Point, incoming: SegmentOrientation | n
 }
 
 /**
+ * Push the waypoint riser nearest a node face (`anchor` = inset source/target
+ * endpoint) out to `EDGE_CONSTANTS.STUB_OFFSET` so the edge keeps a perpendicular
+ * offset. Any riser closer than that is shifted forward, including bends behind
+ * the face (gap < 0) — common on multi-handle nodes where the router's port sits
+ * behind the rendered handle. Shifting the stored waypoint's own vertex (its
+ * `waypointIndex` is preserved) survives consolidation, whereas a derived elbow
+ * (`waypointIndex === -1`) would be collapsed.
+ */
+function clearNodeFace(waypoints: Waypoint[], anchor: Point, position: Position): Waypoint[] {
+  const dir = getDirection(position);
+  const axis = dir.dx !== 0 ? 'x' : 'y';
+  const sign = dir.dx !== 0 ? dir.dx : dir.dy;
+  const nearest = waypoints.reduce(
+    (acc, w) => (sign > 0 ? Math.min(acc, w[axis]) : Math.max(acc, w[axis])),
+    sign > 0 ? Infinity : -Infinity
+  );
+  // Lands the riser exactly STUB_OFFSET in front of the face for any gap < that,
+  // including bends behind the face (gap < 0) — common on multi-handle nodes
+  // where the router's port sits behind the rendered handle.
+  const gap = (nearest - anchor[axis]) * sign;
+  if (gap >= EDGE_CONSTANTS.STUB_OFFSET) return waypoints;
+  const shift = (EDGE_CONSTANTS.STUB_OFFSET - gap) * sign;
+  return waypoints.map((w) =>
+    Math.abs(w[axis] - nearest) < TOL ? { ...w, [axis]: w[axis] + shift } : w
+  );
+}
+
+/**
  * Build the ordered, provenance-tagged vertices of the path:
  * `[start, …, end]`. Falls back to auto-routing when no manual waypoints are
  * provided. When manual waypoints exist:
@@ -176,7 +204,9 @@ export function buildPathVertices(
   targetX: number,
   targetY: number,
   targetPosition: Position,
-  waypoints: Waypoint[] = []
+  waypoints: Waypoint[] = [],
+  // Router waypoints get face-clearance (clearNodeFace); manual ones render as-is.
+  autoRouted = false
 ): PathVertex[] {
   const sourceOffset = ARROW_OFFSETS[sourcePosition];
   const targetOffset = ARROW_OFFSETS[targetPosition];
@@ -201,6 +231,11 @@ export function buildPathVertices(
   const startVertex = derived(start);
   const endVertex = derived(end);
 
+  // Clear both faces for auto-routed bends; leave manual waypoints as placed.
+  const routed = autoRouted
+    ? clearNodeFace(clearNodeFace(waypoints, start, sourcePosition), end, targetPosition)
+    : waypoints;
+
   // `path` carries the start anchor only as orientation context for the
   // interior-elbow heuristic; it is sliced off before consolidation. The
   // anchors must never be fed to `consolidateWaypoints` — they are trivially
@@ -209,22 +244,22 @@ export function buildPathVertices(
   const path: PathVertex[] = [startVertex];
 
   // Source stub: anchor face → first waypoint.
-  for (const elbow of routeAnchorToPoint(start, sourcePosition, waypoints[0]!)) {
+  for (const elbow of routeAnchorToPoint(start, sourcePosition, routed[0]!)) {
     path.push(derived(elbow));
   }
-  path.push({ x: waypoints[0]!.x, y: waypoints[0]!.y, waypointIndex: 0 });
+  path.push({ x: routed[0]!.x, y: routed[0]!.y, waypointIndex: 0 });
 
   // Interior links: orthogonalize between consecutive waypoints.
-  for (let i = 1; i < waypoints.length; i++) {
+  for (let i = 1; i < routed.length; i++) {
     const from = path[path.length - 1]!;
     const incoming = path.length >= 2 ? getSegmentOrientation(path[path.length - 2]!, from) : null;
-    const elbow = connectorElbow(from, waypoints[i]!, incoming);
+    const elbow = connectorElbow(from, routed[i]!, incoming);
     if (elbow) path.push(derived(elbow));
-    path.push({ x: waypoints[i]!.x, y: waypoints[i]!.y, waypointIndex: i });
+    path.push({ x: routed[i]!.x, y: routed[i]!.y, waypointIndex: i });
   }
 
   // Target stub: last waypoint → anchor face (reverse of the anchor-outward order).
-  const targetStub = routeAnchorToPoint(end, targetPosition, waypoints[waypoints.length - 1]!);
+  const targetStub = routeAnchorToPoint(end, targetPosition, routed[routed.length - 1]!);
   for (let j = targetStub.length - 1; j >= 0; j--) {
     path.push(derived(targetStub[j]!));
   }
