@@ -67,4 +67,14 @@ describe('NodePropertyPanel', () => {
     render(<NodePropertyPanel schema={MULTI_STEP} />);
     expect(screen.queryByRole('button', { name: /submit/i })).not.toBeInTheDocument();
   });
+
+  it('renders children instead of the form when children are provided', () => {
+    render(
+      <NodePropertyPanel schema={MULTI_STEP}>
+        <div data-testid="custom-body">custom content</div>
+      </NodePropertyPanel>
+    );
+    expect(screen.getByTestId('custom-body')).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'Parameters' })).not.toBeInTheDocument();
+  });
 });
