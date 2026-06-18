@@ -118,7 +118,9 @@ export function NodePropertyPanel({
 
       {/* ── Content (children) or Form ── */}
       {children ? (
-        <div className="min-h-0 flex-1 overflow-auto" style={SURFACE_REMAP}>{children}</div>
+        <div className="min-h-0 flex-1 overflow-auto" style={SURFACE_REMAP}>
+          {children}
+        </div>
       ) : !formSchema ? (
         <div className="py-4 text-xs text-foreground-subtle [padding-inline:var(--mf-content-inset,1.5rem)]">
           No form schema defined for this node.
