@@ -1,3 +1,14 @@
+## [@uipath/apollo-react-v4.50.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.49.0...@uipath/apollo-react@4.50.0) (2026-06-18)
+
+### Features
+
+* **apollo-react:** add ProbeCard canvas component ([425f5ab](https://github.com/UiPath/apollo-ui/commit/425f5ab86dc340145c76f8c5f6f94a420157e408))
+* **storybook:** break out Node Flyout Probe into standalone story section ([1d3d495](https://github.com/UiPath/apollo-ui/commit/1d3d495edfab5e84910c94520d0647dedf95ffdd))
+
+### Bug Fixes
+
+* **apollo-react:** only intercept wheel events when ProbeCard handlers are defined ([bc016fe](https://github.com/UiPath/apollo-ui/commit/bc016fea7200de3c8e8b8b452465aa15520860a4))
+
 ## [@uipath/apollo-react-v4.49.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.48.4...@uipath/apollo-react@4.49.0) (2026-06-18)
 
 ### Features
