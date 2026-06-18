@@ -136,7 +136,9 @@ export function ExpressionField({
         </div>
       </div>
 
-      {description && <p className="text-[11px] leading-4 text-foreground-subtle">{description}</p>}
+      {description && (
+        <span className="block text-[11px] leading-4 text-foreground-subtle">{description}</span>
+      )}
     </div>
   );
 }
