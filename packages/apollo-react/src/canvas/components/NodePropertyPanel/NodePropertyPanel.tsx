@@ -48,6 +48,7 @@ export function NodePropertyPanel({
   resetKey,
   className,
   contentInset = '1.5rem',
+  children,
 }: NodePropertyPanelProps) {
   const hasNodeHeader = !!(nodeLabel || nodeCategory || nodeIcon || action);
 
@@ -60,10 +61,13 @@ export function NodePropertyPanel({
   );
 
   return (
-    <div className={cn('flex min-h-0 flex-col bg-surface-raised', className)}>
+    <div
+      className={cn('flex min-h-0 flex-col bg-surface-raised', className)}
+      style={{ '--mf-content-inset': contentInset } as CSSProperties}
+    >
       {/* ── Title bar (optional; host panel system may own it) ── */}
       {panelTitle && (
-        <div className="flex h-10 shrink-0 items-center justify-between border-b border-border-subtle px-2">
+        <div className="flex h-10 shrink-0 items-center justify-between px-2">
           <div className="flex items-center gap-1">
             <div className="grid size-8 place-items-center text-foreground-subtle">
               <GripVertical size={14} />
@@ -86,8 +90,8 @@ export function NodePropertyPanel({
 
       {/* ── Node identity row ── */}
       {hasNodeHeader && (
-        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border-subtle px-6 py-4">
-          <div className="flex min-w-0 flex-1 items-center gap-3">
+        <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,1.5rem)]">
+          <div className="flex min-w-0 flex-1 items-center gap-3.5">
             {nodeIcon && (
               <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
                 {nodeIcon}
@@ -97,12 +101,12 @@ export function NodePropertyPanel({
               {nodeLabel && (
                 // <span>, not <p>: host apps (e.g. Angular Material's `.mat-typography p`)
                 // inject a bottom margin on <p> that breaks the header alignment.
-                <span className="block truncate text-lg font-semibold leading-6 tracking-[-0.4px] text-foreground">
+                <span className="block truncate text-base font-semibold leading-5 tracking-[-0.3px] text-foreground">
                   {nodeLabel}
                 </span>
               )}
               {nodeCategory && (
-                <span className="block truncate text-sm leading-5 text-foreground-muted">
+                <span className="block truncate text-xs leading-4 text-foreground-muted">
                   {nodeCategory}
                 </span>
               )}
@@ -112,19 +116,16 @@ export function NodePropertyPanel({
         </div>
       )}
 
-      {/* ── Form ── */}
-      {!formSchema ? (
+      {/* ── Content (children) or Form ── */}
+      {children ? (
+        <div className="min-h-0 flex-1 overflow-auto">{children}</div>
+      ) : !formSchema ? (
         <div className="px-6 py-4 text-xs text-foreground-subtle">
           No form schema defined for this node.
         </div>
       ) : (
         <div className="min-h-0 flex-1 overflow-auto">
-          <div
-            style={{ ...SURFACE_REMAP, '--mf-content-inset': contentInset } as CSSProperties}
-            className="[&_label]:text-foreground-muted"
-          >
-            {/* Horizontal padding + the tab underline's full-bleed both derive from
-                `--mf-content-inset`, so they stay in lockstep. */}
+          <div style={SURFACE_REMAP} className="[&_label]:text-foreground-muted">
             <MetadataForm
               key={resetKey}
               schema={formSchema}

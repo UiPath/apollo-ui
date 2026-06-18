@@ -105,7 +105,7 @@ export const apolloFutureDarkMonaco = {
   inherit: false,
   rules: darkRules,
   colors: {
-    'editor.background': '#18181b', // zinc-900  surface-raised
+    'editor.background': '#27272a', // zinc-800  surface-overlay
     'editor.foreground': '#a1a1aa', // zinc-400  --code-rest
     'editorLineNumber.foreground': '#52525b', // zinc-600  comment level
     'editorLineNumber.activeForeground': '#a1a1aa', // zinc-400
@@ -149,7 +149,7 @@ export const apolloFutureLightMonaco = {
   inherit: false,
   rules: lightRules,
   colors: {
-    'editor.background': '#f4f4f5', // zinc-100  surface-raised
+    'editor.background': '#e4e4e7', // zinc-200  surface-overlay
     'editor.foreground': '#52525b', // zinc-600  --code-rest
     'editorLineNumber.foreground': '#a1a1aa', // zinc-400  comment level
     'editorLineNumber.activeForeground': '#71717a', // zinc-500

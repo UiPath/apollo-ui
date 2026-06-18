@@ -387,20 +387,15 @@ function TabbedStepForm({
   return (
     <>
       <Tabs value={currentTab} onValueChange={setActiveTab} className="flex flex-col gap-4">
-        {/* Underline tabs (properties-panel style), overriding the primitive's
-          default segmented/pill look. Scoped here so the shared Tabs primitive
-          stays segmented for other consumers. */}
-        {/* Horizontal scroll when the tabs overflow a narrow panel (scrollbar hidden; tabs
-          stay on one line instead of clipping). The underline can optionally bleed past the
-          form's horizontal padding to the panel edges: a consumer sets `--mf-content-inset`
-          to its content inset and the list bleeds by that, re-insetting the labels. Default
-          0 keeps the underline at content width — correct for any padding. */}
-        <TabsList className="h-auto justify-start gap-4 overflow-x-auto rounded-none border-b border-border bg-transparent py-0 text-muted-foreground [-ms-overflow-style:none] [margin-inline:calc(var(--mf-content-inset,0px)*-1)] [padding-inline:var(--mf-content-inset,0px)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {/* Segmented pill tabs (properties-panel style). Horizontal scroll when
+          tabs overflow a narrow panel; scrollbar is hidden so tabs stay on one
+          line without clipping. */}
+        <TabsList className="h-auto justify-start gap-0.5 overflow-x-auto rounded-lg bg-transparent p-0.5 text-muted-foreground [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {visibleSteps.map((step) => (
             <TabsTrigger
               key={step.id}
               value={step.id}
-              className="-mb-px shrink-0 whitespace-nowrap rounded-none border-b-2 border-transparent bg-transparent px-1 pb-2 pt-1 font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+              className="inline-flex h-6 shrink-0 items-center whitespace-nowrap rounded-md px-2.5 text-xs font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-surface-overlay data-[state=active]:text-foreground data-[state=active]:shadow-sm"
             >
               {step.title}
             </TabsTrigger>
