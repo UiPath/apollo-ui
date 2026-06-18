@@ -188,6 +188,9 @@ const config: StorybookConfig = {
       optimizeDeps: {
         ...config.optimizeDeps,
         exclude: [...(config.optimizeDeps?.exclude ?? []), 'monaco-editor'],
+        // TODO: investigate React error #130 on NodePropertyTrigger story under Vite 8 (rolldown).
+        // Suspect: Rolldown lazy-init ordering or Radix UI pre-bundling mismatch.
+        // See: https://apollo-design.vercel.app/?path=/story/apollo-react-canvas-components-panels-node-property-trigger--default
       },
       // biome-ignore lint/suspicious/noExplicitAny: plugins array typed as unknown[] after flat/filter; cast required
       plugins: [
