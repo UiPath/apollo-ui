@@ -10,7 +10,18 @@ import {
   apolloFutureDarkMonaco,
   apolloFutureLightMonaco,
 } from '@uipath/apollo-wind/editor-themes';
-import { ChevronDown, CircleCheck, Code2, GitFork, Globe, GripVertical, Play, Plus, Sparkles, X } from 'lucide-react';
+import {
+  ChevronDown,
+  CircleCheck,
+  Code2,
+  GitFork,
+  Globe,
+  GripVertical,
+  Play,
+  Plus,
+  Sparkles,
+  X,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { NodePropertyPanel } from './NodePropertyPanel';
@@ -28,13 +39,7 @@ const CanvasBackground = ({ children }: { children: ReactNode }) => (
   </div>
 );
 
-const PanelFrame = ({
-  children,
-  width = 'w-[380px]',
-}: {
-  children: ReactNode;
-  width?: string;
-}) => (
+const PanelFrame = ({ children, width = 'w-[380px]' }: { children: ReactNode; width?: string }) => (
   <div className={`${width} overflow-hidden rounded-2xl border border-border-subtle shadow-lg`}>
     {children}
   </div>
@@ -83,8 +88,8 @@ function registerMonacoThemes(monaco: any) {
 const THEME_CLASS_MAP: Record<string, string> = {
   'future-dark': 'apollo-future-dark',
   'future-light': 'apollo-future-light',
-  'dark': 'apollo-core-dark',
-  'light': 'apollo-core-light',
+  dark: 'apollo-core-dark',
+  light: 'apollo-core-light',
   'dark-hc': 'apollo-core-dark-hc',
   'light-hc': 'apollo-core-light-hc',
 };
@@ -106,7 +111,6 @@ function useMonacoTheme(): string {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-
 
 // ============================================================================
 // Shared FormSchema (steps = tabs; sections within each step hold the fields)
@@ -402,14 +406,19 @@ function FullEditorStory() {
                       value={label}
                       onChange={(e) => setLabel(e.target.value)}
                       onBlur={() => setEditingLabel(false)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false); }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false);
+                      }}
                       className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
                       autoFocus
                     />
                   ) : (
                     <button
                       type="button"
-                      onClick={() => { setEditingLabel(true); setTimeout(() => labelRef.current?.select(), 0); }}
+                      onClick={() => {
+                        setEditingLabel(true);
+                        setTimeout(() => labelRef.current?.select(), 0);
+                      }}
                       className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
                     >
                       {label}
@@ -421,14 +430,19 @@ function FullEditorStory() {
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
                       onBlur={() => setEditingCategory(false)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false); }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false);
+                      }}
                       className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
                       autoFocus
                     />
                   ) : (
                     <button
                       type="button"
-                      onClick={() => { setEditingCategory(true); setTimeout(() => categoryRef.current?.select(), 0); }}
+                      onClick={() => {
+                        setEditingCategory(true);
+                        setTimeout(() => categoryRef.current?.select(), 0);
+                      }}
                       className="truncate rounded px-1.5 py-0.5 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay"
                     >
                       {category}
@@ -445,9 +459,15 @@ function FullEditorStory() {
             <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
               <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
                 <TabsList className={TAB_LIST_CLASS}>
-                  <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>Parameters</TabsTrigger>
-                  <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>Error handling</TabsTrigger>
-                  <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>Advanced</TabsTrigger>
+                  <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
+                    Parameters
+                  </TabsTrigger>
+                  <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
+                    Error handling
+                  </TabsTrigger>
+                  <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
+                    Advanced
+                  </TabsTrigger>
                 </TabsList>
               </div>
               <TabsContent value="parameters" className="mt-0 flex min-h-0 flex-1 flex-col">
@@ -479,7 +499,9 @@ function FullEditorStory() {
                     <MonacoEditor
                       height="100%"
                       defaultLanguage="javascript"
-                      defaultValue={'// Script\nconst result = items\n  .filter(x => x.active)\n  .map(x => ({\n    id: x.id,\n    value: x.value,\n  }));\n\nreturn result;'}
+                      defaultValue={
+                        '// Script\nconst result = items\n  .filter(x => x.active)\n  .map(x => ({\n    id: x.id,\n    value: x.value,\n  }));\n\nreturn result;'
+                      }
                       theme={monacoTheme}
                       beforeMount={registerMonacoThemes}
                       options={{
@@ -499,7 +521,11 @@ function FullEditorStory() {
                         renderLineHighlight: 'line',
                         hideCursorInOverviewRuler: true,
                         overviewRulerBorder: false,
-                        scrollbar: { vertical: 'auto', horizontal: 'hidden', alwaysConsumeMouseWheel: false },
+                        scrollbar: {
+                          vertical: 'auto',
+                          horizontal: 'hidden',
+                          alwaysConsumeMouseWheel: false,
+                        },
                         automaticLayout: true,
                       }}
                     />
@@ -610,14 +636,19 @@ function CasePanel({
             value={caseTitle}
             onChange={(e) => onTitleChange(e.target.value)}
             onBlur={() => setEditingTitle(false)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingTitle(false); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === 'Escape') setEditingTitle(false);
+            }}
             className="flex-1 rounded bg-surface-overlay px-1 py-0.5 text-xs font-medium text-foreground outline-none ring-1 ring-brand"
             autoFocus
           />
         ) : (
           <button
             type="button"
-            onClick={() => { setEditingTitle(true); setTimeout(() => titleRef.current?.select(), 0); }}
+            onClick={() => {
+              setEditingTitle(true);
+              setTimeout(() => titleRef.current?.select(), 0);
+            }}
             className="flex-1 truncate rounded px-1 py-0.5 text-left text-xs font-medium text-foreground transition hover:bg-surface-overlay"
           >
             {caseTitle}
@@ -661,7 +692,10 @@ function CasePanel({
             </div>
           </div>
           <div className="px-3 pb-3">
-            <div className="overflow-hidden rounded-xl border border-border-subtle" style={{ height: '120px' }}>
+            <div
+              className="overflow-hidden rounded-xl border border-border-subtle"
+              style={{ height: '120px' }}
+            >
               <MonacoEditor
                 height="100%"
                 defaultLanguage="javascript"
@@ -721,14 +755,19 @@ function CompactEditorStory() {
                       value={label}
                       onChange={(e) => setLabel(e.target.value)}
                       onBlur={() => setEditingLabel(false)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false); }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false);
+                      }}
                       className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
                       autoFocus
                     />
                   ) : (
                     <button
                       type="button"
-                      onClick={() => { setEditingLabel(true); setTimeout(() => labelRef.current?.select(), 0); }}
+                      onClick={() => {
+                        setEditingLabel(true);
+                        setTimeout(() => labelRef.current?.select(), 0);
+                      }}
                       className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
                     >
                       {label}
@@ -740,14 +779,19 @@ function CompactEditorStory() {
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
                       onBlur={() => setEditingCategory(false)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false); }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false);
+                      }}
                       className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
                       autoFocus
                     />
                   ) : (
                     <button
                       type="button"
-                      onClick={() => { setEditingCategory(true); setTimeout(() => categoryRef.current?.select(), 0); }}
+                      onClick={() => {
+                        setEditingCategory(true);
+                        setTimeout(() => categoryRef.current?.select(), 0);
+                      }}
                       className="truncate rounded px-1.5 py-0.5 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay"
                     >
                       {category}
@@ -760,56 +804,62 @@ function CompactEditorStory() {
               </div>
             </div>
 
-          <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
-            <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-              <TabsList className={TAB_LIST_CLASS}>
-                <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>Parameters</TabsTrigger>
-                <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>Error handling</TabsTrigger>
-                <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>Advanced</TabsTrigger>
-              </TabsList>
-            </div>
-
-            <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto">
-              {/* Cases field label row */}
-              <div className="py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                <span className="text-sm font-medium text-foreground-muted">Cases</span>
+            <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
+              <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                <TabsList className={TAB_LIST_CLASS}>
+                  <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
+                    Parameters
+                  </TabsTrigger>
+                  <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
+                    Error handling
+                  </TabsTrigger>
+                  <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
+                    Advanced
+                  </TabsTrigger>
+                </TabsList>
               </div>
 
-              {/* Case accordion panels — inset cards with gap */}
-              <div className="flex flex-col gap-2 pb-1 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                {cases.map((c, i) => (
-                  <CasePanel
-                    key={c.id}
-                    caseTitle={c.title}
-                    onTitleChange={(title) => updateCaseTitle(c.id, title)}
-                    onDelete={() => deleteCase(c.id)}
-                    monacoTheme={monacoTheme}
-                    defaultExpanded={i === 0}
-                    defaultValue={i === 0 ? 'input.status === "active"' : ''}
-                  />
-                ))}
-              </div>
+              <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto">
+                {/* Cases field label row */}
+                <div className="py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                  <span className="text-sm font-medium text-foreground-muted">Cases</span>
+                </div>
 
-              {/* Add case */}
-              <button
-                type="button"
-                onClick={addCase}
-                className="flex items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover [padding-inline:var(--mf-content-inset,0.875rem)]"
-              >
-                <Plus size={12} />
-                Add case
-              </button>
+                {/* Case accordion panels — inset cards with gap */}
+                <div className="flex flex-col gap-2 pb-1 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                  {cases.map((c, i) => (
+                    <CasePanel
+                      key={c.id}
+                      caseTitle={c.title}
+                      onTitleChange={(title) => updateCaseTitle(c.id, title)}
+                      onDelete={() => deleteCase(c.id)}
+                      monacoTheme={monacoTheme}
+                      defaultExpanded={i === 0}
+                      defaultValue={i === 0 ? 'input.status === "active"' : ''}
+                    />
+                  ))}
+                </div>
 
-              {/* Default branch toggle */}
-              <div className="flex items-center gap-2 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                <Switch size="sm" checked={defaultBranch} onCheckedChange={setDefaultBranch} />
-                <span className="text-xs text-foreground-muted">Default branch</span>
-              </div>
-            </TabsContent>
+                {/* Add case */}
+                <button
+                  type="button"
+                  onClick={addCase}
+                  className="flex items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover [padding-inline:var(--mf-content-inset,0.875rem)]"
+                >
+                  <Plus size={12} />
+                  Add case
+                </button>
 
-            <TabsContent value="error-handling" className="mt-0" />
-            <TabsContent value="advanced" className="mt-0" />
-          </Tabs>
+                {/* Default branch toggle */}
+                <div className="flex items-center gap-2 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                  <Switch size="sm" checked={defaultBranch} onCheckedChange={setDefaultBranch} />
+                  <span className="text-xs text-foreground-muted">Default branch</span>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="error-handling" className="mt-0" />
+              <TabsContent value="advanced" className="mt-0" />
+            </Tabs>
           </div>
         </NodePropertyPanel>
       </PanelFrame>
@@ -855,14 +905,19 @@ function InlineCaseRow({
             value={caseTitle}
             onChange={(e) => onTitleChange(e.target.value)}
             onBlur={() => setEditingTitle(false)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingTitle(false); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === 'Escape') setEditingTitle(false);
+            }}
             className="flex-1 rounded bg-surface-overlay px-1 py-0.5 text-xs font-medium text-foreground outline-none ring-1 ring-brand"
             autoFocus
           />
         ) : (
           <button
             type="button"
-            onClick={() => { setEditingTitle(true); setTimeout(() => titleRef.current?.select(), 0); }}
+            onClick={() => {
+              setEditingTitle(true);
+              setTimeout(() => titleRef.current?.select(), 0);
+            }}
             className="flex-1 truncate rounded px-1 py-0.5 text-left text-xs font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
           >
             {caseTitle}
@@ -975,14 +1030,19 @@ function InputEditorStory() {
                       value={label}
                       onChange={(e) => setLabel(e.target.value)}
                       onBlur={() => setEditingLabel(false)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false); }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false);
+                      }}
                       className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
                       autoFocus
                     />
                   ) : (
                     <button
                       type="button"
-                      onClick={() => { setEditingLabel(true); setTimeout(() => labelRef.current?.select(), 0); }}
+                      onClick={() => {
+                        setEditingLabel(true);
+                        setTimeout(() => labelRef.current?.select(), 0);
+                      }}
                       className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
                     >
                       {label}
@@ -994,14 +1054,19 @@ function InputEditorStory() {
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
                       onBlur={() => setEditingCategory(false)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false); }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false);
+                      }}
                       className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
                       autoFocus
                     />
                   ) : (
                     <button
                       type="button"
-                      onClick={() => { setEditingCategory(true); setTimeout(() => categoryRef.current?.select(), 0); }}
+                      onClick={() => {
+                        setEditingCategory(true);
+                        setTimeout(() => categoryRef.current?.select(), 0);
+                      }}
                       className="truncate rounded px-1.5 py-0.5 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay"
                     >
                       {category}
@@ -1018,14 +1083,22 @@ function InputEditorStory() {
             <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
               <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
                 <TabsList className={TAB_LIST_CLASS}>
-                  <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>Parameters</TabsTrigger>
-                  <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>Error handling</TabsTrigger>
-                  <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>Advanced</TabsTrigger>
+                  <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
+                    Parameters
+                  </TabsTrigger>
+                  <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
+                    Error handling
+                  </TabsTrigger>
+                  <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
+                    Advanced
+                  </TabsTrigger>
                 </TabsList>
               </div>
               <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto">
                 <div className="py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                  <span className="text-sm font-medium text-foreground-muted">Output messaging</span>
+                  <span className="text-sm font-medium text-foreground-muted">
+                    Output messaging
+                  </span>
                 </div>
                 <div className="flex flex-col gap-3 pb-1 [padding-inline:var(--mf-content-inset,0.875rem)]">
                   {cases.map((c) => (
@@ -1084,66 +1157,66 @@ function InlineEditingStory() {
     <CanvasBackground>
       <PanelFrame>
         <NodePropertyPanel panelTitle="Properties" onClose={() => {}} contentInset="0.875rem">
-        {/* Node identity row — inline editable */}
-        <div className="flex shrink-0 items-center gap-3 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            {editingName ? (
-              <input
-                ref={nameRef}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onBlur={() => setEditingName(false)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === 'Escape') setEditingName(false);
-                }}
-                className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.4px] text-foreground outline-none ring-1 ring-brand"
-                autoFocus
-              />
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  setEditingName(true);
-                  setTimeout(() => nameRef.current?.select(), 0);
-                }}
-                className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.4px] text-foreground transition hover:bg-surface-overlay"
-              >
-                {name}
-              </button>
-            )}
-            {editingType ? (
-              <input
-                ref={typeRef}
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                onBlur={() => setEditingType(false)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === 'Escape') setEditingType(false);
-                }}
-                className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-sm leading-5 text-foreground outline-none ring-1 ring-brand"
-                autoFocus
-              />
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  setEditingType(true);
-                  setTimeout(() => typeRef.current?.select(), 0);
-                }}
-                className="truncate rounded px-1.5 py-0.5 text-left text-sm leading-5 text-foreground-muted transition hover:bg-surface-overlay"
-              >
-                {type}
-              </button>
-            )}
+          {/* Node identity row — inline editable */}
+          <div className="flex shrink-0 items-center gap-3 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              {editingName ? (
+                <input
+                  ref={nameRef}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onBlur={() => setEditingName(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === 'Escape') setEditingName(false);
+                  }}
+                  className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.4px] text-foreground outline-none ring-1 ring-brand"
+                  autoFocus
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingName(true);
+                    setTimeout(() => nameRef.current?.select(), 0);
+                  }}
+                  className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.4px] text-foreground transition hover:bg-surface-overlay"
+                >
+                  {name}
+                </button>
+              )}
+              {editingType ? (
+                <input
+                  ref={typeRef}
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                  onBlur={() => setEditingType(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === 'Escape') setEditingType(false);
+                  }}
+                  className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-sm leading-5 text-foreground outline-none ring-1 ring-brand"
+                  autoFocus
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingType(true);
+                    setTimeout(() => typeRef.current?.select(), 0);
+                  }}
+                  className="truncate rounded px-1.5 py-0.5 text-left text-sm leading-5 text-foreground-muted transition hover:bg-surface-overlay"
+                >
+                  {type}
+                </button>
+              )}
+            </div>
+            <button
+              type="button"
+              className="flex h-8 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-foreground-on-accent transition hover:bg-brand-hover"
+            >
+              <Play size={14} />
+              Run
+            </button>
           </div>
-          <button
-            type="button"
-            className="flex h-8 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-foreground-on-accent transition hover:bg-brand-hover"
-          >
-            <Play size={14} />
-            Run
-          </button>
-        </div>
         </NodePropertyPanel>
       </PanelFrame>
     </CanvasBackground>
