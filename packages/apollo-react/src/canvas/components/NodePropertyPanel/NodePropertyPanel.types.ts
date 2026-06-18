@@ -41,9 +41,9 @@ export interface NodePropertyPanelProps {
   resetKey?: string;
   className?: string;
   /**
-   * Horizontal inset (any CSS length) applied to the form content. It also drives
-   * the tab underline's full-bleed: the tab bar extends past this inset to the panel
-   * edges and re-insets its labels to line up with the fields. Default `1.5rem`.
+   * Horizontal inset (any CSS length) applied via `--mf-content-inset`. Aligns the
+   * form fields, identity row, and empty state to a consistent left/right edge.
+   * Default `1.5rem`.
    */
   contentInset?: string;
   /**

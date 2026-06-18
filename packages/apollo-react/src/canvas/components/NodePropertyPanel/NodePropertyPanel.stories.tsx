@@ -22,8 +22,8 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NodePropertyPanel } from './NodePropertyPanel';
 
 // ============================================================================
@@ -384,161 +384,159 @@ function FullEditorStory() {
   const categoryRef = useRef<HTMLInputElement>(null);
 
   return (
-    <CanvasBackground>
-      <PanelFrame>
-        <NodePropertyPanel
-          panelTitle="Properties"
-          onClose={() => {}}
-          contentInset="0.875rem"
-          className="h-[560px]"
-        >
-          <div className="flex h-full flex-col">
-            {/* Inline-editable identity row */}
-            <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
-              <div className="flex min-w-0 flex-1 items-center gap-3.5">
-                <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
-                  <Code2 />
-                </div>
-                <div className="flex min-w-0 flex-1 flex-col justify-center">
-                  {editingLabel ? (
-                    <input
-                      ref={labelRef}
-                      value={label}
-                      onChange={(e) => setLabel(e.target.value)}
-                      onBlur={() => setEditingLabel(false)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false);
-                      }}
-                      className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
-                      autoFocus
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingLabel(true);
-                        setTimeout(() => labelRef.current?.select(), 0);
-                      }}
-                      className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
-                    >
-                      {label}
-                    </button>
-                  )}
-                  {editingCategory ? (
-                    <input
-                      ref={categoryRef}
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                      onBlur={() => setEditingCategory(false)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false);
-                      }}
-                      className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
-                      autoFocus
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingCategory(true);
-                        setTimeout(() => categoryRef.current?.select(), 0);
-                      }}
-                      className="truncate rounded px-1.5 py-0.5 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay"
-                    >
-                      {category}
-                    </button>
-                  )}
-                </div>
+    <PanelFrame>
+      <NodePropertyPanel
+        panelTitle="Properties"
+        onClose={() => {}}
+        contentInset="0.875rem"
+        className="h-[560px]"
+      >
+        <div className="flex h-full flex-col">
+          {/* Inline-editable identity row */}
+          <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
+            <div className="flex min-w-0 flex-1 items-center gap-3.5">
+              <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
+                <Code2 />
               </div>
-              <div className="shrink-0">
-                <DebugButton />
+              <div className="flex min-w-0 flex-1 flex-col justify-center">
+                {editingLabel ? (
+                  <input
+                    ref={labelRef}
+                    value={label}
+                    onChange={(e) => setLabel(e.target.value)}
+                    onBlur={() => setEditingLabel(false)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false);
+                    }}
+                    className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
+                    autoFocus
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingLabel(true);
+                      setTimeout(() => labelRef.current?.select(), 0);
+                    }}
+                    className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
+                  >
+                    {label}
+                  </button>
+                )}
+                {editingCategory ? (
+                  <input
+                    ref={categoryRef}
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    onBlur={() => setEditingCategory(false)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false);
+                    }}
+                    className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
+                    autoFocus
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingCategory(true);
+                      setTimeout(() => categoryRef.current?.select(), 0);
+                    }}
+                    className="truncate rounded px-1.5 py-0.5 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay"
+                  >
+                    {category}
+                  </button>
+                )}
               </div>
             </div>
-
-            {/* Tabs + editor */}
-            <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
-              <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                <TabsList className={TAB_LIST_CLASS}>
-                  <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
-                    Parameters
-                  </TabsTrigger>
-                  <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
-                    Error handling
-                  </TabsTrigger>
-                  <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
-                    Advanced
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-              <TabsContent value="parameters" className="mt-0 flex min-h-0 flex-1 flex-col">
-                <div className="flex shrink-0 items-center justify-between py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                  <span className="text-xs font-medium text-foreground-muted">Path</span>
-                  <div className="flex items-center gap-0.5">
-                    <button
-                      type="button"
-                      aria-label="AI assist"
-                      title="AI assist"
-                      className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-                    >
-                      <Sparkles size={12} />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Insert variable"
-                      title="Insert variable"
-                      className="flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-                    >
-                      <span className="font-mono text-[10px]">{'{x}'}</span>
-                      <span>Insert</span>
-                      <ChevronDown size={9} />
-                    </button>
-                  </div>
-                </div>
-                <div className="flex min-h-0 flex-1 flex-col pb-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                  <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border-subtle">
-                    <MonacoEditor
-                      height="100%"
-                      defaultLanguage="javascript"
-                      defaultValue={
-                        '// Script\nconst result = items\n  .filter(x => x.active)\n  .map(x => ({\n    id: x.id,\n    value: x.value,\n  }));\n\nreturn result;'
-                      }
-                      theme={monacoTheme}
-                      beforeMount={registerMonacoThemes}
-                      options={{
-                        fontSize: 13,
-                        lineHeight: 20,
-                        minimap: { enabled: false },
-                        scrollBeyondLastLine: false,
-                        wordWrap: 'on',
-                        fontFamily:
-                          'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
-                        padding: { top: 6, bottom: 16 },
-                        lineNumbers: 'on',
-                        lineNumbersMinChars: 2,
-                        lineDecorationsWidth: 4,
-                        glyphMargin: false,
-                        folding: false,
-                        renderLineHighlight: 'line',
-                        hideCursorInOverviewRuler: true,
-                        overviewRulerBorder: false,
-                        scrollbar: {
-                          vertical: 'auto',
-                          horizontal: 'hidden',
-                          alwaysConsumeMouseWheel: false,
-                        },
-                        automaticLayout: true,
-                      }}
-                    />
-                  </div>
-                </div>
-              </TabsContent>
-              <TabsContent value="error-handling" className="mt-0" />
-              <TabsContent value="advanced" className="mt-0" />
-            </Tabs>
+            <div className="shrink-0">
+              <DebugButton />
+            </div>
           </div>
-        </NodePropertyPanel>
-      </PanelFrame>
-    </CanvasBackground>
+
+          {/* Tabs + editor */}
+          <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
+            <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+              <TabsList className={TAB_LIST_CLASS}>
+                <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
+                  Parameters
+                </TabsTrigger>
+                <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
+                  Error handling
+                </TabsTrigger>
+                <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
+                  Advanced
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            <TabsContent value="parameters" className="mt-0 flex min-h-0 flex-1 flex-col">
+              <div className="flex shrink-0 items-center justify-between py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                <span className="text-xs font-medium text-foreground-muted">Path</span>
+                <div className="flex items-center gap-0.5">
+                  <button
+                    type="button"
+                    aria-label="AI assist"
+                    title="AI assist"
+                    className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                  >
+                    <Sparkles size={12} />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Insert variable"
+                    title="Insert variable"
+                    className="flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                  >
+                    <span className="font-mono text-[10px]">{'{x}'}</span>
+                    <span>Insert</span>
+                    <ChevronDown size={9} />
+                  </button>
+                </div>
+              </div>
+              <div className="flex min-h-0 flex-1 flex-col pb-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border-subtle">
+                  <MonacoEditor
+                    height="100%"
+                    defaultLanguage="javascript"
+                    defaultValue={
+                      '// Script\nconst result = items\n  .filter(x => x.active)\n  .map(x => ({\n    id: x.id,\n    value: x.value,\n  }));\n\nreturn result;'
+                    }
+                    theme={monacoTheme}
+                    beforeMount={registerMonacoThemes}
+                    options={{
+                      fontSize: 13,
+                      lineHeight: 20,
+                      minimap: { enabled: false },
+                      scrollBeyondLastLine: false,
+                      wordWrap: 'on',
+                      fontFamily:
+                        'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+                      padding: { top: 6, bottom: 16 },
+                      lineNumbers: 'on',
+                      lineNumbersMinChars: 2,
+                      lineDecorationsWidth: 4,
+                      glyphMargin: false,
+                      folding: false,
+                      renderLineHighlight: 'line',
+                      hideCursorInOverviewRuler: true,
+                      overviewRulerBorder: false,
+                      scrollbar: {
+                        vertical: 'auto',
+                        horizontal: 'hidden',
+                        alwaysConsumeMouseWheel: false,
+                      },
+                      automaticLayout: true,
+                    }}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+            <TabsContent value="error-handling" className="mt-0" />
+            <TabsContent value="advanced" className="mt-0" />
+          </Tabs>
+        </div>
+      </NodePropertyPanel>
+    </PanelFrame>
   );
 }
 
@@ -623,6 +621,7 @@ function CasePanel({
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
+          aria-label={expanded ? 'Collapse case' : 'Expand case'}
           className="grid size-5 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
         >
           <ChevronDown
@@ -733,137 +732,135 @@ function CompactEditorStory() {
   const categoryRef = useRef<HTMLInputElement>(null);
 
   return (
-    <CanvasBackground>
-      <PanelFrame>
-        <NodePropertyPanel
-          panelTitle="Properties"
-          onClose={() => {}}
-          contentInset="0.875rem"
-          className="h-[640px]"
-        >
-          <div className="flex h-full flex-col">
-            {/* Inline-editable identity row */}
-            <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
-              <div className="flex min-w-0 flex-1 items-center gap-3.5">
-                <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
-                  <GitFork />
-                </div>
-                <div className="flex min-w-0 flex-1 flex-col justify-center">
-                  {editingLabel ? (
-                    <input
-                      ref={labelRef}
-                      value={label}
-                      onChange={(e) => setLabel(e.target.value)}
-                      onBlur={() => setEditingLabel(false)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false);
-                      }}
-                      className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
-                      autoFocus
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingLabel(true);
-                        setTimeout(() => labelRef.current?.select(), 0);
-                      }}
-                      className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
-                    >
-                      {label}
-                    </button>
-                  )}
-                  {editingCategory ? (
-                    <input
-                      ref={categoryRef}
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                      onBlur={() => setEditingCategory(false)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false);
-                      }}
-                      className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
-                      autoFocus
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingCategory(true);
-                        setTimeout(() => categoryRef.current?.select(), 0);
-                      }}
-                      className="truncate rounded px-1.5 py-0.5 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay"
-                    >
-                      {category}
-                    </button>
-                  )}
-                </div>
+    <PanelFrame>
+      <NodePropertyPanel
+        panelTitle="Properties"
+        onClose={() => {}}
+        contentInset="0.875rem"
+        className="h-[640px]"
+      >
+        <div className="flex h-full flex-col">
+          {/* Inline-editable identity row */}
+          <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
+            <div className="flex min-w-0 flex-1 items-center gap-3.5">
+              <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
+                <GitFork />
               </div>
-              <div className="shrink-0">
-                <DebugButton />
+              <div className="flex min-w-0 flex-1 flex-col justify-center">
+                {editingLabel ? (
+                  <input
+                    ref={labelRef}
+                    value={label}
+                    onChange={(e) => setLabel(e.target.value)}
+                    onBlur={() => setEditingLabel(false)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false);
+                    }}
+                    className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
+                    autoFocus
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingLabel(true);
+                      setTimeout(() => labelRef.current?.select(), 0);
+                    }}
+                    className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
+                  >
+                    {label}
+                  </button>
+                )}
+                {editingCategory ? (
+                  <input
+                    ref={categoryRef}
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    onBlur={() => setEditingCategory(false)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false);
+                    }}
+                    className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
+                    autoFocus
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingCategory(true);
+                      setTimeout(() => categoryRef.current?.select(), 0);
+                    }}
+                    className="truncate rounded px-1.5 py-0.5 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay"
+                  >
+                    {category}
+                  </button>
+                )}
               </div>
             </div>
+            <div className="shrink-0">
+              <DebugButton />
+            </div>
+          </div>
 
-            <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
-              <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                <TabsList className={TAB_LIST_CLASS}>
-                  <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
-                    Parameters
-                  </TabsTrigger>
-                  <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
-                    Error handling
-                  </TabsTrigger>
-                  <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
-                    Advanced
-                  </TabsTrigger>
-                </TabsList>
+          <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
+            <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+              <TabsList className={TAB_LIST_CLASS}>
+                <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
+                  Parameters
+                </TabsTrigger>
+                <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
+                  Error handling
+                </TabsTrigger>
+                <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
+                  Advanced
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto">
+              {/* Cases field label row */}
+              <div className="py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                <span className="text-sm font-medium text-foreground-muted">Cases</span>
               </div>
 
-              <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto">
-                {/* Cases field label row */}
-                <div className="py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                  <span className="text-sm font-medium text-foreground-muted">Cases</span>
-                </div>
+              {/* Case accordion panels — inset cards with gap */}
+              <div className="flex flex-col gap-2 pb-1 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                {cases.map((c, i) => (
+                  <CasePanel
+                    key={c.id}
+                    caseTitle={c.title}
+                    onTitleChange={(title) => updateCaseTitle(c.id, title)}
+                    onDelete={() => deleteCase(c.id)}
+                    monacoTheme={monacoTheme}
+                    defaultExpanded={i === 0}
+                    defaultValue={i === 0 ? 'input.status === "active"' : ''}
+                  />
+                ))}
+              </div>
 
-                {/* Case accordion panels — inset cards with gap */}
-                <div className="flex flex-col gap-2 pb-1 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                  {cases.map((c, i) => (
-                    <CasePanel
-                      key={c.id}
-                      caseTitle={c.title}
-                      onTitleChange={(title) => updateCaseTitle(c.id, title)}
-                      onDelete={() => deleteCase(c.id)}
-                      monacoTheme={monacoTheme}
-                      defaultExpanded={i === 0}
-                      defaultValue={i === 0 ? 'input.status === "active"' : ''}
-                    />
-                  ))}
-                </div>
+              {/* Add case */}
+              <button
+                type="button"
+                onClick={addCase}
+                className="flex items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover [padding-inline:var(--mf-content-inset,0.875rem)]"
+              >
+                <Plus size={12} />
+                Add case
+              </button>
 
-                {/* Add case */}
-                <button
-                  type="button"
-                  onClick={addCase}
-                  className="flex items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover [padding-inline:var(--mf-content-inset,0.875rem)]"
-                >
-                  <Plus size={12} />
-                  Add case
-                </button>
+              {/* Default branch toggle */}
+              <div className="flex items-center gap-2 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                <Switch size="sm" checked={defaultBranch} onCheckedChange={setDefaultBranch} />
+                <span className="text-xs text-foreground-muted">Default branch</span>
+              </div>
+            </TabsContent>
 
-                {/* Default branch toggle */}
-                <div className="flex items-center gap-2 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                  <Switch size="sm" checked={defaultBranch} onCheckedChange={setDefaultBranch} />
-                  <span className="text-xs text-foreground-muted">Default branch</span>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="error-handling" className="mt-0" />
-              <TabsContent value="advanced" className="mt-0" />
-            </Tabs>
-          </div>
-        </NodePropertyPanel>
-      </PanelFrame>
-    </CanvasBackground>
+            <TabsContent value="error-handling" className="mt-0" />
+            <TabsContent value="advanced" className="mt-0" />
+          </Tabs>
+        </div>
+      </NodePropertyPanel>
+    </PanelFrame>
   );
 }
 
@@ -973,6 +970,7 @@ function InlineCaseRow({
           type="button"
           onClick={() => setMode((m) => (m === 'fixed' ? 'expression' : 'fixed'))}
           title={mode === 'fixed' ? 'Switch to Expression' : 'Switch to Fixed'}
+          aria-label={mode === 'fixed' ? 'Switch to Expression' : 'Switch to Fixed'}
           className={cn(
             'absolute right-2 top-1/2 z-10 grid size-5 -translate-y-1/2 place-items-center rounded transition-colors',
             mode === 'expression'
@@ -1008,130 +1006,126 @@ function InputEditorStory() {
     setCases((prev) => prev.map((c) => (c.id === id ? { ...c, title } : c)));
 
   return (
-    <CanvasBackground>
-      <PanelFrame>
-        <NodePropertyPanel
-          panelTitle="Properties"
-          onClose={() => {}}
-          contentInset="0.875rem"
-          className="h-[640px]"
-        >
-          <div className="flex h-full flex-col">
-            {/* Inline-editable identity row */}
-            <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
-              <div className="flex min-w-0 flex-1 items-center gap-3.5">
-                <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
-                  <CircleCheck />
-                </div>
-                <div className="flex min-w-0 flex-1 flex-col justify-center">
-                  {editingLabel ? (
-                    <input
-                      ref={labelRef}
-                      value={label}
-                      onChange={(e) => setLabel(e.target.value)}
-                      onBlur={() => setEditingLabel(false)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false);
-                      }}
-                      className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
-                      autoFocus
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingLabel(true);
-                        setTimeout(() => labelRef.current?.select(), 0);
-                      }}
-                      className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
-                    >
-                      {label}
-                    </button>
-                  )}
-                  {editingCategory ? (
-                    <input
-                      ref={categoryRef}
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                      onBlur={() => setEditingCategory(false)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false);
-                      }}
-                      className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
-                      autoFocus
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingCategory(true);
-                        setTimeout(() => categoryRef.current?.select(), 0);
-                      }}
-                      className="truncate rounded px-1.5 py-0.5 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay"
-                    >
-                      {category}
-                    </button>
-                  )}
-                </div>
+    <PanelFrame>
+      <NodePropertyPanel
+        panelTitle="Properties"
+        onClose={() => {}}
+        contentInset="0.875rem"
+        className="h-[640px]"
+      >
+        <div className="flex h-full flex-col">
+          {/* Inline-editable identity row */}
+          <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
+            <div className="flex min-w-0 flex-1 items-center gap-3.5">
+              <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
+                <CircleCheck />
               </div>
-              <div className="shrink-0">
-                <DebugButton />
+              <div className="flex min-w-0 flex-1 flex-col justify-center">
+                {editingLabel ? (
+                  <input
+                    ref={labelRef}
+                    value={label}
+                    onChange={(e) => setLabel(e.target.value)}
+                    onBlur={() => setEditingLabel(false)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false);
+                    }}
+                    className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
+                    autoFocus
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingLabel(true);
+                      setTimeout(() => labelRef.current?.select(), 0);
+                    }}
+                    className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
+                  >
+                    {label}
+                  </button>
+                )}
+                {editingCategory ? (
+                  <input
+                    ref={categoryRef}
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    onBlur={() => setEditingCategory(false)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false);
+                    }}
+                    className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
+                    autoFocus
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingCategory(true);
+                      setTimeout(() => categoryRef.current?.select(), 0);
+                    }}
+                    className="truncate rounded px-1.5 py-0.5 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay"
+                  >
+                    {category}
+                  </button>
+                )}
               </div>
             </div>
-
-            {/* Tabs */}
-            <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
-              <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                <TabsList className={TAB_LIST_CLASS}>
-                  <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
-                    Parameters
-                  </TabsTrigger>
-                  <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
-                    Error handling
-                  </TabsTrigger>
-                  <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
-                    Advanced
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-              <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto">
-                <div className="py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                  <span className="text-sm font-medium text-foreground-muted">
-                    Output messaging
-                  </span>
-                </div>
-                <div className="flex flex-col gap-3 pb-1 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                  {cases.map((c) => (
-                    <InlineCaseRow
-                      key={c.id}
-                      caseTitle={c.title}
-                      onTitleChange={(title) => updateCaseTitle(c.id, title)}
-                      onDelete={() => deleteCase(c.id)}
-                      monacoTheme={monacoTheme}
-                      defaultValue=""
-                    />
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  onClick={addCase}
-                  className="flex items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover [padding-inline:var(--mf-content-inset,0.875rem)]"
-                >
-                  <Plus size={12} />
-                  Add output variable
-                </button>
-                <div className="flex items-center gap-2 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-                  <Switch size="sm" checked={defaultBranch} onCheckedChange={setDefaultBranch} />
-                  <span className="text-xs text-foreground-muted">Default branch</span>
-                </div>
-              </TabsContent>
-              <TabsContent value="error-handling" className="mt-0" />
-              <TabsContent value="advanced" className="mt-0" />
-            </Tabs>
+            <div className="shrink-0">
+              <DebugButton />
+            </div>
           </div>
-        </NodePropertyPanel>
-      </PanelFrame>
-    </CanvasBackground>
+
+          {/* Tabs */}
+          <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
+            <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+              <TabsList className={TAB_LIST_CLASS}>
+                <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
+                  Parameters
+                </TabsTrigger>
+                <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
+                  Error handling
+                </TabsTrigger>
+                <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
+                  Advanced
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto">
+              <div className="py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                <span className="text-sm font-medium text-foreground-muted">Output messaging</span>
+              </div>
+              <div className="flex flex-col gap-3 pb-1 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                {cases.map((c) => (
+                  <InlineCaseRow
+                    key={c.id}
+                    caseTitle={c.title}
+                    onTitleChange={(title) => updateCaseTitle(c.id, title)}
+                    onDelete={() => deleteCase(c.id)}
+                    monacoTheme={monacoTheme}
+                    defaultValue=""
+                  />
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={addCase}
+                className="flex items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover [padding-inline:var(--mf-content-inset,0.875rem)]"
+              >
+                <Plus size={12} />
+                Add output variable
+              </button>
+              <div className="flex items-center gap-2 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                <Switch size="sm" checked={defaultBranch} onCheckedChange={setDefaultBranch} />
+                <span className="text-xs text-foreground-muted">Default branch</span>
+              </div>
+            </TabsContent>
+            <TabsContent value="error-handling" className="mt-0" />
+            <TabsContent value="advanced" className="mt-0" />
+          </Tabs>
+        </div>
+      </NodePropertyPanel>
+    </PanelFrame>
   );
 }
 
@@ -1154,72 +1148,70 @@ function InlineEditingStory() {
   const typeRef = useRef<HTMLInputElement>(null);
 
   return (
-    <CanvasBackground>
-      <PanelFrame>
-        <NodePropertyPanel panelTitle="Properties" onClose={() => {}} contentInset="0.875rem">
-          {/* Node identity row — inline editable */}
-          <div className="flex shrink-0 items-center gap-3 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              {editingName ? (
-                <input
-                  ref={nameRef}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onBlur={() => setEditingName(false)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === 'Escape') setEditingName(false);
-                  }}
-                  className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.4px] text-foreground outline-none ring-1 ring-brand"
-                  autoFocus
-                />
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingName(true);
-                    setTimeout(() => nameRef.current?.select(), 0);
-                  }}
-                  className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.4px] text-foreground transition hover:bg-surface-overlay"
-                >
-                  {name}
-                </button>
-              )}
-              {editingType ? (
-                <input
-                  ref={typeRef}
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  onBlur={() => setEditingType(false)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === 'Escape') setEditingType(false);
-                  }}
-                  className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-sm leading-5 text-foreground outline-none ring-1 ring-brand"
-                  autoFocus
-                />
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingType(true);
-                    setTimeout(() => typeRef.current?.select(), 0);
-                  }}
-                  className="truncate rounded px-1.5 py-0.5 text-left text-sm leading-5 text-foreground-muted transition hover:bg-surface-overlay"
-                >
-                  {type}
-                </button>
-              )}
-            </div>
-            <button
-              type="button"
-              className="flex h-8 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-foreground-on-accent transition hover:bg-brand-hover"
-            >
-              <Play size={14} />
-              Run
-            </button>
+    <PanelFrame>
+      <NodePropertyPanel panelTitle="Properties" onClose={() => {}} contentInset="0.875rem">
+        {/* Node identity row — inline editable */}
+        <div className="flex shrink-0 items-center gap-3 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            {editingName ? (
+              <input
+                ref={nameRef}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onBlur={() => setEditingName(false)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === 'Escape') setEditingName(false);
+                }}
+                className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.4px] text-foreground outline-none ring-1 ring-brand"
+                autoFocus
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingName(true);
+                  setTimeout(() => nameRef.current?.select(), 0);
+                }}
+                className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.4px] text-foreground transition hover:bg-surface-overlay"
+              >
+                {name}
+              </button>
+            )}
+            {editingType ? (
+              <input
+                ref={typeRef}
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                onBlur={() => setEditingType(false)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === 'Escape') setEditingType(false);
+                }}
+                className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-sm leading-5 text-foreground outline-none ring-1 ring-brand"
+                autoFocus
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingType(true);
+                  setTimeout(() => typeRef.current?.select(), 0);
+                }}
+                className="truncate rounded px-1.5 py-0.5 text-left text-sm leading-5 text-foreground-muted transition hover:bg-surface-overlay"
+              >
+                {type}
+              </button>
+            )}
           </div>
-        </NodePropertyPanel>
-      </PanelFrame>
-    </CanvasBackground>
+          <button
+            type="button"
+            className="flex h-8 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-foreground-on-accent transition hover:bg-brand-hover"
+          >
+            <Play size={14} />
+            Run
+          </button>
+        </div>
+      </NodePropertyPanel>
+    </PanelFrame>
   );
 }
 
