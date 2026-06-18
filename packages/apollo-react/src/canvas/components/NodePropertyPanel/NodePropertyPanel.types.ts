@@ -49,8 +49,9 @@ export interface NodePropertyPanelProps {
   /**
    * Arbitrary content rendered in the panel body instead of a `MetadataForm`.
    * Use when the node's properties are not schema-driven (e.g. an expression
-   * editor, a preview pane, or a custom layout). When provided, `schema` is
-   * ignored and the children fill the scrollable content area.
+   * editor, a preview pane, or a custom layout). When provided, `schema`,
+   * `plugins`, `onSubmit`, `disabled`, and `resetKey` are all ignored.
+   * The children fill the scrollable content area.
    */
   children?: ReactNode;
 }
