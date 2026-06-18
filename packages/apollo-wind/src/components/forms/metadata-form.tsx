@@ -1,8 +1,7 @@
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-
 import { type FieldValues, FormProvider, useForm } from 'react-hook-form';
 import { z } from 'zod/v4';
-
 import {
   Accordion,
   AccordionContent,
@@ -10,7 +9,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { DataFetcher } from './data-fetcher';
 import { FormFieldRenderer } from './field-renderer';
@@ -40,6 +39,13 @@ interface MetadataFormProps {
   disabled?: boolean;
   /** Disable browser autocomplete suggestions. Defaults to undefined (browser default). */
   autoComplete?: 'off' | 'on';
+  /**
+   * Presentation for multi-step schemas. `'wizard'` (default) shows Previous/Next
+   * navigation with a Submit button on the final step. `'tabs'` renders the steps
+   * as a tab bar over a single form instance, so values and validation are shared
+   * across every step. Ignored for single-page (`sections`) schemas.
+   */
+  stepVariant?: 'wizard' | 'tabs';
 }
 
 // Stable default to prevent re-renders
@@ -52,6 +58,7 @@ export function MetadataForm({
   className,
   disabled = false,
   autoComplete,
+  stepVariant = 'wizard',
 }: MetadataFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [customComponents, setCustomComponents] = useState<
@@ -182,6 +189,17 @@ export function MetadataForm({
   // Render based on form structure
   const renderContent = () => {
     if (schema.steps) {
+      if (stepVariant === 'tabs') {
+        return (
+          <TabbedStepForm
+            schema={schema}
+            context={context}
+            customComponents={customComponents}
+            disabled={disabled}
+            onReset={() => reset()}
+          />
+        );
+      }
       return (
         <MultiStepForm
           schema={schema}
@@ -209,7 +227,9 @@ export function MetadataForm({
       <form onSubmit={handleFormSubmit} className={className} autoComplete={autoComplete}>
         {renderContent()}
 
-        {/* Only render FormActions for single-page forms - multi-step forms have their own navigation */}
+        {/* Wizard forms own their navigation/Submit, and tabbed forms render
+            FormActions inside TabbedStepForm so it's suppressed when no tab is
+            visible. Only single-page forms render FormActions here. */}
         {!schema.steps && <FormActions schema={schema} context={context} onReset={() => reset()} />}
       </form>
     </FormProvider>
@@ -325,6 +345,88 @@ function MultiStepForm({
         )}
       </div>
     </div>
+  );
+}
+
+interface TabbedStepFormProps extends SinglePageFormProps {
+  onReset: () => void;
+}
+
+function TabbedStepForm({
+  schema,
+  context,
+  customComponents,
+  disabled,
+  onReset,
+}: TabbedStepFormProps) {
+  const steps = schema.steps || [];
+
+  // Hide steps that have no sections or whose conditions evaluate to false, so a
+  // node that doesn't supply a given step (e.g. a trigger with no parameters)
+  // never renders an empty tab.
+  const visibleSteps = steps.filter(
+    (step) =>
+      step.sections.length > 0 && (!step.conditions || context.evaluateConditions(step.conditions))
+  );
+
+  // Clamp the active tab to a still-visible step so a step that disappears
+  // (condition flips, manifest swap) can't strand the form on a dead tab.
+  const [activeTab, setActiveTab] = useState<string>('');
+  const currentTab = visibleSteps.some((step) => step.id === activeTab)
+    ? activeTab
+    : (visibleSteps[0]?.id ?? '');
+
+  // Persist the clamp into state: once a selected step disappears we settle on the
+  // fallback, so a later reappearance doesn't snap the user back to the old tab.
+  useEffect(() => {
+    if (activeTab !== currentTab) setActiveTab(currentTab);
+  }, [activeTab, currentTab]);
+
+  if (visibleSteps.length === 0) return null;
+
+  return (
+    <>
+      <Tabs value={currentTab} onValueChange={setActiveTab} className="flex flex-col gap-4">
+        {/* Underline tabs (properties-panel style), overriding the primitive's
+          default segmented/pill look. Scoped here so the shared Tabs primitive
+          stays segmented for other consumers. */}
+        {/* Horizontal scroll when the tabs overflow a narrow panel (scrollbar hidden; tabs
+          stay on one line instead of clipping). The underline can optionally bleed past the
+          form's horizontal padding to the panel edges: a consumer sets `--mf-content-inset`
+          to its content inset and the list bleeds by that, re-insetting the labels. Default
+          0 keeps the underline at content width — correct for any padding. */}
+        <TabsList className="h-auto justify-start gap-4 overflow-x-auto rounded-none border-b border-border bg-transparent py-0 text-muted-foreground [-ms-overflow-style:none] [margin-inline:calc(var(--mf-content-inset,0px)*-1)] [padding-inline:var(--mf-content-inset,0px)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {visibleSteps.map((step) => (
+            <TabsTrigger
+              key={step.id}
+              value={step.id}
+              className="-mb-px shrink-0 whitespace-nowrap rounded-none border-b-2 border-transparent bg-transparent px-1 pb-2 pt-1 font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+            >
+              {step.title}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        {visibleSteps.map((step) => (
+          <TabsContent key={step.id} value={step.id} className="space-y-2">
+            {step.sections
+              .filter(
+                (section) => !section.conditions || context.evaluateConditions(section.conditions)
+              )
+              .map((section) => (
+                <FormSection
+                  key={section.id}
+                  section={section}
+                  context={context}
+                  customComponents={customComponents}
+                  disabled={disabled}
+                />
+              ))}
+          </TabsContent>
+        ))}
+      </Tabs>
+      <FormActions schema={schema} context={context} onReset={onReset} />
+    </>
   );
 }
 
