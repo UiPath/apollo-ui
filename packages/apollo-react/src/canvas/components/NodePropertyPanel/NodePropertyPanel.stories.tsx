@@ -95,6 +95,7 @@ const THEME_CLASS_MAP: Record<string, string> = {
 };
 
 function getMonacoThemeName(): string {
+  if (typeof document === 'undefined') return 'apollo-future-dark';
   const classes = Array.from(document.body.classList);
   const match = classes.find((c) => c in THEME_CLASS_MAP);
   return match ? THEME_CLASS_MAP[match] : 'apollo-future-dark';
