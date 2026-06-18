@@ -99,6 +99,8 @@ export const CanvasEdge = memo(function CanvasEdge({
     targetY,
     targetPosition,
     waypoints: effectiveWaypoints,
+    // Face-clearance applies to router waypoints only; manual ones render as-is.
+    autoRouted: waypoints.length === 0,
     enableSegments: editingEnabled,
     hideArrowHead,
   });
