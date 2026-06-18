@@ -11,8 +11,6 @@ export interface ExpressionFieldProps {
   mode?: ExpressionMode;
   /** Short description shown below the editor. */
   description?: string;
-  /** Called when the expression value changes (Phase 2 — editing not yet wired). */
-  onChange?: (value: string) => void;
   /** Called when the user switches between expr and json modes. */
   onModeChange?: (mode: ExpressionMode) => void;
 }
