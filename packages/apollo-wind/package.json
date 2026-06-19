@@ -123,7 +123,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
-    "dompurify": "^3.4.0",
+    "dompurify": ">=3.4.9",
     "framer-motion": "^12.26.2",
     "jsep": "^1.4.0",
     "lexical": "0.42.0",
