@@ -46,5 +46,20 @@
   "loop-node.add-node": "Döngüye düğüm ekle",
   "loop-node.mode.parallel": "Paralel",
   "loop-node.mode.sequential": "Sıralı",
-  "loop-node.title": "Döngü"
+  "loop-node.title": "Döngü",
+  "canvas.property_trigger.properties": "Özellikler",
+  "canvas.property_trigger.panel_options": "Panel seçenekleri",
+  "canvas.property_trigger.auto_hide": "Otomatik Gizle",
+  "canvas.property_trigger.always_persist": "Her zaman devam et",
+  "canvas.property_trigger.layout_right": "Varsayılan — Sağ",
+  "canvas.property_trigger.layout_bottom": "Varsayılan — Alt",
+  "canvas.property_trigger.layout_split": "Varsayılan — Böl",
+  "canvas.property_trigger.panel_behavior": "Panel davranışı",
+  "canvas.property_trigger.default_layouts": "Varsayılan düzenler",
+  "canvas.property_trigger.saved_presets": "Kaydedilen hazır ayarlar",
+  "canvas.property_trigger.no_saved_presets": "Henüz kaydedilmiş hazır ayar yok.",
+  "canvas.property_trigger.save_as_preset": "Hazır ayar olarak kaydet",
+  "canvas.property_trigger.apply_preset_with_label": "{label} öğesini uygula",
+  "canvas.property_trigger.rename_preset_with_label": "{label} kategorisini yeniden adlandır",
+  "canvas.property_trigger.delete_preset_with_label": "{label} öğesini sil"
 }

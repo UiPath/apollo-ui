@@ -46,5 +46,20 @@
   "loop-node.add-node": "루프에 노드 추가",
   "loop-node.mode.parallel": "병렬",
   "loop-node.mode.sequential": "연속성",
-  "loop-node.title": "루프"
+  "loop-node.title": "루프",
+  "canvas.property_trigger.properties": "속성",
+  "canvas.property_trigger.panel_options": "패널 옵션",
+  "canvas.property_trigger.auto_hide": "자동 숨김",
+  "canvas.property_trigger.always_persist": "항상 유지",
+  "canvas.property_trigger.layout_right": "기본값 — 오른쪽",
+  "canvas.property_trigger.layout_bottom": "기본값 — 아래쪽",
+  "canvas.property_trigger.layout_split": "기본값 — 분할",
+  "canvas.property_trigger.panel_behavior": "패널 동작",
+  "canvas.property_trigger.default_layouts": "기본 레이아웃",
+  "canvas.property_trigger.saved_presets": "저장된 사전 설정",
+  "canvas.property_trigger.no_saved_presets": "아직 저장된 사전 설정이 없습니다.",
+  "canvas.property_trigger.save_as_preset": "사전 설정으로 저장",
+  "canvas.property_trigger.apply_preset_with_label": "{label} 적용",
+  "canvas.property_trigger.rename_preset_with_label": "{label} 이름 바꾸기",
+  "canvas.property_trigger.delete_preset_with_label": "{label}삭제"
 }

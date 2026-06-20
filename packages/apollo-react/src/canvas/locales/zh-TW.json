@@ -46,5 +46,20 @@
   "loop-node.add-node": "將節點新增至迴圈",
   "loop-node.mode.parallel": "並行",
   "loop-node.mode.sequential": "順序",
-  "loop-node.title": "迴圈"
+  "loop-node.title": "迴圈",
+  "canvas.property_trigger.properties": "屬性",
+  "canvas.property_trigger.panel_options": "面板選項",
+  "canvas.property_trigger.auto_hide": "自動隱藏",
+  "canvas.property_trigger.always_persist": "一律持續",
+  "canvas.property_trigger.layout_right": "預設 — 右側",
+  "canvas.property_trigger.layout_bottom": "預設 — 底部",
+  "canvas.property_trigger.layout_split": "預設 — 分割",
+  "canvas.property_trigger.panel_behavior": "面板行為",
+  "canvas.property_trigger.default_layouts": "預設版面配置",
+  "canvas.property_trigger.saved_presets": "已儲存的預設",
+  "canvas.property_trigger.no_saved_presets": "尚無已儲存的預設。",
+  "canvas.property_trigger.save_as_preset": "儲存為預設",
+  "canvas.property_trigger.apply_preset_with_label": "套用 {label}",
+  "canvas.property_trigger.rename_preset_with_label": "重新命名 {label}",
+  "canvas.property_trigger.delete_preset_with_label": "刪除 {label}"
 }

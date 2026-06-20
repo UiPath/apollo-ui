@@ -46,5 +46,20 @@
   "loop-node.add-node": "ループにノードを追加",
   "loop-node.mode.parallel": "並列",
   "loop-node.mode.sequential": "順次",
-  "loop-node.title": "ループ"
+  "loop-node.title": "ループ",
+  "canvas.property_trigger.properties": "プロパティ",
+  "canvas.property_trigger.panel_options": "パネルのオプション",
+  "canvas.property_trigger.auto_hide": "自動非表示",
+  "canvas.property_trigger.always_persist": "常に保持",
+  "canvas.property_trigger.layout_right": "既定 — 右",
+  "canvas.property_trigger.layout_bottom": "既定 — 下",
+  "canvas.property_trigger.layout_split": "既定 — 分割",
+  "canvas.property_trigger.panel_behavior": "パネルの動作",
+  "canvas.property_trigger.default_layouts": "既定のレイアウト",
+  "canvas.property_trigger.saved_presets": "保存されたプリセット",
+  "canvas.property_trigger.no_saved_presets": "保存されたプリセットはまだありません。",
+  "canvas.property_trigger.save_as_preset": "プリセットとして保存",
+  "canvas.property_trigger.apply_preset_with_label": "{label} を適用",
+  "canvas.property_trigger.rename_preset_with_label": "{label} の名前を変更",
+  "canvas.property_trigger.delete_preset_with_label": "{label} を削除"
 }
