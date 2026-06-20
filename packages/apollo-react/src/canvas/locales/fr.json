@@ -46,5 +46,20 @@
   "loop-node.add-node": "Ajouter un nœud à la boucle",
   "loop-node.mode.parallel": "Parallèle",
   "loop-node.mode.sequential": "Séquentielle",
-  "loop-node.title": "Boucle"
+  "loop-node.title": "Boucle",
+  "canvas.property_trigger.properties": "Propriétés",
+  "canvas.property_trigger.panel_options": "Options du panneau",
+  "canvas.property_trigger.auto_hide": "Masquer automatiquement",
+  "canvas.property_trigger.always_persist": "Conserver la persistance",
+  "canvas.property_trigger.layout_right": "Défaut (à droite)",
+  "canvas.property_trigger.layout_bottom": "Défaut (en bas)",
+  "canvas.property_trigger.layout_split": "Défaut (diviser)",
+  "canvas.property_trigger.panel_behavior": "Comportement des panneaux",
+  "canvas.property_trigger.default_layouts": "Agencement par défaut",
+  "canvas.property_trigger.saved_presets": "Agencements enregistrés",
+  "canvas.property_trigger.no_saved_presets": "Aucun agencement enregistré pour le moment.",
+  "canvas.property_trigger.save_as_preset": "Enregistrer cet agencement",
+  "canvas.property_trigger.apply_preset_with_label": "Appliquer {label}",
+  "canvas.property_trigger.rename_preset_with_label": "Renommer {label}",
+  "canvas.property_trigger.delete_preset_with_label": "Supprimer {label}"
 }

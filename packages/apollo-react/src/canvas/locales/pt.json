@@ -46,5 +46,20 @@
   "loop-node.add-node": "Adicionar nó ao ciclo",
   "loop-node.mode.parallel": "Paralelo",
   "loop-node.mode.sequential": "Sequencial",
-  "loop-node.title": "Ciclo"
+  "loop-node.title": "Ciclo",
+  "canvas.property_trigger.properties": "Propriedades",
+  "canvas.property_trigger.panel_options": "Opções do painel",
+  "canvas.property_trigger.auto_hide": "Ocultar Automaticamente",
+  "canvas.property_trigger.always_persist": "Persistir sempre",
+  "canvas.property_trigger.layout_right": "Predefinição — Direita",
+  "canvas.property_trigger.layout_bottom": "Predefinição — Fundo",
+  "canvas.property_trigger.layout_split": "Predefinição — Dividido",
+  "canvas.property_trigger.panel_behavior": "Comportamento do painel",
+  "canvas.property_trigger.default_layouts": "Esquemas predefinidos",
+  "canvas.property_trigger.saved_presets": "Predefinições guardadas",
+  "canvas.property_trigger.no_saved_presets": "Ainda não foram guardadas predefinições.",
+  "canvas.property_trigger.save_as_preset": "Guardar como predefinição",
+  "canvas.property_trigger.apply_preset_with_label": "Aplicar {label}",
+  "canvas.property_trigger.rename_preset_with_label": "Mudar o nome de {label}",
+  "canvas.property_trigger.delete_preset_with_label": "Eliminar {label}"
 }

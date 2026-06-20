@@ -46,5 +46,20 @@
   "loop-node.add-node": "Adăugați nodul la buclă",
   "loop-node.mode.parallel": "Paralel",
   "loop-node.mode.sequential": "Secvențial",
-  "loop-node.title": "Buclă"
+  "loop-node.title": "Buclă",
+  "canvas.property_trigger.properties": "Proprietăți",
+  "canvas.property_trigger.panel_options": "Opțiuni panou",
+  "canvas.property_trigger.auto_hide": "Ascundere automată",
+  "canvas.property_trigger.always_persist": "Păstrați întotdeauna",
+  "canvas.property_trigger.layout_right": "Implicit — Dreapta",
+  "canvas.property_trigger.layout_bottom": "Implicit — Jos",
+  "canvas.property_trigger.layout_split": "Implicit — Împărțire",
+  "canvas.property_trigger.panel_behavior": "Comportamentul panoului",
+  "canvas.property_trigger.default_layouts": "Aspecte implicite",
+  "canvas.property_trigger.saved_presets": "Presetări salvate",
+  "canvas.property_trigger.no_saved_presets": "Încă nu există presetări salvate.",
+  "canvas.property_trigger.save_as_preset": "Salvați ca presetare",
+  "canvas.property_trigger.apply_preset_with_label": "Aplicați {label}",
+  "canvas.property_trigger.rename_preset_with_label": "Redenumește {label}",
+  "canvas.property_trigger.delete_preset_with_label": "Șterge {label}"
 }

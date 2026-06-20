@@ -46,5 +46,20 @@
   "loop-node.add-node": "Agregar nodo al bucle",
   "loop-node.mode.parallel": "Paralelo",
   "loop-node.mode.sequential": "Secuencial",
-  "loop-node.title": "Bucle"
+  "loop-node.title": "Bucle",
+  "canvas.property_trigger.properties": "Propiedades",
+  "canvas.property_trigger.panel_options": "Opciones del panel",
+  "canvas.property_trigger.auto_hide": "Ocultar de forma automática",
+  "canvas.property_trigger.always_persist": "Persistir siempre",
+  "canvas.property_trigger.layout_right": "Predeterminado: derecha",
+  "canvas.property_trigger.layout_bottom": "Predeterminado: parte inferior",
+  "canvas.property_trigger.layout_split": "Predeterminado: dividir",
+  "canvas.property_trigger.panel_behavior": "Comportamiento del panel",
+  "canvas.property_trigger.default_layouts": "Diseños predeterminados",
+  "canvas.property_trigger.saved_presets": "Ajustes preestablecidos guardados",
+  "canvas.property_trigger.no_saved_presets": "Aún no hay ajustes preestablecidos guardados.",
+  "canvas.property_trigger.save_as_preset": "Guardar como ajuste preestablecido",
+  "canvas.property_trigger.apply_preset_with_label": "Aplicar {label}",
+  "canvas.property_trigger.rename_preset_with_label": "Cambiar el nombre de {label}",
+  "canvas.property_trigger.delete_preset_with_label": "Eliminar {label}"
 }

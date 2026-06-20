@@ -46,5 +46,20 @@
   "loop-node.add-node": "向循环添加节点",
   "loop-node.mode.parallel": "并行",
   "loop-node.mode.sequential": "顺序",
-  "loop-node.title": "循环"
+  "loop-node.title": "循环",
+  "canvas.property_trigger.properties": "属性",
+  "canvas.property_trigger.panel_options": "面板选项",
+  "canvas.property_trigger.auto_hide": "自动隐藏",
+  "canvas.property_trigger.always_persist": "始终保留",
+  "canvas.property_trigger.layout_right": "默认 — 右侧",
+  "canvas.property_trigger.layout_bottom": "默认 — 底部",
+  "canvas.property_trigger.layout_split": "默认 — 拆分",
+  "canvas.property_trigger.panel_behavior": "面板行为",
+  "canvas.property_trigger.default_layouts": "默认布局",
+  "canvas.property_trigger.saved_presets": "已保存的预设",
+  "canvas.property_trigger.no_saved_presets": "尚无已保存的预设。",
+  "canvas.property_trigger.save_as_preset": "另存为预设",
+  "canvas.property_trigger.apply_preset_with_label": "应用 {label}",
+  "canvas.property_trigger.rename_preset_with_label": "重命名 {label}",
+  "canvas.property_trigger.delete_preset_with_label": "删除{label}"
 }

@@ -46,5 +46,20 @@
   "loop-node.add-node": "Knoten zu Schleife hinzufügen",
   "loop-node.mode.parallel": "Parallel",
   "loop-node.mode.sequential": "Sequenziell",
-  "loop-node.title": "Schleife"
+  "loop-node.title": "Schleife",
+  "canvas.property_trigger.properties": "Eigenschaften",
+  "canvas.property_trigger.panel_options": "Optionen für Bereich",
+  "canvas.property_trigger.auto_hide": "Automatisch ausblenden",
+  "canvas.property_trigger.always_persist": "Immer beibehalten",
+  "canvas.property_trigger.layout_right": "Standard – Rechts",
+  "canvas.property_trigger.layout_bottom": "Standard – Unten",
+  "canvas.property_trigger.layout_split": "Standard – Aufgeteilt",
+  "canvas.property_trigger.panel_behavior": "Verhalten des Bereichs",
+  "canvas.property_trigger.default_layouts": "Standardlayouts",
+  "canvas.property_trigger.saved_presets": "Gespeicherte Voreinstellungen",
+  "canvas.property_trigger.no_saved_presets": "Noch keine gespeicherten Voreinstellungen.",
+  "canvas.property_trigger.save_as_preset": "Als Voreinstellung speichern",
+  "canvas.property_trigger.apply_preset_with_label": "{label} anwenden",
+  "canvas.property_trigger.rename_preset_with_label": "{label} umbenennen",
+  "canvas.property_trigger.delete_preset_with_label": "{label} löschen"
 }

@@ -46,5 +46,20 @@
   "loop-node.add-node": "Adicionar nó ao loop",
   "loop-node.mode.parallel": "Paralelo",
   "loop-node.mode.sequential": "Sequencial",
-  "loop-node.title": "Loop"
+  "loop-node.title": "Loop",
+  "canvas.property_trigger.properties": "Propriedades",
+  "canvas.property_trigger.panel_options": "Opções do painel",
+  "canvas.property_trigger.auto_hide": "Ocultar Automaticamente",
+  "canvas.property_trigger.always_persist": "Sempre persistir",
+  "canvas.property_trigger.layout_right": "Padrão – À direita",
+  "canvas.property_trigger.layout_bottom": "Padrão – Parte inferior",
+  "canvas.property_trigger.layout_split": "Padrão – Tela dividida",
+  "canvas.property_trigger.panel_behavior": "Comportamento do painel",
+  "canvas.property_trigger.default_layouts": "Layouts padrão",
+  "canvas.property_trigger.saved_presets": "Predefinições salvas",
+  "canvas.property_trigger.no_saved_presets": "Nenhuma predefinição salva ainda.",
+  "canvas.property_trigger.save_as_preset": "Salvar como predefinição",
+  "canvas.property_trigger.apply_preset_with_label": "Aplicar {label}",
+  "canvas.property_trigger.rename_preset_with_label": "Renomear {label}",
+  "canvas.property_trigger.delete_preset_with_label": "Excluir {label}"
 }
