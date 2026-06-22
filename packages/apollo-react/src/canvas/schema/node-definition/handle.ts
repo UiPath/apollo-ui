@@ -24,6 +24,14 @@ export const handleTypeSchema = z.enum(['source', 'target']);
  */
 export const handleTypeDisplaySchema = z.enum(['artifact', 'input', 'output']);
 
+/**
+ * When a handle's label is shown.
+ * - `always` (default): label is always visible.
+ * - `hover`: label is shown only while the node is hovered or selected; it
+ *   fades in/out and does not shift position when the add button appears.
+ */
+export const handleLabelVisibilitySchema = z.enum(['always', 'hover']);
+
 export const handleConfigurationSpecificPositionSchema = z.object({
   /** The height of the area where the handles will be located in the node. Has no effect if no top or bottom is set. */
   height: z.number().optional(),
@@ -104,6 +112,9 @@ export const handleManifestSchema = z.object({
   /** Whether to show action button */
   showButton: z.boolean().optional(),
 
+  /** When this handle's label is shown. Defaults to `always`. */
+  labelVisibility: handleLabelVisibilitySchema.optional(),
+
   /** Connection constraints for this handle */
   constraints: connectionConstraintSchema.optional(),
 
@@ -154,6 +165,7 @@ export type HandlePosition = z.infer<typeof handlePositionSchema>;
 export type HandleBoundary = z.infer<typeof handleBoundarySchema>;
 export type HandleType = z.infer<typeof handleTypeSchema>;
 export type HandleCategory = z.infer<typeof handleTypeDisplaySchema>;
+export type HandleLabelVisibility = z.infer<typeof handleLabelVisibilitySchema>;
 export type HandleManifest = z.infer<typeof handleManifestSchema>;
 export type HandleGroupManifest = z.infer<typeof handleGroupManifestSchema>;
 export type HandleGroupOverride = z.infer<typeof handleGroupOverrideSchema>;

@@ -6,9 +6,9 @@
 
 import type { Meta, StoryObj } from '@storybook/react';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
-import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Button, Input, Label, Slider, Switch, cn } from '@uipath/apollo-wind';
+import { Button, cn, Input, Label, Slider, Switch } from '@uipath/apollo-wind';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { NodeRegistryProvider } from '../../core';
 import type { CategoryManifest, NodeManifest } from '../../schema';
@@ -22,12 +22,12 @@ import {
 } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
 import type { ValidationErrorSeverity } from '../../types/validation';
+import { CanvasIcon } from '../../utils/icon-registry';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { NodeInspector } from '../NodeInspector';
-import { CanvasIcon } from '../../utils/icon-registry';
-import { BaseNodeOverrideConfigProvider } from './BaseNodeConfigContext';
 import type { BaseNodeData } from './BaseNode.types';
+import { BaseNodeOverrideConfigProvider } from './BaseNodeConfigContext';
 
 // ============================================================================
 // Meta Configuration
@@ -1243,6 +1243,59 @@ const dynamicHandlesManifest: { nodes: NodeManifest[]; categories: CategoryManif
         },
       ],
     },
+    {
+      nodeType: 'uipath.hover-labels',
+      version: '1.0.0',
+      category: 'control',
+      tags: ['handle', 'label'],
+      sortOrder: 3,
+      display: {
+        label: 'Hover Labels',
+        icon: 'tag',
+        shape: 'square',
+      },
+      handleConfiguration: [
+        {
+          position: 'right',
+          handles: [
+            {
+              id: 'out-hover',
+              type: 'source',
+              handleType: 'output',
+              label: 'Hover label',
+              labelVisibility: 'hover',
+            },
+            {
+              id: 'out-always',
+              type: 'source',
+              handleType: 'output',
+              label: 'Always label',
+              labelVisibility: 'always',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      nodeType: 'uipath.hover-sink',
+      version: '1.0.0',
+      category: 'control',
+      tags: ['handle'],
+      sortOrder: 4,
+      display: {
+        label: 'Sink',
+        shape: 'circle',
+      },
+      handleConfiguration: [
+        {
+          position: 'left',
+          handles: [
+            { id: 'sink-hover', type: 'target', handleType: 'input' },
+            { id: 'sink-always', type: 'target', handleType: 'input' },
+          ],
+        },
+      ],
+    },
   ],
 };
 
@@ -1309,10 +1362,65 @@ function DynamicHandlesStory() {
         height: 96,
         width: 96,
       },
+      {
+        ...createNode({
+          id: 'hover-labels-node',
+          type: 'uipath.hover-labels',
+          position: { x: 1150, y: 200 },
+          data: {
+            nodeType: 'uipath.hover-labels',
+            version: '1.0.0',
+            display: {
+              label: 'Hover Labels',
+              subLabel: 'Hover to toggle labels',
+              shape: 'square',
+            },
+          },
+        }),
+        height: 96,
+        width: 96,
+      },
+      {
+        ...createNode({
+          id: 'hover-sink-node',
+          type: 'uipath.hover-sink',
+          position: { x: 1550, y: 230 },
+          data: {
+            nodeType: 'uipath.hover-sink',
+            version: '1.0.0',
+            display: {
+              label: 'Sink',
+              shape: 'circle',
+            },
+          },
+        }),
+        height: 48,
+        width: 48,
+      },
     ];
   }, [switchData, decisionData]);
 
-  const { canvasProps, setNodes } = useCanvasStory({ initialNodes });
+  const initialEdges = useMemo<Edge[]>(
+    () => [
+      {
+        id: 'e-hover',
+        source: 'hover-labels-node',
+        sourceHandle: 'out-hover',
+        target: 'hover-sink-node',
+        targetHandle: 'sink-hover',
+      },
+      {
+        id: 'e-always',
+        source: 'hover-labels-node',
+        sourceHandle: 'out-always',
+        target: 'hover-sink-node',
+        targetHandle: 'sink-always',
+      },
+    ],
+    []
+  );
+
+  const { canvasProps, setNodes } = useCanvasStory({ initialNodes, initialEdges });
 
   // Sync switch node data when controls change
   useEffect(() => {
@@ -1387,7 +1495,14 @@ function DynamicHandlesStory() {
       </Panel>
       <StoryInfoPanel
         title="Handles"
-        description="Demonstrates repeat expressions (dynamic handle count) and templated handle labels."
+        description={
+          <>
+            Demonstrates repeat expressions (dynamic handle count) and templated handle labels.
+            <br />
+            The Hover Labels node uses labelVisibility: hover, so its label shows only while the
+            node is hovered or selected, while the Always label stays on.
+          </>
+        }
       >
         <Column gap={20}>
           <Column gap={12}>

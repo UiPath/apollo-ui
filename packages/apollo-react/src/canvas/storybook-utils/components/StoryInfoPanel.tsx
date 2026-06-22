@@ -8,7 +8,7 @@ export interface StoryInfoPanelProps {
   /** Panel title */
   title: string;
   /** Optional description below the title */
-  description?: string;
+  description?: React.ReactNode;
   /** Panel content */
   children?: React.ReactNode;
   /** Whether the panel can be collapsed */
