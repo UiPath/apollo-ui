@@ -875,6 +875,17 @@ export const CompactEditor: Story = {
 // Inline expression inputs — one per case, no code editor panel.
 // ============================================================================
 
+const INSERT_SNIPPETS = [
+  { label: 'Input data', code: 'context.input' },
+  { label: 'Item ID', code: 'item.id' },
+  { label: 'Item name', code: 'item.name' },
+  { label: 'Current index', code: 'index' },
+  { label: 'Timestamp', code: 'Date.now()' },
+  { label: 'True', code: 'true' },
+  { label: 'False', code: 'false' },
+  { label: 'Null', code: 'null' },
+];
+
 function InlineCaseRow({
   caseTitle,
   onTitleChange,
@@ -892,10 +903,29 @@ function InlineCaseRow({
   const titleRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState(defaultValue);
   const [mode, setMode] = useState<'fixed' | 'expression'>('fixed');
+  const [insertOpen, setInsertOpen] = useState(false);
+  const [modePopoverOpen, setModePopoverOpen] = useState(false);
+  const insertRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!insertOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (insertRef.current && !insertRef.current.contains(e.target as Node)) {
+        setInsertOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [insertOpen]);
+
+  const insertSnippet = (code: string) => {
+    setValue((v) => (v ? `${v} ${code}` : code));
+    setInsertOpen(false);
+  };
 
   return (
     <div className="flex flex-col gap-1.5">
-      {/* Case title row with action buttons and delete on hover */}
+      {/* Case title row */}
       <div className="group flex items-center">
         {editingTitle ? (
           <input
@@ -939,48 +969,140 @@ function InlineCaseRow({
           >
             <Sparkles size={12} />
           </button>
-          <button
-            type="button"
-            aria-label="Insert variable"
-            title="Insert variable"
-            className="flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-          >
-            <span className="font-mono text-[10px]">{'{x}'}</span>
-            <span>Insert</span>
-            <ChevronDown size={9} />
-          </button>
+          {/* Insert popover */}
+          <div ref={insertRef} className="relative">
+            <button
+              type="button"
+              aria-label="Insert snippet"
+              title="Insert snippet"
+              onClick={() => setInsertOpen((v) => !v)}
+              className={cn(
+                'flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] transition',
+                insertOpen
+                  ? 'bg-surface-overlay text-foreground'
+                  : 'text-foreground-subtle hover:bg-surface-overlay hover:text-foreground'
+              )}
+            >
+              <span className="font-mono text-[10px]">{'{x}'}</span>
+              <span>Insert</span>
+              <ChevronDown size={9} />
+            </button>
+            {insertOpen && (
+              <div className="absolute right-0 top-full z-50 mt-1 min-w-[192px] overflow-hidden rounded-xl border border-border-subtle bg-surface-overlay py-1 shadow-lg">
+                {INSERT_SNIPPETS.map((s) => (
+                  <button
+                    key={s.code}
+                    type="button"
+                    onClick={() => insertSnippet(s.code)}
+                    className="flex w-full items-center justify-between gap-3 px-3 py-1.5 text-left hover:bg-surface-raised"
+                  >
+                    <span className="text-xs text-foreground">{s.label}</span>
+                    <span className="font-mono text-[10px] text-foreground-muted">{s.code}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-      {/* Monaco editor — Code2 button overlays on the right to toggle mode */}
-      <div className="relative h-10 overflow-hidden rounded-xl border border-border-subtle">
-        <MonacoEditor
-          height="40px"
-          language={mode === 'expression' ? 'javascript' : 'plaintext'}
-          value={value}
-          onChange={(val) => setValue(val ?? '')}
-          theme={monacoTheme}
-          beforeMount={registerMonacoThemes}
-          options={INLINE_EDITOR_OPTIONS}
-        />
-        {value === '' && (
-          <div className="pointer-events-none absolute left-[6px] top-1/2 -translate-y-1/2 font-mono text-[13px] text-foreground-subtle">
-            {mode === 'fixed' ? 'Enter a value' : 'Enter an expression'}
+
+      {/* Monaco editor with mode toggle on the right.
+          Outer wrapper is NOT overflow-hidden so the popover can escape. */}
+      <div className="relative">
+        <div className="overflow-hidden rounded-xl border border-border-subtle">
+          <div className="relative h-10">
+            <MonacoEditor
+              height="40px"
+              language={mode === 'expression' ? 'javascript' : 'plaintext'}
+              value={value}
+              onChange={(val) => setValue(val ?? '')}
+              theme={monacoTheme}
+              beforeMount={registerMonacoThemes}
+              options={INLINE_EDITOR_OPTIONS}
+            />
+            {value === '' && (
+              <div className="pointer-events-none absolute left-[6px] top-1/2 -translate-y-1/2 font-mono text-[13px] text-foreground-subtle">
+                {mode === 'fixed' ? 'Enter a value' : 'Enter an expression'}
+              </div>
+            )}
           </div>
-        )}
-        <button
-          type="button"
-          onClick={() => setMode((m) => (m === 'fixed' ? 'expression' : 'fixed'))}
-          title={mode === 'fixed' ? 'Switch to Expression' : 'Switch to Fixed'}
-          aria-label={mode === 'fixed' ? 'Switch to Expression' : 'Switch to Fixed'}
-          className={cn(
-            'absolute right-2 top-1/2 z-10 grid size-5 -translate-y-1/2 place-items-center rounded transition-colors',
-            mode === 'expression'
-              ? 'bg-surface-overlay text-foreground'
-              : 'text-foreground-subtle hover:text-foreground'
-          )}
+        </div>
+        {/* Mode toggle — click to switch, hover to pick from popover */}
+        <div
+          className="absolute right-2 top-1/2 z-10 flex -translate-y-1/2 items-center gap-1.5"
+          onMouseEnter={() => setModePopoverOpen(true)}
+          onMouseLeave={() => setModePopoverOpen(false)}
         >
-          <Code2 size={12} />
-        </button>
+          <div className="h-3.5 w-px bg-border-subtle" />
+          <button
+            type="button"
+            onClick={() => setMode((m) => (m === 'fixed' ? 'expression' : 'fixed'))}
+            aria-label={
+              mode === 'fixed' ? 'Switch to Javascript expression' : 'Switch to Plain text'
+            }
+            className={cn(
+              'flex h-5 items-center rounded border px-1.5 text-[10px] font-medium transition',
+              mode === 'expression'
+                ? 'border-brand/30 bg-brand/10 text-brand'
+                : 'border-border-subtle bg-surface-overlay text-foreground-muted hover:border-border hover:text-foreground'
+            )}
+          >
+            {mode === 'fixed' ? 'PT' : 'JS'}
+          </button>
+          {modePopoverOpen && (
+            <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-border-subtle bg-surface-overlay shadow-lg">
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('fixed');
+                  setModePopoverOpen(false);
+                }}
+                className={cn(
+                  'flex w-full flex-col gap-0.5 px-3 py-2.5 text-left transition hover:bg-surface-raised',
+                  mode === 'fixed' && 'bg-surface-raised'
+                )}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={cn(
+                      'size-1.5 shrink-0 rounded-full',
+                      mode === 'fixed' ? 'bg-brand' : 'bg-border'
+                    )}
+                  />
+                  <span className="text-xs font-medium text-foreground">Plain text</span>
+                </div>
+                <span className="pl-3 text-[11px] leading-4 text-foreground-subtle">
+                  Enter static values like "hello" or 42
+                </span>
+              </button>
+              <div className="mx-3 h-px bg-border-subtle" />
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('expression');
+                  setModePopoverOpen(false);
+                }}
+                className={cn(
+                  'flex w-full flex-col gap-0.5 px-3 py-2.5 text-left transition hover:bg-surface-raised',
+                  mode === 'expression' && 'bg-surface-raised'
+                )}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={cn(
+                      'size-1.5 shrink-0 rounded-full',
+                      mode === 'expression' ? 'bg-brand' : 'bg-border'
+                    )}
+                  />
+                  <span className="text-xs font-medium text-foreground">Javascript expression</span>
+                </div>
+                <span className="pl-3 text-[11px] leading-4 text-foreground-subtle">
+                  Compute the return value dynamically with JS
+                </span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
