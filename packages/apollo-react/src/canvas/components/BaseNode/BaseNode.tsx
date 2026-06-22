@@ -228,6 +228,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         label: h.label,
         visible: h.visible,
         showButton: h.showButton,
+        labelVisibility: h.labelVisibility,
         constraints: h.constraints,
       })),
       visible: group.visible,

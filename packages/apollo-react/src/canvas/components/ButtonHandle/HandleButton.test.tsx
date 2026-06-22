@@ -199,3 +199,58 @@ describe('HandleButton hover handlers', () => {
     await expect(user.unhover(button)).resolves.toBeUndefined();
   });
 });
+
+describe('HandleButton mount & label visibility', () => {
+  afterEach(cleanup);
+
+  it('unmounts the add button when not visible (default behavior)', () => {
+    render(<HandleButton visible={false} position={Position.Top} onAction={vi.fn()} />);
+    expect(screen.queryByRole('button', { name: 'Add node' })).toBeNull();
+  });
+
+  it('keeps the add button mounted but transparent when keepButtonMounted and not visible', () => {
+    render(
+      <HandleButton visible={false} keepButtonMounted position={Position.Top} onAction={vi.fn()} />
+    );
+
+    // aria-hidden removes it from the accessible tree (and zeroes its accessible
+    // name), so query with hidden: true and check the label via the attribute.
+    const button = screen.getByRole('button', { hidden: true });
+    expect(button).toHaveAttribute('aria-label', 'Add node');
+    expect(button.className).toContain('opacity-0');
+    expect(button.className).toContain('pointer-events-none');
+    expect(button).toHaveAttribute('aria-hidden', 'true');
+    // disabled (not just tabindex=-1) so aria-hidden is not applied to a focusable element.
+    expect(button).toBeDisabled();
+  });
+
+  it('shows the mounted add button when keepButtonMounted and visible', () => {
+    render(<HandleButton visible keepButtonMounted position={Position.Top} onAction={vi.fn()} />);
+
+    const button = screen.getByRole('button', { name: 'Add node' });
+    expect(button.className).toContain('opacity-100');
+    expect(button.className).toContain('pointer-events-auto');
+  });
+
+  it('fades the label via labelVisible', () => {
+    const { rerender } = render(
+      <HandleButton
+        visible
+        position={Position.Top}
+        onAction={vi.fn()}
+        label="Tools"
+        labelVisible={false}
+      />
+    );
+    expect(screen.getByText('Tools').closest('[class*="transition-opacity"]')?.className).toContain(
+      'opacity-0'
+    );
+
+    rerender(
+      <HandleButton visible position={Position.Top} onAction={vi.fn()} label="Tools" labelVisible />
+    );
+    expect(screen.getByText('Tools').closest('[class*="transition-opacity"]')?.className).toContain(
+      'opacity-100'
+    );
+  });
+});

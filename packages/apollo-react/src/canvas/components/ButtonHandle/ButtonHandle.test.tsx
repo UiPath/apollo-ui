@@ -270,6 +270,72 @@ describe('ButtonHandles', () => {
     });
   });
 
+  describe('hover-gated labels (labelVisibility)', () => {
+    const hoverHandle: ButtonHandleConfig = {
+      id: 'tool',
+      type: 'source',
+      handleType: 'artifact',
+      label: 'Tools',
+      showButton: true,
+      labelVisibility: 'hover',
+      onAction: vi.fn(),
+    };
+
+    const getLabelClass = () =>
+      screen.getByText('Tools').closest('[class*="transition-opacity"]')?.className ?? '';
+
+    it('hides the label when the node is neither hovered nor selected', () => {
+      render(<ButtonHandles handles={[hoverHandle]} nodeId="n" position={Position.Top} />);
+      expect(getLabelClass()).toContain('opacity-0');
+    });
+
+    it('reveals the label when the node is hovered', () => {
+      render(<ButtonHandles handles={[hoverHandle]} nodeId="n" position={Position.Top} hovered />);
+      expect(getLabelClass()).toContain('opacity-100');
+    });
+
+    it('reveals the label when the node is selected', () => {
+      render(<ButtonHandles handles={[hoverHandle]} nodeId="n" position={Position.Top} selected />);
+      expect(getLabelClass()).toContain('opacity-100');
+    });
+
+    it('hover-gates the inward label when connectionPosition differs from position', () => {
+      const { rerender } = render(
+        <ButtonHandles
+          handles={[hoverHandle]}
+          nodeId="n"
+          position={Position.Top}
+          connectionPosition={Position.Bottom}
+        />
+      );
+      expect(getLabelClass()).toContain('opacity-0');
+
+      rerender(
+        <ButtonHandles
+          handles={[hoverHandle]}
+          nodeId="n"
+          position={Position.Top}
+          connectionPosition={Position.Bottom}
+          hovered
+        />
+      );
+      expect(getLabelClass()).toContain('opacity-100');
+    });
+
+    it('keeps a default (always) label visible regardless of hover/selection', () => {
+      const alwaysHandle: ButtonHandleConfig = {
+        id: 'tool',
+        type: 'source',
+        handleType: 'artifact',
+        label: 'Tools',
+        showButton: true,
+        onAction: vi.fn(),
+      };
+      render(<ButtonHandles handles={[alwaysHandle]} nodeId="n" position={Position.Top} />);
+      expect(getLabelClass()).toContain('opacity-100');
+    });
+  });
+
   describe('Grid-aligned positioning', () => {
     it('uses grid-aligned positioning for Top handles when nodeWidth is provided', () => {
       const handles: ButtonHandleConfig[] = [

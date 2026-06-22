@@ -1,6 +1,9 @@
 import { Handle, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
-import type { HandleConfigurationSpecificPosition } from '../../schema/node-definition/handle';
+import type {
+  HandleConfigurationSpecificPosition,
+  HandleLabelVisibility,
+} from '../../schema/node-definition/handle';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import { cx } from '../../utils/CssUtil';
 import { calculateGridAlignedHandlePositions } from '../../utils/handle-positioning';
@@ -44,6 +47,10 @@ type ButtonHandleProps = {
   labelIcon?: React.ReactNode;
   labelBackgroundColor?: string;
   visible?: boolean;
+  /** Whether the label is shown. Defaults to `visible` when omitted. */
+  labelVisible?: boolean;
+  /** When the label is shown. `hover` keeps the add button mounted so the label never reflows. */
+  labelVisibility?: HandleLabelVisibility;
   showButton?: boolean;
   selected?: boolean;
   index?: number; // 0-based index of this handle on the edge
@@ -69,6 +76,8 @@ const ButtonHandleBase = ({
   labelIcon,
   labelBackgroundColor,
   visible = true,
+  labelVisible,
+  labelVisibility,
   showButton = true,
   selected = false,
   index = 0,
@@ -161,6 +170,12 @@ const ButtonHandleBase = ({
   const unmarkAsHovered = useCallback(() => setIsHovered(false), []);
   const showActionButton = !!onAction && type === 'source';
 
+  // Label visibility defaults to the handle's own visibility (current behavior).
+  const resolvedLabelVisible = labelVisible ?? visible;
+  // When the label is hover-gated, keep the add button mounted (opacity-toggled)
+  // so the flex stack never reflows and the label doesn't jump as the button appears.
+  const keepButtonMounted = labelVisibility === 'hover';
+
   const {
     width: handleWidth,
     height: handleHeight,
@@ -205,6 +220,7 @@ const ButtonHandleBase = ({
           label={label}
           labelIcon={labelIcon}
           labelBackgroundColor={labelBackgroundColor}
+          labelVisible={resolvedLabelVisible}
           layout={layout}
         />
         <Handle
@@ -226,7 +242,8 @@ const ButtonHandleBase = ({
         {showActionButton ? (
           <HandleButton
             visible={showButton}
-            labelVisible={visible}
+            labelVisible={resolvedLabelVisible}
+            keepButtonMounted={keepButtonMounted}
             position={connectionPosition}
             onAction={handleButtonClick}
             onMouseEnter={handleButtonMouseEnter}
@@ -285,7 +302,8 @@ const ButtonHandleBase = ({
       {showActionButton ? (
         <HandleButton
           visible={showButton}
-          labelVisible={visible}
+          labelVisible={resolvedLabelVisible}
+          keepButtonMounted={keepButtonMounted}
           position={position}
           onAction={handleButtonClick}
           onMouseEnter={handleButtonMouseEnter}
@@ -303,6 +321,7 @@ const ButtonHandleBase = ({
             backgroundColor={labelBackgroundColor}
             label={label}
             labelIcon={labelIcon}
+            visible={resolvedLabelVisible}
           />
         )
       )}
@@ -321,6 +340,7 @@ function InwardHandleContent({
   label,
   labelIcon,
   labelBackgroundColor,
+  labelVisible = true,
   layout,
 }: {
   handleType: HandleType;
@@ -331,13 +351,16 @@ function InwardHandleContent({
   label?: string;
   labelIcon?: React.ReactNode;
   labelBackgroundColor?: string;
+  labelVisible?: boolean;
   layout: InwardHandleLayout;
 }) {
   const labelElement = label ? (
     <div
+      aria-hidden={labelVisible ? undefined : true}
       className={cx(
         'pointer-events-none flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-surface px-2 py-0.5',
-        'text-xs font-medium leading-4 text-foreground-muted'
+        'text-xs font-medium leading-4 text-foreground-muted transition-opacity duration-250',
+        labelVisible ? 'opacity-100' : 'opacity-0'
       )}
       style={labelBackgroundColor ? { backgroundColor: labelBackgroundColor } : undefined}
     >
@@ -374,6 +397,8 @@ export interface ButtonHandleConfig {
   labelIcon?: React.ReactNode;
   showButton?: boolean;
   labelBackgroundColor?: string;
+  /** When the handle's label is shown. Defaults to `always`. */
+  labelVisibility?: HandleLabelVisibility;
   /** Config-level visibility — controls whether the handle is rendered at all. */
   visible?: boolean;
   /** Runtime visibility — controls opacity (e.g. connected handles stay visible). */
@@ -452,6 +477,10 @@ const ButtonHandlesBase = ({
       />
       {visibleHandles.map((handle, index) => {
         const handleVisible = handle.showHandle ?? visible;
+        // Hover-gated labels follow the node's hover/selection state; others
+        // track the handle's own visibility (current always-on behavior).
+        const labelVisible =
+          handleVisible && (handle.labelVisibility !== 'hover' || selected || hovered);
 
         return (
           <ButtonHandle
@@ -465,10 +494,12 @@ const ButtonHandlesBase = ({
             label={handle.label}
             labelIcon={handle.labelIcon}
             labelBackgroundColor={handle.labelBackgroundColor}
+            labelVisibility={handle.labelVisibility}
             index={index}
             total={visibleHandles.length}
             selected={selected}
             visible={handleVisible}
+            labelVisible={labelVisible}
             showButton={finalSelected && handleVisible && handle.showButton}
             onAction={handle.onAction}
             onMouseEnter={handle.onMouseEnter}
