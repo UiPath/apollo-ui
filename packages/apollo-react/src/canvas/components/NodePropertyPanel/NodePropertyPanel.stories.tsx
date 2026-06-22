@@ -1,7 +1,20 @@
 import MonacoEditor from '@monaco-editor/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { FormSchema } from '@uipath/apollo-wind';
-import { cn, Switch, Tabs, TabsContent, TabsList, TabsTrigger } from '@uipath/apollo-wind';
+import {
+  cn,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  MetadataForm,
+  Switch,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@uipath/apollo-wind';
 import {
   apolloCoreDarkHCMonaco,
   apolloCoreDarkMonaco,
@@ -20,9 +33,10 @@ import {
   Play,
   Plus,
   Sparkles,
+  Type,
   X,
 } from 'lucide-react';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { NodePropertyPanel } from './NodePropertyPanel';
 
@@ -53,6 +67,18 @@ function RunButton() {
     >
       <Play size={14} />
       Run
+    </button>
+  );
+}
+
+function RunButtonIconOnly() {
+  return (
+    <button
+      type="button"
+      aria-label="Run"
+      className="grid size-8 shrink-0 place-items-center rounded-lg bg-brand text-foreground-on-accent transition hover:bg-brand-hover"
+    >
+      <Play size={14} />
     </button>
   );
 }
@@ -582,7 +608,7 @@ const INLINE_EDITOR_OPTIONS = {
   padding: { top: 10, bottom: 10 },
   lineNumbers: 'off',
   lineNumbersMinChars: 0,
-  lineDecorationsWidth: 0,
+  lineDecorationsWidth: 14,
   glyphMargin: false,
   folding: false,
   renderLineHighlight: 'none',
@@ -904,7 +930,6 @@ function InlineCaseRow({
   const [value, setValue] = useState(defaultValue);
   const [mode, setMode] = useState<'fixed' | 'expression'>('fixed');
   const [insertOpen, setInsertOpen] = useState(false);
-  const [modePopoverOpen, setModePopoverOpen] = useState(false);
   const insertRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -1021,87 +1046,74 @@ function InlineCaseRow({
               options={INLINE_EDITOR_OPTIONS}
             />
             {value === '' && (
-              <div className="pointer-events-none absolute left-[6px] top-1/2 -translate-y-1/2 font-mono text-[13px] text-foreground-subtle">
+              <div className="pointer-events-none absolute left-[14px] top-1/2 -translate-y-1/2 font-mono text-[13px] text-foreground-subtle">
                 {mode === 'fixed' ? 'Enter a value' : 'Enter an expression'}
               </div>
             )}
           </div>
         </div>
-        {/* Mode toggle — click to switch, hover to pick from popover */}
-        <div
-          className="absolute right-2 top-1/2 z-10 flex -translate-y-1/2 items-center gap-1.5"
-          onMouseEnter={() => setModePopoverOpen(true)}
-          onMouseLeave={() => setModePopoverOpen(false)}
-        >
-          <div className="h-3.5 w-px bg-border-subtle" />
-          <button
-            type="button"
-            onClick={() => setMode((m) => (m === 'fixed' ? 'expression' : 'fixed'))}
-            aria-label={
-              mode === 'fixed' ? 'Switch to Javascript expression' : 'Switch to Plain text'
-            }
-            className={cn(
-              'flex h-5 items-center rounded border px-1.5 text-[10px] font-medium transition',
-              mode === 'expression'
-                ? 'border-brand/30 bg-brand/10 text-brand'
-                : 'border-border-subtle bg-surface-overlay text-foreground-muted hover:border-border hover:text-foreground'
-            )}
-          >
-            {mode === 'fixed' ? 'PT' : 'JS'}
-          </button>
-          {modePopoverOpen && (
-            <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-border-subtle bg-surface-overlay shadow-lg">
+        {/* Mode toggle — DropdownMenu picker */}
+        <div className="absolute right-2 top-1/2 z-10 flex -translate-y-1/2 items-center gap-1.5">
+          <div className="h-3.5 w-px bg-border" />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                onClick={() => {
-                  setMode('fixed');
-                  setModePopoverOpen(false);
-                }}
+                aria-label="Select expression mode"
                 className={cn(
-                  'flex w-full flex-col gap-0.5 px-3 py-2.5 text-left transition hover:bg-surface-raised',
+                  'flex h-6 items-center rounded border px-1.5 text-[10px] font-medium transition',
+                  mode === 'expression'
+                    ? 'border-brand/40 bg-brand/15 text-brand'
+                    : 'border-border bg-surface text-foreground-muted hover:text-foreground'
+                )}
+              >
+                {mode === 'fixed' ? 'PT' : 'JS'}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 p-1">
+              <DropdownMenuItem
+                onClick={() => setMode('fixed')}
+                className={cn(
+                  'flex flex-col items-start gap-0.5 py-2.5 focus:bg-surface-overlay',
                   mode === 'fixed' && 'bg-surface-raised'
                 )}
               >
-                <div className="flex items-center gap-1.5">
-                  <span
-                    className={cn(
-                      'size-1.5 shrink-0 rounded-full',
-                      mode === 'fixed' ? 'bg-brand' : 'bg-border'
-                    )}
+                <div className="flex items-center gap-2">
+                  <Type
+                    size={13}
+                    className={cn('shrink-0', mode === 'fixed' ? 'text-brand' : 'text-foreground-muted')}
                   />
-                  <span className="text-xs font-medium text-foreground">Plain text</span>
+                  <span className={cn('text-xs font-medium', mode === 'fixed' ? 'text-brand' : 'text-foreground')}>
+                    Plain text
+                  </span>
                 </div>
-                <span className="pl-3 text-[11px] leading-4 text-foreground-subtle">
+                <span className="pl-[21px] text-[11px] leading-4 text-foreground-subtle">
                   Enter static values like "hello" or 42
                 </span>
-              </button>
-              <div className="mx-3 h-px bg-border-subtle" />
-              <button
-                type="button"
-                onClick={() => {
-                  setMode('expression');
-                  setModePopoverOpen(false);
-                }}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setMode('expression')}
                 className={cn(
-                  'flex w-full flex-col gap-0.5 px-3 py-2.5 text-left transition hover:bg-surface-raised',
+                  'flex flex-col items-start gap-0.5 py-2.5 focus:bg-surface-overlay',
                   mode === 'expression' && 'bg-surface-raised'
                 )}
               >
-                <div className="flex items-center gap-1.5">
-                  <span
-                    className={cn(
-                      'size-1.5 shrink-0 rounded-full',
-                      mode === 'expression' ? 'bg-brand' : 'bg-border'
-                    )}
+                <div className="flex items-center gap-2">
+                  <Code2
+                    size={13}
+                    className={cn('shrink-0', mode === 'expression' ? 'text-brand' : 'text-foreground-muted')}
                   />
-                  <span className="text-xs font-medium text-foreground">Javascript expression</span>
+                  <span className={cn('text-xs font-medium', mode === 'expression' ? 'text-brand' : 'text-foreground')}>
+                    Javascript expression
+                  </span>
                 </div>
-                <span className="pl-3 text-[11px] leading-4 text-foreground-subtle">
+                <span className="pl-[21px] text-[11px] leading-4 text-foreground-subtle">
                   Compute the return value dynamically with JS
                 </span>
-              </button>
-            </div>
-          )}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>
@@ -1341,4 +1353,105 @@ function InlineEditingStory() {
 export const InlineEditing: Story = {
   name: 'Inline Editing',
   render: () => <InlineEditingStory />,
+};
+
+const SURFACE_REMAP = { '--surface-raised': 'var(--surface-overlay)' } as CSSProperties;
+
+function CompactResponsivePanelStory() {
+  const steps = httpRequestForm.steps ?? [];
+  const [activeStepId, setActiveStepId] = useState(steps[0]?.id ?? '');
+
+  const activeStep = steps.find((s) => s.id === activeStepId);
+
+  const flatSchema: FormSchema = {
+    id: httpRequestForm.id,
+    title: httpRequestForm.title,
+    mode: httpRequestForm.mode,
+    actions: [],
+    sections: activeStep?.sections ?? [],
+  };
+
+  return (
+    <NodePropertyPanel
+      panelTitle="Properties"
+      nodeLabel="Fetch invoice details"
+      nodeCategory="HTTP Request"
+      action={<RunButtonIconOnly />}
+      contentInset="0.875rem"
+      onClose={() => {}}
+      className="h-[480px]"
+    >
+      <div className="flex h-full flex-col" style={SURFACE_REMAP}>
+        <div className="shrink-0 border-b border-border-subtle px-[0.875rem] py-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex h-7 items-center gap-1.5 rounded-lg px-2 text-sm font-medium text-foreground transition hover:bg-surface-overlay"
+              >
+                <span>{activeStep?.title}</span>
+                <ChevronDown size={12} className="text-foreground-muted" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-44">
+              {steps.map((step) => (
+                <DropdownMenuItem
+                  key={step.id}
+                  onClick={() => setActiveStepId(step.id)}
+                  className={cn(
+                    'text-sm focus:bg-surface-overlay',
+                    step.id === activeStepId && 'bg-surface-raised font-medium'
+                  )}
+                >
+                  {step.title}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto [&_label]:text-foreground-muted">
+          <MetadataForm
+            schema={flatSchema}
+            className="flex flex-col gap-4 pb-6 pt-3 [padding-inline:0.875rem]"
+          />
+        </div>
+      </div>
+    </NodePropertyPanel>
+  );
+}
+
+export const Responsive: Story = {
+  name: 'Responsive',
+  render: () => (
+    <div className="flex items-start gap-[100px]">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-xs font-medium text-foreground">Fixed Size</span>
+          <span className="text-xs text-foreground-muted">Example Spacious</span>
+        </div>
+        <PanelFrame>
+          <NodePropertyPanel
+            panelTitle="Properties"
+            nodeIcon={<Globe />}
+            nodeLabel="Fetch invoice details"
+            nodeCategory="HTTP Request"
+            action={<RunButton />}
+            schema={httpRequestForm}
+            contentInset="0.875rem"
+            onClose={() => {}}
+            className="h-[640px]"
+          />
+        </PanelFrame>
+      </div>
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-xs font-medium text-foreground">Fixed Size</span>
+          <span className="text-xs text-foreground-muted">Example Compact</span>
+        </div>
+        <PanelFrame width="w-[280px]">
+          <CompactResponsivePanelStory />
+        </PanelFrame>
+      </div>
+    </div>
+  ),
 };
