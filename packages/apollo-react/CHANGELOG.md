@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.51.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.50.0...@uipath/apollo-react@4.51.0) (2026-06-22)
+
+### Features
+
+* **apollo-react:** add hover visibility option for handle labels ([556c528](https://github.com/UiPath/apollo-ui/commit/556c528898b5e66c249dd27848e2747bf2dd63a2))
+
 ## [@uipath/apollo-react-v4.50.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.49.0...@uipath/apollo-react@4.50.0) (2026-06-18)
 
 ### Features
