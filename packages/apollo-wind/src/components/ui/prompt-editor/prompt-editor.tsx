@@ -139,11 +139,16 @@ const EditorInner = forwardRef(
       () => ({
         setTokens: (tokens: PromptEditorToken[]) => {
           if (editorRef.current) {
+            // The update triggers OnChangePlugin → handleChange, which emits `onChange` once from the
+            // resulting state. Don't also call onChange here, or controlled consumers get a duplicate
+            // emit per setTokens() (extra renders / feedback loops).
             editorRef.current.update(() => {
               $setEditorTokensInternal(tokens);
             });
+          } else {
+            // No editor mounted yet → no OnChangePlugin emit, so notify directly.
+            onChangeRef.current?.(tokens);
           }
-          onChangeRef.current?.(tokens);
         },
         insertAutocompleteTrigger: () => {
           const editor = editorRef.current;

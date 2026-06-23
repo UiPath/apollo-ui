@@ -254,14 +254,17 @@ export const AutocompletePlugin = ({ options }: { options: PromptEditorAutoCompl
   );
 
   useEffect(() => {
+    // Track the last text content in a closure so each update reads the document once (current)
+    // rather than traversing both prev and current states via getTextContent() on every keystroke.
+    let lastText = editor.getEditorState().read(() => $getRoot().getTextContent());
     return mergeRegister(
-      editor.registerUpdateListener(({ editorState, prevEditorState }) => {
+      editor.registerUpdateListener(({ editorState }) => {
         // Detect whether this update changed the editor's text content (vs. just moving the
         // selection / cursor). Any text change means the user re-engaged the trigger flow, so we
         // forget the dismissed-`$` sentinel and let the next valid trigger open the picker fresh.
-        const prevText = prevEditorState.read(() => $getRoot().getTextContent());
         const currText = editorState.read(() => $getRoot().getTextContent());
-        const textChanged = prevText !== currText;
+        const textChanged = currText !== lastText;
+        lastText = currText;
         if (textChanged) dismissedTriggerRef.current = null;
 
         editorState.read(() => {
