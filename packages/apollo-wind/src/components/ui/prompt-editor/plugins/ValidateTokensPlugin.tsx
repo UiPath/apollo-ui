@@ -1,7 +1,15 @@
-import { useEffect } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { useEffect } from 'react';
 import type { PromptEditorAutoCompleteOption } from '../types';
 import { getAllPromptTokenNodes, type PromptTokenNode } from './shared/token-nodes';
+
+/** Lexical node type → token type. Constant, so defined once at module scope (not per node/pass). */
+const NODE_TYPE_TO_TOKEN_TYPE: Record<string, string> = {
+  'input-token': 'input',
+  'output-token': 'output',
+  'state-token': 'state',
+  'resource-token': 'resource',
+};
 
 export const ValidateTokensPlugin = ({
   options,
@@ -18,13 +26,7 @@ export const ValidateTokensPlugin = ({
     }
 
     const checkIsInvalid = (node: PromptTokenNode) => {
-      const nodeTypeToTokenType: Record<string, string> = {
-        'input-token': 'input',
-        'output-token': 'output',
-        'state-token': 'state',
-        'resource-token': 'resource',
-      };
-      const tokenType = nodeTypeToTokenType[node.getType()];
+      const tokenType = NODE_TYPE_TO_TOKEN_TYPE[node.getType()];
       if (!tokenType) return false;
       const validSet = validValues.get(tokenType);
       return !validSet || !validSet.has(node.getValue());

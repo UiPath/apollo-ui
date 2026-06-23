@@ -14,22 +14,23 @@ import {
 } from 'lexical';
 import {
   createInputTokenNode,
+  createOutputTokenNode,
+  createResourceTokenNode,
+  createStateTokenNode,
   InputTokenNode,
   isInputTokenNode,
-  createOutputTokenNode,
   isOutputTokenNode,
-  OutputTokenNode,
-  createStateTokenNode,
-  isStateTokenNode,
-  StateTokenNode,
-  createResourceTokenNode,
   isResourceTokenNode,
+  isStateTokenNode,
+  OutputTokenNode,
   ResourceTokenNode,
+  StateTokenNode,
 } from '../nodes';
 import type { PromptEditorToken } from '../types';
 
-/** Convert Lexical editor state to PromptEditorToken[] */
-export const WORD_JOINER = '⁠';
+/** U+2060 WORD JOINER — zero-width, used as a caret anchor next to inline token pills. Explicit
+ *  escape (not the invisible literal) so it can't be silently dropped/altered by editors. */
+export const WORD_JOINER = '\u2060';
 
 const appendTextToken = (tokens: PromptEditorToken[], raw: string) => {
   const text = raw.split(WORD_JOINER).join('');
