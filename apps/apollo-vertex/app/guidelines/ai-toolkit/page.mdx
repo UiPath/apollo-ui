@@ -1,0 +1,68 @@
+import { ColorShowcase } from './color-showcase'
+import { AiMark } from './ai-mark'
+import { MarkUsage } from './mark-usage'
+import { Surfaces } from './surfaces'
+import { Examples } from './examples'
+import { Badge } from '@/registry/badge/badge'
+
+# AI Toolkit <Badge status="ai" variant="secondary" className="align-middle ml-2">v1.0</Badge>
+
+A working style guide for the AI expression across the design system: the mark
+(full size and small), the mark paired with the wordmark, and the mark inside
+components like badges and cards.
+
+## Principles
+
+- **Match the expression to the moment.** A quiet tag marks provenance, a glow highlights a recommendation, the full mark signals a judgment call.
+- **Mark the group once, not every control.** Set the AI context at the boundary so the mark keeps its meaning.
+- **Pair a glow with a label.** The glow draws the eye and the label says why. Limit it to one best match per view.
+- **Use it sparingly.** The expression only reads as special when most of the UI stays neutral.
+
+## Color
+
+Two ramps anchor the AI expression: **Primary**, the brand cyan, and **Insight**,
+the violet that signals intelligence. The AI gradients blend the two: the strong
+gradient runs Insight 600 to Primary 300, and the subtle gradient is a soft tint
+pair for surface fills. The full token reference lives in [Foundation → Colors](/foundation/colors#ai-gradients).
+
+**Which gradient to use**
+
+- `--ai-gradient-strong`: the hero gradient. Use for AI marks, icon fills, and glows. Never place text on it.
+- `--ai-gradient-fill`: the same gradient, darkened to carry white text at AA. Use for badges and buttons.
+- `--ai-gradient-text`: use when AI text itself needs the gradient, clipped onto the letters.
+- `--ai-gradient`: the quiet tint. Use for AI surface fills and backgrounds.
+
+<ColorShowcase />
+
+## Mark and wordmark
+
+The mark, the `Astroid` icon, paired with the wordmark, set bold with tight letter spacing.
+Two fills: the AI gradient for expressive moments, and a solid fill for dense or
+small contexts.
+
+<AiMark />
+
+## In components
+
+The small mark in context: section headers, badges, and buttons. Each example
+below is labeled with when to use it. Gradient fill uses the text-safe `--ai-gradient-fill`
+(white text, AA); soft tint uses `--ai-gradient` with foreground text. To implement
+these, use the AI variants on the [Badge](/components/badge#ai) and [Button](/components/button#ai) components.
+
+<MarkUsage />
+
+## Surfaces
+
+AI surfaces. The chat input takes an AI gradient border on focus. Cards come
+solid or glass, and a glow, an AI gradient shadow, can sit behind either. See the
+[Input](/components/input#ai-variant) and [Card](/components/card#selectable) component
+pages for implementation.
+
+<Surfaces />
+
+## Examples
+
+Compositions that combine the mark, color, and components into real patterns.
+Each example shows the AI expression working alongside standard UI.
+
+<Examples />
