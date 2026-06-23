@@ -6,9 +6,9 @@
  */
 
 import { useLiveQuery } from "@tanstack/react-db";
-import { useSolution } from "@uipath/vs-core";
 import { ENTITY } from "./constants";
 import type { SolutionTestBatchRun } from "./types";
+import { useSolutionTestCollection } from "./use-solution-test-collection";
 
 export interface UseSolutionTestBatchRunsResult {
   batchRuns: SolutionTestBatchRun[];
@@ -17,11 +17,7 @@ export interface UseSolutionTestBatchRunsResult {
 
 /** Live list of batch runs. */
 export function useSolutionTestBatchRuns(): UseSolutionTestBatchRunsResult {
-  const solution = useSolution();
-  const collection = solution?.api.collections.solutionTests[ENTITY.batchRuns];
-  const { data, isLoading } = useLiveQuery<SolutionTestBatchRun>(
-    (q) => (collection ? q.from({ batchRuns: collection }) : null),
-    [collection],
-  );
+  const collection = useSolutionTestCollection(ENTITY.batchRuns);
+  const { data, isLoading } = useLiveQuery(() => collection, [collection]);
   return { batchRuns: data ?? [], isLoading };
 }

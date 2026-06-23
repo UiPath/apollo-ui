@@ -16,6 +16,7 @@ import { useSolutionTestsActions } from "./context";
 import type { AttachmentFetcher, MutationHook } from "./mutations";
 import { JobRole } from "./types";
 import type { SolutionTestJob } from "./types";
+import { useSolutionTestCollection } from "./use-solution-test-collection";
 
 export interface UseBaselineJobsResult {
   jobs: SolutionTestJob[];
@@ -24,12 +25,8 @@ export interface UseBaselineJobsResult {
 
 /** Live baseline jobs for a test. */
 export function useBaselineJobs(testId: string): UseBaselineJobsResult {
-  const solution = useSolution();
-  const collection = solution?.api.collections.solutionTests[ENTITY.jobs];
-  const { data, isLoading } = useLiveQuery<SolutionTestJob>(
-    (q) => (collection ? q.from({ jobs: collection }) : null),
-    [collection],
-  );
+  const collection = useSolutionTestCollection(ENTITY.jobs);
+  const { data, isLoading } = useLiveQuery(() => collection, [collection]);
   const jobs = (data ?? []).filter(
     (job) => job.SolutionTestId === testId && job.JobRole === JobRole.Baseline,
   );

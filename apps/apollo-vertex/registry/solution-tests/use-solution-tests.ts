@@ -13,6 +13,7 @@ import { ENTITY } from "./constants";
 import { useSolutionTestsActions } from "./context";
 import type { MutationHook } from "./mutations";
 import type { SolutionTest } from "./types";
+import { useSolutionTestCollection } from "./use-solution-test-collection";
 
 export interface UseSolutionTestsResult {
   tests: SolutionTest[];
@@ -21,12 +22,8 @@ export interface UseSolutionTestsResult {
 
 /** Live list of solution tests. */
 export function useSolutionTests(): UseSolutionTestsResult {
-  const solution = useSolution();
-  const collection = solution?.api.collections.solutionTests[ENTITY.tests];
-  const { data, isLoading } = useLiveQuery<SolutionTest>(
-    (q) => (collection ? q.from({ tests: collection }) : null),
-    [collection],
-  );
+  const collection = useSolutionTestCollection(ENTITY.tests);
+  const { data, isLoading } = useLiveQuery(() => collection, [collection]);
   return { tests: data ?? [], isLoading };
 }
 
