@@ -6,10 +6,10 @@ import { buildTokenIconSvgMarkup } from './token-icon-markup';
 
 const marked = new Marked({ async: false, gfm: true, breaks: true });
 
-// Preview element styles live in the package stylesheet (`styles/tailwind.utilities.css`, scoped
-// under `.prompt-editor-preview`) that consumers already import — see the note there. They were
-// previously injected inline here, but a per-component `.css` import doesn't resolve next to the
-// emitted JS in apollo-wind's bundless build, so the rules moved into the shared stylesheet.
+// Preview element styles live in the prompt-editor-scoped `styles/prompt-editor.css` (under
+// `.prompt-editor-preview`), pulled into the package stylesheet via an `@import` in
+// `styles/tailwind.consumer.css` and shipped by rslib's copy step. They aren't a per-component JS
+// `import './…css'` — that doesn't resolve next to the emitted JS in the bundless build.
 
 export interface MarkdownPreviewProps {
   tokens: PromptEditorToken[];
