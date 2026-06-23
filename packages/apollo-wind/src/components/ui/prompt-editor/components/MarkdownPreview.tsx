@@ -9,7 +9,7 @@ const marked = new Marked({ async: false, gfm: true, breaks: true });
 // Preview element styles live in the prompt-editor-scoped `styles/prompt-editor.css` (under
 // `.prompt-editor-preview`), pulled into the package stylesheet via an `@import` in
 // `styles/tailwind.consumer.css` and shipped by rslib's copy step. They aren't a per-component JS
-// `import './…css'` — that doesn't resolve next to the emitted JS in the bundless build.
+// `import './…css'` — that doesn't resolve next to the emitted JS in the bundleless build.
 
 export interface MarkdownPreviewProps {
   tokens: PromptEditorToken[];

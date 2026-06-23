@@ -17,7 +17,7 @@
 
 /* Component-scoped styles that need element selectors (not Tailwind classes), pulled in here so they
    ship with the package stylesheet without a per-component JS `.css` import (unsupported by the
-   bundless build). Kept in `styles/` (same dir) so the same-dir import survives the flat copy to dist. */
+   bundleless build). Kept in `styles/` (same dir) so the same-dir import survives the flat copy to dist. */
 @import "./prompt-editor.css";
 
 :root {

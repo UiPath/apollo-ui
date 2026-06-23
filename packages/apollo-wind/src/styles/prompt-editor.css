@@ -7,7 +7,7 @@
  * Lives in `styles/` (next to the other package stylesheets) rather than the component folder, and is
  * pulled in via `@import "./prompt-editor.css"` in `tailwind.consumer.css`, because the package ships
  * its CSS by copying `styles/*.css` flat to the dist root (see rslib.config `output.copy`) with
- * same-dir `@import`s — a per-component JS `.css` import doesn't resolve in the bundless build, and a
+ * same-dir `@import`s — a per-component JS `.css` import doesn't resolve in the bundleless build, and a
  * cross-dir `@import` would break the copied `dist/tailwind.css` entry.
  */
 .prompt-editor-preview { color: var(--color-foreground); }
