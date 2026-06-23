@@ -1,3 +1,23 @@
+## [@uipath/apollo-react-v4.52.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.51.0...@uipath/apollo-react@4.52.0) (2026-06-23)
+
+### Features
+
+* **apollo-react:** add Node Property Panel editor stories ([cbdef36](https://github.com/UiPath/apollo-ui/commit/cbdef36cae599feda105668612c3d792ea015ed5))
+* **apollo-react:** add NodePropertyPanel editor stories with inline editing ([e63dba9](https://github.com/UiPath/apollo-ui/commit/e63dba90b99dcb5b2663a155ec127767e7b13d98))
+* **apollo-react:** add Responsive story with compact panel dropdown tab navigation ([c383cf9](https://github.com/UiPath/apollo-ui/commit/c383cf9eb93824a0af43f16162017ce55fefdb44))
+* **apollo-react:** update Editor Inline with Insert popover and mode toggle ([1ccf0ee](https://github.com/UiPath/apollo-ui/commit/1ccf0eef2105d91b18ae51f44f847cb90c8ef397))
+
+### Bug Fixes
+
+* **apollo-react:** address final PR review feedback ([63986df](https://github.com/UiPath/apollo-ui/commit/63986dfd2a1a0142df948d7c1439bc6ee39d5414))
+* **apollo-react:** address PR review feedback on NodePropertyPanel ([1c7555e](https://github.com/UiPath/apollo-ui/commit/1c7555e538f689e9db160861d41527633d71b77b))
+* **apollo-react:** address second round of PR [#793](https://github.com/UiPath/apollo-ui/issues/793) Copilot feedback ([72d67c1](https://github.com/UiPath/apollo-ui/commit/72d67c159a793bd3f9d1cb27acd08e426c6f4210))
+* **apollo-react:** fix ExpressionField status dot token and docstring accuracy ([be0d97c](https://github.com/UiPath/apollo-ui/commit/be0d97cc755fe26915ce72a6e5214821984d515d))
+* **apollo-react:** guard getMonacoThemeName against SSR/Node environment ([3858986](https://github.com/UiPath/apollo-ui/commit/3858986edc61a21f2c2d5e280996ea169cc1f25f))
+* **apollo-react:** match compact tab text size and reduce responsive story gap ([1fdce1e](https://github.com/UiPath/apollo-ui/commit/1fdce1e5228a0c4a49333b020b6a01b903f36e29))
+* **apollo-react:** remove unused onChange from ExpressionField; restore vite 8 in storybook ([f13fd49](https://github.com/UiPath/apollo-ui/commit/f13fd493e9f73f7d801f543248b5e297ea8c9046))
+* **apollo-react:** restore NodePropertyPanel borders and fix surface/inset regressions ([6beb42c](https://github.com/UiPath/apollo-ui/commit/6beb42c88af3432d734601c744effd58088d966b))
+
 ## [@uipath/apollo-react-v4.51.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.50.0...@uipath/apollo-react@4.51.0) (2026-06-22)
 
 ### Features

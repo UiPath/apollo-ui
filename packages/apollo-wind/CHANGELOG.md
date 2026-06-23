@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.23.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.22.0...@uipath/apollo-wind@2.23.0) (2026-06-23)
+
+### Features
+
+* **apollo-react:** add NodePropertyPanel editor stories with inline editing ([e63dba9](https://github.com/UiPath/apollo-ui/commit/e63dba90b99dcb5b2663a155ec127767e7b13d98))
+
 ## [@uipath/apollo-wind-v2.22.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.21.0...@uipath/apollo-wind@2.22.0) (2026-06-18)
 
 ### Features
