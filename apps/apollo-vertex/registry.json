@@ -204,7 +204,12 @@
           "ai-chat-muted": "oklch(0.955 0.006 260)",
           "ai-chat-muted-foreground": "oklch(0.50 0.020 260)",
           "ai-chat-brand-gradient": "linear-gradient(97.73deg, #5D4ED0 8.79%, #1076A0 91.48%)",
-          "ai-gradient": "linear-gradient(100.64deg, rgb(238, 224, 255) 8.29%, rgb(207, 217, 255) 88.73%)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-100) 8.29%, var(--primary-50) 88.73%)",
+          "ai-glow-start": "var(--insight-100)",
+          "ai-glow-end": "var(--primary-50)",
+          "ai-glass": "color-mix(in srgb, var(--card) 80%, transparent)",
+          "ai-gradient-fill": "linear-gradient(97.73deg, var(--insight-600) 8.79%, var(--primary-700) 91.48%)",
+          "ai-gradient-text": "linear-gradient(97.73deg, var(--insight-600) 8.79%, var(--primary-700) 91.48%)",
           "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
           "ai-gradient-start": "#6C5AEF",
           "ai-gradient-end": "#69C7DD"
@@ -306,7 +311,12 @@
           "ai-chat-muted": "oklch(0.26 0.030 258)",
           "ai-chat-muted-foreground": "oklch(0.65 0.020 258)",
           "ai-chat-brand-gradient": "linear-gradient(97.73deg, #9485F5 8.79%, #69C7DD 91.48%)",
-          "ai-gradient": "linear-gradient(98.69deg, rgb(108, 90, 239) 8.79%, rgb(105, 199, 221) 91.48%)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-800) 8.29%, var(--primary-800) 88.73%)",
+          "ai-glow-start": "var(--insight-800)",
+          "ai-glow-end": "var(--primary-800)",
+          "ai-glass": "color-mix(in srgb, var(--card) 90%, transparent)",
+          "ai-gradient-fill": "linear-gradient(97.73deg, var(--insight-600) 8.79%, var(--primary-700) 91.48%)",
+          "ai-gradient-text": "linear-gradient(97.73deg, var(--insight-400) 8.79%, var(--primary-400) 91.48%)",
           "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
           "ai-gradient-start": "#6C5AEF",
           "ai-gradient-end": "#69C7DD"
@@ -2580,227 +2590,6 @@
         {
           "path": "registry/protected-feature-route/protected-feature-route.tsx",
           "type": "registry:ui"
-        }
-      ]
-    },
-    {
-      "name": "solution-tests",
-      "type": "registry:ui",
-      "title": "Solution Tests",
-      "description": "Page-level view for managing UiPath Solution Tests — test cases, batch runs, KPI trend, run-result baselines, and adopt/update/remove actions. Domain-neutral: the smart container reads the generic UiPathST* entity collections from your vs-core solution via collection-backed hooks, and the subject entity is parameterized via SolutionTestsConfig.",
-      "dependencies": [
-        "@tanstack/react-db@^0.1.86",
-        "@tanstack/react-query@^5.90.0",
-        "@tanstack/react-table",
-        "@tanstack/react-router",
-        "@uipath/vs-core@^2.0.6",
-        "@uipath/uipath-typescript@^1.0.0",
-        "react-i18next",
-        "recharts@2.15.4",
-        "sonner",
-        "lucide-react",
-        "zod"
-      ],
-      "registryDependencies": [
-        "@uipath/alert",
-        "@uipath/badge",
-        "@uipath/button",
-        "@uipath/card",
-        "@uipath/chart",
-        "@uipath/data-table",
-        "@uipath/dialog",
-        "@uipath/empty",
-        "@uipath/page-header",
-        "@uipath/skeleton",
-        "@uipath/sonner",
-        "@uipath/spinner",
-        "@uipath/switch",
-        "@uipath/table",
-        "@uipath/tabs",
-        "@uipath/tooltip"
-      ],
-      "files": [
-        {
-          "path": "registry/solution-tests/index.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/index.ts"
-        },
-        {
-          "path": "registry/solution-tests/solution-tests-view.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/solution-tests-view.tsx"
-        },
-        {
-          "path": "registry/solution-tests/solution-tests.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/solution-tests.tsx"
-        },
-        {
-          "path": "registry/solution-tests/context.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/context.tsx"
-        },
-        {
-          "path": "registry/solution-tests/hooks.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/hooks.ts"
-        },
-        {
-          "path": "registry/solution-tests/constants.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/constants.ts"
-        },
-        {
-          "path": "registry/solution-tests/mutations.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/mutations.ts"
-        },
-        {
-          "path": "registry/solution-tests/attachments.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/attachments.ts"
-        },
-        {
-          "path": "registry/solution-tests/actions.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/actions.ts"
-        },
-        {
-          "path": "registry/solution-tests/create-actions.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/create-actions.ts"
-        },
-        {
-          "path": "registry/solution-tests/use-solution-tests.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/use-solution-tests.ts"
-        },
-        {
-          "path": "registry/solution-tests/use-solution-test-collection.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/use-solution-test-collection.ts"
-        },
-        {
-          "path": "registry/solution-tests/use-solution-test-batch-runs.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/use-solution-test-batch-runs.ts"
-        },
-        {
-          "path": "registry/solution-tests/use-solution-test-runs.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/use-solution-test-runs.ts"
-        },
-        {
-          "path": "registry/solution-tests/use-baseline-jobs.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/use-baseline-jobs.ts"
-        },
-        {
-          "path": "registry/solution-tests/use-run-results.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/use-run-results.ts"
-        },
-        {
-          "path": "registry/solution-tests/use-force-stop.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/use-force-stop.ts"
-        },
-        {
-          "path": "registry/solution-tests/config.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/config.ts"
-        },
-        {
-          "path": "registry/solution-tests/types.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/types.ts"
-        },
-        {
-          "path": "registry/solution-tests/tabs.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/tabs.ts"
-        },
-        {
-          "path": "registry/solution-tests/status-maps.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/status-maps.ts"
-        },
-        {
-          "path": "registry/solution-tests/utils.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/utils.ts"
-        },
-        { "path": "lib/renderValueOrEmptyState.ts", "type": "registry:lib" },
-        { "path": "lib/constants.ts", "type": "registry:lib" },
-        {
-          "path": "registry/solution-tests/user-messages.ts",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/user-messages.ts"
-        },
-        {
-          "path": "registry/solution-tests/user-messages-view.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/user-messages-view.tsx"
-        },
-        {
-          "path": "registry/solution-tests/json-viewer-dialog.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/json-viewer-dialog.tsx"
-        },
-        {
-          "path": "registry/solution-tests/delete-confirm-dialog.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/delete-confirm-dialog.tsx"
-        },
-        {
-          "path": "registry/solution-tests/evaluator-results-view.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/evaluator-results-view.tsx"
-        },
-        {
-          "path": "registry/solution-tests/kpi-bar.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/kpi-bar.tsx"
-        },
-        {
-          "path": "registry/solution-tests/expanded-agents.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/expanded-agents.tsx"
-        },
-        {
-          "path": "registry/solution-tests/expanded-agents-view.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/expanded-agents-view.tsx"
-        },
-        {
-          "path": "registry/solution-tests/result-expanded-content.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/result-expanded-content.tsx"
-        },
-        {
-          "path": "registry/solution-tests/run-confirm-dialog.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/run-confirm-dialog.tsx"
-        },
-        {
-          "path": "registry/solution-tests/run-details-dialog.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/run-details-dialog.tsx"
-        },
-        {
-          "path": "registry/solution-tests/run-details-dialog-view.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/run-details-dialog-view.tsx"
-        },
-        {
-          "path": "registry/solution-tests/expanded-run-tests.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/expanded-run-tests.tsx"
-        },
-        {
-          "path": "registry/solution-tests/expanded-run-tests-view.tsx",
-          "type": "registry:ui",
-          "target": "components/ui/solution-tests/expanded-run-tests-view.tsx"
         }
       ]
     }
