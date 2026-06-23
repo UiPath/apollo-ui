@@ -20,6 +20,7 @@ import type {
   SolutionTestJob,
   SolutionTestRunResult,
 } from "./types";
+import { useSolutionTestCollection } from "./use-solution-test-collection";
 
 export interface UseRunResultsResult {
   results: SolutionTestRunResult[];
@@ -44,16 +45,14 @@ function isBaselineJobResult(
 
 /** Live run results for a run, excluding entry-point jobs (role != Baseline). */
 export function useRunResults(runId: string): UseRunResultsResult {
-  const solution = useSolution();
-  const resultsCollection =
-    solution?.api.collections.solutionTests[ENTITY.runResults];
-  const jobsCollection = solution?.api.collections.solutionTests[ENTITY.jobs];
-  const { data, isReady: resultsReady } = useLiveQuery<SolutionTestRunResult>(
-    (q) => (resultsCollection ? q.from({ results: resultsCollection }) : null),
+  const resultsCollection = useSolutionTestCollection(ENTITY.runResults);
+  const jobsCollection = useSolutionTestCollection(ENTITY.jobs);
+  const { data, isReady: resultsReady } = useLiveQuery(
+    () => resultsCollection,
     [resultsCollection],
   );
-  const { data: jobsData, isReady: jobsReady } = useLiveQuery<SolutionTestJob>(
-    (q) => (jobsCollection ? q.from({ jobs: jobsCollection }) : null),
+  const { data: jobsData, isReady: jobsReady } = useLiveQuery(
+    () => jobsCollection,
     [jobsCollection],
   );
   // The role filter needs both collections. Until both are ready, stay loading

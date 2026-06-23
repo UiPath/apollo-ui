@@ -2676,6 +2676,11 @@
           "target": "components/ui/solution-tests/use-solution-tests.ts"
         },
         {
+          "path": "registry/solution-tests/use-solution-test-collection.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/use-solution-test-collection.ts"
+        },
+        {
           "path": "registry/solution-tests/use-solution-test-batch-runs.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/use-solution-test-batch-runs.ts"
