@@ -53,23 +53,41 @@ Shadow tokens use a consistent structure: a diffuse ambient layer plus an offset
   ))}
 </div>
 
-## AI Gradient
+## AI Gradients
 
-A special two-stop gradient used for AI-adjacent UI surfaces.
+Gradient tokens for the AI expression. Each swatch resolves the live token, so it reflects the current theme. The fill and strong gradients are the same in light and dark; the text and subtle gradients shift ramp steps per theme. See the [AI Toolkit](/guidelines/ai-toolkit) for usage and contrast guidance.
 
-<div className="not-prose my-6 grid grid-cols-2 gap-3">
+<div className="not-prose my-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
   <div className="rounded-lg border border-border overflow-hidden">
-    <div className="h-20" style={{ background: 'linear-gradient(100.64deg, rgb(238, 224, 255) 8.29%, rgb(207, 217, 255) 88.73%)' }} />
+    <div className="h-20" style={{ background: 'var(--ai-gradient-fill)' }} />
     <div className="p-3">
-      <span className="text-sm font-medium text-foreground">Light</span>
-      <code className="block text-xs font-mono text-muted-foreground mt-1">--ai-gradient</code>
+      <span className="text-sm font-medium text-foreground">Fill</span>
+      <code className="block text-xs font-mono text-muted-foreground mt-1">--ai-gradient-fill</code>
+      <span className="block text-xs text-muted-foreground mt-1">Solid fill behind white text (passes AA).</span>
     </div>
   </div>
   <div className="rounded-lg border border-border overflow-hidden">
-    <div className="h-20" style={{ background: 'linear-gradient(98.69deg, rgb(108, 90, 239) 8.79%, rgb(105, 199, 221) 91.48%)' }} />
+    <div className="h-20" style={{ background: 'var(--ai-gradient-text)' }} />
     <div className="p-3">
-      <span className="text-sm font-medium text-foreground">Dark</span>
-      <code className="block text-xs font-mono text-muted-foreground mt-1">--ai-gradient (dark)</code>
+      <span className="text-sm font-medium text-foreground">Text</span>
+      <code className="block text-xs font-mono text-muted-foreground mt-1">--ai-gradient-text</code>
+      <span className="block text-xs text-muted-foreground mt-1">Gradient-clipped text; lifts to lighter steps in dark.</span>
+    </div>
+  </div>
+  <div className="rounded-lg border border-border overflow-hidden">
+    <div className="h-20" style={{ background: 'var(--ai-gradient-strong)' }} />
+    <div className="p-3">
+      <span className="text-sm font-medium text-foreground">Strong</span>
+      <code className="block text-xs font-mono text-muted-foreground mt-1">--ai-gradient-strong</code>
+      <span className="block text-xs text-muted-foreground mt-1">Decorative marks, icon fills, and glows.</span>
+    </div>
+  </div>
+  <div className="rounded-lg border border-border overflow-hidden">
+    <div className="h-20" style={{ background: 'var(--ai-gradient)' }} />
+    <div className="p-3">
+      <span className="text-sm font-medium text-foreground">Subtle</span>
+      <code className="block text-xs font-mono text-muted-foreground mt-1">--ai-gradient</code>
+      <span className="block text-xs text-muted-foreground mt-1">Soft surface tint and inset glow; deeper steps in dark.</span>
     </div>
   </div>
 </div>
