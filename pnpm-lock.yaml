@@ -1043,8 +1043,8 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       dompurify:
-        specifier: '>=3.4.9'
-        version: 3.4.10
+        specifier: '>=3.4.11'
+        version: 3.4.11
       framer-motion:
         specifier: ^12.26.2
         version: 12.26.2(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
