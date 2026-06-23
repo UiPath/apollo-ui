@@ -1081,9 +1081,17 @@ function InlineCaseRow({
                 <div className="flex items-center gap-2">
                   <Type
                     size={13}
-                    className={cn('shrink-0', mode === 'fixed' ? 'text-brand' : 'text-foreground-muted')}
+                    className={cn(
+                      'shrink-0',
+                      mode === 'fixed' ? 'text-brand' : 'text-foreground-muted'
+                    )}
                   />
-                  <span className={cn('text-xs font-medium', mode === 'fixed' ? 'text-brand' : 'text-foreground')}>
+                  <span
+                    className={cn(
+                      'text-xs font-medium',
+                      mode === 'fixed' ? 'text-brand' : 'text-foreground'
+                    )}
+                  >
                     Plain text
                   </span>
                 </div>
@@ -1102,9 +1110,17 @@ function InlineCaseRow({
                 <div className="flex items-center gap-2">
                   <Code2
                     size={13}
-                    className={cn('shrink-0', mode === 'expression' ? 'text-brand' : 'text-foreground-muted')}
+                    className={cn(
+                      'shrink-0',
+                      mode === 'expression' ? 'text-brand' : 'text-foreground-muted'
+                    )}
                   />
-                  <span className={cn('text-xs font-medium', mode === 'expression' ? 'text-brand' : 'text-foreground')}>
+                  <span
+                    className={cn(
+                      'text-xs font-medium',
+                      mode === 'expression' ? 'text-brand' : 'text-foreground'
+                    )}
+                  >
                     Javascript expression
                   </span>
                 </div>
@@ -1387,7 +1403,7 @@ function CompactResponsivePanelStory() {
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="flex h-7 items-center gap-1.5 rounded-lg px-2 text-sm font-medium text-foreground transition hover:bg-surface-overlay"
+                className="flex h-7 items-center gap-1.5 rounded-lg px-2 text-xs font-medium text-foreground transition hover:bg-surface-overlay"
               >
                 <span>{activeStep?.title}</span>
                 <ChevronDown size={12} className="text-foreground-muted" />
@@ -1423,7 +1439,7 @@ function CompactResponsivePanelStory() {
 export const Responsive: Story = {
   name: 'Responsive',
   render: () => (
-    <div className="flex items-start gap-[100px]">
+    <div className="flex items-start gap-[80px]">
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-0.5">
           <span className="text-xs font-medium text-foreground">Fixed Size</span>
