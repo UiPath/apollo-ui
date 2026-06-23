@@ -6,10 +6,39 @@ import { buildTokenIconSvgMarkup } from './token-icon-markup';
 
 const marked = new Marked({ async: false, gfm: true, breaks: true });
 
-// Preview element styles live in the prompt-editor-scoped `styles/prompt-editor.css` (under
-// `.prompt-editor-preview`), pulled into the package stylesheet via an `@import` in
-// `styles/tailwind.consumer.css` and shipped by rslib's copy step. They aren't a per-component JS
-// `import './…css'` — that doesn't resolve next to the emitted JS in the bundleless build.
+/**
+ * Preview element styles, injected via an inline `<style>` so they load only when the preview
+ * actually renders — not for every apollo-wind consumer (which a global stylesheet `@import` would
+ * do), and without a per-component JS `.css` import (which doesn't resolve in the bundleless build).
+ * Scoped under `.prompt-editor-preview`; colors use design tokens.
+ */
+const MARKDOWN_PREVIEW_STYLES = `
+.prompt-editor-preview { color: var(--color-foreground); }
+.prompt-editor-preview-empty { color: var(--color-muted-foreground); }
+.prompt-editor-preview h1 { font-size: 1.5em; font-weight: 700; margin: 0.5em 0 0.25em; line-height: 1.3; }
+.prompt-editor-preview h2 { font-size: 1.25em; font-weight: 700; margin: 0.5em 0 0.25em; line-height: 1.3; }
+.prompt-editor-preview h3 { font-size: 1.1em; font-weight: 600; margin: 0.4em 0 0.2em; line-height: 1.3; }
+.prompt-editor-preview h4, .prompt-editor-preview h5, .prompt-editor-preview h6 { font-size: 1em; font-weight: 600; margin: 0.4em 0 0.2em; line-height: 1.3; }
+.prompt-editor-preview p { margin: 0.25em 0; }
+.prompt-editor-preview code { font-family: 'Fira Code', 'Consolas', monospace; font-size: 0.875em; padding: 0.15em 0.4em; border-radius: 4px; background-color: var(--color-muted); color: var(--color-foreground); }
+.prompt-editor-preview pre { margin: 0.5em 0; padding: 0.75em 1em; border-radius: 6px; overflow-x: auto; background-color: var(--color-muted); color: var(--color-foreground); }
+.prompt-editor-preview pre code { padding: 0; background: none; font-size: 0.85em; }
+.prompt-editor-preview blockquote { margin: 0.5em 0; padding: 0.25em 0.75em; border-left: 3px solid var(--color-border); color: var(--color-muted-foreground); }
+.prompt-editor-preview ul, .prompt-editor-preview ol { margin: 0.25em 0; padding-left: 1.5em; }
+.prompt-editor-preview ul { list-style-type: disc; }
+.prompt-editor-preview ol { list-style-type: decimal; }
+.prompt-editor-preview li { margin: 0.1em 0; }
+.prompt-editor-preview a { color: var(--color-primary); text-decoration: underline; text-underline-offset: 2px; }
+.prompt-editor-preview a:hover { opacity: 0.8; }
+.prompt-editor-preview hr { margin: 0.75em 0; border: none; border-top: 1px solid var(--color-border); }
+.prompt-editor-preview table { border-collapse: collapse; margin: 0.5em 0; width: 100%; }
+.prompt-editor-preview th, .prompt-editor-preview td { border: 1px solid var(--color-border); padding: 0.35em 0.75em; text-align: left; }
+.prompt-editor-preview th { font-weight: 600; background-color: var(--color-muted); }
+.prompt-editor-preview strong { font-weight: 700; }
+.prompt-editor-preview em { font-style: italic; }
+.prompt-editor-preview .token-pill { display: inline-flex; align-items: center; gap: 3px; height: 20px; padding: 0 4px; border-radius: 4px; font-size: 13px; line-height: 20px; vertical-align: middle; background: var(--color-primary-lighter); color: var(--color-foreground); }
+.prompt-editor-preview .token-pill svg { display: block; flex-shrink: 0; color: var(--color-primary); width: 14px; height: 14px; }
+`;
 
 export interface MarkdownPreviewProps {
   tokens: PromptEditorToken[];
@@ -161,17 +190,20 @@ export const MarkdownPreview = ({ tokens, minRows = 4 }: MarkdownPreviewProps) =
   }, [tokens]);
 
   return (
-    <div
-      className="prompt-editor-preview"
-      style={{
-        padding: '8px 12px',
-        minHeight: `${minRows * LINE_HEIGHT + VERTICAL_PADDING * 2}px`,
-        fontFamily: "'Noto Sans', sans-serif",
-        fontSize: '14px',
-        lineHeight: '20px',
-      }}
-      // biome-ignore lint/security/noDangerouslySetInnerHtml: HTML is produced by marked then sanitized through DOMPurify with a strict allowlist (PURIFY_CONFIG) before this point.
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    <>
+      <style>{MARKDOWN_PREVIEW_STYLES}</style>
+      <div
+        className="prompt-editor-preview"
+        style={{
+          padding: '8px 12px',
+          minHeight: `${minRows * LINE_HEIGHT + VERTICAL_PADDING * 2}px`,
+          fontFamily: "'Noto Sans', sans-serif",
+          fontSize: '14px',
+          lineHeight: '20px',
+        }}
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: HTML is produced by marked then sanitized through DOMPurify with a strict allowlist (PURIFY_CONFIG) before this point.
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    </>
   );
 };

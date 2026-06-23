@@ -65,8 +65,6 @@ export default defineConfig({
       { from: './src/styles/tailwind.consumer.css', to: './tailwind.css' },
       // tailwind.consumer.css imports this via relative path
       { from: './src/styles/tailwind.utilities.css', to: './tailwind.utilities.css' },
-      // tailwind.consumer.css also imports the prompt-editor preview styles (same-dir import)
-      { from: './src/styles/prompt-editor.css', to: './prompt-editor.css' },
     ],
   },
   tools: {
