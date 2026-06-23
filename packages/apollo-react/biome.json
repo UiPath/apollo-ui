@@ -76,7 +76,7 @@
   },
   "overrides": [
     {
-      "includes": ["**/*.stories.tsx"],
+      "includes": ["**/NodePropertyPanel.stories.tsx"],
       "linter": {
         "rules": {
           "a11y": {

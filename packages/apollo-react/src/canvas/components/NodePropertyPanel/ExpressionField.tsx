@@ -100,6 +100,7 @@ export function ExpressionField({
           <button
             type="button"
             onClick={() => onModeChange?.('expr')}
+            aria-pressed={activeMode === 'expr'}
             className="rounded px-2 py-0.5 text-[11px] transition"
             style={{
               color: activeMode === 'expr' ? 'var(--foreground)' : 'var(--foreground-subtle)',
@@ -111,6 +112,7 @@ export function ExpressionField({
           <button
             type="button"
             onClick={() => onModeChange?.('json')}
+            aria-pressed={activeMode === 'json'}
             className="rounded px-2 py-0.5 text-[11px] transition"
             style={{
               color: activeMode === 'json' ? 'var(--foreground)' : 'var(--foreground-subtle)',
