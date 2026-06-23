@@ -16,13 +16,13 @@ export interface ExpressionFieldProps {
 }
 
 /**
- * ExpressionField — syntax-highlighted expression editor with mode switcher.
+ * ExpressionField — read-only expression display with mode switcher.
  *
- * Phase 1: read-only display with Expr / JSON mode toggle, undo/redo chrome,
+ * Phase 1: plain-text display with Expr / JSON mode toggle, undo/redo chrome,
  * AI assist button, and Insert variable affordance.
  *
- * Phase 2: live editing via Monaco/CodeMirror with variable binding ({x} pill),
- * real-time validation, and IntelliSense.
+ * Phase 2: live editing via Monaco/CodeMirror with syntax highlighting,
+ * variable binding ({x} pill), real-time validation, and IntelliSense.
  */
 export function ExpressionField({
   label,
@@ -131,7 +131,7 @@ export function ExpressionField({
         {/* Footer */}
         <div className="flex items-center justify-between border-t border-border-subtle bg-surface px-3 py-1.5">
           <div className="flex items-center gap-1.5">
-            <span className="size-1.5 shrink-0 rounded-full bg-green-500" />
+            <span className="size-1.5 shrink-0 rounded-full bg-[--success]" />
             <span className="text-[10px] text-foreground-subtle">No errors</span>
           </div>
           <span className="text-[10px] text-foreground-subtle">Ln 1, Col 1</span>
