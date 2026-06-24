@@ -49,6 +49,7 @@ export function NodePropertyPanel({
   className,
   contentInset = '1.5rem',
   children,
+  headerExtra,
 }: NodePropertyPanelProps) {
   const hasNodeHeader = !!(nodeLabel || nodeCategory || nodeIcon || action);
 
@@ -74,17 +75,20 @@ export function NodePropertyPanel({
             </div>
             <span className="text-sm font-semibold text-foreground">{panelTitle}</span>
           </div>
-          {onClose && (
-            <button
-              type="button"
-              onClick={onClose}
-              title="Close"
-              aria-label="Close"
-              className="grid size-6 place-items-center rounded text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
-            >
-              <X size={14} />
-            </button>
-          )}
+          <div className="flex items-center gap-1">
+            {headerExtra}
+            {onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                title="Close"
+                aria-label="Close"
+                className="grid size-6 place-items-center rounded text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
         </div>
       )}
 

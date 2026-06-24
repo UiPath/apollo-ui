@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  Input,
   MetadataForm,
   ScrollableTabsList,
   Switch,
@@ -26,13 +27,18 @@ import {
 } from '@uipath/apollo-wind/editor-themes';
 import {
   ChevronDown,
+  ChevronsDownUp,
+  ChevronsUpDown,
   CircleCheck,
   Code2,
+  Copy,
   GitFork,
   Globe,
   GripVertical,
   Play,
   Plus,
+  Search,
+  SlidersHorizontal,
   Sparkles,
   Type,
   X,
@@ -1284,6 +1290,1470 @@ function InputEditorStory() {
 export const InputEditor: Story = {
   name: 'Editor Inline',
   render: () => <InputEditorStory />,
+};
+
+// ============================================================================
+// Output Panel helpers
+// ============================================================================
+
+type OutputNode = {
+  key: string;
+  type: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'null';
+  value?: string | number | boolean | null;
+  children?: OutputNode[];
+  path: string;
+};
+
+function outputTypeIcon(type: string) {
+  if (type === 'string')
+    return (
+      <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: '14px', lineHeight: '1' }}>
+        T
+      </span>
+    );
+  if (type === 'number')
+    return <span className="font-mono text-[13px] font-bold leading-none">#</span>;
+  if (type === 'null')
+    return <span className="font-mono text-[13px] leading-none">&#8709;</span>;
+  if (type === 'object')
+    return (
+      <span className="font-mono text-[11px] font-bold leading-none tracking-tighter">{'{}'}</span>
+    );
+  if (type === 'array')
+    return (
+      <svg
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      >
+        <path d="M8 6h12M8 12h12M8 18h12M3.5 6h.01M3.5 12h.01M3.5 18h.01" />
+      </svg>
+    );
+  return null;
+}
+
+function TypeBadge({ type }: { type: string }) {
+  const configs: Record<string, { label: string; cls: string }> = {
+    string:  { label: 'T',   cls: 'border-blue-500/30 bg-blue-500/10 text-blue-400' },
+    number:  { label: '#',   cls: 'border-amber-500/30 bg-amber-500/10 text-amber-400' },
+    boolean: { label: '?',   cls: 'border-green-500/30 bg-green-500/10 text-green-400' },
+    object:  { label: '{}',  cls: 'border-purple-500/30 bg-purple-500/10 text-purple-400' },
+    array:   { label: '[]',  cls: 'border-purple-500/30 bg-purple-500/10 text-purple-400' },
+    null:    { label: '∅',   cls: 'border-border bg-surface-overlay text-foreground-muted' },
+  };
+  const { label, cls } = configs[type] ?? { label: '?', cls: 'border-border bg-surface-overlay text-foreground-muted' };
+  return (
+    <span className={cn('inline-flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded border px-0.5 font-mono text-[9px] font-semibold leading-none', cls)}>
+      {label}
+    </span>
+  );
+}
+
+function outputValueColorClass(type: string, value: unknown): string {
+  if (type === 'string') return 'text-[#2f8a3e]';
+  if (type === 'number') return 'text-[#0e7490]';
+  if (type === 'boolean') return value ? 'text-[#1f9d57]' : 'text-[#d83a2b]';
+  if (type === 'null') return 'text-foreground-subtle';
+  return 'text-foreground';
+}
+
+function formatOutputValue(
+  type: string,
+  value: string | number | boolean | null | undefined,
+): string {
+  if (type === 'null' || value === null || value === undefined) return 'null';
+  if (type === 'string') return `"${value}"`;
+  return String(value);
+}
+
+function nodeMatchesQuery(node: OutputNode, q: string): boolean {
+  if (!q) return true;
+  if (node.key.toLowerCase().includes(q)) return true;
+  if (node.value !== undefined && node.value !== null && String(node.value).toLowerCase().includes(q))
+    return true;
+  return node.children?.some((c) => nodeMatchesQuery(c, q)) ?? false;
+}
+
+function collectContainerPaths(nodes: OutputNode[]): string[] {
+  const paths: string[] = [];
+  for (const n of nodes) {
+    if (n.children) {
+      paths.push(n.path);
+      paths.push(...collectContainerPaths(n.children));
+    }
+  }
+  return paths;
+}
+
+type FlatRow = { node: OutputNode; depth: number };
+
+function flattenOutputTree(
+  nodes: OutputNode[],
+  collapsed: Record<string, boolean>,
+  query: string,
+  depth = 0,
+): FlatRow[] {
+  const rows: FlatRow[] = [];
+  for (const n of nodes) {
+    if (query && !nodeMatchesQuery(n, query)) continue;
+    rows.push({ node: n, depth });
+    if (n.children && !collapsed[n.path]) {
+      rows.push(...flattenOutputTree(n.children, collapsed, query, depth + 1));
+    }
+  }
+  return rows;
+}
+
+const PANEL_NODE_ID = 'httpRequest1';
+const PANEL_NODE_LABEL = 'HTTP Request';
+
+// Concept 2 helpers — flat leaf list for expression references
+type FlatLeaf = { path: string; type: string; value?: string | number | boolean | null };
+
+function flattenToLeaves(nodes: OutputNode[], prefix = ''): FlatLeaf[] {
+  const result: FlatLeaf[] = [];
+  for (const n of nodes) {
+    const p = prefix ? `${prefix}.${n.key}` : n.key;
+    if (n.children) result.push(...flattenToLeaves(n.children, p));
+    else result.push({ path: p, type: n.type, value: n.value });
+  }
+  return result;
+}
+
+// Concept 3 helpers — TypeScript interface generation
+function formatTsKey(key: string): string {
+  return /[^a-zA-Z0-9_$]/.test(key) ? `'${key}'` : key;
+}
+
+function tsTypeForLeaf(node: OutputNode): string {
+  if (node.type === 'null') return 'string | null';
+  return node.type;
+}
+
+function buildInterfaceBody(
+  nodes: OutputNode[],
+  referencedKeys: Set<string>,
+  depth: number,
+): string {
+  const pad = '  '.repeat(depth);
+  return nodes
+    .map((n) => {
+      const key = formatTsKey(n.key);
+      const isRef = referencedKeys.has(n.key);
+      const refTag = isRef ? '  // ← referenced' : '';
+      if (n.children) {
+        const childBody = buildInterfaceBody(n.children, new Set(), depth + 1);
+        return `${pad}${key}: {${refTag}\n${childBody}\n${pad}};`;
+      }
+      const valNote =
+        n.value !== null && n.value !== undefined
+          ? `  // ${n.type === 'string' ? `"${n.value}"` : n.value}`
+          : '';
+      return `${pad}${key}: ${tsTypeForLeaf(n)};${valNote}${refTag}`;
+    })
+    .join('\n');
+}
+
+function buildTsDocument(
+  nodes: OutputNode[],
+  referencedKeys: Set<string>,
+  mode: 'input' | 'output',
+): string {
+  const suffix = mode === 'output' ? 'Output' : 'Input';
+  const interfaceName = `FetchInvoiceDetails${suffix}`;
+  const body = buildInterfaceBody(nodes, referencedKeys, 1);
+  return `// Fetch invoice details — HTTP Request\ninterface ${interfaceName} {\n${body}\n}`;
+}
+
+// ============================================================================
+// Output Panel
+// Two-tab view: Schema (referenced fields + searchable output tree) and
+// JSON (read-only Monaco editor showing sample output).
+// ============================================================================
+
+const REFERENCED_OUTPUTS = [
+  { name: 'responseBody', type: 'object' },
+  { name: 'statusCode', type: 'number' },
+  { name: 'headers', type: 'object' },
+  { name: 'errorMessage', type: 'string' },
+  { name: 'duration', type: 'number' },
+  { name: 'requestId', type: 'string' },
+  { name: 'token', type: 'string' },
+];
+
+const REFERENCED_INPUTS = [
+  { name: 'url', type: 'string' },
+  { name: 'method', type: 'string' },
+  { name: 'headers', type: 'object' },
+];
+
+const INPUT_TREE_DATA: OutputNode[] = [
+  { key: 'url', type: 'string', value: 'https://api.example.com/invoices', path: 'url' },
+  { key: 'method', type: 'string', value: 'GET', path: 'method' },
+  {
+    key: 'headers',
+    type: 'object',
+    path: 'headers',
+    children: [
+      {
+        key: 'Authorization',
+        type: 'string',
+        value: 'Bearer {{token}}',
+        path: 'headers.Authorization',
+      },
+      {
+        key: 'Content-Type',
+        type: 'string',
+        value: 'application/json',
+        path: 'headers.Content-Type',
+      },
+    ],
+  },
+  { key: 'timeout', type: 'number', value: 30000, path: 'timeout' },
+  { key: 'body', type: 'null', value: null, path: 'body' },
+];
+
+const INPUT_JSON = JSON.stringify(
+  {
+    url: 'https://api.example.com/invoices',
+    method: 'GET',
+    headers: {
+      Authorization: 'Bearer {{token}}',
+      'Content-Type': 'application/json',
+    },
+    timeout: 30000,
+    body: null,
+  },
+  null,
+  2,
+);
+
+const OUTPUT_TREE_DATA: OutputNode[] = [
+  { key: 'statusCode', type: 'number', value: 200, path: 'statusCode' },
+  {
+    key: 'responseBody',
+    type: 'object',
+    path: 'responseBody',
+    children: [
+      { key: 'id', type: 'string', value: 'inv-001', path: 'responseBody.id' },
+      { key: 'amount', type: 'number', value: 1500, path: 'responseBody.amount' },
+      { key: 'currency', type: 'string', value: 'USD', path: 'responseBody.currency' },
+      { key: 'status', type: 'string', value: 'paid', path: 'responseBody.status' },
+    ],
+  },
+  {
+    key: 'headers',
+    type: 'object',
+    path: 'headers',
+    children: [
+      {
+        key: 'content-type',
+        type: 'string',
+        value: 'application/json',
+        path: 'headers.content-type',
+      },
+      { key: 'x-request-id', type: 'string', value: 'abc-123', path: 'headers.x-request-id' },
+    ],
+  },
+  { key: 'errorMessage', type: 'null', value: null, path: 'errorMessage' },
+  { key: 'duration', type: 'number', value: 342, path: 'duration' },
+  { key: 'requestId', type: 'string', value: 'req-abc-123', path: 'requestId' },
+  { key: 'token', type: 'string', value: 'eyJhbGciOiJSUzI1NiJ9', path: 'token' },
+  { key: 'retryCount', type: 'number', value: 0, path: 'retryCount' },
+  { key: 'cached', type: 'boolean', value: false, path: 'cached' },
+];
+
+const OUTPUT_JSON = JSON.stringify(
+  {
+    statusCode: 200,
+    responseBody: {
+      id: 'inv-001',
+      amount: 1500.0,
+      currency: 'USD',
+      status: 'paid',
+    },
+    headers: {
+      'content-type': 'application/json',
+      'x-request-id': 'abc-123',
+    },
+    errorMessage: null,
+    duration: 342,
+    requestId: 'req-abc-123',
+    token: 'eyJhbGciOiJSUzI1NiJ9',
+    retryCount: 0,
+    cached: false,
+  },
+  null,
+  2
+);
+
+function OutputPanelStory({ mode }: { mode: 'input' | 'output' }) {
+  const monacoTheme = useMonacoTheme();
+  const [search, setSearch] = useState('');
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(
+      [...collectContainerPaths(OUTPUT_TREE_DATA), ...collectContainerPaths(INPUT_TREE_DATA)].map((p) => [p, true]),
+    ),
+  );
+  const [filter, setFilter] = useState<'referenced' | 'all'>('referenced');
+  const [editingPath, setEditingPath] = useState<string | null>(null);
+  const [editedValues, setEditedValues] = useState<Record<string, string | number | boolean | null>>({});
+  const [copiedPath, setCopiedPath] = useState<string | null>(null);
+  const [nodeMode, setNodeMode] = useState<'live' | 'static' | 'llm' | 'disabled'>('live');
+
+  const copyExpr = (path: string) => {
+    navigator.clipboard.writeText(`{{${PANEL_NODE_ID}.${path}}}`).catch(() => {});
+    setCopiedPath(path);
+    setTimeout(() => setCopiedPath(null), 1500);
+  };
+
+  const NODE_MODES = [
+    { value: 'live',     label: 'Live',     dot: 'bg-green-500',        text: 'text-green-500'        },
+    { value: 'static',   label: 'Static',   dot: 'bg-blue-500',         text: 'text-blue-500'         },
+    { value: 'llm',      label: 'LLM',      dot: 'bg-purple-500',       text: 'text-purple-500'       },
+    { value: 'disabled', label: 'Disabled', dot: 'bg-foreground-subtle', text: 'text-foreground-muted' },
+  ] as const;
+  const currentNodeMode = NODE_MODES.find((m) => m.value === nodeMode) ?? NODE_MODES[0];
+
+  const isOutput = mode === 'output';
+  const currentTreeData = isOutput ? OUTPUT_TREE_DATA : INPUT_TREE_DATA;
+  const currentReferenced = isOutput ? REFERENCED_OUTPUTS : REFERENCED_INPUTS;
+  const schemaLabel = isOutput ? 'Node output schema' : 'Node input schema';
+  const currentJson = isOutput ? OUTPUT_JSON : INPUT_JSON;
+
+  const saveEdit = (node: OutputNode, raw: string) => {
+    const val: string | number | null = node.type === 'number' ? (Number(raw) || 0) : raw;
+    setEditedValues((prev) => ({ ...prev, [node.path]: val }));
+    setEditingPath(null);
+  };
+
+  const toggleCollapsed = (path: string) =>
+    setCollapsed((prev) => ({ ...prev, [path]: !prev[path] }));
+
+  const referencedKeys = new Set(currentReferenced.map((r) => r.name));
+  const activeTreeData =
+    filter === 'referenced'
+      ? currentTreeData.filter((n) => referencedKeys.has(n.key))
+      : currentTreeData;
+
+  const rows = flattenOutputTree(activeTreeData, collapsed, search.toLowerCase());
+
+  const allContainerPaths = collectContainerPaths(activeTreeData);
+  const allCollapsed =
+    allContainerPaths.length > 0 && allContainerPaths.every((p) => collapsed[p]);
+  const toggleAll = () => {
+    if (allCollapsed) {
+      setCollapsed({});
+    } else {
+      setCollapsed(Object.fromEntries(allContainerPaths.map((p) => [p, true])));
+    }
+  };
+
+  return (
+    <PanelFrame>
+      <NodePropertyPanel
+        panelTitle={isOutput ? 'Output' : 'Input'}
+        contentInset="0.875rem"
+        onClose={() => {}}
+        className="h-[640px]"
+      >
+        <Tabs defaultValue="schema" className="flex h-full min-h-0 flex-col">
+          <div className="shrink-0 flex items-center justify-between pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+            <TabsList className={TAB_LIST_CLASS}>
+              <TabsTrigger value="schema" className={TAB_TRIGGER_CLASS}>
+                Schema
+              </TabsTrigger>
+              <TabsTrigger value="json" className={TAB_TRIGGER_CLASS}>
+                JSON
+              </TabsTrigger>
+            </TabsList>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                >
+                  <span className={cn('size-1.5 shrink-0 rounded-full', currentNodeMode.dot)} />
+                  <span className={currentNodeMode.text}>{currentNodeMode.label}</span>
+                  <ChevronDown size={10} className="text-foreground-subtle" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-36">
+                {NODE_MODES.map((m) => (
+                  <DropdownMenuItem
+                    key={m.value}
+                    onClick={() => setNodeMode(m.value)}
+                    className={cn('flex items-center gap-2', nodeMode === m.value && 'text-foreground')}
+                  >
+                    <span className={cn('size-1.5 shrink-0 rounded-full', m.dot)} />
+                    <span>{m.label}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Schema tab */}
+          <TabsContent value="schema" className="mt-0 flex min-h-0 flex-1 flex-col">
+            {/* Search */}
+            <div className="shrink-0 px-[0.875rem] pb-2 pt-4">
+              <div className="relative">
+                <Search
+                  size={14}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                  type="text"
+                  placeholder={isOutput ? 'Search outputs' : 'Search inputs'}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+
+            {/* Filter toggle */}
+            <div className="shrink-0 px-[0.875rem] pb-4">
+              <Tabs
+                value={filter}
+                onValueChange={(v) => setFilter(v as 'referenced' | 'all')}
+              >
+                <TabsList className={TAB_LIST_CLASS}>
+                  <TabsTrigger value="referenced" className={TAB_TRIGGER_CLASS}>
+                    Referenced in this node
+                    <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-medium leading-none text-foreground-subtle">
+                      {currentReferenced.length} fields
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger value="all" className={TAB_TRIGGER_CLASS}>
+                    All fields
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
+            {/* Schema label */}
+            <div className="shrink-0 flex items-center justify-between px-[0.875rem] pb-1">
+              <span className="text-xs font-medium text-foreground-muted">{schemaLabel}</span>
+              <button
+                type="button"
+                onClick={toggleAll}
+                className="text-[10px] text-foreground-subtle transition hover:text-foreground"
+              >
+                {allCollapsed ? 'Expand all' : 'Collapse all'}
+              </button>
+            </div>
+
+            {/* Output tree */}
+            <div className="min-h-0 flex-1 overflow-y-auto pb-4">
+              {rows.map(({ node, depth }) =>
+                node.children !== undefined ? (
+                  <div
+                    key={node.path}
+                    className="group flex cursor-default items-center gap-2 py-1.5 transition hover:bg-surface-overlay"
+                    style={{ paddingLeft: `${14 + depth * 16}px`, paddingRight: '14px' }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => toggleCollapsed(node.path)}
+                      className="grid size-4 shrink-0 place-items-center text-foreground-subtle transition hover:text-foreground"
+                    >
+                      <ChevronDown
+                        size={11}
+                        className={cn(
+                          'transition-transform duration-100',
+                          collapsed[node.path] && '-rotate-90',
+                        )}
+                      />
+                    </button>
+                    <span className="flex size-4 shrink-0 items-center justify-center text-foreground-subtle">
+                      {outputTypeIcon(node.type)}
+                    </span>
+                    <span className="flex-1 truncate font-mono text-xs font-semibold text-foreground">
+                      {node.key}
+                    </span>
+                    <span className="shrink-0 font-mono text-[10px] text-foreground-muted">
+                      {node.type === 'array'
+                        ? `${node.children.length} ${node.children.length === 1 ? 'item' : 'items'}`
+                        : `${node.children.length} ${node.children.length === 1 ? 'key' : 'keys'}`}
+                    </span>
+                  </div>
+                ) : (
+                  <div
+                    key={node.path}
+                    className="group flex cursor-default items-center gap-2 py-1.5 transition hover:bg-surface-overlay"
+                    style={{ paddingLeft: `${30 + depth * 16}px`, paddingRight: '14px' }}
+                  >
+                    <span className="flex size-4 shrink-0 items-center justify-center text-foreground-subtle">
+                      {outputTypeIcon(node.type)}
+                    </span>
+                    <span className="font-mono text-xs font-normal text-foreground-muted">{node.key}</span>
+                    <span className="shrink-0 text-[10px] text-foreground-muted">=</span>
+                    {editingPath === node.path ? (
+                      <input
+                        autoFocus
+                        type="text"
+                        defaultValue={String(editedValues[node.path] ?? node.value ?? '')}
+                        onBlur={(e) => saveEdit(node, e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveEdit(node, e.currentTarget.value);
+                          if (e.key === 'Escape') setEditingPath(null);
+                        }}
+                        className={cn(
+                          '-mx-1 min-w-0 flex-1 rounded bg-transparent px-1 font-mono text-xs outline-none ring-1 ring-brand',
+                          outputValueColorClass(node.type, editedValues[node.path] ?? node.value),
+                        )}
+                      />
+                    ) : (
+                      <>
+                        <span
+                          onClick={() => node.type !== 'null' && setEditingPath(node.path)}
+                          className={cn(
+                            'flex-1 truncate font-mono text-xs',
+                            node.type !== 'null'
+                              ? 'cursor-text underline decoration-dashed underline-offset-2 decoration-foreground-subtle/40 hover:decoration-foreground-subtle'
+                              : 'cursor-default',
+                            outputValueColorClass(
+                              node.type,
+                              editedValues[node.path] ?? node.value,
+                            ),
+                          )}
+                        >
+                          {formatOutputValue(
+                            node.type,
+                            (editedValues[node.path] ?? node.value) as string | number | boolean | null,
+                          )}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => copyExpr(node.path)}
+                          title={`Copy {{${PANEL_NODE_ID}.${node.path}}}`}
+                          className="grid size-5 shrink-0 place-items-center rounded text-foreground-subtle opacity-0 transition hover:bg-surface-raised hover:text-foreground group-hover:opacity-100"
+                        >
+                          {copiedPath === node.path ? (
+                            <CircleCheck size={11} className="text-brand" />
+                          ) : (
+                            <Copy size={11} />
+                          )}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                ),
+              )}
+              {rows.length === 0 && (
+                <p className="py-4 text-center text-xs text-foreground-subtle">
+                  No outputs match your search.
+                </p>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* JSON tab */}
+          <TabsContent
+            value="json"
+            className="mt-0 flex min-h-0 flex-1 flex-col pb-4 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]"
+          >
+            <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border-subtle">
+              <MonacoEditor
+                key={mode}
+                height="100%"
+                defaultLanguage="json"
+                defaultValue={currentJson}
+                theme={monacoTheme}
+                beforeMount={registerMonacoThemes}
+                options={{
+                  fontSize: 13,
+                  lineHeight: 20,
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  wordWrap: 'on',
+                  fontFamily:
+                    'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+                  padding: { top: 6, bottom: 16 },
+                  lineNumbers: 'on',
+                  lineNumbersMinChars: 2,
+                  lineDecorationsWidth: 4,
+                  glyphMargin: false,
+                  folding: false,
+                  renderLineHighlight: 'line',
+                  hideCursorInOverviewRuler: true,
+                  overviewRulerBorder: false,
+                  readOnly: false,
+                  scrollbar: {
+                    vertical: 'auto',
+                    horizontal: 'hidden',
+                    alwaysConsumeMouseWheel: false,
+                  },
+                  automaticLayout: true,
+                }}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </NodePropertyPanel>
+    </PanelFrame>
+  );
+}
+
+// ============================================================================
+// Concept 2 — Expression Reference Panel
+// Flat list of all leaf output paths as copyable expression references.
+// ============================================================================
+
+function Concept2PanelStory({ mode }: { mode: 'input' | 'output' }) {
+  const monacoTheme = useMonacoTheme();
+  const [search, setSearch] = useState('');
+  const [activeControl, setActiveControl] = useState<'referenced' | 'search' | null>(null);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(
+      [...collectContainerPaths(OUTPUT_TREE_DATA), ...collectContainerPaths(INPUT_TREE_DATA)].map((p) => [p, true]),
+    ),
+  );
+  const [copiedPath, setCopiedPath] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [editingPath, setEditingPath] = useState<string | null>(null);
+  const [editedValues, setEditedValues] = useState<Record<string, string | number | boolean | null>>({});
+  const [nodeMode, setNodeMode] = useState<'live' | 'static' | 'llm' | 'disabled'>('live');
+
+  const NODE_MODES = [
+    { value: 'live',     label: 'Live',     dot: 'bg-green-500',        text: 'text-green-500'        },
+    { value: 'static',   label: 'Static',   dot: 'bg-blue-500',         text: 'text-blue-500'         },
+    { value: 'llm',      label: 'LLM',      dot: 'bg-purple-500',       text: 'text-purple-500'       },
+    { value: 'disabled', label: 'Disabled', dot: 'bg-foreground-subtle', text: 'text-foreground-muted' },
+  ] as const;
+  const currentNodeMode = NODE_MODES.find((m) => m.value === nodeMode) ?? NODE_MODES[0];
+
+  const isOutput = mode === 'output';
+  const currentTreeData = isOutput ? OUTPUT_TREE_DATA : INPUT_TREE_DATA;
+  const currentReferenced = isOutput ? REFERENCED_OUTPUTS : REFERENCED_INPUTS;
+  const currentJson = isOutput ? OUTPUT_JSON : INPUT_JSON;
+  const referencedKeys = new Set(currentReferenced.map((r) => r.name));
+
+  const allLeaves = flattenToLeaves(currentTreeData);
+  const referencedLeaves = allLeaves.filter((f) => referencedKeys.has(f.path.split('.')[0]));
+
+  const isRefActive = activeControl === 'referenced';
+  const isSearchActive = activeControl === 'search';
+
+  const activeTreeData = isRefActive
+    ? currentTreeData.filter((n) => referencedKeys.has(n.key))
+    : currentTreeData;
+
+  const rows = flattenOutputTree(activeTreeData, collapsed, search.toLowerCase());
+
+  const toggleCollapsed = (path: string) =>
+    setCollapsed((prev) => ({ ...prev, [path]: !prev[path] }));
+
+  const allContainerPaths = collectContainerPaths(activeTreeData);
+  const allCollapsed = allContainerPaths.length > 0 && allContainerPaths.every((p) => collapsed[p]);
+  const toggleAll = () => {
+    if (allCollapsed) {
+      setCollapsed({});
+    } else {
+      setCollapsed(Object.fromEntries(allContainerPaths.map((p) => [p, true])));
+    }
+  };
+
+  const saveEdit = (node: OutputNode, raw: string) => {
+    const val: string | number | null = node.type === 'number' ? (Number(raw) || 0) : raw;
+    setEditedValues((prev) => ({ ...prev, [node.path]: val }));
+    setEditingPath(null);
+  };
+
+  const copyExpr = (path: string) => {
+    navigator.clipboard.writeText(`{{${PANEL_NODE_ID}.${path}}}`).catch(() => {});
+    setCopiedPath(path);
+    setTimeout(() => setCopiedPath(null), 1500);
+  };
+
+  return (
+    <PanelFrame>
+      <NodePropertyPanel
+        panelTitle={isOutput ? 'Output' : 'Input'}
+        contentInset="0.875rem"
+        onClose={() => {}}
+        className="h-[640px]"
+      >
+        <div className="flex h-full min-h-0 flex-col">
+          {/* Node identity bar with mode selector on the right */}
+          <div className="shrink-0 flex items-center justify-between gap-2 px-[0.875rem] pb-3 pt-4">
+            <div className="flex min-w-0 items-center gap-2">
+              <Globe size={13} className="shrink-0 text-foreground-subtle" />
+              <span className="text-xs font-medium text-foreground">{PANEL_NODE_LABEL}</span>
+              <span className="font-mono text-[10px] text-foreground-muted">{PANEL_NODE_ID}</span>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                >
+                  <span className={cn('size-1.5 shrink-0 rounded-full', currentNodeMode.dot)} />
+                  <span className={currentNodeMode.text}>{currentNodeMode.label}</span>
+                  <ChevronDown size={10} className="text-foreground-subtle" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-36">
+                {NODE_MODES.map((m) => (
+                  <DropdownMenuItem
+                    key={m.value}
+                    onClick={() => setNodeMode(m.value)}
+                    className={cn('flex items-center gap-2', nodeMode === m.value && 'text-foreground')}
+                  >
+                    <span className={cn('size-1.5 shrink-0 rounded-full', m.dot)} />
+                    <span>{m.label}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <Tabs defaultValue="schema" className="flex min-h-0 flex-1 flex-col">
+            {/* Tab strip */}
+            <div className="shrink-0 px-[0.875rem] pb-3">
+              <TabsList className={TAB_LIST_CLASS}>
+                <TabsTrigger value="schema" className={TAB_TRIGGER_CLASS}>
+                  Schema
+                </TabsTrigger>
+                <TabsTrigger value="json" className={TAB_TRIGGER_CLASS}>
+                  JSON
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            {/* Schema tab */}
+            <TabsContent value="schema" className="mt-0 flex min-h-0 flex-1 flex-col">
+              {/* Header: Referenced on left, inline search + collapse on right */}
+              <div className="shrink-0 flex items-center gap-1.5 px-[0.875rem] pb-1 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setActiveControl(isRefActive ? null : 'referenced')}
+                  className={cn(
+                    'flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 transition',
+                    isRefActive
+                      ? 'bg-surface-overlay text-foreground ring-2 ring-ring/30'
+                      : 'bg-transparent text-foreground-muted hover:bg-surface-overlay hover:text-foreground',
+                  )}
+                >
+                  <span className="text-xs">Referenced</span>
+                  <span className="rounded-sm bg-surface-raised px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-foreground">
+                    {currentReferenced.length}
+                  </span>
+                  <ChevronDown
+                    size={12}
+                    className={cn('text-foreground-subtle transition-transform duration-150', isRefActive && 'rotate-180')}
+                  />
+                </button>
+                <div className="flex-1" />
+                {searchOpen ? (
+                  <div className="relative flex items-center">
+                    <Search size={12} className="pointer-events-none absolute left-2 text-foreground-subtle" />
+                    <input
+                      autoFocus
+                      type="text"
+                      value={search}
+                      onChange={(e) => { setSearch(e.target.value); setActiveControl('search'); }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') { setSearch(''); setSearchOpen(false); setActiveControl(null); }
+                      }}
+                      placeholder={isOutput ? 'Search outputs...' : 'Search inputs...'}
+                      className="h-6 w-36 rounded bg-surface-overlay pl-6 pr-6 text-xs text-foreground placeholder:text-foreground-subtle focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { setSearch(''); setSearchOpen(false); setActiveControl(null); }}
+                      className="absolute right-1.5 grid size-4 place-items-center text-foreground-subtle transition hover:text-foreground"
+                    >
+                      <X size={11} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setSearchOpen(true)}
+                    title="Search fields"
+                    className="grid size-5 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                  >
+                    <Search size={12} />
+                  </button>
+                )}
+                {allContainerPaths.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={toggleAll}
+                    title={allCollapsed ? 'Expand all' : 'Collapse all'}
+                    className="grid size-5 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                  >
+                    {allCollapsed ? <ChevronsUpDown size={12} /> : <ChevronsDownUp size={12} />}
+                  </button>
+                )}
+              </div>
+
+              {/* Referenced chips — only visible when Referenced is active */}
+              {isRefActive && (
+                <div className="shrink-0 px-[0.875rem] pb-2 pt-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    {referencedLeaves.map((f) => (
+                      <button
+                        key={f.path}
+                        type="button"
+                        onClick={() => copyExpr(f.path)}
+                        title={`Copy {{${PANEL_NODE_ID}.${f.path}}}`}
+                        className="inline-flex items-center gap-1.5 rounded-md bg-surface-overlay px-2 py-1 font-mono text-[10px] text-foreground transition hover:bg-surface-raised"
+                      >
+                        <span className="text-foreground-subtle">{outputTypeIcon(f.type)}</span>
+                        {copiedPath === f.path ? (
+                          <span className="text-brand">Copied!</span>
+                        ) : (
+                          <span>{f.path}</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tree list */}
+              <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border-subtle pb-0 [margin-inline:var(--mf-content-inset,0.875rem)] mb-4 mt-1" style={{ backgroundColor: 'var(--surface-raised)' }}>
+                <div className="h-full overflow-y-auto">
+                {rows.map(({ node, depth }) =>
+                  node.children !== undefined ? (
+                    <div
+                      key={node.path}
+                      className="group flex cursor-default items-center gap-2 py-1 transition hover:bg-surface-overlay"
+                      style={{ paddingLeft: `${14 + depth * 16}px`, paddingRight: '14px' }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => toggleCollapsed(node.path)}
+                        className="grid size-3 shrink-0 place-items-center text-foreground-subtle transition hover:text-foreground"
+                      >
+                        <ChevronDown
+                          size={10}
+                          className={cn('transition-transform duration-100', collapsed[node.path] && '-rotate-90')}
+                        />
+                      </button>
+                      <TypeBadge type={node.type} />
+                      <span className="flex-1 truncate font-mono text-xs text-foreground">{node.key}</span>
+                      <span className="shrink-0 font-mono text-[10px] text-foreground-muted">
+                        {node.type === 'array'
+                          ? `${node.children.length} ${node.children.length === 1 ? 'item' : 'items'}`
+                          : `${node.children.length} ${node.children.length === 1 ? 'key' : 'keys'}`}
+                      </span>
+                    </div>
+                  ) : (
+                    <div
+                      key={node.path}
+                      className="group flex cursor-default items-center gap-2 py-1 transition hover:bg-surface-overlay"
+                      style={{ paddingLeft: `${14 + depth * 16}px`, paddingRight: '14px' }}
+                    >
+                      <TypeBadge type={node.type} />
+                      <span className="flex-1 truncate font-mono text-xs text-foreground">{node.key}</span>
+                      {editingPath === node.path ? (
+                        <input
+                          autoFocus
+                          type="text"
+                          defaultValue={String(editedValues[node.path] ?? node.value ?? '')}
+                          onBlur={(e) => saveEdit(node, e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveEdit(node, e.currentTarget.value);
+                            if (e.key === 'Escape') setEditingPath(null);
+                          }}
+                          className={cn(
+                            'min-w-0 max-w-[45%] rounded bg-transparent px-1 font-mono text-xs text-right outline-none ring-1 ring-brand',
+                            outputValueColorClass(node.type, editedValues[node.path] ?? node.value),
+                          )}
+                        />
+                      ) : (
+                        <>
+                          <span
+                            onClick={() => node.type !== 'null' && setEditingPath(node.path)}
+                            className={cn(
+                              'max-w-[45%] truncate font-mono text-xs text-right',
+                              node.type !== 'null' ? 'cursor-text' : 'cursor-default',
+                              outputValueColorClass(node.type, editedValues[node.path] ?? node.value),
+                            )}
+                          >
+                            {formatOutputValue(node.type, (editedValues[node.path] ?? node.value) as string | number | boolean | null)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => copyExpr(node.path)}
+                            title={`Copy {{${PANEL_NODE_ID}.${node.path}}}`}
+                            className="grid size-5 shrink-0 place-items-center rounded text-foreground-subtle opacity-0 transition hover:bg-surface-raised hover:text-foreground group-hover:opacity-100"
+                          >
+                            {copiedPath === node.path ? (
+                              <CircleCheck size={11} className="text-brand" />
+                            ) : (
+                              <Copy size={11} />
+                            )}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  ),
+                )}
+                {rows.length === 0 && (
+                  <p className="py-4 text-center text-xs text-foreground-subtle">
+                    No references match your search.
+                  </p>
+                )}
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* JSON tab */}
+            <TabsContent
+              value="json"
+              className="mt-0 flex min-h-0 flex-1 flex-col pb-4 pt-1 [padding-inline:var(--mf-content-inset,0.875rem)]"
+            >
+              <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border-subtle">
+                <MonacoEditor
+                  key={mode}
+                  height="100%"
+                  defaultLanguage="json"
+                  defaultValue={currentJson}
+                  theme={monacoTheme}
+                  beforeMount={registerMonacoThemes}
+                  options={{
+                    fontSize: 13,
+                    lineHeight: 20,
+                    minimap: { enabled: false },
+                    scrollBeyondLastLine: false,
+                    wordWrap: 'on',
+                    fontFamily:
+                      'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+                    padding: { top: 6, bottom: 16 },
+                    lineNumbers: 'on',
+                    lineNumbersMinChars: 2,
+                    lineDecorationsWidth: 4,
+                    glyphMargin: false,
+                    folding: false,
+                    renderLineHighlight: 'line',
+                    hideCursorInOverviewRuler: true,
+                    overviewRulerBorder: false,
+                    readOnly: false,
+                    scrollbar: {
+                      vertical: 'auto',
+                      horizontal: 'hidden',
+                      alwaysConsumeMouseWheel: false,
+                    },
+                    automaticLayout: true,
+                  }}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </NodePropertyPanel>
+    </PanelFrame>
+  );
+}
+
+// ============================================================================
+// Concept 3 — TypeScript Schema View
+// Monaco editor showing the output as a generated TypeScript interface.
+// Referenced fields annotated with // ← referenced.
+// ============================================================================
+
+const MONACO_OPTS_BASE = {
+  minimap: { enabled: false },
+  scrollBeyondLastLine: false,
+  wordWrap: 'on' as const,
+  fontFamily:
+    'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+  glyphMargin: false,
+  hideCursorInOverviewRuler: true,
+  overviewRulerBorder: false,
+  scrollbar: { vertical: 'auto' as const, horizontal: 'hidden' as const, alwaysConsumeMouseWheel: false },
+  automaticLayout: true,
+};
+
+function Concept3PanelStory({ mode }: { mode: 'input' | 'output' }) {
+  const monacoTheme = useMonacoTheme();
+  const [search, setSearch] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [filter, setFilter] = useState<'referenced' | 'all'>('all');
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(
+      [...collectContainerPaths(OUTPUT_TREE_DATA), ...collectContainerPaths(INPUT_TREE_DATA)].map((p) => [p, true]),
+    ),
+  );
+  const [editingPath, setEditingPath] = useState<string | null>(null);
+  const [editedValues, setEditedValues] = useState<Record<string, string | number | boolean | null>>({});
+  const [copiedPath, setCopiedPath] = useState<string | null>(null);
+  const [nodeMode, setNodeMode] = useState<'live' | 'static' | 'llm' | 'disabled'>('live');
+
+  const copyExpr = (path: string) => {
+    navigator.clipboard.writeText(`{{${PANEL_NODE_ID}.${path}}}`).catch(() => {});
+    setCopiedPath(path);
+    setTimeout(() => setCopiedPath(null), 1500);
+  };
+
+  const NODE_MODES = [
+    { value: 'live',     label: 'Live',     dot: 'bg-green-500',  text: 'text-green-500'  },
+    { value: 'static',   label: 'Static',   dot: 'bg-blue-500',   text: 'text-blue-500'   },
+    { value: 'llm',      label: 'LLM',      dot: 'bg-purple-500', text: 'text-purple-500' },
+    { value: 'disabled', label: 'Disabled', dot: 'bg-foreground-subtle', text: 'text-foreground-muted' },
+  ] as const;
+  const currentNodeMode = NODE_MODES.find((m) => m.value === nodeMode) ?? NODE_MODES[0];
+
+  const isOutput = mode === 'output';
+  const currentTreeData = isOutput ? OUTPUT_TREE_DATA : INPUT_TREE_DATA;
+  const currentReferenced = isOutput ? REFERENCED_OUTPUTS : REFERENCED_INPUTS;
+  const schemaLabel = isOutput ? 'Node output schema' : 'Node input schema';
+  const referencedKeys = new Set(currentReferenced.map((r) => r.name));
+
+  const tsDoc = buildTsDocument(currentTreeData, referencedKeys, mode);
+  const jsonDoc = isOutput ? OUTPUT_JSON : INPUT_JSON;
+
+  const saveEdit = (node: OutputNode, raw: string) => {
+    const val: string | number | null = node.type === 'number' ? (Number(raw) || 0) : raw;
+    setEditedValues((prev) => ({ ...prev, [node.path]: val }));
+    setEditingPath(null);
+  };
+
+  const toggleCollapsed = (path: string) =>
+    setCollapsed((prev) => ({ ...prev, [path]: !prev[path] }));
+
+  const activeTreeData =
+    filter === 'referenced'
+      ? currentTreeData.filter((n) => referencedKeys.has(n.key))
+      : currentTreeData;
+
+  const rows = flattenOutputTree(activeTreeData, collapsed, search.toLowerCase());
+
+  const allContainerPaths = collectContainerPaths(activeTreeData);
+  const allCollapsed = allContainerPaths.length > 0 && allContainerPaths.every((p) => collapsed[p]);
+  const toggleAll = () => {
+    if (allCollapsed) {
+      setCollapsed({});
+    } else {
+      setCollapsed(Object.fromEntries(allContainerPaths.map((p) => [p, true])));
+    }
+  };
+
+  return (
+    <PanelFrame>
+      <NodePropertyPanel
+        panelTitle={isOutput ? 'Output' : 'Input'}
+        contentInset="0.875rem"
+        onClose={() => {}}
+        className="h-[640px]"
+      >
+        <Tabs defaultValue="schema" className="flex h-full min-h-0 flex-col">
+          <div className="shrink-0 flex items-center justify-between pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+            <TabsList className={TAB_LIST_CLASS}>
+              <TabsTrigger value="schema" className={TAB_TRIGGER_CLASS}>
+                Schema
+              </TabsTrigger>
+              <TabsTrigger value="types" className={TAB_TRIGGER_CLASS}>
+                Types
+              </TabsTrigger>
+              <TabsTrigger value="json" className={TAB_TRIGGER_CLASS}>
+                JSON
+              </TabsTrigger>
+            </TabsList>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                >
+                  <span className={cn('size-1.5 shrink-0 rounded-full', currentNodeMode.dot)} />
+                  <span className={currentNodeMode.text}>{currentNodeMode.label}</span>
+                  <ChevronDown size={10} className="text-foreground-subtle" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-36">
+                {NODE_MODES.map((m) => (
+                  <DropdownMenuItem
+                    key={m.value}
+                    onClick={() => setNodeMode(m.value)}
+                    className={cn('flex items-center gap-2', nodeMode === m.value && 'text-foreground')}
+                  >
+                    <span className={cn('size-1.5 shrink-0 rounded-full', m.dot)} />
+                    <span>{m.label}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Schema tab */}
+          <TabsContent value="schema" className="mt-0 flex min-h-0 flex-1 flex-col">
+            {/* Schema header: label (or inline search) + filter + collapse toggle */}
+            <div className="shrink-0 flex items-center gap-1.5 px-[0.875rem] pb-1 pt-4">
+              {searchOpen ? (
+                <div className="relative flex flex-1 items-center">
+                  <Search size={12} className="pointer-events-none absolute left-2 text-foreground-subtle" />
+                  <input
+                    autoFocus
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') { setSearch(''); setSearchOpen(false); }
+                    }}
+                    placeholder={isOutput ? 'Search outputs...' : 'Search inputs...'}
+                    className="h-6 w-full rounded bg-surface-overlay pl-6 pr-6 text-xs text-foreground placeholder:text-foreground-subtle focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => { setSearch(''); setSearchOpen(false); }}
+                    className="absolute right-1.5 grid size-4 place-items-center text-foreground-subtle transition hover:text-foreground"
+                  >
+                    <X size={11} />
+                  </button>
+                </div>
+              ) : (
+                <span className="flex-1 text-xs font-medium text-foreground-muted">{schemaLabel}</span>
+              )}
+              {!searchOpen && (
+                <button
+                  type="button"
+                  onClick={() => setSearchOpen(true)}
+                  title="Search fields"
+                  className="grid size-5 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                >
+                  <Search size={12} />
+                </button>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    title="Filter fields"
+                    className={cn(
+                      'relative grid size-5 place-items-center rounded transition',
+                      filter === 'referenced'
+                        ? 'text-brand'
+                        : 'text-foreground-subtle hover:bg-surface-overlay hover:text-foreground',
+                    )}
+                  >
+                    <SlidersHorizontal size={12} />
+                    {filter === 'referenced' && (
+                      <span className="absolute right-0.5 top-0.5 size-1 rounded-full bg-brand" />
+                    )}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  <DropdownMenuItem
+                    onClick={() => setFilter('referenced')}
+                    className={cn('flex items-center justify-between', filter === 'referenced' && 'text-foreground')}
+                  >
+                    <span className="text-[11px]">Referenced in this node</span>
+                    <span className="ml-3 rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-foreground-muted">
+                      {currentReferenced.length}
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setFilter('all')}
+                    className={cn('text-[11px]', filter === 'all' && 'text-foreground')}
+                  >
+                    All fields
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <button
+                type="button"
+                onClick={toggleAll}
+                title={allCollapsed ? 'Expand all' : 'Collapse all'}
+                className="grid size-5 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+              >
+                {allCollapsed ? <ChevronsUpDown size={12} /> : <ChevronsDownUp size={12} />}
+              </button>
+            </div>
+
+            {/* Tree */}
+            <div className="min-h-0 flex-1 overflow-y-auto pb-4">
+              {rows.map(({ node, depth }) =>
+                node.children !== undefined ? (
+                  <div
+                    key={node.path}
+                    className="group flex cursor-default items-center gap-2 py-1.5 transition hover:bg-surface-overlay"
+                    style={{ paddingLeft: `${14 + depth * 16}px`, paddingRight: '14px' }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => toggleCollapsed(node.path)}
+                      className="grid size-4 shrink-0 place-items-center text-foreground-subtle transition hover:text-foreground"
+                    >
+                      <ChevronDown
+                        size={11}
+                        className={cn(
+                          'transition-transform duration-100',
+                          collapsed[node.path] && '-rotate-90',
+                        )}
+                      />
+                    </button>
+                    <span className="flex size-4 shrink-0 items-center justify-center text-foreground-subtle">
+                      {outputTypeIcon(node.type)}
+                    </span>
+                    <span className="flex-1 truncate font-mono text-xs font-semibold text-foreground">
+                      {node.key}
+                    </span>
+                    <span className="shrink-0 font-mono text-[10px] text-foreground-muted">
+                      {node.type === 'array'
+                        ? `${node.children.length} ${node.children.length === 1 ? 'item' : 'items'}`
+                        : `${node.children.length} ${node.children.length === 1 ? 'key' : 'keys'}`}
+                    </span>
+                  </div>
+                ) : (
+                  <div
+                    key={node.path}
+                    className="group flex cursor-default items-center gap-2 py-1.5 transition hover:bg-surface-overlay"
+                    style={{ paddingLeft: `${30 + depth * 16}px`, paddingRight: '14px' }}
+                  >
+                    <span className="flex size-4 shrink-0 items-center justify-center text-foreground-subtle">
+                      {outputTypeIcon(node.type)}
+                    </span>
+                    <span className="font-mono text-xs font-normal text-foreground-muted">{node.key}</span>
+                    <span className="shrink-0 text-[10px] text-foreground-muted">=</span>
+                    {editingPath === node.path ? (
+                      <input
+                        autoFocus
+                        type="text"
+                        defaultValue={String(editedValues[node.path] ?? node.value ?? '')}
+                        onBlur={(e) => saveEdit(node, e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveEdit(node, e.currentTarget.value);
+                          if (e.key === 'Escape') setEditingPath(null);
+                        }}
+                        className={cn(
+                          '-mx-1 min-w-0 flex-1 rounded bg-transparent px-1 font-mono text-xs outline-none ring-1 ring-brand',
+                          outputValueColorClass(node.type, editedValues[node.path] ?? node.value),
+                        )}
+                      />
+                    ) : (
+                      <>
+                        <span
+                          onClick={() => node.type !== 'null' && setEditingPath(node.path)}
+                          className={cn(
+                            'flex-1 truncate font-mono text-xs',
+                            node.type !== 'null'
+                              ? 'cursor-text underline decoration-dashed underline-offset-2 decoration-foreground-subtle/40 hover:decoration-foreground-subtle'
+                              : 'cursor-default',
+                            outputValueColorClass(node.type, editedValues[node.path] ?? node.value),
+                          )}
+                        >
+                          {formatOutputValue(
+                            node.type,
+                            (editedValues[node.path] ?? node.value) as string | number | boolean | null,
+                          )}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => copyExpr(node.path)}
+                          title={`Copy {{${PANEL_NODE_ID}.${node.path}}}`}
+                          className="grid size-5 shrink-0 place-items-center rounded text-foreground-subtle opacity-0 transition hover:bg-surface-raised hover:text-foreground group-hover:opacity-100"
+                        >
+                          {copiedPath === node.path ? (
+                            <CircleCheck size={11} className="text-brand" />
+                          ) : (
+                            <Copy size={11} />
+                          )}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                ),
+              )}
+              {rows.length === 0 && (
+                <p className="py-4 text-center text-xs text-foreground-subtle">
+                  No outputs match your search.
+                </p>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Types tab */}
+          <TabsContent
+            value="types"
+            className="mt-0 flex min-h-0 flex-1 flex-col pb-4 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]"
+          >
+            <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border-subtle">
+              <MonacoEditor
+                key={`${mode}-types`}
+                height="100%"
+                defaultLanguage="typescript"
+                defaultValue={tsDoc}
+                theme={monacoTheme}
+                beforeMount={registerMonacoThemes}
+                options={{
+                  ...MONACO_OPTS_BASE,
+                  fontSize: 12,
+                  lineHeight: 20,
+                  padding: { top: 14, bottom: 16 },
+                  lineNumbers: 'off',
+                  lineDecorationsWidth: 0,
+                  folding: true,
+                  renderLineHighlight: 'line',
+                  readOnly: true,
+                }}
+              />
+            </div>
+          </TabsContent>
+
+          {/* JSON tab */}
+          <TabsContent
+            value="json"
+            className="mt-0 flex min-h-0 flex-1 flex-col pb-4 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]"
+          >
+            <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border-subtle">
+              <MonacoEditor
+                key={`${mode}-json`}
+                height="100%"
+                defaultLanguage="json"
+                defaultValue={jsonDoc}
+                theme={monacoTheme}
+                beforeMount={registerMonacoThemes}
+                options={{
+                  ...MONACO_OPTS_BASE,
+                  fontSize: 13,
+                  lineHeight: 20,
+                  padding: { top: 6, bottom: 16 },
+                  lineNumbers: 'on',
+                  lineNumbersMinChars: 2,
+                  lineDecorationsWidth: 4,
+                  folding: false,
+                  renderLineHighlight: 'line',
+                  readOnly: false,
+                }}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </NodePropertyPanel>
+    </PanelFrame>
+  );
+}
+
+// ============================================================================
+// Three-concept comparison layout
+// ============================================================================
+
+function ModeToggle({
+  mode,
+  onChange,
+}: {
+  mode: 'input' | 'output';
+  onChange: (m: 'input' | 'output') => void;
+}) {
+  return (
+    <div className="flex items-center overflow-hidden rounded border border-border">
+      {(['input', 'output'] as const).map((m, i) => (
+        <>
+          {i > 0 && <div key={`sep-${m}`} className="h-3 w-px bg-border" />}
+          <button
+            key={m}
+            type="button"
+            onClick={() => onChange(m)}
+            className={cn(
+              'px-2 py-0.5 text-[10px] font-medium transition',
+              mode === m
+                ? 'bg-surface-overlay text-foreground'
+                : 'text-foreground-muted hover:text-foreground',
+            )}
+          >
+            {m === 'input' ? 'Input' : 'Output'}
+          </button>
+        </>
+      ))}
+    </div>
+  );
+}
+
+const CONCEPT_NOTES: Record<1 | 2 | 3, { pros: string[]; cons: string[]; recommended?: boolean }> = {
+  1: {
+    pros: [
+      'Familiar Schema/JSON tab pattern — low learning curve',
+      'Referenced/All filter with field count is immediately visible',
+      'Inline value editing keeps context without leaving the view',
+    ],
+    cons: [
+      'Filter row adds height between search and the tree list',
+      'No node identity header — activity name and type not shown',
+    ],
+  },
+  2: {
+    pros: [
+      'Node identity always visible alongside the Referenced toggle',
+      'Compact single-row search reduces vertical clutter',
+      'Schema + JSON tabs with consistent inline editing',
+    ],
+    cons: [
+      'Referenced chips require a click to reveal — less discoverable',
+      'Dual active-mode dimming adds interaction complexity',
+    ],
+    recommended: true,
+  },
+  3: {
+    pros: [
+      'Three complete views: Schema, TypeScript types, and raw JSON',
+      'Filter icon keeps the search row tight and uncluttered',
+      'Node identity (name + category) always anchors context',
+    ],
+    cons: [
+      'Three tabs increases cognitive load for first-time users',
+      'TypeScript view is developer-focused — not useful for all personas',
+    ],
+  },
+};
+
+function ConceptPanel({ label, concept }: { label: string; concept: 1 | 2 | 3 }) {
+  const [mode, setMode] = useState<'input' | 'output'>('output');
+  const notes = CONCEPT_NOTES[concept];
+  return (
+    <div className="flex w-[380px] flex-col pb-[30px]">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-sm font-medium text-foreground-muted">{label}</span>
+        <ModeToggle mode={mode} onChange={setMode} />
+      </div>
+      {concept === 1 && <OutputPanelStory key={mode} mode={mode} />}
+      {concept === 2 && <Concept2PanelStory key={mode} mode={mode} />}
+      {concept === 3 && <Concept3PanelStory key={mode} mode={mode} />}
+      <div className="mt-[30px] rounded-lg border border-border-subtle bg-surface-raised p-3 text-xs">
+        <div className="mb-2 flex flex-col gap-1">
+          {notes.pros.map((p) => (
+            <div key={p} className="flex items-start gap-1.5">
+              <span className="mt-px shrink-0 text-[10px] font-bold text-green-500">+</span>
+              <span className="text-foreground-muted">{p}</span>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-col gap-1">
+          {notes.cons.map((c) => (
+            <div key={c} className="flex items-start gap-1.5">
+              <span className="mt-px shrink-0 text-[10px] font-bold text-red-400">−</span>
+              <span className="text-foreground-muted">{c}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InputOutputStory() {
+  return (
+    <div className="flex items-start p-8" style={{ gap: '50px' }}>
+      <ConceptPanel label="Concept 1" concept={1} />
+      <ConceptPanel label="Concept 2" concept={2} />
+      <ConceptPanel label="Concept 3" concept={3} />
+    </div>
+  );
+}
+
+export const Output: Story = {
+  name: 'Input / Output',
+  render: () => <InputOutputStory />,
+  parameters: { layout: 'fullscreen' },
 };
 
 // ============================================================================
