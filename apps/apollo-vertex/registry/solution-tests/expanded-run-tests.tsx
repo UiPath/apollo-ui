@@ -38,6 +38,7 @@ export const ExpandedRunTests = ({ runs, tests }: ExpandedRunTestsProps) => {
       onOpenDetails={(run, subjectId) => setDetailsTarget({ run, subjectId })}
       onForceStop={(runId) =>
         forceStopRun.mutate(runId, {
+          onSuccess: () => toast.success(t("force_stop_initiated")),
           onError: () => toast.error(t("failed_to_force_stop_run")),
         })
       }

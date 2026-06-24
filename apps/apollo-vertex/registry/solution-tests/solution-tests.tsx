@@ -147,6 +147,7 @@ export const SolutionTests = () => {
       }}
       onForceStopBatch={(batchId) =>
         forceStopBatch.mutate(batchId, {
+          onSuccess: () => toast.success(t("force_stop_initiated")),
           onError: (err) =>
             toast.error(err.message || t("failed_to_force_stop_batch")),
         })
