@@ -26,7 +26,10 @@ export interface UseBaselineJobsResult {
 /** Live baseline jobs for a test. */
 export function useBaselineJobs(testId: string): UseBaselineJobsResult {
   const collection = useSolutionTestCollection(ENTITY.jobs);
-  const { data, isLoading } = useLiveQuery(() => collection, [collection]);
+  const { data, isLoading } = useLiveQuery(
+    (q) => q.from({ jobs: collection }),
+    [collection],
+  );
   const jobs = (data ?? []).filter(
     (job) => job.SolutionTestId === testId && job.JobRole === JobRole.Baseline,
   );

@@ -18,6 +18,9 @@ export interface UseSolutionTestBatchRunsResult {
 /** Live list of batch runs. */
 export function useSolutionTestBatchRuns(): UseSolutionTestBatchRunsResult {
   const collection = useSolutionTestCollection(ENTITY.batchRuns);
-  const { data, isLoading } = useLiveQuery(() => collection, [collection]);
+  const { data, isLoading } = useLiveQuery(
+    (q) => q.from({ batchRuns: collection }),
+    [collection],
+  );
   return { batchRuns: data ?? [], isLoading };
 }
