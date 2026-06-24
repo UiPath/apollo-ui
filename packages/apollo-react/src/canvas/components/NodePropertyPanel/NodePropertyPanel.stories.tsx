@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   MetadataForm,
+  ScrollableTabsList,
   Switch,
   Tabs,
   TabsContent,
@@ -1377,16 +1378,6 @@ function CompactResponsivePanelStory() {
   const steps = httpRequestForm.steps ?? [];
   const [activeStepId, setActiveStepId] = useState(steps[0]?.id ?? '');
 
-  const activeStep = steps.find((s) => s.id === activeStepId);
-
-  const flatSchema: FormSchema = {
-    id: httpRequestForm.id,
-    title: httpRequestForm.title,
-    mode: httpRequestForm.mode,
-    actions: [],
-    sections: activeStep?.sections ?? [],
-  };
-
   return (
     <NodePropertyPanel
       panelTitle="Properties"
@@ -1397,41 +1388,47 @@ function CompactResponsivePanelStory() {
       onClose={() => {}}
       className="h-[480px]"
     >
-      <div className="flex h-full flex-col" style={SURFACE_REMAP}>
-        <div className="shrink-0 border-b border-border-subtle px-[0.875rem] py-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="flex h-7 items-center gap-1.5 rounded-lg px-2 text-xs font-medium text-foreground transition hover:bg-surface-overlay"
-              >
-                <span>{activeStep?.title}</span>
-                <ChevronDown size={12} className="text-foreground-muted" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-44">
-              {steps.map((step) => (
-                <DropdownMenuItem
-                  key={step.id}
-                  onClick={() => setActiveStepId(step.id)}
-                  className={cn(
-                    'text-sm focus:bg-surface-overlay',
-                    step.id === activeStepId && 'bg-surface-raised font-medium'
-                  )}
-                >
-                  {step.title}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+      <Tabs
+        value={activeStepId}
+        onValueChange={setActiveStepId}
+        className="flex h-full min-h-0 flex-col"
+        style={SURFACE_REMAP}
+      >
+        <div className="shrink-0 pt-3 [padding-inline:0.875rem]">
+          <ScrollableTabsList
+            className={TAB_LIST_CLASS}
+            scrollButtonClassName="size-6 hover:bg-surface-overlay"
+          >
+            {steps.map((step) => (
+              <TabsTrigger key={step.id} value={step.id} className={TAB_TRIGGER_CLASS}>
+                {step.title}
+              </TabsTrigger>
+            ))}
+          </ScrollableTabsList>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto [&_label]:text-foreground-muted">
-          <MetadataForm
-            schema={flatSchema}
-            className="flex flex-col gap-4 pb-6 pt-3 [padding-inline:0.875rem]"
-          />
-        </div>
-      </div>
+        {steps.map((step) => {
+          const flatSchema: FormSchema = {
+            id: httpRequestForm.id,
+            title: httpRequestForm.title,
+            mode: httpRequestForm.mode,
+            actions: [],
+            sections: step.sections,
+          };
+
+          return (
+            <TabsContent
+              key={step.id}
+              value={step.id}
+              className="mt-0 min-h-0 flex-1 overflow-y-auto [&_label]:text-foreground-muted"
+            >
+              <MetadataForm
+                schema={flatSchema}
+                className="flex flex-col gap-4 pb-6 pt-3 [padding-inline:0.875rem]"
+              />
+            </TabsContent>
+          );
+        })}
+      </Tabs>
     </NodePropertyPanel>
   );
 }

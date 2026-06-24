@@ -243,7 +243,14 @@ export { toast, Toaster } from './components/ui/sonner';
 // -----------------------------------------------------------------------------
 // Navigation Components
 // -----------------------------------------------------------------------------
-export { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
+export {
+  ScrollableTabsList,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from './components/ui/tabs';
+export type { ScrollableTabsListProps } from './components/ui/tabs';
 
 export {
   Breadcrumb,
