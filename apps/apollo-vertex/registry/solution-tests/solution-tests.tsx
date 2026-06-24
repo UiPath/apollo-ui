@@ -137,11 +137,13 @@ export const SolutionTests = () => {
       }
       onDeleteTest={(testId) => {
         deleteTest.mutate(testId, {
-          onSuccess: () => toast.success(t("test_deleted")),
+          onSuccess: () => {
+            toast.success(t("test_deleted"));
+            setDeleteConfirmId(null);
+          },
           onError: (err) =>
             toast.error(err.message || t("failed_to_delete_test")),
         });
-        setDeleteConfirmId(null);
       }}
       onForceStopBatch={(batchId) =>
         forceStopBatch.mutate(batchId, {
