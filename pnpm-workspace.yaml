@@ -39,6 +39,7 @@ overrides:
   js-yaml: ">=4.1.2"                   # GHSA-h67p-54hq-rp68 (moderate) — transitive via @commitlint/load>cosmiconfig
   markdown-it: ">=14.1.2"              # GHSA-6v5v-wf23-fmfq (moderate) — transitive via storybook toolchain
   "@babel/core": ">=7.29.1"            # GHSA-4x5r-pxfx-6jf8 (low) — transitive via storybook/babel transform
+  rolldown: "1.0.1"                    # vite 8 dep-optimizer regression: rolldown 1.0.2/1.0.3 emit chunks that call cross-chunk init_*() without importing it -> "init_*_esm is not defined" at runtime (Storybook preview crash). Upstream still open (rolldown#9515 / vite#22583, both p1). 1.0.1 is the last good rolldown; keep vite 8.0.16 (security-patched) and pin rolldown back. Remove once fixed upstream.
   # Security pins (vetted 2026-06-16)
   esbuild: "^0.28.1"                    # GHSA-gv7w-rqvm-qjhr (high)/GHSA-g7r4-m6w7-qqqr (low) — Storybook 10.4.x widened its range (@storybook/csf-plugin@10.4.1 now allows esbuild ^0.28.1) and nothing in the tree still pins <0.28; override retained as defense-in-depth to pin the patched line
   "ws@>=8.0.0 <9": "^8.21.0"            # GHSA-96hv-2xvq-fx4p (high) — latest engine.io-client (6.6.5) still pins ws ~8.20.1; blocked upstream at Socket.IO

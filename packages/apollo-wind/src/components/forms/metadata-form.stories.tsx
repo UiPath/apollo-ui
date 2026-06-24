@@ -863,17 +863,55 @@ const tabbedNodeSchema: FormSchema = {
 };
 
 /**
- * Tabbed Steps (stepVariant="tabs")
+ * Tabbed Steps (deprecated stepVariant="tabs")
  *
- * Renders a multi-step schema as a tab bar over a single form instance. Values
- * and validation are shared across every tab, so switching tabs never loses
- * edits. This is the node properties panel layout: Parameters comes from the
- * node, Error handling and Advanced are common across node types.
+ * Legacy way to render tabs: a multi-step (`steps`) schema with the deprecated
+ * `stepVariant="tabs"` prop. Prefer the schema-driven `TabbedFormSchema` below.
+ * Kept here so existing consumers keep working until the prop is removed.
  */
 export const TabbedSteps: Story = {
   args: {
     schema: tabbedNodeSchema,
     stepVariant: 'tabs',
+  },
+};
+
+/**
+ * Schema-driven tabs (TabbedFormSchema)
+ *
+ * The recommended way to render tabs: a flat `sections` list plus a `tabs`
+ * declaration, where each section opts into a tab via `section.tab`. Tabs are
+ * data, not a presentation prop. Values and validation are shared across every
+ * tab (one form instance), so switching tabs never loses edits.
+ */
+const tabbedFormNodeSchema: FormSchema = {
+  id: 'scheduled-trigger-schema-tabs',
+  title: 'Scheduled trigger',
+  actions: [],
+  initialData: tabbedNodeSchema.initialData,
+  tabs: (tabbedNodeSchema.steps ?? []).map((step) => ({ id: step.id, title: step.title })),
+  sections: (tabbedNodeSchema.steps ?? []).flatMap((step) =>
+    step.sections.map((section) => ({ ...section, tab: step.id }))
+  ),
+};
+
+export const SchemaDrivenTabs: Story = {
+  args: {
+    schema: tabbedFormNodeSchema,
+  },
+};
+
+/**
+ * Flat layout override (layout="flat")
+ *
+ * The same `TabbedFormSchema`, rendered as one flat list by passing
+ * `layout="flat"`. Useful for a wide container that wants the whole form at a
+ * glance while a narrow panel renders the same schema as tabs.
+ */
+export const TabbedSchemaFlatOverride: Story = {
+  args: {
+    schema: tabbedFormNodeSchema,
+    layout: 'flat',
   },
 };
 

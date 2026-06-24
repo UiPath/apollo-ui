@@ -36,8 +36,26 @@ function RunButton() {
 }
 
 // ============================================================================
-// Shared FormSchema (steps = tabs; sections within each step hold the fields)
+// Shared form fixtures. Authored as `steps`, then converted to the recommended
+// schema-driven tabs (`tabs` + `section.tab`) via `stepsToTabbed` below, which
+// mirrors how flow-workbench assembly composes tabs from tagged sections.
 // ============================================================================
+
+/** Convert a legacy `steps` schema to the schema-driven `TabbedFormSchema` shape. */
+const stepsToTabbed = (schema: FormSchema): FormSchema =>
+  'steps' in schema && schema.steps
+    ? {
+        id: schema.id,
+        title: schema.title,
+        mode: schema.mode,
+        actions: schema.actions,
+        initialData: schema.initialData,
+        tabs: schema.steps.map((step) => ({ id: step.id, title: step.title })),
+        sections: schema.steps.flatMap((step) =>
+          step.sections.map((section) => ({ ...section, tab: step.id }))
+        ),
+      }
+    : schema;
 
 const httpRequestForm: FormSchema = {
   id: 'http-request',
@@ -249,7 +267,7 @@ export const Default: Story = {
         nodeLabel="Fetch invoice details"
         nodeCategory="HTTP Request"
         action={<RunButton />}
-        schema={httpRequestForm}
+        schema={stepsToTabbed(httpRequestForm)}
         contentInset="0.75rem"
         onClose={() => {}}
         className="h-[640px]"
@@ -270,7 +288,7 @@ export const EmbeddedNoTitleBar: Story = {
         nodeLabel="Fetch invoice details"
         nodeCategory="HTTP Request"
         action={<RunButton />}
-        schema={httpRequestForm}
+        schema={stepsToTabbed(httpRequestForm)}
         className="h-[600px]"
       />
     </PanelFrame>
@@ -289,7 +307,7 @@ export const NoParametersTab: Story = {
         nodeLabel="Manual trigger"
         nodeCategory="Starts a flow run manually"
         action={<RunButton />}
-        schema={manualTriggerForm}
+        schema={stepsToTabbed(manualTriggerForm)}
         onClose={() => {}}
         className="h-[600px]"
       />

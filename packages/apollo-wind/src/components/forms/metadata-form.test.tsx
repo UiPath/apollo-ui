@@ -419,4 +419,217 @@ describe('MetadataForm', () => {
       expect(screen.queryByRole('button', { name: 'Submit' })).not.toBeInTheDocument();
     });
   });
+
+  describe('schema-driven tabs (TabbedFormSchema)', () => {
+    const tabbedFormSchema: FormSchema = {
+      id: 'tabbed-form',
+      title: 'Tabbed Form',
+      tabs: [
+        { id: 'parameters', title: 'Parameters' },
+        { id: 'advanced', title: 'Advanced' },
+      ],
+      sections: [
+        {
+          id: 'params',
+          tab: 'parameters',
+          fields: [
+            {
+              name: 'url',
+              type: 'text',
+              label: 'URL',
+              placeholder: 'Params field',
+              defaultValue: '',
+            },
+          ],
+        },
+        {
+          id: 'adv',
+          tab: 'advanced',
+          fields: [
+            {
+              name: 'retries',
+              type: 'text',
+              label: 'Retries',
+              placeholder: 'Advanced field',
+              defaultValue: '',
+            },
+          ],
+        },
+        // No `tab` -> falls into the first declared tab (Parameters).
+        {
+          id: 'orphan',
+          fields: [
+            {
+              name: 'note',
+              type: 'text',
+              label: 'Note',
+              placeholder: 'Orphan field',
+              defaultValue: '',
+            },
+          ],
+        },
+      ],
+    };
+
+    it('renders one tab per declared tab, in tabs[] order', () => {
+      render(<MetadataForm schema={tabbedFormSchema} />);
+
+      const tabs = screen.getAllByRole('tab');
+      expect(tabs.map((t) => t.textContent)).toEqual(['Parameters', 'Advanced']);
+    });
+
+    it('routes an untagged section into the first tab', () => {
+      render(<MetadataForm schema={tabbedFormSchema} />);
+
+      // Parameters is active by default: its own field and the orphan field are both shown.
+      expect(screen.getByPlaceholderText('Params field')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Orphan field')).toBeInTheDocument();
+    });
+
+    it('keeps a value entered in one tab after switching tabs (single shared instance)', async () => {
+      const user = userEvent.setup();
+      render(<MetadataForm schema={tabbedFormSchema} />);
+
+      await user.type(screen.getByPlaceholderText('Params field'), 'hello');
+      await user.click(screen.getByRole('tab', { name: 'Advanced' }));
+      await waitFor(() =>
+        expect(screen.getByPlaceholderText('Advanced field')).toBeInTheDocument()
+      );
+
+      await user.click(screen.getByRole('tab', { name: 'Parameters' }));
+      await waitFor(() => expect(screen.getByPlaceholderText('Params field')).toHaveValue('hello'));
+    });
+
+    it('omits a tab whose sections are all absent (bar still shown for the rest)', () => {
+      const schema: FormSchema = {
+        id: 'omit',
+        title: 'Omit',
+        tabs: [
+          { id: 'parameters', title: 'Parameters' },
+          { id: 'advanced', title: 'Advanced' },
+          { id: 'empty', title: 'Empty' },
+        ],
+        sections: [
+          { id: 'p', tab: 'parameters', fields: [{ name: 'url', type: 'text', label: 'URL' }] },
+          {
+            id: 'a',
+            tab: 'advanced',
+            fields: [{ name: 'retries', type: 'text', label: 'Retries' }],
+          },
+        ],
+      };
+      render(<MetadataForm schema={schema} />);
+
+      expect(screen.getByRole('tab', { name: 'Parameters' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'Advanced' })).toBeInTheDocument();
+      expect(screen.queryByRole('tab', { name: 'Empty' })).not.toBeInTheDocument();
+    });
+
+    it('hides the tab bar and renders sections directly when only one tab is visible', () => {
+      // A trigger-like node: only General + Update variable, both in one tab.
+      const single: FormSchema = {
+        id: 'single',
+        title: 'Single',
+        tabs: [{ id: 'advanced', title: 'Advanced' }],
+        sections: [
+          {
+            id: 'general',
+            title: 'General',
+            collapsible: true,
+            tab: 'advanced',
+            fields: [{ name: 'g', type: 'text', label: 'G', placeholder: 'gen field' }],
+          },
+          {
+            id: 'uv',
+            title: 'Update variable',
+            collapsible: true,
+            tab: 'advanced',
+            fields: [{ name: 'u', type: 'text', label: 'U', placeholder: 'uv field' }],
+          },
+        ],
+      };
+      render(<MetadataForm schema={single} />);
+
+      // No tab bar for a lone tab.
+      expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+      // Sections render as plain headings (2 siblings), not collapsible accordions.
+      expect(screen.getByText('General')).toBeInTheDocument();
+      expect(screen.getByText('Update variable')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('gen field')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('uv field')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'General' })).not.toBeInTheDocument();
+    });
+
+    it('layout="flat" ignores tabs and renders every section in one list', () => {
+      render(<MetadataForm schema={tabbedFormSchema} layout="flat" />);
+
+      expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+      // All fields visible at once (no tab gating).
+      expect(screen.getByPlaceholderText('Params field')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Advanced field')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Orphan field')).toBeInTheDocument();
+    });
+
+    describe('per-tab section headers', () => {
+      // Parameters holds two titled sections (Inputs / Outputs); Advanced holds one.
+      const multiSectionSchema: FormSchema = {
+        id: 'multi-section-tabs',
+        title: 'Multi Section Tabs',
+        tabs: [
+          { id: 'parameters', title: 'Parameters' },
+          { id: 'advanced', title: 'Advanced' },
+        ],
+        sections: [
+          {
+            id: 'inputs',
+            title: 'Inputs',
+            tab: 'parameters',
+            fields: [{ name: 'in', type: 'text', label: 'In', placeholder: 'Inputs field' }],
+          },
+          {
+            id: 'outputs',
+            title: 'Outputs',
+            tab: 'parameters',
+            fields: [{ name: 'out', type: 'text', label: 'Out', placeholder: 'Outputs field' }],
+          },
+          {
+            id: 'general',
+            title: 'General',
+            tab: 'advanced',
+            fields: [{ name: 'gen', type: 'text', label: 'Gen', placeholder: 'General field' }],
+          },
+        ],
+      };
+
+      it('keeps section headings when a tab holds more than one section', () => {
+        render(<MetadataForm schema={multiSectionSchema} />);
+
+        // Parameters is active by default: both sibling headings are shown.
+        expect(screen.getByText('Inputs')).toBeInTheDocument();
+        expect(screen.getByText('Outputs')).toBeInTheDocument();
+        expect(screen.getByPlaceholderText('Inputs field')).toBeInTheDocument();
+        expect(screen.getByPlaceholderText('Outputs field')).toBeInTheDocument();
+      });
+
+      it('suppresses the section heading when a tab holds a single section', async () => {
+        const user = userEvent.setup();
+        render(<MetadataForm schema={multiSectionSchema} />);
+
+        await user.click(screen.getByRole('tab', { name: 'Advanced' }));
+        await waitFor(() =>
+          expect(screen.getByPlaceholderText('General field')).toBeInTheDocument()
+        );
+        // The lone section's title is not rendered (the tab label is the heading).
+        expect(screen.queryByText('General')).not.toBeInTheDocument();
+      });
+
+      it('renders the section as a plain heading, not a collapsible accordion', () => {
+        render(<MetadataForm schema={multiSectionSchema} />);
+
+        // No accordion trigger chrome around the tab-hosted sibling sections.
+        expect(screen.queryByRole('button', { name: 'Inputs' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Outputs' })).not.toBeInTheDocument();
+      });
+    });
+  });
 });

@@ -22,6 +22,7 @@ import type {
   FormPlugin,
   FormSchema,
   FormSection as FormSectionType,
+  TabbedFormSchema,
 } from './form-schema';
 import { RulesEngine } from './rules-engine';
 import { validationConfigToZod } from './validation-converter';
@@ -40,12 +41,21 @@ interface MetadataFormProps {
   /** Disable browser autocomplete suggestions. Defaults to undefined (browser default). */
   autoComplete?: 'off' | 'on';
   /**
-   * Presentation for multi-step schemas. `'wizard'` (default) shows Previous/Next
-   * navigation with a Submit button on the final step. `'tabs'` renders the steps
-   * as a tab bar over a single form instance, so values and validation are shared
-   * across every step. Ignored for single-page (`sections`) schemas.
+   * @deprecated Tabs are now declared in the schema. Use a `TabbedFormSchema`
+   * (`tabs` + `section.tab`) instead of `steps` + `stepVariant="tabs"`. This prop
+   * only affects `MultiStepFormSchema` (`steps`) and will be removed in the next major.
+   *
+   * `'wizard'` (default) shows Previous/Next navigation with a Submit on the final
+   * step. `'tabs'` renders the steps as a tab bar over a single shared form instance.
    */
   stepVariant?: 'wizard' | 'tabs';
+  /**
+   * Render override for a `TabbedFormSchema`. `'tabbed'` (default) renders the tab
+   * bar; `'flat'` ignores the tab grouping and renders every section in one flat
+   * list (e.g. a wide dialog that wants the full form at a glance). Ignored for
+   * single-page and multi-step schemas.
+   */
+  layout?: 'tabbed' | 'flat';
 }
 
 // Stable default to prevent re-renders
@@ -59,6 +69,7 @@ export function MetadataForm({
   disabled = false,
   autoComplete,
   stepVariant = 'wizard',
+  layout = 'tabbed',
 }: MetadataFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [customComponents, setCustomComponents] = useState<
@@ -186,8 +197,24 @@ export function MetadataForm({
     }
   });
 
+  // A tabbed schema (`tabs` + `section.tab`) renders a tab bar unless the caller
+  // overrides with layout="flat" (e.g. a wide dialog wanting the full form flat).
+  const isTabbed = 'tabs' in schema && Array.isArray(schema.tabs) && layout !== 'flat';
+
   // Render based on form structure
   const renderContent = () => {
+    if (isTabbed) {
+      return (
+        <TabbedSections
+          schema={schema as TabbedFormSchema}
+          context={context}
+          customComponents={customComponents}
+          disabled={disabled}
+          onReset={() => reset()}
+        />
+      );
+    }
+
     if (schema.steps) {
       if (stepVariant === 'tabs') {
         return (
@@ -227,10 +254,12 @@ export function MetadataForm({
       <form onSubmit={handleFormSubmit} className={className} autoComplete={autoComplete}>
         {renderContent()}
 
-        {/* Wizard forms own their navigation/Submit, and tabbed forms render
-            FormActions inside TabbedStepForm so it's suppressed when no tab is
-            visible. Only single-page forms render FormActions here. */}
-        {!schema.steps && <FormActions schema={schema} context={context} onReset={() => reset()} />}
+        {/* Wizard owns its own navigation/Submit; tabbed forms (steps-as-tabs or
+            schema tabs) render FormActions inside their tab renderer so it is
+            suppressed when no tab is visible. Everything else renders it here. */}
+        {!schema.steps && !isTabbed && (
+          <FormActions schema={schema} context={context} onReset={() => reset()} />
+        )}
       </form>
     </FormProvider>
   );
@@ -348,41 +377,104 @@ function MultiStepForm({
   );
 }
 
-interface TabbedStepFormProps extends SinglePageFormProps {
-  onReset: () => void;
+/** A tab and the sections it renders. Built from `steps` or from `tabs` + `section.tab`. */
+interface TabGroup {
+  id: string;
+  title: string;
+  sections: FormSectionType[];
+  conditions?: FieldCondition[];
 }
 
-function TabbedStepForm({
+interface TabbedFormCoreProps {
+  groups: TabGroup[];
+  schema: FormSchema;
+  context: FormContext;
+  customComponents: Record<string, React.ComponentType<CustomFieldComponentProps>>;
+  disabled?: boolean;
+  onReset: () => void;
+  /**
+   * When true, sections render with tab-hosted headers (the tab is the
+   * container): a lone section in a tab is headerless, sibling sections keep a
+   * plain heading. The schema-driven `TabbedFormSchema` path opts in; the
+   * deprecated steps-as-tabs path leaves it off to preserve its accordion look.
+   */
+  tabSectionHeaders?: boolean;
+}
+
+/**
+ * Shared tab renderer for both the (deprecated) steps-as-tabs path and the
+ * schema-driven `TabbedFormSchema` path. Renders one tab per group, hides
+ * groups with no visible section, clamps the active tab to a visible one, and
+ * owns FormActions so the Submit is suppressed when no tab is visible.
+ */
+function TabbedFormCore({
+  groups,
   schema,
   context,
   customComponents,
   disabled,
   onReset,
-}: TabbedStepFormProps) {
-  const steps = schema.steps || [];
+  tabSectionHeaders = false,
+}: TabbedFormCoreProps) {
+  const visibleSection = (section: FormSectionType) =>
+    !section.conditions || context.evaluateConditions(section.conditions);
 
-  // Hide steps that have no sections or whose conditions evaluate to false, so a
-  // node that doesn't supply a given step (e.g. a trigger with no parameters)
-  // never renders an empty tab.
-  const visibleSteps = steps.filter(
-    (step) =>
-      step.sections.length > 0 && (!step.conditions || context.evaluateConditions(step.conditions))
+  // A group renders only when its own conditions pass AND it has at least one
+  // visible section, so an empty/conditioned tab never shows.
+  const visibleGroups = groups.filter(
+    (group) =>
+      (!group.conditions || context.evaluateConditions(group.conditions)) &&
+      group.sections.some(visibleSection)
   );
 
-  // Clamp the active tab to a still-visible step so a step that disappears
+  // Clamp the active tab to a still-visible group so a group that disappears
   // (condition flips, manifest swap) can't strand the form on a dead tab.
   const [activeTab, setActiveTab] = useState<string>('');
-  const currentTab = visibleSteps.some((step) => step.id === activeTab)
+  const currentTab = visibleGroups.some((group) => group.id === activeTab)
     ? activeTab
-    : (visibleSteps[0]?.id ?? '');
+    : (visibleGroups[0]?.id ?? '');
 
-  // Persist the clamp into state: once a selected step disappears we settle on the
-  // fallback, so a later reappearance doesn't snap the user back to the old tab.
+  // Persist the clamp into state: once a selected group disappears we settle on
+  // the fallback, so a later reappearance doesn't snap the user back to it.
   useEffect(() => {
     if (activeTab !== currentTab) setActiveTab(currentTab);
   }, [activeTab, currentTab]);
 
-  if (visibleSteps.length === 0) return null;
+  if (visibleGroups.length === 0) return null;
+
+  // Render one group's sections with the tab header rule: a lone section is
+  // headerless (the tab/heading is implied), siblings each keep a plain heading.
+  const renderGroupSections = (group: TabGroup) => {
+    const sectionsToRender = group.sections.filter(visibleSection);
+    const variant: 'auto' | 'plain' | 'hidden' = !tabSectionHeaders
+      ? 'auto'
+      : sectionsToRender.length > 1
+        ? 'plain'
+        : 'hidden';
+    return sectionsToRender.map((section) => (
+      <FormSection
+        key={section.id}
+        section={section}
+        context={context}
+        customComponents={customComponents}
+        disabled={disabled}
+        headerVariant={variant}
+      />
+    ));
+  };
+
+  // A single visible group is not worth a tab bar: render its sections directly
+  // (still de-accordioned via the header rule), so a simple node — e.g. a trigger
+  // whose only sections are General + Update variable — looks consistent with
+  // tabbed nodes instead of falling back to accordions.
+  if (visibleGroups.length === 1) {
+    return (
+      <>
+        <div className="flex flex-col gap-5">{renderGroupSections(visibleGroups[0])}</div>
+        <FormActions schema={schema} context={context} onReset={onReset} />
+      </>
+    );
+  }
 
   return (
     <>
@@ -394,34 +486,22 @@ function TabbedStepForm({
           stay on one line instead of clipping). The underline can optionally bleed past the
           form's horizontal padding to the panel edges: a consumer sets `--mf-content-inset`
           to its content inset and the list bleeds by that, re-insetting the labels. Default
-          0 keeps the underline at content width — correct for any padding. */}
+          0 keeps the underline at content width, correct for any padding. */}
         <TabsList className="h-auto justify-start gap-4 overflow-x-auto rounded-none border-b border-border bg-transparent py-0 text-muted-foreground [-ms-overflow-style:none] [margin-inline:calc(var(--mf-content-inset,0px)*-1)] [padding-inline:var(--mf-content-inset,0px)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {visibleSteps.map((step) => (
+          {visibleGroups.map((group) => (
             <TabsTrigger
-              key={step.id}
-              value={step.id}
+              key={group.id}
+              value={group.id}
               className="-mb-px shrink-0 whitespace-nowrap rounded-none border-b-2 border-transparent bg-transparent px-1 pb-2 pt-1 font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
             >
-              {step.title}
+              {group.title}
             </TabsTrigger>
           ))}
         </TabsList>
 
-        {visibleSteps.map((step) => (
-          <TabsContent key={step.id} value={step.id} className="space-y-2">
-            {step.sections
-              .filter(
-                (section) => !section.conditions || context.evaluateConditions(section.conditions)
-              )
-              .map((section) => (
-                <FormSection
-                  key={section.id}
-                  section={section}
-                  context={context}
-                  customComponents={customComponents}
-                  disabled={disabled}
-                />
-              ))}
+        {visibleGroups.map((group) => (
+          <TabsContent key={group.id} value={group.id} className="space-y-5">
+            {renderGroupSections(group)}
           </TabsContent>
         ))}
       </Tabs>
@@ -430,14 +510,121 @@ function TabbedStepForm({
   );
 }
 
+interface TabbedStepFormProps extends SinglePageFormProps {
+  onReset: () => void;
+}
+
+/**
+ * @deprecated Steps-as-tabs. Use a `TabbedFormSchema` instead. Kept so existing
+ * `steps` + `stepVariant="tabs"` consumers keep working until the next major.
+ */
+function TabbedStepForm({
+  schema,
+  context,
+  customComponents,
+  disabled,
+  onReset,
+}: TabbedStepFormProps) {
+  const groups: TabGroup[] = (schema.steps || []).map((step) => ({
+    id: step.id,
+    title: step.title,
+    sections: step.sections,
+    conditions: step.conditions,
+  }));
+
+  return (
+    <TabbedFormCore
+      groups={groups}
+      schema={schema}
+      context={context}
+      customComponents={customComponents}
+      disabled={disabled}
+      onReset={onReset}
+    />
+  );
+}
+
+interface TabbedSectionsProps {
+  schema: TabbedFormSchema;
+  context: FormContext;
+  customComponents: Record<string, React.ComponentType<CustomFieldComponentProps>>;
+  disabled?: boolean;
+  onReset: () => void;
+}
+
+/**
+ * Schema-driven tabs: groups a flat `sections` list into the tabs declared in
+ * `schema.tabs` (array order = render order) via each `section.tab`. Sections
+ * with no `tab`, or a `tab` matching no declared tab, fall into the first tab.
+ */
+function TabbedSections({
+  schema,
+  context,
+  customComponents,
+  disabled,
+  onReset,
+}: TabbedSectionsProps) {
+  const tabIds = new Set(schema.tabs.map((tab) => tab.id));
+  const firstTabId = schema.tabs[0]?.id;
+
+  const sectionsByTab = new Map<string, FormSectionType[]>();
+  for (const section of schema.sections) {
+    if (process.env.NODE_ENV !== 'production' && section.tab && !tabIds.has(section.tab)) {
+      console.warn(
+        `[MetadataForm] section "${section.id}" references unknown tab "${section.tab}"; falling back to the first tab.`
+      );
+    }
+    const targetTab = section.tab && tabIds.has(section.tab) ? section.tab : firstTabId;
+    if (!targetTab) continue;
+    const bucket = sectionsByTab.get(targetTab);
+    if (bucket) bucket.push(section);
+    else sectionsByTab.set(targetTab, [section]);
+  }
+
+  const groups: TabGroup[] = schema.tabs.map((tab) => ({
+    id: tab.id,
+    title: tab.title,
+    conditions: tab.conditions,
+    sections: sectionsByTab.get(tab.id) ?? [],
+  }));
+
+  return (
+    <TabbedFormCore
+      groups={groups}
+      schema={schema}
+      context={context}
+      customComponents={customComponents}
+      disabled={disabled}
+      onReset={onReset}
+      tabSectionHeaders
+    />
+  );
+}
+
 interface FormSectionProps {
   section: FormSectionType;
   context: FormContext;
   customComponents: Record<string, React.ComponentType<CustomFieldComponentProps>>;
   disabled?: boolean;
+  /**
+   * How the section header renders.
+   * - `'auto'` (default): accordion when `collapsible`, else a bordered titled box,
+   *   else (no title) a bare field grid. This is the single-page / wizard look.
+   * - `'plain'`: a lightweight non-collapsible heading with no border box, for a
+   *   section that shares a tab with sibling sections (e.g. Inputs / Outputs).
+   * - `'hidden'`: no header at all (a lone section in a tab; the tab label is the
+   *   heading), rendered as a bare field grid.
+   */
+  headerVariant?: 'auto' | 'plain' | 'hidden';
 }
 
-function FormSection({ section, context, customComponents, disabled }: FormSectionProps) {
+function FormSection({
+  section,
+  context,
+  customComponents,
+  disabled,
+  headerVariant = 'auto',
+}: FormSectionProps) {
   const gridColumns = context.schema.layout?.columns || 1;
   const gap = context.schema.layout?.gap || 4;
 
@@ -461,9 +648,24 @@ function FormSection({ section, context, customComponents, disabled }: FormSecti
     </div>
   );
 
-  // If no title, render fields directly without wrapper
-  if (!section.title) {
+  // Tab-hosted sections: the tab is the container, so we drop the accordion chrome.
+  // A lone section in a tab needs no header (the tab label is the heading); a
+  // section sharing a tab keeps a plain (borderless, non-collapsible) heading.
+  if (headerVariant === 'hidden' || !section.title) {
     return fieldsGrid;
+  }
+  if (headerVariant === 'plain') {
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1">
+          <h4 className="text-sm font-semibold text-foreground">{section.title}</h4>
+          {section.description && (
+            <p className="text-sm text-muted-foreground">{section.description}</p>
+          )}
+        </div>
+        {fieldsGrid}
+      </div>
+    );
   }
 
   // Shared inner content (without padding - wrapper handles that)

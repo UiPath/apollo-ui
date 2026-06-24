@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { createRequire } from 'node:module';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/react-vite';
 import { mergeAlias } from 'vite';
@@ -7,6 +8,14 @@ import type { PluginOption } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// pnpm's strict, isolated node_modules means Storybook's own packages can't
+// always resolve sibling framework/addon packages via bare specifiers (they
+// live in this app's node_modules, not Storybook's). Resolve them to absolute
+// paths here. This is Storybook's documented fix for pnpm and is hoist-agnostic.
+const sbRequire = createRequire(import.meta.url);
+const getAbsolutePath = (value: string): string =>
+  dirname(sbRequire.resolve(join(value, 'package.json')));
 
 // react-scan must install its devtools hook before React initializes.
 // Two Storybook behaviors interfere with this:
@@ -55,10 +64,10 @@ const config: StorybookConfig = {
     },
   ],
   addons: [
-    '@storybook/addon-links',
-    '@storybook/addon-docs',
-    '@storybook/addon-a11y',
-    '@storybook/addon-mcp',
+    getAbsolutePath('@storybook/addon-links'),
+    getAbsolutePath('@storybook/addon-docs'),
+    getAbsolutePath('@storybook/addon-a11y'),
+    getAbsolutePath('@storybook/addon-mcp'),
   ],
   features: {
     experimentalComponentsManifest: true,
@@ -71,7 +80,7 @@ const config: StorybookConfig = {
     },
   ],
   framework: {
-    name: '@storybook/react-vite',
+    name: getAbsolutePath('@storybook/react-vite'),
     options: {},
   },
   previewHead: (head) => `

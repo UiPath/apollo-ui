@@ -1,13 +1,15 @@
 import type {
-  FormSchema,
-  FieldMetadata,
-  FormSection,
-  FormStep,
-  FieldRule,
   DataSource,
   FieldCondition,
+  FieldMetadata,
   FieldOption,
+  FieldRule,
   FormAction,
+  FormSchema,
+  FormSection,
+  FormStep,
+  FormTab,
+  TabbedFormSection,
   ValidationConfig,
 } from './form-schema';
 
@@ -262,6 +264,24 @@ function serializeSection(section: FormSection): JsonObject {
   if (section.conditions && section.conditions.length > 0) {
     result.conditions = section.conditions.map(serializeCondition);
   }
+  const { tab } = section as TabbedFormSection;
+  if (tab) result.tab = tab;
+
+  return result;
+}
+
+/**
+ * Serialize a FormTab to JSON-safe format
+ */
+function serializeTab(tab: FormTab): JsonObject {
+  const result: JsonObject = {
+    id: tab.id,
+    title: tab.title,
+  };
+
+  if (tab.conditions && tab.conditions.length > 0) {
+    result.conditions = tab.conditions.map(serializeCondition);
+  }
 
   return result;
 }
@@ -306,6 +326,11 @@ export function serializeSchema(schema: FormSchema): JsonObject {
   }
   if (schema.layout) result.layout = schema.layout as JsonObject;
   if (schema.metadata) result.metadata = schema.metadata as JsonObject;
+
+  // Tabs (tabbed schema only) declare the tab bar; sections still serialize flat below.
+  if ('tabs' in schema && schema.tabs) {
+    result.tabs = schema.tabs.map(serializeTab);
+  }
 
   // Sections or Steps
   if ('sections' in schema && schema.sections) {

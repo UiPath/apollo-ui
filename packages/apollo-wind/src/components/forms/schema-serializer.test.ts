@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { serializeSchema, schemaToJson } from './schema-serializer';
-import type { FormSchema, FieldMetadata } from './form-schema';
+import type { FieldMetadata, FormSchema } from './form-schema';
+import { schemaToJson, serializeSchema } from './schema-serializer';
 
 describe('serializeSchema', () => {
   describe('single-page form', () => {
@@ -320,6 +320,51 @@ describe('serializeSchema', () => {
       expect(section.description).toBe('First section');
       expect(section.collapsible).toBe(true);
       expect(section.defaultExpanded).toBe(false);
+    });
+  });
+
+  describe('tabbed form serialization', () => {
+    it('serializes tabs and each section tab id', () => {
+      const schema: FormSchema = {
+        id: 'tabbed',
+        title: 'Tabbed',
+        tabs: [
+          { id: 'parameters', title: 'Parameters' },
+          {
+            id: 'advanced',
+            title: 'Advanced',
+            conditions: [{ field: 'mode', operator: 'equals', value: 'pro' }],
+          },
+        ],
+        sections: [
+          { id: 'params', tab: 'parameters', fields: [] },
+          { id: 'adv', tab: 'advanced', fields: [] },
+        ],
+      };
+
+      const result = serializeSchema(schema);
+
+      const tabs = result.tabs as Array<Record<string, unknown>>;
+      expect(tabs).toHaveLength(2);
+      expect(tabs[0]).toMatchObject({ id: 'parameters', title: 'Parameters' });
+      expect(tabs[1].conditions).toHaveLength(1);
+
+      const sections = result.sections as Array<Record<string, unknown>>;
+      expect(sections[0].tab).toBe('parameters');
+      expect(sections[1].tab).toBe('advanced');
+    });
+
+    it('omits tab/tabs for non-tabbed schemas', () => {
+      const schema: FormSchema = {
+        id: 'flat',
+        title: 'Flat',
+        sections: [{ id: 's1', fields: [] }],
+      };
+
+      const result = serializeSchema(schema);
+
+      expect(result.tabs).toBeUndefined();
+      expect((result.sections as Array<Record<string, unknown>>)[0].tab).toBeUndefined();
     });
   });
 

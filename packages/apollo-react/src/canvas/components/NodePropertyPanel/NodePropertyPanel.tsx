@@ -12,8 +12,9 @@ const SURFACE_REMAP = { '--surface-raised': 'var(--surface-overlay)' } as CSSPro
  * The panel owns only the *chrome*: an optional title bar (drag handle + close),
  * a node identity row (icon / label / category + an action slot), and the form
  * frame. The form itself is a single `MetadataForm` rendered from the `schema`
- * you pass in, with multi-step schemas presented as tabs (Parameters, Error
- * handling, Advanced, ...).
+ * you pass in, presented as tabs (Parameters, Error handling, Advanced, ...).
+ * Prefer a schema-driven `TabbedFormSchema` (`tabs` + `section.tab`); legacy
+ * multi-step (`steps`) schemas are also rendered as tabs for compatibility.
  *
  * The caller owns everything domain-specific: schema assembly, real-time change
  * handling, custom field components, and validation are all supplied through
@@ -27,7 +28,7 @@ const SURFACE_REMAP = { '--surface-raised': 'var(--surface-overlay)' } as CSSPro
  *   nodeLabel="Fetch invoice details"
  *   nodeCategory="HTTP Request"
  *   action={<RunButton />}
- *   schema={assembledSchema}              // caller-built FormSchema (steps = tabs)
+ *   schema={assembledSchema}              // caller-built TabbedFormSchema (tabs + section.tab)
  *   plugins={formPlugins}                 // real-time onChange, custom fields
  *   resetKey={selectedNodeId}             // remount on node change
  *   onClose={() => deselect()}
@@ -124,7 +125,9 @@ export function NodePropertyPanel({
             className="[&_label]:text-foreground-muted"
           >
             {/* Horizontal padding + the tab underline's full-bleed both derive from
-                `--mf-content-inset`, so they stay in lockstep. */}
+                `--mf-content-inset`, so they stay in lockstep. A `TabbedFormSchema`
+                renders as tabs on its own; `stepVariant="tabs"` only keeps legacy
+                `steps` schemas rendering as tabs (it is ignored for tabbed schemas). */}
             <MetadataForm
               key={resetKey}
               schema={formSchema}

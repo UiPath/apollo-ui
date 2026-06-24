@@ -1,4 +1,4 @@
-import type { UseFormReturn, FieldValues } from 'react-hook-form';
+import type { FieldValues, UseFormReturn } from 'react-hook-form';
 
 /**
  * Core Schema Types for Apollo-Wind Metadata Forms
@@ -331,6 +331,30 @@ export interface FormSection {
   conditions?: FieldCondition[]; // Show/hide entire section
 }
 
+/**
+ * A section that knows which tab it belongs to. Distinct from `FormSection`
+ * so the `tab` key cannot leak into `FormStep.sections` (wizard steps), where
+ * it would be meaningless.
+ */
+export interface TabbedFormSection extends FormSection {
+  /**
+   * References a `FormTab.id` in the schema's `tabs`. Sections with no `tab`
+   * (or a `tab` that matches no declared tab) fall into the first visible tab.
+   */
+  tab?: string;
+}
+
+/**
+ * Declares a tab in a `TabbedFormSchema`. Array order in `tabs` is the
+ * authoritative render order. A tab renders only when at least one of its
+ * sections is visible.
+ */
+export interface FormTab {
+  id: string;
+  title: string;
+  conditions?: FieldCondition[]; // Show/hide the entire tab
+}
+
 export interface FormStep {
   id: string;
   title: string;
@@ -387,6 +411,19 @@ interface BaseFormSchema {
 export interface SinglePageFormSchema extends BaseFormSchema {
   sections: FormSection[];
   steps?: never;
+  tabs?: never;
+}
+
+/**
+ * Tabbed form schema. Like a single-page form (one shared form instance, one
+ * flat `sections` list), but the sections are grouped into tabs declared in
+ * `tabs`. Each section opts into a tab via `section.tab`. The form stays a
+ * single RHF instance, so values and validation are shared across every tab.
+ */
+export interface TabbedFormSchema extends BaseFormSchema {
+  tabs: FormTab[];
+  sections: TabbedFormSection[];
+  steps?: never;
 }
 
 /**
@@ -395,12 +432,14 @@ export interface SinglePageFormSchema extends BaseFormSchema {
 export interface MultiStepFormSchema extends BaseFormSchema {
   steps: FormStep[];
   sections?: never;
+  tabs?: never;
 }
 
 /**
- * Form schema - either single-page or multi-step (discriminated union)
+ * Form schema - single-page, tabbed, or multi-step (discriminated union).
+ * Discriminated by shape: `tabs` -> tabbed, `steps` -> multi-step, else single-page.
  */
-export type FormSchema = SinglePageFormSchema | MultiStepFormSchema;
+export type FormSchema = SinglePageFormSchema | TabbedFormSchema | MultiStepFormSchema;
 
 // ============================================================================
 // Runtime Context Types
