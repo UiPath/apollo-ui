@@ -161,13 +161,29 @@ export type AgentFlowA2aResource = {
   errorAction?: Omit<ToolbarActionItem, 'id' | 'onAction'>;
 };
 
+export type AgentFlowSkillsResource = {
+  id: string;
+  type: 'skills';
+  name: string;
+  originalName?: string;
+  description: string;
+  errors?: ErrorInfo[];
+  hasBreakpoint?: boolean;
+  isCurrentBreakpoint?: boolean;
+  hasGuardrails?: boolean;
+  projectId?: string;
+  isDisabled?: boolean;
+  errorAction?: Omit<ToolbarActionItem, 'id' | 'onAction'>;
+};
+
 export type AgentFlowResource =
   | AgentFlowContextResource
   | AgentFlowEscalationResource
   | AgentFlowMcpResource
   | AgentFlowToolResource
   | AgentFlowMemorySpaceResource
-  | AgentFlowA2aResource;
+  | AgentFlowA2aResource
+  | AgentFlowSkillsResource;
 export type AgentFlowResourceType = AgentFlowResource['type'];
 
 /**
@@ -276,7 +292,16 @@ export type AgentFlowProps = {
   resources: AgentFlowResource[];
   allowDragging?: boolean;
   initialSelectedResource?: {
-    type: 'context' | 'escalation' | 'mcp' | 'pane' | 'run' | 'tool' | 'memorySpace' | 'a2a';
+    type:
+      | 'context'
+      | 'escalation'
+      | 'mcp'
+      | 'pane'
+      | 'run'
+      | 'tool'
+      | 'memorySpace'
+      | 'a2a'
+      | 'skills';
     name: string;
   } | null;
   onSelectResource?: (resourceId: string | null) => void;
@@ -354,6 +379,8 @@ export type AgentFlowProps = {
   enableMcpTools?: boolean;
   /** TODO: Remove once memory feature is fully implemented */
   enableMemory?: boolean;
+  /** Enables the "Skills" add-button on the top edge of the agent node. */
+  enableSkills?: boolean;
   enableA2a?: boolean;
   enableStickyNotes?: boolean;
   enableInstructions?: boolean;
@@ -465,6 +492,9 @@ export type MemorySpaceResourceData = {
 export type A2aResourceData = {
   type: 'a2a';
 };
+export type SkillsResourceData = {
+  type: 'skills';
+};
 
 export type SharedResourceData = {
   name: string;
@@ -512,6 +542,7 @@ export type AgentFlowResourceNodeData = (
   | ToolResourceData
   | MemorySpaceResourceData
   | A2aResourceData
+  | SkillsResourceData
 ) &
   SharedResourceData;
 export type AgentFlowResourceNode = Node<AgentFlowResourceNodeData, 'resource'> & {
@@ -552,6 +583,7 @@ export interface AgentNodeTranslations {
   context: string;
   tools: string;
   memory: string;
+  skills: string;
   instructions: string;
   addInstructions: string;
   // Settings preview
@@ -579,6 +611,7 @@ export const DefaultAgentNodeTranslations: AgentNodeTranslations = {
   context: 'Context',
   tools: 'Tools',
   memory: 'Memory',
+  skills: 'Skills',
   instructions: 'Instructions',
   addInstructions: 'Add Instructions',
   // Settings preview

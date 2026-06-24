@@ -86,11 +86,14 @@ const AGENT_FLOW_FIT_VIEW_OPTIONS = {
 
 // agent node wrapper
 const createAgentNodeWrapper = (handlers: {
-  onAddResource?: (type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace' | 'a2a') => void;
+  onAddResource?: (
+    type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace' | 'a2a' | 'skills'
+  ) => void;
   translations?: AgentNodeTranslations;
   suggestionTranslations?: SuggestionTranslations;
   enableMcpTools?: boolean;
   enableMemory?: boolean;
+  enableSkills?: boolean;
   enableA2a?: boolean;
   enableInstructions?: boolean;
   healthScore?: number;
@@ -146,6 +149,15 @@ const createAgentNodeWrapper = (handlers: {
           node.data.parentNodeId === props.id
       );
 
+    const hasSkills =
+      handlers.enableSkills === true &&
+      nodes.some(
+        (node) =>
+          isAgentFlowResourceNode(node) &&
+          node.data.type === 'skills' &&
+          node.data.parentNodeId === props.id
+      );
+
     // Check if agent itself is running OR if any of its resources are running on view mode OR if it's processing a suggestion
     const agentRunning = hasAgentRunning(storeProps.spans);
     const resourceRunning = nodes.some(
@@ -187,6 +199,7 @@ const createAgentNodeWrapper = (handlers: {
         hasMcp={hasMcp}
         hasMemory={hasMemory}
         hasA2a={hasA2a}
+        hasSkills={hasSkills}
         a2aEnabled={handlers.enableA2a === true}
         mcpEnabled={handlers.enableMcpTools !== false}
         mode={storeProps.mode}
@@ -198,6 +211,7 @@ const createAgentNodeWrapper = (handlers: {
         translations={handlers.translations ?? DefaultAgentNodeTranslations}
         suggestionTranslations={handlers.suggestionTranslations ?? DefaultSuggestionTranslations}
         enableMemory={handlers.enableMemory === true}
+        enableSkills={handlers.enableSkills === true}
         enableInstructions={handlers.enableInstructions === true}
         healthScore={handlers.healthScore}
         onHealthScoreClick={handlers.onHealthScoreClick}
@@ -276,6 +290,7 @@ const AgentFlowInner = memo(
     canvasRef,
     enableMcpTools,
     enableMemory,
+    enableSkills,
     enableA2a,
     enableStickyNotes,
     enableInstructions,
@@ -373,7 +388,7 @@ const AgentFlowInner = memo(
 
     const nodeTypes = useMemo(() => {
       const handleAddResource = (
-        type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace' | 'a2a'
+        type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace' | 'a2a' | 'skills'
       ) => {
         // Use createResourcePlaceholder which will either create a placeholder or call onAddResource
         createResourcePlaceholder(type);
@@ -389,6 +404,7 @@ const AgentFlowInner = memo(
           suggestionTranslations,
           enableMcpTools,
           enableMemory,
+          enableSkills,
           enableA2a,
           enableInstructions,
           healthScore,
@@ -428,6 +444,7 @@ const AgentFlowInner = memo(
       onCollapseResource,
       enableMcpTools,
       enableMemory,
+      enableSkills,
       suggestionGroup?.metadata?.version,
     ]);
 
@@ -596,6 +613,7 @@ const AgentFlowInner = memo(
       if (node.data.isVirtual) return true; // Always keep virtual nodes
       if (node.data.type === 'memorySpace') return !!enableMemory;
       if (node.data.type === 'a2a') return !!enableA2a;
+      if (node.data.type === 'skills') return !!enableSkills;
       return true;
     });
 

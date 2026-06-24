@@ -352,6 +352,7 @@ interface AgentFlowWrapperProps {
   definition?: any;
   enableTimelinePlayer?: boolean;
   enableMemory?: boolean;
+  enableSkills?: boolean;
   enableStickyNotes?: boolean;
   enableInstructions?: boolean;
   healthScore?: number;
@@ -371,6 +372,7 @@ const AgentFlowWrapper = ({
   definition = sampleAgentDefinition,
   enableTimelinePlayer = true,
   enableMemory = true,
+  enableSkills = true,
   enableStickyNotes = true,
   enableInstructions = false,
   healthScore,
@@ -624,6 +626,7 @@ const AgentFlowWrapper = ({
             onSelectResource={handleSelectResource}
             enableTimelinePlayer={mode === 'view' && enableTimelinePlayer}
             enableMemory={enableMemory}
+            enableSkills={enableSkills}
             enableStickyNotes={enableStickyNotes}
             enableInstructions={enableInstructions}
             stickyNotes={stickyNotes}
