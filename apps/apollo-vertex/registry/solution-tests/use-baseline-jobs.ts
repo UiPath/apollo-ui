@@ -39,8 +39,12 @@ export function useBaselineJobs(testId: string): UseBaselineJobsResult {
 /** Remove a job from the test's expected (baseline) results. */
 export function useRemoveJobBaseline(): MutationHook<string> {
   const actions = useSolutionTestsActions();
+  const jobsCollection = useSolutionTestCollection(ENTITY.jobs);
   return useMutation({
-    mutationFn: (baselineId: string) => actions.removeJobBaseline(baselineId),
+    mutationFn: async (baselineId: string) => {
+      await actions.removeJobBaseline(baselineId);
+      await jobsCollection.utils.refetch();
+    },
   });
 }
 

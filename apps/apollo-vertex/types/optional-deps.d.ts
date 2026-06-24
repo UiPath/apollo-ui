@@ -10,6 +10,10 @@ declare module "@tanstack/react-db" {
       id: string,
       callback: (draft: T) => void,
     ): { isPersisted: { promise: Promise<unknown> } };
+    // `utils.refetch()` re-pulls the source so the collection reflects writes
+    // made out of band (e.g. through a backend trigger rather than the
+    // collection's own mutators).
+    readonly utils: { refetch(): Promise<void> };
   }
   interface QueryResult<T = unknown> {
     readonly __row?: T;

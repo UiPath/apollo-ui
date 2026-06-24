@@ -73,7 +73,15 @@ export function useToggleTestActive(): MutationHook<{
 /** Delete a test. */
 export function useDeleteTest(): MutationHook<string> {
   const actions = useSolutionTestsActions();
+  const testsCollection = useSolutionTestCollection(ENTITY.tests);
+  const jobsCollection = useSolutionTestCollection(ENTITY.jobs);
   return useMutation({
-    mutationFn: (testId: string) => actions.deleteTest(testId),
+    mutationFn: async (testId: string) => {
+      await actions.deleteTest(testId);
+      await Promise.all([
+        testsCollection.utils.refetch(),
+        jobsCollection.utils.refetch(),
+      ]);
+    },
   });
 }
