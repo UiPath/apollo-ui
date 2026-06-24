@@ -48,11 +48,11 @@ export function useRunResults(runId: string): UseRunResultsResult {
   const resultsCollection = useSolutionTestCollection(ENTITY.runResults);
   const jobsCollection = useSolutionTestCollection(ENTITY.jobs);
   const { data, isReady: resultsReady } = useLiveQuery(
-    () => resultsCollection,
+    (q) => q.from({ results: resultsCollection }),
     [resultsCollection],
   );
   const { data: jobsData, isReady: jobsReady } = useLiveQuery(
-    () => jobsCollection,
+    (q) => q.from({ jobs: jobsCollection }),
     [jobsCollection],
   );
   // The role filter needs both collections. Until both are ready, stay loading

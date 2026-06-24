@@ -1,7 +1,7 @@
 declare module "@tanstack/react-db" {
   // Minimal stand-ins for @tanstack/db (re-exported by react-db). The phantom
-  // `__row` on Collection carries the row type so `useLiveQuery` can infer it;
-  // QueryResult is opaque (query-builder hooks supply their row type explicitly).
+  // `__row` carries the row type through the query builder so `useLiveQuery`
+  // infers it from a typed `q.from({...})` source.
   export interface Collection<T = unknown> {
     readonly __row?: T;
     // Optimistic, server-synced row mutation (Immer-style draft). The returned
@@ -11,21 +11,24 @@ declare module "@tanstack/react-db" {
       callback: (draft: T) => void,
     ): { isPersisted: { promise: Promise<unknown> } };
   }
-  interface QueryResult {
-    readonly __query?: true;
+  interface QueryResult<T = unknown> {
+    readonly __row?: T;
+  }
+  // Result of a source the stub can't type (e.g. the generic entity
+  // collections). It carries no row type, so the row type is supplied by an
+  // explicit `useLiveQuery` type argument instead.
+  interface UntypedQueryResult {
+    readonly __untyped?: true;
   }
   interface QueryBuilder {
-    from(source: Record<string, unknown>): QueryResult;
+    from<T>(source: Record<string, Collection<T>>): QueryResult<T>;
+    from(source: Record<string, unknown>): UntypedQueryResult;
   }
 
-  // Accepts both the direct-collection form (`() => collection`, used by the
-  // Solution Tests read hooks — row type inferred from the Collection) and the
-  // query-builder form (`(q) => q.from({...})`, used by the identity/entity
-  // hooks — row type supplied explicitly).
   export function useLiveQuery<T>(
     queryFn: (
       q: QueryBuilder,
-    ) => Collection<T> | QueryResult | undefined | null,
+    ) => Collection<T> | QueryResult<T> | UntypedQueryResult | undefined | null,
     deps?: Array<unknown>,
   ): { data: T[] | undefined; isLoading: boolean; isReady: boolean };
 }

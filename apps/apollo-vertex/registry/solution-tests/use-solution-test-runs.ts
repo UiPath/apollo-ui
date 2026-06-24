@@ -18,6 +18,9 @@ export interface UseSolutionTestRunsResult {
 /** Live list of all runs (the view filters by batch in memory). */
 export function useSolutionTestRuns(): UseSolutionTestRunsResult {
   const collection = useSolutionTestCollection(ENTITY.runs);
-  const { data, isLoading } = useLiveQuery(() => collection, [collection]);
+  const { data, isLoading } = useLiveQuery(
+    (q) => q.from({ runs: collection }),
+    [collection],
+  );
   return { runs: data ?? [], isLoading };
 }

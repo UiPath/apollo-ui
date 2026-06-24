@@ -23,7 +23,10 @@ export interface UseSolutionTestsResult {
 /** Live list of solution tests. */
 export function useSolutionTests(): UseSolutionTestsResult {
   const collection = useSolutionTestCollection(ENTITY.tests);
-  const { data, isLoading } = useLiveQuery(() => collection, [collection]);
+  const { data, isLoading } = useLiveQuery(
+    (q) => q.from({ tests: collection }),
+    [collection],
+  );
   return { tests: data ?? [], isLoading };
 }
 
