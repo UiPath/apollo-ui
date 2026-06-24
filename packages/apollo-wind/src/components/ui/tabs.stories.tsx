@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from './input';
 import { Label } from './label';
 import { Switch } from './switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
+import { ScrollableTabsList, Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
 
 const meta: Meta<typeof Tabs> = {
   title: 'Components/Navigation/Tabs',
@@ -117,6 +117,73 @@ export const Disabled = {
         </div>
       </TabsContent>
     </Tabs>
+  ),
+};
+
+// ============================================================================
+// Overflow
+// ============================================================================
+
+const overflowTabs = [
+  { value: 'parameters', label: 'Parameters' },
+  { value: 'error-handling', label: 'Error handling' },
+  { value: 'advanced', label: 'Advanced' },
+];
+
+const OverflowTabContent = ({ value }: { value: string }) => (
+  <div className="rounded-lg border p-4">
+    <p className="text-sm capitalize">{value.replace('-', ' ')} content</p>
+  </div>
+);
+
+export const Overflow = {
+  name: 'Overflow',
+  render: () => (
+    <div className="flex flex-wrap items-start gap-10">
+      <div className="space-y-3">
+        <div>
+          <p className="text-sm font-medium">Spacious</p>
+          <p className="text-xs text-muted-foreground">All tabs fit in the available width.</p>
+        </div>
+        <Tabs defaultValue="parameters" className="w-[420px]">
+          <TabsList>
+            {overflowTabs.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value}>
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {overflowTabs.map((tab) => (
+            <TabsContent key={tab.value} value={tab.value}>
+              <OverflowTabContent value={tab.value} />
+            </TabsContent>
+          ))}
+        </Tabs>
+      </div>
+
+      <div className="space-y-3">
+        <div>
+          <p className="text-sm font-medium">Compact</p>
+          <p className="text-xs text-muted-foreground">
+            Scroll controls expose tabs that do not fit without changing selection.
+          </p>
+        </div>
+        <Tabs defaultValue="parameters" className="w-[280px]">
+          <ScrollableTabsList aria-label="Compact example tabs">
+            {overflowTabs.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value}>
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </ScrollableTabsList>
+          {overflowTabs.map((tab) => (
+            <TabsContent key={tab.value} value={tab.value}>
+              <OverflowTabContent value={tab.value} />
+            </TabsContent>
+          ))}
+        </Tabs>
+      </div>
+    </div>
   ),
 };
 

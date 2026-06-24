@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
+import { ScrollableTabsList, Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
 
 describe('Tabs', () => {
   const TabsExample = ({
@@ -178,6 +178,151 @@ describe('Tabs', () => {
     );
 
     expect(screen.getByText('Content 2')).toBeInTheDocument();
+  });
+
+  it('shows stable scroll controls for overflowing tabs', async () => {
+    const user = userEvent.setup();
+    const scrollBy = vi.fn();
+    const scrollWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollWidth');
+    const clientWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth');
+    const originalScrollBy = HTMLElement.prototype.scrollBy;
+
+    Object.defineProperty(HTMLElement.prototype, 'scrollWidth', {
+      configurable: true,
+      get: () => 480,
+    });
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+      configurable: true,
+      get: () => 240,
+    });
+    HTMLElement.prototype.scrollBy = scrollBy;
+
+    try {
+      render(
+        <Tabs defaultValue="tab1">
+          <ScrollableTabsList aria-label="Scrollable tabs">
+            <TabsTrigger value="tab1">Tab 1</TabsTrigger>
+            <TabsTrigger value="tab2">Tab 2</TabsTrigger>
+            <TabsTrigger value="tab3">Tab 3</TabsTrigger>
+          </ScrollableTabsList>
+          <TabsContent value="tab1">Content 1</TabsContent>
+          <TabsContent value="tab2">Content 2</TabsContent>
+          <TabsContent value="tab3">Content 3</TabsContent>
+        </Tabs>
+      );
+
+      const previousButton = await screen.findByRole('button', { name: 'Scroll tabs left' });
+      const nextButton = screen.getByRole('button', { name: 'Scroll tabs right' });
+
+      expect(previousButton).toBeDisabled();
+      expect(nextButton).toBeEnabled();
+
+      await user.click(nextButton);
+      expect(scrollBy).toHaveBeenCalledWith({ left: 240, behavior: 'smooth' });
+      expect(screen.getByRole('tab', { name: 'Tab 1' })).toHaveAttribute('aria-selected', 'true');
+    } finally {
+      if (scrollWidth) Object.defineProperty(HTMLElement.prototype, 'scrollWidth', scrollWidth);
+      else delete (HTMLElement.prototype as Partial<HTMLElement>).scrollWidth;
+      if (clientWidth) Object.defineProperty(HTMLElement.prototype, 'clientWidth', clientWidth);
+      else delete (HTMLElement.prototype as Partial<HTMLElement>).clientWidth;
+      HTMLElement.prototype.scrollBy = originalScrollBy;
+    }
+  });
+
+  it('reveals an initially active tab when it starts outside the viewport', async () => {
+    const scrollBy = vi.fn();
+    const scrollWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollWidth');
+    const clientWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth');
+    const originalScrollBy = HTMLElement.prototype.scrollBy;
+    const originalGetBoundingClientRect = HTMLElement.prototype.getBoundingClientRect;
+
+    Object.defineProperty(HTMLElement.prototype, 'scrollWidth', {
+      configurable: true,
+      get: () => 480,
+    });
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+      configurable: true,
+      get: () => 240,
+    });
+    HTMLElement.prototype.scrollBy = scrollBy;
+    HTMLElement.prototype.getBoundingClientRect = function () {
+      if (this.getAttribute('role') === 'tablist') {
+        return { left: 0, right: 240 } as DOMRect;
+      }
+      if (this.getAttribute('role') === 'tab' && this.dataset.state === 'active') {
+        return { left: 320, right: 400 } as DOMRect;
+      }
+      return originalGetBoundingClientRect.call(this);
+    };
+
+    try {
+      render(
+        <Tabs defaultValue="tab3">
+          <ScrollableTabsList aria-label="Scrollable tabs">
+            <TabsTrigger value="tab1">Tab 1</TabsTrigger>
+            <TabsTrigger value="tab2">Tab 2</TabsTrigger>
+            <TabsTrigger value="tab3">Tab 3</TabsTrigger>
+          </ScrollableTabsList>
+        </Tabs>
+      );
+
+      await waitFor(() => {
+        expect(scrollBy).toHaveBeenCalledWith({ left: 160, behavior: 'smooth' });
+      });
+    } finally {
+      if (scrollWidth) Object.defineProperty(HTMLElement.prototype, 'scrollWidth', scrollWidth);
+      else delete (HTMLElement.prototype as Partial<HTMLElement>).scrollWidth;
+      if (clientWidth) Object.defineProperty(HTMLElement.prototype, 'clientWidth', clientWidth);
+      else delete (HTMLElement.prototype as Partial<HTMLElement>).clientWidth;
+      HTMLElement.prototype.scrollBy = originalScrollBy;
+      HTMLElement.prototype.getBoundingClientRect = originalGetBoundingClientRect;
+    }
+  });
+
+  it('updates overflow controls when tabs are added', async () => {
+    let measuredScrollWidth = 240;
+    const scrollWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollWidth');
+    const clientWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth');
+
+    Object.defineProperty(HTMLElement.prototype, 'scrollWidth', {
+      configurable: true,
+      get: () => measuredScrollWidth,
+    });
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+      configurable: true,
+      get: () => 240,
+    });
+
+    try {
+      const { rerender } = render(
+        <Tabs defaultValue="tab1">
+          <ScrollableTabsList aria-label="Scrollable tabs">
+            <TabsTrigger value="tab1">Tab 1</TabsTrigger>
+            <TabsTrigger value="tab2">Tab 2</TabsTrigger>
+          </ScrollableTabsList>
+        </Tabs>
+      );
+
+      expect(screen.queryByRole('button', { name: 'Scroll tabs right' })).not.toBeInTheDocument();
+
+      measuredScrollWidth = 480;
+      rerender(
+        <Tabs defaultValue="tab1">
+          <ScrollableTabsList aria-label="Scrollable tabs">
+            <TabsTrigger value="tab1">Tab 1</TabsTrigger>
+            <TabsTrigger value="tab2">Tab 2</TabsTrigger>
+            <TabsTrigger value="tab3">Tab 3</TabsTrigger>
+          </ScrollableTabsList>
+        </Tabs>
+      );
+
+      expect(await screen.findByRole('button', { name: 'Scroll tabs right' })).toBeEnabled();
+    } finally {
+      if (scrollWidth) Object.defineProperty(HTMLElement.prototype, 'scrollWidth', scrollWidth);
+      else delete (HTMLElement.prototype as Partial<HTMLElement>).scrollWidth;
+      if (clientWidth) Object.defineProperty(HTMLElement.prototype, 'clientWidth', clientWidth);
+      else delete (HTMLElement.prototype as Partial<HTMLElement>).clientWidth;
+    }
   });
 
   it('applies custom className to TabsList', () => {
