@@ -1,3 +1,18 @@
+## [@uipath/apollo-wind-v2.24.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.23.0...@uipath/apollo-wind@2.24.0) (2026-06-24)
+
+### Features
+
+* **apollo-wind:** add PromptEditor component ([424c8c3](https://github.com/UiPath/apollo-ui/commit/424c8c33c9d5b78646a5d35a9b591da588c6479b))
+* **apollo-wind:** add variable drag-drop to PromptEditor ([6fe9d91](https://github.com/UiPath/apollo-ui/commit/6fe9d91452faf0ade969701f284941aa7c1ecc87))
+
+### Bug Fixes
+
+* **apollo-wind:** address PromptEditor PR review feedback ([92abd0b](https://github.com/UiPath/apollo-ui/commit/92abd0b53f96f1e6b3be4bdf3dd3237b13dd1a0e))
+* **apollo-wind:** address PromptEditor review feedback ([a654c31](https://github.com/UiPath/apollo-ui/commit/a654c3177adaa1b15be71edbef8446fb250cca7b))
+* **apollo-wind:** address PromptEditor review feedback (autocomplete focus, preview styles, exports) ([a8fea68](https://github.com/UiPath/apollo-ui/commit/a8fea6831aff88b2bfc44a7f955af889c7b71745))
+* **apollo-wind:** de-duplicate setTokens onChange + lighten autocomplete text-diff ([ac3e9d0](https://github.com/UiPath/apollo-ui/commit/ac3e9d03a1658a92d49dbb89e235a8eae677fe83))
+* **apollo-wind:** drop redundant .sb-story preview-head override ([cabbad8](https://github.com/UiPath/apollo-ui/commit/cabbad80be441d54e03f4c560d8862d45c4c07cd))
+
 ## [@uipath/apollo-wind-v2.23.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.22.0...@uipath/apollo-wind@2.23.0) (2026-06-23)
 
 ### Features

@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.52.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.52.0...@uipath/apollo-react@4.52.1) (2026-06-24)
+
+### Bug Fixes
+
+* **apollo-react:** align lexical to 0.42 and drop dep-consistency exemption ([636220c](https://github.com/UiPath/apollo-ui/commit/636220c82d0d036ae16d5188329ac3647a23b626))
+
 ## [@uipath/apollo-react-v4.52.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.51.0...@uipath/apollo-react@4.52.0) (2026-06-23)
 
 ### Features
