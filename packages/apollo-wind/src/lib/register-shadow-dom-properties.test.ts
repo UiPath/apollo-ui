@@ -12,11 +12,11 @@ const SAMPLE_CSS = `
 `;
 
 beforeEach(() => {
-  document.querySelectorAll(SELECTOR).forEach((el) => el.remove());
+  document.querySelectorAll(SELECTOR).forEach((el) => { el.remove(); });
 });
 
 afterEach(() => {
-  document.querySelectorAll(SELECTOR).forEach((el) => el.remove());
+  document.querySelectorAll(SELECTOR).forEach((el) => { el.remove(); });
 });
 
 describe('registerCssPropertyRules', () => {

@@ -18,14 +18,14 @@ const NEEDLE = '@property';
 
 function extractPropertyRules(css: string): string[] {
   const rules: string[] = [];
-  let pos = 0;
-  while ((pos = css.indexOf(NEEDLE, pos)) !== -1) {
+  let pos = css.indexOf(NEEDLE, 0);
+  while (pos !== -1) {
     const open = css.indexOf('{', pos);
     if (open === -1) break;
     const close = css.indexOf('}', open);
     if (close === -1) break;
     rules.push(css.slice(pos, close + 1));
-    pos = close + 1;
+    pos = css.indexOf(NEEDLE, close + 1);
   }
   return rules;
 }

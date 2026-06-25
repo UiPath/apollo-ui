@@ -6,7 +6,6 @@
 // Utilities
 // -----------------------------------------------------------------------------
 export { cn } from './lib/utils';
-export { registerCssPropertyRules } from './lib/register-shadow-dom-properties';
 export {
   injectTailwindIntoShadowRoot,
   hasApolloWindCss,

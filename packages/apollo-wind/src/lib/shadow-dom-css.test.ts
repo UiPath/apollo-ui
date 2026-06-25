@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   hasApolloWindCss,
   injectTailwindIntoShadowRoot,
@@ -22,16 +22,14 @@ function createShadowHost(): { host: HTMLElement; root: ShadowRoot } {
 }
 
 beforeEach(() => {
-  document.querySelectorAll(SELECTOR).forEach((el) => el.remove());
-  document.querySelectorAll(PROPERTY_SELECTOR).forEach((el) => el.remove());
+  document.querySelectorAll(SELECTOR).forEach((el) => { el.remove(); });
+  document.querySelectorAll(PROPERTY_SELECTOR).forEach((el) => { el.remove(); });
 });
 
 afterEach(() => {
-  document.querySelectorAll(SELECTOR).forEach((el) => el.remove());
-  document.querySelectorAll(PROPERTY_SELECTOR).forEach((el) => el.remove());
-  document
-    .querySelectorAll('div')
-    .forEach((el) => el.parentNode?.removeChild(el));
+  document.querySelectorAll(SELECTOR).forEach((el) => { el.remove(); });
+  document.querySelectorAll(PROPERTY_SELECTOR).forEach((el) => { el.remove(); });
+  document.querySelectorAll('div').forEach((el) => { el.parentNode?.removeChild(el); });
 });
 
 describe('injectTailwindIntoShadowRoot', () => {
