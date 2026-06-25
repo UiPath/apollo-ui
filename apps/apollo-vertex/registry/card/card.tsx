@@ -66,7 +66,7 @@ function Card({
         ) : (
           <div
             className={cn(
-              "absolute inset-0 rounded-2xl pointer-events-none blur-xl bg-primary-400/15 dark:bg-primary-400/30",
+              "absolute inset-0 rounded-2xl pointer-events-none blur-xl bg-primary-400/15 dark:bg-primary-400/20",
               "transition-opacity duration-150",
               selected ? "opacity-100" : "opacity-0",
             )}
@@ -76,7 +76,7 @@ function Card({
         {/* Hover glow: always primary */}
         <div
           className={cn(
-            "absolute inset-0 rounded-2xl pointer-events-none blur-xl bg-primary-400/15 dark:bg-primary-400/50",
+            "absolute inset-0 rounded-2xl pointer-events-none blur-xl bg-primary-400/15 dark:bg-primary-400/20",
             "opacity-0 transition-opacity duration-150",
             !selected && "group-hover/card:opacity-100",
           )}
