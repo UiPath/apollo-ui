@@ -3,6 +3,7 @@ import { Button } from '@/registry/button/button'
 import { Input } from '@/registry/input/input'
 import { Label } from '@/registry/label/label'
 import { SelectableCardDemo } from './selectable-card-demo'
+import { AiGlowCardDemo, AiGlowGroupDemo } from './ai-glow-demo'
 
 # Card
 
@@ -75,7 +76,7 @@ Use `variant="solid"` for a flat card with a solid background and border.
 
 ## Selectable
 
-Cards can be made selectable with `selectable="standard"` or `selectable="ai"`. Selectable cards render as a `<button>` with `aria-pressed` for accessibility. They show a glow effect on hover and when selected.
+Cards can be made selectable with `selectable="standard"` or `selectable="ai"`. Selectable cards render as a `<button>` with `aria-pressed` for accessibility. They show a glow effect on hover and when selected. The `ai` glow uses the AI gradient; see the [AI Toolkit](/guidelines/ai-toolkit) for guidance and richer AI card compositions.
 
 <div className="mt-4">
   <SelectableCardDemo />
@@ -91,6 +92,51 @@ Cards can be made selectable with `selectable="standard"` or `selectable="ai"`. 
   <CardTitle>AI Mode</CardTitle>
   <CardDescription>Uses an AI gradient glow when selected.</CardDescription>
 </Card>
+```
+
+## AI glow
+
+A glow, an AI gradient shadow, can sit behind a card or a group of cards to mark it as AI without a border or a solid fill. It is a composition rather than a Card prop: render the `AiGlow` primitive as the first child of a `relative` parent, then layer the content above it in its own `relative` wrapper. The glow is decorative, so it is `aria-hidden` and ignores pointer events. For when to reach for a glow, see the [AI Toolkit](/guidelines/ai-toolkit).
+
+Give the card the translucent AI glass surface (`variant="glass"` with `bg-[var(--ai-glass)]`) so the colored glow reads through it instead of sitting behind an opaque fill.
+
+### Behind a single card
+
+The `card` variant is a soft blurred blob. Pair it with a label so the emphasis is explained, and limit it to one best match per view.
+
+<div className="flex justify-center p-8 rounded-lg mt-4 border">
+  <AiGlowCardDemo />
+</div>
+
+```tsx
+<div className="relative">
+  <AiGlow />
+  <div className="relative">
+    <Card variant="glass" className="bg-[var(--ai-glass)] dark:bg-[var(--ai-glass)]">
+      {/* ... */}
+    </Card>
+  </div>
+</div>
+```
+
+### Behind a card group
+
+The `group` variant is a wider, amorphous wash. Set the AI context once at the group level instead of marking every card, so the mark keeps its meaning.
+
+<div className="p-8 rounded-lg mt-4 border overflow-hidden">
+  <AiGlowGroupDemo />
+</div>
+
+```tsx
+<div className="relative">
+  <AiGlow variant="group" />
+  <div className="relative grid gap-4 sm:grid-cols-2">
+    <Card variant="glass" className="bg-[var(--ai-glass)] dark:bg-[var(--ai-glass)]">
+      {/* ... */}
+    </Card>
+    {/* ...more cards */}
+  </div>
+</div>
 ```
 
 ## Installation
