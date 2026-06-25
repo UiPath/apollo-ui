@@ -1,4 +1,5 @@
 import { Badge } from '@/registry/badge/badge'
+import { AiMark } from '@/registry/ai-mark/ai-mark'
 import { AlertTriangle, CircleAlert, Check } from 'lucide-react'
 
 # Badge
@@ -53,6 +54,16 @@ Badges combine a `variant` appearance (primary, secondary, or outline). Icons ar
   <Badge status="success" variant="outline"><Check strokeWidth={2} /> Outline</Badge>
 </div>
 
+### AI
+
+The `ai` status marks AI-generated or AI-suggested content, reusing the default, secondary, and outline variants. Pair it with the AI mark. See the [AI Toolkit](/guidelines/ai-toolkit) for when and how to use the AI expression.
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-2">
+  <Badge status="ai"><AiMark /> Picked for you</Badge>
+  <Badge status="ai" variant="secondary"><AiMark /> AI suggested</Badge>
+  <Badge status="ai" variant="outline"><AiMark /> AI generated</Badge>
+</div>
+
 ## Installation
 
 ```bash
@@ -79,4 +90,7 @@ import { Badge } from "@/components/ui/badge"
 
 // With icons (consumer-provided)
 <Badge status="info"><Info /> Ready</Badge>
+
+// AI status — pair with the AI mark
+<Badge status="ai"><AiMark /> Picked for you</Badge>
 ```
