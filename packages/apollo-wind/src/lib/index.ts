@@ -1,6 +1,6 @@
-export { cn, get, deepEqual } from './utils';
 export {
-  injectTailwindIntoShadowRoot,
   hasApolloWindCss,
+  injectTailwindIntoShadowRoot,
   TAILWIND_INJECT_ATTR,
 } from './shadow-dom-css';
+export { cn, deepEqual, get } from './utils';

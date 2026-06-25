@@ -14,8 +14,11 @@ const SAMPLE_CSS = `
 .grid { display: grid; }
 `;
 
+const SHADOW_HOST_ATTR = 'data-test-shadow-host';
+
 function createShadowHost(): { host: HTMLElement; root: ShadowRoot } {
   const host = document.createElement('div');
+  host.setAttribute(SHADOW_HOST_ATTR, '');
   document.body.appendChild(host);
   const root = host.attachShadow({ mode: 'open' });
   return { host, root };
@@ -29,7 +32,7 @@ beforeEach(() => {
 afterEach(() => {
   document.querySelectorAll(SELECTOR).forEach((el) => { el.remove(); });
   document.querySelectorAll(PROPERTY_SELECTOR).forEach((el) => { el.remove(); });
-  document.querySelectorAll('div').forEach((el) => { el.parentNode?.removeChild(el); });
+  document.querySelectorAll(`[${SHADOW_HOST_ATTR}]`).forEach((el) => { el.remove(); });
 });
 
 describe('injectTailwindIntoShadowRoot', () => {
