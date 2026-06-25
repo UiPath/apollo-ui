@@ -6,6 +6,11 @@
 // Utilities
 // -----------------------------------------------------------------------------
 export { cn } from './lib/utils';
+export {
+  injectTailwindIntoShadowRoot,
+  hasApolloWindCss,
+  TAILWIND_INJECT_ATTR,
+} from './lib/shadow-dom-css';
 
 // -----------------------------------------------------------------------------
 // Layout Components
