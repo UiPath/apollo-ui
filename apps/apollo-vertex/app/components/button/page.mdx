@@ -1,4 +1,5 @@
 import { Button } from '@/registry/button/button'
+import { AiMark } from '@/registry/ai-mark/ai-mark'
 import { Mail, Loader2, ChevronRight } from 'lucide-react'
 
 # Button
@@ -37,6 +38,16 @@ Displays a button or a component that looks like a button.
   <Button disabled><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait</Button>
 </div>
 
+## AI
+
+The `ai` (solid), `ai-soft` (secondary-equivalent), and `ai-outline` variants apply the AI expression for AI-initiated actions. Pair with the AI mark. See the [AI Toolkit](/guidelines/ai-toolkit) for guidance.
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-2">
+  <Button variant="ai"><AiMark /> Ask AI</Button>
+  <Button variant="ai-soft"><AiMark /> Summarize</Button>
+  <Button variant="ai-outline"><AiMark /> Draft with AI</Button>
+</div>
+
 ## Installation
 
 ```bash
@@ -51,4 +62,9 @@ import { Button } from "@/components/ui/button"
 
 ```tsx
 <Button variant="outline">Button</Button>
+
+// AI variants — pair with the AI mark
+<Button variant="ai"><AiMark /> Ask AI</Button>
+<Button variant="ai-soft"><AiMark /> Summarize</Button>
+<Button variant="ai-outline"><AiMark /> Draft with AI</Button>
 ```
