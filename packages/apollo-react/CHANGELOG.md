@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.53.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.52.1...@uipath/apollo-react@4.53.0) (2026-06-25)
+
+### Features
+
+* **apollo-wind:** add tab overflow navigation ([d95db79](https://github.com/UiPath/apollo-ui/commit/d95db799e7749584e308df7a50202ef5287551c7))
+
 ## [@uipath/apollo-react-v4.52.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.52.0...@uipath/apollo-react@4.52.1) (2026-06-24)
 
 ### Bug Fixes

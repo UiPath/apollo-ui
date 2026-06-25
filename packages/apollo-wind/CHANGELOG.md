@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.25.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.24.0...@uipath/apollo-wind@2.25.0) (2026-06-25)
+
+### Features
+
+* **apollo-wind:** add tab overflow navigation ([d95db79](https://github.com/UiPath/apollo-ui/commit/d95db799e7749584e308df7a50202ef5287551c7))
+
 ## [@uipath/apollo-wind-v2.24.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.23.0...@uipath/apollo-wind@2.24.0) (2026-06-24)
 
 ### Features
