@@ -77,4 +77,14 @@ describe('NodePropertyPanel', () => {
     expect(screen.getByTestId('custom-body')).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'Parameters' })).not.toBeInTheDocument();
   });
+
+  it('renders headerExtra content in the title bar when panelTitle is set', () => {
+    render(
+      <NodePropertyPanel
+        panelTitle="Properties"
+        headerExtra={<span data-testid="header-extra">extra</span>}
+      />
+    );
+    expect(screen.getByTestId('header-extra')).toBeInTheDocument();
+  });
 });
