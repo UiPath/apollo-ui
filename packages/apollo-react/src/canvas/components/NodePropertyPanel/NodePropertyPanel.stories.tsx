@@ -1,8 +1,9 @@
-import MonacoEditor from '@monaco-editor/react';
+import type { EditorProps } from '@monaco-editor/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { FormSchema } from '@uipath/apollo-wind';
 import {
   Badge,
+  Button,
   cn,
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +13,7 @@ import {
   Input,
   MetadataForm,
   ScrollableTabsList,
+  Search as SearchField,
   Switch,
   Tabs,
   TabsContent,
@@ -32,6 +34,8 @@ import {
   ChevronsUpDown,
   CircleAlert,
   CircleCheck,
+  CircleDot,
+  CircleOff,
   Code2,
   Copy,
   GitFork,
@@ -39,15 +43,27 @@ import {
   GripVertical,
   Play,
   Plus,
-  Search,
-  SlidersHorizontal,
   Sparkles,
+  SquareDashed,
   Type,
   X,
 } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { NodePropertyPanel } from './NodePropertyPanel';
+
+// @monaco-editor/react uses a CJS build without an `exports` field, which
+// causes Rolldown (Vite 8 production bundler) to resolve the default import as
+// undefined. Lazy-loading via dynamic import routes through a different interop
+// path that correctly extracts the default export at runtime.
+const _LazyMonaco = lazy(() => import('@monaco-editor/react'));
+function MonacoEditor(props: EditorProps) {
+  return (
+    <Suspense fallback={<div className="flex-1 min-h-[200px]" />}>
+      <_LazyMonaco {...props} />
+    </Suspense>
+  );
+}
 
 // ============================================================================
 // Layout helpers
@@ -1646,66 +1662,42 @@ type OutputNode = {
   path: string;
 };
 
-function outputTypeIcon(type: string) {
-  if (type === 'string')
-    return (
-      <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: '14px', lineHeight: '1' }}>
-        T
-      </span>
-    );
-  if (type === 'number')
-    return <span className="font-mono text-[13px] font-bold leading-none">#</span>;
-  if (type === 'null')
-    return <span className="font-mono text-[13px] leading-none">&#8709;</span>;
-  if (type === 'object')
-    return (
-      <span className="font-mono text-[11px] font-bold leading-none tracking-tighter">{'{}'}</span>
-    );
-  if (type === 'array')
-    return (
-      <svg
-        width="13"
-        height="13"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      >
-        <path d="M8 6h12M8 12h12M8 18h12M3.5 6h.01M3.5 12h.01M3.5 18h.01" />
-      </svg>
-    );
-  return null;
-}
-
 function TypeBadge({ type }: { type: string }) {
   const configs: Record<string, { label: string; cls: string }> = {
-    string:  { label: 'T',   cls: 'border-blue-500/30 bg-blue-500/10 text-blue-400' },
-    number:  { label: '#',   cls: 'border-amber-500/30 bg-amber-500/10 text-amber-400' },
-    boolean: { label: '?',   cls: 'border-green-500/30 bg-green-500/10 text-green-400' },
-    object:  { label: '{}',  cls: 'border-purple-500/30 bg-purple-500/10 text-purple-400' },
-    array:   { label: '[]',  cls: 'border-purple-500/30 bg-purple-500/10 text-purple-400' },
-    null:    { label: '∅',   cls: 'border-border bg-surface-overlay text-foreground-muted' },
+    string: { label: 'T', cls: 'border-info bg-info-background text-info' },
+    number: { label: '#', cls: 'border-warning bg-warning-background text-warning' },
+    boolean: { label: '?', cls: 'border-success bg-success-background text-success' },
+    object: { label: '{}', cls: 'border-brand bg-brand-subtle text-brand' },
+    array: { label: '[]', cls: 'border-brand bg-brand-subtle text-brand' },
+    null: { label: '∅', cls: 'border-border bg-surface-overlay text-foreground-muted' },
   };
-  const { label, cls } = configs[type] ?? { label: '?', cls: 'border-border bg-surface-overlay text-foreground-muted' };
+  const { label, cls } = configs[type] ?? {
+    label: '?',
+    cls: 'border-border bg-surface-overlay text-foreground-muted',
+  };
   return (
-    <span className={cn('inline-flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded border px-0.5 font-mono text-[9px] font-semibold leading-none', cls)}>
+    <span
+      className={cn(
+        'inline-flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded border px-0.5 font-mono text-[9px] font-semibold leading-none',
+        cls
+      )}
+    >
       {label}
     </span>
   );
 }
 
 function outputValueColorClass(type: string, value: unknown): string {
-  if (type === 'string') return 'text-[#2f8a3e]';
-  if (type === 'number') return 'text-[#0e7490]';
-  if (type === 'boolean') return value ? 'text-[#1f9d57]' : 'text-[#d83a2b]';
+  if (type === 'string') return 'text-success';
+  if (type === 'number') return 'text-info';
+  if (type === 'boolean') return value ? 'text-success' : 'text-error';
   if (type === 'null') return 'text-foreground-subtle';
   return 'text-foreground';
 }
 
 function formatOutputValue(
   type: string,
-  value: string | number | boolean | null | undefined,
+  value: string | number | boolean | null | undefined
 ): string {
   if (type === 'null' || value === null || value === undefined) return 'null';
   if (type === 'string') return `"${value}"`;
@@ -1715,7 +1707,11 @@ function formatOutputValue(
 function nodeMatchesQuery(node: OutputNode, q: string): boolean {
   if (!q) return true;
   if (node.key.toLowerCase().includes(q)) return true;
-  if (node.value !== undefined && node.value !== null && String(node.value).toLowerCase().includes(q))
+  if (
+    node.value !== undefined &&
+    node.value !== null &&
+    String(node.value).toLowerCase().includes(q)
+  )
     return true;
   return node.children?.some((c) => nodeMatchesQuery(c, q)) ?? false;
 }
@@ -1737,7 +1733,7 @@ function flattenOutputTree(
   nodes: OutputNode[],
   collapsed: Record<string, boolean>,
   query: string,
-  depth = 0,
+  depth = 0
 ): FlatRow[] {
   const rows: FlatRow[] = [];
   for (const n of nodes) {
@@ -1753,68 +1749,6 @@ function flattenOutputTree(
 const PANEL_NODE_ID = 'httpRequest1';
 const PANEL_NODE_LABEL = 'HTTP Request';
 
-// Concept 2 helpers — flat leaf list for expression references
-type FlatLeaf = { path: string; type: string; value?: string | number | boolean | null };
-
-function flattenToLeaves(nodes: OutputNode[], prefix = ''): FlatLeaf[] {
-  const result: FlatLeaf[] = [];
-  for (const n of nodes) {
-    const p = prefix ? `${prefix}.${n.key}` : n.key;
-    if (n.children) result.push(...flattenToLeaves(n.children, p));
-    else result.push({ path: p, type: n.type, value: n.value });
-  }
-  return result;
-}
-
-// Concept 3 helpers — TypeScript interface generation
-function formatTsKey(key: string): string {
-  return /[^a-zA-Z0-9_$]/.test(key) ? `'${key}'` : key;
-}
-
-function tsTypeForLeaf(node: OutputNode): string {
-  if (node.type === 'null') return 'string | null';
-  return node.type;
-}
-
-function buildInterfaceBody(
-  nodes: OutputNode[],
-  referencedKeys: Set<string>,
-  depth: number,
-): string {
-  const pad = '  '.repeat(depth);
-  return nodes
-    .map((n) => {
-      const key = formatTsKey(n.key);
-      const isRef = referencedKeys.has(n.key);
-      const refTag = isRef ? '  // ← referenced' : '';
-      if (n.children) {
-        const childBody = buildInterfaceBody(n.children, new Set(), depth + 1);
-        return `${pad}${key}: {${refTag}\n${childBody}\n${pad}};`;
-      }
-      const valNote =
-        n.value !== null && n.value !== undefined
-          ? `  // ${n.type === 'string' ? `"${n.value}"` : n.value}`
-          : '';
-      return `${pad}${key}: ${tsTypeForLeaf(n)};${valNote}${refTag}`;
-    })
-    .join('\n');
-}
-
-function buildTsDocument(
-  nodes: OutputNode[],
-  referencedKeys: Set<string>,
-  mode: 'input' | 'output',
-): string {
-  const suffix = mode === 'output' ? 'Output' : 'Input';
-  const interfaceName = `FetchInvoiceDetails${suffix}`;
-  const body = buildInterfaceBody(nodes, referencedKeys, 1);
-  return `// Fetch invoice details — HTTP Request\ninterface ${interfaceName} {\n${body}\n}`;
-}
-
-// ============================================================================
-// Output Panel
-// Two-tab view: Schema (referenced fields + searchable output tree) and
-// JSON (read-only Monaco editor showing sample output).
 // ============================================================================
 
 const REFERENCED_OUTPUTS = [
@@ -1828,88 +1762,133 @@ const REFERENCED_OUTPUTS = [
 ];
 
 const REFERENCED_INPUTS = [
-  { name: 'url', type: 'string' },
-  { name: 'method', type: 'string' },
+  { name: 'responseBody', type: 'object' },
+  { name: 'statusCode', type: 'number' },
   { name: 'headers', type: 'object' },
+  { name: 'condition', type: 'string' },
+  { name: 'result', type: 'boolean' },
+  { name: 'prompt', type: 'string' },
+  { name: 'response', type: 'string' },
+  { name: 'assignee', type: 'string' },
+  { name: 'message', type: 'string' },
 ];
 
-const INPUT_TREE_DATA: OutputNode[] = [
-  { key: 'url', type: 'string', value: 'https://api.example.com/invoices', path: 'url' },
-  { key: 'method', type: 'string', value: 'GET', path: 'method' },
-  {
-    key: 'headers',
-    type: 'object',
-    path: 'headers',
-    children: [
-      {
-        key: 'Authorization',
-        type: 'string',
-        value: 'Bearer {{token}}',
-        path: 'headers.Authorization',
-      },
-      {
-        key: 'Content-Type',
-        type: 'string',
-        value: 'application/json',
-        path: 'headers.Content-Type',
-      },
-    ],
-  },
-  { key: 'timeout', type: 'number', value: 30000, path: 'timeout' },
-  { key: 'body', type: 'null', value: null, path: 'body' },
-];
-
-const INPUT_JSON = JSON.stringify(
-  {
-    url: 'https://api.example.com/invoices',
-    method: 'GET',
-    headers: {
-      Authorization: 'Bearer {{token}}',
-      'Content-Type': 'application/json',
-    },
-    timeout: 30000,
-    body: null,
-  },
-  null,
-  2,
-);
-
-const OUTPUT_TREE_DATA: OutputNode[] = [
-  { key: 'statusCode', type: 'number', value: 200, path: 'statusCode' },
+const HTTP_REQUEST_CHILDREN: OutputNode[] = [
+  { key: 'statusCode', type: 'number', value: 200, path: `${PANEL_NODE_ID}.statusCode` },
   {
     key: 'responseBody',
     type: 'object',
-    path: 'responseBody',
+    path: `${PANEL_NODE_ID}.responseBody`,
     children: [
-      { key: 'id', type: 'string', value: 'inv-001', path: 'responseBody.id' },
-      { key: 'amount', type: 'number', value: 1500, path: 'responseBody.amount' },
-      { key: 'currency', type: 'string', value: 'USD', path: 'responseBody.currency' },
-      { key: 'status', type: 'string', value: 'paid', path: 'responseBody.status' },
+      { key: 'id', type: 'string', value: 'inv-001', path: `${PANEL_NODE_ID}.responseBody.id` },
+      {
+        key: 'amount',
+        type: 'number',
+        value: 1500,
+        path: `${PANEL_NODE_ID}.responseBody.amount`,
+      },
+      {
+        key: 'currency',
+        type: 'string',
+        value: 'USD',
+        path: `${PANEL_NODE_ID}.responseBody.currency`,
+      },
+      {
+        key: 'status',
+        type: 'string',
+        value: 'paid',
+        path: `${PANEL_NODE_ID}.responseBody.status`,
+      },
     ],
   },
   {
     key: 'headers',
     type: 'object',
-    path: 'headers',
+    path: `${PANEL_NODE_ID}.headers`,
     children: [
       {
         key: 'content-type',
         type: 'string',
         value: 'application/json',
-        path: 'headers.content-type',
+        path: `${PANEL_NODE_ID}.headers.content-type`,
       },
-      { key: 'x-request-id', type: 'string', value: 'abc-123', path: 'headers.x-request-id' },
+      {
+        key: 'x-request-id',
+        type: 'string',
+        value: 'abc-123',
+        path: `${PANEL_NODE_ID}.headers.x-request-id`,
+      },
     ],
   },
-  { key: 'errorMessage', type: 'null', value: null, path: 'errorMessage' },
-  { key: 'duration', type: 'number', value: 342, path: 'duration' },
-  { key: 'requestId', type: 'string', value: 'req-abc-123', path: 'requestId' },
-  { key: 'token', type: 'string', value: 'eyJhbGciOiJSUzI1NiJ9', path: 'token' },
-  { key: 'retryCount', type: 'number', value: 0, path: 'retryCount' },
-  { key: 'cached', type: 'boolean', value: false, path: 'cached' },
+  { key: 'errorMessage', type: 'string', value: null, path: `${PANEL_NODE_ID}.errorMessage` },
+  { key: 'duration', type: 'number', value: 342, path: `${PANEL_NODE_ID}.duration` },
+  { key: 'requestId', type: 'string', value: 'req-abc-123', path: `${PANEL_NODE_ID}.requestId` },
+  {
+    key: 'token',
+    type: 'string',
+    value: 'eyJhbGciOiJSUzI1NiJ9',
+    path: `${PANEL_NODE_ID}.token`,
+  },
+  { key: 'retryCount', type: 'number', value: 0, path: `${PANEL_NODE_ID}.retryCount` },
+  { key: 'cached', type: 'boolean', value: false, path: `${PANEL_NODE_ID}.cached` },
 ];
 
-const OUTPUT_JSON = JSON.stringify(
+const INPUT_TREE_DATA: OutputNode[] = [
+  { key: PANEL_NODE_ID, type: 'object', path: PANEL_NODE_ID, children: HTTP_REQUEST_CHILDREN },
+  {
+    key: 'decision1',
+    type: 'object',
+    path: 'decision1',
+    children: [
+      {
+        key: 'condition',
+        type: 'string',
+        value: 'invoice.amount > 1000',
+        path: 'decision1.condition',
+      },
+      { key: 'result', type: 'boolean', value: true, path: 'decision1.result' },
+      { key: 'branch', type: 'string', value: 'approve', path: 'decision1.branch' },
+    ],
+  },
+  {
+    key: 'agent1',
+    type: 'object',
+    path: 'agent1',
+    children: [
+      {
+        key: 'prompt',
+        type: 'string',
+        value: 'Summarize the invoice details',
+        path: 'agent1.prompt',
+      },
+      { key: 'model', type: 'string', value: 'gpt-4o-mini', path: 'agent1.model' },
+      {
+        key: 'response',
+        type: 'string',
+        value: 'Invoice inv-001 for $1,500 USD is paid.',
+        path: 'agent1.response',
+      },
+      { key: 'tokens', type: 'number', value: 342, path: 'agent1.tokens' },
+    ],
+  },
+  {
+    key: 'approval1',
+    type: 'object',
+    path: 'approval1',
+    children: [
+      { key: 'assignee', type: 'string', value: 'finance-team', path: 'approval1.assignee' },
+      {
+        key: 'message',
+        type: 'string',
+        value: 'Please review this invoice',
+        path: 'approval1.message',
+      },
+      { key: 'dueDate', type: 'string', value: '2025-01-15', path: 'approval1.dueDate' },
+    ],
+  },
+];
+
+const HTTP_REQUEST_JSON = JSON.stringify(
   {
     statusCode: 200,
     responseBody: {
@@ -1933,340 +1912,51 @@ const OUTPUT_JSON = JSON.stringify(
   2
 );
 
-function OutputPanelStory({ mode }: { mode: 'input' | 'output' }) {
-  const monacoTheme = useMonacoTheme();
-  const [search, setSearch] = useState('');
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(
-      [...collectContainerPaths(OUTPUT_TREE_DATA), ...collectContainerPaths(INPUT_TREE_DATA)].map((p) => [p, true]),
-    ),
-  );
-  const [filter, setFilter] = useState<'referenced' | 'all'>('referenced');
-  const [editingPath, setEditingPath] = useState<string | null>(null);
-  const [editedValues, setEditedValues] = useState<Record<string, string | number | boolean | null>>({});
-  const [copiedPath, setCopiedPath] = useState<string | null>(null);
-  const [nodeMode, setNodeMode] = useState<'live' | 'static' | 'llm' | 'disabled'>('live');
+const OUTPUT_TREE_DATA: OutputNode[] = [
+  { key: PANEL_NODE_ID, type: 'object', path: PANEL_NODE_ID, children: HTTP_REQUEST_CHILDREN },
+];
 
-  const copyExpr = (path: string) => {
-    navigator.clipboard.writeText(`{{${PANEL_NODE_ID}.${path}}}`).catch(() => {});
-    setCopiedPath(path);
-    setTimeout(() => setCopiedPath(null), 1500);
-  };
-
-  const NODE_MODES = [
-    { value: 'live',     label: 'Live',     dot: 'bg-green-500',        text: 'text-green-500'        },
-    { value: 'static',   label: 'Static',   dot: 'bg-blue-500',         text: 'text-blue-500'         },
-    { value: 'llm',      label: 'LLM',      dot: 'bg-purple-500',       text: 'text-purple-500'       },
-    { value: 'disabled', label: 'Disabled', dot: 'bg-foreground-subtle', text: 'text-foreground-muted' },
-  ] as const;
-  const currentNodeMode = NODE_MODES.find((m) => m.value === nodeMode) ?? NODE_MODES[0];
-
-  const isOutput = mode === 'output';
-  const currentTreeData = isOutput ? OUTPUT_TREE_DATA : INPUT_TREE_DATA;
-  const currentReferenced = isOutput ? REFERENCED_OUTPUTS : REFERENCED_INPUTS;
-  const schemaLabel = isOutput ? 'Node output schema' : 'Node input schema';
-  const currentJson = isOutput ? OUTPUT_JSON : INPUT_JSON;
-
-  const saveEdit = (node: OutputNode, raw: string) => {
-    const val: string | number | null = node.type === 'number' ? (Number(raw) || 0) : raw;
-    setEditedValues((prev) => ({ ...prev, [node.path]: val }));
-    setEditingPath(null);
-  };
-
-  const toggleCollapsed = (path: string) =>
-    setCollapsed((prev) => ({ ...prev, [path]: !prev[path] }));
-
-  const referencedKeys = new Set(currentReferenced.map((r) => r.name));
-  const activeTreeData =
-    filter === 'referenced'
-      ? currentTreeData.filter((n) => referencedKeys.has(n.key))
-      : currentTreeData;
-
-  const rows = flattenOutputTree(activeTreeData, collapsed, search.toLowerCase());
-
-  const allContainerPaths = collectContainerPaths(activeTreeData);
-  const allCollapsed =
-    allContainerPaths.length > 0 && allContainerPaths.every((p) => collapsed[p]);
-  const toggleAll = () => {
-    if (allCollapsed) {
-      setCollapsed({});
-    } else {
-      setCollapsed(Object.fromEntries(allContainerPaths.map((p) => [p, true])));
-    }
-  };
-
-  return (
-    <PanelFrame>
-      <NodePropertyPanel
-        panelTitle={isOutput ? 'Output' : 'Input'}
-        contentInset="0.875rem"
-        onClose={() => {}}
-        className="h-[640px]"
-      >
-        <Tabs defaultValue="schema" className="flex h-full min-h-0 flex-col">
-          <div className="shrink-0 flex items-center justify-between pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-            <TabsList className={TAB_LIST_CLASS}>
-              <TabsTrigger value="schema" className={TAB_TRIGGER_CLASS}>
-                Schema
-              </TabsTrigger>
-              <TabsTrigger value="json" className={TAB_TRIGGER_CLASS}>
-                JSON
-              </TabsTrigger>
-            </TabsList>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="flex items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
-                >
-                  <span className={cn('size-1.5 shrink-0 rounded-full', currentNodeMode.dot)} />
-                  <span className={currentNodeMode.text}>{currentNodeMode.label}</span>
-                  <ChevronDown size={10} className="text-foreground-subtle" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-36">
-                {NODE_MODES.map((m) => (
-                  <DropdownMenuItem
-                    key={m.value}
-                    onClick={() => setNodeMode(m.value)}
-                    className={cn('flex items-center gap-2', nodeMode === m.value && 'text-foreground')}
-                  >
-                    <span className={cn('size-1.5 shrink-0 rounded-full', m.dot)} />
-                    <span>{m.label}</span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          {/* Schema tab */}
-          <TabsContent value="schema" className="mt-0 flex min-h-0 flex-1 flex-col">
-            {/* Search */}
-            <div className="shrink-0 px-[0.875rem] pb-2 pt-4">
-              <div className="relative">
-                <Search
-                  size={14}
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                />
-                <Input
-                  type="text"
-                  placeholder={isOutput ? 'Search outputs' : 'Search inputs'}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-
-            {/* Filter toggle */}
-            <div className="shrink-0 px-[0.875rem] pb-4">
-              <Tabs
-                value={filter}
-                onValueChange={(v) => setFilter(v as 'referenced' | 'all')}
-              >
-                <TabsList className={TAB_LIST_CLASS}>
-                  <TabsTrigger value="referenced" className={TAB_TRIGGER_CLASS}>
-                    Referenced in this node
-                    <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-medium leading-none text-foreground-subtle">
-                      {currentReferenced.length} fields
-                    </span>
-                  </TabsTrigger>
-                  <TabsTrigger value="all" className={TAB_TRIGGER_CLASS}>
-                    All fields
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-
-            {/* Schema label */}
-            <div className="shrink-0 flex items-center justify-between px-[0.875rem] pb-1">
-              <span className="text-xs font-medium text-foreground-muted">{schemaLabel}</span>
-              <button
-                type="button"
-                onClick={toggleAll}
-                className="text-[10px] text-foreground-subtle transition hover:text-foreground"
-              >
-                {allCollapsed ? 'Expand all' : 'Collapse all'}
-              </button>
-            </div>
-
-            {/* Output tree */}
-            <div className="min-h-0 flex-1 overflow-y-auto pb-4">
-              {rows.map(({ node, depth }) =>
-                node.children !== undefined ? (
-                  <div
-                    key={node.path}
-                    className="group flex cursor-default items-center gap-2 py-1.5 transition hover:bg-surface-overlay"
-                    style={{ paddingLeft: `${14 + depth * 16}px`, paddingRight: '14px' }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => toggleCollapsed(node.path)}
-                      className="grid size-4 shrink-0 place-items-center text-foreground-subtle transition hover:text-foreground"
-                    >
-                      <ChevronDown
-                        size={11}
-                        className={cn(
-                          'transition-transform duration-100',
-                          collapsed[node.path] && '-rotate-90',
-                        )}
-                      />
-                    </button>
-                    <span className="flex size-4 shrink-0 items-center justify-center text-foreground-subtle">
-                      {outputTypeIcon(node.type)}
-                    </span>
-                    <span className="flex-1 truncate font-mono text-xs font-semibold text-foreground">
-                      {node.key}
-                    </span>
-                    <span className="shrink-0 font-mono text-[10px] text-foreground-muted">
-                      {node.type === 'array'
-                        ? `${node.children.length} ${node.children.length === 1 ? 'item' : 'items'}`
-                        : `${node.children.length} ${node.children.length === 1 ? 'key' : 'keys'}`}
-                    </span>
-                  </div>
-                ) : (
-                  <div
-                    key={node.path}
-                    className="group flex cursor-default items-center gap-2 py-1.5 transition hover:bg-surface-overlay"
-                    style={{ paddingLeft: `${30 + depth * 16}px`, paddingRight: '14px' }}
-                  >
-                    <span className="flex size-4 shrink-0 items-center justify-center text-foreground-subtle">
-                      {outputTypeIcon(node.type)}
-                    </span>
-                    <span className="font-mono text-xs font-normal text-foreground-muted">{node.key}</span>
-                    <span className="shrink-0 text-[10px] text-foreground-muted">=</span>
-                    {editingPath === node.path ? (
-                      <input
-                        autoFocus
-                        type="text"
-                        defaultValue={String(editedValues[node.path] ?? node.value ?? '')}
-                        onBlur={(e) => saveEdit(node, e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') saveEdit(node, e.currentTarget.value);
-                          if (e.key === 'Escape') setEditingPath(null);
-                        }}
-                        className={cn(
-                          '-mx-1 min-w-0 flex-1 rounded bg-transparent px-1 font-mono text-xs outline-none ring-1 ring-brand',
-                          outputValueColorClass(node.type, editedValues[node.path] ?? node.value),
-                        )}
-                      />
-                    ) : (
-                      <>
-                        <span
-                          onClick={() => node.type !== 'null' && setEditingPath(node.path)}
-                          className={cn(
-                            'flex-1 truncate font-mono text-xs',
-                            node.type !== 'null'
-                              ? 'cursor-text underline decoration-dashed underline-offset-2 decoration-foreground-subtle/40 hover:decoration-foreground-subtle'
-                              : 'cursor-default',
-                            outputValueColorClass(
-                              node.type,
-                              editedValues[node.path] ?? node.value,
-                            ),
-                          )}
-                        >
-                          {formatOutputValue(
-                            node.type,
-                            (editedValues[node.path] ?? node.value) as string | number | boolean | null,
-                          )}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => copyExpr(node.path)}
-                          title={`Copy {{${PANEL_NODE_ID}.${node.path}}}`}
-                          className="grid size-5 shrink-0 place-items-center rounded text-foreground-subtle opacity-0 transition hover:bg-surface-raised hover:text-foreground group-hover:opacity-100"
-                        >
-                          {copiedPath === node.path ? (
-                            <CircleCheck size={11} className="text-brand" />
-                          ) : (
-                            <Copy size={11} />
-                          )}
-                        </button>
-                      </>
-                    )}
-                  </div>
-                ),
-              )}
-              {rows.length === 0 && (
-                <p className="py-4 text-center text-xs text-foreground-subtle">
-                  No outputs match your search.
-                </p>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* JSON tab */}
-          <TabsContent
-            value="json"
-            className="mt-0 flex min-h-0 flex-1 flex-col pb-4 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]"
-          >
-            <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border-subtle">
-              <MonacoEditor
-                key={mode}
-                height="100%"
-                defaultLanguage="json"
-                defaultValue={currentJson}
-                theme={monacoTheme}
-                beforeMount={registerMonacoThemes}
-                options={{
-                  fontSize: 13,
-                  lineHeight: 20,
-                  minimap: { enabled: false },
-                  scrollBeyondLastLine: false,
-                  wordWrap: 'on',
-                  fontFamily:
-                    'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
-                  padding: { top: 6, bottom: 16 },
-                  lineNumbers: 'on',
-                  lineNumbersMinChars: 2,
-                  lineDecorationsWidth: 4,
-                  glyphMargin: false,
-                  folding: false,
-                  renderLineHighlight: 'line',
-                  hideCursorInOverviewRuler: true,
-                  overviewRulerBorder: false,
-                  readOnly: false,
-                  scrollbar: {
-                    vertical: 'auto',
-                    horizontal: 'hidden',
-                    alwaysConsumeMouseWheel: false,
-                  },
-                  automaticLayout: true,
-                }}
-              />
-            </div>
-          </TabsContent>
-        </Tabs>
-      </NodePropertyPanel>
-    </PanelFrame>
-  );
-}
+const INPUT_JSON = HTTP_REQUEST_JSON;
+const OUTPUT_JSON = HTTP_REQUEST_JSON;
 
 // ============================================================================
 // Concept 2 — Expression Reference Panel
 // Flat list of all leaf output paths as copyable expression references.
 // ============================================================================
 
-function Concept2PanelStory({ mode }: { mode: 'input' | 'output' }) {
-  const monacoTheme = useMonacoTheme();
+function Concept2PanelStory({
+  mode,
+  context = 'flow',
+}: {
+  mode: 'input' | 'output';
+  context?: 'studio' | 'flow';
+}) {
   const [search, setSearch] = useState('');
-  const [activeControl, setActiveControl] = useState<'referenced' | 'search' | null>(null);
+  const [filter, setFilter] = useState<'default' | 'referenced' | 'all'>('default');
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(
-      [...collectContainerPaths(OUTPUT_TREE_DATA), ...collectContainerPaths(INPUT_TREE_DATA)].map((p) => [p, true]),
-    ),
+      [...collectContainerPaths(OUTPUT_TREE_DATA), ...collectContainerPaths(INPUT_TREE_DATA)]
+        .filter((p) => p !== PANEL_NODE_ID)
+        .map((p) => [p, true])
+    )
   );
   const [copiedPath, setCopiedPath] = useState<string | null>(null);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [editingPath, setEditingPath] = useState<string | null>(null);
-  const [editedValues, setEditedValues] = useState<Record<string, string | number | boolean | null>>({});
-  const [nodeMode, setNodeMode] = useState<'live' | 'static' | 'llm' | 'disabled'>('live');
+  const [editedValues, setEditedValues] = useState<
+    Record<string, string | number | boolean | null>
+  >({});
+  const [nodeMode, setNodeMode] = useState<'live' | 'static' | 'simulated' | 'disabled'>('live');
 
   const NODE_MODES = [
-    { value: 'live',     label: 'Live',     dot: 'bg-green-500',        text: 'text-green-500'        },
-    { value: 'static',   label: 'Static',   dot: 'bg-blue-500',         text: 'text-blue-500'         },
-    { value: 'llm',      label: 'LLM',      dot: 'bg-purple-500',       text: 'text-purple-500'       },
-    { value: 'disabled', label: 'Disabled', dot: 'bg-foreground-subtle', text: 'text-foreground-muted' },
+    { value: 'live', label: 'Live', description: 'Use the real response from this node', icon: CircleDot },
+    { value: 'static', label: 'Static mock', description: 'Always return a value you define', icon: SquareDashed },
+    {
+      value: 'simulated',
+      label: 'Simulated',
+      description: 'Generate a response dynamically using an LLM',
+      icon: Sparkles,
+    },
+    { value: 'disabled', label: 'Skip node', description: "Don't execute this node", icon: CircleOff },
   ] as const;
   const currentNodeMode = NODE_MODES.find((m) => m.value === nodeMode) ?? NODE_MODES[0];
 
@@ -2276,15 +1966,15 @@ function Concept2PanelStory({ mode }: { mode: 'input' | 'output' }) {
   const currentJson = isOutput ? OUTPUT_JSON : INPUT_JSON;
   const referencedKeys = new Set(currentReferenced.map((r) => r.name));
 
-  const allLeaves = flattenToLeaves(currentTreeData);
-  const referencedLeaves = allLeaves.filter((f) => referencedKeys.has(f.path.split('.')[0]));
-
-  const isRefActive = activeControl === 'referenced';
-  const isSearchActive = activeControl === 'search';
-
-  const activeTreeData = isRefActive
-    ? currentTreeData.filter((n) => referencedKeys.has(n.key))
-    : currentTreeData;
+  const activeTreeData =
+    filter === 'all'
+      ? currentTreeData
+      : currentTreeData
+          .map((root) => ({
+            ...root,
+            children: root.children?.filter((n) => referencedKeys.has(n.key)),
+          }))
+          .filter((root) => (root.children?.length ?? 0) > 0);
 
   const rows = flattenOutputTree(activeTreeData, collapsed, search.toLowerCase());
 
@@ -2301,16 +1991,23 @@ function Concept2PanelStory({ mode }: { mode: 'input' | 'output' }) {
     }
   };
 
+  const escapeRef = useRef(false);
+
   const saveEdit = (node: OutputNode, raw: string) => {
-    const val: string | number | null = node.type === 'number' ? (Number(raw) || 0) : raw;
+    const val =
+      node.type === 'boolean' ? raw === 'true' : node.type === 'number' ? Number(raw) || 0 : raw;
     setEditedValues((prev) => ({ ...prev, [node.path]: val }));
     setEditingPath(null);
   };
 
   const copyExpr = (path: string) => {
-    navigator.clipboard.writeText(`{{${PANEL_NODE_ID}.${path}}}`).catch(() => {});
-    setCopiedPath(path);
-    setTimeout(() => setCopiedPath(null), 1500);
+    navigator.clipboard
+      ?.writeText(`{{${path}}}`)
+      ?.then(() => {
+        setCopiedPath(path);
+        setTimeout(() => setCopiedPath(null), 1500);
+      })
+      ?.catch(() => {});
   };
 
   return (
@@ -2322,42 +2019,53 @@ function Concept2PanelStory({ mode }: { mode: 'input' | 'output' }) {
         className="h-[640px]"
       >
         <div className="flex h-full min-h-0 flex-col">
-          {/* Node identity bar with mode selector on the right */}
-          <div className="shrink-0 flex items-center justify-between gap-2 px-[0.875rem] pb-3 pt-4">
-            <div className="flex min-w-0 items-center gap-2">
-              <Globe size={13} className="shrink-0 text-foreground-subtle" />
-              <span className="text-xs font-medium text-foreground">{PANEL_NODE_LABEL}</span>
-              <span className="font-mono text-[10px] text-foreground-muted">{PANEL_NODE_ID}</span>
+          {/* Node identity bar — hidden in Studio context */}
+          {context === 'flow' && (
+            <div className="shrink-0 flex items-center justify-between gap-2 [padding-inline:var(--mf-content-inset,0.875rem)] pb-3 pt-4">
+              <div className="flex min-w-0 items-center gap-2">
+                <Globe size={13} className="shrink-0 text-foreground-subtle" />
+                <span className="text-xs font-medium text-foreground">{PANEL_NODE_LABEL}</span>
+                <span className="font-mono text-[10px] text-foreground-muted">{PANEL_NODE_ID}</span>
+              </div>
+              {isOutput && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                    >
+                      <span>{currentNodeMode.label}</span>
+                      <ChevronDown size={10} className="text-foreground-subtle" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-64">
+                    {NODE_MODES.map((m) => {
+                      const Icon = m.icon;
+                      return (
+                        <DropdownMenuItem
+                          key={m.value}
+                          onClick={() => setNodeMode(m.value)}
+                          className={cn('flex items-start gap-2', nodeMode === m.value && 'text-foreground')}
+                        >
+                          <Icon size={13} className="mt-[2px] shrink-0 text-foreground-subtle" />
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-xs font-medium">{m.label}</span>
+                            <span className="text-[10px] leading-tight text-foreground-muted">
+                              {m.description}
+                            </span>
+                          </div>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="flex items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
-                >
-                  <span className={cn('size-1.5 shrink-0 rounded-full', currentNodeMode.dot)} />
-                  <span className={currentNodeMode.text}>{currentNodeMode.label}</span>
-                  <ChevronDown size={10} className="text-foreground-subtle" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-36">
-                {NODE_MODES.map((m) => (
-                  <DropdownMenuItem
-                    key={m.value}
-                    onClick={() => setNodeMode(m.value)}
-                    className={cn('flex items-center gap-2', nodeMode === m.value && 'text-foreground')}
-                  >
-                    <span className={cn('size-1.5 shrink-0 rounded-full', m.dot)} />
-                    <span>{m.label}</span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          )}
 
           <Tabs defaultValue="schema" className="flex min-h-0 flex-1 flex-col">
-            {/* Tab strip */}
-            <div className="shrink-0 px-[0.875rem] pb-3">
+            {/* Tab strip — status badge moves here in Studio context */}
+            <div className={cn('shrink-0 flex items-center gap-2 [padding-inline:var(--mf-content-inset,0.875rem)] pb-1.5', context === 'studio' && 'pt-3')}>
               <TabsList className={TAB_LIST_CLASS}>
                 <TabsTrigger value="schema" className={TAB_TRIGGER_CLASS}>
                   Schema
@@ -2366,185 +2074,230 @@ function Concept2PanelStory({ mode }: { mode: 'input' | 'output' }) {
                   JSON
                 </TabsTrigger>
               </TabsList>
+              {context === 'studio' && isOutput && (
+                <>
+                  <div className="flex-1" />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="flex items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                      >
+                        <span>{currentNodeMode.label}</span>
+                        <ChevronDown size={10} className="text-foreground-subtle" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-64">
+                      {NODE_MODES.map((m) => {
+                        const Icon = m.icon;
+                        return (
+                          <DropdownMenuItem
+                            key={m.value}
+                            onClick={() => setNodeMode(m.value)}
+                            className={cn('flex items-start gap-2', nodeMode === m.value && 'text-foreground')}
+                          >
+                            <Icon size={13} className="mt-[2px] shrink-0 text-foreground-subtle" />
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-xs font-medium">{m.label}</span>
+                              <span className="text-[10px] leading-tight text-foreground-muted">
+                                {m.description}
+                              </span>
+                            </div>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              )}
             </div>
 
             {/* Schema tab */}
             <TabsContent value="schema" className="mt-0 flex min-h-0 flex-1 flex-col">
-              {/* Header: Referenced on left, inline search + collapse on right */}
-              <div className="shrink-0 flex items-center gap-1.5 px-[0.875rem] pb-1 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setActiveControl(isRefActive ? null : 'referenced')}
-                  className={cn(
-                    'flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 transition',
-                    isRefActive
-                      ? 'bg-surface-overlay text-foreground ring-2 ring-ring/30'
-                      : 'bg-transparent text-foreground-muted hover:bg-surface-overlay hover:text-foreground',
-                  )}
-                >
-                  <span className="text-xs">Referenced</span>
-                  <span className="rounded-sm bg-surface-raised px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-foreground">
-                    {currentReferenced.length}
-                  </span>
-                  <ChevronDown
-                    size={12}
-                    className={cn('text-foreground-subtle transition-transform duration-150', isRefActive && 'rotate-180')}
-                  />
-                </button>
-                <div className="flex-1" />
-                {searchOpen ? (
-                  <div className="relative flex items-center">
-                    <Search size={12} className="pointer-events-none absolute left-2 text-foreground-subtle" />
-                    <input
-                      autoFocus
-                      type="text"
-                      value={search}
-                      onChange={(e) => { setSearch(e.target.value); setActiveControl('search'); }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Escape') { setSearch(''); setSearchOpen(false); setActiveControl(null); }
-                      }}
-                      placeholder={isOutput ? 'Search outputs...' : 'Search inputs...'}
-                      className="h-6 w-36 rounded bg-surface-overlay pl-6 pr-6 text-xs text-foreground placeholder:text-foreground-subtle focus:outline-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => { setSearch(''); setSearchOpen(false); setActiveControl(null); }}
-                      className="absolute right-1.5 grid size-4 place-items-center text-foreground-subtle transition hover:text-foreground"
+              {/* Header: filter dropdown on left, search + collapse on right */}
+              <div className="shrink-0 flex items-center gap-1.5 [padding-inline:var(--mf-content-inset,0.875rem)] pb-1 pt-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="3xs" className="gap-1.5 text-foreground-muted">
+                      <span>
+                        {filter === 'referenced'
+                          ? 'Filter: Referenced in this node'
+                          : filter === 'all'
+                            ? 'Filter: All'
+                            : 'Filter'}
+                      </span>
+                      {filter === 'referenced' && (
+                        <span className="rounded-sm bg-surface-raised px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-foreground">
+                          {currentReferenced.length}
+                        </span>
+                      )}
+                      <ChevronDown size={10} className="text-foreground-subtle" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-52">
+                    <DropdownMenuItem
+                      onClick={() => setFilter('referenced')}
+                      className={cn(
+                        'flex items-center justify-between',
+                        filter === 'referenced' && 'text-foreground'
+                      )}
                     >
-                      <X size={11} />
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setSearchOpen(true)}
-                    title="Search fields"
-                    className="grid size-5 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-                  >
-                    <Search size={12} />
-                  </button>
-                )}
+                      <span className="text-[11px]">Referenced in this node</span>
+                      <span className="ml-3 rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-foreground-muted">
+                        {currentReferenced.length}
+                      </span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setFilter('all')}
+                      className={cn('text-[11px]', filter === 'all' && 'text-foreground')}
+                    >
+                      All
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <div className="flex-1" />
+                <SearchField
+                  value={search}
+                  onChange={setSearch}
+                  aria-label={isOutput ? 'Search outputs' : 'Search inputs'}
+                  placeholder={isOutput ? 'Search outputs...' : 'Search inputs...'}
+                  className="h-7 w-36 text-xs"
+                />
                 {allContainerPaths.length > 0 && (
-                  <button
-                    type="button"
+                  <Button
+                    variant="ghost"
+                    size="3xs"
+                    icon
                     onClick={toggleAll}
                     title={allCollapsed ? 'Expand all' : 'Collapse all'}
-                    className="grid size-5 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                    aria-label={allCollapsed ? 'Expand all' : 'Collapse all'}
                   >
                     {allCollapsed ? <ChevronsUpDown size={12} /> : <ChevronsDownUp size={12} />}
-                  </button>
+                  </Button>
                 )}
               </div>
 
-              {/* Referenced chips — only visible when Referenced is active */}
-              {isRefActive && (
-                <div className="shrink-0 px-[0.875rem] pb-2 pt-2">
-                  <div className="flex flex-wrap gap-1.5">
-                    {referencedLeaves.map((f) => (
-                      <button
-                        key={f.path}
-                        type="button"
-                        onClick={() => copyExpr(f.path)}
-                        title={`Copy {{${PANEL_NODE_ID}.${f.path}}}`}
-                        className="inline-flex items-center gap-1.5 rounded-md bg-surface-overlay px-2 py-1 font-mono text-[10px] text-foreground transition hover:bg-surface-raised"
-                      >
-                        <span className="text-foreground-subtle">{outputTypeIcon(f.type)}</span>
-                        {copiedPath === f.path ? (
-                          <span className="text-brand">Copied!</span>
-                        ) : (
-                          <span>{f.path}</span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Tree list */}
-              <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border-subtle pb-0 [margin-inline:var(--mf-content-inset,0.875rem)] mb-4 mt-1" style={{ backgroundColor: 'var(--surface-raised)' }}>
-                <div className="h-full overflow-y-auto">
-                {rows.map(({ node, depth }) =>
-                  node.children !== undefined ? (
-                    <div
-                      key={node.path}
-                      className="group flex cursor-default items-center gap-2 py-1 transition hover:bg-surface-overlay"
-                      style={{ paddingLeft: `${14 + depth * 16}px`, paddingRight: '14px' }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => toggleCollapsed(node.path)}
-                        className="grid size-3 shrink-0 place-items-center text-foreground-subtle transition hover:text-foreground"
+              <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-surface-overlay bg-surface-overlay/40 pb-0 [margin-inline:var(--mf-content-inset,0.875rem)] mb-4 mt-1">
+                <div className="h-full overflow-y-auto pt-1.5">
+                  {rows.map(({ node, depth }) =>
+                    node.children !== undefined ? (
+                      <div
+                        key={node.path}
+                        className="group flex cursor-default items-center gap-2 py-1 transition hover:bg-surface-overlay"
+                        style={{ paddingLeft: `${8 + depth * 16}px`, paddingRight: '14px' }}
                       >
-                        <ChevronDown
-                          size={10}
-                          className={cn('transition-transform duration-100', collapsed[node.path] && '-rotate-90')}
-                        />
-                      </button>
-                      <TypeBadge type={node.type} />
-                      <span className="flex-1 truncate font-mono text-xs text-foreground">{node.key}</span>
-                      <span className="shrink-0 font-mono text-[10px] text-foreground-muted">
-                        {node.type === 'array'
-                          ? `${node.children.length} ${node.children.length === 1 ? 'item' : 'items'}`
-                          : `${node.children.length} ${node.children.length === 1 ? 'key' : 'keys'}`}
-                      </span>
-                    </div>
-                  ) : (
-                    <div
-                      key={node.path}
-                      className="group flex cursor-default items-center gap-2 py-1 transition hover:bg-surface-overlay"
-                      style={{ paddingLeft: `${14 + depth * 16}px`, paddingRight: '14px' }}
-                    >
-                      <TypeBadge type={node.type} />
-                      <span className="flex-1 truncate font-mono text-xs text-foreground">{node.key}</span>
-                      {editingPath === node.path ? (
-                        <input
-                          autoFocus
-                          type="text"
-                          defaultValue={String(editedValues[node.path] ?? node.value ?? '')}
-                          onBlur={(e) => saveEdit(node, e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') saveEdit(node, e.currentTarget.value);
-                            if (e.key === 'Escape') setEditingPath(null);
-                          }}
-                          className={cn(
-                            'min-w-0 max-w-[45%] rounded bg-transparent px-1 font-mono text-xs text-right outline-none ring-1 ring-brand',
-                            outputValueColorClass(node.type, editedValues[node.path] ?? node.value),
-                          )}
-                        />
-                      ) : (
-                        <>
-                          <span
-                            onClick={() => node.type !== 'null' && setEditingPath(node.path)}
+                        <button
+                          type="button"
+                          onClick={() => toggleCollapsed(node.path)}
+                          aria-label={
+                            collapsed[node.path] ? `Expand ${node.key}` : `Collapse ${node.key}`
+                          }
+                          className="grid size-3 shrink-0 place-items-center text-foreground-subtle transition hover:text-foreground"
+                        >
+                          <ChevronDown
+                            size={10}
                             className={cn(
-                              'max-w-[45%] truncate font-mono text-xs text-right',
-                              node.type !== 'null' ? 'cursor-text' : 'cursor-default',
-                              outputValueColorClass(node.type, editedValues[node.path] ?? node.value),
+                              'transition-transform duration-100',
+                              collapsed[node.path] && '-rotate-90'
                             )}
-                          >
-                            {formatOutputValue(node.type, (editedValues[node.path] ?? node.value) as string | number | boolean | null)}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => copyExpr(node.path)}
-                            title={`Copy {{${PANEL_NODE_ID}.${node.path}}}`}
-                            className="grid size-5 shrink-0 place-items-center rounded text-foreground-subtle opacity-0 transition hover:bg-surface-raised hover:text-foreground group-hover:opacity-100"
-                          >
-                            {copiedPath === node.path ? (
-                              <CircleCheck size={11} className="text-brand" />
-                            ) : (
-                              <Copy size={11} />
+                          />
+                        </button>
+                        <TypeBadge type={node.type} />
+                        <span className="flex-1 truncate font-mono text-xs text-foreground">
+                          {node.key}
+                        </span>
+                        <span className="shrink-0 font-mono text-[10px] text-foreground-muted">
+                          {node.type === 'array'
+                            ? `${node.children.length} ${node.children.length === 1 ? 'item' : 'items'}`
+                            : `${node.children.length} ${node.children.length === 1 ? 'key' : 'keys'}`}
+                        </span>
+                      </div>
+                    ) : (
+                      <div
+                        key={node.path}
+                        className="group flex cursor-default items-center gap-2 py-1 transition hover:bg-surface-overlay"
+                        style={{ paddingLeft: `${8 + depth * 16}px`, paddingRight: '14px' }}
+                      >
+                        <div className="size-3 shrink-0" />
+                        <TypeBadge type={node.type} />
+                        <span className="shrink-0 font-mono text-xs text-foreground">
+                          {node.key}
+                        </span>
+                        <span className="shrink-0 font-mono text-xs text-foreground-subtle">=</span>
+                        {editingPath === node.path ? (
+                          <input
+                            autoFocus
+                            type="text"
+                            defaultValue={String(editedValues[node.path] ?? node.value ?? '')}
+                            onBlur={(e) => {
+                              if (!escapeRef.current) saveEdit(node, e.target.value);
+                              escapeRef.current = false;
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') saveEdit(node, e.currentTarget.value);
+                              if (e.key === 'Escape') {
+                                escapeRef.current = true;
+                                setEditingPath(null);
+                              }
+                            }}
+                            className={cn(
+                              'min-w-0 flex-1 rounded bg-transparent px-1 font-mono text-xs outline-none ring-1 ring-brand',
+                              outputValueColorClass(
+                                node.type,
+                                editedValues[node.path] ?? node.value
+                              )
                             )}
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  ),
-                )}
-                {rows.length === 0 && (
-                  <p className="py-4 text-center text-xs text-foreground-subtle">
-                    No references match your search.
-                  </p>
-                )}
+                          />
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => node.type !== 'null' && setEditingPath(node.path)}
+                              className={cn(
+                                'max-w-[55%] shrink-0 truncate font-mono text-xs',
+                                node.type !== 'null' ? 'cursor-text' : 'cursor-default',
+                                outputValueColorClass(
+                                  node.type,
+                                  editedValues[node.path] ?? node.value
+                                )
+                              )}
+                            >
+                              {formatOutputValue(
+                                node.type,
+                                (editedValues[node.path] ?? node.value) as
+                                  | string
+                                  | number
+                                  | boolean
+                                  | null
+                              )}
+                            </button>
+                            <div className="flex-1" />
+                            <Button
+                              variant="ghost"
+                              size="3xs"
+                              icon
+                              onClick={() => copyExpr(node.path)}
+                              title={`Copy {{${node.path}}}`}
+                              aria-label={`Copy expression for ${node.path}`}
+                              className="shrink-0 text-foreground-subtle opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                            >
+                              {copiedPath === node.path ? (
+                                <CircleCheck size={11} className="text-brand" />
+                              ) : (
+                                <Copy size={11} />
+                              )}
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    )
+                  )}
+                  {rows.length === 0 && (
+                    <p className="py-4 text-center text-xs text-foreground-subtle">
+                      No references match your search.
+                    </p>
+                  )}
                 </div>
               </div>
             </TabsContent>
@@ -2554,40 +2307,10 @@ function Concept2PanelStory({ mode }: { mode: 'input' | 'output' }) {
               value="json"
               className="mt-0 flex min-h-0 flex-1 flex-col pb-4 pt-1 [padding-inline:var(--mf-content-inset,0.875rem)]"
             >
-              <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border-subtle">
-                <MonacoEditor
-                  key={mode}
-                  height="100%"
-                  defaultLanguage="json"
-                  defaultValue={currentJson}
-                  theme={monacoTheme}
-                  beforeMount={registerMonacoThemes}
-                  options={{
-                    fontSize: 13,
-                    lineHeight: 20,
-                    minimap: { enabled: false },
-                    scrollBeyondLastLine: false,
-                    wordWrap: 'on',
-                    fontFamily:
-                      'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
-                    padding: { top: 6, bottom: 16 },
-                    lineNumbers: 'on',
-                    lineNumbersMinChars: 2,
-                    lineDecorationsWidth: 4,
-                    glyphMargin: false,
-                    folding: false,
-                    renderLineHighlight: 'line',
-                    hideCursorInOverviewRuler: true,
-                    overviewRulerBorder: false,
-                    readOnly: false,
-                    scrollbar: {
-                      vertical: 'auto',
-                      horizontal: 'hidden',
-                      alwaysConsumeMouseWheel: false,
-                    },
-                    automaticLayout: true,
-                  }}
-                />
+              <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-surface-overlay bg-surface-overlay/40">
+                <pre className="h-full overflow-auto p-3 font-mono text-xs leading-5 text-foreground whitespace-pre">
+                  {currentJson}
+                </pre>
               </div>
             </TabsContent>
           </Tabs>
@@ -2598,496 +2321,40 @@ function Concept2PanelStory({ mode }: { mode: 'input' | 'output' }) {
 }
 
 // ============================================================================
-// Concept 3 — TypeScript Schema View
-// Monaco editor showing the output as a generated TypeScript interface.
-// Referenced fields annotated with // ← referenced.
+// In Studio / In Flow layout
 // ============================================================================
-
-const MONACO_OPTS_BASE = {
-  minimap: { enabled: false },
-  scrollBeyondLastLine: false,
-  wordWrap: 'on' as const,
-  fontFamily:
-    'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
-  glyphMargin: false,
-  hideCursorInOverviewRuler: true,
-  overviewRulerBorder: false,
-  scrollbar: { vertical: 'auto' as const, horizontal: 'hidden' as const, alwaysConsumeMouseWheel: false },
-  automaticLayout: true,
-};
-
-function Concept3PanelStory({ mode }: { mode: 'input' | 'output' }) {
-  const monacoTheme = useMonacoTheme();
-  const [search, setSearch] = useState('');
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [filter, setFilter] = useState<'referenced' | 'all'>('all');
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(
-      [...collectContainerPaths(OUTPUT_TREE_DATA), ...collectContainerPaths(INPUT_TREE_DATA)].map((p) => [p, true]),
-    ),
-  );
-  const [editingPath, setEditingPath] = useState<string | null>(null);
-  const [editedValues, setEditedValues] = useState<Record<string, string | number | boolean | null>>({});
-  const [copiedPath, setCopiedPath] = useState<string | null>(null);
-  const [nodeMode, setNodeMode] = useState<'live' | 'static' | 'llm' | 'disabled'>('live');
-
-  const copyExpr = (path: string) => {
-    navigator.clipboard.writeText(`{{${PANEL_NODE_ID}.${path}}}`).catch(() => {});
-    setCopiedPath(path);
-    setTimeout(() => setCopiedPath(null), 1500);
-  };
-
-  const NODE_MODES = [
-    { value: 'live',     label: 'Live',     dot: 'bg-green-500',  text: 'text-green-500'  },
-    { value: 'static',   label: 'Static',   dot: 'bg-blue-500',   text: 'text-blue-500'   },
-    { value: 'llm',      label: 'LLM',      dot: 'bg-purple-500', text: 'text-purple-500' },
-    { value: 'disabled', label: 'Disabled', dot: 'bg-foreground-subtle', text: 'text-foreground-muted' },
-  ] as const;
-  const currentNodeMode = NODE_MODES.find((m) => m.value === nodeMode) ?? NODE_MODES[0];
-
-  const isOutput = mode === 'output';
-  const currentTreeData = isOutput ? OUTPUT_TREE_DATA : INPUT_TREE_DATA;
-  const currentReferenced = isOutput ? REFERENCED_OUTPUTS : REFERENCED_INPUTS;
-  const schemaLabel = isOutput ? 'Node output schema' : 'Node input schema';
-  const referencedKeys = new Set(currentReferenced.map((r) => r.name));
-
-  const tsDoc = buildTsDocument(currentTreeData, referencedKeys, mode);
-  const jsonDoc = isOutput ? OUTPUT_JSON : INPUT_JSON;
-
-  const saveEdit = (node: OutputNode, raw: string) => {
-    const val: string | number | null = node.type === 'number' ? (Number(raw) || 0) : raw;
-    setEditedValues((prev) => ({ ...prev, [node.path]: val }));
-    setEditingPath(null);
-  };
-
-  const toggleCollapsed = (path: string) =>
-    setCollapsed((prev) => ({ ...prev, [path]: !prev[path] }));
-
-  const activeTreeData =
-    filter === 'referenced'
-      ? currentTreeData.filter((n) => referencedKeys.has(n.key))
-      : currentTreeData;
-
-  const rows = flattenOutputTree(activeTreeData, collapsed, search.toLowerCase());
-
-  const allContainerPaths = collectContainerPaths(activeTreeData);
-  const allCollapsed = allContainerPaths.length > 0 && allContainerPaths.every((p) => collapsed[p]);
-  const toggleAll = () => {
-    if (allCollapsed) {
-      setCollapsed({});
-    } else {
-      setCollapsed(Object.fromEntries(allContainerPaths.map((p) => [p, true])));
-    }
-  };
-
-  return (
-    <PanelFrame>
-      <NodePropertyPanel
-        panelTitle={isOutput ? 'Output' : 'Input'}
-        contentInset="0.875rem"
-        onClose={() => {}}
-        className="h-[640px]"
-      >
-        <Tabs defaultValue="schema" className="flex h-full min-h-0 flex-col">
-          <div className="shrink-0 flex items-center justify-between pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-            <TabsList className={TAB_LIST_CLASS}>
-              <TabsTrigger value="schema" className={TAB_TRIGGER_CLASS}>
-                Schema
-              </TabsTrigger>
-              <TabsTrigger value="types" className={TAB_TRIGGER_CLASS}>
-                Types
-              </TabsTrigger>
-              <TabsTrigger value="json" className={TAB_TRIGGER_CLASS}>
-                JSON
-              </TabsTrigger>
-            </TabsList>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="flex items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
-                >
-                  <span className={cn('size-1.5 shrink-0 rounded-full', currentNodeMode.dot)} />
-                  <span className={currentNodeMode.text}>{currentNodeMode.label}</span>
-                  <ChevronDown size={10} className="text-foreground-subtle" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-36">
-                {NODE_MODES.map((m) => (
-                  <DropdownMenuItem
-                    key={m.value}
-                    onClick={() => setNodeMode(m.value)}
-                    className={cn('flex items-center gap-2', nodeMode === m.value && 'text-foreground')}
-                  >
-                    <span className={cn('size-1.5 shrink-0 rounded-full', m.dot)} />
-                    <span>{m.label}</span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          {/* Schema tab */}
-          <TabsContent value="schema" className="mt-0 flex min-h-0 flex-1 flex-col">
-            {/* Schema header: label (or inline search) + filter + collapse toggle */}
-            <div className="shrink-0 flex items-center gap-1.5 px-[0.875rem] pb-1 pt-4">
-              {searchOpen ? (
-                <div className="relative flex flex-1 items-center">
-                  <Search size={12} className="pointer-events-none absolute left-2 text-foreground-subtle" />
-                  <input
-                    autoFocus
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Escape') { setSearch(''); setSearchOpen(false); }
-                    }}
-                    placeholder={isOutput ? 'Search outputs...' : 'Search inputs...'}
-                    className="h-6 w-full rounded bg-surface-overlay pl-6 pr-6 text-xs text-foreground placeholder:text-foreground-subtle focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => { setSearch(''); setSearchOpen(false); }}
-                    className="absolute right-1.5 grid size-4 place-items-center text-foreground-subtle transition hover:text-foreground"
-                  >
-                    <X size={11} />
-                  </button>
-                </div>
-              ) : (
-                <span className="flex-1 text-xs font-medium text-foreground-muted">{schemaLabel}</span>
-              )}
-              {!searchOpen && (
-                <button
-                  type="button"
-                  onClick={() => setSearchOpen(true)}
-                  title="Search fields"
-                  className="grid size-5 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-                >
-                  <Search size={12} />
-                </button>
-              )}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    title="Filter fields"
-                    className={cn(
-                      'relative grid size-5 place-items-center rounded transition',
-                      filter === 'referenced'
-                        ? 'text-brand'
-                        : 'text-foreground-subtle hover:bg-surface-overlay hover:text-foreground',
-                    )}
-                  >
-                    <SlidersHorizontal size={12} />
-                    {filter === 'referenced' && (
-                      <span className="absolute right-0.5 top-0.5 size-1 rounded-full bg-brand" />
-                    )}
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-52">
-                  <DropdownMenuItem
-                    onClick={() => setFilter('referenced')}
-                    className={cn('flex items-center justify-between', filter === 'referenced' && 'text-foreground')}
-                  >
-                    <span className="text-[11px]">Referenced in this node</span>
-                    <span className="ml-3 rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-foreground-muted">
-                      {currentReferenced.length}
-                    </span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setFilter('all')}
-                    className={cn('text-[11px]', filter === 'all' && 'text-foreground')}
-                  >
-                    All fields
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <button
-                type="button"
-                onClick={toggleAll}
-                title={allCollapsed ? 'Expand all' : 'Collapse all'}
-                className="grid size-5 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-              >
-                {allCollapsed ? <ChevronsUpDown size={12} /> : <ChevronsDownUp size={12} />}
-              </button>
-            </div>
-
-            {/* Tree */}
-            <div className="min-h-0 flex-1 overflow-y-auto pb-4">
-              {rows.map(({ node, depth }) =>
-                node.children !== undefined ? (
-                  <div
-                    key={node.path}
-                    className="group flex cursor-default items-center gap-2 py-1.5 transition hover:bg-surface-overlay"
-                    style={{ paddingLeft: `${14 + depth * 16}px`, paddingRight: '14px' }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => toggleCollapsed(node.path)}
-                      className="grid size-4 shrink-0 place-items-center text-foreground-subtle transition hover:text-foreground"
-                    >
-                      <ChevronDown
-                        size={11}
-                        className={cn(
-                          'transition-transform duration-100',
-                          collapsed[node.path] && '-rotate-90',
-                        )}
-                      />
-                    </button>
-                    <span className="flex size-4 shrink-0 items-center justify-center text-foreground-subtle">
-                      {outputTypeIcon(node.type)}
-                    </span>
-                    <span className="flex-1 truncate font-mono text-xs font-semibold text-foreground">
-                      {node.key}
-                    </span>
-                    <span className="shrink-0 font-mono text-[10px] text-foreground-muted">
-                      {node.type === 'array'
-                        ? `${node.children.length} ${node.children.length === 1 ? 'item' : 'items'}`
-                        : `${node.children.length} ${node.children.length === 1 ? 'key' : 'keys'}`}
-                    </span>
-                  </div>
-                ) : (
-                  <div
-                    key={node.path}
-                    className="group flex cursor-default items-center gap-2 py-1.5 transition hover:bg-surface-overlay"
-                    style={{ paddingLeft: `${30 + depth * 16}px`, paddingRight: '14px' }}
-                  >
-                    <span className="flex size-4 shrink-0 items-center justify-center text-foreground-subtle">
-                      {outputTypeIcon(node.type)}
-                    </span>
-                    <span className="font-mono text-xs font-normal text-foreground-muted">{node.key}</span>
-                    <span className="shrink-0 text-[10px] text-foreground-muted">=</span>
-                    {editingPath === node.path ? (
-                      <input
-                        autoFocus
-                        type="text"
-                        defaultValue={String(editedValues[node.path] ?? node.value ?? '')}
-                        onBlur={(e) => saveEdit(node, e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') saveEdit(node, e.currentTarget.value);
-                          if (e.key === 'Escape') setEditingPath(null);
-                        }}
-                        className={cn(
-                          '-mx-1 min-w-0 flex-1 rounded bg-transparent px-1 font-mono text-xs outline-none ring-1 ring-brand',
-                          outputValueColorClass(node.type, editedValues[node.path] ?? node.value),
-                        )}
-                      />
-                    ) : (
-                      <>
-                        <span
-                          onClick={() => node.type !== 'null' && setEditingPath(node.path)}
-                          className={cn(
-                            'flex-1 truncate font-mono text-xs',
-                            node.type !== 'null'
-                              ? 'cursor-text underline decoration-dashed underline-offset-2 decoration-foreground-subtle/40 hover:decoration-foreground-subtle'
-                              : 'cursor-default',
-                            outputValueColorClass(node.type, editedValues[node.path] ?? node.value),
-                          )}
-                        >
-                          {formatOutputValue(
-                            node.type,
-                            (editedValues[node.path] ?? node.value) as string | number | boolean | null,
-                          )}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => copyExpr(node.path)}
-                          title={`Copy {{${PANEL_NODE_ID}.${node.path}}}`}
-                          className="grid size-5 shrink-0 place-items-center rounded text-foreground-subtle opacity-0 transition hover:bg-surface-raised hover:text-foreground group-hover:opacity-100"
-                        >
-                          {copiedPath === node.path ? (
-                            <CircleCheck size={11} className="text-brand" />
-                          ) : (
-                            <Copy size={11} />
-                          )}
-                        </button>
-                      </>
-                    )}
-                  </div>
-                ),
-              )}
-              {rows.length === 0 && (
-                <p className="py-4 text-center text-xs text-foreground-subtle">
-                  No outputs match your search.
-                </p>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* Types tab */}
-          <TabsContent
-            value="types"
-            className="mt-0 flex min-h-0 flex-1 flex-col pb-4 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]"
-          >
-            <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border-subtle">
-              <MonacoEditor
-                key={`${mode}-types`}
-                height="100%"
-                defaultLanguage="typescript"
-                defaultValue={tsDoc}
-                theme={monacoTheme}
-                beforeMount={registerMonacoThemes}
-                options={{
-                  ...MONACO_OPTS_BASE,
-                  fontSize: 12,
-                  lineHeight: 20,
-                  padding: { top: 14, bottom: 16 },
-                  lineNumbers: 'off',
-                  lineDecorationsWidth: 0,
-                  folding: true,
-                  renderLineHighlight: 'line',
-                  readOnly: true,
-                }}
-              />
-            </div>
-          </TabsContent>
-
-          {/* JSON tab */}
-          <TabsContent
-            value="json"
-            className="mt-0 flex min-h-0 flex-1 flex-col pb-4 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]"
-          >
-            <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border-subtle">
-              <MonacoEditor
-                key={`${mode}-json`}
-                height="100%"
-                defaultLanguage="json"
-                defaultValue={jsonDoc}
-                theme={monacoTheme}
-                beforeMount={registerMonacoThemes}
-                options={{
-                  ...MONACO_OPTS_BASE,
-                  fontSize: 13,
-                  lineHeight: 20,
-                  padding: { top: 6, bottom: 16 },
-                  lineNumbers: 'on',
-                  lineNumbersMinChars: 2,
-                  lineDecorationsWidth: 4,
-                  folding: false,
-                  renderLineHighlight: 'line',
-                  readOnly: false,
-                }}
-              />
-            </div>
-          </TabsContent>
-        </Tabs>
-      </NodePropertyPanel>
-    </PanelFrame>
-  );
-}
-
-// ============================================================================
-// Three-concept comparison layout
-// ============================================================================
-
-function ModeToggle({
-  mode,
-  onChange,
-}: {
-  mode: 'input' | 'output';
-  onChange: (m: 'input' | 'output') => void;
-}) {
-  return (
-    <div className="flex items-center overflow-hidden rounded border border-border">
-      {(['input', 'output'] as const).map((m, i) => (
-        <>
-          {i > 0 && <div key={`sep-${m}`} className="h-3 w-px bg-border" />}
-          <button
-            key={m}
-            type="button"
-            onClick={() => onChange(m)}
-            className={cn(
-              'px-2 py-0.5 text-[10px] font-medium transition',
-              mode === m
-                ? 'bg-surface-overlay text-foreground'
-                : 'text-foreground-muted hover:text-foreground',
-            )}
-          >
-            {m === 'input' ? 'Input' : 'Output'}
-          </button>
-        </>
-      ))}
-    </div>
-  );
-}
-
-const CONCEPT_NOTES: Record<1 | 2 | 3, { pros: string[]; cons: string[]; recommended?: boolean }> = {
-  1: {
-    pros: [
-      'Familiar Schema/JSON tab pattern — low learning curve',
-      'Referenced/All filter with field count is immediately visible',
-      'Inline value editing keeps context without leaving the view',
-    ],
-    cons: [
-      'Filter row adds height between search and the tree list',
-      'No node identity header — activity name and type not shown',
-    ],
-  },
-  2: {
-    pros: [
-      'Node identity always visible alongside the Referenced toggle',
-      'Compact single-row search reduces vertical clutter',
-      'Schema + JSON tabs with consistent inline editing',
-    ],
-    cons: [
-      'Referenced chips require a click to reveal — less discoverable',
-      'Dual active-mode dimming adds interaction complexity',
-    ],
-    recommended: true,
-  },
-  3: {
-    pros: [
-      'Three complete views: Schema, TypeScript types, and raw JSON',
-      'Filter icon keeps the search row tight and uncluttered',
-      'Node identity (name + category) always anchors context',
-    ],
-    cons: [
-      'Three tabs increases cognitive load for first-time users',
-      'TypeScript view is developer-focused — not useful for all personas',
-    ],
-  },
-};
-
-function ConceptPanel({ label, concept }: { label: string; concept: 1 | 2 | 3 }) {
-  const [mode, setMode] = useState<'input' | 'output'>('output');
-  const notes = CONCEPT_NOTES[concept];
-  return (
-    <div className="flex w-[380px] flex-col pb-[30px]">
-      <div className="mb-3 flex items-center justify-between">
-        <span className="text-sm font-medium text-foreground-muted">{label}</span>
-        <ModeToggle mode={mode} onChange={setMode} />
-      </div>
-      {concept === 1 && <OutputPanelStory key={mode} mode={mode} />}
-      {concept === 2 && <Concept2PanelStory key={mode} mode={mode} />}
-      {concept === 3 && <Concept3PanelStory key={mode} mode={mode} />}
-      <div className="mt-[30px] rounded-lg border border-border-subtle bg-surface-raised p-3 text-xs">
-        <div className="mb-2 flex flex-col gap-1">
-          {notes.pros.map((p) => (
-            <div key={p} className="flex items-start gap-1.5">
-              <span className="mt-px shrink-0 text-[10px] font-bold text-green-500">+</span>
-              <span className="text-foreground-muted">{p}</span>
-            </div>
-          ))}
-        </div>
-        <div className="flex flex-col gap-1">
-          {notes.cons.map((c) => (
-            <div key={c} className="flex items-start gap-1.5">
-              <span className="mt-px shrink-0 text-[10px] font-bold text-red-400">−</span>
-              <span className="text-foreground-muted">{c}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function InputOutputStory() {
+  const [context, setContext] = useState<'studio' | 'flow'>('flow');
   return (
-    <div className="flex items-start p-8" style={{ gap: '50px' }}>
-      <ConceptPanel label="Concept 1" concept={1} />
-      <ConceptPanel label="Concept 2" concept={2} />
-      <ConceptPanel label="Concept 3" concept={3} />
+    <div className="flex flex-col items-center gap-6 p-8">
+      <div className="flex items-center overflow-hidden rounded border border-border">
+        {(['flow', 'studio'] as const).map((c, i) => (
+          <span key={c} className="contents">
+            {i > 0 && <div className="h-3 w-px bg-border" />}
+            <button
+              type="button"
+              onClick={() => setContext(c)}
+              className={cn(
+                'px-3 py-1 text-xs font-medium transition',
+                context === c
+                  ? 'bg-surface-overlay text-foreground'
+                  : 'text-foreground-muted hover:text-foreground'
+              )}
+            >
+              {c === 'studio' ? 'In Studio' : 'In Flow'}
+            </button>
+          </span>
+        ))}
+      </div>
+      <div className="flex items-start gap-[50px]">
+        <div className="w-[380px]">
+          <Concept2PanelStory mode="input" context={context} />
+        </div>
+        <div className="w-[380px]">
+          <Concept2PanelStory mode="output" context={context} />
+        </div>
+      </div>
     </div>
   );
 }
