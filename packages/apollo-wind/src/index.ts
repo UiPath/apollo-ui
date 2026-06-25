@@ -7,6 +7,11 @@
 // -----------------------------------------------------------------------------
 export { cn } from './lib/utils';
 export { registerCssPropertyRules } from './lib/register-shadow-dom-properties';
+export {
+  injectTailwindIntoShadowRoot,
+  hasApolloWindCss,
+  TAILWIND_INJECT_ATTR,
+} from './lib/shadow-dom-css';
 
 // -----------------------------------------------------------------------------
 // Layout Components
