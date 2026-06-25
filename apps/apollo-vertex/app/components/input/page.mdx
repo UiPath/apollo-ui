@@ -1,6 +1,7 @@
 import { Input } from '@/registry/input/input'
 import { Label } from '@/registry/label/label'
 import { Button } from '@/registry/button/button'
+import { AiInputDemo } from './ai-input-demo'
 
 # Input
 
@@ -32,6 +33,14 @@ Displays a form input field or a component that looks like an input field.
     <Input type="email" placeholder="Email" />
     <Button type="submit">Subscribe</Button>
   </div>
+</div>
+
+## AI variant
+
+The AI input is a **composition**, not a base Input prop: the standard Input sits inside a wrapper that adds a subtle gradient inset glow and the AI mark (with a tooltip). The wrapper owns the box and focus ring so `overflow-hidden` can clip the glow without clipping the ring. See the [AI Toolkit](/guidelines/ai-toolkit) for the pattern and guidance.
+
+<div className="p-4 border rounded-lg mt-4">
+  <AiInputDemo />
 </div>
 
 ## Installation
