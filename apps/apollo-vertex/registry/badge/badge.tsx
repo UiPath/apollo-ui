@@ -23,6 +23,7 @@ const badgeVariants = cva(
         warning: "",
         success: "",
         error: "",
+        ai: "",
       },
     },
     compoundVariants: [
@@ -98,6 +99,26 @@ const badgeVariants = cva(
         variant: "outline",
         class:
           "border-destructive text-destructive dark:text-destructive bg-transparent",
+      },
+
+      // ai status
+      {
+        status: "ai",
+        variant: "default",
+        class:
+          "border-transparent text-white [background-image:var(--ai-gradient-fill)]",
+      },
+      {
+        status: "ai",
+        variant: "secondary",
+        class:
+          "border-transparent text-foreground dark:text-foreground [background-image:var(--ai-gradient)]",
+      },
+      {
+        status: "ai",
+        variant: "outline",
+        class:
+          "border-transparent text-insight-600 dark:text-insight-400 [background-image:linear-gradient(var(--background),var(--background)),var(--ai-gradient-strong)] [background-origin:border-box] [background-clip:padding-box,border-box]",
       },
     ],
     defaultVariants: {
