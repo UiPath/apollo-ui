@@ -58,7 +58,7 @@ import { AddNodeManager } from '../AddNodePanel/AddNodeManager';
 import { AddNodePreview } from '../AddNodePanel/AddNodePreview';
 import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
 import { BaseCanvas, type BaseCanvasRef } from '../BaseCanvas';
-import { BaseNode } from '../BaseNode/BaseNode';
+import { BaseNode } from '../BaseNode';
 import { BlankCanvasNode } from '../BlankCanvasNode';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { LoopCanvasNode } from '../LoopNode';
