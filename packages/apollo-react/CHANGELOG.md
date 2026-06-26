@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.53.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.53.0...@uipath/apollo-react@4.53.1) (2026-06-26)
+
+### Bug Fixes
+
+* **apollo-react:** avoid canvas story import cycle ([10a1294](https://github.com/UiPath/apollo-ui/commit/10a1294ceaa92e5d2200302f8f6cba965cadf07d))
+
 ## [@uipath/apollo-react-v4.53.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.52.1...@uipath/apollo-react@4.53.0) (2026-06-25)
 
 ### Features
