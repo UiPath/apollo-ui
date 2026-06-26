@@ -164,10 +164,9 @@ const ListViewRow = memo(
   }: RowComponentProps<ListViewRowProps<T>>) => {
     const renderItem = renderedItems[index]!;
 
-    const buttonStyle = useMemo(
-      () => ({ ...style, padding: 0, paddingRight: '4px', height: '32px', outlineOffset: '-1px' }),
-      [style]
-    );
+    // `style` from react-window already carries the row height (rowHeight), so
+    // we only layer on the padding that insets content from the focus ring.
+    const buttonStyle = useMemo(() => ({ ...style, padding: '4px 6px' }), [style]);
 
     const handleButtonClick = useCallback(() => {
       const clickTarget = renderedItems[index];

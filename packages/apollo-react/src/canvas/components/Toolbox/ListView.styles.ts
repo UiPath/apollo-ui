@@ -27,7 +27,13 @@ export const ListItemButton = styled(motion.button)`
   cursor: pointer;
   text-align: left;
   width: 100%;
-  transition: all 0.15s ease;
+  // Reserve the focus ring geometry in the resting state (invisible via a
+  // transparent color) so activating a row only flips outline-color. Without
+  // this the outline falls back to UA defaults (3px / currentColor) and every
+  // sub-property jumps at once, flashing a thick dark border under transition.
+  outline: 1px solid transparent;
+  outline-offset: -1px;
+  transition: background-color 0.15s ease, opacity 0.15s ease, outline-color 0.15s ease;
 
   &:hover,
   &.active {
@@ -35,8 +41,7 @@ export const ListItemButton = styled(motion.button)`
   }
 
   &.active {
-    outline: 1px solid var(--canvas-primary);
-    outline-offset: -1px;
+    outline-color: var(--canvas-primary);
   }
 `;
 
