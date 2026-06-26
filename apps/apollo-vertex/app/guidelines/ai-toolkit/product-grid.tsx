@@ -104,7 +104,7 @@ function ProductCard({ product }: { product: Product }) {
         </span>
       </div>
       <Button variant={product.ai ? "default" : "secondary"} className="w-full">
-        <Plus className="size-4" />
+        <Plus className="size-4" aria-hidden="true" />
         {product.cta}
       </Button>
     </Card>

@@ -38,6 +38,7 @@ export function AiInput({
       <input
         type="text"
         value={value}
+        aria-label="Ask AI anything"
         placeholder="Ask AI anything…"
         onChange={(e) => setValue(e.target.value)}
         onFocus={() => setFocused(true)}

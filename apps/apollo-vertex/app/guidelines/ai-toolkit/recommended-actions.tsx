@@ -69,7 +69,7 @@ function RecommendationCard({
         <Button
           size="sm"
           variant="outline"
-          className="border-0 text-foreground hover:opacity-90"
+          className="border-0 text-foreground hover:text-foreground hover:opacity-90"
           style={{ background: SOFT }}
         >
           {action.cta}

@@ -1,5 +1,3 @@
-"use client";
-
 import { Astroid } from "./astroid";
 
 interface AiIconProps {

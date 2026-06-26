@@ -23,7 +23,7 @@ function MarkCard({
   );
 }
 
-/** The AI Identity mark: asteroid icon + wordmark, in gradient and solid fills. */
+/** The AI Identity mark: astroid icon + wordmark, in gradient and solid fills. */
 export function AiMark() {
   return (
     <div className="my-6 grid gap-4 sm:grid-cols-2">

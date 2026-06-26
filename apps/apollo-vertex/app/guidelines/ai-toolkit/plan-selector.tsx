@@ -132,7 +132,7 @@ export function PlanSelector() {
                   </span>
                   {isSelected ? (
                     <span className="flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                      <Check className="size-4" />
+                      <Check className="size-4" aria-hidden="true" />
                     </span>
                   ) : (
                     <span className="size-6 rounded-full border-2 border-muted-foreground/30" />
@@ -147,7 +147,7 @@ export function PlanSelector() {
       <div className="mt-5 flex justify-end">
         <Button>
           Continue
-          <ArrowRight className="size-4" />
+          <ArrowRight className="size-4" aria-hidden="true" />
         </Button>
       </div>
     </div>

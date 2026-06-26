@@ -26,6 +26,22 @@ function Block({ label, children }: { label: string; children: ReactNode }) {
 export function Surfaces() {
   return (
     <div className="my-6 space-y-14">
+      {/* Shared mark gradient, referenced by the cards below. */}
+      <svg width={0} height={0} aria-hidden="true" className="absolute">
+        <defs>
+          <linearGradient
+            id="ai-card-gradient"
+            x1="2"
+            y1="4"
+            x2="22"
+            y2="20"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop offset="0" stopColor="var(--ai-gradient-start)" />
+            <stop offset="1" stopColor="var(--ai-gradient-end)" />
+          </linearGradient>
+        </defs>
+      </svg>
       <div>
         <h3 className="mb-3 text-sm font-semibold text-foreground">
           Chat input
@@ -111,26 +127,6 @@ export function Surfaces() {
             <Block label="Regular · icon lockup. Use with or without a border. Padding is built into the card surface.">
               <Card variant="solid">
                 <CardContent className="flex items-start gap-2">
-                  <svg
-                    width={0}
-                    height={0}
-                    aria-hidden="true"
-                    className="absolute"
-                  >
-                    <defs>
-                      <linearGradient
-                        id="ai-card-gradient"
-                        x1="2"
-                        y1="4"
-                        x2="22"
-                        y2="20"
-                        gradientUnits="userSpaceOnUse"
-                      >
-                        <stop offset="0" stopColor="var(--ai-gradient-start)" />
-                        <stop offset="1" stopColor="var(--ai-gradient-end)" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
                   <AiIcon
                     className="mt-0.5 size-5 shrink-0"
                     gradientId="ai-card-gradient"

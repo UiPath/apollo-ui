@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useId } from "react";
+import { ASTROID_PATH } from "./astroid";
 
 // Mirrors ai-chat's Thinking animation, but the start state is the filled
 // Astroid instead of the Autopilot sparkle: the mark fades and rotates out as a
@@ -12,10 +13,6 @@ const REVERSE_DURATION = 0.4;
 const PULSE_DURATION = 1.8;
 const EASE = [0.83, 0, 0.17, 1] as const;
 const CIRCLE_RADIUS = 3;
-
-// Lucide astroid path (filled).
-const ASTROID =
-  "M12.983 21.186a1 1 0 0 1-1.966 0 10 10 0 0 0-8.203-8.203 1 1 0 0 1 0-1.966 10 10 0 0 0 8.203-8.203 1 1 0 0 1 1.966 0 10 10 0 0 0 8.203 8.203 1 1 0 0 1 0 1.966 10 10 0 0 0-8.203 8.203";
 
 const PULSE_TRANSITION_ON = {
   opacity: {
@@ -117,7 +114,7 @@ export function AstroidThinking({
             ease: EASE,
           }}
         >
-          <path d={ASTROID} fill={`url(#${gradientId})`} />
+          <path d={ASTROID_PATH} fill={`url(#${gradientId})`} />
         </motion.g>
 
         {/* Dot — grows in, then breathes in the steady state. */}
