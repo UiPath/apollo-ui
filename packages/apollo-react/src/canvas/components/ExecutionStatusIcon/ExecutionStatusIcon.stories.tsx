@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { ExecutionStatusIcon } from './ExecutionStatusIcon';
 
 const meta = {
-  title: 'Components/ExecutionStatusIcon',
+  title: 'Components/Primitives/ExecutionStatusIcon',
   component: ExecutionStatusIcon,
   parameters: {
     layout: 'centered',
@@ -13,6 +13,7 @@ const meta = {
       options: [
         'InProgress',
         'Cancelled',
+        'UserCancelled',
         'Completed',
         'Paused',
         'Failed',
@@ -55,6 +56,7 @@ export const Default: Story = {
           { status: 'Failed', label: 'Failed', description: 'Execution failed' },
           { status: 'Paused', label: 'Paused', description: 'Temporarily stopped' },
           { status: 'Cancelled', label: 'Cancelled', description: 'Execution cancelled' },
+          { status: 'UserCancelled', label: 'User Cancelled', description: 'Stopped by user' },
           { status: 'Terminated', label: 'Terminated', description: 'Forcefully stopped' },
           { status: 'NotExecuted', label: 'Not Executed', description: 'Not yet started' },
           { status: 'Warning', label: 'Warning', description: 'Needs attention' },
@@ -74,7 +76,7 @@ export const Default: Story = {
             }}
           >
             <div style={{ height: '32px', display: 'flex', alignItems: 'center' }}>
-              <ExecutionStatusIcon status={status as any} size={24} />
+              <ExecutionStatusIcon status={status} size={24} />
             </div>
             <div style={{ textAlign: 'center' }}>
               <div

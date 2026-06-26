@@ -3,8 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { PREVIEW_NODE_ID } from '../constants';
 import {
   type ContainerPlacement,
+  DEFAULT_CONTAINER_HEIGHT,
   DEFAULT_CONTAINER_MIN_HEIGHT,
   DEFAULT_CONTAINER_MIN_WIDTH,
+  DEFAULT_CONTAINER_WIDTH,
   ensureContainersFitChildren,
   getContainerFitGeometry,
   getContainerResizeMinimums,
@@ -30,8 +32,8 @@ describe('container sizing', () => {
       height: 224,
     });
     expect(getContainerFitGeometry()).toMatchObject({
-      minWidth: DEFAULT_CONTAINER_MIN_WIDTH,
-      minHeight: DEFAULT_CONTAINER_MIN_HEIGHT,
+      minWidth: DEFAULT_CONTAINER_WIDTH,
+      minHeight: DEFAULT_CONTAINER_HEIGHT,
       padding: { left: 144, right: 144, top: 96, bottom: 48 },
     });
   });
@@ -485,10 +487,14 @@ describe('container sizing', () => {
       y: 96,
     });
     expect(result.nodes.find((node) => node.id === 'inner')).toMatchObject({
-      style: { width: 400, height: 320 },
+      style: { width: DEFAULT_CONTAINER_WIDTH, height: DEFAULT_CONTAINER_HEIGHT },
     });
+    // Outer grows upward (its `position.y` moves negative by the cumulative
+    // leadingShift) so children don't visually jump down in canvas space.
+    // height = 320 + leadingShiftY(160), width = 144 + 560 + 144 = 848.
     expect(result.nodes.find((node) => node.id === 'outer')).toMatchObject({
-      style: { width: 704, height: 464 },
+      position: { x: 0, y: -160 },
+      style: { width: 848, height: 480 },
     });
   });
 });
@@ -814,12 +820,13 @@ describe('placeContainerNode cyclic edges', () => {
       data: {},
     };
     // Wider rectangle inserted between n1 and n2 — n2 must shift right.
+    // Position is what the preview pass already computed: right of n1 by gap.
     const insertedNode: Node = {
       id: 'inserted',
       type: 'agent',
       parentId: 'outer',
       extent: 'parent',
-      position: { x: 0, y: 112 },
+      position: { x: 288, y: 112 },
       measured: { width: 288, height: 96 },
       data: {},
     };

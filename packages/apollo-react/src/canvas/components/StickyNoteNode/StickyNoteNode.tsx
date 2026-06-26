@@ -5,11 +5,15 @@ import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyf
 import type { ResizeDragEvent, ResizeParams } from '@uipath/apollo-react/canvas/xyflow/system';
 import { AnimatePresence } from 'motion/react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ApI18nProvider } from '../../../i18n';
+import { flushSync } from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
+import { useSafeLingui } from '../../../i18n';
 import { GRID_SPACING } from '../../constants';
+import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
+import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
+import { NodeViewportOverlay } from '../NodeViewportOverlay';
 import type { ToolbarAction } from '../Toolbar';
 import { NodeToolbar } from '../Toolbar';
 import { FormattingToolbar } from './FormattingToolbar';
@@ -46,6 +50,8 @@ export interface StickyNoteNodeProps extends NodeProps {
   onContentChange?: (content: string) => void;
   onColorChange?: (color: StickyNoteColor) => void;
   onResize?: (width: number, height: number) => void;
+  onResizeStart?: () => void;
+  onResizeEnd?: () => void;
 }
 
 const minWidth = GRID_SPACING * 8;
@@ -62,13 +68,18 @@ const StickyNoteNodeComponent = ({
   onContentChange,
   onColorChange,
   onResize,
+  onResizeStart,
+  onResizeEnd,
 }: StickyNoteNodeProps) => {
+  const { _ } = useSafeLingui();
   const { updateNodeData, deleteElements } = useReactFlow();
+  const { multipleNodesSelected } = useSelectionState();
   const [isEditing, setIsEditing] = useState(!readOnly && (data.autoFocus ?? false));
   const [isResizing, setIsResizing] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [localContent, setLocalContent] = useState(data.content || '');
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const skipBlurRef = useRef<string | null>(null);
   const { ref: markdownRef, scrollCaptureProps } = useScrollCapture();
   const colorButtonRef = useRef<HTMLDivElement>(null);
   const [activeFormats, setActiveFormats] = useState<ActiveFormats>({
@@ -100,10 +111,10 @@ const StickyNoteNodeComponent = ({
   }, [isEditing, data.autoFocus, id, updateNodeData, readOnly]);
 
   useEffect(() => {
-    if (!selected || isResizing) {
+    if (!selected || dragging || isResizing || multipleNodesSelected) {
       setIsColorPickerOpen(false);
     }
-  }, [selected, isResizing]);
+  }, [selected, dragging, isResizing, multipleNodesSelected]);
 
   useEffect(() => {
     if (readOnly) {
@@ -126,13 +137,21 @@ const StickyNoteNodeComponent = ({
   const handleBlur = useCallback(() => {
     setIsEditing(false);
     if (readOnly) return;
-    if (localContent !== data.content) {
-      onContentChange?.(localContent);
-      updateNodeData(id, { content: localContent });
+
+    const content = textAreaRef.current?.value ?? localContent;
+    if (skipBlurRef.current === content) {
+      skipBlurRef.current = null;
+      return;
+    }
+
+    if (content !== data.content) {
+      onContentChange?.(content);
+      updateNodeData(id, { content });
     }
   }, [id, localContent, data.content, updateNodeData, onContentChange, readOnly]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    skipBlurRef.current = null;
     setLocalContent(e.target.value);
   }, []);
 
@@ -163,6 +182,7 @@ const StickyNoteNodeComponent = ({
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === 'Escape') {
+        skipBlurRef.current = textAreaRef.current?.value ?? localContent;
         setIsEditing(false);
         setLocalContent(data.content || '');
         textAreaRef.current?.blur();
@@ -185,20 +205,46 @@ const StickyNoteNodeComponent = ({
       }
       shortcutKeyDown(e);
     },
-    [data.content, shortcutKeyDown, handleFormat]
+    [data.content, localContent, shortcutKeyDown, handleFormat]
   );
 
   // Resize handlers
   const handleResizeStart = useCallback(() => {
+    if (isEditing) {
+      const content = textAreaRef.current?.value ?? localContent;
+
+      if (!readOnly && content !== data.content) {
+        skipBlurRef.current = content;
+        flushSync(() => {
+          onContentChange?.(content);
+          updateNodeData(id, { content });
+        });
+      }
+
+      textAreaRef.current?.blur();
+    }
     setIsResizing(true);
-  }, []);
+    onResizeStart?.();
+  }, [
+    data.content,
+    id,
+    isEditing,
+    localContent,
+    onContentChange,
+    onResizeStart,
+    readOnly,
+    updateNodeData,
+  ]);
 
   const handleResizeEnd = useCallback(
     (_event: ResizeDragEvent, params: ResizeParams) => {
       setIsResizing(false);
       onResize?.(params.width, params.height);
+      if (onResizeEnd) {
+        queueMicrotask(onResizeEnd);
+      }
     },
-    [onResize]
+    [onResize, onResizeEnd]
   );
 
   // Color change handler
@@ -261,13 +307,13 @@ const StickyNoteNodeComponent = ({
       {
         id: 'delete',
         icon: <CanvasIcon icon="trash" size={14} />,
-        label: 'Delete',
+        label: _({ id: 'sticky-note.toolbar.delete', message: 'Delete' }),
         onAction: handleDelete,
       },
       {
         id: 'edit',
         icon: <CanvasIcon icon="pencil" size={14} />,
-        label: 'Edit',
+        label: _({ id: 'sticky-note.toolbar.edit', message: 'Edit' }),
         onAction: handleEditClick,
       },
       { id: 'separator' },
@@ -285,7 +331,7 @@ const StickyNoteNodeComponent = ({
             }}
           />
         ),
-        label: 'Color',
+        label: _({ id: 'sticky-note.toolbar.color', message: 'Color' }),
         onAction: handleToggleColorPicker,
       },
     ];
@@ -296,12 +342,15 @@ const StickyNoteNodeComponent = ({
       position: 'top' as const,
       align: 'center' as const,
     };
-  }, [handleEditClick, handleToggleColorPicker, color, handleDelete]);
+  }, [_, handleEditClick, handleToggleColorPicker, color, handleDelete]);
+
+  const shouldRenderToolbarOverlay =
+    !readOnly && selected && !dragging && !isResizing && !multipleNodesSelected;
 
   return (
     <>
       <Global styles={stickyNoteGlobalStyles} />
-      <StickyNoteWrapper>
+      <StickyNoteWrapper data-sticky-note>
         {!readOnly && (
           <>
             {/* Top-left resize control */}
@@ -365,7 +414,7 @@ const StickyNoteNodeComponent = ({
           <TopCornerIndicators visible={selected && !readOnly} />
           <BottomCornerIndicators visible={selected && !readOnly} />
           {isEditing ? (
-            <ApI18nProvider component="canvas">
+            <>
               <FormattingToolbar
                 textAreaRef={textAreaRef}
                 borderColor={color}
@@ -384,7 +433,7 @@ const StickyNoteNodeComponent = ({
                 isEditing={isEditing}
                 className="nodrag nowheel"
               />
-            </ApI18nProvider>
+            </>
           ) : (
             <StickyNoteMarkdown ref={markdownRef} {...scrollCaptureProps}>
               {localContent ? (
@@ -410,45 +459,57 @@ const StickyNoteNodeComponent = ({
           )}
         </StickyNoteContainer>
 
-        {!readOnly && selected && !dragging && !isResizing && (
-          <NodeToolbar nodeId={id} config={toolbarConfig} expanded={true} />
+        {shouldRenderToolbarOverlay && (
+          <NodeToolbar nodeId={id} config={toolbarConfig} expanded={true} portalToNodeOverlay />
         )}
-        <AnimatePresence>
-          {!readOnly && selected && !dragging && !isResizing && isColorPickerOpen && (
-            <div
-              style={{
-                position: 'absolute',
-                top: -40,
-                left: '50%',
-                transform: 'translateX(40px)',
-                zIndex: 1000,
-              }}
-            >
-              <ColorPickerPanel
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.15, ease: 'easeOut' }}
-              >
-                {Object.keys(STICKY_NOTE_COLORS).map((stickyColorKey) => {
-                  const colorName = stickyColorKey as StickyNoteColor;
-                  return (
-                    <ColorOption
-                      key={stickyColorKey}
-                      color={STICKY_NOTE_COLORS[colorName]}
-                      isSelected={colorKey === colorName}
-                      onClick={() => handleColorChange(colorName)}
-                      title={colorName.charAt(0).toUpperCase() + colorName.slice(1)}
-                    />
-                  );
-                })}
-              </ColorPickerPanel>
-            </div>
-          )}
-        </AnimatePresence>
+        {shouldRenderToolbarOverlay && (
+          <NodeViewportOverlay nodeId={id} layer="nodeToolbar">
+            <AnimatePresence>
+              {isColorPickerOpen && (
+                <div
+                  className="nodrag nopan nowheel"
+                  style={{
+                    position: 'absolute',
+                    top: -40,
+                    left: '50%',
+                    transform: 'translateX(40px)',
+                    zIndex: 1000,
+                    pointerEvents: 'auto',
+                  }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ColorPickerPanel
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                  >
+                    {Object.keys(STICKY_NOTE_COLORS).map((stickyColorKey) => {
+                      const colorName = stickyColorKey as StickyNoteColor;
+                      return (
+                        <ColorOption
+                          type="button"
+                          key={stickyColorKey}
+                          color={STICKY_NOTE_COLORS[colorName]}
+                          isSelected={colorKey === colorName}
+                          onClick={() => handleColorChange(colorName)}
+                          title={colorName.charAt(0).toUpperCase() + colorName.slice(1)}
+                        />
+                      );
+                    })}
+                  </ColorPickerPanel>
+                </div>
+              )}
+            </AnimatePresence>
+          </NodeViewportOverlay>
+        )}
       </StickyNoteWrapper>
     </>
   );
 };
 
-export const StickyNoteNode = memo(StickyNoteNodeComponent);
+export const StickyNoteNode = memo(StickyNoteNodeComponent, areNodePropsEqualIgnoringPosition);

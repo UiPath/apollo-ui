@@ -16,10 +16,10 @@ const baseContext: NodeStatusContext = { nodeId: 'node-1' };
 describe('resolveAdornments', () => {
   // ── No status ───────────────────────────────────────────
 
-  it('returns execution status indicator as default topRight', () => {
+  it('does not reserve a topRight adornment without visible status', () => {
     const result = resolveAdornments(baseContext);
     expect(result.topLeft).toBeUndefined();
-    expect((result.topRight as React.ReactElement)?.type).toBe(ExecutionStatusIndicator);
+    expect(result.topRight).toBeUndefined();
     expect(result.bottomLeft).toBeUndefined();
     expect(result.bottomRight).toBeUndefined();
   });
@@ -37,6 +37,17 @@ describe('resolveAdornments', () => {
       executionState: { status: 'Failed', count: 2 },
     });
     expect((result.topRight as React.ReactElement)?.type).toBe(ExecutionStatusIndicator);
+  });
+
+  it('can hide execution status adornment', () => {
+    const result = resolveAdornments(
+      {
+        ...baseContext,
+        executionState: { status: 'Failed', count: 2 },
+      },
+      { hideExecutionStatusAdornment: true }
+    );
+    expect(result.topRight).toBeUndefined();
   });
 
   // ── Breakpoint (topLeft) ────────────────────────────────
@@ -144,7 +155,7 @@ describe('resolveAdornments', () => {
     expect((result.topRight as React.ReactElement)?.type).toBe(ValidationWarningIndicator);
   });
 
-  it('falls back to execution indicator for INFO severity', () => {
+  it('does not show topRight adornment for INFO severity without visible status', () => {
     const result = resolveAdornments({
       ...baseContext,
       validationState: {
@@ -152,7 +163,7 @@ describe('resolveAdornments', () => {
         validationError: undefined,
       },
     });
-    expect((result.topRight as React.ReactElement)?.type).toBe(ExecutionStatusIndicator);
+    expect(result.topRight).toBeUndefined();
   });
 
   // ── Priority: execution status > validation ─────────────
@@ -174,6 +185,26 @@ describe('resolveAdornments', () => {
     expect((result.topRight as React.ReactElement)?.type).toBe(ExecutionStatusIndicator);
   });
 
+  it('falls back to validation when execution status adornment is hidden', () => {
+    const result = resolveAdornments(
+      {
+        ...baseContext,
+        executionState: 'Completed',
+        validationState: {
+          validationStatus: ValidationErrorSeverity.ERROR,
+          validationError: {
+            code: 'REQUIRED',
+            message: 'URL is required',
+            description: 'URL is required',
+            severity: ValidationErrorSeverity.ERROR,
+          },
+        },
+      },
+      { hideExecutionStatusAdornment: true }
+    );
+    expect((result.topRight as React.ReactElement)?.type).toBe(ValidationErrorIndicator);
+  });
+
   it('validation shown when no execution state', () => {
     const result = resolveAdornments({
       ...baseContext,
@@ -191,12 +222,12 @@ describe('resolveAdornments', () => {
     expect((result.topRight as React.ReactElement)?.type).toBe(ValidationErrorIndicator);
   });
 
-  it('falls back to execution indicator when no validation state', () => {
+  it('does not show topRight adornment when no validation state or visible status exists', () => {
     const result = resolveAdornments({
       ...baseContext,
       validationState: undefined,
     });
-    expect((result.topRight as React.ReactElement)?.type).toBe(ExecutionStatusIndicator);
+    expect(result.topRight).toBeUndefined();
   });
 });
 

@@ -1,0 +1,19 @@
+{
+  "rich-text-editor.bold": "太字",
+  "rich-text-editor.code": "コード",
+  "rich-text-editor.format-bold": "書式設定 (太字)",
+  "rich-text-editor.format-code": "書式設定 (コード)",
+  "rich-text-editor.format-italic": "書式設定 (斜体)",
+  "rich-text-editor.format-ordered-list": "書式設定 (番号付きリスト)",
+  "rich-text-editor.format-strikethrough": "書式設定 (取り消し線)",
+  "rich-text-editor.format-underline": "書式設定 (下線)",
+  "rich-text-editor.format-unordered-list": "書式設定 (記号付きリスト)",
+  "rich-text-editor.insert-link": "リンクを挿入",
+  "rich-text-editor.italic": "斜体",
+  "rich-text-editor.link": "リンク",
+  "rich-text-editor.loading": "読み込んでいます。",
+  "rich-text-editor.ordered-list": "番号付きリスト",
+  "rich-text-editor.strikethrough": "取り消し線",
+  "rich-text-editor.underline": "下線",
+  "rich-text-editor.unordered-list": "記号付きリスト"
+}

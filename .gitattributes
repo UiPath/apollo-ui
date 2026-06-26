@@ -1,0 +1,8 @@
+# Normalize line endings on commit; check out as LF.
+* text=auto eol=lf
+
+# Shell scripts must stay LF on Windows checkouts so they execute on Linux runners.
+*.sh text eol=lf
+
+# Lockfile is generated; mark as text but discourage diffs.
+pnpm-lock.yaml text eol=lf linguist-generated=true

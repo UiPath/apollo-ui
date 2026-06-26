@@ -9,7 +9,9 @@ interface EventDrivenTaskItemProps {
   task: StageTaskItem;
   taskExecution?: StageTaskExecution;
   isSelected: boolean;
-  getContextMenuItems?: () => NodeMenuItem[];
+  /** Receives the task so parents can pass one stable function to every item
+   * instead of a per-task closure (which would defeat the memo below). */
+  getContextMenuItems?: (task: StageTaskItem) => NodeMenuItem[];
   onTaskClick: (e: React.MouseEvent, taskId: string) => void;
   isTaskLoading?: boolean;
 }
@@ -42,6 +44,7 @@ const EventDrivenTaskItemComponent = ({
       data-testid={`stage-task-${task.id}`}
       selected={isSelected}
       status={taskExecution?.status}
+      isPlaceholder={task.isPlaceholder}
       onClick={handleClick}
       {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
     >
@@ -50,7 +53,7 @@ const EventDrivenTaskItemComponent = ({
       {getContextMenuItems && (
         <TaskMenu
           ref={menuRef}
-          taskId={task.id}
+          task={task}
           getContextMenuItems={getContextMenuItems}
           disabled={isTaskLoading}
         />

@@ -17,7 +17,6 @@ import { Tabs, TabsList, TabsTrigger } from './tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './table';
 import { Calendar } from './calendar';
 import { ButtonGroup } from './button-group';
-import { CodeBlock } from './code-block';
 import { Textarea } from './textarea';
 import { Label } from './label';
 import { RadioGroup, RadioGroupItem } from './radio-group';
@@ -201,22 +200,6 @@ const components: ComponentInfo[] = [
           Accept terms
         </label>
       </div>
-    ),
-  },
-  {
-    name: 'Code Block',
-    description: 'Syntax-highlighted code display',
-    storyPath: 'wind-components-core-code-block--docs',
-    category: Category.Core,
-    preview: (
-      <CodeBlock
-        language="tsx"
-        showLineNumbers={false}
-        showCopyButton={false}
-        className="text-[10px] w-full"
-      >
-        {'const x = <Button />'}
-      </CodeBlock>
     ),
   },
   {

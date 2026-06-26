@@ -8,6 +8,8 @@ import {
 import { cn } from '@uipath/apollo-wind';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { shallow } from 'zustand/shallow';
+import { useSafeLingui } from '../../../i18n';
+import { NODE_BADGE_INSET_SQUARE, NODE_BADGE_SIZE } from '../../constants';
 import { useOptionalNodeTypeRegistry } from '../../core';
 import { useElementValidationStatus, useNodeExecutionState } from '../../hooks';
 import type { HandleGroupManifest } from '../../schema/node-definition';
@@ -24,6 +26,7 @@ import {
 import { CanvasIcon } from '../../utils/icon-registry';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
 import { selectIsConnecting, snapToGrid } from '../../utils/NodeUtils';
+import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import { resolveToolbar } from '../../utils/toolbar-resolver';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
@@ -34,13 +37,17 @@ import { getStatusBorder } from '../BaseNode/BaseNodeContainer';
 import { MissingManifestNode } from '../BaseNode/BaseNodeMissingManifest';
 import type { HandleActionEvent } from '../ButtonHandle';
 import { ButtonHandles } from '../ButtonHandle';
+import { CanvasTooltip } from '../CanvasTooltip';
 import { NodeToolbar } from '../Toolbar';
 import { type ContainerHandleGroup, resolveContainerHandleGroups } from './LoopNode.helpers';
-import type { LoopNodeProps } from './LoopNode.types';
+import type { LoopNodeExecutionCountState, LoopNodeProps } from './LoopNode.types';
+import { LoopNodeExecutionCount } from './LoopNodeExecutionCount';
 
 const DEFAULT_LOOP_ICON = 'repeat';
-const DEFAULT_LOOP_TITLE = 'Loop';
 const EMPTY_DATA: Record<string, unknown> = {};
+const LOOP_HEADER_ADORNMENT_GAP = 8;
+const LOOP_HEADER_ADORNMENT_PADDING =
+  NODE_BADGE_INSET_SQUARE + NODE_BADGE_SIZE + LOOP_HEADER_ADORNMENT_GAP;
 
 const RESIZE_CONTROLS = [
   {
@@ -105,7 +112,7 @@ function resolveInteractionState(
 function useHasChildNodes(id: string, enabled: boolean): boolean {
   return useStore(
     useCallback(
-      (state: ReactFlowState) => !enabled || state.nodes.some((node) => node.parentId === id),
+      (state: ReactFlowState) => !enabled || (state.parentLookup.get(id)?.size ?? 0) > 0,
       [id, enabled]
     )
   );
@@ -178,13 +185,18 @@ function LoopNodeComponent(props: LoopNodeProps) {
     height = 0,
     onAddFirstChild,
     onResize,
+    onResizeStart,
+    onResizeEnd,
     toolbarConfig: toolbarConfigProp,
     adornments: adornmentsProp,
     executionStatusOverride,
     suggestionType: suggestionTypeProp,
+    iterationPillState: iterationPillStateProp,
   } = props;
   const nodeTypeRegistry = useOptionalNodeTypeRegistry();
+  const { _ } = useSafeLingui();
   const [isHovered, setIsHovered] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
 
   const resolvedData = data ?? EMPTY_DATA;
   const isLoading = !!resolvedData.loading;
@@ -232,18 +244,27 @@ function LoopNodeComponent(props: LoopNodeProps) {
     [manifest?.display, id, resolvedData]
   );
 
-  const displayTitle = display.label ?? DEFAULT_LOOP_TITLE;
+  const displayTitle = display.label ?? _({ id: 'loop-node.title', message: 'Loop' });
   const displayIcon = display.icon ?? DEFAULT_LOOP_ICON;
   const isParallel = resolvedData.parallel === true;
+  const label = isParallel
+    ? _({ id: 'loop-node.mode.parallel', message: 'Parallel' })
+    : _({ id: 'loop-node.mode.sequential', message: 'Sequential' });
+  const addNodeToLoopLabel = _({
+    id: 'loop-node.add-node',
+    message: 'Add node to loop',
+  });
   const isDropTarget = resolvedData.isDropTarget === true;
   const containerWidth = width || DEFAULT_CONTAINER_WIDTH;
   const containerHeight = height || DEFAULT_CONTAINER_HEIGHT;
-  const showResizeControls = selected && !dragging && isDesignMode;
+  const resizeControlsMounted = isDesignMode && !dragging;
+  const resizeControlsVisible = resizeControlsMounted && (selected || isResizing);
+  const resizeMinimumsEnabled = resizeControlsMounted && (selected || isHovered || isResizing);
   const resizeMinimums = useContainerResizeMinimums(
     id,
     containerWidth,
     containerHeight,
-    showResizeControls
+    resizeMinimumsEnabled
   );
   const nodeSizeStyle = {
     width: containerWidth,
@@ -262,11 +283,13 @@ function LoopNodeComponent(props: LoopNodeProps) {
 
   const adornments: NodeAdornments = useMemo(
     () => ({
-      ...resolveAdornments(statusContext),
+      ...resolveAdornments(statusContext, { hideExecutionStatusAdornment: true }),
       ...(adornmentsProp ?? {}),
     }),
     [adornmentsProp, statusContext]
   );
+  const hasTopLeftAdornment = !!adornments.topLeft;
+  const hasTopRightAdornment = !!adornments.topRight;
 
   const resolvedHandleGroups = useMemo(() => {
     const handleConfigurations = resolveLoopHandleConfigurations(
@@ -291,6 +314,16 @@ function LoopNodeComponent(props: LoopNodeProps) {
     },
     [onResize]
   );
+  const handleResizeStart = useCallback(() => {
+    setIsResizing(true);
+    onResizeStart?.();
+  }, [onResizeStart]);
+  const handleResizeEnd = useCallback(() => {
+    setIsResizing(false);
+    if (onResizeEnd) {
+      queueMicrotask(onResizeEnd);
+    }
+  }, [onResizeEnd]);
 
   const handleEmptyClick = useCallback(() => {
     onAddFirstChild?.();
@@ -308,6 +341,9 @@ function LoopNodeComponent(props: LoopNodeProps) {
   const showEmptyStateButton = isDesignMode && !hasChildNodes && !!onAddFirstChild;
 
   const interactionState = resolveInteractionState(dragging, selected, isHovered);
+  const activeStatus = suggestionType ?? validationState?.validationStatus ?? executionStatus;
+  const statusBorder = getStatusBorder(activeStatus);
+  const hasStatusBorder = statusBorder.length > 0;
 
   if (!manifest) {
     return (
@@ -341,9 +377,10 @@ function LoopNodeComponent(props: LoopNodeProps) {
       className={cn(
         'group/loop-shell relative box-border flex h-full w-full flex-col overflow-visible rounded-[20px] border bg-transparent',
         'transition-[border-color,box-shadow,opacity] shadow-(--canvas-node-shadow-rest)',
-        'border-border-subtle',
-        getStatusBorder(suggestionType ?? validationState?.validationStatus ?? executionStatus),
-        isHovered && 'shadow-(--canvas-node-shadow-hover) border-border-hover',
+        'border-border',
+        statusBorder,
+        isHovered && 'shadow-(--canvas-node-shadow-hover)',
+        isHovered && !hasStatusBorder && 'border-border-hover',
         selected && 'outline outline-2 outline-foreground-accent-muted',
         isDropTarget && 'bg-surface-hover outline outline-2 outline-brand',
         interactionState === 'drag' && 'cursor-grabbing shadow-(--canvas-node-shadow-lifted)'
@@ -355,6 +392,22 @@ function LoopNodeComponent(props: LoopNodeProps) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
+      {/* Clip the surface-overlay matte to the card's inner edge so it never overshoots or
+          falls short at the corners. 19px = container rounded-[20px] - 1px border. */}
+      <div className="absolute inset-0 isolate flex flex-col overflow-hidden rounded-[19px]">
+        <Header
+          title={displayTitle}
+          icon={displayIcon}
+          loading={isLoading}
+          isParallel={isParallel}
+          label={label}
+          iterationPillState={iterationPillStateProp}
+          nodeWidth={containerWidth}
+          hasTopLeftAdornment={hasTopLeftAdornment}
+          hasTopRightAdornment={hasTopRightAdornment}
+        />
+        <BodyFrame isEmpty={showEmptyStateButton} isLoading={isLoading} />
+      </div>
       {ADORNMENT_SLOT_POSITIONS.map((slot) =>
         adornments?.[slot] ? (
           <BaseBadgeSlot key={slot} position={ADORNMENT_SLOT_SHAPES[slot]} shape="rectangle">
@@ -362,12 +415,15 @@ function LoopNodeComponent(props: LoopNodeProps) {
           </BaseBadgeSlot>
         ) : null
       )}
-      <ResizeCornerIndicators visible={showResizeControls} />
-      {showResizeControls ? (
-        <ResizeControls minimums={resizeMinimums} onResize={handleResize} />
+      <ResizeCornerIndicators visible={resizeControlsVisible} />
+      {resizeControlsMounted ? (
+        <ResizeControls
+          minimums={resizeMinimums}
+          onResize={handleResize}
+          onResizeStart={handleResizeStart}
+          onResizeEnd={handleResizeEnd}
+        />
       ) : null}
-      <Header title={displayTitle} icon={displayIcon} loading={isLoading} isParallel={isParallel} />
-      <BodyFrame isEmpty={showEmptyStateButton} isLoading={isLoading} />
       {showEmptyStateButton ? (
         <div
           className={cn(
@@ -375,7 +431,7 @@ function LoopNodeComponent(props: LoopNodeProps) {
             '-translate-x-1/2 -translate-y-1/2'
           )}
         >
-          <EmptyState onAddFirstChild={handleEmptyClick} />
+          <EmptyState label={addNodeToLoopLabel} onAddFirstChild={handleEmptyClick} />
         </div>
       ) : null}
       {toolbarConfig && (
@@ -404,18 +460,28 @@ function LoopNodeComponent(props: LoopNodeProps) {
   );
 }
 
-export const LoopNode = memo(LoopNodeComponent);
+export const LoopNode = memo(LoopNodeComponent, areNodePropsEqualIgnoringPosition);
 
 function Header({
   title,
   icon,
   loading,
   isParallel,
+  label,
+  iterationPillState,
+  nodeWidth,
+  hasTopLeftAdornment,
+  hasTopRightAdornment,
 }: {
   title: string;
   icon?: string;
   loading: boolean;
   isParallel: boolean;
+  label: string;
+  iterationPillState?: LoopNodeExecutionCountState;
+  nodeWidth: number;
+  hasTopLeftAdornment: boolean;
+  hasTopRightAdornment: boolean;
 }) {
   const titleContent = loading ? (
     <div className="h-5 w-28 animate-pulse rounded bg-(--canvas-background-overlay)" />
@@ -431,52 +497,84 @@ function Header({
     </span>
   ) : null;
 
+  const headerStyle =
+    hasTopLeftAdornment || hasTopRightAdornment
+      ? {
+          paddingLeft: hasTopLeftAdornment ? LOOP_HEADER_ADORNMENT_PADDING : undefined,
+          paddingRight: hasTopRightAdornment ? LOOP_HEADER_ADORNMENT_PADDING : undefined,
+        }
+      : undefined;
+
   return (
     <div
-      className="flex shrink-0 cursor-grab items-center justify-between gap-2.5 px-3.5 pt-2.5 text-foreground active:cursor-grabbing"
+      className={cn(
+        'relative z-10 flex shrink-0 cursor-grab items-center justify-between gap-2.5 rounded-t-[18px]',
+        '-mb-2.5 bg-surface-overlay px-3.5 pb-2.5 pt-2.5 text-foreground',
+        'active:cursor-grabbing'
+      )}
+      style={headerStyle}
       data-testid="loop-node-header"
     >
       <div className="flex min-w-0 items-center gap-2.5">
         {iconContent}
         {titleContent}
       </div>
-      <span className="flex shrink-0 items-center gap-1 rounded-full border border-border-subtle bg-transparent px-2.5 py-0.5 text-[11px] font-semibold leading-4 text-foreground">
-        <span className={cn('flex shrink-0', isParallel && 'rotate-90')} aria-hidden>
-          <CanvasIcon icon="align-justify" size={11} />
+      <div className="flex shrink-0 items-center gap-2">
+        {iterationPillState ? (
+          <LoopNodeExecutionCount
+            state={iterationPillState}
+            size={nodeWidth >= 400 ? 'full' : nodeWidth >= 260 ? 'compact' : 'minimal'}
+          />
+        ) : null}
+        <span className="flex h-6 shrink-0 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-[11px] font-semibold leading-4 text-foreground shadow-sm">
+          <span className={cn('flex shrink-0', isParallel && 'rotate-90')} aria-hidden>
+            <CanvasIcon icon="text-align-justify" size={12} />
+          </span>
+          {label}
         </span>
-        {isParallel ? 'Parallel' : 'Sequential'}
-      </span>
+      </div>
     </div>
   );
 }
 
-function EmptyState({ onAddFirstChild }: { onAddFirstChild: () => void }) {
+function EmptyState({ label, onAddFirstChild }: { label: string; onAddFirstChild: () => void }) {
   return (
-    <button
-      type="button"
-      onClick={onAddFirstChild}
-      aria-label="Add node to loop"
-      className={cn(
-        'nodrag nopan',
-        'pointer-events-auto flex h-8 w-8 items-center justify-center rounded-xl',
-        'border border-border bg-surface-overlay text-foreground',
-        'shadow-(--canvas-node-shadow-lifted)',
-        'transition-colors',
-        'hover:bg-surface-hover hover:border-brand'
-      )}
-    >
-      <CanvasIcon icon="plus" size={14} />
-    </button>
+    <CanvasTooltip content={label} placement="top">
+      <button
+        type="button"
+        onClick={onAddFirstChild}
+        aria-label={label}
+        className={cn(
+          'nodrag nopan',
+          'pointer-events-auto flex h-8 w-8 items-center justify-center rounded-xl',
+          'border border-border bg-surface-overlay text-foreground',
+          'shadow-(--canvas-node-shadow-lifted)',
+          'transition-colors',
+          'hover:bg-surface-hover hover:border-brand'
+        )}
+      >
+        <CanvasIcon icon="plus" size={14} />
+      </button>
+    </CanvasTooltip>
   );
 }
 
-function BodyFrame({ isEmpty, isLoading }: { isEmpty?: boolean; isLoading?: boolean }) {
+const BodyFrame = memo(function BodyFrame({
+  isEmpty,
+  isLoading,
+}: {
+  isEmpty?: boolean;
+  isLoading?: boolean;
+}) {
   return (
     <div
       data-testid="loop-body-frame"
       data-empty={isEmpty ? 'true' : 'false'}
       className={cn(
-        'relative m-2.5 flex flex-1 rounded-xl border-[1.5px] border-dashed border-border-subtle bg-transparent',
+        'relative m-2.5 flex flex-1 rounded-xl border-[1.5px] border-dashed border-border bg-transparent',
+        // Oversized spread on purpose: the parent rounded-[19px] clip layer (not this value)
+        // defines the matte's outer edge. Shrinking it back reintroduces the corner gaps.
+        'shadow-[0_0_0_200px_var(--surface-overlay)]',
         'pointer-events-none'
       )}
     >
@@ -485,14 +583,18 @@ function BodyFrame({ isEmpty, isLoading }: { isEmpty?: boolean; isLoading?: bool
       ) : null}
     </div>
   );
-}
+});
 
-function ResizeControls({
+const ResizeControls = memo(function ResizeControls({
   minimums = DEFAULT_RESIZE_MINIMUMS,
   onResize,
+  onResizeStart,
+  onResizeEnd,
 }: {
   minimums?: ContainerResizeMinimums;
   onResize: (_event: unknown, params: { width: number; height: number }) => void;
+  onResizeStart: () => void;
+  onResizeEnd: () => void;
 }) {
   return (
     <>
@@ -503,7 +605,9 @@ function ResizeControls({
           position={position}
           minWidth={minimums[widthSide]}
           minHeight={minimums[heightSide]}
+          onResizeStart={onResizeStart}
           onResize={onResize}
+          onResizeEnd={onResizeEnd}
         >
           <div
             className="absolute bottom-0 right-0 h-5 w-5 pointer-events-auto"
@@ -513,15 +617,20 @@ function ResizeControls({
       ))}
     </>
   );
-}
+});
 
-function ResizeCornerIndicators({ visible }: { visible: boolean }) {
+const ResizeCornerIndicators = memo(function ResizeCornerIndicators({
+  visible,
+}: {
+  visible: boolean;
+}) {
   return (
     <>
       {RESIZE_CONTROLS.map(({ position, indicatorClassName }) => (
         <div
           key={position}
           aria-hidden
+          data-testid={`loop-resize-corner-indicator-${position}`}
           className={cn(
             'pointer-events-none absolute h-2 w-2 rounded-full bg-brand transition-opacity',
             indicatorClassName,
@@ -531,7 +640,7 @@ function ResizeCornerIndicators({ visible }: { visible: boolean }) {
       ))}
     </>
   );
-}
+});
 
 type SharedHandleGroupProps = {
   nodeId: string;

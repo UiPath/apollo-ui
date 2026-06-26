@@ -5,6 +5,7 @@ import type {
   FormContext,
   FieldOption,
   CustomFieldComponentProps,
+  SliderFieldMetadata,
 } from './form-schema';
 import { hasOptions, isCustomField } from './form-schema';
 import { RulesEngine } from './rules-engine';
@@ -502,24 +503,13 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
 
     case 'slider':
       return (
-        <FormField>
-          <div className="flex justify-between">
-            <FormLabel required={required}>{field.label}</FormLabel>
-            <span className="text-sm text-muted-foreground">
-              {formField.value as React.ReactNode}
-            </span>
-          </div>
-          <Slider
-            value={[formField.value as number]}
-            onValueChange={(values) => formField.onChange(values[0])}
-            min={field.min || 0}
-            max={field.max || 100}
-            step={field.step || 1}
-            disabled={disabled}
-          />
-          <FormDescription>{field.description}</FormDescription>
-          <FormError>{error}</FormError>
-        </FormField>
+        <SliderField
+          field={field}
+          formField={formField}
+          error={error}
+          disabled={disabled}
+          required={required}
+        />
       );
 
     case 'date':
@@ -618,4 +608,85 @@ function FormDescription({ children }: { children?: React.ReactNode }) {
 function FormError({ children }: { children?: React.ReactNode }) {
   if (!children) return null;
   return <p className="text-sm text-destructive">{children}</p>;
+}
+
+// ============================================================================
+// Slider field — extracted so it can subscribe to another form field via
+// useFormContext().watch() and run an effect to clamp the value when the
+// resolved max drops below the current value.
+// ============================================================================
+
+interface SliderFieldProps {
+  field: SliderFieldMetadata;
+  formField: {
+    value: unknown;
+    onChange: (value: unknown) => void;
+    onBlur: () => void;
+    name: string;
+    ref: React.Ref<unknown>;
+  };
+  error?: string;
+  disabled: boolean;
+  required: boolean;
+}
+
+function SliderField({ field, formField, error, disabled, required }: SliderFieldProps) {
+  const { watch } = useFormContext();
+  const watchedMax = field.maxRef ? watch(field.maxRef.fromField) : undefined;
+  const resolvedMax = resolveSliderMax(field, watchedMax);
+
+  // Clamp the form value if the resolved max drops below it (e.g. user
+  // switched to a model with a lower token cap).
+  const prevMaxRef = useRef(resolvedMax);
+  useEffect(() => {
+    if (resolvedMax === prevMaxRef.current) return;
+    prevMaxRef.current = resolvedMax;
+    const v = formField.value;
+    if (typeof v === 'number' && v > resolvedMax) {
+      formField.onChange(resolvedMax);
+    }
+  }, [resolvedMax, formField.value, formField.onChange]);
+
+  const displayValue = (() => {
+    const v = formField.value;
+    if (typeof v === 'number') return Math.min(v, resolvedMax);
+    return v;
+  })();
+
+  return (
+    <FormField>
+      <div className="flex justify-between">
+        <FormLabel required={required}>{field.label}</FormLabel>
+        <span className="text-sm text-muted-foreground">{displayValue as React.ReactNode}</span>
+      </div>
+      <Slider
+        value={[(displayValue as number) ?? field.min ?? 0]}
+        onValueChange={(values) => formField.onChange(values[0])}
+        min={field.min || 0}
+        max={resolvedMax}
+        step={field.step || 1}
+        disabled={disabled}
+      />
+      <FormDescription>{field.description}</FormDescription>
+      <FormError>{error}</FormError>
+    </FormField>
+  );
+}
+
+/**
+ * Resolve the slider's effective max. Priority:
+ *   1. `field.maxRef` — use the watched value if it's a finite positive number,
+ *      otherwise `maxRef.fallback`.
+ *   2. `field.max` — static numeric max.
+ *   3. 100 — historical default.
+ */
+function resolveSliderMax(field: SliderFieldMetadata, watchedValue: unknown): number {
+  if (field.maxRef) {
+    if (typeof watchedValue === 'number' && Number.isFinite(watchedValue) && watchedValue > 0) {
+      return watchedValue;
+    }
+    if (typeof field.maxRef.fallback === 'number') return field.maxRef.fallback;
+  }
+  if (typeof field.max === 'number') return field.max;
+  return 100;
 }

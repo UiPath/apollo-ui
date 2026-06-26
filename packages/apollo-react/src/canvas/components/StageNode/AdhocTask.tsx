@@ -9,7 +9,9 @@ interface AdhocTaskItemProps {
   task: StageTaskItem;
   taskExecution?: StageTaskExecution;
   isSelected: boolean;
-  getContextMenuItems?: () => NodeMenuItem[];
+  /** Receives the task so parents can pass one stable function to every item
+   * instead of a per-task closure (which would defeat the memo below). */
+  getContextMenuItems?: (task: StageTaskItem) => NodeMenuItem[];
   onTaskClick: (e: React.MouseEvent, taskId: string) => void;
   onTaskPlay?: (taskId: string) => Promise<void>;
   isTaskLoading?: boolean;
@@ -44,6 +46,7 @@ const AdhocTaskItemComponent = ({
       data-testid={`stage-task-${task.id}`}
       selected={isSelected}
       status={taskExecution?.status}
+      isPlaceholder={task.isPlaceholder}
       onClick={handleClick}
       {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
     >
@@ -51,7 +54,7 @@ const AdhocTaskItemComponent = ({
       {getContextMenuItems && (
         <TaskMenu
           ref={menuRef}
-          taskId={task.id}
+          task={task}
           getContextMenuItems={getContextMenuItems}
           disabled={isTaskLoading}
         />

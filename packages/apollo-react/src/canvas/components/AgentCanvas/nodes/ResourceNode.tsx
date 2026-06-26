@@ -355,7 +355,7 @@ export const ResourceNode = memo(
 
     const breakpointAdornment = useMemo((): React.ReactNode => {
       if (!hasBreakpoint) return undefined;
-      return <CanvasIcon icon="circle" size={14} color="#cc3d45" />;
+      return <CanvasIcon icon="circle" size={14} color="#cc3d45" fill="#cc3d45" />;
     }, [hasBreakpoint]);
 
     const statusAdornment = useMemo((): React.ReactNode => {

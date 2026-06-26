@@ -1,6 +1,6 @@
-import type { TableChartConfiguration } from "@uipath/apollo-dashboarding";
 import { DateTime } from "luxon";
 import { z } from "zod";
+import type { TableChartConfiguration } from "@/lib/charts-core";
 import type { EntityField } from "./entities";
 
 const stringListFilterSchema = z.object({

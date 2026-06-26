@@ -132,7 +132,7 @@ export const MuiDatepicker = (palette: Palette): ComponentsOverrides['MuiPopper'
           // Selected Day
           '&.Mui-selected': {
             backgroundColor: palette.semantic.colorPrimary,
-            color: palette.semantic.colorForegroundInverse,
+            color: palette.semantic.colorForegroundOnAccent,
 
             '&:hover': { backgroundColor: palette.semantic.colorPrimary },
           },
@@ -161,7 +161,7 @@ export const MuiDatepicker = (palette: Palette): ComponentsOverrides['MuiPopper'
 
           '&.Mui-selected': {
             backgroundColor: palette.semantic.colorPrimary,
-            color: palette.semantic.colorForegroundInverse,
+            color: palette.semantic.colorForegroundOnAccent,
 
             '&:hover': { backgroundColor: palette.semantic.colorPrimary },
           },

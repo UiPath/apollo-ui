@@ -333,4 +333,90 @@ describe('MetadataForm', () => {
       });
     });
   });
+
+  describe('tabbed multi-step form (stepVariant="tabs")', () => {
+    const tabbedSchema: FormSchema = {
+      id: 'tabbed',
+      title: 'Tabbed Form',
+      steps: [
+        {
+          id: 'parameters',
+          title: 'Parameters',
+          sections: [
+            {
+              id: 'p',
+              fields: [
+                {
+                  name: 'field1',
+                  type: 'text',
+                  label: 'Field 1',
+                  placeholder: 'Params field',
+                  defaultValue: '',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: 'advanced',
+          title: 'Advanced',
+          sections: [
+            {
+              id: 'a',
+              fields: [
+                {
+                  name: 'field2',
+                  type: 'text',
+                  label: 'Field 2',
+                  placeholder: 'Advanced field',
+                  defaultValue: '',
+                },
+              ],
+            },
+          ],
+        },
+        // A step with no sections must not produce a tab (e.g. a trigger with no parameters).
+        { id: 'empty', title: 'Should Not Render', sections: [] },
+      ],
+    };
+
+    it('renders one tab per non-empty step and omits empty steps', () => {
+      render(<MetadataForm schema={tabbedSchema} stepVariant="tabs" />);
+
+      expect(screen.getByRole('tab', { name: 'Parameters' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'Advanced' })).toBeInTheDocument();
+      expect(screen.queryByRole('tab', { name: 'Should Not Render' })).not.toBeInTheDocument();
+    });
+
+    it('keeps a value entered in one tab after switching tabs (single shared form instance)', async () => {
+      const user = userEvent.setup();
+      render(<MetadataForm schema={tabbedSchema} stepVariant="tabs" />);
+
+      await user.type(screen.getByPlaceholderText('Params field'), 'hello');
+
+      // Switch to the Advanced tab, then back to Parameters.
+      await user.click(screen.getByRole('tab', { name: 'Advanced' }));
+      await waitFor(() =>
+        expect(screen.getByPlaceholderText('Advanced field')).toBeInTheDocument()
+      );
+
+      await user.click(screen.getByRole('tab', { name: 'Parameters' }));
+
+      // Value survives because every tab shares one react-hook-form instance.
+      await waitFor(() => expect(screen.getByPlaceholderText('Params field')).toHaveValue('hello'));
+    });
+
+    it('renders no Submit action when every step is empty (no phantom default Submit)', () => {
+      const allEmpty: FormSchema = {
+        id: 'all-empty',
+        title: 'All Empty',
+        steps: [{ id: 'empty', title: 'Empty', sections: [] }],
+      };
+      render(<MetadataForm schema={allEmpty} stepVariant="tabs" />);
+
+      // TabbedStepForm renders nothing, so FormActions (and its default Submit) is suppressed.
+      expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Submit' })).not.toBeInTheDocument();
+    });
+  });
 });

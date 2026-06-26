@@ -20,7 +20,7 @@ import { BaseCanvas } from '../../components/BaseCanvas';
 // ============================================================================
 
 const meta = {
-  title: 'Templates/Flow',
+  title: 'Templates/Canvas with Panels',
   parameters: {
     layout: 'fullscreen',
   },

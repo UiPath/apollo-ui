@@ -1,4 +1,5 @@
 import { assert } from "@/lib/asserts/assert";
+import { buildField } from "@/lib/charts-core";
 import {
   type Entity,
   type EntityField,
@@ -8,11 +9,9 @@ import {
 export function buildTableDataModel(entity: Entity) {
   return {
     id: entity.id,
-    fields: entity.fields.map((field) => ({
-      id: field.name,
-      display: field.name,
-      type: mapFieldType(field.dataType),
-    })),
+    fields: entity.fields.map((field) =>
+      buildField(field.name, mapFieldType(field.dataType)),
+    ),
   };
 }
 
@@ -29,11 +28,7 @@ export function buildMultiEntityDataModel(
         field != null,
         `buildMultiEntityDataModel: dimension "${d}" is not present in qualified fields. Caller must validate dimensions first.`,
       );
-      return {
-        id: d,
-        display: d,
-        type: mapFieldType(field.dataType),
-      };
+      return buildField(d, mapFieldType(field.dataType));
     }),
   };
 }

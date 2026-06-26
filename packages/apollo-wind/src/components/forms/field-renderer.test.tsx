@@ -228,6 +228,115 @@ describe('FormFieldRenderer', () => {
     });
   });
 
+  describe('slider field', () => {
+    it('renders with static max', () => {
+      const field: FieldMetadata = {
+        name: 'temperature',
+        type: 'slider',
+        label: 'Temperature',
+        min: 0,
+        max: 1,
+        step: 0.1,
+      };
+
+      render(
+        <FormWrapper defaultValues={{ temperature: 0.5 }}>
+          <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
+        </FormWrapper>
+      );
+
+      const slider = screen.getByRole('slider');
+      expect(slider).toHaveAttribute('aria-valuemax', '1');
+      expect(slider).toHaveAttribute('aria-valuenow', '0.5');
+    });
+
+    it('falls back to 100 when neither max nor maxRef is provided', () => {
+      const field: FieldMetadata = {
+        name: 'value',
+        type: 'slider',
+        label: 'Value',
+      };
+
+      render(
+        <FormWrapper defaultValues={{ value: 50 }}>
+          <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
+        </FormWrapper>
+      );
+
+      expect(screen.getByRole('slider')).toHaveAttribute('aria-valuemax', '100');
+    });
+
+    it('derives max from another form field via maxRef', () => {
+      const field: FieldMetadata = {
+        name: 'maxTokens',
+        type: 'slider',
+        label: 'Max tokens',
+        min: 0,
+        maxRef: { fromField: 'modelMaxTokens', fallback: 1000 },
+      };
+
+      render(
+        <FormWrapper defaultValues={{ maxTokens: 500, modelMaxTokens: 32768 }}>
+          <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
+        </FormWrapper>
+      );
+
+      expect(screen.getByRole('slider')).toHaveAttribute('aria-valuemax', '32768');
+    });
+
+    it('uses maxRef.fallback when watched field is missing', () => {
+      const field: FieldMetadata = {
+        name: 'maxTokens',
+        type: 'slider',
+        label: 'Max tokens',
+        maxRef: { fromField: 'modelMaxTokens', fallback: 16384 },
+      };
+
+      render(
+        <FormWrapper defaultValues={{ maxTokens: 500 }}>
+          <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
+        </FormWrapper>
+      );
+
+      expect(screen.getByRole('slider')).toHaveAttribute('aria-valuemax', '16384');
+    });
+
+    it('uses maxRef.fallback when watched value is not a positive number', () => {
+      const field: FieldMetadata = {
+        name: 'maxTokens',
+        type: 'slider',
+        label: 'Max tokens',
+        maxRef: { fromField: 'modelMaxTokens', fallback: 8192 },
+      };
+
+      render(
+        <FormWrapper defaultValues={{ maxTokens: 500, modelMaxTokens: 'not-a-number' }}>
+          <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
+        </FormWrapper>
+      );
+
+      expect(screen.getByRole('slider')).toHaveAttribute('aria-valuemax', '8192');
+    });
+
+    it('maxRef takes precedence over static max', () => {
+      const field: FieldMetadata = {
+        name: 'maxTokens',
+        type: 'slider',
+        label: 'Max tokens',
+        max: 999,
+        maxRef: { fromField: 'modelMaxTokens', fallback: 16384 },
+      };
+
+      render(
+        <FormWrapper defaultValues={{ maxTokens: 500, modelMaxTokens: 4096 }}>
+          <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
+        </FormWrapper>
+      );
+
+      expect(screen.getByRole('slider')).toHaveAttribute('aria-valuemax', '4096');
+    });
+  });
+
   describe('visibility rules', () => {
     it('hides field when visibility rule evaluates to false', () => {
       const field: FieldMetadata = {

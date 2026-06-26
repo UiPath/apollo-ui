@@ -6,6 +6,7 @@ export type {
   StageNodeCanvasProps,
   StageNodeProps,
   StageStatus,
+  StageTaskContextMenuArgs,
   StageTaskItem,
   StageTaskStatus,
 } from './StageNode.types';

@@ -1,8 +1,8 @@
-import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen, waitFor } from '../../utils/testing';
 import type { ListItem } from '../Toolbox';
 import { StageNode } from './StageNode';
 import type { StageNodeProps, StageTaskItem } from './StageNode.types';
@@ -48,11 +48,11 @@ vi.mock('@dnd-kit/utilities', () => ({
 // Mock FloatingCanvasPanel
 vi.mock('../FloatingCanvasPanel', () => ({
   FloatingCanvasPanel: ({
-    open,
+    open = true,
     children,
     onClose,
   }: {
-    open: boolean;
+    open?: boolean;
     children?: React.ReactNode;
     onClose?: () => void;
   }) =>
@@ -109,19 +109,13 @@ vi.mock('../Toolbox', () => ({
 vi.mock('./DraggableTask', () => ({
   DraggableTask: ({
     task,
-    groupIndex,
-    taskIndex,
     isDragDisabled,
     getContextMenuItems,
   }: {
     task: StageTaskItem;
-    groupIndex?: number;
-    taskIndex?: number;
     isDragDisabled?: boolean;
     getContextMenuItems?: (
-      groupIndex: number,
-      taskIndex: number,
-      taskId: string
+      task: StageTaskItem
     ) => Array<{ id?: string; label?: string; onClick?: () => void }>;
   }) => {
     const [menuItems, setMenuItems] = React.useState<
@@ -138,9 +132,7 @@ vi.mock('./DraggableTask', () => ({
             type="button"
             data-testid={`task-menu-button-${task.id}`}
             onClick={() => {
-              if (groupIndex !== undefined && taskIndex !== undefined) {
-                setMenuItems(getContextMenuItems(groupIndex, taskIndex, task.id));
-              }
+              setMenuItems(getContextMenuItems(task));
             }}
           >
             Open Menu
@@ -309,26 +301,6 @@ describe('StageNode - Replace Task Functionality', () => {
       // Check toolbox title
       const toolboxTitle = screen.getByTestId('toolbox-title');
       expect(toolboxTitle).toHaveTextContent('Replace task');
-    });
-
-    it('should use custom replaceTaskLabel when provided', async () => {
-      const user = userEvent.setup();
-      const onReplaceTaskFromToolbox = vi.fn();
-      renderStageNode({
-        onReplaceTaskFromToolbox,
-        replaceTaskLabel: 'Custom Replace Label',
-      });
-
-      const taskMenuButton = screen.getByTestId('task-menu-button-task-1');
-      await user.click(taskMenuButton);
-
-      const replaceMenuItem = screen.getByTestId('menu-item-task-1-replace-task');
-      await user.click(replaceMenuItem);
-
-      await waitFor(() => {
-        const toolboxTitle = screen.getByTestId('toolbox-title');
-        expect(toolboxTitle).toHaveTextContent('Custom Replace Label');
-      });
     });
 
     it('should display task options in replace task toolbox', async () => {
@@ -848,6 +820,130 @@ describe('StageNode - ReadOnly Mode', () => {
   });
 });
 
+describe('StageNode - SLA Indicator', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const getSlaIndicator = () => screen.getByTestId('stage-sla-stage-1');
+
+  it('does not render the SLA indicator when slaText is undefined', () => {
+    renderStageNode({
+      execution: { stageStatus: {}, taskStatus: {} },
+    });
+
+    expect(screen.queryByTestId('stage-sla-stage-1')).not.toBeInTheDocument();
+  });
+
+  it('does not render the SLA indicator when only duration is provided', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: { duration: 'Duration: 1h 30m' },
+        taskStatus: {},
+      },
+    });
+
+    expect(screen.queryByTestId('stage-sla-stage-1')).not.toBeInTheDocument();
+  });
+
+  it('renders slaText without an icon when slaIcon is omitted', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: { slaText: 'SLA: 10 days remaining' },
+        taskStatus: {},
+      },
+    });
+
+    const indicator = getSlaIndicator();
+    expect(indicator).toHaveTextContent('SLA: 10 days remaining');
+    expect(indicator).not.toHaveAttribute('data-sla-icon');
+    expect(indicator.querySelector('svg')).toBeNull();
+  });
+
+  it('renders a warning icon and text when slaIcon is "warning"', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: { slaText: 'SLA: 1 day remaining', slaIcon: 'warning' },
+        taskStatus: {},
+      },
+    });
+
+    const indicator = getSlaIndicator();
+    expect(indicator).toHaveTextContent('SLA: 1 day remaining');
+    expect(indicator).toHaveAttribute('data-sla-icon', 'warning');
+    expect(indicator.querySelector('svg')).not.toBeNull();
+  });
+
+  it('renders an error icon and text when slaIcon is "error"', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: { slaText: 'SLA: 1 day overdue', slaIcon: 'error' },
+        taskStatus: {},
+      },
+    });
+
+    const indicator = getSlaIndicator();
+    expect(indicator).toHaveTextContent('SLA: 1 day overdue');
+    expect(indicator).toHaveAttribute('data-sla-icon', 'error');
+    expect(indicator.querySelector('svg')).not.toBeNull();
+  });
+
+  it('renders both duration and slaText as independent lines when both are provided', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: {
+          duration: 'Duration: 1h 30m',
+          slaText: 'SLA: 1 day remaining',
+          slaIcon: 'warning',
+        },
+        taskStatus: {},
+      },
+    });
+
+    expect(screen.getByText('Duration: 1h 30m')).toBeInTheDocument();
+    const indicator = getSlaIndicator();
+    expect(indicator).toHaveTextContent('SLA: 1 day remaining');
+    expect(indicator).toHaveAttribute('data-sla-icon', 'warning');
+  });
+});
+
+describe('StageNode - Status Icon', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const warningExecution = {
+    stageStatus: { status: 'Warning' as const, label: 'This stage has validation warnings.' },
+    taskStatus: {},
+  };
+
+  it('does not render the status icon when status is undefined', () => {
+    renderStageNode({ execution: { stageStatus: {}, taskStatus: {} } });
+
+    expect(screen.queryByTestId('stage-status-stage-1')).not.toBeInTheDocument();
+  });
+
+  it('invokes onStatusClick without propagating to onStageClick', async () => {
+    const onStatusClick = vi.fn();
+    const onStageClick = vi.fn();
+    renderStageNode({ execution: warningExecution, onStatusClick, onStageClick });
+
+    await userEvent.click(screen.getByTestId('stage-status-stage-1'));
+
+    expect(onStatusClick).toHaveBeenCalledTimes(1);
+    expect(onStageClick).not.toHaveBeenCalled();
+  });
+
+  it('propagates the click to onStageClick when onStatusClick is not provided', async () => {
+    const onStageClick = vi.fn();
+    renderStageNode({ execution: warningExecution, onStageClick });
+
+    await userEvent.click(screen.getByTestId('stage-status-stage-1'));
+
+    expect(onStageClick).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('StageNode - Header Chips', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -922,26 +1018,125 @@ describe('StageNode - Header Chips', () => {
     renderStageNode({
       stageDetails: {
         ...defaultProps.stageDetails,
-        headerChips: [{ type: StageHeaderChipType.CaseExit, tooltip: 'Exit case condition' }],
+        headerChips: [{ type: StageHeaderChipType.Entry, tooltip: 'Entry condition' }],
       },
     });
 
-    expect(screen.getByRole('button', { name: 'Exit case condition' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Entry condition' })).toBeInTheDocument();
   });
 
   it('should fall back to chip type as aria-label when tooltip is a ReactNode', () => {
     renderStageNode({
       stageDetails: {
         ...defaultProps.stageDetails,
-        headerChips: [
-          { type: StageHeaderChipType.CaseCompletion, tooltip: <span>Completion</span> },
-        ],
+        headerChips: [{ type: StageHeaderChipType.Completion, tooltip: <span>Completion</span> }],
       },
     });
 
     expect(
-      screen.getByRole('button', { name: StageHeaderChipType.CaseCompletion })
+      screen.getByRole('button', { name: StageHeaderChipType.Completion })
     ).toBeInTheDocument();
+  });
+});
+
+describe('StageNode - Status Badges', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const optionalBadge = () => screen.queryByTestId('stage-optional-badge-stage-1');
+  const endsCaseBadge = () => screen.queryByTestId('stage-ends-case-badge-stage-1');
+
+  const withChips = (
+    chips: { type: StageHeaderChipType; label?: string; tooltip?: string; onClick?: () => void }[]
+  ) => ({
+    stageDetails: { ...defaultProps.stageDetails, headerChips: chips },
+  });
+
+  it('does not render status badges by default', () => {
+    renderStageNode();
+    expect(optionalBadge()).not.toBeInTheDocument();
+    expect(endsCaseBadge()).not.toBeInTheDocument();
+  });
+
+  it('renders the Optional badge with the default label', () => {
+    renderStageNode(withChips([{ type: StageHeaderChipType.Optional }]));
+    const badge = optionalBadge();
+    expect(badge).toBeInTheDocument();
+    expect(badge).toHaveTextContent('Optional');
+    expect(endsCaseBadge()).not.toBeInTheDocument();
+  });
+
+  it('renders the Ends case badge with the default label', () => {
+    renderStageNode(withChips([{ type: StageHeaderChipType.EndsCase }]));
+    const badge = endsCaseBadge();
+    expect(badge).toBeInTheDocument();
+    expect(badge).toHaveTextContent('Ends case');
+    expect(optionalBadge()).not.toBeInTheDocument();
+  });
+
+  it('renders both status badges when both chips are present', () => {
+    renderStageNode(
+      withChips([{ type: StageHeaderChipType.Optional }, { type: StageHeaderChipType.EndsCase }])
+    );
+    expect(optionalBadge()).toBeInTheDocument();
+    expect(endsCaseBadge()).toBeInTheDocument();
+  });
+
+  it('uses consumer-supplied chip labels when provided', () => {
+    renderStageNode(
+      withChips([
+        { type: StageHeaderChipType.Optional, label: 'Opcional' },
+        { type: StageHeaderChipType.EndsCase, label: 'Finaliza caso' },
+      ])
+    );
+    expect(optionalBadge()).toHaveTextContent('Opcional');
+    expect(endsCaseBadge()).toHaveTextContent('Finaliza caso');
+  });
+
+  it('falls back to the default label when an empty label is supplied', () => {
+    renderStageNode(withChips([{ type: StageHeaderChipType.Optional, label: '' }]));
+    expect(optionalBadge()).toHaveTextContent('Optional');
+  });
+
+  it('renders an interactive button when an onClick is provided', () => {
+    renderStageNode(withChips([{ type: StageHeaderChipType.Optional, onClick: vi.fn() }]));
+    expect(optionalBadge()?.tagName).toBe('BUTTON');
+  });
+
+  it('renders a non-interactive span when no onClick is provided', () => {
+    renderStageNode(withChips([{ type: StageHeaderChipType.Optional }]));
+    expect(optionalBadge()?.tagName).toBe('SPAN');
+  });
+
+  it('calls the chip onClick when the badge is clicked', async () => {
+    const user = userEvent.setup();
+    const onClick = vi.fn();
+    renderStageNode(withChips([{ type: StageHeaderChipType.EndsCase, onClick }]));
+
+    await user.click(endsCaseBadge() as HTMLElement);
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders status badges alongside SLA text and interactive chips', () => {
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        headerChips: [
+          { type: StageHeaderChipType.Entry },
+          { type: StageHeaderChipType.Optional },
+          { type: StageHeaderChipType.EndsCase },
+        ],
+      },
+      execution: {
+        stageStatus: { slaText: 'SLA: 3 days' },
+        taskStatus: {},
+      },
+    });
+    expect(screen.getByTestId('stage-sla-stage-1')).toHaveTextContent('SLA: 3 days');
+    expect(screen.getByRole('button', { name: StageHeaderChipType.Entry })).toBeInTheDocument();
+    expect(optionalBadge()).toBeInTheDocument();
+    expect(endsCaseBadge()).toBeInTheDocument();
   });
 });
 
@@ -969,5 +1164,150 @@ describe('StageNode - Add Task Button', () => {
     renderStageNode({ onTaskAdd: vi.fn(), loadingTaskIds: new Set() });
 
     expect(screen.getByRole('button', { name: 'Add task' })).not.toBeDisabled();
+  });
+});
+
+describe('StageNode - Stage status icon tooltip', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('renders the status icon with the status name as aria-label and tooltip when no host label is supplied', () => {
+    renderStageNode({
+      execution: { stageStatus: { status: 'InProgress' }, taskStatus: {} },
+    });
+
+    const statusButton = screen.getByRole('button', { name: 'In progress' });
+    expect(statusButton).toBeInTheDocument();
+  });
+
+  it('uses the host-supplied error label as the aria-label so screen readers match the tooltip', () => {
+    renderStageNode({
+      execution: {
+        stageStatus: { status: 'Failed', label: 'Activity X threw NullReferenceException' },
+        taskStatus: {},
+      },
+    });
+
+    expect(
+      screen.getByRole('button', { name: 'Activity X threw NullReferenceException' })
+    ).toBeInTheDocument();
+  });
+
+  it('uses "In progress" as the aria-label for the InProgress status', () => {
+    renderStageNode({
+      execution: { stageStatus: { status: 'InProgress' as const }, taskStatus: {} },
+    });
+
+    expect(screen.getByRole('button', { name: 'In progress' })).toBeInTheDocument();
+  });
+});
+
+describe('StageTitleInput - input attributes', () => {
+  const enterEditMode = async (user: ReturnType<typeof userEvent.setup>) => {
+    await user.click(screen.getByRole('button', { name: 'Test Stage' }));
+    return screen.getByDisplayValue('Test Stage') as HTMLInputElement;
+  };
+
+  it('suppresses browser autocomplete on the stage title input', async () => {
+    const user = userEvent.setup();
+    renderStageNode({ onStageTitleChange: vi.fn() });
+
+    const input = await enterEditMode(user);
+    expect(input).toHaveAttribute('autocomplete', 'off');
+  });
+
+  it('uses a per-stage unique name derived from the stage id', async () => {
+    const user = userEvent.setup();
+    renderStageNode({ onStageTitleChange: vi.fn() });
+
+    const input = await enterEditMode(user);
+    expect(input).toHaveAttribute('name', 'stage-title-stage-1');
+  });
+
+  it('generates a different name for each stage so browsers do not group inputs', async () => {
+    const user = userEvent.setup();
+    const { unmount } = renderStageNode({ id: 'stage-a', onStageTitleChange: vi.fn() });
+    let input = await enterEditMode(user);
+    expect(input).toHaveAttribute('name', 'stage-title-stage-a');
+    unmount();
+
+    renderStageNode({ id: 'stage-b', onStageTitleChange: vi.fn() });
+    input = await enterEditMode(user);
+    expect(input).toHaveAttribute('name', 'stage-title-stage-b');
+  });
+});
+
+describe('StageNode - getTaskContextMenuItems', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const renderWithCallback = (
+    getTaskContextMenuItems?: StageNodeProps['getTaskContextMenuItems']
+  ) =>
+    renderStageNode({
+      stageDetails: {
+        label: 'Test Stage',
+        tasks: [[{ id: 'task-1', label: 'Task 1' }]],
+      },
+      getTaskContextMenuItems,
+    });
+
+  it('appends items returned by getTaskContextMenuItems to the task menu', async () => {
+    const user = userEvent.setup();
+    const onCustom = vi.fn();
+    renderWithCallback(() => [{ id: 'custom-action', label: 'Custom Action', onClick: onCustom }]);
+
+    await user.click(screen.getByTestId('task-menu-button-task-1'));
+
+    expect(screen.getByTestId('menu-item-task-1-custom-action')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-item-task-1-custom-action')).toHaveTextContent('Custom Action');
+  });
+
+  it('passes the task and group context to the callback', async () => {
+    const user = userEvent.setup();
+    const getTaskContextMenuItems = vi.fn().mockReturnValue([]);
+    renderStageNode({
+      stageDetails: {
+        label: 'Test Stage',
+        tasks: [[{ id: 'task-a', label: 'Task A' }]],
+      },
+      onReplaceTaskFromToolbox: vi.fn(), // ensure the menu renders
+      getTaskContextMenuItems,
+    });
+
+    await user.click(screen.getByTestId('task-menu-button-task-a'));
+
+    expect(getTaskContextMenuItems).toHaveBeenCalledWith({
+      task: expect.objectContaining({ id: 'task-a', label: 'Task A' }),
+      taskGroupType: 'sequential',
+      isParallel: false,
+    });
+  });
+
+  it('does not render the task menu trigger when the callback returns an empty array and no other actions are provided', () => {
+    renderWithCallback(() => []);
+
+    expect(screen.queryByTestId('task-menu-button-task-1')).not.toBeInTheDocument();
+  });
+
+  it('does not render the task menu trigger when the callback returns undefined and no other actions are provided', () => {
+    renderWithCallback(() => undefined);
+
+    expect(screen.queryByTestId('task-menu-button-task-1')).not.toBeInTheDocument();
+  });
+
+  it('invokes the item onClick when the menu item is clicked', async () => {
+    const user = userEvent.setup();
+    const onCustom = vi.fn();
+    renderWithCallback(() => [
+      { id: 'go-to-definition', label: 'Go to definition', onClick: onCustom },
+    ]);
+
+    await user.click(screen.getByTestId('task-menu-button-task-1'));
+    await user.click(screen.getByTestId('menu-item-task-1-go-to-definition'));
+
+    expect(onCustom).toHaveBeenCalledTimes(1);
   });
 });

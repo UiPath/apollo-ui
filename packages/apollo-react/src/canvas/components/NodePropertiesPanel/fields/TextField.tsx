@@ -1,14 +1,5 @@
-import { Column } from '@uipath/apollo-react/canvas/layouts';
+import { cn } from '@uipath/apollo-wind';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import {
-  FieldError,
-  FieldHelpText,
-  FieldLabel,
-  InputSuffix,
-  InputWrapper,
-  TextArea,
-  TextInput,
-} from '../NodePropertiesPanel.styles';
 import type { ConfigField } from '../NodePropertiesPanel.types';
 
 interface TextFieldProps {
@@ -17,6 +8,9 @@ interface TextFieldProps {
   onChange: (value: string) => void;
   error?: string;
 }
+
+const inputBase =
+  'w-full px-3 py-2 text-[13px] font-mono border border-(--canvas-border) rounded bg-(--canvas-background) text-(--canvas-foreground) outline-none transition-colors placeholder:text-(--canvas-foreground-de-emp) focus:border-(--canvas-primary) disabled:opacity-50 disabled:cursor-not-allowed';
 
 export const TextField = memo(function TextField({
   field,
@@ -31,7 +25,6 @@ export const TextField = memo(function TextField({
     setLocalValue(value || '');
   }, [value]);
 
-  // Cleanup debounce timer on unmount or when debounce changes
   useEffect(() => {
     return () => {
       if (debounceTimer.current) {
@@ -46,7 +39,6 @@ export const TextField = memo(function TextField({
       const newValue = e.target.value;
       setLocalValue(newValue);
 
-      // Clear existing timer
       if (debounceTimer.current) {
         clearTimeout(debounceTimer.current);
         debounceTimer.current = null;
@@ -65,36 +57,47 @@ export const TextField = memo(function TextField({
     [field.debounce, onChange]
   );
 
+  const inputId = `field-${field.key}`;
+
   return (
-    <Column gap={4}>
-      <FieldLabel>{field.label}</FieldLabel>
+    <div className="flex flex-col gap-1">
+      <label htmlFor={inputId} className="text-[13px] text-(--canvas-foreground-de-emp)">
+        {field.label}
+      </label>
       {field.type === 'textarea' ? (
-        <TextArea
-          className="nodrag"
+        <textarea
+          id={inputId}
+          className={cn('nodrag resize-y', inputBase, error && 'border-(--canvas-error)')}
           value={localValue}
           onChange={handleChange}
           placeholder={field.placeholder}
           disabled={field.disabled}
           rows={field.rows || 3}
-          hasError={!!error}
         />
       ) : (
-        <InputWrapper>
-          <TextInput
-            className="nodrag"
+        <div className="flex items-center gap-2">
+          <input
+            id={inputId}
+            className={cn('nodrag flex-1', inputBase, error && 'border-(--canvas-error)')}
             type="text"
             value={localValue}
             onChange={handleChange}
             placeholder={field.placeholder}
             disabled={field.disabled}
-            hasError={!!error}
-            style={{ flex: 1 }}
           />
-          {field.suffix && <InputSuffix>{field.suffix}</InputSuffix>}
-        </InputWrapper>
+          {field.suffix && (
+            <span className="shrink-0 text-[13px] text-(--canvas-foreground-de-emp) whitespace-nowrap">
+              {field.suffix}
+            </span>
+          )}
+        </div>
       )}
-      {field.helpText && <FieldHelpText>{field.helpText}</FieldHelpText>}
-      {error && <FieldError>{error}</FieldError>}
-    </Column>
+      {field.helpText && (
+        <span className="text-[12px] text-(--canvas-foreground-de-emp) block">
+          {field.helpText}
+        </span>
+      )}
+      {error && <span className="text-[12px] text-(--canvas-error-text) block">{error}</span>}
+    </div>
   );
 });

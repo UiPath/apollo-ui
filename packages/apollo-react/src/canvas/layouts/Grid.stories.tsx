@@ -28,7 +28,7 @@ const Box = ({
 );
 
 const meta: Meta<typeof Grid> = {
-  title: 'Core/Layouts/Grid',
+  title: 'Components/Layout/Grid',
   component: Grid,
   parameters: {
     layout: 'fullscreen',

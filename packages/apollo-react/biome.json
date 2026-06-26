@@ -76,6 +76,16 @@
   },
   "overrides": [
     {
+      "includes": ["**/NodePropertyPanel.stories.tsx"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noAutofocus": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["src/canvas/**"],
       "linter": {
         "rules": {

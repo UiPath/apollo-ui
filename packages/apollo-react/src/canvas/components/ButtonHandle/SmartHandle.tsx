@@ -20,8 +20,9 @@ import {
 } from 'react';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import { cx } from '../../utils/CssUtil';
+import { calculateGridAlignedHandlePositions } from '../../utils/handle-positioning';
 import type { HandleActionEvent } from './ButtonHandle';
-import { calculateGridAlignedHandlePositions, pixelToPercent } from './ButtonHandleStyleUtils';
+import { pixelToPercent } from './ButtonHandleStyleUtils';
 import { HandleButton } from './HandleButton';
 import { HandleLabel } from './HandleLabel';
 import { HandleNotch } from './HandleNotch';

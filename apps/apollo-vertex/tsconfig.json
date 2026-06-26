@@ -32,6 +32,23 @@
       "@/components/ui/card": ["./registry/card/card"],
       "@/components/ui/carousel": ["./registry/carousel/carousel"],
       "@/components/ui/chart": ["./registry/chart/chart"],
+      "@/lib/charts-core": ["./registry/charts-core/charts-core"],
+      "@/lib/data-fabric-adapter": [
+        "./registry/data-fabric-adapter/data-fabric-adapter"
+      ],
+      "@/lib/insights-adapter": [
+        "./registry/insights-adapter/insights-adapter"
+      ],
+      "@/components/ui/line-chart": ["./registry/line-chart/line-chart"],
+      "@/components/ui/multi-line-chart": [
+        "./registry/multi-line-chart/multi-line-chart"
+      ],
+      "@/components/ui/bar-chart": ["./registry/bar-chart/bar-chart"],
+      "@/components/ui/distribution-chart": [
+        "./registry/distribution-chart/distribution-chart"
+      ],
+      "@/components/ui/kpi-chart": ["./registry/kpi-chart/kpi-chart"],
+      "@/components/ui/table-chart": ["./registry/table-chart/table-chart"],
       "@/components/ui/checkbox": ["./registry/checkbox/checkbox"],
       "@/components/ui/collapsible": ["./registry/collapsible/collapsible"],
       "@/components/ui/combobox": ["./registry/combobox/combobox"],
@@ -65,6 +82,9 @@
       "@/components/ui/navigation-menu": [
         "./registry/navigation-menu/navigation-menu"
       ],
+      "@/components/ui/onboarding-tour-joyride": [
+        "./registry/onboarding-tour-joyride/index"
+      ],
       "@/components/ui/page-header": ["./registry/page-header/page-header"],
       "@/components/ui/pagination": ["./registry/pagination/pagination"],
       "@/components/ui/popover": ["./registry/popover/popover"],
@@ -79,6 +99,7 @@
       "@/components/ui/sidebar": ["./registry/sidebar/sidebar"],
       "@/components/ui/skeleton": ["./registry/skeleton/skeleton"],
       "@/components/ui/slider": ["./registry/slider/slider"],
+      "@/components/ui/solution-tests": ["./registry/solution-tests/index"],
       "@/components/ui/sonner": ["./registry/sonner/sonner"],
       "@/components/ui/spinner": ["./registry/spinner/spinner"],
       "@/components/ui/switch": ["./registry/switch/switch"],

@@ -81,27 +81,6 @@ function createNode(config: NodeConfig): Node {
   };
 }
 
-interface LoopNodeConfig {
-  id: string;
-  label: string;
-  x: number;
-  y: number;
-}
-
-function createLoopNode(config: LoopNodeConfig): Node {
-  const { id, label, x, y } = config;
-
-  return {
-    id,
-    type: 'uipath.control-flow.while',
-    position: { x, y },
-    data: {
-      display: { label },
-    },
-    zIndex: 0,
-  };
-}
-
 function createStickyNote(
   id: string,
   color: StickyNoteColor,
@@ -1161,107 +1140,6 @@ function DesignModeStory() {
 }
 
 // ============================================================================
-// Loop Edges Story
-// ============================================================================
-
-function LoopEdgesStory() {
-  const initialNodes = useMemo(
-    () => [
-      // Complex Loop Chain Section
-      createStickyNote(
-        'sticky-chain',
-        'pink',
-        '**Loop Chain**\nMultiple loop nodes in sequence with both output and success handles',
-        { x: 16 * 10, y: 16 * 25 },
-        { width: 16 * 40, height: 16 * 20 }
-      ),
-      createNode({
-        id: 'chain-start',
-        label: 'Start',
-        x: 16 * 11,
-        y: 16 * 30,
-        sourcePositions: [Position.Right],
-      }),
-      createLoopNode({
-        id: 'chain-loop-1',
-        label: 'Loop 1',
-        x: 16 * 21,
-        y: 16 * 30,
-      }),
-      createLoopNode({
-        id: 'chain-loop-2',
-        label: 'Loop 2',
-        x: 16 * 34,
-        y: 16 * 32,
-      }),
-
-      // Info panel
-      createStickyNote(
-        'sticky-info',
-        'white',
-        "## Loop Edges\n\nSequenceEdge automatically detects and renders loop edges with custom paths.\n\n**Detection:**\n- **Self-loops**: source === target\n- **LoopBack edges**: targetHandle === 'loopBack'\n\n**Visual Features:**\n- Path goes below the node with rounded corners\n- Grid-snapped to 16px for consistency\n- Success handle loops have larger height (96px vs 64px)\n- Edge toolbar works on loop paths",
-        { x: 16 * 10, y: 16 * 3 },
-        { width: 16 * 32, height: 16 * 21 }
-      ),
-    ],
-    []
-  );
-
-  const initialEdges: Edge[] = useMemo(
-    () => [
-      // Chain edges
-      {
-        id: 'e-chain-start',
-        source: 'chain-start',
-        target: 'chain-loop-1',
-        sourceHandle: `out-${Position.Right}`,
-        targetHandle: 'input',
-        type: 'sequence',
-      },
-      {
-        id: 'e-chain-loop1-success',
-        source: 'chain-loop-1',
-        target: 'chain-loop-2',
-        sourceHandle: 'body',
-        targetHandle: 'input',
-        type: 'sequence',
-      },
-      {
-        id: 'e-chain-loop2-loopBack',
-        source: 'chain-loop-2',
-        target: 'chain-loop-2',
-        sourceHandle: 'body',
-        targetHandle: 'loopBack',
-        type: 'sequence',
-      },
-      {
-        id: 'e-chain-loop2-success',
-        source: 'chain-loop-2',
-        target: 'chain-loop-1',
-        sourceHandle: 'success',
-        targetHandle: 'loopBack',
-        type: 'sequence',
-      },
-    ],
-    []
-  );
-
-  const { canvasProps } = useCanvasStory({
-    initialNodes,
-    initialEdges,
-    additionalNodeTypes: nodeTypes,
-  });
-
-  return (
-    <BaseCanvas {...canvasProps} edgeTypes={edgeTypes} mode="design">
-      <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} />
-      </Panel>
-    </BaseCanvas>
-  );
-}
-
-// ============================================================================
 // Exported Stories
 // ============================================================================
 
@@ -1312,18 +1190,6 @@ export const ValidationStates: Story = {
       description: {
         story:
           'Demonstrates validation states visible in design mode. Edges show different colors based on validation severity.',
-      },
-    },
-  },
-};
-
-export const LoopEdges: Story = {
-  render: () => <LoopEdgesStory />,
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Demonstrates loop edges with custom paths. SequenceEdge automatically detects self-loops and loopBack edges, rendering them with paths that go below the node. Success handle loops have larger dimensions than output handle loops.',
       },
     },
   },

@@ -49,14 +49,14 @@ export const MuiFab = (palette: Palette): ComponentsOverrides['MuiFab'] => ({
   },
   secondary: {
     backgroundColor: palette.semantic.colorPrimary,
-    '& .MuiFab-label': { color: palette.semantic.colorBackground },
+    '& .MuiFab-label': { color: palette.semantic.colorForegroundOnAccent },
     '&:hover': {
       backgroundColor: palette.semantic.colorPrimaryHover,
-      '& MuiFab-label': { color: palette.semantic.colorBackground },
+      '& MuiFab-label': { color: palette.semantic.colorForegroundOnAccent },
     },
     '&:focus': {
       backgroundColor: palette.semantic.colorPrimaryHover,
-      '& MuiFab-label': { color: palette.semantic.colorBackground },
+      '& MuiFab-label': { color: palette.semantic.colorForegroundOnAccent },
     },
   },
 });

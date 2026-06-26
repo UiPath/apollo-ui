@@ -7,21 +7,23 @@ on:
       - 'support/**'
 
 env:
-  GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
-  NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
   BASE_REF: ${{ github.event.pull_request.base.ref }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
+# Deny-all at the workflow level; each job grants only what it needs. Prevents
+# permission creep if a future job is added without an explicit permissions block.
+permissions: {}
 
 jobs:
   checks:
     name: ${{ matrix.check }}
     runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == false
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -42,25 +44,16 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 22
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-deps
 
       - name: Cache Turborepo
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-turbo-
+            ${{ runner.os }}-turbo-${{ github.ref_name }}-
 
       - name: Run Format Check
         if: matrix.check == 'Format'
@@ -101,13 +94,16 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: coverage
-          path: coverage/
+          path: |
+            packages/*/coverage/
+            web-packages/*/coverage/
           retention-days: 7
+          if-no-files-found: ignore
 
       - name: Run Build
         if: matrix.check == 'Build'
         run: |
-          if git diff --name-only origin/${BASE_REF}...HEAD | grep -qE '^(pnpm-lock\.yaml|package\.json)$'; then
+          if git diff --name-only "origin/${BASE_REF}...HEAD" | grep -qE '^(pnpm-lock\.yaml|package\.json)$'; then
             echo "📦 Root dependency files changed - building all packages"
             pnpm build
           else
@@ -115,20 +111,118 @@ jobs:
             pnpm build --affected
           fi
 
+      - name: Collect package sizes
+        if: matrix.check == 'Build'
+        run: node scripts/pr-package-report.cjs --collect-sizes=pkg-sizes.json
+
+      - name: Upload package sizes
+        if: matrix.check == 'Build'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: package-sizes
+          path: pkg-sizes.json
+          retention-days: 7
+          if-no-files-found: ignore
+
       - name: Upload Failure Artifacts
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: failure-${{ matrix.check }}-${{ github.sha }}
           path: |
-            coverage/
-            dist/
-            .turbo/
+            packages/*/coverage/
+            web-packages/*/coverage/
           retention-days: 3
+          if-no-files-found: ignore
+
+  # ── Sticky PR comment: per-package coverage + published size ──────────────
+  coverage-comment:
+    name: Coverage Comment
+    needs: checks
+    if: always() && github.event.pull_request.head.repo.fork == false
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+      pull-requests: write # post/update the sticky PR comment
+      actions: read # read the last main build's run + download its package-sizes artifact
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download coverage
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        continue-on-error: true
+        with:
+          name: coverage
+
+      - name: Download package sizes
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        continue-on-error: true
+        with:
+          name: package-sizes
+
+      # "vs main" baseline: the latest successful main build that actually uploaded a
+      # package-sizes artifact (skip-ci version-bump commits skip release.yml, so the most
+      # recent run may have none — walk back until one does).
+      - name: Find latest main size baseline
+        id: baseline
+        # Best-effort: the job's continue-on-error only keeps the workflow green; a failed step
+        # still skips the rest of the job. Without this, a transient Actions API error here would
+        # suppress the whole coverage+size comment. Failure → empty run_id → "vs main" shows "—".
+        continue-on-error: true
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const runs = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'release.yml',
+              branch: 'main',
+              status: 'success',
+              per_page: 10,
+            });
+            for (const run of runs.data.workflow_runs) {
+              const arts = await github.rest.actions.listWorkflowRunArtifacts({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: run.id,
+              });
+              if (arts.data.artifacts.some((a) => a.name === 'package-sizes' && !a.expired)) {
+                core.info(`Size baseline from main run ${run.id} (${(run.head_sha || '').slice(0, 7)})`);
+                core.setOutput('run_id', String(run.id));
+                return;
+              }
+            }
+            core.info('No main build with a package-sizes artifact found; "vs main" will show "—".');
+
+      - name: Download main size baseline
+        if: steps.baseline.outputs.run_id
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        continue-on-error: true
+        with:
+          name: package-sizes
+          path: base-sizes
+          run-id: ${{ steps.baseline.outputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Post coverage + size comment
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          PKG_SIZES_BASE_FILE: base-sizes/pkg-sizes.json
+        with:
+          script: |
+            const { postPackageReportComment } = require('./scripts/pr-package-report.cjs');
+            await postPackageReportComment({ github, context, core });
 
   detect-lockfile-changes:
     name: Detect Lockfile Changes
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       changed: ${{ steps.lockfile_check.outputs.changed }}
     steps:
@@ -141,23 +235,26 @@ jobs:
       - name: Check for lockfile changes
         id: lockfile_check
         run: |
-          if git diff --name-only origin/${BASE_REF}...HEAD | grep -q '^pnpm-lock\.yaml$'; then
-            echo "changed=true" >> $GITHUB_OUTPUT
+          if git diff --name-only "origin/${BASE_REF}...HEAD" | grep -q '^pnpm-lock\.yaml$'; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           else
-            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
   audit:
     name: ${{ matrix.check }}
     needs: detect-lockfile-changes
-    if: needs.detect-lockfile-changes.outputs.changed == 'true'
+    if: needs.detect-lockfile-changes.outputs.changed == 'true' && github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
         check:
           - Audit All Dependencies
           - Audit Production Dependencies
+          - Audit Package Signatures
 
     steps:
       - name: Checkout code
@@ -166,17 +263,8 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 22
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-deps
 
       - name: Run Audit All Dependencies
         if: matrix.check == 'Audit All Dependencies'
@@ -185,3 +273,12 @@ jobs:
       - name: Run Audit Production Dependencies
         if: matrix.check == 'Audit Production Dependencies'
         run: pnpm audit --prod
+
+      - name: Audit Package Signatures
+        if: matrix.check == 'Audit Package Signatures'
+        # Use pnpm's native signatures audit (pnpm >=11.1), not `npm audit signatures`.
+        # Both verify the same ECDSA registry signatures, but npm's arborist can't read pnpm's
+        # symlinked store: it mis-pairs `source-map-js` with @lingui/cli's `source-map` version
+        # and aborts with ETARGET before verifying anything. pnpm reads its own store correctly
+        # and verifies every package.
+        run: pnpm audit signatures

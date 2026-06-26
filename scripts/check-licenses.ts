@@ -8,7 +8,7 @@
  * Policy: GO (Permissive Licenses) - approved for use and distribution without legal approval
  */
 
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { appendFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -107,7 +107,7 @@ function writeReport(markdown: string) {
 }
 
 try {
-  const json = execSync('pnpm licenses list --json', { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 });
+  const json = execFileSync('pnpm', ['licenses', 'list', '--json'], { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 });
   const data: Record<string, PackageInfo[]> = JSON.parse(json);
 
   const total = Object.values(data).reduce((sum, pkgs) => sum + pkgs.length, 0);

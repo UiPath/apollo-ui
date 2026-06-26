@@ -1,7 +1,7 @@
 import type { Placement } from '@floating-ui/react';
 import { ViewportPortal } from '@uipath/apollo-react/canvas/xyflow/react';
 import { cn } from '@uipath/apollo-wind';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { CanvasPortal } from './CanvasPortal';
@@ -10,6 +10,23 @@ import { type AnchorRect, useFloatingPosition } from './useFloatingPosition';
 
 const PANEL_BASE_CLASS =
   'text-(--canvas-foreground) bg-(--canvas-background-raised) border border-(--canvas-border-de-emp) text-sm flex flex-col transition-opacity duration-200 ease-in-out';
+
+/**
+ * Design ceiling for the floating panel height (px). Mirrors the `max-h-[600px]`
+ * utility in {@link PANEL_FLOATING_CLASS}; keep the two in sync. The viewport
+ * cap from the `size` middleware is clamped to this so the panel never exceeds
+ * the intended ceiling on tall viewports.
+ */
+const PANEL_FLOATING_MAX_HEIGHT = 600;
+
+/**
+ * Floor for the viewport-aware height cap (px). When the anchor sits hard
+ * against a viewport edge on a short screen, the `size` middleware can report
+ * an `availableHeight` of just a few px (or 0). Without a floor the panel
+ * would collapse to an unusable sliver with no reachable close affordance;
+ * the floor keeps it usable and lets `shift` reposition it into view instead.
+ */
+const PANEL_FLOATING_MIN_HEIGHT = 100;
 
 const PANEL_FLOATING_CLASS =
   'rounded-lg shadow-[0_4px_16px_rgba(0,0,0,0.12)] w-auto min-w-[280px] max-w-none h-auto max-h-[600px]';
@@ -55,6 +72,13 @@ export type FloatingCanvasPanelProps = {
   children?: ReactNode;
   onClose?: () => void;
   scrollKey?: string;
+  /**
+   * When `false`, the panel chrome's content area uses `overflow: hidden`
+   * instead of `overflow-y: auto`. Set this when `children` already manage
+   * their own scrolling (e.g. a virtualized list inside `Toolbox`) so the
+   * chrome doesn't add a redundant outer scrollbar. Defaults to `true`.
+   */
+  scrollableContent?: boolean;
 
   // Mouse events for hover persistence
   onMouseEnter?: () => void;
@@ -77,22 +101,38 @@ export function FloatingCanvasPanel({
   children,
   onClose,
   scrollKey,
+  scrollableContent = true,
   onMouseEnter,
   onMouseLeave,
 }: FloatingCanvasPanelProps) {
-  const { computedAnchor, floatingStyles, refs, mergedReferenceRef } = useFloatingPosition({
-    open,
-    nodeId,
-    anchorRect,
-    placement,
-    offset,
-    fallbackPlacement,
-  });
+  const { computedAnchor, floatingStyles, availableHeight, refs, mergedReferenceRef } =
+    useFloatingPosition({
+      open,
+      nodeId,
+      anchorRect,
+      placement,
+      offset,
+      fallbackPlacement,
+    });
 
   const panelClassName = useMemo(
     () => cn(PANEL_BASE_CLASS, isPinned ? PANEL_PINNED_CLASS : PANEL_FLOATING_CLASS),
     [isPinned]
   );
+
+  // Viewport-aware ceiling derived from the `size` middleware. The inline
+  // `maxHeight` overrides the `max-h-[600px]` class, so it's clamped to the
+  // design ceiling to keep the panel from exceeding 600px on tall viewports.
+  const sizingStyle = useMemo<CSSProperties>(() => {
+    if (isPinned || availableHeight == null) return {};
+    const maxHeight = Math.min(PANEL_FLOATING_MAX_HEIGHT, availableHeight);
+    const occupiedHeight = Math.max(PANEL_FLOATING_MIN_HEIGHT, maxHeight);
+    return {
+      maxHeight: `${maxHeight}px`,
+      minHeight: `${PANEL_FLOATING_MIN_HEIGHT}px`,
+      ['--floating-available-height' as string]: `${occupiedHeight}px`,
+    };
+  }, [isPinned, availableHeight]);
 
   if (!open || !computedAnchor) return null;
 
@@ -150,6 +190,7 @@ export function FloatingCanvasPanel({
         style={{
           position: 'fixed',
           ...screenPosition,
+          ...sizingStyle,
           zIndex: 1100,
           pointerEvents: 'auto',
         }}
@@ -160,6 +201,7 @@ export function FloatingCanvasPanel({
           headerActions={headerActions}
           onClose={onClose}
           scrollKey={scrollKey}
+          scrollableContent={scrollableContent}
         >
           {children}
         </PanelChrome>
@@ -181,6 +223,7 @@ export function FloatingCanvasPanel({
       onPointerLeave={onMouseLeave}
       style={{
         ...(isPinned ? {} : floatingStyles),
+        ...sizingStyle,
         position: isPinned ? 'fixed' : 'absolute',
         right: isPinned ? 0 : undefined,
         top: isPinned ? 0 : undefined,
@@ -194,6 +237,7 @@ export function FloatingCanvasPanel({
         headerActions={headerActions}
         onClose={onClose}
         scrollKey={scrollKey}
+        scrollableContent={scrollableContent}
       >
         {children}
       </PanelChrome>

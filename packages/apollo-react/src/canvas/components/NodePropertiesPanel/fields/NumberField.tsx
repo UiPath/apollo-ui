@@ -1,13 +1,5 @@
-import { Column } from '@uipath/apollo-react/canvas/layouts';
+import { cn } from '@uipath/apollo-wind';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import {
-  FieldError,
-  FieldHelpText,
-  FieldLabel,
-  InputSuffix,
-  InputWrapper,
-  NumberInput,
-} from '../NodePropertiesPanel.styles';
 import type { ConfigField } from '../NodePropertiesPanel.types';
 
 interface NumberFieldProps {
@@ -32,7 +24,6 @@ export const NumberField = memo(function NumberField({
     setLocalValue(value ?? (field.defaultValue as number | undefined) ?? '');
   }, [value, field.defaultValue]);
 
-  // Cleanup debounce timer on unmount
   useEffect(() => {
     return () => {
       if (debounceTimer.current) {
@@ -68,11 +59,23 @@ export const NumberField = memo(function NumberField({
   );
 
   return (
-    <Column gap={4}>
-      <FieldLabel>{field.label}</FieldLabel>
-      <InputWrapper>
-        <NumberInput
-          className="nodrag"
+    <div className="flex flex-col gap-1">
+      <label
+        htmlFor={`field-${field.key}`}
+        className="text-[13px] text-(--canvas-foreground-de-emp)"
+      >
+        {field.label}
+      </label>
+      <div className="flex items-center gap-2">
+        <input
+          id={`field-${field.key}`}
+          className={cn(
+            'nodrag flex-1 px-3 py-2 text-[13px] font-mono border border-(--canvas-border) rounded bg-(--canvas-background) text-(--canvas-foreground) outline-none transition-colors',
+            'focus:border-(--canvas-primary)',
+            'disabled:opacity-50 disabled:cursor-not-allowed',
+            '[appearance:textfield] [&::-webkit-inner-spin-button]:hidden [&::-webkit-outer-spin-button]:hidden',
+            error && 'border-(--canvas-error)'
+          )}
           type="number"
           value={localValue}
           onChange={handleChange}
@@ -81,13 +84,19 @@ export const NumberField = memo(function NumberField({
           min={field.min}
           max={field.max}
           step={field.step}
-          hasError={!!error}
-          style={{ flex: 1 }}
         />
-        {field.suffix && <InputSuffix>{field.suffix}</InputSuffix>}
-      </InputWrapper>
-      {field.helpText && <FieldHelpText>{field.helpText}</FieldHelpText>}
-      {error && <FieldError>{error}</FieldError>}
-    </Column>
+        {field.suffix && (
+          <span className="shrink-0 text-[13px] text-(--canvas-foreground-de-emp) whitespace-nowrap">
+            {field.suffix}
+          </span>
+        )}
+      </div>
+      {field.helpText && (
+        <span className="text-[12px] text-(--canvas-foreground-de-emp) block">
+          {field.helpText}
+        </span>
+      )}
+      {error && <span className="text-[12px] text-(--canvas-error-text) block">{error}</span>}
+    </div>
   );
 });

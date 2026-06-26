@@ -2,7 +2,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { ButtonHandleConfig } from './ButtonHandle';
+import { canvasEventBus } from '../../utils/CanvasEventBus';
+import type { ButtonHandleConfig, HandleMouseEvent } from './ButtonHandle';
 import { ButtonHandles } from './ButtonHandle';
 
 // Mock @xyflow/react Handle component
@@ -269,6 +270,72 @@ describe('ButtonHandles', () => {
     });
   });
 
+  describe('hover-gated labels (labelVisibility)', () => {
+    const hoverHandle: ButtonHandleConfig = {
+      id: 'tool',
+      type: 'source',
+      handleType: 'artifact',
+      label: 'Tools',
+      showButton: true,
+      labelVisibility: 'hover',
+      onAction: vi.fn(),
+    };
+
+    const getLabelClass = () =>
+      screen.getByText('Tools').closest('[class*="transition-opacity"]')?.className ?? '';
+
+    it('hides the label when the node is neither hovered nor selected', () => {
+      render(<ButtonHandles handles={[hoverHandle]} nodeId="n" position={Position.Top} />);
+      expect(getLabelClass()).toContain('opacity-0');
+    });
+
+    it('reveals the label when the node is hovered', () => {
+      render(<ButtonHandles handles={[hoverHandle]} nodeId="n" position={Position.Top} hovered />);
+      expect(getLabelClass()).toContain('opacity-100');
+    });
+
+    it('reveals the label when the node is selected', () => {
+      render(<ButtonHandles handles={[hoverHandle]} nodeId="n" position={Position.Top} selected />);
+      expect(getLabelClass()).toContain('opacity-100');
+    });
+
+    it('hover-gates the inward label when connectionPosition differs from position', () => {
+      const { rerender } = render(
+        <ButtonHandles
+          handles={[hoverHandle]}
+          nodeId="n"
+          position={Position.Top}
+          connectionPosition={Position.Bottom}
+        />
+      );
+      expect(getLabelClass()).toContain('opacity-0');
+
+      rerender(
+        <ButtonHandles
+          handles={[hoverHandle]}
+          nodeId="n"
+          position={Position.Top}
+          connectionPosition={Position.Bottom}
+          hovered
+        />
+      );
+      expect(getLabelClass()).toContain('opacity-100');
+    });
+
+    it('keeps a default (always) label visible regardless of hover/selection', () => {
+      const alwaysHandle: ButtonHandleConfig = {
+        id: 'tool',
+        type: 'source',
+        handleType: 'artifact',
+        label: 'Tools',
+        showButton: true,
+        onAction: vi.fn(),
+      };
+      render(<ButtonHandles handles={[alwaysHandle]} nodeId="n" position={Position.Top} />);
+      expect(getLabelClass()).toContain('opacity-100');
+    });
+  });
+
   describe('Grid-aligned positioning', () => {
     it('uses grid-aligned positioning for Top handles when nodeWidth is provided', () => {
       const handles: ButtonHandleConfig[] = [
@@ -375,8 +442,143 @@ describe('ButtonHandles', () => {
       const handleElements = screen.getAllByTestId('handle');
       expect(handleElements).toHaveLength(1);
 
-      // Single handle is always placed at the exact node center, regardless of grid.
-      expect(handleElements[0]).toHaveStyle({ top: '50%' });
+      // nodeHeight=80 → exact center (40) is half a grid step off (gridSize=16).
+      // Snap rounds to 48 (60%) so the handle stays grid-aligned.
+      expect(handleElements[0]).toHaveStyle({ top: '60%' });
+    });
+  });
+
+  describe('Hover handlers', () => {
+    it('invokes onMouseEnter with the HandleMouseEvent payload and emits handle:mouseenter on the bus', async () => {
+      const user = userEvent.setup();
+      const onMouseEnter = vi.fn();
+      const busSpy = vi.fn();
+
+      const unsubscribe = canvasEventBus.on('handle:mouseenter', busSpy);
+
+      const handles: ButtonHandleConfig[] = [
+        {
+          id: 'handle1',
+          type: 'source',
+          handleType: 'output',
+          showButton: true,
+          onAction: vi.fn(),
+          onMouseEnter,
+        },
+      ];
+
+      render(
+        <ButtonHandles
+          handles={handles}
+          nodeId="test-node"
+          position={Position.Right}
+          selected={true}
+          visible={true}
+        />
+      );
+
+      const button = screen.getByRole('button');
+      await user.hover(button);
+
+      const expectedPayload: HandleMouseEvent = {
+        handleId: 'handle1',
+        nodeId: 'test-node',
+        handleType: 'output',
+        position: Position.Right,
+      };
+      expect(onMouseEnter).toHaveBeenCalledWith(expectedPayload);
+      expect(busSpy).toHaveBeenCalledWith(expect.objectContaining(expectedPayload));
+
+      unsubscribe();
+    });
+
+    it('invokes onMouseLeave with the HandleMouseEvent payload and emits handle:mouseleave on the bus', async () => {
+      const user = userEvent.setup();
+      const onMouseLeave = vi.fn();
+      const busSpy = vi.fn();
+
+      const unsubscribe = canvasEventBus.on('handle:mouseleave', busSpy);
+
+      const handles: ButtonHandleConfig[] = [
+        {
+          id: 'handle1',
+          type: 'source',
+          handleType: 'output',
+          showButton: true,
+          onAction: vi.fn(),
+          onMouseLeave,
+        },
+      ];
+
+      render(
+        <ButtonHandles
+          handles={handles}
+          nodeId="test-node"
+          position={Position.Right}
+          selected={true}
+          visible={true}
+        />
+      );
+
+      const button = screen.getByRole('button');
+      await user.hover(button);
+      await user.unhover(button);
+
+      const expectedPayload: HandleMouseEvent = {
+        handleId: 'handle1',
+        nodeId: 'test-node',
+        handleType: 'output',
+        position: Position.Right,
+      };
+      expect(onMouseLeave).toHaveBeenCalledWith(expectedPayload);
+      expect(busSpy).toHaveBeenCalledWith(expect.objectContaining(expectedPayload));
+
+      unsubscribe();
+    });
+
+    it('emits bus events even when no onMouseEnter/onMouseLeave callbacks are wired', async () => {
+      const user = userEvent.setup();
+      const enterSpy = vi.fn();
+      const leaveSpy = vi.fn();
+
+      const unsubscribeEnter = canvasEventBus.on('handle:mouseenter', enterSpy);
+      const unsubscribeLeave = canvasEventBus.on('handle:mouseleave', leaveSpy);
+
+      const handles: ButtonHandleConfig[] = [
+        {
+          id: 'handle1',
+          type: 'source',
+          handleType: 'output',
+          showButton: true,
+          onAction: vi.fn(),
+        },
+      ];
+
+      render(
+        <ButtonHandles
+          handles={handles}
+          nodeId="test-node"
+          position={Position.Right}
+          selected={true}
+          visible={true}
+        />
+      );
+
+      const button = screen.getByRole('button');
+      await user.hover(button);
+      await user.unhover(button);
+
+      const expectedPayload = {
+        handleId: 'handle1',
+        nodeId: 'test-node',
+        handleType: 'output',
+        position: Position.Right,
+      };
+      expect(enterSpy).toHaveBeenCalledWith(expect.objectContaining(expectedPayload));
+      expect(leaveSpy).toHaveBeenCalledWith(expect.objectContaining(expectedPayload));
+
+      unsubscribeEnter();
+      unsubscribeLeave();
     });
   });
 });

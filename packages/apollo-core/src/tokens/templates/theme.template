@@ -1,7 +1,7 @@
 @import "./variables";
 
 $light: (
-<% _.each(allProperties, function(property) { if (property.name.endsWith('light')) {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('-light') && !property.name.endsWith('-future-light')) {
 %>    <%= property.name.slice(0, -'-light'.length) %>: $<%= property.name %>,
 <% }}); %>
     border: $border-light,
@@ -9,7 +9,7 @@ $light: (
 );
 
 $light-hc: (
-<% _.each(allProperties, function(property) { if (property.name.endsWith('light-hc')) {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('-light-hc')) {
 %>    <%= property.name.slice(0, -'-light-hc'.length) %>: $<%= property.name %>,
 <% }}); %>
     border: $border-light-hc,
@@ -17,7 +17,7 @@ $light-hc: (
 );
 
 $dark: (
-<% _.each(allProperties, function(property) { if (property.name.endsWith('dark')) {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('-dark') && !property.name.endsWith('-future-dark')) {
 %>    <%= property.name.slice(0, -'-dark'.length) %>: $<%= property.name %>,
 <% }}); %>
     border: $border-dark,
@@ -25,16 +25,34 @@ $dark: (
 );
 
 $dark-hc: (
-<% _.each(allProperties, function(property) { if (property.name.endsWith('dark-hc')) {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('-dark-hc')) {
 %>    <%= property.name.slice(0, -'-dark-hc'.length) %>: $<%= property.name %>,
 <% }}); %>
     border: $border-dark-hc,
     color-scheme: dark,
 );
 
+$future-dark: (
+<% _.each(allProperties, function(property) { if (property.name.endsWith('-future-dark')) {
+%>    <%= property.name.slice(0, -'-future-dark'.length) %>: $<%= property.name %>,
+<% }}); %>
+    border: $border-future-dark,
+    color-scheme: dark,
+);
+
+$future-light: (
+<% _.each(allProperties, function(property) { if (property.name.endsWith('-future-light')) {
+%>    <%= property.name.slice(0, -'-future-light'.length) %>: $<%= property.name %>,
+<% }}); %>
+    border: $border-future-light,
+    color-scheme: light,
+);
+
 $theme: (
     light: $light,
     light-hc: $light-hc,
     dark: $dark,
-    dark-hc: $dark-hc
+    dark-hc: $dark-hc,
+    future-dark: $future-dark,
+    future-light: $future-light
 )

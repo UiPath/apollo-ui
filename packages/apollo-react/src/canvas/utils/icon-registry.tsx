@@ -10,7 +10,12 @@ import { icons } from 'lucide-react';
 import { type JSX, memo, useMemo } from 'react';
 import * as Icons from '../icons';
 
-export type IconComponent = (props: { w?: number; h?: number; color?: string }) => JSX.Element;
+export type IconComponent = (props: {
+  w?: number;
+  h?: number;
+  color?: string;
+  fill?: string;
+}) => JSX.Element;
 
 /**
  * Registry of available icons (UIPath icons only)
@@ -34,6 +39,7 @@ const iconRegistry: Record<string, IconComponent> = {
   switch: ({ w, h }) => <Icons.SwitchIcon w={w ?? 24} h={h ?? 24} />,
   uipath: ({ w, h }) => <Icons.UiPathIcon w={w ?? 24} h={h ?? 24} />,
   'agent-diagram': ({ w, h }) => <Icons.AgentDiagramIcon w={w ?? 24} h={h ?? 24} />,
+  function: ({ w, h }) => <Icons.FunctionProject w={w ?? 29} h={h ?? 28} />,
 };
 
 /**
@@ -93,11 +99,13 @@ export function getIcon(iconId?: string): IconComponent {
   const LucideIcon = (
     icons as Record<
       string,
-      React.ComponentType<{ width?: number; height?: number; color?: string }>
+      React.ComponentType<{ width?: number; height?: number; color?: string; fill?: string }>
     >
   )[pascalCaseId];
   if (LucideIcon) {
-    return ({ w, h, color }) => <LucideIcon width={w ?? 24} height={h ?? 24} color={color} />;
+    return ({ w, h, color, fill }) => (
+      <LucideIcon width={w ?? 24} height={h ?? 24} color={color} {...(fill?.length && { fill })} />
+    );
   }
 
   // Fallback to box icon
@@ -109,16 +117,22 @@ export interface CanvasIconProps {
   icon?: string;
   size?: number;
   color?: string;
+  fill?: string;
 }
 
 /**
  * Memoized component for rendering icons from the registry.
  * Use this instead of getIcon() to avoid creating components during render.
  */
-export const CanvasIcon = memo(function CanvasIcon({ icon, size = 16, color }: CanvasIconProps) {
+export const CanvasIcon = memo(function CanvasIcon({
+  icon,
+  size = 16,
+  color,
+  fill,
+}: CanvasIconProps) {
   const Icon = useMemo(() => (icon ? getIcon(icon) : null), [icon]);
   if (!Icon) return null;
-  return <Icon w={size} h={size} color={color} />;
+  return <Icon w={size} h={size} color={color} fill={fill} />;
 });
 
 /** @deprecated Use `CanvasIcon` instead. */

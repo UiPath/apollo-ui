@@ -3,12 +3,11 @@
 import { clientTools } from "@tanstack/ai-client";
 import { useChat } from "@tanstack/ai-react";
 import { Entities } from "@uipath/uipath-typescript/entities";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createAgentHubConnection } from "@/registry/ai-chat/adapters/agenthub/adapter";
 import { AiChat } from "@/registry/ai-chat/components/ai-chat";
 import { AiChatEmptyState } from "@/registry/ai-chat/components/ai-chat-empty-state";
-import { AiChatMessage } from "@/registry/ai-chat/components/ai-chat-message";
 import { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
 import {
   CHOICES_TOOL_PROMPT,
@@ -40,6 +39,7 @@ import {
   createDataFabricTableTool,
   dataFabricTableClient,
 } from "@/registry/ai-chat/tools/data-fabric-table";
+import type { MessageFeedbackType } from "@/registry/ai-chat/types";
 import { DataFabricGate } from "./AiChatDataFabricGate";
 import type { OrgTenantInfo } from "./AiChatLoginGate";
 import { createUiPathSdk } from "./ai-chat-example-utils";
@@ -145,10 +145,12 @@ function AgentHubChatInner({
     tools,
   });
 
-  const { messages, sendMessage, isLoading, stop, clear, error } = useChat({
-    connection,
-    tools,
-  });
+  const { messages, sendMessage, reload, status, stop, clear, error } = useChat(
+    {
+      connection,
+      tools,
+    },
+  );
 
   const emptyState = (
     <AiChatEmptyState
@@ -157,99 +159,95 @@ function AgentHubChatInner({
     />
   );
 
+  const [feedback, setFeedback] = useState<Record<string, MessageFeedbackType>>(
+    {},
+  );
+
   return (
     <AiChat
       messages={messages}
-      isLoading={isLoading}
-      onSendMessage={(text) => {
-        void sendMessage(text);
+      status={status}
+      onSendMessage={(text, parts) => {
+        if (!parts?.length) {
+          void sendMessage(text);
+          return;
+        }
+        void sendMessage({
+          content: [
+            ...(text ? [{ type: "text" as const, content: text }] : []),
+            ...parts,
+          ],
+        });
       }}
       onStop={stop}
       onClearChat={clear}
-      title="Autopilot"
-      assistantName="Autopilot"
+      onFeedback={(messageId, type) => {
+        setFeedback((prev) => ({ ...prev, [messageId]: type }));
+      }}
+      getFeedback={(messageId) => feedback[messageId] ?? null}
+      onRegenerate={() => void reload()}
+      onEditMessage={(_messageId, content) => void sendMessage(content)}
+      enableTextSelection
+      renderToolPart={(part) => {
+        if (!part.output) return null;
+
+        if (part.name === "data_fabric_table") {
+          return (
+            <Suspense>{tableTool.renderTable(part.output, part.id)}</Suspense>
+          );
+        }
+
+        if (part.name === "data_fabric_distribution") {
+          return (
+            <Suspense>
+              {distributionTool.renderDistribution(part.output, part.id)}
+            </Suspense>
+          );
+        }
+
+        if (part.name === "data_fabric_bar") {
+          return <Suspense>{barTool.renderBar(part.output, part.id)}</Suspense>;
+        }
+
+        if (part.name === "data_fabric_line") {
+          return (
+            <Suspense>{lineTool.renderLine(part.output, part.id)}</Suspense>
+          );
+        }
+
+        if (part.name === "data_fabric_multi_line") {
+          return (
+            <Suspense>
+              {multiLineTool.renderMultiLine(part.output, part.id)}
+            </Suspense>
+          );
+        }
+
+        if (part.name === "data_fabric_kpi") {
+          return <Suspense>{kpiTool.renderKpi(part.output, part.id)}</Suspense>;
+        }
+
+        if (part.name === "presentChoices") {
+          return renderChoices(part.output, {
+            onAction: (text) => {
+              void sendMessage(text);
+            },
+          });
+        }
+
+        return null;
+      }}
+      title="AI Assistant"
+      assistantName="AI Assistant"
       emptyState={emptyState}
+      acceptedFileTypes="image/*"
       suggestions={[
-        t("shell_suggestion_recent_runs"),
-        t("shell_suggestion_failing_processes"),
-        t("shell_suggestion_summarize_queue"),
+        "Show me recent automation runs",
+        "What processes are failing?",
+        "Summarize today's queue data",
       ]}
       error={error ?? null}
-    >
-      {messages.map((message) => (
-        <AiChatMessage
-          key={message.id}
-          message={message}
-          assistantName="Autopilot"
-        >
-          {message.parts.map((part) => {
-            if (part.type !== "tool-call" || !part.output) return null;
-
-            if (part.name === "data_fabric_table") {
-              return (
-                <Suspense key={part.id}>
-                  {tableTool.renderTable(part.output, part.id)}
-                </Suspense>
-              );
-            }
-
-            if (part.name === "data_fabric_distribution") {
-              return (
-                <Suspense key={part.id}>
-                  {distributionTool.renderDistribution(part.output, part.id)}
-                </Suspense>
-              );
-            }
-
-            if (part.name === "data_fabric_bar") {
-              return (
-                <Suspense key={part.id}>
-                  {barTool.renderBar(part.output, part.id)}
-                </Suspense>
-              );
-            }
-
-            if (part.name === "data_fabric_line") {
-              return (
-                <Suspense key={part.id}>
-                  {lineTool.renderLine(part.output, part.id)}
-                </Suspense>
-              );
-            }
-
-            if (part.name === "data_fabric_multi_line") {
-              return (
-                <Suspense key={part.id}>
-                  {multiLineTool.renderMultiLine(part.output, part.id)}
-                </Suspense>
-              );
-            }
-
-            if (part.name === "data_fabric_kpi") {
-              return (
-                <Suspense key={part.id}>
-                  {kpiTool.renderKpi(part.output, part.id)}
-                </Suspense>
-              );
-            }
-
-            if (part.name === "presentChoices") {
-              return (
-                <div key={part.id}>
-                  {renderChoices(part.output, {
-                    onAction: (text) => {
-                      void sendMessage(text);
-                    },
-                  })}
-                </div>
-              );
-            }
-
-            return null;
-          })}
-        </AiChatMessage>
-      ))}
-    </AiChat>
+    />
   );
 }
 

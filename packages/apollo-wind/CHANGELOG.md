@@ -1,3 +1,94 @@
+## [@uipath/apollo-wind-v2.25.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.24.0...@uipath/apollo-wind@2.25.0) (2026-06-25)
+
+### Features
+
+* **apollo-wind:** add tab overflow navigation ([d95db79](https://github.com/UiPath/apollo-ui/commit/d95db799e7749584e308df7a50202ef5287551c7))
+
+## [@uipath/apollo-wind-v2.24.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.23.0...@uipath/apollo-wind@2.24.0) (2026-06-24)
+
+### Features
+
+* **apollo-wind:** add PromptEditor component ([424c8c3](https://github.com/UiPath/apollo-ui/commit/424c8c33c9d5b78646a5d35a9b591da588c6479b))
+* **apollo-wind:** add variable drag-drop to PromptEditor ([6fe9d91](https://github.com/UiPath/apollo-ui/commit/6fe9d91452faf0ade969701f284941aa7c1ecc87))
+
+### Bug Fixes
+
+* **apollo-wind:** address PromptEditor PR review feedback ([92abd0b](https://github.com/UiPath/apollo-ui/commit/92abd0b53f96f1e6b3be4bdf3dd3237b13dd1a0e))
+* **apollo-wind:** address PromptEditor review feedback ([a654c31](https://github.com/UiPath/apollo-ui/commit/a654c3177adaa1b15be71edbef8446fb250cca7b))
+* **apollo-wind:** address PromptEditor review feedback (autocomplete focus, preview styles, exports) ([a8fea68](https://github.com/UiPath/apollo-ui/commit/a8fea6831aff88b2bfc44a7f955af889c7b71745))
+* **apollo-wind:** de-duplicate setTokens onChange + lighten autocomplete text-diff ([ac3e9d0](https://github.com/UiPath/apollo-ui/commit/ac3e9d03a1658a92d49dbb89e235a8eae677fe83))
+* **apollo-wind:** drop redundant .sb-story preview-head override ([cabbad8](https://github.com/UiPath/apollo-ui/commit/cabbad80be441d54e03f4c560d8862d45c4c07cd))
+
+## [@uipath/apollo-wind-v2.23.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.22.0...@uipath/apollo-wind@2.23.0) (2026-06-23)
+
+### Features
+
+* **apollo-react:** add NodePropertyPanel editor stories with inline editing ([e63dba9](https://github.com/UiPath/apollo-ui/commit/e63dba90b99dcb5b2663a155ec127767e7b13d98))
+
+## [@uipath/apollo-wind-v2.22.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.21.0...@uipath/apollo-wind@2.22.0) (2026-06-18)
+
+### Features
+
+* **apollo-wind:** add MetadataForm stepVariant="tabs" ([7663582](https://github.com/UiPath/apollo-ui/commit/76635820fb0c2744b5e4b1fea8c3eb41ca531b83))
+
+## [@uipath/apollo-wind-v2.21.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.20.1...@uipath/apollo-wind@2.21.0) (2026-06-17)
+
+### Features
+
+* **apollo-wind:** add Core/HC editor themes and expand Code Editors patterns page ([109560b](https://github.com/UiPath/apollo-ui/commit/109560bc9aac0320bcbc39d8d6d2c5d53992b299))
+* **apollo-wind:** migrate Code Editors stories and remove CodeBlock component ([531b319](https://github.com/UiPath/apollo-ui/commit/531b31908f637e35513d4885c2e81f5c936488f2))
+* **storybook:** add Monaco/CodeMirror live demos and restructure Code Block IA ([d95eab1](https://github.com/UiPath/apollo-ui/commit/d95eab1fb873a4c623d3a3ceec6278bf9973ad5b))
+
+### Bug Fixes
+
+* **apollo-wind:** connect future-dark and future-light CodeBlock themes to Apollo CSS tokens ([1b56fc0](https://github.com/UiPath/apollo-ui/commit/1b56fc019ba7a9a1e55fc1dbaf3725ca13e1599c))
+
+## [@uipath/apollo-wind-v2.20.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.20.0...@uipath/apollo-wind@2.20.1) (2026-06-17)
+
+### Performance Improvements
+
+* **apollo-wind:** mark side-effect-free for tree-shaking [MST-11264] ([d1dbec0](https://github.com/UiPath/apollo-ui/commit/d1dbec0d28a829aa1a339ebd74a34d7a4290d647))
+
+## [@uipath/apollo-wind-v2.20.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.19.1...@uipath/apollo-wind@2.20.0) (2026-06-16)
+
+### Features
+
+* **storybook:** add system-wide introduction landing page and unify getting started docs ([a337586](https://github.com/UiPath/apollo-ui/commit/a337586ff2a77cc616da8b7d084e11298736c5fd))
+
+### Bug Fixes
+
+* **storybook:** address Copilot review comments on PR [#825](https://github.com/UiPath/apollo-ui/issues/825) ([28931f9](https://github.com/UiPath/apollo-ui/commit/28931f9419440e92cb2850686a6041e694998336))
+* **storybook:** apply biome formatting to introduction and getting started stories ([c77c391](https://github.com/UiPath/apollo-ui/commit/c77c3916a7ce3f1814fe2fb27a55e6b3ddd823d7))
+* **storybook:** handle clipboard write rejection in CodeBlock copy button ([7a7adf3](https://github.com/UiPath/apollo-ui/commit/7a7adf37a48ab6c1ea7907ced66cb0f99c330709))
+
+## [@uipath/apollo-wind-v2.19.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.19.0...@uipath/apollo-wind@2.19.1) (2026-06-12)
+
+### Bug Fixes
+
+* **apollo-wind:** use surface-overlay for future field backgrounds ([63f770d](https://github.com/UiPath/apollo-ui/commit/63f770dc31237d57841dd5289a528867a70babe7))
+
+## [@uipath/apollo-wind-v2.19.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.18.0...@uipath/apollo-wind@2.19.0) (2026-06-10)
+
+### Features
+
+* **apollo-react:** add future-theming support ([9030f70](https://github.com/UiPath/apollo-ui/commit/9030f705ebfc0ce7be9c9ff0dc33ef5700599918))
+
+## [@uipath/apollo-wind-v2.18.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.17.0...@uipath/apollo-wind@2.18.0) (2026-05-27)
+
+### Features
+
+* **apollo-wind:** add Delete story to Dialog, improve dialog stories UX ([813c036](https://github.com/UiPath/apollo-ui/commit/813c036546380fcd662eb5a0183d9cf645d94f4b))
+
+## [@uipath/apollo-wind-v2.17.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.16.1...@uipath/apollo-wind@2.17.0) (2026-05-19)
+
+### Features
+
+* **apollo-wind:** add maxRef to slider for dynamic max from another field ([999736a](https://github.com/UiPath/apollo-ui/commit/999736aba08c27a2a52c3b1f3bec34b9c58757ef))
+
+### Bug Fixes
+
+* **apollo-vertex:** remove deprecated table classNames key from calendar ([12dea7d](https://github.com/UiPath/apollo-ui/commit/12dea7dc8d0a27859103c5778c00a643c157ded6))
+
 ## [@uipath/apollo-wind-v2.16.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.16.0...@uipath/apollo-wind@2.16.1) (2026-05-10)
 
 ### Bug Fixes

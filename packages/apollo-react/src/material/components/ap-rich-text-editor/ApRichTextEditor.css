@@ -1,0 +1,526 @@
+/*
+ * Styles for ApRichTextEditor.
+ * Ported from portal-shell's ap-rich-text-editor.scss. The original used Shadow DOM
+ * (`:host`); here everything is scoped under the `.ap-rich-text-editor` root class.
+ * SCSS tokens ($pad-*, $font-*) are mapped to apollo-core CSS custom properties.
+ */
+
+.ap-rich-text-editor {
+  display: inline-grid;
+}
+
+.ap-rich-text-editor .editor-container {
+  min-width: 364px;
+  min-height: 184px;
+  color: var(--color-foreground-de-emp);
+  position: relative;
+  border-radius: 3px;
+  border: 1px solid var(--color-foreground-de-emp);
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--pad-l);
+  margin-bottom: var(--pad-xs);
+  resize: vertical;
+  overflow: auto;
+  font-family: var(--font-m-family);
+}
+
+.ap-rich-text-editor .editor-container:focus-within {
+  outline: 2px solid var(--color-focus-indicator);
+  outline-offset: -1px;
+}
+
+.ap-rich-text-editor .editor-container.error {
+  border: 1px solid var(--color-error-text);
+  outline: 1px solid var(--color-error-text);
+}
+
+.ap-rich-text-editor .editor-container.error:focus-within {
+  outline: 2px solid var(--color-error-text);
+  outline-offset: -1px;
+}
+
+.ap-rich-text-editor .editor-container.disabled {
+  border: 1px solid var(--color-border-disabled);
+  cursor: not-allowed;
+}
+
+.ap-rich-text-editor .editor-container.loading {
+  cursor: wait;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  gap: 45px;
+}
+
+.ap-rich-text-editor .editor-label {
+  color: var(--color-foreground-de-emp);
+  font-size: var(--font-m-size);
+  font-weight: 600;
+  line-height: var(--font-m-line-height);
+  font-family: var(--font-m-family);
+}
+
+.ap-rich-text-editor .editor-label.disabled {
+  color: var(--color-foreground-disable);
+}
+
+.ap-rich-text-editor .editor-inner {
+  position: relative;
+  border-radius: 3px;
+  border: 0px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  resize: vertical;
+  overflow: auto;
+}
+
+.ap-rich-text-editor .editor-inner.disabled * {
+  color: var(--color-foreground-disable) !important;
+}
+
+.ap-rich-text-editor .editor-input {
+  resize: none;
+  font-size: var(--font-m-size);
+  line-height: var(--font-m-line-height);
+  position: relative;
+  tab-size: 1;
+  padding: var(--pad-xxl) var(--pad-xxxl);
+  outline: 0;
+}
+
+.ap-rich-text-editor .editor-placeholder {
+  color: var(--color-foreground-light);
+  overflow: hidden;
+  position: absolute;
+  text-overflow: ellipsis;
+  top: var(--pad-xxl);
+  left: var(--pad-xxxl);
+  font-size: var(--font-m-size);
+  line-height: var(--font-m-line-height);
+  user-select: none;
+  display: inline-block;
+  pointer-events: none;
+}
+
+/* Visually-hidden format markers (expanded from the editor-text-decorations mixin). */
+.ap-rich-text-editor .editor-text-bold:before,
+.ap-rich-text-editor .editor-text-italic:before,
+.ap-rich-text-editor .editor-text-underline:before,
+.ap-rich-text-editor .editor-text-strikethrough:before,
+.ap-rich-text-editor .editor-text-underlineStrikethrough:before {
+  position: absolute;
+  clip: rect(0, 0, 0, 0);
+}
+
+.ap-rich-text-editor .editor-text-bold {
+  font-weight: bold;
+}
+.ap-rich-text-editor .editor-text-bold:before {
+  content: "bold";
+}
+.ap-rich-text-editor .editor-text-bold.editor-text-italic:before {
+  content: "bold italic";
+}
+.ap-rich-text-editor .editor-text-bold.editor-text-italic.editor-text-underline:before {
+  content: "bold italic underline";
+}
+.ap-rich-text-editor .editor-text-bold.editor-text-italic.editor-text-strikethrough:before {
+  content: "bold italic strikethrough";
+}
+.ap-rich-text-editor
+  .editor-text-bold.editor-text-italic.editor-text-underlineStrikethrough:before {
+  content: "bold italic underline strikethrough";
+}
+.ap-rich-text-editor .editor-text-bold.editor-text-underline:before {
+  content: "bold underline";
+}
+.ap-rich-text-editor .editor-text-bold.editor-text-underline.editor-text-italic:before {
+  content: "bold italic underline";
+}
+.ap-rich-text-editor .editor-text-bold.editor-text-strikethrough:before {
+  content: "bold strikethrough";
+}
+.ap-rich-text-editor .editor-text-bold.editor-text-strikethrough.editor-text-italic:before {
+  content: "bold italic strikethrough";
+}
+.ap-rich-text-editor .editor-text-bold.editor-text-underlineStrikethrough:before {
+  content: "bold underline strikethrough";
+}
+.ap-rich-text-editor
+  .editor-text-bold.editor-text-underlineStrikethrough.editor-text-italic:before {
+  content: "bold italic underline strikethrough";
+}
+
+.ap-rich-text-editor .editor-text-italic {
+  font-style: italic;
+}
+.ap-rich-text-editor .editor-text-italic:before {
+  content: "italic";
+}
+.ap-rich-text-editor .editor-text-italic.editor-text-bold:before {
+  content: "bold italic";
+}
+.ap-rich-text-editor .editor-text-italic.editor-text-bold.editor-text-underline:before {
+  content: "bold italic underline";
+}
+.ap-rich-text-editor .editor-text-italic.editor-text-bold.editor-text-strikethrough:before {
+  content: "bold italic strikethrough";
+}
+.ap-rich-text-editor
+  .editor-text-italic.editor-text-bold.editor-text-underlineStrikethrough:before {
+  content: "bold italic underline strikethrough";
+}
+.ap-rich-text-editor .editor-text-italic.editor-text-underline:before {
+  content: "italic underline";
+}
+.ap-rich-text-editor .editor-text-italic.editor-text-underline.editor-text-bold:before {
+  content: "bold italic underline";
+}
+.ap-rich-text-editor .editor-text-italic.editor-text-strikethrough:before {
+  content: "italic strikethrough";
+}
+.ap-rich-text-editor .editor-text-italic.editor-text-strikethrough.editor-text-bold:before {
+  content: "bold italic strikethrough";
+}
+.ap-rich-text-editor .editor-text-italic.editor-text-underlineStrikethrough:before {
+  content: "italic underline strikethrough";
+}
+.ap-rich-text-editor
+  .editor-text-italic.editor-text-underlineStrikethrough.editor-text-bold:before {
+  content: "bold italic underline strikethrough";
+}
+
+.ap-rich-text-editor .editor-text-underline {
+  text-decoration: underline;
+}
+.ap-rich-text-editor .editor-text-underline:before {
+  content: "underline";
+}
+.ap-rich-text-editor .editor-text-underline.editor-text-bold:before {
+  content: "bold underline";
+}
+.ap-rich-text-editor .editor-text-underline.editor-text-bold.editor-text-italic:before {
+  content: "bold italic underline";
+}
+.ap-rich-text-editor .editor-text-underline.editor-text-italic:before {
+  content: "italic underline";
+}
+.ap-rich-text-editor .editor-text-underline.editor-text-italic.editor-text-bold:before {
+  content: "bold italic underline";
+}
+
+.ap-rich-text-editor .editor-text-strikethrough {
+  text-decoration: line-through;
+}
+.ap-rich-text-editor .editor-text-strikethrough:before {
+  content: "strikethrough";
+}
+.ap-rich-text-editor .editor-text-strikethrough.editor-text-bold:before {
+  content: "bold strikethrough";
+}
+.ap-rich-text-editor .editor-text-strikethrough.editor-text-bold.editor-text-italic:before {
+  content: "bold italic strikethrough";
+}
+.ap-rich-text-editor .editor-text-strikethrough.editor-text-italic:before {
+  content: "italic strikethrough";
+}
+.ap-rich-text-editor .editor-text-strikethrough.editor-text-italic.editor-text-bold:before {
+  content: "bold italic strikethrough";
+}
+
+.ap-rich-text-editor .editor-text-underlineStrikethrough {
+  text-decoration: underline line-through;
+}
+.ap-rich-text-editor .editor-text-underlineStrikethrough:before {
+  content: "underline strikethrough";
+}
+.ap-rich-text-editor .editor-text-underlineStrikethrough.editor-text-bold:before {
+  content: "bold underline strikethrough";
+}
+.ap-rich-text-editor
+  .editor-text-underlineStrikethrough.editor-text-bold.editor-text-italic:before {
+  content: "bold italic underline strikethrough";
+}
+.ap-rich-text-editor .editor-text-underlineStrikethrough.editor-text-italic:before {
+  content: "italic underline strikethrough";
+}
+.ap-rich-text-editor
+  .editor-text-underlineStrikethrough.editor-text-italic.editor-text-bold:before {
+  content: "bold italic underline strikethrough";
+}
+
+.ap-rich-text-editor .editor-text-code {
+  background-color: var(--color-background-secondary);
+  padding: 1px 0.25rem;
+  font-family: Menlo, Consolas, Monaco, monospace;
+  font-size: 94%;
+  border-radius: 3px;
+}
+
+.ap-rich-text-editor .editor-link {
+  color: var(--color-foreground-link);
+  text-decoration: none;
+}
+
+.ap-rich-text-editor .editor-code {
+  background-color: var(--color-background-secondary);
+  font-family: Menlo, Consolas, Monaco, monospace;
+  display: block;
+  padding: var(--pad-l) var(--pad-l) var(--pad-l) 52px;
+  line-height: 1.53;
+  font-size: 13px;
+  margin: 0;
+  margin-top: var(--pad-l);
+  margin-bottom: 8px;
+  tab-size: 2;
+  white-space: pre;
+  overflow-y: hidden;
+  overflow-x: auto;
+  position: relative;
+  border-radius: 3px;
+}
+
+.ap-rich-text-editor .editor-code:before {
+  content: attr(data-gutter);
+  position: absolute;
+  background-color: var(--color-background-gray);
+  left: 0;
+  top: 0;
+  border-right: 1px solid var(--color-border);
+  padding: var(--pad-l);
+  color: var(--color-foreground);
+  white-space: pre-wrap;
+  text-align: right;
+  min-width: 24px;
+  height: 100%;
+}
+
+.ap-rich-text-editor .editor-tokenComment {
+  color: slategray;
+}
+.ap-rich-text-editor .editor-tokenPunctuation {
+  color: #999;
+}
+.ap-rich-text-editor .editor-tokenProperty {
+  color: #905;
+}
+.ap-rich-text-editor .editor-tokenSelector {
+  color: #690;
+}
+.ap-rich-text-editor .editor-tokenOperator {
+  color: #9a6e3a;
+}
+.ap-rich-text-editor .editor-tokenAttr {
+  color: #07a;
+}
+.ap-rich-text-editor .editor-tokenVariable {
+  color: #e90;
+}
+.ap-rich-text-editor .editor-tokenFunction {
+  color: #dd4a68;
+}
+
+.ap-rich-text-editor .editor-paragraph {
+  margin: 0;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.ap-rich-text-editor .editor-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.ap-rich-text-editor .editor-heading-h1 {
+  font-size: var(--font-header-1-size);
+  line-height: var(--font-header-1-line-height);
+  color: var(--color-foreground);
+  margin: 0;
+  padding: 0;
+}
+
+.ap-rich-text-editor .editor-heading-h2 {
+  font-size: var(--font-header-2-size);
+  line-height: var(--font-header-2-line-height);
+  color: var(--color-foreground-de-emp);
+  margin: 0;
+  padding: 0;
+}
+
+.ap-rich-text-editor .editor-heading-h3 {
+  font-size: var(--font-header-3-size);
+  line-height: var(--font-header-3-line-height);
+  color: var(--color-foreground-de-emp);
+  margin: 0;
+  padding: 0;
+}
+
+.ap-rich-text-editor .editor-heading-h4 {
+  font-size: var(--font-header-4-size);
+  line-height: var(--font-header-4-line-height);
+  color: var(--color-foreground-de-emp);
+  margin: 0;
+  padding: 0;
+}
+
+.ap-rich-text-editor .editor-heading-h5 {
+  font-size: var(--font-header-4-size);
+  line-height: var(--font-header-4-line-height);
+  color: var(--color-foreground-de-emp);
+  margin: 0;
+  padding: 0;
+}
+
+.ap-rich-text-editor .editor-quote {
+  margin: 0;
+  margin-left: 20px;
+  font-size: var(--font-m-size);
+  color: var(--color-foreground-de-emp);
+  border-left-color: var(--color-background-gray-emp);
+  border-left-width: 4px;
+  border-left-style: solid;
+  padding-left: var(--pad-xxxl);
+}
+
+.ap-rich-text-editor .editor-list-ol {
+  padding: 0;
+  margin: 0;
+  margin-left: var(--pad-xxxl);
+}
+
+.ap-rich-text-editor .editor-list-ul {
+  padding: 0;
+  margin: 0;
+  margin-left: var(--pad-xxxl);
+}
+
+.ap-rich-text-editor .editor-listitem {
+  margin: var(--pad-l) calc(var(--pad-xxxl) * 2);
+}
+
+.ap-rich-text-editor .editor-nested-listitem {
+  list-style-type: none;
+}
+
+.ap-rich-text-editor pre::-webkit-scrollbar {
+  background: transparent;
+  width: 10px;
+}
+
+.ap-rich-text-editor pre::-webkit-scrollbar-thumb {
+  background: var(--color-background-gray);
+}
+
+.ap-rich-text-editor .toolbar {
+  display: flex;
+  margin-bottom: 1px;
+  background: none;
+  padding: var(--pad-m) var(--pad-l);
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  align-items: center;
+  border-bottom: 1px solid var(--color-foreground-de-emp);
+}
+
+.ap-rich-text-editor .toolbar.disabled {
+  border-bottom: 1px solid var(--color-border-disabled);
+}
+
+.ap-rich-text-editor .toolbar button.toolbar-item {
+  border: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border-radius: 3px;
+  cursor: pointer;
+  vertical-align: middle;
+  color: var(--color-icon-default);
+  height: 28px;
+  width: 28px;
+  padding: 0px;
+}
+
+.ap-rich-text-editor .toolbar button.toolbar-item:disabled {
+  cursor: not-allowed;
+  color: var(--color-foreground-disable);
+}
+
+.ap-rich-text-editor .toolbar button.toolbar-item.spaced {
+  margin-right: var(--pad-xxl);
+}
+
+.ap-rich-text-editor .toolbar button.toolbar-item.active {
+  color: var(--color-foreground-inverse);
+  background-color: var(--color-background-inverse);
+}
+
+.ap-rich-text-editor .toolbar .toolbar-item:hover:not([disabled]):not(.active) {
+  color: var(--color-foreground);
+  background-color: var(--color-background-hover);
+}
+
+.ap-rich-text-editor .toolbar .divider {
+  width: 1px;
+  background-color: var(--color-background-gray);
+  margin-right: var(--pad-xxl);
+  height: 24px;
+}
+
+.ap-rich-text-editor .editor-table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  overflow-y: scroll;
+  overflow-x: scroll;
+  table-layout: fixed;
+  width: max-content;
+  margin: 32px 0;
+}
+
+.ap-rich-text-editor .editor-table-selection *::selection {
+  background-color: transparent;
+}
+
+.ap-rich-text-editor .editor-table-selected {
+  outline: 2px solid var(--color-focus-indicator);
+}
+
+.ap-rich-text-editor .editor-table-cell {
+  border: 1px solid var(--color-border);
+  width: 72px;
+  min-width: 72px;
+  vertical-align: top;
+  text-align: start;
+  padding: 6px 8px;
+  position: relative;
+  outline: none;
+}
+
+.ap-rich-text-editor .editor-table-cell-header {
+  background-color: var(--color-background-gray);
+  text-align: start;
+  color: var(--color-foreground);
+}
+
+.ap-rich-text-editor .editor-table-cell-selected {
+  background-color: var(--color-background-pressed);
+}
+
+.ap-rich-text-editor .editor-table-cell-primary-selected {
+  border: 2px solid var(--color-focus-indicator);
+  display: block;
+  height: calc(100% - 2px);
+  position: absolute;
+  width: calc(100% - 2px);
+  left: -1px;
+  top: -1px;
+  z-index: 2;
+}
+
+.ap-rich-text-editor .editor-table-cell-editing {
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+  border-radius: 3px;
+}

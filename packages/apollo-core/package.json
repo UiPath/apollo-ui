@@ -1,6 +1,6 @@
 {
   "name": "@uipath/apollo-core",
-  "version": "5.9.1",
+  "version": "5.10.0",
   "description": "Apollo Design System - Core design tokens, icons, and fonts",
   "repository": {
     "type": "git",
@@ -40,7 +40,8 @@
   ],
   "scripts": {
     "build": "pnpm run build:tokens && pnpm run build:fonts && pnpm run process:icons && pnpm run build:icons && rslib build",
-    "build:tokens": "node build-tokens.js",
+    "build:tokens": "tsx scripts/extract-tailwind-colors.ts && node build-tokens.js",
+    "check:tailwind-tokens": "tsx scripts/extract-tailwind-colors.ts --check",
     "build:fonts": "postcss 'src/fonts/**/*.base-css' --base src/fonts --dir src/fonts --ext .css --verbose",
     "build:icons": "tsx scripts/generate-icons.ts",
     "process:icons": "tsx scripts/process-icons.ts && tsx scripts/update-colors.ts",
@@ -63,8 +64,7 @@
   ],
   "license": "MIT",
   "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org"
+    "access": "public"
   },
   "devDependencies": {
     "@rslib/core": "^0.19.6",
@@ -75,6 +75,7 @@
     "postcss-cli": "^10.1.0",
     "style-dictionary": "2.8.3",
     "svg-to-ts": "^12.0.0",
+    "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3",
     "vitest": "^4.1.5"
   }

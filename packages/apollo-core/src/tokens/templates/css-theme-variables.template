@@ -1,7 +1,15 @@
 @import "./variables.css";
 
-body.light, .apollo-design.light {
-<% _.each(allProperties, function(property) { if (property.name.endsWith('light')) {
+/*
+ * Classic themes additionally match bare element classes via :where() so a
+ * theme class on any element (not just body/.apollo-design) defines the
+ * tokens for that subtree. :where() keeps specificity at zero, so existing
+ * body.X-level overrides in consuming apps keep winning.
+ * :not(.react-flow) excludes ReactFlow wrappers, which add a .light/.dark
+ * class of their own (colorMode prop) and must not re-theme their subtree.
+ */
+body.light, .apollo-design.light, :where(.light:not(.react-flow)) {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('-light') && !property.name.endsWith('-future-light')) {
   const baseName = property.name.slice(0, -'-light'.length);
 %>  --<%= baseName %>: <%= property.value %>;
 <% }}); %>
@@ -9,8 +17,8 @@ body.light, .apollo-design.light {
   color-scheme: light;
 }
 
-body.light-hc, .apollo-design.light-hc {
-<% _.each(allProperties, function(property) { if (property.name.endsWith('light-hc')) {
+body.light-hc, .apollo-design.light-hc, :where(.light-hc) {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('-light-hc')) {
   const baseName = property.name.slice(0, -'-light-hc'.length);
 %>  --<%= baseName %>: <%= property.value %>;
 <% }}); %>
@@ -18,8 +26,8 @@ body.light-hc, .apollo-design.light-hc {
   color-scheme: light;
 }
 
-body.dark, .apollo-design.dark {
-<% _.each(allProperties, function(property) { if (property.name.endsWith('dark')) {
+body.dark, .apollo-design.dark, :where(.dark:not(.react-flow)) {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('-dark') && !property.name.endsWith('-future-dark')) {
   const baseName = property.name.slice(0, -'-dark'.length);
 %>  --<%= baseName %>: <%= property.value %>;
 <% }}); %>
@@ -27,11 +35,31 @@ body.dark, .apollo-design.dark {
   color-scheme: dark;
 }
 
-body.dark-hc, .apollo-design.dark-hc {
-<% _.each(allProperties, function(property) { if (property.name.endsWith('dark-hc')) {
+body.dark-hc, .apollo-design.dark-hc, :where(.dark-hc) {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('-dark-hc')) {
   const baseName = property.name.slice(0, -'-dark-hc'.length);
 %>  --<%= baseName %>: <%= property.value %>;
 <% }}); %>
   --border: var(--border-dark-hc);
   color-scheme: dark;
+}
+
+/* Future themes use bare class selectors (not gated on body/.apollo-design)
+   so they can be scoped to any element, matching how apollo-wind applies them. */
+body.future-dark, .future-dark {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('-future-dark')) {
+  const baseName = property.name.slice(0, -'-future-dark'.length);
+%>  --<%= baseName %>: <%= property.value %>;
+<% }}); %>
+  --border: var(--border-future-dark);
+  color-scheme: dark;
+}
+
+body.future-light, .future-light {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('-future-light')) {
+  const baseName = property.name.slice(0, -'-future-light'.length);
+%>  --<%= baseName %>: <%= property.value %>;
+<% }}); %>
+  --border: var(--border-future-light);
+  color-scheme: light;
 }

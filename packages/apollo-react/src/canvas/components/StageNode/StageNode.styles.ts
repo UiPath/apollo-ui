@@ -69,7 +69,7 @@ export const StageContainer = styled.div<{
 export const StageHeader = styled.div<{ isException?: boolean }>`
   position: relative;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   padding: ${Spacing.SpacingS} ${Spacing.SpacingBase};
   border-bottom: solid 1px var(--canvas-border-de-emp);
   background: ${(props) => (props.isException ? 'var(--color-background-secondary)' : 'var(--canvas-background)')};
@@ -77,44 +77,8 @@ export const StageHeader = styled.div<{ isException?: boolean }>`
   overflow: hidden;
 `;
 
-export const StageTitleContainer = styled.div<{ isEditing?: boolean }>`
-  display: block;
-  border-radius: 4px;
-  height: 100%;
-  width: 100%;
-  box-sizing: border-box;
-  border: ${(props) => (props.isEditing ? '1px solid var(--canvas-border-de-emp)' : 'none')};
-`;
-
-export const StageTitleInput = styled.input<{
-  isEditing?: boolean;
-  isStageTitleEditable?: boolean;
-  value?: string;
-}>`
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  cursor: text;
-  border: none;
-  background: transparent;
-  text-overflow: ellipsis;
-  border-radius: 2px;
-  width: 100%;
-  min-width: 100px;
-  padding: ${Padding.PadS} 0px;
-
-  &:focus {
-    outline: none;
-  }
-
-  &:hover {
-    cursor: ${(props) => (props.isStageTitleEditable ? 'text' : 'pointer')};
-    background: ${(props) => (props.isEditing || props.isStageTitleEditable ? 'var(--canvas-background-secondary)' : 'transparent')};
-  }
-`;
-
 export const StageContent = styled.div`
-  padding: 15px ${STAGE_CONTENT_PADDING_X}px ${Spacing.SpacingBase} ${STAGE_CONTENT_PADDING_X}px;
+  padding: 15px ${STAGE_CONTENT_PADDING_X}px ${Spacing.SpacingS} ${STAGE_CONTENT_PADDING_X}px;
   border-radius: 0 0 ${Spacing.SpacingBase} ${Spacing.SpacingBase};
   overflow: hidden;
   flex: 1;
@@ -173,6 +137,7 @@ export const StageTask = styled.div<{
   selected?: boolean;
   isParallel?: boolean;
   isDragEnabled?: boolean;
+  isPlaceholder?: boolean;
 }>`
   position: relative;
   display: flex;
@@ -180,7 +145,8 @@ export const StageTask = styled.div<{
   gap: ${Spacing.SpacingXs};
   padding: ${Padding.PadS} ${Padding.PadM};
   background: var(--canvas-background);
-  border: 1px solid var(--canvas-border-de-emp);
+  border: 1px ${({ isPlaceholder }) => (isPlaceholder ? 'dashed' : 'solid')}
+    var(--canvas-border-de-emp);
   border-radius: ${Spacing.SpacingXs};
   color: var(--canvas-foreground);
   transition: all 0.2s ease;
@@ -288,7 +254,9 @@ export const StageChip = styled.button`
   align-items: center;
   justify-content: center;
   gap: ${Padding.PadS};
-  padding: ${Padding.PadXs} ${Spacing.SpacingXs};
+  box-sizing: border-box;
+  height: ${Spacing.SpacingL};
+  padding: 0 ${Spacing.SpacingXs};
   border-radius: 10px;
   border: 1px solid var(--canvas-border-de-emp);
   background: transparent;

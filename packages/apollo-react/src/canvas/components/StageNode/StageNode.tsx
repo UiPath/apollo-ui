@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import { NodeContextMenu } from '../NodeContextMenu';
 import { useSetNodeSelection } from '../NodePropertiesPanel/hooks';
@@ -8,8 +9,10 @@ import type { StageNodeProps, TaskStateReference } from './StageNode.types';
 import { StageNodeAllTaskGroups } from './StageNodeAllTaskGroups';
 import { StageNodeHandles } from './StageNodeHandles';
 import { StageNodeHeader } from './StageNodeHeader';
+import { useStageNodeLabels } from './useStageNodeLabels';
 
 const StageNodeInner = (props: StageNodeProps) => {
+  const labels = useStageNodeLabels();
   const {
     dragging,
     selected,
@@ -17,8 +20,6 @@ const StageNodeInner = (props: StageNodeProps) => {
     width,
     execution,
     stageDetails,
-    addTaskLabel = 'Add task',
-    replaceTaskLabel = 'Replace task',
     taskOptions = [],
     menuItems,
     pendingReplaceTask,
@@ -106,6 +107,9 @@ const StageNodeInner = (props: StageNodeProps) => {
     [onAddTaskFromToolbox, setSelectedNodeId, id]
   );
 
+  const handleAddTaskToolboxClose = useCallback(() => setIsAddingTask(false), []);
+  const handleReplaceTaskToolboxClose = useCallback(() => setIsReplacingTask(false), []);
+
   const handleReplaceTaskToolboxItemSelected = useCallback(
     (item: ListItem) => {
       onReplaceTaskFromToolbox?.(
@@ -132,7 +136,7 @@ const StageNodeInner = (props: StageNodeProps) => {
   return (
     <div
       data-testid={`stage-${id}`}
-      style={{ position: 'relative' }}
+      className="relative"
       onClick={handleStageClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -157,24 +161,27 @@ const StageNodeInner = (props: StageNodeProps) => {
         />
       </StageContainer>
 
-      {onAddTaskFromToolbox && (
-        <FloatingCanvasPanel open={isAddingTask} nodeId={id} offset={15}>
+      {/* Panels are mounted only while open: FloatingCanvasPanel subscribes to the
+          node's internals (useInternalNode), so a permanently mounted panel re-renders
+          on every drag/measure frame of the stage even though it renders nothing. */}
+      {onAddTaskFromToolbox && isAddingTask && (
+        <FloatingCanvasPanel nodeId={id} offset={15}>
           <Toolbox
-            title={addTaskLabel}
+            title={labels.addTask}
             initialItems={taskOptions}
-            onClose={() => setIsAddingTask(false)}
+            onClose={handleAddTaskToolboxClose}
             onItemSelect={handleAddTaskToolboxItemSelected}
             onSearch={onTaskToolboxSearch}
           />
         </FloatingCanvasPanel>
       )}
 
-      {onReplaceTaskFromToolbox && (
-        <FloatingCanvasPanel open={isReplacingTask} nodeId={id} offset={15}>
+      {onReplaceTaskFromToolbox && isReplacingTask && (
+        <FloatingCanvasPanel nodeId={id} offset={15}>
           <Toolbox
-            title={replaceTaskLabel}
+            title={labels.replaceTask}
             initialItems={taskOptions}
-            onClose={() => setIsReplacingTask(false)}
+            onClose={handleReplaceTaskToolboxClose}
             onItemSelect={handleReplaceTaskToolboxItemSelected}
             onSearch={onTaskToolboxSearch}
           />
@@ -196,4 +203,4 @@ const StageNodeInner = (props: StageNodeProps) => {
   );
 };
 
-export const StageNode = memo(StageNodeInner);
+export const StageNode = memo(StageNodeInner, areNodePropsEqualIgnoringPosition);

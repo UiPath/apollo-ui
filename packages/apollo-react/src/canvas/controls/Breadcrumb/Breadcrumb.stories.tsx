@@ -3,7 +3,7 @@ import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import { Breadcrumb } from './Breadcrumb';
 
 const meta: Meta<typeof Breadcrumb> = {
-  title: 'Core/Controls/Breadcrumb',
+  title: 'Components/Controls/Breadcrumb',
   component: Breadcrumb,
 };
 export default meta;

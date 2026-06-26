@@ -1,29 +1,30 @@
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import type { Preview } from '@storybook/react';
+import { SUPPORTED_LOCALES } from '@uipath/apollo-react/i18n';
 import {
   apolloMaterialUiThemeDark,
   apolloMaterialUiThemeDarkHC,
+  apolloMaterialUiThemeFutureDark,
+  apolloMaterialUiThemeFutureLight,
   apolloMaterialUiThemeLight,
   apolloMaterialUiThemeLightHC,
 } from '@uipath/apollo-react/material/theme';
 // biome-ignore lint/correctness/noUnusedImports: needed
 import React, { useEffect } from 'react';
+import { ApolloDocsContainer } from './DocsContainer';
 import { GlobalStyles } from './GlobalStyles';
-
-const isDev = import.meta.env.MODE !== 'production';
+import { ALL_THEMES, clampThemeForMaterial, DEFAULT_THEME, type ThemeMode } from './themes';
 
 // The react-scan devtools hook is installed via previewBody in main.ts
 // (must happen before React initializes). Here we configure the overlay/canvas
 // and start paused — toggling happens via the toolbar global in the decorator.
-if (isDev) {
-  try {
-    const { scan, setOptions } = await import('react-scan');
-    scan({ enabled: true, showToolbar: true, allowInIframe: true });
-    setOptions({ enabled: false });
-  } catch {
-    // react-scan optional; preview works without it
-  }
+try {
+  const { scan, setOptions } = await import('react-scan');
+  scan({ enabled: true, showToolbar: true, allowInIframe: true });
+  setOptions({ enabled: false });
+} catch {
+  // react-scan optional; preview works without it
 }
 
 // Apollo core + canvas CSS
@@ -37,38 +38,33 @@ import '@uipath/apollo-react/canvas/xyflow/style.css';
 // Wind: source Tailwind CSS (processed by PostCSS/Tailwind at dev time)
 import '@/styles/tailwind.css';
 
-// All available themes
-type ThemeMode =
-  | 'light'
-  | 'dark'
-  | 'light-hc'
-  | 'dark-hc'
-  | 'future-light'
-  | 'future-dark'
-  | 'wireframe'
-  | 'vertex'
-  | 'canvas';
+// Human-readable display names for the locale toolbar.
+const LOCALE_LABELS: Record<(typeof SUPPORTED_LOCALES)[number], string> = {
+  en: 'English',
+  es: 'Español',
+  pt: 'Português',
+  de: 'Deutsch',
+  fr: 'Français',
+  ja: '日本語',
+  ko: '한국어',
+  ru: 'Русский',
+  tr: 'Türkçe',
+  'zh-CN': '中文 (简体)',
+  'zh-TW': '中文 (繁體)',
+  'pt-BR': 'Português (Brasil)',
+  'es-MX': 'Español (México)',
+};
 
-const allThemes: ThemeMode[] = [
-  'light',
-  'dark',
-  'light-hc',
-  'dark-hc',
-  'future-light',
-  'future-dark',
-  'wireframe',
-  'vertex',
-  'canvas',
-];
-
-// Map every theme to its closest MUI equivalent (used by stories with `parameters.material`)
+// Map every theme to its MUI equivalent (used by stories with `parameters.material`).
+// Demo themes never reach Material stories (clamped in the decorator and hidden
+// from the selector by the manager tool) but keep closest-match fallbacks.
 const muiThemeMap: Record<ThemeMode, typeof apolloMaterialUiThemeLight> = {
   light: apolloMaterialUiThemeLight,
   dark: apolloMaterialUiThemeDark,
   'light-hc': apolloMaterialUiThemeLightHC,
   'dark-hc': apolloMaterialUiThemeDarkHC,
-  'future-light': apolloMaterialUiThemeLight,
-  'future-dark': apolloMaterialUiThemeDark,
+  'future-light': apolloMaterialUiThemeFutureLight,
+  'future-dark': apolloMaterialUiThemeFutureDark,
   wireframe: apolloMaterialUiThemeLight,
   vertex: apolloMaterialUiThemeDark,
   canvas: apolloMaterialUiThemeDark,
@@ -107,9 +103,13 @@ const preview: Preview = {
   initialGlobals: {
     theme: 'future-dark',
     reactScan: 'off',
+    locale: 'en',
   },
   parameters: {
     backgrounds: { disable: true },
+    docs: {
+      container: ApolloDocsContainer,
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
@@ -122,7 +122,8 @@ const preview: Preview = {
     options: {
       storySort: {
         order: [
-          'Wind',
+          'Introduction',
+          'Apollo Wind',
           [
             'Introduction',
             'Theme',
@@ -164,88 +165,165 @@ const preview: Preview = {
             'Experiments',
             '*',
           ],
-          'Canvas',
-          ['Components', ['All Components', '*'], '*'],
+          'Apollo React',
+          [
+            'Canvas',
+            [
+              'Introduction',
+              'Theme',
+              'Components',
+              [
+                'All Components',
+                'Canvas',
+                'Controls',
+                'Edges',
+                'Layout',
+                'Nodes',
+                'Panels',
+                [
+                  'Node Property Trigger',
+                  'Node Manifest Panel',
+                  'Node Flyout Panel',
+                  'Node Flyout Probe',
+                  '*',
+                ],
+                'Primitives',
+                '*',
+              ],
+              'Templates',
+              [
+                'Canvas Blank',
+                'Canvas with Panels',
+                'Canvas Agent Flow',
+                'Canvas Agent Flow Coded',
+                '*',
+              ],
+              '*',
+            ],
+            'Material (Maintenance Only)',
+            ['Introduction', 'Components', ['All Components', '*'], '*'],
+            '*',
+          ],
+          'Apollo Core',
+          [
+            'Introduction',
+            'Theme',
+            [
+              'Colors',
+              'Typography',
+              'Spacing',
+              'Borders',
+              'Shadows',
+              'Icons',
+              'Screens',
+              'CSS Variables',
+              '*',
+            ],
+            '*',
+          ],
         ],
       },
     },
   },
   globalTypes: {
+    // Theme selection UI lives in .storybook/manager.tsx (custom tool) so the
+    // item list can be filtered per story (Material stories hide demo themes).
     theme: {
       description: 'Toggle design language theme',
+    },
+    reactScan: {
+      description: 'Toggle React Scan rendering highlights',
       toolbar: {
-        title: 'Theme',
-        icon: 'paintbrush',
+        title: 'React Scan',
+        icon: 'beaker',
         items: [
-          { value: 'light', title: 'Light' },
-          { value: 'dark', title: 'Dark' },
-          { value: 'light-hc', title: 'Light High Contrast' },
-          { value: 'dark-hc', title: 'Dark High Contrast' },
-          { value: 'future-light', title: 'Future Light' },
-          { value: 'future-dark', title: 'Future Dark' },
-          { value: 'wireframe', title: 'Wireframe' },
-          { value: 'vertex', title: 'Vertex' },
-          { value: 'canvas', title: 'Canvas' },
+          { value: 'off', title: 'React Scan: Off' },
+          { value: 'on', title: 'React Scan: On' },
         ],
         dynamicTitle: true,
       },
     },
-    ...(isDev && {
-      reactScan: {
-        description: 'Toggle React Scan rendering highlights',
-        toolbar: {
-          title: 'React Scan',
-          icon: 'beaker',
-          items: [
-            { value: 'off', title: 'React Scan: Off' },
-            { value: 'on', title: 'React Scan: On' },
-          ],
-          dynamicTitle: true,
-        },
+    // Locale toolbar — sets <html lang>, which `ApI18nProvider` picks up as its
+    // fallback locale (see packages/apollo-react/src/i18n/ApI18nProvider.tsx).
+    locale: {
+      description: 'Locale for ApI18nProvider (sets <html lang>)',
+      toolbar: {
+        title: 'Locale',
+        icon: 'globe',
+        items: SUPPORTED_LOCALES.map((code) => ({ value: code, title: LOCALE_LABELS[code] })),
+        dynamicTitle: true,
       },
-    }),
+    },
   },
   decorators: [
     (Story, context) => {
-      const theme = (context.globals.theme ?? 'future-dark') as ThemeMode;
+      const useMaterial = context.parameters?.material === true;
+      const globalTheme = (context.globals.theme ?? DEFAULT_THEME) as ThemeMode;
+      // Material stories never render with Wind-only demo themes (the manager
+      // tool also auto-corrects the global; this is the same-frame guarantee).
+      const theme = useMaterial ? clampThemeForMaterial(globalTheme) : globalTheme;
       const reactScanEnabled = context.globals.reactScan === 'on';
+      const locale = (context.globals.locale ?? 'en') as (typeof SUPPORTED_LOCALES)[number];
 
       // Apply theme class to <body>. All themes (core and element) use <body>:
       // - Core themes match body.light/body.dark in apollo-core theme-variables.css
       // - Element themes match .future-dark/.vertex/etc. in Wind tailwind.consumer.css
       useEffect(() => {
         const body = document.body;
-        body.classList.remove(...allThemes);
+        body.classList.remove(...ALL_THEMES);
         body.classList.add(theme);
         return () => {
-          body.classList.remove(...allThemes);
+          body.classList.remove(...ALL_THEMES);
         };
       }, [theme, context.id]);
 
       // Toggle react-scan
       useEffect(() => {
-        if (isDev) {
-          import('react-scan').then(({ setOptions }) => {
+        import('react-scan')
+          .then(({ setOptions }) => {
             setOptions({
               enabled: reactScanEnabled,
               showToolbar: reactScanEnabled,
             });
+          })
+          .catch(() => {
+            // react-scan optional; preview works without it
           });
-        }
       }, [reactScanEnabled]);
 
+      // Write synchronously during the decorator render so the freshly-mounted ApI18nProvider
+      // (forced by the `key={locale}` below) sees the new value on its first render.
+      if (typeof document !== 'undefined' && document.documentElement.lang !== locale) {
+        document.documentElement.lang = locale;
+      }
+
       const isFullscreen = context.parameters?.layout === 'fullscreen';
-      const useMaterial = context.parameters?.material === true;
 
       // Stories with `parameters.material` get MUI ThemeProvider + CssBaseline +
-      // GlobalStyles. Used by legacy MUI-based stories (e.g. react-playground).
+      // GlobalStyles (Material Overrides stories).
       if (useMaterial) {
         const muiTheme = muiThemeMap[theme];
+        // key={locale} forces a story remount so mount-time i18n (ApI18nProvider
+        // reading <html lang>) picks up the new locale. Stories that receive the
+        // locale as a reactive prop (e.g. Chat, whose harness owns a stateful
+        // service singleton that must NOT be torn down) opt out via
+        // `parameters.localeRemount: false`.
+        const remountKey = context.parameters?.localeRemount === false ? 'static' : locale;
         return (
           <ThemeProvider theme={muiTheme}>
             <CssBaseline />
             <GlobalStyles />
-            <div style={{ height: '100%', width: '100%' }}>
+            <div
+              key={remountKey}
+              style={{
+                height: '100%',
+                width: '100%',
+                // previewHead strips #storybook-root padding globally; give
+                // regular stories breathing room, keep fullscreen edge-to-edge.
+                padding: isFullscreen ? 0 : 24,
+                boxSizing: 'border-box',
+              }}
+            >
               <Story />
             </div>
           </ThemeProvider>
@@ -253,7 +331,7 @@ const preview: Preview = {
       }
 
       return (
-        <div className={isFullscreen ? 'h-screen' : 'p-1'}>
+        <div key={locale} className={isFullscreen ? 'h-screen' : 'p-1'}>
           <Story />
         </div>
       );

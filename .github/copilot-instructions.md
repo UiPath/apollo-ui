@@ -1,228 +1,259 @@
-# Apollo UI - Copilot Instructions
+# Apollo UI — Copilot Instructions
 
 ## Project Overview
 
-Apollo v.4 is UiPath's open-source design system for building consistent user experiences across all UiPath products. It's a multi-framework component library (React, Web Components) with shared design tokens, built as a monorepo with Turborepo and pnpm.
-
-**Target Audience**: Internal UiPath developers and external consumers using the design system.
-
-**Key Features**: 1300+ icons, comprehensive design tokens, Material UI theming, TypeScript support, Storybook documentation.
-
-## Tech Stack
-
-**Build & Tooling:**
-- Monorepo: Turborepo + pnpm workspaces
-- Language: TypeScript (strict mode)
-- Linter/Formatter: Biome
-- Testing: Vitest, React Testing Library, Playwright (visual regression)
-- Documentation: Storybook 10
-- CI/CD: GitHub Actions
-- Release: semantic-release
-
-**Frameworks:**
-- React 18+ with Material UI 5.x
-- Tailwind CSS with shadcn/ui
-- Web Components (Custom Elements)
-
-**Dependencies:**
-- Package manager: pnpm >= 10
-- Node.js: >= 22
-- Build: Rslib/Rsbuild (packages), Vite (Storybook builder)
+Apollo v.4 is UiPath's open-source design system. Monorepo with Turborepo + pnpm workspaces, TypeScript strict mode, Biome for linting/formatting, Vitest + Playwright for testing, Storybook 10 for docs, semantic-release for publishing.
 
 ## Project Structure
 
 ```
-apollo-ui/
-├── .github/              # GitHub workflows, issue templates
-├── packages/             # Core + framework packages (REQUIRE TESTS)
-│   ├── apollo-core/      # Design tokens, 1300+ icons, fonts
-│   ├── apollo-react/     # React components + Material UI theme
-│   └── apollo-wind/      # Tailwind CSS + shadcn/ui
-├── web-packages/         # Cross-framework web components (REQUIRE TESTS)
-│   ├── ap-chat/          # Chat web component
-└── apps/                 # Development/demo apps (NO TESTS NEEDED)
-    ├── storybook/        # Component documentation
-    ├── react-playground/ # React demo app
+packages/        # apollo-core (tokens/icons), apollo-react (React+MUI), apollo-wind (Tailwind+shadcn) — REQUIRE TESTS
+web-packages/    # ap-chat (web component) — REQUIRE TESTS
+apps/            # storybook — NO TESTS NEEDED
+.github/         # workflows, actions, scripts
 ```
 
-**Package Dependencies:**
-- All packages depend on `apollo-core` (design tokens)
-- Web components depend on framework packages
+All packages depend on `apollo-core`. Node ≥ 22, pnpm ≥ 11. Build: Rslib/Rsbuild (packages), Vite (Storybook).
 
-## Coding Guidelines
+## General Guidelines
 
-### Naming Conventions
+- **Think critically** — analyze before agreeing; push back on mistakes.
+- **Plan before acting** — for major changes propose what + why before writing code.
+- **Do not gold-plate** — complete the task, no unrequested features or abstractions.
+- **No docs files** — do not create `*.md` files unless explicitly asked.
 
-**React Components:**
-- Prefix: `Ap*` (e.g., `ApButton`, `ApTextField`, `ApCard`)
-- File naming: PascalCase (e.g., `ApButton.tsx`)
+---
 
-**Files:**
-- Components: PascalCase (`ApButton.tsx`)
-- Utilities: camelCase (`formatDate.ts`)
-- Tests: `*.test.ts` or `*.spec.ts`
-- Stories: `*.stories.tsx`
+## GitHub Actions Security
 
-**TypeScript:**
-- Strict mode enabled - use proper types, avoid `any`
-- Prefer type inference where clear
-- Use generics for reusable components
-- Export types alongside implementations
+Rules apply whenever any `.github/` file is touched.
 
-### Component Patterns
+### Permissions
 
-- Use design tokens from `apollo-core` (never hardcode colors/spacing)
-- Prefer composition over inheritance
-- Keep components focused and single-purpose
-- Follow existing patterns in the codebase
-- **No new Emotion or MUI usage in `apollo-react`** — see Styling Standards below
+`permissions: {}` at workflow level on any workflow with a write-capable job. Per-job grants only.
 
-### Styling Standards (apollo-react)
+**Must be job-scoped — never workflow-level:**
 
-The `apollo-react` package is migrating from Emotion/MUI to Tailwind CSS + `apollo-wind`. **All new code must use Tailwind patterns.**
+| Permission | Risk |
+|---|---|
+| `contents: write` | Push code / create releases |
+| `packages: write` | Publish to registries — supply chain critical |
+| `id-token: write` | OIDC — only on jobs that call `--provenance` or use OIDC directly |
+| `deployments: write` | Production deployments |
+| `pull-requests: write` | Merge PRs |
+| `statuses: write` | Fake commit status checks |
+| `issues: write` | Close/modify issues |
+| `checks: write` | Fake CI check results |
 
-**Block PRs that introduce:**
-- New imports from `@emotion/styled`, `@emotion/react`, or usage of `styled.*` / `css` helpers
+### Action SHA Reference
+
+All `uses:` pinned to a full 40-character SHA with a `# vX` comment. No `@v*`, `@latest`, `@main`.
+
+| Action | SHA | Version |
+|---|---|---|
+| `actions/checkout` | `34e114876b0b11c390a56381ad16ebd13914f8d5` | v4 |
+| `actions/setup-node` | `49933ea5288caeca8642d1e84afbd3f7d6820020` | v4 |
+| `actions/cache` | `0057852bfaa89a56745cba8c7296529d2fc39830` | v4 |
+| `actions/upload-artifact` | `ea165f8d65b6e75b540449e92b4886f43607fa02` | v4 |
+| `actions/download-artifact` | `d3f86a106a0bac45b974a628896c90dbdf5c8093` | v4 |
+| `actions/github-script` | `ed597411d8f924073f98dfc5c65a23a2325f34cd` | v8 |
+| `actions/dependency-review-action` | `a1d282b36b6f3519aa1f3fc636f609c47dddb294` | v5.0.0 |
+| `actions/attest-sbom` | `c604332985a26aa8cf1bdc465b92731239ec6b9e` | v4.1.0 |
+| `actions/attest-build-provenance` | `a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32` | v4.1.0 |
+| `actions/create-github-app-token` | `bcd2ba49218906704ab6c1aa796996da409d3eb1` | v3.2.0 |
+| `pnpm/action-setup` | `b906affcce14559ad1aafd4ab0e942779e9f58b1` | v4 |
+| `zizmorcore/zizmor-action` | `135698455da5c3b3e55f73f4419e481ab68cdd95` | v0.4.1 |
+| `reviewdog/action-actionlint` | `6fb7acc99f4a1008869fa8a0f09cfca740837d9d` | v1.72.0 |
+| `advanced-security/dismiss-alerts` | `3478381bd53e9f9a9ea1c23bd25ef0ec236e0d06` | v2 |
+| `github/codeql-action/init` | `45cbd0c69e560cd9e7cd7f8c32362050c9b7ded2` | v4.32.2 |
+| `github/codeql-action/analyze` | `45cbd0c69e560cd9e7cd7f8c32362050c9b7ded2` | v4.32.2 |
+
+First-party composite actions (`./.github/actions/*`) referenced by path — no SHA needed.
+
+### PR Review Checklist
+
+When any PR touches `.github/workflows/`, `.github/actions/`, `.npmrc`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, or `scripts/`:
+
+**Action pinning**
+- [ ] All `uses:` are full 40-char SHAs with `# vX` comment — no tags, branches, or partial SHAs
+- [ ] New actions verified against the action's releases page before adding
+
+**Permissions**
+- [ ] `permissions: {}` at workflow level when any job needs write access
+- [ ] `id-token: write` only on the publish job (provenance/OIDC)
+- [ ] `contents: write` only on jobs that push commits (release, prune-release-age-exemptions)
+
+**Secrets**
+- [ ] No `${{ secrets.* }}` in workflow-level or job-level `env:` — step-scoped only
+- [ ] `persist-credentials: false` on all checkouts that don't push
+- [ ] Jobs that must push inject credentials via `git remote set-url` immediately before the push, not at checkout
+- [ ] Secrets appearing in command output are redacted before `$GITHUB_OUTPUT`, step summaries, or PR comments
+
+**Fork safety**
+- [ ] Every job using secrets or publishing has `if: github.event.pull_request.head.repo.fork == false`
+- [ ] No `pull_request_target` trigger — use `pull_request` (see Supply Chain §3)
+- [ ] No `on: workflow_run` trigger without an explicit `if: github.event.workflow_run.head_repository.full_name == github.repository` guard — same trust-boundary collapse risk as `pull_request_target`
+- [ ] PR comment parsing filters by `select(.user.type == "Bot" or .user.login == "github-actions[bot]")`
+- [ ] Jobs triggered by `workflow_run` that consume artifacts validate attestation via `gh attestation verify` before executing any artifact content
+
+**Install safety**
+- [ ] Every `pnpm install` uses `--frozen-lockfile` — use `./.github/actions/install-node-deps`, never call pnpm directly
+- [ ] No bare `pnpm dlx <pkg>` / `npx -y <pkg>` without exact version pin
+- [ ] Approved pinned `pnpm dlx` versions: `shadcn@4.4.0`, `serve@14.2.6`, `tsx@4.20.6` — changes require same review bar as dependency updates
+- [ ] New `minimumReleaseAgeExclude` entries in `pnpm-workspace.yaml` include exact version + reason: `- 'pkg'  # x.y.z — reason`
+
+**Cache**
+- [ ] Turbo cache key: `${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}`; `restore-keys` scoped to same branch — never matches entries from other branches or PR runs
+- [ ] pnpm store cache key (if used): also includes `github.sha`; `restore-keys` scoped to same branch — never broad enough to be written by a fork/PR run and read by a release run
+- [ ] Scheduled workflow jobs (`on: schedule`) do not restore caches under keys that a fork PR could have written
+
+**Injection**
+- [ ] No `${{ github.event.* }}` or `${{ github.head_ref }}` interpolated directly in `run:` — pass through `env:`
+- [ ] `GITHUB_OUTPUT` heredoc delimiters use `openssl rand -hex 8`, not the literal string `EOF`
+
+**CODEOWNERS + tooling**
+- [ ] New CI-executed scripts and security-sensitive configs are covered by CODEOWNERS
+- [ ] New `# zizmor: ignore[rule]` suppressions have a comment explaining why
+- [ ] New `// codeql[query-id]` inline suppressions require @UiPath/Apollo sign-off — `codeql.yml` auto-dismisses them post-merge
+
+---
+
+## Supply Chain Attack Reference
+
+Flag these patterns immediately:
+
+| Attack | Flag this pattern | Defense in repo |
+|---|---|---|
+| **Lockfile drift (shai-hulud)** | `pnpm install` without `--frozen-lockfile`; `npm install` | `install-node-deps` enforces `--frozen-lockfile` |
+| **Day-zero publish via pnpm dlx** | `pnpm dlx pkg` without `@x.y.z`; `npx -y pkg` | All `pnpm dlx` calls version-pinned |
+| **TanStack: `pull_request_target` + pnpm store cache poison + OIDC extract** | `on: pull_request_target`; broad `restore-keys` missing `ref_name`; pnpm store cache writable from fork run | No `pull_request_target`; Turbo + pnpm store cache branch-scoped |
+| **Cache poisoning (pnpm store)** | `actions/cache` write from fork/PR run with restore-key matching release pipeline | pnpm store cache keys include `github.sha`; `restore-keys` scoped to same branch only |
+| **Published package protocol injection** | `github:`, `file:`, `link:`, or `git+` protocol in `optionalDependencies`/`dependencies` of a new/updated package | Audit lockfile diff; flag any non-registry URL reference in prod deps |
+| **OIDC trusted-publisher scope too broad** | `id-token: write` on a workflow that isn't `release.yml`; npm trusted-publisher not constrained by `job_workflow_ref` | `id-token: write` job-scoped to release job only; verify npmjs.org trusted-publisher settings include `job_workflow_ref` for `release.yml@refs/heads/main` |
+| **`workflow_run` without head-repo guard** | `on: workflow_run` without `if: github.event.workflow_run.head_repository.full_name == github.repository` | No `workflow_run` trigger in repo; add guard if ever introduced |
+| **Maintainer account takeover / burst publish** | Package receives 3+ new versions in a 6-minute window; new maintainer added within last 30 days; unusual publish time | `monitor-npm-publishes.yml` flags version-to-release mismatch; check socket.dev for maintainer changes |
+| **Forged bot commit identity** | Version-bump commit where committer email ≠ `semantic-release-bot@users.noreply.github.com` | Check committer email on release commits; semantic-release-bot identity is fixed in `release.yml` git config step |
+| **Dependency confusion** | New `.npmrc` adding `@uipath` registry routing, or `publishConfig.registry` change pointing `@uipath` at a non-npm.org registry | Repo `.npmrc` carries only the GHP publish `_authToken` placeholder — never an `@uipath:registry=` line; all 4 names claimed on npm.org; publish script pins `--@uipath:registry=https://registry.npmjs.org` for the npm.org publish step |
+| **Workflow injection** | `${{ github.event.*.title }}` etc. in `run:` blocks | Pass via `env:` |
+| **Compromised maintainer / day-zero** | Any production dep update without verifying age, changelog, and postinstall scripts | `minimumReleaseAge: 20160` (14d quarantine); `npm audit signatures` |
+| **Fork secret exfiltration** | Missing `fork == false` guard; `pull_request_target` | All publish/secret jobs guarded |
+| **Artifact injection** | Cross-run `actions/download-artifact` without attestation | Same-run only; `actions/attest-sbom` on release |
+
+---
+
+## Release and Publishing Review
+
+When reviewing `release.yml`, `dev-publish.yml`, `dev-cleanup.yml`, or `scripts/`:
+
+- [ ] `semantic-release` config not changed to publish to unexpected registries or add unexpected plugins
+- [ ] `--provenance` still present in `publish-to-registries.sh` (SLSA L2)
+- [ ] All publishes scoped to `@uipath/*` only
+- [ ] Dev-publish versions use `x.y.z-prNNN.sha` format
+- [ ] `dev-publish.yml` / `dev-cleanup.yml` cleanup steps validate `^@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+(\.[a-z0-9]+)?$` before `pnpm unpublish:dev`
+- [ ] npm publishes use OIDC Trusted Publishing — no `NPM_AUTH_TOKEN` / `NPM_TOKEN` in workflow `env:`; release job declares `id-token: write`
+- [ ] GitHub App token (`steps.app-token.outputs.token`) step-scoped to the steps that need it — not job-level or workflow-level
+- [ ] `release.yml` checkout uses `persist-credentials: false`; credentials injected via `git remote set-url` only after `pnpm build` + `pnpm test`
+
+---
+
+## Dependabot Review
+
+**All Dependabot PRs:**
+- [ ] `pnpm-lock.yaml` diff matches the stated update — no unexpected additions
+- [ ] Production deps: new version published >14 days ago (Dependabot bypasses `minimumReleaseAge`)
+- [ ] `dependency-review-action` check passed
+- [ ] `Audit Package Signatures` check passed when `pnpm-lock.yaml` changed
+
+**All production dependency updates — apply these checks before approving:**
+1. `pnpm-lock.yaml` diff matches the stated update — no unexpected additions or removals
+2. New version was published **more than 14 days ago** — Dependabot bypasses `minimumReleaseAge`, manual check required
+3. Read the changelog between old and new version for anything unexpected
+4. Verify no new or changed `postinstall`/`preinstall` scripts, obfuscated code, or new remote fetch calls introduced in the new version
+5. Check https://socket.dev/npm/package/[package-name] for supply chain signals — look specifically for recent maintainer additions (last 90 days) and burst-publish patterns
+6. `dependency-review-action` check passed; `Audit Package Signatures` passed if `pnpm-lock.yaml` changed
+7. Confirm the PR was opened by `app/dependabot` (GitHub's verified bot) — verify the PR author badge. A human PR falsely attributing changes to Dependabot is suspicious.
+8. Flag any `github:`, `file:`, `link:`, or `git+` protocol reference appearing in the updated `pnpm-lock.yaml` — legitimate Dependabot PRs only introduce registry versions.
+9. If a package received a new maintainer within the last 90 days AND the new version was published within the last 14 days, hold the PR until the 14-day quarantine window passes even if Dependabot bypassed `minimumReleaseAge`.
+
+Note: `@tanstack/*` packages have a confirmed supply chain incident history (May 2025) — apply extra care, but these checks apply to every production dependency, not just tanstack.
+
+**GitHub Actions SHA updates:** verify new SHA resolves to a tagged release (not arbitrary commit); `# vX.Y.Z` comment matches the tag.
+
+**Grouped PRs:** apply all checks to every production dep in the group individually before approving the group.
+
+---
+
+## pnpm / Node
+
+- Use `./.github/actions/install-node-deps` in CI — never call `pnpm install` directly.
+- Use `pnpm exec <tool>` for tools in `devDependencies` — not `pnpm dlx`.
+- `pnpm install --frozen-lockfile` never re-resolves. `pnpm add` re-resolves and may fail `minimumReleaseAge`. When it does, add to `minimumReleaseAgeExclude` with version + reason:
+  ```yaml
+  - 'pkg'  # 1.2.3 — locked version too new when added   # ✅
+  - 'pkg'  # too new                                      # ❌ missing version, prune workflow won't remove it
+  ```
+- Vercel CLI: always `npm install -g vercel@X.Y.Z` — never `@latest`.
+- **pnpm 11 breaking change ([pnpm/pnpm#11536](https://github.com/pnpm/pnpm/issues/11536)):** pnpm 11 silently ignores the entire `pnpm.*` block in `package.json` (overrides, packageExtensions, onlyBuiltDependencies, etc.). All pnpm configuration must live in `pnpm-workspace.yaml`. Never add `pnpm.overrides` or `pnpm.packageExtensions` to `package.json` — they will be silently ignored with no warning.
+
+---
+
+## TypeScript / React (apollo-react)
+
+The package is migrating from Emotion/MUI → Tailwind + `apollo-wind`. **Block:**
+- New `@emotion/styled`, `@emotion/react`, `styled.*`, `css` helper imports
 - New `*.styles.ts` files
-- New `@mui/material/*` component imports for building UI (existing MUI theme overrides in `theme/` are exempt)
-- New usage of `Ap*` components from `@uipath/apollo-react` (these are MUI wrappers — use `apollo-wind` components instead)
+- New `@mui/material/*` UI component imports (theme overrides in `theme/` are exempt)
+- New `Ap*` component imports from `@uipath/apollo-react` used to build other components
 
-**Flag for migration when:**
-- A PR significantly modifies an existing file that uses styled-components or MUI — recommend migrating the touched component to Tailwind as part of the change
+**Use instead:** Tailwind utility classes (static literal strings); `cn()` from `apollo-wind` only when classes conflict; CSS custom properties for dynamic dimensions.
 
-**Approved patterns:**
-- Tailwind utility classes as static literal strings in JSX
-- `cn()` from `@uipath/apollo-wind` for conflicting class overrides
-- CSS custom properties (`style` prop) for dynamic dimensions
-- Existing MUI theme overrides in `packages/apollo-react/src/theme/` (maintenance only)
+**Naming:** React components `Ap*`; files PascalCase for components, camelCase for utilities; tests `*.test.ts` / `*.spec.ts`; stories `*.stories.tsx`. TypeScript strict — no `any`, export types alongside implementations.
 
-### Testing Requirements
+When a PR significantly modifies an existing styled/MUI component, migrate it to Tailwind as part of the change.
 
-**Required (Library Code):**
-- All code in `packages/` and `web-packages/`
-- Unit tests for utilities and hooks
-- Component tests for critical UI behavior
-- Visual regression tests for components
+---
 
-**NOT Required (Demo Code):**
-- Code in `apps/` folder (Storybook, playgrounds)
-- Showcase/demo applications
+## Code Review
 
-### Documentation
-
-- JSDoc comments for public APIs
-- Storybook stories for all components
-- README.md in each package with usage examples
-
-## Build-Time vs Runtime Security Model
-
-**This is critical for security reviews:**
-
-### Build-Time Scripts (`packages/*/scripts/*.ts`)
-✅ **Safe/Acceptable:**
-- Run in trusted CI/CD environment with repository files
-- Process trusted sources (Figma exports, repository structure)
-- Path operations on repository files
-- Processing files from `src/icons/svg/` (trusted design team exports)
-- String operations on folder names from repository structure
-- Missing input validation for build-time configuration
-- Recursive directory traversal with depth limits
-- File system operations in `scripts/` folders
-
-### Runtime Code (Components, Hooks, Utilities)
-⚠️ **Requires Strict Security:**
-- Runs in user applications
-- Validate all user inputs
-- Sanitize data before rendering
-- Prevent XSS, prototype pollution, injection attacks
-- Missing input validation on user-facing APIs is a security issue
-
-### Context-Specific Patterns
-- `new Function()` in library config: OK (developer-defined, not user input)
-- SVG processing in build scripts: OK (trusted Figma source)
-- `innerHTML` in dev.ts: OK (dev-only file with static markup)
-- Regex patterns for internal file matching: OK (build-time only)
-
-## What to Flag as Security Issues
-
-**Flag these ONLY in runtime code:**
-- Secrets/credentials in code or configs
-- XSS vulnerabilities in React components
-- Prototype pollution in runtime utilities
-- Missing input validation on user-facing APIs
-- Unsafe dependencies with known CVEs
-- Template injection in user-controlled content
-
-**DO NOT flag in build scripts:**
-- Theoretical security issues in trusted build-time contexts
-- Path operations on repository files
-- File processing from known trusted sources
-
-## Code Review Approach
-
-When providing suggestions or reviewing code:
-
-1. **Summary**: Brief overview of what's being done
-2. **Code Quality**: Critical issues with structure, patterns, or best practices
-3. **Security**: Real security concerns (distinguish build-time vs runtime)
-4. **Type Safety**: TypeScript errors or type issues
-5. **Testing**: Missing tests for library code (NOT required for apps/)
-6. **Performance**: Significant performance implications
-
-**Focus on blocking issues** - things that prevent safe merging:
-- Breaking changes to public APIs
-- Security vulnerabilities in runtime code
+**Block on:**
+- Workflow-level `permissions` missing or includes write-capable permission that should be job-scoped
+- Unpinned actions (`@v*`, `@latest`, branch refs)
+- Missing `persist-credentials: false` on read-only checkouts
+- `${{ secrets.* }}` in workflow/job-level `env:`
+- `pnpm install` without `--frozen-lockfile`; `pnpm dlx` / `npx -y` without version pin
+- Missing fork guard on secret-using or publishing jobs
+- `on: workflow_run` trigger without `if: github.event.workflow_run.head_repository.full_name == github.repository` guard
+- `optionalDependencies`, `dependencies`, or `devDependencies` containing `github:`, `git+`, `file:`, or `link:` protocol references in a PR that also modifies `pnpm-lock.yaml`
+- Modification to `monitor-npm-publishes.yml` that removes or weakens the alert-on-mismatch logic
+- Literal `EOF` heredoc delimiter in a `run:` step where the output value is attacker-influenced — use `openssl rand -hex 8`
+- New Emotion/MUI usage in `apollo-react`
+- Breaking public API changes
+- Runtime security vulnerabilities (XSS, injection, prototype pollution)
 - TypeScript errors
-- Missing tests for critical library functionality
-- Incorrect use of design tokens
-- New Emotion styled-components or MUI component usage in apollo-react (use Tailwind instead)
+- Missing tests in `packages/` or `web-packages/`
 
-**Don't block on:**
-- Minor style/formatting (Biome handles this)
-- Theoretical security in build scripts
-- Missing tests in playground apps
-- Minor optimizations
+**Do not block on:** style/formatting (Biome); theoretical issues in build-time scripts; missing tests in `apps/`; minor optimizations.
 
-**Be pragmatic:**
-- Approve when functionally correct and secure
-- Build-time scripts != runtime code
-- Test library code, not demos
-- Trust the tools (Biome, TypeScript)
+---
 
 ## Component Checklist
 
-When creating new components, verify:
-- [ ] Follows naming conventions (`Ap*` prefix for React)
-- [ ] Uses tokens from `apollo-core`
-- [ ] Includes TypeScript types
-- [ ] Has Storybook story
-- [ ] Has unit tests (if in packages/ or web-packages/)
-- [ ] Has visual regression tests
-- [ ] Documented in package README
-- [ ] No new `@emotion/styled`, `@emotion/react`, or `@mui/material` imports (use Tailwind + apollo-wind)
+- [ ] `Ap*` prefix, tokens from `apollo-core`, TypeScript types
+- [ ] Storybook story, unit tests (if in `packages/` or `web-packages/`), visual regression tests
+- [ ] README entry
+- [ ] No new `@emotion/styled`, `@emotion/react`, or `@mui/material` imports
 
-## Available Resources
+---
 
-**Scripts (from root):**
-- `pnpm build` - Build all packages
-- `pnpm dev` - Run all packages in dev mode
-- `pnpm test` - Run all tests
-- `pnpm lint` - Lint all packages
-- `pnpm storybook:dev` - Run Storybook
-- `pnpm format` - Format with Biome
+## Available Scripts
 
-**Package-specific:**
-- `pnpm build:packages` - Build only packages/
-- `pnpm dev:react-playground` - Run React playground
-- `pnpm test:visual` - Visual regression tests
-
-**Release:**
-- `pnpm release` - Release packages (semantic-release)
-
-## Key Principles
-
-1. **Context matters**: Build-time scripts != runtime code
-2. **Pragmatic over perfect**: Functional and secure > style nitpicks
-3. **Test what matters**: Library code needs tests, demos don't
-4. **Trust the tools**: Biome handles formatting, TypeScript handles types
-5. **Design tokens first**: Use apollo-core tokens, never hardcode
+| Command | Does |
+|---|---|
+| `pnpm build` | Build all packages |
+| `pnpm dev` | Dev mode all packages |
+| `pnpm test` | Run all tests |
+| `pnpm lint` | Lint all packages |
+| `pnpm format` | Format with Biome |
+| `pnpm storybook:dev` | Run Storybook |
+| `pnpm test:visual` | Visual regression tests |
+| `pnpm release` | Release (semantic-release) |

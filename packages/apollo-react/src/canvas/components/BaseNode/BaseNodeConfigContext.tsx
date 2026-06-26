@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import type { ElementStatusValues } from '../../types/execution';
-import type { HandleActionEvent } from '../ButtonHandle/ButtonHandle';
+import type { HandleActionEvent, HandleMouseEvent } from '../ButtonHandle/ButtonHandle';
 import type { NodeToolbarConfig } from '../Toolbar';
 import type { FooterVariant, NodeAdornments } from './BaseNode.types';
 
@@ -20,6 +20,11 @@ import type { FooterVariant, NodeAdornments } from './BaseNode.types';
 export interface BaseNodeOverrideConfig {
   // Callbacks (Runtime Behavior)
   onHandleAction?: (event: HandleActionEvent) => void;
+  /** Fired when the cursor enters a source handle's inline add button. */
+  onHandleMouseEnter?: (event: HandleMouseEvent) => void;
+  /** Fired when the cursor leaves a source handle's inline add button. */
+  onHandleMouseLeave?: (event: HandleMouseEvent) => void;
+  onActionNeeded?: (nodeId: string) => void;
   shouldShowAddButtonFn?: (opts: { showAddButton: boolean; selected: boolean }) => boolean;
   shouldShowButtonHandleNotchesFn?: (opts: {
     isConnecting: boolean;

@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { HandleButton } from './HandleButton';
@@ -8,10 +9,14 @@ const DRAG_THRESHOLD = 5;
 function renderButton({
   visible = true,
   onAction = vi.fn<(e: React.MouseEvent) => void>(),
+  onMouseEnter,
+  onMouseLeave,
   handleEl,
 }: {
   visible?: boolean;
   onAction?: (event: React.MouseEvent) => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
   handleEl?: HTMLDivElement;
 } = {}) {
   const handleRef = { current: handleEl ?? null } as React.RefObject<HTMLDivElement | null>;
@@ -21,6 +26,8 @@ function renderButton({
       visible={visible}
       position={Position.Right}
       onAction={onAction}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       handleRef={handleRef}
     />
   );
@@ -145,5 +152,105 @@ describe('HandleButton drag behaviour', () => {
     fireEvent.pointerUp(document);
     fireEvent.click(button);
     expect(onAction).toHaveBeenCalledOnce();
+  });
+});
+
+describe('HandleButton hover handlers', () => {
+  afterEach(cleanup);
+
+  it('invokes onMouseEnter when the cursor enters the inline button', async () => {
+    const user = userEvent.setup();
+    const onMouseEnter = vi.fn();
+    const { button } = renderButton({ onMouseEnter });
+
+    await user.hover(button);
+
+    expect(onMouseEnter).toHaveBeenCalledOnce();
+  });
+
+  it('invokes onMouseLeave when the cursor leaves the inline button', async () => {
+    const user = userEvent.setup();
+    const onMouseLeave = vi.fn();
+    const { button } = renderButton({ onMouseLeave });
+
+    await user.hover(button);
+    await user.unhover(button);
+
+    expect(onMouseLeave).toHaveBeenCalledOnce();
+  });
+
+  it('still calls onAction on click when hover handlers are wired', async () => {
+    const user = userEvent.setup();
+    const onMouseEnter = vi.fn();
+    const onMouseLeave = vi.fn();
+    const { button, onAction } = renderButton({ onMouseEnter, onMouseLeave });
+
+    await user.hover(button);
+    await user.click(button);
+
+    expect(onAction).toHaveBeenCalledOnce();
+  });
+
+  it('does not throw when hovering with no hover handlers supplied', async () => {
+    const user = userEvent.setup();
+    const { button } = renderButton();
+
+    await expect(user.hover(button)).resolves.toBeUndefined();
+    await expect(user.unhover(button)).resolves.toBeUndefined();
+  });
+});
+
+describe('HandleButton mount & label visibility', () => {
+  afterEach(cleanup);
+
+  it('unmounts the add button when not visible (default behavior)', () => {
+    render(<HandleButton visible={false} position={Position.Top} onAction={vi.fn()} />);
+    expect(screen.queryByRole('button', { name: 'Add node' })).toBeNull();
+  });
+
+  it('keeps the add button mounted but transparent when keepButtonMounted and not visible', () => {
+    render(
+      <HandleButton visible={false} keepButtonMounted position={Position.Top} onAction={vi.fn()} />
+    );
+
+    // aria-hidden removes it from the accessible tree (and zeroes its accessible
+    // name), so query with hidden: true and check the label via the attribute.
+    const button = screen.getByRole('button', { hidden: true });
+    expect(button).toHaveAttribute('aria-label', 'Add node');
+    expect(button.className).toContain('opacity-0');
+    expect(button.className).toContain('pointer-events-none');
+    expect(button).toHaveAttribute('aria-hidden', 'true');
+    // disabled (not just tabindex=-1) so aria-hidden is not applied to a focusable element.
+    expect(button).toBeDisabled();
+  });
+
+  it('shows the mounted add button when keepButtonMounted and visible', () => {
+    render(<HandleButton visible keepButtonMounted position={Position.Top} onAction={vi.fn()} />);
+
+    const button = screen.getByRole('button', { name: 'Add node' });
+    expect(button.className).toContain('opacity-100');
+    expect(button.className).toContain('pointer-events-auto');
+  });
+
+  it('fades the label via labelVisible', () => {
+    const { rerender } = render(
+      <HandleButton
+        visible
+        position={Position.Top}
+        onAction={vi.fn()}
+        label="Tools"
+        labelVisible={false}
+      />
+    );
+    expect(screen.getByText('Tools').closest('[class*="transition-opacity"]')?.className).toContain(
+      'opacity-0'
+    );
+
+    rerender(
+      <HandleButton visible position={Position.Top} onAction={vi.fn()} label="Tools" labelVisible />
+    );
+    expect(screen.getByText('Tools').closest('[class*="transition-opacity"]')?.className).toContain(
+      'opacity-100'
+    );
   });
 });

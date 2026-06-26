@@ -1,8 +1,12 @@
-import type {
-  ChartDataModel,
-  DataModelField,
-} from "@uipath/apollo-dashboarding";
 import { z } from "zod";
+import {
+  type AggregationKind,
+  buildField,
+  type ChartDataModel,
+  type DataModelField,
+  type DataModelFieldType,
+  type DataModelMetric,
+} from "@/lib/charts-core";
 import {
   type Entity,
   type EntityField,
@@ -12,63 +16,64 @@ import {
 } from "./entities";
 import { fail, ok, type ResolverResult } from "./resolver-result";
 
-export type Aggregation = "COUNT" | "SUM" | "AVG" | "MIN" | "MAX";
-
-export type DimensionType = "string" | "numeric" | "boolean" | "datetime";
-
 // Data Fabric rewrites aliases that contain dots (qualified field paths)
 // into a canonical `<FUNCTION>_<field>` form when joins are used, breaking
 // the chart's `r[alias]` lookup. Sanitize the alias by replacing dots, so
 // the server respects what we send. The `field` reference still needs to
 // be qualified for the server to resolve the correct entity.
-export function buildMetricEntry(metric: ResolvedMetric) {
-  const aliasField = metric.field.replaceAll(".", "_");
+export function buildMetricEntry(metric: ResolvedMetric): DataModelMetric {
+  const aliasField = metric.argument.id.replaceAll(".", "_");
   return {
-    id: `${metric.aggregation.toLowerCase()}_${aliasField}`,
+    id: `${metric.aggregation}_${aliasField}`,
     display: metric.display,
-    aggregation: metric.aggregation,
-    field: metric.field,
+    expression: {
+      type: "aggregate",
+      aggregation: metric.aggregation,
+      argument: metric.argument,
+    },
   };
 }
 
-interface BuildDataModelInput<T extends DimensionType> {
+interface BuildDataModelInput<T extends DataModelFieldType> {
   id: string;
   dimension: string;
   dimensionType: T;
   metric: ResolvedMetric;
 }
 
-export function buildDataModel<T extends DimensionType>({
+export function buildDataModel<T extends DataModelFieldType>({
   id,
   dimension,
   dimensionType,
   metric,
-}: BuildDataModelInput<T>): ChartDataModel<DataModelField & { type: T }> {
+}: BuildDataModelInput<T>): ChartDataModel<
+  Extract<DataModelField, { type: T }>
+> {
   return {
     id,
-    dimensions: [{ id: dimension, type: dimensionType }],
+    dimensions: [buildField(dimension, dimensionType)],
     metrics: [buildMetricEntry(metric)],
   };
 }
 
-interface BuildMultiMetricDataModelInput<T extends DimensionType> {
+interface BuildMultiMetricDataModelInput<T extends DataModelFieldType> {
   id: string;
   dimension: string;
   dimensionType: T;
   metrics: ResolvedMetric[];
 }
 
-export function buildMultiMetricDataModel<T extends DimensionType>({
+export function buildMultiMetricDataModel<T extends DataModelFieldType>({
   id,
   dimension,
   dimensionType,
   metrics,
 }: BuildMultiMetricDataModelInput<T>): ChartDataModel<
-  DataModelField & { type: T }
+  Extract<DataModelField, { type: T }>
 > {
   return {
     id,
-    dimensions: [{ id: dimension, type: dimensionType }],
+    dimensions: [buildField(dimension, dimensionType)],
     metrics: metrics.map((m) => buildMetricEntry(m)),
   };
 }
@@ -99,50 +104,77 @@ export const metricSchema = z
 
 export type MetricInput = z.infer<typeof metricSchema>;
 
-export function formatAggregation(aggregation: Aggregation): string {
+export function formatAggregation(aggregation: AggregationKind): string {
   switch (aggregation) {
     case "COUNT":
       return "Count";
     case "SUM":
       return "Sum";
-    case "AVG":
+    case "AVERAGE":
       return "Avg";
     case "MIN":
       return "Min";
     case "MAX":
       return "Max";
+    case "ANY":
+      return "Any";
+    case "DISTINCT_COUNT":
+      return "Distinct count";
+    case "PERCENTAGE":
+      return "Percentage";
+    case "PERCENTILE":
+      return "Percentile";
+    case "MEDIAN":
+      return "Median";
   }
 }
 
-export interface ResolvedDimension<T extends DimensionType = DimensionType> {
+function metricInputToAggregateType(input: MetricInput): AggregationKind {
+  switch (input.aggregation) {
+    case "COUNT":
+      return "COUNT";
+    case "SUM":
+      return "SUM";
+    case "AVG":
+      return "AVERAGE";
+    case "MIN":
+      return "MIN";
+    case "MAX":
+      return "MAX";
+  }
+}
+
+export interface ResolvedDimension<
+  T extends DataModelFieldType = DataModelFieldType,
+> {
   id: string;
   type: T;
 }
 
 export interface ResolvedMetric {
-  field: string;
-  aggregation: Aggregation;
+  argument: DataModelField;
+  aggregation: AggregationKind;
   display: string;
 }
 
 export function dedupeMetrics(metrics: ResolvedMetric[]): ResolvedMetric[] {
   const seen = new Set<string>();
   return metrics.filter((m) => {
-    const key = `${m.aggregation}|${m.field}`;
+    const key = `${m.aggregation}|${m.argument.id}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 }
 
-function isAllowedDimensionType<T extends DimensionType>(
-  value: DimensionType,
+function isAllowedFieldType<T extends DataModelFieldType>(
+  value: DataModelFieldType,
   allowed: ReadonlyArray<T>,
 ): value is T {
-  return (allowed as readonly DimensionType[]).includes(value);
+  return (allowed as readonly DataModelFieldType[]).includes(value);
 }
 
-export function resolveSingleDimension<T extends DimensionType>(
+export function resolveSingleDimension<T extends DataModelFieldType>(
   entity: Entity,
   dimension: string,
   allowed: ReadonlyArray<T>,
@@ -156,7 +188,7 @@ export function resolveSingleDimension<T extends DimensionType>(
     });
   }
   const type = mapFieldType(field.dataType);
-  if (!isAllowedDimensionType(type, allowed)) {
+  if (!isAllowedFieldType(type, allowed)) {
     return fail({
       reason: "wrong_dimension_type_in_entity",
       field: dimension,
@@ -168,7 +200,7 @@ export function resolveSingleDimension<T extends DimensionType>(
   return ok({ id: field.name, type });
 }
 
-export function resolveMultiDimension<T extends DimensionType>(
+export function resolveMultiDimension<T extends DataModelFieldType>(
   primaryEntity: string,
   dimension: string,
   qualifiedFields: Map<string, EntityField>,
@@ -185,7 +217,7 @@ export function resolveMultiDimension<T extends DimensionType>(
     });
   }
   const type = mapFieldType(field.dataType);
-  if (!isAllowedDimensionType(type, allowed)) {
+  if (!isAllowedFieldType(type, allowed)) {
     return fail({
       reason: "wrong_dimension_type_in_joined",
       field: qualified,
@@ -205,15 +237,17 @@ export function resolveSingleMetric(
       metric?.field && entity.fields.some((f) => f.name === metric.field)
         ? metric.field
         : null;
-    const field = userField ?? pickCountField(entity);
-    if (!field) {
+    const fieldName = userField ?? pickCountField(entity);
+    if (!fieldName) {
       return fail({
         reason: "no_countable_in_entity",
         entity: entity.name,
       });
     }
+    const entityField = entity.fields.find((f) => f.name === fieldName);
+    const type = entityField ? mapFieldType(entityField.dataType) : "string";
     return ok({
-      field,
+      argument: buildField(fieldName, type),
       aggregation: "COUNT",
       display: userField ? `Count of ${userField}` : "Count",
     });
@@ -242,10 +276,11 @@ export function resolveSingleMetric(
       aggregation: metric.aggregation,
     });
   }
+  const aggregation = metricInputToAggregateType(metric);
   return ok({
-    field: field.name,
-    aggregation: metric.aggregation,
-    display: `${formatAggregation(metric.aggregation)} of ${field.name}`,
+    argument: buildField(field.name, "numeric"),
+    aggregation,
+    display: `${formatAggregation(aggregation)} of ${field.name}`,
   });
 }
 
@@ -270,16 +305,18 @@ export function resolveMultiMetric(
         : `${primaryEntity}.${metric.field}`;
       if (qualifiedFields.has(qualified)) userField = qualified;
     }
-    const field =
+    const fieldName =
       userField ?? pickCountFieldQualified(primaryEntity, qualifiedFields);
-    if (!field) {
+    if (!fieldName) {
       return fail({
         reason: "no_countable_in_joined",
         primary: primaryEntity,
       });
     }
+    const entityField = qualifiedFields.get(fieldName);
+    const type = entityField ? mapFieldType(entityField.dataType) : "string";
     return ok({
-      field,
+      argument: buildField(fieldName, type),
       aggregation: "COUNT",
       display: userField
         ? `Count of ${unqualifiedDisplay(userField)}`
@@ -311,9 +348,10 @@ export function resolveMultiMetric(
       aggregation: metric.aggregation,
     });
   }
+  const aggregation = metricInputToAggregateType(metric);
   return ok({
-    field: qualified,
-    aggregation: metric.aggregation,
-    display: `${formatAggregation(metric.aggregation)} of ${unqualifiedDisplay(qualified)}`,
+    argument: buildField(qualified, "numeric"),
+    aggregation,
+    display: `${formatAggregation(aggregation)} of ${unqualifiedDisplay(qualified)}`,
   });
 }

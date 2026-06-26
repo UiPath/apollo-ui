@@ -35,8 +35,11 @@ export const HandleButton = memo(
   ({
     visible,
     labelVisible,
+    keepButtonMounted = false,
     position,
     onAction,
+    onMouseEnter,
+    onMouseLeave,
     handleRef,
     label,
     labelIcon,
@@ -45,8 +48,16 @@ export const HandleButton = memo(
   }: {
     visible?: boolean;
     labelVisible?: boolean;
+    /**
+     * Keep the add button mounted and toggle its opacity via `visible` instead of
+     * conditionally rendering it. This reserves the button's slot in the flex
+     * stack so the label never reflows/jumps when the button appears or hides.
+     */
+    keepButtonMounted?: boolean;
     position: Position;
     onAction: (event: React.MouseEvent) => void;
+    onMouseEnter?: () => void;
+    onMouseLeave?: () => void;
     handleRef?: React.RefObject<HTMLDivElement | null>;
     label?: string;
     labelIcon?: React.ReactNode;
@@ -126,18 +137,44 @@ export const HandleButton = memo(
       teardownRef.current = cleanup;
     }, []);
 
+    const addButton = keepButtonMounted ? (
+      // Always mounted: toggle opacity so the slot is reserved and the label never reflows.
+      // When not visible, disable it (non-focusable, non-interactive) and hide it from the
+      // accessibility tree so neither keyboard nor assistive tech reaches an invisible button.
+      // `disabled:opacity-0` overrides the button's default `disabled:opacity-50`.
+      <CanvasInlineButton
+        aria-label="Add node"
+        aria-hidden={visible ? undefined : true}
+        disabled={visible ? undefined : true}
+        onClick={handleClick}
+        onPointerDown={handlePointerDown}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        className={cx(
+          'nodrag nopan transition-opacity duration-250',
+          visible
+            ? 'pointer-events-auto opacity-100'
+            : 'pointer-events-none opacity-0 disabled:opacity-0'
+        )}
+      />
+    ) : (
+      visible && (
+        <CanvasInlineButton
+          aria-label="Add node"
+          onClick={handleClick}
+          onPointerDown={handlePointerDown}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          className="nodrag nopan pointer-events-auto animate-fade-in"
+        />
+      )
+    );
+
     const content = (
       <div
         className={cx('absolute flex items-center pointer-events-none', BUTTON_POSITION[position])}
       >
-        {visible && (
-          <CanvasInlineButton
-            aria-label="Add node"
-            onClick={handleClick}
-            onPointerDown={handlePointerDown}
-            className="nodrag nopan pointer-events-auto animate-fade-in"
-          />
-        )}
+        {addButton}
         {label && (
           <InlineLabel
             label={label}
@@ -149,7 +186,13 @@ export const HandleButton = memo(
       </div>
     );
 
+    const shouldRenderPortal = Boolean(keepButtonMounted || visible || (label && labelVisible));
+
     if (portal) {
+      if (!shouldRenderPortal) {
+        return null;
+      }
+
       const { nodeId, ...anchor } = portal;
 
       return (
@@ -175,6 +218,7 @@ const InlineLabel = ({
   visible?: boolean;
 }) => (
   <div
+    aria-hidden={visible ? undefined : true}
     className={cx(
       'px-1.5 py-0.5 rounded-sm whitespace-nowrap select-none transition-opacity duration-250 z-10',
       visible ? 'opacity-100' : 'opacity-0'

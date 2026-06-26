@@ -3,10 +3,13 @@
 import { motion, useReducedMotion } from "framer-motion";
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  ENTRANCE_ANIMATE,
+  ENTRANCE_EASE,
+  ENTRANCE_INITIAL,
+} from "../animations";
 import { AiChatThinking } from "./ai-chat-thinking";
 
-// Quartic ease-out — same curve used inside AiChatThinking for consistency
-const ENTRANCE_EASE = [0.22, 1, 0.36, 1] as const;
 const ENTRANCE_DURATION = 0.5;
 // Text appears after the icon's morph completes (FORWARD_DURATION in AiChatThinking is 0.8s) plus a small gap
 const TEXT_DELAY = 0.9;
@@ -49,8 +52,8 @@ export function AiChatLoading() {
       role="status"
       aria-label={thinkingLabel}
       className="flex justify-start py-2"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={ENTRANCE_INITIAL}
+      animate={ENTRANCE_ANIMATE}
       transition={{ duration: ENTRANCE_DURATION, ease: ENTRANCE_EASE }}
     >
       {!prefersReducedMotion && (

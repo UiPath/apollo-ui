@@ -6,9 +6,9 @@ on:
       - main
       - 'support/**'
 
+permissions: {}
+
 env:
-  GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
-  NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
   TURBO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: 1
 
@@ -21,77 +21,305 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     name: Release and Publish
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      changed: ${{ steps.bump.outputs.changed }}
+      changed_packages: ${{ steps.bump.outputs.changed_packages }}
     permissions:
       contents: write
       packages: write
+      id-token: write
+      attestations: write
 
     steps:
-      # zizmor: ignore[artipacked]
-      # Credentials needed for semantic-release to push version bumps; no artifacts uploaded in this workflow
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.RELEASE_TOKEN }}
+          persist-credentials: false
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 22
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      # OIDC env scrubbed except on the Release step (only place it's needed).
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-deps
+        env:
+          ACTIONS_ID_TOKEN_REQUEST_URL: ""
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
 
       - name: Cache Turborepo
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-turbo-
+            ${{ runner.os }}-turbo-${{ github.ref_name }}-
 
       - name: Build packages
+        env:
+          ACTIONS_ID_TOKEN_REQUEST_URL: ""
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
         run: pnpm build
 
       - name: Run tests
+        env:
+          ACTIONS_ID_TOKEN_REQUEST_URL: ""
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
         run: pnpm test
+
+      # Pre/post hash to detect plugin tampering before attestation.
+      - name: Snapshot dist/ hashes
+        env:
+          ACTIONS_ID_TOKEN_REQUEST_URL: ""
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
+        run: |
+          find packages/*/dist web-packages/*/dist -type f -print0 \
+            | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/dist.pre.sha256"
 
       - name: Setup git user
         run: |
           git config --global user.name "semantic-release-bot"
           git config --global user.email "semantic-release-bot@users.noreply.github.com"
+          # Credential helper reads GITHUB_TOKEN from env on demand. Set only on
+          # the Release step → no leak to later steps that don't push. The single
+          # quotes are intentional: git invokes the helper later in a fresh shell
+          # which expands $GITHUB_TOKEN at credential-lookup time, not now.
+          # URL-scoped to github.com so a stray `git push` to any other host can't
+          # exfiltrate the token through this helper.
+          # shellcheck disable=SC2016
+          git config --global credential.https://github.com.helper \
+            '!f() { test -n "$GITHUB_TOKEN" || exit 1; echo "username=x-access-token"; echo "password=$GITHUB_TOKEN"; }; f'
 
       - name: Release
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-          GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GH_NPM_REGISTRY_TOKEN: ${{ github.token }}
           HUSKY: 0
         run: pnpm release
 
-      - name: Commit changelogs and package updates
+      - name: Verify dist/ unchanged
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          ACTIONS_ID_TOKEN_REQUEST_URL: ""
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            # Get list of changed packages
-            CHANGED_PACKAGES=$(git diff --name-only | grep 'packages/\|web-packages/' | cut -d'/' -f2 | sort -u | tr '\n' ', ' | sed 's/,$//')
-
-            git add --all
-            git commit -m "chore(release): version bump [skip ci]" -m "Packages: $CHANGED_PACKAGES"
-
-            if ! git push; then
-              echo "::error::Failed to push version bump commit"
-              echo "This may indicate a conflict or permission issue"
-              exit 1
-            fi
-            echo "✓ Pushed version bump commit"
-          else
-            echo "No changes to commit"
+          find packages/*/dist web-packages/*/dist -type f -print0 \
+            | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/dist.post.sha256"
+          if ! diff -q "$RUNNER_TEMP/dist.pre.sha256" "$RUNNER_TEMP/dist.post.sha256" >/dev/null; then
+            echo "::error::dist/ was modified during release"
+            diff "$RUNNER_TEMP/dist.pre.sha256" "$RUNNER_TEMP/dist.post.sha256" || true
+            exit 1
           fi
+
+      - name: Pack dist for attestation
+        run: |
+          tar -czf "$RUNNER_TEMP/dist-apollo-core.tar.gz"  -C packages/apollo-core  dist
+          tar -czf "$RUNNER_TEMP/dist-apollo-react.tar.gz" -C packages/apollo-react dist
+          tar -czf "$RUNNER_TEMP/dist-apollo-wind.tar.gz"  -C packages/apollo-wind  dist
+          tar -czf "$RUNNER_TEMP/dist-ap-chat.tar.gz"      -C web-packages/ap-chat  dist
+
+      - name: Capture version-bump diff
+        id: bump
+        run: |
+          # pnpm-lock.yaml NOT in allowlist — a compromised plugin could swap
+          # integrity/tarball hashes there to self-propagate via the next install.
+          ALLOWED=(
+            'packages/*/CHANGELOG.md'
+            'packages/*/package.json'
+            'web-packages/*/CHANGELOG.md'
+            'web-packages/*/package.json'
+          )
+
+          UNTRACKED=$(git ls-files --others --exclude-standard -- "${ALLOWED[@]}" 2>/dev/null || true)
+          if [ -n "$UNTRACKED" ]; then
+            echo "$UNTRACKED" | xargs git add -N --
+          fi
+
+          PATCH="$RUNNER_TEMP/version-bump.patch"
+          git diff -- "${ALLOWED[@]}" > "$PATCH"
+
+          if [ -s "$PATCH" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            CHANGED_PACKAGES=$(git diff --name-only -- "${ALLOWED[@]}" | grep -E '^(packages|web-packages)/' | cut -d'/' -f2 | sort -u | tr '\n' ', ' | sed 's/,$//')
+            echo "changed_packages=$CHANGED_PACKAGES" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [ -n "$UNTRACKED" ]; then
+            echo "$UNTRACKED" | xargs git reset HEAD --
+          fi
+
+      - name: Upload version-bump patch
+        if: steps.bump.outputs.changed == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: version-bump-patch
+          path: ${{ runner.temp }}/version-bump.patch
+          retention-days: 7
+
+      - name: Generate per-package SBOMs
+        if: steps.bump.outputs.changed == 'true'
+        run: |
+          pnpm --filter @uipath/apollo-core  sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-apollo-core.cyclonedx.json"
+          pnpm --filter @uipath/apollo-react sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-apollo-react.cyclonedx.json"
+          pnpm --filter @uipath/apollo-wind  sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-apollo-wind.cyclonedx.json"
+          pnpm --filter '@uipath/ap-chat'    sbom --sbom-format cyclonedx --prod > "$RUNNER_TEMP/sbom-ap-chat.cyclonedx.json"
+
+      - name: Attest SBOM — apollo-core
+        if: steps.bump.outputs.changed == 'true'
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        with:
+          subject-path: ${{ runner.temp }}/dist-apollo-core.tar.gz
+          sbom-path: ${{ runner.temp }}/sbom-apollo-core.cyclonedx.json
+
+      - name: Attest SBOM — apollo-react
+        if: steps.bump.outputs.changed == 'true'
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        with:
+          subject-path: ${{ runner.temp }}/dist-apollo-react.tar.gz
+          sbom-path: ${{ runner.temp }}/sbom-apollo-react.cyclonedx.json
+
+      - name: Attest SBOM — apollo-wind
+        if: steps.bump.outputs.changed == 'true'
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        with:
+          subject-path: ${{ runner.temp }}/dist-apollo-wind.tar.gz
+          sbom-path: ${{ runner.temp }}/sbom-apollo-wind.cyclonedx.json
+
+      - name: Attest SBOM — ap-chat
+        if: steps.bump.outputs.changed == 'true'
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        with:
+          subject-path: ${{ runner.temp }}/dist-ap-chat.tar.gz
+          sbom-path: ${{ runner.temp }}/sbom-ap-chat.cyclonedx.json
+
+      - name: Upload SBOMs and dist tarballs as release artifact
+        if: steps.bump.outputs.changed == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/sbom-*.cyclonedx.json
+            ${{ runner.temp }}/dist-*.tar.gz
+          retention-days: 90
+
+      # Build provenance covers GHP consumers (npm --provenance is npmjs.org-only).
+      # Verify: gh attestation verify dist-<pkg>.tar.gz --owner UiPath
+      - name: Attest build provenance — apollo-core
+        if: steps.bump.outputs.changed == 'true'
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-path: ${{ runner.temp }}/dist-apollo-core.tar.gz
+
+      - name: Attest build provenance — apollo-react
+        if: steps.bump.outputs.changed == 'true'
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-path: ${{ runner.temp }}/dist-apollo-react.tar.gz
+
+      - name: Attest build provenance — apollo-wind
+        if: steps.bump.outputs.changed == 'true'
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-path: ${{ runner.temp }}/dist-apollo-wind.tar.gz
+
+      - name: Attest build provenance — ap-chat
+        if: steps.bump.outputs.changed == 'true'
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-path: ${{ runner.temp }}/dist-ap-chat.tar.gz
+
+      # Publish this build's per-package sizes so PR runs can show a "vs main" delta against the
+      # last successful main build. Unconditional (not gated on a version bump) so the baseline
+      # refreshes on every main build. `npm pack --dry-run` writes nothing to dist/.
+      # continue-on-error: this is best-effort telemetry — it must never fail the publishing
+      # job, which would skip the `commit-version-bump` job (needs: release) and leave the
+      # version bump uncommitted on main after npm publish + tags already happened.
+      - name: Collect package sizes baseline
+        continue-on-error: true
+        env:
+          ACTIONS_ID_TOKEN_REQUEST_URL: ""
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
+        run: node scripts/pr-package-report.cjs --collect-sizes=pkg-sizes.json
+
+      - name: Upload package sizes baseline
+        continue-on-error: true
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: package-sizes
+          path: pkg-sizes.json
+          retention-days: 90
+          if-no-files-found: ignore
+
+  # Isolated runner — App token confined here. The commit-push step has never
+  # seen third-party JS from the release job.
+  commit-version-bump:
+    name: Commit version bump
+    needs: release
+    if: needs.release.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Download version-bump patch
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: version-bump-patch
+          path: ${{ runner.temp }}
+
+      - name: Verify patch is safe to apply
+        run: node .github/scripts/verify-version-bump-patch.mjs "$RUNNER_TEMP/version-bump.patch"
+
+      - name: Apply version-bump patch
+        # Symlink defense lives in the verifier (rejects mode-120000 hunks).
+        run: git apply --whitespace=nowarn "$RUNNER_TEMP/version-bump.patch"
+
+      - name: Validate package.json mutations
+        run: node .github/scripts/validate-package-json-mutations.mjs "$RUNNER_TEMP/version-bump.patch"
+
+      - name: Generate GitHub App token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          client-id: ${{ vars.RELEASER_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+
+      - name: Commit and push version bump
+        env:
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
+          CHANGED_PACKAGES: ${{ needs.release.outputs.changed_packages }}
+        run: |
+          git config user.name "semantic-release-bot"
+          git config user.email "semantic-release-bot@users.noreply.github.com"
+
+          git add -- \
+            'packages/*/CHANGELOG.md' \
+            'packages/*/package.json' \
+            'web-packages/*/CHANGELOG.md' \
+            'web-packages/*/package.json' 2>/dev/null || true
+
+          if git diff --cached --quiet; then
+            echo "::error::Patch applied but nothing staged"
+            exit 1
+          fi
+
+          git commit -m "chore(release): version bump [skip ci]" -m "Packages: $CHANGED_PACKAGES"
+
+          # Inject App token into the origin URL just for the push, then strip it.
+          # Runner is ephemeral and isolated; the token lives in .git/config only
+          # for this step.
+          git remote set-url origin "https://x-access-token:${APP_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if ! git push origin HEAD; then
+            git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+            echo "::error::Failed to push version bump commit"
+            exit 1
+          fi
+          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"

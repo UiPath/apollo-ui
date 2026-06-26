@@ -234,6 +234,81 @@ export const colorGroups: ColorGroup[] = [
     ],
   },
   {
+    heading: "Insight",
+    tokens: [
+      {
+        token: "insight-50",
+        label: "Insight 50",
+        description: "Lightest tint",
+        lightValue: "oklch(0.96 0.03 277)",
+        darkValue: "oklch(0.96 0.03 277)",
+      },
+      {
+        token: "insight-100",
+        label: "Insight 100",
+        description: "",
+        lightValue: "oklch(0.92 0.05 277)",
+        darkValue: "oklch(0.92 0.05 277)",
+      },
+      {
+        token: "insight-200",
+        label: "Insight 200",
+        description: "",
+        lightValue: "oklch(0.86 0.09 277)",
+        darkValue: "oklch(0.86 0.09 277)",
+      },
+      {
+        token: "insight-300",
+        label: "Insight 300",
+        description: "",
+        lightValue: "oklch(0.78 0.14 277)",
+        darkValue: "oklch(0.78 0.14 277)",
+      },
+      {
+        token: "insight-400",
+        label: "Insight 400",
+        description: "",
+        lightValue: "oklch(0.70 0.19 277)",
+        darkValue: "oklch(0.70 0.19 277)",
+      },
+      {
+        token: "insight-500",
+        label: "Insight 500",
+        description: "Mid-point",
+        lightValue: "oklch(0.62 0.22 277)",
+        darkValue: "oklch(0.62 0.22 277)",
+      },
+      {
+        token: "insight-600",
+        label: "Insight 600",
+        description: "Default insight",
+        lightValue: "oklch(0.56 0.20 277)",
+        darkValue: "oklch(0.56 0.20 277)",
+      },
+      {
+        token: "insight-700",
+        label: "Insight 700",
+        description: "",
+        lightValue: "oklch(0.48 0.17 277)",
+        darkValue: "oklch(0.48 0.17 277)",
+      },
+      {
+        token: "insight-800",
+        label: "Insight 800",
+        description: "",
+        lightValue: "oklch(0.38 0.13 278)",
+        darkValue: "oklch(0.38 0.13 278)",
+      },
+      {
+        token: "insight-900",
+        label: "Insight 900",
+        description: "Darkest shade",
+        lightValue: "oklch(0.30 0.10 278)",
+        darkValue: "oklch(0.30 0.10 278)",
+      },
+    ],
+  },
+  {
     heading: "Status",
     tokens: [
       {

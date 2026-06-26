@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+@source "../registry";
+@source "../templates";
 
 /* Optional: import Nextra theme styles */
 @import 'nextra-theme-docs/style.css';
@@ -6,8 +8,6 @@
 
 /* Design tokens — generated from registry.json > apollo-vertex-theme */
 @import "./theme.generated.css";
-
-@source "../node_modules/@uipath/apollo-dashboarding";
 
 @custom-variant dark (&:is(.dark *)); /* or nextra-theme-blog/style.css */
 

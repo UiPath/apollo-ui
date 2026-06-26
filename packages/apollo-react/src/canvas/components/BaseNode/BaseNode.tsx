@@ -10,6 +10,9 @@ import {
   DEFAULT_NODE_SIZE,
   DEFAULT_RECTANGLE_NODE_WIDTH,
   GRID_SPACING,
+  NODE_BADGE_INSET_CIRCLE,
+  NODE_BADGE_INSET_SQUARE,
+  NODE_BADGE_SIZE,
   NODE_BORDER_SIZE,
   NODE_CONTAINER_RADIUS_RATIO,
   NODE_HEIGHT_DEFAULT,
@@ -25,9 +28,10 @@ import { useElementValidationStatus, useNodeExecutionState } from '../../hooks';
 import type { NodeShape } from '../../schema';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import { resolveAdornments } from '../../utils/adornment-resolver';
-import { getIcon } from '../../utils/icon-registry';
+import { CanvasIcon, getIcon } from '../../utils/icon-registry';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
 import { selectIsConnecting } from '../../utils/NodeUtils';
+import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import { resolveToolbar } from '../../utils/toolbar-resolver';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
 import { useCanvasTheme } from '../BaseCanvas/CanvasThemeContext';
@@ -87,6 +91,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // Read runtime configuration from context (provided by parent node components)
   const {
     onHandleAction: onHandleActionProp,
+    onHandleMouseEnter: onHandleMouseEnterProp,
+    onHandleMouseLeave: onHandleMouseLeaveProp,
+    onActionNeeded,
     shouldShowAddButtonFn: shouldShowAddButtonFnProp,
     shouldShowButtonHandleNotchesFn: shouldShowButtonHandleNotchesFnProp,
     toolbarConfig: toolbarConfigProp,
@@ -221,6 +228,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         label: h.label,
         visible: h.visible,
         showButton: h.showButton,
+        labelVisibility: h.labelVisibility,
         constraints: h.constraints,
       })),
       visible: group.visible,
@@ -304,6 +312,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const displayShape = display.shape ?? 'square';
   const displayBackground = display.background;
   const displayColor = display.color;
+  const displayShadow = display.shadow ?? true;
   const displayIconBackground = isDarkMode
     ? (display.iconBackgroundDark ?? display.iconBackground)
     : display.iconBackground;
@@ -313,13 +322,11 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const displayLabelBackgroundColor = labelBackgroundColor;
   const displayFooterVariant = footerVariant;
 
-  // SubLabel: Component prop takes precedence, then plain string from display
+  // SubLabel: Component prop takes precedence, then plain string from display.
   const displaySubLabel = useMemo(() => {
-    // 1. Component prop (e.g., composite with health score badge)
     if (subLabelComponent !== undefined) {
       return subLabelComponent;
     }
-    // 2. Plain string from display.subLabel
     return display.subLabel;
   }, [subLabelComponent, display.subLabel]);
 
@@ -395,19 +402,6 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     [isConnecting, selected, isHovered, dragging]
   );
 
-  const toolbarPosition = toolbarConfig?.position ?? (toolbarConfig ? Position.Top : undefined);
-
-  // True when handle buttons at the toolbar's position would collide with it.
-  const hasHandleButtonsAtToolbar = useMemo(() => {
-    if (!toolbarPosition || !handleConfigurations?.length) return false;
-    return handleConfigurations.some(
-      (config) =>
-        config.position === toolbarPosition &&
-        config.visible !== false &&
-        config.handles.some((h) => h.type === 'source' && h.showButton !== false)
-    );
-  }, [toolbarPosition, handleConfigurations]);
-
   const hasVisibleBottomHandles = useMemo(() => {
     if (
       !handleConfigurations ||
@@ -473,6 +467,69 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   // Check if smart handles are enabled via node data
   const useSmartHandles = data?.useSmartHandles ?? false;
+  const toolbarPosition = toolbarConfig?.position ?? (toolbarConfig ? Position.Top : undefined);
+
+  // Handle affordances *configured* at the toolbar's side that it would overlap.
+  // `button` = a source add button; `label` = a handle label (any handle type).
+  // Whether each is actually rendered is gated by `offsetToolbar` below, since
+  // buttons and labels appear under different conditions.
+  const toolbarSideHandleAffordances = useMemo(() => {
+    let hasButton = false;
+    let hasLabel = false;
+    if (!toolbarPosition || !handleConfigurations?.length) {
+      return { hasButton, hasLabel };
+    }
+    for (const config of handleConfigurations) {
+      if (config.position !== toolbarPosition || config.visible === false) continue;
+      for (const handle of config.handles) {
+        if (handle.visible === false) continue;
+        const showButton = useSmartHandles ? handle.showButton : handle.showButton !== false;
+        if (handle.type === 'source' && showButton) hasButton = true;
+        if (handle.label) hasLabel = true;
+      }
+    }
+    return { hasButton, hasLabel };
+  }, [toolbarPosition, handleConfigurations]);
+
+  // Offset the toolbar to clear whichever handle affordance is actually rendered
+  // at its side — not merely configured. A shown add button stacks button + label
+  // and needs the larger offset; a label alone needs only a small one.
+  const offsetToolbar = useMemo<'button' | 'label' | false>(() => {
+    if (multipleNodesSelected) return false;
+    const { hasButton, hasLabel } = toolbarSideHandleAffordances;
+
+    // Mirror the gating that actually renders an add button (see `useButtonHandles`
+    // / `smartHandleElements`), so the larger 'button' offset only applies when one
+    // is really on screen — not while connecting/dragging or under a custom predicate.
+    const isAddButtonShown = () => {
+      // SmartHandle add buttons require selection (and ignore connect/drag state).
+      if (useSmartHandles) {
+        return mode === 'design' && !!selected;
+      }
+      const showAddButton = mode === 'design' && !isConnecting && !dragging;
+      if (shouldShowAddButtonFn) {
+        return shouldShowAddButtonFn({ showAddButton, selected: !!selected });
+      }
+      return showAddButton && (!!selected || isHovered);
+    };
+
+    if (hasButton && isAddButtonShown()) return 'button';
+    // Labels render whenever their handle is visible — on hover or selection, in
+    // any mode (including readonly) — which is exactly when the toolbar is shown,
+    // so a configured label always coincides with it.
+    if (hasLabel) return 'label';
+    return false;
+  }, [
+    toolbarSideHandleAffordances,
+    mode,
+    multipleNodesSelected,
+    useSmartHandles,
+    selected,
+    isHovered,
+    isConnecting,
+    dragging,
+    shouldShowAddButtonFn,
+  ]);
 
   // Generate ButtonHandle elements (default behavior)
   // Hide add buttons when multiple nodes are selected to avoid visual clutter
@@ -480,6 +537,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     handleConfigurations,
     shouldShowHandles,
     handleAction,
+    handleMouseEnter: onHandleMouseEnterProp,
+    handleMouseLeave: onHandleMouseLeaveProp,
     nodeId: id,
     selected: selected ?? false,
     hovered: isHovered,
@@ -604,6 +663,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         hasFooter={hasFooter}
         background={displayBackground}
         loading={data.loading}
+        shadow={displayShadow}
       >
         {(Icon || data.loading) && (
           <BaseInnerShape
@@ -620,7 +680,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
             {adornments.topLeft}
           </BaseBadgeSlot>
         )}
-        {adornments?.topRight && (
+        {adornments?.topRight && executionStatus !== 'ActionNeeded' && (
           <BaseBadgeSlot position="top-right" shape={displayShape}>
             {adornments.topRight}
           </BaseBadgeSlot>
@@ -650,17 +710,42 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         {displayFooter && (
           <div className="basis-full pt-0.5 min-w-0 overflow-hidden">{displayFooter}</div>
         )}
-        {toolbarConfig && (
-          <NodeToolbar
-            nodeId={id}
-            config={toolbarConfig}
-            expanded={selected || isHovered}
-            hidden={dragging || multipleNodesSelected}
-            offsetToolbar={hasHandleButtonsAtToolbar}
-          />
-        )}
       </BaseContainer>
+      {toolbarConfig && (
+        <NodeToolbar
+          nodeId={id}
+          config={toolbarConfig}
+          expanded={selected || isHovered}
+          hidden={dragging || multipleNodesSelected}
+          offsetToolbar={offsetToolbar}
+        />
+      )}
       {handleElements}
+      {executionStatus === 'ActionNeeded' &&
+        (() => {
+          const badgeInset =
+            displayShape === 'circle' ? NODE_BADGE_INSET_CIRCLE : NODE_BADGE_INSET_SQUARE;
+          return (
+            <button
+              type="button"
+              className="absolute z-10 flex items-center gap-1 rounded-full bg-amber-400 text-[11px] font-semibold text-stone-900 shadow-sm transition-colors hover:bg-amber-300"
+              style={{
+                top: badgeInset,
+                left: `calc(var(--node-w) - ${badgeInset + NODE_BADGE_SIZE}px)`,
+                height: NODE_BADGE_SIZE,
+                minWidth: NODE_BADGE_SIZE,
+                paddingInline: '4px 10px',
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onActionNeeded?.(id);
+              }}
+            >
+              <CanvasIcon icon="flag" size={12} />
+              <span className="whitespace-nowrap">Action needed</span>
+            </button>
+          );
+        })()}
     </div>
   );
 
@@ -676,4 +761,4 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   return nodeContent;
 };
 
-export const BaseNode = memo(BaseNodeComponent);
+export const BaseNode = memo(BaseNodeComponent, areNodePropsEqualIgnoringPosition);

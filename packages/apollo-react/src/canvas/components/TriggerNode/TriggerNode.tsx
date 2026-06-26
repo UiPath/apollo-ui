@@ -2,6 +2,7 @@ import { Position, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useCallback, useMemo, useState } from 'react';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import { CanvasIcon } from '../../utils/icon-registry';
+import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { CanvasTooltip } from '../CanvasTooltip';
@@ -70,4 +71,4 @@ const TriggerNodeComponent = (props: TriggerNodeProps) => {
   );
 };
 
-export const TriggerNode = memo(TriggerNodeComponent);
+export const TriggerNode = memo(TriggerNodeComponent, areNodePropsEqualIgnoringPosition);

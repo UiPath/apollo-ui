@@ -1,6 +1,7 @@
 import { useNavigationStack } from '@uipath/apollo-react/canvas/hooks';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSafeLingui } from '../../../i18n';
 import { useListRef } from 'react-window';
 import {
   TOOLBOX_GAP,
@@ -155,6 +156,8 @@ export function Toolbox<T>({
   quickActions,
   renderEmptyState,
 }: ToolboxProps<T>) {
+  const { _ } = useSafeLingui();
+  const searchPlaceholder = _({ id: 'toolbox.search', message: 'Search' });
   const [items, setItems] = useState<ListItem<T>[]>(initialItems);
   const [search, setSearch] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
@@ -627,14 +630,34 @@ export function Toolbox<T>({
     handleBackTransition,
   ]);
 
+  // When rendered inside a `FloatingCanvasPanel`, the panel's `size` middleware
+  // exposes `--floating-available-height` so the Toolbox can cap its own
+  // height to whatever fits the viewport.
+  const responsiveStyle = useMemo<React.CSSProperties>(
+    () =>
+      fullHeight
+        ? { boxSizing: 'border-box', overflow: 'hidden' }
+        : {
+            boxSizing: 'border-box',
+            overflow: 'hidden',
+            maxHeight: `min(${TOOLBOX_HEIGHT}px, var(--floating-available-height, ${TOOLBOX_HEIGHT}px))`,
+          },
+    [fullHeight]
+  );
+
   return (
-    <div ref={containerRef} data-testid="toolbox-container">
+    <div
+      ref={containerRef}
+      data-testid="toolbox-container"
+      style={{ maxHeight: '100%', overflow: 'hidden' }}
+    >
       <Column
         px={TOOLBOX_PADDING_X}
         py={TOOLBOX_PADDING_Y}
         gap={TOOLBOX_GAP}
         w={fullWidth ? '100%' : TOOLBOX_WIDTH}
         h={fullHeight ? '100%' : TOOLBOX_HEIGHT}
+        style={responsiveStyle}
       >
         {quickActions && quickActions.length > 0 && <QuickActionsRow actions={quickActions} />}
         <Header
@@ -647,7 +670,7 @@ export function Toolbox<T>({
           value={search}
           onChange={handleSearch}
           clear={clearSearch}
-          placeholder="Search"
+          placeholder={searchPlaceholder}
           inputRef={searchInputRef}
           clearButtonRef={clearButtonRef}
           onNavigationKeyDown={handleNavigationKeyDown}

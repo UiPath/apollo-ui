@@ -80,7 +80,17 @@
           "color-ai-chat-input-foreground": "var(--ai-chat-input-foreground)",
           "color-ai-chat-ring": "var(--ai-chat-ring)",
           "color-ai-chat-muted": "var(--ai-chat-muted)",
-          "color-ai-chat-muted-foreground": "var(--ai-chat-muted-foreground)"
+          "color-ai-chat-muted-foreground": "var(--ai-chat-muted-foreground)",
+          "color-insight-50": "var(--insight-50)",
+          "color-insight-100": "var(--insight-100)",
+          "color-insight-200": "var(--insight-200)",
+          "color-insight-300": "var(--insight-300)",
+          "color-insight-400": "var(--insight-400)",
+          "color-insight-500": "var(--insight-500)",
+          "color-insight-600": "var(--insight-600)",
+          "color-insight-700": "var(--insight-700)",
+          "color-insight-800": "var(--insight-800)",
+          "color-insight-900": "var(--insight-900)"
         },
         "light": {
           "background": "oklch(1 0 89.8800)",
@@ -134,6 +144,19 @@
           "sidebar-accent-foreground": "oklch(0.1660 0.0283 203.3380)",
           "sidebar-border": "oklch(0.9237 0.0133 262.3780)",
           "sidebar-ring": "oklch(0.64 0.115 208)",
+          "insight-50": "oklch(0.96 0.03 277)",
+          "insight-100": "oklch(0.92 0.05 277)",
+          "insight-200": "oklch(0.86 0.09 277)",
+          "insight-300": "oklch(0.78 0.14 277)",
+          "insight-400": "oklch(0.70 0.19 277)",
+          "insight-500": "oklch(0.62 0.22 277)",
+          "insight-600": "oklch(0.56 0.20 277)",
+          "insight-700": "oklch(0.48 0.17 277)",
+          "insight-800": "oklch(0.38 0.13 278)",
+          "insight-900": "oklch(0.30 0.10 278)",
+          "font-sans": "Inter, ui-sans-serif, sans-serif, system-ui",
+          "font-serif": "IBM Plex Serif, ui-serif, serif",
+          "font-mono": "IBM Plex Mono, ui-monospace, monospace",
           "radius": "0.625rem",
           "shadow-x": "0",
           "shadow-y": "0px",
@@ -180,7 +203,13 @@
           "ai-chat-ring": "oklch(0.64 0.115 208)",
           "ai-chat-muted": "oklch(0.955 0.006 260)",
           "ai-chat-muted-foreground": "oklch(0.50 0.020 260)",
-          "ai-gradient": "linear-gradient(100.64deg, rgb(238, 224, 255) 8.29%, rgb(207, 217, 255) 88.73%)",
+          "ai-chat-brand-gradient": "linear-gradient(97.73deg, #5D4ED0 8.79%, #1076A0 91.48%)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-100) 8.29%, var(--primary-50) 88.73%)",
+          "ai-glow-start": "var(--insight-100)",
+          "ai-glow-end": "var(--primary-50)",
+          "ai-glass": "color-mix(in srgb, var(--card) 80%, transparent)",
+          "ai-gradient-fill": "linear-gradient(97.73deg, var(--insight-600) 8.79%, var(--primary-700) 91.48%)",
+          "ai-gradient-text": "linear-gradient(97.73deg, var(--insight-600) 8.79%, var(--primary-700) 91.48%)",
           "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
           "ai-gradient-start": "#6C5AEF",
           "ai-gradient-end": "#69C7DD"
@@ -237,6 +266,19 @@
           "sidebar-accent-foreground": "oklch(0.9525 0.0110 225.9830)",
           "sidebar-border": "oklch(0.9525 0.0110 225.9830)",
           "sidebar-ring": "oklch(0.69 0.112 207)",
+          "insight-50": "oklch(0.96 0.03 277)",
+          "insight-100": "oklch(0.92 0.05 277)",
+          "insight-200": "oklch(0.86 0.09 277)",
+          "insight-300": "oklch(0.78 0.14 277)",
+          "insight-400": "oklch(0.70 0.19 277)",
+          "insight-500": "oklch(0.62 0.22 277)",
+          "insight-600": "oklch(0.56 0.20 277)",
+          "insight-700": "oklch(0.48 0.17 277)",
+          "insight-800": "oklch(0.38 0.13 278)",
+          "insight-900": "oklch(0.30 0.10 278)",
+          "font-sans": "Inter, ui-sans-serif, sans-serif, system-ui",
+          "font-serif": "IBM Plex Serif, ui-serif, serif",
+          "font-mono": "IBM Plex Mono, ui-monospace, monospace",
           "radius": "0.625rem",
           "shadow-x": "0",
           "shadow-y": "0px",
@@ -268,7 +310,13 @@
           "ai-chat-ring": "oklch(0.69 0.112 207)",
           "ai-chat-muted": "oklch(0.26 0.030 258)",
           "ai-chat-muted-foreground": "oklch(0.65 0.020 258)",
-          "ai-gradient": "linear-gradient(98.69deg, rgb(108, 90, 239) 8.79%, rgb(105, 199, 221) 91.48%)",
+          "ai-chat-brand-gradient": "linear-gradient(97.73deg, #9485F5 8.79%, #69C7DD 91.48%)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-800) 8.29%, var(--primary-800) 88.73%)",
+          "ai-glow-start": "var(--insight-800)",
+          "ai-glow-end": "var(--primary-800)",
+          "ai-glass": "color-mix(in srgb, var(--card) 90%, transparent)",
+          "ai-gradient-fill": "linear-gradient(97.73deg, var(--insight-600) 8.79%, var(--primary-700) 91.48%)",
+          "ai-gradient-text": "linear-gradient(97.73deg, var(--insight-400) 8.79%, var(--primary-400) 91.48%)",
           "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
           "ai-gradient-start": "#6C5AEF",
           "ai-gradient-end": "#69C7DD"
@@ -303,18 +351,743 @@
       ]
     },
     {
+      "name": "charts-core",
+      "type": "registry:lib",
+      "title": "Charts Core",
+      "description": "Shared chart infrastructure: DataAdapter interface, chart-data types, configurations, format helpers, and the ChartLoadingBoundary primitive consumed by every chart.",
+      "dependencies": [
+        "@tanstack/react-query@^5.90.0",
+        "@types/luxon",
+        "luxon",
+        "react-error-boundary@^6.0.0",
+        "react-i18next",
+        "zod"
+      ],
+      "registryDependencies": ["@uipath/spinner"],
+      "files": [
+        {
+          "path": "lib/asserts/assert.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "lib/asserts/assert-boolean.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "lib/asserts/assert-date-time-or-string.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "lib/asserts/assert-defined.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "lib/asserts/assert-number.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "lib/asserts/assert-number-or-null.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "types/luxon.d.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/charts-core/chart-data-mapper.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/chart-data-mapper.ts"
+        },
+        {
+          "path": "registry/charts-core/chart-loading-boundary.tsx",
+          "type": "registry:lib",
+          "target": "lib/charts-core/chart-loading-boundary.tsx"
+        },
+        {
+          "path": "registry/charts-core/chart-models.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/chart-models.ts"
+        },
+        {
+          "path": "registry/charts-core/charts-core.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/charts-core.ts"
+        },
+        {
+          "path": "registry/charts-core/data-adapter.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/data-adapter.ts"
+        },
+        {
+          "path": "registry/charts-core/data-query-response-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/data-query-response-schema.ts"
+        },
+        {
+          "path": "registry/charts-core/error-boundary.tsx",
+          "type": "registry:lib",
+          "target": "lib/charts-core/error-boundary.tsx"
+        },
+        {
+          "path": "registry/charts-core/map-filter-config.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/map-filter-config.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/bar-chart-configuration.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/bar-chart-configuration.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/base-chart-configuration.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/base-chart-configuration.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/chart-properties.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/chart-properties.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/chart-type-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/chart-type-schema.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/distribution-chart-configuration.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/distribution-chart-configuration.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/filter-values-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/filter-values-schema.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/kpi-chart-configuration.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/kpi-chart-configuration.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/line-chart-configuration.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/line-chart-configuration.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/multi-line-chart-configuration.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/multi-line-chart-configuration.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/table-chart-configuration.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/table-chart-configuration.ts"
+        },
+        {
+          "path": "registry/charts-core/models/expression.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/expression.ts"
+        },
+        {
+          "path": "registry/charts-core/models/field.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/field.ts"
+        },
+        {
+          "path": "registry/charts-core/models/filter-values.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/filter-values.ts"
+        },
+        {
+          "path": "registry/charts-core/models/filter.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/filter.ts"
+        },
+        {
+          "path": "registry/charts-core/models/join-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/join-schema.ts"
+        },
+        {
+          "path": "registry/charts-core/models/primitive-value.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/primitive-value.ts"
+        },
+        {
+          "path": "registry/charts-core/spinner-with-children.tsx",
+          "type": "registry:lib",
+          "target": "lib/charts-core/spinner-with-children.tsx"
+        },
+        {
+          "path": "registry/charts-core/table-data-model.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/table-data-model.ts"
+        },
+        {
+          "path": "registry/charts-core/util/binning/adaptive-bin-formatting.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/binning/adaptive-bin-formatting.ts"
+        },
+        {
+          "path": "registry/charts-core/util/binning/constants.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/binning/constants.ts"
+        },
+        {
+          "path": "registry/charts-core/util/binning/nice-duration-numbers.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/binning/nice-duration-numbers.ts"
+        },
+        {
+          "path": "registry/charts-core/util/binning/nice-numbers.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/binning/nice-numbers.ts"
+        },
+        {
+          "path": "registry/charts-core/util/data-type-alignment.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/data-type-alignment.ts"
+        },
+        {
+          "path": "registry/charts-core/util/empty-array.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/empty-array.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/base-format-options.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/base-format-options.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/bin-label-format-setting.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/bin-label-format-setting.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/bin-label.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/bin-label.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/compute-duration-units.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/compute-duration-units.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/constants.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/constants.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/duration-unit.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/duration-unit.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/format-boolean.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/format-boolean.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/format-currency.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/format-currency.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/format-date.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/format-date.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/format-duration.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/format-duration.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/format-metric-value.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/format-metric-value.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/format-number.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/format-number.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/format-percentage.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/format-percentage.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/format.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/format.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/get-chart-range.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/get-chart-range.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/highest-duration-unit.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/highest-duration-unit.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/is-date-only.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/is-date-only.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/percentage-format-options.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/percentage-format-options.ts"
+        },
+        {
+          "path": "registry/charts-core/util/build-field.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/build-field.ts"
+        },
+        {
+          "path": "registry/charts-core/util/get-metric-field-type.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/get-metric-field-type.ts"
+        }
+      ]
+    },
+    {
+      "name": "data-fabric-adapter",
+      "type": "registry:lib",
+      "title": "Data Fabric Adapter",
+      "description": "DataAdapter implementation that talks to UiPath Data Fabric. Pair with any chart from charts-core.",
+      "dependencies": [
+        "@tanstack/react-query@^5.90.0",
+        "@ts-rest/core@^3.53.0-rc.1",
+        "@types/luxon",
+        "luxon",
+        "zod"
+      ],
+      "registryDependencies": ["@uipath/charts-core"],
+      "files": [
+        {
+          "path": "registry/data-fabric-adapter/adapter.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/adapter.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/chart-adapters/bar.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/chart-adapters/bar.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/chart-adapters/distribution.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/chart-adapters/distribution.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/chart-adapters/kpi.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/chart-adapters/kpi.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/chart-adapters/line.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/chart-adapters/line.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/chart-adapters/multi-line.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/chart-adapters/multi-line.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/chart-adapters/table.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/chart-adapters/table.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/contract.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/contract.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/data-fabric-adapter.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/data-fabric-adapter.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/schemas/query-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/schemas/query-schema.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/utils/binning-utils.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/utils/binning-utils.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/utils/fetch-date-binned-data.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/utils/fetch-date-binned-data.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/utils/filter-group.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/utils/filter-group.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/utils/metric-aggregate.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/utils/metric-aggregate.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/utils/query-options.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/utils/query-options.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/utils/query.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/utils/query.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/utils/response-data-mapper.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/utils/response-data-mapper.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/utils/throw-error.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/utils/throw-error.ts"
+        }
+      ]
+    },
+    {
+      "name": "insights-adapter",
+      "type": "registry:lib",
+      "title": "Insights Adapter",
+      "description": "DataAdapter implementation that talks to the UiPath Insights standalone-query API. Pair with any chart from charts-core.",
+      "dependencies": [
+        "@tanstack/react-query@^5.90.0",
+        "@ts-rest/core@^3.53.0-rc.1",
+        "@types/luxon",
+        "luxon",
+        "zod"
+      ],
+      "registryDependencies": ["@uipath/charts-core"],
+      "files": [
+        {
+          "path": "registry/insights-adapter/adapter.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/adapter.ts"
+        },
+        {
+          "path": "registry/insights-adapter/chart-adapters/bar.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/chart-adapters/bar.ts"
+        },
+        {
+          "path": "registry/insights-adapter/chart-adapters/distribution.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/chart-adapters/distribution.ts"
+        },
+        {
+          "path": "registry/insights-adapter/chart-adapters/kpi.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/chart-adapters/kpi.ts"
+        },
+        {
+          "path": "registry/insights-adapter/chart-adapters/line.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/chart-adapters/line.ts"
+        },
+        {
+          "path": "registry/insights-adapter/chart-adapters/multi-line.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/chart-adapters/multi-line.ts"
+        },
+        {
+          "path": "registry/insights-adapter/chart-adapters/table.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/chart-adapters/table.ts"
+        },
+        {
+          "path": "registry/insights-adapter/contract.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/contract.ts"
+        },
+        {
+          "path": "registry/insights-adapter/insights-adapter.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/insights-adapter.ts"
+        },
+        {
+          "path": "registry/insights-adapter/schemas/aggregate-fragment-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/schemas/aggregate-fragment-schema.ts"
+        },
+        {
+          "path": "registry/insights-adapter/schemas/filter-fragment-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/schemas/filter-fragment-schema.ts"
+        },
+        {
+          "path": "registry/insights-adapter/schemas/filter-request-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/schemas/filter-request-schema.ts"
+        },
+        {
+          "path": "registry/insights-adapter/schemas/query-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/schemas/query-schema.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/assert-configuration-supported.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/assert-configuration-supported.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/binning.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/binning.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/filter-request.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/filter-request.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/metric-aggregate.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/metric-aggregate.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/query-options.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/query-options.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/query.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/query.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/throw-error.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/throw-error.ts"
+        }
+      ]
+    },
+    {
+      "name": "line-chart",
+      "type": "registry:ui",
+      "title": "Line Chart",
+      "description": "A time-series line chart over a datetime dimension.",
+      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
+      "registryDependencies": [
+        "@uipath/card",
+        "@uipath/charts-core",
+        "@uipath/chart"
+      ],
+      "files": [
+        {
+          "path": "registry/line-chart/line-chart-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/line-chart/line-chart-view.tsx"
+        },
+        {
+          "path": "registry/line-chart/line-chart-with-adapter.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/line-chart/line-chart-with-adapter.tsx"
+        },
+        {
+          "path": "registry/line-chart/line-chart.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/line-chart/line-chart.tsx"
+        }
+      ]
+    },
+    {
+      "name": "multi-line-chart",
+      "type": "registry:ui",
+      "title": "Multi-Line Chart",
+      "description": "Two metrics on a shared datetime axis with independent Y axes.",
+      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
+      "registryDependencies": [
+        "@uipath/card",
+        "@uipath/chart",
+        "@uipath/charts-core"
+      ],
+      "files": [
+        {
+          "path": "registry/multi-line-chart/multi-line-chart-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/multi-line-chart/multi-line-chart-view.tsx"
+        },
+        {
+          "path": "registry/multi-line-chart/multi-line-chart-with-adapter.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/multi-line-chart/multi-line-chart-with-adapter.tsx"
+        },
+        {
+          "path": "registry/multi-line-chart/multi-line-chart.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/multi-line-chart/multi-line-chart.tsx"
+        }
+      ]
+    },
+    {
+      "name": "bar-chart",
+      "type": "registry:ui",
+      "title": "Bar Chart",
+      "description": "A metric broken down by a categorical dimension.",
+      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
+      "registryDependencies": [
+        "@uipath/card",
+        "@uipath/charts-core",
+        "@uipath/chart"
+      ],
+      "files": [
+        {
+          "path": "registry/bar-chart/bar-chart-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/bar-chart/bar-chart-view.tsx"
+        },
+        {
+          "path": "registry/bar-chart/bar-chart-with-adapter.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/bar-chart/bar-chart-with-adapter.tsx"
+        },
+        {
+          "path": "registry/bar-chart/bar-chart.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/bar-chart/bar-chart.tsx"
+        },
+        {
+          "path": "registry/bar-chart/bar-label.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/bar-chart/bar-label.tsx"
+        },
+        {
+          "path": "registry/bar-chart/metric-column.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/bar-chart/metric-column.tsx"
+        },
+        {
+          "path": "registry/bar-chart/util/colors.ts",
+          "type": "registry:ui",
+          "target": "components/ui/bar-chart/util/colors.ts"
+        },
+        {
+          "path": "registry/bar-chart/util/get-bar-color.ts",
+          "type": "registry:ui",
+          "target": "components/ui/bar-chart/util/get-bar-color.ts"
+        },
+        {
+          "path": "registry/bar-chart/util/recharts-bar-data.ts",
+          "type": "registry:ui",
+          "target": "components/ui/bar-chart/util/recharts-bar-data.ts"
+        }
+      ]
+    },
+    {
+      "name": "distribution-chart",
+      "type": "registry:ui",
+      "title": "Distribution Chart",
+      "description": "A histogram over a numeric or datetime dimension.",
+      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
+      "registryDependencies": [
+        "@uipath/card",
+        "@uipath/charts-core",
+        "@uipath/chart"
+      ],
+      "files": [
+        {
+          "path": "registry/distribution-chart/distribution-chart-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/distribution-chart/distribution-chart-view.tsx"
+        },
+        {
+          "path": "registry/distribution-chart/distribution-chart-with-adapter.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/distribution-chart/distribution-chart-with-adapter.tsx"
+        },
+        {
+          "path": "registry/distribution-chart/distribution-chart.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/distribution-chart/distribution-chart.tsx"
+        }
+      ]
+    },
+    {
+      "name": "kpi-chart",
+      "type": "registry:ui",
+      "title": "KPI Chart",
+      "description": "A single scalar metric (count, sum, average, min, max).",
+      "dependencies": ["@tanstack/react-query@^5.90.0"],
+      "registryDependencies": ["@uipath/card", "@uipath/charts-core"],
+      "files": [
+        {
+          "path": "registry/kpi-chart/kpi-chart-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/kpi-chart/kpi-chart-view.tsx"
+        },
+        {
+          "path": "registry/kpi-chart/kpi-chart-with-adapter.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/kpi-chart/kpi-chart-with-adapter.tsx"
+        },
+        {
+          "path": "registry/kpi-chart/kpi-chart.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/kpi-chart/kpi-chart.tsx"
+        }
+      ]
+    },
+    {
+      "name": "table-chart",
+      "type": "registry:ui",
+      "title": "Table Chart",
+      "description": "A sortable table of entity rows.",
+      "dependencies": [
+        "@tanstack/react-query@^5.90.0",
+        "@tanstack/react-table@^8.21.0"
+      ],
+      "registryDependencies": [
+        "@uipath/card",
+        "@uipath/charts-core",
+        "@uipath/table"
+      ],
+      "files": [
+        {
+          "path": "registry/table-chart/table-chart-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/table-chart/table-chart-view.tsx"
+        },
+        {
+          "path": "registry/table-chart/table-chart-with-adapter.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/table-chart/table-chart-with-adapter.tsx"
+        },
+        {
+          "path": "registry/table-chart/table-chart.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/table-chart/table-chart.tsx"
+        }
+      ]
+    },
+    {
       "name": "ai-chat",
       "type": "registry:ui",
       "title": "AI Chat",
       "description": "A composable AI chat UI component for TanStack AI with AgentHub adapter, markdown rendering, suggestion buttons, and error display",
       "dependencies": [
         "@mantine/hooks@^9.0.0",
+        "@radix-ui/react-tooltip@^1.2.8",
         "@tanstack/ai@0.14.0",
         "@tanstack/ai-client@0.8.0",
         "@tanstack/ai-react@0.8.0",
         "@tanstack/react-query@^5.90.0",
         "@types/luxon",
-        "@uipath/apollo-dashboarding@0.0.61",
         "@uipath/uipath-typescript@^1.3.1",
         "eventsource-parser@^3.0.6",
         "zod",
@@ -323,13 +1096,25 @@
         "react-i18next",
         "highlight.js",
         "react-markdown",
+        "remark-breaks",
         "remark-gfm",
         "framer-motion"
       ],
       "registryDependencies": [
         "@uipath/alert-dialog",
+        "@uipath/bar-chart",
+        "@uipath/button",
         "@uipath/card",
+        "@uipath/charts-core",
+        "@uipath/data-fabric-adapter",
+        "@uipath/dialog",
+        "@uipath/distribution-chart",
         "@uipath/dropdown-menu",
+        "@uipath/kpi-chart",
+        "@uipath/line-chart",
+        "@uipath/multi-line-chart",
+        "@uipath/table-chart",
+        "@uipath/textarea",
         "@uipath/tooltip"
       ],
       "files": [
@@ -390,6 +1175,21 @@
           "target": "components/ui/ai-chat/hooks/use-sticky-scroll.ts"
         },
         {
+          "path": "registry/ai-chat/hooks/use-pending-files.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/hooks/use-pending-files.ts"
+        },
+        {
+          "path": "registry/ai-chat/animations.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/animations.ts"
+        },
+        {
+          "path": "registry/ai-chat/content-parts.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/content-parts.ts"
+        },
+        {
           "path": "registry/ai-chat/components/ai-chat.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat.tsx"
@@ -425,9 +1225,54 @@
           "target": "components/ui/ai-chat/components/ai-chat-input-glow.tsx"
         },
         {
+          "path": "registry/ai-chat/components/ai-chat-pending-files.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-pending-files.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-image-preview.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-image-preview.tsx"
+        },
+        {
           "path": "registry/ai-chat/components/ai-chat-suggestions.tsx",
           "type": "registry:ui",
           "target": "components/ui/ai-chat/components/ai-chat-suggestions.tsx"
+        },
+        {
+          "path": "registry/ai-chat/types.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/types.ts"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-header.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-header.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-message-actions.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-message-actions.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-selection-menu.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-selection-menu.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-empty-suggestions.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-empty-suggestions.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-scroll-to-bottom-button.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-scroll-to-bottom-button.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-error-banner.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-error-banner.tsx"
         },
         {
           "path": "registry/ai-chat/components/ai-chat-thinking.tsx",
@@ -812,6 +1657,11 @@
           "target": "components/ui/data-table/data-table.tsx"
         },
         {
+          "path": "registry/data-table/data-table-expand-toggle.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-expand-toggle.tsx"
+        },
+        {
           "path": "registry/data-table/data-table-filters.tsx",
           "type": "registry:ui",
           "target": "components/ui/data-table/data-table-filters.tsx"
@@ -1066,6 +1916,40 @@
       ]
     },
     {
+      "name": "onboarding-tour-joyride",
+      "type": "registry:ui",
+      "title": "Onboarding Tour (Joyride)",
+      "description": "Guided onboarding tour built on React Joyride with an Apollo Vertex–styled custom tooltip, welcome modal, and conditional step gating.",
+      "dependencies": [
+        "react-joyride",
+        "lucide-react",
+        "@radix-ui/react-dialog"
+      ],
+      "registryDependencies": ["button"],
+      "files": [
+        {
+          "path": "registry/onboarding-tour-joyride/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/index.ts"
+        },
+        {
+          "path": "registry/onboarding-tour-joyride/onboarding-tour-joyride-types.ts",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/onboarding-tour-joyride-types.ts"
+        },
+        {
+          "path": "registry/onboarding-tour-joyride/tour-persistence.ts",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/tour-persistence.ts"
+        },
+        {
+          "path": "registry/onboarding-tour-joyride/onboarding-tour-joyride-popover.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/onboarding-tour-joyride-popover.tsx"
+        }
+      ]
+    },
+    {
       "name": "navigation-menu",
       "type": "registry:ui",
       "title": "Navigation Menu",
@@ -1215,7 +2099,9 @@
         "@tanstack/react-router",
         "pkce-challenge",
         "sonner",
-        "@mantine/hooks@^9.0.0"
+        "@mantine/hooks@^9.0.0",
+        "@tanstack/react-db",
+        "@uipath/vs-core@^1.2.2"
       ],
       "registryDependencies": [
         "button",
@@ -1223,7 +2109,9 @@
         "avatar",
         "dropdown-menu",
         "skeleton",
-        "sidebar"
+        "sidebar",
+        "spinner",
+        "collapsible"
       ],
       "files": [
         { "path": "registry/shell/shell.tsx", "type": "registry:ui" },
@@ -1256,10 +2144,6 @@
         { "path": "lib/react-i18next.d.ts", "type": "registry:lib" },
         {
           "path": "registry/shell/shell-animations.ts",
-          "type": "registry:ui"
-        },
-        {
-          "path": "registry/shell/shell-nav-item.tsx",
           "type": "registry:ui"
         },
         {
@@ -1307,6 +2191,10 @@
           "type": "registry:ui"
         },
         {
+          "path": "registry/shell/group-membership-screens.tsx",
+          "type": "registry:ui"
+        },
+        {
           "path": "registry/shell/use-group-members.ts",
           "type": "registry:ui"
         },
@@ -1314,7 +2202,14 @@
           "path": "registry/shell/use-is-group-member.ts",
           "type": "registry:ui"
         },
-        { "path": "lib/identity-service.ts", "type": "registry:lib" }
+        {
+          "path": "registry/shell/use-group-id.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-roles.ts",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -1375,7 +2270,7 @@
       "dependencies": [
         "@tanstack/react-table",
         "@tanstack/react-db",
-        "@uipath/vs-core"
+        "@uipath/vs-core@^1.2.2"
       ],
       "registryDependencies": ["@uipath/use-data-table", "@uipath/data-table"],
       "files": [
@@ -1389,9 +2284,12 @@
         },
         { "path": "lib/renderValueOrEmptyState.ts", "type": "registry:lib" },
         { "path": "lib/asserts/assert.ts", "type": "registry:lib" },
-        { "path": "lib/asserts/assertDateOrString.ts", "type": "registry:lib" },
-        { "path": "lib/asserts/assertNumber.ts", "type": "registry:lib" },
-        { "path": "lib/asserts/assertString.ts", "type": "registry:lib" }
+        {
+          "path": "lib/asserts/assert-date-or-string.ts",
+          "type": "registry:lib"
+        },
+        { "path": "lib/asserts/assert-number.ts", "type": "registry:lib" },
+        { "path": "lib/asserts/assert-string.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -1692,6 +2590,227 @@
         {
           "path": "registry/protected-feature-route/protected-feature-route.tsx",
           "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "solution-tests",
+      "type": "registry:ui",
+      "title": "Solution Tests",
+      "description": "Page-level view for managing UiPath Solution Tests — test cases, batch runs, KPI trend, run-result baselines, and adopt/update/remove actions. Domain-neutral: the smart container reads the generic UiPathST* entity collections from your vs-core solution via collection-backed hooks, and the subject entity is parameterized via SolutionTestsConfig.",
+      "dependencies": [
+        "@tanstack/react-db@^0.1.86",
+        "@tanstack/react-query@^5.90.0",
+        "@tanstack/react-table",
+        "@tanstack/react-router",
+        "@uipath/vs-core@^2.0.6",
+        "@uipath/uipath-typescript@^1.0.0",
+        "react-i18next",
+        "recharts@2.15.4",
+        "sonner",
+        "lucide-react",
+        "zod"
+      ],
+      "registryDependencies": [
+        "@uipath/alert",
+        "@uipath/badge",
+        "@uipath/button",
+        "@uipath/card",
+        "@uipath/chart",
+        "@uipath/data-table",
+        "@uipath/dialog",
+        "@uipath/empty",
+        "@uipath/page-header",
+        "@uipath/skeleton",
+        "@uipath/sonner",
+        "@uipath/spinner",
+        "@uipath/switch",
+        "@uipath/table",
+        "@uipath/tabs",
+        "@uipath/tooltip"
+      ],
+      "files": [
+        {
+          "path": "registry/solution-tests/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/index.ts"
+        },
+        {
+          "path": "registry/solution-tests/solution-tests-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/solution-tests-view.tsx"
+        },
+        {
+          "path": "registry/solution-tests/solution-tests.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/solution-tests.tsx"
+        },
+        {
+          "path": "registry/solution-tests/context.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/context.tsx"
+        },
+        {
+          "path": "registry/solution-tests/hooks.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/hooks.ts"
+        },
+        {
+          "path": "registry/solution-tests/constants.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/constants.ts"
+        },
+        {
+          "path": "registry/solution-tests/mutations.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/mutations.ts"
+        },
+        {
+          "path": "registry/solution-tests/attachments.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/attachments.ts"
+        },
+        {
+          "path": "registry/solution-tests/actions.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/actions.ts"
+        },
+        {
+          "path": "registry/solution-tests/create-actions.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/create-actions.ts"
+        },
+        {
+          "path": "registry/solution-tests/use-solution-tests.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/use-solution-tests.ts"
+        },
+        {
+          "path": "registry/solution-tests/use-solution-test-collection.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/use-solution-test-collection.ts"
+        },
+        {
+          "path": "registry/solution-tests/use-solution-test-batch-runs.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/use-solution-test-batch-runs.ts"
+        },
+        {
+          "path": "registry/solution-tests/use-solution-test-runs.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/use-solution-test-runs.ts"
+        },
+        {
+          "path": "registry/solution-tests/use-baseline-jobs.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/use-baseline-jobs.ts"
+        },
+        {
+          "path": "registry/solution-tests/use-run-results.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/use-run-results.ts"
+        },
+        {
+          "path": "registry/solution-tests/use-force-stop.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/use-force-stop.ts"
+        },
+        {
+          "path": "registry/solution-tests/config.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/config.ts"
+        },
+        {
+          "path": "registry/solution-tests/types.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/types.ts"
+        },
+        {
+          "path": "registry/solution-tests/tabs.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/tabs.ts"
+        },
+        {
+          "path": "registry/solution-tests/status-maps.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/status-maps.ts"
+        },
+        {
+          "path": "registry/solution-tests/utils.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/utils.ts"
+        },
+        { "path": "lib/renderValueOrEmptyState.ts", "type": "registry:lib" },
+        { "path": "lib/constants.ts", "type": "registry:lib" },
+        {
+          "path": "registry/solution-tests/user-messages.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/user-messages.ts"
+        },
+        {
+          "path": "registry/solution-tests/user-messages-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/user-messages-view.tsx"
+        },
+        {
+          "path": "registry/solution-tests/json-viewer-dialog.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/json-viewer-dialog.tsx"
+        },
+        {
+          "path": "registry/solution-tests/delete-confirm-dialog.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/delete-confirm-dialog.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluator-results-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluator-results-view.tsx"
+        },
+        {
+          "path": "registry/solution-tests/kpi-bar.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/kpi-bar.tsx"
+        },
+        {
+          "path": "registry/solution-tests/expanded-agents.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/expanded-agents.tsx"
+        },
+        {
+          "path": "registry/solution-tests/expanded-agents-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/expanded-agents-view.tsx"
+        },
+        {
+          "path": "registry/solution-tests/result-expanded-content.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/result-expanded-content.tsx"
+        },
+        {
+          "path": "registry/solution-tests/run-confirm-dialog.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/run-confirm-dialog.tsx"
+        },
+        {
+          "path": "registry/solution-tests/run-details-dialog.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/run-details-dialog.tsx"
+        },
+        {
+          "path": "registry/solution-tests/run-details-dialog-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/run-details-dialog-view.tsx"
+        },
+        {
+          "path": "registry/solution-tests/expanded-run-tests.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/expanded-run-tests.tsx"
+        },
+        {
+          "path": "registry/solution-tests/expanded-run-tests-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/expanded-run-tests-view.tsx"
         }
       ]
     }

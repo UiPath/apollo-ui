@@ -19,16 +19,20 @@ export const HandleLabel = ({
   label,
   labelIcon,
   shouldTruncate,
+  visible = true,
 }: {
   position: Position;
   backgroundColor?: string;
   label: string;
   labelIcon?: React.ReactNode;
   shouldTruncate?: boolean;
+  visible?: boolean;
 }) => (
   <div
+    aria-hidden={visible ? undefined : true}
     className={cx(
-      'absolute px-1.5 py-0.5 rounded-sm z-1 whitespace-nowrap select-none',
+      'absolute px-1.5 py-0.5 rounded-sm z-1 whitespace-nowrap select-none transition-opacity duration-250',
+      visible ? 'opacity-100' : 'opacity-0 pointer-events-none',
       LABEL_POSITION[position],
       shouldTruncate && 'max-w-[50px] overflow-hidden'
     )}

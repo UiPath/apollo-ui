@@ -12,14 +12,27 @@ export interface LoopNodeResizeSize {
   height: number;
 }
 
+export interface LoopNodeExecutionCountState {
+  activeIndex: number;
+  total: number;
+  onActiveIndexChange?: (nextIndex: number) => void;
+  disabled?: boolean;
+  isAll: boolean;
+  onAllChange: (isAll: boolean) => void;
+  iterationStatuses?: Map<number, ElementStatusValues>;
+}
+
 export interface LoopNodeConfig {
   toolbarConfig?: NodeToolbarConfig | null;
   adornments?: NodeAdornments;
   executionStatusOverride?: ElementStatusValues;
   suggestionType?: SuggestionType;
+  iterationPillState?: LoopNodeExecutionCountState;
 }
 
 export interface LoopNodeProps extends NodeProps<Node<LoopNodeData>>, LoopNodeConfig {
   onAddFirstChild?: () => void;
   onResize?: (size: LoopNodeResizeSize) => void;
+  onResizeStart?: () => void;
+  onResizeEnd?: () => void;
 }

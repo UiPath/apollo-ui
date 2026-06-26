@@ -26,12 +26,18 @@ const buttonVariants = cva(
         info: "bg-info text-white hover:bg-info/90 focus-visible:ring-info/20 dark:focus-visible:ring-info/40 dark:bg-info/60",
         warning:
           "bg-warning text-white hover:bg-warning/90 focus-visible:ring-warning/20 dark:focus-visible:ring-warning/40 dark:bg-warning/60",
+        ai: "text-white hover:opacity-90 [background-image:var(--ai-gradient-fill)]",
+        "ai-soft":
+          "text-foreground hover:opacity-90 [background-image:var(--ai-gradient)]",
+        "ai-outline":
+          "border border-transparent text-insight-600 dark:text-insight-400 hover:opacity-90 [background-image:linear-gradient(var(--background),var(--background)),var(--ai-gradient-strong)] [background-origin:border-box] [background-clip:padding-box,border-box]",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
         sm: "h-8 rounded-lg gap-1.5 px-3 has-[>svg]:px-2.5",
         lg: "h-10 rounded-lg px-6 has-[>svg]:px-4",
         icon: "size-9",
+        "icon-xs": "size-7",
         "icon-sm": "size-8",
         "icon-lg": "size-10",
       },

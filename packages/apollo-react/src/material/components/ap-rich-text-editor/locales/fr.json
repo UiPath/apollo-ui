@@ -1,0 +1,19 @@
+{
+  "rich-text-editor.bold": "Gras",
+  "rich-text-editor.code": "Code",
+  "rich-text-editor.format-bold": "Format Gras",
+  "rich-text-editor.format-code": "Format de code",
+  "rich-text-editor.format-italic": "Format italique",
+  "rich-text-editor.format-ordered-list": "Format liste ordonnée",
+  "rich-text-editor.format-strikethrough": "Format Barré",
+  "rich-text-editor.format-underline": "Format de soulignement",
+  "rich-text-editor.format-unordered-list": "Format de liste non ordonnée",
+  "rich-text-editor.insert-link": "Insérer lien",
+  "rich-text-editor.italic": "Italique",
+  "rich-text-editor.link": "Lier",
+  "rich-text-editor.loading": "Chargement",
+  "rich-text-editor.ordered-list": "Liste ordonnée",
+  "rich-text-editor.strikethrough": "Biffer",
+  "rich-text-editor.underline": "Souligner",
+  "rich-text-editor.unordered-list": "Liste non ordonnée"
+}

@@ -18,26 +18,37 @@ enum ElementStatusValues {
 export type StageStatus = `${ElementStatusValues}`;
 export type StageTaskStatus = `${ElementStatusValues}`;
 
+export type StageSlaIcon = 'warning' | 'error';
+
 export interface StageTaskItem {
   id: string;
   label: string;
   icon?: React.ReactElement;
   isAdhoc?: boolean;
+  isPlaceholder?: boolean;
   taskGroupType?: 'sequential' | 'event-driven' | 'adhoc';
   hasEntryCondition?: boolean;
+}
+
+export interface StageTaskContextMenuArgs {
+  task: StageTaskItem;
+  taskGroupType: 'sequential' | 'event-driven' | 'adhoc';
+  isParallel: boolean;
 }
 
 export enum StageHeaderChipType {
   Entry = 'entry',
   Exit = 'exit',
+  Completion = 'completion',
   ReturnToOrigin = 'returnToOrigin',
-  CaseExit = 'caseExit',
-  CaseCompletion = 'caseCompletion',
+  Optional = 'optional',
+  EndsCase = 'endsCase',
 }
 
 export interface StageHeaderChip {
   type: StageHeaderChipType;
   count?: number;
+  label?: string;
   tooltip?: React.ReactNode;
   onClick?: () => void;
 }
@@ -58,19 +69,20 @@ export interface StageNodeBaseProps {
     selectedTaskId?: string;
     headerChips?: StageHeaderChip[];
   };
-  addTaskLabel?: string;
-  replaceTaskLabel?: string;
   taskOptions?: ListItem[];
   execution?: {
     stageStatus: {
       status?: StageStatus;
       label?: string;
       duration?: string;
+      slaText?: string;
+      slaIcon?: StageSlaIcon;
     };
     taskStatus: Record<string, StageTaskExecution>;
   };
   menuItems?: NodeMenuItem[];
   onStageClick?: () => void;
+  onStatusClick?: () => void;
   onTaskAdd?: () => void;
   onAddTaskFromToolbox?: (taskItem: ListItem) => void;
   onTaskToolboxSearch?: ToolboxSearchHandler;
@@ -84,6 +96,7 @@ export interface StageNodeBaseProps {
   onTaskReorder?: (reorderedTasks: StageTaskItem[][]) => void;
   onReplaceTaskFromToolbox?: (newTask: ListItem, groupIndex: number, taskIndex: number) => void;
   onTaskPlay?: (taskId: string) => Promise<void>;
+  getTaskContextMenuItems?: (args: StageTaskContextMenuArgs) => NodeMenuItem[] | undefined;
   hideParallelOptions?: boolean;
   loadingTaskIds?: ReadonlySet<string>;
 }
@@ -97,6 +110,8 @@ export interface StageTaskExecution {
   message?: string;
   label?: string;
   duration?: string;
+  /** Tooltip text shown on hover over the duration text (e.g. a wait-for-timer countdown). */
+  durationTooltip?: string;
   retryDuration?: string;
   badge?: string;
   badgeStatus?: 'warning' | 'info' | 'error';

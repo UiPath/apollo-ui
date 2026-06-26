@@ -1,0 +1,109 @@
+import { DistributionChartTemplate } from '@/templates/charts/DistributionChartTemplate';
+
+# Distribution Chart
+
+A histogram over a numeric or datetime dimension. Bins are computed by the adapter and rendered as bars.
+
+<div className="not-prose my-8">
+  <DistributionChartTemplate />
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/distribution-chart
+```
+
+Installs both the prop-driven `DistributionChart` view and the `DistributionChartWithAdapter` variant.
+
+## View
+
+`DistributionChart` plots an array of `{ x, y }` points where `x` is the bin label. Same shape as `LineChart` but rendered as bars (no curve).
+
+```tsx
+import { DistributionChart } from "@/components/ui/distribution-chart";
+
+const data = [
+  { x: "0–100", y: 12 },
+  { x: "100–200", y: 28 },
+  { x: "200–300", y: 19 },
+  // ...
+];
+
+const formatValue = (value: number) =>
+  new Intl.NumberFormat("en-US").format(value);
+
+<DistributionChart
+  data={data}
+  seriesLabel="Order count"
+  formatValue={formatValue}
+/>
+```
+
+### Props
+
+- `data: Array<{ x: string; y: number }>` — bin label + count.
+- `seriesLabel: string` — tooltip label.
+- `formatValue: (value: number) => string` — formats Y values.
+- `color?: string` — optional override; defaults to `var(--color-primary)`.
+
+## With adapter
+
+`DistributionChartWithAdapter` runs a min/max query, computes bin cutoff points, then queries the binned data — all behind Suspense + error boundary.
+
+The chart package does not bundle an adapter. Install one of the ready-made adapters (or implement the `DataAdapter` interface yourself):
+
+```bash
+npx shadcn@latest add @uipath/data-fabric-adapter
+# or
+npx shadcn@latest add @uipath/insights-adapter
+```
+
+```tsx
+import { DistributionChartWithAdapter } from "@/components/ui/distribution-chart";
+import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
+
+const adapter = dataFabricAdapter({
+  baseUrl: "/api/datafabric/.../api",
+  accessToken,
+  entityName: "Orders",
+});
+
+const dataModel = {
+  id: "order-amount-distribution",
+  dimensions: [
+    { id: "Amount", display: "Amount", type: "numeric" as const },
+  ],
+  metrics: [
+    {
+      id: "count",
+      display: "Orders",
+      expression: {
+        type: "aggregate" as const,
+        aggregation: "COUNT" as const,
+        argument: { id: "Id", display: "Id", type: "numeric" as const },
+      },
+    },
+  ],
+};
+
+const configuration = {
+  id: "amount-distribution",
+  name: "Order amount distribution",
+  type: "distribution" as const,
+  dimensions: ["Amount"],
+  metrics: ["count"],
+};
+
+<DistributionChartWithAdapter
+  configuration={configuration}
+  dataModel={dataModel}
+  dataAdapter={adapter}
+/>
+```
+
+### Props
+
+- `configuration: DistributionChartConfiguration` — single dimension + single metric.
+- `dataModel: ChartDataModel<NumericOrDatetimeModelField>` — dimension must be `numeric` or `datetime`.
+- `dataAdapter: DataAdapter` — implementation that runs the queries.

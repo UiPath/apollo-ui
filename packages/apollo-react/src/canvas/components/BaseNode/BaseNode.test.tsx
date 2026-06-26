@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -10,7 +10,17 @@ const DEFAULT_MANIFEST = {
 } as const;
 
 // Hoisted mocks — available inside vi.mock factories
-const { mockUpdateNode, mockHandleConfigs, mockManifest } = vi.hoisted(() => ({
+const {
+  mockUpdateNode,
+  mockHandleConfigs,
+  mockManifest,
+  mockUseButtonHandles,
+  mockOverrideConfig,
+  mockMode,
+  mockMultipleNodesSelected,
+  mockIsConnecting,
+  mockNodeToolbar,
+} = vi.hoisted(() => ({
   mockUpdateNode: vi.fn(),
   mockHandleConfigs: { current: undefined as HandleGroupManifest[] | undefined },
   mockManifest: {
@@ -19,12 +29,20 @@ const { mockUpdateNode, mockHandleConfigs, mockManifest } = vi.hoisted(() => ({
       handleConfiguration: [],
     } as Record<string, unknown>,
   },
+  // biome-ignore lint/suspicious/noExplicitAny: hook receives a broad typed options object
+  mockUseButtonHandles: vi.fn() as any,
+  mockOverrideConfig: { current: {} as Record<string, unknown> },
+  mockMode: { current: 'design' as string },
+  mockMultipleNodesSelected: { current: false },
+  mockIsConnecting: { current: false },
+  // biome-ignore lint/suspicious/noExplicitAny: captures the toolbar props for assertions
+  mockNodeToolbar: vi.fn() as any,
 }));
 
 // xyflow is globally mocked in canvas-mocks.ts; extend with test-specific overrides.
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@uipath/apollo-react/canvas/xyflow/react')>()),
-  useStore: () => false,
+  useStore: () => mockIsConnecting.current,
   useUpdateNodeInternals: () => vi.fn(),
   useReactFlow: () => ({ updateNodeData: vi.fn(), updateNode: mockUpdateNode }),
 }));
@@ -41,22 +59,36 @@ vi.mock('../../core', () => ({
 }));
 
 vi.mock('../BaseCanvas/BaseCanvasModeProvider', () => ({
-  useBaseCanvasMode: () => ({ mode: 'design' }),
+  useBaseCanvasMode: () => ({ mode: mockMode.current }),
 }));
 vi.mock('../BaseCanvas/ConnectedHandlesContext', () => ({ useConnectedHandles: () => new Set() }));
 vi.mock('../BaseCanvas/SelectionStateContext', () => ({
-  useSelectionState: () => ({ multipleNodesSelected: false }),
+  useSelectionState: () => ({ multipleNodesSelected: mockMultipleNodesSelected.current }),
+}));
+vi.mock('../Toolbar', () => ({
+  NodeToolbar: (props: Record<string, unknown>) => {
+    mockNodeToolbar(props);
+    return null;
+  },
 }));
 vi.mock('../BaseCanvas/CanvasThemeContext', () => ({
   useCanvasTheme: () => ({ isDarkMode: false }),
 }));
-vi.mock('../ButtonHandle/useButtonHandles', () => ({ useButtonHandles: () => null }));
+vi.mock('../ButtonHandle/useButtonHandles', () => ({
+  useButtonHandles: (opts: unknown) => {
+    mockUseButtonHandles(opts);
+    return null;
+  },
+}));
 vi.mock('../ButtonHandle/SmartHandle', () => ({
   SmartHandle: () => null,
   SmartHandleProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 vi.mock('./BaseNodeConfigContext', () => ({
-  useBaseNodeOverrideConfig: () => ({ handleConfigurations: mockHandleConfigs.current }),
+  useBaseNodeOverrideConfig: () => ({
+    handleConfigurations: mockHandleConfigs.current,
+    ...mockOverrideConfig.current,
+  }),
 }));
 vi.mock('../../utils/adornment-resolver', () => ({ resolveAdornments: () => ({}) }));
 vi.mock('../../utils/toolbar-resolver', () => ({ resolveToolbar: () => undefined }));
@@ -122,8 +154,14 @@ const makeHandles = (position: Position, count: number): HandleGroupManifest[] =
 describe('BaseNode', () => {
   afterEach(() => {
     mockUpdateNode.mockClear();
+    mockUseButtonHandles.mockClear();
+    mockNodeToolbar.mockClear();
     mockHandleConfigs.current = undefined;
     mockManifest.current = { ...DEFAULT_MANIFEST };
+    mockOverrideConfig.current = {};
+    mockMode.current = 'design';
+    mockMultipleNodesSelected.current = false;
+    mockIsConnecting.current = false;
   });
 
   describe('Height computation', () => {
@@ -281,6 +319,211 @@ describe('BaseNode', () => {
       render(<BaseNode {...defaultProps} />);
       // No aria-hidden 'M' span — the registered icon takes the slot.
       expect(screen.queryByText('M', { selector: '[aria-hidden="true"]' })).not.toBeInTheDocument();
+    });
+  });
+
+  // BaseNode forwards the consumer-facing `onHandleMouseEnter`/`onHandleMouseLeave`
+  // from `BaseNodeOverrideConfigProvider` into `useButtonHandles` as
+  // `handleMouseEnter`/`handleMouseLeave`. Trigger those by reaching into the
+  // captured hook arguments and invoking them with a synthetic payload.
+  describe('Handle hover handlers', () => {
+    it('forwards onHandleMouseEnter/onHandleMouseLeave overrides and fires with the payload', () => {
+      const onHandleMouseEnter = vi.fn();
+      const onHandleMouseLeave = vi.fn();
+      mockOverrideConfig.current = { onHandleMouseEnter, onHandleMouseLeave };
+
+      render(<BaseNode {...defaultProps} />);
+
+      expect(mockUseButtonHandles).toHaveBeenCalled();
+      const opts = mockUseButtonHandles.mock.calls.at(-1)?.[0] as {
+        handleMouseEnter?: (e: unknown) => void;
+        handleMouseLeave?: (e: unknown) => void;
+      };
+      expect(opts.handleMouseEnter).toBe(onHandleMouseEnter);
+      expect(opts.handleMouseLeave).toBe(onHandleMouseLeave);
+
+      const payload = {
+        handleId: 'output',
+        nodeId: 'test-node',
+        handleType: 'output',
+        position: Position.Right,
+      };
+      opts.handleMouseEnter?.(payload);
+      opts.handleMouseLeave?.(payload);
+
+      expect(onHandleMouseEnter).toHaveBeenCalledWith(payload);
+      expect(onHandleMouseLeave).toHaveBeenCalledWith(payload);
+    });
+  });
+
+  describe('Toolbar offset', () => {
+    type Handle = HandleGroupManifest['handles'][number];
+
+    const TOP_TOOLBAR = {
+      actions: [{ id: 'edit', icon: 'edit', label: 'Edit', onAction: vi.fn() }],
+      position: 'top',
+    };
+
+    const buttonHandle: Handle = {
+      id: 'src',
+      type: 'source',
+      handleType: 'output',
+      showButton: true,
+    };
+    const labelHandle: Handle = {
+      id: 'art',
+      type: 'source',
+      handleType: 'artifact',
+      label: 'Memory',
+      showButton: false,
+    };
+    const labelHandleButtonOmitted: Handle = {
+      id: 'art',
+      type: 'source',
+      handleType: 'artifact',
+      label: 'Memory',
+      showButton: false,
+    };
+    const buttonAndLabelHandle: Handle = {
+      id: 'src-labeled',
+      type: 'source',
+      handleType: 'output',
+      label: 'Output',
+      showButton: true,
+    };
+
+    const topHandles = (...handles: Handle[]): HandleGroupManifest[] => [
+      { position: Position.Top, handles },
+    ];
+
+    const renderNode = (overrides: Partial<NodeProps<Node<BaseNodeData>>> = {}) => {
+      mockOverrideConfig.current = { toolbarConfig: TOP_TOOLBAR };
+      return render(<BaseNode {...defaultProps} {...overrides} />);
+    };
+
+    // The latest `offsetToolbar` value handed to NodeToolbar.
+    const offset = () => mockNodeToolbar.mock.calls.at(-1)?.[0]?.offsetToolbar;
+
+    it('does not offset when no handle is configured at the toolbar side', () => {
+      mockHandleConfigs.current = [];
+      renderNode({ selected: true });
+      expect(offset()).toBe(false);
+    });
+
+    it('does not offset when the handle is on a different side than the toolbar', () => {
+      mockHandleConfigs.current = [{ position: Position.Bottom, handles: [buttonHandle] }];
+      renderNode({ selected: true });
+      expect(offset()).toBe(false);
+    });
+
+    it("offsets for 'button' when a selected node shows a source add button", () => {
+      mockHandleConfigs.current = topHandles(buttonHandle);
+      renderNode({ selected: true });
+      expect(offset()).toBe('button');
+    });
+
+    it('does not offset for a button in readonly mode (button is not rendered)', () => {
+      mockMode.current = 'readonly';
+      mockHandleConfigs.current = topHandles(buttonHandle);
+      renderNode({ selected: true });
+      expect(offset()).toBe(false);
+    });
+
+    it("offsets for 'label' when a labeled handle has no visible button", () => {
+      mockHandleConfigs.current = topHandles(labelHandle);
+      renderNode({ selected: true });
+      expect(offset()).toBe('label');
+    });
+
+    it("offsets for 'label' when a labeled handle has omitted button in smart handles mode", () => {
+      mockHandleConfigs.current = topHandles(labelHandleButtonOmitted);
+      renderNode({ selected: true, data: { useSmartHandles: true } });
+      expect(offset()).toBe('label');
+    });
+
+    it("offsets for 'label' on a labeled handle even in readonly mode", () => {
+      mockMode.current = 'readonly';
+      mockHandleConfigs.current = topHandles(labelHandle);
+      renderNode({ selected: true });
+      expect(offset()).toBe('label');
+    });
+
+    it("prefers 'button' over 'label' when both are shown", () => {
+      mockHandleConfigs.current = topHandles(buttonAndLabelHandle);
+      renderNode({ selected: true });
+      expect(offset()).toBe('button');
+    });
+
+    it("falls back to 'label' when the button is hidden but the label shows", () => {
+      mockMode.current = 'readonly';
+      mockHandleConfigs.current = topHandles(buttonAndLabelHandle);
+      renderNode({ selected: true });
+      expect(offset()).toBe('label');
+    });
+
+    it('does not offset while multiple nodes are selected', () => {
+      mockMultipleNodesSelected.current = true;
+      mockHandleConfigs.current = topHandles(labelHandle);
+      renderNode({ selected: true });
+      expect(offset()).toBe(false);
+    });
+
+    it('ignores a handle group that is not visible', () => {
+      mockHandleConfigs.current = [
+        { position: Position.Top, visible: false, handles: [labelHandle] },
+      ];
+      renderNode({ selected: true });
+      expect(offset()).toBe(false);
+    });
+
+    it('ignores an individually hidden handle', () => {
+      mockHandleConfigs.current = topHandles({ ...labelHandle, visible: false });
+      renderNode({ selected: true });
+      expect(offset()).toBe(false);
+    });
+
+    it('offsets a ButtonHandle add button on hover alone (not selected)', () => {
+      mockHandleConfigs.current = topHandles(buttonHandle);
+      const { container } = renderNode({ selected: false });
+      expect(offset()).toBe(false);
+      fireEvent.mouseEnter(container.firstChild as Element);
+      expect(offset()).toBe('button');
+    });
+
+    it('requires selection — not just hover — for a SmartHandle add button', () => {
+      mockHandleConfigs.current = topHandles(buttonHandle);
+      const { container } = renderNode({ selected: false, data: { useSmartHandles: true } });
+      fireEvent.mouseEnter(container.firstChild as Element);
+      expect(offset()).toBe(false);
+    });
+
+    it('does not apply the button offset while a connection is in progress', () => {
+      // ButtonHandle add buttons are hidden during connect; the offset must match.
+      mockIsConnecting.current = true;
+      mockHandleConfigs.current = topHandles(buttonHandle);
+      renderNode({ selected: true });
+      expect(offset()).toBe(false);
+    });
+
+    it('falls back to the label offset while connecting when the handle is labeled', () => {
+      mockIsConnecting.current = true;
+      mockHandleConfigs.current = topHandles(buttonAndLabelHandle);
+      renderNode({ selected: true });
+      expect(offset()).toBe('label');
+    });
+
+    it('honors a custom shouldShowAddButtonFn (parity with useButtonHandles)', () => {
+      // AgentNode-style predicate shows the add button whenever selected — even in
+      // readonly, where the default predicate would not. The offset must follow it.
+      mockMode.current = 'readonly';
+      mockOverrideConfig.current = {
+        toolbarConfig: TOP_TOOLBAR,
+        shouldShowAddButtonFn: (o: { showAddButton: boolean; selected: boolean }) =>
+          o.showAddButton || o.selected,
+      };
+      mockHandleConfigs.current = topHandles(buttonHandle);
+      render(<BaseNode {...defaultProps} selected={true} />);
+      expect(offset()).toBe('button');
     });
   });
 });

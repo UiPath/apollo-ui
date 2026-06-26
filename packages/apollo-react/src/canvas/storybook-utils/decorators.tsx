@@ -18,7 +18,7 @@ import {
   type ValidationStateContextValue,
   ValidationStatusContext,
 } from '../hooks';
-import type { ElementStatus } from '../types/execution';
+import { type ElementStatus, ElementStatusValues } from '../types/execution';
 import type { ValidationErrorSeverity } from '../types/validation';
 import { defaultWorkflowManifest } from './manifests';
 
@@ -27,6 +27,7 @@ import { defaultWorkflowManifest } from './manifests';
  * theme toolbar in `apps/storybook/.storybook/preview.tsx`.
  */
 const DARK_THEMES = new Set(['dark', 'dark-hc', 'future-dark', 'vertex', 'canvas']);
+const EXECUTION_STATUSES = new Set<ElementStatus>(Object.values(ElementStatusValues));
 
 /**
  * Props for execution state configuration.
@@ -66,10 +67,16 @@ export interface CanvasProvidersOptions {
  */
 const defaultExecutionState: ExecutionStateConfig = {
   getNodeExecutionState: (nodeId: string): ElementStatus | undefined =>
-    nodeId.split('-')[1] as ElementStatus,
+    resolveStoryExecutionStatus(nodeId.split('-')[1]),
   getEdgeExecutionState: (edgeId: string, _targetNodeId: string): ElementStatus | undefined =>
-    edgeId.split('-')[1] as ElementStatus,
+    resolveStoryExecutionStatus(edgeId.split('-')[1]),
 };
+
+function resolveStoryExecutionStatus(value: string | undefined): ElementStatus | undefined {
+  return value && EXECUTION_STATUSES.has(value as ElementStatus)
+    ? (value as ElementStatus)
+    : undefined;
+}
 
 /**
  * Default validation state that extracts status from node ID.

@@ -12,6 +12,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.700.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.950.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.50.value}"
       }
     },
     "backgroundSecondary": {
@@ -26,6 +32,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.650.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.900.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.100.value}"
       }
     },
     "backgroundInverse": {
@@ -40,6 +52,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.100.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.50.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.950.value}"
       }
     },
     "backgroundGray": {
@@ -54,6 +72,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.600.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.600.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.300.value}"
       }
     },
     "backgroundDisabled": {
@@ -68,6 +92,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.650.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.900.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.200.value}"
       }
     },
     "backgroundHighlight": {
@@ -82,6 +112,12 @@
       },
       "dark-hc": {
         "value": "{color.orange.850.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.950.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.100.value}"
       }
     },
     "backgroundRaised": {
@@ -96,6 +132,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.650.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.900.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.100.value}"
       }
     },
     "backgroundEdit": {
@@ -110,6 +152,12 @@
       },
       "dark-hc": {
         "value": "{color.black.value}99"
+      },
+      "future-dark": {
+        "value": "{color.black.value}99"
+      },
+      "future-light": {
+        "value": "{color.white.value}"
       }
     },
     "backgroundGrayEmp": {
@@ -124,6 +172,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.400.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.500.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.400.value}"
       }
     },
     "backgroundHover": {
@@ -142,6 +196,12 @@
       "dark-hc": {
         "value": "{color.ink.400.value}14",
         "comment": "14 hex = 0.08 Opacity"
+      },
+      "future-dark": {
+        "value": "{color.zinc.300.value}14"
+      },
+      "future-light": {
+        "value": "{color.zinc.600.value}14"
       }
     },
     "backgroundPressed": {
@@ -160,6 +220,12 @@
       "dark-hc": {
         "value": "{color.ink.300.value}1f",
         "comment": "1f hex = 0.12 Opacity"
+      },
+      "future-dark": {
+        "value": "{color.zinc.300.value}1f"
+      },
+      "future-light": {
+        "value": "{color.zinc.600.value}1f"
       }
     },
     "backgroundSelected": {
@@ -174,6 +240,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.600.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.700.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.300.value}"
       }
     },
     "selectionIndicator": {
@@ -188,6 +260,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.100.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.500.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.500.value}"
       }
     },
     "notificationBadge": {
@@ -202,6 +280,12 @@
       },
       "dark-hc": {
         "value": "{color.white.value}"
+      },
+      "future-dark": {
+        "value": "{color.white.value}"
+      },
+      "future-light": {
+        "value": "{color.black.value}"
       }
     },
     "notificationIndicator": {
@@ -216,6 +300,12 @@
       },
       "dark-hc": {
         "value": "{color.orange.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.rose.400.value}"
+      },
+      "future-light": {
+        "value": "{color.rose.600.value}"
       }
     },
     "hover": {
@@ -230,6 +320,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.650.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.700.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.300.value}"
       }
     },
     "curtain": {
@@ -244,6 +340,12 @@
       },
       "dark-hc": {
         "value": "rgba(black, 0.75)"
+      },
+      "future-dark": {
+        "value": "rgba(black, 0.75)"
+      },
+      "future-light": {
+        "value": "rgba(black, 0.3)"
       }
     },
     "border": {
@@ -258,6 +360,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.350.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.700.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.300.value}"
       }
     },
     "borderDisabled": {
@@ -272,6 +380,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.450.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.800.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.200.value}"
       }
     },
     "borderGrid": {
@@ -286,6 +400,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.650.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.800.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.200.value}"
       }
     },
     "borderDeEmp": {
@@ -300,6 +420,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.400.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.800.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.200.value}"
       }
     },
     "selection": {
@@ -314,6 +440,12 @@
       },
       "dark-hc": {
         "value": "{color.orange.200.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.400.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.600.value}"
       }
     },
     "logo": {
@@ -328,6 +460,12 @@
       },
       "dark-hc": {
         "value": "{color.white.value}"
+      },
+      "future-dark": {
+        "value": "{color.white.value}"
+      },
+      "future-light": {
+        "value": "{color.black.value}"
       }
     },
     "foreground": {
@@ -342,6 +480,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.150.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.50.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.950.value}"
       }
     },
     "foregroundLight": {
@@ -356,6 +500,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.350.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.400.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.500.value}"
       }
     },
     "foregroundEmp": {
@@ -370,6 +520,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.100.value}"
+      },
+      "future-dark": {
+        "value": "{color.white.value}"
+      },
+      "future-light": {
+        "value": "{color.black.value}"
       }
     },
     "foregroundDeEmp": {
@@ -384,6 +540,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.400.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.500.value}"
       }
     },
     "foregroundDisable": {
@@ -398,6 +560,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.400.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.500.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.400.value}"
       }
     },
     "foregroundInverse": {
@@ -412,6 +580,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.700.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.950.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.50.value}"
       }
     },
     "foregroundHighlight": {
@@ -426,6 +600,12 @@
       },
       "dark-hc": {
         "value": "{color.orange.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.400.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.600.value}"
       }
     },
     "foregroundHighlightSelected": {
@@ -440,6 +620,12 @@
       },
       "dark-hc": {
         "value": "{color.orange.300.value}1a"
+      },
+      "future-dark": {
+        "value": "{color.cyan.400.value}1a"
+      },
+      "future-light": {
+        "value": "{color.cyan.600.value}1a"
       }
     },
     "foregroundHighlightSelectedHover": {
@@ -454,6 +640,12 @@
       },
       "dark-hc": {
         "value": "{color.orange.300.value}26"
+      },
+      "future-dark": {
+        "value": "{color.cyan.400.value}26"
+      },
+      "future-light": {
+        "value": "{color.cyan.600.value}26"
       }
     },
     "foregroundLink": {
@@ -468,6 +660,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.400.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.700.value}"
       }
     },
     "foregroundLinkPressed": {
@@ -482,6 +680,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.200.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.300.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.800.value}"
       }
     },
     "foregroundInvDeEmp": {
@@ -496,6 +700,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.600.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.600.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.300.value}"
       }
     },
     "primary": {
@@ -510,6 +720,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.200.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.500.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.500.value}"
       }
     },
     "primaryLighter": {
@@ -524,6 +740,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.800.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.300.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.100.value}"
       }
     },
     "primaryDarker": {
@@ -538,6 +760,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.200.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.600.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.700.value}"
       }
     },
     "primaryHover": {
@@ -552,6 +780,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.400.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.600.value}"
       }
     },
     "primaryFocused": {
@@ -566,6 +800,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.400.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.600.value}"
       }
     },
     "primaryPressed": {
@@ -580,6 +820,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.400.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.500.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.500.value}"
       }
     },
     "secondaryFocused": {
@@ -594,6 +840,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.650.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.700.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.100.value}"
       }
     },
     "secondaryPressed": {
@@ -608,6 +860,12 @@
       },
       "dark-hc": {
         "value": "{color.blue_secondary.700.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.900.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.200.value}"
       }
     },
     "chipDefaultBackground": {
@@ -622,6 +880,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.550.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.600.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.300.value}"
       }
     },
     "chipErrorBackground": {
@@ -636,6 +900,12 @@
       },
       "dark-hc": {
         "value": "{color.black.value}"
+      },
+      "future-dark": {
+        "value": "{color.red.950.value}"
+      },
+      "future-light": {
+        "value": "{color.red.100.value}"
       }
     },
     "chipWarningBackground": {
@@ -650,6 +920,12 @@
       },
       "dark-hc": {
         "value": "{color.black.value}"
+      },
+      "future-dark": {
+        "value": "{color.amber.950.value}"
+      },
+      "future-light": {
+        "value": "{color.amber.100.value}"
       }
     },
     "chipInfoBackground": {
@@ -664,6 +940,12 @@
       },
       "dark-hc": {
         "value": "{color.black.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.950.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.100.value}"
       }
     },
     "chipSuccessBackground": {
@@ -678,6 +960,12 @@
       },
       "dark-hc": {
         "value": "{color.black.value}"
+      },
+      "future-dark": {
+        "value": "{color.emerald.950.value}"
+      },
+      "future-light": {
+        "value": "{color.emerald.100.value}"
       }
     },
     "errorIcon": {
@@ -692,6 +980,12 @@
       },
       "dark-hc": {
         "value": "{color.error.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.error.400.value}"
+      },
+      "future-light": {
+        "value": "{color.error.500.value}"
       }
     },
     "errorIconInverse": {
@@ -706,6 +1000,12 @@
       },
       "dark-hc": {
         "value": "{color.error.600.value}"
+      },
+      "future-dark": {
+        "value": "{color.error.500.value}"
+      },
+      "future-light": {
+        "value": "{color.error.400.value}"
       }
     },
     "errorText": {
@@ -720,6 +1020,12 @@
       },
       "dark-hc": {
         "value": "{color.error.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.error.400.value}"
+      },
+      "future-light": {
+        "value": "{color.error.700.value}"
       }
     },
     "errorBackground": {
@@ -734,6 +1040,12 @@
       },
       "dark-hc": {
         "value": "{color.black.value}"
+      },
+      "future-dark": {
+        "value": "{color.red.950.value}"
+      },
+      "future-light": {
+        "value": "{color.red.100.value}"
       }
     },
     "errorForegroundInverse": {
@@ -748,6 +1060,12 @@
       },
       "dark-hc": {
         "value": "{color.error.600.value}"
+      },
+      "future-dark": {
+        "value": "{color.error.500.value}"
+      },
+      "future-light": {
+        "value": "{color.error.400.value}"
       }
     },
     "infoForeground": {
@@ -762,6 +1080,12 @@
       },
       "dark-hc": {
         "value": "{color.blue_secondary.400.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.400.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.700.value}"
       }
     },
     "infoIcon": {
@@ -776,6 +1100,12 @@
       },
       "dark-hc": {
         "value": "{color.blue_secondary.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.400.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.600.value}"
       }
     },
     "infoIconInverse": {
@@ -790,6 +1120,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.600.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.600.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.400.value}"
       }
     },
     "infoText": {
@@ -804,6 +1140,12 @@
       },
       "dark-hc": {
         "value": "{color.blue_secondary.400.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.400.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.700.value}"
       }
     },
     "infoForegroundInverse": {
@@ -818,6 +1160,12 @@
       },
       "dark-hc": {
         "value": "{color.blue_secondary.500.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.600.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.400.value}"
       }
     },
     "infoBackground": {
@@ -832,6 +1180,12 @@
       },
       "dark-hc": {
         "value": "{color.black.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.950.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.100.value}"
       }
     },
     "successIcon": {
@@ -846,6 +1200,12 @@
       },
       "dark-hc": {
         "value": "{color.green.400.value}"
+      },
+      "future-dark": {
+        "value": "{color.emerald.400.value}"
+      },
+      "future-light": {
+        "value": "{color.emerald.700.value}"
       }
     },
     "successIconInverse": {
@@ -860,6 +1220,12 @@
       },
       "dark-hc": {
         "value": "{color.green.500.value}"
+      },
+      "future-dark": {
+        "value": "{color.emerald.700.value}"
+      },
+      "future-light": {
+        "value": "{color.emerald.400.value}"
       }
     },
     "successText": {
@@ -874,6 +1240,12 @@
       },
       "dark-hc": {
         "value": "{color.green.400.value}"
+      },
+      "future-dark": {
+        "value": "{color.emerald.400.value}"
+      },
+      "future-light": {
+        "value": "{color.emerald.700.value}"
       }
     },
     "successBackground": {
@@ -888,6 +1260,12 @@
       },
       "dark-hc": {
         "value": "{color.black.value}"
+      },
+      "future-dark": {
+        "value": "{color.emerald.950.value}"
+      },
+      "future-light": {
+        "value": "{color.emerald.100.value}"
       }
     },
     "successForegroundInverse": {
@@ -902,6 +1280,12 @@
       },
       "dark-hc": {
         "value": "{color.green.500.value}"
+      },
+      "future-dark": {
+        "value": "{color.emerald.700.value}"
+      },
+      "future-light": {
+        "value": "{color.emerald.400.value}"
       }
     },
     "warningIcon": {
@@ -916,6 +1300,12 @@
       },
       "dark-hc": {
         "value": "{color.yellow.400.value}"
+      },
+      "future-dark": {
+        "value": "{color.amber.400.value}"
+      },
+      "future-light": {
+        "value": "{color.amber.500.value}"
       }
     },
     "warningIconInverse": {
@@ -930,6 +1320,12 @@
       },
       "dark-hc": {
         "value": "{color.yellow.500.value}"
+      },
+      "future-dark": {
+        "value": "{color.amber.500.value}"
+      },
+      "future-light": {
+        "value": "{color.amber.400.value}"
       }
     },
     "warningText": {
@@ -944,6 +1340,12 @@
       },
       "dark-hc": {
         "value": "{color.yellow.200.value}"
+      },
+      "future-dark": {
+        "value": "{color.amber.400.value}"
+      },
+      "future-light": {
+        "value": "{color.amber.700.value}"
       }
     },
     "warningBackground": {
@@ -958,6 +1360,12 @@
       },
       "dark-hc": {
         "value": "{color.black.value}"
+      },
+      "future-dark": {
+        "value": "{color.amber.950.value}"
+      },
+      "future-light": {
+        "value": "{color.amber.100.value}"
       }
     },
     "warningForegroundInverse": {
@@ -972,6 +1380,12 @@
       },
       "dark-hc": {
         "value": "{color.yellow.500.value}"
+      },
+      "future-dark": {
+        "value": "{color.amber.500.value}"
+      },
+      "future-light": {
+        "value": "{color.amber.400.value}"
       }
     },
     "iconDefault": {
@@ -986,6 +1400,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.400.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.600.value}"
       }
     },
     "iconInvertedDefault": {
@@ -1000,6 +1420,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.600.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.600.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.300.value}"
       }
     },
     "toggleOffHover": {
@@ -1014,6 +1440,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.300.value}14"
+      },
+      "future-dark": {
+        "value": "{color.zinc.300.value}14"
+      },
+      "future-light": {
+        "value": "{color.zinc.600.value}14"
       }
     },
     "toggleOffFocus": {
@@ -1028,6 +1460,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.300.value}14"
+      },
+      "future-dark": {
+        "value": "{color.zinc.300.value}14"
+      },
+      "future-light": {
+        "value": "{color.zinc.600.value}14"
       }
     },
     "toggleOffPressed": {
@@ -1042,6 +1480,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.300.value}1f"
+      },
+      "future-dark": {
+        "value": "{color.zinc.300.value}1f"
+      },
+      "future-light": {
+        "value": "{color.zinc.600.value}1f"
       }
     },
     "toggleOnHover": {
@@ -1056,6 +1500,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.400.value}14"
+      },
+      "future-dark": {
+        "value": "{color.cyan.500.value}14"
+      },
+      "future-light": {
+        "value": "{color.cyan.500.value}14"
       }
     },
     "toggleOnFocus": {
@@ -1070,6 +1520,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.400.value}14"
+      },
+      "future-dark": {
+        "value": "{color.cyan.500.value}14"
+      },
+      "future-light": {
+        "value": "{color.cyan.500.value}14"
       }
     },
     "toggleOnPressed": {
@@ -1084,6 +1540,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.400.value}1f"
+      },
+      "future-dark": {
+        "value": "{color.cyan.500.value}1f"
+      },
+      "future-light": {
+        "value": "{color.cyan.500.value}1f"
       }
     },
     "calloutBackground": {
@@ -1098,6 +1560,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.700.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.700.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.700.value}"
       }
     },
     "warn": {
@@ -1112,6 +1580,12 @@
       },
       "dark-hc": {
         "value": "{color.red.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.red.400.value}"
+      },
+      "future-light": {
+        "value": "{color.red.600.value}"
       }
     },
     "warnDarker": {
@@ -1126,6 +1600,12 @@
       },
       "dark-hc": {
         "value": "{color.red.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.red.300.value}"
+      },
+      "future-light": {
+        "value": "{color.red.700.value}"
       }
     },
     "warnHover": {
@@ -1140,6 +1620,12 @@
       },
       "dark-hc": {
         "value": "{color.red.400.value}0a"
+      },
+      "future-dark": {
+        "value": "{color.red.400.value}0a"
+      },
+      "future-light": {
+        "value": "{color.red.600.value}0a"
       }
     },
     "warnFocus": {
@@ -1154,6 +1640,12 @@
       },
       "dark-hc": {
         "value": "{color.red.400.value}1f"
+      },
+      "future-dark": {
+        "value": "{color.red.400.value}1f"
+      },
+      "future-light": {
+        "value": "{color.red.600.value}1f"
       }
     },
     "warnPressed": {
@@ -1168,6 +1660,12 @@
       },
       "dark-hc": {
         "value": "{color.red.400.value}14"
+      },
+      "future-dark": {
+        "value": "{color.red.400.value}14"
+      },
+      "future-light": {
+        "value": "{color.red.600.value}14"
       }
     },
     "carouselBackground": {
@@ -1182,6 +1680,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.050-contrast.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.950.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.50.value}"
       }
     },
     "iconButtonHover": {
@@ -1196,6 +1700,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.300.value}14"
+      },
+      "future-dark": {
+        "value": "{color.zinc.300.value}14"
+      },
+      "future-light": {
+        "value": "{color.zinc.600.value}14"
       }
     },
     "iconButtonFocus": {
@@ -1210,6 +1720,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.300.value}14"
+      },
+      "future-dark": {
+        "value": "{color.zinc.300.value}14"
+      },
+      "future-light": {
+        "value": "{color.zinc.600.value}14"
       }
     },
     "iconButtonPressed": {
@@ -1224,6 +1740,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.300.value}1f"
+      },
+      "future-dark": {
+        "value": "{color.zinc.300.value}1f"
+      },
+      "future-light": {
+        "value": "{color.zinc.600.value}1f"
       }
     },
     "codeFunction": {
@@ -1238,6 +1760,12 @@
       },
       "dark-hc": {
         "value": "{color.purple.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.violet.400.value}"
+      },
+      "future-light": {
+        "value": "{color.violet.600.value}"
       }
     },
     "codeOperator": {
@@ -1252,6 +1780,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.400.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.400.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.700.value}"
       }
     },
     "codeNumeric": {
@@ -1266,6 +1800,12 @@
       },
       "dark-hc": {
         "value": "#6ECDB6"
+      },
+      "future-dark": {
+        "value": "{color.amber.400.value}"
+      },
+      "future-light": {
+        "value": "{color.amber.700.value}"
       }
     },
     "codeText": {
@@ -1280,6 +1820,12 @@
       },
       "dark-hc": {
         "value": "{color.pink.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.emerald.400.value}"
+      },
+      "future-light": {
+        "value": "{color.emerald.700.value}"
       }
     },
     "toggleThumbOff": {
@@ -1294,6 +1840,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.300.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.600.value}"
       }
     },
     "toggleTrackOff": {
@@ -1308,6 +1860,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.550.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.600.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.300.value}"
       }
     },
     "toggleThumbOn": {
@@ -1322,6 +1880,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.400.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.500.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.500.value}"
       }
     },
     "toggleTrackOn": {
@@ -1336,6 +1900,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.700.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.800.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.200.value}"
       }
     },
     "toggleThumbOffDisabled": {
@@ -1350,6 +1920,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.550.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.600.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.300.value}"
       }
     },
     "toggleTrackOffDisabled": {
@@ -1364,6 +1940,12 @@
       },
       "dark-hc": {
         "value": "{color.ink.600.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.700.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.200.value}"
       }
     },
     "toggleThumbOnDisabled": {
@@ -1378,6 +1960,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.400.value}47"
+      },
+      "future-dark": {
+        "value": "{color.cyan.500.value}47"
+      },
+      "future-light": {
+        "value": "{color.cyan.500.value}47"
       }
     },
     "toggleTrackOnDisabled": {
@@ -1392,6 +1980,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.700.value}61"
+      },
+      "future-dark": {
+        "value": "{color.cyan.800.value}61"
+      },
+      "future-light": {
+        "value": "{color.cyan.200.value}61"
       }
     },
     "skeleton": {
@@ -1406,6 +2000,12 @@
       },
       "dark-hc": {
         "value": "#273139"
+      },
+      "future-dark": {
+        "value": "{color.zinc.800.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.200.value}"
       }
     },
     "skeletonGlow": {
@@ -1420,6 +2020,12 @@
       },
       "dark-hc": {
         "value": "#525A61"
+      },
+      "future-dark": {
+        "value": "{color.zinc.600.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.50.value}"
       }
     },
     "dataGridHover": {
@@ -1434,6 +2040,12 @@
       },
       "dark-hc": {
         "value": "#272F36"
+      },
+      "future-dark": {
+        "value": "{color.zinc.800.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.100.value}"
       }
     },
     "dataGridPressed": {
@@ -1448,6 +2060,12 @@
       },
       "dark-hc": {
         "value": "#2E363D"
+      },
+      "future-dark": {
+        "value": "{color.zinc.700.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.200.value}"
       }
     },
     "focusIndicator": {
@@ -1462,6 +2080,12 @@
       },
       "dark-hc": {
         "value": "{color.blue_secondary.200.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.400.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.600.value}"
       }
     },
     "focusIndicatorInverse": {
@@ -1476,6 +2100,12 @@
       },
       "dark-hc": {
         "value": "{color.blue.500.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.600.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.400.value}"
       }
     },
     "chartPurple": {
@@ -1490,6 +2120,12 @@
       },
       "dark-hc": {
         "value": "{color.purple.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.violet.400.value}"
+      },
+      "future-light": {
+        "value": "{color.violet.600.value}"
       }
     },
     "chartPink": {
@@ -1504,6 +2140,12 @@
       },
       "dark-hc": {
         "value": "{color.pink.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.rose.400.value}"
+      },
+      "future-light": {
+        "value": "{color.rose.600.value}"
       }
     },
     "chartBlueSecondary": {
@@ -1518,6 +2160,12 @@
       },
       "dark-hc": {
         "value": "{color.blue_secondary.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.400.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.600.value}"
       }
     },
     "chartLightBlue": {
@@ -1532,6 +2180,12 @@
       },
       "dark-hc": {
         "value": "{color.light_blue.400.value}"
+      },
+      "future-dark": {
+        "value": "{color.sky.400.value}"
+      },
+      "future-light": {
+        "value": "{color.sky.600.value}"
       }
     },
     "chartGreen": {
@@ -1546,6 +2200,12 @@
       },
       "dark-hc": {
         "value": "{color.green.400.value}"
+      },
+      "future-dark": {
+        "value": "{color.emerald.400.value}"
+      },
+      "future-light": {
+        "value": "{color.emerald.600.value}"
       }
     },
     "chartYellow": {
@@ -1560,6 +2220,12 @@
       },
       "dark-hc": {
         "value": "{color.yellow.400.value}"
+      },
+      "future-dark": {
+        "value": "{color.amber.400.value}"
+      },
+      "future-light": {
+        "value": "{color.amber.600.value}"
       }
     },
     "gradientGeneralStart": {
@@ -1574,6 +2240,12 @@
       },
       "dark-hc": {
         "value": "{color.gradient.1D.value}"
+      },
+      "future-dark": {
+        "value": "{color.gradient.1D.value}"
+      },
+      "future-light": {
+        "value": "{color.gradient.1L.value}"
       }
     },
     "gradientGeneralEnd": {
@@ -1588,6 +2260,12 @@
       },
       "dark-hc": {
         "value": "{color.gradient.1D-end.value}"
+      },
+      "future-dark": {
+        "value": "{color.gradient.1D-end.value}"
+      },
+      "future-light": {
+        "value": "{color.gradient.1L-end.value}"
       }
     },
     "gradientAgentStart": {
@@ -1602,6 +2280,12 @@
       },
       "dark-hc": {
         "value": "{color.gradient.2D.value}"
+      },
+      "future-dark": {
+        "value": "{color.gradient.2D.value}"
+      },
+      "future-light": {
+        "value": "{color.gradient.2L.value}"
       }
     },
     "gradientAgentEnd": {
@@ -1616,6 +2300,12 @@
       },
       "dark-hc": {
         "value": "{color.gradient.2D-end.value}"
+      },
+      "future-dark": {
+        "value": "{color.gradient.2D-end.value}"
+      },
+      "future-light": {
+        "value": "{color.gradient.2L-end.value}"
       }
     },
     "gradientInvokedStart": {
@@ -1630,6 +2320,12 @@
       },
       "dark-hc": {
         "value": "{color.gradient.3D.value}"
+      },
+      "future-dark": {
+        "value": "{color.gradient.3D.value}"
+      },
+      "future-light": {
+        "value": "{color.gradient.3L.value}"
       }
     },
     "gradientInvokedEnd": {
@@ -1644,6 +2340,12 @@
       },
       "dark-hc": {
         "value": "{color.gradient.3D-end.value}"
+      },
+      "future-dark": {
+        "value": "{color.gradient.3D-end.value}"
+      },
+      "future-light": {
+        "value": "{color.gradient.3L-end.value}"
       }
     },
     "gradientHumanStart": {
@@ -1658,6 +2360,12 @@
       },
       "dark-hc": {
         "value": "{color.gradient.4D.value}"
+      },
+      "future-dark": {
+        "value": "{color.gradient.4D.value}"
+      },
+      "future-light": {
+        "value": "{color.gradient.4L.value}"
       }
     },
     "gradientHumanEnd": {
@@ -1672,6 +2380,192 @@
       },
       "dark-hc": {
         "value": "{color.gradient.4D-end.value}"
+      },
+      "future-dark": {
+        "value": "{color.gradient.4D-end.value}"
+      },
+      "future-light": {
+        "value": "{color.gradient.4L-end.value}"
+      }
+    },
+    "backgroundOverlay": {
+      "light": {
+        "value": "{color.ink.150.value}"
+      },
+      "light-hc": {
+        "value": "{color.ink.150.value}"
+      },
+      "dark": {
+        "value": "{color.ink.600.value}"
+      },
+      "dark-hc": {
+        "value": "{color.ink.600.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.800.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.200.value}"
+      }
+    },
+    "foregroundSecondary": {
+      "light": {
+        "value": "{color.ink.700.value}"
+      },
+      "light-hc": {
+        "value": "{color.ink.700.value}"
+      },
+      "dark": {
+        "value": "{color.ink.100.value}"
+      },
+      "dark-hc": {
+        "value": "{color.ink.100.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.100.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.900.value}"
+      }
+    },
+    "foregroundHover": {
+      "light": {
+        "value": "{color.ink.550.value}"
+      },
+      "light-hc": {
+        "value": "{color.ink.600.value}"
+      },
+      "dark": {
+        "value": "{color.ink.300.value}"
+      },
+      "dark-hc": {
+        "value": "{color.ink.300.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.300.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.600.value}"
+      }
+    },
+    "foregroundOnAccent": {
+      "light": {
+        "value": "{color.ink.100.value}"
+      },
+      "light-hc": {
+        "value": "{color.ink.100.value}"
+      },
+      "dark": {
+        "value": "{color.ink.700.value}"
+      },
+      "dark-hc": {
+        "value": "{color.ink.700.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.950.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.950.value}"
+      }
+    },
+    "primarySubtle": {
+      "light": {
+        "value": "{color.blue.200.value}"
+      },
+      "light-hc": {
+        "value": "{color.blue.200.value}"
+      },
+      "dark": {
+        "value": "{color.blue.700.value}"
+      },
+      "dark-hc": {
+        "value": "{color.blue.800.value}"
+      },
+      "future-dark": {
+        "value": "{color.cyan.950.value}"
+      },
+      "future-light": {
+        "value": "{color.cyan.50.value}"
+      }
+    },
+    "borderMuted": {
+      "light": {
+        "value": "{color.ink.150.value}"
+      },
+      "light-hc": {
+        "value": "{color.ink.150.value}"
+      },
+      "dark": {
+        "value": "{color.ink.650.value}"
+      },
+      "dark-hc": {
+        "value": "{color.ink.650.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.900.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.100.value}"
+      }
+    },
+    "borderDeep": {
+      "light": {
+        "value": "{color.ink.150.value}"
+      },
+      "light-hc": {
+        "value": "{color.ink.150.value}"
+      },
+      "dark": {
+        "value": "{color.ink.650.value}"
+      },
+      "dark-hc": {
+        "value": "{color.ink.650.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.950.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.50.value}"
+      }
+    },
+    "borderInverse": {
+      "light": {
+        "value": "{color.ink.400.value}"
+      },
+      "light-hc": {
+        "value": "{color.ink.500.value}"
+      },
+      "dark": {
+        "value": "{color.ink.450.value}"
+      },
+      "dark-hc": {
+        "value": "{color.ink.350.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.200.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.700.value}"
+      }
+    },
+    "borderHover": {
+      "light": {
+        "value": "{color.ink.400.value}"
+      },
+      "light-hc": {
+        "value": "{color.ink.500.value}"
+      },
+      "dark": {
+        "value": "{color.ink.450.value}"
+      },
+      "dark-hc": {
+        "value": "{color.ink.350.value}"
+      },
+      "future-dark": {
+        "value": "{color.zinc.600.value}"
+      },
+      "future-light": {
+        "value": "{color.zinc.400.value}"
       }
     }
   }

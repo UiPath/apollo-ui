@@ -1,26 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { MetadataForm } from './metadata-form';
-import { FormStateViewer } from './form-state-viewer';
-import type { FormSchema } from './form-schema';
-import { useForm, FormProvider, type FieldValues, type UseFormReturn } from 'react-hook-form';
-import { RuleBuilder } from './rules-engine';
-import { autoSavePlugin, analyticsPlugin } from './form-plugins';
-import { setupDemoMocks } from './demo-mocks';
 import {
-  cascadingDropdownsSchema,
-  computedFieldsSchema,
-  conditionalSectionsSchema,
-  conditionalQuestionsSchema,
-  automationJobSchema,
-  multiStepSchema,
-  fileUploadSchema,
-  FileUploadExample,
-} from './form-examples';
-import { SchemaViewer } from './schema-viewer';
+  Controller,
+  type FieldValues,
+  FormProvider,
+  type UseFormReturn,
+  useForm,
+  useFormContext,
+} from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -28,8 +17,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useFormContext, Controller } from 'react-hook-form';
 import { Toaster } from '@/components/ui/sonner';
+import { Switch } from '@/components/ui/switch';
+import { setupDemoMocks } from './demo-mocks';
+import {
+  automationJobSchema,
+  cascadingDropdownsSchema,
+  computedFieldsSchema,
+  conditionalQuestionsSchema,
+  conditionalSectionsSchema,
+  FileUploadExample,
+  fileUploadSchema,
+  multiStepSchema,
+} from './form-examples';
+import { analyticsPlugin, autoSavePlugin } from './form-plugins';
+import type { FormSchema } from './form-schema';
+import { FormStateViewer } from './form-state-viewer';
+import { MetadataForm } from './metadata-form';
+import { RuleBuilder } from './rules-engine';
+import { SchemaViewer } from './schema-viewer';
 
 // Setup mocks for cascading dropdown examples
 setupDemoMocks();
@@ -237,6 +243,65 @@ export const CompactLayout: Story = {
     onSubmit: async (data) => {
       console.log('Survey submitted:', data);
       alert('Thanks for your feedback!');
+    },
+  },
+};
+
+// ============================================================================
+// SLIDER WITH DYNAMIC MAX (maxRef)
+// ============================================================================
+
+const sliderMaxRefSchema: FormSchema = {
+  id: 'slider-max-ref',
+  title: 'Slider with dynamic max',
+  description:
+    "The slider's `max` is bound to the value of the 'Available capacity' field via " +
+    '`maxRef`. Change the number input above to see the slider re-scale (and clamp the ' +
+    'current value if it now exceeds the new max).',
+  sections: [
+    {
+      id: 's1',
+      fields: [
+        {
+          name: 'availableCapacity',
+          type: 'number',
+          label: 'Available capacity (stand-in for e.g. model.maxTokens at runtime)',
+          min: 0,
+          defaultValue: 16384,
+        },
+        {
+          name: 'tokens',
+          type: 'slider',
+          label: 'Token allocation',
+          min: 0,
+          step: 100,
+          maxRef: { fromField: 'availableCapacity', fallback: 16384 },
+          defaultValue: 8000,
+        },
+      ],
+    },
+  ],
+  initialData: { availableCapacity: 16384, tokens: 8000 },
+};
+
+/**
+ * Slider with dynamic max (`maxRef`)
+ *
+ * Demonstrates the new additive `maxRef` option on `SliderFieldMetadata`. The
+ * slider's upper bound is sourced from another form field at render time:
+ *
+ * ```ts
+ * { type: 'slider', maxRef: { fromField: 'availableCapacity', fallback: 1000 } }
+ * ```
+ *
+ * Try lowering the "Available capacity" value below the slider's current value
+ * — the slider both rescales and auto-clamps the form value via `onChange`.
+ */
+export const SliderWithDynamicMax: Story = {
+  args: {
+    schema: sliderMaxRefSchema,
+    onSubmit: async (data) => {
+      console.log('Submitted:', data);
     },
   },
 };
@@ -705,6 +770,110 @@ export const MultiStepWizard: Story = {
       console.log('Onboarding complete:', data);
       alert('Welcome! Your account is set up.');
     },
+  },
+};
+
+// ============================================================================
+// TABBED MULTI-STEP
+// ============================================================================
+
+// A node-style schema whose steps map to tabs. Parameters comes from the node,
+// while Error handling and Advanced are common across node types. A node with no
+// parameters simply omits the Parameters step and its tab is not rendered.
+const tabbedNodeSchema: FormSchema = {
+  id: 'scheduled-trigger',
+  title: 'Scheduled trigger',
+  // No submit button: this mirrors a properties panel that persists on change.
+  actions: [],
+  initialData: {
+    'inputs.interval': 1,
+    'inputs.unit': 'week',
+    'inputs.at': '09:00',
+    'inputs.ends': 'never',
+    'inputs.errorHandlingEnabled': false,
+    nodeId: 'scheduledTrigger1',
+    'display.label': 'Scheduled trigger',
+  },
+  steps: [
+    {
+      id: 'parameters',
+      title: 'Parameters',
+      sections: [
+        {
+          id: 'schedule',
+          fields: [
+            { name: 'inputs.interval', type: 'number', label: 'Repeat every' },
+            {
+              name: 'inputs.unit',
+              type: 'select',
+              label: 'Unit',
+              options: [
+                { label: 'Hour', value: 'hour' },
+                { label: 'Day', value: 'day' },
+                { label: 'Week', value: 'week' },
+              ],
+            },
+            { name: 'inputs.at', type: 'text', label: 'At' },
+            {
+              name: 'inputs.ends',
+              type: 'select',
+              label: 'Ends',
+              options: [
+                { label: 'Never', value: 'never' },
+                { label: 'On date', value: 'on-date' },
+                { label: 'After occurrences', value: 'after' },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'error-handling',
+      title: 'Error handling',
+      sections: [
+        {
+          id: 'error',
+          fields: [
+            {
+              name: 'inputs.errorHandlingEnabled',
+              type: 'switch',
+              label: 'Enable error handling',
+              description: 'Add an error output handle on the node to catch and handle failures.',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'advanced',
+      title: 'Advanced',
+      sections: [
+        {
+          id: 'general',
+          fields: [
+            { name: 'nodeId', type: 'text', label: 'ID', disabled: true },
+            { name: 'display.label', type: 'text', label: 'Label' },
+            { name: 'display.description', type: 'textarea', label: 'Description' },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+/**
+ * Tabbed Steps (stepVariant="tabs")
+ *
+ * Renders a multi-step schema as a tab bar over a single form instance. Values
+ * and validation are shared across every tab, so switching tabs never loses
+ * edits. This is the node properties panel layout: Parameters comes from the
+ * node, Error handling and Advanced are common across node types.
+ */
+export const TabbedSteps: Story = {
+  args: {
+    schema: tabbedNodeSchema,
+    stepVariant: 'tabs',
   },
 };
 

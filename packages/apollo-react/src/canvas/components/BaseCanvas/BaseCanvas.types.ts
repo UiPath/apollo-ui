@@ -6,6 +6,7 @@ import type {
   ReactFlowProps,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { ReactNode } from 'react';
+import type { SupportedLocale } from '../../../i18n';
 import type { ToolbarActionHandler } from '../../schema/toolbar';
 
 /**
@@ -187,6 +188,13 @@ export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends 
    * @default undefined
    */
   isDarkMode?: boolean;
+
+  /**
+   * Locale forwarded to the canvas's i18n provider so localized canvas
+   * components (StageNode, Toolbox, etc.) render in the host application's
+   * active language. Falls back to English when omitted.
+   */
+  locale?: SupportedLocale;
 }
 
 /**

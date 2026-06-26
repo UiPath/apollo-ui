@@ -80,7 +80,7 @@ const DefaultCanvasDecorator = ({
 };
 
 const meta: Meta<StageNodeProps> = {
-  title: 'Components/StageNode',
+  title: 'Components/Nodes/StageNode',
   component: StageNode,
   parameters: {
     layout: 'fullscreen',
@@ -99,7 +99,6 @@ const meta: Meta<StageNodeProps> = {
           data: {
             stageDetails: context.args.stageDetails,
             execution: context.args.execution,
-            addTaskLabel: context.args.addTaskLabel,
             menuItems: context.args.menuItems,
             onTaskAdd: context.args.onTaskAdd,
             onTaskClick: context.args.onTaskClick,
@@ -116,13 +115,6 @@ const meta: Meta<StageNodeProps> = {
     stageDetails: {
       label: 'Default Stage',
       tasks: [],
-    },
-  },
-  argTypes: {
-    addTaskLabel: {
-      control: 'text',
-      description: 'Label for the add process button',
-      defaultValue: 'Add process',
     },
   },
 };
@@ -188,7 +180,7 @@ export const Default: Story = {
           },
           execution: {
             stageStatus: {
-              duration: 'SLA: None',
+              slaText: 'SLA: None',
             },
           },
           onTaskAdd: () => {
@@ -212,7 +204,7 @@ export const Default: Story = {
           },
           execution: {
             stageStatus: {
-              duration: 'SLA: None',
+              slaText: 'SLA: None',
             },
           },
           onAddTaskFromToolbox: (taskItem: ListItem) => {
@@ -235,6 +227,9 @@ export const Default: Story = {
         width: 304,
         data: {
           onReplaceTaskFromToolbox: () => {},
+          onStatusClick: () => {
+            window.alert('Status icon clicked - this would navigate to the validation issue');
+          },
           stageDetails: {
             label: 'Validation - Failed',
             isReadOnly: true,
@@ -263,6 +258,9 @@ export const Default: Story = {
         position: { x: 1104, y: 96 },
         width: 304,
         data: {
+          onStatusClick: () => {
+            window.alert('Status icon clicked - this would navigate to the validation issue');
+          },
           stageDetails: {
             label: 'Review - Warning',
             isReadOnly: true,
@@ -391,7 +389,7 @@ export const ExecutionStatus: Story = {
           execution: {
             stageStatus: {
               status: 'Completed',
-              duration: 'SLA: 4h',
+              slaText: 'SLA: 4h',
             },
             taskStatus: {
               '1': { status: 'Completed', label: 'KYC and AML Checks', duration: '2h 15m' },
@@ -427,7 +425,7 @@ export const ExecutionStatus: Story = {
           execution: {
             stageStatus: {
               status: 'Completed',
-              duration: 'SLA: 6h 15m',
+              slaText: 'SLA: 6h 15m',
             },
             taskStatus: {
               '1': {
@@ -480,7 +478,7 @@ export const ExecutionStatus: Story = {
             stageStatus: {
               status: 'InProgress',
               label: 'In progress',
-              duration: 'SLA: 2h 15m',
+              slaText: 'SLA: 2h 15m',
             },
             taskStatus: {
               '1': { status: 'Completed', label: 'Report Ordering', duration: '2h 15m' },
@@ -531,7 +529,6 @@ export const ExecutionStatus: Story = {
           execution: {
             stageStatus: {
               status: 'NotExecuted',
-              label: 'Not started',
             },
             taskStatus: {},
           },
@@ -564,6 +561,110 @@ export const ExecutionStatus: Story = {
         targetHandle: '3____target____left',
       },
     ] as Edge[],
+  },
+};
+
+export const SLAStates: Story = {
+  name: 'SLA States',
+  parameters: {
+    nodes: [
+      {
+        id: '0',
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Stage 1',
+            isReadOnly: true,
+            tasks: [],
+          },
+          execution: {
+            stageStatus: {
+              slaText: 'SLA: None',
+            },
+            taskStatus: {},
+          },
+        },
+      },
+      {
+        id: '1',
+        type: 'stage',
+        position: { x: 400, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Closing',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'eSign envelope', icon: <DocumentIcon /> }],
+              [{ id: '3', label: 'Review closing docs', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'InProgress',
+              label: 'In progress',
+              slaText: 'SLA: 10 days remaining',
+            },
+            taskStatus: {},
+          },
+        },
+      },
+      {
+        id: '2',
+        type: 'stage',
+        position: { x: 752, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Closing',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'eSign envelope', icon: <DocumentIcon /> }],
+              [{ id: '3', label: 'Review closing docs', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'InProgress',
+              label: 'In progress',
+              slaText: 'SLA: 1 day remaining',
+              slaIcon: 'warning',
+            },
+            taskStatus: {},
+          },
+        },
+      },
+      {
+        id: '3',
+        type: 'stage',
+        position: { x: 1104, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Closing',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'eSign envelope', icon: <DocumentIcon /> }],
+              [{ id: '3', label: 'Review closing docs', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'InProgress',
+              label: 'In progress',
+              slaText: 'SLA: 1 day overdue',
+              slaIcon: 'error',
+            },
+            taskStatus: {},
+          },
+        },
+      },
+    ],
   },
 };
 
@@ -669,6 +770,7 @@ export const InteractiveTaskManagement: Story = {
               '2': {
                 status: 'InProgress',
                 duration: '1h 15m',
+                durationTooltip: '45m remaining',
                 retryDuration: '15m',
                 badge: 'Retry',
                 badgeStatus: 'warning',
@@ -688,6 +790,92 @@ export const InteractiveTaskManagement: Story = {
           },
           onTaskClick: (taskId: string) => {
             window.alert(`Task clicked: ${taskId} (execution mode - read only)`);
+          },
+        },
+      },
+    ],
+  },
+};
+
+export const ExecutionModeWithSla: Story = {
+  name: 'Execution Mode - Runtime vs SLA',
+  parameters: {
+    nodes: [
+      {
+        id: 'exec-runtime-only',
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Runtime only',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'eSign envelope', icon: <DocumentIcon /> }],
+              [{ id: '3', label: 'Review closing docs', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'InProgress',
+              label: 'In progress',
+              duration: 'Duration: 2h 15m',
+            },
+            taskStatus: {},
+          },
+        },
+      },
+      {
+        id: 'exec-sla-only',
+        type: 'stage',
+        position: { x: 400, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'SLA only',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'eSign envelope', icon: <DocumentIcon /> }],
+              [{ id: '3', label: 'Review closing docs', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'InProgress',
+              label: 'In progress',
+              slaText: 'SLA: 1 day remaining',
+              slaIcon: 'warning',
+            },
+            taskStatus: {},
+          },
+        },
+      },
+      {
+        id: 'exec-runtime-and-sla',
+        type: 'stage',
+        position: { x: 752, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Runtime + SLA (both)',
+            isReadOnly: true,
+            tasks: [
+              [{ id: '1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'eSign envelope', icon: <DocumentIcon /> }],
+              [{ id: '3', label: 'Review closing docs', icon: <DocumentIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: 'InProgress',
+              label: 'In progress',
+              duration: 'Duration: 2h 15m',
+              slaText: 'SLA: 1 day remaining',
+              slaIcon: 'warning',
+            },
+            taskStatus: {},
           },
         },
       },
@@ -1015,6 +1203,13 @@ const initialTasksForAddReplace: StageTaskItem[][] = [
   ],
   [{ id: 'task-2', label: 'Document Review', icon: <DocumentIcon /> }],
   [{ id: 'task-3', label: 'Process Validation', icon: <ProcessIcon /> }],
+  [
+    {
+      id: 'task-with-custom-action',
+      label: 'Task with Custom Menu Action',
+      icon: <ProcessIcon />,
+    },
+  ],
 ];
 
 const availableTaskOptions: ListItem[] = [
@@ -1301,6 +1496,16 @@ const AddAndReplaceTasksStory = () => {
                 onTaskGroupModification: handleTaskGroupModification,
                 onTaskReorder: handleTaskReorder,
                 onTaskClick: handleTaskClick,
+                getTaskContextMenuItems: ({ task }: { task: StageTaskItem }) =>
+                  task.id === 'task-with-custom-action'
+                    ? [
+                        {
+                          id: 'go-to-definition',
+                          label: 'Go to definition',
+                          onClick: () => alert(`Go to definition clicked for task: ${task.id}`),
+                        },
+                      ]
+                    : undefined,
               },
             }
           : node
@@ -1929,7 +2134,7 @@ export const AdhocTasks: Story = {
             stageStatus: {
               status: 'InProgress',
               label: 'In progress',
-              duration: 'SLA: 3h 45m',
+              slaText: 'SLA: 3h 45m',
             },
             taskStatus: {
               '1': {
@@ -2017,6 +2222,7 @@ export const TasksBySection: Story = {
                   label: 'Parallel task 1',
                   icon: <DocumentIcon />,
                   taskGroupType: 'sequential',
+                  isPlaceholder: true,
                 },
                 {
                   id: '4',
@@ -2063,6 +2269,7 @@ export const TasksBySection: Story = {
                   label: 'Ad hoc - Risk Assessment',
                   icon: <VerificationIcon />,
                   taskGroupType: 'adhoc',
+                  isPlaceholder: true,
                 },
               ],
               [
@@ -2120,6 +2327,7 @@ export const TasksBySection: Story = {
                   icon: <VerificationIcon />,
                   taskGroupType: 'event-driven',
                   hasEntryCondition: true,
+                  isPlaceholder: true,
                 },
               ],
               [
@@ -2179,6 +2387,7 @@ export const TasksBySection: Story = {
                   icon: <VerificationIcon />,
                   taskGroupType: 'adhoc',
                   hasEntryCondition: true,
+                  isPlaceholder: true,
                 },
               ],
               [
@@ -2205,7 +2414,7 @@ export const TasksBySection: Story = {
             stageStatus: {
               status: 'InProgress',
               label: 'In progress',
-              duration: 'SLA: 3h 45m',
+              slaText: 'SLA: 3h 45m',
             },
             taskStatus: {
               '1': {
@@ -2351,11 +2560,6 @@ export const WithRulesTags: Story = {
                 tooltip: 'Exit rules',
                 onClick: () => window.alert('Open exit rules panel'),
               },
-              {
-                type: StageHeaderChipType.CaseExit,
-                tooltip: 'Case exit',
-                onClick: () => window.alert('Open case exit panel'),
-              },
             ],
           },
           onTaskClick: (taskId: string) => window.alert(`Task clicked: ${taskId}`),
@@ -2388,9 +2592,9 @@ export const WithRulesTags: Story = {
                 onClick: () => window.alert('Open exit rules panel'),
               },
               {
-                type: StageHeaderChipType.CaseCompletion,
-                tooltip: 'Case completion',
-                onClick: () => window.alert('Open case completion panel'),
+                type: StageHeaderChipType.Completion,
+                tooltip: 'Stage completion',
+                onClick: () => window.alert('Open stage completion panel'),
               },
             ],
           },
@@ -2441,10 +2645,15 @@ export const WithRulesTags: Story = {
                 tooltip: 'Exit rules',
                 onClick: () => window.alert('Open exit rules panel'),
               },
+              {
+                type: StageHeaderChipType.Completion,
+                tooltip: 'Stage completion',
+                onClick: () => window.alert('Open stage completion panel'),
+              },
             ],
           },
           execution: {
-            stageStatus: { status: 'Completed', label: 'Completed', duration: 'SLA: 4h' },
+            stageStatus: { status: 'Completed', label: 'Completed', slaText: 'SLA: 4h' },
           },
         },
       },
@@ -2477,8 +2686,124 @@ export const WithRulesTags: Story = {
             ],
           },
           execution: {
-            stageStatus: { status: 'InProgress', label: 'In progress', duration: 'SLA: 2h' },
+            stageStatus: { status: 'InProgress', label: 'In progress', slaText: 'SLA: 2h' },
           },
+        },
+      },
+    ],
+  },
+};
+
+export const WithStatusBadges: Story = {
+  name: 'With Status Badges (Optional / Ends Case)',
+  parameters: {
+    nodes: [
+      // Optional stage — subtle "Optional" badge (clickable) alongside SLA + chips.
+      {
+        id: '1',
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Intake',
+            tasks: [
+              [{ id: 't1', label: 'Prepare closing docs', icon: <DocumentIcon /> }],
+              [{ id: 't2', label: 'eSign envelope', icon: <ProcessIcon /> }],
+            ],
+            headerChips: [
+              {
+                type: StageHeaderChipType.Entry,
+                count: 1,
+                tooltip: 'Entry rules',
+                onClick: () => window.alert('Open entry rules panel'),
+              },
+              {
+                type: StageHeaderChipType.Exit,
+                count: 1,
+                tooltip: 'Exit rules',
+                onClick: () => window.alert('Open exit rules panel'),
+              },
+              {
+                type: StageHeaderChipType.Optional,
+                tooltip: 'Not required for case completion',
+                onClick: () => window.alert('Open "Required for case completion" setting'),
+              },
+            ],
+          },
+          execution: { stageStatus: { slaText: 'SLA: 3 days' } },
+          onTaskClick: (taskId: string) => window.alert(`Task clicked: ${taskId}`),
+          onTaskAdd: () => window.alert('Add task'),
+        },
+      },
+      // Terminal stage — filled danger "Ends case" badge.
+      {
+        id: '2',
+        type: 'stage',
+        position: { x: 400, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Rejected',
+            tasks: [
+              [{ id: 't3', label: 'Summarize rejection', icon: <DocumentIcon /> }],
+              [{ id: 't4', label: 'Send customer letter', icon: <ProcessIcon /> }],
+            ],
+            headerChips: [
+              {
+                type: StageHeaderChipType.Entry,
+                count: 1,
+                tooltip: 'Entry rules',
+                onClick: () => window.alert('Open entry rules panel'),
+              },
+              {
+                type: StageHeaderChipType.EndsCase,
+                tooltip: 'Entering this stage ends the case',
+                onClick: () => window.alert('Open terminal-stage setting'),
+              },
+            ],
+          },
+          onTaskClick: (taskId: string) => window.alert(`Task clicked: ${taskId}`),
+          onTaskAdd: () => window.alert('Add task'),
+        },
+      },
+      // Both badges + SLA + chips coexisting, plus consumer-supplied labels.
+      {
+        id: '3',
+        type: 'stage',
+        position: { x: 752, y: 96 },
+        width: 304,
+        data: {
+          stageDetails: {
+            label: 'Optional + terminal',
+            tasks: [[{ id: 't5', label: 'Final compliance audit', icon: <DocumentIcon /> }]],
+            headerChips: [
+              {
+                type: StageHeaderChipType.Entry,
+                count: 2,
+                tooltip: 'Entry rules',
+                onClick: () => window.alert('Open entry rules panel'),
+              },
+              {
+                type: StageHeaderChipType.Completion,
+                tooltip: 'Stage completion',
+                onClick: () => window.alert('Open stage completion panel'),
+              },
+              {
+                type: StageHeaderChipType.Optional,
+                label: 'Optional',
+                onClick: () => window.alert('Open "Required for case completion" setting'),
+              },
+              {
+                type: StageHeaderChipType.EndsCase,
+                label: 'Ends case',
+                onClick: () => window.alert('Open terminal-stage setting'),
+              },
+            ],
+          },
+          execution: { stageStatus: { slaText: 'SLA: 1 day remaining', slaIcon: 'warning' } },
+          onTaskClick: (taskId: string) => window.alert(`Task clicked: ${taskId}`),
+          onTaskAdd: () => window.alert('Add task'),
         },
       },
     ],

@@ -24,13 +24,15 @@ export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
 export interface ApI18nProviderProps {
   /**
-   * Component path relative to src/ where locales are stored.
-   * Example: 'material/components/ap-chat'
+   * Apollo-react component group whose pre-built lingui catalogs should be
+   * activated. Must be a key registered in `locale-registry.ts`
+   * (e.g. `'canvas'`, `'material/components/ap-chat'`). Unknown values log
+   * an error and activate empty messages.
    */
   component: string;
   /**
-   * Locale to use for translations. If not provided, will attempt to use locale from LocaleProvider context.
-   * @default 'en'
+   * Locale to use for translations. If not provided, reads from document.documentElement.lang (set by the host app), falling back to 'en'.
+   * @default document.documentElement.lang || 'en'
    */
   locale?: SupportedLocale;
   /**
@@ -40,26 +42,27 @@ export interface ApI18nProviderProps {
 }
 
 /**
- * Component-scoped i18n provider for Apollo components.
+ * Activates apollo-react's pre-built lingui catalogs for a given component
+ * group. Wrap any apollo-react UI (e.g. `<ApChat>`, canvas components) so its
+ * strings render in the active locale.
  *
- * @internal This is an internal API scoped to specific components.
- * Not exposed in the public package exports.
+ * `component` must be a key registered in `locale-registry.ts`. Mutates the
+ * shared `@lingui/core` i18n singleton, so host apps running their own
+ * lingui setup should keep a single source of truth.
  *
  * @example
  * ```tsx
- * import { ApI18nProvider } from '../../../i18n';
+ * import { ApI18nProvider } from '@uipath/apollo-react/i18n';
  *
- * function MyComponent() {
- *   return (
- *     <ApI18nProvider component="material/components/ap-chat">
- *       <ApChat chatServiceInstance={chatService} />
- *     </ApI18nProvider>
- *   );
- * }
+ * <ApI18nProvider component="material/components/ap-chat">
+ *   <ApChat chatServiceInstance={chatService} />
+ * </ApI18nProvider>
  * ```
  */
 export function ApI18nProvider({ component, locale: propLocale, children }: ApI18nProviderProps) {
-  const locale = propLocale || 'en';
+  const detectedLang = document.documentElement.lang as SupportedLocale;
+  const fallback = SUPPORTED_LOCALES.includes(detectedLang) ? detectedLang : 'en';
+  const locale = propLocale || fallback;
 
   const loadAndActivate = useCallback(() => {
     const preImportedLocales = getAllPreImportedLocales(component);

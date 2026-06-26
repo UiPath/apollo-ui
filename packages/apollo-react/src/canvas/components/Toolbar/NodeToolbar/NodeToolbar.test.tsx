@@ -436,4 +436,48 @@ describe('NodeToolbar', () => {
       expect(screen.getByTestId('custom-overflow-icon')).toBeInTheDocument();
     });
   });
+
+  describe('Offset and hover bridge', () => {
+    const bridge = () => screen.queryByTestId('node-toolbar-hover-bridge');
+    const positioner = () => screen.getByRole('toolbar').parentElement;
+
+    it('renders the hover bridge and no offset when offsetToolbar is unset', () => {
+      render(<NodeToolbar {...defaultProps} />);
+
+      expect(bridge()).toBeInTheDocument();
+      expect(positioner()?.style.getPropertyValue('--toolbar-offset')).toBe('');
+    });
+
+    it('renders the hover bridge and a smaller offset for a label collision', () => {
+      render(<NodeToolbar {...defaultProps} offsetToolbar="label" />);
+
+      const offset = Number.parseInt(
+        positioner()?.style.getPropertyValue('--toolbar-offset') ?? '',
+        10
+      );
+      expect(bridge()).toBeInTheDocument();
+      expect(offset).toBeGreaterThan(0);
+      expect(offset).toBeLessThan(48); // smaller than the button offset
+    });
+
+    it('skips the hover bridge and applies the larger offset for a button collision', () => {
+      render(<NodeToolbar {...defaultProps} offsetToolbar="button" />);
+
+      expect(bridge()).not.toBeInTheDocument();
+      expect(positioner()?.style.getPropertyValue('--toolbar-offset')).toBe('48px');
+    });
+
+    it('treats offsetToolbar={true} as a back-compat alias for "button"', () => {
+      render(<NodeToolbar {...defaultProps} offsetToolbar={true} />);
+
+      expect(bridge()).not.toBeInTheDocument();
+      expect(positioner()?.style.getPropertyValue('--toolbar-offset')).toBe('48px');
+    });
+
+    it('does not render the hover bridge when the toolbar is hidden', () => {
+      render(<NodeToolbar {...defaultProps} expanded={false} />);
+
+      expect(bridge()).not.toBeInTheDocument();
+    });
+  });
 });

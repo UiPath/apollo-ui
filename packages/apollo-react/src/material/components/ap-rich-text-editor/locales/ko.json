@@ -1,0 +1,19 @@
+{
+  "rich-text-editor.bold": "굵게",
+  "rich-text-editor.code": "코드",
+  "rich-text-editor.format-bold": "서식 굵게",
+  "rich-text-editor.format-code": "코드 서식",
+  "rich-text-editor.format-italic": "서식 기울임꼴",
+  "rich-text-editor.format-ordered-list": "순서 목록 서식",
+  "rich-text-editor.format-strikethrough": "서식 취소선",
+  "rich-text-editor.format-underline": "밑줄 서식",
+  "rich-text-editor.format-unordered-list": "정렬되지 않은 목록 서식",
+  "rich-text-editor.insert-link": "링크 삽입",
+  "rich-text-editor.italic": "기울임꼴",
+  "rich-text-editor.link": "링크",
+  "rich-text-editor.loading": "로드하는 중",
+  "rich-text-editor.ordered-list": "순서 목록",
+  "rich-text-editor.strikethrough": "취소선",
+  "rich-text-editor.underline": "밑줄",
+  "rich-text-editor.unordered-list": "정렬되지 않은 목록"
+}

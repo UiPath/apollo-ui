@@ -4,6 +4,7 @@ import type { ValidationErrorSeverity } from '../../types/validation';
 export const edgeTargetStatusToEdgeColor: {
   [key in ElementStatus | ValidationErrorSeverity]: string;
 } = {
+  ActionNeeded: 'var(--canvas-warning-icon)',
   Cancelled: 'var(--canvas-error-icon)',
   Completed: 'var(--canvas-success-icon)',
   CRITICAL: 'var(--canvas-error-icon)',

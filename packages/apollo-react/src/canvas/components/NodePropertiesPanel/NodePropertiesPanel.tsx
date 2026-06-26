@@ -1,4 +1,3 @@
-import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Button } from '@uipath/apollo-wind';
 import { memo, useCallback, useEffect, useState } from 'react';
@@ -6,11 +5,6 @@ import { CanvasIcon } from '../../utils/icon-registry';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import { CheckboxField, NumberField, SelectField, TextField } from './fields';
 import { useNodeConfiguration, useNodeSelection } from './hooks';
-import {
-  FieldContainer,
-  SectionTitle,
-  ConfigSection as StyledConfigSection,
-} from './NodePropertiesPanel.styles';
 import type {
   ConfigField,
   ConfigSection,
@@ -96,21 +90,28 @@ export const NodePropertiesPanel = memo(function NodePropertiesPanel({
     if (!selectedNode) return null;
 
     return (
-      <StyledConfigSection key={section.id}>
-        {section.title && <SectionTitle>{section.title}</SectionTitle>}
-        <Column gap={16}>
+      <div
+        key={section.id}
+        className="px-4 py-4 border-b border-(--canvas-border-de-emp) last:border-b-0"
+      >
+        {section.title && (
+          <div className="font-medium text-[14px] text-(--canvas-foreground) mb-2">
+            {section.title}
+          </div>
+        )}
+        <div className="flex flex-col gap-4">
           {section.fields.map((field) => (
-            <FieldContainer key={field.key}>
+            <div key={field.key}>
               {renderField(
                 field,
                 selectedNode.data[field.key],
                 (value) => handleFieldChange(field.key, value),
                 errors[field.key]
               )}
-            </FieldContainer>
+            </div>
           ))}
-        </Column>
-      </StyledConfigSection>
+        </div>
+      </div>
     );
   };
 
@@ -159,10 +160,10 @@ export const NodePropertiesPanel = memo(function NodePropertiesPanel({
       {schema.sections ? (
         schema.sections.map((section) => renderSection(section))
       ) : (
-        <StyledConfigSection>
-          <Column gap={16}>
+        <div className="px-4 py-4">
+          <div className="flex flex-col gap-4">
             {schema.fields?.map((field) => (
-              <FieldContainer key={field.key}>
+              <div key={field.key}>
                 {selectedNode &&
                   renderField(
                     field,
@@ -170,10 +171,10 @@ export const NodePropertiesPanel = memo(function NodePropertiesPanel({
                     (value) => handleFieldChange(field.key, value),
                     errors[field.key]
                   )}
-              </FieldContainer>
+              </div>
             ))}
-          </Column>
-        </StyledConfigSection>
+          </div>
+        </div>
       )}
     </FloatingCanvasPanel>
   );

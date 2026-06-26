@@ -287,7 +287,7 @@ export function placeAddedNode({
       });
     }
 
-    const resolvedNodes = placeContainerNode({
+    const placedNodes = placeContainerNode({
       nodes,
       insertedNode,
       placement,
@@ -298,10 +298,33 @@ export function placeAddedNode({
       ignoredNodeTypes,
     });
 
-    return {
-      nodes: resolvedNodes,
-      insertedNode: resolvedNodes.find((node) => node.id === insertedNode.id)!,
-    };
+    // The preview is sized at `DEFAULT_NODE_SIZE` (96x96) but the materialized
+    // node can be much larger — a container node is 560x320 by default — so a
+    // True target placed by `calculateAutoPosition` for the 96-tall preview can
+    // overlap a False target sibling once both materialize. Resolve sibling
+    // collisions after fit so multi-output branches don't stack.
+    const placedInsertedNode = placedNodes.find((node) => node.id === insertedNode.id)!;
+    const resolved = resolveScopedCollisions(placedNodes, placedInsertedNode, {
+      ignoredNodeTypes,
+      getNodeDimensions,
+    });
+    // After siblings shift apart, the container may again need to grow.
+    if (resolved.insertedNode.parentId) {
+      const refitted = fitContainersAndPushSiblings({
+        nodes: resolved.nodes,
+        containerIds: [resolved.insertedNode.parentId],
+        getContainerFitGeometry,
+        getNodeDimensions,
+        ignoredNodeTypes,
+        gap: CONTAINER_SEQUENCE_GAP_PX,
+      });
+      return {
+        nodes: refitted,
+        insertedNode:
+          refitted.find((node) => node.id === resolved.insertedNode.id) ?? resolved.insertedNode,
+      };
+    }
+    return resolved;
   }
 
   const shifted = shiftForEdgeInsertion({

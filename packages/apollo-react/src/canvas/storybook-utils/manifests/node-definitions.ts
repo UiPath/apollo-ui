@@ -265,7 +265,6 @@ export const allNodeManifests: NodeManifest[] = [
         handles: [
           {
             id: 'success',
-            label: 'Success',
             type: 'source',
             handleType: 'output',
           },

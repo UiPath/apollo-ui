@@ -88,7 +88,13 @@ function inferPreviewContainerId(sourceNode: Node, targetNode?: Node): string | 
 
 /**
  * Converts an absolute preview position into container-local coordinates and
- * constrains the preview to the container parent.
+ * parents the preview to the container with `extent: 'parent'`. When the
+ * preview's handle-aware position lands past the container's body (e.g.
+ * Decision +True spread above the container), xyflow's clamp pulls it back
+ * to the nearest edge of the container body — the preview shows the
+ * approximate landing area inside the current container; the materialize
+ * pass then grows the container and places the real node at its true
+ * post-spread position.
  */
 export function reparentPreviewNodeToContainer(
   previewNode: Node,

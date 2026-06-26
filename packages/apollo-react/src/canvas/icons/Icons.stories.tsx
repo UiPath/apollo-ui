@@ -4,7 +4,7 @@ import { Column, Row } from '../layouts';
 import * as Icons from '.';
 
 export default {
-  title: 'Core/Icons',
+  title: 'Theme/Icons',
   parameters: {
     layout: 'fullscreen',
   },
@@ -23,12 +23,15 @@ const iconEntries = (
   // ensure stable order
   .sort(([a], [b]) => a.localeCompare(b));
 
-export const AllIcons: StoryFn = () => {
+export const AllIcons: StoryFn<{ color: string }> = ({ color }) => {
   return (
-    <Column p={16} gap={10} style={{ color: 'var(--color-foreground)' }}>
+    <Column p={16} gap={10} style={{ color: color || 'var(--color-foreground)' }}>
       <Column gap={8}>
         <h1 style={{ margin: 0, fontSize: '2rem' }}>Icon Gallery</h1>
-        <p style={{ margin: 0 }}>All available icons</p>
+        <p style={{ margin: 0 }}>
+          All available icons. Use the <code>color</code> control to change{' '}
+          <code>currentColor</code> and verify icons honor it.
+        </p>
       </Column>
       <Row gap={16} wrap="wrap">
         {iconEntries.map(([name, Icon]) => (
@@ -71,6 +74,18 @@ export const AllIcons: StoryFn = () => {
       </Row>
     </Column>
   );
+};
+
+AllIcons.args = {
+  color: '',
+};
+
+AllIcons.argTypes = {
+  color: {
+    name: 'currentColor',
+    description: 'CSS color applied to the container; icons inherit it via currentColor',
+    control: { type: 'color' },
+  },
 };
 
 export const DifferentSizes: StoryFn = () => {

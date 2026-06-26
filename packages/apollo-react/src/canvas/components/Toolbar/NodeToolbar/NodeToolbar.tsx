@@ -11,9 +11,9 @@ import { useToolbarState } from './useToolbarState';
 
 const POSITIONER_BASE_CLASS = 'absolute flex pointer-events-none z-10';
 
-// Container enforces a 40px cross-axis (`min-h-10 min-w-10`) in every
-// orientation, so the same offset produces a consistent ~12px gap on every
-// side: 40 (toolbar) + 12 (gap) = 52.
+// Container has a 40px cross-axis minimum (see CONTAINER_DIRECTION_CLASS), so
+// this offset produces a consistent ~12px gap on every side: 40 + 12 = 52.
+// Main-axis is content-driven, letting a single-action toolbar shrink to fit.
 // `--toolbar-offset` (default 0) adds extra displacement to clear handle buttons.
 const POSITIONER_POSITION_CLASS: Record<'top' | 'bottom' | 'left' | 'right', string> = {
   top: 'top-[calc(-52px-var(--toolbar-offset,0px))] left-0 right-0 flex-row',
@@ -22,8 +22,11 @@ const POSITIONER_POSITION_CLASS: Record<'top' | 'bottom' | 'left' | 'right', str
   right: 'right-[calc(-52px-var(--toolbar-offset,0px))] top-0 bottom-0 flex-col',
 };
 
-/** Extra displacement (px) applied when `offsetToolbar` is true. */
-const TOOLBAR_OFFSET = 48; // Clears the button handle + label + gaps
+/** Extra displacement (px) applied to clear a colliding handle affordance. */
+const TOOLBAR_OFFSET: Record<'button' | 'label', number> = {
+  button: 48, // Clears the add button + its label + gaps
+  label: 24, // 1.5rem — clears a label-only handle
+};
 
 const POSITIONER_ALIGN_CLASS: Record<'start' | 'center' | 'end', string> = {
   start: 'justify-start',
@@ -31,16 +34,30 @@ const POSITIONER_ALIGN_CLASS: Record<'start' | 'center' | 'end', string> = {
   end: 'justify-end',
 };
 
+// Invisible hover bridge that fills the gap between the node and the toolbar.
+// Without it, moving the pointer across that empty gap fires the node's
+// `mouseleave` and dismisses the toolbar. Each side anchors to the node-facing
+// edge of the positioner and spans the base 12px gap plus the current offset,
+// so it still reaches the node when the toolbar is pushed out for a label.
+// Skipped only for the `'button'` offset — a source add button (and, for the
+// ButtonHandle path, its own `HandleHoverBridge`) already occupies that side.
+const POSITIONER_BRIDGE_CLASS: Record<'top' | 'bottom' | 'left' | 'right', string> = {
+  top: 'top-full left-0 right-0 h-[calc(12px+var(--toolbar-offset,0px))]',
+  bottom: 'bottom-full left-0 right-0 h-[calc(12px+var(--toolbar-offset,0px))]',
+  left: 'left-full top-0 bottom-0 w-[calc(12px+var(--toolbar-offset,0px))]',
+  right: 'right-full top-0 bottom-0 w-[calc(12px+var(--toolbar-offset,0px))]',
+};
+
 const CONTAINER_BASE_CLASS =
-  'flex items-center gap-1 p-1 min-h-10 min-w-10 shrink-0 bg-(--canvas-background-raised) ' +
+  'flex items-center gap-1 p-1 shrink-0 bg-(--canvas-background-raised) ' +
   'border border-(--canvas-background-overlay) rounded-xl shadow-[0_2px_6px_rgba(0,0,0,0.08)] ' +
   'pointer-events-auto';
 
 const CONTAINER_DIRECTION_CLASS: Record<'top' | 'bottom' | 'left' | 'right', string> = {
-  top: 'flex-row',
-  bottom: 'flex-row',
-  left: 'flex-col',
-  right: 'flex-col',
+  top: 'flex-row min-h-10',
+  bottom: 'flex-row min-h-10',
+  left: 'flex-col min-w-10',
+  right: 'flex-col min-w-10',
 };
 
 const SEPARATOR_BASE_CLASS = 'flex-[0_0_auto] bg-(--canvas-background-overlay) self-center';
@@ -85,6 +102,10 @@ const NodeToolbarComponent = ({
   const position = config.position || 'top';
   const align = config.align || 'center';
 
+  // Normalize the offset prop: `true` is a back-compat alias for 'button'.
+  const offsetMode: 'button' | 'label' | undefined =
+    offsetToolbar === true ? 'button' : offsetToolbar || undefined;
+
   const positionerClassName = useMemo(
     () =>
       cn(POSITIONER_BASE_CLASS, POSITIONER_POSITION_CLASS[position], POSITIONER_ALIGN_CLASS[align]),
@@ -108,9 +129,9 @@ const NodeToolbarComponent = ({
   );
 
   const offsetStyle = useMemo(() => {
-    if (!offsetToolbar) return undefined;
-    return { '--toolbar-offset': `${TOOLBAR_OFFSET}px` } as React.CSSProperties;
-  }, [offsetToolbar]);
+    if (!offsetMode) return undefined;
+    return { '--toolbar-offset': `${TOOLBAR_OFFSET[offsetMode]}px` } as React.CSSProperties;
+  }, [offsetMode]);
 
   const toolbarAnimationVariants = useMemo(() => {
     const offsetAxis = position === 'top' || position === 'bottom' ? 'y' : 'x';
@@ -133,10 +154,24 @@ const NodeToolbarComponent = ({
     return null;
   }
 
+  if (portalToNodeOverlay && displayState === 'hidden') {
+    return null;
+  }
+
   const toolbarContent = (
     <AnimatePresence>
       {displayState !== 'hidden' && (
         <div className={positionerClassName} style={offsetStyle}>
+          {offsetMode !== 'button' && (
+            <div
+              aria-hidden
+              data-testid="node-toolbar-hover-bridge"
+              className={cn(
+                'absolute pointer-events-auto cursor-default',
+                POSITIONER_BRIDGE_CLASS[position]
+              )}
+            />
+          )}
           <motion.div
             layout="position"
             className={containerClassName}

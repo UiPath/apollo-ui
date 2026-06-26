@@ -114,6 +114,12 @@
       "rules": {
         "react/only-export-components": "off"
       }
+    },
+    {
+      "files": ["templates/**/*.tsx"],
+      "rules": {
+        "eslint/max-lines": ["error", { "max": 500 }]
+      }
     }
   ]
 }

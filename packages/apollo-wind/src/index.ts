@@ -92,6 +92,9 @@ export { FileUpload } from './components/ui/file-upload';
 // -----------------------------------------------------------------------------
 // Data Display Components
 // -----------------------------------------------------------------------------
+// NOTE: CodeBlock was removed. Use Monaco or CodeMirror with Apollo editor
+// themes instead. See @uipath/apollo-wind/editor-themes for the theme API and
+// Patterns → Code Editors in Storybook for integration guidance.
 export {
   Card,
   CardContent,
@@ -106,9 +109,6 @@ export type { StatsCardProps } from './components/ui/stats-card';
 
 export { Badge, badgeVariants } from './components/ui/badge';
 export type { BadgeProps } from './components/ui/badge';
-
-export { CodeBlock } from './components/ui/code-block';
-export type { CodeBlockProps } from './components/ui/code-block';
 
 export { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar';
 
@@ -140,6 +140,19 @@ export type {
 } from './components/ui/editable-cell';
 
 export { Progress } from './components/ui/progress';
+
+// -----------------------------------------------------------------------------
+// Prompt Editor
+// -----------------------------------------------------------------------------
+export { PromptEditor, VARIABLE_DRAG_MIME } from './components/ui/prompt-editor';
+export type {
+  PromptEditorAutoCompleteOption,
+  PromptEditorMode,
+  PromptEditorProps,
+  PromptEditorRef,
+  PromptEditorToken,
+  PromptEditorTokenType,
+} from './components/ui/prompt-editor';
 
 export { Skeleton } from './components/ui/skeleton';
 
@@ -230,7 +243,14 @@ export { toast, Toaster } from './components/ui/sonner';
 // -----------------------------------------------------------------------------
 // Navigation Components
 // -----------------------------------------------------------------------------
-export { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
+export {
+  ScrollableTabsList,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from './components/ui/tabs';
+export type { ScrollableTabsListProps } from './components/ui/tabs';
 
 export {
   Breadcrumb,

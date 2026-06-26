@@ -11,8 +11,8 @@ A composable AI chat UI component for Apollo Vertex. Built with React, TypeScrip
 ## Features
 
 - **TanStack AI Integration** — Works with `useChat` from `@tanstack/ai-react` and `UIMessage` types
-- **Composable** — `AiChat` is the shell, `AiChatMessage` renders messages, you iterate parts and render tools inline
-- **Type-Safe Tool Rendering** — Check `part.name` in the parts loop and TypeScript narrows `part.output` automatically
+- **One-prop wiring** — Pass `messages` and `status` from `useChat`; the component owns the message loop, scroll, and per-message action wiring
+- **Type-Safe Tool Rendering** — Pass a `renderToolPart` callback; TypeScript narrows `part.output` automatically when you check `part.name`
 - **AgentHub Adapter** — Built-in adapter for the UiPath AgentHub normalized LLM endpoint (OpenAI + Anthropic models)
 - **Conversational Agent Adapter** — Built-in adapter for a deployed UiPath Conversational Agent, with session management
 - **Markdown Rendering** — Renders assistant responses with GitHub Flavored Markdown
@@ -23,6 +23,8 @@ A composable AI chat UI component for Apollo Vertex. Built with React, TypeScrip
 - **Data Fabric Multi-Line Chart Tool** — Compare two metrics on a shared datetime axis, each with its own Y axis, totals label, and join support
 - **Data Fabric KPI Tool** — Render a single scalar metric (count, sum, average, min, max) with optional filters and joins
 - **Suggestion Buttons** — Interactive choice buttons rendered from tool results
+- **File Attachments** — Opt-in via `acceptedFileTypes`; users pick files, paste from the clipboard, drag-and-drop onto the chat, preview images in a fullscreen dialog (both in the input chips and in sent message bubbles), and the resulting `ContentPart[]` arrives in the `onSendMessage` callback
+- **Text Selection → Ask AI** — Opt-in via `enableTextSelection`; selecting any text in the conversation pops up a floating "Ask AI" pill that quotes the selection into the input as a markdown blockquote so the LLM sees the user's question alongside its source context
 
 ## Installation
 
@@ -49,7 +51,6 @@ npx shadcn@latest add @uipath/ai-chat
 ```tsx
 import { useChat } from '@tanstack/ai-react';
 import { AiChat } from '@/components/ui/ai-chat/components/ai-chat';
-import { AiChatMessage } from '@/components/ui/ai-chat/components/ai-chat-message';
 import { createAgentHubConnection } from '@/components/ui/ai-chat/adapters/agenthub/adapter';
 
 function BasicChat() {
@@ -60,39 +61,34 @@ function BasicChat() {
     systemPrompt: 'You are a helpful assistant.',
   });
 
-  const { messages, sendMessage, isLoading, stop, clear, error } = useChat({
+  const { messages, sendMessage, status, stop, clear, error } = useChat({
     connection,
   });
 
   return (
     <AiChat
       messages={messages}
-      isLoading={isLoading}
+      status={status}
       onSendMessage={(text) => sendMessage(text)}
       onStop={stop}
       onClearChat={clear}
       error={error}
       title="AI Assistant"
-    >
-      {messages.map((message) => (
-        <AiChatMessage key={message.id} message={message} />
-      ))}
-    </AiChat>
+    />
   );
 }
 ```
 
 ## Tool Rendering
 
-Render tool output inline in the chat — just like TanStack AI's own examples. Define tools with `toolDefinition`, pass the input through as output in your client tool, then check `part.name` in the parts loop. TypeScript narrows `part.output` automatically.
+Define tools with `toolDefinition`, pass the input through as output in your client tool, then provide a `renderToolPart` callback to `<AiChat>`. The part is already narrowed to tool-call parts; check `part.name` and TypeScript narrows `part.output` to the right tool's output type automatically.
 
 ```tsx
 import { z } from 'zod';
 import { toolDefinition } from '@tanstack/ai';
 import { clientTools } from '@tanstack/ai-client';
-import { stream, useChat } from '@tanstack/ai-react';
+import { useChat } from '@tanstack/ai-react';
 import { AiChat } from '@/components/ui/ai-chat/components/ai-chat';
-import { AiChatMessage } from '@/components/ui/ai-chat/components/ai-chat-message';
 
 // 1. Define tools — output passes input through for rendering
 const showResultsInput = z.object({
@@ -110,9 +106,9 @@ const showResultsDef = toolDefinition({
 const showResults = showResultsDef.client((input) => input);
 const toolDefs = clientTools(showResults);
 
-// 2. Wire it up — iterate parts, render tools inline
+// 2. Wire it up — return tool output from renderToolPart
 function ChatWithTools() {
-  const { messages, sendMessage, isLoading, stop } = useChat({
+  const { messages, sendMessage, status, stop } = useChat({
     connection,
     tools: toolDefs,
   });
@@ -120,25 +116,98 @@ function ChatWithTools() {
   return (
     <AiChat
       messages={messages}
-      isLoading={isLoading}
+      status={status}
       onSendMessage={(text) => sendMessage(text)}
       onStop={stop}
-    >
-      {messages.map((message) => (
-        <AiChatMessage key={message.id} message={message}>
-          {message.parts.map((part) => {
-            // TypeScript narrows part.output when you check part.name
-            if (part.type === 'tool-call' && part.name === 'show_results' && part.output) {
-              return <ResultsTable key={part.id} entity={part.output.entityName} columns={part.output.columns} />;
-            }
-            return null;
-          })}
-        </AiChatMessage>
-      ))}
-    </AiChat>
+      renderToolPart={(part) => {
+        // TypeScript narrows part.output when you check part.name
+        if (part.name === 'show_results' && part.output) {
+          return <ResultsTable entity={part.output.entityName} columns={part.output.columns} />;
+        }
+        return null;
+      }}
+    />
   );
 }
 ```
+
+`<AiChat>` keys each rendered part by `part.id`, so you don't need to add `key` yourself.
+
+## Message Actions
+
+Each message can show inline actions — copy, thumbs-up/down feedback, regenerate, and edit. Pass the optional callbacks directly to `<AiChat>`; it wires them to the right messages (assistant for feedback/regenerate, user for edit) and the action row appears automatically.
+
+```tsx
+const { messages, sendMessage, reload, status, stop } = useChat({ connection });
+
+<AiChat
+  messages={messages}
+  status={status}
+  onSendMessage={(text) => sendMessage(text)}
+  onStop={stop}
+  onFeedback={(messageId, type) => {
+    // type: 'positive' | 'negative' — send to your analytics / feedback endpoint
+    void recordFeedback({ messageId, type });
+  }}
+  getFeedback={(messageId) => feedbackById[messageId] ?? null}
+  onRegenerate={() => void reload()}
+  onEditMessage={(_messageId, content) => {
+    // Re-runs the conversation with the edited user message
+    void sendMessage(content);
+  }}
+/>
+```
+
+Copy is always available and needs no wiring. Feedback and edit only render when their callbacks are supplied.
+
+## File Attachments
+
+Set `acceptedFileTypes` to enable the attachments UI. The paperclip menu, clipboard-paste handling, drag-and-drop onto the chat, the chip list, the in-bubble thumbnails, and the image preview dialog all turn on together; omit the prop and the feature stays off.
+
+Attached files arrive in `onSendMessage` as wire-ready TanStack AI `ContentPart`s — splice them straight into `sendMessage({ content: [...] })` for a multimodal request:
+
+```tsx
+<AiChat
+  messages={messages}
+  status={status}
+  onSendMessage={(text, parts) => {
+    if (!parts?.length) {
+      void sendMessage(text);
+      return;
+    }
+    void sendMessage({
+      content: [
+        ...(text ? [{ type: 'text' as const, content: text }] : []),
+        ...parts,
+      ],
+    });
+  }}
+  onStop={stop}
+  acceptedFileTypes="image/*"
+/>
+```
+
+`acceptedFileTypes` is passed straight to the underlying `<input accept>` — any HTML accept-string works. Files outside the supported set are silently dropped at conversion time (today only `image/*` produces a `ContentPart`):
+
+- `"image/*"` — images only
+
+Attached images render with a clickable thumbnail chip that opens a fullscreen preview (Esc or backdrop click to close), and the same thumbnails appear in the user's message bubble after sending. Clipboard paste — including OS screenshots — attaches files automatically, and dragging files anywhere over the chat container highlights it with a dashed border before accepting the drop.
+
+## Text Selection → Ask AI
+
+Set `enableTextSelection` to enable selection-driven follow-ups. Selecting any text inside the message scroll area pops up a floating "Ask AI" pill above the selection; clicking it pre-fills the input with the selection as a markdown blockquote, focuses the textarea, and lets the user append their question. The quote rides along to the LLM as message content so the model has the source context, and renders as a styled blockquote in the user's bubble.
+
+```tsx
+<AiChat
+  messages={messages}
+  status={status}
+  onSendMessage={(text) => sendMessage(text)}
+  onStop={stop}
+  enableTextSelection
+/>
+```
+
+The pill is scoped to the message scroll container — selections in the header, input, or outside the chat are ignored. It uses absolute positioning inside the scroll area, so it tracks the text as the user scrolls without any extra wiring. Clicking it preserves the selection through the click so the captured text is read reliably, then collapses the selection after.
 
 ## AgentHub Adapter
 
@@ -186,7 +255,7 @@ const connection = createConversationalAgentConnection({
   folderId,  // number — the folder the agent lives in
 });
 
-const { messages, sendMessage, isLoading, stop, clear, error } = useChat({
+const { messages, sendMessage, status, stop, clear, error } = useChat({
   connection,
 });
 
@@ -203,7 +272,7 @@ Notes:
 
 ## Data Fabric Table Tool
 
-The `data_fabric_table` tool renders entity data as interactive tables powered by `@uipath/apollo-dashboarding`. It supports server-side **filtering** — list filters, text search, and numeric ranges — so users can ask for filtered views directly in the chat.
+The `data_fabric_table` tool renders entity data as interactive tables powered by the `data-fabric-adapter` registry item paired with the `table-chart` component. It supports server-side **filtering** — list filters, text search, and numeric ranges — so users can ask for filtered views directly in the chat.
 
 ```tsx
 import {
@@ -218,7 +287,7 @@ const tableTool = createDataFabricTableTool({
 });
 
 // Use dataFabricTableClient in your tools array, tableTool.toolPrompt in your system prompt,
-// and tableTool.renderTable(part.output, part.id) in your parts loop.
+// and tableTool.renderTable(part.output, part.id) in your renderToolPart callback.
 ```
 
 ### Filter types
@@ -230,7 +299,7 @@ The LLM can pass filters based on the user's request:
 - **Range filter (numeric)** — numeric min/max: `"show orders over $200"`
 - **Range filter (datetime)** — ISO 8601 min/max: `"show orders from the last 30 days"`. The tool prompt is given today's date so the LLM can resolve relative phrases into absolute ISO dates before calling the tool.
 
-Filters are passed through the table configuration to `@uipath/apollo-dashboarding`, which translates them to Data Fabric query filters server-side.
+Filters are passed through the table configuration to the `data-fabric-adapter`, which translates them to Data Fabric query filters server-side.
 
 ### Multi-entity joins
 
@@ -271,7 +340,7 @@ const distributionTool = createDataFabricDistributionTool({
 });
 
 // Use dataFabricDistributionClient in your tools array, distributionTool.toolPrompt in your
-// system prompt, and distributionTool.renderDistribution(part.output, part.id) in your parts loop.
+// system prompt, and distributionTool.renderDistribution(part.output, part.id) in your renderToolPart callback.
 ```
 
 ### Dimension
@@ -319,7 +388,7 @@ const barTool = createDataFabricBarTool({
 });
 
 // Use dataFabricBarClient in your tools array, barTool.toolPrompt in your
-// system prompt, and barTool.renderBar(part.output, part.id) in your parts loop.
+// system prompt, and barTool.renderBar(part.output, part.id) in your renderToolPart callback.
 ```
 
 ### When to use bar vs distribution vs line
@@ -375,7 +444,7 @@ const lineTool = createDataFabricLineTool({
 });
 
 // Use dataFabricLineClient in your tools array, lineTool.toolPrompt in your
-// system prompt, and lineTool.renderLine(part.output, part.id) in your parts loop.
+// system prompt, and lineTool.renderLine(part.output, part.id) in your renderToolPart callback.
 ```
 
 ### When to use line vs distribution
@@ -408,7 +477,7 @@ const multiLineTool = createDataFabricMultiLineTool({
 });
 
 // Use dataFabricMultiLineClient in your tools array, multiLineTool.toolPrompt in your
-// system prompt, and multiLineTool.renderMultiLine(part.output, part.id) in your parts loop.
+// system prompt, and multiLineTool.renderMultiLine(part.output, part.id) in your renderToolPart callback.
 ```
 
 ### Metrics
@@ -455,7 +524,7 @@ const kpiTool = createDataFabricKpiTool({
 });
 
 // Use dataFabricKpiClient in your tools array, kpiTool.toolPrompt in your
-// system prompt, and kpiTool.renderKpi(part.output, part.id) in your parts loop.
+// system prompt, and kpiTool.renderKpi(part.output, part.id) in your renderToolPart callback.
 ```
 
 ### When to use KPI vs other chart tools
@@ -486,7 +555,7 @@ Filter and join schemas are shared with the other Data Fabric tools (including t
 
 ## Suggestion Buttons
 
-The `presentChoices` tool renders interactive suggestion buttons. Define the tool with a Zod schema, and render choices inline in the parts loop:
+The `presentChoices` tool renders interactive suggestion buttons. Define the tool with a Zod schema, and render choices from `renderToolPart`:
 
 ```tsx
 import {
@@ -497,17 +566,20 @@ import {
 
 // Add presentChoicesClient to your tools array and CHOICES_TOOL_PROMPT to your system prompt.
 
-// In your parts loop:
-{message.parts.map((part) => {
-  if (part.type === 'tool-call' && part.name === 'presentChoices' && part.output) {
-    return (
-      <div key={part.id}>
-        {renderChoices(part.output, { onAction: (text) => sendMessage(text) })}
-      </div>
-    );
-  }
-  return null;
-})}
+<AiChat
+  messages={messages}
+  status={status}
+  onSendMessage={(text) => sendMessage(text)}
+  onStop={stop}
+  renderToolPart={(part) => {
+    if (part.name === 'presentChoices' && part.output) {
+      return renderChoices(part.output, {
+        onAction: (text) => sendMessage(text),
+      });
+    }
+    return null;
+  }}
+/>
 ```
 
 > **Try it out** — type *"give me some choices"* in the demo above to see suggestion buttons in action.
@@ -519,32 +591,31 @@ import {
 
 ### `<AiChat>`
 
-Chat shell component. Handles layout, scroll, input, loading indicator, suggestions, and errors. Render messages as children.
+Chat shell component. Owns the message loop, scroll, input, loading indicator, suggestions, errors, and per-message action wiring. Generic over the connection's tools (`AiChat<TTools>`) — pass `UIMessage<TTools>[]` straight from `useChat` and `renderToolPart` gets typed narrowing on `part.name`/`part.output`.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `messages` | `UIMessage[]` | required | Messages from `useChat` |
-| `isLoading` | `boolean` | required | Loading state from `useChat` |
-| `onSendMessage` | `(content: string) => void` | required | Send handler |
+| `messages` | `UIMessage<TTools>[]` | required | Messages from `useChat` |
+| `status` | `'ready' \| 'submitted' \| 'streaming' \| 'error'` | required | Chat lifecycle state from `useChat` |
+| `onSendMessage` | `(content: string, parts?: ContentPart[]) => void` | required | Send handler. `parts` is populated when `acceptedFileTypes` is set and the user attached anything. Attachments arrive as TanStack AI `ContentPart`s (currently `ImagePart` only — files outside the supported set are silently dropped) ready to splice into `sendMessage({ content: [...] })` |
 | `onStop` | `() => void` | required | Stop/abort handler |
-| `children` | `ReactNode` | — | Message list (typically `messages.map(...)`) |
-| `onClearChat` | `() => void` | — | Clear handler |
-| `assistantName` | `string` | `"AI Assistant"` | Assistant display name |
+| `renderToolPart` | `(part: ToolCallPart<TTools>) => ReactNode` | — | Render tool output for an assistant message. Check `part.name` to narrow `part.output` |
+| `onClearChat` | `() => void` | — | Shows a "New conversation" item in the header dropdown when provided |
+| `onRetry` | `() => void` | — | Retry handler shown next to the inline error banner |
+| `onFeedback` | `(messageId: string, type: 'positive' \| 'negative') => void` | — | Thumbs-up/down callback. Feedback buttons only render when provided |
+| `getFeedback` | `(messageId: string) => 'positive' \| 'negative' \| null \| undefined` | — | Resolves the saved feedback for a message — drives the pressed state |
+| `onRegenerate` | `() => void` | — | Regenerate the last assistant response |
+| `onEditMessage` | `(messageId: string, content: string) => void` | — | Save an edited user message. Edit affordance only renders when provided |
+| `assistantName` | `string` | `"AI Assistant"` | Label used for the assistant in copied conversation text |
 | `title` | `string` | — | Chat title in the header |
+| `header` | `ReactNode` | — | Custom header — replaces the default `<AiChatHeader>` |
 | `emptyState` | `ReactNode` | — | Custom empty state |
+| `suggestions` | `string[]` | — | Quick-start prompts shown below the input in the empty state |
+| `onSuggestionClick` | `(suggestion: string) => void` | — | Called when a suggestion is clicked (defaults to sending it as a message) |
 | `placeholder` | `string` | — | Input placeholder |
-| `showClearButton` | `boolean` | `true` | Show the clear button |
+| `acceptedFileTypes` | `string` | — | HTML accept-string for attachments (e.g. `"image/*"`). Setting this enables the paperclip menu, paste handler, drag-and-drop, chip list, in-bubble image thumbnails, and image preview; omit to disable attachments entirely |
+| `enableTextSelection` | `boolean` | `false` | Show a floating "Ask AI" pill when the user selects text in the message area. Clicking it quotes the selection into the input as a markdown blockquote so the LLM sees the source context alongside the user's question |
 | `error` | `Error \| null` | — | Inline error banner |
-
-### `<AiChatMessage>`
-
-Renders a single message with avatar, name, markdown text, and children for custom content (tool output).
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `message` | `UIMessage` | required | The message to render |
-| `assistantName` | `string` | `"AI Assistant"` | Assistant display name |
-| `children` | `ReactNode` | — | Custom content rendered below the message text (tool output, etc.) |
 
 ### `AgentHubAdapterConfig`
 

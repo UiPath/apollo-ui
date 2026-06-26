@@ -1,14 +1,14 @@
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Button } from '@uipath/apollo-wind';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { CanvasIcon } from '../../utils/icon-registry';
 
 export interface StoryInfoPanelProps {
   /** Panel title */
   title: string;
   /** Optional description below the title */
-  description?: string;
+  description?: React.ReactNode;
   /** Panel content */
   children?: React.ReactNode;
   /** Whether the panel can be collapsed */
@@ -19,7 +19,7 @@ export interface StoryInfoPanelProps {
   position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 }
 
-export function StoryInfoPanel({
+export const StoryInfoPanel = memo(function StoryInfoPanel({
   title,
   description,
   children,
@@ -77,4 +77,4 @@ export function StoryInfoPanel({
       </Column>
     </Panel>
   );
-}
+});

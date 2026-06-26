@@ -10,6 +10,7 @@ import { StageNodeAdhocTaskGroups } from './StageNodeAdhocTaskGroups';
 import { StageNodeEventDrivenTaskGroups } from './StageNodeEventDrivenTaskGroups';
 import { StageNodeSequentialTaskGroups } from './StageNodeSequentialTaskGroups';
 import { getMenuItem } from './StageNodeTaskUtilities';
+import { useStageNodeLabels } from './useStageNodeLabels';
 
 const StageNodeAllTaskGroupsInner = ({
   props,
@@ -39,6 +40,7 @@ const StageNodeAllTaskGroupsInner = ({
     onReplaceTaskFromToolbox,
   } = props;
 
+  const labels = useStageNodeLabels();
   const allTasks = useMemo(() => stageDetails?.tasks || [], [stageDetails?.tasks]);
 
   // Split tasks into separate sections
@@ -53,7 +55,7 @@ const StageNodeAllTaskGroupsInner = ({
 
   const selectedTaskId = stageDetails?.selectedTaskId;
   const defaultContent =
-    stageDetails?.defaultContent || (isReadOnly ? 'No tasks' : 'Add first task');
+    stageDetails?.defaultContent || (isReadOnly ? labels.noTasks : labels.addFirstTask);
 
   const handleReorderSequentialTasks = useCallback(
     (newTasks: StageTaskItem[][]) => {
@@ -64,8 +66,6 @@ const StageNodeAllTaskGroupsInner = ({
     },
     [onTaskReorder, eventDrivenTaskGroups, adhocTaskGroups]
   );
-
-  const hasContextMenu = !!(onReplaceTaskFromToolbox || onTaskGroupModification);
 
   const handleTaskClick = useCallback(
     (e: React.MouseEvent, taskElementId: string) => {
@@ -97,7 +97,7 @@ const StageNodeAllTaskGroupsInner = ({
         return undefined;
       }
 
-      return getMenuItem('replace-task', 'Replace task', () => {
+      return getMenuItem('replace-task', labels.replaceTask, () => {
         taskStateReference.current = {
           isParallel,
           groupIndex,
@@ -107,7 +107,14 @@ const StageNodeAllTaskGroupsInner = ({
         setIsReplacingTask(true);
       });
     },
-    [onReplaceTaskFromToolbox, allTasks, onTaskClick, setIsReplacingTask, taskStateReference]
+    [
+      onReplaceTaskFromToolbox,
+      allTasks,
+      onTaskClick,
+      setIsReplacingTask,
+      taskStateReference,
+      labels.replaceTask,
+    ]
   );
 
   const generateDeleteTaskMenuItemForTask = useCallback(
@@ -131,11 +138,11 @@ const StageNodeAllTaskGroupsInner = ({
         return undefined;
       }
 
-      return getMenuItem('remove-task', 'Delete task', () =>
+      return getMenuItem('remove-task', labels.deleteTask, () =>
         onTaskGroupModification(GroupModificationType.REMOVE_TASK, groupIndex, taskIndex)
       );
     },
-    [allTasks, onTaskGroupModification]
+    [allTasks, onTaskGroupModification, labels.deleteTask]
   );
 
   return (
@@ -154,7 +161,9 @@ const StageNodeAllTaskGroupsInner = ({
               {defaultContent}
             </Button>
           ) : (
-            <span className="text-xs text-foreground-muted h-9">{defaultContent}</span>
+            <span className="inline-flex items-center h-9 text-sm font-medium text-foreground-muted">
+              {defaultContent}
+            </span>
           )}
         </Column>
       ) : (
@@ -166,7 +175,6 @@ const StageNodeAllTaskGroupsInner = ({
             isReadOnly={isReadOnly}
             selectedTaskId={selectedTaskId}
             taskWidthStyle={taskWidthStyle}
-            hasContextMenu={hasContextMenu}
             handleTaskClick={handleTaskClick}
             handleReorderSequentialTasks={handleReorderSequentialTasks}
             allTasks={allTasks}

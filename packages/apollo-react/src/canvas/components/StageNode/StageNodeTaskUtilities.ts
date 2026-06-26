@@ -2,7 +2,18 @@ import type { ReactNode } from 'react';
 import { GroupModificationType } from '../../utils/GroupModificationUtils';
 import type { NodeMenuAction, NodeMenuItem } from '../NodeContextMenu';
 
-// TODO: Add translation for the menu items
+export interface StageContextMenuLabels {
+  moveUp: string;
+  moveDown: string;
+  ungroupParallelTasks: string;
+  removeFromParallelGroup: string;
+  removeGroupFromStage: string;
+  deleteTask: string;
+  createParallelGroupWithTaskAbove: string;
+  createParallelGroupWithTaskBelow: string;
+  addTaskToParallelGroupAbove: string;
+  addTaskToParallelGroupBelow: string;
+}
 
 export const getContextMenuItems = ({
   isParallelGroup,
@@ -14,6 +25,7 @@ export const getContextMenuItems = ({
   isBelowParallel,
   reGroupTaskFunction,
   hideParallelOptions = false,
+  labels,
 }: {
   isParallelGroup: boolean;
   groupIndex: number;
@@ -28,44 +40,45 @@ export const getContextMenuItems = ({
     taskIndex: number
   ) => void;
   hideParallelOptions?: boolean;
+  labels: StageContextMenuLabels;
 }): NodeMenuItem[] => {
   const CONTEXT_MENU_ITEMS = {
-    MOVE_UP: getMenuItem('move-up', 'Move up', () =>
+    MOVE_UP: getMenuItem('move-up', labels.moveUp, () =>
       reGroupTaskFunction(
         GroupModificationType.TASK_GROUP_UP,
         groupIndexInAllTasks,
         taskIndexInAllTasks
       )
     ),
-    MOVE_DOWN: getMenuItem('move-down', 'Move down', () =>
+    MOVE_DOWN: getMenuItem('move-down', labels.moveDown, () =>
       reGroupTaskFunction(
         GroupModificationType.TASK_GROUP_DOWN,
         groupIndexInAllTasks,
         taskIndexInAllTasks
       )
     ),
-    UNGROUP_ALL: getMenuItem('ungroup', 'Ungroup parallel tasks', () =>
+    UNGROUP_ALL: getMenuItem('ungroup', labels.ungroupParallelTasks, () =>
       reGroupTaskFunction(
         GroupModificationType.UNGROUP_ALL_TASKS,
         groupIndexInAllTasks,
         taskIndexInAllTasks
       )
     ),
-    SPLIT_TASK: getMenuItem('split', 'Remove from parallel group', () =>
+    SPLIT_TASK: getMenuItem('split', labels.removeFromParallelGroup, () =>
       reGroupTaskFunction(
         GroupModificationType.SPLIT_GROUP,
         groupIndexInAllTasks,
         taskIndexInAllTasks
       )
     ),
-    REMOVE_GROUP: getMenuItem('remove-group', 'Remove group from stage', () =>
+    REMOVE_GROUP: getMenuItem('remove-group', labels.removeGroupFromStage, () =>
       reGroupTaskFunction(
         GroupModificationType.REMOVE_GROUP,
         groupIndexInAllTasks,
         taskIndexInAllTasks
       )
     ),
-    REMOVE_TASK: getMenuItem('remove-task', 'Delete task', () =>
+    REMOVE_TASK: getMenuItem('remove-task', labels.deleteTask, () =>
       reGroupTaskFunction(
         GroupModificationType.REMOVE_TASK,
         groupIndexInAllTasks,
@@ -74,7 +87,7 @@ export const getContextMenuItems = ({
     ),
     CREATE_PARALLEL_GROUP_ABOVE: getMenuItem(
       'group-with-up',
-      'Create parallel group with task above',
+      labels.createParallelGroupWithTaskAbove,
       () =>
         reGroupTaskFunction(
           GroupModificationType.MERGE_GROUP_UP,
@@ -84,7 +97,7 @@ export const getContextMenuItems = ({
     ),
     CREATE_PARALLEL_GROUP_BELOW: getMenuItem(
       'group-with-down',
-      'Create parallel group with task below',
+      labels.createParallelGroupWithTaskBelow,
       () =>
         reGroupTaskFunction(
           GroupModificationType.MERGE_GROUP_DOWN,
@@ -94,7 +107,7 @@ export const getContextMenuItems = ({
     ),
     ADD_TO_PARALLEL_GROUP_ABOVE: getMenuItem(
       'add-to-group-with-up',
-      'Add task to parallel group above',
+      labels.addTaskToParallelGroupAbove,
       () =>
         reGroupTaskFunction(
           GroupModificationType.MERGE_GROUP_UP,
@@ -104,7 +117,7 @@ export const getContextMenuItems = ({
     ),
     ADD_TO_PARALLEL_GROUP_BELOW: getMenuItem(
       'add-to-group-with-down',
-      'Add task to parallel group below',
+      labels.addTaskToParallelGroupBelow,
       () =>
         reGroupTaskFunction(
           GroupModificationType.MERGE_GROUP_DOWN,
