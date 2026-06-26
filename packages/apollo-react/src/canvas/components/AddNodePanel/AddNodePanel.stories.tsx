@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel, Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { NodeRegistryProvider } from '../../core';
 import { useAddNodeOnConnectEnd, useCanvasEvent } from '../../hooks';
 import type { CategoryManifest, NodeManifest } from '../../schema';
@@ -438,6 +438,159 @@ function ShapeTestPanel(props: AddNodePanelProps) {
   );
 }
 
+type DocumentExtractionMessageState = {
+  id: string;
+  label: string;
+  message: string;
+  icon: string;
+  actionLabel?: string;
+  actionHref?: string;
+};
+
+const DOCUMENT_EXTRACTION_MESSAGE_STATES: DocumentExtractionMessageState[] = [
+  {
+    id: 'availability-check-failed',
+    label: 'Availability check failed',
+    icon: 'wifi-off',
+    message:
+      "We couldn't check IXP availability. Check your connection and try again. If this keeps happening, contact your administrator.",
+    actionLabel: 'Try again',
+  },
+  {
+    id: 'service-disabled',
+    label: 'Service not enabled',
+    icon: 'circle-alert',
+    message:
+      "Document extraction needs Document Understanding, which isn't enabled for this tenant. A tenant administrator can enable it in Admin > Tenants > Services.",
+    actionLabel: 'Open tenant services',
+    actionHref: '#admin-tenants-services',
+  },
+  {
+    id: 'missing-license',
+    label: 'Missing license',
+    icon: 'badge-alert',
+    message:
+      "You don't have a Communications Mining license, so you can't use document extraction. Ask a tenant administrator to assign the required license, then reopen this panel.",
+    actionLabel: 'Contact administrator',
+  },
+];
+
+function DocumentExtractionMessagePanel({ state }: { state: DocumentExtractionMessageState }) {
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const button = panelRef.current?.querySelector<HTMLButtonElement>(
+      `#toolbox-item-document-extraction-${state.id}`
+    );
+    button?.click();
+  }, [state.id]);
+
+  const items: ListItem<NodeItemData>[] = useMemo(
+    () => [
+      {
+        id: `document-extraction-${state.id}`,
+        name: 'Document extraction',
+        icon: { name: 'file-search' },
+        data: { type: 'document-extraction', category: 'Documents' },
+        children: [],
+      },
+    ],
+    [state.id]
+  );
+
+  return (
+    <div ref={panelRef}>
+      <AddNodePanel
+        title="Add node"
+        items={items}
+        onNodeSelect={(node) => console.log('Selected node:', node)}
+        onClose={() => console.log('Closed selector')}
+        renderEmptyState={() => <DocumentExtractionMessage state={state} />}
+      />
+    </div>
+  );
+}
+
+function DocumentExtractionMessage({ state }: { state: DocumentExtractionMessageState }) {
+  return (
+    <div
+      className="flex min-h-[250px] flex-1 flex-col items-center justify-center gap-4 px-6 py-8 text-center"
+      role="status"
+      aria-live="polite"
+    >
+      <div
+        className="flex h-10 w-10 items-center justify-center rounded-lg"
+        style={{
+          backgroundColor: 'var(--canvas-background-hover)',
+          color: 'var(--canvas-foreground-de-emp)',
+        }}
+      >
+        <CanvasIcon icon={state.icon} size={22} />
+      </div>
+      <p className="m-0 max-w-[240px] text-sm leading-5 text-foreground-muted">{state.message}</p>
+      {state.actionLabel && state.actionHref && (
+        <a
+          href={state.actionHref}
+          className="rounded-md border border-solid px-3 py-1.5 text-xs font-medium no-underline"
+          style={{
+            borderColor: 'var(--canvas-border)',
+            color: 'var(--canvas-foreground-emp)',
+            backgroundColor: 'var(--canvas-background)',
+          }}
+          onClick={(event) => {
+            event.preventDefault();
+            console.log(`${state.label}: ${state.actionLabel}`);
+          }}
+        >
+          {state.actionLabel}
+        </a>
+      )}
+      {state.actionLabel && !state.actionHref && (
+        <button
+          type="button"
+          className="rounded-md border border-solid px-3 py-1.5 text-xs font-medium"
+          style={{
+            borderColor: 'var(--canvas-border)',
+            color: 'var(--canvas-foreground-emp)',
+            backgroundColor: 'var(--canvas-background)',
+          }}
+          onClick={() => console.log(`${state.label}: ${state.actionLabel}`)}
+        >
+          {state.actionLabel}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function DocumentExtractionMessagesStory() {
+  return (
+    <div
+      className="min-h-screen w-screen overflow-auto px-8 py-10"
+      style={{ backgroundColor: 'var(--color-background-secondary)' }}
+    >
+      <div className="flex flex-wrap gap-[50px]">
+        {DOCUMENT_EXTRACTION_MESSAGE_STATES.map((state) => (
+          <section key={state.id} className="flex flex-col gap-2">
+            <span className="text-xs font-semibold text-foreground-muted">{state.label}</span>
+            <div
+              style={{
+                width: '320px',
+                backgroundColor: 'var(--canvas-background-raised)',
+                border: '1px solid var(--canvas-border-de-emp)',
+                borderRadius: '8px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+              }}
+            >
+              <DocumentExtractionMessagePanel state={state} />
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /**
  * Story for testing all available node shapes (container, rectangle, square, circle).
  *
@@ -541,6 +694,22 @@ export const AllShapes: Story = {
     },
   },
   render: () => <AllShapesStory />,
+};
+
+export const NodePanelMessaging: Story = {
+  name: 'Add node panel message types',
+  parameters: {
+    docs: {
+      description: {
+        story: [
+          'Previews Document extraction blocker and recovery messages inside the AddNodePanel shell.',
+          '',
+          'These states use the same title, search bar, panel width, and empty body region so the copy and visual treatment can be reviewed together.',
+        ].join('\n'),
+      },
+    },
+  },
+  render: () => <DocumentExtractionMessagesStory />,
 };
 
 export const NodePanelStaticItems: Story = {
