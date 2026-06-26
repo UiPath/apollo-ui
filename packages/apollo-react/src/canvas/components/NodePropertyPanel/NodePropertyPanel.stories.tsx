@@ -2,6 +2,10 @@ import MonacoEditor from '@monaco-editor/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { FormSchema } from '@uipath/apollo-wind';
 import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  Badge,
   cn,
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +30,7 @@ import {
 } from '@uipath/apollo-wind/editor-themes';
 import {
   ChevronDown,
+  CircleAlert,
   CircleCheck,
   Code2,
   GitFork,
@@ -627,6 +632,8 @@ function CasePanel({
   monacoTheme,
   defaultExpanded = false,
   defaultValue = '',
+  errorMessage,
+  errorAction,
 }: {
   caseTitle: string;
   onTitleChange: (title: string) => void;
@@ -634,13 +641,21 @@ function CasePanel({
   monacoTheme: string;
   defaultExpanded?: boolean;
   defaultValue?: string;
+  errorMessage?: string;
+  errorAction?: string;
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [editingTitle, setEditingTitle] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
+  const hasError = Boolean(errorMessage);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border-subtle">
+    <div
+      className={cn(
+        'overflow-hidden rounded-xl border',
+        hasError ? 'border-error/60 shadow-[0_0_0_1px_var(--error)]' : 'border-border-subtle'
+      )}
+    >
       {/* Card header */}
       <div className="group flex items-center gap-2 px-3 py-2.5">
         <div className="grid size-5 shrink-0 cursor-grab place-items-center text-foreground-subtle">
@@ -650,7 +665,10 @@ function CasePanel({
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-label={expanded ? 'Collapse case' : 'Expand case'}
-          className="grid size-5 shrink-0 place-items-center rounded text-foreground-subtle transition hover:text-foreground"
+          className={cn(
+            'grid size-5 shrink-0 place-items-center rounded transition hover:text-foreground',
+            hasError ? 'text-error' : 'text-foreground-subtle'
+          )}
         >
           <ChevronDown
             size={12}
@@ -680,6 +698,11 @@ function CasePanel({
           >
             {caseTitle}
           </button>
+        )}
+        {hasError && (
+          <Badge variant="error" className="h-5 gap-1 px-1.5 text-[10px] font-medium">
+            <CircleAlert size={10} />1
+          </Badge>
         )}
         <button
           type="button"
@@ -720,9 +743,15 @@ function CasePanel({
           </div>
           <div className="px-3 pb-3">
             <div
-              className="overflow-hidden rounded-xl border border-border-subtle"
+              className={cn(
+                'relative overflow-hidden rounded-xl border',
+                hasError ? 'border-error shadow-[0_0_0_1px_var(--error)]' : 'border-border-subtle'
+              )}
               style={{ height: '120px' }}
             >
+              {hasError && (
+                <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-1 bg-error" />
+              )}
               <MonacoEditor
                 height="100%"
                 defaultLanguage="javascript"
@@ -732,9 +761,186 @@ function CasePanel({
                 options={COMPACT_EDITOR_OPTIONS}
               />
             </div>
+            {hasError && errorMessage && (
+              <InlineValidationMessage message={errorMessage} action={errorAction} />
+            )}
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+type CompactTabId = 'parameters' | 'error-handling' | 'advanced';
+
+const ALERT_ISSUES: Array<{
+  id: string;
+  tab: CompactTabId;
+  tabLabel: string;
+  field: string;
+  message: string;
+  action: string;
+}> = [
+  {
+    id: 'condition',
+    tab: 'parameters',
+    tabLabel: 'Parameters',
+    field: 'Case 1 condition',
+    message: 'Condition cannot be evaluated because the expression returns text.',
+    action: 'Return a boolean expression, for example input.status === "active".',
+  },
+  {
+    id: 'fallback',
+    tab: 'error-handling',
+    tabLabel: 'Error handling',
+    field: 'Fallback path',
+    message: 'No fallback path is configured for failed case evaluation.',
+    action: 'Choose a fallback branch or enable Default branch.',
+  },
+  {
+    id: 'timeout',
+    tab: 'advanced',
+    tabLabel: 'Advanced',
+    field: 'Timeout',
+    message: 'Retry duration exceeds the node timeout.',
+    action: 'Increase timeout to 60 seconds or reduce retries to 1.',
+  },
+];
+
+const ALERT_ISSUE_COUNT_BY_TAB = ALERT_ISSUES.reduce(
+  (acc, issue) => ({ ...acc, [issue.tab]: (acc[issue.tab] ?? 0) + 1 }),
+  {} as Record<CompactTabId, number>
+);
+
+function TabLabelWithError({ label, count }: { label: string; count: number }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span>{label}</span>
+      <span
+        title={`${count} issue${count === 1 ? '' : 's'}`}
+        className="grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-semibold leading-none text-foreground-on-accent"
+      >
+        {count}
+      </span>
+    </span>
+  );
+}
+
+function InlineValidationMessage({ message, action }: { message: string; action?: string }) {
+  return (
+    <div className="mt-2 flex gap-2 rounded-lg border border-error/40 bg-error-background/40 px-2.5 py-2 text-xs">
+      <CircleAlert size={13} className="mt-0.5 shrink-0 text-error" />
+      <div className="min-w-0">
+        <p className="font-medium leading-4 text-error">{message}</p>
+        {action && <p className="mt-0.5 leading-4 text-foreground-muted">{action}</p>}
+      </div>
+    </div>
+  );
+}
+
+function ValidationSummary({ onSelectTab }: { onSelectTab: (tab: CompactTabId) => void }) {
+  return (
+    <Alert className="border-error/50 bg-error-background/35 px-3 py-3 text-foreground">
+      <CircleAlert className="size-4 text-error" />
+      <AlertTitle className="text-sm text-foreground">
+        {ALERT_ISSUES.length} issues need attention
+      </AlertTitle>
+      <AlertDescription>
+        <div className="mt-2 flex flex-col gap-1.5">
+          {ALERT_ISSUES.map((issue) => (
+            <button
+              type="button"
+              key={issue.id}
+              onClick={() => onSelectTab(issue.tab)}
+              className="flex items-start gap-2 rounded-md px-2 py-1.5 text-left transition hover:bg-surface-overlay"
+            >
+              <span className="mt-1 size-1.5 shrink-0 rounded-full bg-error" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-xs font-medium leading-4 text-foreground">
+                  {issue.field}
+                </span>
+                <span className="block text-[11px] leading-4 text-foreground-muted">
+                  {issue.tabLabel} · {issue.action}
+                </span>
+              </span>
+            </button>
+          ))}
+        </div>
+      </AlertDescription>
+    </Alert>
+  );
+}
+
+function ErrorFieldBlock({
+  title,
+  message,
+  action,
+}: {
+  title: string;
+  message: string;
+  action: string;
+}) {
+  return (
+    <div className="rounded-xl border border-error/50 bg-error-background/25 p-3">
+      <div className="flex items-start gap-2">
+        <CircleAlert size={14} className="mt-0.5 shrink-0 text-error" />
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-semibold text-foreground">{title}</p>
+          <p className="mt-1 text-xs leading-4 text-error">{message}</p>
+          <p className="mt-1 text-xs leading-4 text-foreground-muted">{action}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const ALERT_PATTERN_NOTES = [
+  {
+    title: 'Panel status count',
+    description: 'Shows total issues on the node identity area before the user scans the tabs.',
+  },
+  {
+    title: 'Tab error count',
+    description: 'Marks each tab with the number of issues inside that section.',
+  },
+  {
+    title: 'Issue summary',
+    description:
+      'Lists every blocking issue with its location and a direct path to the affected tab.',
+  },
+  {
+    title: 'Inline field error',
+    description: 'Places the message and next action directly under the invalid code editor.',
+  },
+  {
+    title: 'Section error block',
+    description:
+      'Explains tab-specific configuration problems when the field is not currently visible.',
+  },
+];
+
+function AlertPatternNoteCard() {
+  return (
+    <div className="w-[380px] rounded-xl border border-border-subtle bg-surface-overlay p-4 shadow-sm">
+      <div className="flex items-start gap-2">
+        <CircleAlert size={15} className="mt-0.5 shrink-0 text-error" />
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-foreground">Alert and error types included</h3>
+          <p className="mt-1 text-xs leading-4 text-foreground-muted">
+            The story combines global navigation cues with local, action-oriented messages.
+          </p>
+        </div>
+      </div>
+      <div className="mt-3 flex flex-col gap-2">
+        {ALERT_PATTERN_NOTES.map((note) => (
+          <div key={note.title} className="flex gap-2">
+            <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-error" />
+            <p className="text-xs leading-4 text-foreground-muted">
+              <span className="font-medium text-foreground">{note.title}:</span> {note.description}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -896,6 +1102,207 @@ export const CompactEditor: Story = {
   name: 'Editor Compact',
   render: () => <CompactEditorStory />,
 };
+
+function AlertsAndErrorsStory() {
+  const monacoTheme = useMonacoTheme();
+  const [activeTab, setActiveTab] = useState<CompactTabId>('parameters');
+  const [cases, setCases] = useState([{ id: 1, title: 'Case 1' }]);
+  const nextIdRef = useRef(2);
+  const [defaultBranch, setDefaultBranch] = useState(false);
+  const [label, setLabel] = useState('Switch');
+  const [category, setCategory] = useState('Control');
+  const [editingLabel, setEditingLabel] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(false);
+  const labelRef = useRef<HTMLInputElement>(null);
+  const categoryRef = useRef<HTMLInputElement>(null);
+
+  const addCase = () => {
+    const id = nextIdRef.current++;
+    setCases((prev) => [...prev, { id, title: `Case ${id}` }]);
+  };
+  const deleteCase = (id: number) => setCases((prev) => prev.filter((c) => c.id !== id));
+  const updateCaseTitle = (id: number, title: string) =>
+    setCases((prev) => prev.map((c) => (c.id === id ? { ...c, title } : c)));
+  const conditionIssue = ALERT_ISSUES.find((issue) => issue.id === 'condition');
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <div className="w-[380px] rounded-lg border border-border-subtle bg-surface-overlay px-3 py-2 text-xs leading-4 text-foreground-muted shadow-sm">
+        <span className="font-medium text-foreground">Design Review:</span> This pattern is ready
+        for feedback on alert placement, hierarchy, and action clarity.
+      </div>
+      <PanelFrame>
+        <NodePropertyPanel
+          panelTitle="Properties"
+          onClose={() => {}}
+          contentInset="0.875rem"
+          className="h-[640px]"
+        >
+          <div className="flex h-full flex-col">
+            <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
+              <div className="flex min-w-0 flex-1 items-center gap-3.5">
+                <div className="relative grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
+                  <GitFork />
+                  <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-error text-[10px] font-semibold text-foreground-on-accent">
+                    {ALERT_ISSUES.length}
+                  </span>
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col justify-center">
+                  {editingLabel ? (
+                    <input
+                      ref={labelRef}
+                      value={label}
+                      onChange={(e) => setLabel(e.target.value)}
+                      onBlur={() => setEditingLabel(false)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === 'Escape') setEditingLabel(false);
+                      }}
+                      className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-base font-semibold leading-5 tracking-[-0.3px] text-foreground outline-none ring-1 ring-brand"
+                      autoFocus
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingLabel(true);
+                        setTimeout(() => labelRef.current?.select(), 0);
+                      }}
+                      className="truncate rounded px-1.5 py-0.5 text-left text-base font-semibold leading-5 tracking-[-0.3px] text-foreground transition hover:bg-surface-overlay"
+                    >
+                      {label}
+                    </button>
+                  )}
+                  {editingCategory ? (
+                    <input
+                      ref={categoryRef}
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      onBlur={() => setEditingCategory(false)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === 'Escape') setEditingCategory(false);
+                      }}
+                      className="w-full rounded bg-surface-overlay px-1.5 py-0.5 text-xs leading-4 text-foreground outline-none ring-1 ring-brand"
+                      autoFocus
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingCategory(true);
+                        setTimeout(() => categoryRef.current?.select(), 0);
+                      }}
+                      className="truncate rounded px-1.5 py-0.5 text-left text-xs leading-4 text-foreground-muted transition hover:bg-surface-overlay"
+                    >
+                      {category}
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="shrink-0">
+                <DebugButton />
+              </div>
+            </div>
+
+            <Tabs
+              value={activeTab}
+              onValueChange={(value) => setActiveTab(value as CompactTabId)}
+              className="flex min-h-0 flex-1 flex-col"
+            >
+              <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                <TabsList className={TAB_LIST_CLASS}>
+                  <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
+                    <TabLabelWithError
+                      label="Parameters"
+                      count={ALERT_ISSUE_COUNT_BY_TAB.parameters}
+                    />
+                  </TabsTrigger>
+                  <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
+                    <TabLabelWithError
+                      label="Error handling"
+                      count={ALERT_ISSUE_COUNT_BY_TAB['error-handling']}
+                    />
+                  </TabsTrigger>
+                  <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
+                    <TabLabelWithError label="Advanced" count={ALERT_ISSUE_COUNT_BY_TAB.advanced} />
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+
+              <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto">
+                <div className="flex flex-col gap-3 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                  <ValidationSummary onSelectTab={setActiveTab} />
+                </div>
+                <div className="py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                  <span className="text-sm font-medium text-foreground-muted">Cases</span>
+                </div>
+                <div className="flex flex-col gap-2 pb-1 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                  {cases.map((c, i) => (
+                    <CasePanel
+                      key={c.id}
+                      caseTitle={c.title}
+                      onTitleChange={(title) => updateCaseTitle(c.id, title)}
+                      onDelete={() => deleteCase(c.id)}
+                      monacoTheme={monacoTheme}
+                      defaultExpanded={i === 0}
+                      defaultValue={i === 0 ? 'input.status' : ''}
+                      errorMessage={i === 0 ? conditionIssue?.message : undefined}
+                      errorAction={i === 0 ? conditionIssue?.action : undefined}
+                    />
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={addCase}
+                  className="flex items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover [padding-inline:var(--mf-content-inset,0.875rem)]"
+                >
+                  <Plus size={12} />
+                  Add case
+                </button>
+                <div className="flex items-center gap-2 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                  <Switch size="sm" checked={defaultBranch} onCheckedChange={setDefaultBranch} />
+                  <span className="text-xs text-foreground-muted">Default branch</span>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="error-handling" className="mt-0 min-h-0 flex-1 overflow-auto">
+                <div className="flex flex-col gap-3 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                  <ValidationSummary onSelectTab={setActiveTab} />
+                  <div className="flex flex-col gap-2">
+                    <span className="text-sm font-medium text-foreground-muted">
+                      Failure behavior
+                    </span>
+                    <ErrorFieldBlock
+                      title="Fallback path"
+                      message="No fallback path is configured for failed case evaluation."
+                      action="Choose a fallback branch or enable Default branch before running this node."
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="advanced" className="mt-0 min-h-0 flex-1 overflow-auto">
+                <div className="flex flex-col gap-3 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+                  <ValidationSummary onSelectTab={setActiveTab} />
+                  <div className="flex flex-col gap-2">
+                    <span className="text-sm font-medium text-foreground-muted">
+                      Execution limits
+                    </span>
+                    <ErrorFieldBlock
+                      title="Timeout"
+                      message="Retry duration exceeds the node timeout."
+                      action="Increase timeout to 60 seconds or reduce retries to 1."
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </NodePropertyPanel>
+      </PanelFrame>
+      <AlertPatternNoteCard />
+    </div>
+  );
+}
 
 // ============================================================================
 // Input Editor
@@ -1370,6 +1777,11 @@ function InlineEditingStory() {
 export const InlineEditing: Story = {
   name: 'Inline Editing',
   render: () => <InlineEditingStory />,
+};
+
+export const AlertsAndErrors: Story = {
+  name: 'Alerts and Errors',
+  render: () => <AlertsAndErrorsStory />,
 };
 
 const SURFACE_REMAP = { '--surface-raised': 'var(--surface-overlay)' } as CSSProperties;
