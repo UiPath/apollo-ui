@@ -845,8 +845,8 @@ const ALERT_ISSUES: Array<{
   },
 ];
 
-const ALERT_ISSUE_COUNT_BY_TAB = ALERT_ISSUES.reduce(
-  (acc, issue) => ({ ...acc, [issue.tab]: (acc[issue.tab] ?? 0) + 1 }),
+const ALERT_ISSUE_COUNT_BY_TAB = ALERT_ISSUES.reduce<Record<CompactTabId, number>>(
+  (acc, issue) => ({ ...acc, [issue.tab]: acc[issue.tab] + 1 }),
   {
     parameters: 0,
     'error-handling': 0,
