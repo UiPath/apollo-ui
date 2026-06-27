@@ -1046,7 +1046,8 @@ function setSuggestions() {
   );
 }
 
-function sendToolCall(displayMode: string) {
+type ToolCallDisplayMode = 'ToolNameOnly' | 'InputsAndOutputs' | 'FullTrace';
+function sendToolCall(displayMode: ToolCallDisplayMode) {
   const now = new Date().toISOString();
   const start = new Date(Date.now() - 2500).toISOString();
 
@@ -1585,9 +1586,15 @@ function createUI() {
     ?.addEventListener('click', sendResponseWithCitations);
   document.getElementById('send-code-block')?.addEventListener('click', sendCodeBlock);
   document.getElementById('send-html')?.addEventListener('click', sendHTMLPreview);
-  document.getElementById('send-tool-call-name-only')?.addEventListener('click', () => sendToolCall('ToolNameOnly'));
-  document.getElementById('send-tool-call-io')?.addEventListener('click', () => sendToolCall('InputsAndOutputs'));
-  document.getElementById('send-tool-call-full-trace')?.addEventListener('click', () => sendToolCall('FullTrace'));
+  document
+    .getElementById('send-tool-call-name-only')
+    ?.addEventListener('click', () => sendToolCall('ToolNameOnly'));
+  document
+    .getElementById('send-tool-call-io')
+    ?.addEventListener('click', () => sendToolCall('InputsAndOutputs'));
+  document
+    .getElementById('send-tool-call-full-trace')
+    ?.addEventListener('click', () => sendToolCall('FullTrace'));
   document
     .getElementById('send-disabled-actions')
     ?.addEventListener('click', sendResponseDisabledActions);
