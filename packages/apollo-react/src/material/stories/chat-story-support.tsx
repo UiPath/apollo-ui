@@ -2063,7 +2063,9 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
             <DemoButton onClick={() => sendToolCall(ConversationalDisplayModeTypes.ToolNameOnly)}>
               Tool Call: Name Only
             </DemoButton>
-            <DemoButton onClick={() => sendToolCall(ConversationalDisplayModeTypes.InputsAndOutputs)}>
+            <DemoButton
+              onClick={() => sendToolCall(ConversationalDisplayModeTypes.InputsAndOutputs)}
+            >
               Tool Call: I/O
             </DemoButton>
             <DemoButton onClick={() => sendToolCall(ConversationalDisplayModeTypes.FullTrace)}>
