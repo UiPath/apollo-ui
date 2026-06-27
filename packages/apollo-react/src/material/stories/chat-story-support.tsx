@@ -18,6 +18,7 @@ import {
   type AutopilotChatResourceManager,
   AutopilotChatRole,
   AutopilotChatService,
+  ConversationalDisplayModeTypes,
   type SupportedLocale,
 } from '../components';
 
@@ -1408,11 +1409,101 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
     );
   };
 
-  const sendToolCall = () => {
+  const sendToolCall = (displayMode: string) => {
+    const now = new Date().toISOString();
+    const start = new Date(Date.now() - 2500).toISOString();
+
+    if (displayMode === ConversationalDisplayModeTypes.FullTrace) {
+      chatService?.sendResponse({
+        content: 'Tool call response',
+        widget: 'apollo-agents-tool-call',
+        meta: {
+          displayMode,
+          span: {
+            key: 'multi-web-search',
+            name: 'Tool call - Multi_Web_Search',
+            data: {
+              id: 'root-span',
+              name: 'Tool call - Multi_Web_Search',
+              startTime: new Date(Date.now() - 25000).toISOString(),
+              endTime: now,
+              status: 'ok',
+              type: 'toolCall',
+              attributes: {
+                toolName: 'Multi_Web_Search',
+                toolType: 'Agent',
+                arguments: { query: 'what are trending right now' },
+                result: { result: 'Multi web search completed successfully.' },
+              },
+            },
+            children: [
+              {
+                key: 'autonomous-web-search',
+                name: 'Autonomous Web Search',
+                data: {
+                  id: 'agentTool-1',
+                  name: 'Autonomous Web Search',
+                  startTime: new Date(Date.now() - 25000).toISOString(),
+                  endTime: now,
+                  status: 'ok',
+                  type: 'agentTool',
+                },
+                children: [
+                  {
+                    key: 'agent-run-1',
+                    name: 'Agent run - Autonomous Web Search',
+                    data: {
+                      id: 'agentRun-1',
+                      name: 'Agent run - Autonomous Web Search',
+                      startTime: new Date(Date.now() - 23000).toISOString(),
+                      endTime: now,
+                      status: 'ok',
+                      type: 'agentRun',
+                    },
+                    children: [
+                      {
+                        key: 'tool-call-web-search-1',
+                        name: 'Tool call - Web_Search',
+                        data: {
+                          id: 'ws1',
+                          name: 'Tool call - Web_Search',
+                          type: 'toolCall',
+                          status: 'ok',
+                          startTime: new Date(Date.now() - 21000).toISOString(),
+                          endTime: new Date(Date.now() - 17000).toISOString(),
+                        },
+                        children: [],
+                      },
+                      {
+                        key: 'tool-call-web-search-2',
+                        name: 'Tool call - Web_Search',
+                        data: {
+                          id: 'ws2',
+                          name: 'Tool call - Web_Search',
+                          type: 'toolCall',
+                          status: 'ok',
+                          startTime: new Date(Date.now() - 16000).toISOString(),
+                          endTime: new Date(Date.now() - 10000).toISOString(),
+                        },
+                        children: [],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+        // biome-ignore lint/suspicious/noExplicitAny: meta property not in public type definition
+      } as any);
+      return;
+    }
+
     chatService?.sendResponse({
       content: 'Tool call response',
       widget: 'apollo-agents-tool-call',
       meta: {
+        displayMode,
         input: {
           provider: 'GoogleCustomSearch',
           query: 'most interesting scientific fact discovered recently 2025',
@@ -1428,8 +1519,8 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
           ],
         },
         isError: false,
-        startTime: new Date().toISOString(),
-        endTime: new Date().toISOString(),
+        startTime: start,
+        endTime: now,
         toolName: 'Web_Search',
       },
       // biome-ignore lint/suspicious/noExplicitAny: meta property not in public type definition
@@ -1969,7 +2060,15 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
             <DemoButton onClick={sendHTMLPreview}>HTML Preview</DemoButton>
           </ButtonGroup>
           <ButtonGroup>
-            <DemoButton onClick={sendToolCall}>Send Tool Call</DemoButton>
+            <DemoButton onClick={() => sendToolCall(ConversationalDisplayModeTypes.ToolNameOnly)}>
+              Tool Call: Name Only
+            </DemoButton>
+            <DemoButton onClick={() => sendToolCall(ConversationalDisplayModeTypes.InputsAndOutputs)}>
+              Tool Call: I/O
+            </DemoButton>
+            <DemoButton onClick={() => sendToolCall(ConversationalDisplayModeTypes.FullTrace)}>
+              Tool Call: Full Trace
+            </DemoButton>
             <DemoButton onClick={sendResponseDisabledActions}>Disabled Actions</DemoButton>
           </ButtonGroup>
           <ButtonGroup>

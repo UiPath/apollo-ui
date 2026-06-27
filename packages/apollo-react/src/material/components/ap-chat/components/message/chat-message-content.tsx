@@ -48,6 +48,7 @@ const getApolloMessageRenderers = (locale: SupportedLocale) => [
           isError={message.meta.isError}
           startTime={message.meta.startTime}
           endTime={message.meta.endTime}
+          displayMode={message.meta.displayMode}
           locale={locale}
         />
       );
