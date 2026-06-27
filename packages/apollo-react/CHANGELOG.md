@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v4.54.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.53.1...@uipath/apollo-react@4.54.0) (2026-06-27)
+
+### Features
+
+* **apollo-react:** fix format ([d51ace3](https://github.com/UiPath/apollo-ui/commit/d51ace3b7b00e209835bcb0df6082a37db9d68fe))
+* **apollo-react:** pass in display mode to ap-tool-call for chat ([5797d44](https://github.com/UiPath/apollo-ui/commit/5797d44a3d92effb1ea11f3fe30f3d50e765f855))
+
 ## [@uipath/apollo-react-v4.53.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.53.0...@uipath/apollo-react@4.53.1) (2026-06-26)
 
 ### Bug Fixes

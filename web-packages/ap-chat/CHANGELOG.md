@@ -1,3 +1,10 @@
+## [@uipath/ap-chat-v1.6.0](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.5.7...@uipath/ap-chat@1.6.0) (2026-06-27)
+
+### Features
+
+* **apollo-react:** fix format and suggestions ([3a1139e](https://github.com/UiPath/apollo-ui/commit/3a1139e2e2ebb2a980b320089ab84b61c6c08406))
+* **apollo-react:** pass in display mode to ap-tool-call for chat ([5797d44](https://github.com/UiPath/apollo-ui/commit/5797d44a3d92effb1ea11f3fe30f3d50e765f855))
+
 ## [@uipath/ap-chat-v1.5.6](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.5.5...@uipath/ap-chat@1.5.6) (2026-05-10)
 
 ### Bug Fixes
