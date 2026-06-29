@@ -2076,6 +2076,19 @@
       ]
     },
     {
+      "name": "share-with-uipath-checkbox",
+      "type": "registry:ui",
+      "title": "Share With UiPath Checkbox",
+      "description": "A labeled opt-in checkbox for sharing feedback data with UiPath — the outer-loop consent control on Platform Feedback submission surfaces.",
+      "registryDependencies": ["@uipath/checkbox", "@uipath/label"],
+      "files": [
+        {
+          "path": "registry/share-with-uipath-checkbox/share-with-uipath-checkbox.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "sheet",
       "type": "registry:ui",
       "title": "Sheet",
