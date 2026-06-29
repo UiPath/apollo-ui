@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.54.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.54.1...@uipath/apollo-react@4.54.2) (2026-06-29)
+
+### Bug Fixes
+
+* **apollo-react:** add breathing room around toolbox list focus ring ([a73d98e](https://github.com/UiPath/apollo-ui/commit/a73d98ed705ef9e36fdf5578e3c1b87e50988a3e))
+
 ## [@uipath/apollo-react-v4.54.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.54.0...@uipath/apollo-react@4.54.1) (2026-06-29)
 
 ### Bug Fixes
