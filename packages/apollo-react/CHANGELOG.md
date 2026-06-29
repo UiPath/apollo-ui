@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.54.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.54.0...@uipath/apollo-react@4.54.1) (2026-06-29)
+
+### Bug Fixes
+
+* **apollo-react:** show node label fallback tooltips [MST-10975] ([217a2be](https://github.com/UiPath/apollo-ui/commit/217a2befcfc5d42fb75a8edc2a3e9a84e08583c0))
+
 ## [@uipath/apollo-react-v4.54.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.53.1...@uipath/apollo-react@4.54.0) (2026-06-27)
 
 ### Features
