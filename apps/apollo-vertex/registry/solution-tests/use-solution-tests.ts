@@ -39,6 +39,18 @@ export function useRunTests(): MutationHook<{ testIds?: string[] }> {
   });
 }
 
+/** Create a solution test from a subject id (e.g. a loan). */
+export function useCreateTest(): MutationHook<string> {
+  const actions = useSolutionTestsActions();
+  const testsCollection = useSolutionTestCollection(ENTITY.tests);
+  return useMutation({
+    mutationFn: async (subjectId: string) => {
+      await actions.createTest(subjectId);
+      await testsCollection.utils.refetch();
+    },
+  });
+}
+
 /**
  * Toggle a test's active flag. Unlike the other writes this isn't an API
  * trigger — it's a direct field update on the `UiPathSTTests` collection, so it
