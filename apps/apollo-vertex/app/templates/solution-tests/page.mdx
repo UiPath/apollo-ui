@@ -90,6 +90,39 @@ render the dumb `SolutionTestsView`, which takes all data and callbacks via
 props. It must still be wrapped in `SolutionTestsProvider` (the view reads
 `config` from context via `useSolutionTestsConfig`), as the preview above does.
 
+## Saving a subject as a test
+
+Alongside the full-page view, the package exports a standalone `SaveAsTestButton`
+for the inverse flow: letting a user promote the subject they're looking at (a
+loan, claim, invoice, …) into a new Solution Test from that subject's own page.
+It's presentational — you own the placement and wire it to the `useCreateTest`
+hook, which POSTs the subject id to the `solution-tests/create` action through
+the same `triggerBaseUrl` / `getToken` plumbing as the other writes.
+
+```tsx
+"use client";
+
+import {
+  SaveAsTestButton,
+  useCreateTest,
+} from "@/components/ui/solution-tests";
+
+function SaveSubjectAsTest({ subjectId }: { subjectId: string }) {
+  const createTest = useCreateTest();
+  return (
+    <SaveAsTestButton
+      isSaving={createTest.isPending}
+      isSaved={createTest.isSuccess}
+      onSave={() => createTest.mutate(subjectId)}
+    />
+  );
+}
+```
+
+Both must sit inside a `SolutionTestsProvider` (the hook resolves the write
+actions from context). The button takes `isSaved`, `isSaving`, `onSave`, and an
+optional `disabled`, and renders its own saving / saved states.
+
 ## Installation
 
 ```bash

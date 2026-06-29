@@ -111,6 +111,11 @@ export function createSolutionTestActions(
         auth: { userToken: token },
       }));
     },
+    createTest(subjectId: string): Promise<void> {
+      return callFn(AUTOMATION_FUNCTION_PATH.createTest, {
+        subject_id: subjectId,
+      });
+    },
     deleteTest(testId: string): Promise<void> {
       return callFn(AUTOMATION_FUNCTION_PATH.deleteTest, {
         solution_test_id: testId,

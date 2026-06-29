@@ -18,6 +18,7 @@
 export {
   useSolutionTests,
   useRunTests,
+  useCreateTest,
   useToggleTestActive,
   useDeleteTest,
 } from "./use-solution-tests";

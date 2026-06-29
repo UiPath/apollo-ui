@@ -18,6 +18,7 @@ export const AUTOMATION_FUNCTIONS_SLUG = "automation-functions";
 
 /** `automation-functions` RPC paths. */
 export const AUTOMATION_FUNCTION_PATH = {
+  createTest: "/solution-tests/create",
   deleteTest: "/solution-tests/delete",
   forceStopBatch: "/solution-tests/force-stop-batch",
   forceStopRun: "/solution-tests/force-stop",

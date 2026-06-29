@@ -6,6 +6,8 @@
 export interface SolutionTestsActions {
   /** Run the given tests, or all active Ready tests when omitted. */
   runTests(testIds?: string[]): Promise<void>;
+  /** Create a solution test from a subject (the backend keys it as `subject_id`). */
+  createTest(subjectId: string): Promise<void>;
   deleteTest(testId: string): Promise<void>;
   forceStopBatch(batchId: string): Promise<void>;
   forceStopRun(runId: string): Promise<void>;

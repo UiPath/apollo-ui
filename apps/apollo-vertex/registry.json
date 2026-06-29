@@ -2636,6 +2636,11 @@
           "target": "components/ui/solution-tests/index.ts"
         },
         {
+          "path": "registry/solution-tests/save-as-test-button.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/save-as-test-button.tsx"
+        },
+        {
           "path": "registry/solution-tests/solution-tests-view.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/solution-tests-view.tsx"

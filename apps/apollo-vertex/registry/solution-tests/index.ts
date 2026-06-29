@@ -19,6 +19,7 @@
 export { SolutionTests } from "./solution-tests";
 export { SolutionTestsView } from "./solution-tests-view";
 export type { SolutionTestsViewProps } from "./solution-tests-view";
+export { SaveAsTestButton } from "./save-as-test-button";
 export {
   SolutionTestsProvider,
   useSolutionTestsContext,
@@ -35,6 +36,7 @@ export {
   useBaselineJobs,
   useRunResults,
   useRunTests,
+  useCreateTest,
   useToggleTestActive,
   useDeleteTest,
   useForceStopBatch,
