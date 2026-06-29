@@ -3,6 +3,7 @@ import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { Badge, Button, Spinner } from '@uipath/apollo-wind';
 import debounce from 'debounce';
 import { memo, useCallback, useMemo, useState } from 'react';
+import { useSafeLingui } from '../../../i18n';
 import { TimelinePlayIcon } from '../../icons';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
@@ -19,16 +20,6 @@ const ProcessCanvasIcon = () => (
     <rect x="14" y="14" width="7" height="7" rx="1" />
   </svg>
 );
-
-const generateBadgeText = (taskExecution: StageTaskExecution) => {
-  if (!taskExecution.badge) {
-    return undefined;
-  }
-  if (taskExecution.retryCount && taskExecution.retryCount > 1) {
-    return `${taskExecution.badge} x${taskExecution.retryCount}`;
-  }
-  return taskExecution.badge;
-};
 
 const TaskPlayButton = memo(
   ({
@@ -112,11 +103,30 @@ export interface TaskContentProps {
 
 export const TaskContent = memo(
   ({ task, taskExecution, isDragging, onTaskPlay }: TaskContentProps) => {
+    const { _ } = useSafeLingui();
     const getStatusName = useExecutionStatusLabel();
     const hasExecutionStatus = !!taskExecution?.status;
+    const badgeText = useMemo(() => {
+      if (!taskExecution?.badge) {
+        return undefined;
+      }
+      if (taskExecution.retryCount && taskExecution.retryCount > 1) {
+        if (taskExecution.status === 'InProgress') {
+          return _({
+            id: 'stage-node.task-badge.running-again',
+            message: 'Running again',
+          });
+        }
+        return _({
+          id: 'stage-node.task-badge.ran-n-times',
+          message: '{count, plural, one {Ran # time} other {Ran # times}}',
+          values: { count: taskExecution.retryCount },
+        });
+      }
+      return taskExecution.badge;
+    }, [taskExecution?.badge, taskExecution?.retryCount, taskExecution?.status, _]);
     const hasSecondRowContent =
-      taskExecution &&
-      (taskExecution.duration || taskExecution.retryDuration || taskExecution.badge);
+      taskExecution && (taskExecution.duration || taskExecution.retryDuration || badgeText);
     const showPlayButtonSmall = onTaskPlay && hasExecutionStatus;
     const taskStatusFallbackName = hasExecutionStatus ? getStatusName(taskExecution?.status) : '';
     const taskStatusTooltip = taskExecution?.message || taskStatusFallbackName;
@@ -197,11 +207,7 @@ export const TaskContent = memo(
               )}
             </Row>
             <Row align="center" gap={Spacing.SpacingXs}>
-              {taskExecution?.badge && (
-                <Badge variant={taskExecution.badgeStatus}>
-                  {generateBadgeText(taskExecution) ?? ''}
-                </Badge>
-              )}
+              {badgeText && <Badge variant={taskExecution.badgeStatus}>{badgeText}</Badge>}
               <StageTaskEntryConditionIcon task={task} small />
               {showPlayButtonSmall && (
                 <TaskPlayButton taskId={task.id} onTaskPlay={onTaskPlay} small />

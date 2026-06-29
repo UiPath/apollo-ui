@@ -115,6 +115,12 @@ export interface StageTaskExecution {
   retryDuration?: string;
   badge?: string;
   badgeStatus?: 'warning' | 'info' | 'error';
+  /**
+   * Total run count to display in the badge. Requires `badge` to be set. When `> 1`, Apollo
+   * overrides the `badge` text with a localized "Ran N times" (or "Running again" when `status` is
+   * `'InProgress'`). When `1` or absent, the `badge` string is rendered as-is and must be
+   * pre-localized by the consumer.
+   */
   retryCount?: number;
 }
 

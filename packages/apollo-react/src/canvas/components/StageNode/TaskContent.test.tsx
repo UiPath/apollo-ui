@@ -91,6 +91,77 @@ describe('TaskContent - execution status tooltip', () => {
   });
 });
 
+describe('TaskContent - badge', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('renders "Running again" when retryCount > 1 and status is InProgress', () => {
+    renderTaskContent({
+      taskExecution: { status: 'InProgress', duration: '1m', retryCount: 2, badge: 'Running' },
+    });
+    expect(screen.getByText('Running again')).toBeInTheDocument();
+  });
+
+  it('renders "Ran N times" when retryCount > 1 and status is not InProgress', () => {
+    renderTaskContent({
+      taskExecution: { status: 'Completed', duration: '1m', retryCount: 2, badge: 'Ran' },
+    });
+    expect(screen.getByText('Ran 2 times')).toBeInTheDocument();
+  });
+
+  it('interpolates the count into the plural form', () => {
+    renderTaskContent({
+      taskExecution: { status: 'Failed', duration: '1m', retryCount: 3, badge: 'Ran' },
+    });
+    expect(screen.getByText('Ran 3 times')).toBeInTheDocument();
+  });
+
+  it('overrides the consumer-supplied badge string when retryCount > 1', () => {
+    renderTaskContent({
+      taskExecution: {
+        status: 'Completed',
+        duration: '1m',
+        retryCount: 2,
+        badge: 'Reworked',
+      },
+    });
+    expect(screen.getByText('Ran 2 times')).toBeInTheDocument();
+    expect(screen.queryByText('Reworked')).not.toBeInTheDocument();
+  });
+
+  it('renders the consumer-supplied badge string as-is when retryCount is 1', () => {
+    renderTaskContent({
+      taskExecution: { status: 'Completed', duration: '1m', retryCount: 1, badge: 'Ran' },
+    });
+    expect(screen.getByText('Ran')).toBeInTheDocument();
+  });
+
+  it('renders the consumer-supplied badge string as-is when retryCount is 1 and status is InProgress', () => {
+    renderTaskContent({
+      taskExecution: { status: 'InProgress', duration: '1m', retryCount: 1, badge: 'Running' },
+    });
+    expect(screen.getByText('Running')).toBeInTheDocument();
+  });
+
+  it('renders the consumer-supplied badge string when retryCount is absent', () => {
+    renderTaskContent({
+      taskExecution: { status: 'Completed', duration: '1m', badge: 'Action needed' },
+    });
+    expect(screen.getByText('Action needed')).toBeInTheDocument();
+  });
+
+  it('renders no badge when no badge string is supplied (even if retryCount > 1)', () => {
+    renderTaskContent({ taskExecution: { status: 'Completed', duration: '1m', retryCount: 2 } });
+    expect(screen.queryByText(/Ran|Running/)).not.toBeInTheDocument();
+  });
+
+  it('renders no badge when neither retryCount nor a badge string is supplied', () => {
+    renderTaskContent({ taskExecution: { status: 'Completed', duration: '1m' } });
+    expect(screen.queryByText(/Ran|Running|Reworked/)).not.toBeInTheDocument();
+  });
+});
+
 describe('TaskContent - duration tooltip', () => {
   beforeEach(() => {
     vi.clearAllMocks();
