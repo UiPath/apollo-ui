@@ -1117,6 +1117,45 @@
         "@uipath/textarea",
         "@uipath/tooltip"
       ],
+      "cssVars": {
+        "theme": {
+          "color-ai-chat-foreground": "var(--ai-chat-foreground)",
+          "color-ai-chat-muted": "var(--ai-chat-muted)",
+          "color-primary-700": "var(--primary-700)",
+          "color-ai-chat-border": "var(--ai-chat-border)",
+          "color-ai-chat-accent": "var(--ai-chat-accent)",
+          "color-ai-chat-muted-foreground": "var(--ai-chat-muted-foreground)",
+          "color-ai-chat-bubble-user": "var(--ai-chat-bubble-user)",
+          "color-ai-chat-bubble-user-foreground": "var(--ai-chat-bubble-user-foreground)",
+          "color-ai-chat": "var(--ai-chat)"
+        },
+        "light": {
+          "ai-chat-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-chat-muted": "oklch(0.955 0.006 260)",
+          "ai-chat-border": "oklch(0.92 0.008 260)",
+          "ai-chat-accent": "oklch(0.64 0.115 208)",
+          "ai-chat-muted-foreground": "oklch(0.50 0.020 260)",
+          "ai-chat-bubble-user": "oklch(0.955 0.008 252)",
+          "ai-chat-bubble-user-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-gradient-start": "#6C5AEF",
+          "ai-gradient-end": "#69C7DD",
+          "ai-chat-brand-gradient": "linear-gradient(97.73deg, #5D4ED0 8.79%, #1076A0 91.48%)",
+          "ai-chat": "oklch(0.985 0.002 260)"
+        },
+        "dark": {
+          "ai-chat-foreground": "oklch(0.95 0.010 225)",
+          "ai-chat-muted": "oklch(0.26 0.030 258)",
+          "ai-chat-border": "oklch(0.30 0.040 258)",
+          "ai-chat-accent": "oklch(0.69 0.112 207)",
+          "ai-chat-muted-foreground": "oklch(0.65 0.020 258)",
+          "ai-chat-bubble-user": "oklch(0.28 0.035 255)",
+          "ai-chat-bubble-user-foreground": "oklch(0.95 0.010 225)",
+          "ai-gradient-start": "#6C5AEF",
+          "ai-gradient-end": "#69C7DD",
+          "ai-chat-brand-gradient": "linear-gradient(97.73deg, #9485F5 8.79%, #69C7DD 91.48%)",
+          "ai-chat": "oklch(0.19 0.025 260)"
+        }
+      },
       "files": [
         { "path": "lib/asserts/assert.ts", "type": "registry:lib" },
         {
@@ -1446,6 +1485,23 @@
       "type": "registry:ui",
       "title": "Alert",
       "description": "Displays a callout for user attention.",
+      "cssVars": {
+        "theme": {
+          "color-badge": "var(--badge)",
+          "color-warning": "var(--warning)",
+          "color-warning-foreground": "var(--warning-foreground)"
+        },
+        "light": {
+          "badge": "oklch(0.5995 0.0199 253.42)",
+          "warning": "oklch(0.80 0.1401 80.82)",
+          "warning-foreground": "oklch(0.1660 0.0283 203.3400)"
+        },
+        "dark": {
+          "badge": "oklch(0.7196 0.0135 255.53)",
+          "warning": "oklch(0.6889 0.1401 80.82)",
+          "warning-foreground": "oklch(0.1660 0.0283 203.3400)"
+        }
+      },
       "files": [{ "path": "registry/alert/alert.tsx", "type": "registry:ui" }]
     },
     {
@@ -1488,6 +1544,56 @@
       "title": "Badge",
       "description": "Displays a badge or a component that looks like a badge.",
       "dependencies": ["@radix-ui/react-slot"],
+      "cssVars": {
+        "theme": {
+          "color-badge": "var(--badge)",
+          "color-badge-foreground": "var(--badge-foreground)",
+          "color-info": "var(--info)",
+          "color-info-foreground": "var(--info-foreground)",
+          "color-warning": "var(--warning)",
+          "color-warning-foreground": "var(--warning-foreground)",
+          "color-success": "var(--success)",
+          "color-success-foreground": "var(--success-foreground)",
+          "color-insight-600": "var(--insight-600)",
+          "color-insight-400": "var(--insight-400)"
+        },
+        "light": {
+          "ai-gradient-fill": "linear-gradient(97.73deg, var(--insight-600) 8.79%, var(--primary-700) 91.48%)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-100) 8.29%, var(--primary-50) 88.73%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
+          "badge": "oklch(0.5995 0.0199 253.42)",
+          "badge-foreground": "oklch(1 0 89.8800)",
+          "info": "oklch(0.52 0.120 210)",
+          "info-foreground": "oklch(1 0 89.8800)",
+          "warning": "oklch(0.80 0.1401 80.82)",
+          "warning-foreground": "oklch(0.1660 0.0283 203.3400)",
+          "success": "oklch(0.57 0.105 152)",
+          "success-foreground": "oklch(1 0 89.8800)",
+          "insight-600": "oklch(0.56 0.20 277)",
+          "insight-400": "oklch(0.70 0.19 277)",
+          "primary-50": "oklch(0.95 0.035 218)",
+          "primary-700": "oklch(0.52 0.120 210)",
+          "insight-100": "oklch(0.92 0.05 277)"
+        },
+        "dark": {
+          "ai-gradient-fill": "linear-gradient(97.73deg, var(--insight-600) 8.79%, var(--primary-700) 91.48%)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-800) 8.29%, var(--primary-800) 88.73%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
+          "badge": "oklch(0.7196 0.0135 255.53)",
+          "badge-foreground": "oklch(0.1660 0.0283 203.3400)",
+          "info": "oklch(0.69 0.112 207)",
+          "info-foreground": "oklch(0.1660 0.0283 203.3400)",
+          "warning": "oklch(0.6889 0.1401 80.82)",
+          "warning-foreground": "oklch(0.1660 0.0283 203.3400)",
+          "success": "oklch(0.70 0.120 152)",
+          "success-foreground": "oklch(0.1660 0.0283 203.3400)",
+          "insight-600": "oklch(0.56 0.20 277)",
+          "insight-400": "oklch(0.70 0.19 277)",
+          "primary-700": "oklch(0.52 0.120 210)",
+          "primary-800": "oklch(0.46 0.095 220)",
+          "insight-800": "oklch(0.38 0.13 278)"
+        }
+      },
       "files": [{ "path": "registry/badge/badge.tsx", "type": "registry:ui" }]
     },
     {
@@ -1509,6 +1615,41 @@
       "title": "Button",
       "description": "Displays a button or a component that looks like a button.",
       "dependencies": ["@radix-ui/react-slot"],
+      "cssVars": {
+        "theme": {
+          "color-success": "var(--success)",
+          "color-info": "var(--info)",
+          "color-warning": "var(--warning)",
+          "color-insight-400": "var(--insight-400)",
+          "color-insight-600": "var(--insight-600)"
+        },
+        "light": {
+          "success": "oklch(0.57 0.105 152)",
+          "info": "oklch(0.52 0.120 210)",
+          "warning": "oklch(0.80 0.1401 80.82)",
+          "primary-50": "oklch(0.95 0.035 218)",
+          "primary-700": "oklch(0.52 0.120 210)",
+          "insight-100": "oklch(0.92 0.05 277)",
+          "insight-400": "oklch(0.70 0.19 277)",
+          "insight-600": "oklch(0.56 0.20 277)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-100) 8.29%, var(--primary-50) 88.73%)",
+          "ai-gradient-fill": "linear-gradient(97.73deg, var(--insight-600) 8.79%, var(--primary-700) 91.48%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)"
+        },
+        "dark": {
+          "success": "oklch(0.70 0.120 152)",
+          "info": "oklch(0.69 0.112 207)",
+          "warning": "oklch(0.6889 0.1401 80.82)",
+          "primary-700": "oklch(0.52 0.120 210)",
+          "primary-800": "oklch(0.46 0.095 220)",
+          "insight-400": "oklch(0.70 0.19 277)",
+          "insight-600": "oklch(0.56 0.20 277)",
+          "insight-800": "oklch(0.38 0.13 278)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-800) 8.29%, var(--primary-800) 88.73%)",
+          "ai-gradient-fill": "linear-gradient(97.73deg, var(--insight-600) 8.79%, var(--primary-700) 91.48%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)"
+        }
+      },
       "files": [{ "path": "registry/button/button.tsx", "type": "registry:ui" }]
     },
     {
@@ -1530,6 +1671,27 @@
       "type": "registry:ui",
       "title": "Card",
       "description": "Displays a card with header, content, and footer. Supports solid, glass, and selectable variants.",
+      "cssVars": {
+        "theme": {
+          "color-primary-400": "var(--primary-400)"
+        },
+        "light": {
+          "primary-50": "oklch(0.95 0.035 218)",
+          "primary-400": "oklch(0.75 0.100 210)",
+          "insight-100": "oklch(0.92 0.05 277)",
+          "sidebar": "oklch(0.9723 0.0074 260.7300)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-100) 8.29%, var(--primary-50) 88.73%)",
+          "ai-glass": "color-mix(in srgb, var(--card) 80%, transparent)"
+        },
+        "dark": {
+          "primary-400": "oklch(0.75 0.100 210)",
+          "primary-800": "oklch(0.46 0.095 220)",
+          "insight-800": "oklch(0.38 0.13 278)",
+          "sidebar": "oklch(0.1620 0.0310 257.7000)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-800) 8.29%, var(--primary-800) 88.73%)",
+          "ai-glass": "color-mix(in srgb, var(--card) 90%, transparent)"
+        }
+      },
       "files": [{ "path": "registry/card/card.tsx", "type": "registry:ui" }]
     },
     {
@@ -2113,6 +2275,26 @@
         "spinner",
         "collapsible"
       ],
+      "cssVars": {
+        "theme": {
+          "color-primary-700": "var(--primary-700)",
+          "color-primary-400": "var(--primary-400)",
+          "color-primary-100": "var(--primary-100)",
+          "color-primary-900": "var(--primary-900)"
+        },
+        "light": {
+          "primary-100": "oklch(0.92 0.045 216)",
+          "primary-400": "oklch(0.75 0.100 210)",
+          "primary-700": "oklch(0.52 0.120 210)",
+          "primary-900": "oklch(0.2394 0.0455 252.445)"
+        },
+        "dark": {
+          "primary-100": "oklch(0.92 0.045 216)",
+          "primary-400": "oklch(0.75 0.100 210)",
+          "primary-700": "oklch(0.52 0.120 210)",
+          "primary-900": "oklch(0.2394 0.0455 252.445)"
+        }
+      },
       "files": [
         { "path": "registry/shell/shell.tsx", "type": "registry:ui" },
         {
@@ -2416,6 +2598,23 @@
       "title": "Sonner",
       "description": "An opinionated toast component for React.",
       "dependencies": ["sonner", "next-themes"],
+      "cssVars": {
+        "theme": {
+          "color-info": "var(--info)",
+          "color-success": "var(--success)",
+          "color-warning": "var(--warning)"
+        },
+        "light": {
+          "success": "oklch(0.57 0.105 152)",
+          "warning": "oklch(0.80 0.1401 80.82)",
+          "info": "oklch(0.52 0.120 210)"
+        },
+        "dark": {
+          "success": "oklch(0.70 0.120 152)",
+          "warning": "oklch(0.6889 0.1401 80.82)",
+          "info": "oklch(0.69 0.112 207)"
+        }
+      },
       "files": [{ "path": "registry/sonner/sonner.tsx", "type": "registry:ui" }]
     },
     {
