@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.54.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.54.2...@uipath/apollo-react@4.54.3) (2026-06-30)
+
+### Bug Fixes
+
+* **apollo-react:** update badge label for retryCount ([31cf799](https://github.com/UiPath/apollo-ui/commit/31cf799d69a7444c76bd0ca0dc425b3c34ae54b8))
+
 ## [@uipath/apollo-react-v4.54.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.54.1...@uipath/apollo-react@4.54.2) (2026-06-29)
 
 ### Bug Fixes
