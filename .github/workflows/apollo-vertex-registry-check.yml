@@ -55,6 +55,9 @@ jobs:
       - name: Build registry
         run: pnpm --filter apollo-vertex registry:build
 
+      - name: Check registry CSS variables
+        run: node --experimental-strip-types .github/scripts/test-registry/check-css-vars.ts
+
       - name: Generate matrix batches
         id: matrix
         run: |
