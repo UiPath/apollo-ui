@@ -2816,6 +2816,7 @@
         "@uipath/button",
         "@uipath/card",
         "@uipath/chart",
+        "@uipath/collapsible",
         "@uipath/data-table",
         "@uipath/dialog",
         "@uipath/empty",
@@ -3015,6 +3016,56 @@
           "path": "registry/solution-tests/expanded-run-tests-view.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/expanded-run-tests-view.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/registry.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/registry.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/output-panels.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/output-panels.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/generic-evaluator-result.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/generic-evaluator-result.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/ixp-extraction/schema.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/ixp-extraction/schema.ts"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/ixp-extraction/ixp-extraction-result.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/ixp-extraction/ixp-extraction-result.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/ixp-extraction/internal/provenance-bar.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/ixp-extraction/internal/provenance-bar.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/ixp-extraction/internal/summary-bar.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/ixp-extraction/internal/summary-bar.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/ixp-extraction/internal/document-row.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/ixp-extraction/internal/document-row.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/ixp-extraction/internal/field-group.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/ixp-extraction/internal/field-group.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/ixp-extraction/internal/verdict-badge.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/ixp-extraction/internal/verdict-badge.tsx"
         }
       ]
     }
