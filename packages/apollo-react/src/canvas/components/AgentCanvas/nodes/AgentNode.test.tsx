@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { BaseCanvasModeProvider } from '../../BaseCanvas/BaseCanvasModeProvider';
 import { NodeRegistryProvider } from '../../../core/NodeRegistryProvider';
 import type { AgentNodeTranslations } from '../../../types';
+import { BaseCanvasModeProvider } from '../../BaseCanvas/BaseCanvasModeProvider';
 import { agentFlowManifest } from '../agent-flow.manifest';
 import { AgentNodeElement } from './AgentNode';
 
@@ -26,6 +26,8 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
   useReactFlow: () => ({
     setNodes: vi.fn(),
     setEdges: vi.fn(),
+    updateNode: vi.fn(),
+    getNode: vi.fn(),
   }),
 }));
 

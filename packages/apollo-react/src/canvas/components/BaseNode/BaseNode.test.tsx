@@ -12,6 +12,8 @@ const DEFAULT_MANIFEST = {
 // Hoisted mocks — available inside vi.mock factories
 const {
   mockUpdateNode,
+  mockGetNode,
+  mockNodeState,
   mockHandleConfigs,
   mockManifest,
   mockUseButtonHandles,
@@ -22,6 +24,9 @@ const {
   mockNodeToolbar,
 } = vi.hoisted(() => ({
   mockUpdateNode: vi.fn(),
+  mockGetNode: vi.fn(),
+  // Simulates React Flow's stored node: updateNode writes height here, getNode reads it.
+  mockNodeState: { current: { height: undefined as number | undefined } },
   mockHandleConfigs: { current: undefined as HandleGroupManifest[] | undefined },
   mockManifest: {
     current: {
@@ -39,12 +44,25 @@ const {
   mockNodeToolbar: vi.fn() as any,
 }));
 
+// getNode reflects whatever updateNode last wrote, so the height-sync effect converges
+// exactly as it does against React Flow's real store.
+mockGetNode.mockImplementation(() => mockNodeState.current);
+mockUpdateNode.mockImplementation((_id: string, patch: { height?: number }) => {
+  if (patch?.height !== undefined) {
+    mockNodeState.current = { ...mockNodeState.current, height: patch.height };
+  }
+});
+
 // xyflow is globally mocked in canvas-mocks.ts; extend with test-specific overrides.
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@uipath/apollo-react/canvas/xyflow/react')>()),
   useStore: () => mockIsConnecting.current,
   useUpdateNodeInternals: () => vi.fn(),
-  useReactFlow: () => ({ updateNodeData: vi.fn(), updateNode: mockUpdateNode }),
+  useReactFlow: () => ({
+    updateNodeData: vi.fn(),
+    updateNode: mockUpdateNode,
+    getNode: mockGetNode,
+  }),
 }));
 
 vi.mock('../../hooks', () => ({
@@ -155,6 +173,8 @@ const makeHandles = (position: Position, count: number): HandleGroupManifest[] =
 describe('BaseNode', () => {
   afterEach(() => {
     mockUpdateNode.mockClear();
+    mockGetNode.mockClear();
+    mockNodeState.current = { height: undefined };
     mockUseButtonHandles.mockClear();
     mockNodeToolbar.mockClear();
     mockHandleConfigs.current = undefined;
@@ -165,75 +185,28 @@ describe('BaseNode', () => {
     mockIsConnecting.current = false;
   });
 
-  describe('Height computation', () => {
-    // Override the rAF mock from canvas-mocks to run synchronously
-    // so updateNode calls complete during the effect flush within act/render.
-    const savedRAF = window.requestAnimationFrame;
-    beforeEach(() => {
-      window.requestAnimationFrame = (cb) => {
-        cb(performance.now());
-        return 0;
-      };
-    });
-    afterEach(() => {
-      window.requestAnimationFrame = savedRAF;
-    });
+  // The handle count sets `--node-h` (the node height), which is also written to
+  // React Flow's node.height so measured height, edges, and handle spacing agree.
+  // It is a pure function of handles/footer (never reads the measured height), so the
+  // write-back is idempotent and converges (no flicker loop).
+  // Height = max(96 default | footer height, (maxHandlesPerSide * 2 + 2) * 16).
+  describe('Height computation (floor + node.height sync)', () => {
+    // Read the `--node-h` CSS var off the outer wrapper (parent of base-container).
+    const floorVar = () =>
+      screen.getByTestId('base-container').parentElement?.style.getPropertyValue('--node-h');
 
-    it('expands height when handles exceed base height', () => {
-      // 4 handles × 40px = 160px > 96px default
-      mockHandleConfigs.current = makeHandles(Position.Left, 4);
-      render(<BaseNode {...defaultProps} height={96} />);
-      expect(mockUpdateNode).toHaveBeenCalledWith('test-node', { height: 160 });
-    });
-
-    it('does not expand when handles fit within base height', () => {
-      // 2 handles × 40px = 80px < 96px default
+    it('sets the floor to the 96px default when handles fit within it', () => {
+      // 2 handles → (2*2+2)*16 = 96 == default
       mockHandleConfigs.current = makeHandles(Position.Left, 2);
-      render(<BaseNode {...defaultProps} height={96} />);
-      expect(mockUpdateNode).not.toHaveBeenCalled();
+      render(<BaseNode {...defaultProps} />);
+      expect(floorVar()).toBe('96px');
     });
 
-    it('respects user-provided height as the base', () => {
-      // height=200, 2 handles need 80px < 200 → no expansion
-      mockHandleConfigs.current = makeHandles(Position.Left, 2);
-      render(<BaseNode {...defaultProps} height={200} />);
-      expect(mockUpdateNode).not.toHaveBeenCalled();
-    });
-
-    it('shrinks back to default when handles are removed', () => {
-      // Start with 4 handles (160px needed)
+    it('expands the floor to fit the handle count', () => {
+      // 4 handles → (4*2+2)*16 = 160 > 96 default
       mockHandleConfigs.current = makeHandles(Position.Left, 4);
-      const { rerender } = render(<BaseNode {...defaultProps} height={96} />);
-      expect(mockUpdateNode).toHaveBeenCalledWith('test-node', { height: 160 });
-
-      // Simulate React Flow updating height to match our sync
-      // Note: new data={{}} ref on each rerender to break through React.memo
-      mockUpdateNode.mockClear();
-      rerender(<BaseNode {...defaultProps} height={160} data={{}} />);
-      expect(mockUpdateNode).not.toHaveBeenCalled();
-
-      // Remove handles — should shrink back to DEFAULT_NODE_SIZE (96)
-      mockHandleConfigs.current = [];
-      mockUpdateNode.mockClear();
-      rerender(<BaseNode {...defaultProps} height={160} data={{}} />);
-      expect(mockUpdateNode).toHaveBeenCalledWith('test-node', { height: 96 });
-    });
-
-    it('shrinks back to user-provided height after handle removal', () => {
-      // User height=200, 8 handles need 288px
-      mockHandleConfigs.current = makeHandles(Position.Left, 8);
-      const { rerender } = render(<BaseNode {...defaultProps} height={200} />);
-      expect(mockUpdateNode).toHaveBeenCalledWith('test-node', { height: 288 });
-
-      // Simulate React Flow updating height
-      mockUpdateNode.mockClear();
-      rerender(<BaseNode {...defaultProps} height={288} data={{}} />);
-
-      // Remove handles — should return to 200, not DEFAULT_NODE_SIZE (96)
-      mockHandleConfigs.current = [];
-      mockUpdateNode.mockClear();
-      rerender(<BaseNode {...defaultProps} height={288} data={{}} />);
-      expect(mockUpdateNode).toHaveBeenCalledWith('test-node', { height: 200 });
+      render(<BaseNode {...defaultProps} />);
+      expect(floorVar()).toBe('160px');
     });
 
     it('uses max of left and right handle counts', () => {
@@ -242,8 +215,65 @@ describe('BaseNode', () => {
         ...makeHandles(Position.Left, 2),
         ...makeHandles(Position.Right, 4),
       ];
-      render(<BaseNode {...defaultProps} height={96} />);
-      expect(mockUpdateNode).toHaveBeenCalledWith('test-node', { height: 160 });
+      render(<BaseNode {...defaultProps} />);
+      expect(floorVar()).toBe('160px');
+    });
+
+    it('ignores the measured height prop when computing the floor', () => {
+      mockHandleConfigs.current = makeHandles(Position.Left, 2);
+      const { rerender } = render(<BaseNode {...defaultProps} height={500} />);
+      expect(floorVar()).toBe('96px');
+      rerender(<BaseNode {...defaultProps} height={12} data={{}} />);
+      expect(floorVar()).toBe('96px');
+    });
+
+    it('writes the floor to node.height and converges without repeat writes', () => {
+      // 3 handles → 128px floor, written once to node.height.
+      mockHandleConfigs.current = makeHandles(Position.Left, 3);
+      const { rerender } = render(<BaseNode {...defaultProps} />);
+      expect(mockUpdateNode).toHaveBeenCalledWith('test-node', { height: 128 });
+      expect(mockUpdateNode).toHaveBeenCalledTimes(1);
+
+      // Re-render with the handle set unchanged: node.height already equals the floor,
+      // so the guard skips the write — no oscillation.
+      mockUpdateNode.mockClear();
+      rerender(<BaseNode {...defaultProps} data={{}} />);
+      expect(mockUpdateNode).not.toHaveBeenCalled();
+    });
+
+    it('does not write when node.height already equals the floor', () => {
+      // Persisted node already at the correct height → no redundant write on mount.
+      mockNodeState.current = { height: 96 };
+      mockHandleConfigs.current = makeHandles(Position.Left, 2);
+      render(<BaseNode {...defaultProps} />);
+      expect(mockUpdateNode).not.toHaveBeenCalled();
+    });
+
+    it('deflates the floor and settles when a handle is removed (MST-11677)', () => {
+      mockHandleConfigs.current = makeHandles(Position.Left, 3);
+      const { rerender } = render(<BaseNode {...defaultProps} />);
+      expect(floorVar()).toBe('128px');
+      expect(mockUpdateNode).toHaveBeenLastCalledWith('test-node', { height: 128 });
+
+      // Remove a handle → floor drops to 96, written once, then settles.
+      mockUpdateNode.mockClear();
+      mockHandleConfigs.current = makeHandles(Position.Left, 2);
+      rerender(<BaseNode {...defaultProps} data={{}} />);
+      expect(floorVar()).toBe('96px');
+      expect(mockUpdateNode).toHaveBeenCalledWith('test-node', { height: 96 });
+
+      mockUpdateNode.mockClear();
+      rerender(<BaseNode {...defaultProps} data={{}} />);
+      expect(floorVar()).toBe('96px');
+      expect(mockUpdateNode).not.toHaveBeenCalledWith('test-node', { height: 128 });
+      expect(mockUpdateNode).not.toHaveBeenCalled();
+    });
+
+    it('uses the fixed footer height as the floor when it exceeds the handle floor', () => {
+      mockOverrideConfig.current = { footerComponent: 'footer', footerVariant: 'single' };
+      mockHandleConfigs.current = makeHandles(Position.Left, 2);
+      render(<BaseNode {...defaultProps} />);
+      expect(floorVar()).toBe('160px');
     });
   });
 
