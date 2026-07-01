@@ -1,0 +1,150 @@
+# Terminology
+
+Consistent terminology reduces confusion and improves translation accuracy. Use these definitions across all product copy.
+
+## Platform terms
+
+| Term | Usage |
+|---|---|
+| **Activity** | A specific action or task performed by a robot within an automation. |
+| **Add** | Use when placing an item into a container you're already working in — a list, node, group, schema, or other parent element. Pairs with Remove. Examples: Add input, Add output, Add condition, Add variable update, Add field. Don't use "Add new." |
+| **Automation** | The use of a robot to perform business process steps with minimal human intervention. |
+| **Build** | Use instead of Create for agents, automations, apps, and connectors. Examples: Build an agent, Build a connector. |
+| **Create** | Use when making a new standalone object with its own identity and lifecycle. Omit "new" — it's redundant. Pairs with Delete. Don't use for agents, automations, apps, or connectors (use **Build**). Examples: Create entity record, Create a model, Create a project. |
+| **Execute** | Do not use in the context of automations or jobs. |
+| **Job** | The Orchestrator object for a scheduled or triggered automation instance. Never use as a verb (use **Run**). Job and Run coexist: Job = the Orchestrator object; Run = a single execution. |
+| **New** | Indicates the state of a record. Don't use as a verb or in place of **Add** or **Create**. |
+| **Run** | Use as a verb for a robot performing automated tasks. Also acceptable as a noun to mean a single execution — such as "Stop the entire run," "View the latest run," or the "Runs" table header. When a standalone string risks noun/verb ambiguity, use a descriptive string key (such as `..._COLUMN_RUNS`) for translators rather than avoiding the noun. |
+| **Select** | Use instead of "Choose" for clickable items. Avoid "Deselect" — use **Clear** instead. |
+| **Settings** | Configurable aspects of the application. Use as link text for pages managing application settings. |
+| **Trigger** | An event or condition that initiates an automation. |
+| **Try again** | Use for retry interactions. Don't use "retry." |
+| **Workflow** | Structured sequence of steps built on the platform to coordinate tasks across humans, robots, and AI agents. |
+
+**Add vs. Create — tie-breaker:** If the action's primary purpose is placing an item into a container, use Add. If the object stands on its own, use Create (or Build for agents, automations, apps, and connectors). The opposite-action test confirms it: if the natural undo is Remove, it's Add; if it's Delete, it's Create.
+
+---
+
+## Component copy guidelines
+
+### Button
+
+Use clear verbs; verb + noun when possible. CTAs: 2–4 words maximum.
+
+Don't use "Click here" or "Go to somewhere." Use specific actions (e.g. "Access in...", "Manage in...").
+
+### Badge
+
+One to two words maximum. Avoid wrapping.
+
+### Checkbox
+
+Keep labels short and descriptive.
+
+### Dropdown
+
+Labels should be clear and purposeful. Use short, unique names for all options. Make sure no two options start with the same word or phrase.
+
+### Link
+
+Make all links unique and descriptive. Don't use "Learn more" or "Click here." Don't use the word "link" in the text. Links to the same destination should use consistent link text.
+
+### List
+
+Begin list items with a capital letter. Maintain consistency for scannability.
+
+### Modal
+
+- **Title** — Direct and descriptive.
+- **Body** — Concise. Include only what the user needs to act.
+- **CTAs** — Primary CTA on the right; secondary CTA to the left.
+
+**Example:**
+- Title: Delete this automation?
+- Body: This will permanently remove the automation and all associated logs. You can't undo this action.
+- Actions: [Cancel] [Delete]
+
+### Drawer
+
+- **Header** — Clearly state the purpose (e.g. "Edit project settings").
+- **Sections** — Use labeled sections and grouping to support skimming.
+- **CTAs** — One primary action, typically "Save" or "Apply." Add "Cancel" or "Discard" where needed.
+
+### Search fields
+
+Do: "Search by name or keyword" / "Search projects or automations"
+
+Don't: "Search..."
+
+Don't rely on placeholder text for critical instruction. Include labels and/or helper text as needed.
+
+### Filter labels
+
+Labels should be nouns, not verbs. Keep labels unique.
+
+**Clearing actions:**
+- Do: "Clear all filters" / "Reset filters"
+- Don't: "Cancel" / "X"
+
+**Empty state for filtered view:** "No results match your filters. Try adjusting or clearing your filters."
+
+### Expandable content (accordions)
+
+Use clear, neutral triggers: "Show advanced settings", "View details", "Expand task history."
+
+Avoid casual language: "Sneak peek", "Unlock more."
+
+### Page headings
+
+Use noun-based labels, not action phrases. Exception: modals may use action verbs.
+
+- Do: "Process overview", "Configuration details", "Output parameters"
+- Don't: "Learn about processes", "Configure the settings", "View output"
+
+### Tabs
+
+- Order tabs by relevance — first tab should be the most logical starting view.
+- Sequence tabs by association.
+- Labels should provide clear, concise explanations of the content within.
+
+### Text input
+
+- Labels appear above the field; never use placeholder text instead of a label.
+- Placeholder text is an additional hint or example; avoid using it when possible.
+- Helper text below the field can show examples, syntax, or character count. Max two sentences.
+
+### Toggle switch
+
+- Always include labels or surrounding context.
+- Be clear about what the switch turns on/off. Don't frame the label as a question.
+- The label should not change when its state changes.
+
+### Tooltip
+
+- Use sparingly for supplementary, nonessential info. Never for critical info, errors, long text, or interactive content.
+- Limit to ~2 lines; icon button tooltips: one or two words.
+- Don't repeat the parent element's copy.
+
+### Empty states
+
+- Clear headline.
+- Helpful, actionable guidance.
+- Appropriate CTA.
+
+### Error messages
+
+**Tone:** Neutral and calm. Avoid blame (e.g. "you forgot…"). Avoid dramatizing ("Oops!" or "Something went terribly wrong!").
+
+**Structure:**
+1. What happened — Briefly describe the issue in user-facing terms.
+2. Why it matters (optional) — Provide context only if it helps resolution.
+3. What to do next — Give a clear recovery action.
+
+Do: "We couldn't save your changes. Check your connection and try again."
+
+Don't: "Oops! Something went wrong."
+
+**When not to show an error:**
+- Avoid errors for known or expected system states (e.g. no search results).
+- Show errors inline where possible (e.g. next to a form field).
+- Don't repeat error messages in multiple places.
