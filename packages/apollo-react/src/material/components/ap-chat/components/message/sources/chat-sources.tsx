@@ -261,11 +261,10 @@ function AutopilotChatSourcesComponent({ groupId, message }: AutopilotChatSource
               {sources.map((source, index) => {
                 const isUrl = 'url' in source;
                 const isPdf = 'download_url' in source;
-                const page_number = isPdf && source.page_number ? source.page_number : 0;
-                const pageText =
-                  isPdf && source.page_number
-                    ? ` (${_(msg({ id: 'autopilot-chat.message.page-number', message: `Page ${page_number}` }))})`
-                    : '';
+                const page_number = isPdf ? source.page_number : undefined;
+                const pageText = page_number
+                  ? ` (${_(msg({ id: 'autopilot-chat.message.page-number', message: `Page ${page_number}` }))})`
+                  : '';
                 const text = `[${source.id}] ${source.title}${pageText}`;
 
                 return (
