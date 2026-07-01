@@ -11,7 +11,8 @@ export interface SolutionTestsConfig {
   subjectNoun?: { singular: string; plural: string };
   /** Score at/above which a result passes (drives pass color + KPI trend line). Defaults to 0.9. */
   passThreshold?: number;
-  /** Show the Expected/Actual input panels in run-result details. Defaults to false (outputs only). */
+  /** Debug aid: also render the raw Expected/Actual *input* panels in run-result
+   * details (typically wired to a dev-only flag). Defaults to false. */
   showInputs?: boolean;
 }
 

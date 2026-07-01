@@ -1,26 +1,24 @@
 "use client";
 
+import { Fragment } from "react";
 import { z } from "zod";
-import { EVALUATOR_LABELS } from "./constants";
-import { useSolutionTestsConfig } from "./context";
+import { resolveEvaluatorRenderer } from "./evaluators/registry";
+import type { SolutionTestRunResult } from "./types";
 
-const EvaluatorResultSchema = z.object({
-  score: z.number().optional(),
-  details: z.object({ justification: z.string().optional() }).optional(),
-});
-const EvaluatorResultsSchema = z.record(z.string(), EvaluatorResultSchema);
+/** The `EvaluatorResults` attachment is untrusted wire data, so it's validated
+ * at the fetch boundary via `parseEvaluatorResults`. Each value's `details`
+ * stays `unknown` until the resolved renderer validates it against that
+ * evaluator's schema. */
+const EvaluatorResultsSchema = z.record(
+  z.string(),
+  z.object({ score: z.number().optional(), details: z.unknown().optional() }),
+);
+export type EvaluatorResults = z.infer<typeof EvaluatorResultsSchema>;
 
-/** Tailwind color for an evaluator score: muted when absent, else pass/fail. */
-function scoreColorClass(
-  score: number | undefined,
-  passThreshold: number,
-): string {
-  if (score == null) return "text-muted-foreground";
-  return score >= passThreshold ? "text-green-600" : "text-red-500";
-}
-
-export const EvaluatorResultsView = ({ data }: { data: unknown }) => {
-  const { passThreshold } = useSolutionTestsConfig();
+/** Validate the raw `EvaluatorResults` attachment (a JSON string or object)
+ * into a typed map, or `null` if it's absent / not a valid results map. This
+ * is the trust boundary — callers pass the parsed result on as a typed prop. */
+export function parseEvaluatorResults(data: unknown): EvaluatorResults | null {
   if (data == null) return null;
 
   let raw: unknown = data;
@@ -33,36 +31,39 @@ export const EvaluatorResultsView = ({ data }: { data: unknown }) => {
   }
 
   const parsed = EvaluatorResultsSchema.safeParse(raw);
-  if (!parsed.success) return null;
-  const entries = Object.entries(parsed.data);
-  if (entries.length === 0) return null;
+  return parsed.success ? parsed.data : null;
+}
 
+interface EvaluatorResultsViewProps {
+  data: EvaluatorResults;
+  expectedOutput: unknown;
+  actualOutput: unknown;
+  result: SolutionTestRunResult;
+}
+
+/** Renders each evaluator's result through the renderer registered for its id
+ * (falling back to the generic card). The evaluator id is the object key — no
+ * schema-sniffing needed. */
+export const EvaluatorResultsView = ({
+  data,
+  expectedOutput,
+  actualOutput,
+  result,
+}: EvaluatorResultsViewProps) => {
   return (
-    <div className="flex flex-col gap-3">
-      {entries.map(([evaluatorId, evaluator]) => {
-        const score = evaluator.score;
-        const scoreStr = score == null ? "—" : `${Math.round(score * 100)}%`;
-        const justification = evaluator.details?.justification;
-        const label = EVALUATOR_LABELS[evaluatorId] ?? evaluatorId;
-
-        return (
-          <div key={evaluatorId} className="rounded-md border bg-muted/50 p-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">{label}</span>
-              <span
-                className={`text-sm font-semibold ${scoreColorClass(score, passThreshold)}`}
-              >
-                {scoreStr}
-              </span>
-            </div>
-            {justification && (
-              <p className="mt-2 whitespace-pre-wrap text-xs">
-                {justification}
-              </p>
-            )}
-          </div>
-        );
-      })}
+    <div className="flex flex-col gap-4">
+      {Object.entries(data).map(([evaluatorId, evaluator]) => (
+        <Fragment key={evaluatorId}>
+          {resolveEvaluatorRenderer(evaluatorId)({
+            evaluatorId,
+            score: evaluator.score,
+            rawDetails: evaluator.details,
+            expectedOutput,
+            actualOutput,
+            result,
+          })}
+        </Fragment>
+      ))}
     </div>
   );
 };
