@@ -67,15 +67,19 @@ interface AgentNodeProps {
   hasTool?: boolean;
   hasMcp?: boolean;
   hasA2a?: boolean;
+  hasSkills?: boolean;
   a2aEnabled?: boolean;
   mcpEnabled?: boolean;
   hasError?: boolean;
   hasSuccess?: boolean;
   hasRunning?: boolean;
-  onAddResource?: (type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace' | 'a2a') => void;
+  onAddResource?: (
+    type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace' | 'a2a' | 'skills'
+  ) => void;
   onAddInstructions?: () => void;
   translations: AgentNodeTranslations;
   enableMemory?: boolean;
+  enableSkills?: boolean;
   enableInstructions?: boolean;
   healthScore?: number;
   onHealthScoreClick?: () => void;
@@ -100,6 +104,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     hasTool = false,
     hasMcp = false,
     hasA2a = false,
+    hasSkills = false,
     a2aEnabled = false,
     mcpEnabled = true,
     hasError = false,
@@ -109,6 +114,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     onAddInstructions,
     translations,
     enableMemory,
+    enableSkills,
     enableInstructions = false,
     healthScore,
     onHealthScoreClick,
@@ -209,6 +215,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
 
   const displayMemory =
     enableMemory === true && (mode === 'design' || (mode === 'view' && hasMemory));
+  const displaySkills =
+    enableSkills === true && (mode === 'design' || (mode === 'view' && hasSkills));
   const displayContext = mode === 'design' || (mode === 'view' && hasContext);
   const displayEscalation = mode === 'design' || (mode === 'view' && hasEscalation);
   const displayTool = mode === 'design' || (mode === 'view' && hasTool);
@@ -252,6 +260,21 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         visible: displayEscalation,
         onAction: (_e: HandleActionEvent) => {
           onAddResource?.('escalation');
+        },
+      });
+    }
+
+    if (displaySkills) {
+      topHandles.push({
+        id: ResourceNodeType.Skills,
+        type: 'source',
+        handleType: 'artifact',
+        label: translations.skills,
+        showButton: mode === 'design',
+        labelBackgroundColor: 'var(--canvas-background-secondary)',
+        visible: displaySkills,
+        onAction: (_e: HandleActionEvent) => {
+          onAddResource?.('skills');
         },
       });
     }
@@ -310,6 +333,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     mode,
     displayContext,
     displayMemory,
+    displaySkills,
     displayMcp,
     displayTool,
     displayA2a,
@@ -603,6 +627,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
     hasTool,
     hasMcp,
     hasA2a,
+    hasSkills,
     a2aEnabled,
     mcpEnabled,
     hasError,
@@ -612,6 +637,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
     onAddInstructions,
     translations,
     enableMemory,
+    enableSkills,
     enableInstructions,
     healthScore,
     onHealthScoreClick,
@@ -631,6 +657,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
       hasTool={hasTool}
       hasMcp={hasMcp}
       hasA2a={hasA2a}
+      hasSkills={hasSkills}
       a2aEnabled={a2aEnabled}
       mcpEnabled={mcpEnabled}
       hasError={hasError}
@@ -640,6 +667,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
       onAddInstructions={onAddInstructions}
       translations={translations}
       enableMemory={enableMemory}
+      enableSkills={enableSkills}
       enableInstructions={enableInstructions}
       healthScore={healthScore}
       onHealthScoreClick={onHealthScoreClick}

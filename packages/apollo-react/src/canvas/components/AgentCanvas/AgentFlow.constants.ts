@@ -7,6 +7,7 @@ export enum ResourceNodeType {
   Tool = 'tool',
   MemorySpace = 'memorySpace',
   A2A = 'a2a',
+  Skills = 'skills',
 }
 
 export const ResourceNodeTypeToPosition: Record<ResourceNodeType, Position> = {
@@ -16,16 +17,18 @@ export const ResourceNodeTypeToPosition: Record<ResourceNodeType, Position> = {
   [ResourceNodeType.Tool]: Position.Bottom,
   [ResourceNodeType.MemorySpace]: Position.Top,
   [ResourceNodeType.A2A]: Position.Bottom,
+  [ResourceNodeType.Skills]: Position.Top,
 };
 
 // Consistent ordering for resource node types
-// Top: MemorySpace -> Escalation
+// Top: MemorySpace -> Escalation -> Skills
 // Bottom: Context -> Tool -> MCP -> A2A
 export const ResourceNodeTypeOrder: Record<ResourceNodeType, number> = {
   [ResourceNodeType.MemorySpace]: 0,
   [ResourceNodeType.Escalation]: 1,
-  [ResourceNodeType.Context]: 2,
-  [ResourceNodeType.Tool]: 3,
-  [ResourceNodeType.MCP]: 4,
-  [ResourceNodeType.A2A]: 5,
+  [ResourceNodeType.Skills]: 2,
+  [ResourceNodeType.Context]: 3,
+  [ResourceNodeType.Tool]: 4,
+  [ResourceNodeType.MCP]: 5,
+  [ResourceNodeType.A2A]: 6,
 };
