@@ -728,7 +728,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           return (
             <button
               type="button"
-              className="absolute z-10 flex items-center gap-1 rounded-full bg-amber-400 text-[11px] font-semibold text-stone-900 shadow-sm transition-colors hover:bg-amber-300"
+              className="nodrag absolute z-10 flex cursor-pointer items-center gap-1 rounded-full bg-amber-400 text-[11px] font-semibold text-stone-900 shadow-sm transition-colors hover:bg-amber-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500"
               style={{
                 top: badgeInset,
                 left: `calc(var(--node-w) - ${badgeInset + NODE_BADGE_SIZE}px)`,
