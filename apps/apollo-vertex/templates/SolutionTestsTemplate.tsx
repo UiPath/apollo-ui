@@ -201,8 +201,6 @@ function SolutionTestsTemplateContent() {
                 loading: false,
                 expected: att.ExpectedOutput,
                 actual: att.ActualOutput,
-                expectedInput: att.ExpectedInput,
-                actualInput: att.ActualInput,
                 evaluatorResults: att.EvaluatorResults,
               };
             }

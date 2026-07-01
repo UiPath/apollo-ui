@@ -66,8 +66,9 @@ export const FieldGroup = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {visible.map((f) => (
-                <TableRow key={f.field} className="align-top">
+              {visible.map((f, i) => (
+                // oxlint-disable-next-line react(no-array-index-key) -- line items repeat field names; no stable per-row id and the table never reorders
+                <TableRow key={`${f.field}-${i}`} className="align-top">
                   <TableCell className="px-2 py-1 font-medium whitespace-normal break-words">
                     {f.field}
                   </TableCell>
