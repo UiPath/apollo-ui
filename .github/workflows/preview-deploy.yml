@@ -51,7 +51,7 @@ jobs:
       - name: Authenticate UiPath External App
         env:
           UIPATH_BASE_URL: ${{ vars.UIPATH_BASE_URL || secrets.UIPATH_BASE_URL }}
-          UIPATH_CLIENT_ID: ${{ secrets.UIPATH_CLIENT_ID }}
+          UIPATH_CLIENT_ID: ${{ vars.UIPATH_CLIENT_ID }}
           UIPATH_CLIENT_SCOPE: ${{ vars.UIPATH_CLIENT_SCOPE }}
           UIPATH_CLIENT_SECRET: ${{ secrets.UIPATH_CLIENT_SECRET }}
           UIPATH_ORG_NAME: ${{ vars.UIPATH_ORG_NAME || secrets.UIPATH_ORG_NAME }}
