@@ -20,6 +20,8 @@
     "dev:chat": "turbo run dev --filter=@uipath/ap-chat",
     "dev:apollo-vertex": "turbo run dev --filter=apollo-vertex",
     "dev:apollo-docs": "turbo run dev --filter=apollo-docs",
+    "demo": "apps/apollo-vertex/slack/node_modules/.bin/concurrently --names APP,SLACK --prefix-colors cyan,magenta \"pnpm --filter apollo-vertex dev\" \"cd apps/apollo-vertex/slack && npm start\"",
+    "demo:reset": "cd apps/apollo-vertex/slack && npm run reset-demo",
     "fix:dependencies": "check-dependency-version-consistency . --fix",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
