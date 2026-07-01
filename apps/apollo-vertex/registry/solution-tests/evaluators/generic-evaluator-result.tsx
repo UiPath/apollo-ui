@@ -21,7 +21,7 @@ function scoreColorClass(
   passThreshold: number,
 ): string {
   if (score == null) return "text-muted-foreground";
-  return score >= passThreshold ? "text-green-600" : "text-red-500";
+  return score >= passThreshold ? "text-success" : "text-destructive";
 }
 
 export const GenericEvaluatorResult = ({

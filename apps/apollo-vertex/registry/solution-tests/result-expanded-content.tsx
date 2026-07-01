@@ -7,15 +7,16 @@ import { RunResultStatus } from "./types";
 import type { SolutionTestRunResult } from "./types";
 import { hasAutoPass } from "./utils";
 import { UserMessagesView } from "./user-messages-view";
-import { EvaluatorResultsView } from "./evaluator-results-view";
+import {
+  EvaluatorResultsView,
+  parseEvaluatorResults,
+} from "./evaluator-results-view";
 import { JsonPanel, formatJson } from "./evaluators/output-panels";
 
 export interface ExpandedRowData {
   loading: boolean;
   expected?: unknown;
-  expectedInput?: unknown;
   actual?: unknown;
-  actualInput?: unknown;
   evaluatorResults?: unknown;
 }
 
@@ -54,19 +55,31 @@ export const ResultExpandedContent = ({
   const isAutoPass = hasAutoPass(data.evaluatorResults);
   const isPassedOrFailed =
     status === RunResultStatus.Passed || status === RunResultStatus.Failed;
+  const evaluatorResults = parseEvaluatorResults(data.evaluatorResults);
+  const hasEvaluatorResults =
+    evaluatorResults != null && Object.keys(evaluatorResults).length > 0;
 
   return (
     <div className="flex flex-col gap-4 p-4">
       <UserMessagesView messages={result.UserMessages} />
 
-      {isPassedOrFailed && !isAutoPass && (
-        <EvaluatorResultsView
-          data={data.evaluatorResults}
-          expectedOutput={data.expected}
-          actualOutput={data.actual}
-          result={result}
-        />
-      )}
+      {isPassedOrFailed &&
+        !isAutoPass &&
+        (hasEvaluatorResults ? (
+          <EvaluatorResultsView
+            data={evaluatorResults}
+            expectedOutput={data.expected}
+            actualOutput={data.actual}
+            result={result}
+          />
+        ) : (
+          // No parseable evaluator results — fall back to the raw output panels
+          // so a passed/failed row always shows something.
+          <div className="grid grid-cols-2 gap-4">
+            <JsonPanel title={t("expected_output")} data={data.expected} />
+            <JsonPanel title={t("actual_output")} data={data.actual} />
+          </div>
+        ))}
 
       {status === RunResultStatus.Missing && (
         <JsonPanel title={t("expected_output")} data={data.expected} />
