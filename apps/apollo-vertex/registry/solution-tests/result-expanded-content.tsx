@@ -59,13 +59,11 @@ export const ResultExpandedContent = ({
     <div className="flex flex-col gap-4 p-4">
       <UserMessagesView messages={result.UserMessages} />
 
-      {/* Each evaluator renders its own view (e.g. the IXP comparison shows
-          provenance + per-field verdicts and skips the raw outputs). */}
       {isPassedOrFailed && !isAutoPass && (
         <EvaluatorResultsView
           data={data.evaluatorResults}
-          expected={data.expected}
-          actual={data.actual}
+          expectedOutput={data.expected}
+          actualOutput={data.actual}
           result={result}
         />
       )}

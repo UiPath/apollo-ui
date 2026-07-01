@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { renderValueOrEmptyState } from "@/lib/renderValueOrEmptyState";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -10,8 +12,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { IxpVerdict, formatFieldValues, type IxpField } from "../schema";
+import { IxpVerdict, type IxpField } from "../schema";
 import { VerdictBadge } from "./verdict-badge";
+
+/** Render a field's value list (multi-valued fields join with " | "). Empty,
+ * absent, and null values all render the same way (—); the field-value arrays
+ * can contain nulls (IXP emits null for taxonomy fields it didn't extract). */
+function formatFieldValues(values: unknown[]): string {
+  const present = values.filter((v) => v != null && v !== "").map(String);
+  return present.length > 0
+    ? present.join(" | ")
+    : renderValueOrEmptyState(null);
+}
 
 /** One field group within a document: a heading + a table of fields. Identical
  * fields are hidden behind a toggle so the changes stand out. */
@@ -80,15 +92,16 @@ export const FieldGroup = ({
         </div>
       )}
       {identicalCount > 0 && (
-        <button
-          type="button"
+        <Button
+          variant="link"
+          size="sm"
           onClick={() => setShowUnchanged((s) => !s)}
-          className="mt-1 text-xs text-muted-foreground underline-offset-2 hover:underline"
+          className="mt-1 h-auto p-0 text-xs text-muted-foreground"
         >
           {showUnchanged
             ? t("ixp_hide_unchanged")
             : t("ixp_show_unchanged", { count: identicalCount })}
-        </button>
+        </Button>
       )}
     </div>
   );

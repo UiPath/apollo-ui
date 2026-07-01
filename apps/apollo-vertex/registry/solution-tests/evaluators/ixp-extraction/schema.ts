@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { renderValueOrEmptyState } from "@/lib/renderValueOrEmptyState";
 
 /** The three-way per-field verdict the IXP evaluator emits. */
 export const IxpVerdict = {
@@ -54,13 +53,3 @@ export type IxpDetails = z.infer<typeof IxpDetailsSchema>;
 export type IxpDocument = z.infer<typeof DocumentSchema>;
 export type IxpField = z.infer<typeof FieldSchema>;
 export type IxpProvenance = z.infer<typeof ProvenanceSchema>;
-
-/** Render a field's value list (multi-valued fields join with " | "). Empty,
- * absent, and null values all render the same way ("—") — the distinction
- * between "no field" and "null value" isn't meaningful to a reviewer. */
-export function formatFieldValues(values: unknown[]): string {
-  const present = values.filter((v) => v != null && v !== "").map(String);
-  return present.length > 0
-    ? present.join(" | ")
-    : renderValueOrEmptyState(null);
-}
