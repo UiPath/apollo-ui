@@ -16,19 +16,23 @@ export const IxpDocStatus = {
 } as const;
 
 const ProvenanceSchema = z.object({
+  // Always resolved (env-default fallback), so never null.
+  project_name: z.string(),
+  // These can be null when tag→version resolution fails.
   resolved_project_version: z.union([z.number(), z.string()]).nullish(),
   extractor: z.string().nullish(),
   tag: z.string().nullish(),
-  project_name: z.string().nullish(),
 });
 
 const FieldSchema = z.object({
   group: z.string(),
   field: z.string(),
+  // Baseline vs new-run values for the field — arbitrary extracted values
+  // (text/number/date/null), so intentionally untyped.
   expected: z.array(z.unknown()),
   actual: z.array(z.unknown()),
   verdict: z.string(),
-  reason: z.string().optional().default(""),
+  verdict_reason: z.string().optional().default(""),
 });
 
 const DocumentSchema = z.object({
@@ -45,8 +49,10 @@ export const IxpDetailsSchema = z.object({
   different_field_count: z.number(),
   semantically_same_field_count: z.number(),
   identical_field_count: z.number(),
-  expected_provenance: ProvenanceSchema.nullish(),
-  actual_provenance: ProvenanceSchema.nullish(),
+  // Present in every payload, but null when a run produced no provenance
+  // (e.g. a baseline captured before provenance existed, or a no-documents run).
+  expected_provenance: ProvenanceSchema.nullable(),
+  actual_provenance: ProvenanceSchema.nullable(),
 });
 
 export type IxpDetails = z.infer<typeof IxpDetailsSchema>;

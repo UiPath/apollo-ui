@@ -76,9 +76,9 @@ export const FieldGroup = ({
                   </TableCell>
                   <TableCell className="px-2 py-1 whitespace-normal break-words">
                     {formatFieldValues(f.actual)}
-                    {f.reason && f.verdict !== IxpVerdict.Identical && (
+                    {f.verdict_reason && f.verdict !== IxpVerdict.Identical && (
                       <div className="mt-0.5 text-[11px] italic text-muted-foreground">
-                        {f.reason}
+                        {f.verdict_reason}
                       </div>
                     )}
                   </TableCell>

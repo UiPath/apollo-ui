@@ -1,11 +1,13 @@
 "use client";
 
+import { Fragment } from "react";
 import { z } from "zod";
-import { resolveEvaluatorComponent } from "./evaluators/registry";
+import { resolveEvaluatorRenderer } from "./evaluators/registry";
 import type { SolutionTestRunResult } from "./types";
 
-/** Each value's `details` is evaluator-specific, so it stays `unknown` here —
- * the resolved component validates the shape it expects. */
+/** The `EvaluatorResults` attachment is untrusted wire data, so it's validated
+ * at runtime here. Each value's `details` stays `unknown` until the resolved
+ * renderer validates it against that evaluator's schema. */
 const EvaluatorResultsSchema = z.record(
   z.string(),
   z.object({ score: z.number().optional(), details: z.unknown().optional() }),
@@ -18,7 +20,7 @@ interface EvaluatorResultsViewProps {
   result: SolutionTestRunResult;
 }
 
-/** Renders each evaluator's result through the component registered for its id
+/** Renders each evaluator's result through the renderer registered for its id
  * (falling back to the generic card). The evaluator id is the object key — no
  * schema-sniffing needed. */
 export const EvaluatorResultsView = ({
@@ -45,20 +47,18 @@ export const EvaluatorResultsView = ({
 
   return (
     <div className="flex flex-col gap-4">
-      {entries.map(([evaluatorId, evaluator]) => {
-        const Component = resolveEvaluatorComponent(evaluatorId);
-        return (
-          <Component
-            key={evaluatorId}
-            evaluatorId={evaluatorId}
-            score={evaluator.score}
-            evaluatorDetails={evaluator.details}
-            expectedOutput={expectedOutput}
-            actualOutput={actualOutput}
-            result={result}
-          />
-        );
-      })}
+      {entries.map(([evaluatorId, evaluator]) => (
+        <Fragment key={evaluatorId}>
+          {resolveEvaluatorRenderer(evaluatorId)({
+            evaluatorId,
+            score: evaluator.score,
+            rawDetails: evaluator.details,
+            expectedOutput,
+            actualOutput,
+            result,
+          })}
+        </Fragment>
+      ))}
     </div>
   );
 };
