@@ -62,6 +62,24 @@ export interface ContainerSafeArea {
   };
 }
 
+export interface ContainerSafeAreaBuffer {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
+export interface ContainerSafeAreaOptions {
+  buffer?: Partial<ContainerSafeAreaBuffer>;
+}
+
+export interface RectLike {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 /** Records a single container resize caused by fitting children. */
 export interface ContainerSizeChange {
   containerId: string;
@@ -161,6 +179,20 @@ const CONTAINER_BODY_PADDING_PX = GRID_SPACING * 2;
 const CONTAINER_INNER_HANDLE_RAIL_WIDTH_PX = GRID_SPACING * 5;
 const CONTAINER_CHILD_SAFE_GAP_PX = GRID_SPACING;
 const DEFAULT_CONTAINER_HEADER_HEIGHT_PX = 40;
+const DEFAULT_CONTAINER_SAFE_AREA_BUFFER: ContainerSafeAreaBuffer = {
+  left:
+    CONTAINER_BODY_PADDING_PX + CONTAINER_INNER_HANDLE_RAIL_WIDTH_PX + CONTAINER_CHILD_SAFE_GAP_PX,
+  right:
+    CONTAINER_BODY_PADDING_PX + CONTAINER_INNER_HANDLE_RAIL_WIDTH_PX + CONTAINER_CHILD_SAFE_GAP_PX,
+  top: CONTAINER_BODY_PADDING_PX,
+  bottom: CONTAINER_BODY_PADDING_PX,
+};
+const CONTAINER_BOUNDARY_SAFE_AREA_BUFFER: ContainerSafeAreaBuffer = {
+  left: CONTAINER_BODY_PADDING_PX,
+  right: CONTAINER_BODY_PADDING_PX,
+  top: GRID_SPACING,
+  bottom: CONTAINER_BODY_PADDING_PX,
+};
 
 /** Horizontal gap maintained between nodes in a container sequence. */
 export const CONTAINER_SEQUENCE_GAP_PX = GRID_SPACING * 3;
@@ -207,21 +239,19 @@ export function getNodeDimensions(
  */
 export function getContainerSafeArea(
   containerNode: Pick<Node, 'width' | 'height' | 'measured' | 'style'>,
-  fallback: NodeDimensions = { width: DEFAULT_CONTAINER_WIDTH, height: DEFAULT_CONTAINER_HEIGHT }
+  fallback: NodeDimensions = { width: DEFAULT_CONTAINER_WIDTH, height: DEFAULT_CONTAINER_HEIGHT },
+  options: ContainerSafeAreaOptions = {}
 ): ContainerSafeArea {
   const size = getNodeDimensions(containerNode, fallback);
-  const horizontalPadding = snapUpToGrid(
-    CONTAINER_FRAME_INSET_PX +
-      CONTAINER_BODY_PADDING_PX +
-      CONTAINER_INNER_HANDLE_RAIL_WIDTH_PX +
-      CONTAINER_CHILD_SAFE_GAP_PX
-  );
-  const verticalPadding = snapUpToGrid(CONTAINER_FRAME_INSET_PX + CONTAINER_BODY_PADDING_PX);
+  const buffer = {
+    ...DEFAULT_CONTAINER_SAFE_AREA_BUFFER,
+    ...options.buffer,
+  };
   const padding = {
-    left: horizontalPadding,
-    right: horizontalPadding,
-    top: snapUpToGrid(DEFAULT_CONTAINER_HEADER_HEIGHT_PX + verticalPadding),
-    bottom: verticalPadding,
+    left: snapUpToGrid(CONTAINER_FRAME_INSET_PX + buffer.left),
+    right: snapUpToGrid(CONTAINER_FRAME_INSET_PX + buffer.right),
+    top: snapUpToGrid(DEFAULT_CONTAINER_HEADER_HEIGHT_PX + CONTAINER_FRAME_INSET_PX + buffer.top),
+    bottom: snapUpToGrid(CONTAINER_FRAME_INSET_PX + buffer.bottom),
   };
 
   return {
@@ -231,6 +261,23 @@ export function getContainerSafeArea(
     height: Math.max(0, size.height - padding.top - padding.bottom),
     padding,
   };
+}
+
+/** Returns whether a local child rect is fully inside the container boundary safe area. */
+export function isRectInsideContainerSafeArea(
+  rect: RectLike,
+  containerNode: Pick<Node, 'width' | 'height' | 'measured' | 'style'>
+): boolean {
+  const safeArea = getContainerSafeArea(containerNode, undefined, {
+    buffer: CONTAINER_BOUNDARY_SAFE_AREA_BUFFER,
+  });
+
+  return (
+    rect.x >= safeArea.x &&
+    rect.y >= safeArea.y &&
+    rect.x + rect.width <= safeArea.x + safeArea.width &&
+    rect.y + rect.height <= safeArea.y + safeArea.height
+  );
 }
 
 /**

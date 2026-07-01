@@ -28,7 +28,11 @@ import { BaseCanvas } from '../BaseCanvas';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { LoopNode } from './LoopNode';
-import type { LoopNodeData, LoopNodeExecutionCountState } from './LoopNode.types';
+import type {
+  LoopNodeBoundaryState,
+  LoopNodeData,
+  LoopNodeExecutionCountState,
+} from './LoopNode.types';
 import { LoopNodeExecutionCount } from './LoopNodeExecutionCount';
 
 const meta: Meta = {
@@ -318,6 +322,18 @@ function LoopCanvasStory({
   );
 }
 
+type BoundaryStateLoopNodeData = LoopNodeData & {
+  boundaryState?: LoopNodeBoundaryState;
+};
+
+function BoundaryStateLoopCanvasNode(props: NodeProps<Node<BoundaryStateLoopNodeData>>) {
+  return <LoopNode {...props} boundaryState={props.data.boundaryState} />;
+}
+
+const BOUNDARY_STATE_NODE_TYPES = {
+  [LOOP_TYPE]: BoundaryStateLoopCanvasNode,
+};
+
 function DefaultStory() {
   const initialNodes = useMemo<Node[]>(
     () => [
@@ -389,6 +405,64 @@ function DefaultStory() {
           'Default loop container with inner start/continue handles, an outer success handle, child nodes, and insertion affordances.',
       }}
     />
+  );
+}
+
+function BoundaryStatesStory() {
+  const initialNodes = useMemo<Node<BoundaryStateLoopNodeData>[]>(
+    () => [
+      createLoopContainerNode(
+        'loop-boundary-default',
+        { x: 80, y: 160 },
+        { width: 352, height: 240 },
+        {
+          data: {
+            boundaryState: 'default',
+            display: { label: 'Default' },
+          },
+        }
+      ),
+      createLoopContainerNode(
+        'loop-drop-target-boundary',
+        { x: 496, y: 160 },
+        { width: 352, height: 240 },
+        {
+          data: {
+            boundaryState: 'drop-target',
+            display: { label: 'Drop target' },
+          },
+        }
+      ),
+      createLoopContainerNode(
+        'loop-invalid-boundary',
+        { x: 912, y: 160 },
+        { width: 352, height: 240 },
+        {
+          data: {
+            boundaryState: 'invalid',
+            display: { label: 'Invalid' },
+          },
+        }
+      ),
+    ],
+    []
+  );
+
+  const { canvasProps } = useCanvasStory({
+    initialNodes,
+    additionalNodeTypes: BOUNDARY_STATE_NODE_TYPES,
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="Boundary States"
+        description="Default, drop-target, and invalid loop boundary styling."
+      />
+    </BaseCanvas>
   );
 }
 
@@ -785,6 +859,11 @@ function NestedLoopsManyChildrenStory() {
 
 export const Default: Story = {
   render: () => <DefaultStory />,
+};
+
+export const BoundaryStates: Story = {
+  name: 'Boundary States',
+  render: () => <BoundaryStatesStory />,
 };
 
 export const NestedOuterOutputInsert: Story = {
