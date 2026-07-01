@@ -1,0 +1,654 @@
+name: Coded App Preview Deployments
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - 'support/**'
+
+# Deny-all default; jobs grant the minimum they need.
+permissions: {}
+
+env:
+  TURBO_TELEMETRY_DISABLED: 1
+  DO_NOT_TRACK: 1
+
+concurrency:
+  group: coded-app-preview-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy Apollo Coded App Previews
+    if: github.event.pull_request.head.repo.fork == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-deps
+
+      - name: Restore Turborepo cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-${{ github.ref_name }}-
+
+      - name: Install UiPath CLI
+        run: npm install --global @uipath/cli@1.197.0
+
+      - name: Authenticate UiPath External App
+        env:
+          UIPATH_BASE_URL: ${{ vars.UIPATH_BASE_URL || secrets.UIPATH_BASE_URL }}
+          UIPATH_CLIENT_ID: ${{ secrets.UIPATH_CLIENT_ID }}
+          UIPATH_CLIENT_SCOPE: ${{ vars.UIPATH_CLIENT_SCOPE }}
+          UIPATH_CLIENT_SECRET: ${{ secrets.UIPATH_CLIENT_SECRET }}
+          UIPATH_ORG_NAME: ${{ vars.UIPATH_ORG_NAME || secrets.UIPATH_ORG_NAME }}
+          UIPATH_TENANT_NAME: ${{ vars.UIPATH_TENANT_NAME || secrets.UIPATH_TENANT_NAME }}
+        run: |
+          missing=0
+          for name in UIPATH_BASE_URL UIPATH_CLIENT_ID UIPATH_CLIENT_SECRET UIPATH_ORG_NAME UIPATH_TENANT_NAME; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is required for Coded App preview deployments."
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+          export UIPATH_CLIENT_SCOPE="${UIPATH_CLIENT_SCOPE:-Apps Apps.Read Apps.Write OR.Folders.Read OR.Folders.Write OR.Execution}"
+
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const baseUrl = process.env.UIPATH_BASE_URL.replace(/\/+$/, '');
+          const scope = process.env.UIPATH_CLIENT_SCOPE;
+          const params = new URLSearchParams({
+            grant_type: 'client_credentials',
+            client_id: process.env.UIPATH_CLIENT_ID,
+            client_secret: process.env.UIPATH_CLIENT_SECRET,
+            scope,
+          });
+
+          function parseJwtPayload(token) {
+            const [, payload] = String(token).split('.');
+            if (!payload) return {};
+            return JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+          }
+
+          function appendEnv(name, value) {
+            fs.appendFileSync(process.env.GITHUB_ENV, `${name}=${value}\n`);
+          }
+
+          async function main() {
+            const tokenResponse = await fetch(`${baseUrl}/identity_/connect/token`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: params,
+            });
+            const tokenData = await tokenResponse.json().catch(() => ({}));
+            if (!tokenResponse.ok || !tokenData.access_token) {
+              throw new Error(`External App token exchange failed with HTTP ${tokenResponse.status}: ${JSON.stringify(tokenData)}`);
+            }
+
+            const claims = parseJwtPayload(tokenData.access_token);
+            const orgId = claims.prt_id || claims.prtId || claims.organizationId;
+            if (!orgId) {
+              throw new Error('External App token did not include an organization id.');
+            }
+
+            const contextResponse = await fetch(`${baseUrl}/${orgId}/portal_/api/filtering/leftnav/tenantsAndOrganizationInfo`, {
+              headers: { Authorization: `Bearer ${tokenData.access_token}` },
+            });
+            const contextText = await contextResponse.text();
+            if (!contextResponse.ok) {
+              throw new Error(`Could not fetch External App tenant context (HTTP ${contextResponse.status}): ${contextText}`);
+            }
+            const context = JSON.parse(contextText);
+            const tenant = (context.tenants || []).find((item) => item.name === process.env.UIPATH_TENANT_NAME);
+            if (!tenant) {
+              throw new Error(`External App cannot access tenant "${process.env.UIPATH_TENANT_NAME}".`);
+            }
+
+            console.log(`::add-mask::${tokenData.access_token}`);
+            appendEnv('UIPATH_ACCESS_TOKEN', tokenData.access_token);
+            appendEnv('UIPATH_BASE_URL', baseUrl);
+            appendEnv('UIPATH_URL', baseUrl);
+            appendEnv('UIPATH_ORG_ID', orgId);
+            appendEnv('UIPATH_ORGANIZATION_ID', orgId);
+            appendEnv('UIPATH_ORG_NAME', process.env.UIPATH_ORG_NAME || context.organization?.name || '');
+            appendEnv('UIPATH_TENANT_ID', tenant.id);
+            appendEnv('UIPATH_TENANT_NAME', tenant.name);
+          }
+
+          main().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Deploy Coded App previews
+        id: deploy
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          UIPATH_FOLDER_KEY: ${{ vars.UIPATH_FOLDER_KEY || secrets.UIPATH_FOLDER_KEY }}
+        run: |
+          missing=0
+          for name in UIPATH_ACCESS_TOKEN UIPATH_BASE_URL UIPATH_FOLDER_KEY UIPATH_ORG_NAME UIPATH_TENANT_NAME; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is required for Coded App preview deployments."
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+          short_sha="${GITHUB_SHA:0:7}"
+          version="0.1.0-pr${PR_NUMBER}.${short_sha}.${GITHUB_RUN_ATTEMPT}"
+          landing_app="apollo-landing-pr-${PR_NUMBER}"
+          docs_app="apollo-docs-pr-${PR_NUMBER}"
+          design_app="apollo-design-pr-${PR_NUMBER}"
+          vertex_app="apollo-vertex-pr-${PR_NUMBER}"
+
+          fix_relative_assets() {
+            local output_dir="$1"
+            OUTPUT_DIR="$output_dir" node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+
+          const root = process.env.OUTPUT_DIR;
+          const filePattern = /\.(?:html|css|js|json)$/i;
+
+          function walk(dir) {
+            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+              const fullPath = path.join(dir, entry.name);
+              if (entry.isDirectory()) {
+                walk(fullPath);
+              } else if (entry.isFile() && filePattern.test(fullPath)) {
+                const current = fs.readFileSync(fullPath, 'utf8');
+                const updated = current
+                  .replace(/\b(src|href)=["']\/(?!\/|https?:|data:)/g, '$1="./')
+                  .replace(/url\(\s*\/(?!\/|https?:|data:)/g, 'url(./');
+                if (updated !== current) {
+                  fs.writeFileSync(fullPath, updated);
+                }
+              }
+            }
+          }
+
+          walk(root);
+          NODE
+          }
+
+          deploy_coded_app() {
+            local label="$1"
+            local app_name="$2"
+            local output_dir="$3"
+            local tags="$4"
+            local asset_mode="${5:-relative}"
+            local uipath_dir=".uipath/${label}"
+
+            if [ ! -d "$output_dir" ]; then
+              echo "::error::Build output directory not found: $output_dir"
+              exit 1
+            fi
+
+            if [ "$asset_mode" = "relative" ]; then
+              fix_relative_assets "$output_dir"
+            fi
+
+            uip codedapp pack "$output_dir" \
+              --name "$app_name" \
+              --version "$version" \
+              --output "$uipath_dir"
+
+            uip codedapp publish \
+              --name "$app_name" \
+              --version "$version" \
+              --type Web \
+              --uipath-dir "$uipath_dir" \
+              --base-url "$UIPATH_BASE_URL" \
+              --tenant-name "$UIPATH_TENANT_NAME" \
+              --access-token "$UIPATH_ACCESS_TOKEN"
+
+            for attempt in 1 2 3 4; do
+              if uip codedapp deploy \
+                --name "$app_name" \
+                --base-url "$UIPATH_BASE_URL" \
+                --org-name "$UIPATH_ORG_NAME" \
+                --folder-key "$UIPATH_FOLDER_KEY" \
+                --access-token "$UIPATH_ACCESS_TOKEN" \
+                --tags "$tags"; then
+                return 0
+              fi
+
+              echo "Deploy attempt ${attempt} failed; waiting for package indexing..."
+              sleep 10
+            done
+
+            echo "::error::Failed to deploy $app_name after retries."
+            exit 1
+          }
+
+          stage_next_export() {
+            local source_dir="$1"
+            local stage_dir="$2"
+            local overlay="$3"
+            SOURCE_DIR="$source_dir" STAGE_DIR="$stage_dir" OVERLAY="$overlay" node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+
+          const sourceDir = path.resolve(process.env.SOURCE_DIR);
+          const stageDir = path.resolve(process.env.STAGE_DIR);
+          const overlay = process.env.OVERLAY;
+
+          const docsNextConfig = [
+            'import nextra from "nextra";',
+            '',
+            'const withNextra = nextra({',
+            '  defaultShowCopyCode: true,',
+            '});',
+            '',
+            'const codedAppPath = process.env.APOLLO_CODED_APP_PATH?.replace(/^\\/+|\\/+$/g, "");',
+            'const codedAppBasePath = codedAppPath ? `/${codedAppPath}` : undefined;',
+            '',
+            'export default withNextra({',
+            '  output: "export",',
+            '  trailingSlash: true,',
+            '  ...(codedAppBasePath && { basePath: codedAppBasePath }),',
+            '  reactCompiler: true,',
+            '  turbopack: {',
+            '    resolveAlias: {',
+            '      "next-mdx-import-source-file": "./mdx-components.tsx",',
+            '    },',
+            '  },',
+            '});',
+            '',
+          ].join('\n');
+
+          const vertexNextConfig = [
+            'import nextra from "nextra";',
+            '',
+            'const withNextra = nextra({',
+            '  defaultShowCopyCode: true,',
+            '});',
+            '',
+            'const codedAppPath = process.env.APOLLO_CODED_APP_PATH?.replace(/^\\/+|\\/+$/g, "");',
+            'const codedAppBasePath = codedAppPath ? `/${codedAppPath}` : undefined;',
+            '',
+            'export default withNextra({',
+            '  output: "export",',
+            '  trailingSlash: true,',
+            '  env: {',
+            '    NEXT_PUBLIC_APOLLO_CODED_APP_PATH: codedAppPath ?? "",',
+            '  },',
+            '  ...(codedAppBasePath && { basePath: codedAppBasePath }),',
+            '  reactCompiler: true,',
+            '  turbopack: {',
+            '    resolveAlias: {',
+            '      "next-mdx-import-source-file": "./mdx-components.tsx",',
+            '    },',
+            '  },',
+            '});',
+            '',
+          ].join('\n');
+
+          const mdxDeclaration = [
+            "declare module '*.mdx' {",
+            "  import type { ComponentType } from 'react';",
+            '',
+            '  const MDXComponent: ComponentType;',
+            '  export default MDXComponent;',
+            '}',
+            '',
+          ].join('\n');
+
+          const disabledAiChatTemplate = [
+            'export function AiChatTemplate() {',
+            '  return (',
+            '    <div className="flex h-full min-h-[500px] flex-col items-center justify-center rounded-lg border bg-card px-6 text-center">',
+            '      <p className="text-base font-medium text-foreground">',
+            '        AI Chat is not available in Coded App preview',
+            '      </p>',
+            '      <p className="mt-2 max-w-xl text-sm text-muted-foreground">',
+            '        The demo needs browser calls to UiPath backend services that are blocked',
+            '        by cross-origin preflight checks in the Coded App host. The rest of',
+            '        Apollo Vertex is still available in this preview.',
+            '      </p>',
+            '    </div>',
+            '  );',
+            '}',
+            '',
+          ].join('\n');
+
+          function normalize(value) {
+            return value.split(path.sep).join('/');
+          }
+
+          function shouldCopy(source) {
+            const rel = normalize(path.relative(sourceDir, source));
+            if (!rel) return true;
+            const excluded = ['.next', 'out', 'node_modules'];
+            if (overlay === 'vertex') excluded.push('app/api');
+            return !excluded.some((item) => rel === item || rel.startsWith(`${item}/`) || path.basename(source) === item);
+          }
+
+          function writeStageFile(relativePath, content) {
+            const target = path.join(stageDir, relativePath);
+            fs.mkdirSync(path.dirname(target), { recursive: true });
+            fs.writeFileSync(target, content, 'utf8');
+          }
+
+          fs.rmSync(stageDir, { recursive: true, force: true });
+          fs.mkdirSync(path.dirname(stageDir), { recursive: true });
+          fs.cpSync(sourceDir, stageDir, { recursive: true, filter: shouldCopy });
+
+          const nodeModules = [
+            path.join(sourceDir, 'node_modules'),
+            path.resolve('node_modules'),
+          ].find((candidate) => fs.existsSync(candidate));
+          if (nodeModules) {
+            fs.symlinkSync(nodeModules, path.join(stageDir, 'node_modules'), 'dir');
+          }
+
+          if (overlay === 'docs') {
+            writeStageFile('next.config.mjs', docsNextConfig);
+            writeStageFile('mdx.d.ts', mdxDeclaration);
+            writeStageFile('app/page.tsx', 'import OverviewPage from "./introduction/overview/page.mdx";\n\nexport default function Page() {\n  return <OverviewPage />;\n}\n');
+          } else if (overlay === 'vertex') {
+            writeStageFile('next.config.ts', vertexNextConfig);
+            writeStageFile('templates/AiChatTemplate.tsx', disabledAiChatTemplate);
+            writeStageFile('mdx.d.ts', mdxDeclaration);
+            writeStageFile('app/components/page.tsx', 'import ComponentsOverviewPage from "./overview/page.mdx";\n\nexport default function ComponentsIndex() {\n  return <ComponentsOverviewPage />;\n}\n');
+          } else {
+            throw new Error(`Unknown overlay: ${overlay}`);
+          }
+          NODE
+          }
+
+          postprocess_next_export() {
+            local output_dir="$1"
+            local app_name="$2"
+            OUTPUT_DIR="$output_dir" APP_BASE="/${app_name}" node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+
+          const outputDir = path.resolve(process.env.OUTPUT_DIR);
+          const appBase = process.env.APP_BASE;
+
+          function normalize(value) {
+            return value.split(path.sep).join('/');
+          }
+
+          function findHtmlFiles(dir) {
+            const files = [];
+            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+              const fullPath = path.join(dir, entry.name);
+              if (entry.isDirectory()) {
+                files.push(...findHtmlFiles(fullPath));
+              } else if (entry.isFile() && fullPath.endsWith('.html')) {
+                files.push(fullPath);
+              }
+            }
+            return files;
+          }
+
+          function htmlRoute(htmlFile) {
+            const route = normalize(path.relative(outputDir, htmlFile))
+              .replace(/\/index\.html$/i, '')
+              .replace(/\.html$/i, '')
+              .replace(/^\/+|\/+$/g, '');
+            return route === 'index' ? '' : route;
+          }
+
+          function escapeRegExp(value) {
+            return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          }
+
+          function escapeHtmlAttribute(value) {
+            return String(value)
+              .replaceAll('&', '&amp;')
+              .replaceAll('"', '&quot;')
+              .replaceAll('<', '&lt;')
+              .replaceAll('>', '&gt;');
+          }
+
+          function isAssetPath(route) {
+            return /(^|\/)(?:_next|_pagefind|r)(?:\/|$)/.test(route) ||
+              /\.[a-z0-9]+(?:[?#].*)?$/i.test(route);
+          }
+
+          function shouldPrefixRootPath(rootPath) {
+            if (!rootPath || rootPath.startsWith('//')) return false;
+            return rootPath !== appBase && !rootPath.startsWith(`${appBase}/`);
+          }
+
+          function indexedHref(href) {
+            if (!href.startsWith(`${appBase}/`)) return href;
+            const match = href.match(/^([^?#]*)([?#].*)?$/);
+            if (!match) return href;
+            const [, pathname, suffix = ''] = match;
+            if (pathname === appBase || pathname === `${appBase}/`) return href;
+            const route = pathname.slice(appBase.length).replace(/^\/+|\/+$/g, '');
+            if (!route || route.endsWith('index.html') || isAssetPath(route)) return href;
+            return `${appBase}/${route}/index.html${suffix}`;
+          }
+
+          function normalizeRouteHrefs(content) {
+            return content.replace(/(^|[\s<])href=(["'])([^"']+)\2/g, (match, lead, quote, href) => {
+              const normalized = indexedHref(href);
+              return normalized === href ? match : `${lead}href=${quote}${normalized}${quote}`;
+            });
+          }
+
+          function unprefixDataHrefs(content) {
+            const unprefixed = content.replace(
+              new RegExp(`\\bdata-href=(["'])${escapeRegExp(appBase)}/`, 'g'),
+              'data-href=$1/',
+            );
+            return unprefixed.replace(
+              /\bdata-href=(["'])(\/[^"']*?)\/index\.html([?#][^"']*)?\1/g,
+              (_match, quote, route, suffix = '') => `data-href=${quote}${route}${suffix}${quote}`,
+            );
+          }
+
+          function prefixRootPaths(content) {
+            let updated = content.replace(/\b(src|href)=(["'])\/(?!\/)([^"']*)\2/g, (match, attr, quote, rest) => {
+              const rootPath = `/${rest}`;
+              if (!shouldPrefixRootPath(rootPath)) return match;
+              return `${attr}=${quote}${appBase}${rootPath}${quote}`;
+            });
+            updated = updated.replace(/("src"\s*:\s*")\/(?!\/)([^"\\]*)/g, (match, prefix, rest) => {
+              const rootPath = `/${rest}`;
+              if (!shouldPrefixRootPath(rootPath)) return match;
+              return `${prefix}${appBase}${rootPath.slice(1) ? rootPath : '/'}`;
+            });
+            updated = updated.replace(/(\\"src\\"\s*:\s*\\")\/(?!\/)([^"\\]*)/g, (match, prefix, rest) => {
+              const rootPath = `/${rest}`;
+              if (!shouldPrefixRootPath(rootPath)) return match;
+              return `${prefix}${appBase}${rootPath.slice(1) ? rootPath : '/'}`;
+            });
+            return unprefixDataHrefs(normalizeRouteHrefs(updated));
+          }
+
+          function navigationShim() {
+            return [
+              '(()=>{',
+              `const configuredBase=${JSON.stringify(appBase)};`,
+              'const cleanBase=(value)=>(value||"").replace(/\\/+$/g,"");',
+              'const appBase=()=>cleanBase(document.querySelector(\'meta[name="uipath:app-base"]\')?.content)||configuredBase;',
+              'const cleanRoute=(value)=>(value||"").replace(/^\\/+|\\/+$/g,"");',
+              'const routeMeta=()=>cleanRoute(document.querySelector(\'meta[name="uip-go:route"]\')?.content);',
+              'const isAssetPath=(path)=>(/(^|\\/)(?:_next|_pagefind|r)(?:\\/|$)/.test(path)||/\\.[a-z0-9]+(?:[?#].*)?$/i.test(path));',
+              'const relativeRoute=(pathname)=>{const base=appBase();if(base&&(pathname===base||pathname===`${base}/`))return "";if(base&&pathname.startsWith(`${base}/`))return pathname.slice(base.length+1);return pathname.replace(/^\\/+/, "");};',
+              'const indexedUrl=(url)=>{const base=appBase();const route=cleanRoute(relativeRoute(url.pathname));if(!route||route.endsWith("index.html")||isAssetPath(route))return url;url.pathname=`${base}/${route}/index.html`;return url;};',
+              'const route=cleanRoute(relativeRoute(window.location.pathname));',
+              'if(route&&route!==routeMeta()&&!route.endsWith("index.html")&&!isAssetPath(route)){',
+              'const url=new URL(window.location.href);indexedUrl(url);window.location.replace(url.href);return;',
+              '}',
+              'document.addEventListener("click",(event)=>{',
+              'if(event.defaultPrevented||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.button!==0)return;',
+              'const anchor=event.target?.closest?.("a[href]");',
+              'if(!anchor)return;',
+              'const url=new URL(anchor.getAttribute("href"),window.location.href);',
+              'if(url.origin!==window.location.origin)return;',
+              'const base=appBase();',
+              'if(base&&!(url.pathname===base||url.pathname.startsWith(`${base}/`))){const rootPath=url.pathname.replace(/^\\/+/, "");if(rootPath&&isAssetPath(rootPath))return;url.pathname=rootPath?`${base}/${rootPath}`:`${base}/`;}',
+              'indexedUrl(url);',
+              'if(url.hash&&url.pathname===window.location.pathname&&url.search===window.location.search)return;',
+              'const nextRoute=cleanRoute(relativeRoute(url.pathname));',
+              'if(isAssetPath(nextRoute))return;',
+              'event.preventDefault();',
+              'event.stopImmediatePropagation();',
+              'window.location.assign(url.href);',
+              '},true);',
+              '})();',
+            ].join('');
+          }
+
+          function injectNavigationShim(content, route) {
+            const cleaned = content
+              .replace(/<meta name="uip-go:route" content="[^"]*"\/?>/g, '')
+              .replace(/<script data-uip-go-vertex-nav>[\s\S]*?<\/script>/g, '');
+            const routeMeta = `<meta name="uip-go:route" content="${escapeHtmlAttribute(route)}"/>`;
+            const shim = `<script data-uip-go-vertex-nav>${navigationShim()}</script>`;
+            const headMatch = cleaned.match(/<head[^>]*>/i);
+            if (!headMatch || headMatch.index === undefined) return `${routeMeta}${shim}${cleaned}`;
+            const insertAt = headMatch.index + headMatch[0].length;
+            return `${cleaned.slice(0, insertAt)}${routeMeta}${shim}${cleaned.slice(insertAt)}`;
+          }
+
+          let updatedCount = 0;
+          for (const htmlFile of findHtmlFiles(outputDir)) {
+            const original = fs.readFileSync(htmlFile, 'utf8');
+            const updated = injectNavigationShim(prefixRootPaths(original), htmlRoute(htmlFile));
+            if (updated !== original) {
+              fs.writeFileSync(htmlFile, updated, 'utf8');
+              updatedCount += 1;
+            }
+          }
+          console.log(`Updated ${updatedCount} HTML files for ${appBase}.`);
+          NODE
+          }
+
+          prepare_docs_export() {
+            APOLLO_CODED_APP=1 APOLLO_CODED_APP_PATH="$docs_app" CI=true pnpm turbo build --filter=apollo-docs
+            stage_next_export "apps/apollo-docs" ".uipath-build/apollo-docs" "docs"
+            (cd ".uipath-build/apollo-docs" && APOLLO_CODED_APP=1 APOLLO_CODED_APP_PATH="$docs_app" CI=true pnpm exec next build)
+            postprocess_next_export ".uipath-build/apollo-docs/out" "$docs_app"
+            rm -rf "apps/apollo-docs/out"
+            cp -R ".uipath-build/apollo-docs/out" "apps/apollo-docs/out"
+          }
+
+          prepare_vertex_export() {
+            stage_next_export "apps/apollo-vertex" ".uipath-build/apollo-vertex" "vertex"
+            (
+              cd ".uipath-build/apollo-vertex"
+              APOLLO_CODED_APP=1 APOLLO_CODED_APP_PATH="$vertex_app" CI=true pnpm generate:theme
+              APOLLO_CODED_APP=1 APOLLO_CODED_APP_PATH="$vertex_app" CI=true pnpm registry:build
+              APOLLO_CODED_APP=1 APOLLO_CODED_APP_PATH="$vertex_app" CI=true pnpm exec next build
+            )
+            postprocess_next_export ".uipath-build/apollo-vertex/out" "$vertex_app"
+            rm -rf "apps/apollo-vertex/out"
+            cp -R ".uipath-build/apollo-vertex/out" "apps/apollo-vertex/out"
+          }
+
+          pnpm turbo build --filter=apollo-landing
+          deploy_coded_app "apollo-landing" "$landing_app" "apps/landing/dist" "preview,apollo,apollo-landing"
+
+          prepare_docs_export
+          deploy_coded_app "apollo-docs" "$docs_app" "apps/apollo-docs/out" "preview,apollo,apollo-docs" "none"
+
+          pnpm turbo run storybook:build --filter=storybook-app
+          deploy_coded_app "apollo-design" "$design_app" "apps/storybook/storybook-static" "preview,apollo,apollo-design"
+
+          prepare_vertex_export
+          deploy_coded_app "apollo-vertex" "$vertex_app" "apps/apollo-vertex/out" "preview,apollo,apollo-vertex" "none"
+
+          host_env="$(echo "$UIPATH_BASE_URL" | sed -E 's#^https?://##; s#/.*$##; s#\\.uipath\\.com$##')"
+          if [ "$host_env" = "cloud" ]; then
+            app_host="${UIPATH_ORG_NAME}.uipath.host"
+          else
+            app_host="${UIPATH_ORG_NAME}.${host_env}.uipath.host"
+          fi
+
+          {
+            echo "landing_url=https://${app_host}/${landing_app}"
+            echo "docs_url=https://${app_host}/${docs_app}"
+            echo "design_url=https://${app_host}/${design_app}"
+            echo "vertex_url=https://${app_host}/${vertex_app}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Save Turborepo cache
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
+
+      - name: Update PR comment
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          APOLLO_DESIGN_URL: ${{ steps.deploy.outputs.design_url }}
+          APOLLO_DOCS_URL: ${{ steps.deploy.outputs.docs_url }}
+          APOLLO_LANDING_URL: ${{ steps.deploy.outputs.landing_url }}
+          APOLLO_VERTEX_URL: ${{ steps.deploy.outputs.vertex_url }}
+        with:
+          script: |
+            const identifier = '<!-- apollo-coded-app-preview-comment -->';
+            const timestamp = new Date().toLocaleString('en-US', {
+              timeZone: 'America/Los_Angeles',
+              year: 'numeric',
+              month: 'short',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: true
+            });
+            const logsLink = `[Logs](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+            const body = [
+              identifier,
+              'Apollo Coded App preview deployments are ready.',
+              '',
+              '| Project | Preview | Updated (PT) |',
+              '|---------|---------|--------------|',
+              `| apollo-design | [Preview](${process.env.APOLLO_DESIGN_URL}) · ${logsLink} | ${timestamp} |`,
+              `| apollo-docs | [Preview](${process.env.APOLLO_DOCS_URL}) · ${logsLink} | ${timestamp} |`,
+              `| apollo-landing | [Preview](${process.env.APOLLO_LANDING_URL}) · ${logsLink} | ${timestamp} |`,
+              `| apollo-vertex | [Preview](${process.env.APOLLO_VERTEX_URL}) · ${logsLink} | ${timestamp} |`
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(comment => comment.body?.includes(identifier));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
