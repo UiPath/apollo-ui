@@ -11,8 +11,8 @@ export const ProvenanceBar = ({
   expected,
   actual,
 }: {
-  expected: IxpProvenance | null | undefined;
-  actual: IxpProvenance | null | undefined;
+  expected: IxpProvenance | null;
+  actual: IxpProvenance | null;
 }) => {
   const { t } = useTranslation();
   if (!expected && !actual) return null;
