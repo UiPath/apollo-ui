@@ -73,7 +73,7 @@ export const BaseContainer = ({
 
     return cn(
       'relative flex items-center cursor-pointer bg-surface-overlay border border-border',
-      'w-(--node-w) h-(--node-h) rounded-(--node-radius)',
+      'w-(--node-w) min-h-(--node-h) h-auto rounded-(--node-radius)',
       'outline-offset-0 transition-[box-shadow,border-color] duration-150',
       shadow && 'shadow-(--canvas-node-shadow-rest)',
       shape === 'rectangle'
