@@ -13,8 +13,8 @@ const EvaluatorResultsSchema = z.record(
 
 interface EvaluatorResultsViewProps {
   data: unknown;
-  expected: unknown;
-  actual: unknown;
+  expectedOutput: unknown;
+  actualOutput: unknown;
   result: SolutionTestRunResult;
 }
 
@@ -23,8 +23,8 @@ interface EvaluatorResultsViewProps {
  * schema-sniffing needed. */
 export const EvaluatorResultsView = ({
   data,
-  expected,
-  actual,
+  expectedOutput,
+  actualOutput,
   result,
 }: EvaluatorResultsViewProps) => {
   if (data == null) return null;
@@ -52,9 +52,9 @@ export const EvaluatorResultsView = ({
             key={evaluatorId}
             evaluatorId={evaluatorId}
             score={evaluator.score}
-            details={evaluator.details}
-            expected={expected}
-            actual={actual}
+            evaluatorDetails={evaluator.details}
+            expectedOutput={expectedOutput}
+            actualOutput={actualOutput}
             result={result}
           />
         );

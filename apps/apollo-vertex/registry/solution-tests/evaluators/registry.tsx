@@ -5,16 +5,17 @@ import type { SolutionTestRunResult } from "../types";
 import { GenericEvaluatorResult } from "./generic-evaluator-result";
 import { IxpExtractionResult } from "./ixp-extraction/ixp-extraction-result";
 
-export const IXP_EXTRACTION_EVALUATOR_ID = "uipath-ixp-document-extraction";
+const JSON_SIMILARITY_EVALUATOR_ID = "uipath-json-similarity";
+const LLM_JUDGE_EVALUATOR_ID = "uipath-llm-judge-output-semantic-similarity";
+const IXP_EXTRACTION_EVALUATOR_ID = "uipath-ixp-document-extraction";
 
 export interface EvaluatorResultProps {
   evaluatorId: string;
   score: number | undefined;
-  /** Evaluator-specific `details` payload — each component validates it. */
-  details: unknown;
-  /** Raw expected/actual outputs (used by the generic component). */
-  expected: unknown;
-  actual: unknown;
+  /** The evaluator's own `details` payload — each component validates it. */
+  evaluatorDetails: unknown;
+  expectedOutput: unknown;
+  actualOutput: unknown;
   result: SolutionTestRunResult;
 }
 
@@ -26,8 +27,8 @@ const EVALUATOR_COMPONENTS: Record<
   string,
   ComponentType<EvaluatorResultProps>
 > = {
-  "uipath-json-similarity": GenericEvaluatorResult,
-  "uipath-llm-judge-output-semantic-similarity": GenericEvaluatorResult,
+  [JSON_SIMILARITY_EVALUATOR_ID]: GenericEvaluatorResult,
+  [LLM_JUDGE_EVALUATOR_ID]: GenericEvaluatorResult,
   [IXP_EXTRACTION_EVALUATOR_ID]: IxpExtractionResult,
 };
 

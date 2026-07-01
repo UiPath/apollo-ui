@@ -25,14 +25,14 @@ function scoreColorClass(
 export const GenericEvaluatorResult = ({
   evaluatorId,
   score,
-  details,
-  expected,
-  actual,
+  evaluatorDetails,
+  expectedOutput,
+  actualOutput,
 }: EvaluatorResultProps) => {
   const { t } = useTranslation();
   const { passThreshold } = useSolutionTestsConfig();
   const label = EVALUATOR_LABELS[evaluatorId] ?? evaluatorId;
-  const parsed = DetailsSchema.safeParse(details);
+  const parsed = DetailsSchema.safeParse(evaluatorDetails);
   const justification = parsed.success ? parsed.data?.justification : "";
   const scoreStr = score == null ? "—" : `${Math.round(score * 100)}%`;
 
@@ -52,8 +52,8 @@ export const GenericEvaluatorResult = ({
         )}
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <JsonPanel title={t("expected_output")} data={expected} />
-        <JsonPanel title={t("actual_output")} data={actual} />
+        <JsonPanel title={t("expected_output")} data={expectedOutput} />
+        <JsonPanel title={t("actual_output")} data={actualOutput} />
       </div>
     </div>
   );
