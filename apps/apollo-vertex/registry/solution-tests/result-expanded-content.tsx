@@ -3,6 +3,7 @@
 import { useTranslation } from "react-i18next";
 import { Empty, EmptyDescription } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSolutionTestsConfig } from "./context";
 import { RunResultStatus } from "./types";
 import type { SolutionTestRunResult } from "./types";
 import { hasAutoPass } from "./utils";
@@ -16,7 +17,9 @@ import { JsonPanel, formatJson } from "./evaluators/output-panels";
 export interface ExpandedRowData {
   loading: boolean;
   expected?: unknown;
+  expectedInput?: unknown;
   actual?: unknown;
+  actualInput?: unknown;
   evaluatorResults?: unknown;
 }
 
@@ -30,6 +33,7 @@ export const ResultExpandedContent = ({
   data,
 }: ResultExpandedContentProps) => {
   const { t } = useTranslation();
+  const { showInputs } = useSolutionTestsConfig();
   const status = result.Status;
 
   if (data?.loading) {
@@ -80,6 +84,15 @@ export const ResultExpandedContent = ({
             <JsonPanel title={t("actual_output")} data={data.actual} />
           </div>
         ))}
+
+      {/* Debug aid (dev-only via the `showInputs` config flag): the raw inputs
+          fed to the run, rendered alongside the evaluator results. */}
+      {isPassedOrFailed && showInputs && (
+        <div className="grid grid-cols-2 gap-4">
+          <JsonPanel title={t("expected_input")} data={data.expectedInput} />
+          <JsonPanel title={t("actual_input")} data={data.actualInput} />
+        </div>
+      )}
 
       {status === RunResultStatus.Missing && (
         <JsonPanel title={t("expected_output")} data={data.expected} />

@@ -75,17 +75,26 @@ export const RunDetailsDialog = ({
           status === RunResultStatus.Passed ||
           status === RunResultStatus.Failed
         ) {
-          const [expected, actual, evalResults] = await Promise.allSettled([
-            attachment.fetch(result.Id, "ExpectedOutput"),
-            attachment.fetch(result.Id, "ActualOutput"),
-            attachment.fetch(result.Id, "EvaluatorResults"),
-          ]);
+          const [expected, expectedInput, actual, actualInput, evalResults] =
+            await Promise.allSettled([
+              attachment.fetch(result.Id, "ExpectedOutput"),
+              attachment.fetch(result.Id, "ExpectedInput"),
+              attachment.fetch(result.Id, "ActualOutput"),
+              attachment.fetch(result.Id, "ActualInput"),
+              attachment.fetch(result.Id, "EvaluatorResults"),
+            ]);
           setRowData((prev) => ({
             ...prev,
             [result.Id]: {
               loading: false,
               expected: expected.status === "fulfilled" ? expected.value : null,
+              expectedInput:
+                expectedInput.status === "fulfilled"
+                  ? expectedInput.value
+                  : null,
               actual: actual.status === "fulfilled" ? actual.value : null,
+              actualInput:
+                actualInput.status === "fulfilled" ? actualInput.value : null,
               evaluatorResults:
                 evalResults.status === "fulfilled" ? evalResults.value : null,
             },
