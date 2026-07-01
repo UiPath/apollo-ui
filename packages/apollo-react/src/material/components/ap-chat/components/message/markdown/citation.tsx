@@ -132,9 +132,8 @@ const clearHighlightRange = (state?: HighlightState) => {
 export const Citation = React.memo(
   ({ id, title, url, page_number, download_url, messageId }: CitationProps) => {
     const { _ } = useLingui();
-    const pageNumber = page_number;
     const pageText = page_number
-      ? ` (${_(msg({ id: 'autopilot-chat.message.page-number', message: `Page ${pageNumber}` }))})`
+      ? ` (${_(msg({ id: 'autopilot-chat.message.page-number', message: `Page ${page_number}` }))})`
       : '';
     const chatService = useChatService();
     const { spacing } = useChatState();
