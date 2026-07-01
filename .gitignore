@@ -84,5 +84,10 @@ lerna-debug.log*
 .cache/
 .turbo/
 
+# UiPath Coded Apps local packaging
+.uipath/
+.uipath-build/
+uipath.json
+
 # Vercel
 .vercel/
