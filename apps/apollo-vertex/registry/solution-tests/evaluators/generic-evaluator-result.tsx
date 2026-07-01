@@ -7,12 +7,14 @@ import { useSolutionTestsConfig } from "../context";
 import { JsonPanel } from "./output-panels";
 import type { EvaluatorResultProps } from "./registry";
 
-/** Default evaluator view for evaluators without a custom component: a
- * score + justification card plus the raw expected/actual outputs. */
-
-const DetailsSchema = z
-  .object({ justification: z.string().optional() })
-  .nullish();
+/** Schema for evaluators without a custom view (json-similarity, llm-judge):
+ * a score + optional justification, plus the raw expected/actual outputs. */
+export const GenericEvaluatorDetailsSchema = z.object({
+  justification: z.string().optional(),
+});
+export type GenericEvaluatorDetails = z.infer<
+  typeof GenericEvaluatorDetailsSchema
+>;
 
 function scoreColorClass(
   score: number | undefined,
@@ -28,12 +30,11 @@ export const GenericEvaluatorResult = ({
   evaluatorDetails,
   expectedOutput,
   actualOutput,
-}: EvaluatorResultProps) => {
+}: EvaluatorResultProps<GenericEvaluatorDetails>) => {
   const { t } = useTranslation();
   const { passThreshold } = useSolutionTestsConfig();
   const label = EVALUATOR_LABELS[evaluatorId] ?? evaluatorId;
-  const parsed = DetailsSchema.safeParse(evaluatorDetails);
-  const justification = parsed.success ? parsed.data?.justification : "";
+  const justification = evaluatorDetails.justification;
   const scoreStr = score == null ? "—" : `${Math.round(score * 100)}%`;
 
   return (
