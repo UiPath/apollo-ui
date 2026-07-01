@@ -30,6 +30,10 @@ export const SUPPORTED_LOCALES = Object.keys(
 const DEFAULT_LOCALE: SupportedLocale = "en";
 
 export const configurei18n = async () => {
+  if (i18n.isInitialized) {
+    document.documentElement.lang = i18n.language;
+    return;
+  }
   await i18n
     .use({
       type: "backend",

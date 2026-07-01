@@ -93,7 +93,10 @@
     ".dependency-cruiser.js",
     "scripts/**",
     "next-env.d.ts",
-    "types/**/*.d.ts"
+    "types/**/*.d.ts",
+    "slack/**",
+    "templates/invoice-review/**",
+    "app/api/demo-*/**"
   ],
   "overrides": [
     {
