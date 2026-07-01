@@ -111,22 +111,14 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   } = useBaseNodeOverrideConfig();
 
   const updateNodeInternals = useUpdateNodeInternals();
-  const { updateNodeData, updateNode } = useReactFlow();
+  const { updateNodeData } = useReactFlow();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
-  // Tracks the height we last synced to React Flow via updateNode, so we can
-  // distinguish our own handle-based writes from external changes (user-specified
-  // height, React Flow measurement, resize).
-  const syncedHeightRef = useRef<number | undefined>(undefined);
-  // The "base" height — what the node height would be without handle inflation.
-  // Updated when height changes from an external source (not our sync).
-  const baseHeightRef = useRef<number>(DEFAULT_NODE_SIZE);
-
-  if (height && height !== syncedHeightRef.current) {
-    baseHeightRef.current = height;
-  }
+  // Height is content-driven: the handle count sets a CSS min-height floor and
+  // React Flow's ResizeObserver measures the real height. We never write height
+  // back, so there is no feedback loop to disambiguate.
 
   // Get execution status from external source
   const executionState = useNodeExecutionState(id);
@@ -260,11 +252,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     };
   }, [adornmentsProp, statusContext]);
 
-  // Compute height: max of base height (user-specified or measured) and handle minimum.
-  // baseHeightRef is updated above from external height changes; handle inflation
-  // is computed from the current handleConfigurations.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: height updates baseHeightRef above and intentionally retriggers this memo.
-  const computedHeight = useMemo(() => {
+  // Min-height floor: a pure function of visible handle count and the intrinsic
+  // default/footer height. Never reads the measured `height` prop.
+  const minNodeHeight = useMemo(() => {
     const leftHandles = handleConfigurations
       .filter((config) => config.position === Position.Left && config.visible !== false)
       .reduce(
@@ -282,31 +272,21 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     const leftRightHandles = Math.max(leftHandles, rightHandles);
 
     // Each handle gets a 2-grid-space lane (32px), plus 2-grid-space padding at top + bottom of node.
-    const minNodeHeight = (leftRightHandles * 2 + 2) * GRID_SPACING;
-    return Math.max(baseHeightRef.current, minNodeHeight);
-  }, [handleConfigurations, height]);
+    const handleFloor = (leftRightHandles * 2 + 2) * GRID_SPACING;
 
+    // Intrinsic floor: fixed footer height when a footer is present, else the default.
+    const intrinsic = getContainerHeight(undefined, !!footerComponent, footerVariant);
+    const intrinsicFloor = typeof intrinsic === 'number' ? intrinsic : NODE_HEIGHT_DEFAULT;
+
+    return Math.max(intrinsicFloor, handleFloor);
+  }, [handleConfigurations, footerComponent, footerVariant]);
+
+  // Recalculate React Flow handle positions when handle configuration (and thus the
+  // min-height floor) changes.
   // biome-ignore lint/correctness/useExhaustiveDependencies: handle configuration changes require React Flow handle recalculation.
   useEffect(() => {
     updateNodeInternals(id);
-  }, [handleConfigurations, id, updateNodeInternals]);
-
-  // Sync computed height to node when it differs from React Flow's current value
-  useEffect(() => {
-    if (computedHeight !== undefined && computedHeight !== height) {
-      syncedHeightRef.current = computedHeight;
-      const frameId = requestAnimationFrame(() => {
-        updateNode(id, { height: computedHeight });
-        updateNodeInternals(id);
-      });
-
-      return () => {
-        cancelAnimationFrame(frameId);
-      };
-    }
-
-    return undefined;
-  }, [computedHeight, height, id, updateNode, updateNodeInternals]);
+  }, [handleConfigurations, minNodeHeight, id, updateNodeInternals]);
 
   const displayLabel = display.label;
   const displayShape = display.shape ?? 'square';
@@ -320,7 +300,6 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // Display customization from props (not data)
   const displayLabelTooltip = labelTooltip;
   const displayLabelBackgroundColor = labelBackgroundColor;
-  const displayFooterVariant = footerVariant;
 
   // SubLabel: Component prop takes precedence, then plain string from display.
   const displaySubLabel = useMemo(() => {
@@ -343,10 +322,10 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // ---------------------------------------------------------------------------
   const hasFooter = !!displayFooter;
   const containerWidth = getContainerWidth(displayShape, width);
-  const containerHeight = getContainerHeight(height, hasFooter, displayFooterVariant);
+  const containerHeight = minNodeHeight;
 
   const nodeVars = useMemo((): React.CSSProperties => {
-    const numH = typeof containerHeight === 'number' ? containerHeight : DEFAULT_NODE_SIZE;
+    const numH = containerHeight;
 
     const getRadius = (basis: number, ratio: number) => {
       return displayShape === 'circle'
@@ -378,7 +357,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
     return {
       '--node-w': `${containerWidth}px`,
-      '--node-h': typeof containerHeight === 'number' ? `${containerHeight}px` : 'auto',
+      '--node-h': `${containerHeight}px`,
       '--node-radius': nodeRadius,
       '--node-gap': `${(gap - NODE_BORDER_SIZE * 2) / 2}px`,
       '--inner-w': `${innerW}px`,
