@@ -41,7 +41,10 @@ export const IxpExtractionResult = ({
             {t("ixp_no_documents")}
           </p>
         ) : (
-          documents.map((doc) => <DocumentRow key={doc.document} doc={doc} />)
+          documents.map((doc, i) => (
+            // oxlint-disable-next-line react(no-array-index-key) -- static comparison result with no stable per-document id; rows never reorder
+            <DocumentRow key={`${doc.document}-${i}`} doc={doc} />
+          ))
         )}
       </div>
     </div>

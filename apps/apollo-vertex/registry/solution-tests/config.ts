@@ -11,8 +11,6 @@ export interface SolutionTestsConfig {
   subjectNoun?: { singular: string; plural: string };
   /** Score at/above which a result passes (drives pass color + KPI trend line). Defaults to 0.9. */
   passThreshold?: number;
-  /** Show the Expected/Actual input panels in run-result details. Defaults to false (outputs only). */
-  showInputs?: boolean;
 }
 
 /** Config with defaults applied — what components read from context. */
@@ -21,7 +19,6 @@ export interface ResolvedSolutionTestsConfig {
   getSubjectHref?: (test: SolutionTest) => string | undefined;
   subjectNoun?: { singular: string; plural: string };
   passThreshold: number;
-  showInputs: boolean;
 }
 
 export function resolveConfig(
@@ -32,6 +29,5 @@ export function resolveConfig(
     getSubjectHref: config.getSubjectHref,
     subjectNoun: config.subjectNoun,
     passThreshold: config.passThreshold ?? DEFAULT_PASS_THRESHOLD,
-    showInputs: config.showInputs ?? false,
   };
 }
