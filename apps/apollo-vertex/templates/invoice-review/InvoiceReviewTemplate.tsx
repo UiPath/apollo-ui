@@ -84,8 +84,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/registry/dialog/dialog";
+import { ShellProfileExtrasProvider } from "@/registry/shell/shell-profile-extras";
 import { Toaster } from "@/registry/sonner/sonner";
 import { useDataTable } from "@/registry/use-data-table/useDataTable";
+import {
+  InvoiceVersionProvider,
+  LayoutVersionMenuItem,
+  useInvoiceVersion,
+} from "./invoice-version";
+import { ExceptionTimeline } from "./next/ExceptionTimeline";
+import { HeaderDecision } from "./next/HeaderDecision";
+import {
+  getReview,
+  isHoldSuggestion,
+  type Suggestion,
+} from "./next/invoice-review-data";
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 
@@ -1859,7 +1872,7 @@ function InvoiceListView({
           <Card
             variant="glass"
             className={cn(
-              "cursor-pointer transition-all",
+              "cursor-pointer transition-all py-0",
               cardFilter === "due-today" && "border-2 border-destructive",
             )}
             onClick={() => toggleCard("due-today")}
@@ -1886,7 +1899,7 @@ function InvoiceListView({
           <Card
             variant="glass"
             className={cn(
-              "cursor-pointer transition-all",
+              "cursor-pointer transition-all py-0",
               cardFilter === "pending-review" && "border-2 border-warning",
             )}
             onClick={() => toggleCard("pending-review")}
@@ -1913,7 +1926,7 @@ function InvoiceListView({
           <Card
             variant="glass"
             className={cn(
-              "cursor-pointer transition-all",
+              "cursor-pointer transition-all py-0",
               cardFilter === "exceptions" && "border-2 border-foreground",
             )}
             onClick={() => toggleCard("exceptions")}
@@ -1942,7 +1955,7 @@ function InvoiceListView({
           <Card
             variant="glass"
             className={cn(
-              "cursor-pointer transition-all",
+              "cursor-pointer transition-all py-0",
               cardFilter === "auto-approved"
                 ? "border-2 border-foreground"
                 : "opacity-50",
@@ -2338,11 +2351,7 @@ function TopBar({
           <PageHeaderFieldLabel>PO</PageHeaderFieldLabel>
           <PageHeaderFieldValue>
             {!d.po || d.po === "—" ? (
-              <Badge
-                status="error"
-                variant="secondary"
-                className="rounded-[4px] px-2.5 py-[3px]"
-              >
+              <Badge status="error" variant="secondary">
                 Missing PO
               </Badge>
             ) : (
@@ -2353,11 +2362,7 @@ function TopBar({
         <PageHeaderField>
           <PageHeaderFieldLabel>Status</PageHeaderFieldLabel>
           <PageHeaderFieldValue className="flex items-center gap-1 transition-colors duration-180">
-            <Badge
-              status={statusInfo.status}
-              variant="secondary"
-              className="rounded-[4px] px-2.5 py-[3px]"
-            >
+            <Badge status={statusInfo.status} variant="secondary">
               {statusInfo.label}
             </Badge>
           </PageHeaderFieldValue>
@@ -4045,21 +4050,14 @@ function DetailsCombinedTab() {
                     {line.description}
                   </span>
                   {line.flag && (
-                    <span className="text-[11px] px-1.5 py-0.5 rounded-full border border-destructive/60 text-destructive shrink-0 leading-none">
+                    <Badge variant="secondary" className="shrink-0">
                       {line.flag}
-                    </span>
+                    </Badge>
                   )}
                 </div>
                 <div className="flex items-center gap-4 text-[12px] text-muted-foreground">
                   <span>Qty {line.qty}</span>
-                  <span
-                    className={cn(
-                      line.flagStatus === "error" && "text-destructive",
-                      line.flagStatus === "warning" && "text-warning",
-                    )}
-                  >
-                    {line.amount}
-                  </span>
+                  <span className="text-foreground">{line.amount}</span>
                   {line.agreed && <span>PO {line.agreed}</span>}
                 </div>
               </div>
@@ -5178,6 +5176,7 @@ function RightPanel({
   onAddNote,
   width,
   onWidthChange,
+  mergedLayout = false,
 }: {
   tab: RightTab;
   onTabChange: (tab: RightTab) => void;
@@ -5187,6 +5186,7 @@ function RightPanel({
   onAddNote: (note: string) => void;
   width: number;
   onWidthChange: (w: number) => void;
+  mergedLayout?: boolean;
 }) {
   const MIN_WIDTH = 360;
   const MAX_WIDTH = 720;
@@ -5212,7 +5212,12 @@ function RightPanel({
     window.addEventListener("pointerup", up);
   }
 
-  const tabOrder: RightTab[] = ["activity", "details", "lines", "source"];
+  // Next layout: drop Activity (now in the timeline) and fold Line items into Details.
+  const tabOrder: RightTab[] = mergedLayout
+    ? ["details", "source"]
+    : ["activity", "details", "lines", "source"];
+  const effectiveTab: RightTab =
+    mergedLayout && (tab === "activity" || tab === "lines") ? "details" : tab;
   const tabLabel = (t: RightTab) =>
     t === "lines" ? "Line items" : t.charAt(0).toUpperCase() + t.slice(1);
 
@@ -5242,7 +5247,7 @@ function RightPanel({
             }}
             className={cn(
               "relative flex-1 py-3 text-xs font-medium transition-colors flex items-center justify-center gap-1 whitespace-nowrap",
-              tab === t
+              effectiveTab === t
                 ? "text-foreground border-b-2 border-foreground -mb-px"
                 : "text-muted-foreground hover:text-foreground",
             )}
@@ -5255,15 +5260,17 @@ function RightPanel({
         ))}
       </div>
       <div className="flex-1 flex flex-col overflow-hidden">
-        {tab === "activity" && (
+        {effectiveTab === "activity" && (
           <ActivityTabC
             extraEntries={extraTimelineEntries}
             onAddNote={onAddNote}
           />
         )}
-        {tab === "details" && <DetailsCombinedTab />}
-        {tab === "lines" && <LinesTab />}
-        {tab === "source" && <SourceTab />}
+        {/* DetailsCombinedTab already combines fields + a Line items section,
+            so the merged tab is just this (no separate LinesTab = no overlap). */}
+        {effectiveTab === "details" && <DetailsCombinedTab />}
+        {effectiveTab === "lines" && <LinesTab />}
+        {effectiveTab === "source" && <SourceTab />}
       </div>
     </div>
   );
@@ -5305,6 +5312,134 @@ function formatCommsTime(iso: string): string {
 }
 
 /** Center + right panel content only — no LeftNav wrapper. */
+// --- Dev "next" version stubs (toggled via the profile menu, see
+// invoice-version.tsx). Header and right panel mirror the current components so
+// switching is a no-op until we diverge; the center starts as a blank canvas.
+// Lean next-version header: identity (invoice # + vendor) + Status + the
+// Approve split-button, inline on one row. Amount/Due/PO/Assignee are dropped
+// here because the Details panel already owns them.
+function TopBarNext({
+  flagged,
+  held,
+  completion,
+  canApprove,
+  onApprove,
+  onReject,
+  onHold,
+  onFlag,
+}: {
+  flagged: boolean;
+  held?: boolean;
+  completion?: CompletionRecord;
+  canApprove: boolean;
+  onApprove: () => void;
+  onReject: () => void;
+  onHold: () => void;
+  onFlag: () => void;
+}) {
+  const d = useInvoiceDetail();
+  const tableRow = invoiceTableData.find((r) => r.id === d.id);
+  const baseStatus: InvoiceStatus = tableRow?.status ?? "pending-review";
+  const effectiveStatus: InvoiceStatus = completion
+    ? completion.type === "approved"
+      ? "approved"
+      : "rejected"
+    : held
+      ? "on-hold"
+      : flagged
+        ? "flagged"
+        : baseStatus;
+  const statusInfo = statusBadgeMap[effectiveStatus];
+  return (
+    <PageHeader bordered className="@3xl:!grid-cols-[auto_1fr_auto]">
+      <PageHeaderNav>
+        <PageHeaderTitleGroup>
+          <PageHeaderTitle as="h2">
+            <span className="group inline-flex items-center gap-1 cursor-pointer">
+              <span className="group-hover:underline">{d.id}</span>
+              <ExternalLink className="size-3.5 shrink-0 text-foreground opacity-0 -translate-x-1 transition-all duration-120 group-hover:opacity-60 group-hover:translate-x-0" />
+            </span>
+          </PageHeaderTitle>
+          <PageHeaderDescription>{d.vendor}</PageHeaderDescription>
+        </PageHeaderTitleGroup>
+      </PageHeaderNav>
+      <PageHeaderContent className="@3xl:justify-between">
+        <PageHeaderField>
+          <PageHeaderFieldLabel>Amount</PageHeaderFieldLabel>
+          <PageHeaderFieldValue>{d.amount}</PageHeaderFieldValue>
+        </PageHeaderField>
+        <PageHeaderField>
+          <PageHeaderFieldLabel>Due</PageHeaderFieldLabel>
+          <PageHeaderFieldValue>{d.dueFormatted}</PageHeaderFieldValue>
+        </PageHeaderField>
+        <PageHeaderField>
+          <PageHeaderFieldLabel>PO</PageHeaderFieldLabel>
+          <PageHeaderFieldValue>
+            {!d.po || d.po === "—" ? (
+              <Badge status="warning" variant="secondary">
+                Missing PO
+              </Badge>
+            ) : (
+              d.po
+            )}
+          </PageHeaderFieldValue>
+        </PageHeaderField>
+        <PageHeaderField>
+          <PageHeaderFieldLabel>Status</PageHeaderFieldLabel>
+          <PageHeaderFieldValue className="flex items-center gap-1 transition-colors duration-180">
+            <Badge variant="secondary">{statusInfo.label}</Badge>
+          </PageHeaderFieldValue>
+        </PageHeaderField>
+        <PageHeaderField>
+          <PageHeaderFieldLabel>Assignee</PageHeaderFieldLabel>
+          <PageHeaderFieldValue className="flex items-center gap-1.5">
+            <Avatar className="size-[14px] shrink-0">
+              {d.assignee === REVIEWER_NAME && (
+                <AvatarImage src={REVIEWER_AVATAR} alt={d.assignee} />
+              )}
+              <AvatarFallback className="text-[7px] font-bold text-background bg-muted-foreground">
+                {d.assigneeInitials[0]}
+              </AvatarFallback>
+            </Avatar>
+            {d.assignee}
+          </PageHeaderFieldValue>
+        </PageHeaderField>
+      </PageHeaderContent>
+      <PageHeaderActions className="@3xl:ml-6">
+        <HeaderDecision
+          canApprove={canApprove}
+          onApprove={onApprove}
+          onReject={onReject}
+          onHold={onHold}
+          onFlag={onFlag}
+        />
+      </PageHeaderActions>
+    </PageHeader>
+  );
+}
+
+function RightPanelNext(props: Parameters<typeof RightPanel>[0]) {
+  return <RightPanel {...props} mergedLayout />;
+}
+
+function CenterPanelNext({
+  activeInvoiceId,
+  onCleared,
+}: {
+  activeInvoiceId: string;
+  onCleared: () => void;
+}) {
+  const review = getReview(activeInvoiceId);
+  const handleResolve = (s: Suggestion) => {
+    // Hold-type resolutions wait on an external reply; the invoice stays locked.
+    if (isHoldSuggestion(s)) return;
+    // Cascade (downstream) re-validation is layered in separately; not clear yet.
+    if (review.downstream) return;
+    onCleared();
+  };
+  return <ExceptionTimeline review={review} onResolve={handleResolve} />;
+}
+
 function InvoiceDetailPane({
   activeInvoiceId,
   completion,
@@ -5370,6 +5505,10 @@ function InvoiceDetailPane({
     updater: (prev: TimelineEntry[]) => TimelineEntry[],
   ) => void;
 }) {
+  const { version } = useInvoiceVersion();
+  // Header Approve stays locked until the timeline reports the path is clear.
+  // Resets per invoice because InvoiceDetailPane is keyed by contentKey.
+  const [approveReady, setApproveReady] = useState(false);
   const data =
     detailDataMap[activeInvoiceId] ??
     (detailDataMap["INV-GRN-001"] as InvoiceDetailData);
@@ -5733,11 +5872,24 @@ function InvoiceDetailPane({
           className="shrink-0 inv-between-enter"
           style={{ animationDelay: "40ms" }}
         >
-          <TopBar
-            flagged={flagged}
-            held={held}
-            completion={justCompleted ?? completion}
-          />
+          {version === "next" ? (
+            <TopBarNext
+              flagged={flagged}
+              held={held}
+              completion={justCompleted ?? completion}
+              canApprove={approveReady}
+              onApprove={() => onComplete("approved")}
+              onReject={() => onComplete("rejected")}
+              onHold={() => onPark("hold", "Held from header")}
+              onFlag={() => onPark("flag", "Flagged from header")}
+            />
+          ) : (
+            <TopBar
+              flagged={flagged}
+              held={held}
+              completion={justCompleted ?? completion}
+            />
+          )}
         </div>
         <div
           className="relative flex flex-1 overflow-hidden"
@@ -5748,162 +5900,187 @@ function InvoiceDetailPane({
             className="flex flex-col flex-1 overflow-hidden inv-between-enter"
             style={{ animationDelay: "80ms" }}
           >
-            {/* Segmented toggle — Findings / Comms */}
-            <CenterToggle
-              view={centerView}
-              onViewChange={(v) => {
-                onCenterViewChange(v);
-                if (v === "comms") onCommsViewed();
-              }}
-              commsUnread={commsUnread}
-              commsCount={commsCount}
-            />
-            <div className="flex flex-col flex-1 overflow-hidden">
-              {/* Comms always shows the communication trail, even after the
-                  invoice is approved/rejected/held. */}
-              {centerView === "comms" ? (
-                <CommsView
-                  messages={commsMessages}
-                  onNewEmail={openEmailModal}
-                  onAction={(id) => dispatchAction(id, "slack")}
-                  onSendReply={handleSendReply}
-                  hasActiveThread={hasActiveThread}
+            {version === "next" ? (
+              <CenterPanelNext
+                activeInvoiceId={activeInvoiceId}
+                onCleared={() => setApproveReady(true)}
+              />
+            ) : (
+              <>
+                {/* Segmented toggle — Findings / Comms */}
+                <CenterToggle
+                  view={centerView}
+                  onViewChange={(v) => {
+                    onCenterViewChange(v);
+                    if (v === "comms") onCommsViewed();
+                  }}
+                  commsUnread={commsUnread}
+                  commsCount={commsCount}
                 />
-              ) : justCompleted && !nextInvoice ? (
-                /* Queue cleared — replaces center content entirely */
-                <div className="flex-1 overflow-y-auto custom-scrollbar">
-                  <div className="flex flex-col items-center text-center py-12 px-8">
-                    <AnimatedCheck size={56} />
-                    <div
-                      className="mt-6 flex flex-col items-center gap-4"
-                      style={{
-                        opacity: 0,
-                        animation: "fadeIn 300ms ease 600ms forwards",
-                      }}
-                    >
-                      <div>
-                        <h2 className="text-xl font-medium">All caught up</h2>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          No invoices pending your review.
-                        </p>
-                      </div>
-                      {(approvedCount > 0 || rejectedCount > 0) && (
-                        <div className="flex gap-2 flex-wrap justify-center">
-                          {approvedCount > 0 && (
-                            <Badge status="success" variant="secondary">
-                              {approvedCount} approved this session
-                            </Badge>
-                          )}
-                          {rejectedCount > 0 && (
-                            <Badge status="error" variant="secondary">
-                              {rejectedCount} rejected this session
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-                      <p className="text-xs text-muted-foreground">
-                        {justCompleted.type === "approved"
-                          ? `Approved · ${data.id} · ${data.vendor}`
-                          : `Rejected · ${data.id} · Reason: ${justCompleted.reason}`}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : justCompleted ? (
-                /* Just completed — alert + up next card */
-                <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 custom-scrollbar">
-                  <div
-                    style={{
-                      opacity: 0,
-                      animation: "fadeIn 300ms ease 250ms forwards",
-                    }}
-                  >
-                    {justCompleted.type === "approved" ? (
-                      <Alert
-                        status="default"
-                        visual="outline"
-                        className="border-success [&>svg]:text-success"
-                      >
-                        <Check className="h-4 w-4" />
-                        <AlertTitle className="text-sm font-medium">
-                          Invoice approved
-                        </AlertTitle>
-                        <AlertDescription className="text-xs text-muted-foreground">
-                          {data.id} · {data.vendor} · {data.amount} — sent for
-                          payment processing.
-                          <br />
-                          {completedCount} of {totalInQueue} invoices reviewed
-                        </AlertDescription>
-                      </Alert>
-                    ) : (
-                      <Alert status="error" visual="outline">
-                        <X className="h-4 w-4" />
-                        <AlertTitle className="text-sm font-medium">
-                          Invoice rejected
-                        </AlertTitle>
-                        <AlertDescription className="text-xs text-muted-foreground">
-                          {data.id} · {data.vendor} · Reason:{" "}
-                          {justCompleted.reason}
-                          <br />
-                          Vendor will be notified. Removed from your queue.
-                        </AlertDescription>
-                      </Alert>
-                    )}
-                    <Separator className="my-4" />
-                    <UpNextCard
-                      nextInvoice={nextInvoice}
-                      onNext={onNextInvoice}
-                      onBack={onBack}
+                <div className="flex flex-col flex-1 overflow-hidden">
+                  {/* Comms always shows the communication trail, even after the
+                  invoice is approved/rejected/held. */}
+                  {centerView === "comms" ? (
+                    <CommsView
+                      messages={commsMessages}
+                      onNewEmail={openEmailModal}
+                      onAction={(id) => dispatchAction(id, "slack")}
+                      onSendReply={handleSendReply}
+                      hasActiveThread={hasActiveThread}
                     />
-                  </div>
+                  ) : justCompleted && !nextInvoice ? (
+                    /* Queue cleared — replaces center content entirely */
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                      <div className="flex flex-col items-center text-center py-12 px-8">
+                        <AnimatedCheck size={56} />
+                        <div
+                          className="mt-6 flex flex-col items-center gap-4"
+                          style={{
+                            opacity: 0,
+                            animation: "fadeIn 300ms ease 600ms forwards",
+                          }}
+                        >
+                          <div>
+                            <h2 className="text-xl font-medium">
+                              All caught up
+                            </h2>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              No invoices pending your review.
+                            </p>
+                          </div>
+                          {(approvedCount > 0 || rejectedCount > 0) && (
+                            <div className="flex gap-2 flex-wrap justify-center">
+                              {approvedCount > 0 && (
+                                <Badge status="success" variant="secondary">
+                                  {approvedCount} approved this session
+                                </Badge>
+                              )}
+                              {rejectedCount > 0 && (
+                                <Badge status="error" variant="secondary">
+                                  {rejectedCount} rejected this session
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            {justCompleted.type === "approved"
+                              ? `Approved · ${data.id} · ${data.vendor}`
+                              : `Rejected · ${data.id} · Reason: ${justCompleted.reason}`}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : justCompleted ? (
+                    /* Just completed — alert + up next card */
+                    <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 custom-scrollbar">
+                      <div
+                        style={{
+                          opacity: 0,
+                          animation: "fadeIn 300ms ease 250ms forwards",
+                        }}
+                      >
+                        {justCompleted.type === "approved" ? (
+                          <Alert
+                            status="default"
+                            visual="outline"
+                            className="border-success [&>svg]:text-success"
+                          >
+                            <Check className="h-4 w-4" />
+                            <AlertTitle className="text-sm font-medium">
+                              Invoice approved
+                            </AlertTitle>
+                            <AlertDescription className="text-xs text-muted-foreground">
+                              {data.id} · {data.vendor} · {data.amount} — sent
+                              for payment processing.
+                              <br />
+                              {completedCount} of {totalInQueue} invoices
+                              reviewed
+                            </AlertDescription>
+                          </Alert>
+                        ) : (
+                          <Alert status="error" visual="outline">
+                            <X className="h-4 w-4" />
+                            <AlertTitle className="text-sm font-medium">
+                              Invoice rejected
+                            </AlertTitle>
+                            <AlertDescription className="text-xs text-muted-foreground">
+                              {data.id} · {data.vendor} · Reason:{" "}
+                              {justCompleted.reason}
+                              <br />
+                              Vendor will be notified. Removed from your queue.
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                        <Separator className="my-4" />
+                        <UpNextCard
+                          nextInvoice={nextInvoice}
+                          onNext={onNextInvoice}
+                          onBack={onBack}
+                        />
+                      </div>
+                    </div>
+                  ) : sentEmails.length > 0 && centerView === "findings" ? (
+                    <div className="h-full overflow-y-auto px-4 sm:px-6 lg:px-8 pt-7 pb-6 custom-scrollbar">
+                      <AwaitingResponseBlock
+                        sentEmails={sentEmails}
+                        onFollowUp={openEmailModal}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-8 pb-[136px] custom-scrollbar">
+                      <ExceptionBlock
+                        emailButtonState={
+                          sentEmails.length > 0
+                            ? "sent"
+                            : emailModalOpen
+                              ? "draft-open"
+                              : "default"
+                        }
+                        onAction={(id, opts) =>
+                          dispatchAction(id, "findings", opts)
+                        }
+                        onUndo={handleUndoState}
+                        confirmed={confirmed}
+                        dimContent={flagged || held}
+                      />
+                    </div>
+                  )}
+                  {!justCompleted &&
+                    !completion &&
+                    !flagged &&
+                    !held &&
+                    centerView === "findings" && <AskFooter />}
                 </div>
-              ) : sentEmails.length > 0 && centerView === "findings" ? (
-                <div className="h-full overflow-y-auto px-4 sm:px-6 lg:px-8 pt-7 pb-6 custom-scrollbar">
-                  <AwaitingResponseBlock
-                    sentEmails={sentEmails}
-                    onFollowUp={openEmailModal}
-                  />
-                </div>
-              ) : (
-                <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-8 pb-[136px] custom-scrollbar">
-                  <ExceptionBlock
-                    emailButtonState={
-                      sentEmails.length > 0
-                        ? "sent"
-                        : emailModalOpen
-                          ? "draft-open"
-                          : "default"
-                    }
-                    onAction={(id, opts) =>
-                      dispatchAction(id, "findings", opts)
-                    }
-                    onUndo={handleUndoState}
-                    confirmed={confirmed}
-                    dimContent={flagged || held}
-                  />
-                </div>
-              )}
-              {!justCompleted &&
-                !completion &&
-                !flagged &&
-                !held &&
-                centerView === "findings" && <AskFooter />}
-            </div>
+              </>
+            )}
           </div>
           <div
             className="inv-between-enter h-full"
             style={{ animationDelay: "120ms" }}
           >
-            <RightPanel
-              tab={rightTab}
-              onTabChange={onRightTabChange}
-              commsIsNew={commsIsNew}
-              onCommsViewed={() => setCommsIsNew(false)}
-              extraTimelineEntries={extraTimelineEntries}
-              onAddNote={handleAddNote}
-              width={rightPanelWidth}
-              onWidthChange={onRightPanelWidthChange}
-            />
+            {version === "next" ? (
+              <RightPanelNext
+                tab={rightTab}
+                onTabChange={onRightTabChange}
+                commsIsNew={commsIsNew}
+                onCommsViewed={() => setCommsIsNew(false)}
+                extraTimelineEntries={extraTimelineEntries}
+                onAddNote={handleAddNote}
+                width={rightPanelWidth}
+                onWidthChange={onRightPanelWidthChange}
+              />
+            ) : (
+              <RightPanel
+                tab={rightTab}
+                onTabChange={onRightTabChange}
+                commsIsNew={commsIsNew}
+                onCommsViewed={() => setCommsIsNew(false)}
+                extraTimelineEntries={extraTimelineEntries}
+                onAddNote={handleAddNote}
+                width={rightPanelWidth}
+                onWidthChange={onRightPanelWidthChange}
+              />
+            )}
           </div>
         </div>
 
@@ -5967,7 +6144,7 @@ function InvoiceReviewContent() {
   // Posted card threads, keyed by ts → invoice id (from the store).
   const [slackCards, setSlackCards] = useState<Record<string, string>>({});
   // Resizable right-panel width (persists across invoice switches).
-  const [rightPanelWidth, setRightPanelWidth] = useState(460);
+  const [rightPanelWidth, setRightPanelWidth] = useState(380);
 
   // Poll the shared store every 2s while a detail view is open so Slack-driven
   // actions show up in the product. Crude but reliable for a demo.
@@ -6312,7 +6489,11 @@ export function InvoiceReviewTemplate() {
   return (
     <RouterContextProvider router={router}>
       <Toaster />
-      <InvoiceReviewContent />
+      <InvoiceVersionProvider>
+        <ShellProfileExtrasProvider items={<LayoutVersionMenuItem />}>
+          <InvoiceReviewContent />
+        </ShellProfileExtrasProvider>
+      </InvoiceVersionProvider>
     </RouterContextProvider>
   );
 }
