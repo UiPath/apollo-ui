@@ -17,8 +17,8 @@ import {
 } from "../schema";
 import { FieldGroup } from "./field-group";
 
-/** Group a document's fields by their `group` (e.g. "<Doc> > <Section>"),
- * preserving first-seen order. */
+/** Group fields by their `group` ("<Doc> > <Section>"), preserving first-seen
+ * order. (A Map rather than Object.groupBy — consumers target the ES2023 lib.) */
 function groupFields(fields: IxpField[]): [string, IxpField[]][] {
   const map = new Map<string, IxpField[]>();
   for (const f of fields) {
@@ -47,23 +47,35 @@ const DocumentSummary = ({
   if (doc.status === IxpDocStatus.NewInActual) {
     return <Badge status="info">{t("ixp_doc_new")}</Badge>;
   }
+
+  const hasDiff = different > 0;
+  const hasSemantic = semanticallySame > 0;
+  const isPerfectMatch = !hasDiff && !hasSemantic;
+  const metrics = [
+    {
+      show: hasDiff,
+      status: "error",
+      labelKey: "ixp_count_different",
+      count: different,
+    },
+    {
+      show: hasSemantic,
+      status: "warning",
+      labelKey: "ixp_count_semantically_same",
+      count: semanticallySame,
+    },
+    { show: isPerfectMatch, status: "success", labelKey: "ixp_doc_match" },
+  ] as const;
+
   return (
     <div className="flex items-center gap-1.5">
-      {different > 0 && (
-        <Badge status="error" variant="secondary">
-          {t("ixp_count_different", { count: different })}
-        </Badge>
-      )}
-      {semanticallySame > 0 && (
-        <Badge status="warning" variant="secondary">
-          {t("ixp_count_semantically_same", { count: semanticallySame })}
-        </Badge>
-      )}
-      {different === 0 && semanticallySame === 0 && (
-        <Badge status="success" variant="secondary">
-          {t("ixp_doc_match")}
-        </Badge>
-      )}
+      {metrics
+        .filter((m) => m.show)
+        .map((m) => (
+          <Badge key={m.labelKey} status={m.status} variant="secondary">
+            {"count" in m ? t(m.labelKey, { count: m.count }) : t(m.labelKey)}
+          </Badge>
+        ))}
       <span className="text-xs text-muted-foreground">
         {t("ixp_identical_ratio", {
           identical: doc.identical_count,
@@ -77,12 +89,12 @@ const DocumentSummary = ({
 /** A collapsible per-document section. Clean (all-identical) documents start
  * collapsed; anything with a change or a missing/new status starts open. */
 export const DocumentRow = ({ doc }: { doc: IxpDocument }) => {
-  const different = doc.fields.filter(
-    (f) => f.verdict === IxpVerdict.Different,
-  ).length;
-  const semanticallySame = doc.fields.filter(
-    (f) => f.verdict === IxpVerdict.SemanticallySame,
-  ).length;
+  const verdictCounts = doc.fields.reduce<Record<string, number>>((acc, f) => {
+    acc[f.verdict] = (acc[f.verdict] ?? 0) + 1;
+    return acc;
+  }, {});
+  const different = verdictCounts[IxpVerdict.Different] ?? 0;
+  const semanticallySame = verdictCounts[IxpVerdict.SemanticallySame] ?? 0;
   const isClean =
     doc.status === IxpDocStatus.Compared &&
     different === 0 &&

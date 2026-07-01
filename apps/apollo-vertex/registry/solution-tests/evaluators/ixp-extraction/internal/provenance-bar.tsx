@@ -5,11 +5,6 @@ import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { IxpProvenance } from "../schema";
 
-const version = (p: IxpProvenance | null | undefined) =>
-  p?.resolved_project_version == null
-    ? null
-    : String(p.resolved_project_version);
-
 /** Informational banner showing which IXP taxonomy version / extractor produced
  * the baseline vs the new run, highlighting a version change. */
 export const ProvenanceBar = ({
@@ -22,9 +17,9 @@ export const ProvenanceBar = ({
   const { t } = useTranslation();
   if (!expected && !actual) return null;
 
-  const ev = version(expected);
-  const av = version(actual);
-  const versionChanged = ev != null && av != null && ev !== av;
+  const ev = expected?.resolved_project_version ?? null;
+  const av = actual?.resolved_project_version ?? null;
+  const versionChanged = ev != null && av != null && String(ev) !== String(av);
   const extractor = actual?.extractor ?? expected?.extractor ?? null;
 
   return (
