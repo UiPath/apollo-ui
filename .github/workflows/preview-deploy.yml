@@ -46,7 +46,7 @@ jobs:
             ${{ runner.os }}-turbo-${{ github.ref_name }}-
 
       - name: Install UiPath CLI
-        run: npm install --global @uipath/cli@1.197.0
+        run: npm install --global @uipath/cli@1.196.4
 
       - name: Authenticate UiPath External App
         env:
