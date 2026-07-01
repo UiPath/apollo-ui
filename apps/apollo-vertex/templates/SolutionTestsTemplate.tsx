@@ -200,7 +200,9 @@ function SolutionTestsTemplateContent() {
               rowData[id] = {
                 loading: false,
                 expected: att.ExpectedOutput,
+                expectedInput: att.ExpectedInput,
                 actual: att.ActualOutput,
+                actualInput: att.ActualInput,
                 evaluatorResults: att.EvaluatorResults,
               };
             }
