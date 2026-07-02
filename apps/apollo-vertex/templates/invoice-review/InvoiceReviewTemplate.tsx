@@ -71,6 +71,11 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { ApolloShell } from "@/components/ui/shell";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
@@ -95,10 +100,17 @@ import {
 import { ExceptionTimeline } from "./next/ExceptionTimeline";
 import { HeaderDecision } from "./next/HeaderDecision";
 import {
+  exceptionMeta,
+  findReview,
+  getExceptionSummary,
   getReview,
-  isHoldSuggestion,
-  type Suggestion,
+  invoiceReviews,
+  openExceptions,
 } from "./next/invoice-review-data";
+import {
+  InvoiceRuntimeProvider,
+  useInvoiceRuntime,
+} from "./next/invoice-runtime";
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 
@@ -499,7 +511,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     vat: "—",
     description:
       "IT peripherals and cabling for the New York office. Same invoice number was submitted twice within three weeks.",
-    exceptionTag: "Duplicate flag",
+    exceptionTag: "Duplicate",
     exceptionTagStatus: "warning",
     exceptionHeadline: "Possible duplicate — invoice number already paid",
     exceptionMetrics: [
@@ -875,80 +887,31 @@ const InvoiceDetailContext = createContext<InvoiceDetailData>(
 );
 const useInvoiceDetail = () => useContext(InvoiceDetailContext);
 
-const invoicesReview: Invoice[] = [
-  {
-    id: "INV-GRN-001",
-    vendor: "ACME Industrial",
-    amount: "$694",
-    tag: "Price mismatch",
-    tagType: "error",
+// "My queue" is derived: the invoices assigned to the current reviewer (from
+// the shared fixtures), not a hardcoded list. dueGroup is queue-view metadata
+// (a demo grouping), so it lives here rather than in the invoice record.
+const REVIEWER_QUEUE_NAME = "Peter Vachon";
+const QUEUE_DUE_GROUP: Record<string, "today" | "tomorrow"> = {
+  "INV-84471": "today",
+  "INV-66216": "today",
+  "INV-91003": "today",
+  "INV-GRN-001": "today",
+  "INV-55832": "tomorrow",
+  "INV-60118": "tomorrow",
+  "INV-77294": "tomorrow",
+  "INV-48209": "tomorrow",
+};
+
+const invoicesReview: Invoice[] = invoiceReviews
+  .filter((r) => r.assignee.name === REVIEWER_QUEUE_NAME)
+  .map((r) => ({
+    id: r.id,
+    vendor: r.supplier,
+    // Compact amount for the narrow rail (drop cents + currency code).
+    amount: r.amount.replace(/\.\d+/, "").split(" ")[0],
     score: 3,
-    dueGroup: "today",
-  },
-  {
-    id: "INV-66216",
-    vendor: "Prime Office Solutions",
-    amount: "$65,800",
-    tag: "High value",
-    tagType: "warning",
-    score: 4,
-    dueGroup: "today",
-  },
-  {
-    id: "INV-84471",
-    vendor: "Acme Supply Co.",
-    amount: "$12,240",
-    tag: "Missing PO",
-    tagType: "error",
-    score: 2,
-    dueGroup: "today",
-  },
-  {
-    id: "INV-91003",
-    vendor: "NorthStar LLC",
-    amount: "£8,750",
-    tag: "High value",
-    tagType: "warning",
-    score: 4,
-    dueGroup: "today",
-  },
-  {
-    id: "INV-77294",
-    vendor: "Vertex Supplies Inc.",
-    amount: "$3,180",
-    tag: "Duplicate flag",
-    tagType: "warning",
-    score: 3,
-    dueGroup: "tomorrow",
-  },
-  {
-    id: "INV-55832",
-    vendor: "Meridian Group",
-    amount: "€22,500",
-    tag: "High value",
-    tagType: "warning",
-    score: 4,
-    dueGroup: "tomorrow",
-  },
-  {
-    id: "INV-60118",
-    vendor: "Crestwood Co.",
-    amount: "$940",
-    tag: "Missing PO",
-    tagType: "error",
-    score: 2,
-    dueGroup: "tomorrow",
-  },
-  {
-    id: "INV-48209",
-    vendor: "Folio Systems",
-    amount: "$7,620",
-    tag: "New vendor",
-    tagType: "info",
-    score: 4,
-    dueGroup: "tomorrow",
-  },
-];
+    dueGroup: QUEUE_DUE_GROUP[r.id] ?? "today",
+  }));
 
 const dueTodayInvoices = invoicesReview.filter(
   (inv) => inv.dueGroup === "today",
@@ -1025,8 +988,8 @@ const invoiceTableData: InvoiceTableRow[] = [
     dueDate: "2026-05-28",
     exception: "high-value",
     score: 4,
-    status: "in-review",
-    assignee: "Maria Chen",
+    status: "pending-review",
+    assignee: "Peter Vachon",
   },
   {
     id: "INV-84471",
@@ -1047,8 +1010,8 @@ const invoiceTableData: InvoiceTableRow[] = [
     dueDate: "2026-05-28",
     exception: "high-value",
     score: 4,
-    status: "in-review",
-    assignee: "James Park",
+    status: "pending-review",
+    assignee: "Peter Vachon",
   },
   {
     id: "INV-77294",
@@ -1059,7 +1022,7 @@ const invoiceTableData: InvoiceTableRow[] = [
     exception: "duplicate",
     score: 3,
     status: "pending-review",
-    assignee: "Maria Chen",
+    assignee: "Peter Vachon",
   },
   {
     id: "INV-55832",
@@ -1069,7 +1032,7 @@ const invoiceTableData: InvoiceTableRow[] = [
     dueDate: "2026-05-29",
     exception: "high-value",
     score: 4,
-    status: "in-review",
+    status: "pending-review",
     assignee: "Peter Vachon",
   },
   {
@@ -1081,7 +1044,7 @@ const invoiceTableData: InvoiceTableRow[] = [
     exception: "missing-po",
     score: 2,
     status: "pending-review",
-    assignee: "James Park",
+    assignee: "Peter Vachon",
   },
   {
     id: "INV-48209",
@@ -1483,6 +1446,65 @@ const exceptionPriority: Partial<Record<ExceptionType, number>> = {
   "new-vendor": 1,
 };
 
+// Exception cell for known review records: the lead exception (canonical label
+// + tone) plus a muted "+N" for the rest, or "Cleared" once all are resolved.
+// Reads the shared runtime store so it stays live. Rows that aren't real review
+// records (dashboard-only fillers) fall back to their static exception.
+function TableExceptionCell({
+  id,
+  fallback,
+}: {
+  id: string;
+  fallback: ExceptionType;
+}) {
+  const runtime = useInvoiceRuntime();
+  const review = findReview(id);
+  if (review) {
+    const open = openExceptions(review, runtime.getRuntime(id));
+    if (open.length === 0) {
+      return <Badge variant="secondary">Cleared</Badge>;
+    }
+    const [lead, ...others] = open;
+    const meta = exceptionMeta(lead);
+    return (
+      <div className="flex items-center gap-1.5">
+        <Badge variant="secondary" status={meta.tone}>
+          {meta.label}
+        </Badge>
+        {others.length > 0 && (
+          <Tooltip>
+            <TooltipTrigger
+              className="cursor-default text-xs font-medium text-muted-foreground"
+              onClick={(e) => e.stopPropagation()}
+            >
+              +{others.length}
+            </TooltipTrigger>
+            <TooltipContent side="top" align="center">
+              <ul className="space-y-0.5">
+                {others.map((e) => (
+                  <li key={e.id}>
+                    {exceptionMeta(e).label}
+                    {e.scope.level === "line" ? ` · Line ${e.scope.line}` : ""}
+                  </li>
+                ))}
+              </ul>
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+    );
+  }
+  const map = exceptionBadgeMap[fallback];
+  if (map.status === null) {
+    return <span className="text-[13px] text-muted-foreground">5/5</span>;
+  }
+  return (
+    <Badge variant="secondary" status={map.status}>
+      {map.label}
+    </Badge>
+  );
+}
+
 const invoiceColumns: ColumnDef<InvoiceTableRow>[] = [
   {
     accessorKey: "id",
@@ -1533,17 +1555,12 @@ const invoiceColumns: ColumnDef<InvoiceTableRow>[] = [
     ),
     // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- filterFn is Row<RowData> but compatible at runtime
     filterFn: dataTableFacetedFilterFn as FilterFn<InvoiceTableRow>,
-    cell: ({ row }) => {
-      const ex = row.getValue<ExceptionType>("exception");
-      const map = exceptionBadgeMap[ex];
-      if (map.status === null)
-        return <span className="text-[13px] text-muted-foreground">5/5</span>;
-      return (
-        <Badge variant="secondary" status={map.status}>
-          {map.label}
-        </Badge>
-      );
-    },
+    cell: ({ row }) => (
+      <TableExceptionCell
+        id={row.original.id}
+        fallback={row.getValue<ExceptionType>("exception")}
+      />
+    ),
   },
   {
     accessorKey: "status",
@@ -2027,6 +2044,12 @@ function NavSectionLabel({
   );
 }
 
+const TONE_DOT: Record<string, string> = {
+  error: "bg-destructive",
+  warning: "bg-warning",
+  info: "bg-info",
+};
+
 function NavInvoiceItem({
   invoice,
   isActive,
@@ -2050,21 +2073,31 @@ function NavInvoiceItem({
   // Parked (flag/hold) only applies when not already approved/rejected.
   const isParked = !isCompleted && !!parked;
 
+  // Exception display derives from the shared model + live loop state, so the
+  // queue never disagrees with the workspace or the table.
+  const runtime = useInvoiceRuntime();
+  const summary =
+    isAuto || isCompleted
+      ? null
+      : getExceptionSummary(
+          getReview(invoice.id),
+          runtime.getRuntime(invoice.id),
+        );
+  const lead = summary?.lead ?? null;
+  const extraCount = summary?.extraCount ?? 0;
+  const isReady = !!summary && summary.openCount === 0;
+
   const dotColor = isCompleted
     ? completion.type === "approved"
       ? "bg-success"
       : "bg-destructive"
     : isParked
       ? "bg-warning"
-      : isAuto
+      : isAuto || isReady
         ? "bg-success"
-        : invoice.tagType === "error"
-          ? "bg-destructive"
-          : invoice.tagType === "warning"
-            ? "bg-warning"
-            : invoice.tagType === "info"
-              ? "bg-info"
-              : "bg-muted-foreground";
+        : lead
+          ? (TONE_DOT[exceptionMeta(lead).tone] ?? "bg-muted-foreground")
+          : "bg-muted-foreground";
 
   const tagLabel = isCompleted
     ? completion.type === "approved"
@@ -2076,7 +2109,11 @@ function NavInvoiceItem({
         : "Flagged"
       : isAuto
         ? "Done"
-        : invoice.tag;
+        : isReady
+          ? "Ready to approve"
+          : lead
+            ? exceptionMeta(lead).label
+            : "";
 
   return (
     <button
@@ -2108,22 +2145,26 @@ function NavInvoiceItem({
           </span>
         </div>
         <div className="mt-[5px] flex items-center justify-between gap-2">
-          {(invoice.tag || isAuto || isCompleted) && (
-            <div className="flex items-center gap-1 shrink-0 min-w-0">
-              <div className={cn("size-1.5 rounded-full shrink-0", dotColor)} />
-              <span className="text-[11px] font-medium text-muted-foreground truncate">
-                {tagLabel}
+          <div className="flex items-center gap-1 shrink-0 min-w-0">
+            <div className={cn("size-1.5 rounded-full shrink-0", dotColor)} />
+            <span className="text-[11px] font-medium text-muted-foreground truncate">
+              {tagLabel}
+            </span>
+            {/* Muted "+N" for the extra open exceptions behind the lead. */}
+            {extraCount > 0 && (
+              <span className="ml-1.5 shrink-0 text-xs font-medium text-muted-foreground">
+                +{extraCount}
               </span>
-              {/* Secondary status: only shows for in-flight (not completed,
-                  not parked) invoices so it doesn't compete with terminal
-                  states like Approved/Rejected. */}
-              {contacted && !isCompleted && !isParked && (
-                <span className="text-[11px] font-medium text-muted-foreground/70 truncate">
-                  · Contacted supplier
-                </span>
-              )}
-            </div>
-          )}
+            )}
+            {/* Secondary status: only shows for in-flight (not completed,
+                not parked) invoices so it doesn't compete with terminal
+                states like Approved/Rejected. */}
+            {contacted && !isCompleted && !isParked && (
+              <span className="text-[11px] font-medium text-muted-foreground/70 truncate">
+                · Contacted supplier
+              </span>
+            )}
+          </div>
           <span className="text-xs text-muted-foreground ml-auto">
             {invoice.id}
           </span>
@@ -3033,7 +3074,7 @@ const EXCEPTION_TYPE_BY_TAG: Record<string, ExceptionType> = {
   "Price mismatch": "price-mismatch",
   "High value": "high-value",
   "Missing PO": "missing-po",
-  "Duplicate flag": "duplicate",
+  Duplicate: "duplicate",
   "New vendor": "new-vendor",
 };
 
@@ -5376,7 +5417,7 @@ function TopBarNext({
           <PageHeaderFieldLabel>PO</PageHeaderFieldLabel>
           <PageHeaderFieldValue>
             {!d.po || d.po === "—" ? (
-              <Badge status="warning" variant="secondary">
+              <Badge status="error" variant="secondary">
                 Missing PO
               </Badge>
             ) : (
@@ -5387,7 +5428,9 @@ function TopBarNext({
         <PageHeaderField>
           <PageHeaderFieldLabel>Status</PageHeaderFieldLabel>
           <PageHeaderFieldValue className="flex items-center gap-1 transition-colors duration-180">
-            <Badge variant="secondary">{statusInfo.label}</Badge>
+            <Badge status={statusInfo.status} variant="secondary">
+              {statusInfo.label}
+            </Badge>
           </PageHeaderFieldValue>
         </PageHeaderField>
         <PageHeaderField>
@@ -5430,14 +5473,11 @@ function CenterPanelNext({
   onCleared: () => void;
 }) {
   const review = getReview(activeInvoiceId);
-  const handleResolve = (s: Suggestion) => {
-    // Hold-type resolutions wait on an external reply; the invoice stays locked.
-    if (isHoldSuggestion(s)) return;
-    // Cascade (downstream) re-validation is layered in separately; not clear yet.
-    if (review.downstream) return;
-    onCleared();
-  };
-  return <ExceptionTimeline review={review} onResolve={handleResolve} />;
+  // The timeline owns the resolve/revalidate loop; it calls onCleared once the
+  // invoice fully clears. Keyed by invoice id so loop state resets on switch.
+  return (
+    <ExceptionTimeline key={review.id} review={review} onAllClear={onCleared} />
+  );
 }
 
 function InvoiceDetailPane({
@@ -6490,9 +6530,11 @@ export function InvoiceReviewTemplate() {
     <RouterContextProvider router={router}>
       <Toaster />
       <InvoiceVersionProvider>
-        <ShellProfileExtrasProvider items={<LayoutVersionMenuItem />}>
-          <InvoiceReviewContent />
-        </ShellProfileExtrasProvider>
+        <InvoiceRuntimeProvider>
+          <ShellProfileExtrasProvider items={<LayoutVersionMenuItem />}>
+            <InvoiceReviewContent />
+          </ShellProfileExtrasProvider>
+        </InvoiceRuntimeProvider>
       </InvoiceVersionProvider>
     </RouterContextProvider>
   );
