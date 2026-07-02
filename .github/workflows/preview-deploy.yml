@@ -50,7 +50,9 @@ jobs:
               second: '2-digit',
               hour12: true
             });
-            const logsLink = `[Logs](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const deployingLink = `[Deploying...](${runUrl})`;
+            const logsLink = `[Logs](${runUrl})`;
             const projects = ['apollo-design', 'apollo-docs', 'apollo-landing', 'apollo-vertex'];
             const body = [
               identifier,
@@ -58,7 +60,7 @@ jobs:
               '',
               '| Project | Status | Preview | Updated (PT) |',
               '|---------|--------|---------|--------------|',
-              ...projects.map(project => `| ${project} | Deploying... | ${logsLink} | ${timestamp} |`)
+              ...projects.map(project => `| ${project} | ${deployingLink} | ${logsLink} | ${timestamp} |`)
             ].join('\n');
 
             const { data: comments } = await github.rest.issues.listComments({
