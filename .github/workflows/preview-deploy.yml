@@ -231,10 +231,28 @@ jobs:
             write_output "$output_name" "$app_url"
           }
 
-          run_uip_go "apollo-landing" "$landing_app"
-          run_uip_go "apollo-docs" "$docs_app"
-          run_uip_go "apollo-design" "$design_app"
-          run_uip_go "apollo-vertex" "$vertex_app"
+          failed_apps=()
+          deploy_or_record_failure() {
+            local label="$1"
+            local app_name="$2"
+
+            if run_uip_go "$label" "$app_name"; then
+              return 0
+            fi
+
+            failed_apps+=("$label")
+            return 0
+          }
+
+          deploy_or_record_failure "apollo-landing" "$landing_app"
+          deploy_or_record_failure "apollo-docs" "$docs_app"
+          deploy_or_record_failure "apollo-design" "$design_app"
+          deploy_or_record_failure "apollo-vertex" "$vertex_app"
+
+          if [ "${#failed_apps[@]}" -ne 0 ]; then
+            echo "::error::uip-go deployment failed for: ${failed_apps[*]}"
+            exit 1
+          fi
 
       - name: Save Turborepo cache
         if: always()
