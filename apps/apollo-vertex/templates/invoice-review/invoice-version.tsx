@@ -19,9 +19,15 @@ import { cn } from "@/lib/utils";
 /**
  * Dev-only switch for the invoice-review detail area (everything right of the
  * "My Queue" left nav: header, middle, and right panels). Lets us flip between
- * the current design and an in-progress "next" version to compare them.
+ * layout variants to compare them.
+ *
+ * v1 = the original design (was "current"). v2 = the timeline redesign (was
+ * "next"). v3 = an in-progress variant; it currently mirrors v2 as a starting
+ * point until it diverges.
  */
-export type InvoiceVersion = "current" | "next";
+export type InvoiceVersion = "v1" | "v2" | "v3";
+
+const VERSIONS: InvoiceVersion[] = ["v1", "v2", "v3"];
 
 const STORAGE_KEY = "invoice-review:version";
 
@@ -34,13 +40,19 @@ const InvoiceVersionContext = createContext<InvoiceVersionContextValue | null>(
   null,
 );
 
-export function InvoiceVersionProvider({ children }: { children: ReactNode }) {
-  const [version, setVersionState] = useState<InvoiceVersion>("current");
+function isVersion(value: string | null): value is InvoiceVersion {
+  return value === "v1" || value === "v2" || value === "v3";
+}
 
-  // Restore the last-used version on mount (dev convenience across reloads).
+export function InvoiceVersionProvider({ children }: { children: ReactNode }) {
+  const [version, setVersionState] = useState<InvoiceVersion>("v1");
+
+  // Restore the last-used version on mount, migrating the legacy names.
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === "current" || saved === "next") setVersionState(saved);
+    const migrated =
+      saved === "current" ? "v1" : saved === "next" ? "v2" : saved;
+    if (isVersion(migrated)) setVersionState(migrated);
   }, []);
 
   const setVersion = (v: InvoiceVersion) => {
@@ -75,21 +87,18 @@ export function LayoutVersionMenuItem() {
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>
         <Layers className="w-4 h-4" />
-        <span>Layout ({version === "next" ? "New" : "Current"})</span>
+        <span>Layout ({version})</span>
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent>
-        <DropdownMenuItem
-          onClick={() => setVersion("current")}
-          className={cn(version === "current" ? "bg-accent" : "")}
-        >
-          Current
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => setVersion("next")}
-          className={cn(version === "next" ? "bg-accent" : "")}
-        >
-          New
-        </DropdownMenuItem>
+        {VERSIONS.map((v) => (
+          <DropdownMenuItem
+            key={v}
+            onClick={() => setVersion(v)}
+            className={cn(version === v ? "bg-accent" : "")}
+          >
+            {v}
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuSubContent>
     </DropdownMenuSub>
   );

@@ -608,12 +608,96 @@ function Stage({
 }
 
 /** The reviewer's node: optional group header, the stage, the exception index. */
+// Tone dots for the "Up next" strip (no badge chips there).
+const DOT_TONE: Record<string, string> = {
+  error: "bg-destructive",
+  warning: "bg-warning",
+  info: "bg-info",
+};
+
+/**
+ * "Up next": a quiet, borderless preview of the open exceptions behind the live
+ * one. One line each (tone dot + headline + scope + optional New tag), no
+ * ordinals, no chips, no "Viewing". Lines pull an exception forward on click.
+ */
+function ExceptionStrip({
+  items,
+  activeId,
+  isNew,
+  onSelect,
+}: {
+  /** open, non-active exceptions in the standing order */
+  items: InvoiceException[];
+  activeId: string;
+  isNew: (e: InvoiceException) => boolean;
+  onSelect: (id: string) => void;
+}) {
+  if (
+    process.env.NODE_ENV !== "production" &&
+    items.some((e) => e.id === activeId)
+  ) {
+    console.error(
+      "[ExceptionStrip] the active exception must never appear in the strip:",
+      activeId,
+    );
+  }
+  if (items.length === 0) return null;
+  const capped = items.length > 4;
+  const shown = capped ? items.slice(0, 3) : items;
+  const moreCount = items.length - shown.length;
+  return (
+    <div className="mt-5">
+      <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">
+        Up next
+      </p>
+      <ul>
+        {shown.map((e) => (
+          <li key={e.id}>
+            <button
+              type="button"
+              onClick={() => onSelect(e.id)}
+              className="flex h-6 w-full items-center gap-2 rounded text-left transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+            >
+              <span
+                className={cn(
+                  "size-1.5 shrink-0 rounded-full",
+                  DOT_TONE[exceptionMeta(e).tone] ?? "bg-muted-foreground",
+                )}
+              />
+              <span className="min-w-0 flex-1 truncate text-[13px] text-muted-foreground">
+                {e.headline}
+              </span>
+              <span className="shrink-0 text-xs text-muted-foreground">
+                · {scopeLabel(e.scope)}
+              </span>
+              {isNew(e) && (
+                <Badge status="info" variant="secondary" className="shrink-0">
+                  New
+                </Badge>
+              )}
+            </button>
+          </li>
+        ))}
+        {capped && moreCount > 0 && (
+          <li className="flex h-6 items-center gap-2">
+            <span className="size-1.5 shrink-0" />
+            <span className="text-[13px] text-muted-foreground">
+              …and {moreCount} more
+            </span>
+          </li>
+        )}
+      </ul>
+    </div>
+  );
+}
+
 function ExceptionGroup({
   active,
   openList,
   showHeader,
   counter,
   isNew,
+  variant,
   onResolve,
   onSelect,
 }: {
@@ -622,9 +706,11 @@ function ExceptionGroup({
   showHeader: boolean;
   counter: string;
   isNew: (e: InvoiceException) => boolean;
+  variant: "strip" | "index";
   onResolve: (s: Suggestion) => void;
   onSelect: (id: string) => void;
 }) {
+  const waiting = openList.filter((e) => e.id !== active.id);
   return (
     <TimelineRow marker="reviewer" className="pb-12" live>
       {showHeader && (
@@ -637,9 +723,18 @@ function ExceptionGroup({
         </div>
       )}
       <Stage exception={active} isNew={isNew} onResolve={onResolve} />
-      {openList.length >= 2 && (
-        <ExceptionIndex
-          items={openList}
+      {variant === "index" ? (
+        openList.length >= 2 && (
+          <ExceptionIndex
+            items={openList}
+            activeId={active.id}
+            isNew={isNew}
+            onSelect={onSelect}
+          />
+        )
+      ) : (
+        <ExceptionStrip
+          items={waiting}
           activeId={active.id}
           isNew={isNew}
           onSelect={onSelect}
@@ -699,6 +794,7 @@ function ResolvingNode({
   showHeader,
   counter,
   isNew,
+  variant,
   reducedMotion,
 }: {
   resolve: ResolveState;
@@ -706,10 +802,12 @@ function ResolvingNode({
   showHeader: boolean;
   counter: string;
   isNew: (e: InvoiceException) => boolean;
+  variant: "strip" | "index";
   reducedMotion: boolean;
 }) {
   const { exc, phase, label, sub, settledSub } = resolve;
-  const hasOthers = openList.some((e) => e.id !== exc.id);
+  const others = openList.filter((e) => e.id !== exc.id);
+  const hasOthers = others.length > 0;
   return (
     <>
       <TimelineRow marker="resolved">
@@ -743,11 +841,20 @@ function ResolvingNode({
               <span className="text-xs text-muted-foreground">{counter}</span>
             </div>
           )}
-          {openList.length >= 2 && (
-            <ExceptionIndex
-              items={openList}
-              activeId=""
-              resolvingId={exc.id}
+          {variant === "index" ? (
+            openList.length >= 2 && (
+              <ExceptionIndex
+                items={openList}
+                activeId=""
+                resolvingId={exc.id}
+                isNew={isNew}
+                onSelect={() => {}}
+              />
+            )
+          ) : (
+            <ExceptionStrip
+              items={others}
+              activeId={exc.id}
               isNew={isNew}
               onSelect={() => {}}
             />
@@ -858,11 +965,14 @@ export function ExceptionTimeline({
   onAllClear,
   onApprove,
   onHold,
+  exceptionListVariant = "strip",
 }: {
   review: InvoiceReview;
   onAllClear: () => void;
   onApprove: () => void;
   onHold: () => void;
+  /** "strip" = the Up next preview (default); "index" = the bordered index. */
+  exceptionListVariant?: "strip" | "index";
 }) {
   const runtime = useInvoiceRuntime();
   const rt = runtime.getRuntime(review.id);
@@ -1193,6 +1303,7 @@ export function ExceptionTimeline({
                   showHeader={showHeader}
                   counter={counter}
                   isNew={isNew}
+                  variant={exceptionListVariant}
                   reducedMotion={reducedMotion}
                 />
               ) : active ? (
@@ -1202,6 +1313,7 @@ export function ExceptionTimeline({
                   showHeader={showHeader}
                   counter={counter}
                   isNew={isNew}
+                  variant={exceptionListVariant}
                   onResolve={resolveActive}
                   onSelect={anchor}
                 />
