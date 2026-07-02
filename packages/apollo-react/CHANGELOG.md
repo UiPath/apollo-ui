@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.55.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.55.0...@uipath/apollo-react@4.55.1) (2026-07-02)
+
+### Bug Fixes
+
+* **apollo-react:** render citation page number in ap-chat ([c323091](https://github.com/UiPath/apollo-ui/commit/c3230919419dac73943a1ad9e7ae8ae802fa0a50))
+
 ## [@uipath/apollo-react-v4.55.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.54.4...@uipath/apollo-react@4.55.0) (2026-07-02)
 
 ### Features
