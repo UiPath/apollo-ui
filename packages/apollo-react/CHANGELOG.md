@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v4.55.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.54.4...@uipath/apollo-react@4.55.0) (2026-07-02)
+
+### Features
+
+* **apollo-react:** add property panel alerts story ([2c367c2](https://github.com/UiPath/apollo-ui/commit/2c367c2a9500f4a4183bfc0eec4dd5a808226f57))
+
 ## [@uipath/apollo-react-v4.54.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.54.3...@uipath/apollo-react@4.54.4) (2026-07-02)
 
 ### Bug Fixes
