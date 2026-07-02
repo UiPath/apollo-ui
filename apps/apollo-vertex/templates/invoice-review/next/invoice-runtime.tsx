@@ -8,7 +8,11 @@ import {
   useMemo,
   useState,
 } from "react";
-import type { InvoiceException, InvoiceRuntime } from "./invoice-review-data";
+import type {
+  InvoiceException,
+  InvoiceReview,
+  InvoiceRuntime,
+} from "./invoice-review-data";
 
 // Per-invoice loop state (resolved ids + surfaced exceptions), shared across the
 // workspace, queue rail, and table so an invoice reads the same on every surface
@@ -21,6 +25,7 @@ interface RuntimeStore {
   getRuntime: (invoiceId: string) => InvoiceRuntime;
   resolveExceptions: (invoiceId: string, ids: string[]) => void;
   surfaceExceptions: (invoiceId: string, items: InvoiceException[]) => void;
+  patchData: (invoiceId: string, patch: Partial<InvoiceReview>) => void;
 }
 
 const InvoiceRuntimeContext = createContext<RuntimeStore | null>(null);
@@ -47,6 +52,14 @@ export function InvoiceRuntimeProvider({ children }: { children: ReactNode }) {
           return {
             ...prev,
             [id]: { ...cur, surfaced: [...cur.surfaced, ...fresh] },
+          };
+        }),
+      patchData: (id, patch) =>
+        setMap((prev) => {
+          const cur = prev[id] ?? EMPTY;
+          return {
+            ...prev,
+            [id]: { ...cur, dataPatch: { ...cur.dataPatch, ...patch } },
           };
         }),
     }),

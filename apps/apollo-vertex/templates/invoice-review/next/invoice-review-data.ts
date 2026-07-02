@@ -82,6 +82,10 @@ export interface ExceptionResolution {
   label: string;
   sub: string;
   time?: string;
+  /** lowercase fragment for the completion summary, e.g. "PO-5123 linked" */
+  shortLabel?: string;
+  /** invoice-data changes to apply to the shared record on commit */
+  dataPatch?: Partial<InvoiceReview>;
 }
 
 export interface FindingSide {
@@ -155,6 +159,8 @@ export interface InvoiceReview {
   amount: string;
   due: string;
   poPill: { label: string; tone: "red" | "neutral" };
+  /** linked purchase order, if any (shown in the header + Details panel) */
+  purchaseOrder?: string;
   assignee: InvoiceAssignee;
   status: InvoiceStatus;
   agentHistory: AgentStep[];
@@ -168,6 +174,8 @@ export interface InvoiceReview {
 export interface InvoiceRuntime {
   resolvedIds: string[];
   surfaced: InvoiceException[];
+  /** invoice-data changes applied by resolutions (e.g. a linked PO) */
+  dataPatch?: Partial<InvoiceReview>;
 }
 
 export function exceptionMeta(e: InvoiceException): {
@@ -310,6 +318,7 @@ function highValueException(
     resolution: {
       label: "Marked reviewed",
       sub: "High value, resolved by you",
+      shortLabel: "high value reviewed",
     },
   };
 }
@@ -352,6 +361,7 @@ const ACME_PRICE_LINE2: InvoiceException = {
   resolution: {
     label: "Accepted amended price",
     sub: "Price mismatch on line 2, resolved by you",
+    shortLabel: "amended price accepted",
   },
 };
 
@@ -386,6 +396,7 @@ const ACME_TAX: InvoiceException = {
   resolution: {
     label: "Marked verified",
     sub: "Tax mismatch, resolved by you",
+    shortLabel: "tax verified",
   },
 };
 
@@ -431,6 +442,11 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         resolution: {
           label: "Linked PO-5123",
           sub: "Missing PO, resolved by you",
+          shortLabel: "PO-5123 linked",
+          dataPatch: {
+            poPill: { label: "PO-5123", tone: "neutral" },
+            purchaseOrder: "PO-5123",
+          },
         },
       },
     ],
@@ -576,6 +592,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         resolution: {
           label: "Account 4020 applied",
           sub: "Billing account not found, resolved by you",
+          shortLabel: "account 4020 applied",
         },
       },
       {
@@ -608,6 +625,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         resolution: {
           label: "Sent to procurement",
           sub: "Missing PO, resolved by you",
+          shortLabel: "sent to procurement",
         },
       },
       {
@@ -642,6 +660,7 @@ const invoiceReviewMap: Record<string, InvoiceReview> = {
         resolution: {
           label: "Marked verified",
           sub: "Quantity mismatch on line 5, resolved by you",
+          shortLabel: "quantity verified",
         },
       },
     ],

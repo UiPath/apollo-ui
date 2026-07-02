@@ -17,6 +17,7 @@ import {
   useState,
 } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AiMark } from "@/registry/ai-mark/ai-mark";
 import { Avatar, AvatarFallback } from "@/registry/avatar/avatar";
@@ -53,7 +54,13 @@ function usePrefersReducedMotion(): boolean {
 // Marker kinds mirror the AI Toolkit timeline treatment. People are avatars,
 // agents carry the mark, resolved facts are a green check (a system fact, not a
 // person, so not an avatar).
-type MarkerKind = "agent" | "progress" | "upcoming" | "reviewer" | "resolved";
+type MarkerKind =
+  | "agent"
+  | "progress"
+  | "upcoming"
+  | "reviewer"
+  | "resolved"
+  | "complete";
 
 function TimelineMarker({ kind }: { kind: MarkerKind }) {
   if (kind === "reviewer") {
@@ -70,6 +77,14 @@ function TimelineMarker({ kind }: { kind: MarkerKind }) {
       <span className="flex size-7 items-center justify-center rounded-full bg-success/15 text-success">
         {/* Nudge right to optically center (the check badge weights it left). */}
         <UserRoundCheck className="size-3.5 translate-x-px" />
+      </span>
+    );
+  }
+  if (kind === "complete") {
+    // The only flat solid-fill marker on the screen; it carries the moment.
+    return (
+      <span className="flex size-7 items-center justify-center rounded-full bg-success text-white">
+        <Check className="size-4" />
       </span>
     );
   }
@@ -113,15 +128,18 @@ function TimelineRow({
   marker,
   isLast,
   className,
+  live,
   children,
 }: {
   marker: MarkerKind;
   isLast?: boolean;
   className?: string;
+  /** marks the newest live block, so the column can scroll to follow it */
+  live?: boolean;
   children: ReactNode;
 }) {
   return (
-    <li className="flex gap-3">
+    <li className="flex gap-3" data-live={live || undefined}>
       <div className="flex flex-col items-center">
         <TimelineMarker kind={marker} />
         {!isLast && <span className="my-1 w-px flex-1 bg-border" />}
@@ -272,14 +290,12 @@ const ENTER_STEP =
 
 function LiveExceptionContent({
   exception,
-  showScope,
   isNew,
   onResolve,
   entering = false,
   hideFix = false,
 }: {
   exception: InvoiceException;
-  showScope: boolean;
   isNew: boolean;
   onResolve: (s: Suggestion) => void;
   entering?: boolean;
@@ -303,11 +319,6 @@ function LiveExceptionContent({
         <Badge status={exceptionMeta(exception).tone} variant="default">
           {exceptionMeta(exception).label}
         </Badge>
-        {showScope && (
-          <span className="text-xs text-muted-foreground">
-            {scopeLabel(exception.scope)}
-          </span>
-        )}
         {isNew && (
           <Badge status="info" variant="secondary">
             New
@@ -481,14 +492,12 @@ function ExceptionIndex({
  */
 function ResolvingBlock({
   exception,
-  showScope,
   label,
   sub,
   phase,
   reducedMotion,
 }: {
   exception: InvoiceException;
-  showScope: boolean;
   label: string;
   sub: string;
   phase: "confirm" | "check" | "reveal";
@@ -508,11 +517,13 @@ function ResolvingBlock({
 
   return (
     <div>
-      {/* The compact resolved row emerges as the detail collapses. */}
+      {/* The compact resolved row emerges once the detail has faded out. */}
       <div
         className={cn(
           "flex min-h-7 items-center gap-2 pt-0.5 transition-opacity",
-          collapsed ? "opacity-100 duration-150" : "opacity-0 duration-0",
+          collapsed
+            ? "opacity-100 duration-150 delay-[120ms]"
+            : "opacity-0 duration-0",
         )}
       >
         <span className="shrink-0 text-sm text-foreground">{label}</span>
@@ -521,7 +532,9 @@ function ResolvingBlock({
         </span>
         <span className="shrink-0 text-xs text-muted-foreground">Just now</span>
       </div>
-      {/* The exception detail (minus the fix card) collapses to zero height. */}
+      {/* The exception detail (minus the fix card) collapses to zero height.
+          Its content fades out fast (~120ms) so the height animates on
+          invisible content and never clips a glyph mid-collapse. */}
       <div
         className="grid transition-[grid-template-rows] duration-[250ms] ease-out"
         style={{ gridTemplateRows: collapsed ? "0fr" : "1fr" }}
@@ -529,13 +542,12 @@ function ResolvingBlock({
         <div className="min-h-0 overflow-hidden">
           <div
             className={cn(
-              "pt-3 transition-opacity duration-150",
+              "pt-3 transition-opacity duration-[120ms]",
               collapsed && "opacity-0",
             )}
           >
             <LiveExceptionContent
               exception={exception}
-              showScope={showScope}
               isNew={false}
               onResolve={() => {}}
               hideFix
@@ -554,12 +566,10 @@ function ResolvingBlock({
  */
 function Stage({
   exception,
-  showScope,
   isNew,
   onResolve,
 }: {
   exception: InvoiceException;
-  showScope: boolean;
   isNew: (e: InvoiceException) => boolean;
   onResolve: (s: Suggestion) => void;
 }) {
@@ -589,7 +599,6 @@ function Stage({
       <LiveExceptionContent
         key={displayed.id}
         exception={displayed}
-        showScope={showScope}
         isNew={isNew(displayed)}
         onResolve={onResolve}
         entering={phase === "in"}
@@ -617,23 +626,17 @@ function ExceptionGroup({
   onSelect: (id: string) => void;
 }) {
   return (
-    <TimelineRow marker="reviewer" className="pb-12">
+    <TimelineRow marker="reviewer" className="pb-12" live>
       {showHeader && (
-        <div className="mb-4 flex min-h-7 items-center justify-between gap-4">
+        <div className="mb-4 flex min-h-7 items-center gap-2.5">
           <span className="text-sm font-medium text-foreground">
             Needs your decision
           </span>
-          <span className="shrink-0 text-xs text-muted-foreground">
-            {counter}
-          </span>
+          <span className="h-3 w-px shrink-0 bg-border" aria-hidden="true" />
+          <span className="text-xs text-muted-foreground">{counter}</span>
         </div>
       )}
-      <Stage
-        exception={active}
-        showScope={showHeader}
-        isNew={isNew}
-        onResolve={onResolve}
-      />
+      <Stage exception={active} isNew={isNew} onResolve={onResolve} />
       {openList.length >= 2 && (
         <ExceptionIndex
           items={openList}
@@ -648,7 +651,16 @@ function ExceptionGroup({
 
 // Runtime history rows accumulated as the reviewer works the loop.
 type RunEvent =
-  | { kind: "resolved"; key: string; label: string; sub: string; time: string }
+  | {
+      kind: "resolved";
+      key: string;
+      label: string;
+      sub: string;
+      time: string;
+      shortLabel?: string;
+      /** auto = cleared by a re-check, not resolved by the reviewer */
+      auto?: boolean;
+    }
   | {
       kind: "revalidated";
       key: string;
@@ -665,6 +677,8 @@ type ResolveState = {
   exc: InvoiceException;
   label: string;
   sub: string;
+  shortLabel: string;
+  dataPatch?: Partial<InvoiceReview>;
   phase: ResolvePhase;
   fresh: InvoiceException[];
   clearedInList: string[];
@@ -701,7 +715,6 @@ function ResolvingNode({
       <TimelineRow marker="resolved">
         <ResolvingBlock
           exception={exc}
-          showScope={showHeader}
           label={label}
           sub={sub}
           phase={phase}
@@ -719,13 +732,15 @@ function ResolvingNode({
       {(showHeader || hasOthers) && (
         <TimelineRow marker="reviewer">
           {showHeader && (
-            <div className="mb-4 flex min-h-7 items-center justify-between gap-4">
+            <div className="mb-4 flex min-h-7 items-center gap-2.5">
               <span className="text-sm font-medium text-foreground">
                 Needs your decision
               </span>
-              <span className="shrink-0 text-xs text-muted-foreground">
-                {counter}
-              </span>
+              <span
+                className="h-3 w-px shrink-0 bg-border"
+                aria-hidden="true"
+              />
+              <span className="text-xs text-muted-foreground">{counter}</span>
             </div>
           )}
           {openList.length >= 2 && (
@@ -744,6 +759,93 @@ function ResolvingNode({
 }
 
 /**
+ * At completion, the reviewer's resolve log compresses into a peek (mirroring
+ * the agent peek), expandable to the full accumulated log.
+ */
+function ResolveHistoryPeek({ events }: { events: RunEvent[] }) {
+  const [open, setOpen] = useState(false);
+  const resolvedByYou = events.filter(
+    (e) => e.kind === "resolved" && !e.auto,
+  ).length;
+  const rechecks = events.filter((e) => e.kind === "revalidated").length;
+  const label = `${resolvedByYou} ${
+    resolvedByYou === 1 ? "issue" : "issues"
+  } resolved by you, ${rechecks} ${
+    rechecks === 1 ? "re-check" : "re-checks"
+  } passed`;
+  return (
+    <TimelineRow marker="resolved" className="pb-8">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex min-h-7 w-full items-center gap-1.5 text-left"
+      >
+        <span className="text-sm text-muted-foreground">{label}</span>
+        {open ? (
+          <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+        ) : (
+          <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+        )}
+      </button>
+      {open && (
+        <ol className="mt-2 space-y-3 border-l border-border pl-4">
+          {events.map((e) => (
+            <li key={e.key}>
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-sm text-foreground">{e.label}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {e.time}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">{e.sub}</p>
+            </li>
+          ))}
+        </ol>
+      )}
+    </TimelineRow>
+  );
+}
+
+/** The completion end state: the only solid-fill marker, a title at the anchor
+ * scale, a summary built from the resolutions, and the disposition actions
+ * (wired to the same handlers as the header Approve/Hold). */
+function TerminalBlock({
+  summary,
+  onApprove,
+  onHold,
+}: {
+  summary: string;
+  onApprove: () => void;
+  onHold: () => void;
+}) {
+  return (
+    <TimelineRow marker="complete" isLast live>
+      <div className="animate-in fade-in-0 duration-200 ease-out">
+        <h2
+          className="text-[22px] font-medium leading-[1.25] text-foreground"
+          style={{ letterSpacing: "-0.01em" }}
+        >
+          All checks passed
+        </h2>
+        <p className="mt-1.5 max-w-prose text-sm leading-normal text-muted-foreground">
+          {summary}
+        </p>
+        {/* Duplicates the header disposition intentionally: no resolution actions
+            remain on screen here, so scopes don't mix. Header stays canonical. */}
+        <div className="mt-4 flex items-center gap-2">
+          <Button size="sm" onClick={onApprove}>
+            Approve invoice
+          </Button>
+          <Button size="sm" variant="ghost" onClick={onHold}>
+            Hold
+          </Button>
+        </div>
+      </div>
+    </TimelineRow>
+  );
+}
+
+/**
  * The exception-review timeline for one invoice. Renders the agent history, the
  * resolved/re-validated events, the live exception group, and the loop footer.
  * Resolving the live exception re-runs validation (stub), which may clear items
@@ -754,9 +856,13 @@ function ResolvingNode({
 export function ExceptionTimeline({
   review,
   onAllClear,
+  onApprove,
+  onHold,
 }: {
   review: InvoiceReview;
   onAllClear: () => void;
+  onApprove: () => void;
+  onHold: () => void;
 }) {
   const runtime = useInvoiceRuntime();
   const rt = runtime.getRuntime(review.id);
@@ -781,6 +887,43 @@ export function ExceptionTimeline({
   const reducedMotion = usePrefersReducedMotion();
   const revalCounter = useRef(0);
   const clearedFired = useRef(false);
+
+  // Chat-style scroll follow: the column tracks the newest live content unless
+  // the reviewer scrolls away.
+  const containerRef = useRef<HTMLDivElement>(null);
+  const userScrolledRef = useRef(false);
+  const stickRef = useRef(true);
+  const programmaticUntil = useRef(0);
+  const wasResolvingRef = useRef(false);
+
+  const nearBottom = (px = 120) => {
+    const c = containerRef.current;
+    return c ? c.scrollHeight - c.scrollTop - c.clientHeight <= px : true;
+  };
+  const behavior: ScrollBehavior = reducedMotion ? "auto" : "smooth";
+  // Land the live block's top ~24px below the sticky header so the present
+  // stays in frame and history scrolls out of view above it. The browser clamps
+  // to max scroll, so when the remaining content already fits the viewport this
+  // settles at the column bottom instead.
+  const scrollToLive = () => {
+    const c = containerRef.current;
+    if (!c) return;
+    programmaticUntil.current = Date.now() + 700;
+    const live = c.querySelector<HTMLElement>("[data-live]");
+    if (!live) {
+      c.scrollTo({ top: c.scrollHeight, behavior });
+      return;
+    }
+    const delta =
+      live.getBoundingClientRect().top - c.getBoundingClientRect().top - 24;
+    c.scrollTo({ top: c.scrollTop + delta, behavior });
+  };
+  const scrollToBottom = () => {
+    const c = containerRef.current;
+    if (!c) return;
+    programmaticUntil.current = Date.now() + 700;
+    c.scrollTo({ top: c.scrollHeight, behavior });
+  };
 
   const openList = list.filter((e) => !resolvedIds.includes(e.id));
   const active = openList.find((e) => e.id === activeId) ?? openList[0] ?? null;
@@ -823,6 +966,46 @@ export function ExceptionTimeline({
     });
   }, [active?.id]);
 
+  // Cancel auto-follow the moment the reviewer scrolls the column themselves
+  // (wheel, touch, keys, or a scrollbar drag detected outside a programmatic
+  // scroll window).
+  useEffect(() => {
+    const c = containerRef.current;
+    if (!c) return;
+    const markUser = () => {
+      userScrolledRef.current = true;
+    };
+    const onScroll = () => {
+      if (Date.now() > programmaticUntil.current)
+        userScrolledRef.current = true;
+    };
+    c.addEventListener("wheel", markUser, { passive: true });
+    c.addEventListener("touchmove", markUser, { passive: true });
+    c.addEventListener("keydown", markUser);
+    c.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      c.removeEventListener("wheel", markUser);
+      c.removeEventListener("touchmove", markUser);
+      c.removeEventListener("keydown", markUser);
+      c.removeEventListener("scroll", onScroll);
+    };
+  }, []);
+
+  // Follow the conversation: when a resolve sequence commits, bring the new live
+  // content into view, unless the reviewer scrolled away or was reading history.
+  useEffect(() => {
+    const was = wasResolvingRef.current;
+    wasResolvingRef.current = resolve !== null;
+    if (
+      was &&
+      resolve === null &&
+      stickRef.current &&
+      !userScrolledRef.current
+    ) {
+      requestAnimationFrame(() => scrollToLive());
+    }
+  }, [resolve]);
+
   // Resolve choreography: confirm -> check -> reveal -> commit. One region
   // changes per phase; the next exception and any surfaced items appear only on
   // commit, so nothing about the next state is visible until re-validation
@@ -837,6 +1020,10 @@ export function ExceptionTimeline({
       return () => clearTimeout(t);
     }
     if (resolve.phase === "check") {
+      // Small correction to keep the resolved row + spinner in view.
+      if (stickRef.current && !userScrolledRef.current) {
+        requestAnimationFrame(() => scrollToBottom());
+      }
       let cancelled = false;
       revalidateException(review.id).then(({ cleared, surfaced }) => {
         if (cancelled) return;
@@ -869,6 +1056,7 @@ export function ExceptionTimeline({
             label: s.label,
             sub: s.sub,
             time: "Just now",
+            shortLabel: s.shortLabel,
           },
           ...s.clearedInList.map((cid) => {
             const c = list.find((e) => e.id === cid);
@@ -878,6 +1066,7 @@ export function ExceptionTimeline({
               label: `${c ? exceptionMeta(c).label : "Issue"} cleared`,
               sub: "Cleared automatically after re-check",
               time: "Just now",
+              auto: true,
             };
           }),
           {
@@ -891,6 +1080,8 @@ export function ExceptionTimeline({
         ]);
         runtime.resolveExceptions(review.id, [s.exc.id, ...s.clearedInList]);
         if (s.fresh.length > 0) runtime.surfaceExceptions(review.id, s.fresh);
+        // Data-changing resolutions (e.g. a linked PO) update every surface.
+        if (s.dataPatch) runtime.patchData(review.id, s.dataPatch);
         const next =
           list.find(
             (e) =>
@@ -914,17 +1105,27 @@ export function ExceptionTimeline({
       next.add(id);
       return next;
     });
+    // Bring the newly expanded exception into view (user intent, always).
+    requestAnimationFrame(() => scrollToLive());
   }
 
   function resolveActive() {
     if (!active || resolve) return;
+    // Snapshot follow intent for this sequence: only auto-scroll if the reviewer
+    // was already near the bottom, and cancel it if they scroll during it.
+    stickRef.current = nearBottom(120);
+    userScrolledRef.current = false;
     const r = active.resolution;
-    const label = r?.label ?? `${exceptionMeta(active).label} resolved`;
-    const sub = r?.sub ?? `${exceptionMeta(active).label}, resolved by you`;
+    const meta = exceptionMeta(active);
+    const label = r?.label ?? `${meta.label} resolved`;
+    const sub = r?.sub ?? `${meta.label}, resolved by you`;
+    const shortLabel = r?.shortLabel ?? `${meta.label.toLowerCase()} resolved`;
     setResolve({
       exc: active,
       label,
       sub,
+      shortLabel,
+      dataPatch: r?.dataPatch,
       phase: "confirm",
       fresh: [],
       clearedInList: [],
@@ -932,66 +1133,95 @@ export function ExceptionTimeline({
     });
   }
 
+  // Summary sentence built from the reviewer's resolutions, in order.
+  const shortLabels = events
+    .filter((e) => e.kind === "resolved" && !e.auto && e.shortLabel)
+    .map((e) => (e.kind === "resolved" ? e.shortLabel : undefined))
+    .filter((x): x is string => !!x);
+  const summarySentence =
+    shortLabels.length > 0
+      ? `${(() => {
+          const joined = shortLabels.join(", ");
+          return joined.charAt(0).toUpperCase() + joined.slice(1);
+        })()}. This invoice is ready for your decision.`
+      : "This invoice is ready for your decision.";
+
   return (
-    <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 custom-scrollbar [scrollbar-gutter:stable]">
-      <ol className="w-full max-w-5xl">
-        <AgentHistoryPeek steps={review.agentHistory} />
-        {events.map((ev) =>
-          ev.kind === "resolved" ? (
-            <EventRow
-              key={ev.key}
-              marker="resolved"
-              label={ev.label}
-              sub={ev.sub}
-              time={ev.time}
-            />
+    <div className="relative flex-1 overflow-hidden">
+      <div
+        ref={containerRef}
+        className="h-full overflow-y-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 custom-scrollbar [scrollbar-gutter:stable]"
+      >
+        <ol className="w-full max-w-5xl">
+          <AgentHistoryPeek steps={review.agentHistory} />
+          {allClear ? (
+            <>
+              {/* The resolve log compresses into a peek; the terminal block lands
+                below it. The screen closes the way it opened. */}
+              <ResolveHistoryPeek events={events} />
+              <TerminalBlock
+                summary={summarySentence}
+                onApprove={onApprove}
+                onHold={onHold}
+              />
+            </>
           ) : (
-            <EventRow
-              key={ev.key}
-              marker={ev.pending ? "progress" : "agent"}
-              label={ev.label}
-              sub={ev.sub}
-              time={ev.time}
-            />
-          ),
-        )}
-        {resolve ? (
-          <ResolvingNode
-            resolve={resolve}
-            openList={openList}
-            showHeader={showHeader}
-            counter={counter}
-            isNew={isNew}
-            reducedMotion={reducedMotion}
-          />
-        ) : active ? (
-          <ExceptionGroup
-            active={active}
-            openList={openList}
-            showHeader={showHeader}
-            counter={counter}
-            isNew={isNew}
-            onResolve={resolveActive}
-            onSelect={anchor}
-          />
-        ) : null}
-        {allClear ? (
-          <TimelineRow marker="resolved" isLast>
-            <div className="min-h-7 pt-0.5">
-              <p className="text-sm text-foreground">All checks passed</p>
-              <p className="text-xs text-muted-foreground">
-                This invoice is ready to approve.
-              </p>
-            </div>
-          </TimelineRow>
-        ) : (
-          <TimelineRow marker="upcoming" isLast>
-            <p className="min-h-7 pt-1 text-[13px] leading-normal text-muted-foreground">
-              Validation runs again after each fix. Anything new surfaces here.
-            </p>
-          </TimelineRow>
-        )}
-      </ol>
+            <>
+              {events.map((ev) =>
+                ev.kind === "resolved" ? (
+                  <EventRow
+                    key={ev.key}
+                    marker="resolved"
+                    label={ev.label}
+                    sub={ev.sub}
+                    time={ev.time}
+                  />
+                ) : (
+                  <EventRow
+                    key={ev.key}
+                    marker={ev.pending ? "progress" : "agent"}
+                    label={ev.label}
+                    sub={ev.sub}
+                    time={ev.time}
+                  />
+                ),
+              )}
+              {resolve ? (
+                <ResolvingNode
+                  resolve={resolve}
+                  openList={openList}
+                  showHeader={showHeader}
+                  counter={counter}
+                  isNew={isNew}
+                  reducedMotion={reducedMotion}
+                />
+              ) : active ? (
+                <ExceptionGroup
+                  active={active}
+                  openList={openList}
+                  showHeader={showHeader}
+                  counter={counter}
+                  isNew={isNew}
+                  onResolve={resolveActive}
+                  onSelect={anchor}
+                />
+              ) : null}
+              <TimelineRow marker="upcoming" isLast>
+                <p className="min-h-7 pt-1 text-[13px] leading-normal text-muted-foreground">
+                  Validation runs again after each fix. Anything new surfaces
+                  here.
+                </p>
+              </TimelineRow>
+            </>
+          )}
+        </ol>
+      </div>
+      {/* Header scrim: content fades + blurs across a ~32px zone as it passes
+          under the sticky header. Degrades to fade-only without backdrop-filter. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[var(--header-scrim-h,32px)] backdrop-blur-[8px] [background:linear-gradient(to_bottom,var(--background),transparent)] [mask-image:linear-gradient(to_bottom,black,transparent)]"
+      />
     </div>
   );
 }
