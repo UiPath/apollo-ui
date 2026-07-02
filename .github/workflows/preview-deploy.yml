@@ -25,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: read
       pull-requests: write
 
     steps:
@@ -101,7 +102,8 @@ jobs:
       - name: Install UiPath CLI
         run: npm install --global @uipath/cli@1.196.4
 
-      - name: Authenticate UiPath External App
+      - name: Authenticate UiPath External App (manual path disabled)
+        if: ${{ false }}
         id: auth
         env:
           UIPATH_BASE_URL: ${{ vars.UIPATH_BASE_URL || secrets.UIPATH_BASE_URL }}
@@ -209,8 +211,124 @@ jobs:
           });
           NODE
 
-      - name: Deploy Coded App previews
+      - name: Deploy Coded App previews with uip-go
         id: deploy
+        env:
+          GH_NPM_REGISTRY_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          UIPATH_BASE_URL: ${{ vars.UIPATH_BASE_URL || secrets.UIPATH_BASE_URL }}
+          UIPATH_CLIENT_ID: ${{ vars.UIPATH_CLIENT_ID }}
+          UIPATH_CLIENT_SCOPE: ${{ vars.UIPATH_CLIENT_SCOPE }}
+          UIPATH_CLIENT_SECRET: ${{ secrets.UIPATH_CLIENT_SECRET }}
+          UIPATH_FOLDER_KEY: ${{ vars.UIPATH_FOLDER_KEY || secrets.UIPATH_FOLDER_KEY }}
+          UIPATH_ORG_NAME: ${{ vars.UIPATH_ORG_NAME || secrets.UIPATH_ORG_NAME }}
+          UIPATH_TENANT_NAME: ${{ vars.UIPATH_TENANT_NAME || secrets.UIPATH_TENANT_NAME }}
+        run: |
+          set -euo pipefail
+
+          missing=0
+          for name in GH_NPM_REGISTRY_TOKEN UIPATH_BASE_URL UIPATH_CLIENT_ID UIPATH_CLIENT_SECRET UIPATH_FOLDER_KEY UIPATH_ORG_NAME UIPATH_TENANT_NAME; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is required for uip-go Coded App preview deployments."
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+          short_sha="${GITHUB_SHA:0:7}"
+          version="0.1.0-pr${PR_NUMBER}.${short_sha}.${GITHUB_RUN_ATTEMPT}"
+          landing_app="apollo-landing-pr-${PR_NUMBER}"
+          docs_app="apollo-docs-pr-${PR_NUMBER}"
+          design_app="apollo-design-pr-${PR_NUMBER}"
+          vertex_app="apollo-vertex-pr-${PR_NUMBER}"
+
+          write_output() {
+            local name="$1"
+            local value="$2"
+            local delimiter
+            delimiter="ghadelim_$(openssl rand -hex 16)"
+            {
+              printf '%s<<%s\n' "$name" "$delimiter"
+              printf '%s\n' "$value"
+              printf '%s\n' "$delimiter"
+            } >> "$GITHUB_OUTPUT"
+          }
+
+          derive_app_url() {
+            local app_name="$1"
+            APP_NAME="$app_name" node <<'NODE'
+          const baseUrl = process.env.UIPATH_BASE_URL || '';
+          const orgName = process.env.UIPATH_ORG_NAME || '';
+          const appName = process.env.APP_NAME || '';
+
+          let environment = '';
+          try {
+            const hostname = new URL(baseUrl).hostname;
+            let inferred = hostname.replace(/\.uipath\.com$/, '');
+            inferred = inferred.replace(/^api\./, '').replace(/\.api$/, '');
+            environment = inferred && inferred !== 'api' && inferred !== 'cloud' ? inferred : '';
+          } catch {
+            environment = '';
+          }
+
+          const suffix = environment ? `.${environment}` : '';
+          console.log(`https://${orgName}${suffix}.uipath.host/${appName}`);
+          NODE
+          }
+
+          run_uip_go() {
+            local label="$1"
+            local app_name="$2"
+            local output_name="${label#apollo-}_url"
+            local output_file
+            local command_exit
+            local app_url
+
+            output_file="$(mktemp)"
+            echo "::group::uip-go ${label}"
+            set +e
+            npm exec --yes --registry=https://npm.pkg.github.com --package @uipath/uip-go -- \
+              uip-go "$label" \
+                --name "$app_name" \
+                --path-name "$app_name" \
+                --version "$version" \
+                --folder-key "$UIPATH_FOLDER_KEY" \
+                --base-url "$UIPATH_BASE_URL" \
+                --org-name "$UIPATH_ORG_NAME" \
+                --tenant-name "$UIPATH_TENANT_NAME" \
+                --deploy-retries 3 \
+                --deploy-retry-delay-ms 10000 2>&1 | tee "$output_file"
+            command_exit=${PIPESTATUS[0]}
+            set -e
+            echo "::endgroup::"
+
+            if [ "$command_exit" -ne 0 ]; then
+              echo "::error::uip-go ${label} failed."
+              return "$command_exit"
+            fi
+
+            app_url="$(sed -nE 's/^[[:space:]]*App URL:[[:space:]]*//p' "$output_file" | tail -n 1)"
+            rm -f "$output_file"
+            if [ -z "$app_url" ]; then
+              app_url="$(derive_app_url "$app_name")"
+            fi
+            case "$app_url" in
+              */) ;;
+              *) app_url="${app_url}/" ;;
+            esac
+            write_output "$output_name" "$app_url"
+          }
+
+          run_uip_go "apollo-landing" "$landing_app"
+          run_uip_go "apollo-docs" "$docs_app"
+          run_uip_go "apollo-design" "$design_app"
+          run_uip_go "apollo-vertex" "$vertex_app"
+
+      - name: Deploy Coded App previews (manual path disabled)
+        if: ${{ false }}
+        id: deploy_manual
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           UIPATH_ACCESS_TOKEN: ${{ steps.auth.outputs.uipath_access_token }}
