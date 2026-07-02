@@ -1,3 +1,11 @@
+## [@uipath/apollo-react-v4.56.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.55.1...@uipath/apollo-react@4.56.0) (2026-07-02)
+
+### Features
+
+* **apollo-react:** add Input/Output panel prototype with three concept variants ([b1cca20](https://github.com/UiPath/apollo-ui/commit/b1cca20d4152b671c7c3e302e2f8d231f6d77c20))
+* **apollo-react:** refine I/O panel prototype with semantic tokens and Apollo Wind components ([d0473fb](https://github.com/UiPath/apollo-ui/commit/d0473fb30674ec2b6ad93cb01af547ffd82a5581)), closes [#2f8a3e](https://github.com/UiPath/apollo-ui/issues/2f8a3e) [#0e7490](https://github.com/UiPath/apollo-ui/issues/0e7490)
+* **apollo-react:** refine Input/Output panel prototype UX ([bccdc9b](https://github.com/UiPath/apollo-ui/commit/bccdc9b03476cefdc77c6fa62cb9912d716dd2be))
+
 ## [@uipath/apollo-react-v4.55.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@4.55.0...@uipath/apollo-react@4.55.1) (2026-07-02)
 
 ### Bug Fixes

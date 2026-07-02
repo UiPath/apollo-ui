@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.26.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.25.0...@uipath/apollo-wind@2.26.0) (2026-07-02)
+
+### Features
+
+* **apollo-wind:** add Button 4xs size and Input ghost/xs variants ([b871b1d](https://github.com/UiPath/apollo-ui/commit/b871b1da8379c453756a948d7c3c3d5b4f25bf3c))
+
 ## [@uipath/apollo-wind-v2.25.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.24.0...@uipath/apollo-wind@2.25.0) (2026-06-25)
 
 ### Features
