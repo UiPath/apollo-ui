@@ -34,6 +34,54 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Initialize PR comment
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const identifier = '<!-- apollo-coded-app-preview-comment -->';
+            const timestamp = new Date().toLocaleString('en-US', {
+              timeZone: 'America/Los_Angeles',
+              year: 'numeric',
+              month: 'short',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: true
+            });
+            const logsLink = `[Logs](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+            const projects = ['apollo-design', 'apollo-docs', 'apollo-landing', 'apollo-vertex'];
+            const body = [
+              identifier,
+              'Apollo Coded App preview deployments are running.',
+              '',
+              '| Project | Status | Preview | Updated (PT) |',
+              '|---------|--------|---------|--------------|',
+              ...projects.map(project => `| ${project} | Deploying... | ${logsLink} | ${timestamp} |`)
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(comment => comment.body?.includes(identifier));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
 
@@ -193,6 +241,71 @@ jobs:
           NODE
           }
 
+          postprocess_static_app() {
+            local output_dir="$1"
+            local app_name="$2"
+            OUTPUT_DIR="$output_dir" APP_BASE="/${app_name}/" node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+
+          const root = process.env.OUTPUT_DIR;
+          const appBase = process.env.APP_BASE;
+          const filePattern = /\.(?:html|css|js|json)$/i;
+
+          function walk(dir) {
+            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+              const fullPath = path.join(dir, entry.name);
+              if (entry.isDirectory()) {
+                walk(fullPath);
+              } else if (entry.isFile() && filePattern.test(fullPath)) {
+                const current = fs.readFileSync(fullPath, 'utf8');
+                let updated = current
+                  .replace(/\b(src|href)=(["'])\/(?!\/|https?:|data:)([^"']*)\2/g, (_match, attr, quote, rest) => `${attr}=${quote}${appBase}${rest}${quote}`)
+                  .replace(/url\(\s*\/(?!\/|https?:|data:)([^)"'\s]*)/g, (_match, rest) => `url(${appBase}${rest}`);
+
+                if (fullPath.endsWith('.html')) {
+                  const baseTag = `<base data-uip-go-base href="${appBase}">`;
+                  updated = updated.replace(/<base data-uip-go-base[^>]*>\n?/g, '');
+                  const headMatch = updated.match(/<head[^>]*>/i);
+                  if (headMatch?.index !== undefined) {
+                    const insertAt = headMatch.index + headMatch[0].length;
+                    updated = `${updated.slice(0, insertAt)}${baseTag}${updated.slice(insertAt)}`;
+                  }
+                }
+
+                if (updated !== current) {
+                  fs.writeFileSync(fullPath, updated);
+                }
+              }
+            }
+          }
+
+          walk(root);
+          NODE
+          }
+
+          derive_app_url() {
+            local app_name="$1"
+            APP_NAME="$app_name" node <<'NODE'
+          const baseUrl = process.env.UIPATH_BASE_URL || '';
+          const orgName = process.env.UIPATH_ORG_NAME || '';
+          const appName = process.env.APP_NAME || '';
+
+          let environment = '';
+          try {
+            const hostname = new URL(baseUrl).hostname;
+            let inferred = hostname.replace(/\.uipath\.com$/, '');
+            inferred = inferred.replace(/^api\./, '').replace(/\.api$/, '');
+            environment = inferred && inferred !== 'api' && inferred !== 'cloud' ? inferred : '';
+          } catch {
+            environment = '';
+          }
+
+          const suffix = environment ? `.${environment}` : '';
+          console.log(`https://${orgName}${suffix}.uipath.host/${appName}`);
+          NODE
+          }
+
           deploy_coded_app() {
             local label="$1"
             local app_name="$2"
@@ -200,6 +313,10 @@ jobs:
             local tags="$4"
             local asset_mode="${5:-relative}"
             local uipath_dir=".uipath/${label}"
+            local deploy_output
+            local deploy_exit
+            local app_url
+            local output_name
 
             if [ ! -d "$output_dir" ]; then
               echo "::error::Build output directory not found: $output_dir"
@@ -208,6 +325,7 @@ jobs:
 
             if [ "$asset_mode" = "relative" ]; then
               fix_relative_assets "$output_dir"
+              postprocess_static_app "$output_dir" "$app_name"
             fi
 
             uip codedapp pack "$output_dir" \
@@ -225,13 +343,29 @@ jobs:
               --access-token "$UIPATH_ACCESS_TOKEN"
 
             for attempt in 1 2 3 4; do
-              if uip codedapp deploy \
+              set +e
+              deploy_output="$(uip codedapp deploy \
                 --name "$app_name" \
                 --base-url "$UIPATH_BASE_URL" \
                 --org-name "$UIPATH_ORG_NAME" \
                 --folder-key "$UIPATH_FOLDER_KEY" \
                 --access-token "$UIPATH_ACCESS_TOKEN" \
-                --tags "$tags"; then
+                --tags "$tags" 2>&1)"
+              deploy_exit=$?
+              set -e
+              printf '%s\n' "$deploy_output"
+
+              if [ "$deploy_exit" -eq 0 ]; then
+                app_url="$(printf '%s\n' "$deploy_output" | sed -nE 's/^[[:space:]]*App URL:[[:space:]]*//p' | tail -n 1)"
+                if [ -z "$app_url" ]; then
+                  app_url="$(derive_app_url "$app_name")"
+                fi
+                case "$app_url" in
+                  */) ;;
+                  *) app_url="${app_url}/" ;;
+                esac
+                output_name="${label#apollo-}_url"
+                echo "${output_name}=${app_url}" >> "$GITHUB_OUTPUT"
                 return 0
               fi
 
@@ -578,20 +712,6 @@ jobs:
           prepare_vertex_export
           deploy_coded_app "apollo-vertex" "$vertex_app" "apps/apollo-vertex/out" "preview,apollo,apollo-vertex" "none"
 
-          host_env="$(echo "$UIPATH_BASE_URL" | sed -E 's#^https?://##; s#/.*$##; s#\\.uipath\\.com$##')"
-          if [ "$host_env" = "cloud" ]; then
-            app_host="${UIPATH_ORG_NAME}.uipath.host"
-          else
-            app_host="${UIPATH_ORG_NAME}.${host_env}.uipath.host"
-          fi
-
-          {
-            echo "landing_url=https://${app_host}/${landing_app}"
-            echo "docs_url=https://${app_host}/${docs_app}"
-            echo "design_url=https://${app_host}/${design_app}"
-            echo "vertex_url=https://${app_host}/${vertex_app}"
-          } >> "$GITHUB_OUTPUT"
-
       - name: Save Turborepo cache
         uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
@@ -599,8 +719,10 @@ jobs:
           key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
 
       - name: Update PR comment
+        if: always()
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
+          DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
           APOLLO_DESIGN_URL: ${{ steps.deploy.outputs.design_url }}
           APOLLO_DOCS_URL: ${{ steps.deploy.outputs.docs_url }}
           APOLLO_LANDING_URL: ${{ steps.deploy.outputs.landing_url }}
@@ -619,16 +741,27 @@ jobs:
               hour12: true
             });
             const logsLink = `[Logs](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+            const deploySucceeded = process.env.DEPLOY_OUTCOME === 'success';
+            const rows = [
+              ['apollo-design', process.env.APOLLO_DESIGN_URL],
+              ['apollo-docs', process.env.APOLLO_DOCS_URL],
+              ['apollo-landing', process.env.APOLLO_LANDING_URL],
+              ['apollo-vertex', process.env.APOLLO_VERTEX_URL],
+            ].map(([project, url]) => {
+              const ready = Boolean(url);
+              const status = ready ? 'Ready' : deploySucceeded ? 'Skipped' : 'Failed';
+              const preview = ready ? `[Preview](${url}) · ${logsLink}` : logsLink;
+              return `| ${project} | ${status} | ${preview} | ${timestamp} |`;
+            });
             const body = [
               identifier,
-              'Apollo Coded App preview deployments are ready.',
+              deploySucceeded
+                ? 'Apollo Coded App preview deployments are ready.'
+                : 'Apollo Coded App preview deployments did not complete.',
               '',
-              '| Project | Preview | Updated (PT) |',
-              '|---------|---------|--------------|',
-              `| apollo-design | [Preview](${process.env.APOLLO_DESIGN_URL}) · ${logsLink} | ${timestamp} |`,
-              `| apollo-docs | [Preview](${process.env.APOLLO_DOCS_URL}) · ${logsLink} | ${timestamp} |`,
-              `| apollo-landing | [Preview](${process.env.APOLLO_LANDING_URL}) · ${logsLink} | ${timestamp} |`,
-              `| apollo-vertex | [Preview](${process.env.APOLLO_VERTEX_URL}) · ${logsLink} | ${timestamp} |`
+              '| Project | Status | Preview | Updated (PT) |',
+              '|---------|--------|---------|--------------|',
+              ...rows
             ].join('\n');
 
             const { data: comments } = await github.rest.issues.listComments({
