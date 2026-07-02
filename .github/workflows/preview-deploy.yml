@@ -261,7 +261,11 @@ jobs:
                 const current = fs.readFileSync(fullPath, 'utf8');
                 let updated = current
                   .replace(/\b(src|href)=(["'])\/(?!\/|https?:|data:)([^"']*)\2/g, (_match, attr, quote, rest) => `${attr}=${quote}${appBase}${rest}${quote}`)
-                  .replace(/url\(\s*\/(?!\/|https?:|data:)([^)"'\s]*)/g, (_match, rest) => `url(${appBase}${rest}`);
+                  .replace(/url\(\s*\/(?!\/|https?:|data:)([^)"'\s]*)/g, (_match, rest) => `url(${appBase}${rest}`)
+                  .replace(/(["'`])\.\/brand\//g, (_match, quote) => `${quote}${appBase}brand/`)
+                  .replace(/(["'`])\/brand\//g, (_match, quote) => `${quote}${appBase}brand/`)
+                  .replace(/url\(\s*(["']?)\.\/brand\//g, (_match, quote) => `url(${quote}${appBase}brand/`)
+                  .replace(/url\(\s*(["']?)\/brand\//g, (_match, quote) => `url(${quote}${appBase}brand/`);
 
                 if (fullPath.endsWith('.html')) {
                   const baseTag = `<base data-uip-go-base href="${appBase}">`;
