@@ -13,7 +13,7 @@ permissions: {}
 env:
   TURBO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: 1
-  UIP_GO_VERSION: 0.1.4
+  UIP_GO_VERSION: 0.1.6
 
 concurrency:
   group: coded-app-preview-pr-${{ github.event.pull_request.number }}
@@ -114,9 +114,6 @@ jobs:
           key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-turbo-${{ github.ref_name }}-
-
-      - name: Install UiPath CLI
-        run: npm install --global @uipath/cli@1.196.4
 
       - name: Deploy Coded App previews with uip-go
         id: deploy
