@@ -140,6 +140,16 @@ jobs:
             fs.appendFileSync(process.env.GITHUB_ENV, `${name}=${value}\n`);
           }
 
+          function safeOAuthError(data) {
+            const summary = {};
+            for (const key of ['error', 'error_description', 'error_uri']) {
+              if (typeof data?.[key] === 'string') {
+                summary[key] = data[key];
+              }
+            }
+            return Object.keys(summary).length ? JSON.stringify(summary) : 'No safe error details returned.';
+          }
+
           async function main() {
             const tokenResponse = await fetch(`${baseUrl}/identity_/connect/token`, {
               method: 'POST',
@@ -148,7 +158,7 @@ jobs:
             });
             const tokenData = await tokenResponse.json().catch(() => ({}));
             if (!tokenResponse.ok || !tokenData.access_token) {
-              throw new Error(`External App token exchange failed with HTTP ${tokenResponse.status}: ${JSON.stringify(tokenData)}`);
+              throw new Error(`External App token exchange failed with HTTP ${tokenResponse.status}: ${safeOAuthError(tokenData)}`);
             }
 
             const claims = parseJwtPayload(tokenData.access_token);
@@ -228,8 +238,8 @@ jobs:
               } else if (entry.isFile() && filePattern.test(fullPath)) {
                 const current = fs.readFileSync(fullPath, 'utf8');
                 const updated = current
-                  .replace(/\b(src|href)=["']\/(?!\/|https?:|data:)/g, '$1="./')
-                  .replace(/url\(\s*\/(?!\/|https?:|data:)/g, 'url(./');
+                  .replace(/\b(src|href)=(["'])\/(?!\/|https?:|data:)([^"']*)\2/g, (_match, attr, quote, rest) => `${attr}=${quote}./${rest}${quote}`)
+                  .replace(/url\(\s*(["']?)\/(?!\/|https?:|data:)([^)"'\s]*)/g, (_match, quote, rest) => `url(${quote}./${rest}`);
                 if (updated !== current) {
                   fs.writeFileSync(fullPath, updated);
                 }
@@ -618,6 +628,11 @@ jobs:
               const rootPath = `/${rest}`;
               if (!shouldPrefixRootPath(rootPath)) return match;
               return `${prefix}${appBase}${rootPath.slice(1) ? rootPath : '/'}`;
+            });
+            updated = updated.replace(/url\(\s*(["']?)\/(?!\/|https?:|data:)([^)"'\s]*)/g, (match, quote, rest) => {
+              const rootPath = `/${rest}`;
+              if (!shouldPrefixRootPath(rootPath)) return match;
+              return `url(${quote}${appBase}${rootPath}`;
             });
             return unprefixDataHrefs(normalizeRouteHrefs(updated));
           }
