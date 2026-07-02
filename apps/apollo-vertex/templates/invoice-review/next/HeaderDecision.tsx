@@ -8,7 +8,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ButtonGroup } from "@/registry/button-group/button-group";
+import {
+  ButtonGroup,
+  ButtonGroupSeparator,
+} from "@/registry/button-group/button-group";
 
 /**
  * Per-invoice disposition control for the page header: a primary Approve
@@ -32,12 +35,12 @@ export function HeaderDecision({
   return (
     <ButtonGroup>
       <Button onClick={onApprove}>Approve</Button>
+      {/* Rule between the two same-color halves: primary -100 (lighter) in
+          light, +100 (darker) in dark. Both resolve to primary-600. */}
+      <ButtonGroupSeparator className="bg-primary-600" />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            aria-label="More decisions"
-            className="bg-primary-800 hover:bg-primary-800/90 dark:bg-primary-600 dark:hover:bg-primary-600/90"
-          >
+          <Button aria-label="More decisions">
             <EllipsisVertical className="size-4" />
           </Button>
         </DropdownMenuTrigger>
