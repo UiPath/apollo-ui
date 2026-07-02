@@ -122,7 +122,6 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           UIPATH_BASE_URL: ${{ vars.UIPATH_BASE_URL || secrets.UIPATH_BASE_URL }}
           UIPATH_CLIENT_ID: ${{ vars.UIPATH_CLIENT_ID }}
-          UIPATH_CLIENT_SCOPE: ${{ vars.UIPATH_CLIENT_SCOPE }}
           UIPATH_CLIENT_SECRET: ${{ secrets.UIPATH_CLIENT_SECRET }}
           UIPATH_FOLDER_KEY: ${{ vars.UIPATH_FOLDER_KEY || secrets.UIPATH_FOLDER_KEY }}
           UIPATH_ORG_NAME: ${{ vars.UIPATH_ORG_NAME || secrets.UIPATH_ORG_NAME }}
@@ -199,6 +198,7 @@ jobs:
             local app_url
 
             output_file="$(mktemp)"
+            trap 'rm -f "$output_file"; trap - RETURN' RETURN
             echo "::group::uip-go ${label}"
             set +e
             "$UIP_GO" "$label" \
@@ -221,7 +221,6 @@ jobs:
             fi
 
             app_url="$(sed -nE 's/^[[:space:]]*App URL:[[:space:]]*//p' "$output_file" | tail -n 1)"
-            rm -f "$output_file"
             if [ -z "$app_url" ]; then
               app_url="$(derive_app_url "$app_name")"
             fi
@@ -238,6 +237,7 @@ jobs:
           run_uip_go "apollo-vertex" "$vertex_app"
 
       - name: Save Turborepo cache
+        if: always()
         uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: .turbo
