@@ -284,12 +284,12 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
       { label: "Difference", value: "-$4.84", cls: "text-[#C0392B]" },
     ],
     exceptionBody:
-      "Supplier agreed to discounted price per PO note — invoice reflects original price. Request a corrected invoice from ACME Industrial before approving.",
+      "Supplier agreed to discounted price per PO note. Invoice reflects original price. Request a corrected invoice from ACME Industrial before approving.",
     exceptionPrimaryAction: "Contact supplier",
     exceptionSecondaryAction: "Reject invoice",
     lines: [
       {
-        description: "USB Hub — 7 Port Powered",
+        description: "USB Hub, 7 Port Powered",
         qty: 1,
         amount: "$694.39",
         unitPrice: "$694.39",
@@ -300,7 +300,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     ],
     linesTotal: "$694.39",
     linesAlert: {
-      text: "Price exceeds PO by $4.84 — could not auto-resolve.",
+      text: "Price exceeds PO by $4.84, could not auto-resolve.",
       status: "error",
     },
     sourceFilename: "INV-GRN-001.pdf",
@@ -380,7 +380,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     ],
     linesTotal: "$65,800.00",
     linesAlert: {
-      text: "Total exceeds $50,000 threshold — CFO approval required before payment.",
+      text: "Total exceeds $50,000 threshold. CFO approval required before payment.",
       status: "warning",
     },
     sourceFilename: "INV-66216.pdf",
@@ -465,7 +465,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     ],
     linesTotal: "$12,240.00",
     linesAlert: {
-      text: "No matching PO found — payment blocked until a valid PO is provided.",
+      text: "No matching PO found. Payment blocked until a valid PO is provided.",
       status: "error",
     },
     sourceFilename: "INV-84471.pdf",
@@ -513,7 +513,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
       "IT peripherals and cabling for the New York office. Same invoice number was submitted twice within three weeks.",
     exceptionTag: "Duplicate",
     exceptionTagStatus: "warning",
-    exceptionHeadline: "Possible duplicate — invoice number already paid",
+    exceptionHeadline: "Possible duplicate: invoice number already paid",
     exceptionMetrics: [
       { label: "This invoice", value: "$3,180", cls: "text-foreground" },
       { label: "Prior payment", value: "$3,180", cls: "text-foreground" },
@@ -613,7 +613,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
         unitPrice: "€12,000.00",
       },
       {
-        description: "Contract review — 32 hrs @ €250",
+        description: "Contract review, 32 hrs @ €250",
         qty: 32,
         amount: "€8,000.00",
         unitPrice: "€250.00",
@@ -629,7 +629,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     ],
     linesTotal: "€22,500.00",
     linesAlert: {
-      text: "Total exceeds €20,000 threshold — department head approval required.",
+      text: "Total exceeds €20,000 threshold. Department head approval required.",
       status: "warning",
     },
     sourceFilename: "INV-55832.pdf",
@@ -651,7 +651,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
       "---",
       "Items:",
       "Legal advisory retainer (Q2) · €12,000.00",
-      "Contract review — 32 hrs · €8,000.00",
+      "Contract review, 32 hrs · €8,000.00",
       "Court filing fees · €2,500.00",
       "---",
       "Total: €22,500.00",
@@ -683,7 +683,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
       { label: "POs matched", value: "0", cls: "text-[#C0392B]" },
     ],
     exceptionBody:
-      "No purchase order is on file for this invoice. The amount is under the $1,000 one-off threshold — confirm the requester with the supplier, then approve under petty-cash or reject for a PO-backed resubmission.",
+      "No purchase order is on file for this invoice. The amount is under the $1,000 one-off threshold. Confirm the requester with the supplier, then approve under petty-cash or reject for a PO-backed resubmission.",
     exceptionPrimaryAction: "Contact supplier",
     exceptionSecondaryAction: "Reject invoice",
     lines: [
@@ -706,7 +706,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     ],
     linesTotal: "$940.00",
     linesAlert: {
-      text: "No PO found — under $1,000, may qualify for one-off approval.",
+      text: "No PO found, under $1,000, may qualify for one-off approval.",
       status: "warning",
     },
     sourceFilename: "INV-60118.pdf",
@@ -781,7 +781,7 @@ const detailDataMap: Record<string, InvoiceDetailData> = {
     ],
     linesTotal: "£8,750.00",
     linesAlert: {
-      text: "Total exceeds £5,000 consulting threshold — department head sign-off required.",
+      text: "Total exceeds £5,000 consulting threshold. Department head sign-off required.",
       status: "warning",
     },
     sourceFilename: "INV-91003.pdf",
@@ -2352,6 +2352,9 @@ function TopBar({
   completion?: CompletionRecord;
 }) {
   const d = useInvoiceDetail();
+  const runtime = useInvoiceRuntime();
+  // A data-changing resolution (e.g. Link PO-5123) patches the shared record.
+  const patchedPo = runtime.getRuntime(d.id).dataPatch?.purchaseOrder ?? d.po;
   // Mirror the list view's Status column: row's data status, overridden by
   // live completion/parked state so the header label stays in sync.
   const tableRow = invoiceTableData.find((r) => r.id === d.id);
@@ -2391,12 +2394,12 @@ function TopBar({
         <PageHeaderField>
           <PageHeaderFieldLabel>PO</PageHeaderFieldLabel>
           <PageHeaderFieldValue>
-            {!d.po || d.po === "—" ? (
+            {!patchedPo || patchedPo === "—" ? (
               <Badge status="error" variant="secondary">
                 Missing PO
               </Badge>
             ) : (
-              d.po
+              patchedPo
             )}
           </PageHeaderFieldValue>
         </PageHeaderField>
@@ -2682,7 +2685,7 @@ const activityChecks = [
   {
     status: "skip" as const,
     label: "Line items",
-    desc: "Skipped — halted at price check.",
+    desc: "Skipped, halted at price check.",
   },
 ];
 
@@ -2743,7 +2746,7 @@ function ExpandedA() {
             </Badge>
             <div className="text-sm leading-relaxed">
               <span className="font-medium">{item.label}</span>
-              <span className="text-muted-foreground"> — {item.desc}</span>
+              <span className="text-muted-foreground"> · {item.desc}</span>
             </div>
           </div>
         ))}
@@ -2854,7 +2857,7 @@ function EmailComposer({
   const [cc, setCc] = useState("");
   const [showCc, setShowCc] = useState(false);
   const [subject, setSubject] = useState(
-    `Invoice correction request — Invoice ${data.id}`,
+    `Invoice correction request: Invoice ${data.id}`,
   );
   const [body, setBody] = useState(() => generateDraftBody(data));
   const [sending, setSending] = useState(false);
@@ -3366,7 +3369,7 @@ function ActionBlock({
           <div className="col-start-2 flex items-center justify-between gap-2">
             <div>
               <p className="text-sm font-medium leading-none tracking-tight">
-                {confirmed.kind === "hold" ? "On hold" : "Flagged"} —{" "}
+                {confirmed.kind === "hold" ? "On hold" : "Flagged"} ·{" "}
                 {confirmed.reason}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
@@ -3539,7 +3542,7 @@ function dueDateUrgency(dueDate: string): {
     return {
       daysUntil: d,
       label: `Overdue by ${Math.abs(d)} day${Math.abs(d) !== 1 ? "s" : ""}`,
-      suggestion: "Escalate or reject — payment is overdue.",
+      suggestion: "Escalate or reject. Payment is overdue.",
       level: "overdue",
     };
   if (d === 0)
@@ -3594,7 +3597,7 @@ function AwaitingResponseBlock({
     { label: `Assigned to ${assignee}`, time: "on receipt", done: true },
     ...sentEmails.map((e, i) => ({
       label:
-        i === 0 ? `Supplier contacted — ${e.to}` : `Follow-up sent — ${e.to}`,
+        i === 0 ? `Supplier contacted: ${e.to}` : `Follow-up sent: ${e.to}`,
       time: e.sentAt,
       done: true,
     })),
@@ -3610,7 +3613,7 @@ function AwaitingResponseBlock({
           {urgency.label}
           {urgency.suggestion && (
             <span className="font-normal text-muted-foreground">
-              {" — "}
+              {" · "}
               {urgency.suggestion}
             </span>
           )}
@@ -3993,6 +3996,9 @@ function SourceTab() {
 
 function DetailsCombinedTab() {
   const d = useInvoiceDetail();
+  const runtime = useInvoiceRuntime();
+  // Reflect a data-changing resolution (e.g. Link PO-5123) on the shared record.
+  const patchedPo = runtime.getRuntime(d.id).dataPatch?.purchaseOrder ?? d.po;
 
   return (
     <div className="flex-1 overflow-y-auto custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent_0,black_24px,black_calc(100%_-_64px),transparent_100%)]">
@@ -4040,7 +4046,7 @@ function DetailsCombinedTab() {
         </div>
         <div className="flex justify-between items-baseline py-1">
           <span className="text-xs text-muted-foreground">Purchase order</span>
-          <span className="text-xs font-medium text-right">{d.po}</span>
+          <span className="text-xs font-medium text-right">{patchedPo}</span>
         </div>
         <div className="flex justify-between items-start py-1">
           <span className="text-xs text-muted-foreground flex-shrink-0">
@@ -4456,7 +4462,7 @@ function EmailPanelTab({
   const [cc, setCc] = useState("");
   const [showCc, setShowCc] = useState(false);
   const [subject, setSubject] = useState(
-    `Invoice correction request — Invoice ${data.id}`,
+    `Invoice correction request: Invoice ${data.id}`,
   );
   const [body, setBody] = useState(() => generateDraftBody(data));
   const [sendPhase, setSendPhase] = useState<"idle" | "sending" | "sent">(
@@ -5379,6 +5385,9 @@ function TopBarNext({
   onFlag: () => void;
 }) {
   const d = useInvoiceDetail();
+  const runtime = useInvoiceRuntime();
+  // A data-changing resolution (e.g. Link PO-5123) patches the shared record.
+  const patchedPo = runtime.getRuntime(d.id).dataPatch?.purchaseOrder ?? d.po;
   const tableRow = invoiceTableData.find((r) => r.id === d.id);
   const baseStatus: InvoiceStatus = tableRow?.status ?? "pending-review";
   const effectiveStatus: InvoiceStatus = completion
@@ -5416,12 +5425,12 @@ function TopBarNext({
         <PageHeaderField>
           <PageHeaderFieldLabel>PO</PageHeaderFieldLabel>
           <PageHeaderFieldValue>
-            {!d.po || d.po === "—" ? (
+            {!patchedPo || patchedPo === "—" ? (
               <Badge status="error" variant="secondary">
                 Missing PO
               </Badge>
             ) : (
-              d.po
+              patchedPo
             )}
           </PageHeaderFieldValue>
         </PageHeaderField>
@@ -5468,15 +5477,26 @@ function RightPanelNext(props: Parameters<typeof RightPanel>[0]) {
 function CenterPanelNext({
   activeInvoiceId,
   onCleared,
+  onApprove,
+  onHold,
 }: {
   activeInvoiceId: string;
   onCleared: () => void;
+  onApprove: () => void;
+  onHold: () => void;
 }) {
   const review = getReview(activeInvoiceId);
   // The timeline owns the resolve/revalidate loop; it calls onCleared once the
   // invoice fully clears. Keyed by invoice id so loop state resets on switch.
+  // onApprove/onHold are the same handlers as the header disposition control.
   return (
-    <ExceptionTimeline key={review.id} review={review} onAllClear={onCleared} />
+    <ExceptionTimeline
+      key={review.id}
+      review={review}
+      onAllClear={onCleared}
+      onApprove={onApprove}
+      onHold={onHold}
+    />
   );
 }
 
@@ -5944,6 +5964,8 @@ function InvoiceDetailPane({
               <CenterPanelNext
                 activeInvoiceId={activeInvoiceId}
                 onCleared={() => setApproveReady(true)}
+                onApprove={() => onComplete("approved")}
+                onHold={() => onPark("hold", "Held from header")}
               />
             ) : (
               <>
@@ -6030,7 +6052,7 @@ function InvoiceDetailPane({
                               Invoice approved
                             </AlertTitle>
                             <AlertDescription className="text-xs text-muted-foreground">
-                              {data.id} · {data.vendor} · {data.amount} — sent
+                              {data.id} · {data.vendor} · {data.amount}, sent
                               for payment processing.
                               <br />
                               {completedCount} of {totalInQueue} invoices
