@@ -28,8 +28,10 @@ export const UserMessagesView = ({ messages }: { messages: unknown }) => {
         const displayText = translated === msg.key ? msg.message : translated;
 
         return (
+          // key+timestamp can repeat within a run (e.g. several new-document
+          // warnings); the message text disambiguates them.
           <div
-            key={`${msg.key}-${msg.timestamp}`}
+            key={`${msg.key}-${msg.timestamp}-${msg.message}`}
             className={`rounded-md border-l-4 p-3 text-sm ${categoryBorderStyles[msg.category] ?? "bg-muted/50"}`}
           >
             {displayText}
@@ -68,7 +70,7 @@ export const UserMessagesIcon = ({ messages }: { messages: unknown }) => {
             const MIcon = severityIcons[msg.category] ?? Info;
             return (
               <div
-                key={`${msg.key}-${msg.timestamp}`}
+                key={`${msg.key}-${msg.timestamp}-${msg.message}`}
                 className="flex items-start gap-1.5"
               >
                 <MIcon
