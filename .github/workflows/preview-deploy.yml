@@ -13,28 +13,21 @@ permissions: {}
 env:
   TURBO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: 1
+  UIP_GO_VERSION: 0.1.4
 
 concurrency:
   group: coded-app-preview-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    name: Deploy Apollo Coded App Previews
+  initialize-comment:
+    name: Initialize Apollo Coded App Preview Comment
     if: github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      packages: read
-      pull-requests: write
+      issues: write
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
       - name: Initialize PR comment
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
@@ -90,6 +83,27 @@ jobs:
               });
             }
 
+  deploy:
+    name: Deploy Apollo Coded App Previews
+    needs: initialize-comment
+    if: ${{ !cancelled() && needs.initialize-comment.result == 'success' && github.event.pull_request.head.repo.fork == false }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    outputs:
+      design_url: ${{ steps.deploy.outputs.design_url }}
+      docs_url: ${{ steps.deploy.outputs.docs_url }}
+      landing_url: ${{ steps.deploy.outputs.landing_url }}
+      vertex_url: ${{ steps.deploy.outputs.vertex_url }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
 
@@ -120,7 +134,7 @@ jobs:
           set -euo pipefail
 
           missing=0
-          for name in GH_NPM_REGISTRY_TOKEN UIPATH_BASE_URL UIPATH_CLIENT_ID UIPATH_CLIENT_SECRET UIPATH_FOLDER_KEY UIPATH_ORG_NAME UIPATH_TENANT_NAME; do
+          for name in GH_NPM_REGISTRY_TOKEN UIPATH_BASE_URL UIPATH_CLIENT_ID UIPATH_CLIENT_SECRET UIPATH_FOLDER_KEY UIPATH_ORG_NAME UIPATH_TENANT_NAME UIP_GO_VERSION; do
             if [ -z "${!name:-}" ]; then
               echo "::error::$name is required for uip-go Coded App preview deployments."
               missing=1
@@ -142,7 +156,7 @@ jobs:
             printf '@uipath:registry=https://npm.pkg.github.com\n'
             printf '//npm.pkg.github.com/:_authToken=%s\n' "$GH_NPM_REGISTRY_TOKEN"
           } > "$uip_go_npmrc"
-          NPM_CONFIG_USERCONFIG="$uip_go_npmrc" npm install --prefix "$uip_go_prefix" @uipath/uip-go
+          NPM_CONFIG_USERCONFIG="$uip_go_npmrc" npm install --prefix "$uip_go_prefix" "@uipath/uip-go@${UIP_GO_VERSION}"
           UIP_GO="${uip_go_prefix}/node_modules/.bin/uip-go"
 
           write_output() {
@@ -232,15 +246,23 @@ jobs:
           path: .turbo
           key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
 
+  update-comment:
+    name: Update Apollo Coded App Preview Comment
+    needs: [initialize-comment, deploy]
+    if: ${{ always() && github.event.pull_request.head.repo.fork == false && needs.initialize-comment.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
       - name: Update PR comment
-        if: always()
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
-          APOLLO_DESIGN_URL: ${{ steps.deploy.outputs.design_url }}
-          APOLLO_DOCS_URL: ${{ steps.deploy.outputs.docs_url }}
-          APOLLO_LANDING_URL: ${{ steps.deploy.outputs.landing_url }}
-          APOLLO_VERTEX_URL: ${{ steps.deploy.outputs.vertex_url }}
+          DEPLOY_OUTCOME: ${{ needs.deploy.result }}
+          APOLLO_DESIGN_URL: ${{ needs.deploy.outputs.design_url }}
+          APOLLO_DOCS_URL: ${{ needs.deploy.outputs.docs_url }}
+          APOLLO_LANDING_URL: ${{ needs.deploy.outputs.landing_url }}
+          APOLLO_VERTEX_URL: ${{ needs.deploy.outputs.vertex_url }}
         with:
           script: |
             const identifier = '<!-- apollo-coded-app-preview-comment -->';
